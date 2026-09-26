@@ -1,0 +1,19 @@
+{
+  "name": "@fluxion/studio",
+  "version": "0.0.0",
+  "description": "Vite PWA: editor + player shell, file handling, provider adapters.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

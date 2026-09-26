@@ -11,6 +11,7 @@
   },
   "scripts": {
     "setup": "node scripts/harness/setup.mjs",
+    "typecheck": "tsc -b",
     "verify": "node scripts/gates/precommit.mjs --all",
     "verify:fast": "node scripts/gates/precommit.mjs --quick"
   },

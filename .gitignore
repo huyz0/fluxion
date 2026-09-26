@@ -17,3 +17,4 @@ Thumbs.db
 .harness/review/
 .harness/tmp/
 .harness/artifacts/
+.tsbuild/

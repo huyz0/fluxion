@@ -1,0 +1,18 @@
+{
+  "name": "@fluxion/editor",
+  "version": "0.0.0",
+  "description": "Edit overlay, tools state machine, panels, inspector, library, timeline and interaction editors, AI panel.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

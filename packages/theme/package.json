@@ -1,0 +1,18 @@
+{
+  "name": "@fluxion/theme",
+  "version": "0.0.0",
+  "description": "Token model (DTCG), token resolution, palette generation (OKLCH), contrast checks, CSS-variable emission.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

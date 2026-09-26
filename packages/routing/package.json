@@ -1,0 +1,18 @@
+{
+  "name": "@fluxion/routing",
+  "version": "0.0.0",
+  "description": "Router interface, straight/bezier/orthogonal A* routers, anchor selection, nudging, hops, label placement.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

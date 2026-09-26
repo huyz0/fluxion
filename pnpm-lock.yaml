@@ -30,6 +30,44 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  apps/docs: {}
+
+  apps/studio: {}
+
+  packages/anim: {}
+
+  packages/cli: {}
+
+  packages/core: {}
+
+  packages/dsl: {}
+
+  packages/editor: {}
+
+  packages/exporters: {}
+
+  packages/format: {}
+
+  packages/geometry: {}
+
+  packages/layout: {}
+
+  packages/mcp: {}
+
+  packages/player: {}
+
+  packages/render: {}
+
+  packages/routing: {}
+
+  packages/schema: {}
+
+  packages/sdk: {}
+
+  packages/theme: {}
+
+  packs/basic: {}
+
 packages:
 
   '@turbo/darwin-64@2.11.4':

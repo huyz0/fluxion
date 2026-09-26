@@ -1,0 +1,18 @@
+{
+  "name": "@fluxion/format",
+  "version": "0.0.0",
+  "description": ".flux zip, .flux.html and .flux.json read/write, content-addressed asset store, sanitizers, lockfile.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

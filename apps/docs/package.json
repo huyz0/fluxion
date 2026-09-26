@@ -1,0 +1,19 @@
+{
+  "name": "@fluxion/docs",
+  "version": "0.0.0",
+  "description": "Astro Starlight documentation site and llms.txt.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

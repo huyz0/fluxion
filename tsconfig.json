@@ -2,5 +2,63 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "//": "Solution file: `tsc -b` type-checks every workspace project. Generated references are kept in sync by tools/gen/package.mjs (M1.6).",
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./packages/schema"
+    },
+    {
+      "path": "./packages/geometry"
+    },
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/theme"
+    },
+    {
+      "path": "./packages/layout"
+    },
+    {
+      "path": "./packages/routing"
+    },
+    {
+      "path": "./packages/anim"
+    },
+    {
+      "path": "./packages/format"
+    },
+    {
+      "path": "./packages/dsl"
+    },
+    {
+      "path": "./packages/render"
+    },
+    {
+      "path": "./packages/player"
+    },
+    {
+      "path": "./packages/editor"
+    },
+    {
+      "path": "./packages/sdk"
+    },
+    {
+      "path": "./packages/cli"
+    },
+    {
+      "path": "./packages/mcp"
+    },
+    {
+      "path": "./packages/exporters"
+    },
+    {
+      "path": "./apps/studio"
+    },
+    {
+      "path": "./apps/docs"
+    },
+    {
+      "path": "./packs/basic"
+    }
+  ]
 }
