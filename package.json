@@ -1,0 +1,22 @@
+{
+  "name": "fluxion",
+  "private": true,
+  "description": "Author, AI-generate and present interactive, animated diagram-screens as one portable file.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.28.0",
+  "engines": {
+    "node": ">=22.14",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "setup": "node scripts/harness/setup.mjs",
+    "verify": "node scripts/gates/precommit.mjs --all",
+    "verify:fast": "node scripts/gates/precommit.mjs --quick"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}

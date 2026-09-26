@@ -130,6 +130,7 @@ leg('final milestone review covers M1', () => {
   return rev ? checkFinalReview(rev, 'M1') : 'missing .harness/reviews/milestone-M1-final.json';
 });
 leg('roadmap advanced past M1', () => !['M0', 'M1'].includes(currentMilestone()) || `roadmap Current milestone is ${currentMilestone()}`);
-leg('README quickstart documents pnpm setup/verify', () => /pnpm i[\s\S]*pnpm setup[\s\S]*pnpm verify/.test(readText('README.md')) || 'README.md lacks the pnpm quickstart');
+// `pnpm setup` is a pnpm built-in (PNPM_HOME), so the repo script is invoked as `pnpm run setup`
+leg('README quickstart documents pnpm i / run setup / verify', () => /pnpm i[\s\S]*pnpm run setup[\s\S]*pnpm verify/.test(readText('README.md')) || 'README.md lacks the pnpm quickstart');
 
 await runLegs('m1');
