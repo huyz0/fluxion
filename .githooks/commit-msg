@@ -1,2 +1,4 @@
 #!/bin/sh
-exec node scripts/gates/check-commit-msg.mjs "$1"
+# Message-level gates: subject format, and test removals justified by a Removes-test trailer.
+node scripts/gates/check-commit-msg.mjs "$1" || exit 1
+exec node scripts/gates/check-tests-kept.mjs --msg "$1"

@@ -40,3 +40,8 @@ done: check-size.mjs (AGENTS/skill/package AGENTS/backlog/progress/source-file c
 fix: merged duplicate M0.5 progress entries (M0.5 review r3 F1)
 note: function length/complexity caps enforced by Biome from M1
 next: M0.7
+
+## 2026-09-26 M0.7 (claude)
+done: check-tests-kept (deleted/renamed test files, removed cases, added skip/todo/only) + 13 tests
+moved to commit-msg hook (trailer only exists there); removed from precommit; mutation -> fails
+next: M0.8

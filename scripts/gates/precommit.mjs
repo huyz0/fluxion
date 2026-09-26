@@ -6,6 +6,7 @@
 //   --quick      fast subset for iteration
 //   --summary    one line per step only
 //   --no-review  skip check-reviewed (used when building the review packet)
+// check-tests-kept runs from the commit-msg hook (it needs the Removes-test trailer).
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { exists, node, run } from './lib.mjs';
 import { t } from './thresholds.mjs';
@@ -21,7 +22,6 @@ const STEPS = [
   ['portability', () => true, () => true, () => node('scripts/gates/check-portability.mjs')],
   ['size', () => true, () => exists('scripts/gates/check-size.mjs') || 'check-size.mjs not written yet (M0)', () => node('scripts/gates/check-size.mjs', [`--${mode}`])],
   ['harness-tests', (m) => m !== 'quick', () => exists('tests/harness') || 'tests/harness not written yet (M0)', () => run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])],
-  ['tests-kept', (m) => m === 'staged', () => exists('scripts/gates/check-tests-kept.mjs') || 'not written yet (M0)', () => node('scripts/gates/check-tests-kept.mjs')],
   ['drift', (m) => m !== 'quick', () => exists('scripts/gates/check-drift.mjs') || 'not written yet (M0)', () => node('scripts/gates/check-drift.mjs', [`--${mode}`])],
   ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', 'typecheck', ...(mode === 'all' ? [] : ['--affected']))],
   ['lint', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('biome', 'ci', '.')],
