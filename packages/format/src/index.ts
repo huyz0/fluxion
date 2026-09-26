@@ -1,5 +1,5 @@
 /**
- * @fluxion/format — .flux zip, .flux.html and .flux.json read/write, content-addressed asset store, sanitizers, lockfile.
+ * `@fluxion/format` — .flux zip, .flux.html and .flux.json read/write, content-addressed asset store, sanitizers, lockfile.
  *
  * @packageDocumentation
  */

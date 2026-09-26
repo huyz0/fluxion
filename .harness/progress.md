@@ -272,3 +272,9 @@ review r2 changes-requested (2) fixed: spdx.mjs parses expressions with preceden
 done: DENY_TEXT also tested on each parsed id; Lesser/Library guard covers the GPL word; boundary = not after a letter/digit (GNU_GPL); licenses.test +6 assertions (M1.15 r3 minors; round cap reached there)
 review r1 pass + minor fixed: Lesser/Library guard accepts any separator run (variable-length lookbehind)
 review r2 pass + minor fixed: guard needs the word Lesser/Library joined by whitespace . _ / - only
+
+## 2026-09-26 M1.14 (claude)
+done: check-api.mjs runs API Extractor (node API, one config per library, bundled TS 5.9 on emitted .d.ts) against committed packages/*/api/*.api.md; ae-missing-release-tag and every other warning fail; --update writes reports; TypeDoc (typedoc.json, notDocumented/invalidLink) validates TSDoc on TS 6
+TS 6 route: apps/docs installs typedoc + typescript from named catalog `typescript6` (a packageExtensions dep or an override does not reach a peer); ADR-0011 amended (API Extractor needs no TS 6)
+generated index.ts headers put the package name in backticks (a bare @fluxion/x read as a TSDoc tag); api.test (4)
+review r1 pass + 2 minor fixed: ADR-0011 Context/Confirmation/index row and the planned-pins comment no longer say API Extractor runs on TS 6

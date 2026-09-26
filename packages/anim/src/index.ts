@@ -1,5 +1,5 @@
 /**
- * @fluxion/anim — Animation, timeline and interaction model evaluation: sampling at time t, build-state reduction, morph, rider LUTs, expressions.
+ * `@fluxion/anim` — Animation, timeline and interaction model evaluation: sampling at time t, build-state reduction, morph, rider LUTs, expressions.
  *
  * @packageDocumentation
  */

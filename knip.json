@@ -4,7 +4,7 @@
     ".": {
       "entry": ["scripts/gates/*.mjs", "scripts/harness/**/*.mjs", "tools/gen/*.mjs", "tests/harness/*.test.mjs"],
       "project": ["scripts/**/*.mjs", "tools/**/*.mjs", "tests/**/*.mjs"],
-      "ignoreDependencies": ["@arethetypeswrong/cli", "dependency-cruiser"]
+      "ignoreDependencies": ["@arethetypeswrong/cli", "dependency-cruiser", "@microsoft/api-extractor"]
     }
   },
   "ignoreExportsUsedInFile": true

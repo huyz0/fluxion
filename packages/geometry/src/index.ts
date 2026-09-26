@@ -1,5 +1,5 @@
 /**
- * @fluxion/geometry — Vectors, matrices, bezier/path ops, outline sampling, intersections, bounding boxes, spatial index wrappers.
+ * `@fluxion/geometry` — Vectors, matrices, bezier/path ops, outline sampling, intersections, bounding boxes, spatial index wrappers.
  *
  * @packageDocumentation
  */

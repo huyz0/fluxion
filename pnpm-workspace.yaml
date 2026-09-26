@@ -38,12 +38,18 @@ catalog:
   playwright: 1.63.0
   fast-check: 4.10.2
   vite: 8.3.1
+  "@microsoft/api-extractor": 7.59.2
+  typedoc: 0.28.20
+
+# TS 6 for tools that need the compiler API (ADR-0011): apps/docs installs it as its own
+# `typescript` via "catalog:typescript6", so TypeDoc resolves its peer to TS 6, not the root TS 7.
+catalogs:
+  typescript6:
+    typescript: npm:typescript@6.0.3
 
 # Planned pins, verified on npm 2026-09-26, added to the catalog by the row that installs them
-# (re-check minimumReleaseAge then). typescript6 (npm:typescript@6.0.3) is used by API Extractor and
-# TypeDoc per ADR-0011 from M1.14.
-#   typescript6: npm:typescript@6.0.3
-#   @microsoft/api-extractor: 7.59.2        typedoc: 0.28.20                @changesets/cli: 3.0.3
+# (re-check minimumReleaseAge then).
+#   @changesets/cli: 3.0.3
 #   @playwright/test: 1.63.0
 #   @vitejs/plugin-react: 6.1.1             react: 19.3.0                   react-dom: 19.3.0
 #   @types/react: 19.3.0                    @types/react-dom: 19.3.0        storybook: 10.6.0

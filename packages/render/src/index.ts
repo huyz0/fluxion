@@ -1,5 +1,5 @@
 /**
- * @fluxion/render — React 19 DOM+SVG renderer of a screen, identical in edit and present mode.
+ * `@fluxion/render` — React 19 DOM+SVG renderer of a screen, identical in edit and present mode.
  *
  * @packageDocumentation
  */

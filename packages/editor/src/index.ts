@@ -1,5 +1,5 @@
 /**
- * @fluxion/editor — Edit overlay, tools state machine, panels, inspector, library, timeline and interaction editors, AI panel.
+ * `@fluxion/editor` — Edit overlay, tools state machine, panels, inspector, library, timeline and interaction editors, AI panel.
  *
  * @packageDocumentation
  */

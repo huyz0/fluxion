@@ -1,5 +1,5 @@
 /**
- * @fluxion/pack-basic — First-party basic shape pack; imports only @fluxion/sdk.
+ * `@fluxion/pack-basic` — First-party basic shape pack; imports only `@fluxion/sdk`.
  *
  * @packageDocumentation
  */

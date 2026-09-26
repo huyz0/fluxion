@@ -1,5 +1,5 @@
 /**
- * @fluxion/sdk — Public plugin API: stable contracts, manifest schema, component contract, test harness.
+ * `@fluxion/sdk` — Public plugin API: stable contracts, manifest schema, component contract, test harness.
  *
  * @packageDocumentation
  */

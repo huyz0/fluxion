@@ -1,5 +1,5 @@
 /**
- * @fluxion/schema — Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema generation; migrations.
+ * `@fluxion/schema` — Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema generation; migrations.
  *
  * @packageDocumentation
  */

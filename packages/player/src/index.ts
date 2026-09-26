@@ -1,5 +1,5 @@
 /**
- * @fluxion/player — Present runtime: navigation, clock and scheduler, transitions, trigger bus, interactions, overlays, responsive, speaker sync.
+ * `@fluxion/player` — Present runtime: navigation, clock and scheduler, transitions, trigger bus, interactions, overlays, responsive, speaker sync.
  *
  * @packageDocumentation
  */

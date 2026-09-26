@@ -11,7 +11,8 @@ decision-makers: harness (M1.5)
 Packages import each other (`@fluxion/core` → `@fluxion/schema`). Type-checking and testing
 should not require building every dependency first, but published packages must resolve to built
 `dist/`. TypeScript 7.0 (the native compiler) type-checks about 10× faster, but it has no
-compiler API yet, which API Extractor and TypeDoc need (research 05; ADR-0008).
+compiler API yet, which TypeDoc and dependency-cruiser need (research 05; ADR-0008). (API Extractor,
+first assumed to need it too, bundles its own compiler: amended in M1.14.)
 
 ## Decision Drivers
 
@@ -35,9 +36,12 @@ Tools inside the repo resolve source; published consumers resolve `dist`. `paths
 rejected because it leaks into emitted declarations and duplicates the package graph.
 
 **Dual compiler:** `typescript@7` (catalog `typescript`) runs `tsc -b` for type-checking
-and project references; `typescript@6` (catalog `typescript6`, `npm:typescript@6.0.3`, added to the catalog by M1.14 when API Extractor is installed) is used only
-by API Extractor, TypeDoc and dependency-cruiser (its own dependency via `packageExtensions`, M1.11) until TS 7.1 ships a compiler API. `isolatedDeclarations` keeps
-declaration output simple enough for both.
+and project references. Tools that need a compiler API use TypeScript 6 until TS 7.1 ships one:
+TypeDoc through `apps/docs`, which installs `typescript` from the named catalog `typescript6`
+(`npm:typescript@6.0.3`) so TypeDoc's peer resolves to it (M1.14); dependency-cruiser through its own
+`packageExtensions` dependency (M1.11). API Extractor bundles its own compiler (5.9 today) and reads the
+**emitted** `.d.ts` files, so it needs neither (M1.14). `isolatedDeclarations` keeps
+declaration output simple enough for every tool that reads it.
 
 ## Consequences
 
@@ -52,4 +56,4 @@ declaration output simple enough for both.
 
 `tests/harness/tsconfig-strict.test.mjs` checks strictness; `workspace-shape.test.mjs` (M1.6)
 checks every package's `exports` map has the three conditions; `check-api` (M1.14) runs API
-Extractor on TS 6.
+Extractor (its bundled compiler) on the emitted declarations and TypeDoc on TS 6.

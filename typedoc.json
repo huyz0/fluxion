@@ -1,0 +1,16 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": ["packages/*", "packs/*"],
+  "packageOptions": {
+    "entryPoints": ["src/index.ts"],
+    "excludeInternal": true
+  },
+  "treatWarningsAsErrors": true,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": true
+  },
+  "readme": "none"
+}

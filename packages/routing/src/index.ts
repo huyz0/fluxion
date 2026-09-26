@@ -1,5 +1,5 @@
 /**
- * @fluxion/routing — Router interface, straight/bezier/orthogonal A* routers, anchor selection, nudging, hops, label placement.
+ * `@fluxion/routing` — Router interface, straight/bezier/orthogonal A* routers, anchor selection, nudging, hops, label placement.
  *
  * @packageDocumentation
  */

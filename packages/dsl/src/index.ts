@@ -1,5 +1,5 @@
 /**
- * @fluxion/dsl — FluxScript parser, compiler, decompiler, diagnostics, Mermaid/Markdown importers.
+ * `@fluxion/dsl` — FluxScript parser, compiler, decompiler, diagnostics, Mermaid/Markdown importers.
  *
  * @packageDocumentation
  */

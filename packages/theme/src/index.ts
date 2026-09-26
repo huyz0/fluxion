@@ -1,5 +1,5 @@
 /**
- * @fluxion/theme — Token model (DTCG), token resolution, palette generation (OKLCH), contrast checks, CSS-variable emission.
+ * `@fluxion/theme` — Token model (DTCG), token resolution, palette generation (OKLCH), contrast checks, CSS-variable emission.
  *
  * @packageDocumentation
  */

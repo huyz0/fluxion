@@ -102,7 +102,8 @@ const files = (w) => ({
     null,
     2,
   )}\n`,
-  'src/index.ts': `/**\n * ${w.name} — ${w.desc}\n *\n * @packageDocumentation\n */\n\n/**\n * Version of this package.\n *\n * @public\n */\nexport const VERSION: string = '0.0.0';\n`,
+  // the package name in backticks: a bare `@fluxion/x` at the start reads as a malformed TSDoc tag
+  'src/index.ts': `/**\n * \`${w.name}\` — ${w.desc}\n *\n * @packageDocumentation\n */\n\n/**\n * Version of this package.\n *\n * @public\n */\nexport const VERSION: string = '0.0.0';\n`,
   // T0 smoke test (NFR-MNT-004): keeps the stub above its coverage floor and proves the node project runs it
   'src/index.test.ts': `import { expect, it } from 'vitest';\nimport { VERSION } from './index.js';\n\nit('NFR-MNT-004 smoke: ${w.name} exports its version', () => {\n  expect(VERSION).toBe('0.0.0');\n});\n`,
   'README.md': `# ${w.name}\n\n${w.desc}\n\n| Layer | Pure | Status |\n|---|---|---|\n| ${w.layer} | ${w.runtime === 'pure' ? 'yes' : 'no'} | stub (M1) — exports \`VERSION\` only |\n\nArchitecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).\n`,

@@ -1,5 +1,5 @@
 /**
- * @fluxion/exporters — PDF/PNG/SVG/PPTX/video/site exporters.
+ * `@fluxion/exporters` — PDF/PNG/SVG/PPTX/video/site exporters.
  *
  * @packageDocumentation
  */

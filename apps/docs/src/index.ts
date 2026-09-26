@@ -1,5 +1,5 @@
 /**
- * @fluxion/docs — Astro Starlight documentation site and llms.txt.
+ * `@fluxion/docs` — Astro Starlight documentation site and llms.txt.
  *
  * @packageDocumentation
  */

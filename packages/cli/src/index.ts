@@ -1,5 +1,5 @@
 /**
- * @fluxion/cli — The fluxion command: validate, compile, render, lint, layout, convert, catalog, pack, site build.
+ * `@fluxion/cli` — The fluxion command: validate, compile, render, lint, layout, convert, catalog, pack, site build.
  *
  * @packageDocumentation
  */

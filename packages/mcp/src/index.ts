@@ -1,5 +1,5 @@
 /**
- * @fluxion/mcp — MCP server exposing the same operations as the CLI to AI agents.
+ * `@fluxion/mcp` — MCP server exposing the same operations as the CLI to AI agents.
  *
  * @packageDocumentation
  */

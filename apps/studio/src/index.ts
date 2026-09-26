@@ -1,5 +1,5 @@
 /**
- * @fluxion/studio — Vite PWA: editor + player shell, file handling, provider adapters.
+ * `@fluxion/studio` — Vite PWA: editor + player shell, file handling, provider adapters.
  *
  * @packageDocumentation
  */

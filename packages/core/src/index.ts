@@ -1,5 +1,5 @@
 /**
- * @fluxion/core — Document store (records + signals), transactions, commands, undo/redo, queries, registries.
+ * `@fluxion/core` — Document store (records + signals), transactions, commands, undo/redo, queries, registries.
  *
  * @packageDocumentation
  */

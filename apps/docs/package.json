@@ -15,5 +15,12 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "scripts": {
+    "api:docs": "typedoc --options ../../typedoc.json --emit none"
+  },
+  "devDependencies": {
+    "typedoc": "catalog:",
+    "typescript": "catalog:typescript6"
+  }
 }
