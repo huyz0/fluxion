@@ -1,0 +1,18 @@
+{
+  "description": "Fluxion harness hooks (mirrors .claude/settings.json). Trust the project .codex/ layer once; changed hooks need re-trust (Codex hashes them).",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/gates/precommit.mjs --quick --summary",
+            "statusMessage": "Fluxion quick gate",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -66,3 +66,8 @@ next: M0.10
 done: stop-check.mjs + 7 tests (inactive/red/green/blocked/cap/reset/missing gate); doc in .harness/README.md
 test found ordering bug: cap checked before gate so a green gate could not reset — fixed
 next: M0.11
+
+## 2026-09-26 M0.11 (claude)
+done: .codex/{config.toml,hooks.json,README.md} per current Codex hooks docs; adapters.test.mjs (4)
+live Codex verification folded into M0.15 (codex CLI not installed here)
+next: M0.12

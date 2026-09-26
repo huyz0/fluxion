@@ -43,3 +43,5 @@ It allows stopping unless `state.json.loopActive` is true and the milestone gate
 blocks with the first red leg and the next `todo` row. `blockedReason` or the runaway cap
 (`FLUXION_STOP_BLOCK_CAP`, default 60 blocks) always allow stopping. A green gate sets
 `loopActive=false` and resets the cap. Codex wiring is in `.codex/` (M0.11).
+- After a cap hit or a cleared `blockedReason`, delete `.harness/tmp/stop-blocks` before restarting
+  the loop — the counter otherwise persists until the gate goes green.

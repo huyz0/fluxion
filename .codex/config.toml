@@ -1,0 +1,11 @@
+# Project-layer Codex config for Fluxion. Loaded only after the project .codex/ layer is trusted.
+# Skills need no config: Codex reads .agents/skills/ natively. AGENTS.md is read natively.
+
+[features]
+# Enables .codex/hooks.json (quick gate after file edits). Alias "codex_hooks" is deprecated.
+hooks = true
+
+# Optional deterministic Stop hook (use INSTEAD of the /goal judge, never both):
+# add to .codex/hooks.json:
+#   "Stop": [{ "hooks": [{ "type": "command", "command": "node scripts/harness/stop-check.mjs" }] }]
+# stop-check prints {"decision":"block","reason":...}, which Codex treats as "continue with reason".
