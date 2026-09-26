@@ -1,0 +1,55 @@
+# Harness gates on every push and PR (docs/standards/ci-cd.md). The same scripts the local hooks
+# run, so hook and CI cannot drift. check-reviewed is local-only: per-commit verdicts are bound to
+# local staged bytes (.harness/review is gitignored); CI instead re-checks every commit's
+# message-level gates (task id, Removes-test, Threshold-change) with check-commits.mjs.
+name: gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Only PR runs share a group (and cancel). Each push gets its own group keyed by its SHA: GitHub
+# replaces a *pending* run in a shared group even without cancel-in-progress, and a skipped push
+# run would leave its commits unchecked because the next push's range starts at its own `before`.
+concurrency:
+  group: gates-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gates:
+    name: gates (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - name: git identity for sandbox tests
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@example.invalid"
+      - name: pre-commit ladder (--all)
+        run: node scripts/gates/precommit.mjs --all
+      - name: harness tests
+        run: node --test "tests/harness/*.test.mjs"
+      - name: per-commit message gates
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          # first push of a branch has an all-zero "before"; the pre-harness baseline is exempt
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then BASE=e4273a6; fi
+          node scripts/gates/check-commits.mjs --range "$BASE..$HEAD_SHA"

@@ -79,3 +79,9 @@ next: M0.12
 ## 2026-09-26 M0.16 fix (claude)
 commit refused by hook: git exports GIT_INDEX_FILE=.git/index to hooks; broke git in sandbox worktree
 fix: tests/harness helpers strip GIT_* env (cleanEnv) — suite 102/102 with hook-like env; real repo untouched
+
+## 2026-09-26 M0.12 (claude)
+done: .github/workflows/gates.yml (3 OSes, SHA-pinned checkout v7.0.1/setup-node v7.0.0, read-only token)
+added check-commits.mjs + check-tests-kept --commit (closes M0.7 F1 amend gap); history e4273a6..HEAD 14/14 pass
+not verified on GitHub: no push requested; workflow checked structurally (ci-workflow.test.mjs), actionlint not installed
+next: M0.13

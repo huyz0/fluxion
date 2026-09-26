@@ -7,8 +7,14 @@
 import { readFileSync } from 'node:fs';
 import { git } from './lib.mjs';
 
-const i = process.argv.indexOf('--msg');
-const msg = i >= 0 ? readFileSync(process.argv[i + 1], 'utf8').replace(/^#.*$/gm, '') : '';
+// --commit <sha> (CI): check that commit against its first parent using its own message, so an
+// amended or rebased commit cannot drop a trailer unnoticed (M0.7 review F1).
+const arg = (k) => { const j = process.argv.indexOf(`--${k}`); return j >= 0 ? process.argv[j + 1] : undefined; };
+const sha = arg('commit');
+const range = sha ? [`${sha}^`, sha] : ['--cached'];
+const msg = sha
+  ? git(['log', '-1', '--format=%B', sha]).stdout
+  : arg('msg') ? readFileSync(arg('msg'), 'utf8').replace(/^#.*$/gm, '') : '';
 // [ \t]* not \s*: an empty trailer followed by another trailer line must not count as a reason
 const trailer = /^Removes-test:[ \t]*\S/m.test(msg);
 
@@ -18,14 +24,14 @@ const CASE = /(?<![.\w])(it|test)(\.each\([^)]*\))?\s*\(\s*[`'"]/;
 const DISABLED = /(?<![.\w])(it|test|describe)\.(skip|todo|only)\s*\(|(?<![.\w])x(it|describe)\s*\(/;
 
 const problems = [];
-const status = git(['diff', '--cached', '--name-status', '-M', '--no-color']).stdout.split(/\r?\n/).filter(Boolean);
+const status = git(['diff', ...range, '--name-status', '-M', '--no-color']).stdout.split(/\r?\n/).filter(Boolean);
 for (const line of status) {
   const [code, a, b] = line.split('\t');
   if (code === 'D' && isTest(a)) problems.push(`deletes test file ${a}`);
   if (code.startsWith('R') && isTest(a) && !isTest(b)) problems.push(`renames test file ${a} to non-test ${b}`);
 }
 
-const diff = git(['diff', '--cached', '-U0', '--no-color', '-M']).stdout.split(/\r?\n/);
+const diff = git(['diff', ...range, '-U0', '--no-color', '-M']).stdout.split(/\r?\n/);
 let file = null;
 const counts = new Map();
 for (const l of diff) {
