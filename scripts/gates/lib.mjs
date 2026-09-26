@@ -12,12 +12,19 @@ export const rel = (abs) => relative(REPO_ROOT, abs).split(sep).join('/');
 export const exists = (p) => existsSync(repoPath(p));
 export const readText = (p) => readFileSync(repoPath(p), 'utf8');
 
+/** Quote one argument for cmd.exe (Windows shell used to resolve .cmd shims like pnpm/codex). */
+export const quoteWin = (a) => (/^[\w.,:/\\=@+-]+$/.test(a) ? a : `"${String(a).replace(/"/g, '""')}"`);
+
 /** Run a command in the repo root. Returns { status, stdout, stderr }. Never throws. */
 export function run(cmd, args = [], opts = {}) {
-  const res = spawnSync(cmd, args, {
+  // Windows needs a shell to run .cmd shims (pnpm, npx, codex). Passing an args array together
+  // with shell:true concatenates unescaped (DEP0190), so build one quoted command line instead.
+  const needsShell = process.platform === 'win32' && !cmd.endsWith('.exe') && cmd !== process.execPath && cmd !== 'git';
+  const [file, argv] = needsShell ? [[cmd, ...args].map(quoteWin).join(' '), []] : [cmd, args];
+  const res = spawnSync(file, argv, {
     cwd: REPO_ROOT,
     encoding: 'utf8',
-    shell: process.platform === 'win32' && !cmd.endsWith('.exe') && cmd !== process.execPath,
+    shell: needsShell,
     maxBuffer: 64 * 1024 * 1024,
     ...opts,
   });

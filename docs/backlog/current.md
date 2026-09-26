@@ -7,7 +7,7 @@ States: `todo` · `doing` · `done` · `blocked (<reason>)`. Commit: `git log --
 
 | ID | Task | Req | Acceptance (EARS) | Deps | State | Commit |
 |---|---|---|---|---|---|---|
-| M0.1 | Install Node ≥ 22 + pnpm (repo already `git init`-ed, hooksPath set); `node scripts/harness/setup.mjs`; fix any defect in existing harness scripts until `precommit.mjs --all` is green | NFR-DX-003 | WHEN `node scripts/gates/precommit.mjs --all` runs THE SYSTEM SHALL print PASS or SKIP(with reason) per step and exit 0 | — | todo | |
+| M0.1 | Install Node ≥ 22 + pnpm (repo already `git init`-ed, hooksPath set); `node scripts/harness/setup.mjs`; fix any defect in existing harness scripts until `precommit.mjs --all` is green | NFR-DX-003 | WHEN `node scripts/gates/precommit.mjs --all` runs THE SYSTEM SHALL print PASS or SKIP(with reason) per step and exit 0 | — | done | |
 | M0.2 | Run `m0-complete.mjs`; confirm red; record failing legs in progress log | HARNESS | WHEN the gate runs THE SYSTEM SHALL print one PASS/FAIL line per leg and exit 1 | M0.1 | todo | |
 | M0.3 | `tests/harness/commit-msg.test.mjs` negative + positive cases | NFR-DX-003 | WHEN a subject lacks a backlog task ID, has a wrong type, or an empty trailer THE SYSTEM SHALL exit 1; valid subject → 0 | M0.1 | todo | |
 | M0.4 | `tests/harness/portability.test.mjs` on temp fixture trees | NFR-DX-003 | WHEN a skill has vendor syntax, name≠dir, built-in name, >150 lines, or a stale adapter THE SYSTEM SHALL exit 1 | M0.1 | todo | |
