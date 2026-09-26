@@ -1,0 +1,21 @@
+{
+  "task": "M0.13",
+  "date": "2026-09-26",
+  "runs": [
+    {
+      "author": "claude",
+      "reviewer": "codex",
+      "seededDefect": "scripts/gates/check-size.mjs: files exactly at the cap are rejected (off-by-one)",
+      "diff_sha256": "21f1c8c6c0835226c7037cb0e3ae2ae45c4ada6845080d1e2f95d900a035c12b",
+      "caught": true
+    },
+    {
+      "author": "codex",
+      "reviewer": "claude",
+      "seededDefect": "scripts/gates/check-tests-kept.mjs: one net removed test case per file passes without a Removes-test trailer",
+      "diff_sha256": "800d0b95928f131248338b410f7932804caff1b35a8b1bf7ce6f3cf717a0ce0e",
+      "caught": true
+    }
+  ],
+  "note": "claude->codex reviewed by the Codex CLI (codex exec, read-only sandbox). codex->claude reviewed by an isolated Claude reviewer subagent (FLUXION_SMOKE_MANUAL=claude) because the Claude CLI on this machine is not logged in — the code-review skill documented fallback. Neither reviewer was told a defect was seeded."
+}

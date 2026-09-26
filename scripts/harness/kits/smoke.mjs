@@ -40,6 +40,28 @@ const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.st
 const inWt = (cmd, args, input) => spawnSync(cmd, args, { cwd: wt, encoding: 'utf8', input, env, maxBuffer: 64 * 1024 * 1024 });
 const nodeWt = (script, args) => inWt(process.execPath, [join(wt, script), ...args]);
 
+/**
+ * FLUXION_SMOKE_MANUAL=<vendor>[,…]: write the packet to .harness/tmp/smoke-packet-<vendor>.md in
+ * the main checkout and wait (≤ 30 min) for .harness/tmp/smoke-verdict-<vendor>.json.
+ */
+async function awaitManualVerdict(vendor, packetText) {
+  const packetOut = repoPath('.harness', 'tmp', `smoke-packet-${vendor}.md`);
+  const verdictIn = repoPath('.harness', 'tmp', `smoke-verdict-${vendor}.json`);
+  mkdirSync(repoPath('.harness', 'tmp'), { recursive: true });
+  rmSync(verdictIn, { force: true });
+  writeFileSync(packetOut, packetText);
+  console.log(`smoke: waiting for ${vendor} verdict — give ${packetOut} to an isolated ${vendor} reviewer; write its JSON to ${verdictIn}`);
+  const deadline = Date.now() + Number(process.env.FLUXION_SMOKE_MANUAL_TIMEOUT_MS ?? 30 * 60_000);
+  while (!existsSync(verdictIn)) {
+    if (Date.now() > deadline) die(`timed out waiting for ${verdictIn}`);
+    await new Promise((res) => setTimeout(res, 2000));
+  }
+  const local = join(wt, '.harness', 'tmp', `smoke-verdict-${vendor}.json`);
+  writeFileSync(local, readFileSync(verdictIn, 'utf8'));
+  rmSync(verdictIn, { force: true });
+  return local;
+}
+
 if (git(['worktree', 'add', '--detach', wt, 'HEAD']).status !== 0) {
   console.error('smoke: cannot create worktree');
   process.exit(1);
@@ -64,12 +86,22 @@ try {
     const packetFile = join(wt, '.harness', 'tmp', 'smoke-packet.md');
     writeFileSync(packetFile, packet.stdout);
     const fake = process.env.FLUXION_SMOKE_FAKE_REVIEWER;
-    const r = fake
-      ? inWt(process.execPath, [fake, packetFile, s.reviewer])
-      : nodeWt('scripts/harness/run-reviewer.mjs', ['--task', TASK, '--reviewer', s.reviewer]);
-    if (r.status !== 0) die(`${s.reviewer} reviewer failed: ${r.stderr}`);
-    const verdictFile = fake ? join(wt, '.harness', 'tmp', 'smoke-verdict.json') : join(wt, '.harness', 'tmp', 'verdict.json');
-    if (fake) writeFileSync(verdictFile, r.stdout);
+    const manual = (process.env.FLUXION_SMOKE_MANUAL ?? '').split(',').includes(s.reviewer);
+    let verdictFile = join(wt, '.harness', 'tmp', 'verdict.json');
+    if (manual) {
+      // The vendor's CLI is unavailable: hand the packet to that vendor's isolated subagent (the
+      // code-review skill's documented fallback) and wait for its verdict JSON.
+      verdictFile = await awaitManualVerdict(s.reviewer, packet.stdout);
+    } else {
+      const r = fake
+        ? inWt(process.execPath, [fake, packetFile, s.reviewer])
+        : nodeWt('scripts/harness/run-reviewer.mjs', ['--task', TASK, '--reviewer', s.reviewer]);
+      if (r.status !== 0) die(`${s.reviewer} reviewer failed: ${r.stderr}`);
+      if (fake) {
+        verdictFile = join(wt, '.harness', 'tmp', 'smoke-verdict.json');
+        writeFileSync(verdictFile, r.stdout);
+      }
+    }
     const verdict = JSON.parse(readFileSync(verdictFile, 'utf8'));
     const rec = nodeWt('scripts/harness/review.mjs', ['record', '--file', verdictFile, '--task', TASK]);
     if (rec.status !== 0) die(`record failed: ${rec.stderr}`);

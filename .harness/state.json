@@ -1,9 +1,9 @@
 {
   "milestone": "M0",
-  "currentTask": null,
+  "currentTask": "M0.13",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": false,
-  "blockedReason": "M0.13-M0.15 need Claude Code + Codex CLIs installed and logged in (not available on this machine). Kits ready: docs/harness/README.md section 7. After they run, resume /goal: M0.18 final review, roadmap to M1.",
+  "blockedReason": "M0.14/M0.15 need interactive /goal dry runs in Claude Code and Codex (human); Claude CLI not logged in. Kit: docs/harness/kits/dry-run.md. Then resume /goal for M0.18 and roadmap to M1.",
   "updated": "2026-09-26"
 }

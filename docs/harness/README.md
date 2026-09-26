@@ -87,6 +87,8 @@ in (`state.json` → `blockedReason`). Everything that can be prepared without t
 3. **M0.13 reviewer smoke:** `node scripts/harness/kits/smoke.mjs` — seeds one defect per
    direction in a throwaway worktree, runs the other vendor's reviewer, and writes
    `.harness/reviews/cross-vendor-smoke.json` plus digest lines. Nothing seeded is left behind.
+   If one CLI is not logged in, set `FLUXION_SMOKE_MANUAL=<vendor>` and hand the printed packet to
+   that vendor's isolated reviewer subagent. **Done 2026-09-26** (2/2 caught; Claude via subagent).
 4. **M0.14 / M0.15 `/goal` dry runs:** follow [`kits/dry-run.md`](kits/dry-run.md) in each tool and
    fill every `Date:` / `Outcome:` / `Transcript:` in [`dry-runs.md`](dry-runs.md).
 5. **CI check** (M0 cp2 F3): run `actionlint .github/workflows/gates.yml` or push once and confirm

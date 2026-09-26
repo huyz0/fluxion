@@ -1,10 +1,11 @@
 // NFR-DX-003 (M0.25): the human kits for M0.13–M0.15 work without a CLI and are safe.
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { checkDryRuns, checkReviewerSmoke } from '../../scripts/gates/milestone-checks.mjs';
-import { out, REPO, sandbox } from './helpers.mjs';
+import { cleanEnv, out, REPO, sandbox } from './helpers.mjs';
 
 describe('toy gate (M0.14/M0.15 kit)', () => {
   it('success mode goes green only once done.txt says done', () => {
@@ -70,9 +71,37 @@ console.log(JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, rev
     }
   });
 
+  it('waits for a manual (subagent) verdict for vendors listed in FLUXION_SMOKE_MANUAL', async () => {
+    const sb = sandbox(['scripts', 'docs/backlog', '.harness/reviews'], { git: true });
+    try {
+      sb.write('fake-reviewer.mjs', `import { readFileSync } from 'node:fs';
+const [packet] = process.argv.slice(2);
+const hash = /^diff_sha256: ([0-9a-f]{64})$/m.exec(readFileSync(packet, 'utf8'))[1];
+console.log(JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, reviewer: 'codex:fake', verdict: 'pass', findings: [] }));
+`);
+      const env = { ...cleanEnv(), FLUXION_SMOKE_FAKE_REVIEWER: sb.path('fake-reviewer.mjs'), FLUXION_SMOKE_MANUAL: 'claude', FLUXION_SMOKE_MANUAL_TIMEOUT_MS: '60000' };
+      const child = spawn(process.execPath, [sb.path('scripts/harness/kits/smoke.mjs')], { cwd: sb.dir, env });
+      let stdout = '';
+      child.stdout.on('data', (d) => { stdout += d; });
+      const exited = new Promise((res) => child.on('exit', res));
+      const packet = sb.path('.harness/tmp/smoke-packet-claude.md');
+      for (let i = 0; i < 300 && !existsSync(packet); i++) await new Promise((r) => setTimeout(r, 200));
+      assert.ok(existsSync(packet), `no manual packet; stdout: ${stdout}`);
+      const hash = /^diff_sha256: ([0-9a-f]{64})$/m.exec(readFileSync(packet, 'utf8'))[1];
+      sb.write('.harness/tmp/smoke-verdict-claude.json', JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, reviewer: 'claude-subagent:reviewer', verdict: 'changes-requested', findings: [{ id: 'F1', file: 'scripts/gates/check-tests-kept.mjs', line: 1, severity: 'major', failure_scenario: 'seeded' }] }));
+      assert.equal(await exited, 0, stdout);
+      const record = JSON.parse(sb.read('.harness/reviews/cross-vendor-smoke.json'));
+      assert.equal(checkReviewerSmoke(record, sb.read('.harness/reviews/digest.log')), true);
+      assert.equal(record.runs.find((r) => r.reviewer === 'claude').caught, true);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('cleans up and copies nothing back when a reviewer fails mid-run', () => {
     const sb = sandbox(['scripts', 'docs/backlog', '.harness/reviews'], { git: true });
     try {
+      rmSync(sb.path('.harness/reviews/cross-vendor-smoke.json'), { force: true }); // real evidence copied in
       const digestBefore = sb.read('.harness/reviews/digest.log');
       // first direction (codex) succeeds and is recorded in the worktree; second (claude) fails,
       // e.g. a CLI that is not logged in
