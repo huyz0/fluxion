@@ -6,8 +6,10 @@
 // test-titles.mjs: code only, not strings or comments). Fails when the change deletes a test file,
 // removes running cases (net over the whole change), swaps a case title out, makes a test stop
 // running (skip/todo/skipIf/runIf/fixme/fails, x-prefix, options, runtime skips, skipped suite) or
-// focuses one (.only) — unless the message carries `Removes-test: <reason>`. Runs in commit-msg
-// because the trailer only exists once the message is written.
+// focuses one (.only) — unless the message carries `Removes-test: <reason>`. A case that is only
+// retitled (same arguments apart from the title) passes with `Renames-test: <old> -> <new>`; a
+// Renames-test pair that matches no such retitle is a false claim and fails even with Removes-test.
+// Runs in commit-msg because the trailers only exist once the message is written.
 import { readFileSync } from 'node:fs';
 import { git } from './lib.mjs';
 import { testTitles } from './test-titles.mjs';
@@ -65,16 +67,50 @@ for (const f of files) {
   const focused = f.now.filter((t) => t.focused).length - f.old.filter((t) => t.focused).length;
   if (focused > 0) problems.push(`${f.path}: adds ${focused} .only`);
 }
-// case swap: fewer running copies of a title after the change than before
+// case swap: fewer running copies of a title after the change than before. A title rename is
+// declared with `Renames-test: <old> -> <new>` (one per line); each pair must match a swapped-out
+// title and an added one, so the trailer cannot excuse a removal (M1.26, M1 cp2 F2).
+const oldTally = tally(oldRunning);
+const added = new Map([...nowRunning].map(([title, n]) => [title, n - (oldTally.get(title) ?? 0)]).filter(([, n]) => n > 0));
+// arguments without the title, per title: a rename keeps them (M1.26 review F2)
+const restsOf = (list) => list.reduce((m, t) => m.set(t.title, [...(m.get(t.title) ?? []), t.rest]), new Map());
+const oldRests = restsOf(oldRunning);
+const nowRests = restsOf(files.flatMap((f) => running(f.now)));
+// a title may itself contain ' -> ': keep every split point and use the one that matches (review F1)
+const renames = [...msg.matchAll(/^Renames-test:[ \t]*(.+?)[ \t]*\r?$/gm)].map(([, raw]) => ({
+  raw,
+  splits: [...raw.matchAll(/ -> /g)].map((m) => ({ from: raw.slice(0, m.index), to: raw.slice(m.index + 4) })),
+  used: false,
+}));
+const retitled = (from, to) => (added.get(to) ?? 0) > 0 && (oldRests.get(from) ?? []).some((r) => (nowRests.get(to) ?? []).includes(r));
+const renamedAway = (title) => {
+  for (const r of renames.filter((x) => !x.used)) {
+    const split = r.splits.find((s) => s.from === title && retitled(s.from, s.to));
+    if (!split) continue;
+    r.used = true;
+    added.set(split.to, added.get(split.to) - 1);
+    return true;
+  }
+  return false;
+};
 const firstPath = new Map(oldRunning.toReversed().map((t) => [t.title, t.path]));
-for (const [title, n] of tally(oldRunning)) {
-  const left = nowRunning.get(title) ?? 0;
-  if (left < n) problems.push(`${firstPath.get(title)}: case swap — test "${title}" removed and not re-added${n > 1 ? ` (${n - left} of ${n} copies)` : ''}`);
+for (const [title, n] of oldTally) {
+  let missing = n - (nowRunning.get(title) ?? 0);
+  while (missing > 0 && renamedAway(title)) missing--;
+  if (missing > 0) problems.push(`${firstPath.get(title)}: case swap — test "${title}" removed and not re-added${n > 1 ? ` (${missing} of ${n} copies)` : ''}`);
+}
+// a pair that matches nothing is a false statement in the message: always an error
+const badRenames = renames
+  .filter((r) => !r.used)
+  .map((r) => `Renames-test "${r.raw}" does not match a removed test and an added test with the same arguments (only the title may change)`);
+if (badRenames.length) {
+  for (const b of badRenames) console.error(`tests-kept: ${b}`);
+  process.exit(1);
 }
 
 if (problems.length && !trailer) {
   for (const p of problems) console.error(`tests-kept: ${p}`);
-  console.error('Add a "Removes-test: <reason>" trailer if this is intentional (reviewed like any change).');
+  console.error('A renamed case: add "Renames-test: <old title> -> <new title>". A real removal: add "Removes-test: <reason>" (reviewed like any change).');
   process.exit(1);
 }
 if (problems.length) console.log(`tests-kept: ${problems.length} removal(s) justified by Removes-test trailer`);

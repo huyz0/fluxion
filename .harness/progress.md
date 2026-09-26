@@ -235,3 +235,9 @@ review r2 pass + 2 minor fixed: chain members must be test modifiers (hooks/conf
 ## 2026-09-26 M1.30 (claude)
 done: MODIFIERS gains vitest 'shuffle' (M1.29 r3 minor, round cap reached there); test-titles.test +1
 review r1 pass + 4 minor fixed: suite (root and member), expectFailure (chain and option), override/scoped/extend chains
+
+## 2026-09-26 M1.26 (claude)
+done: `Renames-test: <old> -> <new>` trailer; each pair must match a swapped-out and an added running title (multiset), an unmatched pair always fails; Removes-test stays for real removals; git.md trailer table updated; smoke-kit seed moved
+tests-kept.test +4
+review r1 pass + 3 minor fixed: a rename pair needs identical arguments (scanner exposes rest); titles with ' -> ' pair at any split; CRLF messages; header + git.md state the contract
+review r2 pass + minor fixed: rest skips the whole title token (quotes) and separating/trailing commas, so quote style and wrapping do not block a rename

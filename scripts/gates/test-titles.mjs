@@ -204,11 +204,20 @@ export function testTitles(text) {
       focused: FOCUSED.test(chain) || FOCUSED_OPTION.test(options),
       ctx: new Set([ctx, ...destructured.split(',').map((s) => s.trim())].filter(Boolean)),
       end,
+      // the arguments without the title, whitespace-normalised: equal before and after means the
+      // test was only retitled (check-tests-kept Renames-test, M1.26 review F2)
+      rest: restAfterTitle(text, open, end, literal === undefined ? expr : `${m[3]}${literal}${m[3]}`),
     });
   }
   markRuntimeSkips(text, mask, calls);
   const skipped = calls.filter((c) => !c.own);
-  return calls.map((c) => ({ kind: c.kind, title: c.title, focused: c.focused, runs: c.own && !skipped.some((s) => c.at > s.at && c.at < s.end) }));
+  return calls.map((c) => ({
+    kind: c.kind,
+    title: c.title,
+    rest: c.rest,
+    focused: c.focused,
+    runs: c.own && !skipped.some((s) => c.at > s.at && c.at < s.end),
+  }));
 }
 
 // An untitled `.skip()`, `.todo()`, `.fixme()` or `.fail()` at run time skips the innermost test
@@ -235,6 +244,19 @@ function skippedBy(at, receiver, runner, calls) {
   const around = calls.filter((c) => c.at < at && at < c.end).sort((a, b) => b.at - a.at)[0];
   if (!around) return runner ? calls : [];
   return runner || around.ctx.has(receiver) ? [around] : [];
+}
+
+// The arguments after the whole title token (quotes included), without the separating and trailing
+// commas and with whitespace collapsed, so quote style and formatter wrapping do not count as a
+// change of body (M1.26 review r2 F1).
+function restAfterTitle(text, open, end, token) {
+  const from = text.indexOf(token, open) + token.length;
+  return text
+    .slice(from, end)
+    .replace(/\s+/g, ' ')
+    .replace(/^\s*,\s*/, '')
+    .replace(/\s*,\s*$/, '')
+    .trim();
 }
 
 // whether the call has a second argument that is code (a callback), not a string or nothing

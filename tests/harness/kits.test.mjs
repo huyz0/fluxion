@@ -68,7 +68,7 @@ console.log(JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, rev
       );
       // main checkout: seeds absent, no local verdict files, no leftover worktree
       assert.ok(sb.read('scripts/gates/check-size.mjs').includes('if (n > max)'));
-      assert.ok(sb.read('scripts/gates/check-tests-kept.mjs').includes('if (left < n)'));
+      assert.ok(sb.read('scripts/gates/check-tests-kept.mjs').includes('if (missing > 0) problems.push'));
       assert.equal(sb.git('status', '--porcelain', '--', 'scripts').stdout.trim(), '');
       assert.ok(!existsSync(sb.path('.harness/review')), 'no verdict bound to a seed may exist in the main checkout');
       assert.doesNotMatch(sb.git('worktree', 'list').stdout, /fluxion-smoke-/);

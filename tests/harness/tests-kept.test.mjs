@@ -186,6 +186,65 @@ describe('check-tests-kept (NFR-DX-004)', () => {
     assert.equal(r.status, 0, out(r));
   });
 
+  describe('Renames-test trailer (M1.26, M1 cp2 F2)', () => {
+    const rename = () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two'", "it('NFR-DX-004 CASE-2: two'"));
+      sb.git('add', '-A');
+    };
+
+    it('a matching pair lets a title rename through without Removes-test', () => {
+      rename();
+      const r = check('M0.7: test: cite the requirement\n\nRenames-test: CASE-2: two -> NFR-DX-004 CASE-2: two\n');
+      assert.equal(r.status, 0, out(r));
+    });
+
+    it('a pair whose new title was not added fails, even with Removes-test', () => {
+      rename();
+      const r = check('M0.7: test: x\n\nRenames-test: CASE-2: two -> something else\nRemoves-test: covered\n');
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /Renames-test "CASE-2: two -> something else" does not match/);
+    });
+
+    it('a pair cannot relabel a test whose body changed (M1.26 review F2)', () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});", "it('NFR-DX-004 CASE-2: two', () => { /* emptied */ });"));
+      sb.git('add', '-A');
+      const r = check('M0.7: test: x\n\nRenames-test: CASE-2: two -> NFR-DX-004 CASE-2: two\n');
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /only the title may change/);
+    });
+
+    it('titles that contain " -> " still pair (M1.26 review F1)', () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two'", "it('maps a -> b'"));
+      sb.git('add', '-A');
+      sb.git('commit', '-q', '-m', 'arrow fixture', '--no-verify');
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two'", "it('maps a -> c'"));
+      sb.git('add', '-A');
+      const r = check('M0.7: test: x\r\n\r\nRenames-test: maps a -> b -> maps a -> c\r\n');
+      assert.equal(r.status, 0, out(r));
+    });
+
+    it('quote style and formatter wrapping do not break a rename (M1.26 review r2)', () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});", 'it(\n  "CASE-2: doesn\'t crash",\n  () => {},\n);'));
+      sb.git('add', '-A');
+      const r = check("M0.7: test: x\n\nRenames-test: CASE-2: two -> CASE-2: doesn't crash\n");
+      assert.equal(r.status, 0, out(r));
+    });
+
+    it('a pair cannot excuse a real removal', () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});\n", ''));
+      sb.git('add', '-A');
+      const r = check('M0.7: test: x\n\nRenames-test: CASE-2: two -> CASE-1: one\n');
+      assert.equal(r.status, 1, out(r));
+    });
+
+    it('a swap without a pair still fails, and the hint names Renames-test', () => {
+      rename();
+      const r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /Renames-test: <old title> -> <new title>/);
+    });
+  });
+
   it('names the swapped-out title in a case swap', () => {
     sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two'", "it('CASE-9: other'"));
     sb.git('add', '-A');
