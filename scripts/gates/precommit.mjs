@@ -68,7 +68,7 @@ const STEPS = [
   [
     'licenses',
     (m) => m !== 'quick',
-    () => exists('scripts/gates/check-licenses.mjs') || 'not written yet (M1)',
+    () => (exists('scripts/gates/check-licenses.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
     () => node('scripts/gates/check-licenses.mjs'),
   ],
   [

@@ -56,6 +56,22 @@ export const THRESHOLDS = {
   AI_CATALOG_MAX_TOKENS: { value: 8_000, weakens: 'up' },
 };
 
+// Licence policy (NFR-LIC-002, tech-stack.md §3), read by check-licenses.mjs. check-drift treats a
+// new allowed licence, a wider pack exception, or a dropped deny entry as weakening.
+export const LICENSES = {
+  // shipped (production) dependencies of every workspace
+  allow: ['MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', '0BSD', 'MPL-2.0'],
+  // EPL / LGPL only as optional, separately loaded, unmodified packs (tech-stack.md §3 rule 2)
+  packExceptions: {
+    'packs/layouts-elk': ['EPL-2.0'],
+    'packs/routing-libavoid': ['LGPL-2.1-only', 'LGPL-2.1-or-later', 'LGPL-3.0-only', 'LGPL-3.0-or-later'],
+  },
+  // never, not even as a dev tool: strong copyleft and source-available licences (SPDX id prefixes)
+  denyPrefixes: ['GPL-', 'AGPL-', 'SSPL-', 'BUSL-'],
+  // watermark / domain-key / licence-key libraries (rule 3), whatever their licence field says
+  denyPackages: ['tldraw', '@tldraw/tldraw', 'bpmn-js', 'gojs', '@joint/plus', 'yfiles'],
+};
+
 export const t = (key) => {
   const entry = THRESHOLDS[key];
   if (!entry) throw new Error(`Unknown threshold ${key}`);

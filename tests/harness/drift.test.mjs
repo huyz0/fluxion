@@ -63,6 +63,29 @@ describe('check-drift (NFR-DX-004)', () => {
     });
   }
 
+  const licenceWeakenings = {
+    'an allowed licence added': ["allow: ['MIT', 'Apache-2.0',", "allow: ['MIT', 'LGPL-3.0-only', 'Apache-2.0',", /LICENSES\.allow gained LGPL-3\.0-only/],
+    'a pack exception widened': [
+      "'packs/layouts-elk': ['EPL-2.0']",
+      "'packs/layouts-elk': ['EPL-2.0', 'GPL-3.0-only']",
+      /packExceptions\[packs\/layouts-elk\] gained GPL-3\.0-only/,
+    ],
+    'a denied package dropped': ["'bpmn-js', ", '', /LICENSES\.denyPackages lost bpmn-js/],
+  };
+  for (const [name, [from, to, expected]] of Object.entries(licenceWeakenings)) {
+    it(`fails on the licence policy weakening: ${name} (NFR-LIC-002)`, () => {
+      stageEdit(from, to);
+      const r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, expected);
+    });
+  }
+
+  it('passes when the licence policy is narrowed (NFR-LIC-002)', () => {
+    stageEdit("'ISC', '0BSD', ", "'ISC', ");
+    assert.equal(check().status, 0);
+  });
+
   it('accepts a weakening with a Threshold-change trailer citing an ADR', () => {
     stageEdit('AGENTS_MD_MAX_LINES: { value: 250', 'AGENTS_MD_MAX_LINES: { value: 300');
     const r = check('M0.8: chore(gates): relax\n\nThreshold-change: index grew with skills (ADR-0042)\n');

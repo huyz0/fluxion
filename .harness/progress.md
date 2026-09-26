@@ -260,3 +260,10 @@ review r1 changes-requested (2) fixed: property-name exclusions dropped (within 
 ## 2026-09-26 M1.33 (claude)
 why: M1.32 commit hook failed once: packages.test copied packages/core while tsc -b / attw (concurrent since M1.28) rewrote files there (ENOENT); passes alone
 done: helpers.sandbox filters TRANSIENT (.tsbuild, node_modules, coverage, .turbo, *.tgz); ladder.test +1
+
+## 2026-09-26 M1.15 (claude)
+done: check-licenses.mjs (pnpm licenses list: shipped deps of packages/apps vs allowlist, each pack with its named exceptions, every dep vs GPL/AGPL/SSPL/BUSL prefixes and watermark packages; SPDX OR/AND; LICENSE per workspace + package.json MIT; root NOTICE)
+policy = LICENSES in thresholds.mjs (tech-stack.md says so); check-drift treats allow/exception growth or deny shrink as weakening
+licenses.test (11), drift.test +4; trace --milestone M1 now covers every Must ID (NFR-LIC-002)
+review r1 changes-requested (3) fixed: failed/unreadable pnpm output fails the gate; dev listing is recursive (every workspace); deny match case-insensitive and version-spelling tolerant (not LGPL)
+review r2 changes-requested (2) fixed: spdx.mjs parses expressions with precedence/grouping/WITH (grouped AND GPL no longer slips through); non-SPDX text fails closed for shipped code and is denied by GPL/General Public License/Affero text match (not Lesser/Library); spdx.test (5), licenses.test +3

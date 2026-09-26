@@ -16,8 +16,20 @@ const opt = (k) => {
 
 async function load(src) {
   if (!src) return {};
-  const mod = await import(`data:text/javascript,${encodeURIComponent(src)}`);
-  return mod.THRESHOLDS ?? {};
+  return import(`data:text/javascript,${encodeURIComponent(src)}`);
+}
+
+// the licence policy weakens when it allows more or denies less (NFR-LIC-002, M1.15)
+function licenceWeakening(o, n) {
+  if (!o) return [];
+  if (!n) return ['LICENSES removed'];
+  const gained = (a = [], b = []) => b.filter((x) => !a.includes(x));
+  const out = gained(o.allow, n.allow).map((l) => `LICENSES.allow gained ${l}`);
+  for (const [pack, list] of Object.entries(n.packExceptions ?? {})) {
+    out.push(...gained(o.packExceptions?.[pack], list).map((l) => `LICENSES.packExceptions[${pack}] gained ${l}`));
+  }
+  for (const key of ['denyPrefixes', 'denyPackages']) out.push(...gained(n[key], o[key]).map((x) => `LICENSES.${key} lost ${x}`));
+  return out;
 }
 const show = (rev) => {
   const r = git(['show', `${rev}:${FILE}`]);
@@ -40,8 +52,9 @@ if (sha) {
 if (before === null || before === after) process.exit(0);
 
 // a deleted file removes every threshold (F2); a non-numeric value disables its gate (F1)
-const [old, cur] = [await load(before), after === null ? {} : await load(after)];
-const weakened = [];
+const [oldMod, curMod] = [await load(before), after === null ? {} : await load(after)];
+const [old, cur] = [oldMod.THRESHOLDS ?? {}, curMod.THRESHOLDS ?? {}];
+const weakened = licenceWeakening(oldMod.LICENSES, curMod.LICENSES);
 for (const [key, o] of Object.entries(old)) {
   const n = cur[key];
   if (!n) {

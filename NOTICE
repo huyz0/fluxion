@@ -1,0 +1,15 @@
+Fluxion
+Copyright (c) 2026 Fluxion contributors
+
+Fluxion is licensed under the MIT License (see LICENSE). Every package in this repository carries
+the same MIT LICENSE file.
+
+Third-party software
+--------------------
+Shipped packages depend only on permissively licensed software (MIT, Apache-2.0, BSD-2-Clause,
+BSD-3-Clause, ISC, 0BSD, MPL-2.0 unmodified); scripts/gates/check-licenses.mjs enforces this.
+
+Optional packs may bundle, unmodified and loaded separately from the player, components under
+weak copyleft licences. Their notices ship with the pack:
+  - packs/layouts-elk      elkjs        EPL-2.0
+  - packs/routing-libavoid libavoid-js  LGPL
