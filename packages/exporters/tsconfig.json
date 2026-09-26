@@ -4,8 +4,20 @@
     "rootDir": "src",
     "outDir": ".tsbuild",
     "emitDeclarationOnly": true,
-    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"]
   },
   "include": ["src"],
-  "references": []
+  "references": [
+    {
+      "path": "../../packages/render"
+    },
+    {
+      "path": "../../packages/player"
+    },
+    {
+      "path": "../../packages/format"
+    }
+  ]
 }

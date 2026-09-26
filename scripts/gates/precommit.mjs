@@ -59,7 +59,8 @@ const STEPS = [
   [
     'layering',
     (m) => m !== 'quick',
-    () => exists('scripts/gates/check-layering.mjs') || 'not written yet (M1)',
+    // a missing .dependency-cruiser.mjs must fail in check-layering, not skip (M1.11 review F1)
+    () => (exists('scripts/gates/check-layering.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
     () => node('scripts/gates/check-layering.mjs'),
   ],
   [

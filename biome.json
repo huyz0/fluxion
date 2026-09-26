@@ -100,7 +100,7 @@
       }
     },
     {
-      "includes": ["**/*.config.{ts,mts,js,mjs}", "**/.size-limit.js", "**/.storybook/**", "apps/docs/**"],
+      "includes": ["**/*.config.{ts,mts,js,mjs}", "**/.size-limit.js", ".dependency-cruiser.mjs", "**/.storybook/**", "apps/docs/**"],
       "linter": {
         "rules": {
           "style": {

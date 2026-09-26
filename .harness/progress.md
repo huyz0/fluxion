@@ -189,3 +189,10 @@ done: check-size rejects utils/helpers/misc/common source files (code-structure 
 namedCases counts only passing leaf tests titled with the pattern (M1.23 review minor) via passingTestTitles
 review r1 changes-requested (3) fixed: todo/skip lines are not passing tests; commented-out cases do not count as added; denylist covers src/ directories and .cjs/.cts/.jsx
 open: contracts.md rule 10 says fixtures count as tests, but isTest excludes fixtures/ — belongs with the format-fixture milestone
+
+## 2026-09-26 M1.11 (claude)
+done: workspaces.json gains runtime + dependsOn (single source; check-layering compares it to the overview "May depend on" column and layer order); .dependency-cruiser.mjs built from it (layer, player-not-editor, packs-sdk-only, pure no node:*/DOM, T0 tests no DOM, deep/relative cross-workspace imports, circular, dev deps, unresolvable)
+generator owns tsconfig lib/types (per runtime: pure ES-only, dom, node, mixed) and project references (from dependsOn); --check reports drift (cp1 F5, F6)
+dependency-cruiser needs the TS compiler API (<7): own typescript@6 via packageExtensions; ADR-0011 amended
+layering.test (14), workspace-shape +2 (no DOM in pure tsc; tsconfig drift)
+review r1 pass + minor fixed: layering no longer SKIPs when the depcruise config is missing (fails in check-layering)

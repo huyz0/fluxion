@@ -25,6 +25,7 @@
     "@biomejs/biome": "catalog:",
     "@size-limit/preset-small-lib": "catalog:",
     "@types/node": "catalog:",
+    "dependency-cruiser": "catalog:",
     "knip": "catalog:",
     "publint": "catalog:",
     "size-limit": "catalog:",

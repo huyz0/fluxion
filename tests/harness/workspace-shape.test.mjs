@@ -1,7 +1,7 @@
 // NFR-DX-001 / NFR-SEC-005 / NFR-MNT-001: the workspace root is reproducible and supply-chain safe.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { out, REPO, sandbox } from './helpers.mjs';
@@ -109,6 +109,8 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
   it('tsc -b type-checks every workspace (a type error in any project fails it)', () => {
     const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', ...workspaces.map((w) => w.dir)]);
     try {
+      // node-runtime workspaces resolve @types/node from the repo's install
+      symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
       const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');
       const good = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
       assert.equal(good.status, 0, out(good));
@@ -116,6 +118,36 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
       const bad = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
       assert.notEqual(bad.status, 0, out(bad)); // tsc -b exits 2 on type errors
       assert.match(bad.stdout, /packs\/basic\/src\/broken\.ts.*TS2322/);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('pure packages type-check without DOM; dom and node runtimes get their globals (M1 cp1 F5)', () => {
+    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', ...workspaces.map((w) => w.dir)]);
+    try {
+      symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
+      const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');
+      sb.write('packages/render/src/dom.ts', 'export const title = (): string => document.title;\n');
+      sb.write('packages/cli/src/env.ts', "export const home = (): string | undefined => process.env['HOME'];\n");
+      const ok = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
+      assert.equal(ok.status, 0, out(ok));
+      sb.write('packages/core/src/dom.ts', 'export const title = (): string => document.title;\n');
+      const bad = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
+      assert.notEqual(bad.status, 0, out(bad));
+      assert.match(bad.stdout, /packages\/core\/src\/dom\.ts.*(TS2584|TS2304)/);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('generator --check fails when a tsconfig lib/types/references drift from workspaces.json', () => {
+    const sb = sandbox(['tools', 'tsconfig.json', ...workspaces.map((w) => w.dir)]);
+    try {
+      sb.edit('packages/core/tsconfig.json', (t) => t.replace('"lib": ["ES2023"]', '"lib": ["ES2023", "DOM"]'));
+      const r = sb.node('tools/gen/package.mjs', ['--check']);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /packages\/core\/tsconfig\.json lib\/types\/references out of sync/);
     } finally {
       sb.cleanup();
     }

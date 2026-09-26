@@ -4,8 +4,20 @@
     "rootDir": "src",
     "outDir": ".tsbuild",
     "emitDeclarationOnly": true,
-    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": []
   },
   "include": ["src"],
-  "references": []
+  "references": [
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/geometry"
+    },
+    {
+      "path": "../../packages/theme"
+    }
+  ]
 }

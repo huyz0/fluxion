@@ -51,6 +51,22 @@ const rules = (w) => {
   return '- Follow the layer rules in docs/architecture/01-overview.md.';
 };
 
+// Per-runtime type environment (M1 cp1 F5): pure packages state ES-only explicitly, so adding DOM to
+// the base config for an app can never leak DOM types into them.
+const RUNTIME = {
+  pure: { lib: ['ES2023'], types: [] },
+  dom: { lib: ['ES2023', 'DOM', 'DOM.Iterable'], types: [] },
+  node: { lib: ['ES2023'], types: ['node'] },
+  mixed: { lib: ['ES2023', 'DOM', 'DOM.Iterable'], types: ['node'] },
+};
+const dirOf = (name) => workspaces.find((w) => w.dir.endsWith(`/${name}`)).dir;
+// fields the generator owns in every workspace tsconfig; the rest may evolve by hand
+const tsconfigOwned = (w) => ({
+  lib: RUNTIME[w.runtime].lib,
+  types: RUNTIME[w.runtime].types,
+  references: w.dependsOn.map((d) => ({ path: `../../${dirOf(d)}` })),
+});
+
 const files = (w) => ({
   'package.json': `${JSON.stringify(
     {
@@ -72,9 +88,16 @@ const files = (w) => ({
   'tsconfig.json': `${JSON.stringify(
     {
       extends: '../../tsconfig.base.json',
-      compilerOptions: { rootDir: 'src', outDir: '.tsbuild', emitDeclarationOnly: true, tsBuildInfoFile: '.tsbuild/tsconfig.tsbuildinfo' },
+      compilerOptions: {
+        rootDir: 'src',
+        outDir: '.tsbuild',
+        emitDeclarationOnly: true,
+        tsBuildInfoFile: '.tsbuild/tsconfig.tsbuildinfo',
+        lib: tsconfigOwned(w).lib,
+        types: tsconfigOwned(w).types,
+      },
       include: ['src'],
-      references: [],
+      references: tsconfigOwned(w).references,
     },
     null,
     2,
@@ -106,6 +129,25 @@ function syncReferences(write) {
   return same;
 }
 
+/** Rewrite (or, without write, report) workspace tsconfigs whose owned fields drifted from the manifest. */
+function syncTsconfigs(write) {
+  const stale = [];
+  for (const w of workspaces) {
+    const path = join(ROOT, w.dir, 'tsconfig.json');
+    if (!existsSync(path)) continue;
+    const cfg = JSON.parse(readFileSync(path, 'utf8'));
+    const want = tsconfigOwned(w);
+    const have = { lib: cfg.compilerOptions?.lib, types: cfg.compilerOptions?.types, references: cfg.references };
+    if (JSON.stringify(have) === JSON.stringify(want)) continue;
+    stale.push(`${w.dir}/tsconfig.json`);
+    if (write) {
+      const next = { ...cfg, compilerOptions: { ...cfg.compilerOptions, lib: want.lib, types: want.types }, references: want.references };
+      writeFileSync(path, `${JSON.stringify(next, null, 2)}\n`);
+    }
+  }
+  return stale;
+}
+
 // Written files go through the repo formatter so a fresh workspace passes `biome ci` (M1.9 review F1).
 function format(paths) {
   // FLUXION_TOOLS_ROOT lets tests generate into a sandbox with this repo's installed formatter
@@ -126,6 +168,7 @@ if (arg === '--check') {
       .map((f) => `${w.dir}/${f}`),
   );
   if (!syncReferences(false)) missing.push('tsconfig.json references out of sync (run node tools/gen/package.mjs --all)');
+  for (const s of syncTsconfigs(false)) missing.push(`${s} lib/types/references out of sync with workspaces.json (run node tools/gen/package.mjs --all)`);
   for (const m of missing) console.error(`gen: missing ${m}`);
   process.exit(missing.length ? 1 : 0);
 }
@@ -136,5 +179,6 @@ if (targets.length === 0) {
 }
 const created = targets.flatMap(generate);
 const synced = syncReferences(true);
-format([...created.filter((p) => /\.(json|ts)$/.test(p)), ...(synced ? [] : ['tsconfig.json'])]);
+const retyped = syncTsconfigs(true);
+format([...new Set([...created.filter((p) => /\.(json|ts)$/.test(p)), ...retyped, ...(synced ? [] : ['tsconfig.json'])])]);
 console.log(`gen: created ${created.length} files; tsconfig references synced (${workspaces.length})`);

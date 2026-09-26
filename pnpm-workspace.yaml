@@ -10,6 +10,13 @@ autoInstallPeers: false
 strictPeerDependencies: false
 saveExact: true
 
+# dependency-cruiser parses TypeScript through the compiler API, which TS 7 does not ship yet; it
+# gets its own typescript@6 (ADR-0011 dual compiler). The repo's tsc stays on the catalog's TS 7.
+packageExtensions:
+  dependency-cruiser:
+    dependencies:
+      typescript: npm:typescript@6.0.3
+
 # One version per shared dependency; packages refer to these with "catalog:".
 # Versions verified on npm 2026-09-26 (docs/standards/tech-stack.md). Each row adds the pins it
 # installs, checked against minimumReleaseAge; knip fails on unused catalog entries.
@@ -24,11 +31,12 @@ catalog:
   size-limit: 14.0.1
   "@size-limit/preset-small-lib": 14.0.1
   "@biomejs/biome": 2.5.14
+  dependency-cruiser: 18.4.0
 
 # Planned pins, verified on npm 2026-09-26, added to the catalog by the row that installs them
 # (re-check minimumReleaseAge then). typescript6 (npm:typescript@6.0.3) is used by API Extractor and
 # TypeDoc per ADR-0011 from M1.14.
-#   typescript6: npm:typescript@6.0.3        dependency-cruiser: 18.4.0
+#   typescript6: npm:typescript@6.0.3
 #   @microsoft/api-extractor: 7.59.2        typedoc: 0.28.20                @changesets/cli: 3.0.3
 #   vitest: 5.0.1                           @vitest/browser-playwright: 5.0.1  @vitest/coverage-v8: 5.0.1
 #   @playwright/test: 1.63.0                fast-check: 4.10.2              vite: 8.3.1

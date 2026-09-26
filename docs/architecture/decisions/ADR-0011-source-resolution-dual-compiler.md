@@ -36,7 +36,7 @@ rejected because it leaks into emitted declarations and duplicates the package g
 
 **Dual compiler:** `typescript@7` (catalog `typescript`) runs `tsc -b` for type-checking
 and project references; `typescript@6` (catalog `typescript6`, `npm:typescript@6.0.3`, added to the catalog by M1.14 when API Extractor is installed) is used only
-by API Extractor and TypeDoc until TS 7.1 ships a compiler API. `isolatedDeclarations` keeps
+by API Extractor, TypeDoc and dependency-cruiser (its own dependency via `packageExtensions`, M1.11) until TS 7.1 ships a compiler API. `isolatedDeclarations` keeps
 declaration output simple enough for both.
 
 ## Consequences

@@ -4,8 +4,29 @@
     "rootDir": "src",
     "outDir": ".tsbuild",
     "emitDeclarationOnly": true,
-    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": ["node"]
   },
   "include": ["src"],
-  "references": []
+  "references": [
+    {
+      "path": "../../packages/format"
+    },
+    {
+      "path": "../../packages/dsl"
+    },
+    {
+      "path": "../../packages/layout"
+    },
+    {
+      "path": "../../packages/routing"
+    },
+    {
+      "path": "../../packages/anim"
+    },
+    {
+      "path": "../../packages/render"
+    }
+  ]
 }
