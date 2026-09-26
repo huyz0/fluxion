@@ -8,6 +8,14 @@ import { fileURLToPath } from 'node:url';
 
 export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+/**
+ * Environment without git's hook variables. Tests also run inside the pre-commit hook, where git
+ * exports GIT_INDEX_FILE (relative), GIT_AUTHOR_* etc.; sandbox repos and worktrees must not
+ * inherit them (a linked worktree's `.git` is a file, so `.git/index` breaks it).
+ */
+export const cleanEnv = (env = process.env) =>
+  Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
+
 const DEFAULT_PATHS = ['scripts', '.agents', '.claude/skills', 'AGENTS.md', 'CLAUDE.md', 'docs/backlog', 'docs/milestones/roadmap.md', '.harness/state.json'];
 
 /** Copy harness files into a fresh temp dir. Returns helpers bound to it. */
@@ -24,8 +32,9 @@ export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
       writeFileSync(join(dir, p), text);
     },
     edit: (p, fn) => sb.write(p, fn(sb.read(p))),
-    node: (script, args = [], opts = {}) => spawnSync(process.execPath, [join(dir, script), ...args], { cwd: dir, encoding: 'utf8', ...opts }),
-    git: (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8' }),
+    node: (script, args = [], opts = {}) =>
+      spawnSync(process.execPath, [join(dir, script), ...args], { cwd: dir, encoding: 'utf8', ...opts, env: cleanEnv(opts.env) }),
+    git: (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8', env: cleanEnv() }),
     cleanup: () => rmSync(dir, { recursive: true, force: true }),
   };
   if (git) {

@@ -71,3 +71,11 @@ next: M0.11
 done: .codex/{config.toml,hooks.json,README.md} per current Codex hooks docs; adapters.test.mjs (4)
 live Codex verification folded into M0.15 (codex CLI not installed here)
 next: M0.12
+
+## 2026-09-26 M0.16 (claude)
+done: worktree.mjs create/remove/list + 4 tests; unmerged branches kept (mutation -D -> fails)
+next: M0.12
+
+## 2026-09-26 M0.16 fix (claude)
+commit refused by hook: git exports GIT_INDEX_FILE=.git/index to hooks; broke git in sandbox worktree
+fix: tests/harness helpers strip GIT_* env (cleanEnv) — suite 102/102 with hook-like env; real repo untouched
