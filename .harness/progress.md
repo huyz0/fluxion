@@ -245,3 +245,10 @@ review r2 pass + minor fixed: rest skips the whole title token (quotes) and sepa
 ## 2026-09-26 M1.31 (claude)
 done: restAfterTitle collapses whitespace only where codeMask says code (M1.26 r3 minor; round cap reached there); tests-kept.test +1
 review r1 pass + minor fixed: codeMask tags comments (2); their whitespace collapses like code, only strings/templates stay verbatim
+
+## 2026-09-26 M1.27 (claude)
+done: `pure` field dropped (runtime is the one source; biome.test checks the pure override glob against it); restricted globals + crypto/queueMicrotask/setImmediate/XMLHttpRequest/WebSocket/navigator; GritQL catches Math.random references and `= Math` aliases; DOM_LIBS + vitest/browser; not-to-undeclared-dep rule
+found: depcruise `exclude` dropped every npm edge (node_modules, and any `dist/` npm packages resolve into), so dev-dep/undeclared/DOM rules could never fire on installed packages; now only our own dist/.tsbuild/coverage
+negatives: layering +4 (vitest/browser in T0, undeclared, dev dep, unresolvable), coverage +2 (player, editor floors), biome +4; turbo lint task removed, turbo.test requires a workspace script per task
+review r1 changes-requested (2) fixed: globalThis/self/global denied in pure packages; grit narrowed (Math.random, Math?.random, destructured random, identifier aliases of Math; other Math members fine)
+review r2 changes-requested (2) fixed: grit inverted - Math only as Math.<member other than random> (catches default params, assignments, properties, Math['random']); no-wall-clock.grit: DateTimeFormat format()/formatToParts() with no date

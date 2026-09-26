@@ -36,7 +36,14 @@ const CASES = {
   'no-non-null-assertion.ts': ['packages/render/src/a.ts', 'lint/style/noNonNullAssertion'],
   'pure-date.ts': ['packages/core/src/a.ts', 'lint/style/noRestrictedGlobals'],
   'pure-set-timeout.ts': ['packages/anim/src/a.ts', 'lint/style/noRestrictedGlobals'],
-  'pure-math-random.ts': ['packages/geometry/src/a.ts', 'Math.random() is not deterministic in pure packages'],
+  'pure-crypto.ts': ['packages/core/src/a.ts', 'lint/style/noRestrictedGlobals'],
+  'pure-math-alias.ts': ['packages/layout/src/a.ts', 'Pure packages use Math only as Math.<member>'],
+  'pure-math-ref.ts': ['packages/routing/src/a.ts', 'Pure packages use Math only as Math.<member>'],
+  'pure-globalthis.ts': ['packages/theme/src/a.ts', 'lint/style/noRestrictedGlobals'],
+  'pure-math-optional.ts': ['packages/format/src/a.ts', 'Pure packages use Math only as Math.<member>'],
+  'pure-math-default-param.ts': ['packages/anim/src/a.ts', 'Pure packages use Math only as Math.<member>'],
+  'pure-intl-clock.ts': ['packages/theme/src/a.ts', 'Formatting with no date reads the wall clock'],
+  'pure-math-random.ts': ['packages/geometry/src/a.ts', 'Pure packages use Math only as Math.<member>'],
 };
 
 describe('biome rules (NFR-MNT-002, NFR-MNT-003)', () => {
@@ -61,6 +68,11 @@ describe('biome rules (NFR-MNT-002, NFR-MNT-003)', () => {
     assert.equal(r.status, 0, out(r));
   });
 
+  it('Math member access (Math.sqrt, Math.PI) is fine in a pure package (M1.27 review F2)', () => {
+    const r = lint('pure-math-safe.ts', 'packages/geometry/src/a.ts');
+    assert.equal(r.status, 0, out(r));
+  });
+
   it('restricted globals are allowed outside pure packages', () => {
     const r = lint('pure-date.ts', 'packages/render/src/a.ts');
     assert.equal(r.status, 0, out(r));
@@ -74,6 +86,20 @@ describe('biome rules (NFR-MNT-002, NFR-MNT-003)', () => {
   it('long describe/it callbacks are allowed in co-located test files (M1.9 review F2)', () => {
     const r = lint('no-excessive-lines-per-function.ts', 'packages/render/src/a.test.ts');
     assert.equal(r.status, 0, out(r));
+  });
+
+  it('the pure-package override covers exactly the runtime "pure" workspaces (M1 cp2 F6)', () => {
+    const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
+    const pure = workspaces
+      .filter((w) => w.runtime === 'pure')
+      .map((w) => w.dir)
+      .sort();
+    const override = config.overrides.find((o) => o.plugins);
+    const globbed = override.includes.flatMap((g) => {
+      const m = /^packages\/\{([^}]+)\}\/src\/\*\*$/.exec(g);
+      return m ? m[1].split(',').map((n) => `packages/${n}`) : [g];
+    });
+    assert.deepEqual(globbed.sort(), pure);
   });
 
   it('function length and complexity limits equal the thresholds', () => {

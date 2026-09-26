@@ -5,7 +5,6 @@
       "dir": "packages/schema",
       "name": "@fluxion/schema",
       "layer": "L0",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": [],
       "desc": "Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema generation; migrations."
@@ -14,7 +13,6 @@
       "dir": "packages/geometry",
       "name": "@fluxion/geometry",
       "layer": "L0",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": [],
       "desc": "Vectors, matrices, bezier/path ops, outline sampling, intersections, bounding boxes, spatial index wrappers."
@@ -23,7 +21,6 @@
       "dir": "packages/core",
       "name": "@fluxion/core",
       "layer": "L1",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": ["schema", "geometry"],
       "desc": "Document store (records + signals), transactions, commands, undo/redo, queries, registries."
@@ -32,7 +29,6 @@
       "dir": "packages/theme",
       "name": "@fluxion/theme",
       "layer": "L1",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": ["schema"],
       "desc": "Token model (DTCG), token resolution, palette generation (OKLCH), contrast checks, CSS-variable emission."
@@ -41,7 +37,6 @@
       "dir": "packages/layout",
       "name": "@fluxion/layout",
       "layer": "L2",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": ["core", "geometry"],
       "desc": "Layout interface, built-in algorithms, worker host, constraint/overlap pass, text-measure port."
@@ -50,7 +45,6 @@
       "dir": "packages/routing",
       "name": "@fluxion/routing",
       "layer": "L2",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": ["core", "geometry"],
       "desc": "Router interface, straight/bezier/orthogonal A* routers, anchor selection, nudging, hops, label placement."
@@ -59,7 +53,6 @@
       "dir": "packages/anim",
       "name": "@fluxion/anim",
       "layer": "L2",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": ["core", "geometry", "theme"],
       "desc": "Animation, timeline and interaction model evaluation: sampling at time t, build-state reduction, morph, rider LUTs, expressions."
@@ -68,7 +61,6 @@
       "dir": "packages/format",
       "name": "@fluxion/format",
       "layer": "L2",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": ["schema", "core"],
       "desc": ".flux zip, .flux.html and .flux.json read/write, content-addressed asset store, sanitizers, lockfile."
@@ -77,7 +69,6 @@
       "dir": "packages/dsl",
       "name": "@fluxion/dsl",
       "layer": "L2",
-      "pure": true,
       "runtime": "pure",
       "dependsOn": ["schema", "core", "layout", "theme"],
       "desc": "FluxScript parser, compiler, decompiler, diagnostics, Mermaid/Markdown importers."
@@ -86,7 +77,6 @@
       "dir": "packages/render",
       "name": "@fluxion/render",
       "layer": "L3",
-      "pure": false,
       "runtime": "dom",
       "dependsOn": ["core", "theme", "anim", "geometry"],
       "desc": "React 19 DOM+SVG renderer of a screen, identical in edit and present mode."
@@ -95,7 +85,6 @@
       "dir": "packages/player",
       "name": "@fluxion/player",
       "layer": "L4",
-      "pure": false,
       "runtime": "dom",
       "dependsOn": ["render", "anim", "format"],
       "desc": "Present runtime: navigation, clock and scheduler, transitions, trigger bus, interactions, overlays, responsive, speaker sync."
@@ -104,7 +93,6 @@
       "dir": "packages/editor",
       "name": "@fluxion/editor",
       "layer": "L4",
-      "pure": false,
       "runtime": "dom",
       "dependsOn": ["render", "player", "core", "layout", "routing", "format", "dsl", "theme"],
       "desc": "Edit overlay, tools state machine, panels, inspector, library, timeline and interaction editors, AI panel."
@@ -113,7 +101,6 @@
       "dir": "packages/sdk",
       "name": "@fluxion/sdk",
       "layer": "L4",
-      "pure": false,
       "runtime": "dom",
       "dependsOn": ["core", "render", "schema"],
       "desc": "Public plugin API: stable contracts, manifest schema, component contract, test harness."
@@ -122,7 +109,6 @@
       "dir": "packages/cli",
       "name": "@fluxion/cli",
       "layer": "L5",
-      "pure": false,
       "runtime": "node",
       "dependsOn": ["format", "dsl", "layout", "routing", "anim", "render"],
       "desc": "The fluxion command: validate, compile, render, lint, layout, convert, catalog, pack, site build."
@@ -131,7 +117,6 @@
       "dir": "packages/mcp",
       "name": "@fluxion/mcp",
       "layer": "L5",
-      "pure": false,
       "runtime": "node",
       "dependsOn": ["cli", "format", "dsl"],
       "desc": "MCP server exposing the same operations as the CLI to AI agents."
@@ -140,7 +125,6 @@
       "dir": "packages/exporters",
       "name": "@fluxion/exporters",
       "layer": "L5",
-      "pure": false,
       "runtime": "mixed",
       "dependsOn": ["render", "player", "format"],
       "desc": "PDF/PNG/SVG/PPTX/video/site exporters."
@@ -149,7 +133,6 @@
       "dir": "apps/studio",
       "name": "@fluxion/studio",
       "layer": "App",
-      "pure": false,
       "runtime": "dom",
       "private": true,
       "dependsOn": ["editor", "player"],
@@ -159,7 +142,6 @@
       "dir": "apps/docs",
       "name": "@fluxion/docs",
       "layer": "App",
-      "pure": false,
       "private": true,
       "runtime": "node",
       "dependsOn": [],
@@ -169,7 +151,6 @@
       "dir": "packs/basic",
       "name": "@fluxion/pack-basic",
       "layer": "Pack",
-      "pure": false,
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party basic shape pack; imports only @fluxion/sdk."

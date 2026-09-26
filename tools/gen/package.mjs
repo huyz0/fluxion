@@ -43,7 +43,7 @@ const TSDOWN =
   "import { defineConfig } from 'tsdown';\n\nexport default defineConfig({\n  entry: ['src/index.ts'],\n  format: 'esm',\n  dts: true,\n  clean: true,\n  sourcemap: true,\n  fixedExtension: false, // emit index.js + index.d.ts to match the exports map (type: module)\n});\n";
 
 const rules = (w) => {
-  if (w.pure)
+  if (w.runtime === 'pure')
     return '- **Pure package**: no DOM, timers, `Date.now`, `Math.random`, network or `node:*`. Inject ports (`Clock`, `Random`, `TextMeasurer`, `FileIO`).';
   if (w.layer === 'Pack') return '- Import only `@fluxion/sdk` (and allowed peer libraries). No private back doors into other packages.';
   if (w.runtime === 'dom') return '- DOM allowed. Business logic belongs in the pure packages below this layer.';
@@ -105,8 +105,8 @@ const files = (w) => ({
   'src/index.ts': `/**\n * ${w.name} — ${w.desc}\n *\n * @packageDocumentation\n */\n\n/**\n * Version of this package.\n *\n * @public\n */\nexport const VERSION: string = '0.0.0';\n`,
   // T0 smoke test (NFR-MNT-004): keeps the stub above its coverage floor and proves the node project runs it
   'src/index.test.ts': `import { expect, it } from 'vitest';\nimport { VERSION } from './index.js';\n\nit('NFR-MNT-004 smoke: ${w.name} exports its version', () => {\n  expect(VERSION).toBe('0.0.0');\n});\n`,
-  'README.md': `# ${w.name}\n\n${w.desc}\n\n| Layer | Pure | Status |\n|---|---|---|\n| ${w.layer} | ${w.pure ? 'yes' : 'no'} | stub (M1) — exports \`VERSION\` only |\n\nArchitecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).\n`,
-  'AGENTS.md': `# ${w.name} — agent notes\n\n${w.desc}\n\n## Rules\n\n- Layer ${w.layer}: import only from lower layers, or same-layer packages the map lists as dependencies (docs/architecture/01-overview.md, "May depend on"); enforced by \`check-layering\`.\n${rules(w)}\n- Public API lives in \`src/index.ts\` (\`@fluxion/source\` condition; ADR-0011); every export needs TSDoc and a release tag.\n\n## Tests\n\n- Co-locate \`*.test.ts\` next to the code; name tests with requirement IDs.\n- ${w.pure ? 'T0 (node) only — no DOM in tests.' : 'T0 for logic, T1 (browser) for components.'}\n`,
+  'README.md': `# ${w.name}\n\n${w.desc}\n\n| Layer | Pure | Status |\n|---|---|---|\n| ${w.layer} | ${w.runtime === 'pure' ? 'yes' : 'no'} | stub (M1) — exports \`VERSION\` only |\n\nArchitecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).\n`,
+  'AGENTS.md': `# ${w.name} — agent notes\n\n${w.desc}\n\n## Rules\n\n- Layer ${w.layer}: import only from lower layers, or same-layer packages the map lists as dependencies (docs/architecture/01-overview.md, "May depend on"); enforced by \`check-layering\`.\n${rules(w)}\n- Public API lives in \`src/index.ts\` (\`@fluxion/source\` condition; ADR-0011); every export needs TSDoc and a release tag.\n\n## Tests\n\n- Co-locate \`*.test.ts\` next to the code; name tests with requirement IDs.\n- ${w.runtime === 'pure' ? 'T0 (node) only — no DOM in tests.' : 'T0 for logic, T1 (browser) for components.'}\n`,
   LICENSE,
 });
 

@@ -56,6 +56,17 @@ describe('check-layering (NFR-MNT-001)', () => {
       "export { VERSION } from '../../core/src/index.ts';\n",
       /no-relative-cross-workspace/,
     ],
+    'a T0 test importing vitest/browser': [
+      'packages/render/src/b.test.ts',
+      "import { page } from 'vitest/browser';\nexport const p = page;\n",
+      /t0-tests-no-dom/,
+    ],
+    'shipped source importing an undeclared package': [
+      'packages/core/src/bad.ts',
+      "import { expect } from 'vitest';\nexport const e = expect;\n",
+      /not-to-undeclared-dep/,
+    ],
+    'an unresolvable relative import': ['packages/core/src/bad.ts', "export { x } from './missing.ts';\n", /not-to-unresolvable/],
     'a circular import': ['packages/core/src/a.ts', "import { b } from './b.ts';\nexport const a = (): number => b() + 1;\n", /no-circular/],
   };
   for (const [name, [path, text, expected]] of Object.entries(violations)) {
@@ -67,6 +78,19 @@ describe('check-layering (NFR-MNT-001)', () => {
       assert.match(r.stderr, expected);
     });
   }
+
+  it('fails on shipped source importing a devDependency (M1 cp2 F7)', () => {
+    const manifest = sb.read('packages/core/package.json');
+    sb.edit('packages/core/package.json', (t) => JSON.stringify({ ...JSON.parse(t), devDependencies: { vitest: '5.0.2' } }, null, 2));
+    put('packages/core/src/bad.ts', "import { expect } from 'vitest';\nexport const e = expect;\n");
+    try {
+      const r = layering();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /not-to-dev-dep/);
+    } finally {
+      sb.write('packages/core/package.json', manifest);
+    }
+  });
 
   it('fails loudly when the dependency-cruiser config is missing (M1.11 review F1)', () => {
     const config = sb.read('.dependency-cruiser.mjs');

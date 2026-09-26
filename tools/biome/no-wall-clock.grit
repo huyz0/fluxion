@@ -1,0 +1,7 @@
+or {
+  `$f.format()`,
+  `$f.formatToParts()`
+} as $call where {
+  $f <: contains `DateTimeFormat`,
+  register_diagnostic(span=$call, message="Formatting with no date reads the wall clock in a pure package: pass a date from the injected Clock port.", severity="error")
+}

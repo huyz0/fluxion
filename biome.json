@@ -66,7 +66,7 @@
   "overrides": [
     {
       "includes": ["packages/{schema,geometry,core,theme,layout,routing,anim,format,dsl}/src/**"],
-      "plugins": ["./tools/biome/no-math-random.grit"],
+      "plugins": ["./tools/biome/no-math-random.grit", "./tools/biome/no-wall-clock.grit"],
       "linter": {
         "rules": {
           "style": {
@@ -81,7 +81,16 @@
                   "performance": "Pure package: inject the Clock port.",
                   "fetch": "Pure package: no network; inject the FileIO port.",
                   "window": "Pure package: no DOM.",
-                  "document": "Pure package: no DOM."
+                  "document": "Pure package: no DOM.",
+                  "crypto": "Pure package: randomness and IDs come from the injected Random/IdGenerator port.",
+                  "queueMicrotask": "Pure package: inject the Clock/Scheduler port.",
+                  "setImmediate": "Pure package: inject the Clock/Scheduler port.",
+                  "XMLHttpRequest": "Pure package: no network; inject the FileIO port.",
+                  "WebSocket": "Pure package: no network.",
+                  "navigator": "Pure package: no DOM or host environment.",
+                  "globalThis": "Pure package: no host globals, not even through globalThis.",
+                  "self": "Pure package: no host globals.",
+                  "global": "Pure package: no host globals."
                 }
               }
             }

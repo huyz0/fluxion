@@ -87,6 +87,18 @@ describe('coverage floors (NFR-MNT-004)', () => {
     }
   });
 
+  for (const [dir, floor] of [
+    ['packages/player', 80],
+    ['packages/editor', 70],
+  ]) {
+    it(`fails when ${dir.split('/')[1]} is below its floor (M1 cp2 F7)`, () => {
+      addUncovered(dir);
+      const r = coverage();
+      assert.equal(r.status, 1, out(r));
+      assert.match(`${r.stdout}${r.stderr}`, new RegExp(`"${dir.replace('/', '\\/')}\\/src\\/\\*\\*" threshold \\(${floor}%\\)`));
+    });
+  }
+
   it('does not hold a package without a floor (cli) to one', () => {
     addUncovered('packages/cli');
     const r = coverage();

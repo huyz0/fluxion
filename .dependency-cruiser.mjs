@@ -16,7 +16,8 @@ const target = (names) =>
     .filter((w) => names.includes(short(w)))
     .map((w) => `${esc(w.dir)}/|${esc(w.name)}($|/)|node_modules/${esc(w.name)}/`)
     .join('|')})`;
-const DOM_LIBS = '(^|/node_modules/)(react|react-dom|jsdom|happy-dom|@testing-library/[^/]+|@vitest/browser[^/]*|playwright|@playwright/[^/]+)(/|$)';
+const DOM_LIBS =
+  '(^|/node_modules/)(react|react-dom|jsdom|happy-dom|@testing-library/[^/]+|@vitest/browser[^/]*|vitest/(dist/)?browser[^/]*|playwright|@playwright/[^/]+)(/|$)';
 
 const layerRules = workspaces.map((w) => {
   const forbidden = all.filter((n) => n !== short(w) && !w.dependsOn.includes(n));
@@ -91,6 +92,13 @@ export default {
       to: { dependencyTypes: ['npm-dev'] },
     },
     {
+      name: 'not-to-undeclared-dep',
+      comment: 'shipped source imports only packages its own package.json declares',
+      severity: 'error',
+      from: { path: '^(packages|packs)/[^/]+/src/', pathNot: '\\.(test|spec|stories)\\.[cm]?[jt]sx?$|/__fixtures__/' },
+      to: { dependencyTypes: ['npm-no-pkg', 'npm-unknown'] },
+    },
+    {
       name: 'not-to-unresolvable',
       comment: 'an import that does not resolve is a typo or a missing dependency',
       severity: 'error',
@@ -100,7 +108,10 @@ export default {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: '(^|/)(dist|\\.tsbuild|coverage|node_modules)/' },
+    // only our own build outputs: excluding node_modules, or any `dist/` (npm packages resolve into
+    // theirs), drops every npm edge, so the dev-dep/undeclared/DOM rules could never fire (M1.27);
+    // doNotFollow keeps those edges but does not cruise inside them
+    exclude: { path: '^(packages|packs|apps)/[^/]+/(dist|\\.tsbuild|coverage)/' },
     tsPreCompilationDeps: true,
     tsConfig: { fileName: 'tsconfig.json' },
     enhancedResolveOptions: {

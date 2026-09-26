@@ -12,9 +12,12 @@ const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.
 const libraries = workspaces.filter((w) => w.dir.startsWith('packages/') || w.dir.startsWith('packs/'));
 
 describe('turbo pipelines (NFR-DX-002)', () => {
-  it('declares typecheck, build and lint tasks (tests run as one root Vitest invocation, M1.12)', () => {
+  it('declares typecheck and build, and every task is a script some workspace runs (M1 cp2 F5)', () => {
     const tasks = Object.keys(JSON.parse(readFileSync(join(REPO, 'turbo.json'), 'utf8')).tasks);
-    for (const t of ['typecheck', 'build', 'lint']) assert.ok(tasks.includes(t), t);
+    for (const t of ['typecheck', 'build']) assert.ok(tasks.includes(t), t);
+    // a task no workspace defines runs nothing and reports success (lint and tests are root runs)
+    const scripts = new Set(workspaces.flatMap((w) => Object.keys(JSON.parse(readFileSync(join(REPO, w.dir, 'package.json'), 'utf8')).scripts ?? {})));
+    for (const t of tasks) assert.ok(scripts.has(t), `turbo task ${t} has no workspace script`);
   });
 
   it('builds every library to dist/index.js + index.d.ts and reruns as a full cache hit', () => {
