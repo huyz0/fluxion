@@ -12,9 +12,9 @@ const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.
 const libraries = workspaces.filter((w) => w.dir.startsWith('packages/') || w.dir.startsWith('packs/'));
 
 describe('turbo pipelines (NFR-DX-002)', () => {
-  it('declares typecheck, build, test, test:coverage, test:related and lint tasks', () => {
+  it('declares typecheck, build and lint tasks (tests run as one root Vitest invocation, M1.12)', () => {
     const tasks = Object.keys(JSON.parse(readFileSync(join(REPO, 'turbo.json'), 'utf8')).tasks);
-    for (const t of ['typecheck', 'build', 'test', 'test:coverage', 'test:related', 'lint']) assert.ok(tasks.includes(t), t);
+    for (const t of ['typecheck', 'build', 'lint']) assert.ok(tasks.includes(t), t);
   });
 
   it('builds every library to dist/index.js + index.d.ts and reruns as a full cache hit', () => {

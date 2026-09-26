@@ -196,3 +196,10 @@ generator owns tsconfig lib/types (per runtime: pure ES-only, dom, node, mixed) 
 dependency-cruiser needs the TS compiler API (<7): own typescript@6 via packageExtensions; ADR-0011 amended
 layering.test (14), workspace-shape +2 (no DOM in pure tsc; tsconfig drift)
 review r1 pass + minor fixed: layering no longer SKIPs when the depcruise config is missing (fails in check-layering)
+
+## 2026-09-26 M1.12 (claude)
+done: root vitest.config.ts with node (T0) and browser (T1, Chromium via @vitest/browser-playwright) projects; v8 coverage floors per package from thresholds.mjs (pure 90/85, render+player 80/75, editor 70/65; +2 branch keys from testing.md §6)
+generator emits src/index.test.ts smoke per workspace; render has a browser smoke; root test/test:coverage/test:related call vitest directly (turbo test tasks removed); CI installs chromium
+fast-check: FC_SEED (fixed in CI) / FC_RUNS reach both projects (node via process.env, browser via import.meta.env — browser checked by an ad-hoc probe)
+coverage.test (5): below the floor fails, render floor, no floor for cli, seed probe
+review r1 changes-requested (3) fixed: .vitest/ ignored and probe screenshots dropped; setup installs chromium; M1.7 row, M1.md items 5/10, testing.md rule 1 say root Vitest config

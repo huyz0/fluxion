@@ -40,6 +40,8 @@ jobs:
           cache: pnpm
       - name: install (frozen lockfile)
         run: pnpm install --frozen-lockfile
+      - name: chromium for the Vitest browser project (T1)
+        run: pnpm exec playwright install --with-deps chromium
       - name: git identity for sandbox tests
         run: |
           git config --global user.name "ci"

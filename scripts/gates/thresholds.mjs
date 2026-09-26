@@ -26,7 +26,9 @@ export const THRESHOLDS = {
   COVERAGE_PURE_LINES: { value: 90, weakens: 'down' },
   COVERAGE_PURE_BRANCHES: { value: 85, weakens: 'down' },
   COVERAGE_RENDER_LINES: { value: 80, weakens: 'down' },
+  COVERAGE_RENDER_BRANCHES: { value: 75, weakens: 'down' }, // testing.md §6 (render, player)
   COVERAGE_EDITOR_LINES: { value: 70, weakens: 'down' },
+  COVERAGE_EDITOR_BRANCHES: { value: 65, weakens: 'down' }, // testing.md §6
   MUTATION_PURE_SCORE: { value: 70, weakens: 'down' },
 
   // bundle & file size (NFR-SIZE), bytes gzip

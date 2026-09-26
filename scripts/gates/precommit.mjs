@@ -49,7 +49,9 @@ const STEPS = [
     'test',
     () => true,
     () => hasPkg || 'no workspace yet (M1)',
-    () => pnpm('turbo', 'run', mode === 'quick' ? 'test:related' : 'test:coverage', ...(mode === 'all' ? [] : ['--affected'])),
+    // one root Vitest run (node + browser projects); coverage floors are enforced on every full run.
+    // quick mode runs only tests related to uncommitted changes, without coverage.
+    () => (mode === 'quick' ? pnpm('exec', 'vitest', 'run', '--changed') : pnpm('run', 'test:coverage')),
   ],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
   ['knip', (m) => m !== 'quick', () => (hasPkg && exists('knip.json')) || 'knip not configured', () => pnpm('exec', 'knip', '--no-progress')],

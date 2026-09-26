@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // One-time (idempotent) developer/agent setup. Run as `pnpm run setup` (`pnpm setup` is a pnpm built-in; ADR-0138).
 import { chmodSync } from 'node:fs';
-import { git, node, repoPath } from '../gates/lib.mjs';
+import { exists, git, node, repoPath, run } from '../gates/lib.mjs';
 
 const steps = [
   ['git hooks', () => git(['config', 'core.hooksPath', '.githooks'])],
@@ -12,6 +12,15 @@ const steps = [
     () => {
       for (const h of ['pre-commit', 'commit-msg']) chmodSync(repoPath('.githooks', h), 0o755);
       return { status: 0, stdout: '', stderr: '' };
+    },
+  ],
+  // the Vitest browser project (T1) runs in Playwright's Chromium; pre-commit needs it (M1.12 review F2)
+  [
+    'chromium for browser tests',
+    () => {
+      const cli = repoPath('node_modules', 'playwright', 'cli.js');
+      if (!exists('node_modules/playwright/cli.js')) return { status: 1, stdout: '', stderr: 'playwright is not installed: run `pnpm install` first' };
+      return run(process.execPath, [cli, 'install', 'chromium']);
     },
   ],
 ];

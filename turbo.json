@@ -13,17 +13,6 @@
       "inputs": ["src/**", "tsconfig.json", "package.json", "tsdown.config.*"],
       "outputs": ["dist/**"]
     },
-    "test": {
-      "inputs": ["src/**", "test/**", "package.json", "vitest.config.*"],
-      "outputs": []
-    },
-    "test:coverage": {
-      "inputs": ["src/**", "test/**", "package.json", "vitest.config.*"],
-      "outputs": ["coverage/**"]
-    },
-    "test:related": {
-      "cache": false
-    },
     "lint": {
       "inputs": ["src/**", "package.json"],
       "outputs": []

@@ -23,7 +23,7 @@ routing, or undo means the code is in the wrong layer — fix the layering, not 
 
 | # | Rule | Enforced by |
 |---|---|---|
-| 1 | Tests are co-located: `foo.ts` → `foo.test.ts` (T0), `Foo.browser.test.tsx` (T1). E2E lives in `e2e/`, eval in `eval/`. | `vitest.workspace` globs |
+| 1 | Tests are co-located: `foo.ts` → `foo.test.ts` (T0), `Foo.browser.test.tsx` (T1). E2E lives in `e2e/`, eval in `eval/`. | `vitest.config.ts` project globs |
 | 2 | T0 files import nothing from DOM packages and set no `environment` override. | `check-layering.mjs` |
 | 3 | Watch the test fail before implementing (red → green → refactor). | no gate — judgement |
 | 4 | Test observable behaviour via public entry points, not private helpers or call counts. | no gate — reviewer |

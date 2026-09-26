@@ -13,8 +13,9 @@
     "setup": "node scripts/harness/setup.mjs",
     "build": "turbo run build",
     "typecheck": "tsc -b",
-    "test": "turbo run test",
-    "test:coverage": "turbo run test:coverage",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:related": "vitest related --run",
     "lint": "biome ci .",
     "format": "biome check --write .",
     "verify": "node scripts/gates/precommit.mjs --all",
@@ -25,12 +26,18 @@
     "@biomejs/biome": "catalog:",
     "@size-limit/preset-small-lib": "catalog:",
     "@types/node": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "dependency-cruiser": "catalog:",
+    "fast-check": "catalog:",
     "knip": "catalog:",
+    "playwright": "catalog:",
     "publint": "catalog:",
     "size-limit": "catalog:",
     "tsdown": "catalog:",
     "turbo": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -18,3 +18,4 @@ Thumbs.db
 .harness/tmp/
 .harness/artifacts/
 .tsbuild/
+.vitest/

@@ -29,7 +29,11 @@ describe('workspace root (NFR-DX-001, NFR-SEC-005)', () => {
   });
 
   it('exposes setup, typecheck, verify, verify:fast and the turbo pipeline scripts', () => {
-    for (const s of ['build', 'test', 'test:coverage']) assert.equal(pkg.scripts[s], `turbo run ${s}`);
+    assert.equal(pkg.scripts.build, 'turbo run build');
+    // one root Vitest run covers both projects and every package's coverage floor (M1.12)
+    assert.equal(pkg.scripts.test, 'vitest run');
+    assert.equal(pkg.scripts['test:coverage'], 'vitest run --coverage');
+    assert.equal(pkg.scripts['test:related'], 'vitest related --run');
     // Biome lints the whole repo in one pass (M1.9); packages carry no per-package lint script
     assert.equal(pkg.scripts.lint, 'biome ci .');
     assert.equal(pkg.scripts.setup, 'node scripts/harness/setup.mjs');
