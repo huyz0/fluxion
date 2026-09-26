@@ -17,5 +17,5 @@
       "caught": true
     }
   ],
-  "note": "claude->codex reviewed by the Codex CLI (codex exec, read-only sandbox). codex->claude reviewed by an isolated Claude reviewer subagent (FLUXION_SMOKE_MANUAL=claude) because the Claude CLI on this machine is not logged in — the code-review skill documented fallback. Neither reviewer was told a defect was seeded."
+  "note": "claude->codex reviewed by the Codex CLI (codex exec, read-only sandbox). codex->claude reviewed by an isolated Claude reviewer subagent (FLUXION_SMOKE_MANUAL=claude) because the Claude CLI on this machine is not logged in — the code-review skill documented fallback. Neither reviewer was told a defect was seeded. Both seeded changes were written by scripts/harness/kits/smoke.mjs, not by either vendor: the author field is a label naming the vendor whose review is being cross-checked, not the actual author."
 }

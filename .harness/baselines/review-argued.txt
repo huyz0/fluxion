@@ -6,4 +6,7 @@ M0 cp1 F6: M0 is harness-only; check-trace arrives in M1 (NFR-MNT-008 lands ther
 M0.10 F1: stop-blocks counter persisting after a cap hit is intended (a cap hit needs a human); the restart step (delete .harness/tmp/stop-blocks) is documented in .harness/README.md.
 M0.23 F1: an unstaged working-tree deletion of a tracked .md makes docs-consistency fail loudly (ENOENT) rather than silently pass; transient state, acceptable.
 M0 cp2 F4: no gate can prove a human-run transcript is real (non-negotiable 3); M0.25 requires a Transcript: path per dry-run section to raise the cost of fabrication.
-M0 cp2 F5: operator guide written before the dry runs was a reasonable reorder; it lists them as pending, and M0.14/M0.15 update it with observed behaviour.
+M0 cp2 F5: operator guide written before the dry runs was a reasonable reorder; M0.14/M0.15 were later descoped (ADR-0137), so the guide's /goal behaviour is unobserved and stop-check.mjs is the tested fallback (updated per M0 final F4).
+M0 final F3: ADR-0137 (user decision) accepts adapter tests as confirmation of Codex skill loading; recorded in roadmap Deferred; M0 Goal reworded.
+M0 final F4: see the updated M0 cp2 F5 line.
+M0 final F5: smoke evidence is an evidence-shape check by design; cross-vendor-smoke.json note discloses scripted seeds and the subagent fallback; checkFinalReview relies on dispositions, not the verdict string.

@@ -1,0 +1,22 @@
+{
+  "milestone": "M0",
+  "checkpoint": "final",
+  "range": "e4273a6..3d7f19d",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "pass",
+  "findings": [
+    { "id": "F1", "severity": "major", "area": "gate honesty", "detail": "descoped (<reason>) closes a row via a regex only; check-reviewed exempts backlog diffs that change only State/Commit cells, so an agent can flip a row to descoped in an unreviewed bookkeeping commit. The two M0 descopes are genuine (ADR-0137, reviewed M0.26); the hole is in shared gate code reused by later milestones.", "failure_scenario": "An unattended M1 driver commits only a State cell change to descoped (not feasible); check-reviewed exempts it and m1-complete goes green with the requirement unbuilt." },
+    { "id": "F2", "severity": "major", "area": "spec fidelity", "detail": "M0.12 acceptance (actionlint locally until first push) never happened; gates.yml was only structurally tested and never linted or run; guide section 7 made the CI check optional, beyond the user decision (dry runs and reviewers only), and it is missing from the Deferred table.", "failure_scenario": "First push reveals a workflow or POSIX-only gate error, CI goes red on 3 OSes as M1 adds ci.yml, and the cause is ambiguous." },
+    { "id": "F3", "severity": "minor", "area": "spec fidelity", "detail": "No check that Codex actually lists the 13 skills or runs the PostToolUse hook; moved to M0.15, which is descoped (recorded in Deferred); the M0 Goal still says skills load in both tools.", "failure_scenario": "An untrusted Codex project layer or a wrong matcher means an M1 Codex session never runs the quick gate." },
+    { "id": "F4", "severity": "minor", "area": "coherence", "detail": "The cp2 F5 argued line relies on M0.14/M0.15 updating the guide, which will not happen.", "failure_scenario": "The guide's /goal instructions differ from observed behaviour and the argued line suggests it was handled." },
+    { "id": "F5", "severity": "minor", "area": "gate honesty", "detail": "checkReviewerSmoke trusts author/reviewer labels (seeds are script-written, so author is a label); checkFinalReview ignores the verdict field.", "failure_scenario": "A future smoke run records codex->claude with no Codex involvement and still reads cross-vendor." }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "hand-off", "target": "M1 (first row) + roadmap Deferred", "note": "check-reviewed: any State change to descoped is non-exempt; checkBacklogDone requires the descoped reason to cite an ADR or a roadmap Deferred entry; stub-fixture tests." },
+    { "finding": "F2", "disposition": "hand-off", "target": "M1 row 18 + roadmap Deferred", "note": "Extend M1 row 18 to gates.yml: actionlint clean (Docker rhysd/actionlint) and first push green, early in M1 before other CI rows; the guide CI item is required before M1 CI work. The first push is a human action." },
+    { "finding": "F3", "disposition": "argue", "target": ".harness/baselines/review-argued.txt", "note": "ADR-0137 accepts adapter tests as confirmation; M0 Goal reworded to say Codex skill loading is verified structurally." },
+    { "finding": "F4", "disposition": "argue", "target": ".harness/baselines/review-argued.txt", "note": "cp2 F5 line updated: /goal behaviour unobserved per ADR-0137; stop-check.mjs is the tested fallback." },
+    { "finding": "F5", "disposition": "argue", "target": ".harness/baselines/review-argued.txt", "note": "Evidence-shape check by design; cross-vendor-smoke.json note discloses scripted seeds and the subagent fallback." }
+  ],
+  "planDelta": "All cp1/cp2 reopened rows (M0.21-M0.25) delivered as specified; M0.26 applied the user decision consistently. 18 planned -> 26 rows (1.44x), 2 descoped; growth came from checkpoint reviews hardening the gate. M1 should plan gate-honesty legs up front."
+}

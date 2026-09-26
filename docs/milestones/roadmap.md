@@ -5,7 +5,7 @@
 > *and* a milestone review (fresh agent) has recorded a verdict. The command is written first,
 > red (see `docs/standards/sdd.md`, skill `plan-milestone`).
 
-**Current milestone: `M0`** (the `drive` skill reads this line).
+**Current milestone: `M1`** (the `drive` skill reads this line).
 
 Plans (`M<n>.md`) are hypotheses with ≤ ~20 tasks; the backlog (`docs/backlog/current.md`) is
 authoritative for the current milestone only.
@@ -84,4 +84,6 @@ receiving milestone's plan.
 |---|---|---|---|
 | check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |
 | `/goal` dry runs in interactive Claude Code and Codex sessions (M0.14/M0.15; kit in docs/harness/kits/dry-run.md), including the live Codex-session check moved there from M0.11 (13 skills via `/skills`, PostToolUse quick gate observed) — descoped by user decision; reviews use subagents only | M0 | unscheduled (on human request) | user decision 2026-09-26 |
+| Close descoping loophole: a `descoped (...)` State change is never review-exempt; its reason must cite an ADR or Deferred entry (M0 final F1) | M0 | M1 (first) | shared gate code reused by later milestones |
+| `gates.yml`: actionlint clean + first push green on 3 OSes; guide CI item required before M1 CI work (M0 final F2) | M0 | M1 row 18 (early) | never linted or run |
 | Function-length/complexity caps owned by Biome, not check-size; M1 row 9 reworded accordingly (check-size keeps the file cap from M0.6) (cp1 F5) | M0 | M1 | tools land in M1 |
