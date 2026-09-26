@@ -14,3 +14,9 @@ blocked: —
 done: M0.1 pnpm 11.28 installed; run() quotes args for cmd.exe (no DEP0190); precommit --all PASS
 gate m0: 5/18 — red: M0 scripts, tests/harness, CI, .codex, dry runs, guide, review
 next: M0.2
+
+## 2026-09-26 M0.2 (claude)
+gate m0 confirmed red 5/18 (exit 1). red legs: check-size, check-tests-kept, check-drift,
+build-index (+ index tables), stop-check, worktree scripts; tests/harness; gates.yml; .codex/;
+dry-runs doc; harness guide; milestone review
+argued: M0.1 F1/F2 (quoteWin % expansion, trailing backslash) — no caller affected

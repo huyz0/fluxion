@@ -1,1 +1,3 @@
 # <TaskID> <FindingID>: <one-line argument why this finding is not a defect or is a decision>
+M0.1 F1: cmd.exe %VAR% expansion inside quotes — shell path is only used for .cmd shims (pnpm/npx/codex) with fixed, repo-authored args containing no '%'; revisit if user-supplied text is ever passed.
+M0.1 F2: trailing backslash in a spaced arg — no caller passes Windows paths through the shell path; revisit together with F1.
