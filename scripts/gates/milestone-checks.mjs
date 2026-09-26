@@ -9,7 +9,7 @@ export const BOOKKEEPING_PATHS = [/^\.harness\//, /^docs\/backlog\//, /^docs\/mi
 
 /**
  * A dry-runs record must have, per tool, a Success and an Impossible section, each with a
- * non-empty `Date:` and `Outcome:` line — a sentence mentioning the words is not enough.
+ * non-empty `Date:`, `Outcome:` and `Transcript:` line — mentioning the words is not enough.
  */
 export function checkDryRuns(text, tools = ['Claude Code', 'Codex']) {
   const missing = [];
@@ -19,7 +19,7 @@ export function checkDryRuns(text, tools = ['Claude Code', 'Codex']) {
     for (const kind of ['Success', 'Impossible']) {
       const sub = new RegExp(`^### ${kind}\\s*$([\\s\\S]*?)(?=^##|(?![\\s\\S]))`, 'm').exec(section)?.[1];
       if (!sub) { missing.push(`${tool} / ### ${kind}`); continue; }
-      for (const field of ['Date', 'Outcome']) {
+      for (const field of ['Date', 'Outcome', 'Transcript']) {
         if (!new RegExp(`^${field}:[ \\t]*\\S`, 'm').test(sub)) missing.push(`${tool} / ${kind} / ${field}:`);
       }
     }

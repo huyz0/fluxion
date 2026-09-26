@@ -76,8 +76,21 @@ recorded. Then merge the worktree branch (rebase, keep one commit per task), mov
 | Review loop exceeds 3 rounds | by design the loop stops; read the findings, decide, clear `blockedReason` |
 | Stop hook allows stopping immediately | `blockedReason` set, loop inactive, or runaway cap reached (delete `.harness/tmp/stop-blocks`) |
 
-## 7. What still needs a human in M0
+## 7. Hand-back checklist: finishing M0 (needs a human)
 
-M0.13 (cross-vendor reviewer smoke), M0.14 and M0.15 (`/goal` dry runs in Claude Code and Codex)
-need both CLIs installed and logged in; their results go in `docs/harness/dry-runs.md`, which
-those tasks create (it is intentionally absent until a real dry run has happened).
+The loop stopped because M0.13–M0.15 need the Claude Code and Codex CLIs installed and logged
+in (`state.json` → `blockedReason`). Everything that can be prepared without them is ready:
+
+1. **Node on PATH** in the shell git uses (`node --version`), then `node scripts/harness/setup.mjs`.
+2. **Install and log in** to both CLIs (`claude --version`, `codex --version`); trust the project
+   `.codex/` layer in Codex.
+3. **M0.13 reviewer smoke:** `node scripts/harness/kits/smoke.mjs` — seeds one defect per
+   direction in a throwaway worktree, runs the other vendor's reviewer, and writes
+   `.harness/reviews/cross-vendor-smoke.json` plus digest lines. Nothing seeded is left behind.
+4. **M0.14 / M0.15 `/goal` dry runs:** follow [`kits/dry-run.md`](kits/dry-run.md) in each tool and
+   fill every `Date:` / `Outcome:` / `Transcript:` in [`dry-runs.md`](dry-runs.md).
+5. **CI check** (M0 cp2 F3): run `actionlint .github/workflows/gates.yml` or push once and confirm
+   the `gates` workflow is green on all three OSes.
+6. **Resume:** set the M0.13–M0.15 rows back to `todo`, clear `blockedReason`, delete
+   `.harness/tmp/stop-blocks`, and start `/goal` with the M0 goal text. The agent commits the
+   evidence (M0.13–M0.15), runs the final milestone review (M0.18) and moves the roadmap to M1.

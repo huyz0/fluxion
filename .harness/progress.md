@@ -110,3 +110,9 @@ next: M0.13/14/15 need a human (codex + claude CLIs, logins)
 done: M0.21 (53a3ac6); cp2 milestone review recorded (2 major reopened as M0.24/M0.25, 1 handed to hand-back checklist, 2 argued)
 checkBacklogDone leg + 4 tests (every row done; reopen targets exist and are done)
 next: M0.25 human kits, then stop (M0.13-15 need codex+claude CLIs)
+
+## 2026-09-26 M0.25 (claude) — STOP, handed back
+done: M0.24 (a22f0aa); kits: toy-gate (success/impossible), smoke.mjs (throwaway worktree, digest+evidence copied back), dry-run kit + dry-runs.md template (keeps gate red); checkDryRuns needs Transcript:
+gate m0: 20/25 — red only: M0.13 smoke, M0.14/15 dry runs, M0.18 final review, backlog/roadmap
+blocked: M0.13-M0.15 need Claude Code + Codex CLIs logged in (human) — state.json blockedReason set, loopActive=false
+next (human): docs/harness/README.md section 7; then /goal resumes M0.13-15 commits, M0.18, roadmap to M1

@@ -1,9 +1,9 @@
 {
   "milestone": "M0",
-  "currentTask": "M0.24",
+  "currentTask": null,
   "attempts": 0,
   "reviewRound": 0,
-  "loopActive": true,
-  "blockedReason": null,
+  "loopActive": false,
+  "blockedReason": "M0.13-M0.15 need Claude Code + Codex CLIs installed and logged in (not available on this machine). Kits ready: docs/harness/README.md section 7. After they run, resume /goal: M0.18 final review, roadmap to M1.",
   "updated": "2026-09-26"
 }

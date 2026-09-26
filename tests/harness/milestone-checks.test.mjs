@@ -13,7 +13,7 @@ function inRepo(sb, expr) {
 }
 
 const section = (tool, { success = true, impossible = true } = {}) =>
-  `## ${tool}\n\n${success ? '### Success\nDate: 2026-10-01\nOutcome: goal ended when toy gate exited 0 (3 turns)\n\n' : ''}${impossible ? '### Impossible\nDate: 2026-10-01\nOutcome: stopped with blockedReason after 3 failed attempts\n\n' : ''}`;
+  `## ${tool}\n\n${success ? '### Success\nDate: 2026-10-01\nOutcome: goal ended when toy gate exited 0 (3 turns)\nTranscript: logs/success.txt\n\n' : ''}${impossible ? '### Impossible\nDate: 2026-10-01\nOutcome: stopped with blockedReason after 3 failed attempts\nTranscript: logs/impossible.txt\n\n' : ''}`;
 
 describe('checkDryRuns (NFR-DX-003)', () => {
   it('accepts per-tool success and impossible sections with outcomes', () => {

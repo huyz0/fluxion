@@ -32,6 +32,8 @@ const BEHAVIOUR = {
   'scripts/harness/worktree.mjs': 'tests/harness/worktree.test.mjs',
   '.github/workflows/gates.yml': 'tests/harness/ci-workflow.test.mjs',
   '.codex/hooks.json': 'tests/harness/adapters.test.mjs',
+  'scripts/harness/kits/smoke.mjs': 'tests/harness/kits.test.mjs',
+  'scripts/harness/kits/toy-gate.mjs': 'tests/harness/kits.test.mjs',
 };
 for (const [deliverable, test] of Object.entries(BEHAVIOUR)) {
   leg(`${deliverable} has behavioural test`, () => (exists(deliverable) ? exists(test) || `missing ${test}` : 'missing'));
