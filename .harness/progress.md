@@ -85,3 +85,8 @@ done: .github/workflows/gates.yml (3 OSes, SHA-pinned checkout v7.0.1/setup-node
 added check-commits.mjs + check-tests-kept --commit (closes M0.7 F1 amend gap); history e4273a6..HEAD 14/14 pass
 not verified on GitHub: no push requested; workflow checked structurally (ci-workflow.test.mjs), actionlint not installed
 next: M0.13
+
+## 2026-09-26 M0.23 (claude)
+done: gate tests live only in tests/harness (ci-cd.md, M1.md repointed); docs-consistency.test (fails on old docs)
+precommit header already accurate after M0.12 (check-commits.mjs exists)
+next: M0.22

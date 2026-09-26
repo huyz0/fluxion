@@ -124,7 +124,7 @@ jobs:
 ## 5. Changing CI
 
 - A new gate lands in `scripts/gates/` first, is wired into `precommit.mjs` or a named CI job,
-  and gets a negative fixture in `scripts/gates/__tests__/` proving it fails on bad input.
+  and gets a negative test in `tests/harness/` proving it fails on bad input (run by precommit and CI).
 - Removing or loosening a CI job is a threshold change: `Threshold-change:` trailer + ADR.
 - If the pre-commit budget is exceeded, move the slowest leg to CI rather than raising the
   budget without an ADR.
