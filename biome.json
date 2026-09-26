@@ -90,7 +90,8 @@
                   "navigator": "Pure package: no DOM or host environment.",
                   "globalThis": "Pure package: no host globals, not even through globalThis.",
                   "self": "Pure package: no host globals.",
-                  "global": "Pure package: no host globals."
+                  "global": "Pure package: no host globals.",
+                  "Temporal": "Pure package: Temporal.Now reads the clock; inject the Clock port."
                 }
               }
             }

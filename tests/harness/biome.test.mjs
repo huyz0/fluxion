@@ -42,7 +42,12 @@ const CASES = {
   'pure-globalthis.ts': ['packages/theme/src/a.ts', 'lint/style/noRestrictedGlobals'],
   'pure-math-optional.ts': ['packages/format/src/a.ts', 'Pure packages use Math only as Math.<member>'],
   'pure-math-default-param.ts': ['packages/anim/src/a.ts', 'Pure packages use Math only as Math.<member>'],
-  'pure-intl-clock.ts': ['packages/theme/src/a.ts', 'Formatting with no date reads the wall clock'],
+  'pure-intl-clock.ts': ['packages/theme/src/a.ts', 'Date formatting can read the wall clock'],
+  'pure-intl-cached.ts': ['packages/dsl/src/a.ts', 'Date formatting can read the wall clock'],
+  'pure-math-property-alias.ts': ['packages/core/src/a.ts', 'Pure packages use Math only as Math.<member>'],
+  'pure-temporal.ts': ['packages/anim/src/a.ts', 'lint/style/noRestrictedGlobals'],
+  'pure-math-in-value.ts': ['packages/core/src/a.ts', 'Pure packages use Math only as Math.<member>'],
+  'pure-math-member-object.ts': ['packages/core/src/a.ts', 'Pure packages use Math only as Math.<member>'],
   'pure-math-random.ts': ['packages/geometry/src/a.ts', 'Pure packages use Math only as Math.<member>'],
 };
 
@@ -70,6 +75,11 @@ describe('biome rules (NFR-MNT-002, NFR-MNT-003)', () => {
 
   it('Math member access (Math.sqrt, Math.PI) is fine in a pure package (M1.27 review F2)', () => {
     const r = lint('pure-math-safe.ts', 'packages/geometry/src/a.ts');
+    assert.equal(r.status, 0, out(r));
+  });
+
+  it('type-level Math (interface member, type alias) is not the global (M1.32, M1.27 review r3 F2)', () => {
+    const r = lint('pure-math-property.ts', 'packages/geometry/src/a.ts');
     assert.equal(r.status, 0, out(r));
   });
 

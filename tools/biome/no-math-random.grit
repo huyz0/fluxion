@@ -1,3 +1,9 @@
-`Math` as $m where { not $m <: within `Math.$p` where { $p <: not `random` } } where {
+`Math` as $m where {
+  not $m <: within or {
+    `Math.$p` where { $p <: not `random` },
+    `interface $name { $body }`,
+    `type $name = $t`
+  }
+} where {
   register_diagnostic(span=$m, message="Pure packages use Math only as Math.<member>, never Math.random or an alias of Math: inject the Random port (docs/standards/coding-typescript.md).", severity="error")
 }

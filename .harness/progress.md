@@ -252,3 +252,7 @@ found: depcruise `exclude` dropped every npm edge (node_modules, and any `dist/`
 negatives: layering +4 (vitest/browser in T0, undeclared, dev dep, unresolvable), coverage +2 (player, editor floors), biome +4; turbo lint task removed, turbo.test requires a workspace script per task
 review r1 changes-requested (2) fixed: globalThis/self/global denied in pure packages; grit narrowed (Math.random, Math?.random, destructured random, identifier aliases of Math; other Math members fine)
 review r2 changes-requested (2) fixed: grit inverted - Math only as Math.<member other than random> (catches default params, assignments, properties, Math['random']); no-wall-clock.grit: DateTimeFormat format()/formatToParts() with no date
+
+## 2026-09-26 M1.32 (claude)
+done: no-wall-clock.grit bans DateTimeFormat in pure packages (formatting behind a port); Temporal denied; Math rule skips property names, `{ Math: v }` keys (unless v is Math) and interface/type-alias bodies; biome.test +4
+review r1 changes-requested (2) fixed: property-name exclusions dropped (within exempted every Math under the key/object, e.g. { Math: Math.random() }); only interface and type-alias bodies are exempt; value properties named Math stay flagged
