@@ -217,3 +217,11 @@ done: steps after build run concurrently (Promise.all), printed in ladder order;
 checked: a turbo cache hit does not rewrite dist/ (mtime unchanged), so turbo.test cannot race publint/attw
 ladder.test (3). M1.25 work stashed meanwhile (stash m1.25-wip), resumed after this commit
 review r1 pass + minor fixed: runAsync decodes the stream as utf8 (a 5-byte pattern proves a split character; the 8-byte one aligned with 64 KiB chunks and passed without the fix)
+review r2 pass; 2 minor (string-unaware comment strip; fixture calls after a space) → backlog M1.25 (scanner that knows strings/comments)
+
+## 2026-09-26 M1.25 (claude)
+cp2 milestone review recorded (7 findings: 2 major, 5 minor → rows M1.25-M1.27, doc sync folded into M1.22, contracts rule 10 handed off to M2)
+done: scripts/gates/test-titles.mjs scanner (strings, templates incl. ${}, comments, regex literals); skip/todo in every form does not cover a requirement; check-trace uses it
+test-titles.test (6), trace.test +1 (skipped/todo Must ID fails --milestone)
+review r1 changes-requested fixed: a skipped/todo/skipIf describe marks every call in its callback as not running
+review r2 changes-requested (2) fixed: fixme/fails/fail count as not running; matches starting in strings re-search; plus runtime skips in a body (test.skip(cond), t.skip/t.todo, ctx.skip) skip the enclosing test

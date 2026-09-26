@@ -43,6 +43,16 @@ describe('check-trace (NFR-MNT-008)', () => {
     for (const id of ['NFR-MNT-008', 'NFR-DX-003', 'NFR-DX-004']) assert.match(r.stderr, new RegExp(`${id} \\(Must, milestone M0\\) has no test`));
   });
 
+  it('a skipped or todo test does not cover a Must ID (M1.25, M1 cp2 F1)', () => {
+    sb.write(
+      'tests/harness/s.test.mjs',
+      "import { describe, it } from 'node:test';\nit('NFR-MNT-008 skipped', { skip: true }, () => {});\nit('NFR-DX-003 todo', { todo: true });\ndescribe.skip('suite', () => {\n  it('NFR-DX-004 inside a skipped suite', () => {});\n});\n",
+    );
+    const r = trace('--milestone', 'M0');
+    assert.equal(r.status, 1, out(r));
+    for (const id of ['NFR-MNT-008', 'NFR-DX-003', 'NFR-DX-004']) assert.match(r.stderr, new RegExp(`${id} \\(Must, milestone M0\\) has no test`));
+  });
+
   it('reads .each titles with nested args or a tagged template (M1.13 review F2)', () => {
     sb.write(
       'packages/core/src/e.test.ts',

@@ -87,3 +87,4 @@ receiving milestone's plan.
 | Close descoping loophole: a `descoped (...)` State change is never review-exempt; its reason must cite an ADR or Deferred entry (M0 final F1) | M0 | M1 (first) | shared gate code reused by later milestones |
 | `gates.yml`: actionlint clean + first push green on 3 OSes; guide CI item required before M1 CI work (M0 final F2) | M0 | M1 row 18 (early) | never linted or run |
 | Function-length/complexity caps owned by Biome, not check-size; M1 row 9 reworded accordingly (check-size keeps the file cap from M0.6) (cp1 F5) | M0 | M1 | tools land in M1 |
+| check-tests-kept counts released format fixtures as tests (contracts.md rule 10; `isTest` excludes `fixtures/` today) (M1 cp2 F3) | M1 | M2 (row 16, shared fixtures) | fixtures arrive in M2 |

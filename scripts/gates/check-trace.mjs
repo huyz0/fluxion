@@ -5,11 +5,12 @@
 //   check-trace.mjs --increment R<k>     + every M-priority requirement of increment R<k> has a test
 //   check-trace.mjs --write              refill the matrix Tests column from test titles
 //   check-trace.mjs --dir <root>         check another checkout (tests)
-// A test "names" a requirement when the ID appears in its own title or an enclosing describe title
+// A running test "names" a requirement when the ID appears in its own title or a describe title
 // (vitest, node:test and Playwright all use describe/it/test).
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { REPO_ROOT } from './lib.mjs';
+import { testTitles } from './test-titles.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k) => {
@@ -75,19 +76,16 @@ function* walk(dir) {
     } else if (TEST_FILE.test(e.name)) yield join(dir, e.name);
   }
 }
-// not after `.`, a word or a quote (a call written inside a fixture string is not a test);
-// `.each(…)` args may nest one level of parens, or be a tagged template (M1.13 review F1, F2)
-const TITLE = /(?<![.\w'"`])(?:describe|it|test)(?:\.[a-zA-Z]+)*(?:\.each(?:\((?:[^()]|\([^()]*\))*\)|`[^`]*`))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g;
-// commented-out tests do not count (line comments, block comments, JSDoc lines)
-const uncommented = (text) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+// titles come from a scanner that knows strings, comments and regex literals; a skipped or todo
+// test still has its IDs checked but does not count as covering them (M1.25, M1 cp2 F1)
 const cited = new Map(); // id -> Set(file)
 for (const top of ['tests', 'e2e', 'eval', 'packages', 'packs', 'apps']) {
   for (const file of walk(join(root, top))) {
     const rel = relative(root, file).split(sep).join('/');
-    for (const [, , title] of uncommented(readFileSync(file, 'utf8')).matchAll(TITLE)) {
+    for (const { title, runs } of testTitles(readFileSync(file, 'utf8'))) {
       for (const [id] of title.matchAll(ID)) {
         if (!reqs.has(id)) errors.push(`${rel}: test title cites unknown requirement ${id}`);
-        else cited.set(id, (cited.get(id) ?? new Set()).add(rel));
+        else if (runs) cited.set(id, (cited.get(id) ?? new Set()).add(rel));
       }
     }
   }
