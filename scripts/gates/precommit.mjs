@@ -9,13 +9,13 @@
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { exists, node, run } from './lib.mjs';
+import { exists, nodeAsync as node, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
 const argv = new Set(process.argv.slice(2));
 const mode = argv.has('--all') ? 'all' : argv.has('--quick') ? 'quick' : 'staged';
 const hasPkg = exists('package.json') && exists('turbo.json');
-const pnpm = (...a) => run('pnpm', a);
+const pnpm = (...a) => runAsync('pnpm', a);
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */
 const STEPS = [
@@ -39,7 +39,7 @@ const STEPS = [
     'harness-tests',
     (m) => m !== 'quick',
     () => exists('tests/harness') || 'tests/harness not written yet (M0)',
-    () => run(process.execPath, ['--test', 'tests/harness/*.test.mjs']),
+    () => runAsync(process.execPath, ['--test', 'tests/harness/*.test.mjs']),
   ],
   // one typecheck path (M1 cp1 F4): the root solution `tsc -b` covers every workspace incl. apps;
   // incremental .tsbuildinfo keeps it fast. Per-package `typecheck` scripts exist for turbo filtering.
@@ -82,32 +82,36 @@ const STEPS = [
 ];
 
 const started = Date.now();
-let failed = false;
-const lines = [];
-for (const [name, applies, available, exec] of STEPS) {
-  if (!applies(mode)) continue;
+// Steps up to and including `build` run in order (later steps read dist/). Every step after it is
+// independent, so they run concurrently; results still print in ladder order (M1.28, NFR-DX-002).
+const BARRIER = 'build';
+
+async function runStep([name, , available, exec]) {
   const avail = available();
-  if (avail !== true) {
-    lines.push(`SKIP ${name} — ${avail}`);
-    continue;
-  }
+  if (avail !== true) return { lines: [`SKIP ${name} — ${avail}`], ok: true };
   const t0 = Date.now();
-  const r = exec();
+  const r = await exec();
   const ms = Date.now() - t0;
-  if (r.status === 0) lines.push(`PASS ${name} (${ms}ms)`);
-  else {
-    failed = true;
-    lines.push(`FAIL ${name} (${ms}ms)`);
-    if (!argv.has('--summary'))
-      lines.push(
-        ...`${r.stdout}\n${r.stderr}`
-          .trim()
-          .split(/\r?\n/)
-          .slice(-40)
-          .map((l) => `    ${l}`),
-      );
-  }
+  if (r.status === 0) return { lines: [`PASS ${name} (${ms}ms)`], ok: true };
+  const detail = argv.has('--summary')
+    ? []
+    : `${r.stdout}\n${r.stderr}`
+        .trim()
+        .split(/\r?\n/)
+        .slice(-40)
+        .map((l) => `    ${l}`);
+  return { lines: [`FAIL ${name} (${ms}ms)`, ...detail], ok: false };
 }
+
+const applicable = STEPS.filter(([, applies]) => applies(mode));
+// without the barrier (quick mode has no build) nothing is known to be independent: run in order
+const barrier = applicable.findIndex(([name]) => name === BARRIER);
+const cut = barrier < 0 ? applicable.length : barrier + 1;
+const results = [];
+for (const step of applicable.slice(0, cut)) results.push(await runStep(step));
+results.push(...(await Promise.all(applicable.slice(cut).map(runStep))));
+const lines = results.flatMap((r) => r.lines);
+let failed = results.some((r) => !r.ok);
 const total = Date.now() - started;
 const budget = mode === 'quick' ? t('QUICK_GATE_BUDGET_MS') : t('PRECOMMIT_BUDGET_MS');
 if (mode !== 'all' && total > budget) {

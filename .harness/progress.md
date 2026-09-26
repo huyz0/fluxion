@@ -210,3 +210,10 @@ found: area codes with digits (A11Y, I18N) — first regex missed 9 requirements
 M1 trace leg still red until M1.15 names NFR-LIC-002
 trace.test (10)
 review r1 pass + 4 minor fixed: commented-out calls and fixture strings are not titles; .each with nested args/tagged templates; summary row required per increment; trace skips only when docs/requirements is absent
+
+## 2026-09-26 M1.28 (claude)
+why: M1.25 staged ladder hit 125-150 s with no machine load (harness suite ~70 s, publint+attw ~40 s, serial); raising the budget would weaken NFR-DX-002
+done: steps after build run concurrently (Promise.all), printed in ladder order; serial fallback without the barrier (quick); runAsync/nodeAsync in lib.mjs; --all now ~68 s
+checked: a turbo cache hit does not rewrite dist/ (mtime unchanged), so turbo.test cannot race publint/attw
+ladder.test (3). M1.25 work stashed meanwhile (stash m1.25-wip), resumed after this commit
+review r1 pass + minor fixed: runAsync decodes the stream as utf8 (a 5-byte pattern proves a split character; the 8-byte one aligned with 64 KiB chunks and passed without the fix)

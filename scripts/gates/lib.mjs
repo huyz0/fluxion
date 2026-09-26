@@ -1,5 +1,5 @@
 // Shared helpers for gate and harness scripts. Node >= 22, no dependencies.
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
@@ -32,6 +32,28 @@ export function run(cmd, args = [], opts = {}) {
 }
 
 export const node = (script, args = [], opts) => run(process.execPath, [repoPath(script), ...args], opts);
+
+/** `run` without blocking, so independent gate steps can overlap. Same result shape. */
+export function runAsync(cmd, args = [], opts = {}) {
+  const needsShell = process.platform === 'win32' && !cmd.endsWith('.exe') && cmd !== process.execPath && cmd !== 'git';
+  const [file, argv] = needsShell ? [[cmd, ...args].map(quoteWin).join(' '), []] : [cmd, args];
+  return new Promise((resolve) => {
+    const child = spawn(file, argv, { cwd: REPO_ROOT, shell: needsShell, ...opts });
+    const out = { stdout: '', stderr: '' };
+    // decode the stream, not each chunk: a multi-byte character may straddle two chunks (M1.28 review F1)
+    child.stdout?.setEncoding('utf8');
+    child.stderr?.setEncoding('utf8');
+    child.stdout?.on('data', (d) => {
+      out.stdout += d;
+    });
+    child.stderr?.on('data', (d) => {
+      out.stderr += d;
+    });
+    child.on('error', (e) => resolve({ status: 1, stdout: out.stdout, stderr: `${out.stderr}${e.message}` }));
+    child.on('close', (code) => resolve({ status: code ?? 1, ...out }));
+  });
+}
+export const nodeAsync = (script, args = [], opts) => runAsync(process.execPath, [repoPath(script), ...args], opts);
 export const git = (args, opts) => run('git', args, opts);
 
 /** The exact staged bytes a review verdict is bound to. */
