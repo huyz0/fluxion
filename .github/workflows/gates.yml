@@ -50,6 +50,11 @@ jobs:
         run: node scripts/gates/precommit.mjs --all
       - name: harness tests
         run: node --test "tests/harness/*.test.mjs"
+      # windows/macos runners have no Linux Docker, so the ladder's workflows step SKIPs there; ubuntu
+      # must really run actionlint + zizmor (M1.19, M1 cp1 F3)
+      - name: workflow lint (Docker required)
+        if: matrix.os == 'ubuntu-latest'
+        run: node scripts/gates/check-workflows.mjs --require-docker
       - name: per-commit message gates
         if: matrix.os == 'ubuntu-latest'
         shell: bash

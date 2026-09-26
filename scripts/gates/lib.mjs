@@ -56,6 +56,11 @@ export function runAsync(cmd, args = [], opts = {}) {
 export const nodeAsync = (script, args = [], opts) => runAsync(process.execPath, [repoPath(script), ...args], opts);
 export const git = (args, opts) => run('git', args, opts);
 
+/** The reason in a "<tool>: SKIP — <reason>" line of a tool's output, or null (M1.19, M1 cp1 F3). */
+export function nestedSkip(stdout) {
+  return /^[\w-]+: SKIP — (.+)$/m.exec(stdout ?? '')?.[1]?.trim() ?? null;
+}
+
 /** Whether Node `version` (x.y.z) is below the floor in an engines range such as ">=22.19". */
 export function belowFloor(version, engines) {
   const floor = /(\d+)\.(\d+)(?:\.(\d+))?/

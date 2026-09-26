@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-09-26T17:37:15.962Z",
+  "commit": "fbb3230c6f83fb69c1baf70916c26d76c261d69f",
+  "lockfile": "06d95c2b6020cdab960358970bec376097865afefce63a7d5dcaa90708f988ad",
+  "node": "26.7.0",
+  "platform": "win32-x64",
+  "quickMs": 2726,
+  "stagedMs": 49426,
+  "coldSetupMs": 81368
+}

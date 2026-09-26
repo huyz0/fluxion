@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
-import { run, runAsync } from '../../scripts/gates/lib.mjs';
+import { nestedSkip, run, runAsync } from '../../scripts/gates/lib.mjs';
 import { out, sandbox, TRANSIENT } from './helpers.mjs';
 
 describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
@@ -29,6 +29,21 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
       assert.match(`/repo/${p}`, TRANSIENT, p);
     }
     for (const p of ['packages/core/src/tsbuild.ts', 'packages/core/dist/index.js']) assert.doesNotMatch(`/repo/${p}`, TRANSIENT, p);
+  });
+
+  it('a tool that exits 0 but reports its own SKIP prints as SKIP, not PASS (M1.19, M1 cp1 F3)', () => {
+    assert.equal(nestedSkip('actionlint: 0 findings\nworkflows: SKIP — Docker not available\n'), 'Docker not available');
+    assert.equal(nestedSkip('workflows: 3 files linted\n'), null);
+    const sb = sandbox();
+    try {
+      sb.write('.github/workflows/ci.yml', 'name: ci\n');
+      sb.write('scripts/gates/check-workflows.mjs', "console.log('workflows: SKIP — Docker not available');\n");
+      const r = sb.node('scripts/gates/precommit.mjs', ['--all', '--summary']);
+      assert.match(r.stdout, /^SKIP workflows — Docker not available$/m, out(r));
+      assert.doesNotMatch(r.stdout, /^PASS workflows/m);
+    } finally {
+      sb.cleanup();
+    }
   });
 
   it('runAsync reports a missing command as a failure instead of throwing', async () => {

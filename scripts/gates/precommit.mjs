@@ -9,7 +9,7 @@
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { exists, nodeAsync as node, runAsync } from './lib.mjs';
+import { exists, nestedSkip, nodeAsync as node, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
 const argv = new Set(process.argv.slice(2));
@@ -91,6 +91,13 @@ const STEPS = [
     () => (exists('scripts/gates/check-api.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
     () => node('scripts/gates/check-api.mjs'),
   ],
+  // recorded cold-setup / quick / staged timings within the thresholds (NFR-DX-001, NFR-DX-002)
+  [
+    'budget',
+    (m) => m === 'all',
+    () => (exists('scripts/gates/check-budget.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
+    () => node('scripts/gates/check-budget.mjs'),
+  ],
   ['reviewed', (m) => m === 'staged' && !argv.has('--no-review'), () => true, () => node('scripts/gates/check-reviewed.mjs')],
 ];
 
@@ -105,6 +112,9 @@ async function runStep([name, , available, exec]) {
   const t0 = Date.now();
   const r = await exec();
   const ms = Date.now() - t0;
+  // a tool that exits 0 but reports "<tool>: SKIP — <why>" did not run its check (M1 cp1 F3)
+  const nested = r.status === 0 ? nestedSkip(r.stdout) : null;
+  if (nested) return { lines: [`SKIP ${name} — ${nested}`], ok: true };
   if (r.status === 0) return { lines: [`PASS ${name} (${ms}ms)`], ok: true };
   const detail = argv.has('--summary')
     ? []

@@ -320,3 +320,10 @@ done: apps/docs Astro 7 + Starlight 0.42 site (index + getting-started guide), s
 Changesets: .changeset/config.json (public access), `pnpm changeset status` exits 0; libraries get publishConfig { access: public, provenance: true } (generator too)
 ladder build step builds libraries only (turbo --filter ./packages/* ./packs/*): docs and studio build in CI and the milestone gate; M1.17 minor fixed (ADR-0139 file name)
 review r1 changes-requested: --all builds every workspace (CI gates.yml keeps building apps), staged builds libraries only; turbo inputs for docs (astro.config, typedoc.json, core src/tsconfig; generated api excluded) and studio (index.html, vite.config); F3 argued
+
+## 2026-09-27 M1.19 (claude)
+done: check-budget.mjs (--record measures quick, staged and a cold setup = fresh local clone + pnpm i --frozen-lockfile + pnpm run setup + pnpm verify; default checks .harness/budget.json against QUICK_GATE_BUDGET_MS, PRECOMMIT_BUDGET_MS, new COLD_SETUP_MAX_MS 600 s); verify gains the budget step
+recorded (win32, idle): quick 2.5 s, staged 39.6 s, cold setup 60.2 s
+nested SKIP: a step that exits 0 but prints "<tool>: SKIP — why" shows as SKIP (lib nestedSkip); gates.yml runs check-workflows --require-docker on ubuntu
+pnpm verify: every step PASS, no SKIP lines (46 s); budget.test (6), ladder.test +1
+review r1 pass + 2 minor fixed: review r2 found npm_config_store_dir ignored by pnpm 11 (the 91.9 s run reused the warm store); fixed with pnpm_config_store_dir + --store-dir and a check the temp store was used; install verified cold (reused 0, downloaded 724, 602 MB); review r3: the cold run now measures HEAD + working-tree changes, records that tree's lockfile hash, and the clone checks a provisional record so a lockfile change can be re-recorded; re-recorded 81.4 s; the record carries the pnpm-lock hash and the check fails when it no longer matches
