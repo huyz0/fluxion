@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "Solution file: `tsc -b` type-checks every workspace project. Generated references are kept in sync by tools/gen/package.mjs (M1.6).",
+  "files": [],
+  "references": []
+}

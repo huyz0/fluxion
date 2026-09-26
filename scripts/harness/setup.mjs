@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// One-time (idempotent) developer/agent setup. Wrapped by `pnpm setup` from M1.
+// One-time (idempotent) developer/agent setup. Run as `pnpm run setup` (`pnpm setup` is a pnpm built-in; ADR-0138).
 import { chmodSync } from 'node:fs';
 import { git, node, repoPath } from '../gates/lib.mjs';
 
