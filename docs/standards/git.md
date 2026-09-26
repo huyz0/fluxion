@@ -70,7 +70,7 @@ threshold change: the reason line says which intended behaviour changed the outp
 
 | # | Rule | Enforced by |
 |---|---|---|
-| 19 | Hooks are tracked in `.githooks/` and installed by `pnpm setup` (`git config core.hooksPath .githooks`). Never rely on untracked `.git/hooks`. | `check-portability.mjs` verifies hooksPath |
+| 19 | Hooks are tracked in `.githooks/` and installed by `pnpm run setup` (`git config core.hooksPath .githooks`; `pnpm setup` is a pnpm built-in, ADR-0138). Never rely on untracked `.git/hooks`. | `check-portability.mjs` verifies hooksPath |
 | 20 | `pre-commit` runs `node scripts/gates/precommit.mjs --staged`; `commit-msg` runs `node scripts/gates/check-commit-msg.mjs`. | the hooks themselves |
 | 21 | **Never `--no-verify`**, never `-c core.hooksPath=` tricks. If a hook is wrong, fix the hook in its own task. | CI re-runs everything (`ci-ok`) |
 

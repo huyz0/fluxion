@@ -39,6 +39,7 @@ Index, template and the "ADR required when" list: [`decisions/README.md`](decisi
 | [0009](decisions/ADR-0009-ai-harness.md) | AGENTS.md + portable skills + goal-driven milestone loop + hash-bound cross-vendor review |
 | [0010](decisions/ADR-0010-styling-isolation.md) | Tailwind/shadcn for editor chrome only; theme tokens + CSS Modules for content |
 | [0137](decisions/ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) |
+| [0138](decisions/ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` |
 
 ## Conventions for architecture docs
 
