@@ -75,3 +75,5 @@ M1.34	a7cb7d278d7092f3d503f40189c0657d0f0d3e09842db7fa483348413fffa9fd	r1	pass	c
 M1.34	88e3bfaed57dfac29fb8d6c643eaaf93e69103d0f83b2c2589c78bac5e113fb5	r2	pass	claude-subagent:reviewer	1 findings
 M1.34	57dc243708bfc2d1f1280bda8c37fa52c101b01f33acb0ecdf15c61d232065d0	r3	pass	claude-subagent:reviewer	0 findings
 M1.14	e17a5845aa1ab96a39912e90fd7f37f2a2de4c565b08f81a88544ec4aa049df3	r1	pass	claude-subagent:reviewer	2 findings
+M1.14	e47e62c75d16257e19095ca96e971f7c38ac0c5a00d1e1676f14aaa0d3168f20	r2	pass	claude-subagent:reviewer	1 findings
+M1.35	2b4800ce4291c029c0a3e3b6fc00c9e587806ec9b09b319e37b8cae68718e206	r1	changes-requested	claude-subagent:reviewer	4 findings

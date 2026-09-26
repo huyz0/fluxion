@@ -278,3 +278,8 @@ done: check-api.mjs runs API Extractor (node API, one config per library, bundle
 TS 6 route: apps/docs installs typedoc + typescript from named catalog `typescript6` (a packageExtensions dep or an override does not reach a peer); ADR-0011 amended (API Extractor needs no TS 6)
 generated index.ts headers put the package name in backticks (a bare @fluxion/x read as a TSDoc tag); api.test (4)
 review r1 pass + 2 minor fixed: ADR-0011 Context/Confirmation/index row and the planned-pins comment no longer say API Extractor runs on TS 6
+
+## 2026-09-27 M1.35 (claude)
+cp3 milestone review recorded (7 findings: 2 major, 5 minor): F1 ladder writers -> M1.36, F2 process -> triage rule in code-review skill (this commit), F3/F5 -> M1.36, F4 -> M1.37 (doc sync split from M1.22), F6 bookkeeping here, F7 argued
+from now: a minor on a pass verdict is a row only if it is a realistic false green on a plan leg
+review r1 changes-requested (4) fixed: cp2/cp3 dispositions use target/note (the keys checkBacklogDone reads; checked with all rows done vs M1.36 open); M1.37 acceptance names concrete docs-consistency cases incl. one TS 6 pin source; triage rule covers minors on any verdict

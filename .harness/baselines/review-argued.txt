@@ -12,3 +12,5 @@ M0 final F4: see the updated M0 cp2 F5 line.
 M0 final F5: smoke evidence is an evidence-shape check by design; cross-vendor-smoke.json note discloses scripted seeds and the subagent fallback; checkFinalReview relies on dispositions, not the verdict string.
 M1 cp1 F7: descoping is a human decision and a State change to descoped always needs a verdict (M1.2); resolving the cited ADR file or Deferred row is nice-to-have.
 M1 cp1 F8: the unrecorded M1.1 round-2 verdict is disclosed in progress.md and the M1.1 commit body; from now on every verdict is recorded before fixing.
+M1 cp2 F7 (part): size-limit and knip negatives are not in the M1 plan leg list; their configs are exercised by the verify leg, not by dedicated negatives.
+M1 cp3 F7: a serial regression of the ladder is caught by the precommit budget check and M1.19 check-budget; a real-workspace sandbox inside the harness suite costs too much.

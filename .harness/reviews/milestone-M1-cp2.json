@@ -58,44 +58,44 @@
     {
       "finding": "F1",
       "disposition": "reopen",
-      "row": "M1.25",
-      "reason": "makes the M1 trace leg dishonest; restore passing-test semantics"
+      "target": "M1.25",
+      "note": "makes the M1 trace leg dishonest; restore passing-test semantics"
     },
     {
       "finding": "F2",
       "disposition": "reopen",
-      "row": "M1.26",
-      "reason": "erodes non-negotiable 2; add a verified Renames-test trailer"
+      "target": "M1.26",
+      "note": "erodes non-negotiable 2; add a verified Renames-test trailer"
     },
     {
       "finding": "F3",
       "disposition": "reopen",
-      "row": "M1.25 (scanner); contracts rule 10 handed off to M2 (roadmap Deferred)",
-      "reason": "promised rows must land in the backlog"
+      "target": "M1.25 (scanner); contracts rule 10 handed off to M2 (roadmap Deferred)",
+      "note": "promised rows must land in the backlog"
     },
     {
       "finding": "F4",
       "disposition": "reopen",
-      "row": "M1.22 (doc sync folded in)",
-      "reason": "docs are the agent interface"
+      "target": "M1.22 (doc sync folded in)",
+      "note": "docs are the agent interface"
     },
     {
       "finding": "F5",
       "disposition": "reopen",
-      "row": "M1.27",
-      "reason": "dead pipelines make a vacuous test"
+      "target": "M1.27",
+      "note": "dead pipelines make a vacuous test"
     },
     {
       "finding": "F6",
       "disposition": "reopen",
-      "row": "M1.27",
-      "reason": "non-negotiable 5 is an M1 gate claim"
+      "target": "M1.27",
+      "note": "non-negotiable 5 is an M1 gate claim"
     },
     {
       "finding": "F7",
       "disposition": "reopen",
-      "row": "M1.27",
-      "reason": "layering/coverage negatives reopened; size-limit/knip negatives argued (not in the plan leg list)"
+      "target": "M1.27",
+      "note": "layering/coverage negatives reopened; size-limit/knip negatives argued (not in the plan leg list)"
     }
   ],
   "planDelta": "24 -> 27 rows (M1.25 trace scanner and passing-only, M1.26 rename trailer, M1.27 purity, negatives and turbo cleanup); F4 doc sync folded into M1.22; contracts rule 10 fixture counting handed off to M2. Growth comes from gate hardening, not scope."

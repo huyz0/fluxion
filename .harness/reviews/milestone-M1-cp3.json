@@ -1,0 +1,102 @@
+{
+  "milestone": "M1",
+  "checkpoint": "cp3",
+  "range": "8c51415..74382db",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate-honesty",
+      "detail": "Concurrent ladder (M1.28) assumes steps after build are independent, but harness tests write the real repo: turbo.test runs turbo build in REPO (a no-daemon cache hit restores dist/ under publint/attw/size-limit/knip/api), api.test runs check-api --dir REPO writing packages/*/.tsbuild/api like the api step; M1.33 fixed only the reader side.",
+      "failure_scenario": "Intermittent verify failures on CI (dist restored mid-read, EBUSY on the shared report temp), agents learn to rerun, a real failure is rerun away."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "plan",
+      "detail": "22 -> 34 rows (1.55x); 6 of 12 commits in cp3 turned r3 minors on passing verdicts into rows; ~30 verdicts for 12 commits; the tokenizer has an inherent ceiling (aliases, dead branches, body-less tests).",
+      "failure_scenario": "Remaining rows each spawn follow-up rows on edge cases while budget and CI legs stay red."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "gate-honesty",
+      "detail": "No test covers the TypeDoc path of check-api (only runs with --package/--dir, which skip it).",
+      "failure_scenario": "A refactor drops the TypeDoc call or notDocumented; undocumented exports ship green."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "standards",
+      "detail": "ADR-0011 decision edited in place (documentation.md rule 8 / adr skill: supersede or status line only); tech-stack.md says API Extractor needs TS 6; 09-extensibility.md puts reports under etc/.",
+      "failure_scenario": "A later agent pins TS 6 for API Extractor, looks for reports in etc/, or copies the in-place ADR edit for a real contract."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "coherence",
+      "detail": "The matrix Tests column is stale and unchecked (NFR-LIC-002 shows no test).",
+      "failure_scenario": "The human-facing trace record says a Must requirement has no test and drifts further every milestone."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "plan",
+      "detail": "cp2 F7 argued part has no line in review-argued.txt; the backlog header still says 22 (+2) rows.",
+      "failure_scenario": "The final review cannot tell a decision from an omission."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "gate-honesty",
+      "detail": "ladder.test cannot see a return to serial execution (sandbox steps SKIP).",
+      "failure_scenario": "A serial regression stays green until the budget check trips without naming the cause."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M1.36",
+      "note": "NFR-DX-002 and verify reliability are M1 legs; fix the writers"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M1.35 (this commit: triage rule in the code-review skill)",
+      "note": "process fix, applied from now on"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M1.36",
+      "note": "small; one TypeDoc negative"
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M1.37 (doc sync split out of M1.22)",
+      "note": "docs are the agent interface; decide the ADR amendment policy"
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M1.36",
+      "note": "check-trace fails when --write would change the matrix"
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "target": "M1.35 (this commit)",
+      "note": "trivial bookkeeping"
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "target": "-",
+      "note": "the precommit budget check and M1.19 check-budget cover a serial regression; a real-workspace sandbox inside the harness suite costs too much"
+    }
+  ],
+  "planDelta": "34 -> 37 rows (M1.35 record + triage rule, M1.36 ladder isolation + TypeDoc/matrix checks, M1.37 doc sync split from M1.22). From now on a minor on a passing verdict becomes a row only if it shows a realistic false green on a plan leg; otherwise it is argued. M1.24 and the first green ci.yml push need a human: stop and hand back there."
+}

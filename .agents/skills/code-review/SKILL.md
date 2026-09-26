@@ -21,8 +21,10 @@ Standard: `docs/standards/review.md`.
 4. Record: `node scripts/harness/review.mjs record --file .harness/tmp/verdict.json --task <ID>`.
    Record every round, including `changes-requested`.
 5. Fix `blocking` and `major` findings, restage, repeat (max **3 rounds**; after that stop per
-   `drive`). Record `minor` findings in the backlog as rows for later or argue them in
-   `.harness/baselines/review-argued.txt` (`<ID> <finding-id>: <one-line argument>`).
+   `drive`). Every `minor`, on any verdict, is fixed in a round you run anyway, or triaged: it
+   becomes a backlog row **only** if it shows a realistic false green on a plan leg, otherwise
+   argue it in `.harness/baselines/review-argued.txt` (`<ID> <finding-id>: <one-line argument>`).
+   Never spend a round only on minors (M1 cp3 F2).
 6. Commit without restaging. `check-reviewed.mjs` refuses a commit whose staged hash has no
    `pass` verdict.
 
