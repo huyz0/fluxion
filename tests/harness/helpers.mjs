@@ -1,7 +1,7 @@
 // Test helpers for the harness gates. Each gate derives REPO_ROOT from its own location, so we
 // copy the harness into a temp directory and run the copy against a deliberately broken tree.
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +23,19 @@ export const cleanEnv = (env = process.env) => Object.fromEntries(Object.entries
 export const TRANSIENT = /[\\/](\.tsbuild|node_modules|coverage|\.turbo)([\\/]|$)|\.tgz$/;
 
 const DEFAULT_PATHS = ['scripts', '.agents', '.claude/skills', 'AGENTS.md', 'CLAUDE.md', 'docs/backlog', 'docs/milestones/roadmap.md', '.harness/state.json'];
+
+/**
+ * Link the repo's installs into a sandbox that copied workspaces: the root node_modules and each
+ * workspace's own (apps/studio keeps react there). Junctions, so nothing is copied or reinstalled.
+ */
+export function linkInstalls(sb) {
+  symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
+  const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
+  for (const { dir } of workspaces) {
+    if (existsSync(join(REPO, dir, 'node_modules')) && existsSync(sb.path(dir)))
+      symlinkSync(join(REPO, dir, 'node_modules'), sb.path(`${dir}/node_modules`), 'junction');
+  }
+}
 
 /** Copy harness files into a fresh temp dir. Returns helpers bound to it. */
 export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {

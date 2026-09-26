@@ -20,3 +20,5 @@ Thumbs.db
 .tsbuild/
 .vitest/
 .vitest-cache/
+test-results/
+playwright-report/

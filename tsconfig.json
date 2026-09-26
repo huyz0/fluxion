@@ -59,6 +59,9 @@
     },
     {
       "path": "./packs/basic"
+    },
+    {
+      "path": "./e2e"
     }
   ]
 }

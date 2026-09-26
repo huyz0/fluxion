@@ -3,7 +3,7 @@
   "workspaces": {
     ".": {
       "entry": ["scripts/gates/*.mjs", "scripts/harness/**/*.mjs", "tools/gen/*.mjs", "tests/harness/*.test.mjs"],
-      "project": ["scripts/**/*.mjs", "tools/**/*.mjs", "tests/**/*.mjs"],
+      "project": ["scripts/**/*.mjs", "tools/**/*.mjs", "tests/**/*.mjs", "e2e/**/*.ts", "*.config.ts"],
       "ignoreDependencies": ["@arethetypeswrong/cli", "dependency-cruiser", "@microsoft/api-extractor"]
     }
   },

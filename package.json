@@ -23,8 +23,10 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@axe-core/playwright": "catalog:",
     "@biomejs/biome": "catalog:",
     "@microsoft/api-extractor": "catalog:",
+    "@playwright/test": "catalog:",
     "@size-limit/preset-small-lib": "catalog:",
     "@types/node": "catalog:",
     "@vitest/browser-playwright": "catalog:",

@@ -126,7 +126,8 @@ function generate(w) {
 function syncReferences(write) {
   const path = join(ROOT, 'tsconfig.json');
   const cfg = JSON.parse(readFileSync(path, 'utf8'));
-  const want = workspaces.map((w) => ({ path: `./${w.dir}` }));
+  // every workspace, plus the e2e project (Playwright specs are type-checked too, M1.16)
+  const want = [...workspaces.map((w) => ({ path: `./${w.dir}` })), ...(existsSync(join(ROOT, 'e2e', 'tsconfig.json')) ? [{ path: './e2e' }] : [])];
   const same = JSON.stringify(cfg.references) === JSON.stringify(want);
   if (!same && write) writeFileSync(path, `${JSON.stringify({ ...cfg, references: want }, null, 2)}\n`);
   return same;

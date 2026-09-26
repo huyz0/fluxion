@@ -1,10 +1,10 @@
 // NFR-DX-001 / NFR-SEC-005 / NFR-MNT-001: the workspace root is reproducible and supply-chain safe.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { out, REPO, sandbox } from './helpers.mjs';
+import { linkInstalls, out, REPO, sandbox } from './helpers.mjs';
 
 const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'));
 const ws = readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8');
@@ -75,14 +75,12 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
 
   it('references every workspace from the root solution tsconfig', () => {
     const refs = JSON.parse(read('tsconfig.json')).references.map((r) => r.path.replace(/^\.\//, ''));
-    assert.deepEqual(
-      refs,
-      workspaces.map((w) => w.dir),
-    );
+    // plus the e2e project, so Playwright specs are type-checked too (M1.16)
+    assert.deepEqual(refs, [...workspaces.map((w) => w.dir), 'e2e']);
   });
 
   it('generator --check fails when a workspace file is missing', () => {
-    const sb = sandbox(['tools', 'tsconfig.json', ...workspaces.map((w) => w.dir)]);
+    const sb = sandbox(['tools', 'tsconfig.json', 'e2e', ...workspaces.map((w) => w.dir)]);
     try {
       assert.equal(sb.node('tools/gen/package.mjs', ['--check']).status, 0);
       rmSync(sb.path('packages/core/AGENTS.md'));
@@ -111,10 +109,10 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
   });
 
   it('tsc -b type-checks every workspace (a type error in any project fails it)', () => {
-    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', ...workspaces.map((w) => w.dir)]);
+    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', ...workspaces.map((w) => w.dir)]);
     try {
       // node-runtime workspaces resolve @types/node from the repo's install
-      symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
+      linkInstalls(sb);
       const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');
       const good = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
       assert.equal(good.status, 0, out(good));
@@ -128,9 +126,9 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
   });
 
   it('pure packages type-check without DOM; dom and node runtimes get their globals (M1 cp1 F5)', () => {
-    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', ...workspaces.map((w) => w.dir)]);
+    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', ...workspaces.map((w) => w.dir)]);
     try {
-      symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
+      linkInstalls(sb);
       const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');
       sb.write('packages/render/src/dom.ts', 'export const title = (): string => document.title;\n');
       sb.write('packages/cli/src/env.ts', "export const home = (): string | undefined => process.env['HOME'];\n");
@@ -146,7 +144,7 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
   });
 
   it('generator --check fails when a tsconfig lib/types/references drift from workspaces.json', () => {
-    const sb = sandbox(['tools', 'tsconfig.json', ...workspaces.map((w) => w.dir)]);
+    const sb = sandbox(['tools', 'tsconfig.json', 'e2e', ...workspaces.map((w) => w.dir)]);
     try {
       sb.edit('packages/core/tsconfig.json', (t) => t.replace('"lib": ["ES2023"]', '"lib": ["ES2023", "DOM"]'));
       const r = sb.node('tools/gen/package.mjs', ['--check']);

@@ -1,12 +1,13 @@
 // NFR-MNT-004: coverage floors from thresholds.mjs fail `test:coverage` for a package below them.
 import assert from 'node:assert/strict';
-import { cpSync, readFileSync, symlinkSync } from 'node:fs';
+import { cpSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { after, afterEach, before, describe, it } from 'node:test';
-import { cleanEnv, out, REPO, sandbox } from './helpers.mjs';
+import { cleanEnv, linkInstalls, out, REPO, sandbox } from './helpers.mjs';
 
 const SHARED = [
   'tsconfig.json',
+  'e2e',
   'vitest.config.ts',
   'tools/vitest',
   'tools/gen/workspaces.json',
@@ -44,7 +45,7 @@ describe('coverage floors (NFR-MNT-004)', () => {
     for (const { dir } of workspaces) {
       for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
     }
-    symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
+    linkInstalls(sb);
   });
   after(() => sb.cleanup());
   afterEach(() => {

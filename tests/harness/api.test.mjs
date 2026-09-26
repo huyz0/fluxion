@@ -1,10 +1,10 @@
 // NFR-MNT-007: public APIs have committed API reports and release tags; a signature change without an
 // updated report fails check-api.
 import assert from 'node:assert/strict';
-import { readFileSync, symlinkSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import { out, REPO, sandbox } from './helpers.mjs';
+import { linkInstalls, out, REPO, sandbox } from './helpers.mjs';
 
 let sb;
 const api = (...args) =>
@@ -14,7 +14,7 @@ const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.
 /** Every workspace plus the configs TypeDoc reads, with the repo's install linked in. */
 function fullCopy() {
   const full = sandbox(['scripts', 'tools', 'docs/architecture', 'typedoc.json', 'tsconfig.base.json', 'tsconfig.json', ...workspaces.map((w) => w.dir)]);
-  symlinkSync(join(REPO, 'node_modules'), full.path('node_modules'), 'junction');
+  linkInstalls(full);
   return full;
 }
 

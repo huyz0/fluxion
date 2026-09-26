@@ -1,10 +1,10 @@
 // NFR-MNT-001: the overview's dependency rules are enforced by check-layering (dependency-cruiser
 // config built from tools/gen/workspaces.json dependsOn).
 import assert from 'node:assert/strict';
-import { cpSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { cpSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { after, afterEach, before, describe, it } from 'node:test';
-import { out, REPO, sandbox } from './helpers.mjs';
+import { linkInstalls, out, REPO, sandbox } from './helpers.mjs';
 
 const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
 const SHARED = ['scripts', 'tools', 'docs/architecture', 'tsconfig.json', 'tsconfig.base.json', 'package.json', '.dependency-cruiser.mjs'];
@@ -27,7 +27,7 @@ describe('check-layering (NFR-MNT-001)', () => {
       for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, w.dir, f), sb.path(`${w.dir}/${f}`), { recursive: true });
     }
     // installed tools (vitest, …) resolve as in the repo; workspace links are absent on purpose
-    symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
+    linkInstalls(sb);
   });
   after(() => sb.cleanup());
   afterEach(() => {

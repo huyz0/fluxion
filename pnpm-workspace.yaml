@@ -41,6 +41,13 @@ catalog:
   vite: 8.3.1
   "@microsoft/api-extractor": 7.59.2
   typedoc: 0.28.20
+  "@playwright/test": 1.63.0
+  "@axe-core/playwright": 4.13.0
+  "@vitejs/plugin-react": 6.1.1
+  react: 19.3.0
+  react-dom: 19.3.0
+  "@types/react": 19.3.0
+  "@types/react-dom": 19.3.0
 
 # TS 6 for tools that need the compiler API (ADR-0011): apps/docs installs it as its own
 # `typescript` via "catalog:typescript6", so TypeDoc resolves its peer to TS 6, not the root TS 7.
@@ -51,9 +58,7 @@ catalogs:
 # Planned pins, verified on npm 2026-09-26, added to the catalog by the row that installs them
 # (re-check minimumReleaseAge then).
 #   @changesets/cli: 3.0.3
-#   @playwright/test: 1.63.0
-#   @vitejs/plugin-react: 6.1.1             react: 19.3.0                   react-dom: 19.3.0
-#   @types/react: 19.3.0                    @types/react-dom: 19.3.0        storybook: 10.6.0
+#   storybook: 10.6.0
 #   @storybook/react-vite: 10.6.0           @storybook/addon-vitest: 10.6.0 @storybook/addon-a11y: 10.6.0
 #   astro: 7.3.5                            @astrojs/starlight: 0.42.4      starlight-llms-txt: 0.12.0
 #   starlight-typedoc: 0.23.1               typedoc-plugin-markdown: 4.13.1
