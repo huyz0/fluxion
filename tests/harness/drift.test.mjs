@@ -1,10 +1,11 @@
 // NFR-DX-004 / non-negotiable 2: thresholds only move in the strengthening direction.
 import assert from 'node:assert/strict';
-import { afterEach, beforeEach, describe, it } from 'node:test';
+import { after, afterEach, before, describe, it } from 'node:test';
 import { out, sandbox } from './helpers.mjs';
 
 const FILE = 'scripts/gates/thresholds.mjs';
 let sb;
+let base;
 
 function stageEdit(from, to) {
   sb.edit(FILE, (t) => {
@@ -19,13 +20,21 @@ function check(message = 'M0.8: chore(gates): tune') {
 }
 
 describe('check-drift (NFR-DX-004)', () => {
-  beforeEach(() => {
+  before(() => {
     sb = sandbox(['scripts'], { git: true });
     sb.write('docs/architecture/decisions/ADR-0042-relax-agents-cap.md', '# ADR-0042\n');
     sb.git('add', '-A');
     sb.git('commit', '-q', '-m', 'adr fixture', '--no-verify');
+    base = sb.git('rev-parse', 'HEAD').stdout.trim();
   });
-  afterEach(() => sb.cleanup());
+  // one sandbox per file, reset to the fixture commit after every case: a fresh git sandbox per
+  // case cost ~1.5 s each on Windows and made this file the harness suite's critical path (M1.38)
+  afterEach(() => {
+    sb.git('reset', '-q', '--hard', base);
+    sb.git('clean', '-fdqx');
+    sb.git('config', '--unset', 'core.hooksPath');
+  });
+  after(() => sb.cleanup());
 
   it('passes when thresholds are untouched', () => {
     assert.equal(check().status, 0);

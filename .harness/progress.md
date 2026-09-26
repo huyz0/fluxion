@@ -302,3 +302,8 @@ done: playwright.config.ts (5 projects: chromium, firefox, webkit, Pixel 7, iPho
 apps/studio: Vite 8 + React 19 blank shell (App named export, main.tsx, vite.config.ts, jsx react-jsx); e2e/tsconfig.json is referenced by the root solution (generator keeps ./e2e), so specs are type-checked
 harness: linkInstalls(sb) links root + workspace node_modules (studio keeps react locally); sandboxes copying the root tsconfig also copy e2e
 review r1 changes-requested (5) fixed: block moved to the context (route + routeWebSocket, every page; serviceWorkers block) with a blocked[] record the test asserts (a closed socket alone was vacuous); mobile projects grepInvert @visual; e2e serves the built studio (preview on 4317); axe fixture (expectAccessible, 0 serious/critical) + @no-a11y tag; smoke titles carry no requirement ID
+
+## 2026-09-27 M1.38 (claude)
+why: M1.17's staged ladder hit 123-126 s idle; profiling: tests-kept.test alone 80 s (fresh git sandbox per case, serial within a file), drift 29 s
+done: one sandbox per file reset to the fixture commit after each case (reset --hard, clean -fdx, unset hooksPath); tests-kept split into tests-kept.test (21) + tests-kept-disabling.test (30) over tests-kept-fixture.mjs; tests-kept 80 -> 16/22 s in parallel, drift 29 -> 15 s; named-case leg points at the disabling file
+M1.17 work stashed meanwhile (m1.17-wip)

@@ -144,7 +144,9 @@ function namedCases(file, patterns) {
   return true;
 }
 // M1 cp1 F1: the tests-kept extensions (M1.10) and the coverage floor (M1.12) are proven by named cases
-leg('tests-kept detects skipIf/runIf and case swaps (named cases)', () => namedCases('tests/harness/tests-kept.test.mjs', ['skipIf', 'runIf', 'case swap']));
+leg('tests-kept detects skipIf/runIf and case swaps (named cases)', () =>
+  namedCases('tests/harness/tests-kept-disabling.test.mjs', ['skipIf', 'runIf', 'case swap']),
+);
 leg('coverage below the floor fails test:coverage (named case)', () => namedCases('tests/harness/coverage.test.mjs', ['below the floor']));
 // M1.23 F2 (cp1 F1 "vitest smoke"): a smoke test runs and passes in both Vitest projects
 leg('vitest smoke passes in the node and browser projects', () => {
