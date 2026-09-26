@@ -10,9 +10,9 @@ const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'));
 const ws = readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8');
 
 describe('workspace root (NFR-DX-001, NFR-SEC-005)', () => {
-  it('pins pnpm 11 and a Node >= 22.14 floor', () => {
+  it('pins pnpm 11 and a Node >= 22.18 floor (tsdown needs ^22.18)', () => {
     assert.match(pkg.packageManager, /^pnpm@11\.\d+\.\d+$/);
-    assert.equal(pkg.engines.node, '>=22.14');
+    assert.equal(pkg.engines.node, '>=22.18');
     assert.match(readFileSync(join(REPO, '.node-version'), 'utf8'), /^22\.\d+\.\d+/);
   });
 
@@ -28,7 +28,8 @@ describe('workspace root (NFR-DX-001, NFR-SEC-005)', () => {
     assert.deepEqual(ranges, [], 'catalog entries must be exact versions');
   });
 
-  it('exposes setup, typecheck, verify and verify:fast scripts wired to the harness', () => {
+  it('exposes setup, typecheck, verify, verify:fast and the turbo pipeline scripts', () => {
+    for (const s of ['build', 'test', 'test:coverage', 'lint']) assert.equal(pkg.scripts[s], `turbo run ${s}`);
     assert.equal(pkg.scripts.setup, 'node scripts/harness/setup.mjs');
     assert.equal(pkg.scripts.typecheck, 'tsc -b');
     assert.match(pkg.scripts.verify, /precommit\.mjs --all/);

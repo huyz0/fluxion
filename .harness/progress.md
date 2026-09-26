@@ -163,3 +163,8 @@ note: tsc 7 errors on an empty solution; typecheck script lands with packages (M
 
 ## 2026-09-26 M1.6 (claude)
 done: tools/gen/workspaces.json (package map) + package.mjs (create-missing, --check, syncs root tsconfig references); 19 workspaces generated; root LICENSE; `pnpm typecheck` = tsc -b over all 19 (green); workspace-shape tests 28
+
+## 2026-09-26 M1.7 (claude)
+done: turbo.json (typecheck/build/test/test:coverage/test:related/lint with inputs/outputs); libraries build with tsdown (dist/index.js + index.d.ts, fixedExtension false) - pulled forward from M1.8 because the pipeline needs a build; second build FULL TURBO (turbo.test)
+precommit: typecheck = root tsc -b over all workspaces (M1 cp1 F4); lint SKIPs with reason until biome.json (M1.9)
+cp1 milestone review received: record + rows M1.23/M1.24 next

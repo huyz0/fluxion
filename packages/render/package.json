@@ -14,5 +14,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  }
 }

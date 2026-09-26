@@ -36,6 +36,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `;
 
+// libraries (packages/*, packs/*) build with tsdown; apps get their own build in later rows
+const isLibrary = (w) => w.dir.startsWith('packages/') || w.dir.startsWith('packs/');
+const TSDOWN = "import { defineConfig } from 'tsdown';\n\nexport default defineConfig({\n  entry: ['src/index.ts'],\n  format: 'esm',\n  dts: true,\n  clean: true,\n  sourcemap: true,\n  fixedExtension: false, // emit index.js + index.d.ts to match the exports map (type: module)\n});\n";
+
 const rules = (w) => {
   if (w.pure) return '- **Pure package**: no DOM, timers, `Date.now`, `Math.random`, network or `node:*`. Inject ports (`Clock`, `Random`, `TextMeasurer`, `FileIO`).';
   if (w.layer === 'Pack') return '- Import only `@fluxion/sdk` (and allowed peer libraries). No private back doors into other packages.';
@@ -55,7 +59,9 @@ const files = (w) => ({
     sideEffects: false,
     exports: { '.': { '@fluxion/source': './src/index.ts', types: './dist/index.d.ts', default: './dist/index.js' } },
     files: ['dist'],
+    ...(isLibrary(w) ? { scripts: { build: 'tsdown', typecheck: 'tsc -b' } } : {}),
   }, null, 2)}\n`,
+  ...(isLibrary(w) ? { 'tsdown.config.ts': TSDOWN } : {}),
   'tsconfig.json': `${JSON.stringify({
     extends: '../../tsconfig.base.json',
     compilerOptions: { rootDir: 'src', outDir: '.tsbuild', emitDeclarationOnly: true, tsBuildInfoFile: '.tsbuild/tsconfig.tsbuildinfo' },

@@ -24,8 +24,10 @@ const STEPS = [
   ['index', () => true, () => (exists('AGENTS.md') && exists('docs/standards/README.md')) || 'index targets absent (partial checkout)', () => node('scripts/harness/build-index.mjs', ['--check'])],
   ['size', () => true, () => exists('scripts/gates/check-size.mjs') || 'check-size.mjs not written yet (M0)', () => node('scripts/gates/check-size.mjs', [`--${mode}`])],
   ['harness-tests', (m) => m !== 'quick', () => exists('tests/harness') || 'tests/harness not written yet (M0)', () => run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])],
-  ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', 'typecheck', ...(mode === 'all' ? [] : ['--affected']))],
-  ['lint', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('biome', 'ci', '.')],
+  // one typecheck path (M1 cp1 F4): the root solution `tsc -b` covers every workspace incl. apps;
+  // incremental .tsbuildinfo keeps it fast. Per-package `typecheck` scripts exist for turbo filtering.
+  ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('run', 'typecheck')],
+  ['lint', () => true, () => (hasPkg && exists('biome.json')) || 'biome not configured yet (M1.9)', () => pnpm('exec', 'biome', 'ci', '.')],
   ['test', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', mode === 'quick' ? 'test:related' : 'test:coverage', ...(mode === 'all' ? [] : ['--affected']))],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
   ['layering', (m) => m !== 'quick', () => exists('scripts/gates/check-layering.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-layering.mjs')],
