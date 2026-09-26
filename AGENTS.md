@@ -47,11 +47,14 @@ natively, Claude via generated adapters in `.claude/skills/`). Invoke as `/name`
 ## Commands
 
 ```
-node scripts/harness/setup.mjs             one-time: git hooks path, skill adapters
-pnpm verify:fast                           quick gate (changed files)          [from M1]
-pnpm verify                                full gate == CI pre-commit ladder   [from M1]
+pnpm i && pnpm run setup                   one-time: install, git hooks path, skill adapters
+pnpm verify:fast                           quick gate (changed files)
+pnpm verify                                full gate == CI pre-commit ladder
 node scripts/gates/precommit.mjs           pre-commit ladder (hook runs it with --staged)
+pnpm test | pnpm test:e2e | pnpm run build  Vitest (node+browser) | Playwright | Turborepo build
 node scripts/gates/m<N>-complete.mjs       completion gate of milestone N
+node scripts/gates/check-budget.mjs --record          re-measure gate timings after a lockfile change
+node scripts/gates/check-ci-evidence.mjs --record <sha>  record a green three-OS CI run (needs gh)
 node scripts/harness/review.mjs context --task M3.4     reviewer packet
 node scripts/harness/run-reviewer.mjs --task M3.4       optional cross-vendor reviewer (default: isolated subagent)
 node scripts/harness/review.mjs record --file v.json    store verdict (bound to staged diff hash)

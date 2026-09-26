@@ -22,3 +22,5 @@ M1.21 F1: the Version Packages PR not triggering ci.yml under GITHUB_TOKEN matte
 M1.21 F2: environment npm gating every push to main is the ci-cd.md §3 sketch; with no required reviewers configured the job runs straight through today; splitting publish into its own job belongs with the trusted-publishing setup; no false green.
 M1.21 F3: an action major grouped with digest bumps still needs dashboard approval (dependencyDashboardApproval) and a task commit, so nothing lands unreviewed; config tidy-up, no false green.
 M1.39 F1: later failure names can fall outside the ladder's 40-line detail, but the gates.yml harness step (runs after a ladder failure) prints every failure in full; no failure is hidden, no false green.
+M1.24 F1: evidence from a non-main branch would need a deliberate branch push with a hand-recorded sha; this repo pushes to main only and the record is reviewed in its commit; no realistic false green.
+M1.24 F2: a later commit body starting a line with "M1.21:" can only move the base forward and reject valid evidence (false red), never accept bad evidence.

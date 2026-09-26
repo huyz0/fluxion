@@ -360,3 +360,8 @@ local proof (node:22.19 container as uid 1000, host docker socket, TMPDIR on a p
 third push (b63650c): ci and gates success on every job (verify and gates on ubuntu, windows, macos; 12 e2e shards; security; api); release skipped (RELEASE_ENABLED unset)
 check-ci-evidence.mjs: --record <sha> keeps the successful gates and ci runs of the commit in .harness/reviews/ci-evidence.json; the check re-reads them with gh run view (success, headSha = sha, gates/verify job green on each OS) and requires sha to descend from the M1.21 commit; m1-complete leg added (needs gh)
 recorded b63650c (gates 36275476158, ci 36275476410) and verified live; ci-evidence.test (4: pass incl. M1.21 itself, pre-M1.21 fails, red/missing OS job, failed run, other commit, wrong workflow, missing record, --record keeps successful runs)
+
+## 2026-09-27 M1.22 (claude)
+README: status (toolchain skeleton), Quickstart (Node >= 22.19, pnpm 11 via corepack; pnpm i, pnpm run setup (also installs Chromium), pnpm verify; review r1: e2e rows say Chromium-only vs all five projects needing `playwright install`) and command table; AGENTS.md commands drop the "[from M1]" markers and add test/e2e/build, check-budget --record, check-ci-evidence --record (106 -> 109 lines)
+package map in 01-overview.md compared with tools/gen/workspaces.json dependsOn: consistent for all 19 workspaces; no open quarantines (m1-complete leg PASS)
+final review + roadmap split into M1.41: checkFinalReview allows only bookkeeping paths after the reviewed range, so the docs commit must precede the review
