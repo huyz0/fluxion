@@ -117,12 +117,12 @@ function closesTemplateExpr(ch, st) {
 // a string literal or an expression (`it(c.name, …)`, shown as `<c.name>`); an options object (one
 // level of nesting) or an options variable; the callback's context parameter, plain or destructured
 const CALL =
-  /(?<![.\w$])(x?(?:describe|it|test))((?:\.[a-zA-Z]+(?:\((?:[^()]|\([^()]*\))*\)|`[^`]*`)?)*)\s*\(\s*(?:(['"`])((?:\\.|(?!\3)[^\\])*)\3|([A-Za-z_$][\w$.]*(?:\([^()]*\)|\[[^\]]*\])?)(?=\s*[,)]))(\s*,\s*\{(?:[^{}]|\{[^{}]*\})*\})?(?:\s*,\s*([A-Za-z_$][\w$]*)(?=\s*,))?(?:\s*,\s*(?:async\s+)?(?:function\s*[\w$]*\s*)?(?:\(\s*\{([^}]*)\}|\(?\s*([A-Za-z_$][\w$]*)))?/g;
+  /(?<![.\w$])(x?(?:describe|suite|it|test))((?:\.[a-zA-Z]+(?:\((?:[^()]|\([^()]*\))*\)|`[^`]*`)?)*)\s*\(\s*(?:(['"`])((?:\\.|(?!\3)[^\\])*)\3|([A-Za-z_$][\w$.]*(?:\([^()]*\)|\[[^\]]*\])?)(?=\s*[,)]))(\s*,\s*\{(?:[^{}]|\{[^{}]*\})*\})?(?:\s*,\s*([A-Za-z_$][\w$]*)(?=\s*,))?(?:\s*,\s*(?:async\s+)?(?:function\s*[\w$]*\s*)?(?:\(\s*\{([^}]*)\}|\(?\s*([A-Za-z_$][\w$]*)))?/g;
 // not verifying: skipped, todo, conditional, quarantined (Playwright `fixme`, testing.md rule 19) or
 // expected to fail (vitest `fails`, Playwright `fail`) (M1.25 review r2 F1; M1.29)
-const SKIPPED_CHAIN = /\.(skip|todo|skipIf|runIf|fixme|fails|fail)\b/;
+const SKIPPED_CHAIN = /\.(skip|todo|skipIf|runIf|fixme|fails|fail|expectFailure)\b/;
 // `{ skip: true }`, `{ skip: cond }` and the shorthand `{ skip }`, but not `{ skip: false }`
-const SKIPPED_OPTION = /\b(skip|todo|fails)\b(?!\s*:\s*false\b)/;
+const SKIPPED_OPTION = /\b(skip|todo|fails|expectFailure)\b(?!\s*:\s*false\b)/;
 const FOCUSED = /\.only\b/;
 const FOCUSED_OPTION = /\bonly\b(?!\s*:\s*false\b)/;
 // options this scanner cannot read (a spread or a variable) might skip the test: assume they do,
@@ -142,6 +142,12 @@ const MODIFIERS = new Set([
   'fail',
   'concurrent',
   'sequential',
+  'shuffle',
+  'suite',
+  'expectFailure',
+  'override',
+  'scoped',
+  'extend',
   'each',
   'for',
   'describe',
@@ -157,7 +163,8 @@ function kindOf(name, chain) {
   const members = [...bare.matchAll(/\.([a-zA-Z]+)/g)].map((m) => m[1]);
   if (!members.every((m) => MODIFIERS.has(m))) return null;
   if (members.includes('step')) return 'step';
-  if (members.includes('describe') || name.endsWith('describe')) return 'describe';
+  // describe and its alias `suite` (vitest, node:test)
+  if (members.some((m) => m === 'describe' || m === 'suite') || /(describe|suite)$/.test(name)) return 'describe';
   return name.replace(/^x/, '');
 }
 
@@ -210,7 +217,7 @@ export function testTitles(text) {
 // `ctx.skip()`, or a destructured `({ skip }) => skip()`); `assert.fail()` or `iter.skip(2)` are
 // not skips (M1.29). A runner skip outside any test applies to the whole file, as in Playwright.
 const RUNTIME_SKIP = /(?<![.\w$])(?:([\w$]+)\.)?(skip|todo|fixme|fail)\s*\(\s*(['"`])?/g;
-const RUNNERS = new Set(['it', 'test', 'describe']);
+const RUNNERS = new Set(['it', 'test', 'describe', 'suite']);
 function markRuntimeSkips(text, mask, calls) {
   for (const m of text.matchAll(RUNTIME_SKIP)) {
     const [, receiver, method, quote] = m;

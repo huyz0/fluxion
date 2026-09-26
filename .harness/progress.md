@@ -231,3 +231,7 @@ done: scanner r3 minors (receiver-aware runtime skips, nested options + fails, f
 tests-kept.test +9 (option skip, skipped suite, x-prefix, only option, strings are not tests), test-titles.test +4; smoke-kit seed moved to the new swap line
 review r1 changes-requested (3) fixed: swap detection counts copies (multiset); expression titles read, runtime test.skip(cond[, reason]) told apart from it.skip(expr, fn); shorthand/spread/variable options and destructured skip() count as skipping; Playwright steps are not cases
 review r2 pass + 2 minor fixed: chain members must be test modifiers (hooks/config are not tests); test.describe is a suite; only it/test count as cases (steps and suites renamed freely)
+
+## 2026-09-26 M1.30 (claude)
+done: MODIFIERS gains vitest 'shuffle' (M1.29 r3 minor, round cap reached there); test-titles.test +1
+review r1 pass + 4 minor fixed: suite (root and member), expectFailure (chain and option), override/scoped/extend chains

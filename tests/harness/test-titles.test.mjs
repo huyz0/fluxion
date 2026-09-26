@@ -133,6 +133,27 @@ describe('testTitles (NFR-MNT-008)', () => {
     );
   });
 
+  it('reads every vitest suite modifier, incl. shuffle (M1.29 review r3 F1)', () => {
+    const src = "describe.shuffle.skip('s', () => { it('a', () => {}); });\ndescribe.shuffle('t', () => { it('b', () => {}); });";
+    assert.deepEqual(titles(src), ['-s', '-a', '+t', '+b']);
+  });
+
+  it('reads suite, expectFailure and override/scoped chains (M1.30 review)', () => {
+    const src = [
+      "suite.skip('s', () => { it('a', () => {}); });",
+      "test.suite('t', () => { it('b', () => {}); });",
+      "describe.expectFailure('u', () => { it('c', () => {}); });",
+      "it('d', { expectFailure: true }, () => {});",
+      "test.override({ x: 1 }).skip('e', () => {});",
+      "test.scoped({ y: 2 })('f', () => {});",
+    ].join('\n');
+    assert.deepEqual(titles(src), ['-s', '-a', '+t', '+b', '-u', '-c', '-d', '-e', '+f']);
+    assert.deepEqual(
+      testTitles("test.suite('t', () => {});").map((t) => t.kind),
+      ['describe'],
+    );
+  });
+
   it('Playwright steps are reported as steps, not cases', () => {
     const src = "test('t', async () => { await test.step('open', async () => {}); });";
     assert.deepEqual(
