@@ -1,6 +1,6 @@
 // NFR-MNT-004: coverage floors from thresholds.mjs fail `test:coverage` for a package below them.
 import assert from 'node:assert/strict';
-import { cpSync, readFileSync } from 'node:fs';
+import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { after, afterEach, before, describe, it } from 'node:test';
 import { cleanEnv, linkInstalls, out, REPO, sandbox } from './helpers.mjs';
@@ -39,6 +39,17 @@ function addUncovered(dir) {
   added.push(path);
 }
 
+// The sandbox runs the node project only (a browser launch per case would double this suite).
+// Modules covered only by a sibling *.browser.test (stories, components) are not part of the floor
+// mechanics tested here; the ladder's test step checks the real coverage with both projects.
+function dropBrowserCovered(src) {
+  const files = readdirSync(sb.path(src));
+  const stem = (f) => f.split('.')[0];
+  const covered = new Set(files.filter((f) => /\.browser\.test\.tsx?$/.test(f)).map(stem));
+  covered.delete('index');
+  for (const f of files.filter((f) => covered.has(stem(f)))) rmSync(sb.path(`${src}/${f}`));
+}
+
 describe('coverage floors (NFR-MNT-004)', () => {
   before(() => {
     sb = sandbox(SHARED);
@@ -46,6 +57,7 @@ describe('coverage floors (NFR-MNT-004)', () => {
       for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
     }
     linkInstalls(sb);
+    for (const { dir } of workspaces) dropBrowserCovered(`${dir}/src`);
   });
   after(() => sb.cleanup());
   afterEach(() => {

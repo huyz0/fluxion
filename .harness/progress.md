@@ -307,3 +307,10 @@ review r1 changes-requested (5) fixed: block moved to the context (route + route
 why: M1.17's staged ladder hit 123-126 s idle; profiling: tests-kept.test alone 80 s (fresh git sandbox per case, serial within a file), drift 29 s
 done: one sandbox per file reset to the fixture commit after each case (reset --hard, clean -fdx, unset hooksPath); tests-kept split into tests-kept.test (21) + tests-kept-disabling.test (30) over tests-kept-fixture.mjs; tests-kept 80 -> 16/22 s in parallel, drift 29 -> 15 s; named-case leg points at the disabling file
 M1.17 work stashed meanwhile (m1.17-wip)
+## 2026-09-27 M1.17 (claude)
+done: Storybook 10.6 in packages/editor (@storybook/react-vite, addon-a11y, .storybook/main.ts); EmptyState component + stories; story test via portable stories (composeStories) in the Vitest browser project with axe (0 violations; image-alt probe fails it); test:storybook script
+ADR-0139: @storybook/addon-vitest 10.6 supports Vitest <= 4 only, so portable stories until it supports 5; tech-stack row updated
+pnpm 11 blocks esbuild's postinstall (ERR_PNPM_IGNORED_BUILDS fails install): allowBuilds esbuild false - esbuild works via its optional platform binary
+M1.16 minor fixed here: studio vite.config comment names the preview command
+review r1 changes-requested (4) fixed: kebab-case files (empty-state.*); the browser test composes every story (it.each) in its own root with real unmount; design-ui rule 32 and the backlog row cite ADR-0139
+digest note: the M1.38 r1 digest line was discarded by a checkout before the stash pop and re-appended from the stored verdict (.harness/review/75c125c3...r1.json)

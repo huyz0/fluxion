@@ -10,6 +10,11 @@ autoInstallPeers: false
 strictPeerDependencies: false
 saveExact: true
 
+# Install scripts stay off (NFR-SEC-005). esbuild (via Storybook) works without its postinstall: the
+# platform binary arrives as an optional dependency.
+allowBuilds:
+  esbuild: false
+
 # dependency-cruiser parses TypeScript through the compiler API, which TS 7 does not ship yet; it
 # gets TS 6 here: the only TS 6 version string, which the typescript6 catalog below reuses (YAML anchor;
 # pnpm allows no catalog: specifier in packageExtensions). ADR-0011. The repo's tsc stays on TS 7.
@@ -43,6 +48,10 @@ catalog:
   typedoc: 0.28.20
   "@playwright/test": 1.63.0
   "@axe-core/playwright": 4.13.0
+  axe-core: 4.13.0
+  storybook: 10.6.0
+  "@storybook/react-vite": 10.6.0
+  "@storybook/addon-a11y": 10.6.0
   "@vitejs/plugin-react": 6.1.1
   react: 19.3.0
   react-dom: 19.3.0
@@ -58,7 +67,6 @@ catalogs:
 # Planned pins, verified on npm 2026-09-26, added to the catalog by the row that installs them
 # (re-check minimumReleaseAge then).
 #   @changesets/cli: 3.0.3
-#   storybook: 10.6.0
-#   @storybook/react-vite: 10.6.0           @storybook/addon-vitest: 10.6.0 @storybook/addon-a11y: 10.6.0
+#   @storybook/addon-vitest: 10.6.0 (not installed: supports Vitest <= 4; ADR-0139)
 #   astro: 7.3.5                            @astrojs/starlight: 0.42.4      starlight-llms-txt: 0.12.0
 #   starlight-typedoc: 0.23.1               typedoc-plugin-markdown: 4.13.1

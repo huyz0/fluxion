@@ -141,7 +141,7 @@ never dictates how a deck looks.
 ## 11. Storybook and visual regression
 
 32. **One story per component state**: default, hover/focus (via play), disabled, loading,
-    empty, error, long text, RTL, dark. Stories are Vitest browser tests via addon-vitest. →
+    empty, error, long text, RTL, dark. Stories are Vitest browser tests: a sibling `*.browser.test.tsx` composes every story (portable stories, until addon-vitest supports Vitest 5; ADR-0139). →
     story-coverage test in `editor` (every exported component has a `*.stories.tsx`)
 33. **Visual snapshots** (`toMatchScreenshot`) only in the pinned Playwright Docker image; update
     with `-u` only intentionally and say why in the PR. → CI `visual` job

@@ -27,7 +27,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | Unit / browser / bench | Vitest (projects, browser mode, tags, agent reporter, v8 coverage) | 5.0.x | one runner for everything |
 | Property tests | fast-check (+ `@fast-check/vitest`) | latest | geometry, undo, serialisation invariants |
 | E2E / visual / a11y | Playwright (pinned Docker image for pixels) + `@axe-core/playwright` | 1.62.x | isolated retries, traces |
-| UI catalog | Storybook + addon-vitest + a11y addon | 10.6.x | every story is also a browser test |
+| UI catalog | Storybook + a11y addon; story tests via portable stories (addon-vitest once it supports Vitest 5, ADR-0139) | 10.6.x | every story is also a browser test |
 | Mutation | StrykerJS + vitest-runner (nightly) | latest | test-quality signal on pure packages |
 | Hooks / commits | Tracked `.githooks/` → Node gate scripts (`precommit.mjs`, `check-commit-msg.mjs`); subject `<TaskID>: <type>(<scope>): …` | — | Zero extra deps, identical on Windows/macOS/Linux, single gate definition shared with CI (lefthook/commitlint evaluated, not needed) |
 | Release | Changesets + npm trusted publishing (OIDC, provenance) | latest | no long-lived npm tokens |
