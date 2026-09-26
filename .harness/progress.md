@@ -323,7 +323,15 @@ review r1 changes-requested: --all builds every workspace (CI gates.yml keeps bu
 
 ## 2026-09-27 M1.19 (claude)
 done: check-budget.mjs (--record measures quick, staged and a cold setup = fresh local clone + pnpm i --frozen-lockfile + pnpm run setup + pnpm verify; default checks .harness/budget.json against QUICK_GATE_BUDGET_MS, PRECOMMIT_BUDGET_MS, new COLD_SETUP_MAX_MS 600 s); verify gains the budget step
-recorded (win32, idle): quick 2.5 s, staged 39.6 s, cold setup 60.2 s
+recorded (win32, idle): quick 2.5 s, staged 39.6 s, cold setup 60.2 s (warm store; superseded by the r3 record: quick 2.7 s, staged 49.4 s, cold 81.4 s)
 nested SKIP: a step that exits 0 but prints "<tool>: SKIP — why" shows as SKIP (lib nestedSkip); gates.yml runs check-workflows --require-docker on ubuntu
 pnpm verify: every step PASS, no SKIP lines (46 s); budget.test (6), ladder.test +1
 review r1 pass + 2 minor fixed: review r2 found npm_config_store_dir ignored by pnpm 11 (the 91.9 s run reused the warm store); fixed with pnpm_config_store_dir + --store-dir and a check the temp store was used; install verified cold (reused 0, downloaded 724, 602 MB); review r3: the cold run now measures HEAD + working-tree changes, records that tree's lockfile hash, and the clone checks a provisional record so a lockfile change can be re-recorded; re-recorded 81.4 s; the record carries the pnpm-lock hash and the check fails when it no longer matches
+
+## 2026-09-27 M1.20 (claude)
+done: .github/workflows/ci.yml per ci-cd.md §3: verify (ubuntu/windows/macos, pnpm verify), build (uploads packages/apps dist), e2e (chromium/firefox/webkit x 4 shards in mcr playwright v1.63.0-noble pinned by digest; chromium and webkit also run their mobile preset; blob reports), e2e-report (merge-reports json+html, scripts/ci/flake-report.mjs), visual, a11y, size, api (+ changeset status on PRs), license, eval-recorded (explicit SKIP until M14), ci-ok (if: always(), needs every job, scripts/ci/all-green.mjs)
+root scripts test:e2e, test:visual (--pass-with-no-tests until @visual specs exist), test:a11y
+flake-report fails on flaky, failed, or zero tests run; all-green fails on anything but success (skipped/cancelled included)
+local proof: 2 blob shards -> merge-reports json -> flake-report "4 run, 0 flaky, 0 failed" exit 0; test:a11y 1 passed; check-workflows --require-docker: actionlint 0, zizmor 0
+ci-workflow.test +7 (job set, ci-ok needs all, OS/engine/shard matrix, image = installed Playwright version by digest, SHA pins in every workflow, run blocks <= 3 lines, flake-report + all-green negatives); mutation (visual dropped from ci-ok needs) fails the test and the gate leg
+first push green: pending M1.24 (needs human-authorised push)
