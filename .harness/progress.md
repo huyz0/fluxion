@@ -45,3 +45,8 @@ next: M0.7
 done: check-tests-kept (deleted/renamed test files, removed cases, added skip/todo/only) + 13 tests
 moved to commit-msg hook (trailer only exists there); removed from precommit; mutation -> fails
 next: M0.8
+
+## 2026-09-26 M0.8 (claude)
+done: check-drift (--msg in commit-msg hook; --commit <sha> for CI) + 10 tests; mutation -> 4 fail
+moved drift out of precommit; M0.12 row now covers per-commit CI re-check (M0.7 F1 amend gap)
+next: M0.9

@@ -35,5 +35,5 @@ one line per step: `PASS|FAIL|SKIP <step> (<ms>)`. SKIP must state why (e.g. "no
 
 ```
 VERIFY precommit: PASS (41.2s) — typecheck PASS, lint PASS, test PASS (412), layering PASS,
-size PASS, drift PASS, trace PASS, portability PASS, reviewed SKIP(before review)
+size PASS, trace PASS, portability PASS, reviewed SKIP(before review); commit-msg hook: tests-kept, drift
 ```
