@@ -102,7 +102,10 @@ export function checkBacklogDone(backlogText, milestone, reviews = []) {
   const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
   if (dupes.length) return `duplicate backlog rows: ${[...new Set(dupes)].join(', ')}`;
   const state = new Map(rows.map((c) => [c[1], c[6]]));
-  const notDone = [...state].filter(([, s]) => s !== 'done').map(([id, s]) => `${id} (${s})`);
+  // `descoped (<reason>)` closes a row only by explicit human decision recorded in the reason;
+  // a bare "descoped" does not count. Reopened rows (below) must still be `done`.
+  const closed = (s) => s === 'done' || /^descoped \(\S.*\)$/.test(s);
+  const notDone = [...state].filter(([, s]) => !closed(s)).map(([id, s]) => `${id} (${s})`);
   if (notDone.length) return `not done: ${notDone.join(', ')}`;
   for (const r of reviews) {
     for (const d of r?.dispositions ?? []) {

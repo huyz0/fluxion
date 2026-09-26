@@ -14,10 +14,10 @@ Standard: `docs/standards/review.md`.
    (task row, staged diff or delta since last round, standards selected from paths, gates passed).
    The packet never contains your reasoning — do not add any.
 3. Get a reviewer that is **not you**:
-   - preferred: `node scripts/harness/run-reviewer.mjs --task <ID>` — runs the *other vendor's*
-     CLI headless and read-only on the packet, writes `.harness/tmp/verdict.json`;
-   - otherwise: dispatch your tool's isolated subagent (Claude: the `reviewer` agent) with only
-     the packet file path.
+   - **default (project decision 2026-09-26):** dispatch your tool's isolated reviewer subagent
+     (Claude: the `reviewer` agent; Codex: a fresh subagent) with only the packet file path;
+   - optional: `node scripts/harness/run-reviewer.mjs --task <ID>` runs the other vendor's CLI
+     headless on the packet, when a human asks for a cross-vendor review.
 4. Record: `node scripts/harness/review.mjs record --file .harness/tmp/verdict.json --task <ID>`.
    Record every round, including `changes-requested`.
 5. Fix `blocking` and `major` findings, restage, repeat (max **3 rounds**; after that stop per

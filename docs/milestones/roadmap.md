@@ -83,4 +83,5 @@ receiving milestone's plan.
 | Item | From | To | Reason |
 |---|---|---|---|
 | check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |
+| `/goal` dry runs in interactive Claude Code and Codex sessions (M0.14/M0.15; kit in docs/harness/kits/dry-run.md), including the live Codex-session check moved there from M0.11 (13 skills via `/skills`, PostToolUse quick gate observed) — descoped by user decision; reviews use subagents only | M0 | unscheduled (on human request) | user decision 2026-09-26 |
 | Function-length/complexity caps owned by Biome, not check-size; M1 row 9 reworded accordingly (check-size keeps the file cap from M0.6) (cp1 F5) | M0 | M1 | tools land in M1 |

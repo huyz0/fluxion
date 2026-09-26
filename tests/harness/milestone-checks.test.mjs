@@ -243,3 +243,17 @@ describe('checkBacklogDone inputs (M0.24 review F1-F3)', () => {
     }
   });
 });
+
+describe('descoped rows (user decision 2026-09-26)', () => {
+  const row = (id, state) => `| ${id} | task | NFR-DX-003 | WHEN x THE SYSTEM SHALL y | — | ${state} | |`;
+
+  it('accepts a row descoped with a stated reason', () => {
+    assert.equal(checkBacklogDone(`${row('M0.1', 'done')}\n${row('M0.2', 'descoped (user decision 2026-09-26; roadmap Deferred)')}\n`, 'M0'), true);
+  });
+
+  it('rejects a bare descoped state and a descoped reopen target', () => {
+    assert.match(String(checkBacklogDone(`${row('M0.1', 'descoped')}\n`, 'M0')), /not done: M0\.1/);
+    const reviews = [{ checkpoint: 'cp9', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.2' }] }];
+    assert.match(String(checkBacklogDone(`${row('M0.2', 'descoped (later)')}\n`, 'M0', reviews)), /reopened M0\.2 missing or not done/);
+  });
+});

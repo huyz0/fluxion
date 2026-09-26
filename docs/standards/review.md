@@ -12,7 +12,7 @@ check everything a script can; the reviewer spends attention only on what they c
 
 | Loop | Scope | Who | When | Output |
 |---|---|---|---|---|
-| Per-commit | one task's staged diff | other vendor's CLI headless, or an isolated reviewer subagent | before every commit | `.harness/review/<sha256>.json` (gitignored) |
+| Per-commit | one task's staged diff | an isolated reviewer subagent (other vendor's CLI only on human request) | before every commit | `.harness/review/<sha256>.json` (gitignored) |
 | Milestone | all commits of the milestone, files as they now stand | a fresh agent that did not drive the milestone | ~every 8 commits and before completion | `.harness/reviews/milestone-M<n>-<k>.json` (tracked) |
 
 ## 2. Per-commit flow
@@ -20,14 +20,15 @@ check everything a script can; the reviewer spends attention only on what they c
 ```sh
 git add -p                                            # stage exactly the task
 node scripts/harness/review.mjs context --task M3.4   # → .harness/review/packet.md
-node scripts/harness/run-reviewer.mjs                 # other vendor reviews the packet
+# an isolated reviewer subagent reads only the packet and returns verdict JSON
 node scripts/harness/review.mjs record --file v.json  # validate + store by diff hash
 git commit                                            # check-reviewed.mjs finds the verdict
 ```
 
-`run-reviewer.mjs` picks the reviewer from the author: Claude-authored → `codex exec` in
-read-only sandbox; Codex-authored → `claude -p --agent reviewer`. If the other CLI is
-unavailable it falls back to an isolated same-vendor subagent and records that in `reviewer`.
+**Reviewer = an isolated subagent** of the authoring tool (Claude: `.claude/agents/reviewer.md`;
+Codex: a fresh subagent), given only the packet — project decision 2026-09-26. Cross-vendor CLI
+review (`run-reviewer.mjs`: `codex exec` read-only / `claude -p --agent reviewer`) is optional,
+used when a human asks for it; M0.13 showed both directions catch seeded defects.
 
 ## 3. Rules
 
@@ -91,5 +92,5 @@ blocking findings, or findings without `failure_scenario`.
 ## 7. What review cannot prove
 
 The hash proves the verdict matches the diff; it cannot prove the reviewer was not the author.
-Isolation comes from `run-reviewer.mjs` and the agent definitions, and a human spot-checks
+Isolation comes from the reviewer subagent definitions (fresh context, packet only), and a human spot-checks
 `reviewer` fields at milestone boundaries.

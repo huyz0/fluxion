@@ -4,7 +4,7 @@
 // file or an unparsed review cannot turn a leg green. Each red leg states what is left.
 import { existsSync, readFileSync } from 'node:fs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
-import { backlogTextFor, checkBacklogDone, checkDryRuns, checkFinalReview, checkHooksExecutable, checkReviewerSmoke, loadMilestoneReviews } from './milestone-checks.mjs';
+import { backlogTextFor, checkBacklogDone, checkFinalReview, checkHooksExecutable, checkReviewerSmoke, loadMilestoneReviews } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
@@ -57,8 +57,9 @@ leg('cross-vendor reviewer smoke recorded (M0.13)', () => {
   const digest = exists('.harness/reviews/digest.log') ? readText('.harness/reviews/digest.log') : '';
   return rec ? checkReviewerSmoke(rec, digest) : 'missing .harness/reviews/cross-vendor-smoke.json';
 });
-leg('dry runs recorded per tool: success + impossible (M0.14, M0.15)', () =>
-  (exists('docs/harness/dry-runs.md') ? checkDryRuns(readText('docs/harness/dry-runs.md')) : 'missing docs/harness/dry-runs.md'));
+// M0.14/M0.15 (/goal dry runs) were descoped by the user on 2026-09-26 (roadmap "Deferred"):
+// reviews use subagents only and interactive-session trials are not part of M0. The kit and
+// checkDryRuns stay available for when they are rescheduled.
 
 leg('operator guide linked from AGENTS.md', () => {
   if (!exists('docs/harness/README.md')) return 'missing docs/harness/README.md';

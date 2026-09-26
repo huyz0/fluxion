@@ -6,8 +6,8 @@ description: Review a milestone's commits as a whole with a fresh agent, turn fi
 # Milestone review (outer loop)
 
 **Run by an agent that did not drive the milestone.** The driver dispatches a fresh one
-(Claude: `milestone-reviewer` agent; Codex: a new session or the other vendor via
-`node scripts/harness/run-reviewer.mjs --milestone M<N>`).
+(Claude: `milestone-reviewer` agent; Codex: a fresh subagent). A cross-vendor review via
+`node scripts/harness/run-reviewer.mjs --milestone M<N>` is optional, on human request.
 
 ## Packet
 

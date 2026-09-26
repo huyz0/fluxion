@@ -53,7 +53,7 @@ pnpm verify                                full gate == CI pre-commit ladder   [
 node scripts/gates/precommit.mjs           pre-commit ladder (hook runs it with --staged)
 node scripts/gates/m<N>-complete.mjs       completion gate of milestone N
 node scripts/harness/review.mjs context --task M3.4     reviewer packet
-node scripts/harness/run-reviewer.mjs --task M3.4       run independent reviewer (other vendor)
+node scripts/harness/run-reviewer.mjs --task M3.4       optional cross-vendor reviewer (default: isolated subagent)
 node scripts/harness/review.mjs record --file v.json    store verdict (bound to staged diff hash)
 node scripts/harness/sync-skills.mjs [--check]          regenerate/check .claude/skills adapters
 ```

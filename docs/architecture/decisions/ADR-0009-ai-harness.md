@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted (review-vendor clause and dry-run confirmation superseded by ADR-0137)
 date: 2026-09-26
 decision-makers: Fluxion maintainers
 ---
@@ -41,7 +41,8 @@ Chosen option: **4**.
 - Each milestone has a **completion gate script** `scripts/gates/m<n>-complete.mjs`, written
   **first and red**. The goal is met only when it exits 0 with its output printed.
 - Every commit needs a review verdict bound to the **sha256 of the staged diff**, produced by the
-  *other* vendor's CLI from a packet without author reasoning. `check-reviewed.mjs` enforces it
+  *other* vendor's CLI from a packet without author reasoning. **Superseded by ADR-0137:** the
+  default reviewer is an isolated subagent; cross-vendor review is optional. `check-reviewed.mjs` enforces it
   in pre-commit.
 - State lives in files: roadmap, backlog, `.harness/progress.md` and `.harness/state.json`.
 
@@ -58,6 +59,8 @@ Chosen option: **4**.
 `check-portability` (no vendor syntax in canonical skills, adapters in sync, no name collisions).
 A negative test suite proves each gate fails on a broken fixture. Dry runs of `/goal` on a trivial
 milestone in both tools must stop correctly on success and on an impossible condition.
+**Superseded by ADR-0137:** dry runs are optional; confirmation is check-portability, adapter
+tests, the negative gate suite and the M0.13 cross-vendor smoke.
 
 ## Pros and Cons of the Options
 

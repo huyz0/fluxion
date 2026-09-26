@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Independent reviewer for a staged change or plan. Receives only the review packet (task + diff + standards + passed gates), never the author's reasoning. Use before every commit when the other vendor's CLI is unavailable.
+description: Independent reviewer for a staged change or plan. Receives only the review packet (task + diff + standards + passed gates), never the author's reasoning. Use before every commit (the default reviewer).
 tools: Read, Grep, Glob, Bash
 ---
 

@@ -38,6 +38,7 @@ Index, template and the "ADR required when" list: [`decisions/README.md`](decisi
 | [0008](decisions/ADR-0008-toolchain.md) | pnpm 11 / Turborepo / Vite 8 / tsdown / tsgo / Biome 2 / Vitest / Playwright / Storybook / Changesets |
 | [0009](decisions/ADR-0009-ai-harness.md) | AGENTS.md + portable skills + goal-driven milestone loop + hash-bound cross-vendor review |
 | [0010](decisions/ADR-0010-styling-isolation.md) | Tailwind/shadcn for editor chrome only; theme tokens + CSS Modules for content |
+| [0137](decisions/ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) |
 
 ## Conventions for architecture docs
 

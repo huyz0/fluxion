@@ -126,3 +126,8 @@ still blocked: M0.14/M0.15 interactive /goal dry runs (human)
 codex exec with "/goal ..." ran as a plain prompt (no goal loop); toy success met; log kept locally at .harness/tmp/dryrun/codex-success.log (not recorded as the dry run)
 kit doc now says: use the interactive TUI / Claude Code session
 still blocked: M0.14/M0.15 (human, interactive /goal)
+
+## 2026-09-26 M0.26 (claude)
+user decision: drop interactive /goal dry runs from M0; reviews by isolated subagents only
+done: M0.14/M0.15 descoped (roadmap Deferred); dry-runs leg removed; `descoped (<reason>)` closes a row (+2 tests); review default = subagent in skill/standard/AGENTS; guide section 7 now optional follow-ups
+next: M0.18 final milestone review, roadmap to M1

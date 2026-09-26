@@ -43,7 +43,7 @@ infeasible) and the loop stops — **not** 10 turns of retrying, and never by ed
 ## Record
 
 Fill every field in [`../dry-runs.md`](../dry-runs.md): `Date:`, `Outcome:` (turns, how it ended,
-anything surprising) and `Transcript:` (path or link to the saved transcript/log). The M0 gate
-stays red until all eight sections are filled. Update [`../README.md`](../README.md) if the
+anything surprising) and `Transcript:` (path or link to the saved transcript/log). These dry runs
+were descoped from M0 (user decision 2026-09-26) and are optional. Update [`../README.md`](../README.md) if the
 observed behaviour differs from what it describes. Then remove the worktree:
 `node scripts/harness/worktree.mjs remove dryrun --delete-branch`.
