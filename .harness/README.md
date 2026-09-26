@@ -28,3 +28,18 @@
   `stop-check.mjs` Stop hook.
 - `blockedReason` — set on any stop condition; a human clears it.
 - `attempts` — consecutive failed fix attempts on the current cause (stop at 3).
+
+## Optional deterministic Stop hook (`scripts/harness/stop-check.mjs`)
+
+The built-in `/goal` judge only reads the transcript. If it is seen accepting passes that are not
+real, enable the Stop hook **instead of** `/goal` (never both — double continuation):
+
+```json
+// .claude/settings.json → "hooks"
+"Stop": [{ "hooks": [{ "type": "command", "command": "node scripts/harness/stop-check.mjs" }] }]
+```
+
+It allows stopping unless `state.json.loopActive` is true and the milestone gate is red; then it
+blocks with the first red leg and the next `todo` row. `blockedReason` or the runaway cap
+(`FLUXION_STOP_BLOCK_CAP`, default 60 blocks) always allow stopping. A green gate sets
+`loopActive=false` and resets the cap. Codex wiring is in `.codex/` (M0.11).

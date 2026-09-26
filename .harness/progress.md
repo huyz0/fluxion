@@ -61,3 +61,8 @@ next: M0.10
 done: M0.9 (cd08870); cp1 milestone review recorded (3 major reopened as M0.21-23, 2 minor handed to M1, 1 argued)
 gate m0: 11/18
 next: M0.10
+
+## 2026-09-26 M0.10 (claude)
+done: stop-check.mjs + 7 tests (inactive/red/green/blocked/cap/reset/missing gate); doc in .harness/README.md
+test found ordering bug: cap checked before gate so a green gate could not reset — fixed
+next: M0.11
