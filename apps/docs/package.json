@@ -17,10 +17,18 @@
     "dist"
   ],
   "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
     "api:docs": "typedoc --options ../../typedoc.json --emit none"
   },
   "devDependencies": {
+    "@astrojs/markdown-remark": "catalog:",
+    "@astrojs/starlight": "catalog:",
+    "astro": "catalog:",
+    "starlight-llms-txt": "catalog:",
+    "starlight-typedoc": "catalog:",
     "typedoc": "catalog:",
+    "typedoc-plugin-markdown": "catalog:",
     "typescript": "catalog:typescript6"
   }
 }

@@ -22,3 +22,5 @@ Thumbs.db
 .vitest-cache/
 test-results/
 playwright-report/
+apps/docs/src/content/docs/api/
+.astro/

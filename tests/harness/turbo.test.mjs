@@ -15,6 +15,7 @@ describe('turbo pipelines (NFR-DX-002)', () => {
     for (const t of ['typecheck', 'build']) assert.ok(tasks.includes(t), t);
     // a task no workspace defines runs nothing and reports success (lint and tests are root runs)
     const scripts = new Set(workspaces.flatMap((w) => Object.keys(JSON.parse(readFileSync(join(REPO, w.dir, 'package.json'), 'utf8')).scripts ?? {})));
-    for (const t of tasks) assert.ok(scripts.has(t), `turbo task ${t} has no workspace script`);
+    // package-scoped overrides ("@fluxion/docs#build") name the script after the '#'
+    for (const t of tasks) assert.ok(scripts.has(t.split('#').at(-1)), `turbo task ${t} has no workspace script`);
   });
 });

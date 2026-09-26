@@ -17,3 +17,4 @@ M1 cp3 F7: a serial regression of the ladder is caught by the precommit budget c
 M1.36 F1: no current harness test writes node_modules (pnpm-in-sandbox was removed in this task); snapshotting node_modules would cost seconds per run for a hypothetical writer; revisit if a test starts a package manager.
 M1.36 F2: a turbo caching regression is still caught by the m1-complete build leg (FULL TURBO on the second run) and slows the ladder into the precommit budget check; no false green on a plan leg.
 M1.36 F3: an untracked probe naming an ID is friction, not a false green; the reviewer sees any matrix path in the diff.
+M1.18 F3 (argued): changeset status compares with main by design: on main after the commit it exits 0; a branch that changes a package without a changeset failing the leg is the Changesets policy (NFR-MNT-007).

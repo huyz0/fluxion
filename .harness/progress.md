@@ -314,3 +314,9 @@ pnpm 11 blocks esbuild's postinstall (ERR_PNPM_IGNORED_BUILDS fails install): al
 M1.16 minor fixed here: studio vite.config comment names the preview command
 review r1 changes-requested (4) fixed: kebab-case files (empty-state.*); the browser test composes every story (it.each) in its own root with real unmount; design-ui rule 32 and the backlog row cite ADR-0139
 digest note: the M1.38 r1 digest line was discarded by a checkout before the stash pop and re-appended from the stored verdict (.harness/review/75c125c3...r1.json)
+
+## 2026-09-27 M1.18 (claude)
+done: apps/docs Astro 7 + Starlight 0.42 site (index + getting-started guide), starlight-typedoc API pages for @fluxion/core (TypeDoc on TS 6 in the same workspace), starlight-llms-txt (llms.txt, -full, -small; site = GitHub Pages URL); build ~7 s; generated API markdown and .astro/ gitignored; content.config.ts excluded from tsc (astro:content is Astro's)
+Changesets: .changeset/config.json (public access), `pnpm changeset status` exits 0; libraries get publishConfig { access: public, provenance: true } (generator too)
+ladder build step builds libraries only (turbo --filter ./packages/* ./packs/*): docs and studio build in CI and the milestone gate; M1.17 minor fixed (ADR-0139 file name)
+review r1 changes-requested: --all builds every workspace (CI gates.yml keeps building apps), staged builds libraries only; turbo inputs for docs (astro.config, typedoc.json, core src/tsconfig; generated api excluded) and studio (index.html, vite.config); F3 argued

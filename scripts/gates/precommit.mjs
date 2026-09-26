@@ -34,7 +34,15 @@ const STEPS = [
     () => node('scripts/gates/check-size.mjs', [`--${mode}`]),
   ],
   // build before harness-tests and package hygiene: both need dist (turbo-cached, ~1 s when unchanged)
-  ['build', (m) => m !== 'quick', () => hasPkg || 'no workspace yet (M1)', () => pnpm('run', 'build')],
+  // --all (verify, CI) builds everything; a staged commit builds libraries only: later steps read their
+  // dist/ (publint, attw, api, size-limit), and the docs site and studio bundle are too slow for the
+  // pre-commit budget (M1.18)
+  [
+    'build',
+    (m) => m !== 'quick',
+    () => hasPkg || 'no workspace yet (M1)',
+    () => (mode === 'all' ? pnpm('run', 'build') : pnpm('turbo', 'run', 'build', '--filter=./packages/*', '--filter=./packs/*')),
+  ],
   [
     'harness-tests',
     (m) => m !== 'quick',

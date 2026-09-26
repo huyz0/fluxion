@@ -9,5 +9,6 @@
     "types": ["node"]
   },
   "include": ["src"],
-  "references": []
+  "references": [],
+  "exclude": ["src/content.config.ts"]
 }

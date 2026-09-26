@@ -80,6 +80,8 @@ const files = (w) => ({
       exports: { '.': { '@fluxion/source': './src/index.ts', types: './dist/index.d.ts', default: './dist/index.js' } },
       files: ['dist'],
       ...(isLibrary(w) ? { scripts: { build: 'tsdown', typecheck: 'tsc -b' } } : {}),
+      // published with npm provenance through release.yml's OIDC token (M1.18, M1.21)
+      ...(isLibrary(w) && !w.private ? { publishConfig: { access: 'public', provenance: true } } : {}),
     },
     null,
     2,

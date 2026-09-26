@@ -39,4 +39,4 @@ generates the same tests) and the sibling test files can then be removed.
 ## Confirmation
 
 `pnpm --filter @fluxion/editor test:storybook` runs the story tests (m1-complete leg
-"storybook story test passes"); `EmptyState.browser.test.tsx` fails on an axe violation.
+"storybook story test passes"); `empty-state.browser.test.tsx` fails on an axe violation.

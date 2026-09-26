@@ -103,7 +103,8 @@ export default {
       comment: 'an import that does not resolve is a typo or a missing dependency',
       severity: 'error',
       from: {},
-      to: { couldNotResolve: true, pathNot: target(all) },
+      // astro: modules are Astro's virtual modules, resolved by Astro at build time (apps/docs)
+      to: { couldNotResolve: true, pathNot: `${target(all)}|^astro:` },
     },
   ],
   options: {
@@ -111,7 +112,7 @@ export default {
     // only our own build outputs: excluding node_modules, or any `dist/` (npm packages resolve into
     // theirs), drops every npm edge, so the dev-dep/undeclared/DOM rules could never fire (M1.27);
     // doNotFollow keeps those edges but does not cruise inside them
-    exclude: { path: '^(packages|packs|apps)/[^/]+/(dist|\\.tsbuild|coverage)/' },
+    exclude: { path: '^(packages|packs|apps)/[^/]+/(dist|\\.tsbuild|coverage|\\.astro)/' },
     tsPreCompilationDeps: true,
     tsConfig: { fileName: 'tsconfig.json' },
     enhancedResolveOptions: {

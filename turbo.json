@@ -12,6 +12,25 @@
       "dependsOn": ["^build"],
       "inputs": ["src/**", "tsconfig.json", "package.json", "tsdown.config.*"],
       "outputs": ["dist/**"]
+    },
+    "@fluxion/studio#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "index.html", "vite.config.ts", "tsconfig.json", "package.json"],
+      "outputs": ["dist/**"]
+    },
+    "@fluxion/docs#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "!src/content/docs/api/**",
+        "astro.config.mjs",
+        "tsconfig.json",
+        "package.json",
+        "$TURBO_ROOT$/typedoc.json",
+        "$TURBO_ROOT$/packages/core/src/**",
+        "$TURBO_ROOT$/packages/core/tsconfig.json"
+      ],
+      "outputs": ["dist/**"]
     }
   }
 }

@@ -52,6 +52,13 @@ catalog:
   storybook: 10.6.0
   "@storybook/react-vite": 10.6.0
   "@storybook/addon-a11y": 10.6.0
+  astro: 7.3.5
+  "@astrojs/starlight": 0.42.4
+  "@astrojs/markdown-remark": 7.3.1
+  starlight-llms-txt: 0.12.0
+  starlight-typedoc: 0.23.1
+  typedoc-plugin-markdown: 4.13.1
+  "@changesets/cli": 3.0.3
   "@vitejs/plugin-react": 6.1.1
   react: 19.3.0
   react-dom: 19.3.0
@@ -64,9 +71,5 @@ catalogs:
   typescript6:
     typescript: *typescript6
 
-# Planned pins, verified on npm 2026-09-26, added to the catalog by the row that installs them
-# (re-check minimumReleaseAge then).
-#   @changesets/cli: 3.0.3
-#   @storybook/addon-vitest: 10.6.0 (not installed: supports Vitest <= 4; ADR-0139)
-#   astro: 7.3.5                            @astrojs/starlight: 0.42.4      starlight-llms-txt: 0.12.0
-#   starlight-typedoc: 0.23.1               typedoc-plugin-markdown: 4.13.1
+# Planned pins: none left for M1 (every row installed its own).
+#   @storybook/addon-vitest: 10.6.0 is not installed (supports Vitest <= 4; ADR-0139)

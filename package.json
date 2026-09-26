@@ -25,6 +25,7 @@
     "@arethetypeswrong/cli": "catalog:",
     "@axe-core/playwright": "catalog:",
     "@biomejs/biome": "catalog:",
+    "@changesets/cli": "catalog:",
     "@microsoft/api-extractor": "catalog:",
     "@playwright/test": "catalog:",
     "@size-limit/preset-small-lib": "catalog:",

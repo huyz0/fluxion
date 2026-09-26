@@ -18,5 +18,9 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -b"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
