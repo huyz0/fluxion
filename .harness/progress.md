@@ -350,3 +350,8 @@ first push (f1a1487, human-authorised): gates macos/windows green; ci: verify ma
 release: with no changesets changesets/action runs publish, so it tried to publish every @fluxion/*@0.0.0 to npm; all E404 (no credentials), nothing published. The M1.21 header claim "without pending changesets it does nothing" was wrong; the job now needs repo variable RELEASE_ENABLED=true
 fixes: release guard; packs/*/dist in the dist artifact; harness-tests step uses the spec reporter and a FAIL detail starts at its "failing tests" list (a long assertion message otherwise fills the 40-line tail; ladder.test +1); gates.yml harness step runs after a ladder failure; ci-workflow.test +2 (guard; artifact covers every pnpm workspace glob; reporter and step condition)
 the two ubuntu failures do not reproduce in a node:22.19 Linux container (with CI env vars, no Docker: 400 pass, 4 Docker tests skipped); the next push names them
+
+## 2026-09-27 M1.40 (claude)
+second push (4555fa7): api green (packs dist), release skipped (RELEASE_ENABLED unset), all else green except ubuntu verify/gates: workflows.test "passes a minimal clean workflow" and "fails an actionlint error": actionlint could not read .github/workflows/*.yml in the 0700 mkdtemp sandbox (image user != file owner); the ladder's real-checkout workflows step passed (0755)
+fix: check-workflows passes --user <uid>:<gid> on POSIX (not on Windows Docker Desktop)
+local proof (node:22.19 container as uid 1000, host docker socket, TMPDIR on a path shared with the Docker VM): old code 3 pass / 2 fail with the same "permission denied"; new code 5 pass

@@ -40,8 +40,15 @@ if (info.error || info.status !== 0) skipOrFail('Docker not available');
 if (info.stdout.trim() !== 'linux') skipOrFail(`Docker engine is ${info.stdout.trim()}, need linux`);
 
 const mount = `${root.replace(/\\/g, '/')}:/repo`;
+// on Linux/macOS the linters run as the calling user: a checkout that only its owner can read (a
+// mkdtemp sandbox is 0700, or umask 077) is otherwise "permission denied" for the image's own user
+// (M1.40). Docker Desktop on Windows maps file access itself and has no uid to pass.
+const user = typeof process.getuid === 'function' ? ['--user', `${process.getuid()}:${process.getgid()}`] : [];
 const docker = (image, args) =>
-  spawnSync('docker', ['run', '--rm', '-v', mount, '-w', '/repo', image, ...args], { encoding: 'utf8', env: { ...process.env, MSYS_NO_PATHCONV: '1' } });
+  spawnSync('docker', ['run', '--rm', ...user, '-v', mount, '-w', '/repo', image, ...args], {
+    encoding: 'utf8',
+    env: { ...process.env, MSYS_NO_PATHCONV: '1' },
+  });
 
 let failed = false;
 // explicit file list: actionlint otherwise needs a git project around /repo
