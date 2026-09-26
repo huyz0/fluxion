@@ -1,7 +1,7 @@
 # Product CI (docs/standards/ci-cd.md section 3). `ci-ok` is the single required status check: it
 # needs every job and passes only when all of them succeeded (scripts/ci/all-green.mjs). Steps call
 # repo scripts; no long inline scripts (NFR-PORT-005). Actions and the Playwright image are pinned by
-# digest (NFR-SEC-005); Renovate bumps them from M1.21.
+# digest (NFR-SEC-005); Renovate tracks them (renovate.json).
 name: ci
 
 on:
@@ -261,6 +261,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: node scripts/gates/check-licenses.mjs
 
+  # CodeQL, OSV-Scanner, dependency review, zizmor (ci-cd.md section 3: results feed ci-ok)
+  security:
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    uses: ./.github/workflows/security.yml # zizmor: ignore[self-repository] actionlint 1.7.12 rejects the newer $/ form
+
   # T5 evals on recorded responses start in M14; until then the job says so instead of passing silently
   eval-recorded:
     runs-on: ubuntu-latest
@@ -270,7 +278,7 @@ jobs:
 
   ci-ok:
     if: always()
-    needs: [verify, build, e2e, e2e-report, visual, a11y, size, api, license, eval-recorded]
+    needs: [verify, build, e2e, e2e-report, visual, a11y, size, api, license, security, eval-recorded]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

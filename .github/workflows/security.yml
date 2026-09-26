@@ -1,0 +1,74 @@
+# Supply-chain and code security (docs/standards/ci-cd.md section 3, security.md rule 22,
+# NFR-SEC-005). Called from ci.yml on every PR and push (its result feeds ci-ok) and run weekly.
+# CodeQL and dependency review need GitHub code scanning / dependency review, which a private repo
+# only has with GitHub Code Security: they run when the repo variable CODE_SCANNING is 'true'
+# (set it once the repo is public or licensed) and otherwise print SKIP with that reason.
+name: security
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - if: vars.CODE_SCANNING != 'true'
+        run: echo "codeql — SKIP, code scanning not enabled (repo variable CODE_SCANNING)"
+      - if: vars.CODE_SCANNING == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - if: vars.CODE_SCANNING == 'true'
+        uses: github/codeql-action/init@416ff0dea110f80f0f56f0046500dbf7420e4bb0 # codeql-bundle-v2.27.1
+        with:
+          languages: javascript-typescript
+      - if: vars.CODE_SCANNING == 'true'
+        uses: github/codeql-action/analyze@416ff0dea110f80f0f56f0046500dbf7420e4bb0 # codeql-bundle-v2.27.1
+
+  osv-scanner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # fails on any known vulnerability in the lockfile; no SARIF upload, so no code scanning needed
+      - uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        with:
+          scan-args: --lockfile=pnpm-lock.yaml
+
+  dependency-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - if: github.event_name != 'pull_request'
+        run: echo "dependency-review — SKIP, only a pull request has a dependency diff"
+      - if: github.event_name == 'pull_request' && vars.CODE_SCANNING != 'true'
+        run: echo "dependency-review — SKIP, dependency review not enabled (repo variable CODE_SCANNING)"
+      # new high/critical advisories or a license outside the allowlist fail the PR (NFR-LIC-002 is
+      # also enforced by check-licenses in ci.yml)
+      - if: github.event_name == 'pull_request' && vars.CODE_SCANNING == 'true'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # the same digest-pinned actionlint + zizmor images as the local ladder (check-workflows.mjs)
+      - run: node scripts/gates/check-workflows.mjs --require-docker

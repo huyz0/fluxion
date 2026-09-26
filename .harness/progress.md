@@ -335,3 +335,12 @@ flake-report fails on flaky, failed, or zero tests run; all-green fails on anyth
 local proof: 2 blob shards -> merge-reports json -> flake-report "4 run, 0 flaky, 0 failed" exit 0; test:a11y 1 passed; check-workflows --require-docker: actionlint 0, zizmor 0
 ci-workflow.test +7 (job set, ci-ok needs all, OS/engine/shard matrix, image = installed Playwright version by digest, SHA pins in every workflow, run blocks <= 3 lines, flake-report + all-green negatives); mutation (visual dropped from ci-ok needs) fails the test and the gate leg
 first push green: pending M1.24 (needs human-authorised push)
+
+## 2026-09-27 M1.21 (claude)
+done: security.yml (workflow_call from ci.yml as job `security`, which ci-ok needs; weekly cron): codeql, osv-scanner (lockfile; local run: 963 packages, no issues), dependency-review (PRs), zizmor (check-workflows --require-docker, same digest-pinned images as the ladder)
+private repo without GitHub Code Security (security_and_analysis null): CodeQL upload and dependency review would fail, so both run only when repo variable CODE_SCANNING is 'true' and otherwise print SKIP with that reason — human decision: set it once the repo is public or licensed
+nightly.yml: properties (FC_RUNS=10000, pnpm test), visual-xos (3 OSes, chromium @visual), mutation/perf/eval-live print SKIP naming M20/M13/M16; report (if: failure(), only job with issues: write) runs scripts/ci/nightly-issue.mjs (one "Nightly failure" issue, commented on when open)
+release.yml: permissions {} + job-level contents/pull-requests/id-token write, environment npm, no cache, changesets/action v2 with publish-script `pnpm run release` (new root script); first real publish unverified until npm trusted publishing is configured (human)
+renovate.json (renovate-config-validator --strict, renovate 44.115.10: valid, no migration): dashboard approval (every commit needs a task id, so updates are adopted in task commits), minimumReleaseAge 1 day (= pnpm 1440 min), groups per catalog, majors ungrouped, actions/docker digests, playwright npm + image one group, regex manager for check-workflows images
+zizmor wants the new `$/` self-repository form, actionlint 1.7.12 rejects it: kept ./ with an inline zizmor ignore; actionlint 0, zizmor 0
+ci-workflow.test +5 (only release.yml has id-token/contents write, security/nightly job sets and SKIP reasons, renovate age = pnpm age and regex manager matches both images, nightly-issue dry run); pin and run-block checks now cover every workflow

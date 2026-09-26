@@ -22,7 +22,8 @@
     "lint": "biome ci .",
     "format": "biome check --write .",
     "verify": "node scripts/gates/precommit.mjs --all",
-    "verify:fast": "node scripts/gates/precommit.mjs --quick"
+    "verify:fast": "node scripts/gates/precommit.mjs --quick",
+    "release": "turbo run build --filter=./packages/* --filter=./packs/* && changeset publish"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",

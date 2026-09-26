@@ -1,0 +1,38 @@
+# Release (docs/standards/ci-cd.md section 3, NFR-SEC-005). Without pending changesets it does
+# nothing; with them it opens or updates the "Version Packages" PR. Merging that PR (a human action)
+# publishes through npm trusted publishing (OIDC): provenance is automatic and there is no NPM_TOKEN.
+# The only workflow with id-token: write. No dependency cache here (cache poisoning of a release).
+name: release
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: npm # required reviewer = a human (repo setting)
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false # changesets/action pushes through the GitHub API with its token input
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          publish-script: pnpm run release

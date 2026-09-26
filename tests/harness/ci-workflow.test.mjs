@@ -1,7 +1,7 @@
 // NFR-PORT-005 / NFR-SEC-005: the gates workflow runs the local gate definitions on three OSes
 // with SHA-pinned actions, and re-checks every commit. Structural check (no YAML dependency).
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { out, REPO, sandbox } from './helpers.mjs';
@@ -73,6 +73,8 @@ describe('check-commits (NFR-DX-004)', () => {
 
 // ci.yml (M1.20): the job set of ci-cd.md section 3, gated by one required check
 const ci = readFileSync(join(REPO, '.github/workflows/ci.yml'), 'utf8');
+const WORKFLOWS = readdirSync(join(REPO, '.github/workflows')).filter((f) => f.endsWith('.yml'));
+const workflow = (name) => readFileSync(join(REPO, '.github/workflows', name), 'utf8');
 const jobsOf = (text) => [...(/^jobs:\s*\n([\s\S]*)/m.exec(text)?.[1] ?? '').matchAll(/^ {2}([a-z][\w-]*):\s*$/gm)].map((m) => m[1]);
 
 /** Non-blank, non-comment lines of the `run: |` block starting at line i (0 when line i is not one). */
@@ -110,22 +112,74 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
   });
 
   it('pins every action in every workflow to a full commit SHA (NFR-SEC-005)', () => {
-    for (const name of ['ci.yml', 'gates.yml']) {
-      const text = readFileSync(join(REPO, '.github/workflows', name), 'utf8');
-      for (const [, u] of text.matchAll(/uses:\s*(\S+)/g)) assert.match(u, /@[0-9a-f]{40}$/, `${name}: unpinned action ${u}`);
+    assert.ok(WORKFLOWS.length >= 5, WORKFLOWS.join());
+    for (const name of WORKFLOWS) {
+      // ./ is a reusable workflow of this repo at the same commit
+      for (const [, u] of workflow(name).matchAll(/uses:\s*(\S+)/g))
+        if (!u.startsWith('./')) assert.match(u, /@[0-9a-f]{40}$/, `${name}: unpinned action ${u}`);
     }
     assert.match(ci, /^permissions:\n {2}contents: read$/m);
     assert.doesNotMatch(ci, /id-token:/);
   });
 
   it('has no long inline scripts: a run block is at most 3 lines (NFR-PORT-005)', () => {
-    for (const name of ['ci.yml', 'gates.yml']) {
-      const lines = readFileSync(join(REPO, '.github/workflows', name), 'utf8').split('\n');
+    for (const name of WORKFLOWS) {
+      const lines = workflow(name).split('\n');
       for (let i = 0; i < lines.length; i++) {
         const n = runBlockLength(lines, i);
         assert.ok(n <= 3, `${name}:${i + 1} run block has ${n} lines — move it to scripts/ci/`);
       }
     }
+  });
+});
+
+describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', () => {
+  it('only release.yml can mint an OIDC token or write contents (NFR-SEC-005)', () => {
+    for (const name of WORKFLOWS.filter((n) => n !== 'release.yml')) {
+      assert.doesNotMatch(workflow(name), /id-token:\s*write/, name);
+      assert.doesNotMatch(workflow(name), /contents:\s*write/, name);
+    }
+    const release = workflow('release.yml');
+    assert.match(release, /^permissions: \{\}$/m, 'no workflow-level grant');
+    assert.match(release, /id-token: write/);
+    assert.match(release, /environment: npm/);
+    assert.doesNotMatch(release, /cache:/, 'no dependency cache in the release job');
+    assert.doesNotMatch(release, /secrets\.NPM_TOKEN|NODE_AUTH_TOKEN/, 'trusted publishing, no token');
+  });
+
+  it('security.yml runs CodeQL, OSV-Scanner, dependency review and zizmor, and feeds ci-ok (NFR-SEC-005)', () => {
+    const sec = workflow('security.yml');
+    assert.deepEqual(jobsOf(sec), ['codeql', 'osv-scanner', 'dependency-review', 'zizmor']);
+    assert.match(sec, /github\/codeql-action\/analyze@/);
+    assert.match(sec, /osv-scanner-action@[0-9a-f]{40}[^\n]*\n\s+with:\n\s+scan-args: --lockfile=pnpm-lock\.yaml/);
+    assert.match(sec, /actions\/dependency-review-action@/);
+    assert.match(sec, /check-workflows\.mjs --require-docker/);
+    assert.match(sec, /^ {2}workflow_call:/m);
+    // a disabled scanner says so instead of passing silently
+    assert.equal([...sec.matchAll(/SKIP, [a-z ]+not enabled \(repo variable CODE_SCANNING\)/g)].length, 2);
+    assert.match(ci, /^ {2}security:\n[\s\S]*?uses: \.\/\.github\/workflows\/security\.yml/m);
+  });
+
+  it('nightly.yml has the planned jobs and reports failures as one issue (NFR-SEC-005)', () => {
+    const nightly = workflow('nightly.yml');
+    assert.deepEqual(jobsOf(nightly), ['mutation', 'properties', 'perf', 'eval-live', 'visual-xos', 'report']);
+    assert.match(nightly, /FC_RUNS: '10000'/);
+    const report = /^ {2}report:[\s\S]*/m.exec(nightly)[0];
+    assert.match(report, /needs: \[mutation, properties, perf, eval-live, visual-xos\]/);
+    assert.match(report, /if: failure\(\)/);
+    assert.equal([...nightly.matchAll(/issues: write/g)].length, 1, 'only the report job writes issues');
+    assert.match(report, /issues: write/);
+  });
+
+  it('renovate waits a day like pnpm, pins digests and opens nothing without approval (NFR-SEC-005)', () => {
+    const r = JSON.parse(readFileSync(join(REPO, 'renovate.json'), 'utf8'));
+    const pnpmAge = Number(/^minimumReleaseAge:\s*(\d+)/m.exec(readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8'))[1]);
+    assert.equal(r.minimumReleaseAge, `${pnpmAge / 1440} day`);
+    assert.ok(r.extends.includes('helpers:pinGitHubActionDigestsToSemver') && r.extends.includes('docker:pinDigests'));
+    assert.equal(r.dependencyDashboardApproval, true, 'every commit needs a task id: updates are adopted in task commits');
+    assert.ok(r.packageRules.some((p) => p.matchDepTypes?.includes('pnpm.catalog.default') && p.groupName));
+    const cw = readFileSync(join(REPO, 'scripts/gates/check-workflows.mjs'), 'utf8');
+    assert.equal([...cw.matchAll(new RegExp(r.customManagers[0].matchStrings[0], 'g'))].length, 2, 'the regex manager sees both linter images');
   });
 });
 
@@ -184,6 +238,22 @@ describe('ci scripts (NFR-DX-004)', () => {
         assert.ok(r.stdout.split(/\r?\n/).includes(`FAIL e2e (${bad})`), out(r));
       }
       assert.equal(green({}).status, 1);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('nightly-issue opens one issue, or comments on the open one, naming the failed jobs (NFR-DX-004)', () => {
+    const sb = sandbox(['scripts/ci']);
+    try {
+      const NEEDS = JSON.stringify({ perf: { result: 'success' }, properties: { result: 'failure' } });
+      const run = (existing) => sb.node('scripts/ci/nightly-issue.mjs', ['--dry-run'], { env: { ...process.env, NEEDS, NIGHTLY_EXISTING: existing } });
+      const fresh = run('');
+      assert.equal(fresh.status, 0, out(fresh));
+      assert.match(fresh.stdout, /^gh issue create --title "Nightly failure" --body "[^"]*Failed jobs: properties \(failure\)/m);
+      const again = run('42');
+      assert.match(again.stdout, /^gh issue comment 42 --body /m);
+      assert.doesNotMatch(again.stdout, /issue create/);
     } finally {
       sb.cleanup();
     }
