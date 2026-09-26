@@ -107,7 +107,7 @@ export interface EditorContext extends PlayerContext {
 // @fluxion/sdk/testing — renderComponent(), contractTest(def), fakeContext(), fixtures
 ```
 
-Stability: API Extractor reports (`packages/sdk/etc/*.api.md`) are checked in CI. Release tags
+Stability: API Extractor reports (`packages/*/api/*.api.md`, `check-api.mjs`) are checked in CI. Release tags
 are `@public` (semver-guaranteed), `@beta`, `@alpha` and `@internal` (not exported). A breaking
 change to `@public` needs a major changeset plus an ADR (NFR-MNT-007). The host accepts plugins
 whose `engines.sdk` range includes its SDK version and refuses others with a diagnostic.

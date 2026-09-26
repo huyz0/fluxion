@@ -57,3 +57,9 @@ declaration output simple enough for every tool that reads it.
 `tests/harness/tsconfig-strict.test.mjs` checks strictness; `workspace-shape.test.mjs` (M1.6)
 checks every package's `exports` map has the three conditions; `check-api` (M1.14) runs API
 Extractor (its bundled compiler) on the emitted declarations and TypeDoc on TS 6.
+
+## Amendments
+
+- 2026-09-26 (M1.11): dependency-cruiser also needs the TS 6 compiler API; it gets TS 6 through `packageExtensions`.
+- 2026-09-26 (M1.14): API Extractor bundles its own compiler and reads the emitted `.d.ts`, so it needs no TS 6; TypeDoc gets TS 6 as `apps/docs`' own `typescript` from the named catalog `typescript6`.
+- 2026-09-27 (M1.37): one TS 6 version string: `pnpm-workspace.yaml` declares `npm:typescript@6.0.3` once, YAML-anchored as `&typescript6` in dependency-cruiser's `packageExtensions` entry, and the `typescript6` catalog reuses it (`*typescript6`). pnpm rejects a `catalog:` specifier inside `packageExtensions`, so the catalog cannot be the source. The Decision Outcome text above was corrected in place in M1.11/M1.14, before the amendment policy (documentation.md rule 8) existed.

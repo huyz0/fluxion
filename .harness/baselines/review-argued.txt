@@ -14,3 +14,6 @@ M1 cp1 F7: descoping is a human decision and a State change to descoped always n
 M1 cp1 F8: the unrecorded M1.1 round-2 verdict is disclosed in progress.md and the M1.1 commit body; from now on every verdict is recorded before fixing.
 M1 cp2 F7 (part): size-limit and knip negatives are not in the M1 plan leg list; their configs are exercised by the verify leg, not by dedicated negatives.
 M1 cp3 F7: a serial regression of the ladder is caught by the precommit budget check and M1.19 check-budget; a real-workspace sandbox inside the harness suite costs too much.
+M1.36 F1: no current harness test writes node_modules (pnpm-in-sandbox was removed in this task); snapshotting node_modules would cost seconds per run for a hypothetical writer; revisit if a test starts a package manager.
+M1.36 F2: a turbo caching regression is still caught by the m1-complete build leg (FULL TURBO on the second run) and slows the ladder into the precommit budget check; no false green on a plan leg.
+M1.36 F3: an untracked probe naming an ID is friction, not a false green; the reviewer sees any matrix path in the diff.

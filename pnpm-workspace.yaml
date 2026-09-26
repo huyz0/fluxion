@@ -11,11 +11,12 @@ strictPeerDependencies: false
 saveExact: true
 
 # dependency-cruiser parses TypeScript through the compiler API, which TS 7 does not ship yet; it
-# gets its own typescript@6 (ADR-0011 dual compiler). The repo's tsc stays on the catalog's TS 7.
+# gets TS 6 here: the only TS 6 version string, which the typescript6 catalog below reuses (YAML anchor;
+# pnpm allows no catalog: specifier in packageExtensions). ADR-0011. The repo's tsc stays on TS 7.
 packageExtensions:
   dependency-cruiser:
     dependencies:
-      typescript: npm:typescript@6.0.3
+      typescript: &typescript6 npm:typescript@6.0.3
 
 # One version per shared dependency; packages refer to these with "catalog:".
 # Versions verified on npm 2026-09-26 (docs/standards/tech-stack.md). Each row adds the pins it
@@ -45,7 +46,7 @@ catalog:
 # `typescript` via "catalog:typescript6", so TypeDoc resolves its peer to TS 6, not the root TS 7.
 catalogs:
   typescript6:
-    typescript: npm:typescript@6.0.3
+    typescript: *typescript6
 
 # Planned pins, verified on npm 2026-09-26, added to the catalog by the row that installs them
 # (re-check minimumReleaseAge then).

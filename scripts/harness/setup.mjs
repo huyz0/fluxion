@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 // One-time (idempotent) developer/agent setup. Run as `pnpm run setup` (`pnpm setup` is a pnpm built-in; ADR-0138).
-import { chmodSync } from 'node:fs';
-import { exists, git, node, repoPath, run } from '../gates/lib.mjs';
+import { chmodSync, readFileSync } from 'node:fs';
+import { belowFloor, exists, git, node, repoPath, run } from '../gates/lib.mjs';
+
+// first: below the package.json engines.node floor, install works but tsdown/size-limit fail later,
+// so nothing below is worth running (M1.37)
+const engines = JSON.parse(readFileSync(repoPath('package.json'), 'utf8')).engines?.node ?? '';
+if (belowFloor(process.versions.node, engines)) {
+  console.error(`Node ${process.versions.node} is below the engines floor ${engines} (NFR-PORT-004)`);
+  process.exit(1);
+}
 
 const steps = [
   ['git hooks', () => git(['config', 'core.hooksPath', '.githooks'])],
@@ -32,10 +40,5 @@ for (const [name, fn] of steps) {
     ok = false;
     console.error(r.stderr);
   }
-}
-const [major] = process.versions.node.split('.').map(Number);
-if (major < 22) {
-  ok = false;
-  console.error(`Node ${process.versions.node} < 22 (NFR-PORT-004)`);
 }
 process.exit(ok ? 0 : 1);

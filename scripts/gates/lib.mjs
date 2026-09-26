@@ -56,6 +56,17 @@ export function runAsync(cmd, args = [], opts = {}) {
 export const nodeAsync = (script, args = [], opts) => runAsync(process.execPath, [repoPath(script), ...args], opts);
 export const git = (args, opts) => run('git', args, opts);
 
+/** Whether Node `version` (x.y.z) is below the floor in an engines range such as ">=22.19". */
+export function belowFloor(version, engines) {
+  const floor = /(\d+)\.(\d+)(?:\.(\d+))?/
+    .exec(engines)
+    ?.slice(1, 4)
+    .map((n) => Number(n ?? 0)) ?? [22, 0, 0];
+  const have = version.split('.').map(Number);
+  const first = floor.findIndex((f, i) => have[i] !== f); // the first version part that differs
+  return first >= 0 && have[first] < floor[first];
+}
+
 /** The exact staged bytes a review verdict is bound to. */
 export const stagedDiff = () => git(['diff', '--cached', '--binary', '--no-color', '--no-ext-diff']).stdout;
 export const stagedHash = () => createHash('sha256').update(stagedDiff()).digest('hex');

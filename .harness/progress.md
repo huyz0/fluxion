@@ -289,3 +289,10 @@ done: harness tests no longer write the repo: turbo.test's real-repo build case 
 check-suite-isolation.mjs (m1-complete leg): runs the suite, fails on any created/rewritten/deleted file; repo run: 1427 files untouched
 found: TypeDoc validation sat at the root, which packages mode ignores - notDocumented was off (cp3 F3 was right); now in packageOptions, api.test negative
 check-trace fails on a stale matrix Tests column (refreshed); trace.test +1, isolation.test (3)
+
+## 2026-09-27 M1.37 (claude)
+done: doc sync (cp2 F4, cp3 F4): tech-stack Node 22.19 + TS rows; ci-cd quick tier as implemented; code-structure new-package steps via workspaces.json + generator; 09-extensibility report path api/; M1.md no tsgo; documentation.md rule 8 allows a dated Amendments section for corrections of detail, ADR-0011 has one
+single TS 6 pin: first tried catalog:typescript6 in packageExtensions (a stale lockfile hid that pnpm rejects it; see below)
+setup.mjs checks the engines floor via lib belowFloor; docs-consistency.test +6; M1.36 argued minors committed here
+single TS 6 pin: pnpm rejects catalog: in packageExtensions (a stale lockfile had hidden it), so the one npm:typescript@6.0.3 string is YAML-anchored in packageExtensions and aliased by the typescript6 catalog; staged ladder now 117 s (harness suite ~115 s concurrent) - budget work in M1.19
+review r1 changes-requested (4) fixed: ADR amendment describes the YAML-anchor route; M1.md names dependency-cruiser; tests check every package's typescript spec, dated amendment lines, and run setup.mjs (the floor check now runs first and exits)

@@ -132,9 +132,9 @@ condition, published consumers get `dist/`.
 ## 7. Adding a package — checklist
 
 1. ADR if it adds a layer, a runtime dependency in `player`, or a published package.
-2. `pnpm gen package <name>` (turbo gen template) — never copy-paste another package.
+2. Add the workspace to `tools/gen/workspaces.json` (layer, `runtime`, `dependsOn` = the overview's "May depend on") and run `node tools/gen/package.mjs <dir>` — never copy-paste another package.
 3. Add it to the package map in `docs/architecture/01-overview.md` with layer and "may depend on".
-4. Add its layer rule to `.dependency-cruiser.mjs`; run `node scripts/gates/check-layering.mjs`.
+4. Layer rules come from `dependsOn` (`.dependency-cruiser.mjs` reads workspaces.json; never edit rules by hand); run `node scripts/gates/check-layering.mjs`.
 5. Add coverage floor to `thresholds.mjs` (pure ≥ 90/85, render/player ≥ 80, editor ≥ 70).
 6. Add size-limit entry if it is published or bundled into the player.
 7. Write README.md and AGENTS.md; add a changeset if publishable.

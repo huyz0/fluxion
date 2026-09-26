@@ -14,10 +14,10 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 
 | Concern | Choice | Target version (verify on npm) | Why |
 |---|---|---|---|
-| Runtime (dev, CLI, MCP) | Node.js LTS | ≥ 22.14 (24.x preferred) | Vitest 5 needs ≥ 22.12; npm OIDC publishing needs ≥ 22.14 |
+| Runtime (dev, CLI, MCP) | Node.js LTS | ≥ 22.19 (24.x preferred) | `engines.node` / `.node-version`; tsdown needs ≥ 22.18, size-limit ≥ 22.19; npm OIDC publishing needs ≥ 22.14 |
 | Package manager | pnpm workspaces + **catalogs** | 11.x, pinned via `packageManager` | strict `node_modules`, one version per dep, release-age gating on by default. pnpm 12 (Rust rewrite, same lockfile) is evaluated later |
 | Task runner | Turborepo + remote cache | 2.11.x | tiny config, `--affected`, agents rarely misconfigure it |
-| Language | TypeScript, strict, ESM only | TS 7.0.x (`tsgo -b`) for typecheck; TS 6.0.x kept as `typescript` | TS 7 is ~10x faster; API Extractor/TypeDoc/Stryker need the TS 6 compiler API until TS 7.1 |
+| Language | TypeScript, strict, ESM only | TS 7.0.x as `typescript` (`tsc -b`) for typecheck; TS 6.0.x only from the `typescript6` catalog, the single TS 6 pin (one YAML-anchored string in pnpm-workspace.yaml) | TS 7 is ~10x faster; TypeDoc and dependency-cruiser (later Stryker) need the TS 6 compiler API until TS 7.1; API Extractor bundles its own compiler and reads the emitted `.d.ts` (ADR-0011) |
 | App build | Vite (Rolldown) + `@vitejs/plugin-react` (Oxc, React Compiler) | 8.1.x / 6.1.x | one fast bundler, no Babel anywhere |
 | Library build | tsdown | 0.2x (pre-1.0) | Rolldown + fast `.d.ts` via `isolatedDeclarations` |
 | Player single file | Vite library mode + `vite-plugin-singlefile` | latest Vite 8-aware | self-contained `.flux.html` |
