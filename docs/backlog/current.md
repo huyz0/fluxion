@@ -1,6 +1,6 @@
 # Backlog — M0 Harness bootstrap & verification
 
-Planned: 18 rows · Completion: `node scripts/gates/m0-complete.mjs` · Plan: [M0](../milestones/M0.md)
+Planned: 18 rows (+1 added: M0.19) · Completion: `node scripts/gates/m0-complete.mjs` · Plan: [M0](../milestones/M0.md)
 
 Only the current milestone lives here. Closed milestones move to `archive/M<n>.md`.
 States: `todo` · `doing` · `done` · `blocked (<reason>)`. Commit: `git log --grep "^<ID>:"`.
@@ -25,3 +25,4 @@ States: `todo` · `doing` · `done` · `blocked (<reason>)`. Commit: `git log --
 | M0.16 | `scripts/harness/worktree.mjs create/remove <slug>` | NFR-DX-003 | WHEN run THE SYSTEM SHALL create `../fluxion-<slug>` on branch `agent/<slug>` | M0.1 | todo | |
 | M0.17 | `docs/harness/README.md` operator guide (start/monitor/stop loops, troubleshooting) | NFR-DX-003 | Guide linked from AGENTS.md; check-portability passes | M0.14 | todo | |
 | M0.18 | Milestone review M0 (fresh agent) + dispositions + roadmap current → M1 | all | `.harness/reviews/milestone-M0-final.json` exists; m0-complete exits 0 | all | todo | |
+| M0.19 | `.gitattributes`: LF normalization repo-wide (CRLF only for .cmd/.bat/.ps1), binary asset types incl. `.flux` | NFR-PORT-005 | WHEN files are checked out on any OS THE SYSTEM SHALL use LF line endings so gate scripts and review diff hashes are identical across platforms | — | done | |

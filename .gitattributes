@@ -1,0 +1,29 @@
+# Normalize line endings: LF in the repo and working tree on every OS, so gate scripts,
+# review diff hashes and golden files are byte-identical across Windows/macOS/Linux.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.flux binary
+*.wasm binary
+*.pdf binary
+*.mp4 binary
+*.webm binary
+*.lottie binary
+*.riv binary
