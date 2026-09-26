@@ -10,6 +10,11 @@ node scripts/harness/worktree.mjs create dryrun
 Toy gate: `node scripts/harness/kits/toy-gate.mjs success|impossible` (scratch files live in the
 gitignored `.harness/tmp/toy/`).
 
+**Use the interactive tool, not a headless run.** Observed 2026-09-26 with codex-cli 0.157.1:
+`codex exec '/goal …'` treats `/goal` as ordinary prompt text (no goal loop, no judge); the agent
+did load the `drive` skill and met the toy success goal, but that does not exercise the built-in
+goal loop. Run `/goal` inside the Codex TUI and inside a Claude Code session.
+
 ## Success run — goal text
 
 > Make `node scripts/harness/kits/toy-gate.mjs success` exit 0. The goal is met only when that

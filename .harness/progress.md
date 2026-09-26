@@ -121,3 +121,8 @@ next (human): docs/harness/README.md section 7; then /goal resumes M0.13-15 comm
 done: cross-vendor smoke 2/2 caught — claude->codex via Codex CLI 0.157.1 (installed, existing ChatGPT login), codex->claude via isolated Claude subagent (Claude CLI not logged in)
 added FLUXION_SMOKE_MANUAL mode + test; evidence .harness/reviews/cross-vendor-smoke.json
 still blocked: M0.14/M0.15 interactive /goal dry runs (human)
+
+## 2026-09-26 M0.15 probe (claude)
+codex exec with "/goal ..." ran as a plain prompt (no goal loop); toy success met; log kept locally at .harness/tmp/dryrun/codex-success.log (not recorded as the dry run)
+kit doc now says: use the interactive TUI / Claude Code session
+still blocked: M0.14/M0.15 (human, interactive /goal)
