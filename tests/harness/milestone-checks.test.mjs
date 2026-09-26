@@ -244,7 +244,7 @@ describe('checkBacklogDone inputs (M0.24 review F1-F3)', () => {
   });
 });
 
-describe('descoped rows (user decision 2026-09-26)', () => {
+describe('descoped rows (NFR-DX-003, user decision 2026-09-26)', () => {
   const row = (id, state) => `| ${id} | task | NFR-DX-003 | WHEN x THE SYSTEM SHALL y | — | ${state} | |`;
 
   it('accepts a row descoped with a stated reason', () => {
