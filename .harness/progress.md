@@ -25,3 +25,7 @@ argued: M0.1 F1/F2 (quoteWin % expansion, trailing backslash) — no caller affe
 done: tests/harness helpers + commit-msg suite 12/12; mutation check (weakened gate) -> 2 fail
 fix: node --test needs a glob (tests/harness/*.test.mjs) in precommit + m0 gate
 next: M0.4
+
+## 2026-09-26 M0.4 (claude)
+done: portability suite 14/14 (12 negative cases); mutation (drop built-in check) -> 1 fail
+next: M0.5
