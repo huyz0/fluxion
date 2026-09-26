@@ -135,3 +135,11 @@ next: M0.18 final milestone review, roadmap to M1
 ## 2026-09-26 M0.18 (claude): M0 complete
 final milestone review: pass; 2 major handed to M1 (descoping loophole first; gates.yml actionlint + first push), 3 minor argued
 roadmap current -> M1; the M1 plan carries the hand-offs
+
+## 2026-09-26 M1 session 1 (claude, under /goal)
+done: M1.1 — M0 backlog archived; M1 backlog 22 rows (plan 20 + M0 hand-offs); m1-complete.mjs written red (1/28)
+reviews: isolated subagent only (ADR-0137)
+next: M1.2 descoping loophole
+
+## 2026-09-26 M1.1 review note (claude)
+round-2 verdict (93082925, 2 findings on ci.yml job parsing) was not recorded before fixing; the review record therefore shows one round fewer than actually happened (4 reviews for M1.1)

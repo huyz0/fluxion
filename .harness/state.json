@@ -1,9 +1,9 @@
 {
   "milestone": "M1",
-  "currentTask": null,
+  "currentTask": "M1.1",
   "attempts": 0,
   "reviewRound": 0,
-  "loopActive": false,
+  "loopActive": true,
   "blockedReason": null,
   "updated": "2026-09-26"
 }

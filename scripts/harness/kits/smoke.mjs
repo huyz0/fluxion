@@ -79,8 +79,11 @@ try {
     if (!src.includes(s.from)) die(`seed anchor not found in ${s.file}: ${s.from}`);
     writeFileSync(target, src.replace(s.from, s.to));
     const backlog = join(wt, 'docs', 'backlog', 'current.md');
-    const rows = readFileSync(backlog, 'utf8').replace(/^\| M0\.13 \|.*$/m, `| ${TASK} | ${s.task} | NFR-DX-003 | THE SYSTEM SHALL keep behaviour unchanged | — | doing | |`);
-    writeFileSync(backlog, rows);
+    // the packet reads the task row from current.md; replace the M0.13 row, or append one once
+    // M0 has been archived (worktree-only, never staged)
+    const row = `| ${TASK} | ${s.task} | NFR-DX-003 | THE SYSTEM SHALL keep behaviour unchanged | — | doing | |`;
+    const text = readFileSync(backlog, 'utf8');
+    writeFileSync(backlog, /^\| M0\.13 \|/m.test(text) ? text.replace(/^\| M0\.13 \|.*$/m, row) : `${text.trimEnd()}\n${row}\n`);
     inWt('git', ['add', s.file]);
     const packet = nodeWt('scripts/harness/review.mjs', ['context', '--task', TASK]);
     if (packet.status !== 0) die(`packet failed: ${packet.stderr}`);
