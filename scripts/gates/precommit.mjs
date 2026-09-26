@@ -27,6 +27,7 @@ const STEPS = [
   ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', 'typecheck', ...(mode === 'all' ? [] : ['--affected']))],
   ['lint', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('biome', 'ci', '.')],
   ['test', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', mode === 'quick' ? 'test:related' : 'test:coverage', ...(mode === 'all' ? [] : ['--affected']))],
+  ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
   ['layering', (m) => m !== 'quick', () => exists('scripts/gates/check-layering.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-layering.mjs')],
   ['licenses', (m) => m !== 'quick', () => exists('scripts/gates/check-licenses.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-licenses.mjs')],
   ['trace', (m) => m !== 'quick', () => exists('scripts/gates/check-trace.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-trace.mjs')],

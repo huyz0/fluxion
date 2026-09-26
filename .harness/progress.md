@@ -146,3 +146,8 @@ round-2 verdict (93082925, 2 findings on ci.yml job parsing) was not recorded be
 
 ## 2026-09-26 M1.2 (claude)
 done: check-reviewed never exempts a State change to descoped; checkBacklogDone needs ADR-NNNN or Deferred in the reason; gate probe runs the real check-reviewed case; M1.1 review F1 (grep probe) resolved
+
+## 2026-09-26 M1.3 (claude)
+done: check-workflows.mjs (actionlint 1.7.12 + zizmor 1.30.1 via digest-pinned Docker images; SKIP without Linux Docker unless --require-docker) + 5 tests; registered in precommit
+fixed gates.yml zizmor artipacked (persist-credentials: false)
+first green push of gates.yml on 3 OSes: run 36225774295 (ubuntu 46s, macos 22s, windows 2m52s); the persist-credentials change is re-verified by the next push
