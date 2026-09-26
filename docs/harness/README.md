@@ -50,7 +50,8 @@ Codex only: trust the project `.codex/` layer when prompted (hooks re-prompt whe
 
 - The loop stops itself on the conditions in AGENTS.md ("Stop and hand back") and writes the
   reason to `state.json` → `blockedReason`. Read the last progress entry, decide, then clear
-  `blockedReason` (and delete `.harness/tmp/stop-blocks` if the Stop-hook cap was hit).
+  `blockedReason` and delete `.harness/tmp/stop-blocks` (the Stop-hook counter persists until the
+  gate goes green, so a stale count would end the resumed loop early).
 - Decisions the loop must not make alone: requirement/scope changes, licence posture, file-format
   major versions, anything outward-facing (push, publish, release) — use the `ship` skill only
   when you want that.

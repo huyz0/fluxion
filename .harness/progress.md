@@ -99,3 +99,9 @@ next: M0.17
 ## 2026-09-26 M0.17 (claude)
 done: docs/harness/README.md operator guide (setup, start, watch, unblock, finish, troubleshooting); linked from AGENTS.md
 next: M0.21
+
+## 2026-09-26 M0.21 (claude)
+done: m0-complete legs behavioural (milestone-checks.mjs: dry-runs sections/outcomes, smoke both directions, final review range+dispositions, hooks 100755; deliverable->test map; latency legs NFR-DX-002)
+13 tests with stub fixtures; gate 20/24 — red only: M0.13 smoke, M0.14/15 dry runs, M0.18 review, roadmap
+also: guide says delete stop-blocks whenever blockedReason is cleared (M0.17 review F1)
+next: M0.13/14/15 need a human (codex + claude CLIs, logins)
