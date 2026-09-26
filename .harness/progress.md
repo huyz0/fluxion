@@ -267,3 +267,8 @@ policy = LICENSES in thresholds.mjs (tech-stack.md says so); check-drift treats 
 licenses.test (11), drift.test +4; trace --milestone M1 now covers every Must ID (NFR-LIC-002)
 review r1 changes-requested (3) fixed: failed/unreadable pnpm output fails the gate; dev listing is recursive (every workspace); deny match case-insensitive and version-spelling tolerant (not LGPL)
 review r2 changes-requested (2) fixed: spdx.mjs parses expressions with precedence/grouping/WITH (grouped AND GPL no longer slips through); non-SPDX text fails closed for shipped code and is denied by GPL/General Public License/Affero text match (not Lesser/Library); spdx.test (5), licenses.test +3
+
+## 2026-09-26 M1.34 (claude)
+done: DENY_TEXT also tested on each parsed id; Lesser/Library guard covers the GPL word; boundary = not after a letter/digit (GNU_GPL); licenses.test +6 assertions (M1.15 r3 minors; round cap reached there)
+review r1 pass + minor fixed: Lesser/Library guard accepts any separator run (variable-length lookbehind)
+review r2 pass + minor fixed: guard needs the word Lesser/Library joined by whitespace . _ / - only

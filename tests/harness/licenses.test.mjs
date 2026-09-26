@@ -81,6 +81,13 @@ describe('check-licenses (NFR-LIC-001, NFR-LIC-002)', () => {
     const lgpl = licenses({ dev: [['y', 'LGPL-3.0-only']] });
     const lesser = licenses({ dev: [['z', 'GNU Lesser General Public License v3']] });
     assert.equal(lesser.status, 0, out(lesser));
+    // M1.34 (M1.15 review r3): one-token free text is denied; Lesser/Library GPL in any spelling is not
+    for (const spelling of ['GNU-GPL-3.0', 'GNU/GPLv3', 'GNU_GPL', 'library: GPL-3.0', 'Lesser, GPL', 'SmallLibrary GPL'])
+      assert.equal(licenses({ dev: [['w', spelling]] }).status, 1, spelling);
+    for (const spelling of ['GNU Lesser GPL v3', 'GNU Library GPL', 'GNU-LGPL-3.0', 'GNU.Lesser.GPL', 'GNU Lesser  GPL']) {
+      const r = licenses({ dev: [['v', spelling]] });
+      assert.equal(r.status, 0, `${spelling}\n${out(r)}`);
+    }
     assert.equal(lgpl.status, 0, out(lgpl));
   });
 

@@ -68,13 +68,14 @@ const allowedBy = (expr, allow) => {
 const DENY = new RegExp(`^(${LICENSES.denyPrefixes.map((d) => d.replace(/-$/, '')).join('|')})(?:$|[^A-Z]|V\\d)`, 'i');
 // free text: "GNU GPLv3", "GNU General Public License v3", "Affero" (not Lesser/Library GPL)
 const DENY_TEXT = new RegExp(
-  `\\b(${LICENSES.denyPrefixes.map((d) => d.replace(/-$/, '')).join('|')})|(?<!(LESSER|LIBRARY) )GENERAL PUBLIC LICENSE|AFFERO`,
+  `(?<!\\b(LESSER|LIBRARY)[\\s._/-]+)((?<![A-Z0-9])(${LICENSES.denyPrefixes.map((d) => d.replace(/-$/, '')).join('|')})|GENERAL PUBLIC LICENSE)|AFFERO`,
   'i',
 );
 // denied when every way of satisfying the expression uses a denied licence
 const denied = (expr) => {
   const t = tree(expr);
-  return t === null ? DENY_TEXT.test(expr) : !satisfiable(t, (id) => !DENY.test(id));
+  // an id may itself be free text in one token (GNU-GPL-3.0, GNU/GPLv3): test it both ways (M1.34)
+  return t === null ? DENY_TEXT.test(expr) : !satisfiable(t, (id) => !DENY.test(id) && !DENY_TEXT.test(id));
 };
 const at = (p) => `${p.name}@${p.version} (${p.license})`;
 
