@@ -5,7 +5,7 @@
 > *and* a milestone review (fresh agent) has recorded a verdict. The command is written first,
 > red (see `docs/standards/sdd.md`, skill `plan-milestone`).
 
-**Current milestone: `M1`** (the `drive` skill reads this line).
+**Current milestone: `M2`** (the `drive` skill reads this line).
 
 Plans (`M<n>.md`) are hypotheses with ≤ ~20 tasks; the backlog (`docs/backlog/current.md`) is
 authoritative for the current milestone only.
@@ -88,3 +88,7 @@ receiving milestone's plan.
 | `gates.yml`: actionlint clean + first push green on 3 OSes; guide CI item required before M1 CI work (M0 final F2) | M0 | M1 row 18 (early) | never linted or run |
 | Function-length/complexity caps owned by Biome, not check-size; M1 row 9 reworded accordingly (check-size keeps the file cap from M0.6) (cp1 F5) | M0 | M1 | tools land in M1 |
 | check-tests-kept counts released format fixtures as tests (contracts.md rule 10; `isTest` excludes `fixtures/` today) (M1 cp2 F3) | M1 | M2 (row 16, shared fixtures) | fixtures arrive in M2 |
+| NFR-SEC-005 dependency review and CodeQL are inactive until repo variable `CODE_SCANNING` is set (private repo, no GitHub Code Security); vulnerabilities are enforced meanwhile by OSV-Scanner on every PR/push (any known advisory, not only new) and licences by check-licenses (M1 final F1) | M1 | M11 (before the first public release) | needs a human repo/licence decision |
+| Release enablement: unreleased packages private or a pending-changeset guard, publish job behind the `npm` environment, npm trusted publishing, App token for the Version Packages PR (M1 final F2, M1.21 F1/F2, M1.39) | M1 | M11 | first release is M11 |
+| CI evidence must cover the final review range end, not any sha after M1.21 (M1 final F3) | M1 | M2 | gate code; M1's record was re-taken at the range end |
+| Cold-setup CI job + `check-budget --record` isolation test (M1 final F4); one three-OS verify matrix instead of gates.yml + ci.yml (M1 final F5) | M1 | M2 | CI hygiene |

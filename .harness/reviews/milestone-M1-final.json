@@ -1,0 +1,89 @@
+{
+  "milestone": "M1",
+  "checkpoint": "final",
+  "range": "aaf09b6..369a1d7",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "spec",
+      "detail": "NFR-SEC-005 dependency review and CodeQL run only when repo var CODE_SCANNING=='true'; unset, both echo SKIP and count as success; the human decision was recorded only in progress.md (no row, Deferred entry or ADR).",
+      "failure_scenario": "A PR adds a dependency with a high advisory or a disallowed licence and dependency review never runs while NFR-SEC-005 reads covered."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "plan",
+      "detail": "Release enablement (App token, trusted publishing, npm environment reviewer, split publish job, RELEASE_ENABLED) is not recorded in any receiving milestone; RELEASE_ENABLED only hides the M1.39 hazard (changesets/action publishes every unpublished version).",
+      "failure_scenario": "At M11 a human sets RELEASE_ENABLED=true and the next push publishes all @fluxion/*@0.0.0 stubs with provenance."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "area": "gate-honesty",
+      "detail": "The CI leg accepts any recorded sha at or after M1.21; the record was b63650c (M1.40) and does not cover M1.24 or M1.22; ubuntu-only failures are invisible to the local Windows ladder.",
+      "failure_scenario": "A later commit fails on ubuntu/macos while m1-complete still prints CI green from the stale record."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "spec",
+      "detail": "NFR-DX-001 names a CI job measuring cold setup; there is one local record (win32, Node 26.7) and --record's isolation is untested.",
+      "failure_scenario": "coldSetup silently reuses the machine store or skips verify and the record stays plausible."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "coherence",
+      "detail": "gates.yml and ci.yml both run precommit --all on 3 OSes and gates reruns the harness suite; the per-commit message step is inline bash.",
+      "failure_scenario": "Tripled harness runs triple flake exposure and CI minutes."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "gate-honesty",
+      "detail": "M1.22's 'AGENTS.md commands match package.json scripts' is unchecked; the README leg is a loose regex.",
+      "failure_scenario": "A script rename leaves AGENTS.md pointing at a missing script with nothing red."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "hand-off",
+      "target": "M11 (roadmap Deferred + M11.md handoff)",
+      "note": "needs a human repo-visibility/licence decision; meanwhile OSV-Scanner fails any known advisory on every PR and push and check-licenses gates licences"
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand-off",
+      "target": "M11 (roadmap Deferred + M11.md handoff)",
+      "note": "release is M11; RELEASE_ENABLED stays unset until the listed setup is done"
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "target": "M2 (roadmap Deferred + M2.md handoff)",
+      "note": "evidence re-recorded at the range end 369a1d7 in this commit (later M1 commits are bookkeeping-only, enforced by checkFinalReview); the gate tightening is code, so it goes to M2"
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand-off",
+      "target": "M2",
+      "note": "CI hygiene"
+    },
+    {
+      "finding": "F5",
+      "disposition": "hand-off",
+      "target": "M2",
+      "note": "CI hygiene"
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "minor; no false green on a plan leg"
+    }
+  ],
+  "planDelta": "22 planned -> 41 rows (1.86x), driven by heuristic-gate hardening, ladder concurrency and first real CI runs; budget 1.5-2x rows for gate/CI work, verify on Linux early, put human-setup follow-ups in the Deferred table."
+}

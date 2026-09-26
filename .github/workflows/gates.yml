@@ -27,7 +27,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 15 # the CI rung budget (ci-cd.md section 1); windows ~11 min without the duplicate harness run (M1.42)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -48,9 +48,10 @@ jobs:
           git config --global user.email "ci@example.invalid"
       - name: pre-commit ladder (--all)
         run: node scripts/gates/precommit.mjs --all
-      # runs after a ladder failure too: the ladder shows only the tail of its steps' output (M1.39)
+      # only after a ladder failure, to name every failing test in full (the ladder shows a tail, M1.39);
+      # a green ladder already ran the suite, and a second run pushed windows past its timeout (M1.42)
       - name: harness tests
-        if: ${{ !cancelled() }}
+        if: failure()
         run: node --test "tests/harness/*.test.mjs"
       # windows/macos runners have no Linux Docker, so the ladder's workflows step SKIPs there; ubuntu
       # must really run actionlint + zizmor (M1.19, M1 cp1 F3)

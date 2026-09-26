@@ -365,3 +365,8 @@ recorded b63650c (gates 36275476158, ci 36275476410) and verified live; ci-evide
 README: status (toolchain skeleton), Quickstart (Node >= 22.19, pnpm 11 via corepack; pnpm i, pnpm run setup (also installs Chromium), pnpm verify; review r1: e2e rows say Chromium-only vs all five projects needing `playwright install`) and command table; AGENTS.md commands drop the "[from M1]" markers and add test/e2e/build, check-budget --record, check-ci-evidence --record (106 -> 109 lines)
 package map in 01-overview.md compared with tools/gen/workspaces.json dependsOn: consistent for all 19 workspaces; no open quarantines (m1-complete leg PASS)
 final review + roadmap split into M1.41: checkFinalReview allows only bookkeeping paths after the reviewed range, so the docs commit must precede the review
+
+## 2026-09-27 M1.42 (claude)
+gates.yml windows-latest was cancelled at the 15 min timeout on c5b0b92 and 369a1d7 (b63650c took 13.4 min): ~6 min setup, ladder 438 s, then the standalone harness step reran the suite (it ran on every green ladder before M1.39 too; M1.39 made it also run after failures)
+fix: harness step `if: failure()` (names failures in full only when the ladder failed; a green ladder already ran the suite), ci-workflow.test asserts the condition; review r1 F1: a 25-min timeout would loosen the 15-min CI rung budget (ci-cd.md §1), so the timeout stays 15 (windows ~10.5 min without the rerun)
+final milestone review ran on aaf09b6..369a1d7; M1.42 is code after that range, so the final record extends to M1.42 with a delta review (M1.41)

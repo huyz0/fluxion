@@ -155,7 +155,8 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
 
   it('CI names failing harness tests and ships every built workspace to later jobs (M1.39, NFR-PORT-005)', () => {
     assert.match(readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8'), /'--test-reporter=spec', '--test', 'tests\/harness\/\*\.test\.mjs'/);
-    assert.match(wf, /- name: harness tests\n\s+if: \$\{\{ !cancelled\(\) \}\}\n/);
+    // after a ladder failure only: a green ladder already ran the suite (M1.42: windows timeout)
+    assert.match(wf, /- name: harness tests\n\s+if: failure\(\)\n/);
     const dist = /name: dist\n\s+path: \|\n((?:\s+\S+\/\*\/dist\n)+)/.exec(ci)?.[1] ?? '';
     const workspaces = /^packages:\n((?:\s+- \S+\n)+)/m.exec(readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8'))[1];
     for (const [, glob] of workspaces.matchAll(/- (\S+)/g)) assert.ok(dist.includes(`${glob}/dist`), `build artifact misses ${glob}/dist`);
