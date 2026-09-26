@@ -1,0 +1,16 @@
+{"milestone":"M0","checkpoint":"cp1","range":"e4273a6..0294c8b","reviewer":"claude-subagent:milestone-reviewer",
+ "findings":[
+  {"id":"F1","severity":"major","area":"gate honesty","detail":"Most remaining m0-complete legs only check file existence (stop-check, worktree, .codex, gates.yml, guide, review verdict); no leg for M0.13 catch rate, AGENTS.md link to the guide, roadmap moved to M1; review leg does not parse the verdict or check range/blocking dispositions; dry-runs leg greps four words.","failure_scenario":"Stubs plus mkdir .codex plus an invalid gates.yml plus a one-sentence dry-runs.md make m0-complete print 18/18 while the harness cannot drive M1."},
+  {"id":"F2","severity":"major","area":"gate honesty","detail":"check-reviewed exempts commits touching only docs/backlog/current.md, so acceptance criteria can be rewritten or rows marked done with no review; per-task verdicts are gitignored so history cannot show non-negotiable 4 held.","failure_scenario":"A commit touching only current.md weakens M0.13 acceptance and marks it done; check-reviewed prints bookkeeping-only (exempt)."},
+  {"id":"F3","severity":"major","area":"coherence","detail":"Gate tests live in tests/harness but ci-cd.md and M1.md place gate negative fixtures in scripts/gates/__tests__/, which precommit and CI globs do not run.","failure_scenario":"An M1 agent adds scripts/gates/__tests__/layering.test.mjs per the standard; neither precommit nor CI runs it."},
+  {"id":"F4","severity":"minor","area":"spec fidelity","detail":"check-tests-kept DISABLED misses vitest skipIf/runIf/concurrent.skip; net per-file counting allows swapping a real case for a trivial one.","failure_scenario":"describe('FR-X' changed to describe.skipIf(true)('FR-X' passes with no trailer."},
+  {"id":"F5","severity":"minor","area":"coherence","detail":"precommit.mjs header claims CI re-checks each commit with --commit although check-tests-kept has no --commit mode and CI does not exist yet; function/complexity cap ownership split between check-size comment (Biome) and M1 row 9 (check-size)."},
+  {"id":"F6","severity":"minor","area":"traceability","detail":"M0.2 cites HARNESS, not an FR/NFR; NFR-MNT-008 and NFR-DX-002 are uncited in the backlog; check-trace does not exist until M1."}],
+ "dispositions":[
+  {"finding":"F1","disposition":"reopen","target":"M0.21"},
+  {"finding":"F2","disposition":"reopen","target":"M0.22"},
+  {"finding":"F3","disposition":"reopen","target":"M0.23"},
+  {"finding":"F4","disposition":"hand-off","target":"M1 (vitest/Biome rows) + roadmap Deferred"},
+  {"finding":"F5","disposition":"hand-off","target":"M0.12 (--commit mode, comment made accurate in M0.23) and M1 row 9 (cap ownership) + roadmap Deferred"},
+  {"finding":"F6","disposition":"argue","target":".harness/baselines/review-argued.txt"}],
+ "planDelta":"10 of 19 rows done at cp1 (M0.1-M0.9, M0.19). Reopened findings add M0.21-M0.23 and M0.20 records this review (19 -> 23 rows, 1.28x planned). Harden the completion gate (M0.21) before M0.18."}

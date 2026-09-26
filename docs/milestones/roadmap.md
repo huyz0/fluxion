@@ -82,4 +82,5 @@ receiving milestone's plan.
 
 | Item | From | To | Reason |
 |---|---|---|---|
-| _(none yet)_ | | | |
+| check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |
+| Function-length/complexity caps owned by Biome, not check-size; M1 row 9 reworded accordingly (check-size keeps the file cap from M0.6) (cp1 F5) | M0 | M1 | tools land in M1 |

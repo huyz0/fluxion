@@ -56,3 +56,8 @@ done: build-index.mjs (skills table from descriptions, standards table from Read
 added "> Family:" to 6 standards; tables regenerated; mutation -> 2 fail
 argued: M0.8 F1 (t() accessor tampering is a reviewed code change)
 next: M0.10
+
+## 2026-09-26 M0.20 (claude)
+done: M0.9 (cd08870); cp1 milestone review recorded (3 major reopened as M0.21-23, 2 minor handed to M1, 1 argued)
+gate m0: 11/18
+next: M0.10

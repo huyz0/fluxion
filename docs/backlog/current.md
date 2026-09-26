@@ -1,6 +1,6 @@
 # Backlog — M0 Harness bootstrap & verification
 
-Planned: 18 rows (+1 added: M0.19) · Completion: `node scripts/gates/m0-complete.mjs` · Plan: [M0](../milestones/M0.md)
+Planned: 18 rows (+5 added: M0.19–M0.23; cp1 review) · Completion: `node scripts/gates/m0-complete.mjs` · Plan: [M0](../milestones/M0.md)
 
 Only the current milestone lives here. Closed milestones move to `archive/M<n>.md`.
 States: `todo` · `doing` · `done` · `blocked (<reason>)`. Commit: `git log --grep "^<ID>:"`.
@@ -8,7 +8,7 @@ States: `todo` · `doing` · `done` · `blocked (<reason>)`. Commit: `git log --
 | ID | Task | Req | Acceptance (EARS) | Deps | State | Commit |
 |---|---|---|---|---|---|---|
 | M0.1 | Install Node ≥ 22 + pnpm (repo already `git init`-ed, hooksPath set); `node scripts/harness/setup.mjs`; fix any defect in existing harness scripts until `precommit.mjs --all` is green | NFR-DX-003 | WHEN `node scripts/gates/precommit.mjs --all` runs THE SYSTEM SHALL print PASS or SKIP(with reason) per step and exit 0 | — | done | |
-| M0.2 | Run `m0-complete.mjs`; confirm red; record failing legs in progress log | HARNESS | WHEN the gate runs THE SYSTEM SHALL print one PASS/FAIL line per leg and exit 1 | M0.1 | done | |
+| M0.2 | Run `m0-complete.mjs`; confirm red; record failing legs in progress log | NFR-DX-003 | WHEN the gate runs THE SYSTEM SHALL print one PASS/FAIL line per leg and exit 1 | M0.1 | done | |
 | M0.3 | `tests/harness/commit-msg.test.mjs` negative + positive cases | NFR-DX-003 | WHEN a subject lacks a backlog task ID, has a wrong type, or an empty trailer THE SYSTEM SHALL exit 1; valid subject → 0 | M0.1 | done | |
 | M0.4 | `tests/harness/portability.test.mjs` on temp fixture trees | NFR-DX-003 | WHEN a skill has vendor syntax, name≠dir, built-in name, >150 lines, or a stale adapter THE SYSTEM SHALL exit 1 | M0.1 | done | |
 | M0.5 | `tests/harness/review.test.mjs` in a temp git repo: record/hash/check-reviewed | NFR-DX-003 | IF the staged diff changes after a verdict is recorded THEN check-reviewed SHALL exit 1; matching pass verdict → 0 | M0.1 | done | |
@@ -26,3 +26,7 @@ States: `todo` · `doing` · `done` · `blocked (<reason>)`. Commit: `git log --
 | M0.17 | `docs/harness/README.md` operator guide (start/monitor/stop loops, troubleshooting) | NFR-DX-003 | Guide linked from AGENTS.md; check-portability passes | M0.14 | todo | |
 | M0.18 | Milestone review M0 (fresh agent) + dispositions + roadmap current → M1 | all | `.harness/reviews/milestone-M0-final.json` exists; m0-complete exits 0 | all | todo | |
 | M0.19 | `.gitattributes`: LF normalization repo-wide (CRLF only for .cmd/.bat/.ps1), binary asset types incl. `.flux` | NFR-PORT-005 | WHEN files are checked out on any OS THE SYSTEM SHALL use LF line endings so gate scripts and review diff hashes are identical across platforms | — | done | |
+| M0.20 | Record checkpoint cp1 milestone review, dispositions, hand-offs (roadmap Deferred + M1 plan) | NFR-DX-003 | WHEN a milestone review is recorded THE SYSTEM SHALL have every finding dispositioned (reopen row / hand-off entry / argued line) | M0.9 | done | |
+| M0.21 | Harden `m0-complete.mjs` legs to be behavioural: run stop-check on fixture states, worktree create/remove in a temp repo, require `.codex/config.toml` with hooks, structural check of gates.yml (3 OSes, SHA-pinned `uses:`) or actionlint, M0.13 catch-rate record, AGENTS.md links the guide, roadmap current=M1, review verdict parsed (range ends at HEAD milestone commits, every blocking finding dispositioned), dry-runs doc has per-tool success/impossible sections with outcome lines | NFR-DX-003, NFR-DX-002 | IF any M0 deliverable is a stub or unlinked THEN THE SYSTEM SHALL keep the corresponding leg red (tests with stub fixtures) | M0.10, M0.11, M0.12, M0.13, M0.16, M0.17 | todo | |
+| M0.22 | Narrow the check-reviewed bookkeeping exemption: a backlog diff is exempt only if it changes State/Commit cells; any acceptance/task/req text change requires a verdict; commit a verdict digest line (task, hash, verdict, reviewer) to `.harness/reviews/digest.log` so history shows non-negotiable 4 | NFR-DX-003 | IF a staged backlog change alters any cell other than State/Commit THEN check-reviewed SHALL require a pass verdict | M0.9 | todo | |
+| M0.23 | Single gate-test location `tests/harness/`: update docs/standards/ci-cd.md and docs/milestones/M1.md; make precommit.mjs header accurate (per-commit CI re-check pending M0.12) | NFR-DX-003 | WHEN docs reference gate tests THE SYSTEM SHALL name only tests/harness (grep test in harness suite) | M0.9 | todo | |
