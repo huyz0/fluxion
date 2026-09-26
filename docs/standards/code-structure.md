@@ -2,7 +2,7 @@
 
 > Read when: adding a package, folder or file; a file nears 300 lines or a function nears 60;
 > writing a package's README.md / AGENTS.md; unsure where code belongs.
-> Related: [coding-typescript.md](coding-typescript.md), [tech-stack.md](tech-stack.md).
+> Family: Code · Related: [coding-typescript.md](coding-typescript.md), [tech-stack.md](tech-stack.md).
 
 Goal: an agent working in one package can load that package's context and nothing else, and a
 reviewer can judge a change without reading the rest of the repo. Package map and layers:

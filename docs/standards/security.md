@@ -3,7 +3,7 @@
 > Read when: parsing or rendering anything from a file, clipboard, URL, AI response or plugin;
 > touching `format`, sanitizers, the expression interpreter, CSP, the plugin host, AI provider
 > settings, CI workflows or dependencies; before tagging a release.
-> Related: [tech-stack.md](tech-stack.md) §3, ADR-0003 (file format), ADR-0007 (plugin trust).
+> Family: Quality · Related: [tech-stack.md](tech-stack.md) §3, ADR-0003 (file format), ADR-0007 (plugin trust).
 
 Threat model in one line: **a `.flux` / `.flux.html` file is attacker-controlled input that
 people open and share**, and the editor holds AI keys. Anything that lets a file run code, read

@@ -2,7 +2,7 @@
 
 > Read when: building or changing any editor panel, tool, dialog, overlay, player control or
 > UX copy; adding a Storybook story; touching focus, motion or keyboard handling.
-> Related: [coding-typescript.md](coding-typescript.md), [performance.md](performance.md),
+> Family: Design · Related: [coding-typescript.md](coding-typescript.md), [performance.md](performance.md),
 > ADR-0010 (styling isolation).
 
 Fluxion has two visual worlds: **editor chrome** (our UI) and **content** (the user's deck,

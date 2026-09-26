@@ -28,19 +28,19 @@ natively, Claude via generated adapters in `.claude/skills/`). Invoke as `/name`
 <!-- index:skills:start -->
 | Skill | Use when |
 |---|---|
-| [`drive`](.agents/skills/drive/SKILL.md) | Driving the current milestone to completion autonomously (usually under `/goal`) |
-| [`next-task`](.agents/skills/next-task/SKILL.md) | Starting a session or finishing a task and needing the next ready task |
-| [`plan-milestone`](.agents/skills/plan-milestone/SKILL.md) | A milestone has no backlog rows yet or its completion gate does not exist |
-| [`spec`](.agents/skills/spec/SKILL.md) | A task or feature needs acceptance criteria or a design before code |
-| [`tdd`](.agents/skills/tdd/SKILL.md) | Implementing any task (test first) |
-| [`ui-check`](.agents/skills/ui-check/SKILL.md) | A task changes something visible or interactive in studio/player |
-| [`verify`](.agents/skills/verify/SKILL.md) | Before review/commit, or whenever you need to prove the tree is green |
-| [`code-review`](.agents/skills/code-review/SKILL.md) | A change is staged and needs an independent review verdict |
-| [`milestone-review`](.agents/skills/milestone-review/SKILL.md) | Every ~8 commits and before declaring a milestone complete |
-| [`adr`](.agents/skills/adr/SKILL.md) | Making a choice that is expensive to reverse, or changing a contract |
-| [`research`](.agents/skills/research/SKILL.md) | A question may already be answered in docs/research |
-| [`ship`](.agents/skills/ship/SKILL.md) | A human asked to release, publish or open a PR |
-| [`brevity`](.agents/skills/brevity/SKILL.md) | Writing reports, progress entries or review findings |
+| [`drive`](.agents/skills/drive/SKILL.md) | When told to work a milestone, continue, keep going, auto-proceed, or when running under /goal |
+| [`next-task`](.agents/skills/next-task/SKILL.md) | At the start of a working session, after finishing a task, or when unsure what to do next |
+| [`plan-milestone`](.agents/skills/plan-milestone/SKILL.md) | When a milestone starts, when docs/backlog/current.md has no rows for the current milestone, or when the completion command does not exist yet |
+| [`spec`](.agents/skills/spec/SKILL.md) | When a task lacks checkable acceptance criteria, when a feature spans several rows, when a requirement must change, or when what to build is clearer than how it will be checked |
+| [`tdd`](.agents/skills/tdd/SKILL.md) | Whenever writing or changing code |
+| [`ui-check`](.agents/skills/ui-check/SKILL.md) | When a task changes rendering, editor interaction, present-mode behaviour, animation, responsive layout, or anything a user sees or touches |
+| [`verify`](.agents/skills/verify/SKILL.md) | Before requesting review, before every commit, after rebasing, and whenever you need to prove the tree is green rather than assume it |
+| [`code-review`](.agents/skills/code-review/SKILL.md) | Before every commit and before coding a new milestone plan or spec |
+| [`milestone-review`](.agents/skills/milestone-review/SKILL.md) | At checkpoints (~every 8 commits) and always before declaring a milestone complete |
+| [`adr`](.agents/skills/adr/SKILL.md) | When making a choice that is expensive to reverse, adding a runtime dependency to the player, changing a contract (file format, schema, SDK API, FluxScript grammar, CLI --json, MCP tools), deviating from a standard, or when a milestone plan lists a decision to make before coding |
+| [`research`](.agents/skills/research/SKILL.md) | When choosing a library/algorithm, when unsure how something should work, or before writing an ADR |
+| [`ship`](.agents/skills/ship/SKILL.md) | When asked to push, open a PR, release, publish, or deploy |
+| [`brevity`](.agents/skills/brevity/SKILL.md) | Whenever producing text another agent or a human will read later |
 <!-- index:skills:end -->
 
 ## Commands

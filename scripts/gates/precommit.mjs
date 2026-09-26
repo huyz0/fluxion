@@ -21,6 +21,7 @@ const pnpm = (...a) => run('pnpm', a);
 const STEPS = [
   ['skills-sync', () => true, () => true, () => node('scripts/harness/sync-skills.mjs', ['--check'])],
   ['portability', () => true, () => true, () => node('scripts/gates/check-portability.mjs')],
+  ['index', () => true, () => (exists('AGENTS.md') && exists('docs/standards/README.md')) || 'index targets absent (partial checkout)', () => node('scripts/harness/build-index.mjs', ['--check'])],
   ['size', () => true, () => exists('scripts/gates/check-size.mjs') || 'check-size.mjs not written yet (M0)', () => node('scripts/gates/check-size.mjs', [`--${mode}`])],
   ['harness-tests', (m) => m !== 'quick', () => exists('tests/harness') || 'tests/harness not written yet (M0)', () => run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])],
   ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', 'typecheck', ...(mode === 'all' ? [] : ['--affected']))],

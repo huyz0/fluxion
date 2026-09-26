@@ -3,7 +3,7 @@
 > Read when: touching a hot path (render, overlay, layout, routing, anim sampling, store,
 > undo); adding a dependency to `player` or the editor entry; adding or changing a benchmark;
 > profiling a slowdown.
-> Related: [tech-stack.md](tech-stack.md), [code-structure.md](code-structure.md),
+> Family: Quality · Related: [tech-stack.md](tech-stack.md), [code-structure.md](code-structure.md),
 > `docs/requirements/30-non-functional.md` (PERF, SIZE).
 
 Budgets are product requirements, not aspirations. Every number below lives once in

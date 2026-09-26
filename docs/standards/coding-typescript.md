@@ -2,7 +2,7 @@
 
 > Read when: writing or reviewing any `.ts`/`.tsx` file. Structure and file sizes are in
 > `code-structure.md`; performance rules in `performance.md`.
-> Related: [security.md](security.md), [design-ui.md](design-ui.md).
+> Family: Code · Related: [security.md](security.md), [design-ui.md](design-ui.md).
 
 Every rule names its gate. "Biome" means the rule is configured in `biome.json` and runs in
 `pnpm verify:fast`; warnings are errors.

@@ -2,7 +2,7 @@
 
 > Read when: adding, upgrading or removing a dependency; choosing a tool or library; wondering why
 > something is the way it is. Research basis: `docs/research/05`. Decision record: ADR-0008.
-> Related: [code-structure.md](code-structure.md), [security.md](security.md) §5.
+> Family: Code · Related: [code-structure.md](code-structure.md), [security.md](security.md) §5.
 
 The stack is **decided**. Changing a row in §1 needs an ADR. Versions are the targets verified in
 research 05 (September 2026). **Check each one on npm before pinning**; the lockfile and

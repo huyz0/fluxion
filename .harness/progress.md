@@ -50,3 +50,9 @@ next: M0.8
 done: check-drift (--msg in commit-msg hook; --commit <sha> for CI) + 10 tests; mutation -> 4 fail
 moved drift out of precommit; M0.12 row now covers per-commit CI re-check (M0.7 F1 amend gap)
 next: M0.9
+
+## 2026-09-26 M0.9 (claude)
+done: build-index.mjs (skills table from descriptions, standards table from Read when/Family) + 7 tests; precommit index step
+added "> Family:" to 6 standards; tables regenerated; mutation -> 2 fail
+argued: M0.8 F1 (t() accessor tampering is a reviewed code change)
+next: M0.10
