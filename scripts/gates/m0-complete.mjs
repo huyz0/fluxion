@@ -25,7 +25,7 @@ for (const s of M0_SCRIPTS) leg(`exists ${s}`, () => exists(s) || 'missing');
 
 leg('harness negative tests', () => {
   if (!exists('tests/harness')) return 'tests/harness missing';
-  return ok(run(process.execPath, ['--test', 'tests/harness/']));
+  return ok(run(process.execPath, ['--test', 'tests/harness/*.test.mjs']));
 });
 leg('index tables current', () => (exists('scripts/harness/build-index.mjs') ? ok(node('scripts/harness/build-index.mjs', ['--check'])) : 'build-index.mjs missing'));
 leg('precommit --all green', () => ok(node('scripts/gates/precommit.mjs', ['--all', '--summary'])));

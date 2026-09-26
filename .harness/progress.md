@@ -20,3 +20,8 @@ gate m0 confirmed red 5/18 (exit 1). red legs: check-size, check-tests-kept, che
 build-index (+ index tables), stop-check, worktree scripts; tests/harness; gates.yml; .codex/;
 dry-runs doc; harness guide; milestone review
 argued: M0.1 F1/F2 (quoteWin % expansion, trailing backslash) — no caller affected
+
+## 2026-09-26 M0.3 (claude)
+done: tests/harness helpers + commit-msg suite 12/12; mutation check (weakened gate) -> 2 fail
+fix: node --test needs a glob (tests/harness/*.test.mjs) in precommit + m0 gate
+next: M0.4

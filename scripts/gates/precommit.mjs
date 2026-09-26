@@ -20,7 +20,7 @@ const STEPS = [
   ['skills-sync', () => true, () => true, () => node('scripts/harness/sync-skills.mjs', ['--check'])],
   ['portability', () => true, () => true, () => node('scripts/gates/check-portability.mjs')],
   ['size', () => true, () => exists('scripts/gates/check-size.mjs') || 'check-size.mjs not written yet (M0)', () => node('scripts/gates/check-size.mjs', [`--${mode}`])],
-  ['harness-tests', (m) => m !== 'quick', () => exists('tests/harness') || 'tests/harness not written yet (M0)', () => run(process.execPath, ['--test', 'tests/harness/'])],
+  ['harness-tests', (m) => m !== 'quick', () => exists('tests/harness') || 'tests/harness not written yet (M0)', () => run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])],
   ['tests-kept', (m) => m === 'staged', () => exists('scripts/gates/check-tests-kept.mjs') || 'not written yet (M0)', () => node('scripts/gates/check-tests-kept.mjs')],
   ['drift', (m) => m !== 'quick', () => exists('scripts/gates/check-drift.mjs') || 'not written yet (M0)', () => node('scripts/gates/check-drift.mjs', [`--${mode}`])],
   ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', 'typecheck', ...(mode === 'all' ? [] : ['--affected']))],
