@@ -7,7 +7,10 @@
 
 const REGEX_AFTER = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '+', '-', '*', '%', '<', '>', '~', '^', 'return']);
 
-/** Per-character flag: 1 where the character is code. */
+// comment text: not code, but its whitespace is layout, not content (M1.31 review F1)
+const COMMENT = 2;
+
+/** Per-character flag: 1 where the character is code, 2 in a comment, 0 in a string or regex. */
 export function codeMask(text) {
   const st = { i: 0, mode: 'code', quote: '', inClass: false, braces: [], last: '', mask: new Uint8Array(text.length) };
   while (st.i < text.length) STEP[st.mode](text, st);
@@ -25,13 +28,17 @@ const STEP = {
   },
   line(text, st) {
     if (text[st.i] === '\n') st.mode = 'code';
+    st.mask[st.i] = COMMENT;
     st.i++;
   },
   block(text, st) {
     if (text.startsWith('*/', st.i)) {
       st.mode = 'code';
       st.i += 2;
-    } else st.i++;
+    } else {
+      st.mask[st.i] = COMMENT;
+      st.i++;
+    }
   },
   str(text, st) {
     const ch = text[st.i];
@@ -206,7 +213,7 @@ export function testTitles(text) {
       end,
       // the arguments without the title, whitespace-normalised: equal before and after means the
       // test was only retitled (check-tests-kept Renames-test, M1.26 review F2)
-      rest: restAfterTitle(text, open, end, literal === undefined ? expr : `${m[3]}${literal}${m[3]}`),
+      rest: restAfterTitle(text, mask, { open, end, token: literal === undefined ? expr : `${m[3]}${literal}${m[3]}` }),
     });
   }
   markRuntimeSkips(text, mask, calls);
@@ -249,11 +256,17 @@ function skippedBy(at, receiver, runner, calls) {
 // The arguments after the whole title token (quotes included), without the separating and trailing
 // commas and with whitespace collapsed, so quote style and formatter wrapping do not count as a
 // change of body (M1.26 review r2 F1).
-function restAfterTitle(text, open, end, token) {
+function restAfterTitle(text, mask, { open, end, token }) {
   const from = text.indexOf(token, open) + token.length;
-  return text
-    .slice(from, end)
-    .replace(/\s+/g, ' ')
+  // collapse whitespace in code and comments only: a string or template in the body keeps every
+  // character, so changing an asserted 'x  y' to 'x y' is a body change (M1.31, M1.26 review r3 F1)
+  let out = '';
+  for (let i = from; i < end; i++) {
+    const code = mask[i] !== 0 && /\s/.test(text[i]);
+    if (!code) out += text[i];
+    else if (!out.endsWith(' ')) out += ' ';
+  }
+  return out
     .replace(/^\s*,\s*/, '')
     .replace(/\s*,\s*$/, '')
     .trim();

@@ -230,6 +230,32 @@ describe('check-tests-kept (NFR-DX-004)', () => {
       assert.equal(r.status, 0, out(r));
     });
 
+    it('whitespace inside a string of the body is part of the body (M1.31)', () => {
+      const withValue = (v) => SUITE.replace("it('CASE-2: two', () => {});", `it('CASE-2: two', () => { expect(f()).toBe('${v}'); });`);
+      sb.write('packages/core/src/a.test.ts', withValue('x  y'));
+      sb.git('add', '-A');
+      sb.git('commit', '-q', '-m', 'value fixture', '--no-verify');
+      sb.write('packages/core/src/a.test.ts', withValue('x y').replace("it('CASE-2: two'", "it('CASE-2: spaced'"));
+      sb.git('add', '-A');
+      const r = check('M0.7: test: x\n\nRenames-test: CASE-2: two -> CASE-2: spaced\n');
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /only the title may change/);
+    });
+
+    it('reindenting a comment in the body does not block a rename (M1.31 review)', () => {
+      const body = (indent) => `it('CASE-2: two', () => {\n  /* one\n${indent}* two */\n  // note\r\n});`;
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});", body('   ')));
+      sb.git('add', '-A');
+      sb.git('commit', '-q', '-m', 'comment fixture', '--no-verify');
+      sb.write(
+        'packages/core/src/a.test.ts',
+        SUITE.replace("it('CASE-2: two', () => {});", body('         ').replace("'CASE-2: two'", "'CASE-2: moved'").replace('\r\n', '\n')),
+      );
+      sb.git('add', '-A');
+      const r = check('M0.7: test: x\n\nRenames-test: CASE-2: two -> CASE-2: moved\n');
+      assert.equal(r.status, 0, out(r));
+    });
+
     it('a pair cannot excuse a real removal', () => {
       sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});\n", ''));
       sb.git('add', '-A');

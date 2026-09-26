@@ -241,3 +241,7 @@ done: `Renames-test: <old> -> <new>` trailer; each pair must match a swapped-out
 tests-kept.test +4
 review r1 pass + 3 minor fixed: a rename pair needs identical arguments (scanner exposes rest); titles with ' -> ' pair at any split; CRLF messages; header + git.md state the contract
 review r2 pass + minor fixed: rest skips the whole title token (quotes) and separating/trailing commas, so quote style and wrapping do not block a rename
+
+## 2026-09-26 M1.31 (claude)
+done: restAfterTitle collapses whitespace only where codeMask says code (M1.26 r3 minor; round cap reached there); tests-kept.test +1
+review r1 pass + minor fixed: codeMask tags comments (2); their whitespace collapses like code, only strings/templates stay verbatim
