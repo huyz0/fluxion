@@ -39,7 +39,7 @@ describe('workspace root (NFR-DX-001, NFR-SEC-005)', () => {
 const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
 const read = (p) => readFileSync(join(REPO, p), 'utf8');
 
-describe('workspace packages (NFR-MNT-001, NFR-LIC-001)', () => {
+describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
   it('declares the 16 architecture packages plus studio, docs and the basic pack', () => {
     const libs = workspaces.filter((w) => w.dir.startsWith('packages/')).map((w) => w.name);
     assert.equal(libs.length, 16);

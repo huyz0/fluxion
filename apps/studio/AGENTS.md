@@ -4,7 +4,7 @@ Vite PWA: editor + player shell, file handling, provider adapters.
 
 ## Rules
 
-- Layer App: import only from lower layers (docs/architecture/01-overview.md); enforced by `check-layering`.
+- Layer App: import only from lower layers, or same-layer packages the map lists as dependencies (docs/architecture/01-overview.md, "May depend on"); enforced by `check-layering`.
 - DOM allowed. Business logic belongs in the pure packages below this layer.
 - Public API lives in `src/index.ts` (`@fluxion/source` condition; ADR-0011); every export needs TSDoc and a release tag.
 

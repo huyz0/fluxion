@@ -4,7 +4,7 @@ Edit overlay, tools state machine, panels, inspector, library, timeline and inte
 
 ## Rules
 
-- Layer L4: import only from lower layers (docs/architecture/01-overview.md); enforced by `check-layering`.
+- Layer L4: import only from lower layers, or same-layer packages the map lists as dependencies (docs/architecture/01-overview.md, "May depend on"); enforced by `check-layering`.
 - DOM allowed. Business logic belongs in the pure packages below this layer.
 - Public API lives in `src/index.ts` (`@fluxion/source` condition; ADR-0011); every export needs TSDoc and a release tag.
 

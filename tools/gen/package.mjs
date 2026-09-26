@@ -64,7 +64,7 @@ const files = (w) => ({
   }, null, 2)}\n`,
   'src/index.ts': `/**\n * ${w.name} — ${w.desc}\n *\n * @packageDocumentation\n */\n\n/**\n * Version of this package.\n *\n * @public\n */\nexport const VERSION: string = '0.0.0';\n`,
   'README.md': `# ${w.name}\n\n${w.desc}\n\n| Layer | Pure | Status |\n|---|---|---|\n| ${w.layer} | ${w.pure ? 'yes' : 'no'} | stub (M1) — exports \`VERSION\` only |\n\nArchitecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).\n`,
-  'AGENTS.md': `# ${w.name} — agent notes\n\n${w.desc}\n\n## Rules\n\n- Layer ${w.layer}: import only from lower layers (docs/architecture/01-overview.md); enforced by \`check-layering\`.\n${rules(w)}\n- Public API lives in \`src/index.ts\` (\`@fluxion/source\` condition; ADR-0011); every export needs TSDoc and a release tag.\n\n## Tests\n\n- Co-locate \`*.test.ts\` next to the code; name tests with requirement IDs.\n- ${w.pure ? 'T0 (node) only — no DOM in tests.' : 'T0 for logic, T1 (browser) for components.'}\n`,
+  'AGENTS.md': `# ${w.name} — agent notes\n\n${w.desc}\n\n## Rules\n\n- Layer ${w.layer}: import only from lower layers, or same-layer packages the map lists as dependencies (docs/architecture/01-overview.md, "May depend on"); enforced by \`check-layering\`.\n${rules(w)}\n- Public API lives in \`src/index.ts\` (\`@fluxion/source\` condition; ADR-0011); every export needs TSDoc and a release tag.\n\n## Tests\n\n- Co-locate \`*.test.ts\` next to the code; name tests with requirement IDs.\n- ${w.pure ? 'T0 (node) only — no DOM in tests.' : 'T0 for logic, T1 (browser) for components.'}\n`,
   LICENSE,
 });
 
