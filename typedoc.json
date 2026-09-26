@@ -4,13 +4,13 @@
   "entryPoints": ["packages/*", "packs/*"],
   "packageOptions": {
     "entryPoints": ["src/index.ts"],
-    "excludeInternal": true
+    "excludeInternal": true,
+    "validation": {
+      "notExported": true,
+      "invalidLink": true,
+      "notDocumented": true
+    }
   },
   "treatWarningsAsErrors": true,
-  "validation": {
-    "notExported": true,
-    "invalidLink": true,
-    "notDocumented": true
-  },
   "readme": "none"
 }

@@ -283,3 +283,9 @@ review r1 pass + 2 minor fixed: ADR-0011 Context/Confirmation/index row and the 
 cp3 milestone review recorded (7 findings: 2 major, 5 minor): F1 ladder writers -> M1.36, F2 process -> triage rule in code-review skill (this commit), F3/F5 -> M1.36, F4 -> M1.37 (doc sync split from M1.22), F6 bookkeeping here, F7 argued
 from now: a minor on a pass verdict is a row only if it is a realistic false green on a plan leg
 review r1 changes-requested (4) fixed: cp2/cp3 dispositions use target/note (the keys checkBacklogDone reads; checked with all rows done vs M1.36 open); M1.37 acceptance names concrete docs-consistency cases incl. one TS 6 pin source; triage rule covers minors on any verdict
+
+## 2026-09-27 M1.36 (claude)
+done: harness tests no longer write the repo: turbo.test's real-repo build case removed (duplicate of the m1-complete build leg; pnpm in a linked sandbox tried to reinstall the repo's node_modules), api.test checks a full sandbox copy, Vitest cacheDir .vitest-cache per checkout (sandboxes linked node_modules/.vite)
+check-suite-isolation.mjs (m1-complete leg): runs the suite, fails on any created/rewritten/deleted file; repo run: 1427 files untouched
+found: TypeDoc validation sat at the root, which packages mode ignores - notDocumented was off (cp3 F3 was right); now in packageOptions, api.test negative
+check-trace fails on a stale matrix Tests column (refreshed); trace.test +1, isolation.test (3)

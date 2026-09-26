@@ -112,19 +112,24 @@ if (scope) {
   for (const [id] of inScope) if (!cited.has(id)) errors.push(`${id} (Must, ${kind} ${value}) has no test naming it`);
 }
 
-if (argv.includes('--write')) {
-  const cell = (id) => {
-    const files = [...(cited.get(id) ?? [])].sort();
-    return files.length === 0 ? '—' : files.length <= 2 ? files.map((f) => `\`${f}\``).join(', ') : `\`${files[0]}\` +${files.length - 1}`;
-  };
-  const out = matrixLines.map((line) => {
-    const cells = line.split('|');
-    const id = cells[1]?.trim();
-    if (!matrix.has(id)) return line;
-    cells[6] = ` ${cell(id)} `;
-    return cells.join('|');
-  });
-  writeFileSync(MATRIX, out.join('\n'));
+// the matrix Tests column is generated: --write refills it, otherwise a stale column fails (M1.36, cp3 F5)
+const cell = (id) => {
+  const files = [...(cited.get(id) ?? [])].sort();
+  return files.length === 0 ? '—' : files.length <= 2 ? files.map((f) => `\`${f}\``).join(', ') : `\`${files[0]}\` +${files.length - 1}`;
+};
+const refreshed = matrixLines.map((line) => {
+  const cells = line.split('|');
+  const id = cells[1]?.trim();
+  if (!matrix.has(id)) return line;
+  cells[6] = ` ${cell(id)} `;
+  return cells.join('|');
+});
+const stale = refreshed.filter((line, i) => line !== matrixLines[i]).map((line) => line.split('|')[1].trim());
+if (argv.includes('--write')) writeFileSync(MATRIX, refreshed.join('\n'));
+else if (stale.length) {
+  errors.push(
+    `40-traceability.md Tests column is stale for ${stale.slice(0, 5).join(', ')}${stale.length > 5 ? ` (+${stale.length - 5})` : ''}: run check-trace.mjs --write`,
+  );
 }
 
 if (errors.length) {

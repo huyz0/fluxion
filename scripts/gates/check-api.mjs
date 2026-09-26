@@ -87,8 +87,11 @@ for (const w of libraries) {
 }
 
 // TSDoc completeness of every public export, with TypeDoc on TS 6 (apps/docs installs it; ADR-0011)
-if (root === REPO_ROOT && !only) {
-  const r = run('pnpm', ['--filter', '@fluxion/docs', 'run', 'api:docs']);
+// the checkout's typedoc.json, so tests can prove the TSDoc half on a sandbox (M1.36, cp3 F3)
+if (!only) {
+  // apps/docs' typedoc (its peer is TS 6), run from the checkout so entry points resolve there
+  const typedoc = join(tools, 'apps', 'docs', 'node_modules', 'typedoc', 'bin', 'typedoc');
+  const r = run(process.execPath, [typedoc, '--options', 'typedoc.json', '--emit', 'none'], { cwd: root });
   if (r.status !== 0) failures.push(`typedoc (typedoc.json):\n  ${`${r.stdout}\n${r.stderr}`.trim().split(/\r?\n/).slice(-15).join('\n  ')}`);
 }
 

@@ -349,8 +349,8 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-MNT-004 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `apps/docs/src/index.test.ts` +20 |
 | NFR-MNT-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-MNT-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-MNT-007 | M | R0 | M1, M33 | [30-non-functional.md](30-non-functional.md) | `tests/harness/packages.test.mjs` |
-| NFR-MNT-008 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/trace.test.mjs` |
+| NFR-MNT-007 | M | R0 | M1, M33 | [30-non-functional.md](30-non-functional.md) | `tests/harness/api.test.mjs`, `tests/harness/packages.test.mjs` |
+| NFR-MNT-008 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/test-titles.test.mjs`, `tests/harness/trace.test.mjs` |
 | NFR-AI-001 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-AI-002 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-AI-003 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | — |
@@ -358,9 +358,9 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-OBS-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-OBS-002 | S | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-DX-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/workspace-shape.test.mjs` |
-| NFR-DX-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/milestone-checks.test.mjs`, `tests/harness/turbo.test.mjs` |
+| NFR-DX-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/isolation.test.mjs` +3 |
 | NFR-DX-003 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/adapters.test.mjs` +8 |
 | NFR-DX-004 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` +2 |
-| NFR-LIC-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/workspace-shape.test.mjs` |
-| NFR-LIC-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-LIC-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/licenses.test.mjs`, `tests/harness/workspace-shape.test.mjs` |
+| NFR-LIC-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/drift.test.mjs` +2 |
 | NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | — |

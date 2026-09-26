@@ -10,6 +10,18 @@ const nodeTest = (titles) => `import { describe, it } from 'node:test';\n${title
 describe('check-trace (NFR-MNT-008)', () => {
   beforeEach(() => {
     sb = sandbox(['scripts', 'docs/requirements', 'docs/backlog']);
+    // no tests are copied: the generated Tests column starts empty, as check-trace --write would leave it
+    sb.edit('docs/requirements/40-traceability.md', (t) =>
+      t
+        .split('\n')
+        .map((line) => {
+          const cells = line.split('|');
+          if (!/^ (FR|NFR)-/.test(cells[1] ?? '')) return line;
+          cells[6] = ' — ';
+          return cells.join('|');
+        })
+        .join('\n'),
+    );
   });
   afterEach(() => sb.cleanup());
 
@@ -80,7 +92,7 @@ describe('check-trace (NFR-MNT-008)', () => {
   it('passes the milestone once every Must ID is named, in a test or an enclosing describe', () => {
     sb.write('tests/harness/a.test.mjs', nodeTest(['NFR-MNT-008: traced', 'NFR-DX-003 and NFR-DX-004 together']));
     sb.write('packages/core/src/b.test.ts', "import { describe } from 'vitest';\ndescribe('NFR-MNT-008 suite', () => {});\n");
-    const r = trace('--milestone', 'M0');
+    const r = trace('--milestone', 'M0', '--write');
     assert.equal(r.status, 0, out(r));
   });
 
@@ -90,7 +102,7 @@ describe('check-trace (NFR-MNT-008)', () => {
     assert.match(r.stderr, /FR-TXT-006 \(Must, increment R8\)/);
     assert.match(r.stderr, /NFR-I18N-003 \(Must, increment R8\)/);
     sb.write('packages/format/src/i18n.test.ts', "import { it } from 'vitest';\nit('FR-TXT-006 NFR-I18N-003: any script', () => {});\n");
-    assert.equal(trace('--increment', 'R8').status, 0);
+    assert.equal(trace('--increment', 'R8', '--write').status, 0);
   });
 
   it('fails when a backlog row cites an unknown ID or none', () => {
@@ -114,6 +126,13 @@ describe('check-trace (NFR-MNT-008)', () => {
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /FR-DOC-006: matrix says M\/R1, 10-document-and-file\.md says S\/R1/);
     assert.match(r.stderr, /summary R1: says 84\/7\/0\/91, requirement files give 83\/8\/0\/91/);
+  });
+
+  it('fails when the generated Tests column is stale (M1 cp3 F5)', () => {
+    sb.write('tests/harness/a.test.mjs', nodeTest(['NFR-MNT-008: traced']));
+    const r = trace();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /Tests column is stale for NFR-MNT-008: run check-trace.mjs --write/);
   });
 
   it('--write fills the Tests column from test titles', () => {

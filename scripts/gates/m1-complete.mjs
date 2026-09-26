@@ -154,7 +154,8 @@ leg('vitest smoke passes in the node and browser projects', () => {
   const projects = ['node', 'browser'].filter((p) => new RegExp(`[\\[|]\\s*${p}\\b[^\\n]*smoke`, 'i').test(r.stdout));
   return projects.length === 2 || `smoke ran only in: ${projects.join(', ') || 'none'}`;
 });
-leg('harness test suite passes', () => ok(run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])));
+// M1 cp3 F1: the suite must not write the repo the concurrent ladder reads
+leg('harness test suite passes and leaves the working tree unchanged', () => ok(node('scripts/gates/check-suite-isolation.mjs')));
 leg('no open test quarantines', () => {
   const r = run('git', ['grep', '-n', '-I', '-E', 'QUARANTINE|test\\.fixme\\(', '--', 'packages', 'apps', 'packs', 'e2e', 'tests']);
   const hits = r.stdout

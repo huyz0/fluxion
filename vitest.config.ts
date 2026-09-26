@@ -34,6 +34,9 @@ const CI_SEED = 20_260_926;
 const conditions = ['@fluxion/source', 'module', 'development|production'];
 
 export default defineConfig({
+  // per checkout, not node_modules/.vite: harness sandboxes link the repo's node_modules, and a
+  // shared cache would be written by the sandbox and the ladder's test step at once (M1.36)
+  cacheDir: '.vitest-cache',
   resolve: { conditions: [...conditions, 'browser'] },
   ssr: { resolve: { conditions: [...conditions, 'node'] } },
   test: {
