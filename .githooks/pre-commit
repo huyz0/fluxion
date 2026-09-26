@@ -1,0 +1,4 @@
+#!/bin/sh
+# Tracked hook (installed by: node scripts/harness/setup.mjs). Delegates to the single gate
+# definition so hook and CI cannot drift.
+exec node scripts/gates/precommit.mjs --staged

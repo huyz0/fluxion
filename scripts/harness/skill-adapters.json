@@ -1,0 +1,8 @@
+{
+  "$comment": "Claude-only frontmatter merged into generated .claude/skills adapters by sync-skills.mjs. Canonical skills stay vendor-neutral.",
+  "drive": { "disable-model-invocation": "true" },
+  "ship": { "disable-model-invocation": "true" },
+  "plan-milestone": {},
+  "code-review": {},
+  "milestone-review": {}
+}
