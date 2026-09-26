@@ -24,6 +24,10 @@ function backlogOnlyStateChanges() {
   const a = rows(before.stdout);
   const b = rows(after.stdout);
   if (a.length !== b.length) return false;
+  // Setting a row to `descoped` closes it without doing the work, so it is a scope decision that
+  // always needs a verdict (M0 final F1) — never exempt bookkeeping.
+  const toDescoped = b.some((cells, i) => /^\s*descoped\b/.test(cells[6] ?? '') && (a[i]?.[6] ?? '') !== cells[6]);
+  if (toDescoped) return false;
   return a.every((cells, i) => cells.length === b[i].length && cells.every((c, j) => STATE_COLS.includes(j) || c === b[i][j]));
 }
 

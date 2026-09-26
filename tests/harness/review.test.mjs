@@ -111,6 +111,14 @@ describe('review binding (NFR-DX-003)', () => {
       assert.equal(checkReviewed().status, 1);
       sb.git('reset', '-q');
     });
+
+    it('requires a verdict when a State cell changes to descoped (M0 final F1)', () => {
+      stageBacklog(base().replace('| todo | |', '| descoped (user decision; ADR-0137) | |'));
+      const r = checkReviewed();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /no pass verdict/);
+      sb.git('reset', '-q');
+    });
   });
 
   it('appends a tracked digest line for every recorded verdict', () => {

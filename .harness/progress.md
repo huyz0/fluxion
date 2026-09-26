@@ -143,3 +143,6 @@ next: M1.2 descoping loophole
 
 ## 2026-09-26 M1.1 review note (claude)
 round-2 verdict (93082925, 2 findings on ci.yml job parsing) was not recorded before fixing; the review record therefore shows one round fewer than actually happened (4 reviews for M1.1)
+
+## 2026-09-26 M1.2 (claude)
+done: check-reviewed never exempts a State change to descoped; checkBacklogDone needs ADR-NNNN or Deferred in the reason; gate probe runs the real check-reviewed case; M1.1 review F1 (grep probe) resolved

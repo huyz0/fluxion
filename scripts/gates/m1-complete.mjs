@@ -70,7 +70,11 @@ leg('descoping loophole closed (behavioural probe)', () => {
   const row = (state) => `| M9.1 | t | NFR-DX-003 | x | - | ${state} | |`;
   if (checkBacklogDone(row('descoped (not feasible)'), 'M9') === true) return 'descoped without ADR/Deferred citation still closes a row';
   if (checkBacklogDone(row('descoped (user decision; ADR-0137)'), 'M9') !== true) return 'descoped citing an ADR does not close a row';
-  if (!exists('tests/harness/review.test.mjs') || !/descoped/.test(readText('tests/harness/review.test.mjs'))) return 'review.test.mjs has no descoped exemption case';
+  // run the check-reviewed case that stages a State change to descoped in a temp repo; it must
+  // exist, run and pass (a grep for the word could be satisfied by a comment)
+  const r = run(process.execPath, ['--test', '--test-reporter=spec', '--test-name-pattern=State cell changes to descoped', 'tests/harness/review.test.mjs']);
+  const passed = Number(/^ℹ pass (\d+)/m.exec(r.stdout)?.[1] ?? 0);
+  if (r.status !== 0 || passed < 1) return `check-reviewed descoped case did not run/pass (pass=${passed})`;
   return true;
 });
 leg('harness test suite passes', () => ok(run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])));

@@ -251,9 +251,14 @@ describe('descoped rows (NFR-DX-003, user decision 2026-09-26)', () => {
     assert.equal(checkBacklogDone(`${row('M0.1', 'done')}\n${row('M0.2', 'descoped (user decision 2026-09-26; roadmap Deferred)')}\n`, 'M0'), true);
   });
 
+  it('rejects a descoped reason that cites neither an ADR nor the Deferred table (M0 final F1)', () => {
+    assert.match(String(checkBacklogDone(`${row('M0.1', 'descoped (not feasible)')}\n`, 'M0')), /not done: M0\.1/);
+    assert.equal(checkBacklogDone(`${row('M0.1', 'descoped (user decision; ADR-0137)')}\n`, 'M0'), true);
+  });
+
   it('rejects a bare descoped state and a descoped reopen target', () => {
     assert.match(String(checkBacklogDone(`${row('M0.1', 'descoped')}\n`, 'M0')), /not done: M0\.1/);
     const reviews = [{ checkpoint: 'cp9', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.2' }] }];
-    assert.match(String(checkBacklogDone(`${row('M0.2', 'descoped (later)')}\n`, 'M0', reviews)), /reopened M0\.2 missing or not done/);
+    assert.match(String(checkBacklogDone(`${row('M0.2', 'descoped (later; ADR-0137)')}\n`, 'M0', reviews)), /reopened M0\.2 missing or not done/);
   });
 });
