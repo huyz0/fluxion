@@ -203,3 +203,10 @@ generator emits src/index.test.ts smoke per workspace; render has a browser smok
 fast-check: FC_SEED (fixed in CI) / FC_RUNS reach both projects (node via process.env, browser via import.meta.env — browser checked by an ad-hoc probe)
 coverage.test (5): below the floor fails, render floor, no floor for cli, seed probe
 review r1 changes-requested (3) fixed: .vitest/ ignored and probe screenshots dropped; setup installs chromium; M1.7 row, M1.md items 5/10, testing.md rule 1 say root Vitest config
+
+## 2026-09-26 M1.13 (claude)
+done: check-trace.mjs — unknown IDs in test titles (vitest, node:test, Playwright, incl. enclosing describe) and backlog Req cells; matrix rows and summary vs requirement files; --milestone / --increment Must coverage; --write fills the matrix Tests column (run once: 13 IDs traced)
+found: area codes with digits (A11Y, I18N) — first regex missed 9 requirements; tests-kept fixtures used fake FR-X-00n IDs (renamed CASE-n); M1.22 Req cell 'all' → HARNESS
+M1 trace leg still red until M1.15 names NFR-LIC-002
+trace.test (10)
+review r1 pass + 4 minor fixed: commented-out calls and fixture strings are not titles; .each with nested args/tagged templates; summary row required per increment; trace skips only when docs/requirements is absent

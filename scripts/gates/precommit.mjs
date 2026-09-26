@@ -71,7 +71,12 @@ const STEPS = [
     () => exists('scripts/gates/check-licenses.mjs') || 'not written yet (M1)',
     () => node('scripts/gates/check-licenses.mjs'),
   ],
-  ['trace', (m) => m !== 'quick', () => exists('scripts/gates/check-trace.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-trace.mjs')],
+  [
+    'trace',
+    (m) => m !== 'quick',
+    () => (exists('scripts/gates/check-trace.mjs') ? exists('docs/requirements') || 'requirements absent (partial checkout)' : 'not written yet (M1)'),
+    () => node('scripts/gates/check-trace.mjs'),
+  ],
   ['api', (m) => m !== 'quick', () => exists('scripts/gates/check-api.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-api.mjs')],
   ['reviewed', (m) => m === 'staged' && !argv.has('--no-review'), () => true, () => node('scripts/gates/check-reviewed.mjs')],
 ];

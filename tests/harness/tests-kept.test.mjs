@@ -4,7 +4,7 @@ import { chmodSync } from 'node:fs';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { out, sandbox } from './helpers.mjs';
 
-const SUITE = "import { it } from 'vitest';\nit('FR-X-001: one', () => {});\nit('FR-X-002: two', () => {});\n";
+const SUITE = "import { it } from 'vitest';\nit('CASE-1: one', () => {});\nit('CASE-2: two', () => {});\n";
 // Built indirectly so this file itself does not trip check-tests-kept.
 const SKIP = ['it', 'skip'].join('.');
 const ONLY = ['it', 'only'].join('.');
@@ -35,7 +35,7 @@ describe('check-tests-kept (NFR-DX-004)', () => {
   });
 
   it('passes when test cases are added', () => {
-    sb.write('packages/core/src/a.test.ts', `${SUITE}it('FR-X-003: three', () => {});\n`);
+    sb.write('packages/core/src/a.test.ts', `${SUITE}it('CASE-3: three', () => {});\n`);
     sb.git('add', '-A');
     assert.equal(check().status, 0);
   });
@@ -48,19 +48,19 @@ describe('check-tests-kept (NFR-DX-004)', () => {
   const bad = {
     'deleting a test file': () => sb.git('rm', '-q', 'packages/core/src/a.test.ts'),
     'removing a test case': () => {
-      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two', () => {});\n", ''));
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});\n", ''));
       sb.git('add', '-A');
     },
     'skipping a test case': () => {
-      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002", `${SKIP}('FR-X-002`));
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2", `${SKIP}('CASE-2`));
       sb.git('add', '-A');
     },
     'focusing a test case with .only': () => {
-      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-001", `${ONLY}('FR-X-001`));
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-1", `${ONLY}('CASE-1`));
       sb.git('add', '-A');
     },
     'adding a new skipped case': () => {
-      sb.write('packages/core/src/a.test.ts', `${SUITE}${SKIP}('FR-X-003: later', () => {});\n`);
+      sb.write('packages/core/src/a.test.ts', `${SUITE}${SKIP}('CASE-3: later', () => {});\n`);
       sb.git('add', '-A');
     },
     'renaming a test file to a non-test name': () => sb.git('mv', 'packages/core/src/a.test.ts', 'packages/core/src/a.old.ts'),
@@ -70,19 +70,19 @@ describe('check-tests-kept (NFR-DX-004)', () => {
       sb.git('add', '-A');
     },
     'turning a case into runIf': () => {
-      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002", `${RUN_IF}(false)('FR-X-002`));
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2", `${RUN_IF}(false)('CASE-2`));
       sb.git('add', '-A');
     },
     'a concurrent skip': () => {
-      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002", `${CONCURRENT_SKIP}('FR-X-002`));
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2", `${CONCURRENT_SKIP}('CASE-2`));
       sb.git('add', '-A');
     },
     'commenting a case out': () => {
-      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002", "// it('FR-X-002"));
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2", "// it('CASE-2"));
       sb.git('add', '-A');
     },
     'a case swap (title replaced, count unchanged)': () => {
-      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two'", "it('FR-X-009: something else'"));
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two'", "it('CASE-9: something else'"));
       sb.git('add', '-A');
     },
   };
@@ -95,7 +95,7 @@ describe('check-tests-kept (NFR-DX-004)', () => {
     });
     it(`passes on ${name} with a Removes-test trailer`, () => {
       act();
-      const r = check('M0.7: test: drop obsolete case\n\nRemoves-test: covered by FR-X-004 suite\n');
+      const r = check('M0.7: test: drop obsolete case\n\nRemoves-test: covered by CASE-4 suite\n');
       assert.equal(r.status, 0, out(r));
     });
   }
@@ -124,21 +124,21 @@ describe('check-tests-kept (NFR-DX-004)', () => {
   });
 
   it('moving a case to another test file is not a case swap', () => {
-    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two', () => {});\n", ''));
-    sb.write('packages/core/src/b.test.ts', "import { it } from 'vitest';\nit('FR-X-002: two', () => {});\n");
+    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});\n", ''));
+    sb.write('packages/core/src/b.test.ts', "import { it } from 'vitest';\nit('CASE-2: two', () => {});\n");
     sb.git('add', '-A');
     const r = check();
     assert.equal(r.status, 0, out(r));
   });
 
   it('names the swapped-out title in a case swap', () => {
-    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two'", "it('FR-X-009: other'"));
+    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two'", "it('CASE-9: other'"));
     sb.git('add', '-A');
-    assert.match(check().stderr, /case swap — test "FR-X-002: two" removed/);
+    assert.match(check().stderr, /case swap — test "CASE-2: two" removed/);
   });
 
   it('does not count method calls such as regex .test() as test cases', () => {
-    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two', () => {});\n", "assert.ok(/a/.test('a'));\n"));
+    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', () => {});\n", "assert.ok(/a/.test('a'));\n"));
     sb.git('add', '-A');
     const r = check();
     assert.equal(r.status, 1, out(r));
