@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Completion gate for M1 — Monorepo & toolchain skeleton (docs/milestones/M1.md).
 // Written first and red (M1.1). Legs are behavioural: each runs the real tool or gate.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
-import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews } from './milestone-checks.mjs';
+import { backlogTextFor, checkBacklogDone, checkDistArtifacts, checkFinalReview, checkVerifyOutput, loadMilestoneReviews } from './milestone-checks.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
 const pnpm = (...a) => run('pnpm', a);
@@ -20,19 +20,27 @@ leg('all 16 packages, 2 apps and packs/basic have src/index.ts, README.md, AGENT
   const missing = WORKSPACES.flatMap((w) => ['src/index.ts', 'README.md', 'AGENTS.md', 'LICENSE'].filter((f) => !exists(`${w}/${f}`)).map((f) => `${w}/${f}`));
   return missing.length === 0 || `missing ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ` (+${missing.length - 5})` : ''}`;
 });
-leg('turbo build reruns as a full cache hit', () => {
+const LIBRARIES = WORKSPACES.filter((w) => w.startsWith('packages/') || w.startsWith('packs/'));
+leg('turbo build emits dist for every library and reruns as a full cache hit', () => {
   if (!exists('turbo.json')) return 'missing turbo.json';
-  const first = pnpm('turbo', 'run', 'build');
+  // clear stale output and force a real build so leftover dist/ cannot satisfy the check (M1.23 F3)
+  for (const w of LIBRARIES) rmSync(repoPath(w, 'dist'), { recursive: true, force: true });
+  const first = pnpm('turbo', 'run', 'build', '--force');
   if (first.status !== 0) return ok(first);
+  const dist = checkDistArtifacts(LIBRARIES); // M1 cp1 F1: a no-op build must not pass
+  if (dist !== true) return dist;
   const second = pnpm('turbo', 'run', 'build');
   return /FULL TURBO/.test(second.stdout) || 'second build was not a full cache hit';
 });
-leg('pnpm verify exits 0 with no SKIP lines (every gate exists and ran)', () => {
+// every planned verify step must PASS (M1 cp1 F1): an unregistered step prints no SKIP line
+const VERIFY_STEPS = ['typecheck', 'lint', 'test', 'workflows', 'layering', 'size', 'licenses', 'trace', 'api', 'knip', 'publint', 'attw', 'size-limit', 'budget'];
+leg('pnpm verify exits 0 with every planned step PASS and no SKIP lines', () => {
   if (!exists('package.json')) return 'no package.json';
   const r = pnpm('verify');
   if (r.status !== 0) return ok(r);
   const skips = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('SKIP'));
-  return skips.length === 0 || `skipped: ${skips.map((l) => l.split(' ')[1]).join(', ')}`;
+  if (skips.length) return `skipped: ${skips.map((l) => l.split(' ')[1]).join(', ')}`;
+  return checkVerifyOutput(r.stdout, VERIFY_STEPS);
 });
 
 // Each M1 gate: the script runs green on the repo, and its negative test exists and contains at
@@ -72,10 +80,36 @@ leg('descoping loophole closed (behavioural probe)', () => {
   if (checkBacklogDone(row('descoped (user decision; ADR-0137)'), 'M9') !== true) return 'descoped citing an ADR does not close a row';
   // run the check-reviewed case that stages a State change to descoped in a temp repo; it must
   // exist, run and pass (a grep for the word could be satisfied by a comment)
-  const r = run(process.execPath, ['--test', '--test-reporter=spec', '--test-name-pattern=State cell changes to descoped', 'tests/harness/review.test.mjs']);
+  // run the file directly (not `--test`): under --test the file itself counts as one passing test
+  const r = run(process.execPath, ['--test-reporter=spec', '--test-name-pattern=State cell changes to descoped', 'tests/harness/review.test.mjs']);
   const passed = Number(/^ℹ pass (\d+)/m.exec(r.stdout)?.[1] ?? 0);
   if (r.status !== 0 || passed < 1) return `check-reviewed descoped case did not run/pass (pass=${passed})`;
   return true;
+});
+/**
+ * Run the named node:test cases of one file; each pattern must match at least one case and every
+ * matched case must pass. A comment mentioning the words cannot satisfy this (M1.23 F1).
+ */
+function namedCases(file, patterns) {
+  if (!exists(file)) return `missing ${file}`;
+  for (const p of patterns) {
+    // direct run: under --test the file itself counts as a passing test, so pass>=1 would be vacuous
+    const r = run(process.execPath, ['--test-reporter=spec', `--test-name-pattern=${p}`, file]);
+    const passed = Number(/^ℹ pass (\d+)/m.exec(r.stdout)?.[1] ?? 0);
+    if (r.status !== 0 || passed < 1) return `${file}: no passing case matching "${p}" (pass=${passed})`;
+  }
+  return true;
+}
+// M1 cp1 F1: the tests-kept extensions (M1.10) and the coverage floor (M1.12) are proven by named cases
+leg('tests-kept detects skipIf/runIf and case swaps (named cases)', () => namedCases('tests/harness/tests-kept.test.mjs', ['skipIf', 'runIf', 'case swap']));
+leg('coverage below the floor fails test:coverage (named case)', () => namedCases('tests/harness/coverage.test.mjs', ['below the floor']));
+// M1.23 F2 (cp1 F1 "vitest smoke"): a smoke test runs and passes in both Vitest projects
+leg('vitest smoke passes in the node and browser projects', () => {
+  if (!exists('vitest.config.ts')) return 'missing vitest.config.ts';
+  const r = pnpm('exec', 'vitest', 'run', '--reporter=verbose', '-t', 'smoke');
+  if (r.status !== 0) return ok(r);
+  const projects = ['node', 'browser'].filter((p) => new RegExp(`[\\[|]\\s*${p}\\b[^\\n]*smoke`, 'i').test(r.stdout));
+  return projects.length === 2 || `smoke ran only in: ${projects.join(', ') || 'none'}`;
 });
 leg('harness test suite passes', () => ok(run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])));
 leg('no open test quarantines', () => {

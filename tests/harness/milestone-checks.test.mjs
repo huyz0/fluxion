@@ -1,7 +1,7 @@
 // NFR-DX-003 (M0 cp1 F1): completion legs reject stubs; only real evidence turns them green.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { checkBacklogDone, checkDryRuns, checkReviewerSmoke } from '../../scripts/gates/milestone-checks.mjs';
+import { checkBacklogDone, checkDistArtifacts, checkDryRuns, checkReviewerSmoke, checkVerifyOutput } from '../../scripts/gates/milestone-checks.mjs';
 import { out, sandbox } from './helpers.mjs';
 
 /** Evaluate `expr` against the sandbox copy of milestone-checks.mjs (its git() uses that repo). */
@@ -260,5 +260,30 @@ describe('descoped rows (NFR-DX-003, user decision 2026-09-26)', () => {
     assert.match(String(checkBacklogDone(`${row('M0.1', 'descoped')}\n`, 'M0')), /not done: M0\.1/);
     const reviews = [{ checkpoint: 'cp9', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.2' }] }];
     assert.match(String(checkBacklogDone(`${row('M0.2', 'descoped (later; ADR-0137)')}\n`, 'M0', reviews)), /reopened M0\.2 missing or not done/);
+  });
+});
+
+describe('checkVerifyOutput and checkDistArtifacts (NFR-DX-002, M1 cp1 F1)', () => {
+  const OUT = 'PASS typecheck (1ms)\nPASS lint (1ms)\nSKIP api — not written\nFAIL knip (2ms)\nVERIFY all: FAIL (1s)\n';
+
+  it('accepts when every required step has a PASS line', () => {
+    assert.equal(checkVerifyOutput(OUT, ['typecheck', 'lint']), true);
+  });
+
+  it('rejects absent, skipped and failed steps by name', () => {
+    const r = String(checkVerifyOutput(OUT, ['typecheck', 'api', 'knip', 'publint']));
+    assert.match(r, /api=SKIP/);
+    assert.match(r, /knip=FAIL/);
+    assert.match(r, /publint=absent/);
+  });
+
+  it('does not treat a longer step name as a match (size vs size-limit)', () => {
+    assert.match(String(checkVerifyOutput('PASS size-limit (1ms)\n', ['size'])), /size=absent/);
+  });
+
+  it('requires dist/index.js and dist/index.d.ts for every library', () => {
+    const present = new Set(['packages/a/dist/index.js', 'packages/a/dist/index.d.ts', 'packages/b/dist/index.js']);
+    assert.equal(checkDistArtifacts(['packages/a'], (p) => present.has(p)), true);
+    assert.match(String(checkDistArtifacts(['packages/a', 'packages/b'], (p) => present.has(p))), /packages\/b\/dist\/index\.d\.ts/);
   });
 });

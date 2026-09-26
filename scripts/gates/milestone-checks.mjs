@@ -139,6 +139,24 @@ export function backlogTextFor(milestone) {
   return '';
 }
 
+/**
+ * `pnpm verify` output must contain a PASS line for every required step (M1 cp1 F1): a step that
+ * was never registered prints nothing, so "no SKIP lines" alone cannot prove it ran.
+ */
+export function checkVerifyOutput(stdout, required) {
+  const lines = stdout.split(/\r?\n/);
+  // exact step name: `size` must not match `size-limit` (\b would, since '-' is a word boundary)
+  const status = (step) => lines.find((l) => l.startsWith(`PASS ${step} `) || l.startsWith(`FAIL ${step} `) || l.startsWith(`SKIP ${step} `))?.split(' ')[0];
+  const bad = required.map((s) => [s, status(s)]).filter(([, st]) => st !== 'PASS');
+  return bad.length === 0 || `not PASS: ${bad.map(([s, st]) => `${s}=${st ?? 'absent'}`).join(', ')}`;
+}
+
+/** Every listed workspace has dist/index.js and dist/index.d.ts (build really ran). */
+export function checkDistArtifacts(dirs, has = (p) => existsSync(repoPath(p))) {
+  const missing = dirs.flatMap((d) => ['dist/index.js', 'dist/index.d.ts'].map((f) => `${d}/${f}`)).filter((p) => !has(p));
+  return missing.length === 0 || `missing ${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ` (+${missing.length - 4})` : ''}`;
+}
+
 /** Tracked git hooks must be executable (POSIX git skips them otherwise). */
 export function checkHooksExecutable(hooks = ['pre-commit', 'commit-msg']) {
   const modes = git(['ls-files', '-s', ...hooks.map((h) => `.githooks/${h}`)]).stdout;

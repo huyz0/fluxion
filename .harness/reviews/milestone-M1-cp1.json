@@ -1,0 +1,116 @@
+{
+  "milestone": "M1",
+  "checkpoint": "cp1",
+  "range": "aaf09b6..a1a7a48",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate honesty",
+      "detail": "The verify leg only sees steps registered in precommit STEPS (knip, publint, attw, size-limit, budget absent print no SKIP); the build leg checks only FULL TURBO, not dist artifacts; no legs for the coverage-floor negative, the tests-kept extension, or the vitest smoke.",
+      "failure_scenario": "Build scripts that echo ok and never-registered hygiene tools still turn m1-complete green."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "spec fidelity / gate honesty",
+      "detail": "No M1 commit has been pushed; the recorded green 3-OS run predates the M1.3 and M1.5 changes to gates.yml; first push green for M1.20 has no gate leg.",
+      "failure_scenario": "pnpm/action-setup or the frozen install fails on a runner and M1 is declared complete with CI red."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "gate honesty",
+      "detail": "Nested skips (check-workflows SKIP without Docker, node:test skips) print PASS in precommit.",
+      "failure_scenario": "On a host without Linux Docker a workflow regression passes verify."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "coherence",
+      "detail": "Two typecheck paths (root tsc -b vs turbo typecheck with no package scripts).",
+      "failure_scenario": "turbo runs zero typecheck tasks and the step passes without checking anything."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "architecture",
+      "detail": "Base tsconfig lib ES2023 and types [] for every project; the generator does not model DOM or Node per runtime.",
+      "failure_scenario": "Someone adds DOM to the base config for studio and the implicit no-DOM guard for pure packages disappears."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "coherence",
+      "detail": "workspaces.json duplicates the overview package map without dependency edges; check-layering will need those edges from one source.",
+      "failure_scenario": "Three copies of the allowed edges diverge and a permitted import is rejected or a forbidden one accepted."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "gate honesty",
+      "detail": "checkBacklogDone accepts any reason containing Deferred or ADR-NNNN without resolving the ADR file or Deferred row.",
+      "failure_scenario": "A descoped reason citing a non-existent ADR closes a row, relying on the reviewer alone."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "area": "process",
+      "detail": "M1.1 round-2 verdict was not recorded before fixing; the digest undercounts rounds.",
+      "failure_scenario": "Audits of review churn undercount M1.1."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M1.23",
+      "note": "Verify leg requires a PASS line per planned step (checkVerifyOutput); build leg clears dist, forces a real build and checks dist artifacts (checkDistArtifacts); named-case legs prove the tests-kept skipIf/runIf/case-swap cases and the coverage below-floor case; a Vitest smoke leg requires passing smoke tests in both the node and browser projects; unit tests for the new checks."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M1.24",
+      "note": "Record a green CI run on ubuntu, windows and macos for a SHA at or after M1.21 and add a gate leg that reads it. Needs a push (human-authorised)."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "target": "M1.19",
+      "note": "precommit surfaces a child SKIP as a SKIP line, or CI runs check-workflows with --require-docker on ubuntu."
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand-off",
+      "target": "M1.7",
+      "note": "Resolved in M1.7 (ad4f460): precommit typecheck runs the root tsc -b over every workspace."
+    },
+    {
+      "finding": "F5",
+      "disposition": "hand-off",
+      "target": "M1.11",
+      "note": "Generator emits per-runtime lib/types (dom: DOM lib; node: @types/node); pure packages keep no-DOM as an explicit guard with a negative fixture."
+    },
+    {
+      "finding": "F6",
+      "disposition": "hand-off",
+      "target": "M1.11",
+      "note": "Add dependsOn edges to workspaces.json as the single source for dependency-cruiser, with a sync check against the overview table."
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Descoping is a human decision and a State change to descoped always needs a verdict (M1.2); resolving the ADR file is nice-to-have."
+    },
+    {
+      "finding": "F8",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Disclosed in progress.md and the M1.1 commit body; record every verdict before fixing from now on."
+    }
+  ],
+  "planDelta": "8 of 22 rows done at cp1; adds M1.23 (gate legs) and M1.24 (recorded green CI run, needs a push): 24 rows, 1.2x the 20 planned plus hand-offs. Watch harness-tests latency against PRECOMMIT_BUDGET_MS."
+}
