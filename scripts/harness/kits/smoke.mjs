@@ -51,7 +51,9 @@ async function awaitManualVerdict(vendor, packetText) {
   rmSync(verdictIn, { force: true });
   writeFileSync(packetOut, packetText);
   console.log(`smoke: waiting for ${vendor} verdict — give ${packetOut} to an isolated ${vendor} reviewer; write its JSON to ${verdictIn}`);
-  const deadline = Date.now() + Number(process.env.FLUXION_SMOKE_MANUAL_TIMEOUT_MS ?? 30 * 60_000);
+  const requested = Number(process.env.FLUXION_SMOKE_MANUAL_TIMEOUT_MS);
+  // a non-numeric override must not disable the timeout (the seeded worktree would never be removed)
+  const deadline = Date.now() + (Number.isFinite(requested) && requested > 0 ? requested : 30 * 60_000);
   while (!existsSync(verdictIn)) {
     if (Date.now() > deadline) die(`timed out waiting for ${verdictIn}`);
     await new Promise((res) => setTimeout(res, 2000));

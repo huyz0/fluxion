@@ -73,6 +73,7 @@ console.log(JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, rev
 
   it('waits for a manual (subagent) verdict for vendors listed in FLUXION_SMOKE_MANUAL', async () => {
     const sb = sandbox(['scripts', 'docs/backlog', '.harness/reviews'], { git: true });
+    let child;
     try {
       sb.write('fake-reviewer.mjs', `import { readFileSync } from 'node:fs';
 const [packet] = process.argv.slice(2);
@@ -80,7 +81,7 @@ const hash = /^diff_sha256: ([0-9a-f]{64})$/m.exec(readFileSync(packet, 'utf8'))
 console.log(JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, reviewer: 'codex:fake', verdict: 'pass', findings: [] }));
 `);
       const env = { ...cleanEnv(), FLUXION_SMOKE_FAKE_REVIEWER: sb.path('fake-reviewer.mjs'), FLUXION_SMOKE_MANUAL: 'claude', FLUXION_SMOKE_MANUAL_TIMEOUT_MS: '60000' };
-      const child = spawn(process.execPath, [sb.path('scripts/harness/kits/smoke.mjs')], { cwd: sb.dir, env });
+      child = spawn(process.execPath, [sb.path('scripts/harness/kits/smoke.mjs')], { cwd: sb.dir, env });
       let stdout = '';
       child.stdout.on('data', (d) => { stdout += d; });
       const exited = new Promise((res) => child.on('exit', res));
@@ -94,6 +95,7 @@ console.log(JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, rev
       assert.equal(checkReviewerSmoke(record, sb.read('.harness/reviews/digest.log')), true);
       assert.equal(record.runs.find((r) => r.reviewer === 'claude').caught, true);
     } finally {
+      child?.kill(); // never leave the smoke process polling with a registered worktree
       sb.cleanup();
     }
   });
