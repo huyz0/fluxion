@@ -1,9 +1,9 @@
-// Test titles in a JS/TS source file, read the way the runner would see them (NFR-MNT-008).
+// Test titles in a JS/TS source file, read the way the runner would see them (NFR-MNT-008, NFR-DX-004).
 // A call counts only in code: not inside a string, template text, comment or regex literal.
 // `runs` is false for skip/todo in every form the runners accept: `.skip`, `.todo`, `.skipIf(…)`,
 // `.runIf(…)` (conditional), Playwright `.fixme` (quarantine), `.fails`/`.fail` (expected to fail),
-// and node:test `{ skip }` / `{ todo }` options. `x`-prefixed calls
-// (xit, xdescribe) never match. (M1 cp2 F1; M1.13 review minors.)
+// `x`-prefixed calls, node:test/vitest `{ skip }`/`{ todo }`/`{ fails }` options, runtime skips,
+// and an enclosing suite that does not run. Used by check-trace and check-tests-kept.
 
 const REGEX_AFTER = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '+', '-', '*', '%', '<', '>', '~', '^', 'return']);
 
@@ -113,52 +113,133 @@ function closesTemplateExpr(ch, st) {
   return false;
 }
 
-// describe|it|test, a member chain whose links may take args or a tagged template, then the title
+// [x]describe|it|test and a member chain whose links may take args or a tagged template; the title,
+// a string literal or an expression (`it(c.name, …)`, shown as `<c.name>`); an options object (one
+// level of nesting) or an options variable; the callback's context parameter, plain or destructured
 const CALL =
-  /(?<![.\w$])(describe|it|test)((?:\.[a-zA-Z]+(?:\((?:[^()]|\([^()]*\))*\)|`[^`]*`)?)*)\s*\(\s*(['"`])((?:\\.|(?!\3)[^\\])*)\3(\s*,\s*\{[^{}]*\})?/g;
+  /(?<![.\w$])(x?(?:describe|it|test))((?:\.[a-zA-Z]+(?:\((?:[^()]|\([^()]*\))*\)|`[^`]*`)?)*)\s*\(\s*(?:(['"`])((?:\\.|(?!\3)[^\\])*)\3|([A-Za-z_$][\w$.]*(?:\([^()]*\)|\[[^\]]*\])?)(?=\s*[,)]))(\s*,\s*\{(?:[^{}]|\{[^{}]*\})*\})?(?:\s*,\s*([A-Za-z_$][\w$]*)(?=\s*,))?(?:\s*,\s*(?:async\s+)?(?:function\s*[\w$]*\s*)?(?:\(\s*\{([^}]*)\}|\(?\s*([A-Za-z_$][\w$]*)))?/g;
 // not verifying: skipped, todo, conditional, quarantined (Playwright `fixme`, testing.md rule 19) or
-// expected to fail (vitest `fails`, Playwright `fail`) (M1.25 review r2 F1)
+// expected to fail (vitest `fails`, Playwright `fail`) (M1.25 review r2 F1; M1.29)
 const SKIPPED_CHAIN = /\.(skip|todo|skipIf|runIf|fixme|fails|fail)\b/;
-const SKIPPED_OPTION = /\b(skip|todo)\s*:(?!\s*false\b)/;
+// `{ skip: true }`, `{ skip: cond }` and the shorthand `{ skip }`, but not `{ skip: false }`
+const SKIPPED_OPTION = /\b(skip|todo|fails)\b(?!\s*:\s*false\b)/;
+const FOCUSED = /\.only\b/;
+const FOCUSED_OPTION = /\bonly\b(?!\s*:\s*false\b)/;
+// options this scanner cannot read (a spread or a variable) might skip the test: assume they do,
+// so the gates fail loudly rather than count an unknown test (M1.29 review F3)
+const OPAQUE_OPTION = /\.\.\./;
+
+// members a test/suite declaration may chain; anything else (`beforeEach`, `setTimeout`, `use`,
+// `extend`, `configure`, …) is a hook or config call, not a test (M1.29 review r2 F2)
+const MODIFIERS = new Set([
+  'skip',
+  'todo',
+  'only',
+  'skipIf',
+  'runIf',
+  'fixme',
+  'fails',
+  'fail',
+  'concurrent',
+  'sequential',
+  'each',
+  'for',
+  'describe',
+  'step',
+  'serial',
+  'parallel',
+]);
+
+/** 'it' | 'test' (a case), 'describe' (a suite), 'step' (Playwright, inside a case), or null. */
+function kindOf(name, chain) {
+  // the chain's own members, not names inside its arguments (`.each(Object.entries(x))`)
+  const bare = chain.replace(/\((?:[^()]|\([^()]*\))*\)|`[^`]*`/g, '');
+  const members = [...bare.matchAll(/\.([a-zA-Z]+)/g)].map((m) => m[1]);
+  if (!members.every((m) => MODIFIERS.has(m))) return null;
+  if (members.includes('step')) return 'step';
+  if (members.includes('describe') || name.endsWith('describe')) return 'describe';
+  return name.replace(/^x/, '');
+}
+
+function ownRuns(name, chain, options, optionsVar) {
+  if (name.startsWith('x') || optionsVar) return false;
+  return !SKIPPED_CHAIN.test(chain) && !SKIPPED_OPTION.test(options) && !OPAQUE_OPTION.test(options);
+}
 
 /**
- * Every describe/it/test title written in code, and whether that test or suite runs. A test inside
- * a skipped or todo suite does not run either (M1.25 review F1).
+ * Every describe/it/test title written in code: its kind, whether it runs, and whether it is
+ * focused (`.only`). A test inside a suite that does not run does not run either.
  */
 export function testTitles(text) {
   const mask = codeMask(text);
   const calls = [];
   const re = new RegExp(CALL.source, 'g');
   for (let m = re.exec(text); m; m = re.exec(text)) {
-    // a match that starts inside a string or comment must not swallow the code after it (r2 F2)
+    // a match that starts inside a string or comment must not swallow the code after it
     if (mask[m.index] !== 1) {
       re.lastIndex = m.index + 1;
       continue;
     }
-    const [, name, chain, , title, options] = m;
-    const own = !SKIPPED_CHAIN.test(chain) && !(options && SKIPPED_OPTION.test(options));
+    const [, name, chain, , literal, expr, options = '', optionsVar, destructured = '', ctx] = m;
+    const kind = kindOf(name, chain);
+    if (!kind) continue;
     // the call's argument list: from the paren after the member chain to its match, in code only
     const open = text.indexOf('(', m.index + name.length + chain.length);
-    calls.push({ at: m.index, title, own, end: closingParen(text, mask, open) });
+    const end = closingParen(text, mask, open);
+    // `test.skip(cond)` / `test.skip(cond, 'reason')` is a runtime skip, not a test declaration
+    if (literal === undefined && SKIPPED_CHAIN.test(chain) && !secondArgIsCode(text, mask, open, end)) continue;
+    calls.push({
+      at: m.index,
+      open,
+      kind,
+      title: literal ?? `<${expr}>`,
+      own: ownRuns(name, chain, options, optionsVar),
+      focused: FOCUSED.test(chain) || FOCUSED_OPTION.test(options),
+      ctx: new Set([ctx, ...destructured.split(',').map((s) => s.trim())].filter(Boolean)),
+      end,
+    });
   }
   markRuntimeSkips(text, mask, calls);
   const skipped = calls.filter((c) => !c.own);
-  return calls.map((c) => ({ title: c.title, runs: c.own && !skipped.some((s) => c.at > s.at && c.at < s.end) }));
+  return calls.map((c) => ({ kind: c.kind, title: c.title, focused: c.focused, runs: c.own && !skipped.some((s) => c.at > s.at && c.at < s.end) }));
 }
 
-// An untitled `.skip()`, `.todo()`, `.fixme()` or `.fail()` in a body (Playwright `test.skip()`,
-// node:test `t.skip()`, vitest `ctx.skip()`) skips the innermost test around it, even when
-// conditional: like `skipIf`, it may not run.
-// A titled declaration (`it.skip('t', …)`) has a runner receiver and a string first; anything else,
-// such as `t.todo('reason')` or `test.skip(cond, 'reason')`, is a skip at run time.
-const RUNTIME_SKIP = /([\w$]+)\.(skip|todo|fixme|fail)\s*\(\s*(['"`])?/g;
+// An untitled `.skip()`, `.todo()`, `.fixme()` or `.fail()` at run time skips the innermost test
+// around it, even when conditional (like `skipIf`, it may not run). The receiver must be the runner
+// (Playwright `test.skip(cond)`) or that test's own context parameter (node:test `t.skip()`, vitest
+// `ctx.skip()`, or a destructured `({ skip }) => skip()`); `assert.fail()` or `iter.skip(2)` are
+// not skips (M1.29). A runner skip outside any test applies to the whole file, as in Playwright.
+const RUNTIME_SKIP = /(?<![.\w$])(?:([\w$]+)\.)?(skip|todo|fixme|fail)\s*\(\s*(['"`])?/g;
 const RUNNERS = new Set(['it', 'test', 'describe']);
 function markRuntimeSkips(text, mask, calls) {
   for (const m of text.matchAll(RUNTIME_SKIP)) {
-    if (mask[m.index] !== 1 || (RUNNERS.has(m[1]) && m[3])) continue;
-    const around = calls.filter((c) => c.at < m.index && m.index < c.end).sort((a, b) => b.at - a.at)[0];
-    if (around) around.own = false;
+    const [, receiver, method, quote] = m;
+    const runner = RUNNERS.has(receiver);
+    // part of a declaration's own member chain (`it.skip(c.name, fn)`), already read as a test
+    const declaration = calls.some((c) => c.at <= m.index && m.index < c.open);
+    if (mask[m.index] !== 1 || (runner && quote) || declaration) continue;
+    // a bare call is a skip only when the test destructured it from its context
+    for (const c of skippedBy(m.index, receiver ?? method, runner, calls)) c.own = false;
   }
+}
+
+// the calls a runtime skip at `at` affects: its innermost enclosing test, or the whole file
+function skippedBy(at, receiver, runner, calls) {
+  const around = calls.filter((c) => c.at < at && at < c.end).sort((a, b) => b.at - a.at)[0];
+  if (!around) return runner ? calls : [];
+  return runner || around.ctx.has(receiver) ? [around] : [];
+}
+
+// whether the call has a second argument that is code (a callback), not a string or nothing
+function secondArgIsCode(text, mask, open, end) {
+  let depth = 0;
+  for (let i = open + 1; i < end; i++) {
+    if (mask[i] !== 1) continue;
+    if ('([{'.includes(text[i])) depth++;
+    else if (')]}'.includes(text[i])) depth--;
+    else if (text[i] === ',' && depth === 0) return /^\s*[^\s'"`]/.test(text.slice(i + 1, end));
+  }
+  return false;
 }
 
 function closingParen(text, mask, open) {

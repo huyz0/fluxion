@@ -225,3 +225,9 @@ done: scripts/gates/test-titles.mjs scanner (strings, templates incl. ${}, comme
 test-titles.test (6), trace.test +1 (skipped/todo Must ID fails --milestone)
 review r1 changes-requested fixed: a skipped/todo/skipIf describe marks every call in its callback as not running
 review r2 changes-requested (2) fixed: fixme/fails/fail count as not running; matches starting in strings re-search; plus runtime skips in a body (test.skip(cond), t.skip/t.todo, ctx.skip) skip the enclosing test
+
+## 2026-09-26 M1.29 (claude)
+done: scanner r3 minors (receiver-aware runtime skips, nested options + fails, file-level runner skip, x-prefix and focus reported); check-tests-kept rewritten on the scanner: before/after titles per changed test file, net running cases, swaps, newly non-running, new .only
+tests-kept.test +9 (option skip, skipped suite, x-prefix, only option, strings are not tests), test-titles.test +4; smoke-kit seed moved to the new swap line
+review r1 changes-requested (3) fixed: swap detection counts copies (multiset); expression titles read, runtime test.skip(cond[, reason]) told apart from it.skip(expr, fn); shorthand/spread/variable options and destructured skip() count as skipping; Playwright steps are not cases
+review r2 pass + 2 minor fixed: chain members must be test modifiers (hooks/config are not tests); test.describe is a suite; only it/test count as cases (steps and suites renamed freely)

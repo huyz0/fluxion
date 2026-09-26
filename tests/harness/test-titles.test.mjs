@@ -34,7 +34,7 @@ describe('testTitles (NFR-MNT-008)', () => {
       "it('h', { skip: false }, () => {});",
       "xit('i', () => {});",
     ].join('\n');
-    assert.deepEqual(titles(src), ['-a', '-b', '-c', '-d', '-e', '-f', '-g', '+h']);
+    assert.deepEqual(titles(src), ['-a', '-b', '-c', '-d', '-e', '-f', '-g', '+h', '-i']);
   });
 
   it('tests inside a skipped or todo suite do not run (M1.25 review F1)', () => {
@@ -72,6 +72,90 @@ describe('testTitles (NFR-MNT-008)', () => {
       '});',
     ].join('\n');
     assert.deepEqual(titles(src), ['+suite', '-a', '-b', '-c', '-d', '-e', '+f']);
+  });
+
+  it('assertion helpers and other receivers are not runtime skips (M1.29, M1.25 r3 F1)', () => {
+    const src = [
+      "it('a', () => { try { f(); assert.fail('should throw'); } catch {} });",
+      "it('b', () => { if (x) expect.fail('nope'); });",
+      "it('c', () => { iter.skip(2); });",
+      "it('d', (t) => { other.skip(); });",
+      "it('e', async (t) => { t.skip(); });",
+      "it('f', function (context) { context.todo('later'); });",
+    ].join('\n');
+    assert.deepEqual(titles(src), ['+a', '+b', '+c', '+d', '-e', '-f']);
+  });
+
+  it('reads options with nested objects and the fails option (M1.29, M1.25 r3 F2)', () => {
+    const src = [
+      "it('a', { skip: true, meta: { a: 1 } }, () => {});",
+      "it('b', { fails: true }, () => {});",
+      "it('c', { timeout: 5, meta: { skip: false } }, () => {});",
+    ].join('\n');
+    assert.deepEqual(titles(src), ['-a', '-b', '+c']);
+  });
+
+  it('a runner skip outside any test skips the whole file, as in Playwright (M1.29, M1.25 r3 F3)', () => {
+    const src = ["test.skip(({ browserName }) => browserName === 'webkit');", "test('a', async () => {});", "test('b', async () => {});"].join('\n');
+    assert.deepEqual(titles(src), ['-a', '-b']);
+  });
+
+  it('reads expression titles, so data-driven cases can be skipped or focused visibly (M1.29 review F2)', () => {
+    const src = ['for (const c of CASES) it(c.name, () => {});', "it.skip(c['name'], () => {});", 'it.only(fmt(c), () => {});'].join('\n');
+    assert.deepEqual(
+      testTitles(src).map((t) => `${t.runs ? '+' : '-'}${t.title}${t.focused ? '!' : ''}`),
+      ['+<c.name>', "-<c['name']>", '+<fmt(c)>!'],
+    );
+  });
+
+  it('shorthand, spread and variable options and a destructured skip count as skipping (M1.29 review F3)', () => {
+    const src = [
+      "it('a', { skip }, () => {});",
+      "it('b', { ...opts }, () => {});",
+      "it('c', opts, () => {});",
+      "it('d', ({ skip }) => { skip(); });",
+      "it('e', ({ expect }) => { expect(1).toBe(1); });",
+    ].join('\n');
+    assert.deepEqual(titles(src), ['-a', '-b', '-c', '-d', '+e']);
+  });
+
+  it('hooks and config calls are not tests; Playwright test.describe is a suite (M1.29 review r2)', () => {
+    const src = [
+      'test.beforeEach(resetDb);',
+      'test.setTimeout(TIMEOUT);',
+      "test.describe.configure({ mode: 'serial' });",
+      "test.describe('s', () => {});",
+      "it.each(rows)('row %s', () => {});",
+    ].join('\n');
+    assert.deepEqual(
+      testTitles(src).map((t) => `${t.kind}:${t.title}`),
+      ['describe:s', 'it:row %s'],
+    );
+  });
+
+  it('Playwright steps are reported as steps, not cases', () => {
+    const src = "test('t', async () => { await test.step('open', async () => {}); });";
+    assert.deepEqual(
+      testTitles(src).map((t) => `${t.kind}:${t.title}`),
+      ['test:t', 'step:open'],
+    );
+  });
+
+  it('test.skip(cond) and test.skip(cond, reason) are runtime skips, not declarations', () => {
+    assert.deepEqual(titles("test.describe('d', () => {\n  test.skip(isMobile, 'no hover');\n  test('a', async () => {});\n});\ntest('b', async () => {});"), [
+      '-d',
+      '-a',
+      '+b',
+    ]);
+    assert.deepEqual(titles("test.skip(isCI);\ntest('c', async () => {});"), ['-c']);
+  });
+
+  it('reports kind and focus (.only, { only: true }) for check-tests-kept', () => {
+    const src = ["describe.only('s', () => {});", "it('a', { only: true }, () => {});", "test('b', () => {});"].join('\n');
+    assert.deepEqual(
+      testTitles(src).map(({ kind, focused }) => `${kind}:${focused}`),
+      ['describe:true', 'it:true', 'test:false'],
+    );
   });
 
   it('a match starting inside a string does not swallow the code after it (M1.25 review r2 F2)', () => {

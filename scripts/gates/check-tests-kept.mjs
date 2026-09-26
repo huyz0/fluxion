@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 // Non-negotiable 2: never delete or disable a test to make a gate pass.
 //   check-tests-kept.mjs --msg <commit-msg-file>     (run from the commit-msg hook)
-// Fails when the staged change deletes a test file, removes test cases, swaps a case title out, or
-// adds .skip/.todo/.only/.skipIf/.runIf (also after .concurrent),
-// unless the commit message carries `Removes-test: <reason>`. Runs in commit-msg (not pre-commit)
+//   check-tests-kept.mjs --commit <sha>              (CI: that commit against its first parent)
+// Compares each changed test file before and after, as the runner sees it (scripts/gates/
+// test-titles.mjs: code only, not strings or comments). Fails when the change deletes a test file,
+// removes running cases (net over the whole change), swaps a case title out, makes a test stop
+// running (skip/todo/skipIf/runIf/fixme/fails, x-prefix, options, runtime skips, skipped suite) or
+// focuses one (.only) — unless the message carries `Removes-test: <reason>`. Runs in commit-msg
 // because the trailer only exists once the message is written.
 import { readFileSync } from 'node:fs';
 import { git } from './lib.mjs';
+import { testTitles } from './test-titles.mjs';
 
-// --commit <sha> (CI): check that commit against its first parent using its own message, so an
-// amended or rebased commit cannot drop a trailer unnoticed (M0.7 review F1).
+// --commit <sha> (CI): use that commit's own message, so an amended or rebased commit cannot drop a
+// trailer unnoticed (M0.7 review F1).
 const arg = (k) => {
   const j = process.argv.indexOf(`--${k}`);
   return j >= 0 ? process.argv[j + 1] : undefined;
@@ -22,59 +26,50 @@ const trailer = /^Removes-test:[ \t]*\S/m.test(msg);
 
 const isTest = (p) =>
   /\.(test|spec)\.[cm]?[jt]sx?$/.test(p) || (/(^|\/)(tests|e2e)\/.*\.[cm]?[jt]sx?$/.test(p) && !/(^|\/)(helpers|support|fixtures|__fixtures__)[/.]/.test(p));
-// (?<![.\w]) so method calls like /re/.test('x') are not counted as test cases
-const CASE = /(?<![.\w])(?:it|test)(?:\.concurrent)?(?:\.each\([^)]*\))?\s*\(\s*([`'"])((?:\\.|(?!\1).)*)\1/;
-// skipIf/runIf disable a case conditionally, which hides it on some runtime just as well (M0 cp1 F4)
-const DISABLED = /(?<![.\w])(it|test|describe)(\.concurrent)?\.(skip|todo|only|skipIf|runIf)\s*\(|(?<![.\w])x(it|describe|test)\s*\(/;
+const before = (p) => git(['show', `${sha ? `${sha}^` : 'HEAD'}:${p}`]);
+const after = (p) => git(['show', sha ? `${sha}:${p}` : `:${p}`]);
+const titlesOf = (r) => (r.status === 0 ? testTitles(r.stdout) : []);
+// cases are it/test declarations; suites (describe, incl. Playwright test.describe) and steps are not
+const isCase = (t) => t.kind === 'it' || t.kind === 'test';
 
 const problems = [];
-const status = git(['diff', ...range, '--name-status', '-M', '--no-color'])
+const files = [];
+for (const line of git(['diff', ...range, '--name-status', '-M', '--no-color'])
   .stdout.split(/\r?\n/)
-  .filter(Boolean);
-for (const line of status) {
+  .filter(Boolean)) {
   const [code, a, b] = line.split('\t');
   if (code === 'D' && isTest(a)) problems.push(`deletes test file ${a}`);
   if (code.startsWith('R') && isTest(a) && !isTest(b)) problems.push(`renames test file ${a} to non-test ${b}`);
+  const [oldPath, newPath] = code.startsWith('R') ? [a, b] : [a, a];
+  if (!isTest(oldPath) && !isTest(newPath)) continue;
+  files.push({
+    path: newPath,
+    old: code === 'A' ? [] : titlesOf(before(oldPath)),
+    now: code === 'D' || !isTest(newPath) ? [] : titlesOf(after(newPath)),
+  });
 }
 
-const diff = git(['diff', ...range, '-U0', '--no-color', '-M']).stdout.split(/\r?\n/);
-let file = null;
-const counts = new Map();
-// case swap: a removed title that is not re-added anywhere in the change counts as a removal even
-// when the per-file case count is unchanged (M0 cp1 F4)
-const removedTitles = new Map();
-const addedTitles = new Set();
-for (const l of diff) {
-  if (l.startsWith('+++ ')) {
-    file = l.slice(4).replace(/^b\//, '');
-    continue;
-  }
-  if (l.startsWith('--- ') || !file || !isTest(file)) continue;
-  const c = counts.get(file) ?? { removed: 0, added: 0, disabled: 0 };
-  // a commented-out case is not a case: `// it('x')` neither adds nor removes one (M1.10 review F2)
-  const commented = /^[+-]\s*(\/\/|\/\*|\*)/.test(l);
-  const title = commented ? undefined : CASE.exec(l)?.[2];
-  if (l.startsWith('-') && title !== undefined) {
-    c.removed++;
-    removedTitles.set(title, file);
-  }
-  if (l.startsWith('+') && title !== undefined && !DISABLED.test(l)) {
-    c.added++;
-    addedTitles.add(title);
-  }
-  if (l.startsWith('+') && DISABLED.test(l)) c.disabled++;
-  counts.set(file, c);
+// running cases, net over the whole change, so a case moved between files is not a removal
+const running = (list) => list.filter((t) => isCase(t) && t.runs);
+const oldRunning = files.flatMap((f) => running(f.old).map((t) => ({ ...t, path: f.path })));
+// titles as a multiset: one surviving copy of a duplicated title must not hide the removal of
+// another (M1.29 review F1)
+const tally = (list) => list.reduce((m, t) => m.set(t.title, (m.get(t.title) ?? 0) + 1), new Map());
+const nowRunning = tally(files.flatMap((f) => running(f.now)));
+const net = oldRunning.length - files.reduce((n, f) => n + running(f.now).length, 0);
+for (const f of files) {
+  const drop = running(f.old).length - running(f.now).length;
+  if (net > 0 && drop > 0) problems.push(`${f.path}: removes ${drop} test case(s)`);
+  const stopped = f.now.filter((t) => !t.runs).length - f.old.filter((t) => !t.runs).length;
+  if (stopped > 0) problems.push(`${f.path}: ${stopped} more test(s) or suite(s) do not run (skip/todo/skipIf/runIf/fixme/fails)`);
+  const focused = f.now.filter((t) => t.focused).length - f.old.filter((t) => t.focused).length;
+  if (focused > 0) problems.push(`${f.path}: adds ${focused} .only`);
 }
-// net count over the whole change, so a case moved between files is not a removal; a removed case
-// replaced by a different one is still caught below as a case swap
-const all = [...counts.values()];
-const net = all.reduce((n, c) => n + c.removed - c.added, 0);
-for (const [f, c] of counts) {
-  if (net > 0 && c.removed > c.added) problems.push(`${f}: removes ${c.removed - c.added} test case(s)`);
-  if (c.disabled > 0) problems.push(`${f}: adds ${c.disabled} .skip/.todo/.only/.skipIf/.runIf`);
-}
-for (const [title, f] of removedTitles) {
-  if (!addedTitles.has(title)) problems.push(`${f}: case swap — test "${title}" removed and not re-added`);
+// case swap: fewer running copies of a title after the change than before
+const firstPath = new Map(oldRunning.toReversed().map((t) => [t.title, t.path]));
+for (const [title, n] of tally(oldRunning)) {
+  const left = nowRunning.get(title) ?? 0;
+  if (left < n) problems.push(`${firstPath.get(title)}: case swap — test "${title}" removed and not re-added${n > 1 ? ` (${n - left} of ${n} copies)` : ''}`);
 }
 
 if (problems.length && !trailer) {

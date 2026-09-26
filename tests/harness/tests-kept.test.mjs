@@ -11,6 +11,7 @@ const ONLY = ['it', 'only'].join('.');
 const SKIP_IF = ['describe', 'skipIf'].join('.');
 const RUN_IF = ['it', 'runIf'].join('.');
 const CONCURRENT_SKIP = ['it', 'concurrent', 'skip'].join('.');
+const SKIPPED_SUITE = ['describe', 'skip'].join('.');
 let sb;
 
 function check(message = 'M0.7: test: change') {
@@ -81,6 +82,25 @@ describe('check-tests-kept (NFR-DX-004)', () => {
       sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2", "// it('CASE-2"));
       sb.git('add', '-A');
     },
+    'skipping a case with a node:test option': () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two', ", "it('CASE-2: two', { skip: true }, "));
+      sb.git('add', '-A');
+    },
+    'wrapping cases in a skipped suite': () => {
+      sb.write(
+        'packages/core/src/a.test.ts',
+        `import { describe, it } from 'vitest';\n${SKIPPED_SUITE}('later', () => {\n${SUITE.split('\n').slice(1).join('\n')}});\n`,
+      );
+      sb.git('add', '-A');
+    },
+    'x-prefixing a case': () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2", "xit('CASE-2"));
+      sb.git('add', '-A');
+    },
+    'focusing a case with an option': () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-1: one', ", "it('CASE-1: one', { only: true }, "));
+      sb.git('add', '-A');
+    },
     'a case swap (title replaced, count unchanged)': () => {
       sb.write('packages/core/src/a.test.ts', SUITE.replace("it('CASE-2: two'", "it('CASE-9: something else'"));
       sb.git('add', '-A');
@@ -121,6 +141,41 @@ describe('check-tests-kept (NFR-DX-004)', () => {
     sb.git('rm', '-q', 'packages/core/src/a.test.ts');
     const r = check('M0.7: test: x\n\nRemoves-test:\nCo-Authored-By: Agent <a@example.invalid>\n');
     assert.equal(r.status, 1, out(r));
+  });
+
+  it('removing one copy of a duplicated title is a case swap, even when another copy remains (M1.29 review F1)', () => {
+    const twin =
+      "import { describe, it } from 'vitest';\ndescribe('parse', () => { it('handles empty', () => {}); });\ndescribe('format', () => { it('handles empty', () => {}); });\n";
+    sb.write('packages/core/src/b.test.ts', twin);
+    sb.git('add', '-A');
+    sb.git('commit', '-q', '-m', 'twin fixture', '--no-verify');
+    sb.write('packages/core/src/b.test.ts', twin.replace("describe('parse', () => { it('handles empty', () => {}); });", "it('noop', () => {});"));
+    sb.git('add', '-A');
+    const r = check();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /case swap — test "handles empty" removed and not re-added \(1 of 2 copies\)/);
+  });
+
+  it('renaming a suite or a step, or removing a hook, is not a case removal (M1.29 review r2)', () => {
+    const spec =
+      "import { test } from '@playwright/test';\ntest.beforeEach(resetDb);\ntest.describe('login', () => {\n  test('CASE-9: signs in', async () => { await test.step('open', async () => {}); });\n});\n";
+    sb.write('e2e/login.spec.ts', spec);
+    sb.git('add', '-A');
+    sb.git('commit', '-q', '-m', 'spec fixture', '--no-verify');
+    sb.write('e2e/login.spec.ts', spec.replace('test.beforeEach(resetDb);\n', '').replace("'login'", "'sign-in'").replace("'open'", "'open the page'"));
+    sb.git('add', '-A');
+    const r = check();
+    assert.equal(r.status, 0, out(r));
+  });
+
+  it('test calls written inside strings (fixtures) are not tests (M1.29)', () => {
+    sb.write(
+      'packages/core/src/a.test.ts',
+      `${SUITE}const fixture = "${SKIP}('x', () => {}); ${ONLY}('y', () => {});";\nit('CASE-3: uses fixture', () => fixture);\n`,
+    );
+    sb.git('add', '-A');
+    const r = check();
+    assert.equal(r.status, 0, out(r));
   });
 
   it('moving a case to another test file is not a case swap', () => {
