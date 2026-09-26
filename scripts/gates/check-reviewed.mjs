@@ -8,9 +8,26 @@ import { git, repoPath, stagedHash } from './lib.mjs';
 const diff = git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).filter(Boolean);
 if (diff.length === 0) process.exit(0);
 
-// Exemption: commits that only touch review/progress bookkeeping produced by the loop itself.
+// Exemption: commits that only touch loop bookkeeping. A backlog change qualifies only if it
+// alters nothing but the State/Commit cells of existing rows — acceptance, task or requirement
+// text is a spec change and needs a verdict (M0 cp1 F2).
 const BOOKKEEPING = [/^\.harness\/(progress\.md|state\.json|reviews\/)/, /^docs\/backlog\/current\.md$/];
-if (diff.every((p) => BOOKKEEPING.some((re) => re.test(p)))) {
+const BACKLOG = 'docs/backlog/current.md';
+const STATE_COLS = [6, 7]; // | ID | Task | Req | Acceptance | Deps | State | Commit |  → split indices
+
+function backlogOnlyStateChanges() {
+  if (!diff.includes(BACKLOG)) return true;
+  const before = git(['show', `HEAD:${BACKLOG}`]);
+  const after = git(['show', `:${BACKLOG}`]);
+  if (before.status !== 0 || after.status !== 0) return false;
+  const rows = (text) => text.split(/\r?\n/).map((l) => l.split('|'));
+  const a = rows(before.stdout);
+  const b = rows(after.stdout);
+  if (a.length !== b.length) return false;
+  return a.every((cells, i) => cells.length === b[i].length && cells.every((c, j) => STATE_COLS.includes(j) || c === b[i][j]));
+}
+
+if (diff.every((p) => BOOKKEEPING.some((re) => re.test(p))) && backlogOnlyStateChanges()) {
   console.log('reviewed: bookkeeping-only commit (exempt)');
   process.exit(0);
 }

@@ -90,3 +90,8 @@ next: M0.13
 done: gate tests live only in tests/harness (ci-cd.md, M1.md repointed); docs-consistency.test (fails on old docs)
 precommit header already accurate after M0.12 (check-commits.mjs exists)
 next: M0.22
+
+## 2026-09-26 M0.22 (claude)
+done: check-reviewed exempts backlog diffs only when just State/Commit cells change; review.mjs appends tracked .harness/reviews/digest.log
+4 new tests (old gate fails 2); digest lags one commit by design (written after hashing)
+next: M0.17

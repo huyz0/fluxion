@@ -81,6 +81,46 @@ describe('review binding (NFR-DX-003)', () => {
     sb.git('reset', '-q');
   });
 
+  describe('backlog bookkeeping exemption (M0 cp1 F2)', () => {
+    const ROW = '| M0.5 | task text | NFR-DX-003 | WHEN x THE SYSTEM SHALL y | — | todo | |';
+    const stageBacklog = (text) => {
+      sb.write('docs/backlog/current.md', text);
+      sb.git('add', 'docs/backlog/current.md');
+    };
+    before(() => {
+      sb.git('reset', '-q');
+      stageBacklog(`# Backlog\n\n| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n${ROW}\n`);
+      sb.git('commit', '-q', '--no-verify', '-m', 'M0.5: test: backlog fixture');
+    });
+    const base = () => sb.git('show', 'HEAD:docs/backlog/current.md').stdout;
+
+    it('exempts a change to State/Commit cells only', () => {
+      stageBacklog(base().replace('| todo | |', '| done | abc1234 |'));
+      assert.equal(checkReviewed().status, 0);
+      sb.git('reset', '-q');
+    });
+
+    it('requires a verdict when acceptance text changes', () => {
+      stageBacklog(base().replace('THE SYSTEM SHALL y', 'THE SYSTEM MAY y'));
+      assert.equal(checkReviewed().status, 1);
+      sb.git('reset', '-q');
+    });
+
+    it('requires a verdict when a row is added', () => {
+      stageBacklog(`${base()}| M0.99 | new | x | x | — | todo | |\n`);
+      assert.equal(checkReviewed().status, 1);
+      sb.git('reset', '-q');
+    });
+  });
+
+  it('appends a tracked digest line for every recorded verdict', () => {
+    stage('src/c.txt', 'digest\n');
+    assert.equal(record(verdict()).status, 0);
+    const digest = sb.read('.harness/reviews/digest.log').trim().split('\n').at(-1).split('\t');
+    assert.deepEqual([digest[0], digest[1], digest[3]], [TASK, hash(), 'pass']);
+    sb.git('reset', '-q');
+  });
+
   it('the tracked pre-commit hook refuses an unreviewed commit', () => {
     // the real tracked hook, which runs the full precommit ladder with --staged
     sb.write('.githooks/pre-commit', sb.readRepo('.githooks/pre-commit'));

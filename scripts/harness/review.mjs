@@ -7,8 +7,8 @@
 //   review.mjs milestone --milestone M3              milestone-review packet to stdout
 // The script owns hash, packet, schema and artifact; the reviewing agent owns the judgement.
 // The packet never includes the author's reasoning (docs/standards/review.md).
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { currentMilestone, exists, git, node, readText, repoPath, stagedDiff, stagedHash } from '../gates/lib.mjs';
 import { t } from '../gates/thresholds.mjs';
 
@@ -86,6 +86,11 @@ switch (cmd) {
     const round = roundsFor(task).length + 1;
     mkdirSync(REVIEW_DIR, { recursive: true });
     writeFileSync(join(REVIEW_DIR, `${hash}.r${round}.json`), JSON.stringify({ ...v, round, recordedAt: new Date().toISOString() }, null, 2));
+    // Tracked digest so history shows non-negotiable 4 held (M0 cp1 F2). It is written after the
+    // staged diff was hashed, so it lands in the next commit (bookkeeping-exempt path).
+    const digest = repoPath('.harness', 'reviews', 'digest.log');
+    mkdirSync(dirname(digest), { recursive: true });
+    appendFileSync(digest, `${v.task}\t${hash}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\n`);
     console.log(`recorded ${v.verdict} for ${task} round ${round} (${hash.slice(0, 12)})`);
     if (round > t('REVIEW_ROUND_CAP') && v.verdict !== 'pass') die(`round cap ${t('REVIEW_ROUND_CAP')} exceeded — stop (drive stop condition)`, 3);
     break;
