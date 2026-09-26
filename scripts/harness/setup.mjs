@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // One-time (idempotent) developer/agent setup. Wrapped by `pnpm setup` from M1.
-import { git, node } from '../gates/lib.mjs';
+import { chmodSync } from 'node:fs';
+import { git, node, repoPath } from '../gates/lib.mjs';
 
 const steps = [
   ['git hooks', () => git(['config', 'core.hooksPath', '.githooks'])],
   ['skill adapters', () => node('scripts/harness/sync-skills.mjs')],
+  // POSIX git ignores hooks without the executable bit (the tracked mode is 100755 too)
+  ['hook permissions', () => { for (const h of ['pre-commit', 'commit-msg']) chmodSync(repoPath('.githooks', h), 0o755); return { status: 0, stdout: '', stderr: '' }; }],
 ];
 let ok = true;
 for (const [name, fn] of steps) {

@@ -29,3 +29,12 @@ next: M0.4
 ## 2026-09-26 M0.4 (claude)
 done: portability suite 14/14 (12 negative cases); mutation (drop built-in check) -> 1 fail
 next: M0.5
+
+## 2026-09-26 M0.5 (claude)
+done: review binding suite 11/11 (temp git repo, real hook); mutation (ignore hash) -> fails
+next: M0.6
+
+## 2026-09-26 M0.5 (claude)
+done: review binding suite 11/11 via the REAL tracked hook; mutation (reviewed step off) -> fails
+fix (review r2): hooks tracked 100755 + setup.mjs chmod — POSIX git silently skipped them
+next: M0.6

@@ -18,6 +18,7 @@ export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
     dir,
     path: (p) => join(dir, p),
     read: (p) => readFileSync(join(dir, p), 'utf8'),
+    readRepo: (p) => readFileSync(join(REPO, p), 'utf8'),
     write: (p, text) => {
       mkdirSync(dirname(join(dir, p)), { recursive: true });
       writeFileSync(join(dir, p), text);
