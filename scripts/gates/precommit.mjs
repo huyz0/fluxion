@@ -23,6 +23,8 @@ const STEPS = [
   ['portability', () => true, () => true, () => node('scripts/gates/check-portability.mjs')],
   ['index', () => true, () => (exists('AGENTS.md') && exists('docs/standards/README.md')) || 'index targets absent (partial checkout)', () => node('scripts/harness/build-index.mjs', ['--check'])],
   ['size', () => true, () => exists('scripts/gates/check-size.mjs') || 'check-size.mjs not written yet (M0)', () => node('scripts/gates/check-size.mjs', [`--${mode}`])],
+  // build before harness-tests and package hygiene: both need dist (turbo-cached, ~1 s when unchanged)
+  ['build', (m) => m !== 'quick', () => hasPkg || 'no workspace yet (M1)', () => pnpm('run', 'build')],
   ['harness-tests', (m) => m !== 'quick', () => exists('tests/harness') || 'tests/harness not written yet (M0)', () => run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])],
   // one typecheck path (M1 cp1 F4): the root solution `tsc -b` covers every workspace incl. apps;
   // incremental .tsbuildinfo keeps it fast. Per-package `typecheck` scripts exist for turbo filtering.
@@ -30,6 +32,10 @@ const STEPS = [
   ['lint', () => true, () => (hasPkg && exists('biome.json')) || 'biome not configured yet (M1.9)', () => pnpm('exec', 'biome', 'ci', '.')],
   ['test', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('turbo', 'run', mode === 'quick' ? 'test:related' : 'test:coverage', ...(mode === 'all' ? [] : ['--affected']))],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
+  ['knip', (m) => m !== 'quick', () => (hasPkg && exists('knip.json')) || 'knip not configured', () => pnpm('exec', 'knip', '--no-progress')],
+  ['publint', (m) => m !== 'quick', () => hasPkg || 'no workspace yet (M1)', () => node('scripts/gates/check-packages.mjs', ['--tool', 'publint'])],
+  ['attw', (m) => m !== 'quick', () => hasPkg || 'no workspace yet (M1)', () => node('scripts/gates/check-packages.mjs', ['--tool', 'attw'])],
+  ['size-limit', (m) => m !== 'quick', () => (hasPkg && exists('.size-limit.js')) || 'size-limit not configured', () => pnpm('exec', 'size-limit')],
   ['layering', (m) => m !== 'quick', () => exists('scripts/gates/check-layering.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-layering.mjs')],
   ['licenses', (m) => m !== 'quick', () => exists('scripts/gates/check-licenses.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-licenses.mjs')],
   ['trace', (m) => m !== 'quick', () => exists('scripts/gates/check-trace.mjs') || 'not written yet (M1)', () => node('scripts/gates/check-trace.mjs')],

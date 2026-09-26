@@ -20,9 +20,14 @@
     "verify:fast": "node scripts/gates/precommit.mjs --quick"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "@size-limit/preset-small-lib": "catalog:",
     "@types/node": "catalog:",
+    "knip": "catalog:",
+    "publint": "catalog:",
+    "size-limit": "catalog:",
+    "tsdown": "catalog:",
     "turbo": "catalog:",
-    "typescript": "catalog:",
-    "tsdown": "catalog:"
+    "typescript": "catalog:"
   }
 }
