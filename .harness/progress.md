@@ -183,3 +183,9 @@ done: biome.json (recommended + standards rules; limits = thresholds; pure-packa
 refactors to satisfy limits in lib.mjs (evalLeg), milestone-checks.mjs, review.mjs (STANDARDS_BY_PATH); one-time format sweep; .harness/reviews excluded so recorded verdicts stay byte-exact
 biome.test (17): one negative fixture per rule, scope checks (pure/adapter), limits equal thresholds
 review r1 pass + 2 minor fixed: generator formats what it writes (FLUXION_TOOLS_ROOT for sandbox); long-function exemption covers co-located *.test/*.spec
+
+## 2026-09-26 M1.10 (claude)
+done: check-size rejects utils/helpers/misc/common source files (code-structure rule 8); tests-kept catches skipIf/runIf/concurrent.skip and case swaps; count is net over the whole change so moving a case between files is fine
+namedCases counts only passing leaf tests titled with the pattern (M1.23 review minor) via passingTestTitles
+review r1 changes-requested (3) fixed: todo/skip lines are not passing tests; commented-out cases do not count as added; denylist covers src/ directories and .cjs/.cts/.jsx
+open: contracts.md rule 10 says fixtures count as tests, but isTest excludes fixtures/ — belongs with the format-fixture milestone

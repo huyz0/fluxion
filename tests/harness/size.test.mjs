@@ -28,6 +28,13 @@ describe('check-size (NFR-MNT-003)', () => {
     ],
     'a backlog over 400 lines': [(sb) => sb.edit('docs/backlog/current.md', (t) => t + '| x |\n'.repeat(420)), /current\.md: \d+ lines > 400/],
     'a package AGENTS.md over 60 lines': [(sb) => sb.write('packages/core/AGENTS.md', 'x\n'.repeat(61)), /packages\/core\/AGENTS\.md: 61 lines > 60/],
+    'a utils.ts in a package source': [(sb) => sb.write('packages/core/src/utils.ts', 'export const a = 1;\n'), /utils\.ts: 'utils' is a grab-bag name/],
+    'a helpers test file in an app source': [(sb) => sb.write('apps/studio/src/Helpers.test.tsx', 'export {};\n'), /'helpers' is a grab-bag name/],
+    'a misc module in a pack': [(sb) => sb.write('packs/basic/src/shapes/misc.ts', 'export {};\n'), /misc\.ts: 'misc'/],
+    'a common module': [(sb) => sb.write('packages/render/src/common.mts', 'export {};\n'), /common\.mts: 'common'/],
+    'a utils directory': [(sb) => sb.write('packages/core/src/utils/index.ts', 'export {};\n'), /utils\/index\.ts: 'utils'/],
+    'a helpers.cjs file': [(sb) => sb.write('packages/core/src/helpers.cjs', 'module.exports = {};\n'), /helpers\.cjs: 'helpers'/],
+    'a source .cts file over 400 lines': [(sb) => sb.write('packages/core/src/big.cts', 'export const a = 1;\n'.repeat(401)), /big\.cts: 401 lines > 400/],
     'a source file over 400 lines': [(sb) => sb.write('packages/core/src/big.ts', 'export const a = 1;\n'.repeat(401)), /big\.ts: 401 lines > 400/],
   };
   for (const [name, [mutate, expected]] of Object.entries(cases)) {
@@ -44,6 +51,9 @@ describe('check-size (NFR-MNT-003)', () => {
       sb.write('packages/core/src/__fixtures__/huge.ts', 'x\n'.repeat(900));
       sb.write('packages/core/src/types.d.ts', 'x\n'.repeat(900));
       sb.write('packages/core/src/generated/schema.ts', 'x\n'.repeat(900));
+      // concept names that merely contain a denylisted word are fine
+      sb.write('packages/core/src/common-ancestor.ts', 'export {};\n');
+      sb.write('packages/core/src/anchor-utils-free.ts', 'export {};\n');
       sb.write('.harness/progress.md', `# log\n\n## ok\n${'line\n'.repeat(10)}`);
     });
     assert.equal(r.status, 0, out(r));

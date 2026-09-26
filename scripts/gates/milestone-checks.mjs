@@ -176,6 +176,17 @@ export function backlogTextFor(milestone) {
 }
 
 /**
+ * Titles of passing leaf tests in node:test spec-reporter output. Suites print `▶ name` before
+ * their children and `✔ name (…ms)` after them, so a ✔ line whose title opened a suite is not a test.
+ */
+export function passingTestTitles(spec) {
+  const lines = spec.split(/\r?\n/);
+  const suites = new Set(lines.map((l) => /^\s*▶ (.*)$/.exec(l)?.[1]).filter(Boolean));
+  // the line must end at the duration: todo/skipped cases print `✔ name (…ms) # TODO` (M1.10 review F1)
+  return lines.map((l) => /^\s*✔ (.*) \([\d.]+m?s\)$/.exec(l)?.[1]).filter((t) => t !== undefined && !suites.has(t));
+}
+
+/**
  * `pnpm verify` output must contain a PASS line for every required step (M1 cp1 F1): a step that
  * was never registered prints nothing, so "no SKIP lines" alone cannot prove it ran.
  */

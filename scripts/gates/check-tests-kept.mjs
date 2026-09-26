@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Non-negotiable 2: never delete or disable a test to make a gate pass.
 //   check-tests-kept.mjs --msg <commit-msg-file>     (run from the commit-msg hook)
-// Fails when the staged change deletes a test file, removes test cases, or adds .skip/.todo/.only,
+// Fails when the staged change deletes a test file, removes test cases, swaps a case title out, or
+// adds .skip/.todo/.only/.skipIf/.runIf (also after .concurrent),
 // unless the commit message carries `Removes-test: <reason>`. Runs in commit-msg (not pre-commit)
 // because the trailer only exists once the message is written.
 import { readFileSync } from 'node:fs';
@@ -22,8 +23,9 @@ const trailer = /^Removes-test:[ \t]*\S/m.test(msg);
 const isTest = (p) =>
   /\.(test|spec)\.[cm]?[jt]sx?$/.test(p) || (/(^|\/)(tests|e2e)\/.*\.[cm]?[jt]sx?$/.test(p) && !/(^|\/)(helpers|support|fixtures|__fixtures__)[/.]/.test(p));
 // (?<![.\w]) so method calls like /re/.test('x') are not counted as test cases
-const CASE = /(?<![.\w])(it|test)(\.each\([^)]*\))?\s*\(\s*[`'"]/;
-const DISABLED = /(?<![.\w])(it|test|describe)\.(skip|todo|only)\s*\(|(?<![.\w])x(it|describe)\s*\(/;
+const CASE = /(?<![.\w])(?:it|test)(?:\.concurrent)?(?:\.each\([^)]*\))?\s*\(\s*([`'"])((?:\\.|(?!\1).)*)\1/;
+// skipIf/runIf disable a case conditionally, which hides it on some runtime just as well (M0 cp1 F4)
+const DISABLED = /(?<![.\w])(it|test|describe)(\.concurrent)?\.(skip|todo|only|skipIf|runIf)\s*\(|(?<![.\w])x(it|describe|test)\s*\(/;
 
 const problems = [];
 const status = git(['diff', ...range, '--name-status', '-M', '--no-color'])
@@ -38,6 +40,10 @@ for (const line of status) {
 const diff = git(['diff', ...range, '-U0', '--no-color', '-M']).stdout.split(/\r?\n/);
 let file = null;
 const counts = new Map();
+// case swap: a removed title that is not re-added anywhere in the change counts as a removal even
+// when the per-file case count is unchanged (M0 cp1 F4)
+const removedTitles = new Map();
+const addedTitles = new Set();
 for (const l of diff) {
   if (l.startsWith('+++ ')) {
     file = l.slice(4).replace(/^b\//, '');
@@ -45,14 +51,30 @@ for (const l of diff) {
   }
   if (l.startsWith('--- ') || !file || !isTest(file)) continue;
   const c = counts.get(file) ?? { removed: 0, added: 0, disabled: 0 };
-  if (l.startsWith('-') && CASE.test(l)) c.removed++;
-  if (l.startsWith('+') && CASE.test(l) && !DISABLED.test(l)) c.added++;
+  // a commented-out case is not a case: `// it('x')` neither adds nor removes one (M1.10 review F2)
+  const commented = /^[+-]\s*(\/\/|\/\*|\*)/.test(l);
+  const title = commented ? undefined : CASE.exec(l)?.[2];
+  if (l.startsWith('-') && title !== undefined) {
+    c.removed++;
+    removedTitles.set(title, file);
+  }
+  if (l.startsWith('+') && title !== undefined && !DISABLED.test(l)) {
+    c.added++;
+    addedTitles.add(title);
+  }
   if (l.startsWith('+') && DISABLED.test(l)) c.disabled++;
   counts.set(file, c);
 }
+// net count over the whole change, so a case moved between files is not a removal; a removed case
+// replaced by a different one is still caught below as a case swap
+const all = [...counts.values()];
+const net = all.reduce((n, c) => n + c.removed - c.added, 0);
 for (const [f, c] of counts) {
-  if (c.removed > c.added) problems.push(`${f}: removes ${c.removed - c.added} test case(s)`);
-  if (c.disabled > 0) problems.push(`${f}: adds ${c.disabled} .skip/.todo/.only`);
+  if (net > 0 && c.removed > c.added) problems.push(`${f}: removes ${c.removed - c.added} test case(s)`);
+  if (c.disabled > 0) problems.push(`${f}: adds ${c.disabled} .skip/.todo/.only/.skipIf/.runIf`);
+}
+for (const [title, f] of removedTitles) {
+  if (!addedTitles.has(title)) problems.push(`${f}: case swap — test "${title}" removed and not re-added`);
 }
 
 if (problems.length && !trailer) {

@@ -14,13 +14,26 @@ const cap = (p, max, what) => {
   if (n > max) errors.push(`${p}: ${n} lines > ${max} (${what})`);
 };
 
+// grab-bag module names hide what code does and grow without bound (code-structure.md rule 8)
+const DENYLIST = new Set(['utils', 'helpers', 'misc', 'common']);
+// the file stem and every directory under src/ (a utils/ folder is the same grab-bag; M1.10 review F3)
+const denylisted = (p) => {
+  const i = p.indexOf('/src/');
+  if (i < 0) return null;
+  const parts = p.slice(i + 5).split('/');
+  parts.push(parts.pop().split('.')[0]);
+  return parts.map((s) => s.toLowerCase()).find((s) => DENYLIST.has(s)) ?? null;
+};
+
 cap('AGENTS.md', t('AGENTS_MD_MAX_LINES'), 'AGENTS_MD_MAX_LINES');
 cap('docs/backlog/current.md', t('BACKLOG_MAX_LINES'), 'BACKLOG_MAX_LINES — archive or split the milestone');
 for (const p of listFiles('.agents/skills', (f) => f.endsWith('/SKILL.md'))) cap(p, t('SKILL_MAX_LINES'), 'SKILL_MAX_LINES');
 for (const root of ['packages', 'apps', 'packs']) {
   for (const p of listFiles(root, (f) => /\/AGENTS\.md$/.test(f))) cap(p, t('PACKAGE_AGENTS_MD_MAX_LINES'), 'PACKAGE_AGENTS_MD_MAX_LINES');
-  for (const p of listFiles(root, (f) => /\.(ts|tsx|mts|mjs|js)$/.test(f) && !/\.d\.ts$|__fixtures__|\/generated\//.test(f))) {
+  for (const p of listFiles(root, (f) => /\.[cm]?[jt]sx?$/.test(f) && !/\.d\.[cm]?ts$|__fixtures__|\/generated\//.test(f))) {
     cap(p, t('FILE_MAX_LINES'), 'FILE_MAX_LINES — split the module');
+    const junk = denylisted(p);
+    if (junk) errors.push(`${p}: '${junk}' is a grab-bag name — name the module after what it does (code-structure.md)`);
   }
 }
 

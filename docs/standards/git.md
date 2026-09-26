@@ -49,7 +49,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 | Trailer | When | Enforced by |
 |---|---|---|
 | `Co-Authored-By: <agent> <email>` | Every agent-authored commit | `check-commit-msg.mjs` |
-| `Removes-test: <reason>` | A test file or `it(...)` case disappears | `check-tests-kept.mjs` |
+| `Removes-test: <reason>` | A test file or `it(...)` case disappears, a case title is swapped out, or a case is disabled (`skip`, `only`, `todo`, `skipIf`, `runIf`) | `check-tests-kept.mjs` |
 | `Threshold-change: <reason>` | A value in `scripts/gates/thresholds.mjs`, a coverage/mutation floor, a size-limit, or a visual/SVG baseline moves | `check-drift.mjs` |
 
 A `Threshold-change` may only **strengthen** a limit (higher floor, lower budget) unless an ADR

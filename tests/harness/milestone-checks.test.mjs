@@ -1,7 +1,15 @@
 // NFR-DX-003 (M0 cp1 F1): completion legs reject stubs; only real evidence turns them green.
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { describe, it } from 'node:test';
-import { checkBacklogDone, checkDistArtifacts, checkDryRuns, checkReviewerSmoke, checkVerifyOutput } from '../../scripts/gates/milestone-checks.mjs';
+import {
+  checkBacklogDone,
+  checkDistArtifacts,
+  checkDryRuns,
+  checkReviewerSmoke,
+  checkVerifyOutput,
+  passingTestTitles,
+} from '../../scripts/gates/milestone-checks.mjs';
 import { out, sandbox } from './helpers.mjs';
 
 /** Evaluate `expr` against the sandbox copy of milestone-checks.mjs (its git() uses that repo). */
@@ -305,5 +313,51 @@ describe('checkVerifyOutput and checkDistArtifacts (NFR-DX-002, M1 cp1 F1)', () 
       true,
     );
     assert.match(String(checkDistArtifacts(['packages/a', 'packages/b'], (p) => present.has(p))), /packages\/b\/dist\/index\.d\.ts/);
+  });
+});
+
+describe('passingTestTitles (M1.23 review: named cases are leaf tests)', () => {
+  it('ignores a describe whose title matches when its children do not', () => {
+    const sb = sandbox([]);
+    try {
+      sb.write(
+        'probe.test.mjs',
+        "import { describe, it } from 'node:test';\ndescribe('skipIf group', () => { it('plain child', () => {}); });\nit('detects runIf', () => {});\n",
+      );
+      // node flags before the file, as namedCases runs it (args after the file go to the script)
+      const r = spawnSync(process.execPath, ['--test-reporter=spec', '--test-name-pattern=skipIf', sb.path('probe.test.mjs')], {
+        encoding: 'utf8',
+        // under --test the child would otherwise report to the parent runner instead of printing spec output
+        env: Object.fromEntries(Object.entries(process.env).filter(([k]) => k !== 'NODE_TEST_CONTEXT')),
+      });
+      assert.equal(r.status, 0, out(r));
+      assert.deepEqual(passingTestTitles(r.stdout), ['plain child']);
+      assert.equal(passingTestTitles(r.stdout).filter((t) => t.includes('skipIf')).length, 0);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('does not count todo or skipped cases as passing (M1.10 review F1)', () => {
+    const sb = sandbox([]);
+    try {
+      sb.write(
+        'probe.test.mjs',
+        "import { it } from 'node:test';\nit('todo skipIf case', { todo: true }, () => {});\nit('skipped skipIf case', { skip: true }, () => {});\n",
+      );
+      const r = spawnSync(process.execPath, ['--test-reporter=spec', '--test-name-pattern=skipIf', sb.path('probe.test.mjs')], {
+        encoding: 'utf8',
+        env: Object.fromEntries(Object.entries(process.env).filter(([k]) => k !== 'NODE_TEST_CONTEXT')),
+      });
+      assert.match(r.stdout, /# TODO/, out(r));
+      assert.deepEqual(passingTestTitles(r.stdout), []);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('returns leaf titles without their durations', () => {
+    const spec = '▶ suite\n  ✔ fails on skipIf without a trailer (12.5ms)\n  ✖ broken (1ms)\n✔ suite (20ms)\nℹ pass 1\n';
+    assert.deepEqual(passingTestTitles(spec), ['fails on skipIf without a trailer']);
   });
 });

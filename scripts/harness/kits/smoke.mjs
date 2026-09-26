@@ -30,10 +30,10 @@ const SEEDS = [
     author: 'codex',
     reviewer: 'claude',
     file: 'scripts/gates/check-tests-kept.mjs',
-    from: 'if (c.removed > c.added)',
-    to: 'if (c.removed > c.added + 1)',
-    task: 'Simplify test-case counting in check-tests-kept (no behaviour change: any net removal still needs a trailer)',
-    defect: 'one net removed test case per file passes without a Removes-test trailer',
+    from: 'if (!addedTitles.has(title))',
+    to: 'if (!addedTitles.has(title) && net > 0)',
+    task: 'Avoid double-reporting case swaps in check-tests-kept (no behaviour change: a swapped-out title still needs a trailer)',
+    defect: 'a case swap (a case replaced by a differently titled one, net count unchanged) passes without a Removes-test trailer',
   },
 ];
 

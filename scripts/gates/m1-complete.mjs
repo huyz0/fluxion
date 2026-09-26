@@ -3,7 +3,15 @@
 // Written first and red (M1.1). Legs are behavioural: each runs the real tool or gate.
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
-import { backlogTextFor, checkBacklogDone, checkDistArtifacts, checkFinalReview, checkVerifyOutput, loadMilestoneReviews } from './milestone-checks.mjs';
+import {
+  backlogTextFor,
+  checkBacklogDone,
+  checkDistArtifacts,
+  checkFinalReview,
+  checkVerifyOutput,
+  loadMilestoneReviews,
+  passingTestTitles,
+} from './milestone-checks.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
 const pnpm = (...a) => run('pnpm', a);
@@ -128,8 +136,10 @@ function namedCases(file, patterns) {
   for (const p of patterns) {
     // direct run: under --test the file itself counts as a passing test, so pass>=1 would be vacuous
     const r = run(process.execPath, ['--test-reporter=spec', `--test-name-pattern=${p}`, file]);
-    const passed = Number(/^ℹ pass (\d+)/m.exec(r.stdout)?.[1] ?? 0);
-    if (r.status !== 0 || passed < 1) return `${file}: no passing case matching "${p}" (pass=${passed})`;
+    // M1.23 review: count only tests whose own title names the pattern — a matching describe would
+    // otherwise run (and pass) every child case
+    const titles = passingTestTitles(r.stdout).filter((t) => t.includes(p));
+    if (r.status !== 0 || titles.length < 1) return `${file}: no passing test titled with "${p}"`;
   }
   return true;
 }

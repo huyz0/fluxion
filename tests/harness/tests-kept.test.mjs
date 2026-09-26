@@ -8,6 +8,9 @@ const SUITE = "import { it } from 'vitest';\nit('FR-X-001: one', () => {});\nit(
 // Built indirectly so this file itself does not trip check-tests-kept.
 const SKIP = ['it', 'skip'].join('.');
 const ONLY = ['it', 'only'].join('.');
+const SKIP_IF = ['describe', 'skipIf'].join('.');
+const RUN_IF = ['it', 'runIf'].join('.');
+const CONCURRENT_SKIP = ['it', 'concurrent', 'skip'].join('.');
 let sb;
 
 function check(message = 'M0.7: test: change') {
@@ -61,6 +64,27 @@ describe('check-tests-kept (NFR-DX-004)', () => {
       sb.git('add', '-A');
     },
     'renaming a test file to a non-test name': () => sb.git('mv', 'packages/core/src/a.test.ts', 'packages/core/src/a.old.ts'),
+    // M0 cp1 F4: conditional disabling and title swaps
+    'a new describe skipIf suite': () => {
+      sb.write('packages/core/src/a.test.ts', `${SUITE}${SKIP_IF}(process.env.CI)('later', () => {});\n`);
+      sb.git('add', '-A');
+    },
+    'turning a case into runIf': () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002", `${RUN_IF}(false)('FR-X-002`));
+      sb.git('add', '-A');
+    },
+    'a concurrent skip': () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002", `${CONCURRENT_SKIP}('FR-X-002`));
+      sb.git('add', '-A');
+    },
+    'commenting a case out': () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002", "// it('FR-X-002"));
+      sb.git('add', '-A');
+    },
+    'a case swap (title replaced, count unchanged)': () => {
+      sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two'", "it('FR-X-009: something else'"));
+      sb.git('add', '-A');
+    },
   };
   for (const [name, act] of Object.entries(bad)) {
     it(`fails on ${name} without a trailer`, () => {
@@ -97,6 +121,20 @@ describe('check-tests-kept (NFR-DX-004)', () => {
     sb.git('rm', '-q', 'packages/core/src/a.test.ts');
     const r = check('M0.7: test: x\n\nRemoves-test:\nCo-Authored-By: Agent <a@example.invalid>\n');
     assert.equal(r.status, 1, out(r));
+  });
+
+  it('moving a case to another test file is not a case swap', () => {
+    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two', () => {});\n", ''));
+    sb.write('packages/core/src/b.test.ts', "import { it } from 'vitest';\nit('FR-X-002: two', () => {});\n");
+    sb.git('add', '-A');
+    const r = check();
+    assert.equal(r.status, 0, out(r));
+  });
+
+  it('names the swapped-out title in a case swap', () => {
+    sb.write('packages/core/src/a.test.ts', SUITE.replace("it('FR-X-002: two'", "it('FR-X-009: other'"));
+    sb.git('add', '-A');
+    assert.match(check().stderr, /case swap — test "FR-X-002: two" removed/);
   });
 
   it('does not count method calls such as regex .test() as test cases', () => {
