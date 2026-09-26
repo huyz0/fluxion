@@ -221,6 +221,8 @@ leg('only release.yml has id-token: write', () => {
   return (withToken.length === 1 && withToken[0] === 'release.yml') || `id-token: write in [${withToken.join(', ')}]`;
 });
 
+// M1.24 (M1 cp1 F2): the recorded runs are re-read from GitHub, so this leg needs gh (authenticated)
+leg('CI green on ubuntu, windows and macos for a commit at or after M1.21', () => ok(node('scripts/gates/check-ci-evidence.mjs')));
 leg('every M1 backlog row done (reopened included)', () => checkBacklogDone(backlogTextFor('M1'), 'M1', loadMilestoneReviews('M1')));
 leg('final milestone review covers M1', () => {
   const rev = json('.harness/reviews/milestone-M1-final.json');
