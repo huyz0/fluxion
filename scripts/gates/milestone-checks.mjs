@@ -1,6 +1,8 @@
 // Behavioural checks shared by milestone completion gates (M0 cp1 F1: a leg that only checks a
 // file exists can be satisfied by a stub). Each returns true | '<reason>' for lib.mjs leg().
-import { git } from './lib.mjs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { git, repoPath } from './lib.mjs';
 
 /** Paths a commit may touch after the final review range without invalidating the review. */
 export const BOOKKEEPING_PATHS = [/^\.harness\//, /^docs\/backlog\//, /^docs\/milestones\/(roadmap|M\d+)\.md$/];
@@ -87,6 +89,50 @@ export function checkFinalReview(review, milestone) {
     if (code.length) return `commit ${sha.slice(0, 8)} after the reviewed range changes ${code[0]}`;
   }
   return true;
+}
+
+/**
+ * Every row of the milestone's backlog is `done`, and every `reopen` disposition in the given
+ * reviews targets an existing row of the backlog that is `done` (M0 cp2 F1).
+ */
+export function checkBacklogDone(backlogText, milestone, reviews = []) {
+  const rows = backlogText.split(/\r?\n/).filter((l) => new RegExp(`^\\| ${milestone}\\.\\d+ \\|`).test(l)).map((l) => l.split('|').map((c) => c.trim()));
+  if (rows.length === 0) return `no ${milestone} rows in the backlog`;
+  const ids = rows.map((c) => c[1]);
+  const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
+  if (dupes.length) return `duplicate backlog rows: ${[...new Set(dupes)].join(', ')}`;
+  const state = new Map(rows.map((c) => [c[1], c[6]]));
+  const notDone = [...state].filter(([, s]) => s !== 'done').map(([id, s]) => `${id} (${s})`);
+  if (notDone.length) return `not done: ${notDone.join(', ')}`;
+  for (const r of reviews) {
+    for (const d of r?.dispositions ?? []) {
+      if (d.disposition !== 'reopen') continue;
+      const ids = String(d.target ?? '').match(new RegExp(`${milestone}\\.\\d+`, 'g')) ?? [];
+      if (ids.length === 0) return `${r.checkpoint ?? 'review'} ${d.finding}: reopen target names no ${milestone} row`;
+      const missing = ids.filter((id) => state.get(id) !== 'done');
+      if (missing.length) return `${r.checkpoint ?? 'review'} ${d.finding}: reopened ${missing.join(', ')} missing or not done`;
+    }
+  }
+  return true;
+}
+
+/** Every recorded milestone review for `milestone` (any checkpoint name), parsed. */
+export function loadMilestoneReviews(milestone) {
+  const dir = repoPath('.harness', 'reviews');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((f) => f.startsWith(`milestone-${milestone}-`) && f.endsWith('.json'))
+    .sort()
+    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
+}
+
+/** The backlog text holding `milestone`'s rows: its archive once archived, else current.md. */
+export function backlogTextFor(milestone) {
+  const has = (p) => existsSync(repoPath(p)) && new RegExp(`^\\| ${milestone}\\.\\d+ \\|`, 'm').test(readFileSync(repoPath(p), 'utf8'));
+  for (const p of [`docs/backlog/archive/${milestone}.md`, 'docs/backlog/current.md']) {
+    if (has(p)) return readFileSync(repoPath(p), 'utf8');
+  }
+  return '';
 }
 
 /** Tracked git hooks must be executable (POSIX git skips them otherwise). */

@@ -4,7 +4,7 @@
 // file or an unparsed review cannot turn a leg green. Each red leg states what is left.
 import { existsSync, readFileSync } from 'node:fs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
-import { checkDryRuns, checkFinalReview, checkHooksExecutable, checkReviewerSmoke } from './milestone-checks.mjs';
+import { backlogTextFor, checkBacklogDone, checkDryRuns, checkFinalReview, checkHooksExecutable, checkReviewerSmoke, loadMilestoneReviews } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
@@ -65,6 +65,9 @@ leg('operator guide linked from AGENTS.md', () => {
 leg('final milestone review covers M0 (M0.18)', () => {
   const rev = json('.harness/reviews/milestone-M0-final.json');
   return rev ? checkFinalReview(rev, 'M0') : 'missing .harness/reviews/milestone-M0-final.json';
+});
+leg('every M0 backlog row done, reopened rows included (M0 cp2 F1)', () => {
+  return checkBacklogDone(backlogTextFor('M0'), 'M0', loadMilestoneReviews('M0'));
 });
 leg('roadmap advanced past M0', () => currentMilestone() !== 'M0' || 'roadmap Current milestone is still M0');
 

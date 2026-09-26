@@ -5,3 +5,5 @@ M0.8 F1: t() accessor tampering in thresholds.mjs is a visible code change cover
 M0 cp1 F6: M0 is harness-only; check-trace arrives in M1 (NFR-MNT-008 lands there); M0.2 re-cited as NFR-DX-003. NFR-DX-002 (gate latency) is enforced from M0 by the PRECOMMIT/QUICK budget legs in precommit.mjs and completed in M1 (pnpm verify:fast); M0.21 cites it.
 M0.10 F1: stop-blocks counter persisting after a cap hit is intended (a cap hit needs a human); the restart step (delete .harness/tmp/stop-blocks) is documented in .harness/README.md.
 M0.23 F1: an unstaged working-tree deletion of a tracked .md makes docs-consistency fail loudly (ENOENT) rather than silently pass; transient state, acceptable.
+M0 cp2 F4: no gate can prove a human-run transcript is real (non-negotiable 3); M0.25 requires a Transcript: path per dry-run section to raise the cost of fabrication.
+M0 cp2 F5: operator guide written before the dry runs was a reasonable reorder; it lists them as pending, and M0.14/M0.15 update it with observed behaviour.

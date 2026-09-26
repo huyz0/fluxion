@@ -1,7 +1,7 @@
 // NFR-DX-003 (M0 cp1 F1): completion legs reject stubs; only real evidence turns them green.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { checkDryRuns, checkReviewerSmoke } from '../../scripts/gates/milestone-checks.mjs';
+import { checkBacklogDone, checkDryRuns, checkReviewerSmoke } from '../../scripts/gates/milestone-checks.mjs';
 import { out, sandbox } from './helpers.mjs';
 
 /** Evaluate `expr` against the sandbox copy of milestone-checks.mjs (its git() uses that repo). */
@@ -188,6 +188,56 @@ describe('checkFinalReview and checkHooksExecutable (NFR-DX-003)', () => {
       assert.equal(inRepo(sb, 'c.checkHooksExecutable()'), true);
       sb.git('update-index', '--chmod=-x', '.githooks/commit-msg');
       assert.match(inRepo(sb, 'c.checkHooksExecutable()'), /commit-msg/);
+    } finally {
+      sb.cleanup();
+    }
+  });
+});
+
+describe('checkBacklogDone (NFR-DX-003, M0 cp2 F1)', () => {
+  const row = (id, state) => `| ${id} | task | NFR-DX-003 | WHEN x THE SYSTEM SHALL y | — | ${state} | |`;
+  const backlog = (...rows) => `# Backlog\n\n| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`;
+
+  it('accepts when every row is done and reopened targets are done', () => {
+    const reviews = [{ checkpoint: 'cp1', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.2' }, { finding: 'F2', disposition: 'hand-off', target: 'M1' }] }];
+    assert.equal(checkBacklogDone(backlog(row('M0.1', 'done'), row('M0.2', 'done')), 'M0', reviews), true);
+  });
+
+  it('rejects a row that is not done', () => {
+    assert.match(String(checkBacklogDone(backlog(row('M0.1', 'done'), row('M0.2', 'blocked (needs CLI)')), 'M0')), /not done: M0\.2 \(blocked \(needs CLI\)\)/);
+  });
+
+  it('rejects a reopen whose target row is missing', () => {
+    const reviews = [{ checkpoint: 'final', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.24' }] }];
+    assert.match(String(checkBacklogDone(backlog(row('M0.1', 'done')), 'M0', reviews)), /reopened M0\.24 missing or not done/);
+  });
+
+  it('rejects a reopen that names no row, and an empty backlog', () => {
+    const reviews = [{ dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'later' }] }];
+    assert.match(String(checkBacklogDone(backlog(row('M0.1', 'done')), 'M0', reviews)), /names no M0 row/);
+    assert.match(String(checkBacklogDone('# empty\n', 'M0')), /no M0 rows/);
+  });
+});
+
+describe('checkBacklogDone inputs (M0.24 review F1-F3)', () => {
+  const row = (id, state) => `| ${id} | task | NFR-DX-003 | WHEN x THE SYSTEM SHALL y | — | ${state} | |`;
+
+  it('rejects duplicate row ids (a later done row cannot hide a todo one)', () => {
+    assert.match(String(checkBacklogDone(`${row('M0.13', 'todo')}\n${row('M0.13', 'done')}\n`, 'M0')), /duplicate backlog rows: M0\.13/);
+  });
+
+  it('loads reviews of any checkpoint name, and reads archived rows once archived', () => {
+    const sb = sandbox(['scripts'], { git: true });
+    try {
+      sb.write('.harness/reviews/milestone-M0-cp1.json', JSON.stringify({ milestone: 'M0', checkpoint: 'cp1', dispositions: [] }));
+      sb.write('.harness/reviews/milestone-M0-cp3.json', JSON.stringify({ milestone: 'M0', checkpoint: 'cp3', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.26' }] }));
+      sb.write('.harness/reviews/milestone-M1-cp1.json', JSON.stringify({ milestone: 'M1', checkpoint: 'cp1', dispositions: [] }));
+      sb.write('docs/backlog/current.md', `${row('M1.1', 'todo')}\n`);
+      sb.write('docs/backlog/archive/M0.md', `${row('M0.1', 'done')}\n`);
+      const names = inRepo(sb, "c.loadMilestoneReviews('M0').map((r) => r.checkpoint)");
+      assert.deepEqual(names, ['cp1', 'cp3']);
+      assert.match(inRepo(sb, "c.backlogTextFor('M0')"), /M0\.1/);
+      assert.match(inRepo(sb, "c.checkBacklogDone(c.backlogTextFor('M0'), 'M0', c.loadMilestoneReviews('M0'))"), /cp3 F1: reopened M0\.26 missing or not done/);
     } finally {
       sb.cleanup();
     }

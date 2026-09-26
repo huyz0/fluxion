@@ -105,3 +105,8 @@ done: m0-complete legs behavioural (milestone-checks.mjs: dry-runs sections/outc
 13 tests with stub fixtures; gate 20/24 — red only: M0.13 smoke, M0.14/15 dry runs, M0.18 review, roadmap
 also: guide says delete stop-blocks whenever blockedReason is cleared (M0.17 review F1)
 next: M0.13/14/15 need a human (codex + claude CLIs, logins)
+
+## 2026-09-26 M0.24 (claude)
+done: M0.21 (53a3ac6); cp2 milestone review recorded (2 major reopened as M0.24/M0.25, 1 handed to hand-back checklist, 2 argued)
+checkBacklogDone leg + 4 tests (every row done; reopen targets exist and are done)
+next: M0.25 human kits, then stop (M0.13-15 need codex+claude CLIs)
