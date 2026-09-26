@@ -27,9 +27,11 @@ describe('gates workflow (NFR-PORT-005)', () => {
 
   it('never cancels or replaces push runs (each push range must be checked)', () => {
     const c = /concurrency:[\s\S]*?cancel-in-progress:\s*(.+)/.exec(wf)?.[1].trim();
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal GitHub Actions expression, not a JS template
     assert.equal(c, "${{ github.event_name == 'pull_request' }}");
     // a shared group lets GitHub replace a pending push run; pushes are grouped per SHA
     const g = /concurrency:\s*\n\s*group:\s*(.+)/.exec(wf)?.[1].trim();
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal GitHub Actions expression, not a JS template
     assert.equal(g, "gates-${{ github.event_name == 'pull_request' && github.ref || github.sha }}");
   });
 

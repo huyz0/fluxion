@@ -11,19 +11,25 @@ export const BOOKKEEPING_PATHS = [/^\.harness\//, /^docs\/backlog\//, /^docs\/mi
  * A dry-runs record must have, per tool, a Success and an Impossible section, each with a
  * non-empty `Date:`, `Outcome:` and `Transcript:` line — mentioning the words is not enough.
  */
-export function checkDryRuns(text, tools = ['Claude Code', 'Codex']) {
-  const missing = [];
-  for (const tool of tools) {
-    const section = new RegExp(`^## ${tool}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm').exec(text)?.[1];
-    if (!section) { missing.push(`## ${tool}`); continue; }
-    for (const kind of ['Success', 'Impossible']) {
-      const sub = new RegExp(`^### ${kind}\\s*$([\\s\\S]*?)(?=^##|(?![\\s\\S]))`, 'm').exec(section)?.[1];
-      if (!sub) { missing.push(`${tool} / ### ${kind}`); continue; }
-      for (const field of ['Date', 'Outcome', 'Transcript']) {
-        if (!new RegExp(`^${field}:[ \\t]*\\S`, 'm').test(sub)) missing.push(`${tool} / ${kind} / ${field}:`);
-      }
-    }
+const DRY_RUN_KINDS = ['Success', 'Impossible'];
+const DRY_RUN_FIELDS = ['Date', 'Outcome', 'Transcript'];
+
+/** Missing items of one `## <tool>` section (its Success/Impossible subsections and their fields). */
+function dryRunGaps(tool, section) {
+  const gaps = [];
+  for (const kind of DRY_RUN_KINDS) {
+    const sub = new RegExp(`^### ${kind}\\s*$([\\s\\S]*?)(?=^##|(?![\\s\\S]))`, 'm').exec(section)?.[1];
+    if (!sub) gaps.push(`${tool} / ### ${kind}`);
+    else gaps.push(...DRY_RUN_FIELDS.filter((f) => !new RegExp(`^${f}:[ \\t]*\\S`, 'm').test(sub)).map((f) => `${tool} / ${kind} / ${f}:`));
   }
+  return gaps;
+}
+
+export function checkDryRuns(text, tools = ['Claude Code', 'Codex']) {
+  const missing = tools.flatMap((tool) => {
+    const section = new RegExp(`^## ${tool}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm').exec(text)?.[1];
+    return section ? dryRunGaps(tool, section) : [`## ${tool}`];
+  });
   return missing.length === 0 || `missing ${missing.join(', ')}`;
 }
 
@@ -38,13 +44,18 @@ export function checkReviewerSmoke(record, digest = '', task = 'M0.13') {
   const pairs = new Set(runs.map((r) => `${r.author}->${r.reviewer}`));
   const bad = [];
   if (!(pairs.has('claude->codex') && pairs.has('codex->claude'))) bad.push('needs runs claude->codex and codex->claude');
-  if (runs.some((r) => !r.seededDefect || !/^[0-9a-f]{64}$/.test(r.diff_sha256 ?? '') || typeof r.caught !== 'boolean')) bad.push('each run needs seededDefect, diff_sha256, caught');
+  if (runs.some((r) => !r.seededDefect || !/^[0-9a-f]{64}$/.test(r.diff_sha256 ?? '') || typeof r.caught !== 'boolean'))
+    bad.push('each run needs seededDefect, diff_sha256, caught');
   if (new Set(runs.map((r) => r.diff_sha256)).size !== runs.length) bad.push('each run needs its own diff_sha256');
   if (!runs.some((r) => r.caught === true)) bad.push('no direction caught the seeded defect');
   // digest columns: task, hash, round, verdict, reviewer, findings
-  const lines = digest.split(/\r?\n/).filter(Boolean).map((l) => l.split('\t'));
-  const unrecorded = runs.filter((r) =>
-    !lines.some(([t, h, , , reviewer = '']) => t === task && h === r.diff_sha256 && reviewer.split(/[-:@/ ]/)[0] === r.reviewer));
+  const lines = digest
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((l) => l.split('\t'));
+  const unrecorded = runs.filter(
+    (r) => !lines.some(([t, h, , , reviewer = '']) => t === task && h === r.diff_sha256 && reviewer.split(/[-:@/ ]/)[0] === r.reviewer),
+  );
   if (unrecorded.length) bad.push(`${unrecorded.length} run(s) have no ${task} verdict by that reviewer in .harness/reviews/digest.log`);
   return bad.length === 0 || bad.join('; ');
 }
@@ -56,37 +67,55 @@ export function checkReviewerSmoke(record, digest = '', task = 'M0.13') {
  * its last non-bookkeeping commit.
  */
 const DISPOSITIONS = ['reopen', 'hand-off', 'argue'];
-export function checkFinalReview(review, milestone) {
+
+/** Shape of a review record: reviewer, findings array, well-formed dispositions, none missing. */
+function reviewShapeProblem(review, milestone) {
   if (!review || review.milestone !== milestone) return `review is not for ${milestone}`;
   if (typeof review.reviewer !== 'string' || !review.reviewer.trim()) return 'review has no reviewer';
   if (!Array.isArray(review.findings)) return 'findings must be an array';
   const dispositions = Array.isArray(review.dispositions) ? review.dispositions : [];
-  const malformed = dispositions.filter((d) => !d.finding || !DISPOSITIONS.includes(d.disposition));
-  if (malformed.length) return `disposition needs finding and one of ${DISPOSITIONS.join('/')}`;
+  if (dispositions.some((d) => !d.finding || !DISPOSITIONS.includes(d.disposition))) return `disposition needs finding and one of ${DISPOSITIONS.join('/')}`;
   const disposed = new Set(dispositions.map((d) => d.finding));
   const open = review.findings.filter((f) => ['blocking', 'major'].includes(f.severity) && !disposed.has(f.id));
-  if (open.length) return `undispositioned ${open.map((f) => f.id).join(', ')}`;
+  return open.length ? `undispositioned ${open.map((f) => f.id).join(', ')}` : null;
+}
+
+export function checkFinalReview(review, milestone) {
+  const shape = reviewShapeProblem(review, milestone);
+  if (shape) return shape;
   const m = /^([0-9a-f]{7,40})\.\.([0-9a-f]{7,40})$/.exec(review.range ?? '');
   if (!m) return 'range must be <base>..<sha>';
-  const [, base, end] = m;
+  return checkReviewRange(m[1], m[2], milestone);
+}
+
+/** base..end must be real commits of HEAD covering the whole milestone, then only bookkeeping. */
+function checkReviewRange(base, end, milestone) {
   // both ends must be real commits and the reviewed range must be part of HEAD's history
   for (const sha of [base, end]) {
     if (git(['cat-file', '-e', `${sha}^{commit}`]).status !== 0) return `range sha ${sha} is not a commit`;
   }
   if (git(['merge-base', '--is-ancestor', end, 'HEAD']).status !== 0) return `range end ${end} is not an ancestor of HEAD`;
-  const first = git(['rev-list', '--reverse', `--grep=^${milestone}\\.`, 'HEAD']).stdout.split(/\r?\n/).find(Boolean);
+  const first = git(['rev-list', '--reverse', `--grep=^${milestone}\\.`, 'HEAD'])
+    .stdout.split(/\r?\n/)
+    .find(Boolean);
   if (!first) return `no ${milestone} commits in history`;
   // base must precede the first milestone commit (so base..end starts at the milestone start) and
   // the first milestone commit must be inside base..end — an empty or partial range fails
-  if (git(['merge-base', '--is-ancestor', first, base]).status === 0) return `range base ${base} is not before the first ${milestone} commit ${first.slice(0, 8)}`;
-  if (git(['merge-base', '--is-ancestor', first, end]).status !== 0) return `range ${base}..${end} does not include the first ${milestone} commit ${first.slice(0, 8)}`;
+  if (git(['merge-base', '--is-ancestor', first, base]).status === 0)
+    return `range base ${base} is not before the first ${milestone} commit ${first.slice(0, 8)}`;
+  if (git(['merge-base', '--is-ancestor', first, end]).status !== 0)
+    return `range ${base}..${end} does not include the first ${milestone} commit ${first.slice(0, 8)}`;
+  return onlyBookkeepingAfter(end, milestone);
+}
+
+/** Every milestone commit after `end` may touch only bookkeeping paths. */
+function onlyBookkeepingAfter(end, milestone) {
   const list = git(['rev-list', '--reverse', `${end}..HEAD`, `--grep=^${milestone}\\.`]);
   if (list.status !== 0) return `git rev-list failed: ${list.stderr.trim()}`;
-  const after = list.stdout.split(/\r?\n/).filter(Boolean);
-  for (const sha of after) {
+  for (const sha of list.stdout.split(/\r?\n/).filter(Boolean)) {
     const paths = git(['show', '--name-only', '--format=', sha]).stdout.split(/\r?\n/).filter(Boolean);
-    const code = paths.filter((p) => !BOOKKEEPING_PATHS.some((re) => re.test(p)));
-    if (code.length) return `commit ${sha.slice(0, 8)} after the reviewed range changes ${code[0]}`;
+    const code = paths.find((p) => !BOOKKEEPING_PATHS.some((re) => re.test(p)));
+    if (code) return `commit ${sha.slice(0, 8)} after the reviewed range changes ${code}`;
   }
   return true;
 }
@@ -96,7 +125,10 @@ export function checkFinalReview(review, milestone) {
  * reviews targets an existing row of the backlog that is `done` (M0 cp2 F1).
  */
 export function checkBacklogDone(backlogText, milestone, reviews = []) {
-  const rows = backlogText.split(/\r?\n/).filter((l) => new RegExp(`^\\| ${milestone}\\.\\d+ \\|`).test(l)).map((l) => l.split('|').map((c) => c.trim()));
+  const rows = backlogText
+    .split(/\r?\n/)
+    .filter((l) => new RegExp(`^\\| ${milestone}\\.\\d+ \\|`).test(l))
+    .map((l) => l.split('|').map((c) => c.trim()));
   if (rows.length === 0) return `no ${milestone} rows in the backlog`;
   const ids = rows.map((c) => c[1]);
   const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
@@ -108,16 +140,20 @@ export function checkBacklogDone(backlogText, milestone, reviews = []) {
   const closed = (s) => s === 'done' || (/^descoped \(\S.*\)$/.test(s) && /\bADR-\d{4}\b|\bDeferred\b/.test(s));
   const notDone = [...state].filter(([, s]) => !closed(s)).map(([id, s]) => `${id} (${s})`);
   if (notDone.length) return `not done: ${notDone.join(', ')}`;
-  for (const r of reviews) {
-    for (const d of r?.dispositions ?? []) {
-      if (d.disposition !== 'reopen') continue;
-      const ids = String(d.target ?? '').match(new RegExp(`${milestone}\\.\\d+`, 'g')) ?? [];
-      if (ids.length === 0) return `${r.checkpoint ?? 'review'} ${d.finding}: reopen target names no ${milestone} row`;
-      const missing = ids.filter((id) => state.get(id) !== 'done');
-      if (missing.length) return `${r.checkpoint ?? 'review'} ${d.finding}: reopened ${missing.join(', ')} missing or not done`;
-    }
+  const reopens = reviews.flatMap((r) => (r?.dispositions ?? []).filter((d) => d.disposition === 'reopen').map((d) => [r, d]));
+  for (const [r, d] of reopens) {
+    const problem = reopenProblem(d, milestone, state);
+    if (problem) return `${r.checkpoint ?? 'review'} ${d.finding}: ${problem}`;
   }
   return true;
+}
+
+/** A reopen disposition must name rows of this milestone, and each must be `done`. */
+function reopenProblem(d, milestone, state) {
+  const ids = String(d.target ?? '').match(new RegExp(`${milestone}\\.\\d+`, 'g')) ?? [];
+  if (ids.length === 0) return `reopen target names no ${milestone} row`;
+  const missing = ids.filter((id) => state.get(id) !== 'done');
+  return missing.length ? `reopened ${missing.join(', ')} missing or not done` : null;
 }
 
 /** Every recorded milestone review for `milestone` (any checkpoint name), parsed. */

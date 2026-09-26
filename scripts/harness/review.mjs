@@ -13,33 +13,47 @@ import { currentMilestone, exists, git, node, readText, repoPath, stagedDiff, st
 import { t } from '../gates/thresholds.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
-const arg = (k) => { const i = rest.indexOf(`--${k}`); return i >= 0 ? rest[i + 1] : undefined; };
+const arg = (k) => {
+  const i = rest.indexOf(`--${k}`);
+  return i >= 0 ? rest[i + 1] : undefined;
+};
 const REVIEW_DIR = repoPath('.harness', 'review');
-const die = (m, code = 1) => { console.error(m); process.exit(code); };
+const die = (m, code = 1) => {
+  console.error(m);
+  process.exit(code);
+};
 
 function taskRow(id) {
-  const line = readText('docs/backlog/current.md').split(/\r?\n/).find((l) => new RegExp(`^\\|\\s*${id.replace('.', '\\.')}\\s*\\|`).test(l));
+  const line = readText('docs/backlog/current.md')
+    .split(/\r?\n/)
+    .find((l) => new RegExp(`^\\|\\s*${id.replace('.', '\\.')}\\s*\\|`).test(l));
   return line ?? die(`task ${id} not in docs/backlog/current.md`);
 }
+// which standards a reviewer gets, by staged path
+const STANDARDS_BY_PATH = [
+  [/^packages\/(schema|format)|contracts/, ['contracts.md']],
+  [/\.(ts|tsx)$/, ['coding-typescript.md', 'code-structure.md']],
+  [/^(packages\/(editor|render|player)|apps\/studio)/, ['design-ui.md', 'performance.md']],
+  [/sanitiz|security|plugin|sandbox|format/, ['security.md']],
+  [/^\.github|^scripts|^\.githooks/, ['ci-cd.md']],
+  [/^docs\//, ['documentation.md']],
+];
 function standardsFor(paths) {
   const pick = new Set(['review.md', 'testing.md']);
-  for (const p of paths) {
-    if (/^packages\/(schema|format)|contracts/.test(p)) pick.add('contracts.md');
-    if (/\.(ts|tsx)$/.test(p)) { pick.add('coding-typescript.md'); pick.add('code-structure.md'); }
-    if (/^(packages\/(editor|render|player)|apps\/studio)/.test(p)) { pick.add('design-ui.md'); pick.add('performance.md'); }
-    if (/sanitiz|security|plugin|sandbox|format/.test(p)) pick.add('security.md');
-    if (/^\.github|^scripts|^\.githooks/.test(p)) pick.add('ci-cd.md');
-    if (/^docs\//.test(p)) pick.add('documentation.md');
-  }
+  for (const [re, files] of STANDARDS_BY_PATH) if (paths.some((p) => re.test(p))) for (const f of files) pick.add(f);
   return [...pick].filter((f) => exists(`docs/standards/${f}`)).map((f) => `docs/standards/${f}`);
 }
 function verdictsFor(hash) {
   if (!existsSync(REVIEW_DIR)) return [];
-  return readdirSync(REVIEW_DIR).filter((f) => f.startsWith(hash)).map((f) => JSON.parse(readFileSync(join(REVIEW_DIR, f), 'utf8')));
+  return readdirSync(REVIEW_DIR)
+    .filter((f) => f.startsWith(hash))
+    .map((f) => JSON.parse(readFileSync(join(REVIEW_DIR, f), 'utf8')));
 }
 function roundsFor(task) {
   if (!existsSync(REVIEW_DIR)) return [];
-  return readdirSync(REVIEW_DIR).map((f) => JSON.parse(readFileSync(join(REVIEW_DIR, f), 'utf8'))).filter((v) => v.task === task);
+  return readdirSync(REVIEW_DIR)
+    .map((f) => JSON.parse(readFileSync(join(REVIEW_DIR, f), 'utf8')))
+    .filter((v) => v.task === task);
 }
 
 switch (cmd) {
@@ -57,7 +71,11 @@ switch (cmd) {
     console.log(`# Review packet — ${task} (round ${round} of max ${t('REVIEW_ROUND_CAP')})\n`);
     console.log(`diff_sha256: ${stagedHash()}\n`);
     console.log(`## Task (verbatim from backlog)\n\n${taskRow(task)}\n`);
-    console.log(`## Standards to apply\n\n${standardsFor(paths).map((s) => `- ${s}`).join('\n')}\n`);
+    console.log(
+      `## Standards to apply\n\n${standardsFor(paths)
+        .map((s) => `- ${s}`)
+        .join('\n')}\n`,
+    );
     console.log(`## Deterministic gates already run (do not re-check these)\n\n\`\`\`\n${gates}\n\`\`\`\n`);
     const prev = roundsFor(task).at(-1);
     if (prev) console.log(`## Previous round findings\n\n\`\`\`json\n${JSON.stringify(prev.findings, null, 2)}\n\`\`\`\n`);
@@ -108,7 +126,8 @@ switch (cmd) {
     const log = git(['log', '--no-merges', '--stat', '--format=%n### %h %s', `--grep=^${ms}\\.`]).stdout;
     console.log(`## Commits\n${log}\n`);
     const gate = exists(`scripts/gates/${ms.toLowerCase()}-complete.mjs`)
-      ? node(`scripts/gates/${ms.toLowerCase()}-complete.mjs`).stdout : '(completion gate missing)';
+      ? node(`scripts/gates/${ms.toLowerCase()}-complete.mjs`).stdout
+      : '(completion gate missing)';
     console.log(`## Completion gate output\n\n\`\`\`\n${gate}\n\`\`\`\n`);
     if (exists('.harness/baselines/review-argued.txt')) console.log(`## Argued findings\n\n${readText('.harness/baselines/review-argued.txt')}\n`);
     console.log('## Instructions\n\nFollow .agents/skills/milestone-review/SKILL.md. Output the verdict JSON described there.');

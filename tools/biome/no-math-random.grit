@@ -1,0 +1,3 @@
+`Math.random()` as $call where {
+  register_diagnostic(span=$call, message="Math.random() is not deterministic in pure packages: inject the Random port (docs/standards/coding-typescript.md).", severity="error")
+}

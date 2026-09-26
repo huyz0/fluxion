@@ -37,7 +37,10 @@ describe('check-drift (NFR-DX-004)', () => {
   });
 
   it('passes when a floor is raised (strengthened) or a key is added', () => {
-    stageEdit("COVERAGE_PURE_LINES: { value: 90, weakens: 'down' },", "COVERAGE_PURE_LINES: { value: 95, weakens: 'down' },\n  NEW_KEY: { value: 1, weakens: 'up' },");
+    stageEdit(
+      "COVERAGE_PURE_LINES: { value: 90, weakens: 'down' },",
+      "COVERAGE_PURE_LINES: { value: 95, weakens: 'down' },\n  NEW_KEY: { value: 1, weakens: 'up' },",
+    );
     assert.equal(check().status, 0);
   });
 
@@ -45,7 +48,11 @@ describe('check-drift (NFR-DX-004)', () => {
     'a ceiling raised': ['AGENTS_MD_MAX_LINES: { value: 250', 'AGENTS_MD_MAX_LINES: { value: 300', /AGENTS_MD_MAX_LINES 250 → 300/],
     'a floor lowered': ['COVERAGE_PURE_LINES: { value: 90', 'COVERAGE_PURE_LINES: { value: 80', /COVERAGE_PURE_LINES 90 → 80/],
     'a key removed': ["  REVIEW_ROUND_CAP: { value: 3, weakens: 'up' },\n", '', /REVIEW_ROUND_CAP removed/],
-    'the weakening direction flipped': ["REVIEW_ROUND_CAP: { value: 3, weakens: 'up' }", "REVIEW_ROUND_CAP: { value: 3, weakens: 'down' }", /weakens-direction changed/],
+    'the weakening direction flipped': [
+      "REVIEW_ROUND_CAP: { value: 3, weakens: 'up' }",
+      "REVIEW_ROUND_CAP: { value: 3, weakens: 'down' }",
+      /weakens-direction changed/,
+    ],
   };
   for (const [name, [from, to, expected]] of Object.entries(weakenings)) {
     it(`fails on ${name} without a justified trailer`, () => {

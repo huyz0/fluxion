@@ -11,7 +11,21 @@ import { frontMatter, repoPath } from '../gates/lib.mjs';
 const check = process.argv.includes('--check');
 
 // Lifecycle order for skills; skills not listed follow alphabetically.
-const SKILL_ORDER = ['drive', 'next-task', 'plan-milestone', 'spec', 'tdd', 'ui-check', 'verify', 'code-review', 'milestone-review', 'adr', 'research', 'ship', 'brevity'];
+const SKILL_ORDER = [
+  'drive',
+  'next-task',
+  'plan-milestone',
+  'spec',
+  'tdd',
+  'ui-check',
+  'verify',
+  'code-review',
+  'milestone-review',
+  'adr',
+  'research',
+  'ship',
+  'brevity',
+];
 const FAMILY_ORDER = ['Process', 'Quality', 'Delivery', 'Code', 'Design'];
 const rank = (list, x) => (list.includes(x) ? list.indexOf(x) : list.length);
 const cell = (s) => s.replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim();

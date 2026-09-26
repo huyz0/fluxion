@@ -6,8 +6,6 @@
     "emitDeclarationOnly": true,
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": []
 }

@@ -8,15 +8,20 @@ import { cleanEnv, REPO } from './helpers.mjs';
 
 // Tracked Markdown only: scratch files under .harness/tmp (review packets) quote diffs verbatim.
 const tracked = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '*.md'], { cwd: REPO, encoding: 'utf8', env: cleanEnv() });
-const files = tracked.stdout.split(/\r?\n/).filter(Boolean).map((p) => join(REPO, p));
+const files = tracked.stdout
+  .split(/\r?\n/)
+  .filter(Boolean)
+  .map((p) => join(REPO, p));
 
 describe('harness docs consistency (NFR-DX-003)', () => {
   it('name tests/harness as the only gate-test location', () => {
     const offenders = [];
     for (const f of files) {
-      readFileSync(f, 'utf8').split(/\r?\n/).forEach((line, i) => {
-        if (line.includes('__tests__') && !/not `scripts\/gates\/__tests__\/`/.test(line)) offenders.push(`${relative(REPO, f)}:${i + 1}`);
-      });
+      readFileSync(f, 'utf8')
+        .split(/\r?\n/)
+        .forEach((line, i) => {
+          if (line.includes('__tests__') && !/not `scripts\/gates\/__tests__\/`/.test(line)) offenders.push(`${relative(REPO, f)}:${i + 1}`);
+        });
     }
     assert.deepEqual(offenders, []);
   });

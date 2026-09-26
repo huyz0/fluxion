@@ -1,0 +1,123 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!**/dist", "!**/.tsbuild", "!**/coverage", "!pnpm-lock.yaml", "!tests/harness/fixtures/biome", "!.harness/reviews"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 160
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noFocusedTests": "error",
+        "noSkippedTests": "error"
+      },
+      "performance": {
+        "noReExportAll": "error"
+      },
+      "security": {
+        "noGlobalEval": "error"
+      },
+      "complexity": {
+        "useMaxParams": {
+          "level": "error",
+          "options": {
+            "max": 4
+          }
+        },
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 12
+          }
+        },
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 60
+          }
+        }
+      },
+      "style": {
+        "noDefaultExport": "error",
+        "noNonNullAssertion": "error"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/{schema,geometry,core,theme,layout,routing,anim,format,dsl}/src/**"],
+      "plugins": ["./tools/biome/no-math-random.grit"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "Date": "Pure package: inject the Clock port instead of Date.",
+                  "setTimeout": "Pure package: inject the Clock port.",
+                  "setInterval": "Pure package: inject the Clock port.",
+                  "requestAnimationFrame": "Pure package: inject the Clock port.",
+                  "performance": "Pure package: inject the Clock port.",
+                  "fetch": "Pure package: no network; inject the FileIO port.",
+                  "window": "Pure package: no DOM.",
+                  "document": "Pure package: no DOM."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/src/adapters/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.config.{ts,mts,js,mjs}", "**/.size-limit.js", "**/.storybook/**", "apps/docs/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["tests/**", "**/*.test.{ts,tsx,mts,mjs}", "**/*.spec.{ts,tsx}"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          }
+        }
+      }
+    }
+  ]
+}

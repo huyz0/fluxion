@@ -6,10 +6,13 @@
 // The branch is only deleted with --delete-branch AND when already merged into HEAD's branch
 // (git branch -d refuses otherwise), so unmerged agent work is never lost.
 import { basename, dirname, join } from 'node:path';
-import { REPO_ROOT, git } from '../gates/lib.mjs';
+import { git, REPO_ROOT } from '../gates/lib.mjs';
 
 const [cmd, slug, ...rest] = process.argv.slice(2);
-const die = (m, code = 1) => { console.error(`worktree: ${m}`); process.exit(code); };
+const die = (m, code = 1) => {
+  console.error(`worktree: ${m}`);
+  process.exit(code);
+};
 const ok = (r, what) => (r.status === 0 ? r : die(`${what} failed: ${r.stderr.trim()}`));
 
 if (cmd === 'list') {

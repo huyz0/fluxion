@@ -22,7 +22,10 @@ describe('check-size (NFR-MNT-003)', () => {
   const cases = {
     'AGENTS.md over 250 lines': [(sb) => sb.edit('AGENTS.md', (t) => t + 'x\n'.repeat(260)), /AGENTS\.md: \d+ lines > 250/],
     'a skill over 150 lines': [(sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => t + 'x\n'.repeat(160)), /SKILL\.md: \d+ lines > 150/],
-    'a progress entry over 10 lines': [(sb) => sb.edit('.harness/progress.md', (t) => `${t}\n## big entry\n${'line\n'.repeat(11)}`), /entry "big entry" has 11 lines > 10/],
+    'a progress entry over 10 lines': [
+      (sb) => sb.edit('.harness/progress.md', (t) => `${t}\n## big entry\n${'line\n'.repeat(11)}`),
+      /entry "big entry" has 11 lines > 10/,
+    ],
     'a backlog over 400 lines': [(sb) => sb.edit('docs/backlog/current.md', (t) => t + '| x |\n'.repeat(420)), /current\.md: \d+ lines > 400/],
     'a package AGENTS.md over 60 lines': [(sb) => sb.write('packages/core/AGENTS.md', 'x\n'.repeat(61)), /packages\/core\/AGENTS\.md: 61 lines > 60/],
     'a source file over 400 lines': [(sb) => sb.write('packages/core/src/big.ts', 'export const a = 1;\n'.repeat(401)), /big\.ts: 401 lines > 400/],

@@ -34,7 +34,10 @@ describe('tsconfig strictness (NFR-MNT-002)', () => {
   const bad = {
     'unchecked index access (noUncheckedIndexedAccess)': ['export const f = (a: { x: number }[]): number => a[0].x;\n', /TS2532/],
     'implicit any (strict)': ['export function f(a) { return a; }\n', /TS7006/],
-    'undefined assigned to optional prop (exactOptionalPropertyTypes)': ['export interface O { a?: number }\nexport const o: O = { a: undefined };\n', /TS2375/],
+    'undefined assigned to optional prop (exactOptionalPropertyTypes)': [
+      'export interface O { a?: number }\nexport const o: O = { a: undefined };\n',
+      /TS2375/,
+    ],
     'missing override keyword (noImplicitOverride)': ['class A { m(): void {} }\nexport class B extends A { m(): void {} }\n', /TS4114/],
     'export without explicit type (isolatedDeclarations)': ['export const f = (a: number) => a * 2;\n', /TS9007|TS9010|TS9011|TS9013/],
     'type import without `import type` (verbatimModuleSyntax)': ['import { Point } from "./good.js";\nexport const p: Point = { x: 1 };\n', /TS1484/],

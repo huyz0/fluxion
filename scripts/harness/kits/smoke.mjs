@@ -18,14 +18,20 @@ import { git, repoPath } from '../../gates/lib.mjs';
 const TASK = 'M0.13';
 const SEEDS = [
   {
-    author: 'claude', reviewer: 'codex', file: 'scripts/gates/check-size.mjs',
-    from: 'if (n > max)', to: 'if (n >= max)',
+    author: 'claude',
+    reviewer: 'codex',
+    file: 'scripts/gates/check-size.mjs',
+    from: 'if (n > max)',
+    to: 'if (n >= max)',
     task: 'Tidy the cap comparison in check-size (no behaviour change: a file exactly at the cap still passes)',
     defect: 'files exactly at the cap are rejected (off-by-one)',
   },
   {
-    author: 'codex', reviewer: 'claude', file: 'scripts/gates/check-tests-kept.mjs',
-    from: 'if (c.removed > c.added)', to: 'if (c.removed > c.added + 1)',
+    author: 'codex',
+    reviewer: 'claude',
+    file: 'scripts/gates/check-tests-kept.mjs',
+    from: 'if (c.removed > c.added)',
+    to: 'if (c.removed > c.added + 1)',
     task: 'Simplify test-case counting in check-tests-kept (no behaviour change: any net removal still needs a trailer)',
     defect: 'one net removed test case per file passes without a Removes-test trailer',
   },
@@ -33,7 +39,9 @@ const SEEDS = [
 
 // Throw (never process.exit) so the finally block always removes the seeded worktree.
 class SmokeError extends Error {}
-const die = (m) => { throw new SmokeError(m); };
+const die = (m) => {
+  throw new SmokeError(m);
+};
 const wt = join(mkdtempSync(join(tmpdir(), 'fluxion-smoke-')), 'wt');
 // git's hook variables (GIT_INDEX_FILE=.git/index …) would break git inside a linked worktree
 const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
@@ -122,8 +130,13 @@ try {
   if (newLines.split('\n').filter(Boolean).length !== SEEDS.length) die(`expected ${SEEDS.length} new digest lines, got: ${JSON.stringify(newLines)}`);
   const mainDigest = repoPath('.harness', 'reviews', 'digest.log');
   appendFileSync(mainDigest, newLines);
-  writeFileSync(repoPath('.harness', 'reviews', 'cross-vendor-smoke.json'), `${JSON.stringify({ task: TASK, date: new Date().toISOString().slice(0, 10), runs }, null, 2)}\n`);
-  console.log(`smoke: wrote .harness/reviews/cross-vendor-smoke.json (${runs.filter((r) => r.caught).length}/${runs.length} caught); stage it with digest.log in the M0.13 commit`);
+  writeFileSync(
+    repoPath('.harness', 'reviews', 'cross-vendor-smoke.json'),
+    `${JSON.stringify({ task: TASK, date: new Date().toISOString().slice(0, 10), runs }, null, 2)}\n`,
+  );
+  console.log(
+    `smoke: wrote .harness/reviews/cross-vendor-smoke.json (${runs.filter((r) => r.caught).length}/${runs.length} caught); stage it with digest.log in the M0.13 commit`,
+  );
 } catch (e) {
   failure = e;
 } finally {

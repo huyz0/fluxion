@@ -7,7 +7,10 @@ let sb;
 const GATE = 'scripts/gates/m0-complete.mjs';
 const setState = (over) => sb.write('.harness/state.json', JSON.stringify({ milestone: 'M0', loopActive: true, blockedReason: null, ...over }));
 const fakeGate = (green) =>
-  sb.write(GATE, `console.log('FAIL demo leg');console.log('GATE m0: ${green ? '3/3' : '2/3'} legs green${green ? '' : ' — next red leg: demo leg'}');process.exit(${green ? 0 : 1});\n`);
+  sb.write(
+    GATE,
+    `console.log('FAIL demo leg');console.log('GATE m0: ${green ? '3/3' : '2/3'} legs green${green ? '' : ' — next red leg: demo leg'}');process.exit(${green ? 0 : 1});\n`,
+  );
 const hook = (env = {}) => sb.node('scripts/harness/stop-check.mjs', [], { input: '{"stop_hook_active":false}', env: { ...process.env, ...env } });
 
 describe('stop-check (NFR-DX-003)', () => {

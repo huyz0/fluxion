@@ -9,7 +9,11 @@ import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
-const timed = (fn) => { const t0 = Date.now(); const r = fn(); return { r, ms: Date.now() - t0 }; };
+const timed = (fn) => {
+  const t0 = Date.now();
+  const r = fn();
+  return { r, ms: Date.now() - t0 };
+};
 
 leg('node >= 22', () => Number(process.versions.node.split('.')[0]) >= 22 || `node ${process.versions.node}`);
 leg('git hooks installed (hooksPath=.githooks) and executable', () => {
@@ -39,7 +43,10 @@ for (const [deliverable, test] of Object.entries(BEHAVIOUR)) {
   leg(`${deliverable} has behavioural test`, () => (exists(deliverable) ? exists(test) || `missing ${test}` : 'missing'));
 }
 leg('harness test suite passes', () => ok(run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])));
-leg('codex hooks enabled', () => /^hooks = true$/m.test(exists('.codex/config.toml') ? readText('.codex/config.toml') : '') || '.codex/config.toml lacks [features] hooks = true');
+leg(
+  'codex hooks enabled',
+  () => /^hooks = true$/m.test(exists('.codex/config.toml') ? readText('.codex/config.toml') : '') || '.codex/config.toml lacks [features] hooks = true',
+);
 
 // NFR-DX-002: gate latency within budget (precommit --all includes the harness suite).
 leg(`quick gate < ${t('QUICK_GATE_BUDGET_MS')}ms`, () => {

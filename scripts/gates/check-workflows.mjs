@@ -21,7 +21,10 @@ const root = dirArg >= 0 ? resolve(argv[dirArg + 1]) : REPO_ROOT;
 const requireDocker = argv.includes('--require-docker');
 
 const skipOrFail = (why) => {
-  if (requireDocker) { console.error(`workflows: ${why}`); process.exit(1); }
+  if (requireDocker) {
+    console.error(`workflows: ${why}`);
+    process.exit(1);
+  }
   console.log(`workflows: SKIP — ${why}`);
   process.exit(0);
 };
@@ -37,11 +40,14 @@ if (info.error || info.status !== 0) skipOrFail('Docker not available');
 if (info.stdout.trim() !== 'linux') skipOrFail(`Docker engine is ${info.stdout.trim()}, need linux`);
 
 const mount = `${root.replace(/\\/g, '/')}:/repo`;
-const docker = (image, args) => spawnSync('docker', ['run', '--rm', '-v', mount, '-w', '/repo', image, ...args], { encoding: 'utf8', env: { ...process.env, MSYS_NO_PATHCONV: '1' } });
+const docker = (image, args) =>
+  spawnSync('docker', ['run', '--rm', '-v', mount, '-w', '/repo', image, ...args], { encoding: 'utf8', env: { ...process.env, MSYS_NO_PATHCONV: '1' } });
 
 let failed = false;
 // explicit file list: actionlint otherwise needs a git project around /repo
-const files = readdirSync(wfDir).filter((f) => /\.ya?ml$/.test(f)).map((f) => `.github/workflows/${f}`);
+const files = readdirSync(wfDir)
+  .filter((f) => /\.ya?ml$/.test(f))
+  .map((f) => `.github/workflows/${f}`);
 const al = docker(IMAGES.actionlint, files);
 if (al.status !== 0) {
   failed = true;

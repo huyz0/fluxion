@@ -9,7 +9,7 @@ import { git, node, repoPath } from './lib.mjs';
 
 const i = process.argv.indexOf('--range');
 const range = i >= 0 ? process.argv[i + 1] : undefined;
-if (!range || !range.includes('..')) {
+if (!range?.includes('..')) {
   console.error('usage: check-commits.mjs --range <base>..<head>');
   process.exit(2);
 }

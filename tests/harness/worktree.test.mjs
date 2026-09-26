@@ -47,7 +47,11 @@ describe('worktree.mjs (NFR-DX-003)', () => {
     const inner = join(dirname(sb.dir), `${basename(sb.dir)}-inner`);
     try {
       // the copy of the script inside the outer worktree, so REPO_ROOT is the outer worktree
-      const r = spawnSync(process.execPath, [join(outer, 'scripts/harness/worktree.mjs'), 'create', 'inner'], { cwd: outer, encoding: 'utf8', env: cleanEnv() });
+      const r = spawnSync(process.execPath, [join(outer, 'scripts/harness/worktree.mjs'), 'create', 'inner'], {
+        cwd: outer,
+        encoding: 'utf8',
+        env: cleanEnv(),
+      });
       assert.equal(r.status, 0, out(r));
       assert.ok(existsSync(inner), 'expected sibling of the main checkout');
       assert.equal(run('remove', 'inner').status, 0);

@@ -15,12 +15,14 @@
     "typecheck": "tsc -b",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
-    "lint": "turbo run lint",
+    "lint": "biome ci .",
+    "format": "biome check --write .",
     "verify": "node scripts/gates/precommit.mjs --all",
     "verify:fast": "node scripts/gates/precommit.mjs --quick"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@biomejs/biome": "catalog:",
     "@size-limit/preset-small-lib": "catalog:",
     "@types/node": "catalog:",
     "knip": "catalog:",

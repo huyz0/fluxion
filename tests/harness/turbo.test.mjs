@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { cleanEnv, out, REPO } from './helpers.mjs';
 
-const turbo = (...args) => spawnSync(process.execPath, [join(REPO, 'node_modules', 'turbo', 'bin', 'turbo'), ...args], { cwd: REPO, encoding: 'utf8', env: cleanEnv() });
+const turbo = (...args) =>
+  spawnSync(process.execPath, [join(REPO, 'node_modules', 'turbo', 'bin', 'turbo'), ...args], { cwd: REPO, encoding: 'utf8', env: cleanEnv() });
 const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
 const libraries = workspaces.filter((w) => w.dir.startsWith('packages/') || w.dir.startsWith('packs/'));
 

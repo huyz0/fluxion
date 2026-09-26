@@ -50,7 +50,9 @@ if (r.status === 0) {
 const lastLine = (s) => s.trim().split(/\r?\n/).filter(Boolean).at(-1);
 const summary = lastLine(r.stdout) || `gate ${gate} failed without a summary (exit ${r.status}): ${lastLine(r.stderr) ?? 'no output'}`;
 const nextRow = exists('docs/backlog/current.md')
-  ? readText('docs/backlog/current.md').split(/\r?\n/).find((l) => /^\| M\d+\.\d+ \|/.test(l) && /\| todo \|/.test(l))
+  ? readText('docs/backlog/current.md')
+      .split(/\r?\n/)
+      .find((l) => /^\| M\d+\.\d+ \|/.test(l) && /\| todo \|/.test(l))
   : undefined;
 const next = nextRow ? nextRow.split('|')[1].trim() : 'none (run plan-milestone or milestone-review)';
 block(`${summary}. Continue the drive loop: next backlog row ${next}. Print the EVIDENCE and GATE lines at the end of the turn.`);

@@ -1,7 +1,7 @@
 // Shared helpers for gate and harness scripts. Node >= 22, no dependencies.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,7 +28,7 @@ export function run(cmd, args = [], opts = {}) {
     maxBuffer: 64 * 1024 * 1024,
     ...opts,
   });
-  return { status: res.status ?? 1, stdout: res.stdout ?? '', stderr: res.stderr ?? (res.error?.message ?? '') };
+  return { status: res.status ?? 1, stdout: res.stdout ?? '', stderr: res.stderr ?? res.error?.message ?? '' };
 }
 
 export const node = (script, args = [], opts) => run(process.execPath, [repoPath(script), ...args], opts);
@@ -81,22 +81,26 @@ export function leg(name, fn) {
   legs.push({ name, fn });
 }
 
+/** Evaluate one leg: true | string (failure reason) | {ok, detail}; a throw is a failure. */
+async function evalLeg(fn) {
+  try {
+    const r = await fn();
+    if (r === true) return { ok: true, detail: '' };
+    if (typeof r === 'string') return { ok: false, detail: r };
+    if (r && typeof r === 'object') return { ok: Boolean(r.ok), detail: r.detail ?? '' };
+    return { ok: false, detail: '' };
+  } catch (e) {
+    return { ok: false, detail: `threw: ${e?.message ?? e}` };
+  }
+}
+
 /** Run registered legs, print a summary, exit 0 only if all pass. */
 export async function runLegs(title) {
   const summaryOnly = process.argv.includes('--summary');
   let green = 0;
   const lines = [];
   for (const { name, fn } of legs) {
-    let ok = false;
-    let detail = '';
-    try {
-      const r = await fn();
-      if (r === true) ok = true;
-      else if (typeof r === 'string') detail = r;
-      else if (r && typeof r === 'object') ({ ok, detail = '' } = r);
-    } catch (e) {
-      detail = `threw: ${e?.message ?? e}`;
-    }
+    const { ok, detail } = await evalLeg(fn);
     if (ok) green++;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`);
   }

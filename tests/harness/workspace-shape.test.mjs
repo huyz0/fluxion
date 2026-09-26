@@ -29,7 +29,9 @@ describe('workspace root (NFR-DX-001, NFR-SEC-005)', () => {
   });
 
   it('exposes setup, typecheck, verify, verify:fast and the turbo pipeline scripts', () => {
-    for (const s of ['build', 'test', 'test:coverage', 'lint']) assert.equal(pkg.scripts[s], `turbo run ${s}`);
+    for (const s of ['build', 'test', 'test:coverage']) assert.equal(pkg.scripts[s], `turbo run ${s}`);
+    // Biome lints the whole repo in one pass (M1.9); packages carry no per-package lint script
+    assert.equal(pkg.scripts.lint, 'biome ci .');
     assert.equal(pkg.scripts.setup, 'node scripts/harness/setup.mjs');
     assert.equal(pkg.scripts.typecheck, 'tsc -b');
     assert.match(pkg.scripts.verify, /precommit\.mjs --all/);
@@ -45,7 +47,10 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
     const libs = workspaces.filter((w) => w.dir.startsWith('packages/')).map((w) => w.name);
     assert.equal(libs.length, 16);
     assert.ok(libs.every((n) => n.startsWith('@fluxion/')));
-    assert.deepEqual(workspaces.filter((w) => !w.dir.startsWith('packages/')).map((w) => w.dir), ['apps/studio', 'apps/docs', 'packs/basic']);
+    assert.deepEqual(
+      workspaces.filter((w) => !w.dir.startsWith('packages/')).map((w) => w.dir),
+      ['apps/studio', 'apps/docs', 'packs/basic'],
+    );
   });
 
   for (const w of workspaces) {
@@ -66,7 +71,10 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
 
   it('references every workspace from the root solution tsconfig', () => {
     const refs = JSON.parse(read('tsconfig.json')).references.map((r) => r.path.replace(/^\.\//, ''));
-    assert.deepEqual(refs, workspaces.map((w) => w.dir));
+    assert.deepEqual(
+      refs,
+      workspaces.map((w) => w.dir),
+    );
   });
 
   it('generator --check fails when a workspace file is missing', () => {
@@ -77,6 +85,22 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
       const r = sb.node('tools/gen/package.mjs', ['--check']);
       assert.equal(r.status, 1, out(r));
       assert.match(r.stderr, /missing packages\/core\/AGENTS\.md/);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('generated files already match the formatter (M1.9 review F1)', () => {
+    const sb = sandbox(['tools', 'tsconfig.json', 'biome.json', ...workspaces.map((w) => w.dir)]);
+    try {
+      // the sandbox is not a git repo: same rules, VCS integration off
+      sb.edit('biome.json', (t) => JSON.stringify({ ...JSON.parse(t), $schema: undefined, vcs: { enabled: false } }));
+      for (const f of ['package.json', 'tsconfig.json', 'tsdown.config.ts', 'src/index.ts']) rmSync(sb.path(`packages/core/${f}`));
+      const gen = sb.node('tools/gen/package.mjs', ['packages/core'], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
+      assert.equal(gen.status, 0, out(gen));
+      const biome = join(REPO, 'node_modules', '@biomejs', 'biome', 'bin', 'biome');
+      const r = spawnSync(process.execPath, [biome, 'ci', '--colors=off', 'packages/core'], { cwd: sb.dir, encoding: 'utf8' });
+      assert.equal(r.status, 0, out(r));
     } finally {
       sb.cleanup();
     }

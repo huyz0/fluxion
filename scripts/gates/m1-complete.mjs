@@ -9,11 +9,29 @@ const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().spli
 const pnpm = (...a) => run('pnpm', a);
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
 
-const PACKAGES = ['schema', 'geometry', 'core', 'theme', 'layout', 'routing', 'anim', 'format', 'dsl', 'render', 'player', 'editor', 'sdk', 'cli', 'mcp', 'exporters'];
+const PACKAGES = [
+  'schema',
+  'geometry',
+  'core',
+  'theme',
+  'layout',
+  'routing',
+  'anim',
+  'format',
+  'dsl',
+  'render',
+  'player',
+  'editor',
+  'sdk',
+  'cli',
+  'mcp',
+  'exporters',
+];
 const WORKSPACES = [...PACKAGES.map((p) => `packages/${p}`), 'apps/studio', 'apps/docs', 'packs/basic'];
 
 leg('pnpm workspace installs from the frozen lockfile', () => {
-  if (!exists('package.json') || !exists('pnpm-lock.yaml') || !exists('pnpm-workspace.yaml')) return 'missing package.json, pnpm-lock.yaml or pnpm-workspace.yaml';
+  if (!exists('package.json') || !exists('pnpm-lock.yaml') || !exists('pnpm-workspace.yaml'))
+    return 'missing package.json, pnpm-lock.yaml or pnpm-workspace.yaml';
   return ok(pnpm('install', '--frozen-lockfile', '--prefer-offline'));
 });
 leg('all 16 packages, 2 apps and packs/basic have src/index.ts, README.md, AGENTS.md, LICENSE', () => {
@@ -33,7 +51,22 @@ leg('turbo build emits dist for every library and reruns as a full cache hit', (
   return /FULL TURBO/.test(second.stdout) || 'second build was not a full cache hit';
 });
 // every planned verify step must PASS (M1 cp1 F1): an unregistered step prints no SKIP line
-const VERIFY_STEPS = ['typecheck', 'lint', 'test', 'workflows', 'layering', 'size', 'licenses', 'trace', 'api', 'knip', 'publint', 'attw', 'size-limit', 'budget'];
+const VERIFY_STEPS = [
+  'typecheck',
+  'lint',
+  'test',
+  'workflows',
+  'layering',
+  'size',
+  'licenses',
+  'trace',
+  'api',
+  'knip',
+  'publint',
+  'attw',
+  'size-limit',
+  'budget',
+];
 leg('pnpm verify exits 0 with every planned step PASS and no SKIP lines', () => {
   if (!exists('package.json')) return 'no package.json';
   const r = pnpm('verify');
@@ -114,11 +147,16 @@ leg('vitest smoke passes in the node and browser projects', () => {
 leg('harness test suite passes', () => ok(run(process.execPath, ['--test', 'tests/harness/*.test.mjs'])));
 leg('no open test quarantines', () => {
   const r = run('git', ['grep', '-n', '-I', '-E', 'QUARANTINE|test\\.fixme\\(', '--', 'packages', 'apps', 'packs', 'e2e', 'tests']);
-  const hits = r.stdout.split(/\r?\n/).filter(Boolean).filter((l) => !l.includes('tests/harness/'));
+  const hits = r.stdout
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .filter((l) => !l.includes('tests/harness/'));
   return hits.length === 0 || `open quarantines: ${hits.slice(0, 3).join(' | ')}`;
 });
 
-leg('check-trace --milestone M1 green', () => (exists('scripts/gates/check-trace.mjs') ? ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M1'])) : 'missing check-trace.mjs'));
+leg('check-trace --milestone M1 green', () =>
+  exists('scripts/gates/check-trace.mjs') ? ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M1'])) : 'missing check-trace.mjs',
+);
 leg('playwright lists 5 projects', () => {
   if (!exists('playwright.config.ts')) return 'missing playwright.config.ts';
   const r = pnpm('exec', 'playwright', 'test', '--list');
@@ -126,8 +164,14 @@ leg('playwright lists 5 projects', () => {
   const projects = new Set([...r.stdout.matchAll(/\[([\w-]+)\] ›/g)].map((m) => m[1]));
   return projects.size === 5 || `projects: ${[...projects].join(', ')}`;
 });
-leg('chromium smoke spec passes', () => (exists('playwright.config.ts') ? ok(pnpm('exec', 'playwright', 'test', '--project=chromium', 'e2e/smoke.studio-boots.spec.ts')) : 'missing playwright.config.ts'));
-leg('storybook story test passes', () => (exists('packages/editor/.storybook') ? ok(pnpm('--filter', '@fluxion/editor', 'test:storybook')) : 'missing packages/editor/.storybook'));
+leg('chromium smoke spec passes', () =>
+  exists('playwright.config.ts')
+    ? ok(pnpm('exec', 'playwright', 'test', '--project=chromium', 'e2e/smoke.studio-boots.spec.ts'))
+    : 'missing playwright.config.ts',
+);
+leg('storybook story test passes', () =>
+  exists('packages/editor/.storybook') ? ok(pnpm('--filter', '@fluxion/editor', 'test:storybook')) : 'missing packages/editor/.storybook',
+);
 leg('docs site builds with llms.txt', () => {
   if (!exists('apps/docs/astro.config.mjs')) return 'missing apps/docs/astro.config.mjs';
   const r = pnpm('--filter', '@fluxion/docs', 'build');
@@ -136,7 +180,10 @@ leg('docs site builds with llms.txt', () => {
 });
 leg('changesets configured', () => (exists('.changeset/config.json') ? ok(pnpm('changeset', 'status')) : 'missing .changeset/config.json'));
 leg('workflows ci/security/nightly/release + renovate exist', () => {
-  const need = ['ci.yml', 'security.yml', 'nightly.yml', 'release.yml'].map((w) => `.github/workflows/${w}`).concat('renovate.json').filter((p) => !exists(p));
+  const need = ['ci.yml', 'security.yml', 'nightly.yml', 'release.yml']
+    .map((w) => `.github/workflows/${w}`)
+    .concat('renovate.json')
+    .filter((p) => !exists(p));
   return need.length === 0 || `missing ${need.join(', ')}`;
 });
 leg('ci.yml has the planned job set and ci-ok needs all of them', () => {
@@ -148,7 +195,10 @@ leg('ci.yml has the planned job set and ci-ok needs all of them', () => {
   const need = ['verify', 'build', 'e2e', 'e2e-report', 'visual', 'a11y', 'size', 'api', 'license', 'eval-recorded', 'ci-ok'];
   const missing = need.filter((j) => !jobs.includes(j));
   if (missing.length) return `ci.yml missing jobs: ${missing.join(', ')}`;
-  const needs = (/^ {2}ci-ok:[\s\S]*?needs:\s*\[([^\]]*)\]/m.exec(jobsBlock)?.[1] ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+  const needs = (/^ {2}ci-ok:[\s\S]*?needs:\s*\[([^\]]*)\]/m.exec(jobsBlock)?.[1] ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   const notNeeded = jobs.filter((j) => j !== 'ci-ok' && !needs.includes(j));
   return notNeeded.length === 0 || `ci-ok does not need: ${notNeeded.join(', ')}`;
 });
@@ -165,6 +215,9 @@ leg('final milestone review covers M1', () => {
 });
 leg('roadmap advanced past M1', () => !['M0', 'M1'].includes(currentMilestone()) || `roadmap Current milestone is ${currentMilestone()}`);
 // `pnpm setup` is a pnpm built-in (PNPM_HOME), so the repo script is invoked as `pnpm run setup`
-leg('README quickstart documents pnpm i / run setup / verify', () => /pnpm i[\s\S]*pnpm run setup[\s\S]*pnpm verify/.test(readText('README.md')) || 'README.md lacks the pnpm quickstart');
+leg(
+  'README quickstart documents pnpm i / run setup / verify',
+  () => /pnpm i[\s\S]*pnpm run setup[\s\S]*pnpm verify/.test(readText('README.md')) || 'README.md lacks the pnpm quickstart',
+);
 
 await runLegs('m1');

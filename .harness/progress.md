@@ -177,3 +177,9 @@ fix (review r1): named-case legs run test files directly (under --test the file 
 ## 2026-09-26 M1.8 (claude)
 done: check-packages.mjs (publint --strict, attw esm-only) over 17 libraries; knip.json (harness scripts as entries) clean; .size-limit.js budgets from thresholds.mjs; precommit steps build/knip/publint/attw/size-limit (build moved before harness-tests for clean CI); packages.test (4)
 catalog trimmed to installed pins (knip fails on unused catalog entries); later rows re-add theirs
+
+## 2026-09-26 M1.9 (claude)
+done: biome.json (recommended + standards rules; limits = thresholds; pure-package restricted globals + GritQL Math.random plugin; adapter any-allowlist); root lint = biome ci . (repo-wide), format = biome check --write
+refactors to satisfy limits in lib.mjs (evalLeg), milestone-checks.mjs, review.mjs (STANDARDS_BY_PATH); one-time format sweep; .harness/reviews excluded so recorded verdicts stay byte-exact
+biome.test (17): one negative fixture per rule, scope checks (pure/adapter), limits equal thresholds
+review r1 pass + 2 minor fixed: generator formats what it writes (FLUXION_TOOLS_ROOT for sandbox); long-function exemption covers co-located *.test/*.spec

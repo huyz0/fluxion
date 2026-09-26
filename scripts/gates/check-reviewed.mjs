@@ -39,7 +39,9 @@ if (diff.every((p) => BOOKKEEPING.some((re) => re.test(p))) && backlogOnlyStateC
 const hash = stagedHash();
 const dir = repoPath('.harness', 'review');
 const verdicts = existsSync(dir)
-  ? readdirSync(dir).filter((f) => f.startsWith(hash)).map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')))
+  ? readdirSync(dir)
+      .filter((f) => f.startsWith(hash))
+      .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')))
   : [];
 if (verdicts.some((v) => v.verdict === 'pass' && v.diff_sha256 === hash)) {
   console.log(`reviewed: pass verdict found (${hash.slice(0, 12)})`);

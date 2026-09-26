@@ -13,8 +13,7 @@ export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * exports GIT_INDEX_FILE (relative), GIT_AUTHOR_* etc.; sandbox repos and worktrees must not
  * inherit them (a linked worktree's `.git` is a file, so `.git/index` breaks it).
  */
-export const cleanEnv = (env = process.env) =>
-  Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
+export const cleanEnv = (env = process.env) => Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
 
 const DEFAULT_PATHS = ['scripts', '.agents', '.claude/skills', 'AGENTS.md', 'CLAUDE.md', 'docs/backlog', 'docs/milestones/roadmap.md', '.harness/state.json'];
 

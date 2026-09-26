@@ -41,6 +41,7 @@ describe('check-workflows (NFR-SEC-005)', () => {
   });
 
   it('fails an actionlint error (unknown runner label / bad expression)', needDocker, () => {
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal GitHub Actions expression under test
     const r = lint({ 'bad.yml': GOOD.replace('echo ok', 'echo ${{ github.nope( }}') });
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /actionlint:[\s\S]*bad\.yml:\d+:\d+/); // a real finding, not a setup error

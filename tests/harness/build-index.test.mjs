@@ -22,7 +22,9 @@ describe('build-index (NFR-DX-003)', () => {
   });
 
   it('--check fails when a skill description changes', () => {
-    const { r } = run((sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => t.replace('Use whenever writing or changing code.', 'Use whenever touching any code at all.')));
+    const { r } = run((sb) =>
+      sb.edit('.agents/skills/tdd/SKILL.md', (t) => t.replace('Use whenever writing or changing code.', 'Use whenever touching any code at all.')),
+    );
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /stale index: AGENTS\.md \(skills\)/);
   });

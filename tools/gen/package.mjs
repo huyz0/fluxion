@@ -5,6 +5,7 @@
 //   node tools/gen/package.mjs --check      exit 1 if a workspace file or root tsconfig reference is missing
 // Files are created only when absent (packages evolve after generation); the root tsconfig.json
 // references are always rewritten from the manifest so `tsc -b` covers every workspace.
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,10 +39,12 @@ SOFTWARE.
 
 // libraries (packages/*, packs/*) build with tsdown; apps get their own build in later rows
 const isLibrary = (w) => w.dir.startsWith('packages/') || w.dir.startsWith('packs/');
-const TSDOWN = "import { defineConfig } from 'tsdown';\n\nexport default defineConfig({\n  entry: ['src/index.ts'],\n  format: 'esm',\n  dts: true,\n  clean: true,\n  sourcemap: true,\n  fixedExtension: false, // emit index.js + index.d.ts to match the exports map (type: module)\n});\n";
+const TSDOWN =
+  "import { defineConfig } from 'tsdown';\n\nexport default defineConfig({\n  entry: ['src/index.ts'],\n  format: 'esm',\n  dts: true,\n  clean: true,\n  sourcemap: true,\n  fixedExtension: false, // emit index.js + index.d.ts to match the exports map (type: module)\n});\n";
 
 const rules = (w) => {
-  if (w.pure) return '- **Pure package**: no DOM, timers, `Date.now`, `Math.random`, network or `node:*`. Inject ports (`Clock`, `Random`, `TextMeasurer`, `FileIO`).';
+  if (w.pure)
+    return '- **Pure package**: no DOM, timers, `Date.now`, `Math.random`, network or `node:*`. Inject ports (`Clock`, `Random`, `TextMeasurer`, `FileIO`).';
   if (w.layer === 'Pack') return '- Import only `@fluxion/sdk` (and allowed peer libraries). No private back doors into other packages.';
   if (w.runtime === 'dom') return '- DOM allowed. Business logic belongs in the pure packages below this layer.';
   if (w.runtime === 'node') return '- Node runtime (>= 22). Keep command logic in shared `ops` so the MCP server and CLI stay identical.';
@@ -49,25 +52,33 @@ const rules = (w) => {
 };
 
 const files = (w) => ({
-  'package.json': `${JSON.stringify({
-    name: w.name,
-    version: '0.0.0',
-    description: w.desc,
-    license: 'MIT',
-    ...(w.private ? { private: true } : {}),
-    type: 'module',
-    sideEffects: false,
-    exports: { '.': { '@fluxion/source': './src/index.ts', types: './dist/index.d.ts', default: './dist/index.js' } },
-    files: ['dist'],
-    ...(isLibrary(w) ? { scripts: { build: 'tsdown', typecheck: 'tsc -b' } } : {}),
-  }, null, 2)}\n`,
+  'package.json': `${JSON.stringify(
+    {
+      name: w.name,
+      version: '0.0.0',
+      description: w.desc,
+      license: 'MIT',
+      ...(w.private ? { private: true } : {}),
+      type: 'module',
+      sideEffects: false,
+      exports: { '.': { '@fluxion/source': './src/index.ts', types: './dist/index.d.ts', default: './dist/index.js' } },
+      files: ['dist'],
+      ...(isLibrary(w) ? { scripts: { build: 'tsdown', typecheck: 'tsc -b' } } : {}),
+    },
+    null,
+    2,
+  )}\n`,
   ...(isLibrary(w) ? { 'tsdown.config.ts': TSDOWN } : {}),
-  'tsconfig.json': `${JSON.stringify({
-    extends: '../../tsconfig.base.json',
-    compilerOptions: { rootDir: 'src', outDir: '.tsbuild', emitDeclarationOnly: true, tsBuildInfoFile: '.tsbuild/tsconfig.tsbuildinfo' },
-    include: ['src'],
-    references: [],
-  }, null, 2)}\n`,
+  'tsconfig.json': `${JSON.stringify(
+    {
+      extends: '../../tsconfig.base.json',
+      compilerOptions: { rootDir: 'src', outDir: '.tsbuild', emitDeclarationOnly: true, tsBuildInfoFile: '.tsbuild/tsconfig.tsbuildinfo' },
+      include: ['src'],
+      references: [],
+    },
+    null,
+    2,
+  )}\n`,
   'src/index.ts': `/**\n * ${w.name} — ${w.desc}\n *\n * @packageDocumentation\n */\n\n/**\n * Version of this package.\n *\n * @public\n */\nexport const VERSION: string = '0.0.0';\n`,
   'README.md': `# ${w.name}\n\n${w.desc}\n\n| Layer | Pure | Status |\n|---|---|---|\n| ${w.layer} | ${w.pure ? 'yes' : 'no'} | stub (M1) — exports \`VERSION\` only |\n\nArchitecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).\n`,
   'AGENTS.md': `# ${w.name} — agent notes\n\n${w.desc}\n\n## Rules\n\n- Layer ${w.layer}: import only from lower layers, or same-layer packages the map lists as dependencies (docs/architecture/01-overview.md, "May depend on"); enforced by \`check-layering\`.\n${rules(w)}\n- Public API lives in \`src/index.ts\` (\`@fluxion/source\` condition; ADR-0011); every export needs TSDoc and a release tag.\n\n## Tests\n\n- Co-locate \`*.test.ts\` next to the code; name tests with requirement IDs.\n- ${w.pure ? 'T0 (node) only — no DOM in tests.' : 'T0 for logic, T1 (browser) for components.'}\n`,
@@ -95,9 +106,25 @@ function syncReferences(write) {
   return same;
 }
 
+// Written files go through the repo formatter so a fresh workspace passes `biome ci` (M1.9 review F1).
+function format(paths) {
+  // FLUXION_TOOLS_ROOT lets tests generate into a sandbox with this repo's installed formatter
+  const biome = join(process.env.FLUXION_TOOLS_ROOT ?? ROOT, 'node_modules', '@biomejs', 'biome', 'bin', 'biome');
+  if (paths.length === 0 || !existsSync(biome)) return;
+  const r = spawnSync(process.execPath, [biome, 'format', '--write', '--no-errors-on-unmatched', ...paths], { cwd: ROOT, encoding: 'utf8' });
+  if (r.status !== 0) {
+    console.error(`gen: biome format failed\n${r.stdout}${r.stderr}`);
+    process.exit(1);
+  }
+}
+
 const arg = process.argv[2];
 if (arg === '--check') {
-  const missing = workspaces.flatMap((w) => Object.keys(files(w)).filter((f) => !existsSync(join(ROOT, w.dir, f))).map((f) => `${w.dir}/${f}`));
+  const missing = workspaces.flatMap((w) =>
+    Object.keys(files(w))
+      .filter((f) => !existsSync(join(ROOT, w.dir, f)))
+      .map((f) => `${w.dir}/${f}`),
+  );
   if (!syncReferences(false)) missing.push('tsconfig.json references out of sync (run node tools/gen/package.mjs --all)');
   for (const m of missing) console.error(`gen: missing ${m}`);
   process.exit(missing.length ? 1 : 0);
@@ -108,5 +135,6 @@ if (targets.length === 0) {
   process.exit(2);
 }
 const created = targets.flatMap(generate);
-syncReferences(true);
+const synced = syncReferences(true);
+format([...created.filter((p) => /\.(json|ts)$/.test(p)), ...(synced ? [] : ['tsconfig.json'])]);
 console.log(`gen: created ${created.length} files; tsconfig references synced (${workspaces.length})`);

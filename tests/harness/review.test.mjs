@@ -65,7 +65,9 @@ describe('review binding (NFR-DX-003)', () => {
   });
 
   it('records changes-requested, which does not satisfy the gate', () => {
-    const r = record(verdict({ verdict: 'changes-requested', findings: [{ id: 'F1', file: 'src/a.txt', line: 2, severity: 'major', failure_scenario: 'two is wrong' }] }));
+    const r = record(
+      verdict({ verdict: 'changes-requested', findings: [{ id: 'F1', file: 'src/a.txt', line: 2, severity: 'major', failure_scenario: 'two is wrong' }] }),
+    );
     assert.equal(r.status, 0, out(r));
     assert.equal(checkReviewed().status, 1);
   });

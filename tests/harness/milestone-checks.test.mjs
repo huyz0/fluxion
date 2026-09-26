@@ -44,7 +44,13 @@ describe('checkReviewerSmoke (NFR-DX-003)', () => {
     line('M0.13', H1, 'r1', 'changes-requested', 'codex:gpt-5', '1 findings') +
     line('M0.13', H2, 'r1', 'pass', 'claude-subagent:reviewer', '0 findings') +
     line('M0.22', 'c'.repeat(64), 'r1', 'pass', 'claude-subagent:reviewer', '0 findings');
-  const run = (author, reviewer, caught, diff_sha256 = author === 'claude' ? H1 : H2) => ({ author, reviewer, seededDefect: 'off-by-one in fixture', diff_sha256, caught });
+  const run = (author, reviewer, caught, diff_sha256 = author === 'claude' ? H1 : H2) => ({
+    author,
+    reviewer,
+    seededDefect: 'off-by-one in fixture',
+    diff_sha256,
+    caught,
+  });
 
   it('accepts both directions, recorded for M0.13 by the matching vendor, with a catch', () => {
     assert.equal(checkReviewerSmoke({ runs: [run('claude', 'codex', true), run('codex', 'claude', false)] }, DIGEST), true);
@@ -199,7 +205,15 @@ describe('checkBacklogDone (NFR-DX-003, M0 cp2 F1)', () => {
   const backlog = (...rows) => `# Backlog\n\n| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`;
 
   it('accepts when every row is done and reopened targets are done', () => {
-    const reviews = [{ checkpoint: 'cp1', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.2' }, { finding: 'F2', disposition: 'hand-off', target: 'M1' }] }];
+    const reviews = [
+      {
+        checkpoint: 'cp1',
+        dispositions: [
+          { finding: 'F1', disposition: 'reopen', target: 'M0.2' },
+          { finding: 'F2', disposition: 'hand-off', target: 'M1' },
+        ],
+      },
+    ];
     assert.equal(checkBacklogDone(backlog(row('M0.1', 'done'), row('M0.2', 'done')), 'M0', reviews), true);
   });
 
@@ -230,7 +244,10 @@ describe('checkBacklogDone inputs (M0.24 review F1-F3)', () => {
     const sb = sandbox(['scripts'], { git: true });
     try {
       sb.write('.harness/reviews/milestone-M0-cp1.json', JSON.stringify({ milestone: 'M0', checkpoint: 'cp1', dispositions: [] }));
-      sb.write('.harness/reviews/milestone-M0-cp3.json', JSON.stringify({ milestone: 'M0', checkpoint: 'cp3', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.26' }] }));
+      sb.write(
+        '.harness/reviews/milestone-M0-cp3.json',
+        JSON.stringify({ milestone: 'M0', checkpoint: 'cp3', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.26' }] }),
+      );
       sb.write('.harness/reviews/milestone-M1-cp1.json', JSON.stringify({ milestone: 'M1', checkpoint: 'cp1', dispositions: [] }));
       sb.write('docs/backlog/current.md', `${row('M1.1', 'todo')}\n`);
       sb.write('docs/backlog/archive/M0.md', `${row('M0.1', 'done')}\n`);
@@ -283,7 +300,10 @@ describe('checkVerifyOutput and checkDistArtifacts (NFR-DX-002, M1 cp1 F1)', () 
 
   it('requires dist/index.js and dist/index.d.ts for every library', () => {
     const present = new Set(['packages/a/dist/index.js', 'packages/a/dist/index.d.ts', 'packages/b/dist/index.js']);
-    assert.equal(checkDistArtifacts(['packages/a'], (p) => present.has(p)), true);
+    assert.equal(
+      checkDistArtifacts(['packages/a'], (p) => present.has(p)),
+      true,
+    );
     assert.match(String(checkDistArtifacts(['packages/a', 'packages/b'], (p) => present.has(p))), /packages\/b\/dist\/index\.d\.ts/);
   });
 });

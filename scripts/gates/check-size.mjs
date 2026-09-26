@@ -33,8 +33,11 @@ if (exists('.harness/progress.md')) {
     if (head && body > t('PROGRESS_ENTRY_MAX_LINES')) errors.push(`.harness/progress.md: entry "${head}" has ${body} lines > ${t('PROGRESS_ENTRY_MAX_LINES')}`);
   };
   for (const l of text) {
-    if (l.startsWith('## ')) { flush(); head = l.slice(3); body = 0; }
-    else if (head && l.trim()) body++;
+    if (l.startsWith('## ')) {
+      flush();
+      head = l.slice(3);
+      body = 0;
+    } else if (head && l.trim()) body++;
   }
   flush();
 }

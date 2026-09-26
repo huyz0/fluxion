@@ -23,7 +23,9 @@ describe('check-packages (NFR-MNT-001, NFR-MNT-007)', () => {
   });
 
   it('fails publint when an export points at a file that is not packed', () => {
-    const r = check('publint', (sb) => sb.edit('packages/core/package.json', (t) => t.replace('"default": "./dist/index.js"', '"default": "./lib/missing.js"')));
+    const r = check('publint', (sb) =>
+      sb.edit('packages/core/package.json', (t) => t.replace('"default": "./dist/index.js"', '"default": "./lib/missing.js"')),
+    );
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /publint packages\/core/);
   });

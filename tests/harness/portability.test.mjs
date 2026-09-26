@@ -23,10 +23,7 @@ describe('check-portability (NFR-DX-003)', () => {
   });
 
   const cases = {
-    'vendor placeholder in a skill body': [
-      (sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => `${t}\nUse $ARGUMENTS here.\n`),
-      /\$ARGUMENTS/,
-    ],
+    'vendor placeholder in a skill body': [(sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => `${t}\nUse $ARGUMENTS here.\n`), /\$ARGUMENTS/],
     'Claude @import in AGENTS.md': [(sb) => sb.edit('AGENTS.md', (t) => `${t}\n@docs/standards/git.md\n`), /AGENTS\.md: @import/],
     'name different from directory': [
       (sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => t.replace('name: tdd', 'name: test-first')),
@@ -36,10 +33,7 @@ describe('check-portability (NFR-DX-003)', () => {
       (sb) => sb.write('.agents/skills/review/SKILL.md', skill('review', 'Review things. Use when reviewing.')),
       /collides with a built-in/,
     ],
-    'skill longer than the cap': [
-      (sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => t + 'line\n'.repeat(200)),
-      /lines > 150/,
-    ],
+    'skill longer than the cap': [(sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => t + 'line\n'.repeat(200)), /lines > 150/],
     'stale generated adapter': [
       (sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => t.replace('Implement a task test-first.', 'Implement a task test first, always.')),
       /stale adapter/,
@@ -56,10 +50,7 @@ describe('check-portability (NFR-DX-003)', () => {
       (sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => t.replace('---\n\n', 'allowed-tools: Read\n---\n\n')),
       /vendor-only keys allowed-tools/,
     ],
-    'skill missing from the AGENTS.md index': [
-      (sb) => sb.edit('AGENTS.md', (t) => t.replace(/^\| \[`tdd`\].*\n/m, '')),
-      /skill 'tdd' missing from index/,
-    ],
+    'skill missing from the AGENTS.md index': [(sb) => sb.edit('AGENTS.md', (t) => t.replace(/^\| \[`tdd`\].*\n/m, '')), /skill 'tdd' missing from index/],
     'CLAUDE.md that is not an adapter': [(sb) => sb.write('CLAUDE.md', '# Claude rules\n'), /CLAUDE\.md: must import/],
     'skill naming a script that does not exist': [
       (sb) => sb.edit('.agents/skills/tdd/SKILL.md', (t) => `${t}\nRun node scripts/gates/check-nothing.mjs\n`),

@@ -2,20 +2,9 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {
-      "entry": [
-        "scripts/gates/*.mjs",
-        "scripts/harness/**/*.mjs",
-        "tools/gen/*.mjs",
-        "tests/harness/*.test.mjs"
-      ],
-      "project": [
-        "scripts/**/*.mjs",
-        "tools/**/*.mjs",
-        "tests/**/*.mjs"
-      ],
-      "ignoreDependencies": [
-        "@arethetypeswrong/cli"
-      ]
+      "entry": ["scripts/gates/*.mjs", "scripts/harness/**/*.mjs", "tools/gen/*.mjs", "tests/harness/*.test.mjs"],
+      "project": ["scripts/**/*.mjs", "tools/**/*.mjs", "tests/**/*.mjs"],
+      "ignoreDependencies": ["@arethetypeswrong/cli"]
     }
   },
   "ignoreExportsUsedInFile": true

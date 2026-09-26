@@ -9,14 +9,20 @@ import { git } from './lib.mjs';
 
 const FILE = 'scripts/gates/thresholds.mjs';
 const argv = process.argv.slice(2);
-const opt = (k) => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[i + 1] : undefined; };
+const opt = (k) => {
+  const i = argv.indexOf(`--${k}`);
+  return i >= 0 ? argv[i + 1] : undefined;
+};
 
 async function load(src) {
   if (!src) return {};
   const mod = await import(`data:text/javascript,${encodeURIComponent(src)}`);
   return mod.THRESHOLDS ?? {};
 }
-const show = (rev) => { const r = git(['show', `${rev}:${FILE}`]); return r.status === 0 ? r.stdout : null; };
+const show = (rev) => {
+  const r = git(['show', `${rev}:${FILE}`]);
+  return r.status === 0 ? r.stdout : null;
+};
 
 let before;
 let after;
@@ -38,7 +44,10 @@ const [old, cur] = [await load(before), after === null ? {} : await load(after)]
 const weakened = [];
 for (const [key, o] of Object.entries(old)) {
   const n = cur[key];
-  if (!n) { weakened.push(`${key} removed`); continue; }
+  if (!n) {
+    weakened.push(`${key} removed`);
+    continue;
+  }
   if (typeof n.value !== 'number' || !Number.isFinite(n.value)) weakened.push(`${key} value is not a finite number (${String(n.value)})`);
   else if (n.weakens !== o.weakens) weakened.push(`${key} weakens-direction changed ${o.weakens} → ${n.weakens}`);
   else if (o.weakens === 'up' ? n.value > o.value : n.value < o.value) weakened.push(`${key} ${o.value} → ${n.value} (weakens ${o.weakens})`);

@@ -60,7 +60,7 @@ describe('check-tests-kept (NFR-DX-004)', () => {
       sb.write('packages/core/src/a.test.ts', `${SUITE}${SKIP}('FR-X-003: later', () => {});\n`);
       sb.git('add', '-A');
     },
-    'renaming a test file to a non-test name':() => sb.git('mv', 'packages/core/src/a.test.ts', 'packages/core/src/a.old.ts'),
+    'renaming a test file to a non-test name': () => sb.git('mv', 'packages/core/src/a.test.ts', 'packages/core/src/a.old.ts'),
   };
   for (const [name, act] of Object.entries(bad)) {
     it(`fails on ${name} without a trailer`, () => {

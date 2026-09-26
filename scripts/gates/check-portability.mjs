@@ -6,9 +6,35 @@ import { join } from 'node:path';
 import { frontMatter, node, readText, repoPath } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
-const BUILTINS = new Set(['goal', 'plan', 'review', 'init', 'loop', 'compact', 'status', 'model',
-  'skills', 'agents', 'help', 'clear', 'config', 'memory', 'resume', 'diff', 'approvals', 'new',
-  'mcp', 'permissions', 'cost', 'doctor', 'login', 'logout', 'undo', 'quit', 'exit']);
+const BUILTINS = new Set([
+  'goal',
+  'plan',
+  'review',
+  'init',
+  'loop',
+  'compact',
+  'status',
+  'model',
+  'skills',
+  'agents',
+  'help',
+  'clear',
+  'config',
+  'memory',
+  'resume',
+  'diff',
+  'approvals',
+  'new',
+  'mcp',
+  'permissions',
+  'cost',
+  'doctor',
+  'login',
+  'logout',
+  'undo',
+  'quit',
+  'exit',
+]);
 const VENDOR_SYNTAX = [
   [/^@[\w./-]+\.md\s*$/m, '@import line (Claude-only)'],
   [/\$ARGUMENTS\b/, '$ARGUMENTS placeholder (Claude-only)'],
@@ -18,15 +44,23 @@ const VENDOR_SYNTAX = [
 
 const errors = [];
 const skillsDir = repoPath('.agents', 'skills');
-const names = readdirSync(skillsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+const names = readdirSync(skillsDir, { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => d.name);
 
 for (const name of names) {
   const file = join(skillsDir, name, 'SKILL.md');
   const where = `.agents/skills/${name}/SKILL.md`;
-  if (!existsSync(file)) { errors.push(`${where}: missing`); continue; }
+  if (!existsSync(file)) {
+    errors.push(`${where}: missing`);
+    continue;
+  }
   const text = readFileSync(file, 'utf8');
   const fm = frontMatter(text);
-  if (!fm) { errors.push(`${where}: no YAML front matter`); continue; }
+  if (!fm) {
+    errors.push(`${where}: no YAML front matter`);
+    continue;
+  }
   const { name: n, description: d } = fm.data;
   if (n !== name) errors.push(`${where}: name '${n}' must equal directory '${name}'`);
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name) || name.length > 64) errors.push(`${where}: invalid name`);
