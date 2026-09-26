@@ -256,3 +256,7 @@ review r2 changes-requested (2) fixed: grit inverted - Math only as Math.<member
 ## 2026-09-26 M1.32 (claude)
 done: no-wall-clock.grit bans DateTimeFormat in pure packages (formatting behind a port); Temporal denied; Math rule skips property names, `{ Math: v }` keys (unless v is Math) and interface/type-alias bodies; biome.test +4
 review r1 changes-requested (2) fixed: property-name exclusions dropped (within exempted every Math under the key/object, e.g. { Math: Math.random() }); only interface and type-alias bodies are exempt; value properties named Math stay flagged
+
+## 2026-09-26 M1.33 (claude)
+why: M1.32 commit hook failed once: packages.test copied packages/core while tsc -b / attw (concurrent since M1.28) rewrote files there (ENOENT); passes alone
+done: helpers.sandbox filters TRANSIENT (.tsbuild, node_modules, coverage, .turbo, *.tgz); ladder.test +1

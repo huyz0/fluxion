@@ -15,12 +15,19 @@ export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  */
 export const cleanEnv = (env = process.env) => Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
 
+/**
+ * Build state that other ladder steps rewrite while the harness tests run concurrently (M1.28):
+ * `tsc -b` replaces .tsbuild files, attw packs tarballs. Copying it races those writers (ENOENT on a
+ * file that vanished mid-copy) and no sandbox needs it (M1.33).
+ */
+export const TRANSIENT = /[\\/](\.tsbuild|node_modules|coverage|\.turbo)([\\/]|$)|\.tgz$/;
+
 const DEFAULT_PATHS = ['scripts', '.agents', '.claude/skills', 'AGENTS.md', 'CLAUDE.md', 'docs/backlog', 'docs/milestones/roadmap.md', '.harness/state.json'];
 
 /** Copy harness files into a fresh temp dir. Returns helpers bound to it. */
 export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'fluxion-harness-'));
-  for (const p of paths) cpSync(join(REPO, p), join(dir, p), { recursive: true });
+  for (const p of paths) cpSync(join(REPO, p), join(dir, p), { recursive: true, filter: (src) => !TRANSIENT.test(src) });
   const sb = {
     dir,
     path: (p) => join(dir, p),
