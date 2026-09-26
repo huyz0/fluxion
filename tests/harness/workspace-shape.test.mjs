@@ -10,9 +10,9 @@ const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'));
 const ws = readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8');
 
 describe('workspace root (NFR-DX-001, NFR-SEC-005)', () => {
-  it('pins pnpm 11 and a Node >= 22.18 floor (tsdown needs ^22.18)', () => {
+  it('pins pnpm 11 and a Node >= 22.19 floor (tsdown ^22.18, size-limit ^22.19)', () => {
     assert.match(pkg.packageManager, /^pnpm@11\.\d+\.\d+$/);
-    assert.equal(pkg.engines.node, '>=22.18');
+    assert.equal(pkg.engines.node, '>=22.19');
     assert.match(readFileSync(join(REPO, '.node-version'), 'utf8'), /^22\.\d+\.\d+/);
   });
 

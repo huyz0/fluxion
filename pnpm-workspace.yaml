@@ -23,3 +23,16 @@ catalog:
   knip: 6.38.0
   size-limit: 14.0.1
   "@size-limit/preset-small-lib": 14.0.1
+
+# Planned pins, verified on npm 2026-09-26, added to the catalog by the row that installs them
+# (re-check minimumReleaseAge then). typescript6 (npm:typescript@6.0.3) is used by API Extractor and
+# TypeDoc per ADR-0011 from M1.14.
+#   typescript6: npm:typescript@6.0.3        @biomejs/biome: 2.5.14          dependency-cruiser: 18.4.0
+#   @microsoft/api-extractor: 7.59.2        typedoc: 0.28.20                @changesets/cli: 3.0.3
+#   vitest: 5.0.1                           @vitest/browser-playwright: 5.0.1  @vitest/coverage-v8: 5.0.1
+#   @playwright/test: 1.63.0                fast-check: 4.10.2              vite: 8.3.1
+#   @vitejs/plugin-react: 6.1.1             react: 19.3.0                   react-dom: 19.3.0
+#   @types/react: 19.3.0                    @types/react-dom: 19.3.0        storybook: 10.6.0
+#   @storybook/react-vite: 10.6.0           @storybook/addon-vitest: 10.6.0 @storybook/addon-a11y: 10.6.0
+#   astro: 7.3.5                            @astrojs/starlight: 0.42.4      starlight-llms-txt: 0.12.0
+#   starlight-typedoc: 0.23.1               typedoc-plugin-markdown: 4.13.1
