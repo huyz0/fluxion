@@ -31,10 +31,12 @@ done: portability suite 14/14 (12 negative cases); mutation (drop built-in check
 next: M0.5
 
 ## 2026-09-26 M0.5 (claude)
-done: review binding suite 11/11 (temp git repo, real hook); mutation (ignore hash) -> fails
-next: M0.6
-
-## 2026-09-26 M0.5 (claude)
 done: review binding suite 11/11 via the REAL tracked hook; mutation (reviewed step off) -> fails
 fix (review r2): hooks tracked 100755 + setup.mjs chmod — POSIX git silently skipped them
 next: M0.6
+
+## 2026-09-26 M0.6 (claude)
+done: check-size.mjs (AGENTS/skill/package AGENTS/backlog/progress/source-file caps) + 8 tests; mutation (>=) -> fails
+fix: merged duplicate M0.5 progress entries (M0.5 review r3 F1)
+note: function length/complexity caps enforced by Biome from M1
+next: M0.7
