@@ -18,6 +18,7 @@ linked files, loaded only when a skill or task says so. Keep it ≤ 250 lines (`
 | [docs/milestones/roadmap.md](docs/milestones/roadmap.md) | Milestones in order, **current milestone**, completion commands |
 | [docs/backlog/current.md](docs/backlog/current.md) | Current milestone's tasks — authoritative |
 | [.harness/](.harness/README.md) | Loop state: `state.json`, `progress.md`, review verdicts |
+| [docs/harness/](docs/harness/README.md) | Operator guide for humans running and unblocking loops |
 
 ## Skills
 

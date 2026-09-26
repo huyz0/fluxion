@@ -95,3 +95,7 @@ next: M0.22
 done: check-reviewed exempts backlog diffs only when just State/Commit cells change; review.mjs appends tracked .harness/reviews/digest.log
 4 new tests (old gate fails 2); digest lags one commit by design (written after hashing)
 next: M0.17
+
+## 2026-09-26 M0.17 (claude)
+done: docs/harness/README.md operator guide (setup, start, watch, unblock, finish, troubleshooting); linked from AGENTS.md
+next: M0.21
