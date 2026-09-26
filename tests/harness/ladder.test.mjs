@@ -46,6 +46,20 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
     }
   });
 
+  it('a failing step shows its "failing tests" list even when the report is long (M1.39)', () => {
+    const sb = sandbox();
+    try {
+      sb.write('.github/workflows/ci.yml', 'name: ci\n');
+      const report =
+        "console.log(['x'.repeat(10), '\\u2716 failing tests:', '\\u2716 the named test', ...Array(200).fill('  noise')].join('\\n')); process.exit(1);\n";
+      sb.write('scripts/gates/check-workflows.mjs', report);
+      const r = sb.node('scripts/gates/precommit.mjs', ['--all']);
+      assert.match(r.stdout, /^FAIL workflows[^\n]*\n {4}✖ failing tests:\n {4}✖ the named test$/m, out(r));
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('runAsync reports a missing command as a failure instead of throwing', async () => {
     const r = await runAsync('fluxion-no-such-command-xyz', []);
     assert.notEqual(r.status, 0);

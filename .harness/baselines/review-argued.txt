@@ -18,3 +18,6 @@ M1.36 F1: no current harness test writes node_modules (pnpm-in-sandbox was remov
 M1.36 F2: a turbo caching regression is still caught by the m1-complete build leg (FULL TURBO on the second run) and slows the ladder into the precommit budget check; no false green on a plan leg.
 M1.36 F3: an untracked probe naming an ID is friction, not a false green; the reviewer sees any matrix path in the diff.
 M1.18 F3 (argued): changeset status compares with main by design: on main after the commit it exits 0; a branch that changes a package without a changeset failing the leg is the Changesets policy (NFR-MNT-007).
+M1.21 F1: the Version Packages PR not triggering ci.yml under GITHUB_TOKEN matters only at the first real release (no changesets exist; npm trusted publishing is not configured yet); the fix (GitHub App token) is a human setup decision recorded for the release milestone; no false green on a plan leg.
+M1.21 F2: environment npm gating every push to main is the ci-cd.md §3 sketch; with no required reviewers configured the job runs straight through today; splitting publish into its own job belongs with the trusted-publishing setup; no false green.
+M1.21 F3: an action major grouped with digest bumps still needs dashboard approval (dependencyDashboardApproval) and a task commit, so nothing lands unreviewed; config tidy-up, no false green.

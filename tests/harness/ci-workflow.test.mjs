@@ -147,6 +147,20 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.doesNotMatch(release, /secrets\.NPM_TOKEN|NODE_AUTH_TOKEN/, 'trusted publishing, no token');
   });
 
+  it('release publishes nothing until a human sets RELEASE_ENABLED (M1.39, NFR-SEC-005)', () => {
+    // without changesets, changesets/action publishes every unpublished version: the first push tried
+    // all 0.0.0 packages, so the job itself is opt-in
+    assert.match(workflow('release.yml'), /^ {2}release:\n {4}if: vars\.RELEASE_ENABLED == 'true'\n/m);
+  });
+
+  it('CI names failing harness tests and ships every built workspace to later jobs (M1.39, NFR-PORT-005)', () => {
+    assert.match(readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8'), /'--test-reporter=spec', '--test', 'tests\/harness\/\*\.test\.mjs'/);
+    assert.match(wf, /- name: harness tests\n\s+if: \$\{\{ !cancelled\(\) \}\}\n/);
+    const dist = /name: dist\n\s+path: \|\n((?:\s+\S+\/\*\/dist\n)+)/.exec(ci)?.[1] ?? '';
+    const workspaces = /^packages:\n((?:\s+- \S+\n)+)/m.exec(readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8'))[1];
+    for (const [, glob] of workspaces.matchAll(/- (\S+)/g)) assert.ok(dist.includes(`${glob}/dist`), `build artifact misses ${glob}/dist`);
+  });
+
   it('security.yml runs CodeQL, OSV-Scanner, dependency review and zizmor, and feeds ci-ok (NFR-SEC-005)', () => {
     const sec = workflow('security.yml');
     assert.deepEqual(jobsOf(sec), ['codeql', 'osv-scanner', 'dependency-review', 'zizmor']);

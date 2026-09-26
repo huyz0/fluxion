@@ -47,7 +47,8 @@ const STEPS = [
     'harness-tests',
     (m) => m !== 'quick',
     () => exists('tests/harness') || 'tests/harness not written yet (M0)',
-    () => runAsync(process.execPath, ['--test', 'tests/harness/*.test.mjs']),
+    // spec reporter: it closes with a "failing tests" list, which the FAIL detail starts at (M1.39)
+    () => runAsync(process.execPath, ['--test-reporter=spec', '--test', 'tests/harness/*.test.mjs']),
   ],
   // one typecheck path (M1 cp1 F4): the root solution `tsc -b` covers every workspace incl. apps;
   // incremental .tsbuildinfo keeps it fast. Per-package `typecheck` scripts exist for turbo filtering.
@@ -116,13 +117,12 @@ async function runStep([name, , available, exec]) {
   const nested = r.status === 0 ? nestedSkip(r.stdout) : null;
   if (nested) return { lines: [`SKIP ${name} — ${nested}`], ok: true };
   if (r.status === 0) return { lines: [`PASS ${name} (${ms}ms)`], ok: true };
-  const detail = argv.has('--summary')
-    ? []
-    : `${r.stdout}\n${r.stderr}`
-        .trim()
-        .split(/\r?\n/)
-        .slice(-40)
-        .map((l) => `    ${l}`);
+  const all = `${r.stdout}\n${r.stderr}`.trim().split(/\r?\n/);
+  // a node:test spec report ends with a "failing tests" list, but one long assertion message pushes
+  // the test names out of a plain tail: start at that list when there is one (M1.39)
+  const failing = all.findIndex((l) => l.startsWith('✖ failing tests:'));
+  const shown = failing >= 0 ? all.slice(failing, failing + 40) : all.slice(-40);
+  const detail = argv.has('--summary') ? [] : shown.map((l) => `    ${l}`);
   return { lines: [`FAIL ${name} (${ms}ms)`, ...detail], ok: false };
 }
 

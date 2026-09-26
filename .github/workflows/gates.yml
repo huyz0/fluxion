@@ -48,7 +48,9 @@ jobs:
           git config --global user.email "ci@example.invalid"
       - name: pre-commit ladder (--all)
         run: node scripts/gates/precommit.mjs --all
+      # runs after a ladder failure too: the ladder shows only the tail of its steps' output (M1.39)
       - name: harness tests
+        if: ${{ !cancelled() }}
         run: node --test "tests/harness/*.test.mjs"
       # windows/macos runners have no Linux Docker, so the ladder's workflows step SKIPs there; ubuntu
       # must really run actionlint + zizmor (M1.19, M1 cp1 F3)

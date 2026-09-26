@@ -1,6 +1,8 @@
-# Release (docs/standards/ci-cd.md section 3, NFR-SEC-005). Without pending changesets it does
-# nothing; with them it opens or updates the "Version Packages" PR. Merging that PR (a human action)
-# publishes through npm trusted publishing (OIDC): provenance is automatic and there is no NPM_TOKEN.
+# Release (docs/standards/ci-cd.md section 3, NFR-SEC-005). With pending changesets it opens or
+# updates the "Version Packages" PR; without them changesets/action PUBLISHES every unpublished
+# version (the first push tried all 0.0.0 packages: M1.39). So the job runs only when the repo
+# variable RELEASE_ENABLED is 'true', set by a human once npm trusted publishing (OIDC: provenance
+# automatic, no NPM_TOKEN) and the npm environment are configured.
 # The only workflow with id-token: write. No dependency cache here (cache poisoning of a release).
 name: release
 
@@ -16,6 +18,7 @@ concurrency:
 
 jobs:
   release:
+    if: vars.RELEASE_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: npm # required reviewer = a human (repo setting)

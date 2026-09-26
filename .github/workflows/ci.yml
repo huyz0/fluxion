@@ -64,6 +64,7 @@ jobs:
           name: dist
           path: |
             packages/*/dist
+            packs/*/dist
             apps/*/dist
           if-no-files-found: error
           retention-days: 3
