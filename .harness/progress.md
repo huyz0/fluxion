@@ -519,3 +519,8 @@ ci-runs.mjs: runs read through gh when installed, else the GitHub REST API mappe
 harness cases: a sha before the final review range end fails even with green runs; at/after passes; no final review → last non-bookkeeping commit; REST mapping, 404, auth header only with a token, gh preferred when present
 live check (no gh here): REST reached the M1 evidence through the agent proxy (NODE_USE_ENV_PROXY=1, NODE_EXTRA_CA_CERTS)
 carried M2.19 minor: a rename into a new (unreleased) version folder is allowed; the rule applies only when the destination folder already exists
+
+## 2026-09-27 M2.21 (claude)
+cold-setup job in ci.yml (fresh ubuntu runner, no dependency cache): check-budget --cold runs the isolated cold setup (fresh clone + working-tree changes, empty pnpm store and PLAYWRIGHT_BROWSERS_PATH, pnpm i --frozen-lockfile → pnpm run setup → pnpm verify) and fails above COLD_SETUP_MAX_MS (unchanged, 600 000); ci-ok needs it; the threshold check is one function shared with --record
+budget.test "record isolation": a fake pnpm on PATH checks call order, a fresh store and browsers path per run (store empty before install), the clone outside the working tree, the uncommitted lockfile reaching clone and record, a provisional record seen by verify, temp dir removed; a run whose install leaves the store unused fails; --cold passes without writing and fails on a failing verify
+not done here: re-recording .harness/budget.json — the cold run in this container cannot download Chromium (network policy blocks cdn.playwright.dev); the record still predates the lockfile (blockedReason until a human allows the host or records elsewhere)

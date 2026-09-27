@@ -4,6 +4,8 @@
 //   check-budget.mjs --record   measure and record them: quick gate, staged pre-commit gate, and a cold
 //                               setup (fresh local clone: pnpm i --frozen-lockfile, pnpm run setup,
 //                               pnpm verify); takes minutes
+//   check-budget.mjs --cold     measure only the cold setup, the same isolated way, and fail when it
+//                               fails or takes over COLD_SETUP_MAX_MS; writes nothing (ci.yml cold-setup)
 //   check-budget.mjs --file <f> check another record (tests)
 // The ladder also fails any staged or quick run over its budget as it happens (precommit.mjs); this
 // step keeps the cold-setup measurement, which no single run can see, honest and on record.
@@ -80,6 +82,26 @@ function coldSetup(provisional) {
   }
 }
 
+/** Threshold problems of `record` for the LIMITS keys in `keys`. */
+const limitProblems = (record, keys = Object.keys(LIMITS)) =>
+  keys.flatMap((key) => {
+    const v = record[key];
+    if (typeof v !== 'number') return [`${key} not recorded (the run failed or never ran): run check-budget.mjs --record`];
+    return v > LIMITS[key] ? [`${key} ${v} ms > ${LIMITS[key]} ms`] : [];
+  });
+
+// CI (NFR-DX-001): a fresh runner measures the cold setup itself; the clone's budget step sees
+// stand-ins at the limits, as in --record, because no quick/staged run happens here
+if (argv.includes('--cold')) {
+  const cold = coldSetup({ recordedAt: new Date().toISOString(), quickMs: LIMITS.quickMs, stagedMs: LIMITS.stagedMs, coldSetupMs: LIMITS.coldSetupMs });
+  if (!cold.ok) console.error(`budget: cold run failed\n${cold.tail}`);
+  const problems = limitProblems({ coldSetupMs: cold.ok ? cold.ms : null }, ['coldSetupMs']);
+  for (const p of problems) console.error(`budget: ${p}`);
+  if (!problems.length)
+    console.log(`budget: cold setup ${cold.ms} ms <= ${LIMITS.coldSetupMs} ms (empty store: pnpm i --frozen-lockfile, pnpm run setup, pnpm verify)`);
+  process.exit(problems.length ? 1 : 0);
+}
+
 if (argv.includes('--record')) {
   const ladder = (mode) =>
     timed(() => spawnSync(process.execPath, [repoPath('scripts/gates/precommit.mjs'), mode, '--no-review'], { encoding: 'utf8', cwd: repoPath() }));
@@ -109,11 +131,7 @@ if (!existsSync(file)) {
   process.exit(1);
 }
 const record = JSON.parse(readFileSync(file, 'utf8'));
-const problems = Object.entries(LIMITS).flatMap(([key, max]) => {
-  const v = record[key];
-  if (typeof v !== 'number') return [`${key} not recorded (the run failed or never ran): run check-budget.mjs --record`];
-  return v > max ? [`${key} ${v} ms > ${max} ms`] : [];
-});
+const problems = limitProblems(record);
 // a record describes one dependency set: after a lockfile change the cold setup must be re-measured,
 // or a heavier install could pass on an old number forever (M1.19 review F2)
 if (record.lockfile !== lockfileHash()) problems.push('the record predates the current pnpm-lock.yaml: run check-budget.mjs --record');

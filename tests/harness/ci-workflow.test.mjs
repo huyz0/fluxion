@@ -91,7 +91,7 @@ function runBlockLength(lines, i) {
 describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
   it('has the planned job set and ci-ok needs every other job (NFR-PORT-005)', () => {
     const jobs = jobsOf(ci);
-    for (const j of ['verify', 'build', 'e2e', 'e2e-report', 'visual', 'a11y', 'size', 'api', 'license', 'eval-recorded', 'ci-ok'])
+    for (const j of ['verify', 'cold-setup', 'build', 'e2e', 'e2e-report', 'visual', 'a11y', 'size', 'api', 'license', 'eval-recorded', 'ci-ok'])
       assert.ok(jobs.includes(j), j);
     const needs = /^ {2}ci-ok:[\s\S]*?needs:\s*\[([^\]]*)\]/m
       .exec(ci)[1]

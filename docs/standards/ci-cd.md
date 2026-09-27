@@ -47,6 +47,8 @@ jobs:
   verify:            # matrix os: [ubuntu, windows, macos]
     steps: [checkout@<sha>, pnpm/action-setup@<sha>, setup-node@<sha> (cache: pnpm),
             turbo cache restore, pnpm install --frozen-lockfile, pnpm verify]
+  cold-setup:        # ubuntu; no cache; check-budget --cold: fresh clone, empty store, pnpm i + run setup
+                     # + verify within COLD_SETUP_MAX_MS (NFR-DX-001)
   build:             # turbo run build --affected; uploads dist/ artifact
   e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/4..4/4]
     container: mcr.microsoft.com/playwright:v1.62.0-noble
@@ -60,7 +62,7 @@ jobs:
   eval-recorded:     # pnpm eval --recorded (T5 on recorded responses)
   ci-ok:
     if: always()
-    needs: [verify, build, e2e-report, visual, a11y, size, api, license, eval-recorded]
+    needs: [verify, cold-setup, build, e2e-report, visual, a11y, size, api, license, eval-recorded]
     steps: [node scripts/ci/all-green.mjs '${{ toJSON(needs) }}']
 ```
 
