@@ -30,13 +30,26 @@ let sb;
 const added = [];
 
 function coverage() {
-  // node project only: the sandbox has no browser tests, and a browser launch would add seconds
-  return sb.node('node_modules/vitest/vitest.mjs', ['run', '--coverage', '--project', 'node'], { env: cleanEnv() });
+  // node project only: the sandbox has no browser tests, and a browser launch would add seconds.
+  // Few property runs, fixed seed: these cases test the floor mechanics, not property depth (the
+  // ladder's own test step runs the full count), and a fixed seed keeps the covered lines stable.
+  return sb.node('node_modules/vitest/vitest.mjs', ['run', '--coverage', '--project', 'node'], {
+    env: cleanEnv({ ...process.env, FC_RUNS: '10', FC_SEED: '1' }),
+  });
 }
 function addUncovered(dir) {
   const path = `${dir}/src/uncovered.ts`;
   sb.write(path, UNCOVERED);
   added.push(path);
+}
+/** One coverage run with uncovered code added to each of `dirs`, which is then removed again. */
+function withUncovered(dirs) {
+  for (const dir of dirs) addUncovered(dir);
+  try {
+    return coverage();
+  } finally {
+    for (const p of added.splice(0)) sb.write(p, 'export {};\n');
+  }
 }
 
 // The sandbox runs the node project only (a browser launch per case would double this suite).
@@ -64,21 +77,33 @@ describe('coverage floors (NFR-MNT-004)', () => {
     for (const p of added.splice(0)) sb.write(p, 'export {};\n');
   });
 
+  // Two coverage runs serve every case (each run takes seconds; one per case kept the ladder over
+  // budget): one where every floored package meets its floor while cli (no floor) is uncovered,
+  // and one where each floored package under test is uncovered at once. Every case asserts its
+  // own package's outcome from the shared run.
+  const runs = {};
+  const passing = () => {
+    runs.passing ??= withUncovered(['packages/cli']);
+    return runs.passing;
+  };
+  const failing = () => {
+    runs.failing ??= withUncovered(['packages/core', 'packages/render', 'packages/player', 'packages/editor']);
+    return runs.failing;
+  };
+
   it('passes when every package meets its floor', () => {
-    const r = coverage();
+    const r = passing();
     assert.equal(r.status, 0, out(r));
   });
 
   it('fails when a pure package is below the floor', () => {
-    addUncovered('packages/core');
-    const r = coverage();
+    const r = failing();
     assert.equal(r.status, 1, out(r));
     assert.match(`${r.stdout}${r.stderr}`, /Coverage for lines \([\d.]+%\) does not meet "packages\/core\/src\/\*\*" threshold \(90%\)/);
   });
 
   it('fails when render is below the floor (its own, lower floor)', () => {
-    addUncovered('packages/render');
-    const r = coverage();
+    const r = failing();
     assert.equal(r.status, 1, out(r));
     assert.match(`${r.stdout}${r.stderr}`, /"packages\/render\/src\/\*\*" threshold \(80%\)/);
   });
@@ -105,16 +130,15 @@ describe('coverage floors (NFR-MNT-004)', () => {
     ['packages/editor', 70],
   ]) {
     it(`fails when ${dir.split('/')[1]} is below its floor (M1 cp2 F7)`, () => {
-      addUncovered(dir);
-      const r = coverage();
+      const r = failing();
       assert.equal(r.status, 1, out(r));
       assert.match(`${r.stdout}${r.stderr}`, new RegExp(`"${dir.replace('/', '\\/')}\\/src\\/\\*\\*" threshold \\(${floor}%\\)`));
     });
   }
 
   it('does not hold a package without a floor (cli) to one', () => {
-    addUncovered('packages/cli');
-    const r = coverage();
+    // cli is uncovered in the passing run
+    const r = passing();
     assert.equal(r.status, 0, out(r));
   });
 });

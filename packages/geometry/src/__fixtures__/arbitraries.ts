@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { type Mat2d, multiply, rotation, scaling, translate } from '../mat2d.js';
+import type { PathCommand } from '../path.js';
 import type { Vec2 } from '../vec2.js';
 
 // Values are drawn on a 1e-3 grid, not with fc.double: fc.double spreads its samples over the
@@ -25,3 +26,14 @@ export const matrix: fc.Arbitrary<Mat2d> = fc
   .map(({ tx, ty, quarterDegrees, k, sx, sy }) =>
     multiply(translate(tx, ty), multiply(rotation(((quarterDegrees / 4) * Math.PI) / 180), multiply([1, 0, k, 1, 0, 0], scaling(sx, sy)))),
   );
+
+const drawCommand: fc.Arbitrary<PathCommand> = fc.oneof(
+  point.map((to): PathCommand => ({ kind: 'L', to })),
+  fc.tuple(point, point).map(([control, to]): PathCommand => ({ kind: 'Q', control, to })),
+  fc.tuple(point, point, point).map(([control1, control2, to]): PathCommand => ({ kind: 'C', control1, control2, to })),
+);
+
+/** Valid single-subpath command list: M, 1–4 drawing commands, optional Z. */
+export const pathCommands: fc.Arbitrary<PathCommand[]> = fc
+  .tuple(point, fc.array(drawCommand, { minLength: 1, maxLength: 4 }), fc.boolean())
+  .map(([start, draws, isClosed]) => [{ kind: 'M', to: start } as const, ...draws, ...(isClosed ? [{ kind: 'Z' } as const] : [])]);

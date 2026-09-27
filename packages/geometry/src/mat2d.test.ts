@@ -48,6 +48,8 @@ describe('mat2d', () => {
     // det 1e-13 on entries of size 1: singular; the same shape scaled up by 1e3 is not
     expect(invert([1, 1, 1, 1 + 1e-13, 0, 0]).ok).toBe(false);
     expect(invert([1e3, 0, 0, 1e-3, 0, 0]).ok).toBe(true);
+    // det ≈ 1 passes an absolute 1e-12 test, but on entries of 1e7 it is ~1e-14 of their scale²
+    expect(invert([1e7, 1e7, 1e7, 1e7 + 1e-7, 0, 0]).ok).toBe(false);
   });
 
   it('FR-SHP-001: transform ∘ inverse = identity (ε 1e-9)', () => {

@@ -72,7 +72,9 @@ export function determinant(m: Mat2d): number {
 }
 
 /**
- * Inverse matrix, or error `'MATRIX_SINGULAR'` when `|det| < 1e-12` or the determinant is not finite.
+ * Inverse matrix, or error `'MATRIX_SINGULAR'` when the determinant is not finite or
+ * `|det| < 1e-12 · s²`, where `s` is the largest linear entry magnitude (at least 1): the threshold
+ * is relative to the matrix scale, since `det` is quadratic in the entries.
  *
  * @public
  */

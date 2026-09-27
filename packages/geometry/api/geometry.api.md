@@ -46,7 +46,21 @@ export function boxIntersects(a: Box, b: Box): boolean;
 export function boxUnion(a: Box, b: Box): Box;
 
 // @public
+export function createPathSampler(path: Path, options?: PathSamplerOptions): PathSampler;
+
+// @public
 export function cross(a: Vec2, b: Vec2): number;
+
+// @public
+export type CubicSegment = {
+    readonly p0: Vec2;
+    readonly p1: Vec2;
+    readonly p2: Vec2;
+    readonly p3: Vec2;
+};
+
+// @public
+export function derivativeAt(seg: CubicSegment, t: number): Vec2;
 
 // @public
 export function determinant(m: Mat2d): number;
@@ -81,16 +95,28 @@ export type ElementTransform = {
 export function equalsApprox(a: Vec2, b: Vec2, eps?: number): boolean;
 
 // @public
+export type FillRule = "nonzero" | "evenodd";
+
+// @public
 export type GeometryError = {
     readonly code: GeometryErrorCode;
     readonly message: string;
 };
 
 // @public
-export type GeometryErrorCode = "MATRIX_SINGULAR";
+export type GeometryErrorCode = "MATRIX_SINGULAR" | "PATH_MISSING_MOVE" | "PATH_MULTIPLE_SUBPATHS" | "PATH_COMMAND_AFTER_CLOSE" | "PATH_INVALID_POINT";
 
 // @public
 export function identity(): Mat2d;
+
+// @public
+export function intersectCubics(s1: CubicSegment, s2: CubicSegment, eps?: number): Vec2[];
+
+// @public
+export function intersectPaths(p1: Path, p2: Path, eps?: number): Vec2[];
+
+// @public
+export function intersectSegments(a: LineSegment, b: LineSegment): Vec2 | null;
 
 // @public
 export function invert(m: Mat2d): Result<Mat2d>;
@@ -103,13 +129,78 @@ export { length_2 as length }
 export function lerp(a: Vec2, b: Vec2, t: number): Vec2;
 
 // @public
+export type LineSegment = readonly [start: Vec2, end: Vec2];
+
+// @public
 export type Mat2d = readonly [a: number, b: number, c: number, d: number, e: number, f: number];
 
 // @public
 export function multiply(m: Mat2d, n: Mat2d): Mat2d;
 
 // @public
+export type NearestPoint = {
+    readonly point: Vec2;
+    readonly distance: number;
+    readonly segment: number;
+    readonly t: number;
+};
+
+// @public
+export function nearestPoint(path: Path, p: Vec2): NearestPoint | null;
+
+// @public
 export function normalize(v: Vec2): Vec2;
+
+// @public
+export type Path = {
+    readonly segments: readonly CubicSegment[];
+    readonly closed: boolean;
+};
+
+// @public
+export function pathBounds(path: Path): Box | null;
+
+// @public
+export type PathCommand = {
+    readonly kind: "M";
+    readonly to: Vec2;
+} | {
+    readonly kind: "L";
+    readonly to: Vec2;
+} | {
+    readonly kind: "Q";
+    readonly control: Vec2;
+    readonly to: Vec2;
+} | {
+    readonly kind: "C";
+    readonly control1: Vec2;
+    readonly control2: Vec2;
+    readonly to: Vec2;
+} | {
+    readonly kind: "Z";
+};
+
+// @public
+export function pathFromCommands(cmds: readonly PathCommand[]): Result<Path>;
+
+// @public
+export type PathSampler = {
+    readonly length: number;
+    pointAtLength(s: number): Vec2;
+    tangentAtLength(s: number): Vec2;
+    pointAtFraction(f: number): Vec2;
+};
+
+// @public
+export type PathSamplerOptions = {
+    readonly samplesPerSegment?: number;
+};
+
+// @public
+export function pointAt(seg: CubicSegment, t: number): Vec2;
+
+// @public
+export function pointInPath(path: Path, p: Vec2, rule?: FillRule): boolean;
 
 // @public
 export type Result<T> = {
@@ -131,6 +222,12 @@ export function scale(v: Vec2, k: number): Vec2;
 
 // @public
 export function scaling(sx: number, sy?: number): Mat2d;
+
+// @public
+export function segmentBounds(seg: CubicSegment): Box;
+
+// @public
+export function splitAt(seg: CubicSegment, t: number): readonly [CubicSegment, CubicSegment];
 
 // @public
 export function sub(a: Vec2, b: Vec2): Vec2;

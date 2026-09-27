@@ -107,7 +107,11 @@ function siblingGroups(records: Map<string, Mutable>): string[][] {
   const groups = new Map<string, string[]>();
   for (const id of [...records.keys()].sort(byId)) {
     const g = siblingGroup(records.get(id) ?? {});
-    if (g !== undefined) groups.set(g, [...(groups.get(g) ?? []), id]);
+    if (g === undefined) continue;
+    // push, never copy: a copy per record made large screens quadratic
+    const group = groups.get(g);
+    if (group === undefined) groups.set(g, [id]);
+    else group.push(id);
   }
   return [...groups.values()];
 }
