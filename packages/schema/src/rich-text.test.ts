@@ -50,6 +50,7 @@ describe('rich text (ADR-0013)', () => {
     const issues = checkRichText(value);
     expect(issues.map((i) => [i.code, i.severity, i.path.join('/')])).toEqual([
       ['FLX_TEXT_UNKNOWN_NODE', 'warning', 'content/0'],
+      ['FLX_TEXT_UNKNOWN_NODE', 'warning', 'content/0/content/0'],
       ['FLX_TEXT_UNKNOWN_NODE', 'warning', 'content/1/content/0/content/0'],
     ]);
     expect(richTextSchema.parse(value)).toEqual(value);
@@ -136,6 +137,29 @@ describe('rich text (ADR-0013)', () => {
     expect(mark('color', '#3355ff')).toEqual([]);
     expect(mark('highlight', '{color.accent}')).toEqual([]);
     for (const bad of ['red', 'rgb(1 2 3)', { token: '{c.a}', transform: { alpha: 0.5 } }]) expect(mark('highlight', bad), JSON.stringify(bad)).toHaveLength(1);
+  });
+
+  it('checks the shape an unknown node exposes to renderers: content, text and marks (M2.7 review F2)', () => {
+    const paths = (node: unknown) =>
+      checkRichText(doc(node))
+        .filter((i) => i.severity === 'error')
+        .map((i) => i.path.join('/'));
+    expect(paths({ type: 'table', content: 42 })).toEqual(['content/0/content']);
+    expect(paths({ type: 'table', content: [5] })).toEqual(['content/0/content/0']);
+    expect(paths({ type: 'table', text: 7, marks: 'bold' })).toEqual(['content/0/text', 'content/0/marks']);
+    // known nodes inside an unknown node keep their own rules, wherever they sit
+    expect(paths({ type: 'table', content: [{ type: 'heading', content: [] }, t('')] })).toEqual([
+      'content/0/content/0/attrs/level',
+      'content/0/content/1/text',
+    ]);
+    expect(paths({ type: 'table', content: [p(t('cell')), { type: 'row', content: [t('x', [{ type: 'bold' }])] }] })).toEqual([]);
+  });
+
+  it('a font mark family starting with "{" must be a valid token (M2.7 review F1)', () => {
+    const family = (f: unknown) => checkRichText(doc(p(t('x', [{ type: 'font', attrs: { family: f } }])))).length;
+    expect(family('{font.body}')).toBe(0);
+    expect(family('Inter')).toBe(0);
+    expect(family('{font.body')).toBe(1);
   });
 
   it('requires a doc root with blocks', () => {

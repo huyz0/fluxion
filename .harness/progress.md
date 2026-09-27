@@ -418,3 +418,10 @@ tests: FR-DOC-004 `{color` yields one issue at fill; unknown mark one warning at
 M2.6 r3 F1: colorValue/paint unions wrapped in checkedSchema; it caught screen.notes present in the type only
 ids 1e6 test: 60 s timeout (0.6 s idle, > 5 s under coverage + a parallel agent's load made M2.6's commit fail twice)
 review r1 F1: rich-text walker recursed without a limit (20k nested lists = RangeError) → MAX_RICH_TEXT_DEPTH 64, error at the limit; F2: color/highlight marks take hex or token only (ADR-0013); F3: StyleValue<T> exported (StyleNumber = StyleValue<number>)
+
+## 2026-09-27 M2.8 (claude)
+records/element-base.ts (shared types), element.ts (kind types), element-schemas.ts (all element schemas; isolatedDeclarations keeps Zod field objects module-private): shape (defId `ns:name`, params, anchors), connector (route straight/curved/orthogonal/polyline/plugin, markers, labels, freeSource/freeTarget), group, frame, text, image (fit default contain), component, plugin kind `ns:name`, and an envelope-only UnknownElement; semantic (slug), locks, placement
+records/binding.ts (AnchorRef auto/floating/named/side/point), resources.ts (asset sha256/mime/size, theme DTCG tree, plugin-ref semver/SRI/trust), behaviour.ts (timeline, step, interaction, variable, comment; trigger/action payloads are open `kind` objects until M21-M25)
+document-file.ts: schemaForRecord (by type, element kind; plugin kinds known, others envelope-only), anyRecordSchema, documentFileSchema; the 02-document-model example parses unchanged; a shape without defId fails at records/e1/defId
+M2.7 r2 minors: "{…" literals are broken tokens (font family, variant, font mark); unknown rich-text nodes get their content/text/marks shape-checked
+deps: M2.9 (byte-equal canonical JSON) now after M2.11 (the serializer); M2.10 after M2.8

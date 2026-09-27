@@ -26,11 +26,11 @@ two milestones is delivered in parts (see the milestone plans for the split).
 
 | ID | Pri | Inc | Milestone(s) | Source | Tests |
 |---|---|---|---|---|---|
-| FR-DOC-001 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/records/document.test.ts` +2 |
+| FR-DOC-001 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
 | FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/ids.test.ts` |
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/rich-text.test.ts`, `packages/schema/src/style.test.ts` |
-| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/checked-schema.test.ts` +5 |
+| FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +2 |
+| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/checked-schema.test.ts` +7 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -61,7 +61,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AST-004 | S | R4 | M23 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-005 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-006 | S | R2 | M15 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-SHP-001 | M | R0 | M2 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/schema/src/style.test.ts` |
+| FR-SHP-001 | M | R0 | M2 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/schema/src/records/element.test.ts`, `packages/schema/src/style.test.ts` |
 | FR-SHP-002 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-003 | M | R1 | M5, M7 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
@@ -96,7 +96,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ANC-006 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-ANC-007 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-ANC-008 | S | R6 | M27 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
-| FR-CON-001 | M | R0 | M2 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
+| FR-CON-001 | M | R0 | M2 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/schema/src/records/element.test.ts` |
 | FR-CON-002 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-003 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |

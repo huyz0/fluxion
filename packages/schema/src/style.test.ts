@@ -51,6 +51,8 @@ describe('style and transform values', () => {
       { font: { size: 0 } },
       { font: { family: '' } },
       { variant: '' },
+      { variant: '{variant' },
+      { font: { family: '{font.body' } },
     ])
       expect(styleSchema.safeParse(bad).success, JSON.stringify(bad)).toBe(false);
   });

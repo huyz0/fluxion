@@ -144,6 +144,11 @@ export type Transform = Extensible<{
 }>;
 
 const nonNegative = z.number().min(0);
+// a literal name starting with "{" is a mistyped token reference (M2.7 review F1)
+const literalName = z
+  .string()
+  .min(1)
+  .refine((v) => !v.startsWith('{'), { message: 'looks like a token reference but is not a valid one, e.g. "{font.body}"' });
 const styleNumber = (literal: z.ZodNumber): z.ZodType<StyleNumber> => z.union([literal, tokenRefSchema]);
 
 const strokeSchema = checkedSchema<Stroke>()(
@@ -161,7 +166,7 @@ const shadowSchema = checkedSchema<Shadow>()(
 const effectSchema = checkedSchema<Effect>()(z.looseObject({ type: z.enum(['glow', 'blur']), radius: nonNegative, color: colorValueSchema.optional() }));
 const fontSchema = checkedSchema<FontStyle>()(
   z.looseObject({
-    family: z.union([tokenRefSchema, z.string().min(1)]).optional(),
+    family: z.union([tokenRefSchema, literalName]).optional(),
     size: styleNumber(z.number().positive()).optional(),
     weight: styleNumber(z.number().min(1).max(1000)).optional(),
     style: z.enum(['normal', 'italic']).optional(),
@@ -183,7 +188,7 @@ export const styleSchema: z.ZodType<Style> = checkedSchema<Style>()(
     shadow: z.array(shadowSchema).optional(),
     effects: z.array(effectSchema).optional(),
     font: fontSchema.optional(),
-    variant: z.string().min(1).optional(),
+    variant: literalName.optional(),
   }),
 );
 

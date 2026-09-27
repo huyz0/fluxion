@@ -5,6 +5,61 @@
 ```ts
 
 // @public
+export type AnchorDef = Extensible<{
+    readonly name: string;
+    readonly x: number;
+    readonly y: number;
+    readonly dir?: Point;
+    readonly role?: "in" | "out" | "any";
+    readonly max?: number;
+}>;
+
+// @public
+export type AnchorRef = AutoAnchor | FloatingAnchor | NamedAnchor | SideAnchor | PointAnchor;
+
+// @public
+export type AnyRecord = DocumentRecord | ScreenRecord | ElementRecord | UnknownElement | BindingRecord | ResourceRecord | BehaviourRecord | UnknownRecord;
+
+// @public
+export type AssetRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "asset";
+    readonly meta?: Meta;
+    readonly hash: string;
+    readonly mime: string;
+    readonly size: number;
+    readonly name: string;
+    readonly w?: number;
+    readonly h?: number;
+    readonly source?: string;
+}>;
+
+// @public
+export type AutoAnchor = Extensible<{
+    readonly kind: "auto";
+}>;
+
+// @public
+export type BehaviourRecord = TimelineRecord | StepRecord | InteractionRecord | VariableRecord | CommentRecord;
+
+// @public
+export type BindingRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "binding";
+    readonly meta?: Meta;
+    readonly connectorId: RecordId;
+    readonly end: "source" | "target";
+    readonly elementId: RecordId;
+    readonly anchor: AnchorRef;
+}>;
+
+// @public
+export type BoxedBase = ElementBase & {
+    readonly transform: Transform;
+    readonly text?: RichTextDoc;
+};
+
+// @public
 export function checkRichText(value: unknown): RichTextIssue[];
 
 // @public
@@ -20,16 +75,74 @@ export type ColorTransform = Extensible<{
 export type ColorValue = Color | TokenRef | TransformedToken;
 
 // @public
+export type CommentRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "comment";
+    readonly meta?: Meta;
+    readonly targetId: RecordId;
+    readonly author: string;
+    readonly body: string;
+    readonly resolved: boolean;
+    readonly created?: string;
+}>;
+
+// @public
 export function compareKeys(a: string, b: string): number;
 
 // @public
+export type ComponentElement = Extensible<BoxedBase & {
+    readonly kind: "component";
+    readonly componentId: QualifiedName;
+    readonly props: {
+        readonly [key: string]: unknown;
+    };
+    readonly snapshotAssetId?: RecordId;
+}>;
+
+// @public
+export type ConnectorElement = Extensible<ElementBase & {
+    readonly kind: "connector";
+    readonly route: Route;
+    readonly markers?: Markers;
+    readonly labels?: readonly ConnectorLabel[];
+    readonly freeSource?: Point;
+    readonly freeTarget?: Point;
+}>;
+
+// @public
+export type ConnectorLabel = Extensible<{
+    readonly text: RichTextDoc;
+    readonly position: number;
+    readonly offset?: Point;
+}>;
+
+// @public
+export type CoreElementKind = "shape" | "connector" | "group" | "frame" | "text" | "image" | "component";
+
+// @public
 export function createId(random: Random): RecordId;
+
+// @public
+export type Crop = Extensible<{
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+}>;
 
 // @public
 export const DEFAULT_SCREEN_SIZE: Size;
 
 // @public
 export type DiagnosticSeverity = "error" | "warning" | "info";
+
+// @public
+export type DocumentFile = Extensible<{
+    readonly schemaVersion: string;
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+}>;
 
 // @public
 export type DocumentRecord = Extensible<{
@@ -60,6 +173,29 @@ export type Effect = Extensible<{
 }>;
 
 // @public
+export const ELEMENT_KINDS: readonly CoreElementKind[];
+
+// @public
+export type ElementBase = {
+    readonly id: RecordId;
+    readonly type: "element";
+    readonly meta?: Meta;
+    readonly screenId: RecordId;
+    readonly parentId?: RecordId;
+    readonly index: IndexKey;
+    readonly name?: string;
+    readonly style?: Style;
+    readonly semantic?: Semantic;
+    readonly locks?: Locks;
+    readonly matchKey?: string;
+    readonly placement?: "auto" | "pinned";
+    readonly hidden?: boolean;
+};
+
+// @public
+export type ElementRecord = ShapeElement | ConnectorElement | GroupElement | FrameElement | TextElement | ImageElement | ComponentElement | PluginElement;
+
+// @public
 export type Err<E> = {
     readonly ok: false;
     readonly error: E;
@@ -72,6 +208,11 @@ export function err<E>(error: E): Err<E>;
 export type Extensible<T> = T & {
     readonly [key: string]: unknown;
 };
+
+// @public
+export type FloatingAnchor = Extensible<{
+    readonly kind: "floating";
+}>;
 
 // @public
 export type FluxError = {
@@ -98,6 +239,13 @@ export type FontStyle = Extensible<{
 }>;
 
 // @public
+export type FrameElement = Extensible<BoxedBase & {
+    readonly kind: "frame";
+    readonly clip?: boolean;
+    readonly padding?: number;
+}>;
+
+// @public
 export type GradientPaint = Extensible<{
     readonly type: "linear-gradient" | "radial-gradient";
     readonly angle?: number;
@@ -111,10 +259,24 @@ export type GradientStop = Extensible<{
 }>;
 
 // @public
+export type GroupElement = Extensible<BoxedBase & {
+    readonly kind: "group";
+}>;
+
+// @public
 export const ID_ALPHABET: string;
 
 // @public
 export const ID_LENGTH: number;
+
+// @public
+export type ImageElement = Extensible<BoxedBase & {
+    readonly kind: "image";
+    readonly assetId: RecordId;
+    readonly crop?: Crop;
+    readonly fit: "cover" | "contain" | "fill";
+    readonly maskDefId?: QualifiedName;
+}>;
 
 // @public
 export type ImagePaint = Extensible<{
@@ -129,6 +291,20 @@ export type IndexKey = string & {
 };
 
 // @public
+export type InteractionRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "interaction";
+    readonly meta?: Meta;
+    readonly ownerId: RecordId;
+    readonly trigger: Tagged;
+    readonly condition?: string;
+    readonly actions: readonly Tagged[];
+}>;
+
+// @public
+export function isCoreElementKind(kind: unknown): kind is CoreElementKind;
+
+// @public
 export function isGeneratedId(value: unknown): value is RecordId;
 
 // @public
@@ -141,12 +317,37 @@ export function isRecordId(value: unknown): value is RecordId;
 export function keyBetween(a: string | null, b: string | null): Result<IndexKey>;
 
 // @public
+export type Locks = Extensible<{
+    readonly position?: boolean;
+    readonly size?: boolean;
+    readonly rotation?: boolean;
+    readonly delete?: boolean;
+    readonly edit?: boolean;
+}>;
+
+// @public
+export type Marker = "none" | "arrow" | "triangle" | "circle" | "diamond" | "bar" | QualifiedName;
+
+// @public
+export type Markers = Extensible<{
+    readonly start?: Marker;
+    readonly end?: Marker;
+    readonly mid?: Marker;
+}>;
+
+// @public
 export const MAX_RICH_TEXT_DEPTH: number;
 
 // @public
 export type Meta = {
     readonly [key: string]: unknown;
 };
+
+// @public
+export type NamedAnchor = Extensible<{
+    readonly kind: "named";
+    readonly name: string;
+}>;
 
 // @public
 export function nKeysBetween(a: string | null, b: string | null, n: number): Result<IndexKey[]>;
@@ -164,9 +365,47 @@ export function ok<T>(value: T): Ok<T>;
 export type Paint = ColorValue | GradientPaint | ImagePaint;
 
 // @public
+export type PluginElement = Extensible<BoxedBase & {
+    readonly kind: QualifiedName;
+    readonly props?: {
+        readonly [key: string]: unknown;
+    };
+}>;
+
+// @public
+export type PluginRefRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "plugin-ref";
+    readonly meta?: Meta;
+    readonly pluginId: string;
+    readonly version: string;
+    readonly integrity?: string;
+    readonly trust: "trusted" | "sandboxed";
+}>;
+
+// @public
+export type Point = Extensible<{
+    readonly x: number;
+    readonly y: number;
+}>;
+
+// @public
+export type PointAnchor = Extensible<{
+    readonly kind: "point";
+    readonly x: number;
+    readonly y: number;
+}>;
+
+// @public
+export type QualifiedName = `${string}:${string}`;
+
+// @public
 export interface Random {
     next(): number;
 }
+
+// @public
+export const RECORD_TYPES: readonly string[];
 
 // @public
 export type RecordId = string & {
@@ -180,6 +419,9 @@ export type Rect = Extensible<{
     readonly w: number;
     readonly h: number;
 }>;
+
+// @public
+export type ResourceRecord = AssetRecord | ThemeRecord | PluginRefRecord;
 
 // @public
 export type Result<T, E = FluxError> = Ok<T> | Err<E>;
@@ -217,6 +459,16 @@ export type RichTextNode = Extensible<{
 }>;
 
 // @public
+export type Route = Extensible<{
+    readonly type: "straight" | "curved" | "orthogonal" | "polyline" | QualifiedName;
+    readonly waypoints?: readonly Point[];
+    readonly cornerRadius?: number;
+}>;
+
+// @public
+export const SCHEMA_VERSION: string;
+
+// @public
 export type ScreenRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "screen";
@@ -238,6 +490,14 @@ export type ScreenRecord = Extensible<{
 export function seededRandom(seed: number): Random;
 
 // @public
+export type Semantic = Extensible<{
+    readonly slug?: string;
+    readonly label?: string;
+    readonly role?: string;
+    readonly tags?: readonly string[];
+}>;
+
+// @public
 export type Shadow = Extensible<{
     readonly x: number;
     readonly y: number;
@@ -248,9 +508,43 @@ export type Shadow = Extensible<{
 }>;
 
 // @public
+export type ShapeElement = Extensible<BoxedBase & {
+    readonly kind: "shape";
+    readonly defId: QualifiedName;
+    readonly params?: {
+        readonly [key: string]: unknown;
+    };
+    readonly anchors?: readonly AnchorDef[];
+}>;
+
+// @public
+export type SideAnchor = Extensible<{
+    readonly kind: "side";
+    readonly side: "n" | "e" | "s" | "w";
+    readonly t?: number;
+}>;
+
+// @public
 export type Size = Extensible<{
     readonly w: number;
     readonly h: number;
+}>;
+
+// @public
+export type StepAnimation = Extensible<{
+    readonly id: string;
+}>;
+
+// @public
+export type StepRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "step";
+    readonly meta?: Meta;
+    readonly timelineId: RecordId;
+    readonly index: IndexKey;
+    readonly trigger: Tagged;
+    readonly animations: readonly StepAnimation[];
+    readonly label?: string;
 }>;
 
 // @public
@@ -281,6 +575,43 @@ export type StyleNumber = StyleValue<number>;
 export type StyleValue<T> = T | TokenRef;
 
 // @public
+export type Tagged = Extensible<{
+    readonly kind: string;
+}>;
+
+// @public
+export type TextElement = Extensible<BoxedBase & {
+    readonly kind: "text";
+    readonly text: RichTextDoc;
+    readonly autoSize?: "none" | "width" | "height";
+}>;
+
+// @public
+export type ThemeRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "theme";
+    readonly meta?: Meta;
+    readonly name: string;
+    readonly tokens: {
+        readonly [key: string]: unknown;
+    };
+    readonly defaults?: {
+        readonly [key: string]: unknown;
+    };
+}>;
+
+// @public
+export type TimelineRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "timeline";
+    readonly meta?: Meta;
+    readonly screenId: RecordId;
+    readonly name: string;
+    readonly index: IndexKey;
+    readonly loop?: boolean;
+}>;
+
+// @public
 export type TokenRef = `{${string}}`;
 
 // @public
@@ -298,6 +629,33 @@ export type Transform = Extensible<{
 export type TransformedToken = Extensible<{
     readonly token: TokenRef;
     readonly transform: ColorTransform;
+}>;
+
+// @public
+export type UnknownElement = Extensible<{
+    readonly id: RecordId;
+    readonly type: "element";
+    readonly meta?: Meta;
+    readonly screenId: RecordId;
+    readonly parentId?: RecordId;
+    readonly index: IndexKey;
+    readonly kind: string;
+}>;
+
+// @public
+export type UnknownRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: string;
+}>;
+
+// @public
+export type VariableRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "variable";
+    readonly meta?: Meta;
+    readonly name: string;
+    readonly valueType: "string" | "number" | "boolean" | "color" | "json";
+    readonly default?: unknown;
 }>;
 
 // @public

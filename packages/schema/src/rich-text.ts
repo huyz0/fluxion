@@ -63,7 +63,8 @@ export type RichTextIssue = {
 };
 
 type Path = readonly (string | number)[];
-type Role = 'block' | 'inline' | 'listItem';
+// `any`: children of an unknown node, whose content rules this version does not know
+type Role = 'block' | 'inline' | 'listItem' | 'any';
 
 /**
  * Deepest nesting of rich-text nodes accepted (a list inside a list … counts one level per node).
@@ -108,12 +109,25 @@ class Walker {
     if (!KNOWN.has(type)) {
       // preserved as is; satisfies any content rule (ADR-0013 amendment, M2.7)
       this.warn(path, `unknown rich-text node "${type}" is kept and shown as plain text`, 'FLX_TEXT_UNKNOWN_NODE');
+      this.unknownNode(value, path);
       return type;
     }
-    const fits = role === 'block' ? BLOCKS.has(type) : role === 'inline' ? INLINES.has(type) : type === 'listItem';
+    const fits = role === 'any' || (role === 'block' ? BLOCKS.has(type) : role === 'inline' ? INLINES.has(type) : type === 'listItem');
     if (!fits) this.error(path, `"${type}" is not allowed here (expected ${role === 'listItem' ? 'listItem' : `a ${role} node`})`);
     else this.known(value, type, path);
     return type;
+  }
+
+  /** An unknown node keeps its data, but renderers walk its content and text: those must be well formed (M2.7 review F2). */
+  unknownNode(node: Obj, path: Path): void {
+    const content = node['content'];
+    if (content !== undefined && !Array.isArray(content)) this.error([...path, 'content'], 'content must be an array');
+    if (Array.isArray(content))
+      content.forEach((child: unknown, i: number) => {
+        this.node(child, 'any', [...path, 'content', i]);
+      });
+    if (node['text'] !== undefined && typeof node['text'] !== 'string') this.error([...path, 'text'], 'text must be a string');
+    if (node['marks'] !== undefined) this.marks(node['marks'], path);
   }
 
   known(node: Obj, type: string, path: Path): void {
@@ -180,8 +194,10 @@ class Walker {
   text(node: Obj, path: Path): void {
     if (typeof node['text'] !== 'string' || node['text'] === '') this.error([...path, 'text'], 'text node needs non-empty text');
     this.leaf(node, path);
-    const marks = node['marks'];
-    if (marks === undefined) return;
+    if (node['marks'] !== undefined) this.marks(node['marks'], path);
+  }
+
+  marks(marks: unknown, path: Path): void {
     if (!Array.isArray(marks)) {
       this.error([...path, 'marks'], 'marks must be an array');
       return;
@@ -233,7 +249,9 @@ const MARK_ATTRS: { readonly [type: string]: AttrCheck } = {
   highlight: colorAttr,
   font: (w, attrs, path) => {
     const f = attrs['family'];
-    if (!(typeof f === 'string' && f !== '')) w.error([...path, 'family'], 'font family must be a non-empty string or a token reference');
+    // a string starting with "{" is a token reference or a broken one, never a family name (M2.7 review F1)
+    const ok = tokenRefSchema.safeParse(f).success || (typeof f === 'string' && f !== '' && !f.startsWith('{'));
+    if (!ok) w.error([...path, 'family'], 'font family must be a non-empty name or a token reference');
   },
   size: (w, attrs, path) => {
     const s = attrs['size'];
