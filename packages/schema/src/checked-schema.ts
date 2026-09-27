@@ -1,5 +1,5 @@
 // Record types are written once with TSDoc and proven equal to their Zod schemas at compile time
-// (ADR-0014): `isolatedDeclarations` cannot export `z.infer` of an unannotated schema.
+// (ADR-0140): `isolatedDeclarations` cannot export `z.infer` of an unannotated schema.
 import type { z } from 'zod';
 
 type Primitive = string | number | boolean | bigint | symbol | null | undefined;

@@ -10,7 +10,7 @@ type Ref = Extensible<{ readonly id: RecordId }>;
 
 const tags = z.array(z.string()).optional();
 
-describe('checkedSchema (ADR-0014)', () => {
+describe('checkedSchema (ADR-0140)', () => {
   it('accepts a schema whose output equals the type', () => {
     const point = checkedSchema<Point>()(z.object({ x: z.number(), y: z.number().optional(), tags }));
     expect(point.parse({ x: 1 })).toEqual({ x: 1 });

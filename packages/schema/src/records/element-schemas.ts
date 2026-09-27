@@ -1,4 +1,4 @@
-// Schemas of the element kinds (types in element.ts and element-base.ts; ADR-0014 checks each).
+// Schemas of the element kinds (types in element.ts and element-base.ts; ADR-0140 checks each).
 import { z } from 'zod';
 import { checkedSchema } from '../checked-schema.js';
 import { indexKeySchema, metaSchema, recordIdSchema } from '../primitives.js';

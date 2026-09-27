@@ -1,0 +1,22 @@
+{
+  "milestone": "M2",
+  "checkpoint": "cp1",
+  "range": "1a9aa22..4c8a58a",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    { "id": "F1", "severity": "major", "area": "gate honesty", "detail": "vitestNamed legs match the bare requirement ID: the NFR-REL-002 leg passes on the rich-text nesting test and ignores FC_RUNS; the NFR-REL-005 leg passes on one schema id test; M2.9-M2.17 acceptance properties have no named leg.", "failure_scenario": "A 100-case parse fuzz test that ignores FC_RUNS and a schema-only determinism suite turn m2-complete green." },
+    { "id": "F2", "severity": "major", "area": "coherence / spec fidelity (FR-DOC-005, NFR-REL-005)", "detail": "Schemas fill defaults on parse (screen name/kind/size, transform.rot, image/paint fit, document title, comment resolved), so parse(x) is not x and M2.9's byte-equal round trip only holds for inputs that spell out every default.", "failure_scenario": "A document from an AI patch without screen.kind or transform.rot is rewritten with extra fields on every save." },
+    { "id": "F3", "severity": "minor", "area": "architecture / ADR numbering", "detail": "M2.6 took ADR-0014, which M3.md reserves for command semantics; M2.17 also names ADR-0014.", "failure_scenario": "M3 writes a second ADR-0014." },
+    { "id": "F4", "severity": "minor", "area": "spec fidelity (FR-DOC-004/005)", "detail": "Checks promised to validate() are not in the M2.10 row: id/key mismatch, exactly one document record, unknown type/kind and rich-text warnings.", "failure_scenario": "A file with records {a: {id: b}} or two document records validates with no diagnostics." },
+    { "id": "F5", "severity": "minor", "area": "standards / docs drift", "detail": "02-document-model §1.4 still says TS types are z.infer; §2 puts schemaVersion on the document record while code puts it on DocumentFile; the planned docs-consistency case would not catch either.", "failure_scenario": "An M3/M14 agent writes z.infer record types or adds document.schemaVersion." }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "target": "M2.25", "note": "legs match the plan's exact test titles, FC_RUNS proven by the fuzz test, determinism needs a case per package, named legs for M2.9-M2.17" },
+    { "finding": "F2", "disposition": "reopen", "target": "M2.26", "note": "decide: parsing never fills defaults (ADR-0142); readers apply documented defaults" },
+    { "finding": "F3", "disposition": "reopen", "target": "M2.25", "note": "unplanned ADRs take 0140+ (the harness range after 0139): ADR-0014 of M2.6 becomes ADR-0140, M2.17's dependency ADR is ADR-0141; future plans keep their numbers" },
+    { "finding": "F4", "disposition": "reopen", "target": "M2.10", "note": "row acceptance widened: id/key mismatch, one document record, unknown type/kind and rich-text warnings, each in an invalid fixture" },
+    { "finding": "F5", "disposition": "reopen", "target": "M2.23", "note": "row widened: 02 §1.4 and §2 document row; docs-consistency compares per-record key fields" }
+  ],
+  "planDelta": "24 -> 26 rows (M2.25 gate hardening + ADR renumbering, M2.26 no parse-time defaults); M2.10 and M2.23 acceptance widened"
+}

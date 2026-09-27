@@ -70,7 +70,7 @@ export type Align = (typeof Align)[keyof typeof Align];
 ```
 
 7. **Schema is the source of truth**: a record type is either `z.infer` of its Zod schema or a
-   documented type proven equal to it at compile time with `checkedSchema` (ADR-0014:
+   documented type proven equal to it at compile time with `checkedSchema` (ADR-0140:
    `isolatedDeclarations` cannot export `z.infer` of an unannotated schema); never an unchecked
    duplicate. → TS (`checkedSchema`) + `check-api`
 8. **Branded IDs** (`ShapeId`, `ScreenId`) — never pass a bare `string` where an ID is meant. → TS

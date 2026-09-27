@@ -431,3 +431,9 @@ geometry drafted by a worktree subagent (uncommitted), integrated row by row; th
 tests: FR-SHP-001 transform ∘ inverse = identity ε 1e-9 (property), rotated bounds contain 4 corners (property), 90° corner mapping, flips, singular → error; 100 % lines/branches
 package comment as tsdown dts banner (same fix as schema); the worktree under .claude/worktrees is excluded locally (.git/info/exclude) — biome/knip scanned it
 review r1 F1/F2: arbitraries were fc.double (mostly tiny values; a wrong invert and TL/BR-only bounds passed) → 1e-3-grid coords, well-conditioned composed matrices, integer sizes, quarter-degree angles, exact inverse example, four-edge tightness; both mutants now fail on seeds 1-3; F3: singular threshold relative to entry scale
+
+## 2026-09-27 M2.25 (claude)
+checkpoint cp1 (fresh milestone-reviewer, 1a9aa22..4c8a58a): F1, F2 major; F3-F5 minor; recorded .harness/reviews/milestone-M2-cp1.json; F1/F3 → M2.25, F2 → M2.26 (ADR-0142, no parse-time defaults), F4 → M2.10 acceptance, F5 → M2.23
+m2-complete: vitestNamed escapes the title for -t (literal), legs match the plan's exact titles (NFR-REL-002 fuzz, FR-DOC-003 migration, fixtures), NFR-REL-005 needs a passing case in schema and in geometry, one leg runs the M2.9-M2.17 acceptance properties by title; v1.0 fixture path under src/ (package rootDir); gate 2/18 green (was 3/16: the bare-ID NFR-REL-005 leg no longer passes on ids.test)
+ADR numbering: plans reserve 0014+ per milestone and unplanned decisions use 0137+, so M2.6's ADR-0014 → ADR-0140 (dated amendment), M2.17's dependency ADR → ADR-0141
+review r1 F1: the fuzz leg requires parse-robust.test.ts to assert its run count against fc.readConfigureGlobal().numRuns with no local numRuns (M2.14 row widened); F2: the v1.0 leg needs three titled cases (older fixture migrates, v1.0 validates, idempotent; M2.12 row quotes them); F3: M2.16 row quotes the gate titles

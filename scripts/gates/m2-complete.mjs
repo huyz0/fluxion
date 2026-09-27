@@ -20,7 +20,9 @@ function vitestNamed(pattern, paths, { env = {}, min = 1 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'm2-gate-'));
   try {
     const out = join(dir, 'report.json');
-    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', '--reporter=json', `--outputFile=${out}`, '-t', pattern, ...paths], {
+    // -t takes a regular expression; the pattern is a literal test title (M2 cp1 F1)
+    const literal = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', '--reporter=json', `--outputFile=${out}`, '-t', literal, ...paths], {
       env: { ...process.env, ...env },
     });
     if (!existsSync(out)) return `vitest wrote no report: ${ok(r)}`;
@@ -96,9 +98,19 @@ leg('schema and geometry coverage at or above the pure-package floors', () => {
   }
 });
 
-leg('NFR-REL-002 fuzz: parse never throws on corrupted input at 10 000 runs', () =>
-  vitestNamed('NFR-REL-002', ['packages/schema'], { env: { FC_RUNS: '10000' } }),
-);
+// Test-backed legs match the plan's exact test titles, not a bare requirement ID: another test
+// naming the same ID cannot satisfy them (M2 cp1 F1).
+const FUZZ_TITLE = 'NFR-REL-002: parse never throws on corrupted input';
+leg('NFR-REL-002 fuzz: parse never throws on corrupted input at 10 000 runs', () => {
+  // the fuzz test must count its runs and assert the count equals the global numRuns, so a local
+  // `numRuns` override cannot make FC_RUNS=10000 a no-op (M2.25 review F1)
+  const file = 'packages/schema/src/parse-robust.test.ts';
+  if (!exists(file)) return `missing ${file}`;
+  const src = readText(file);
+  if (!src.includes(FUZZ_TITLE) || !/readConfigureGlobal\(\)\.numRuns/.test(src) || /numRuns\s*:/.test(src))
+    return `${file} must hold "${FUZZ_TITLE}", assert its run count against fc.readConfigureGlobal().numRuns and set no local numRuns`;
+  return vitestNamed(FUZZ_TITLE, ['packages/schema'], { env: { FC_RUNS: '10000' } });
+});
 
 leg('fixtures: gen.mjs --check exits 0 and every fixtures/docs file behaves as named', () => {
   if (!exists('scripts/fixtures/gen.mjs')) return 'missing scripts/fixtures/gen.mjs';
@@ -107,12 +119,47 @@ leg('fixtures: gen.mjs --check exits 0 and every fixtures/docs file behaves as n
   return vitestNamed('fixtures/docs behave as named', ['packages/schema']);
 });
 
+const MIGRATION_TITLES = [
+  'FR-DOC-003: WHEN a fixture at an older version loads THE SYSTEM SHALL migrate it and it validates',
+  'FR-DOC-003: the v1.0 fixture validates with 0 errors',
+  'FR-DOC-003: migrating twice equals migrating once',
+];
 leg('v1.0 fixture migrates and validates', () => {
-  if (!exists('packages/schema/__fixtures__/v1.0')) return 'missing packages/schema/__fixtures__/v1.0';
-  return vitestNamed('FR-DOC-003', ['packages/schema'], { min: 2 });
+  // under src/: the package tsconfig (rootDir src) must reach the fixture JSON the tests import
+  if (!exists('packages/schema/src/__fixtures__/v1.0')) return 'missing packages/schema/src/__fixtures__/v1.0';
+  // every M2.12 acceptance case by title, the released fixture itself included (M2.25 review F2)
+  for (const title of MIGRATION_TITLES) {
+    const r = vitestNamed(title, ['packages/schema']);
+    if (r !== true) return r;
+  }
+  return true;
 });
 
-leg('NFR-REL-005 determinism suite passes', () => vitestNamed('NFR-REL-005', ['packages/schema', 'packages/geometry']));
+leg('NFR-REL-005 determinism suite passes in schema and in geometry', () => {
+  for (const pkg of PURE) {
+    const r = vitestNamed('NFR-REL-005: repeated runs are identical', [`packages/${pkg}`]);
+    if (r !== true) return `${pkg}: ${r}`;
+  }
+  return true;
+});
+
+// the acceptance properties of M2.9-M2.17, by the titles their rows quote
+const ACCEPTANCE = [
+  ['M2.9', 'FR-DOC-005: WHEN a doc with an unknown kind and unknown fields is parsed and serialized THE SYSTEM SHALL emit byte-equal canonical JSON', 'schema'],
+  ['M2.10', 'FR-DOC-004: invalid fixtures match their expected diagnostics', 'schema'],
+  ['M2.11', 'FR-DOC-001: parse(serialize(doc)) deep-equals doc', 'schema'],
+  ['M2.13', 'FR-DOC-001: every generated doc validates with 0 errors', 'schema'],
+  ['M2.15', 'FR-SHP-001: transform ∘ inverse = identity', 'geometry'],
+  ['M2.15', 'FR-SHP-001: rotated bounds contain all 4 corners', 'geometry'],
+  ['M2.16', 'FR-CON-001: path bbox contains all sampled points', 'geometry'],
+  ['M2.16', 'FR-CON-001: intersection is symmetric', 'geometry'],
+  ['M2.16', 'FR-CON-001: nearestPoint is on the path and no sampled point is closer', 'geometry'],
+  ['M2.17', 'NFR-REL-005: both spatial index adapters return identical sorted hits', 'geometry'],
+];
+leg('acceptance properties of M2.9-M2.17 pass under their planned titles', () => {
+  const bad = ACCEPTANCE.map(([row, title, pkg]) => [row, vitestNamed(title, [`packages/${pkg}`])]).filter(([, r]) => r !== true);
+  return bad.length === 0 || bad.map(([row, r]) => `${row} ${r}`).join('; ');
+});
 
 leg('API reports for schema and geometry exist and check-api passes', () => {
   const missing = PURE.map((p) => `packages/${p}/api/${p}.api.md`).filter((f) => !exists(f));

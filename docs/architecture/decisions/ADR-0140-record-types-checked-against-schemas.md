@@ -4,7 +4,7 @@ date: 2026-09-27
 decision-makers: harness (M2.6; deviation from coding-typescript rule 7, within NFR-MNT-002 and NFR-MNT-007)
 ---
 
-# ADR-0014 — Record types are written once as TSDoc'd types and checked against their Zod schemas
+# ADR-0140 — Record types are written once as TSDoc'd types and checked against their Zod schemas
 
 ## Context and Problem Statement
 
@@ -93,3 +93,8 @@ coding-typescript rule 7 now allows either `z.infer` or a documented type proven
 - Good: one spelling, documented output possible from `.describe()`.
 - Bad: a generator, a `--check` gate and a stale-output failure mode, for the same benefit the
   compile-time check gives.
+
+## Amendments
+
+- 2026-09-27 (M2.25): renumbered from ADR-0014, which M3.md reserves for command semantics;
+  decisions not planned in a milestone take numbers from 0137 up (M2 cp1 F3).
