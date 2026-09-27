@@ -57,7 +57,7 @@ for (const line of git(['diff', ...range, '--name-status', '-M', '--no-color'])
   // no trailer excuses this one: a released fixture is fixed by a migration, never edited
   if (code === 'M' && isVersionedFixture(a)) immutable.push(`edits released fixture ${a} (released fixtures are immutable: add a migration)`);
   // a rename into, out of or within a released folder, or a new file in one, changes it too (M2.18 review r2)
-  if (code.startsWith('R') && (isVersionedFixture(a) || isVersionedFixture(b))) immutable.push(`renames released fixture ${a} to ${b}`);
+  if (code.startsWith('R') && (isVersionedFixture(a) || releasedFolder(b))) immutable.push(`renames released fixture ${a} to ${b}`);
   if (code === 'A' && isVersionedFixture(a) && releasedFolder(a)) immutable.push(`adds ${a} to the released fixture folder ${releasedFolder(a)}`);
   if (code.startsWith('R') && isTest(a) && !isTest(b)) problems.push(`renames test file ${a} to non-test ${b}`);
   const [oldPath, newPath] = code.startsWith('R') ? [a, b] : [a, a];

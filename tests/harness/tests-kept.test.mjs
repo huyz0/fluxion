@@ -71,6 +71,14 @@ describe('check-tests-kept (NFR-DX-004)', () => {
     assert.equal(added.status, 1, out(added));
     assert.match(added.stderr, /adds packages\/format\/fixtures\/v1\.0\/extra\.flux\.json to the released fixture folder/);
     assert.doesNotMatch(added.stderr, /v1\.1/, 'a new version folder is not released yet');
+    kept.sb.git('reset', '-q', '--hard');
+    kept.sb.git('clean', '-fdq');
+    kept.sb.write('packages/format/fixtures/draft/next.flux.json', '{"next":true}\n');
+    kept.sb.git('add', '-A');
+    kept.sb.git('commit', '-q', '-m', 'draft fixture', '--no-verify');
+    kept.sb.git('mv', 'packages/format/fixtures/draft/next.flux.json', 'packages/format/fixtures/v2.0/next.flux.json');
+    const promoted = kept.check();
+    assert.equal(promoted.status, 0, `moving a fixture into a new version folder is fine (M2.19 review): ${out(promoted)}`);
   });
 
   it('an empty Removes-test trailer does not count', () => {

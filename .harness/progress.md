@@ -512,3 +512,10 @@ determinism.test (schema): "NFR-REL-005: repeated runs are identical" — per ar
 determinism.test (geometry): same title — per random paths, point and matrix: bounds, sampler length and samples, nearestPoint, intersectPaths, pointInPath (both rules), invert, element matrix/bounds/corners, dynamic and static index queries, twice, exact JSON
 no Math.random/Date in pure packages: already enforced by the biome override (no-math-random.grit, no-wall-clock.grit, noRestrictedGlobals) on packages/{schema,geometry,...}/src
 carried M2.18 r2 minor: check-tests-kept fails, whatever the trailer, a rename into/out of/within a released versioned fixture folder and a new file in an existing one (a new version folder is fine); harness asserts all three
+
+## 2026-09-27 M2.20 (claude)
+check-ci-evidence --milestone M<n>: the recorded sha must be at or after M<n>'s final review range end, or before that review exists HEAD's last commit touching a non-bookkeeping path (BOOKKEEPING_PATHS from milestone-checks.mjs); without --milestone the M1 --after rule is unchanged
+ci-runs.mjs: runs read through gh when installed, else the GitHub REST API mapped to the gh run view shape (Bearer GITHUB_TOKEN only when set, never logged); fetch/spawn injected, tests use fakes (no network)
+harness cases: a sha before the final review range end fails even with green runs; at/after passes; no final review → last non-bookkeeping commit; REST mapping, 404, auth header only with a token, gh preferred when present
+live check (no gh here): REST reached the M1 evidence through the agent proxy (NODE_USE_ENV_PROXY=1, NODE_EXTRA_CA_CERTS)
+carried M2.19 minor: a rename into a new (unreleased) version folder is allowed; the rule applies only when the destination folder already exists

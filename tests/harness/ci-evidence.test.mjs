@@ -34,6 +34,21 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
       sb.git('commit', '-q', '--allow-empty', '--no-verify', '-m', subject);
       sha[key] = sb.git('rev-parse', 'HEAD').stdout.trim();
     }
+    // M9: two code commits, then a bookkeeping-only one (the paths final-review range checks allow)
+    for (const [key, path, subject] of [
+      ['code', 'packages/a.ts', 'M9.1: feat(core): a'],
+      ['end', 'packages/b.ts', 'M9.2: feat(core): b'],
+      ['book', '.harness/progress.md', 'M9.3: chore(harness): progress'],
+    ]) {
+      sb.write(path, `${key}\n`);
+      sb.git('add', path);
+      sb.git('commit', '-q', '--no-verify', '-m', subject);
+      sha[key] = sb.git('rev-parse', 'HEAD').stdout.trim();
+    }
+    sb.write(
+      '.harness/reviews/milestone-M9-final.json',
+      JSON.stringify({ milestone: 'M9', checkpoint: 'final', range: `${sha.m121.slice(0, 7)}..${sha.end.slice(0, 7)}` }),
+    );
   });
   after(() => sb.cleanup());
 
@@ -82,5 +97,87 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     // the listing fixture has no jobs, so the follow-up check fails; the record itself is what matters
     assert.match(none.stdout, /recorded \w{7} \{"gates":1,"ci":2\}/, out(none));
     assert.equal(JSON.parse(sb.read('rec.json')).sha, sha.new);
+  });
+
+  it('--milestone fails a recorded sha before the final review range end, even with green runs', () => {
+    const r = check(record(sha.code), green(sha.code), ['--milestone', 'M9']);
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /is not at or after the final review range end of M9/);
+  });
+
+  it('--milestone passes a sha at or after the final review range end', () => {
+    for (const s of [sha.end, sha.book]) {
+      const r = check(record(s), green(s), ['--milestone', 'M9']);
+      assert.equal(r.status, 0, out(r));
+    }
+  });
+
+  it('--milestone without a final review uses HEAD last non-bookkeeping commit', () => {
+    // M8 has no review: the floor is sha.end (sha.book only touches .harness/)
+    const early = check(record(sha.code), green(sha.code), ['--milestone', 'M8']);
+    assert.equal(early.status, 1, out(early));
+    assert.match(early.stderr, /is not at or after HEAD's last non-bookkeeping commit \(no M8 final review yet\) \(\w{7}\)/);
+    assert.match(early.stderr, new RegExp(sha.end.slice(0, 7)));
+    for (const s of [sha.end, sha.book]) assert.equal(check(record(s), green(s), ['--milestone', 'M8']).status, 0, s);
+  });
+});
+
+describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
+  const ghRun = { id: 11, name: 'gates', head_sha: 'a'.repeat(40), conclusion: 'success', status: 'completed', event: 'push' };
+  const ghJobs = OSES.map((os, i) => ({ id: 100 + i, name: `gates (${os})`, conclusion: 'success', steps: [] }));
+  // endpoint suffix -> REST body; anything else answers 404
+  const routes = [
+    [/\/actions\/runs\/11$/, ghRun],
+    [/\/actions\/runs\/11\/jobs\?/, { total_count: 3, jobs: ghJobs }],
+    [/\/actions\/runs\?head_sha=/, { workflow_runs: [ghRun, { ...ghRun, id: 12, name: 'ci', conclusion: 'failure' }] }],
+  ];
+  /** Fake fetch answering those endpoints; records each request. No network. */
+  const fakeFetch = (calls) => async (url, init) => {
+    calls.push({ url, headers: init.headers });
+    const body = routes.find(([re]) => re.test(url))?.[1];
+    return { ok: Boolean(body), status: body ? 200 : 404, json: async () => body };
+  };
+
+  it('maps REST runs and jobs to the gh run view shape the evidence check reads', async () => {
+    const { restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const calls = [];
+    const rest = restSource({ fetch: fakeFetch(calls) });
+    assert.deepEqual(await rest.view(11), run(11, 'gates', 'a'.repeat(40), 'gates'));
+    assert.deepEqual(await rest.list('a'.repeat(40)), [
+      { databaseId: 11, workflowName: 'gates', conclusion: 'success' },
+      { databaseId: 12, workflowName: 'ci', conclusion: 'failure' },
+    ]);
+    assert.ok(calls.every((c) => c.url.startsWith('https://api.github.com/repos/huyz0/fluxion/actions/runs')));
+    assert.ok(
+      calls.every((c) => !('Authorization' in c.headers)),
+      'no token, no Authorization header',
+    );
+    await assert.rejects(rest.view(99), /answered 404/);
+  });
+
+  it('REST is used when gh is absent, with the Bearer token only when GITHUB_TOKEN is set', async () => {
+    const { hasGh, runSource } = await import('../../scripts/gates/ci-runs.mjs');
+    assert.equal(
+      hasGh(() => ({ error: Object.assign(new Error('spawn gh ENOENT'), { code: 'ENOENT' }) })),
+      false,
+    );
+    assert.equal(
+      hasGh(() => ({ status: 0, stdout: 'gh version 2' })),
+      true,
+    );
+    const calls = [];
+    await runSource({ gh: false, env: { GITHUB_TOKEN: 'fake-token' }, fetch: fakeFetch(calls) }).view(11);
+    assert.equal(calls[0].headers.Authorization, 'Bearer fake-token');
+    const spawned = [];
+    const viaGh = runSource({
+      gh: true,
+      fetch: () => assert.fail('fetch must not be called when gh is installed'),
+      spawn: (cmd, args) => {
+        spawned.push([cmd, ...args]);
+        return { status: 0, stdout: JSON.stringify(run(11, 'gates', 'a'.repeat(40), 'gates')) };
+      },
+    });
+    assert.equal((await viaGh.view(11)).databaseId, 11);
+    assert.deepEqual(spawned[0].slice(0, 4), ['gh', 'run', 'view', '11']);
   });
 });
