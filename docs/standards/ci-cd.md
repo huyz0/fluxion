@@ -48,7 +48,8 @@ jobs:
     steps: [checkout@<sha>, pnpm/action-setup@<sha>, setup-node@<sha> (cache: pnpm),
             turbo cache restore, pnpm install --frozen-lockfile, pnpm verify]
   cold-setup:        # ubuntu; no cache; check-budget --cold: fresh clone, empty store, pnpm i + run setup
-                     # + verify within COLD_SETUP_MAX_MS (NFR-DX-001)
+                     # + verify within COLD_SETUP_MAX_MS (NFR-DX-001); in CI it, not the committed
+                     # budget.json, answers for a changed lockfile (ADR-0143)
   build:             # turbo run build --affected; uploads dist/ artifact
   e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/4..4/4]
     container: mcr.microsoft.com/playwright:v1.62.0-noble

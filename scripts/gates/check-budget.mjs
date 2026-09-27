@@ -134,8 +134,14 @@ if (!existsSync(file)) {
 const record = JSON.parse(readFileSync(file, 'utf8'));
 const problems = limitProblems(record);
 // a record describes one dependency set: after a lockfile change the cold setup must be re-measured,
-// or a heavier install could pass on an old number forever (M1.19 review F2)
-if (record.lockfile !== lockfileHash()) problems.push('the record predates the current pnpm-lock.yaml: run check-budget.mjs --record');
+// or a heavier install could pass on an old number forever (M1.19 review F2). Inside CI the same
+// run's cold-setup job (check-budget --cold, needed by ci-ok) measures the new lockfile live, so a
+// stale record is noted, not failed (ADR-0143); local runs still require a fresh record.
+const inCi = /^(1|true)$/i.test(process.env.CI ?? '');
+if (record.lockfile !== lockfileHash()) {
+  if (inCi) console.log('budget: the record predates pnpm-lock.yaml; in CI the cold-setup job measures this lockfile (ADR-0143)');
+  else problems.push('the record predates the current pnpm-lock.yaml: run check-budget.mjs --record');
+}
 if (problems.length) {
   for (const p of problems) console.error(`budget: ${p}`);
   process.exit(1);

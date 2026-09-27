@@ -18,9 +18,10 @@ const OK = {
   coldSetupMs: 200_000,
   lockfile: 'none', // the sandbox has no pnpm-lock.yaml
 };
-const budget = (record) => {
+// CI is pinned: on a CI runner an inherited CI=true would change the lockfile rule (ADR-0143)
+const budget = (record, ci = '') => {
   if (record !== undefined) sb.write('budget.json', JSON.stringify(record));
-  return sb.node('scripts/gates/check-budget.mjs', ['--file', sb.path('budget.json')]);
+  return sb.node('scripts/gates/check-budget.mjs', ['--file', sb.path('budget.json')], { env: { ...process.env, CI: ci } });
 };
 
 describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
@@ -61,6 +62,19 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     const r = budget(OK);
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /predates the current pnpm-lock\.yaml/);
+  });
+
+  it('lockfile change in CI: a stale record passes with a note, limits still apply (ADR-0143, NFR-DX-001)', () => {
+    sb.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n");
+    const ci = budget(OK, 'true');
+    assert.equal(ci.status, 0, out(ci));
+    assert.match(ci.stdout, /cold-setup job measures this lockfile \(ADR-0143\)/);
+    const over = budget({ ...OK, stagedMs: t('PRECOMMIT_BUDGET_MS') + 1 }, 'true');
+    assert.equal(over.status, 1, out(over));
+    assert.match(over.stderr, /stagedMs .* ms > /);
+    const local = budget(OK, 'false');
+    assert.equal(local.status, 1, out(local));
+    assert.match(local.stderr, /predates the current pnpm-lock\.yaml/);
   });
 
   it('the committed record is within the thresholds (cold setup < 10 min, NFR-DX-001)', () => {

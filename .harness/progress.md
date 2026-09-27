@@ -543,3 +543,8 @@ m2-complete: every leg PASS except verify (budget step only), CI evidence (nothi
 
 ## 2026-09-27 M2.28 (claude)
 first CI on main (4967ed7): everything green (cold-setup job included) except verify on 3 OSes — ubuntu at the budget step only (M2.27); macOS and Windows also failed the M2.21 "record isolation" case: macOS compared /var/... with /private/var/... (the fake pnpm now records resolved store/browser paths, raw --store-dir kept for the args check); Windows cloned with the runner's core.autocrlf, so the clone's lockfile hash (CRLF) differed from the working tree's (the cold clone now passes --config core.autocrlf=false)
+
+## 2026-09-28 M2.27 (claude)
+budget re-recorded on the owner's Windows machine (cdn.playwright.dev reachable): quick 18 389 ms, staged 86 637 ms, cold setup 130 130 ms at 8e0195d, current lockfile; state.json blockedReason cleared
+ADR-0143 (human decision 2026-09-28): inside CI (CI=true|1) the budget step notes, not fails, a record older than pnpm-lock.yaml, because the same run's cold-setup job measures that lockfile; limits and the missing-record rule still apply; locally a stale record still fails
+budget.test: "lockfile change in CI" (CI=true passes with the note, a staged-time breach still fails, CI=false fails); the budget helper pins CI so an inherited CI=true on runners cannot turn the "predates" case vacuous; ci-cd.md cold-setup comment cites ADR-0143
