@@ -383,3 +383,7 @@ verify leg: every planned step PASS; `workflows` may SKIP only as "Docker not av
 review r1 F1: coverage leg judged the vitest exit (other packages' floors fail it) → tests from the json report, floors from the summary; F2: ci-evidence leg (--milestone M2, M2.20); F3 covered by F2 (the gates run lints workflows on ubuntu)
 M1 backlog archived; 24 M2 rows (ADR-0012/0013 first); trace.test "backlog row cites an unknown ID" wrote into M1 rows of the live backlog, now appends its own rows
 env: Playwright 1.63 wants chromium-1243; cdn.playwright.dev is denied here, so /opt/pw-browsers/chromium{,_headless_shell}-1243 alias the preinstalled 1194 build (machine-local, not in the repo)
+
+## 2026-09-27 M2.2 (claude)
+ADR-0012 accepted: 16-char IDs over `A-Za-z0-9_-` (96 bits) from a `Random` port ({ next(): [0,1) }, `seededRandom` mulberry32 for tests); schema accepts readable IDs (1-64 chars of the same alphabet) for fixtures
+own base-62 fractional keys (head char fixes integer length, fraction never ends in 0, first key `a0`); `fractional-indexing` is CC0 = outside LICENSES.allow; no automatic rebalancing (M3 may re-key siblings over 32 chars in one command)
