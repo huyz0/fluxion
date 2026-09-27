@@ -524,3 +524,9 @@ carried M2.19 minor: a rename into a new (unreleased) version folder is allowed;
 cold-setup job in ci.yml (fresh ubuntu runner, no dependency cache): check-budget --cold runs the isolated cold setup (fresh clone + working-tree changes, empty pnpm store and PLAYWRIGHT_BROWSERS_PATH, pnpm i --frozen-lockfile → pnpm run setup → pnpm verify) and fails above COLD_SETUP_MAX_MS (unchanged, 600 000); ci-ok needs it; the threshold check is one function shared with --record
 budget.test "record isolation": a fake pnpm on PATH checks call order, a fresh store and browsers path per run (store empty before install), the clone outside the working tree, the uncommitted lockfile reaching clone and record, a provisional record seen by verify, temp dir removed; a run whose install leaves the store unused fails; --cold passes without writing and fails on a failing verify
 not done here: re-recording .harness/budget.json — the cold run in this container cannot download Chromium (network policy blocks cdn.playwright.dev); the record still predates the lockfile (blockedReason until a human allows the host or records elsewhere)
+
+## 2026-09-27 M2.22 (claude)
+one three-OS verify: gates.yml is one ubuntu job without install (workflow lint + one `node scripts/gates/check-commits.mjs --range "$BASE..$HEAD_SHA"` call); ci.yml's verify matrix is the only three-OS ladder and now also names failing harness tests on failure (M1.39 behaviour kept)
+check-commits.mjs: an empty or all-zero base falls back to the baseline commit (--baseline for tests); harness cases for the fallback, "commit messages checked by script" (single call, only ci.yml runs the ladder on 3 OSes)
+check-ci-evidence: ci's verify must pass on every OS and one gates job (`gates`, or the pre-M2.22 `gates (ubuntu-latest)`); merged with M2.20's --milestone/REST changes
+M2.21 review minor: state.json blockedReason records the budget re-record blocker (cdn.playwright.dev denied here)

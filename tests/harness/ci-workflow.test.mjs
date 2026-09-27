@@ -10,7 +10,9 @@ const wf = readFileSync(join(REPO, '.github/workflows/gates.yml'), 'utf8');
 
 describe('gates workflow (NFR-PORT-005)', () => {
   it('runs on ubuntu, windows and macos', () => {
-    assert.match(wf, /os: \[ubuntu-latest, windows-latest, macos-latest\]/);
+    // since M2.22 the ladder's three-OS run is ci.yml's verify matrix; gates.yml adds the ubuntu-only gates
+    assert.match(/^ {2}verify:[\s\S]*?(?=^ {2}\S)/m.exec(ci)?.[0] ?? '', /os: \[ubuntu-latest, windows-latest, macos-latest\]/);
+    assert.match(wf, /^ {4}runs-on: ubuntu-latest$/m);
   });
 
   it('pins every action to a full commit SHA (NFR-SEC-005)', () => {
@@ -20,9 +22,31 @@ describe('gates workflow (NFR-PORT-005)', () => {
   });
 
   it('runs the same gate scripts as the local hooks', () => {
-    assert.match(wf, /node scripts\/gates\/precommit\.mjs --all/);
-    assert.match(wf, /node --test "tests\/harness\/\*\.test\.mjs"/);
+    // `pnpm verify` is the ladder itself (precommit.mjs --all), run by ci.yml since M2.22
+    assert.equal(JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts.verify, 'node scripts/gates/precommit.mjs --all');
+    assert.match(ci, /- run: pnpm verify\n/);
+    assert.match(ci, /node --test "tests\/harness\/\*\.test\.mjs"/);
+    assert.match(wf, /node scripts\/gates\/check-workflows\.mjs --require-docker/);
     assert.match(wf, /node scripts\/gates\/check-commits\.mjs --range/);
+  });
+
+  it('commit messages checked by script: the per-commit step is one check-commits.mjs call and only ci.yml verifies on three OSes (M1 final F5)', () => {
+    const step = /- name: per-commit message gates\n[\s\S]*?(?=\n {6}- |(?![\s\S]))/.exec(wf)?.[0] ?? '';
+    assert.ok(step, 'gates.yml has a per-commit message gates step');
+    const runs = [...step.matchAll(/^ {8}run: (.*)$/gm)].map((m) => m[1]);
+    assert.deepEqual(runs, ['node scripts/gates/check-commits.mjs --range "$BASE..$HEAD_SHA"'], 'one single-line call, no inline shell');
+    assert.doesNotMatch(step, /shell:|0000000000|e4273a6/, 'the base fallback lives in check-commits.mjs');
+    // the full ladder runs once per OS: exactly one workflow has a three-OS matrix running it
+    const threeOs = WORKFLOWS.filter((name) => {
+      const text = workflow(name);
+      return /precommit\.mjs --all|pnpm verify\b/.test(text) && /windows-latest/.test(text) && /macos-latest/.test(text);
+    });
+    assert.deepEqual(threeOs, ['ci.yml']);
+    const code = wf
+      .split('\n')
+      .filter((l) => !l.trim().startsWith('#'))
+      .join('\n');
+    assert.doesNotMatch(code, /windows-latest|macos-latest|matrix|pnpm install|precommit\.mjs|pnpm verify/, 'gates.yml is ubuntu-only and runs no ladder');
   });
 
   it('never cancels or replaces push runs (each push range must be checked)', () => {
@@ -56,6 +80,35 @@ describe('check-commits (NFR-DX-004)', () => {
       sb.git('commit', '-q', '--amend', '--no-verify', '-m', 'M0.12: test: drop x', '-m', 'Removes-test: obsolete fixture');
       const good = sb.node('scripts/gates/check-commits.mjs', ['--range', `${base}..HEAD`]);
       assert.equal(good.status, 0, out(good));
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('an empty or all-zero base (first push of a branch) falls back to the baseline (M1 final F5)', () => {
+    const sb = sandbox(['scripts', 'docs/backlog'], { git: true });
+    try {
+      const baseline = sb.git('rev-parse', 'HEAD').stdout.trim();
+      for (const n of [1, 2]) {
+        sb.write(`f${n}.txt`, `${n}\n`);
+        sb.git('add', '-A');
+        sb.git('commit', '-q', '--no-verify', '-m', `M0.12: chore: step ${n}`);
+      }
+      const head = sb.git('rev-parse', 'HEAD').stdout.trim();
+      for (const base of ['', '0'.repeat(40)]) {
+        const r = sb.node('scripts/gates/check-commits.mjs', ['--range', `${base}..${head}`, '--baseline', baseline]);
+        assert.equal(r.status, 0, out(r));
+        assert.match(r.stdout, new RegExp(`checking from the baseline ${baseline}`));
+        assert.match(r.stdout, new RegExp(`2/2 commits pass \\(${baseline}\\.\\.${head}\\)`));
+      }
+      // a real base is used as given
+      const given = sb.node('scripts/gates/check-commits.mjs', ['--range', `${head}~1..${head}`, '--baseline', baseline]);
+      assert.match(given.stdout, /1\/1 commits pass/, out(given));
+      assert.doesNotMatch(given.stdout, /baseline/);
+      // the default baseline is the pre-harness commit, absent here: a bad range, not a silent pass
+      const dflt = sb.node('scripts/gates/check-commits.mjs', ['--range', `..${head}`]);
+      assert.equal(dflt.status, 2, out(dflt));
+      assert.match(dflt.stderr, /bad range e4273a6\.\./);
     } finally {
       sb.cleanup();
     }
@@ -155,8 +208,9 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
 
   it('CI names failing harness tests and ships every built workspace to later jobs (M1.39, NFR-PORT-005)', () => {
     assert.match(readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8'), /'--test-reporter=spec', '--test', 'tests\/harness\/\*\.test\.mjs'/);
-    // after a ladder failure only: a green ladder already ran the suite (M1.42: windows timeout)
-    assert.match(wf, /- name: harness tests\n\s+if: failure\(\)\n/);
+    // after a ladder failure only: a green ladder already ran the suite (M1.42: windows timeout);
+    // in ci.yml's verify job since M2.22
+    assert.match(ci, /- run: pnpm verify\n(?:\s+#.*\n)*\s+- name: harness tests\n\s+if: failure\(\)\n/);
     const dist = /name: dist\n\s+path: \|\n((?:\s+\S+\/\*\/dist\n)+)/.exec(ci)?.[1] ?? '';
     const workspaces = /^packages:\n((?:\s+- \S+\n)+)/m.exec(readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8'))[1];
     for (const [, glob] of workspaces.matchAll(/- (\S+)/g)) assert.ok(dist.includes(`${glob}/dist`), `build artifact misses ${glob}/dist`);

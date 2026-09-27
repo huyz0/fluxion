@@ -1,9 +1,9 @@
 {
   "milestone": "M2",
-  "currentTask": "M2.21",
+  "currentTask": "M2.22",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": null,
+  "blockedReason": "budget.json predates pnpm-lock.yaml: check-budget --record cannot measure the cold setup in this container (network policy blocks cdn.playwright.dev); a human must allow the host or re-record on another machine. Rows not needing it continue.",
   "updated": "2026-09-27"
 }

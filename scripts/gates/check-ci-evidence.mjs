@@ -4,8 +4,9 @@
 //   check-ci-evidence.mjs --record <sha>   write .harness/reviews/ci-evidence.json from the successful
 //                                          gates and ci runs of <sha>
 //   check-ci-evidence.mjs                  verify the record against GitHub: each run succeeded, ran
-//                                          <sha>, and every OS job passed; <sha> is at or after the
-//                                          commit of --after (default M1.21)
+//                                          <sha>, ci's verify passed on every OS and the ubuntu gates
+//                                          job passed; <sha> is at or after the commit of --after
+//                                          (default M1.21)
 //   --milestone M<n>  instead of --after: <sha> must be at or after M<n>'s final review range end, or,
 //                     before that review exists, HEAD's last non-bookkeeping commit, so the evidence
 //                     cannot go stale behind later code (M2.20, M1 final F3)
@@ -27,8 +28,12 @@ const file = opt('file') ?? repoPath('.harness', 'reviews', 'ci-evidence.json');
 const after = opt('after') ?? 'M1.21';
 const milestone = opt('milestone');
 const OSES = ['ubuntu-latest', 'windows-latest', 'macos-latest'];
-// workflow -> the matrix job that must pass on every OS
-const REQUIRED = { gates: 'gates', ci: 'verify' };
+// workflow -> the jobs that must pass, each as its accepted names. ci's verify matrix is the one
+// three-OS ladder; gates is ubuntu-only since M2.22 (`gates`), earlier runs named it `gates (ubuntu-latest)`.
+const REQUIRED = {
+  gates: [['gates', 'gates (ubuntu-latest)']],
+  ci: OSES.map((os) => [`verify (${os})`]),
+};
 
 const fail = (msg) => {
   console.error(`ci-evidence: ${msg}`);
@@ -47,9 +52,9 @@ function problems(run, workflow, sha) {
   if (run.workflowName !== workflow) out.push(`run ${run.databaseId} is workflow ${run.workflowName}, not ${workflow}`);
   if (run.headSha !== sha) out.push(`run ${run.databaseId} ran ${String(run.headSha).slice(0, 7)}, not ${sha.slice(0, 7)}`);
   if (run.conclusion !== 'success') out.push(`${workflow} run ${run.databaseId} concluded ${run.conclusion}`);
-  for (const os of OSES) {
-    const job = (run.jobs ?? []).find((j) => j.name === `${REQUIRED[workflow]} (${os})`);
-    if (job?.conclusion !== 'success') out.push(`${workflow}: job ${REQUIRED[workflow]} (${os}) ${job ? job.conclusion : 'missing'}`);
+  for (const names of REQUIRED[workflow]) {
+    const job = (run.jobs ?? []).find((j) => names.includes(j.name));
+    if (job?.conclusion !== 'success') out.push(`${workflow}: job ${job?.name ?? names[0]} ${job ? job.conclusion : 'missing'}`);
   }
   return out;
 }

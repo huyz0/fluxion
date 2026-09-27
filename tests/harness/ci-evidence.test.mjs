@@ -62,6 +62,15 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.equal(check(record(sha.m121), green(sha.m121)).status, 0, 'M1.21 itself counts');
   });
 
+  it('accepts the ubuntu-only gates job and still needs verify green on every OS (M2.22)', () => {
+    const gates = { ...run(1, 'gates', sha.new, 'gates'), jobs: [{ name: 'gates', conclusion: 'success' }] };
+    const r = check(record(sha.new), [gates, run(2, 'ci', sha.new, 'verify')]);
+    assert.equal(r.status, 0, out(r));
+    const noWindows = check(record(sha.new), [gates, withJob(run(2, 'ci', sha.new, 'verify'), 'windows-latest', 'cancelled')]);
+    assert.equal(noWindows.status, 1, out(noWindows));
+    assert.match(noWindows.stderr, /ci: job verify \(windows-latest\) cancelled/);
+  });
+
   it('fails a commit before M1.21, even with green runs', () => {
     const r = check(record(sha.old), green(sha.old));
     assert.equal(r.status, 1, out(r));
@@ -70,7 +79,10 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
 
   it('fails a red or missing OS job, a failed run, or a run of another commit', () => {
     const cases = [
-      [[withJob(run(1, 'gates', sha.new, 'gates'), 'macos-latest', 'failure'), run(2, 'ci', sha.new, 'verify')], /gates: job gates \(macos-latest\) failure/],
+      // gates is ubuntu-only since M2.22; ci's verify is the three-OS job
+      [[withJob(run(1, 'gates', sha.new, 'gates'), 'ubuntu-latest', 'failure'), run(2, 'ci', sha.new, 'verify')], /gates: job gates \(ubuntu-latest\) failure/],
+      [[run(1, 'gates', sha.new, 'gates'), withJob(run(2, 'ci', sha.new, 'verify'), 'macos-latest', 'failure')], /ci: job verify \(macos-latest\) failure/],
+      [[{ ...run(1, 'gates', sha.new, 'gates'), jobs: [] }, run(2, 'ci', sha.new, 'verify')], /gates: job gates missing/],
       [[run(1, 'gates', sha.new, 'gates'), { ...run(2, 'ci', sha.new, 'verify'), jobs: [] }], /ci: job verify \(ubuntu-latest\) missing/],
       [[run(1, 'gates', sha.new, 'gates'), { ...run(2, 'ci', sha.new, 'verify'), conclusion: 'failure' }], /ci run 2 concluded failure/],
       [[run(1, 'gates', sha.m121, 'gates'), run(2, 'ci', sha.new, 'verify')], /run 1 ran \w{7}, not/],

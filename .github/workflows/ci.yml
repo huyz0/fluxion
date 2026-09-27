@@ -43,7 +43,13 @@ jobs:
         run: |
           git config --global user.name "ci"
           git config --global user.email "ci@example.invalid"
+      # the only three-OS run of the full ladder (M2.22); gates.yml keeps the ubuntu-only harness gates
       - run: pnpm verify
+      # only after a ladder failure, to name every failing test in full (the ladder shows a tail, M1.39);
+      # a green ladder already ran the suite, and a second run pushed windows past its timeout (M1.42)
+      - name: harness tests
+        if: failure()
+        run: node --test "tests/harness/*.test.mjs"
 
   # NFR-DX-001: a fresh clone set up from nothing (pnpm i --frozen-lockfile, pnpm run setup, pnpm verify
   # into an empty pnpm store and browser cache) within COLD_SETUP_MAX_MS; check-budget --cold measures

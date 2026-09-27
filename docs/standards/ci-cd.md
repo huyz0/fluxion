@@ -31,7 +31,7 @@ that exists only in YAML is a bug.
 | 7 | No retries for unit/component tests. Playwright may retry once **only to detect** flakes: a test that passed on retry fails the `flake-report` step (see [testing.md](testing.md) §8). | `playwright.config.ts` + `scripts/ci/flake-report.mjs` |
 | 8 | Caches are keyed on lockfile hash and tool version; a cache miss must only cost time, never change results. | review |
 | 9 | Secrets never reach PR jobs from forks. `pull_request_target` is banned. | `zizmor` |
-| 10 | Node version comes from `.node-version` (22 LTS); OS matrix for gates is ubuntu/windows/macos (NFR-PORT-005). | `ci.yml` |
+| 10 | Node version comes from `.node-version` (22 LTS); the ladder (`pnpm verify`) runs once per OS on ubuntu/windows/macos in `ci.yml`'s verify matrix, and `gates.yml` only adds the ubuntu-only harness gates (workflow lint, `check-commits.mjs`) (NFR-PORT-005). | `ci.yml`, `ci-workflow.test.mjs` |
 | 11 | CI never pushes commits, tags, or publishes except `release.yml` on an explicit human-merged Version PR. | review |
 
 ## 3. Workflows (sketch)
