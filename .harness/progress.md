@@ -411,3 +411,10 @@ primitives (recordIdSchema, indexKeySchema, meta, Extensible), paint (TokenRef, 
 tests: FR-SCR-001 default size, backgrounds, rejects; FR-DOC-005 unknown keys kept at record and nested level; harness schema-open-objects bans z.object/strictObject/strict/strip/catchall(never) in schema sources
 review r1 F1: checkedSchema compared mutual assignability, and Extensible's index signature absorbed one-sided optional fields → identity check on a normalized form (index signature → `__open` key, undefined and readonly dropped) + @ts-expect-error cases; r2 F1: scan reads whole files (split chains), checkedSchema rejects z.object for Extensible types; r2 F2: colour functions need 3-4 numeric channels; r2 F3: infinite screen needs a viewport; F2: screen.notes is now in the M2.7 row; F3: named colours = CSS list
 package comment: tsdown dts banner (external imports and re-exported regions precede index.ts's own text in the bundled d.ts); version.ts from M2.5 removed
+
+## 2026-09-27 M2.7 (claude)
+style.ts: StyleNumber (number | TokenRef), Stroke, Shadow, Effect (glow/blur), FontStyle, Style, Transform (rot default 0, flips); rich-text.ts: generic ProseMirror JSON type + checkRichText walker (ADR-0013 rules; unknown node/mark = warning, structure = error, unsafe link = error), richTextSchema fails on errors only; screen.notes (M2.6 F2)
+tests: FR-DOC-004 `{color` yields one issue at fill; unknown mark one warning at its pointer; unknown node kept and satisfies listItem-first (M2.3 r2 F1/F2, ADR-0013 amendment); NFR-SEC-001 javascript:/data:/vbscript:/`//` links fail; 22 structural error paths in one pass
+M2.6 r3 F1: colorValue/paint unions wrapped in checkedSchema; it caught screen.notes present in the type only
+ids 1e6 test: 60 s timeout (0.6 s idle, > 5 s under coverage + a parallel agent's load made M2.6's commit fail twice)
+review r1 F1: rich-text walker recursed without a limit (20k nested lists = RangeError) → MAX_RICH_TEXT_DEPTH 64, error at the limit; F2: color/highlight marks take hex or token only (ADR-0013); F3: StyleValue<T> exported (StyleNumber = StyleValue<number>)

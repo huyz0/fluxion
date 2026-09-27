@@ -85,7 +85,7 @@ const colorTransformSchema = checkedSchema<ColorTransform>()(
 const transformedTokenSchema = checkedSchema<TransformedToken>()(z.looseObject({ token: tokenRefSchema, transform: colorTransformSchema }));
 
 /** A colour field: token references first, so `{…}` is never read as a named colour. */
-export const colorValueSchema: z.ZodType<ColorValue> = z.union([tokenRefSchema, colorSchema, transformedTokenSchema]);
+export const colorValueSchema: z.ZodType<ColorValue> = checkedSchema<ColorValue>()(z.union([tokenRefSchema, colorSchema, transformedTokenSchema]));
 
 /**
  * One colour stop of a gradient.
@@ -147,4 +147,4 @@ const imagePaintSchema = checkedSchema<ImagePaint>()(
 );
 
 /** A paint field. */
-export const paintSchema: z.ZodType<Paint> = z.union([colorValueSchema, gradientSchema, imagePaintSchema]);
+export const paintSchema: z.ZodType<Paint> = checkedSchema<Paint>()(z.union([colorValueSchema, gradientSchema, imagePaintSchema]));

@@ -5,6 +5,9 @@
 ```ts
 
 // @public
+export function checkRichText(value: unknown): RichTextIssue[];
+
+// @public
 export type Color = string;
 
 // @public
@@ -26,6 +29,9 @@ export function createId(random: Random): RecordId;
 export const DEFAULT_SCREEN_SIZE: Size;
 
 // @public
+export type DiagnosticSeverity = "error" | "warning" | "info";
+
+// @public
 export type DocumentRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "document";
@@ -44,6 +50,13 @@ export type DocumentSettings = Extensible<{
     readonly responsive?: "scale" | "reflow";
     readonly reducedMotion?: "respect" | "ignore";
     readonly lineJumps?: boolean;
+}>;
+
+// @public
+export type Effect = Extensible<{
+    readonly type: "glow" | "blur";
+    readonly radius: number;
+    readonly color?: ColorValue;
 }>;
 
 // @public
@@ -70,6 +83,19 @@ export type FluxError = {
 
 // @public
 export type FluxErrorCode = "INDEX_INVALID" | "INDEX_ORDER";
+
+// @public
+export type FontStyle = Extensible<{
+    readonly family?: StyleValue<string>;
+    readonly size?: StyleNumber;
+    readonly weight?: StyleNumber;
+    readonly style?: "normal" | "italic";
+    readonly lineHeight?: StyleNumber;
+    readonly letterSpacing?: StyleNumber;
+    readonly color?: ColorValue;
+    readonly align?: "left" | "center" | "right" | "justify";
+    readonly verticalAlign?: "top" | "middle" | "bottom";
+}>;
 
 // @public
 export type GradientPaint = Extensible<{
@@ -115,6 +141,9 @@ export function isRecordId(value: unknown): value is RecordId;
 export function keyBetween(a: string | null, b: string | null): Result<IndexKey>;
 
 // @public
+export const MAX_RICH_TEXT_DEPTH: number;
+
+// @public
 export type Meta = {
     readonly [key: string]: unknown;
 };
@@ -156,6 +185,38 @@ export type Rect = Extensible<{
 export type Result<T, E = FluxError> = Ok<T> | Err<E>;
 
 // @public
+export type RichTextDoc = RichTextNode & {
+    readonly type: "doc";
+};
+
+// @public
+export type RichTextIssue = {
+    readonly code: "FLX_TEXT_INVALID" | "FLX_TEXT_UNKNOWN_NODE" | "FLX_TEXT_UNKNOWN_MARK" | "FLX_TEXT_UNSAFE_LINK";
+    readonly severity: DiagnosticSeverity;
+    readonly path: readonly (string | number)[];
+    readonly message: string;
+};
+
+// @public
+export type RichTextMark = Extensible<{
+    readonly type: string;
+    readonly attrs?: {
+        readonly [key: string]: unknown;
+    };
+}>;
+
+// @public
+export type RichTextNode = Extensible<{
+    readonly type: string;
+    readonly attrs?: {
+        readonly [key: string]: unknown;
+    };
+    readonly content?: readonly RichTextNode[];
+    readonly marks?: readonly RichTextMark[];
+    readonly text?: string;
+}>;
+
+// @public
 export type ScreenRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "screen";
@@ -170,10 +231,21 @@ export type ScreenRecord = Extensible<{
     readonly parentElementId?: RecordId;
     readonly sectionId?: RecordId;
     readonly hidden?: boolean;
+    readonly notes?: RichTextDoc;
 }>;
 
 // @public
 export function seededRandom(seed: number): Random;
+
+// @public
+export type Shadow = Extensible<{
+    readonly x: number;
+    readonly y: number;
+    readonly blur: number;
+    readonly spread?: number;
+    readonly color: ColorValue;
+    readonly inset?: boolean;
+}>;
 
 // @public
 export type Size = Extensible<{
@@ -182,7 +254,45 @@ export type Size = Extensible<{
 }>;
 
 // @public
+export type Stroke = Extensible<{
+    readonly color?: ColorValue;
+    readonly width?: StyleNumber;
+    readonly dash?: readonly number[];
+    readonly cap?: "butt" | "round" | "square";
+    readonly join?: "miter" | "round" | "bevel";
+}>;
+
+// @public
+export type Style = Extensible<{
+    readonly fill?: Paint;
+    readonly stroke?: Stroke;
+    readonly opacity?: StyleNumber;
+    readonly radius?: StyleNumber;
+    readonly shadow?: readonly Shadow[];
+    readonly effects?: readonly Effect[];
+    readonly font?: FontStyle;
+    readonly variant?: string;
+}>;
+
+// @public
+export type StyleNumber = StyleValue<number>;
+
+// @public
+export type StyleValue<T> = T | TokenRef;
+
+// @public
 export type TokenRef = `{${string}}`;
+
+// @public
+export type Transform = Extensible<{
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+    readonly rot: number;
+    readonly flipX?: boolean;
+    readonly flipY?: boolean;
+}>;
 
 // @public
 export type TransformedToken = Extensible<{

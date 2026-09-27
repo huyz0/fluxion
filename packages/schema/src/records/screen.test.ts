@@ -53,6 +53,15 @@ describe('screen record', () => {
     expect(noViewport.success ? [] : noViewport.error.issues.map((i) => i.path.join('/'))).toEqual(['viewport']);
   });
 
+  it('FR-DOC-001: speaker notes are rich text; invalid notes fail at notes', () => {
+    const notes = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Say hi' }] }] };
+    expect(screenRecordSchema.parse({ ...base, notes }).notes).toEqual(notes);
+    const bad = screenRecordSchema.safeParse({ ...base, notes: { type: 'doc', content: [{ type: 'heading', content: [] }] } });
+    expect(bad.success ? [] : bad.error.issues.map((i) => i.path.join('/'))).toEqual(['notes/content/0/attrs/level']);
+    const notDoc = screenRecordSchema.safeParse({ ...base, notes: 'plain' });
+    expect(notDoc.success ? [] : notDoc.error.issues.map((i) => i.path.join('/'))).toEqual(['notes']);
+  });
+
   it('FR-DOC-005: keeps unknown keys on the record and in nested objects', () => {
     const parsed = screenRecordSchema.parse({ ...base, future: { x: 1 }, size: { w: 10, h: 20, unit: 'px' } });
     expect(parsed['future']).toEqual({ x: 1 });

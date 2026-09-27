@@ -116,3 +116,16 @@ unknown attributes survive a parse/serialize round trip.
 
 FluxScript (M12) keeps a Markdown-like text shorthand compiled into this JSON; the stored form
 remains this subset.
+
+## Amendments
+
+- 2026-09-27 (M2.7): an unknown node satisfies the content rules of the position it is in (it may
+  be the first child of a `listItem`, a block of `doc`, or an inline of a paragraph); only known
+  nodes are checked against those rules. `checkRichText` reports unknown nodes and marks as
+  warnings (`FLX_TEXT_UNKNOWN_NODE`, `FLX_TEXT_UNKNOWN_MARK`), broken structure as
+  `FLX_TEXT_INVALID` and unsafe links as `FLX_TEXT_UNSAFE_LINK` errors; the Zod field schema fails
+  only on errors. `rich-text.test.ts` covers an unknown node that is kept, warned once at its
+  pointer and survives a round trip.
+- 2026-09-27 (M2.7 review): nodes nested deeper than 64 levels (`MAX_RICH_TEXT_DEPTH`) are an
+  `FLX_TEXT_INVALID` error at the first node past the limit and are not walked further, so hostile
+  input cannot overflow the stack (NFR-REL-002).

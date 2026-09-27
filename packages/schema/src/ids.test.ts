@@ -8,7 +8,8 @@ describe('record ids', () => {
     const seen = new Set<string>();
     for (let i = 0; i < 1_000_000; i++) seen.add(createId(random));
     expect(seen.size).toBe(1_000_000);
-  });
+    // ~0.6 s idle; the pre-commit ladder runs it under coverage beside other steps on small CI runners
+  }, 60_000);
 
   it('FR-DOC-002: every id is 16 URL-safe characters', () => {
     fc.assert(

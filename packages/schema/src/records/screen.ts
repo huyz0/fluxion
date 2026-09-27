@@ -5,6 +5,7 @@ import type { IndexKey } from '../fractional-index.js';
 import type { RecordId } from '../ids.js';
 import { type Paint, paintSchema } from '../paint.js';
 import { type Extensible, finite, indexKeySchema, type Meta, metaSchema, recordIdSchema } from '../primitives.js';
+import { type RichTextDoc, richTextSchema } from '../rich-text.js';
 
 /**
  * A width and height in logical pixels.
@@ -73,6 +74,8 @@ export type ScreenRecord = Extensible<{
   readonly sectionId?: RecordId;
   /** Hidden screens are skipped in presentation. */
   readonly hidden?: boolean;
+  /** Speaker notes. */
+  readonly notes?: RichTextDoc;
 }>;
 
 const positive = z.number().positive();
@@ -96,6 +99,7 @@ export const screenRecordSchema: z.ZodType<ScreenRecord> = checkedSchema<ScreenR
       parentElementId: recordIdSchema.optional(),
       sectionId: recordIdSchema.optional(),
       hidden: z.boolean().optional(),
+      notes: richTextSchema.optional(),
     })
     // an infinite canvas has no size of its own; its first view must be stated (M2.6 r2 F3)
     .refine((s) => s.kind !== 'infinite' || s.viewport !== undefined, { message: 'an infinite screen needs a viewport', path: ['viewport'] }),
