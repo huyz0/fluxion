@@ -536,3 +536,7 @@ M2.21 review minor: state.json blockedReason records the budget re-record blocke
 schema and geometry READMEs describe the M2 public surface with an example (geometry example run against dist)
 docs-consistency: catalogue record types = RECORD_TYPES (table and RecordType union), core kind rows = ELEMENT_KINDS, every listed key field exists in that record's schema shape (element base fields against the core kinds' union); shown to fail on a bogus field and on a planned field listed as a key field
 schemaForRecord and RecordSchemaChoice exported from @fluxion/schema (already @public in document-file.ts; additive) so the harness can read the schema shapes from dist; API report regenerated (now references zod's ZodType)
+
+## 2026-09-27 M2.24 (claude) — final review recorded, milestone not closed
+final milestone review (fresh milestone-reviewer, 1a9aa22..5481b86): changes-requested; F1 major reopened as M2.27 (blocked on a human: budget re-record needs cdn.playwright.dev, plus the decision whether CI's same-run cold-setup measurement satisfies the budget step in CI, with an ADR); F2 argued; F3, F4, F5, F7 handed to M3 and F6 to M11 (plans + roadmap Deferred table); M2 Learned filled
+m2-complete: every leg PASS except verify (budget step only), CI evidence (nothing on main yet), backlog (M2.24 waits on M2.27) and roadmap; the roadmap stays on M2 until M2.27 is done

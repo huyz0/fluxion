@@ -1,0 +1,26 @@
+{
+  "milestone": "M2",
+  "checkpoint": "final",
+  "range": "1a9aa22..5481b86",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    { "id": "F1", "severity": "major", "area": "coherence / gate honesty (NFR-DX-001, NFR-PORT-005)", "detail": "Two authorities for cold setup conflict: M1.19's budget step in pnpm verify fails whenever .harness/budget.json predates pnpm-lock.yaml, while M2.21's CI cold-setup job measures cold setup live every run (check-budget --cold) but writes nothing. ci.yml's verify matrix runs pnpm verify on all three OSes, so after any lockfile change verify is red everywhere until someone re-records on a machine that can download Chromium; the CI job's own measurement cannot clear it. The M2 verify and CI-evidence legs have no agent-runnable path to green.", "failure_scenario": "A human re-records and M2 closes; the next lockfile PR turns ci verify red on three OSes although the same run's cold-setup job measured the setup under budget." },
+    { "id": "F2", "severity": "minor", "area": "standards drift (verify skill rule 2, drive stop conditions)", "detail": "pnpm verify has been red at the budget step since M2.6 (first lockfile change); blockedReason and progress.md mention it only from M2.21/M2.22. The staged ladder does not run the budget step.", "failure_scenario": "A later milestone breaks a verify-only step and ships many commits on a red full ladder." },
+    { "id": "F3", "severity": "minor", "area": "architecture / standards drift (coding-typescript rules 10, 12)", "detail": "geometry exports its own Result<T>/GeometryError/err(code, message) while schema exports Result<T, E = FluxError>/err(error); no ADR records the deviation.", "failure_scenario": "M3 core imports both: Result collides, err has two signatures, geometry codes are missing from FluxErrorCode." },
+    { "id": "F4", "severity": "minor", "area": "spec fidelity / docs (M2.23, M2 cp1 F5)", "detail": "docs-consistency checks documented→schema only, and element-row fields against the union of core kinds.", "failure_scenario": "A required field added to a record schema never reaches the catalogue; the test still passes." },
+    { "id": "F5", "severity": "minor", "area": "gate honesty / diagnostics (M2.20)", "detail": "check-ci-evidence exits on the first REST transport failure, hiding the stale-evidence floor error collected before it.", "failure_scenario": "An operator chases auth/proxy instead of pushing and re-recording." },
+    { "id": "F6", "severity": "minor", "area": "architecture / dependencies (non-negotiable 8)", "detail": "fast-check is a runtime dependency of the published @fluxion/schema only for the ./testing entry.", "failure_scenario": "The first npm release ships a property-testing library to every end user." },
+    { "id": "F7", "severity": "minor", "area": "test strength (M2.18)", "detail": "'fixtures/docs behave as named' treats non-invalid fixtures as merely valid; unknown-kind is never checked for FLX_KIND_UNKNOWN.", "failure_scenario": "A builder refactor drops the unknown kind from the shared fixture unnoticed." }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "target": "M2.27", "note": "Hand back to the human: (1) re-record budget.json where cdn.playwright.dev is reachable; (2) decide with an ADR what is authoritative for cold-setup time in CI; harness case for the lockfile-change-in-CI path." },
+    { "finding": "F2", "disposition": "argue", "target": ".harness/baselines/review-argued.txt", "note": "Process lapse already corrected; lesson in M2 Learned." },
+    { "finding": "F3", "disposition": "hand off", "target": "M3", "note": "First M3 row: one error convention for pure packages (ADR or shared L0 module)." },
+    { "finding": "F4", "disposition": "hand off", "target": "M3", "note": "docs-consistency also checks schema → catalogue; element-row fields in the intersection of core kinds." },
+    { "finding": "F5", "disposition": "hand off", "target": "M3", "note": "Report floor/record problems with any transport failure; proxy-aware fetch or message; test." },
+    { "finding": "F6", "disposition": "hand off", "target": "M11", "note": "Move testing helpers out, or fast-check an optional peer, before publishing." },
+    { "finding": "F7", "disposition": "hand off", "target": "M3", "note": "unknown-kind must parse with FLX_KIND_UNKNOWN; optional expected-diagnostics sidecar." }
+  ],
+  "planDelta": "26 -> 27 rows (M2.27: human budget re-record + decision on the CI source of truth for cold setup; blocks the verify and CI-evidence legs). 18 plan tasks became 27 rows (1.5x), explained by ADR splits, docs split, M1 hand-offs, cp1 reopens and this reopen; nothing silently dropped. Spot-checked mutants killed: spatial index, FR-DOC-005 byte-equal, NFR-REL-002 fuzz, determinism; surviving: docs-consistency (F4), fixtures-as-named (F7)."
+}

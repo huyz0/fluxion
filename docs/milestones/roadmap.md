@@ -91,4 +91,9 @@ receiving milestone's plan.
 | NFR-SEC-005 dependency review and CodeQL are inactive until repo variable `CODE_SCANNING` is set (the repo is private by user decision 2026-09-26, so no GitHub Code Security); vulnerabilities are enforced meanwhile by OSV-Scanner on every PR/push (any known advisory, not only new) and licences by check-licenses (M1 final F1) | M1 | M11 (before the first public release) | needs a human repo/licence decision |
 | Release enablement: unreleased packages private or a pending-changeset guard, publish job behind the `npm` environment, npm trusted publishing, App token for the Version Packages PR (M1 final F2, M1.21 F1/F2, M1.39) | M1 | M11 | first release is M11 |
 | CI evidence must cover the final review range end, not any sha after M1.21 (M1 final F3/D1) | M1 | M2 | gate code; M1's record was re-taken at c9f4fab, the final range end, in M1.41 |
+| One Result/error convention across pure packages (M2 final F3) | M2 | M3 (first) | core consumes schema and geometry |
+| docs-consistency checks schema → catalogue too (M2 final F4) | M2 | M3 | M3 adds record fields |
+| check-ci-evidence reports stale evidence before transport errors (M2 final F5) | M2 | M3 | gate diagnostics |
+| fast-check out of @fluxion/schema runtime deps before publishing (M2 final F6) | M2 | M11 | first release is M11 |
+| Valid fixtures behave as named (unknown-kind warns FLX_KIND_UNKNOWN) (M2 final F7) | M2 | M3 | fixture test strength |
 | Cold-setup CI job + `check-budget --record` isolation test (M1 final F4); one three-OS verify matrix instead of gates.yml + ci.yml, restoring windows headroom under the 15-min budget (M1 final F5, D5) | M1 | M2 | CI hygiene |
