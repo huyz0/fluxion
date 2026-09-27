@@ -5,7 +5,30 @@
 ```ts
 
 // @public
+export function compareKeys(a: string, b: string): number;
+
+// @public
 export function createId(random: Random): RecordId;
+
+// @public
+export type Err<E> = {
+    readonly ok: false;
+    readonly error: E;
+};
+
+// @public
+export function err<E>(error: E): Err<E>;
+
+// @public
+export type FluxError = {
+    readonly code: FluxErrorCode;
+    readonly message: string;
+    readonly path?: string;
+    readonly cause?: unknown;
+};
+
+// @public
+export type FluxErrorCode = "INDEX_INVALID" | "INDEX_ORDER" | "SCHEMA_INVALID" | "PARSE_JSON" | "MIGRATION_UNSUPPORTED";
 
 // @public
 export const ID_ALPHABET: string;
@@ -14,10 +37,33 @@ export const ID_ALPHABET: string;
 export const ID_LENGTH: number;
 
 // @public
+export type IndexKey = string & {
+    readonly __brand: "IndexKey";
+};
+
+// @public
 export function isGeneratedId(value: unknown): value is RecordId;
 
 // @public
+export function isIndexKey(key: unknown): key is IndexKey;
+
+// @public
 export function isRecordId(value: unknown): value is RecordId;
+
+// @public
+export function keyBetween(a: string | null, b: string | null): Result<IndexKey>;
+
+// @public
+export function nKeysBetween(a: string | null, b: string | null, n: number): Result<IndexKey[]>;
+
+// @public
+export type Ok<T> = {
+    readonly ok: true;
+    readonly value: T;
+};
+
+// @public
+export function ok<T>(value: T): Ok<T>;
 
 // @public
 export interface Random {
@@ -30,11 +76,12 @@ export type RecordId = string & {
 };
 
 // @public
+export type Result<T, E = FluxError> = Ok<T> | Err<E>;
+
+// @public
 export function seededRandom(seed: number): Random;
 
 // @public
 export const VERSION: string;
-
-// (No @packageDocumentation comment for this package)
 
 ```

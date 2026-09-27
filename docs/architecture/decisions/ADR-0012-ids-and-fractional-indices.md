@@ -105,3 +105,13 @@ allowlist.
 
 Key scheme after David Greenspan's "Implementing Fractional Indexing" (2020), the design
 `fractional-indexing` also follows; the code here is written from the description, not copied.
+
+## Amendments
+
+- 2026-09-27 (M2.4, M2.5): `isRecordId` accepts any 1–64 characters of the ID alphabet (the
+  readable-ID rule under "IDs"); the exact generated shape `^[A-Za-z0-9_-]{16}$` is checked by
+  `isGeneratedId`. Growth: inserting repeatedly at one spot extends the fraction by one base-62
+  digit about every six inserts (`a0V`, `a0G`, `a08`, `a04`, `a02`, `a01`, `a00V`, …), so a
+  32-character key takes on the order of 180 same-spot inserts. The key space never runs out:
+  past the largest integer `after` extends a fraction, and before the smallest integer `A` +
+  26 × `0` (not itself a key) `before` extends one, so there is no exhaustion error.

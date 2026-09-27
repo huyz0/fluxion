@@ -396,3 +396,10 @@ review r1 F1: unknown node/mark types are preserved + one warning each (text fal
 schema/src/ids.ts: `Random` port, branded `RecordId`, `createId` (16 of `A-Za-z0-9_-`, clamps an out-of-range port), `isRecordId` (1-64 chars, readable fixture IDs), `isGeneratedId` (exactly 16), `seededRandom` (mulberry32)
 ids.test: FR-DOC-002 1e6 ids no collision (~0.6 s), pattern property, NFR-REL-005 same seed same ids, whole alphabet used
 carried: M2.3 r2 minors (an unknown node satisfies the known content rules; an unknown-node round-trip test) go into M2.7 with an ADR-0013 amendment
+
+## 2026-09-27 M2.5 (claude)
+schema/src/fractional-index.ts (ADR-0012 scheme): keyBetween, nKeysBetween (bisection; sequential at an open end), compareKeys (code units), isIndexKey; result.ts: Result/ok/err, FluxError + codes (INDEX_INVALID, INDEX_ORDER, SCHEMA_INVALID, PARSE_JSON, MIGRATION_UNSUPPORTED), Ok/Err
+edge found by test: decrementing to the smallest integer `A`+26×`0` gave an invalid key → returns it + `V`; the key space cannot run out, so no exhaustion code
+tests: FR-DOC-010 10k pairs between random neighbours, insert-sequence property, nKeysBetween property, one-screen reorder changes one record, edges, never throws on any string
+ADR-0012 dated amendment: isRecordId 1-64 vs isGeneratedId 16 (M2.4 F1), growth one digit per ~6 same-spot inserts (M2.2 F1), no exhaustion; index.ts re-exports after VERSION so @packageDocumentation shows (M2.4 F2)
+package comment moved to version.ts, the first export of index.ts (biome import sorting suppressed there): tsdown's bundled index.d.ts opens with the first import's region
