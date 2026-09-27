@@ -425,3 +425,9 @@ records/binding.ts (AnchorRef auto/floating/named/side/point), resources.ts (ass
 document-file.ts: schemaForRecord (by type, element kind; plugin kinds known, others envelope-only), anyRecordSchema, documentFileSchema; the 02-document-model example parses unchanged; a shape without defId fails at records/e1/defId
 M2.7 r2 minors: "{…" literals are broken tokens (font family, variant, font mark); unknown rich-text nodes get their content/text/marks shape-checked
 deps: M2.9 (byte-equal canonical JSON) now after M2.11 (the serializer); M2.10 after M2.8
+
+## 2026-09-27 M2.15 (claude)
+geometry drafted by a worktree subagent (uncommitted), integrated row by row; this row: result (Result/GeometryError, code MATRIX_SINGULAR), vec2, mat2d (SVG order a b c d e f; multiply(m, n) applies n first; invert → Result, |det| < 1e-12 singular), box (fromPoints/union/intersection/contains/inflate/corners/transformBox), element-transform (local 0..w,0..h → screen: flips, rotation about centre, translation; elementBounds/elementCorners)
+tests: FR-SHP-001 transform ∘ inverse = identity ε 1e-9 (property), rotated bounds contain 4 corners (property), 90° corner mapping, flips, singular → error; 100 % lines/branches
+package comment as tsdown dts banner (same fix as schema); the worktree under .claude/worktrees is excluded locally (.git/info/exclude) — biome/knip scanned it
+review r1 F1/F2: arbitraries were fc.double (mostly tiny values; a wrong invert and TL/BR-only bounds passed) → 1e-3-grid coords, well-conditioned composed matrices, integer sizes, quarter-degree angles, exact inverse example, four-edge tightness; both mutants now fail on seeds 1-3; F3: singular threshold relative to entry scale

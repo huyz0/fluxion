@@ -5,6 +5,152 @@
 ```ts
 
 // @public
+export function add(a: Vec2, b: Vec2): Vec2;
+
+// @public
+export function apply(m: Mat2d, p: Vec2): Vec2;
+
+// @public
+export type Box = {
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+};
+
+// @public
+export function boxCenter(box: Box): Vec2;
+
+// @public
+export function boxContains(box: Box, p: Vec2): boolean;
+
+// @public
+export function boxContainsBox(outer: Box, inner: Box): boolean;
+
+// @public
+export function boxCorners(box: Box): readonly [Vec2, Vec2, Vec2, Vec2];
+
+// @public
+export function boxFromPoints(points: readonly Vec2[]): Box | null;
+
+// @public
+export function boxInflate(box: Box, dx: number, dy?: number): Box;
+
+// @public
+export function boxIntersection(a: Box, b: Box): Box | null;
+
+// @public
+export function boxIntersects(a: Box, b: Box): boolean;
+
+// @public
+export function boxUnion(a: Box, b: Box): Box;
+
+// @public
+export function cross(a: Vec2, b: Vec2): number;
+
+// @public
+export function determinant(m: Mat2d): number;
+
+// @public
+export function distance(a: Vec2, b: Vec2): number;
+
+// @public
+export function dot(a: Vec2, b: Vec2): number;
+
+// @public
+export function elementBounds(t: ElementTransform): Box;
+
+// @public
+export function elementCorners(t: ElementTransform): readonly Vec2[];
+
+// @public
+export function elementMatrix(t: ElementTransform): Mat2d;
+
+// @public
+export type ElementTransform = {
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+    readonly rot: number;
+    readonly flipX?: boolean;
+    readonly flipY?: boolean;
+};
+
+// @public
+export function equalsApprox(a: Vec2, b: Vec2, eps?: number): boolean;
+
+// @public
+export type GeometryError = {
+    readonly code: GeometryErrorCode;
+    readonly message: string;
+};
+
+// @public
+export type GeometryErrorCode = "MATRIX_SINGULAR";
+
+// @public
+export function identity(): Mat2d;
+
+// @public
+export function invert(m: Mat2d): Result<Mat2d>;
+
+// @public
+function length_2(v: Vec2): number;
+export { length_2 as length }
+
+// @public
+export function lerp(a: Vec2, b: Vec2, t: number): Vec2;
+
+// @public
+export type Mat2d = readonly [a: number, b: number, c: number, d: number, e: number, f: number];
+
+// @public
+export function multiply(m: Mat2d, n: Mat2d): Mat2d;
+
+// @public
+export function normalize(v: Vec2): Vec2;
+
+// @public
+export type Result<T> = {
+    readonly ok: true;
+    readonly value: T;
+} | {
+    readonly ok: false;
+    readonly error: GeometryError;
+};
+
+// @public
+export function rotate(v: Vec2, radians: number): Vec2;
+
+// @public
+export function rotation(radians: number): Mat2d;
+
+// @public
+export function scale(v: Vec2, k: number): Vec2;
+
+// @public
+export function scaling(sx: number, sy?: number): Mat2d;
+
+// @public
+export function sub(a: Vec2, b: Vec2): Vec2;
+
+// @public
+export function transformBox(m: Mat2d, box: Box): Box;
+
+// @public
+export function translate(tx: number, ty: number): Mat2d;
+
+// @public
+export type Vec2 = {
+    readonly x: number;
+    readonly y: number;
+};
+
+// @public
+export function vec2(x: number, y: number): Vec2;
+
+// @public
 export const VERSION: string;
 
 ```
