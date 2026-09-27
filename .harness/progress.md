@@ -540,3 +540,6 @@ schemaForRecord and RecordSchemaChoice exported from @fluxion/schema (already @p
 ## 2026-09-27 M2.24 (claude) — final review recorded, milestone not closed
 final milestone review (fresh milestone-reviewer, 1a9aa22..5481b86): changes-requested; F1 major reopened as M2.27 (blocked on a human: budget re-record needs cdn.playwright.dev, plus the decision whether CI's same-run cold-setup measurement satisfies the budget step in CI, with an ADR); F2 argued; F3, F4, F5, F7 handed to M3 and F6 to M11 (plans + roadmap Deferred table); M2 Learned filled
 m2-complete: every leg PASS except verify (budget step only), CI evidence (nothing on main yet), backlog (M2.24 waits on M2.27) and roadmap; the roadmap stays on M2 until M2.27 is done
+
+## 2026-09-27 M2.28 (claude)
+first CI on main (4967ed7): everything green (cold-setup job included) except verify on 3 OSes — ubuntu at the budget step only (M2.27); macOS and Windows also failed the M2.21 "record isolation" case: macOS compared /var/... with /private/var/... (the fake pnpm now records resolved store/browser paths, raw --store-dir kept for the args check); Windows cloned with the runner's core.autocrlf, so the clone's lockfile hash (CRLF) differed from the working tree's (the cold clone now passes --config core.autocrlf=false)

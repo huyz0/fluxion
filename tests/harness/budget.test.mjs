@@ -77,7 +77,7 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     const calls = pnpmCalls(sb);
     assert.deepEqual(
       calls.map((c) => c.args),
-      [['install', '--frozen-lockfile', '--store-dir', calls[0]?.store], ['run', 'setup'], ['verify']],
+      [['install', '--frozen-lockfile', '--store-dir', calls[0]?.rawStore], ['run', 'setup'], ['verify']],
       'pnpm i --frozen-lockfile, pnpm run setup, pnpm verify, in that order',
     );
     const tmp = dirname(calls[0].cwd);
@@ -130,13 +130,16 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
 // A fake pnpm, first on PATH: logs each call (args, cwd, store, browsers path, the clone's lockfile
 // hash and budget record), creates the --store-dir on install, fails the command in FAKE_PNPM_FAIL.
 const FAKE_PNPM = `import { createHash } from 'node:crypto';
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 const args = process.argv.slice(2);
 const store = process.env.pnpm_config_store_dir;
 const read = (p) => (existsSync(p) ? readFileSync(p) : null);
 const lock = read('pnpm-lock.yaml');
 const budget = read('.harness/budget.json');
-const call = { args, cwd: process.cwd(), store, browsers: process.env.PLAYWRIGHT_BROWSERS_PATH, storeExisted: existsSync(store),
+// resolved like process.cwd() (macOS: /var is a link to /private/var, M2.28); the parent exists
+const real = (p) => p && join(realpathSync(dirname(p)), basename(p));
+const call = { args, cwd: process.cwd(), rawStore: store, store: real(store), browsers: real(process.env.PLAYWRIGHT_BROWSERS_PATH), storeExisted: existsSync(store),
   lockfile: lock && createHash('sha256').update(lock).digest('hex'), budget: budget && JSON.parse(budget) };
 appendFileSync(process.env.FAKE_PNPM_LOG, JSON.stringify(call) + '\\n');
 if (args[0] === process.env.FAKE_PNPM_FAIL) {

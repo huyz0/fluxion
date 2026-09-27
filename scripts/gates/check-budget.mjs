@@ -46,7 +46,8 @@ const timed = (fn, lockfile) => {
 function coldSetup(provisional) {
   const dir = mkdtempSync(join(tmpdir(), 'fluxion-cold-'));
   try {
-    const clone = git(['clone', '--quiet', '--no-hardlinks', repoPath(), join(dir, 'repo')]);
+    // core.autocrlf=false: the clone's bytes (lockfile hash included) equal the repo's on every OS (M2.28)
+    const clone = git(['clone', '--quiet', '--no-hardlinks', '--config', 'core.autocrlf=false', repoPath(), join(dir, 'repo')]);
     if (clone.status !== 0) return { ms: 0, ok: false, tail: clone.stderr };
     const cwd = join(dir, 'repo');
     // a hook's GIT_DIR / GIT_INDEX_FILE must not point the clone's git and pnpm at this repo
