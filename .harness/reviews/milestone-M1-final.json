@@ -1,7 +1,7 @@
 {
   "milestone": "M1",
   "checkpoint": "final",
-  "range": "aaf09b6..369a1d7",
+  "range": "aaf09b6..c9f4fab",
   "reviewer": "claude-subagent:milestone-reviewer",
   "findings": [
     {
@@ -45,6 +45,41 @@
       "area": "gate-honesty",
       "detail": "M1.22's 'AGENTS.md commands match package.json scripts' is unchecked; the README leg is a loose regex.",
       "failure_scenario": "A script rename leaves AGENTS.md pointing at a missing script with nothing red."
+    },
+    {
+      "id": "D1",
+      "severity": "major",
+      "area": "gate-honesty",
+      "detail": "F3 note claimed evidence was re-taken at the range end while ci-evidence.json still recorded b63650c; 369a1d7 and c5b0b92 gates runs were cancelled.",
+      "failure_scenario": "M1 declared complete on stale evidence with red gates runs uncovered."
+    },
+    {
+      "id": "D2",
+      "severity": "major",
+      "area": "process",
+      "detail": "The final-review draft (record, roadmap -> M2, handoffs) was committed inside the M1.42 code commit (the local commit helper staged everything); M1.41 still todo and the roadmap read M2 while the M1 gate was red.",
+      "failure_scenario": "A drive session starts M2 while M1's gate is red."
+    },
+    {
+      "id": "D3",
+      "severity": "minor",
+      "area": "traceability",
+      "detail": "NFR-SEC-005 (dependency review) and NFR-DX-001 (cold-setup CI job) are partly deferred while 40-traceability shows M1 traced; the visibility decision is cited only in progress.md.",
+      "failure_scenario": "An auditor reads NFR-SEC-005 as done in M1."
+    },
+    {
+      "id": "D4",
+      "severity": "minor",
+      "area": "coherence",
+      "detail": "M2 handoffs are prose, not Tasks rows; the F5 text still says gates reruns the harness suite (fixed by M1.42).",
+      "failure_scenario": "The M2 planner skips the F3 gate tightening."
+    },
+    {
+      "id": "D5",
+      "severity": "minor",
+      "area": "ci",
+      "detail": "windows gates margin is thin (~12.5 of 15 min).",
+      "failure_scenario": "Slow runners cancel gates with no failing test."
     }
   ],
   "dispositions": [
@@ -52,7 +87,7 @@
       "finding": "F1",
       "disposition": "hand-off",
       "target": "M11 (roadmap Deferred + M11.md handoff)",
-      "note": "needs a human repo-visibility/licence decision; meanwhile OSV-Scanner fails any known advisory on every PR and push and check-licenses gates licences"
+      "note": "needs a human repo-visibility/licence decision; meanwhile OSV-Scanner fails any known advisory on every PR and push and check-licenses gates licences; human decision 2026-09-26: the repo is private (user: \"create a private gh repo\"), so GitHub Code Security features are unavailable until M11"
     },
     {
       "finding": "F2",
@@ -62,9 +97,9 @@
     },
     {
       "finding": "F3",
-      "disposition": "hand-off",
-      "target": "M2 (roadmap Deferred + M2.md handoff)",
-      "note": "evidence re-recorded at the range end 369a1d7 in this commit (later M1 commits are bookkeeping-only, enforced by checkFinalReview); the gate tightening is code, so it goes to M2"
+      "disposition": "reopen",
+      "target": "M1.41 (evidence re-recorded at c9f4fab, the range end, after its gates and ci runs were green) + M2 (gate tightening)",
+      "note": "the stale b63650c record is replaced in M1.41; only bookkeeping follows c9f4fab (checkFinalReview); requiring evidence at or after the range end is gate code, handed to M2 row list"
     },
     {
       "finding": "F4",
@@ -83,7 +118,42 @@
       "disposition": "argue",
       "target": ".harness/baselines/review-argued.txt",
       "note": "minor; no false green on a plan leg"
+    },
+    {
+      "finding": "D1",
+      "disposition": "reopen",
+      "target": "M1.41",
+      "note": "ci-evidence re-recorded at c9f4fab once its gates (incl. windows) and ci runs were green; F3 note corrected"
+    },
+    {
+      "finding": "D2",
+      "disposition": "reopen",
+      "target": "M1.41",
+      "note": "M1.41 lands immediately as a bookkeeping-only commit with the range extended to c9f4fab; the local helper no longer runs git add -A"
+    },
+    {
+      "finding": "D3",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "deferrals are in the roadmap Deferred table with the cited decision"
+    },
+    {
+      "finding": "D4",
+      "disposition": "reopen",
+      "target": "M1.41 (M2.md handoff marked as rows the M2 plan must add; F5 text corrected)",
+      "note": "bookkeeping"
+    },
+    {
+      "finding": "D5",
+      "disposition": "hand-off",
+      "target": "M2 (one three-OS verify matrix, M1 final F5)",
+      "note": "removing the duplicate verify restores headroom"
     }
   ],
-  "planDelta": "22 planned -> 41 rows (1.86x), driven by heuristic-gate hardening, ladder concurrency and first real CI runs; budget 1.5-2x rows for gate/CI work, verify on Linux early, put human-setup follow-ups in the Deferred table."
+  "planDelta": "22 planned -> 41 rows (1.86x), driven by heuristic-gate hardening, ladder concurrency and first real CI runs; budget 1.5-2x rows for gate/CI work, verify on Linux early, put human-setup follow-ups in the Deferred table.",
+  "delta": {
+    "range": "369a1d7..c9f4fab",
+    "reviewer": "claude-subagent:milestone-reviewer",
+    "note": "fresh reviewer extended the final review over M1.42 (c9f4fab) and re-checked the dispositions"
+  }
 }
