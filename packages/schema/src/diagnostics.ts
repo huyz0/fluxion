@@ -15,6 +15,7 @@ export type DiagnosticSeverity = 'error' | 'warning' | 'info';
  * @public
  */
 export type DiagnosticCode =
+  | 'FLX_JSON_INVALID'
   | 'FLX_DOC_NOT_OBJECT'
   | 'FLX_VERSION_INVALID'
   | 'FLX_VERSION_UNSUPPORTED'
@@ -47,6 +48,7 @@ export type DiagnosticCode =
  * @public
  */
 export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSeverity } = {
+  FLX_JSON_INVALID: 'error',
   FLX_DOC_NOT_OBJECT: 'error',
   FLX_VERSION_INVALID: 'error',
   FLX_VERSION_UNSUPPORTED: 'error',

@@ -15,6 +15,7 @@ id, then referential ones grouped by check (each group by record id).
 
 | Code | Severity | Meaning | Typical fix |
 |---|---|---|---|
+| `FLX_JSON_INVALID` | error | `parseDocument` was given text that is not JSON; the message carries the parser's reason. | Fix the syntax. |
 | `FLX_DOC_NOT_OBJECT` | error | The input is not a JSON object. | Pass the parsed document object. |
 | `FLX_VERSION_INVALID` | error | `schemaVersion` is missing or not `MAJOR.MINOR`. | Set `"schemaVersion": "1.0"`. |
 | `FLX_VERSION_UNSUPPORTED` | error | The major version is newer than this reader, or the version is older and was not migrated. | Open with a newer Fluxion, or run `migrate()` first. |

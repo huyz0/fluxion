@@ -44,6 +44,7 @@ export type { AssetRecord, PluginRefRecord, ResourceRecord, ThemeRecord } from '
 export { DEFAULT_SCREEN_SIZE, type Rect, type ScreenRecord, type Size, screenKind, screenSize } from './records/screen.js';
 export { type Err, err, type Ok, ok, type Result } from './result.js';
 export { checkRichText, MAX_RICH_TEXT_DEPTH, type RichTextDoc, type RichTextIssue, type RichTextMark, type RichTextNode } from './rich-text.js';
+export { canonicalNumber, type DocumentError, type ParsedDocument, parseDocument, serializeDocument } from './serialize.js';
 export {
   type Effect,
   type FontStyle,
