@@ -14,6 +14,7 @@ const SHARED = [
   'scripts/gates/thresholds.mjs',
   'package.json',
   'tsconfig.base.json',
+  'fixtures',
 ];
 // every workspace: tsconfig project references must resolve for Vite's tsconfig loader
 const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));

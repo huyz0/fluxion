@@ -498,3 +498,11 @@ review r2 F1: the overlap check ran nearestPoint at every near-parallel node (co
 ADR-0141: rbush 4.0.1 (MIT, dep quickselect ISC) and flatbush 4.6.2 (ISC, dep flatqueue ISC) as geometry runtime dependencies (catalog; @types/rbush dev only, rbush ships no types), bundled by the player
 spatial-index.ts: SpatialIndex (size, search → ids sorted by code unit, collides), createDynamicIndex (rbush: insert replaces an id, remove, clear) and createStaticIndex (flatbush, built once; empty handled since flatbush needs ≥ 1 item); last item of a repeated id wins in both; edge/corner contact intersects in both
 tests: NFR-REL-005 both adapters (bulk, incremental, static) equal a brute-force scan over random boxes and queries; removals keep dynamic equal to a static index of the rest; touching boxes, replace/remove/clear, empty static index
+
+## 2026-09-27 M2.18 (claude)
+scripts/fixtures/gen.mjs [--check] builds fixtures/docs/*.flux.json from the @fluxion/schema/testing builders (reads dist; canonical text): minimal, two-rects-line, unknown-kind (plugin kind + unknown fields), invalid-ref-missing, invalid-schema-invalid; --check fails on a missing, stale or foreign fixture
+fixtures-docs.test (schema): "fixtures/docs behave as named" — the exact set, each ≤ 50 kB, valid ones parse with no error and are canonical, invalid-<code> fails with FLX_<CODE> (Vite glob ?raw import: the fixtures sit outside src)
+check-tests-kept: deleting or renaming away a released fixture (fixtures/docs, fixtures/v<x>/, __fixtures__/v<x>/) needs Removes-test; editing a versioned fixture always fails (contracts.md rule 10); harness case
+carried minors: M2.14 r3 — a removed binding with a corrupted end frees neither connector end (was: source); M2.17 — ADR-0141 records that rbush ships no types (@types/rbush dev dependency)
+gate fixes before review: the coverage sandbox copies fixtures/ (the fixtures test runs there too); knip entry scripts/fixtures/*.mjs
+review r1 F1: a Removes-test trailer excused editing a versioned fixture → such edits fail whatever the trailer (like a false Renames-test); harness asserts the edit with Removes-test still fails

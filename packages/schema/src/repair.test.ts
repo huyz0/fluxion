@@ -101,4 +101,18 @@ describe('lenient repair (FR-DOC-003)', () => {
     expect(c['freeSource']).toBeUndefined();
     expect(c['freeTarget']).toEqual({ x: 10500, y: 5400 });
   });
+
+  it('a removed binding with a corrupted end frees neither end (M2.14 review r3)', () => {
+    const r = repair({
+      schemaVersion: '1.0',
+      records: {
+        s1: { id: 's1', type: 'screen', index: 'a0' },
+        c: { id: 'c', type: 'element', screenId: 's1', index: 'a0', kind: 'connector', route: { type: 'straight' }, freeTarget: { x: 1, y: 1 } },
+        bx: { id: 'bx', type: 'binding', connectorId: 'c', end: 'middle', elementId: 'gone', anchor: { kind: 'auto' } },
+      },
+    });
+    expect(r.diagnostics.map((d) => d.code)).toEqual(['FLX_REPAIRED_BINDING']);
+    expect(r.document.records['c']).not.toHaveProperty('freeSource');
+    expect(r.document.records['bx']).toBeUndefined();
+  });
 });

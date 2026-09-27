@@ -35,8 +35,9 @@ Chosen option 1. `@fluxion/geometry` exports `SpatialIndex` (`search(box)`, `col
 `size`) with two factories: `createDynamicIndex()` (rbush: `insert`, `remove`, `clear`) and
 `createStaticIndex(items)` (flatbush, built once). Both return hits sorted by id (code-unit
 order), so the adapters are interchangeable and NFR-REL-005 holds whatever the tree shape. Boxes
-touching at an edge intersect in both. Both packages ship their own types, are pure ESM and
-use no DOM, timers or randomness.
+touching at an edge intersect in both. Both are pure ESM and use no DOM, timers or randomness.
+`flatbush` ships its own types; `rbush` 4.0.1 ships none, so `@types/rbush` (MIT) is a dev
+dependency, a recorded deviation from tech-stack.md rule 8 ("types included"; M2.17 review).
 
 ### Consequences
 

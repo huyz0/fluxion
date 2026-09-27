@@ -51,7 +51,8 @@ const endKey = (b: Fields): string => `${String(b['connectorId'])}\u0000${String
 /** Make the connector end a removed binding held into a free point, unless another binding still holds it (M2.12 review r2 F2). */
 function freeEnd(records: Map<string, Mutable>, b: Fields, held: ReadonlyMap<string, number>): void {
   const connector = records.get(String(b['connectorId']));
-  if (connector?.['kind'] !== 'connector' || (held.get(endKey(b)) ?? 0) > 0) return;
+  // a corrupted `end` names no end: free neither (M2.14 review r3)
+  if (connector?.['kind'] !== 'connector' || (b['end'] !== 'source' && b['end'] !== 'target') || (held.get(endKey(b)) ?? 0) > 0) return;
   const free = b['end'] === 'target' ? 'freeTarget' : 'freeSource';
   if (connector[free] === undefined) connector[free] = screenCentre(records, connector);
 }

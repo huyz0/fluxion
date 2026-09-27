@@ -1,0 +1,16 @@
+{
+  "records": {
+    "fEZxSMCblzSNqiwM": {
+      "id": "fEZxSMCblzSNqiwM",
+      "index": "a0",
+      "name": "Main",
+      "type": "screen"
+    },
+    "oAh_9Rnub-dfIZPJ": {
+      "id": "oAh_9Rnub-dfIZPJ",
+      "title": "Minimal",
+      "type": "document"
+    }
+  },
+  "schemaVersion": "1.0"
+}

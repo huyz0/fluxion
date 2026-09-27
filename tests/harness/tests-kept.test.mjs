@@ -38,6 +38,29 @@ describe('check-tests-kept (NFR-DX-004)', () => {
     assert.equal(ok.status, 0, out(ok));
   });
 
+  it('deleting a released fixture needs Removes-test, and a versioned fixture is immutable (contracts.md rule 10, M2.18)', () => {
+    kept.sb.write('fixtures/docs/minimal.flux.json', '{}\n');
+    kept.sb.write('packages/format/fixtures/v1.0/doc.flux.json', '{}\n');
+    kept.sb.git('add', '-A');
+    kept.sb.git('commit', '-q', '-m', 'released fixtures', '--no-verify');
+    kept.sb.git('rm', '-q', 'fixtures/docs/minimal.flux.json');
+    const refused = kept.check();
+    assert.equal(refused.status, 1, out(refused));
+    assert.match(refused.stderr, /deletes released fixture fixtures\/docs\/minimal\.flux\.json/);
+    assert.equal(kept.check('M0.7: test: x\n\nRemoves-test: superseded\n').status, 0);
+    kept.sb.git('reset', '-q', '--hard');
+    kept.sb.write('fixtures/docs/minimal.flux.json', '{"regenerated":true}\n');
+    kept.sb.git('add', '-A');
+    assert.equal(kept.check().status, 0, 'fixtures/docs is regenerated, so editing it is allowed');
+    kept.sb.write('packages/format/fixtures/v1.0/doc.flux.json', '{"edited":true}\n');
+    kept.sb.git('add', '-A');
+    const edited = kept.check();
+    assert.equal(edited.status, 1, out(edited));
+    assert.match(edited.stderr, /edits released fixture packages\/format\/fixtures\/v1\.0\/doc\.flux\.json/);
+    const excused = kept.check('M0.7: fix: x\n\nRemoves-test: fix old fixture\n');
+    assert.equal(excused.status, 1, `no trailer excuses editing a released fixture: ${out(excused)}`);
+  });
+
   it('an empty Removes-test trailer does not count', () => {
     kept.sb.git('rm', '-q', 'packages/core/src/a.test.ts');
     assert.equal(kept.check('M0.7: test: x\n\nRemoves-test:\n').status, 1);

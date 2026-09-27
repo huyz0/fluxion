@@ -1,0 +1,111 @@
+{
+  "records": {
+    "0c8Et_1phC21jU57": {
+      "defId": "basic:rect",
+      "id": "0c8Et_1phC21jU57",
+      "index": "a1",
+      "kind": "shape",
+      "screenId": "rX_C6DIMA8co-OdW",
+      "semantic": {
+        "slug": "server"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Server",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 80,
+        "w": 160,
+        "x": 520,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "DhGD9zA_E_hMrDx6": {
+      "defId": "basic:rect",
+      "id": "DhGD9zA_E_hMrDx6",
+      "index": "a0",
+      "kind": "shape",
+      "screenId": "rX_C6DIMA8co-OdW",
+      "semantic": {
+        "slug": "client"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 80,
+        "w": 160,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "RWiBS1KxZaZ2e-QF": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "cWB8Ucz36bNpnt8N",
+      "elementId": "DhGD9zA_E_hMrDx6",
+      "end": "source",
+      "id": "RWiBS1KxZaZ2e-QF",
+      "type": "binding"
+    },
+    "cWB8Ucz36bNpnt8N": {
+      "id": "cWB8Ucz36bNpnt8N",
+      "index": "a2",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "rX_C6DIMA8co-OdW",
+      "type": "element"
+    },
+    "rX_C6DIMA8co-OdW": {
+      "id": "rX_C6DIMA8co-OdW",
+      "index": "a0",
+      "name": "Main",
+      "type": "screen"
+    },
+    "tBuypSUpGMu_oHl8": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "cWB8Ucz36bNpnt8N",
+      "elementId": "0c8Et_1phC21jU57",
+      "end": "target",
+      "id": "tBuypSUpGMu_oHl8",
+      "type": "binding"
+    },
+    "uUSi4ofWyHyMb1lJ": {
+      "id": "uUSi4ofWyHyMb1lJ",
+      "title": "Two rects and a line",
+      "type": "document"
+    }
+  },
+  "schemaVersion": "1.0"
+}

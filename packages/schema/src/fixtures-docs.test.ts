@@ -1,0 +1,46 @@
+import { describe, expect, it } from 'vitest';
+import { parseDocument, serializeDocument } from './serialize.js';
+
+declare global {
+  interface ImportMeta {
+    /** Vite's build-time glob import (vitest runs this file through Vite). */
+    glob(pattern: string, options: { readonly query: '?raw'; readonly import: 'default'; readonly eager: true }): Record<string, string>;
+  }
+}
+
+// the shared fixtures at the repo root, written by scripts/fixtures/gen.mjs (M2.18)
+const FIXTURES = import.meta.glob('../../../fixtures/docs/*.flux.json', { query: '?raw', import: 'default', eager: true });
+const entries = Object.entries(FIXTURES).map(([path, text]) => [path.split('/').at(-1) ?? path, text] as const);
+
+/** A valid fixture: parses with no error and is already canonical. */
+function expectValid(name: string, text: string): void {
+  const r = parseDocument(text);
+  expect(r.ok ? r.value.diagnostics.filter((d) => d.severity === 'error') : r.error.diagnostics, name).toEqual([]);
+  if (r.ok) expect(serializeDocument(r.value.document), name).toBe(text);
+}
+
+/** An `invalid-<code>` fixture: fails validation with FLX_<CODE>. */
+function expectInvalid(name: string, text: string, code: string): void {
+  const r = parseDocument(text);
+  expect(r.ok, name).toBe(false);
+  const codes = r.ok ? [] : r.error.diagnostics.filter((d) => d.severity === 'error').map((d) => d.code);
+  expect(codes, name).toContain(`FLX_${code.toUpperCase().replaceAll('-', '_')}`);
+}
+
+describe('shared document fixtures (FR-DOC-001)', () => {
+  it('FR-DOC-001: fixtures/docs behave as named', () => {
+    expect(entries.map(([name]) => name).sort()).toEqual([
+      'invalid-ref-missing.flux.json',
+      'invalid-schema-invalid.flux.json',
+      'minimal.flux.json',
+      'two-rects-line.flux.json',
+      'unknown-kind.flux.json',
+    ]);
+    for (const [name, text] of entries) {
+      expect(text.length, name).toBeLessThanOrEqual(50 * 1024);
+      const code = /^invalid-(.+)\.flux\.json$/.exec(name)?.[1];
+      if (code === undefined) expectValid(name, text);
+      else expectInvalid(name, text, code);
+    }
+  });
+});
