@@ -3,8 +3,8 @@
 // order: JS object semantics, still one order per document), geometry numbers rounded to 1e-3
 // (08-file-format §4), -0 written as 0, 2-space indent, LF line ends, a trailing newline. Arrays
 // keep their order (it is meaningful). All other numbers are written exactly (FR-DOC-005).
-import { type Diagnostic, diagnostic } from './diagnostics.js';
-import { type DocumentFile, documentFileSchema } from './document-file.js';
+import { type Diagnostic, diagnostic, jsonPointer } from './diagnostics.js';
+import { type DocumentFile, documentFileSchema, SCHEMA_VERSION } from './document-file.js';
 import type { FluxError } from './errors.js';
 import { migrate } from './migrate.js';
 import { repair } from './repair.js';
@@ -118,7 +118,72 @@ export type ParsedDocument = {
 export type DocumentError = FluxError & {
   /** Every problem found, errors and warnings. */
   readonly diagnostics: readonly Diagnostic[];
+  /**
+   * The records that had no error, after migration and repair, so a damaged file still opens in
+   * part (NFR-REL-002); `null` when the text is not JSON, too deep, or not a migratable document.
+   */
+  readonly salvaged: DocumentFile | null;
 };
+
+/**
+ * Deepest JSON nesting `parseDocument` accepts; deeper input is `FLX_JSON_TOO_DEEP` (hostile
+ * nesting would otherwise overflow the stack in repair and serialization, NFR-REL-002).
+ *
+ * @public
+ */
+export const MAX_JSON_DEPTH: number = 256;
+
+/** Whether `value` nests deeper than `max`, checked without recursion. */
+function tooDeep(value: unknown, max: number): boolean {
+  const stack: [unknown, number][] = [[value, 1]];
+  for (let item = stack.pop(); item !== undefined; item = stack.pop()) {
+    const [v, depth] = item;
+    if (typeof v !== 'object' || v === null) continue;
+    if (depth > max) return true;
+    for (const child of Object.values(v)) stack.push([child, depth + 1]);
+  }
+  return false;
+}
+
+/** Record keys that have an error at or below `/records/<key>`. */
+const brokenKeys = (diagnostics: readonly Diagnostic[]): Set<string> =>
+  new Set(diagnostics.flatMap((d) => (d.severity === 'error' && d.path.startsWith('/records/') ? [d.path.split('/')[2] ?? ''] : [])));
+
+/**
+ * `records` minus the broken ones; a dropped binding goes to repair as dangling, so its connector
+ * end becomes free instead of leaving a valid connector with an end that is neither bound nor
+ * free (M2.14 review r2 F1).
+ */
+function withoutBroken(records: { readonly [key: string]: unknown }, broken: ReadonlySet<string>): { [id: string]: unknown } {
+  const kept: { [id: string]: unknown } = Object.create(null);
+  for (const [key, record] of Object.entries(records)) {
+    if (!isObject(record)) continue;
+    if (!broken.has(jsonPointer([key]).slice(1))) kept[key] = record;
+    else if (record['type'] === 'binding') kept[key] = { id: key, type: 'binding', connectorId: record['connectorId'], end: record['end'] };
+  }
+  return kept;
+}
+
+/**
+ * The records that stay valid on their own: drop every record with an error, repair and validate
+ * again (a dropped screen takes its elements, a dropped element its bindings), to a fixed point
+ * bounded by the record count (M2.14 review F2). Document-level errors may remain.
+ */
+function salvage(doc: unknown, diagnostics: readonly Diagnostic[]): DocumentFile | null {
+  if (!isObject(doc)) return null;
+  const initial = doc['records'];
+  if (!isObject(initial)) return null;
+  let records: { readonly [key: string]: unknown } = initial;
+  let broken = brokenKeys(diagnostics);
+  for (let pass = 0; broken.size > 0 && pass <= Object.keys(records).length; pass++) {
+    const kept = withoutBroken(records, broken);
+    const fixed = repair({ ...doc, schemaVersion: SCHEMA_VERSION, records: kept }).document;
+    records = fixed.records;
+    broken = brokenKeys(validate(fixed));
+  }
+  const typed = documentFileSchema.safeParse({ ...doc, schemaVersion: SCHEMA_VERSION, records });
+  return typed.success ? typed.data : null;
+}
 
 /**
  * Parse `.flux.json` text: JSON syntax, migration to the current schema version, lenient repair
@@ -134,7 +199,11 @@ export function parseDocument(text: string): Result<ParsedDocument, DocumentErro
   } catch (e: unknown) {
     const reason = e instanceof Error ? e.message : String(e);
     const diagnostics = [diagnostic('FLX_JSON_INVALID', [], `not valid JSON: ${reason}`)];
-    return err({ code: 'DOCUMENT_JSON_INVALID', message: `not valid JSON: ${reason}`, diagnostics });
+    return err({ code: 'DOCUMENT_JSON_INVALID', message: `not valid JSON: ${reason}`, diagnostics, salvaged: null });
+  }
+  if (tooDeep(value, MAX_JSON_DEPTH)) {
+    const diagnostics = [diagnostic('FLX_JSON_TOO_DEEP', [], `JSON is nested deeper than ${MAX_JSON_DEPTH} levels`)];
+    return err({ code: 'DOCUMENT_JSON_INVALID', message: diagnostics[0]?.message ?? '', diagnostics, salvaged: null });
   }
   // older versions are migrated, recoverable problems repaired (each reported), then validated
   const migrated = migrate(value);
@@ -142,7 +211,12 @@ export function parseDocument(text: string): Result<ParsedDocument, DocumentErro
   const doc = repaired === null ? value : repaired.document;
   const diagnostics = [...(repaired?.diagnostics ?? []), ...validate(doc)];
   const invalid = (): Result<ParsedDocument, DocumentError> =>
-    err({ code: 'DOCUMENT_INVALID', message: `${diagnostics.filter((d) => d.severity === 'error').length} error(s)`, diagnostics });
+    err({
+      code: 'DOCUMENT_INVALID',
+      message: `${diagnostics.filter((d) => d.severity === 'error').length} error(s)`,
+      diagnostics,
+      salvaged: migrated.ok ? salvage(doc, diagnostics) : null,
+    });
   if (!isValid(diagnostics)) return invalid();
   // validate() accepted it, so the schema does too; parsing returns the input unchanged (ADR-0142)
   const typed = documentFileSchema.safeParse(doc);

@@ -26,11 +26,16 @@ export type Repaired = {
 const isObject = (v: unknown): v is Fields => typeof v === 'object' && v !== null && !Array.isArray(v);
 const byId = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
-/** The centre of the connector's screen: where a freed end is put when its element is gone. */
+/**
+ * Where a freed connector end is put: the centre of the connector's screen, or of its viewport on
+ * an infinite screen (M2.12 review r2 F1).
+ */
 function screenCentre(records: Map<string, Mutable>, connector: Fields | undefined): { x: number; y: number } {
   const screen = records.get(String(connector?.['screenId']));
+  const view = screen?.['kind'] === 'infinite' && isObject(screen['viewport']) ? screen['viewport'] : undefined;
   const size = isObject(screen?.['size']) ? screen['size'] : DEFAULT_SCREEN_SIZE;
-  return { x: Number(size['w'] ?? DEFAULT_SCREEN_SIZE.w) / 2, y: Number(size['h'] ?? DEFAULT_SCREEN_SIZE.h) / 2 };
+  const [x, y, w, h] = view ? [view['x'], view['y'], view['w'], view['h']] : [0, 0, size['w'], size['h']];
+  return { x: Number(x ?? 0) + Number(w ?? DEFAULT_SCREEN_SIZE.w) / 2, y: Number(y ?? 0) + Number(h ?? DEFAULT_SCREEN_SIZE.h) / 2 };
 }
 
 /** A binding whose connector is a connector element and whose element exists. */
@@ -40,20 +45,27 @@ function isSound(records: Map<string, Mutable>, b: Fields): boolean {
   return connector?.['type'] === 'element' && connector['kind'] === 'connector' && element?.['type'] === 'element';
 }
 
-/** Make the connector end a removed binding held into a free point (if it has none). */
-function freeEnd(records: Map<string, Mutable>, b: Fields): void {
+/** Key of one connector end: connector id and `source` or `target`. */
+const endKey = (b: Fields): string => `${String(b['connectorId'])}\u0000${String(b['end'])}`;
+
+/** Make the connector end a removed binding held into a free point, unless another binding still holds it (M2.12 review r2 F2). */
+function freeEnd(records: Map<string, Mutable>, b: Fields, held: ReadonlyMap<string, number>): void {
   const connector = records.get(String(b['connectorId']));
-  if (connector?.['kind'] !== 'connector') return;
+  if (connector?.['kind'] !== 'connector' || (held.get(endKey(b)) ?? 0) > 0) return;
   const free = b['end'] === 'target' ? 'freeTarget' : 'freeSource';
   if (connector[free] === undefined) connector[free] = screenCentre(records, connector);
 }
 
 function repairBindings(records: Map<string, Mutable>, out: Diagnostic[]): void {
+  // bindings per connector end, counted once: O(records), not a scan per removal (M2.14 review F1)
+  const held = new Map<string, number>();
+  for (const r of records.values()) if (r['type'] === 'binding') held.set(endKey(r), (held.get(endKey(r)) ?? 0) + 1);
   for (const id of [...records.keys()].sort(byId)) {
     const b = records.get(id);
     if (b?.['type'] !== 'binding' || isSound(records, b)) continue;
     records.delete(id);
-    freeEnd(records, b);
+    held.set(endKey(b), (held.get(endKey(b)) ?? 1) - 1);
+    freeEnd(records, b, held);
     out.push(diagnostic('FLX_REPAIRED_BINDING', ['records', id], `binding "${id}" pointed at a missing record; removed and the connector end made free`));
   }
 }

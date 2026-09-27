@@ -83,4 +83,22 @@ describe('lenient repair (FR-DOC-003)', () => {
       expect(r.ok ? [] : r.error.diagnostics.map((d) => d.code), JSON.stringify(records)).toEqual(['FLX_RECORDS_INVALID']);
     }
   });
+
+  it('frees an end at the viewport centre of an infinite screen, and not when another binding still holds it (M2.12 review r2)', () => {
+    const doc: RawDocument = {
+      schemaVersion: '1.0',
+      records: {
+        doc: { id: 'doc', type: 'document' },
+        s1: { id: 's1', type: 'screen', index: 'a0', kind: 'infinite', viewport: { x: 10000, y: 5000, w: 1000, h: 800 } },
+        a: { id: 'a', type: 'element', screenId: 's1', index: 'a0', kind: 'shape', defId: 'basic:rect', transform: box },
+        c: { id: 'c', type: 'element', screenId: 's1', index: 'a1', kind: 'connector', route: { type: 'straight' } },
+        b1: { id: 'b1', type: 'binding', connectorId: 'c', end: 'source', elementId: 'a', anchor: { kind: 'auto' } },
+        b2: { id: 'b2', type: 'binding', connectorId: 'c', end: 'source', elementId: 'gone', anchor: { kind: 'auto' } },
+        b3: { id: 'b3', type: 'binding', connectorId: 'c', end: 'target', elementId: 'gone', anchor: { kind: 'auto' } },
+      },
+    };
+    const c = repair(doc).document.records['c'] as { readonly [k: string]: unknown };
+    expect(c['freeSource']).toBeUndefined();
+    expect(c['freeTarget']).toEqual({ x: 10500, y: 5400 });
+  });
 });
