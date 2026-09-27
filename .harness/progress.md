@@ -375,3 +375,11 @@ final milestone review ran on aaf09b6..369a1d7; M1.42 is code after that range, 
 final milestone review (fresh milestone-reviewer) on aaf09b6..369a1d7: F1-F3 major, F4-F6 minor; delta review (fresh) on 369a1d7..c9f4fab: D1, D2 major, D3-D5 minor; record .harness/reviews/milestone-M1-final.json, range aaf09b6..c9f4fab, all majors dispositioned
 F1 (dependency review/CodeQL inactive, private repo) and F2 (release enablement) handed to M11; F3/D1 reopened: ci-evidence re-recorded at c9f4fab (gates 36281183585; ci 36281183914 green on attempt 3 after the account's Actions billing block was fixed by the user; attempts 1-2 failed with ci-ok not started for billing), gate tightening handed to M2; F4, F5, D5 handed to M2; F6, D3 argued; D4 fixed (M2 handoffs are rows for the M2 plan)
 D2: the draft final-review bookkeeping and roadmap -> M2 went into the M1.42 commit because the local commit helper ran `git add -A`; the helper now stages only the backlog row and state
+
+## 2026-09-27 M2.1 (claude)
+m2-complete.mjs written red (1/16 legs green: no quarantines): trace, schema/geometry coverage (≥ 300 statements each + floors, json-summary), NFR-REL-002 at FC_RUNS=10000, fixtures gen --check + named test, v1.0 migration (FR-DOC-003, ≥ 2 tests), NFR-REL-005, API reports (≥ 5 exports) + check-api, diagnostics.md lists every FLX_* code, 3 M1 hand-off legs, verify, backlog, final review, roadmap
+test legs count only passing Vitest tests whose full name carries the pattern (json reporter), harness legs only passing node:test cases titled with it
+verify leg: every planned step PASS; `workflows` may SKIP only as "Docker not available" (zizmor image host is denied by this machine's egress policy; CI runs --require-docker on ubuntu)
+review r1 F1: coverage leg judged the vitest exit (other packages' floors fail it) → tests from the json report, floors from the summary; F2: ci-evidence leg (--milestone M2, M2.20); F3 covered by F2 (the gates run lints workflows on ubuntu)
+M1 backlog archived; 24 M2 rows (ADR-0012/0013 first); trace.test "backlog row cites an unknown ID" wrote into M1 rows of the live backlog, now appends its own rows
+env: Playwright 1.63 wants chromium-1243; cdn.playwright.dev is denied here, so /opt/pw-browsers/chromium{,_headless_shell}-1243 alias the preinstalled 1194 build (machine-local, not in the repo)

@@ -106,18 +106,16 @@ describe('check-trace (NFR-MNT-008)', () => {
   });
 
   it('fails when a backlog row cites an unknown ID or none', () => {
-    sb.edit('docs/backlog/current.md', (t) =>
-      t
-        .split('\n')
-        .map((l) =>
-          l.startsWith('| M1.13 |') ? l.replace('| NFR-MNT-008 |', '| NFR-MNT-998 |') : l.startsWith('| M1.22 |') ? l.replace('| HARNESS |', '| all |') : l,
-        )
-        .join('\n'),
+    // own rows, so the case does not depend on which milestone the live backlog holds
+    sb.edit(
+      'docs/backlog/current.md',
+      (t) => `${t.trimEnd()}\n| M9.1 | x | NFR-MNT-998 | x | — | todo | |\n| M9.2 | x | all | x | — | todo | |\n| M9.3 | x | HARNESS | x | — | todo | |\n`,
     );
     const r = trace();
     assert.equal(r.status, 1, out(r));
-    assert.match(r.stderr, /backlog M1\.13: cites unknown requirement NFR-MNT-998/);
-    assert.match(r.stderr, /backlog M1\.22: Req cell cites no requirement ID/);
+    assert.match(r.stderr, /backlog M9\.1: cites unknown requirement NFR-MNT-998/);
+    assert.match(r.stderr, /backlog M9\.2: Req cell cites no requirement ID/);
+    assert.doesNotMatch(r.stderr, /backlog M9\.3/);
   });
 
   it('fails when the matrix drifts from the requirement files', () => {
