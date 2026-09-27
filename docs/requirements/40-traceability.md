@@ -29,8 +29,8 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-001 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
 | FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/ids.test.ts` |
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +2 |
-| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/checked-schema.test.ts` +7 |
+| FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +4 |
+| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/checked-schema.test.ts` +8 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -326,7 +326,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/rich-text.test.ts` |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/ids.test.ts` |
+| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/ids.test.ts`, `packages/schema/src/validate.test.ts` |
 | NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/rich-text.test.ts` |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |

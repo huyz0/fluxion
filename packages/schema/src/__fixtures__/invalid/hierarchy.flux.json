@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "records": {
+    "doc": { "id": "doc", "type": "document" },
+    "doc2": { "id": "doc2", "type": "document" },
+    "s1": { "id": "s1", "type": "screen", "index": "a0" },
+    "s2": { "id": "s2", "type": "screen", "index": "a0" },
+    "g1": {
+      "id": "g1",
+      "type": "element",
+      "screenId": "s1",
+      "parentId": "g2",
+      "index": "a0",
+      "kind": "group",
+      "transform": { "x": 0, "y": 0, "w": 1, "h": 1 }
+    },
+    "g2": {
+      "id": "g2",
+      "type": "element",
+      "screenId": "s1",
+      "parentId": "g1",
+      "index": "a1",
+      "kind": "group",
+      "transform": { "x": 0, "y": 0, "w": 1, "h": 1 }
+    },
+    "r1": {
+      "id": "r1",
+      "type": "element",
+      "screenId": "s1",
+      "index": "a2",
+      "kind": "shape",
+      "defId": "basic:rect",
+      "transform": { "x": 0, "y": 0, "w": 1, "h": 1 },
+      "semantic": { "slug": "api" }
+    },
+    "r2": {
+      "id": "r2",
+      "type": "element",
+      "screenId": "s1",
+      "parentId": "r1",
+      "index": "a0",
+      "kind": "shape",
+      "defId": "basic:rect",
+      "transform": { "x": 0, "y": 0, "w": 1, "h": 1 },
+      "semantic": { "slug": "api" }
+    },
+    "r3": {
+      "id": "r3",
+      "type": "element",
+      "screenId": "s2",
+      "parentId": "g1",
+      "index": "a0",
+      "kind": "shape",
+      "defId": "basic:rect",
+      "transform": { "x": 0, "y": 0, "w": 1, "h": 1 }
+    },
+    "r4": {
+      "id": "r4",
+      "type": "element",
+      "screenId": "s1",
+      "index": "a2",
+      "kind": "shape",
+      "defId": "basic:rect",
+      "transform": { "x": 0, "y": 0, "w": 1, "h": 1 }
+    }
+  }
+}

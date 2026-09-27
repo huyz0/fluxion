@@ -134,6 +134,21 @@ export type Crop = Extensible<{
 export const DEFAULT_SCREEN_SIZE: Size;
 
 // @public
+export type Diagnostic = {
+    readonly code: DiagnosticCode;
+    readonly severity: DiagnosticSeverity;
+    readonly path: string;
+    readonly message: string;
+    readonly hint?: string;
+};
+
+// @public
+export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSeverity; };
+
+// @public
+export type DiagnosticCode = "FLX_DOC_NOT_OBJECT" | "FLX_VERSION_INVALID" | "FLX_VERSION_UNSUPPORTED" | "FLX_VERSION_NEWER" | "FLX_RECORDS_INVALID" | "FLX_SCHEMA_INVALID" | "FLX_ID_MISMATCH" | "FLX_RECORD_UNKNOWN_TYPE" | "FLX_KIND_UNKNOWN" | "FLX_TEXT_INVALID" | "FLX_TEXT_UNSAFE_LINK" | "FLX_TEXT_UNKNOWN_NODE" | "FLX_TEXT_UNKNOWN_MARK" | "FLX_DOCUMENT_MISSING" | "FLX_DOCUMENT_DUPLICATE" | "FLX_REF_MISSING" | "FLX_REF_WRONG_TYPE" | "FLX_PARENT_INVALID" | "FLX_PARENT_CYCLE" | "FLX_BINDING_DUPLICATE" | "FLX_CONNECTOR_END_MISSING" | "FLX_CONNECTOR_END_CONFLICT" | "FLX_INDEX_DUPLICATE" | "FLX_SLUG_DUPLICATE";
+
+// @public
 export type DiagnosticSeverity = "error" | "warning" | "info";
 
 // @public
@@ -312,6 +327,12 @@ export function isIndexKey(key: unknown): key is IndexKey;
 
 // @public
 export function isRecordId(value: unknown): value is RecordId;
+
+// @public
+export function isValid(diagnostics: readonly Diagnostic[]): boolean;
+
+// @public
+export function jsonPointer(segments: readonly (string | number)[]): string;
 
 // @public
 export function keyBetween(a: string | null, b: string | null): Result<IndexKey>;
@@ -656,6 +677,9 @@ export type UnknownRecord = Extensible<{
     readonly id: RecordId;
     readonly type: string;
 }>;
+
+// @public
+export function validate(doc: unknown): Diagnostic[];
 
 // @public
 export type VariableRecord = Extensible<{

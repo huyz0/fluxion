@@ -1,0 +1,9 @@
+[
+  { "code": "FLX_REF_MISSING", "severity": "error", "path": "/records/doc/themeId" },
+  { "code": "FLX_REF_MISSING", "severity": "error", "path": "/records/s1/background/assetId" },
+  { "code": "FLX_REF_MISSING", "severity": "error", "path": "/records/e1/screenId" },
+  { "code": "FLX_REF_MISSING", "severity": "error", "path": "/records/e2/assetId" },
+  { "code": "FLX_REF_WRONG_TYPE", "severity": "error", "path": "/records/t1/screenId" },
+  { "code": "FLX_REF_MISSING", "severity": "error", "path": "/records/st1/timelineId" },
+  { "code": "FLX_REF_MISSING", "severity": "error", "path": "/records/i1/ownerId" }
+]

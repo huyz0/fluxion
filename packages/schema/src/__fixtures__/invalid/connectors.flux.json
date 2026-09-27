@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "records": {
+    "doc": { "id": "doc", "type": "document" },
+    "s1": { "id": "s1", "type": "screen", "index": "a0" },
+    "a": {
+      "id": "a",
+      "type": "element",
+      "screenId": "s1",
+      "index": "a0",
+      "kind": "shape",
+      "defId": "basic:rect",
+      "transform": { "x": 0, "y": 0, "w": 1, "h": 1 }
+    },
+    "c1": { "id": "c1", "type": "element", "screenId": "s1", "index": "a1", "kind": "connector", "route": { "type": "straight" } },
+    "c2": {
+      "id": "c2",
+      "type": "element",
+      "screenId": "s1",
+      "index": "a2",
+      "kind": "connector",
+      "route": { "type": "straight" },
+      "freeSource": { "x": 0, "y": 0 },
+      "freeTarget": { "x": 9, "y": 9 }
+    },
+    "b1": { "id": "b1", "type": "binding", "connectorId": "c2", "end": "source", "elementId": "a", "anchor": { "kind": "auto" } },
+    "b2": { "id": "b2", "type": "binding", "connectorId": "c2", "end": "source", "elementId": "a", "anchor": { "kind": "floating" } },
+    "b3": { "id": "b3", "type": "binding", "connectorId": "a", "end": "target", "elementId": "c2", "anchor": { "kind": "auto" } },
+    "b4": { "id": "b4", "type": "binding", "connectorId": "c2", "end": "target", "elementId": "c2", "anchor": { "kind": "auto" } }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "records": {
+    "doc": { "id": "doc", "type": "document" },
+    "s1": { "id": "s1", "type": "screen", "index": "a0", "size": { "w": 0, "h": 1080 } },
+    "e1": { "id": "e1", "type": "element", "screenId": "s1", "index": "a0", "kind": "shape", "transform": { "x": 0, "y": 0, "w": -5, "h": 10 } },
+    "e2": {
+      "id": "e3",
+      "type": "element",
+      "screenId": "s1",
+      "index": "a1",
+      "kind": "shape",
+      "defId": "basic:rect",
+      "transform": { "x": 0, "y": 0, "w": 5, "h": 5 },
+      "style": { "fill": "{color" }
+    },
+    "e4": { "id": "e4", "type": "element", "screenId": "s1", "index": "a2", "kind": "hologram", "beam": 3 },
+    "x1": { "id": "x1", "type": "sticky-note", "text": "hi" },
+    "t1": {
+      "id": "t1",
+      "type": "element",
+      "screenId": "s1",
+      "index": "a3",
+      "kind": "text",
+      "transform": { "x": 0, "y": 0, "w": 5, "h": 5 },
+      "text": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [{ "type": "text", "text": "x", "marks": [{ "type": "sparkle" }, { "type": "link", "attrs": { "href": "javascript:alert(1)" } }] }]
+          }
+        ]
+      }
+    },
+    "bad": 7
+  }
+}

@@ -1,0 +1,9 @@
+[
+  { "code": "FLX_REF_WRONG_TYPE", "severity": "error", "path": "/records/b3/connectorId" },
+  { "code": "FLX_REF_WRONG_TYPE", "severity": "error", "path": "/records/b4/elementId" },
+  { "code": "FLX_BINDING_DUPLICATE", "severity": "error", "path": "/records/b2" },
+  { "code": "FLX_CONNECTOR_END_MISSING", "severity": "error", "path": "/records/c1/freeSource" },
+  { "code": "FLX_CONNECTOR_END_MISSING", "severity": "error", "path": "/records/c1/freeTarget" },
+  { "code": "FLX_CONNECTOR_END_CONFLICT", "severity": "warning", "path": "/records/c2/freeSource" },
+  { "code": "FLX_CONNECTOR_END_CONFLICT", "severity": "warning", "path": "/records/c2/freeTarget" }
+]

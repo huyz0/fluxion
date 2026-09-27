@@ -1,6 +1,6 @@
 // Public entry of @fluxion/schema; the package comment is the dts banner in tsdown.config.ts.
 
-export type { DiagnosticSeverity } from './diagnostics.js';
+export { DIAGNOSTIC_CODES, type Diagnostic, type DiagnosticCode, type DiagnosticSeverity, jsonPointer } from './diagnostics.js';
 export { type AnyRecord, type DocumentFile, RECORD_TYPES, SCHEMA_VERSION, type UnknownRecord } from './document-file.js';
 export type { FluxError, FluxErrorCode } from './errors.js';
 export { compareKeys, type IndexKey, isIndexKey, keyBetween, nKeysBetween } from './fractional-index.js';
@@ -55,6 +55,7 @@ export {
   type Transform,
   transformRotation,
 } from './style.js';
+export { isValid, validate } from './validate.js';
 
 /**
  * Version of this package.

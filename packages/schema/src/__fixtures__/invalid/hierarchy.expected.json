@@ -1,0 +1,10 @@
+[
+  { "code": "FLX_DOCUMENT_DUPLICATE", "severity": "error", "path": "/records/doc2" },
+  { "code": "FLX_PARENT_INVALID", "severity": "error", "path": "/records/r2/parentId" },
+  { "code": "FLX_PARENT_INVALID", "severity": "error", "path": "/records/r3/parentId" },
+  { "code": "FLX_PARENT_CYCLE", "severity": "error", "path": "/records/g1/parentId" },
+  { "code": "FLX_PARENT_CYCLE", "severity": "error", "path": "/records/g2/parentId" },
+  { "code": "FLX_INDEX_DUPLICATE", "severity": "warning", "path": "/records/r4/index" },
+  { "code": "FLX_INDEX_DUPLICATE", "severity": "warning", "path": "/records/s2/index" },
+  { "code": "FLX_SLUG_DUPLICATE", "severity": "error", "path": "/records/r2/semantic/slug" }
+]

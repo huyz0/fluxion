@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "records": {
+    "doc": { "id": "doc", "type": "document", "themeId": "th9" },
+    "s1": { "id": "s1", "type": "screen", "index": "a0", "background": { "type": "image", "assetId": "img9" } },
+    "e1": {
+      "id": "e1",
+      "type": "element",
+      "screenId": "s9",
+      "index": "a0",
+      "kind": "shape",
+      "defId": "basic:rect",
+      "transform": { "x": 0, "y": 0, "w": 10, "h": 10 }
+    },
+    "e2": {
+      "id": "e2",
+      "type": "element",
+      "screenId": "s1",
+      "index": "a1",
+      "kind": "image",
+      "assetId": "img9",
+      "transform": { "x": 0, "y": 0, "w": 10, "h": 10 }
+    },
+    "t1": { "id": "t1", "type": "timeline", "screenId": "e1", "name": "main", "index": "a0" },
+    "st1": { "id": "st1", "type": "step", "timelineId": "t9", "index": "a0", "trigger": { "kind": "onClick" }, "animations": [] },
+    "i1": { "id": "i1", "type": "interaction", "ownerId": "gone", "trigger": { "kind": "onClick" }, "actions": [] },
+    "cm1": { "id": "cm1", "type": "comment", "targetId": "e2", "author": "Ada", "body": "ok" }
+  }
+}

@@ -1,0 +1,12 @@
+[
+  { "code": "FLX_SCHEMA_INVALID", "severity": "error", "path": "/records/bad" },
+  { "code": "FLX_SCHEMA_INVALID", "severity": "error", "path": "/records/e1/transform/w" },
+  { "code": "FLX_SCHEMA_INVALID", "severity": "error", "path": "/records/e1/defId" },
+  { "code": "FLX_ID_MISMATCH", "severity": "error", "path": "/records/e2/id" },
+  { "code": "FLX_SCHEMA_INVALID", "severity": "error", "path": "/records/e2/style/fill" },
+  { "code": "FLX_KIND_UNKNOWN", "severity": "warning", "path": "/records/e4/kind" },
+  { "code": "FLX_SCHEMA_INVALID", "severity": "error", "path": "/records/s1/size/w" },
+  { "code": "FLX_TEXT_UNSAFE_LINK", "severity": "error", "path": "/records/t1/text/content/0/content/0/marks/1/attrs/href" },
+  { "code": "FLX_TEXT_UNKNOWN_MARK", "severity": "warning", "path": "/records/t1/text/content/0/content/0/marks/0" },
+  { "code": "FLX_RECORD_UNKNOWN_TYPE", "severity": "warning", "path": "/records/x1/type" }
+]

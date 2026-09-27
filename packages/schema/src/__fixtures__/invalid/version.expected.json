@@ -1,0 +1,4 @@
+[
+  { "code": "FLX_VERSION_UNSUPPORTED", "severity": "error", "path": "/schemaVersion" },
+  { "code": "FLX_RECORDS_INVALID", "severity": "error", "path": "/records" }
+]

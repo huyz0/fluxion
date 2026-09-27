@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1.0",
+  "records": {
+    "s1": { "id": "s1", "type": "screen", "index": "a0" }
+  }
+}
