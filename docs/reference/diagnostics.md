@@ -55,3 +55,14 @@ id, then referential ones grouped by check (each group by record id).
 | `FLX_CONNECTOR_END_CONFLICT` | warning | A connector end has both a binding and a free point; the binding wins. | Remove the free point. |
 | `FLX_INDEX_DUPLICATE` | warning | Siblings (screens; elements with the same screen and parent; timelines of a screen; steps of a timeline) share an `index`; order between them is undefined until repair appends the later ones. | Give each a distinct key. |
 | `FLX_SLUG_DUPLICATE` | error | Two elements share `semantic.slug` (slugs are document-unique handles for FluxScript, AI and MCP). | Rename one. |
+
+## Repair on load
+
+`parseDocument` migrates an older document, then repairs what it can without guessing intent
+and reports each change (02-document-model §4). Validation runs on the repaired document.
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_REPAIRED_BINDING` | warning | A binding pointed at a missing connector or element; it was removed and the connector end became a free point (the screen centre when it had none). | Re-attach the end. |
+| `FLX_REPAIRED_PARENT` | warning | `parentId` named a missing element or looped; the element moved to the screen root. | Regroup if needed. |
+| `FLX_REPAIRED_INDEX` | warning | A sibling `index` was missing, invalid or shared; it was appended after its siblings. | None needed. |

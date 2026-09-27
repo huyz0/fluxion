@@ -6,6 +6,8 @@
 import { type Diagnostic, diagnostic } from './diagnostics.js';
 import { type DocumentFile, documentFileSchema } from './document-file.js';
 import type { FluxError } from './errors.js';
+import { migrate } from './migrate.js';
+import { repair } from './repair.js';
 import { err, ok, type Result } from './result.js';
 import { isValid, validate } from './validate.js';
 
@@ -119,8 +121,9 @@ export type DocumentError = FluxError & {
 };
 
 /**
- * Parse `.flux.json` text: JSON syntax, then {@link validate}. Never throws; expected failures are
- * a `Result` error (coding-typescript rule 10).
+ * Parse `.flux.json` text: JSON syntax, migration to the current schema version, lenient repair
+ * (reported as `FLX_REPAIRED_*` warnings), then {@link validate}. Never throws; expected failures
+ * are a `Result` error (coding-typescript rule 10).
  *
  * @public
  */
@@ -133,11 +136,15 @@ export function parseDocument(text: string): Result<ParsedDocument, DocumentErro
     const diagnostics = [diagnostic('FLX_JSON_INVALID', [], `not valid JSON: ${reason}`)];
     return err({ code: 'DOCUMENT_JSON_INVALID', message: `not valid JSON: ${reason}`, diagnostics });
   }
-  const diagnostics = validate(value);
+  // older versions are migrated, recoverable problems repaired (each reported), then validated
+  const migrated = migrate(value);
+  const repaired = migrated.ok ? repair(migrated.value.document) : null;
+  const doc = repaired === null ? value : repaired.document;
+  const diagnostics = [...(repaired?.diagnostics ?? []), ...validate(doc)];
   const invalid = (): Result<ParsedDocument, DocumentError> =>
     err({ code: 'DOCUMENT_INVALID', message: `${diagnostics.filter((d) => d.severity === 'error').length} error(s)`, diagnostics });
   if (!isValid(diagnostics)) return invalid();
   // validate() accepted it, so the schema does too; parsing returns the input unchanged (ADR-0142)
-  const typed = documentFileSchema.safeParse(value);
+  const typed = documentFileSchema.safeParse(doc);
   return typed.success ? ok({ document: typed.data, diagnostics }) : invalid();
 }

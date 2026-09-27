@@ -5,7 +5,7 @@
  *
  * @public
  */
-export type FluxErrorCode = 'INDEX_INVALID' | 'INDEX_ORDER' | 'DOCUMENT_JSON_INVALID' | 'DOCUMENT_INVALID';
+export type FluxErrorCode = 'INDEX_INVALID' | 'INDEX_ORDER' | 'DOCUMENT_JSON_INVALID' | 'DOCUMENT_INVALID' | 'MIGRATION_UNSUPPORTED';
 
 /**
  * An expected failure: stable `code`, developer message, optional JSON pointer and cause.

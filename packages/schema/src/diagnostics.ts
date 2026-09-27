@@ -39,7 +39,10 @@ export type DiagnosticCode =
   | 'FLX_CONNECTOR_END_MISSING'
   | 'FLX_CONNECTOR_END_CONFLICT'
   | 'FLX_INDEX_DUPLICATE'
-  | 'FLX_SLUG_DUPLICATE';
+  | 'FLX_SLUG_DUPLICATE'
+  | 'FLX_REPAIRED_BINDING'
+  | 'FLX_REPAIRED_PARENT'
+  | 'FLX_REPAIRED_INDEX';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -73,6 +76,9 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_CONNECTOR_END_CONFLICT: 'warning',
   FLX_INDEX_DUPLICATE: 'warning',
   FLX_SLUG_DUPLICATE: 'error',
+  FLX_REPAIRED_BINDING: 'warning',
+  FLX_REPAIRED_PARENT: 'warning',
+  FLX_REPAIRED_INDEX: 'warning',
 };
 
 /**

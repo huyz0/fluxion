@@ -464,3 +464,11 @@ preservation needed no schema change: looseObject everywhere (M2.6), no parse-ti
 review r1 F1: the byte-equal case compared schema output with schema output → also asserts JSON.parse(text) and the parsed document deep-equal the raw input; F2: 08-file-format canonical rule notes the ≥ 1e12 exception
 review r2 F1: every number was rounded, so plugin props and unknown fields lost digits (51.50735 → 51.507) → only geometry is rounded (transform x/y/w/h/rot, free ends, waypoints, label offsets, screen size/viewport), everything else exact; 08-file-format §4 says so; preservation tests use non-grid numbers and arbitrary doubles
 a random-seed run found -0 in extra data written as 0 (the canonical rule) → named example case; the property generator excludes -0; 10 random seeds and FC_RUNS=5000 green
+
+## 2026-09-27 M2.12 (claude)
+migrate.ts: Migration {from,to,up}, MIGRATIONS (empty: 1.0 is the only released version), migrate(doc, chain) → Result<{document, applied}> (MIGRATION_UNSUPPORTED for malformed/newer-major/no path/wrong output/looping chain; current or newer minor returned unchanged, so idempotent); RawDocument records are unknown
+repair.ts: dangling binding → removed, connector end free (screen centre when it had none); missing or looping parent → screen root; missing/invalid/shared sibling index → appended; each FLX_REPAIRED_* warning (3 new codes, documented); pure (JSON clone)
+parseDocument = JSON → migrate → repair → validate; released fixture src/__fixtures__/v1.0/document.flux.json (every record type, canonical form) validates and round-trips byte-equal
+tests: FR-DOC-003 synthetic 0.9→1.0 (dimensions → size, z → index) migrates and validates; v1.0 fixture 0 diagnostics; migrating twice = once; refusals; repair cases; parse repairs on load
+M2.9 r3 minor: M2.md, M12.md and the M2.11 row now say geometry-only rounding
+review r1: records null made parseDocument throw in repair (typeof null === object), and array records were rebuilt as a map → migrate/repair need plain-object records, anything else goes to validate (FLX_RECORDS_INVALID); tests for null, array, string

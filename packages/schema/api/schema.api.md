@@ -149,7 +149,7 @@ export type Diagnostic = {
 export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSeverity; };
 
 // @public
-export type DiagnosticCode = "FLX_JSON_INVALID" | "FLX_DOC_NOT_OBJECT" | "FLX_VERSION_INVALID" | "FLX_VERSION_UNSUPPORTED" | "FLX_VERSION_NEWER" | "FLX_RECORDS_INVALID" | "FLX_SCHEMA_INVALID" | "FLX_ID_MISMATCH" | "FLX_RECORD_UNKNOWN_TYPE" | "FLX_KIND_UNKNOWN" | "FLX_TEXT_INVALID" | "FLX_TEXT_UNSAFE_LINK" | "FLX_TEXT_UNKNOWN_NODE" | "FLX_TEXT_UNKNOWN_MARK" | "FLX_DOCUMENT_MISSING" | "FLX_DOCUMENT_DUPLICATE" | "FLX_REF_MISSING" | "FLX_REF_WRONG_TYPE" | "FLX_PARENT_INVALID" | "FLX_PARENT_CYCLE" | "FLX_BINDING_DUPLICATE" | "FLX_CONNECTOR_END_MISSING" | "FLX_CONNECTOR_END_CONFLICT" | "FLX_INDEX_DUPLICATE" | "FLX_SLUG_DUPLICATE";
+export type DiagnosticCode = "FLX_JSON_INVALID" | "FLX_DOC_NOT_OBJECT" | "FLX_VERSION_INVALID" | "FLX_VERSION_UNSUPPORTED" | "FLX_VERSION_NEWER" | "FLX_RECORDS_INVALID" | "FLX_SCHEMA_INVALID" | "FLX_ID_MISMATCH" | "FLX_RECORD_UNKNOWN_TYPE" | "FLX_KIND_UNKNOWN" | "FLX_TEXT_INVALID" | "FLX_TEXT_UNSAFE_LINK" | "FLX_TEXT_UNKNOWN_NODE" | "FLX_TEXT_UNKNOWN_MARK" | "FLX_DOCUMENT_MISSING" | "FLX_DOCUMENT_DUPLICATE" | "FLX_REF_MISSING" | "FLX_REF_WRONG_TYPE" | "FLX_PARENT_INVALID" | "FLX_PARENT_CYCLE" | "FLX_BINDING_DUPLICATE" | "FLX_CONNECTOR_END_MISSING" | "FLX_CONNECTOR_END_CONFLICT" | "FLX_INDEX_DUPLICATE" | "FLX_SLUG_DUPLICATE" | "FLX_REPAIRED_BINDING" | "FLX_REPAIRED_PARENT" | "FLX_REPAIRED_INDEX";
 
 // @public
 export type DiagnosticSeverity = "error" | "warning" | "info";
@@ -246,7 +246,7 @@ export type FluxError = {
 };
 
 // @public
-export type FluxErrorCode = "INDEX_INVALID" | "INDEX_ORDER" | "DOCUMENT_JSON_INVALID" | "DOCUMENT_INVALID";
+export type FluxErrorCode = "INDEX_INVALID" | "INDEX_ORDER" | "DOCUMENT_JSON_INVALID" | "DOCUMENT_INVALID" | "MIGRATION_UNSUPPORTED";
 
 // @public
 export type FontStyle = Extensible<{
@@ -373,6 +373,25 @@ export type Meta = {
 };
 
 // @public
+export function migrate(doc: unknown, migrations?: readonly Migration[]): Result<Migrated, FluxError>;
+
+// @public
+export type Migrated = {
+    readonly document: RawDocument;
+    readonly applied: readonly string[];
+};
+
+// @public
+export type Migration = {
+    readonly from: string;
+    readonly to: string;
+    readonly up: (doc: RawDocument) => RawDocument;
+};
+
+// @public
+export const MIGRATIONS: readonly Migration[];
+
+// @public
 export type NamedAnchor = Extensible<{
     readonly kind: "named";
     readonly name: string;
@@ -443,6 +462,15 @@ export interface Random {
 }
 
 // @public
+export type RawDocument = {
+    readonly schemaVersion: string;
+    readonly records: {
+        readonly [id: string]: unknown;
+    };
+    readonly [key: string]: unknown;
+};
+
+// @public
 export const RECORD_TYPES: readonly string[];
 
 // @public
@@ -457,6 +485,15 @@ export type Rect = Extensible<{
     readonly w: number;
     readonly h: number;
 }>;
+
+// @public
+export function repair(doc: RawDocument): Repaired;
+
+// @public
+export type Repaired = {
+    readonly document: RawDocument;
+    readonly diagnostics: readonly Diagnostic[];
+};
 
 // @public
 export type ResourceRecord = AssetRecord | ThemeRecord | PluginRefRecord;
