@@ -64,6 +64,7 @@ catalog:
   react-dom: 19.3.0
   "@types/react": 19.3.0
   "@types/react-dom": 19.3.0
+  zod: 4.6.5 # schema runtime (tech-stack.md "Schema"), MIT; bundled by the player through @fluxion/schema
 
 # TS 6 for tools that need the compiler API (ADR-0011): apps/docs installs it as its own
 # `typescript` via "catalog:typescript6", so TypeDoc resolves its peer to TS 6, not the root TS 7.

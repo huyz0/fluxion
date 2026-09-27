@@ -5,10 +5,46 @@
 ```ts
 
 // @public
+export type Color = string;
+
+// @public
+export type ColorTransform = Extensible<{
+    readonly alpha?: number;
+    readonly lighten?: number;
+}>;
+
+// @public
+export type ColorValue = Color | TokenRef | TransformedToken;
+
+// @public
 export function compareKeys(a: string, b: string): number;
 
 // @public
 export function createId(random: Random): RecordId;
+
+// @public
+export const DEFAULT_SCREEN_SIZE: Size;
+
+// @public
+export type DocumentRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "document";
+    readonly meta?: Meta;
+    readonly title: string;
+    readonly lang?: string;
+    readonly themeId?: RecordId;
+    readonly settings?: DocumentSettings;
+    readonly authors?: readonly string[];
+    readonly created?: string;
+    readonly modified?: string;
+}>;
+
+// @public
+export type DocumentSettings = Extensible<{
+    readonly responsive?: "scale" | "reflow";
+    readonly reducedMotion?: "respect" | "ignore";
+    readonly lineJumps?: boolean;
+}>;
 
 // @public
 export type Err<E> = {
@@ -20,6 +56,11 @@ export type Err<E> = {
 export function err<E>(error: E): Err<E>;
 
 // @public
+export type Extensible<T> = T & {
+    readonly [key: string]: unknown;
+};
+
+// @public
 export type FluxError = {
     readonly code: FluxErrorCode;
     readonly message: string;
@@ -28,13 +69,33 @@ export type FluxError = {
 };
 
 // @public
-export type FluxErrorCode = "INDEX_INVALID" | "INDEX_ORDER" | "SCHEMA_INVALID" | "PARSE_JSON" | "MIGRATION_UNSUPPORTED";
+export type FluxErrorCode = "INDEX_INVALID" | "INDEX_ORDER";
+
+// @public
+export type GradientPaint = Extensible<{
+    readonly type: "linear-gradient" | "radial-gradient";
+    readonly angle?: number;
+    readonly stops: readonly GradientStop[];
+}>;
+
+// @public
+export type GradientStop = Extensible<{
+    readonly offset: number;
+    readonly color: ColorValue;
+}>;
 
 // @public
 export const ID_ALPHABET: string;
 
 // @public
 export const ID_LENGTH: number;
+
+// @public
+export type ImagePaint = Extensible<{
+    readonly type: "image";
+    readonly assetId: RecordId;
+    readonly fit: "cover" | "contain" | "fill" | "tile";
+}>;
 
 // @public
 export type IndexKey = string & {
@@ -54,6 +115,11 @@ export function isRecordId(value: unknown): value is RecordId;
 export function keyBetween(a: string | null, b: string | null): Result<IndexKey>;
 
 // @public
+export type Meta = {
+    readonly [key: string]: unknown;
+};
+
+// @public
 export function nKeysBetween(a: string | null, b: string | null, n: number): Result<IndexKey[]>;
 
 // @public
@@ -66,6 +132,9 @@ export type Ok<T> = {
 export function ok<T>(value: T): Ok<T>;
 
 // @public
+export type Paint = ColorValue | GradientPaint | ImagePaint;
+
+// @public
 export interface Random {
     next(): number;
 }
@@ -76,10 +145,50 @@ export type RecordId = string & {
 };
 
 // @public
+export type Rect = Extensible<{
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+}>;
+
+// @public
 export type Result<T, E = FluxError> = Ok<T> | Err<E>;
 
 // @public
+export type ScreenRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "screen";
+    readonly meta?: Meta;
+    readonly index: IndexKey;
+    readonly name: string;
+    readonly kind: "fixed" | "infinite";
+    readonly size: Size;
+    readonly viewport?: Rect;
+    readonly background?: Paint;
+    readonly masterId?: RecordId;
+    readonly parentElementId?: RecordId;
+    readonly sectionId?: RecordId;
+    readonly hidden?: boolean;
+}>;
+
+// @public
 export function seededRandom(seed: number): Random;
+
+// @public
+export type Size = Extensible<{
+    readonly w: number;
+    readonly h: number;
+}>;
+
+// @public
+export type TokenRef = `{${string}}`;
+
+// @public
+export type TransformedToken = Extensible<{
+    readonly token: TokenRef;
+    readonly transform: ColorTransform;
+}>;
 
 // @public
 export const VERSION: string;

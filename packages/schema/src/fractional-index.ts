@@ -1,7 +1,8 @@
 // Fractional-index keys (FR-DOC-010, ADR-0012). A key is an integer part whose head character fixes
 // its length (a..z: 1..26 digits, Z..A: 1..26 digits for negatives) plus a base-62 fraction that
 // never ends in '0'. Digits are in ASCII order, so keys compare as plain strings.
-import { err, type FluxError, ok, type Result } from './result.js';
+import type { FluxError } from './errors.js';
+import { err, ok, type Result } from './result.js';
 
 /**
  * A fractional-index key (`"a0"`, `"a0V"`); order is plain code-unit string order.

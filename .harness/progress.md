@@ -403,3 +403,11 @@ edge found by test: decrementing to the smallest integer `A`+26×`0` gave an inv
 tests: FR-DOC-010 10k pairs between random neighbours, insert-sequence property, nKeysBetween property, one-screen reorder changes one record, edges, never throws on any string
 ADR-0012 dated amendment: isRecordId 1-64 vs isGeneratedId 16 (M2.4 F1), growth one digit per ~6 same-spot inserts (M2.2 F1), no exhaustion; index.ts re-exports after VERSION so @packageDocumentation shows (M2.4 F2)
 package comment moved to version.ts, the first export of index.ts (biome import sorting suppressed there): tsdown's bundled index.d.ts opens with the first import's region
+
+## 2026-09-27 M2.6 (claude)
+zod 4.6.5 via catalog (schema dependency; tech-stack "Schema"); ADR-0014: isolatedDeclarations rejects exported z.infer of unannotated schemas, so record types are TSDoc'd types and `checkedSchema<T>()(schema)` fails tsc unless schema output == T (optional `| undefined` dropped, arrays readonly, branded primitives kept); coding-typescript rule 7 updated
+errors.ts holds FluxError + codes (M2.5 F1), only INDEX_INVALID/INDEX_ORDER (F2); M2.5 F3 argued
+primitives (recordIdSchema, indexKeySchema, meta, Extensible), paint (TokenRef, Color, ColorValue, gradient/image Paint), records/document, records/screen (kind fixed|infinite, size default 1920×1080, viewport, background Paint)
+tests: FR-SCR-001 default size, backgrounds, rejects; FR-DOC-005 unknown keys kept at record and nested level; harness schema-open-objects bans z.object/strictObject/strict/strip/catchall(never) in schema sources
+review r1 F1: checkedSchema compared mutual assignability, and Extensible's index signature absorbed one-sided optional fields → identity check on a normalized form (index signature → `__open` key, undefined and readonly dropped) + @ts-expect-error cases; r2 F1: scan reads whole files (split chains), checkedSchema rejects z.object for Extensible types; r2 F2: colour functions need 3-4 numeric channels; r2 F3: infinite screen needs a viewport; F2: screen.notes is now in the M2.7 row; F3: named colours = CSS list
+package comment: tsdown dts banner (external imports and re-exported regions precede index.ts's own text in the bundled d.ts); version.ts from M2.5 removed
