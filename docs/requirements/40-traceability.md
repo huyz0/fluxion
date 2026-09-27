@@ -27,7 +27,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | ID | Pri | Inc | Milestone(s) | Source | Tests |
 |---|---|---|---|---|---|
 | FR-DOC-001 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/ids.test.ts` |
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -326,7 +326,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/ids.test.ts` |
 | NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |

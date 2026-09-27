@@ -5,6 +5,36 @@
 ```ts
 
 // @public
+export function createId(random: Random): RecordId;
+
+// @public
+export const ID_ALPHABET: string;
+
+// @public
+export const ID_LENGTH: number;
+
+// @public
+export function isGeneratedId(value: unknown): value is RecordId;
+
+// @public
+export function isRecordId(value: unknown): value is RecordId;
+
+// @public
+export interface Random {
+    next(): number;
+}
+
+// @public
+export type RecordId = string & {
+    readonly __brand: "RecordId";
+};
+
+// @public
+export function seededRandom(seed: number): Random;
+
+// @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```

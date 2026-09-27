@@ -4,6 +4,8 @@
  * @packageDocumentation
  */
 
+export { createId, ID_ALPHABET, ID_LENGTH, isGeneratedId, isRecordId, type Random, type RecordId, seededRandom } from './ids.js';
+
 /**
  * Version of this package.
  *

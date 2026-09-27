@@ -391,3 +391,8 @@ own base-62 fractional keys (head char fixes integer length, fraction never ends
 ## 2026-09-27 M2.3 (claude)
 ADR-0013 accepted: ProseMirror-compatible JSON subset as Zod (doc, paragraph, heading 1-6, bullet/ordered list, listItem, text, hardBreak, field) + marks (bold, italic, underline, strike, code, link, color, highlight, font, size)
 review r1 F1: unknown node/mark types are preserved + one warning each (text fallback on render), not errors, so a newer minor never loses text; F2: listItem is paragraph-first, TipTap needs custom marks (color/highlight/font/size) and a field atom in M7; unknown attrs preserved; link.href only http/https/mailto/#screen:<id>; no raw HTML; editor library stays M7 (ADR-0019)
+
+## 2026-09-27 M2.4 (claude)
+schema/src/ids.ts: `Random` port, branded `RecordId`, `createId` (16 of `A-Za-z0-9_-`, clamps an out-of-range port), `isRecordId` (1-64 chars, readable fixture IDs), `isGeneratedId` (exactly 16), `seededRandom` (mulberry32)
+ids.test: FR-DOC-002 1e6 ids no collision (~0.6 s), pattern property, NFR-REL-005 same seed same ids, whole alphabet used
+carried: M2.3 r2 minors (an unknown node satisfies the known content rules; an unknown-node round-trip test) go into M2.7 with an ADR-0013 amendment
