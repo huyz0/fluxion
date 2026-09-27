@@ -553,3 +553,7 @@ budget.test: "lockfile change in CI" (CI=true passes with the note, a staged-tim
 delta milestone review (fresh, 5481b86..23a6cf0): pass with D1 major (ADR-0143 said the staged hook re-records; precommit runs budget only in --all), D2 minor (completion gate inherits CI=true), D3 minor (cold setup measured on ubuntu only)
 fix: ADR-0143 Consequences corrected (stale record surfaces at the next full verify/completion gate; ubuntu-only measurement); m2-complete verify leg runs pnpm verify with CI unset; proof: stale record + CI=true → check-budget exits 0 with the ADR-0143 note, with the gate's CI='' it exits 1
 D1 residual (agent-runnable re-record) and D3 handed to M3 (M3.md + roadmap Deferred); milestone-M2-final.json dispositions use `hand-off` (the gate rejected `hand off`)
+
+## 2026-09-28 M2.24 (claude) — M2 closed
+second delta review (fresh, 23a6cf0..1262dea): pass, E1-E4 minor; final record range now 1a9aa22..1262dea with D1-D3 and E1-E4 dispositioned (D1/D2 reopened as M2.29, done; D3, E1-E3 handed to M3; E4 fixed here); M2.29 review F1/F2 argued (same M3 hand-off)
+M2.24 and M2.29 done; roadmap Current milestone -> M3; CI evidence re-recorded at 1262dea, the range end (gates 36357856795, ci 36357856939, verify green on 3 OSes); review r1 F1 (close only with evidence) fixed by recording it in this commit
