@@ -301,6 +301,9 @@ importers:
 
   packages/schema:
     dependencies:
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       zod:
         specifier: 'catalog:'
         version: 4.6.5

@@ -10,6 +10,11 @@
       "@fluxion/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./testing": {
+      "@fluxion/source": "./src/testing/index.ts",
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
     }
   },
   "files": [
@@ -24,6 +29,7 @@
     "provenance": true
   },
   "dependencies": {
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "fast-check": "catalog:"
   }
 }

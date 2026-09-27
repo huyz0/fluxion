@@ -472,3 +472,8 @@ parseDocument = JSON → migrate → repair → validate; released fixture src/_
 tests: FR-DOC-003 synthetic 0.9→1.0 (dimensions → size, z → index) migrates and validates; v1.0 fixture 0 diagnostics; migrating twice = once; refusals; repair cases; parse repairs on load
 M2.9 r3 minor: M2.md, M12.md and the M2.11 row now say geometry-only rounding
 review r1: records null made parseDocument throw in repair (typeof null === object), and array records were rebuilt as a map → migrate/repair need plain-object records, anything else goes to validate (FLX_RECORDS_INVALID); tests for null, array, string
+
+## 2026-09-27 M2.13 (claude)
+entry `@fluxion/schema/testing` (exports ./testing, tsdown entry testing/index; fast-check a regular dependency via catalog (the entry imports it at runtime; as a peer or devDependency dependency-cruiser flags it), kept out of the main bundle): documentBuilder({seed, title}) with screen/rect/text/connect/build (ids from seededRandom, indices appended per sibling group, bound or free connector ends), plainText; arbitraries arbDocument (valid by construction via the builder: screens, shapes, texts, bound connectors, unique slugs, geometry on the 1e-3 grid) and arbRectOptions
+tests: FR-DOC-001 every generated doc validates with 0 errors (≥ 1000 runs), parse(serialize(doc)) deep-equals doc over arbDocument (M2.11's planned form), deterministic builder output
+review r1 F1: arbElement added ({element, document}: shape, text or free-ended connector in a one-screen doc; property checks all three kinds validate); F2: entry comment says fast-check is a regular dependency
