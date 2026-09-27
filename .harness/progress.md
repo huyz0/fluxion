@@ -387,3 +387,7 @@ env: Playwright 1.63 wants chromium-1243; cdn.playwright.dev is denied here, so 
 ## 2026-09-27 M2.2 (claude)
 ADR-0012 accepted: 16-char IDs over `A-Za-z0-9_-` (96 bits) from a `Random` port ({ next(): [0,1) }, `seededRandom` mulberry32 for tests); schema accepts readable IDs (1-64 chars of the same alphabet) for fixtures
 own base-62 fractional keys (head char fixes integer length, fraction never ends in 0, first key `a0`); `fractional-indexing` is CC0 = outside LICENSES.allow; no automatic rebalancing (M3 may re-key siblings over 32 chars in one command)
+
+## 2026-09-27 M2.3 (claude)
+ADR-0013 accepted: ProseMirror-compatible JSON subset as Zod (doc, paragraph, heading 1-6, bullet/ordered list, listItem, text, hardBreak, field) + marks (bold, italic, underline, strike, code, link, color, highlight, font, size)
+review r1 F1: unknown node/mark types are preserved + one warning each (text fallback on render), not errors, so a newer minor never loses text; F2: listItem is paragraph-first, TipTap needs custom marks (color/highlight/font/size) and a field atom in M7; unknown attrs preserved; link.href only http/https/mailto/#screen:<id>; no raw HTML; editor library stays M7 (ADR-0019)
