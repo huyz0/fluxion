@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { styleSchema, transformSchema } from './style.js';
+import { styleSchema, transformRotation, transformSchema } from './style.js';
 
 describe('style and transform values', () => {
   it('FR-SHP-001: a full style validates and round-trips unchanged', () => {
@@ -57,8 +57,11 @@ describe('style and transform values', () => {
       expect(styleSchema.safeParse(bad).success, JSON.stringify(bad)).toBe(false);
   });
 
-  it('FR-SHP-001: a transform has x, y, w, h and rotation (default 0) and optional flips', () => {
-    expect(transformSchema.parse({ x: 10, y: 20, w: 100, h: 50 })).toEqual({ x: 10, y: 20, w: 100, h: 50, rot: 0 });
+  it('FR-SHP-001: a transform has x, y, w, h, an optional rotation (read as 0) and optional flips', () => {
+    const t = transformSchema.parse({ x: 10, y: 20, w: 100, h: 50 });
+    expect(t).toEqual({ x: 10, y: 20, w: 100, h: 50 });
+    expect(transformRotation(t)).toBe(0);
+    expect(transformRotation({ rot: 30 })).toBe(30);
     expect(transformSchema.parse({ x: 0, y: 0, w: 0, h: 0, rot: -45, flipX: true })).toMatchObject({ rot: -45, flipX: true });
     for (const bad of [
       { x: 0, y: 0, w: -1, h: 1 },

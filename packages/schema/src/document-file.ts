@@ -130,13 +130,16 @@ export function schemaForRecord(record: unknown): RecordSchemaChoice {
   return schema ? { schema, known: true } : { schema: unknownRecordSchema, known: false };
 }
 
-/** Any record, checked by the schema {@link schemaForRecord} picks; parse output keeps its defaults. */
-export const anyRecordSchema: z.ZodType<AnyRecord> = z.unknown().transform((value, ctx): AnyRecord => {
-  const r = schemaForRecord(value).schema.safeParse(value);
-  if (r.success) return r.data;
-  for (const issue of r.error.issues) ctx.addIssue({ ...issue, code: 'custom', message: issue.message, path: issue.path, input: value });
-  return z.NEVER;
-});
+/**
+ * Any record, checked by the schema {@link schemaForRecord} picks. The inner issues keep their Zod
+ * codes and inputs (M2.8 review F1); nothing is transformed, so the output is the input (ADR-0142).
+ */
+export const anyRecordSchema: z.ZodType<AnyRecord> = z
+  .custom<AnyRecord>((value) => typeof value === 'object' && value !== null && !Array.isArray(value), { message: 'a record must be an object' })
+  .superRefine((value, ctx) => {
+    const r = schemaForRecord(value).schema.safeParse(value);
+    if (!r.success) for (const issue of r.error.issues) ctx.addIssue({ ...issue });
+  });
 
 /** Schema of a whole document file. */
 export const documentFileSchema: z.ZodType<DocumentFile> = checkedSchema<DocumentFile>()(

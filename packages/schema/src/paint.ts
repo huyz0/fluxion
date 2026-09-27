@@ -123,8 +123,8 @@ export type ImagePaint = Extensible<{
   readonly type: 'image';
   /** The `asset` record holding the image. */
   readonly assetId: RecordId;
-  /** How the image fills the area. */
-  readonly fit: 'cover' | 'contain' | 'fill' | 'tile';
+  /** How the image fills the area (default `cover`). */
+  readonly fit?: 'cover' | 'contain' | 'fill' | 'tile';
 }>;
 
 /**
@@ -143,7 +143,7 @@ const gradientSchema = checkedSchema<GradientPaint>()(
   }),
 );
 const imagePaintSchema = checkedSchema<ImagePaint>()(
-  z.looseObject({ type: z.literal('image'), assetId: recordIdSchema, fit: z.enum(['cover', 'contain', 'fill', 'tile']).default('cover') }),
+  z.looseObject({ type: z.literal('image'), assetId: recordIdSchema, fit: z.enum(['cover', 'contain', 'fill', 'tile']).optional() }),
 );
 
 /** A paint field. */

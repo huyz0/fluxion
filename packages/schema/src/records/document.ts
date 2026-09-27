@@ -30,8 +30,8 @@ export type DocumentRecord = Extensible<{
   readonly type: 'document';
   /** Free-form metadata. */
   readonly meta?: Meta;
-  /** Document title. */
-  readonly title: string;
+  /** Document title (default empty). */
+  readonly title?: string;
   /** BCP 47 language tag of the content, e.g. `en` or `pt-BR`. */
   readonly lang?: string;
   /** The `theme` record in use. */
@@ -60,7 +60,7 @@ export const documentRecordSchema: z.ZodType<DocumentRecord> = checkedSchema<Doc
     id: recordIdSchema,
     type: z.literal('document'),
     meta: metaSchema.optional(),
-    title: z.string().default(''),
+    title: z.string().optional(),
     lang: z
       .string()
       .regex(/^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$/)

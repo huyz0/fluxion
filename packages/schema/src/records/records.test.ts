@@ -63,7 +63,8 @@ describe('resource and behaviour records', () => {
     };
     expect(interactionRecordSchema.parse(interaction)).toEqual(interaction);
     expect(variableRecordSchema.safeParse({ id: 'v1', type: 'variable', name: 'count', valueType: 'number', default: 0 }).success).toBe(true);
-    expect(commentRecordSchema.parse({ id: 'cm1', type: 'comment', targetId: 'e1', author: 'Ada', body: 'Check this' }).resolved).toBe(false);
+    const comment = { id: 'cm1', type: 'comment', targetId: 'e1', author: 'Ada', body: 'Check this' };
+    expect(commentRecordSchema.parse(comment)).toEqual(comment);
   });
 
   it('rejects malformed behaviour records', () => {

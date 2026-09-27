@@ -109,7 +109,7 @@ export const elementKindSchemas: {
       kind: z.literal('image'),
       assetId: recordIdSchema,
       crop: z.looseObject({ x: unit, y: unit, w: unit, h: unit }).optional(),
-      fit: z.enum(['cover', 'contain', 'fill']).default('contain'),
+      fit: z.enum(['cover', 'contain', 'fill']).optional(),
       maskDefId: qualifiedNameSchema.optional(),
     }),
   ),

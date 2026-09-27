@@ -9,7 +9,9 @@ import { join, relative } from 'node:path';
 import { describe, it } from 'node:test';
 import { REPO } from './helpers.mjs';
 
-const STRIPPING = /\bz\s*\.\s*(?:object|strictObject)\s*\(|\.\s*(?:strict|strip)\s*\(\s*\)|\.\s*catchall\s*\(\s*z\s*\.\s*never\s*\(/;
+// ADR-0142: parsing never fills defaults or rewrites values, so .default/.prefault/.catch/.transform are banned too
+const STRIPPING =
+  /\bz\s*\.\s*(?:object|strictObject)\s*\(|\.\s*(?:strict|strip)\s*\(\s*\)|\.\s*catchall\s*\(\s*z\s*\.\s*never\s*\(|\.\s*(?:default|prefault|catch|transform)\s*\(/;
 
 const STRIPPING_ALL = new RegExp(STRIPPING.source, 'g');
 
@@ -42,7 +44,17 @@ describe('schema objects keep unknown keys (FR-DOC-005)', () => {
   });
 
   it('flags z.object, z.strictObject, .strict(), .strip() and catchall(z.never())', () => {
-    const bad = ['z.object({ a: z.string() })', 'z.strictObject({})', 'z.looseObject({}).strict()', 'x.strip()', 'z.looseObject({}).catchall(z.never())'];
+    const bad = [
+      'z.object({ a: z.string() })',
+      'z.strictObject({})',
+      'z.looseObject({}).strict()',
+      'x.strip()',
+      'z.looseObject({}).catchall(z.never())',
+      "z.string().default('')",
+      'z.number().catch(0)',
+      'z.unknown().transform((v) => v)',
+      'x.prefault({})',
+    ];
     for (const line of bad) assert.ok(STRIPPING.test(line), line);
     for (const line of ['z.looseObject({ a: z.string() })', 'z.record(z.string(), z.unknown())', 'objectSchema(x)']) assert.ok(!STRIPPING.test(line), line);
   });

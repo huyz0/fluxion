@@ -56,12 +56,12 @@ export type ScreenRecord = Extensible<{
   readonly meta?: Meta;
   /** Position among screens (fractional index, FR-DOC-010). */
   readonly index: IndexKey;
-  /** Display name. */
-  readonly name: string;
-  /** `fixed`: a canvas of `size`; `infinite`: an unbounded canvas shown through `viewport`. */
-  readonly kind: 'fixed' | 'infinite';
-  /** Logical size of a fixed screen (default 1920 × 1080). */
-  readonly size: Size;
+  /** Display name (default empty). */
+  readonly name?: string;
+  /** `fixed` (default): a canvas of `size`; `infinite`: an unbounded canvas shown through `viewport`. */
+  readonly kind?: 'fixed' | 'infinite';
+  /** Logical size of a fixed screen (default 1920 × 1080; read it with {@link screenSize}). */
+  readonly size?: Size;
   /** Initial view of an infinite screen (required when `kind` is `infinite`). */
   readonly viewport?: Rect;
   /** Background paint: colour, gradient, image or token. */
@@ -90,9 +90,9 @@ export const screenRecordSchema: z.ZodType<ScreenRecord> = checkedSchema<ScreenR
       type: z.literal('screen'),
       meta: metaSchema.optional(),
       index: indexKeySchema,
-      name: z.string().default(''),
-      kind: z.enum(['fixed', 'infinite']).default('fixed'),
-      size: sizeSchema.default(() => ({ ...DEFAULT_SCREEN_SIZE })),
+      name: z.string().optional(),
+      kind: z.enum(['fixed', 'infinite']).optional(),
+      size: sizeSchema.optional(),
       viewport: rectSchema.optional(),
       background: paintSchema.optional(),
       masterId: recordIdSchema.optional(),
@@ -104,3 +104,21 @@ export const screenRecordSchema: z.ZodType<ScreenRecord> = checkedSchema<ScreenR
     // an infinite canvas has no size of its own; its first view must be stated (M2.6 r2 F3)
     .refine((s) => s.kind !== 'infinite' || s.viewport !== undefined, { message: 'an infinite screen needs a viewport', path: ['viewport'] }),
 );
+
+/**
+ * The logical size of a screen: its `size`, or 1920 × 1080 when omitted (FR-SCR-001, ADR-0142).
+ *
+ * @public
+ */
+export function screenSize(screen: Pick<ScreenRecord, 'size'>): Size {
+  return screen.size ?? DEFAULT_SCREEN_SIZE;
+}
+
+/**
+ * The kind of a screen: its `kind`, or `fixed` when omitted (ADR-0142).
+ *
+ * @public
+ */
+export function screenKind(screen: Pick<ScreenRecord, 'kind'>): 'fixed' | 'infinite' {
+  return screen.kind ?? 'fixed';
+}

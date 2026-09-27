@@ -133,8 +133,8 @@ export type CommentRecord = Extensible<{
   readonly author: string;
   /** Comment text. */
   readonly body: string;
-  /** Whether it is resolved. */
-  readonly resolved: boolean;
+  /** Whether it is resolved (default `false`). */
+  readonly resolved?: boolean;
   /** Creation time, ISO 8601. */
   readonly created?: string;
 }>;
@@ -198,7 +198,7 @@ export const commentRecordSchema: z.ZodType<CommentRecord> = checkedSchema<Comme
     targetId: recordIdSchema,
     author: z.string(),
     body: z.string(),
-    resolved: z.boolean().default(false),
+    resolved: z.boolean().optional(),
     created: z.iso.datetime({ offset: true }).optional(),
   }),
 );

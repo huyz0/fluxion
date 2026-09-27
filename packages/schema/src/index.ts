@@ -41,10 +41,20 @@ export {
 } from './records/element.js';
 export type { AnchorDef, BoxedBase, ElementBase, Locks, Point, QualifiedName, Semantic } from './records/element-base.js';
 export type { AssetRecord, PluginRefRecord, ResourceRecord, ThemeRecord } from './records/resources.js';
-export { DEFAULT_SCREEN_SIZE, type Rect, type ScreenRecord, type Size } from './records/screen.js';
+export { DEFAULT_SCREEN_SIZE, type Rect, type ScreenRecord, type Size, screenKind, screenSize } from './records/screen.js';
 export { type Err, err, type Ok, ok, type Result } from './result.js';
 export { checkRichText, MAX_RICH_TEXT_DEPTH, type RichTextDoc, type RichTextIssue, type RichTextMark, type RichTextNode } from './rich-text.js';
-export type { Effect, FontStyle, Shadow, Stroke, Style, StyleNumber, StyleValue, Transform } from './style.js';
+export {
+  type Effect,
+  type FontStyle,
+  type Shadow,
+  type Stroke,
+  type Style,
+  type StyleNumber,
+  type StyleValue,
+  type Transform,
+  transformRotation,
+} from './style.js';
 
 /**
  * Version of this package.

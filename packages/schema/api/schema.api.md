@@ -82,7 +82,7 @@ export type CommentRecord = Extensible<{
     readonly targetId: RecordId;
     readonly author: string;
     readonly body: string;
-    readonly resolved: boolean;
+    readonly resolved?: boolean;
     readonly created?: string;
 }>;
 
@@ -149,7 +149,7 @@ export type DocumentRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "document";
     readonly meta?: Meta;
-    readonly title: string;
+    readonly title?: string;
     readonly lang?: string;
     readonly themeId?: RecordId;
     readonly settings?: DocumentSettings;
@@ -274,7 +274,7 @@ export type ImageElement = Extensible<BoxedBase & {
     readonly kind: "image";
     readonly assetId: RecordId;
     readonly crop?: Crop;
-    readonly fit: "cover" | "contain" | "fill";
+    readonly fit?: "cover" | "contain" | "fill";
     readonly maskDefId?: QualifiedName;
 }>;
 
@@ -282,7 +282,7 @@ export type ImageElement = Extensible<BoxedBase & {
 export type ImagePaint = Extensible<{
     readonly type: "image";
     readonly assetId: RecordId;
-    readonly fit: "cover" | "contain" | "fill" | "tile";
+    readonly fit?: "cover" | "contain" | "fill" | "tile";
 }>;
 
 // @public
@@ -469,14 +469,17 @@ export type Route = Extensible<{
 export const SCHEMA_VERSION: string;
 
 // @public
+export function screenKind(screen: Pick<ScreenRecord, "kind">): "fixed" | "infinite";
+
+// @public
 export type ScreenRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "screen";
     readonly meta?: Meta;
     readonly index: IndexKey;
-    readonly name: string;
-    readonly kind: "fixed" | "infinite";
-    readonly size: Size;
+    readonly name?: string;
+    readonly kind?: "fixed" | "infinite";
+    readonly size?: Size;
     readonly viewport?: Rect;
     readonly background?: Paint;
     readonly masterId?: RecordId;
@@ -485,6 +488,9 @@ export type ScreenRecord = Extensible<{
     readonly hidden?: boolean;
     readonly notes?: RichTextDoc;
 }>;
+
+// @public
+export function screenSize(screen: Pick<ScreenRecord, "size">): Size;
 
 // @public
 export function seededRandom(seed: number): Random;
@@ -620,7 +626,7 @@ export type Transform = Extensible<{
     readonly y: number;
     readonly w: number;
     readonly h: number;
-    readonly rot: number;
+    readonly rot?: number;
     readonly flipX?: boolean;
     readonly flipY?: boolean;
 }>;
@@ -630,6 +636,9 @@ export type TransformedToken = Extensible<{
     readonly token: TokenRef;
     readonly transform: ColorTransform;
 }>;
+
+// @public
+export function transformRotation(transform: Pick<Transform, "rot">): number;
 
 // @public
 export type UnknownElement = Extensible<{

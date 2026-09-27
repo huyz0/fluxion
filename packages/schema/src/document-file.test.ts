@@ -3,13 +3,13 @@ import { documentFileSchema, schemaForRecord } from './document-file.js';
 
 const text = (s: string) => ({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: s }] }] });
 
-// the canonical example of 02-document-model §7, completed
+// the canonical example of 02-document-model §7 (its elided text filled in)
 const example = {
   schemaVersion: '1.0',
   records: {
     doc: { id: 'doc', type: 'document', title: 'Checkout', themeId: 'th1' },
     th1: { id: 'th1', type: 'theme', name: 'Default', tokens: {} },
-    s1: { id: 's1', type: 'screen', index: 'a0', name: 'Architecture', kind: 'fixed', size: { w: 1920, h: 1080 } },
+    s1: { id: 's1', type: 'screen', index: 'a0', name: 'Architecture', size: { w: 1920, h: 1080 } },
     e1: {
       id: 'e1',
       type: 'element',
@@ -31,7 +31,6 @@ const example = {
       route: { type: 'orthogonal', cornerRadius: 8 },
       markers: { end: 'arrow' },
       riders: [{ shape: 'effects-core:dot', count: 5, speed: 40, loop: true }],
-      freeTarget: { x: 900, y: 460 },
     },
     b1: { id: 'b1', type: 'binding', connectorId: 'c1', end: 'source', elementId: 'e1', anchor: { kind: 'auto' } },
   },
@@ -64,10 +63,15 @@ describe('document file', () => {
     expect(documentFileSchema.parse(doc)).toEqual(doc);
   });
 
-  it('FR-DOC-004: a bad record fails with a path inside the records map', () => {
-    const bad = { ...example, records: { ...example.records, e1: { ...example.records.e1, defId: undefined } } };
+  it('FR-DOC-004: a bad record fails with a path inside the records map and its own issue code', () => {
+    const bad = { ...example, records: { ...example.records, e1: { ...example.records.e1, defId: undefined, transform: { x: 0, y: 0, w: -1, h: 1 } } } };
     const r = documentFileSchema.safeParse(bad);
-    expect(r.success ? [] : r.error.issues.map((i) => i.path.join('/'))).toEqual(['records/e1/defId']);
+    const issues = r.success ? [] : r.error.issues.map((i) => [i.path.join('/'), i.code]);
+    // the inner Zod codes survive the record dispatch (M2.8 review F1)
+    expect(issues).toEqual([
+      ['records/e1/transform/w', 'too_small'],
+      ['records/e1/defId', 'custom'],
+    ]);
   });
 
   it('rejects a bad schema version and a record without id or type', () => {

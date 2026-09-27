@@ -437,3 +437,8 @@ checkpoint cp1 (fresh milestone-reviewer, 1a9aa22..4c8a58a): F1, F2 major; F3-F5
 m2-complete: vitestNamed escapes the title for -t (literal), legs match the plan's exact titles (NFR-REL-002 fuzz, FR-DOC-003 migration, fixtures), NFR-REL-005 needs a passing case in schema and in geometry, one leg runs the M2.9-M2.17 acceptance properties by title; v1.0 fixture path under src/ (package rootDir); gate 2/18 green (was 3/16: the bare-ID NFR-REL-005 leg no longer passes on ids.test)
 ADR numbering: plans reserve 0014+ per milestone and unplanned decisions use 0137+, so M2.6's ADR-0014 → ADR-0140 (dated amendment), M2.17's dependency ADR → ADR-0141
 review r1 F1: the fuzz leg requires parse-robust.test.ts to assert its run count against fc.readConfigureGlobal().numRuns with no local numRuns (M2.14 row widened); F2: the v1.0 leg needs three titled cases (older fixture migrates, v1.0 validates, idempotent; M2.12 row quotes them); F3: M2.16 row quotes the gate titles
+
+## 2026-09-27 M2.26 (claude)
+ADR-0142 (M2 cp1 F2): no schema fills defaults or transforms values; screen name/kind/size, document title, transform.rot, image and image-paint fit, comment resolved are optional with the default in TSDoc; accessors screenSize/screenKind/transformRotation; the unmodified 02 §7 example now parses unchanged
+anyRecordSchema is a custom + superRefine that re-adds the inner Zod issues unchanged (M2.8 F1: too_small at records/e1/transform/w survives the dispatch)
+schema-open-objects scan also bans .default/.prefault/.catch/.transform; tests retitled with Renames-test (document minimal "validates unchanged"; transform "optional rotation (read as 0)")

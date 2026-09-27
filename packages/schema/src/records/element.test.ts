@@ -64,7 +64,7 @@ describe('element kinds', () => {
     expect(elementKindSchemas.frame.safeParse({ ...el, id: 'f', kind: 'frame', transform: box, clip: true, padding: 12 }).success).toBe(true);
     expect(elementKindSchemas.text.safeParse({ ...el, id: 't', kind: 'text', transform: box, text: doc('Hi'), autoSize: 'height' }).success).toBe(true);
     const image = elementKindSchemas.image.parse({ ...el, id: 'i', kind: 'image', transform: box, assetId: 'a1', crop: { x: 0, y: 0, w: 0.5, h: 1 } });
-    expect(image.fit).toBe('contain');
+    expect(image.fit).toBeUndefined();
     expect(
       elementKindSchemas.component.safeParse({ ...el, id: 'k', kind: 'component', transform: box, componentId: 'acme:chart', props: { series: [] } }).success,
     ).toBe(true);
@@ -72,7 +72,7 @@ describe('element kinds', () => {
 
   it('FR-DOC-005: a plugin kind keeps its props verbatim', () => {
     const plugin = { ...el, id: 'p', kind: 'acme:gauge', transform: box, props: { value: 42, nested: { deep: [1, 2] } }, extra: 'kept' };
-    expect(elementKindSchemas.plugin.parse(plugin)).toEqual({ ...plugin, transform: { ...box, rot: 0 } });
+    expect(elementKindSchemas.plugin.parse(plugin)).toEqual(plugin);
   });
 
   it('rejects bad element fields', () => {

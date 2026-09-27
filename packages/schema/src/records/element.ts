@@ -169,8 +169,8 @@ export type ImageElement = Extensible<
     readonly assetId: RecordId;
     /** Visible part of the image. */
     readonly crop?: Crop;
-    /** How the image fills the box. */
-    readonly fit: 'cover' | 'contain' | 'fill';
+    /** How the image fills the box (default `contain`). */
+    readonly fit?: 'cover' | 'contain' | 'fill';
     /** Shape definition used as a mask. */
     readonly maskDefId?: QualifiedName;
   }

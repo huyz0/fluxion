@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { documentRecordSchema } from './document.js';
 
 describe('document record', () => {
-  it('FR-DOC-001: a minimal document record validates and gets an empty title', () => {
-    expect(documentRecordSchema.parse({ id: 'doc', type: 'document' })).toEqual({ id: 'doc', type: 'document', title: '' });
+  it('FR-DOC-001: a minimal document record validates unchanged', () => {
+    expect(documentRecordSchema.parse({ id: 'doc', type: 'document' })).toEqual({ id: 'doc', type: 'document' });
   });
 
   it('FR-DOC-001: takes title, language, theme, settings, authors and ISO times', () => {

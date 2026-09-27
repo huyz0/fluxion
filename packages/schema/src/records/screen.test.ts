@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { screenRecordSchema } from './screen.js';
+import { screenKind, screenRecordSchema, screenSize } from './screen.js';
 
 const base = { id: 's1', type: 'screen', index: 'a0', name: 'Intro' };
 
 describe('screen record', () => {
   it('FR-SCR-001: WHEN a screen omits size THE SYSTEM SHALL default to 1920×1080', () => {
     const r = screenRecordSchema.safeParse(base);
-    expect(r.success && r.data.size).toEqual({ w: 1920, h: 1080 });
-    expect(r.success && r.data.kind).toBe('fixed');
+    // parsing keeps the record as given; the default comes from the accessor (ADR-0142)
+    expect(r.success && r.data).toEqual(base);
+    expect(screenSize(screenRecordSchema.parse(base))).toEqual({ w: 1920, h: 1080 });
+    expect(screenKind(screenRecordSchema.parse(base))).toBe('fixed');
+    expect(screenSize({ size: { w: 800, h: 600 } })).toEqual({ w: 800, h: 600 });
+    expect(screenKind({ kind: 'infinite' })).toBe('infinite');
   });
 
   it('FR-SCR-001: keeps an explicit size and an infinite canvas with a viewport', () => {
@@ -34,7 +38,7 @@ describe('screen record', () => {
       { type: 'image', assetId: 'img1', fit: 'contain' },
     ];
     for (const background of backgrounds) expect(screenRecordSchema.safeParse({ ...base, background }).success, JSON.stringify(background)).toBe(true);
-    expect(screenRecordSchema.parse({ ...base, background: { type: 'image', assetId: 'img1' } }).background).toMatchObject({ fit: 'cover' });
+    expect(screenRecordSchema.parse({ ...base, background: { type: 'image', assetId: 'img1' } }).background).toEqual({ type: 'image', assetId: 'img1' });
   });
 
   it('rejects a bad index, a non-positive size and a malformed background', () => {
@@ -65,6 +69,6 @@ describe('screen record', () => {
   it('FR-DOC-005: keeps unknown keys on the record and in nested objects', () => {
     const parsed = screenRecordSchema.parse({ ...base, future: { x: 1 }, size: { w: 10, h: 20, unit: 'px' } });
     expect(parsed['future']).toEqual({ x: 1 });
-    expect(parsed.size['unit']).toBe('px');
+    expect(parsed.size?.['unit']).toBe('px');
   });
 });

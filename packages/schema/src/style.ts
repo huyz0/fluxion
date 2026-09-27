@@ -135,8 +135,8 @@ export type Transform = Extensible<{
   readonly w: number;
   /** Height (≥ 0). */
   readonly h: number;
-  /** Rotation in degrees, clockwise, about the centre. */
-  readonly rot: number;
+  /** Rotation in degrees, clockwise, about the centre (default 0; read it with {@link transformRotation}). */
+  readonly rot?: number;
   /** Mirror horizontally. */
   readonly flipX?: boolean;
   /** Mirror vertically. */
@@ -192,7 +192,16 @@ export const styleSchema: z.ZodType<Style> = checkedSchema<Style>()(
   }),
 );
 
-/** Schema of an element transform; `rot` defaults to 0. */
+/** Schema of an element transform. */
 export const transformSchema: z.ZodType<Transform> = checkedSchema<Transform>()(
-  z.looseObject({ x: finite, y: finite, w: nonNegative, h: nonNegative, rot: finite.default(0), flipX: z.boolean().optional(), flipY: z.boolean().optional() }),
+  z.looseObject({ x: finite, y: finite, w: nonNegative, h: nonNegative, rot: finite.optional(), flipX: z.boolean().optional(), flipY: z.boolean().optional() }),
 );
+
+/**
+ * The rotation of a transform in degrees: `rot`, or 0 when omitted (ADR-0142).
+ *
+ * @public
+ */
+export function transformRotation(transform: Pick<Transform, 'rot'>): number {
+  return transform.rot ?? 0;
+}
