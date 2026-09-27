@@ -59,6 +59,18 @@ describe('check-tests-kept (NFR-DX-004)', () => {
     assert.match(edited.stderr, /edits released fixture packages\/format\/fixtures\/v1\.0\/doc\.flux\.json/);
     const excused = kept.check('M0.7: fix: x\n\nRemoves-test: fix old fixture\n');
     assert.equal(excused.status, 1, `no trailer excuses editing a released fixture: ${out(excused)}`);
+    kept.sb.git('reset', '-q', '--hard');
+    kept.sb.git('mv', 'packages/format/fixtures/v1.0/doc.flux.json', 'packages/format/fixtures/v1.0/doc-fixed.flux.json');
+    const renamed = kept.check('M0.7: fix: x\n\nRemoves-test: fix old fixture\n');
+    assert.equal(renamed.status, 1, `no trailer excuses renaming inside a released folder: ${out(renamed)}`);
+    kept.sb.git('reset', '-q', '--hard');
+    kept.sb.write('packages/format/fixtures/v1.0/extra.flux.json', '{}\n');
+    kept.sb.write('packages/format/fixtures/v1.1/doc.flux.json', '{}\n');
+    kept.sb.git('add', '-A');
+    const added = kept.check();
+    assert.equal(added.status, 1, out(added));
+    assert.match(added.stderr, /adds packages\/format\/fixtures\/v1\.0\/extra\.flux\.json to the released fixture folder/);
+    assert.doesNotMatch(added.stderr, /v1\.1/, 'a new version folder is not released yet');
   });
 
   it('an empty Removes-test trailer does not count', () => {

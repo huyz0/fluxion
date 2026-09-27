@@ -506,3 +506,9 @@ check-tests-kept: deleting or renaming away a released fixture (fixtures/docs, f
 carried minors: M2.14 r3 — a removed binding with a corrupted end frees neither connector end (was: source); M2.17 — ADR-0141 records that rbush ships no types (@types/rbush dev dependency)
 gate fixes before review: the coverage sandbox copies fixtures/ (the fixtures test runs there too); knip entry scripts/fixtures/*.mjs
 review r1 F1: a Removes-test trailer excused editing a versioned fixture → such edits fail whatever the trailer (like a false Renames-test); harness asserts the edit with Removes-test still fails
+
+## 2026-09-27 M2.19 (claude)
+determinism.test (schema): "NFR-REL-005: repeated runs are identical" — per arbDocument and seed, serialize, parse (valid, truncated, dangling binding), validate, repair, migrate, 20 seeded ids and fractional keys run twice and compare as exact JSON text (key order included)
+determinism.test (geometry): same title — per random paths, point and matrix: bounds, sampler length and samples, nearestPoint, intersectPaths, pointInPath (both rules), invert, element matrix/bounds/corners, dynamic and static index queries, twice, exact JSON
+no Math.random/Date in pure packages: already enforced by the biome override (no-math-random.grit, no-wall-clock.grit, noRestrictedGlobals) on packages/{schema,geometry,...}/src
+carried M2.18 r2 minor: check-tests-kept fails, whatever the trailer, a rename into/out of/within a released versioned fixture folder and a new file in an existing one (a new version folder is fine); harness asserts all three
