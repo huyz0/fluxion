@@ -30,7 +30,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/ids.test.ts` |
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
-| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/checked-schema.test.ts` +8 |
+| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/checked-schema.test.ts` +10 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |

@@ -104,6 +104,65 @@ describe('canonical serialization', () => {
     expect(out).toContain('"list": [\n        1,\n        null,\n        "x"\n      ]');
   });
 
+  it('NFR-REL-005: rounding is idempotent for every double and never turns a finite number infinite', () => {
+    fc.assert(
+      fc.property(fc.double({ noNaN: true }), (n) => {
+        const once = canonicalNumber(n);
+        expect(canonicalNumber(once)).toBe(once);
+        expect(Number.isFinite(once)).toBe(Number.isFinite(n));
+      }),
+    );
+    expect(canonicalNumber(-4498578594957.645)).toBe(-4498578594957.645);
+    expect(canonicalNumber(1e306)).toBe(1e306);
+  });
+
+  it('FR-DOC-005: rounds only geometry fields; every other number is written exactly (M2.9 review r2)', () => {
+    const doc = asDoc({
+      schemaVersion: '1.0',
+      records: {
+        doc: { id: 'doc', type: 'document', ratio: 0.12345 },
+        s1: {
+          id: 's1',
+          type: 'screen',
+          index: 'a0',
+          kind: 'infinite',
+          size: { w: 800.0004, h: 600 },
+          viewport: { x: 0.1234, y: 0, w: 10.0006, h: 10, zoom: 1.23456 },
+        },
+        c: {
+          id: 'c',
+          type: 'element',
+          screenId: 's1',
+          index: 'a0',
+          kind: 'connector',
+          route: { type: 'polyline', waypoints: [{ x: 1.23456, y: 2 }], tension: 0.33333 },
+          freeSource: { x: 0.0004, y: 1 },
+          freeTarget: { x: 5.5555, y: 1 },
+          labels: [{ position: 0.33333, offset: { x: 1.00049, y: 0 }, text: { type: 'doc', content: [{ type: 'paragraph' }] } }],
+          props: { lat: 51.50735 },
+        },
+        g: {
+          id: 'g',
+          type: 'element',
+          screenId: 's1',
+          index: 'a1',
+          kind: 'acme:gauge',
+          transform: { x: 1.0001, y: 0, w: 1, h: 1, rot: 12.34567, skew: 0.12345 },
+          props: { v: 0.9999 },
+        },
+      },
+    });
+    const out = JSON.parse(serializeDocument(doc));
+    expect(out.records.s1.size.w).toBe(800);
+    expect(out.records.s1.viewport).toEqual({ x: 0.123, y: 0, w: 10.001, h: 10, zoom: 1.23456 });
+    expect(out.records.c.route).toEqual({ type: 'polyline', waypoints: [{ x: 1.235, y: 2 }], tension: 0.33333 });
+    expect([out.records.c.freeSource.x, out.records.c.freeTarget.x]).toEqual([0, 5.556]);
+    expect(out.records.c.labels[0].position).toBe(0.33333);
+    expect(out.records.c.labels[0].offset.x).toBe(1);
+    expect(out.records.g.transform).toEqual({ x: 1, y: 0, w: 1, h: 1, rot: 12.346, skew: 0.12345 });
+    expect([out.records.doc.ratio, out.records.c.props.lat, out.records.g.props.v]).toEqual([0.12345, 51.50735, 0.9999]);
+  });
+
   it('rounds numbers to 1e-3 and writes -0 as 0', () => {
     expect(canonicalNumber(1.23456)).toBe(1.235);
     expect(canonicalNumber(-0.0001)).toBe(0);

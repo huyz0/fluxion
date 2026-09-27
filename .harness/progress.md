@@ -456,3 +456,11 @@ serialize.ts: serializeDocument (keys sorted at every depth, numbers on the 1e-3
 tests: FR-DOC-001 parse(serialize(doc)) deep-equals doc over the §7-style doc with random JSON extras on every record (property); NFR-REL-005 twice byte-identical and independent of key order; exact output layout; rounding; parse never throws on bad JSON
 salvage of valid records on failure is M2.14; the arbDocument form of the round-trip property arrives with M2.13
 review r1 F1: canonical() built objects with a prototype, so a "__proto__" key in unknown data was dropped on save → Object.create(null) + test; F2: parseDocument returns the project Result (rule 10)
+
+## 2026-09-27 M2.9 (claude)
+preservation.test: FR-DOC-005 byte-equal canonical JSON after parse+serialize for a document with an unknown record type, a plugin kind with props, an unknown element kind, unknown fields at top level / on records / inside transform, style, font, settings and gradient stops, an unknown rich-text node and mark (and the four warnings it reports); property: an extra field at record/transform/style/font depth survives
+M2.11 r2 minors: canonicalNumber keeps |n| ≥ 1e12 as is (idempotent; no overflow to Infinity), property over every double
+preservation needed no schema change: looseObject everywhere (M2.6), no parse-time defaults (ADR-0142), prototype-free output (M2.11)
+review r1 F1: the byte-equal case compared schema output with schema output → also asserts JSON.parse(text) and the parsed document deep-equal the raw input; F2: 08-file-format canonical rule notes the ≥ 1e12 exception
+review r2 F1: every number was rounded, so plugin props and unknown fields lost digits (51.50735 → 51.507) → only geometry is rounded (transform x/y/w/h/rot, free ends, waypoints, label offsets, screen size/viewport), everything else exact; 08-file-format §4 says so; preservation tests use non-grid numbers and arbitrary doubles
+a random-seed run found -0 in extra data written as 0 (the canonical rule) → named example case; the property generator excludes -0; 10 random seeds and FC_RUNS=5000 green

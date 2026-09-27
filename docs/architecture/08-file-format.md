@@ -119,8 +119,12 @@ the player. The player reads the zip with fflate and inflates entries with nativ
 ```
 
 Determinism (byte-identical for identical documents): object keys sorted by code point
-recursively, 2-space indent, LF, trailing newline, geometry numbers rounded to 1e-3 and `-0` → `0`,
-no `undefined`/`NaN`. `--assets=external` writes assets as `<name>.assets/<sha256>.<ext>` next to
+recursively, 2-space indent, LF, trailing newline, geometry numbers rounded to 1e-3 (element
+`transform` x/y/w/h/rot, free connector ends, waypoints, label offsets, screen `size` and
+`viewport`; magnitudes of 1e12 or more are kept, the grid being finer than their precision) and
+`-0` → `0`, every other number (unknown fields and plugin data included) written exactly, no
+`undefined`/`NaN`. `@fluxion/schema`
+`serializeDocument`/`canonicalNumber` is the reference implementation. `--assets=external` writes assets as `<name>.assets/<sha256>.<ext>` next to
 the JSON so git diffs stay small.
 
 ## 5. Size estimates
