@@ -548,3 +548,8 @@ first CI on main (4967ed7): everything green (cold-setup job included) except ve
 budget re-recorded on the owner's Windows machine (cdn.playwright.dev reachable): quick 18 389 ms, staged 86 637 ms, cold setup 130 130 ms at 8e0195d, current lockfile; state.json blockedReason cleared
 ADR-0143 (human decision 2026-09-28): inside CI (CI=true|1) the budget step notes, not fails, a record older than pnpm-lock.yaml, because the same run's cold-setup job measures that lockfile; limits and the missing-record rule still apply; locally a stale record still fails
 budget.test: "lockfile change in CI" (CI=true passes with the note, a staged-time breach still fails, CI=false fails); the budget helper pins CI so an inherited CI=true on runners cannot turn the "predates" case vacuous; ci-cd.md cold-setup comment cites ADR-0143
+
+## 2026-09-28 M2.29 (claude)
+delta milestone review (fresh, 5481b86..23a6cf0): pass with D1 major (ADR-0143 said the staged hook re-records; precommit runs budget only in --all), D2 minor (completion gate inherits CI=true), D3 minor (cold setup measured on ubuntu only)
+fix: ADR-0143 Consequences corrected (stale record surfaces at the next full verify/completion gate; ubuntu-only measurement); m2-complete verify leg runs pnpm verify with CI unset; proof: stale record + CI=true → check-budget exits 0 with the ADR-0143 note, with the gate's CI='' it exits 1
+D1 residual (agent-runnable re-record) and D3 handed to M3 (M3.md + roadmap Deferred); milestone-M2-final.json dispositions use `hand-off` (the gate rejected `hand off`)

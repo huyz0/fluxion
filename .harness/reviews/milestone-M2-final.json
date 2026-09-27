@@ -16,11 +16,11 @@
   "dispositions": [
     { "finding": "F1", "disposition": "reopen", "target": "M2.27", "note": "Hand back to the human: (1) re-record budget.json where cdn.playwright.dev is reachable; (2) decide with an ADR what is authoritative for cold-setup time in CI; harness case for the lockfile-change-in-CI path." },
     { "finding": "F2", "disposition": "argue", "target": ".harness/baselines/review-argued.txt", "note": "Process lapse already corrected; lesson in M2 Learned." },
-    { "finding": "F3", "disposition": "hand off", "target": "M3", "note": "First M3 row: one error convention for pure packages (ADR or shared L0 module)." },
-    { "finding": "F4", "disposition": "hand off", "target": "M3", "note": "docs-consistency also checks schema → catalogue; element-row fields in the intersection of core kinds." },
-    { "finding": "F5", "disposition": "hand off", "target": "M3", "note": "Report floor/record problems with any transport failure; proxy-aware fetch or message; test." },
-    { "finding": "F6", "disposition": "hand off", "target": "M11", "note": "Move testing helpers out, or fast-check an optional peer, before publishing." },
-    { "finding": "F7", "disposition": "hand off", "target": "M3", "note": "unknown-kind must parse with FLX_KIND_UNKNOWN; optional expected-diagnostics sidecar." }
+    { "finding": "F3", "disposition": "hand-off", "target": "M3", "note": "First M3 row: one error convention for pure packages (ADR or shared L0 module)." },
+    { "finding": "F4", "disposition": "hand-off", "target": "M3", "note": "docs-consistency also checks schema → catalogue; element-row fields in the intersection of core kinds." },
+    { "finding": "F5", "disposition": "hand-off", "target": "M3", "note": "Report floor/record problems with any transport failure; proxy-aware fetch or message; test." },
+    { "finding": "F6", "disposition": "hand-off", "target": "M11", "note": "Move testing helpers out, or fast-check an optional peer, before publishing." },
+    { "finding": "F7", "disposition": "hand-off", "target": "M3", "note": "unknown-kind must parse with FLX_KIND_UNKNOWN; optional expected-diagnostics sidecar." }
   ],
   "planDelta": "26 -> 27 rows (M2.27: human budget re-record + decision on the CI source of truth for cold setup; blocks the verify and CI-evidence legs). 18 plan tasks became 27 rows (1.5x), explained by ADR splits, docs split, M1 hand-offs, cp1 reopens and this reopen; nothing silently dropped. Spot-checked mutants killed: spatial index, FR-DOC-005 byte-equal, NFR-REL-002 fuzz, determinism; surviving: docs-consistency (F4), fixtures-as-named (F7)."
 }

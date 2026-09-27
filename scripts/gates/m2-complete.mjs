@@ -226,7 +226,9 @@ const VERIFY_STEPS = [
   'budget',
 ];
 leg('pnpm verify exits 0 with every planned step PASS', () => {
-  const r = pnpm('verify');
+  // CI unset: under CI=true the budget step accepts a stale record (ADR-0143), and the completion
+  // gate must see the recorded budget for the current lockfile (M2 delta review D2)
+  const r = run('pnpm', ['verify'], { env: { ...process.env, CI: '' } });
   if (r.status !== 0) return ok(r);
   const skips = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('SKIP') && !/^SKIP workflows — Docker not available$/.test(l.trim()));
   if (skips.length) return `skipped: ${skips.join(' | ')}`;

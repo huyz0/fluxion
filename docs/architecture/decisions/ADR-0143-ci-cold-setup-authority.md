@@ -47,12 +47,18 @@ cold-setup numbers must still be within their thresholds, and a missing record s
 
 - Good: a lockfile-only change is judged by a live cold-setup measurement in the same run; verify
   stays green on three OSes.
-- Good: the local rule (M1.19 review F2) is intact; a lockfile commit made through the hook still
-  re-records.
-- Bad: a lockfile change merged from CI alone (Renovate) leaves a stale record on main, so the next
-  local `pnpm verify` asks for `check-budget.mjs --record`. That is a local re-measure, not a
-  false green, because CI measured that lockfile.
-- Bad: the `CI` variable changes a gate's outcome; the harness test pins it both ways.
+- Good: the local rule (M1.19 review F2) is intact in the full ladder: local `pnpm verify` and
+  every completion gate's verify leg (which runs with `CI` unset) fail on a stale record.
+- Bad: the staged pre-commit hook does not run the budget step (it runs only in `--all`), so no
+  gate forces a re-record in the commit that changes the lockfile; the stale record surfaces at
+  the next local `pnpm verify` or completion gate. Re-recording needs a machine that can download
+  Chromium, which agent containers may not reach (handed to M3; M2 delta review D1).
+- Bad: a lockfile change merged from CI alone (Renovate) likewise leaves a stale record on main.
+  That is a pending local re-measure, not a false green, because CI measured that lockfile.
+- Bad: the cold-setup job runs on ubuntu only, so under this rule a lockfile change is not
+  measured on Windows or macOS until the next local record there (handed to M3; delta review D3).
+- Bad: the `CI` variable changes a gate's outcome; the harness test pins it both ways and the
+  completion gates' verify legs unset it.
 
 ### Confirmation
 

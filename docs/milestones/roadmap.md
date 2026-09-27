@@ -96,4 +96,5 @@ receiving milestone's plan.
 | check-ci-evidence reports stale evidence before transport errors (M2 final F5) | M2 | M3 | gate diagnostics |
 | fast-check out of @fluxion/schema runtime deps before publishing (M2 final F6) | M2 | M11 | first release is M11 |
 | Valid fixtures behave as named (unknown-kind warns FLX_KIND_UNKNOWN) (M2 final F7) | M2 | M3 | fixture test strength |
+| Budget re-record path for agents after a lockfile change; cold setup on windows/macos (ADR-0143) (M2 delta D1, D3) | M2 | M3 | needs a design decision |
 | Cold-setup CI job + `check-budget --record` isolation test (M1 final F4); one three-OS verify matrix instead of gates.yml + ci.yml, restoring windows headroom under the 15-min budget (M1 final F5, D5) | M1 | M2 | CI hygiene |
