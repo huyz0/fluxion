@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, it } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { belowFloor } from '../../scripts/gates/lib.mjs';
 import { cleanEnv, out, REPO, sandbox } from './helpers.mjs';
 
@@ -110,4 +111,68 @@ describe('harness docs consistency (NFR-DX-003)', () => {
       sb.cleanup();
     }
   });
+  // M2.23 (M2 cp1 F5): the 02-document-model record catalogue matches the built @fluxion/schema
+  describe('02-document-model catalogue vs @fluxion/schema dist', async () => {
+    const dist = join(REPO, 'packages/schema/dist/index.js');
+    const schema = await import(pathToFileURL(dist).href).catch((e) => {
+      throw new Error(`${dist} not importable (run pnpm run build first): ${e.message}`);
+    });
+    const doc = read('docs/architecture/02-document-model.md');
+    const section = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to, doc.indexOf(from)));
+    const catalogue = catalogueRows(section('| Record | Key fields |', '### Element kinds'));
+    const kinds = catalogueRows(section('| `kind` | Extra fields |', '### Anchors'));
+    const shape = (record) => Object.keys(schema.schemaForRecord(record).schema.shape ?? {});
+
+    it('lists exactly the exported RECORD_TYPES, in the table and in the RecordType union', () => {
+      assert.deepEqual([...catalogue.keys()].sort(), [...schema.RECORD_TYPES].sort());
+      const union = /type RecordType =([^;]*);/.exec(doc)?.[1] ?? '';
+      assert.deepEqual([...union.matchAll(/'([a-z-]+)'/g)].map((m) => m[1]).sort(), [...schema.RECORD_TYPES].sort());
+    });
+
+    it('lists exactly the core ELEMENT_KINDS (plugin rows exempt)', () => {
+      assert.deepEqual([...kinds.keys()].filter((k) => !k.includes('<')).sort(), [...schema.ELEMENT_KINDS].sort());
+    });
+
+    it("names only fields the record's schema has", () => {
+      // element: the fields common to the kinds are checked against the union of the core kinds
+      const recordFields = (type) => (type === 'element' ? schema.ELEMENT_KINDS.flatMap((kind) => shape({ type, kind })) : shape({ type }));
+      const unknown = (label, fields, known) => {
+        assert.ok(known.length > 0, `${label}: schema has no object shape`);
+        return fields.filter((f) => !known.includes(f)).map((f) => `${label}.${f}`);
+      };
+      for (const [type, fields] of catalogue) assert.ok(fields.length > 0, `${type}: no key fields parsed`);
+      const missing = [
+        ...[...catalogue].flatMap(([type, fields]) => unknown(type, fields, recordFields(type))),
+        ...[...kinds]
+          .filter(([kind]) => !kind.includes('<'))
+          .flatMap(([kind, fields]) => unknown(`element(${kind})`, fields, shape({ type: 'element', kind }))),
+      ];
+      assert.deepEqual(missing, []);
+    });
+
+    it('the row parser reads names outside parentheses and skips values', () => {
+      const rows = catalogueRows("| `h` | f |\n|---|---|\n| `a` (x) | `f?` (`not`), `g {w,h}`, `h: 'x'\\|'y'`, `'lit'`, none | `n` |\n");
+      assert.deepEqual([...rows], [['a', ['f', 'g', 'h']]]);
+    });
+  });
 });
+
+/**
+ * Body rows (below `|---`) `| \`name\` … | fields | … |` → Map(name → field names): the leading identifier of
+ * each backticked token in the second cell, after dropping parenthesized asides (examples, notes)
+ * and tokens that are not identifiers (quoted literals).
+ */
+function catalogueRows(table) {
+  const rows = new Map();
+  const lines = table.split(/\r?\n/);
+  for (const line of lines.slice(lines.findIndex((l) => l.startsWith('|---')) + 1)) {
+    const cells = line.replace(/\\\|/g, '\u0000').split('|').slice(1, -1);
+    const name = /^\s*`([^`]+)`/.exec(cells[0] ?? '')?.[1];
+    if (!name || cells.length < 2) continue;
+    let text = cells[1];
+    for (let prev = ''; prev !== text; ) [prev, text] = [text, text.replace(/\([^()]*\)/g, '')];
+    const fields = [...text.matchAll(/`([A-Za-z][A-Za-z0-9]*)[^`]*`/g)].map((m) => m[1]);
+    rows.set(name, fields);
+  }
+  return rows;
+}

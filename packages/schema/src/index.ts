@@ -1,7 +1,15 @@
 // Public entry of @fluxion/schema; the package comment is the dts banner in tsdown.config.ts.
 
 export { DIAGNOSTIC_CODES, type Diagnostic, type DiagnosticCode, type DiagnosticSeverity, jsonPointer } from './diagnostics.js';
-export { type AnyRecord, type DocumentFile, RECORD_TYPES, SCHEMA_VERSION, type UnknownRecord } from './document-file.js';
+export {
+  type AnyRecord,
+  type DocumentFile,
+  RECORD_TYPES,
+  type RecordSchemaChoice,
+  SCHEMA_VERSION,
+  schemaForRecord,
+  type UnknownRecord,
+} from './document-file.js';
 export type { FluxError, FluxErrorCode } from './errors.js';
 export { compareKeys, type IndexKey, isIndexKey, keyBetween, nKeysBetween } from './fractional-index.js';
 export { createId, ID_ALPHABET, ID_LENGTH, isGeneratedId, isRecordId, type Random, type RecordId, seededRandom } from './ids.js';

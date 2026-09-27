@@ -530,3 +530,9 @@ one three-OS verify: gates.yml is one ubuntu job without install (workflow lint 
 check-commits.mjs: an empty or all-zero base falls back to the baseline commit (--baseline for tests); harness cases for the fallback, "commit messages checked by script" (single call, only ci.yml runs the ladder on 3 OSes)
 check-ci-evidence: ci's verify must pass on every OS and one gates job (`gates`, or the pre-M2.22 `gates (ubuntu-latest)`); merged with M2.20's --milestone/REST changes
 M2.21 review minor: state.json blockedReason records the budget re-record blocker (cdn.playwright.dev denied here)
+
+## 2026-09-27 M2.23 (claude)
+02-document-model: §1.4 record types are hand-written and checked against the schemas (ADR-0140); new §1.6 parsing fills no defaults, readers use screenSize/screenKind/transformRotation (ADR-0142); schemaVersion lives on the file (§2, §4); catalogue synced with the schemas (optional marks, missing fields added, fields the schemas lack moved to "Planned", table kind noted as R3/unknown until then)
+schema and geometry READMEs describe the M2 public surface with an example (geometry example run against dist)
+docs-consistency: catalogue record types = RECORD_TYPES (table and RecordType union), core kind rows = ELEMENT_KINDS, every listed key field exists in that record's schema shape (element base fields against the core kinds' union); shown to fail on a bogus field and on a planned field listed as a key field
+schemaForRecord and RecordSchemaChoice exported from @fluxion/schema (already @public in document-file.ts; additive) so the harness can read the schema shapes from dist; API report regenerated (now references zod's ZodType)

@@ -4,6 +4,8 @@
 
 ```ts
 
+import { z } from 'zod';
+
 // @public
 export type AnchorDef = Extensible<{
     readonly name: string;
@@ -483,6 +485,12 @@ export type RecordId = string & {
 };
 
 // @public
+export type RecordSchemaChoice = {
+    readonly schema: z.ZodType<AnyRecord>;
+    readonly known: boolean;
+};
+
+// @public
 export type Rect = Extensible<{
     readonly x: number;
     readonly y: number;
@@ -546,6 +554,9 @@ export type Route = Extensible<{
 
 // @public
 export const SCHEMA_VERSION: string;
+
+// @public
+export function schemaForRecord(record: unknown): RecordSchemaChoice;
 
 // @public
 export function screenKind(screen: Pick<ScreenRecord, "kind">): "fixed" | "infinite";
