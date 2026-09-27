@@ -27,4 +27,5 @@ export { type CubicSegment, derivativeAt, type Path, type PathCommand, pathBound
 export { createPathSampler, type PathSampler, type PathSamplerOptions } from './path-sampler.js';
 export { type FillRule, pointInPath } from './point-in-path.js';
 export type { GeometryError, GeometryErrorCode, Result } from './result.js';
+export { createDynamicIndex, createStaticIndex, type DynamicSpatialIndex, type IndexedBox, type SpatialIndex } from './spatial-index.js';
 export { add, cross, distance, dot, equalsApprox, length, lerp, normalize, rotate, scale, sub, type Vec2, vec2 } from './vec2.js';

@@ -46,7 +46,13 @@ export function boxIntersects(a: Box, b: Box): boolean;
 export function boxUnion(a: Box, b: Box): Box;
 
 // @public
+export function createDynamicIndex(items?: readonly IndexedBox[]): DynamicSpatialIndex;
+
+// @public
 export function createPathSampler(path: Path, options?: PathSamplerOptions): PathSampler;
+
+// @public
+export function createStaticIndex(items: readonly IndexedBox[]): SpatialIndex;
 
 // @public
 export function cross(a: Vec2, b: Vec2): number;
@@ -70,6 +76,13 @@ export function distance(a: Vec2, b: Vec2): number;
 
 // @public
 export function dot(a: Vec2, b: Vec2): number;
+
+// @public
+export type DynamicSpatialIndex = SpatialIndex & {
+    insert(item: IndexedBox): void;
+    remove(id: string): boolean;
+    clear(): void;
+};
 
 // @public
 export function elementBounds(t: ElementTransform): Box;
@@ -108,6 +121,12 @@ export type GeometryErrorCode = "MATRIX_SINGULAR" | "PATH_MISSING_MOVE" | "PATH_
 
 // @public
 export function identity(): Mat2d;
+
+// @public
+export type IndexedBox = {
+    readonly id: string;
+    readonly box: Box;
+};
 
 // @public
 export function intersectCubics(s1: CubicSegment, s2: CubicSegment, eps?: number): Vec2[];
@@ -225,6 +244,13 @@ export function scaling(sx: number, sy?: number): Mat2d;
 
 // @public
 export function segmentBounds(seg: CubicSegment): Box;
+
+// @public
+export type SpatialIndex = {
+    readonly size: number;
+    search(box: Box): string[];
+    collides(box: Box): boolean;
+};
 
 // @public
 export function splitAt(seg: CubicSegment, t: number): readonly [CubicSegment, CubicSegment];

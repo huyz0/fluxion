@@ -30,6 +30,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
 | [0139](ADR-0139-storybook-portable-stories.md) | Story tests through portable stories until `@storybook/addon-vitest` supports Vitest 5 | accepted | 2026-09-27 |
 | [0140](ADR-0140-record-types-checked-against-schemas.md) | Record types are written once as TSDoc'd types and checked against their Zod schemas | accepted | 2026-09-27 |
+| [0141](ADR-0141-spatial-index-rbush-flatbush.md) | Spatial index: `rbush` and `flatbush` behind one `SpatialIndex` interface | accepted | 2026-09-27 |
 | [0142](ADR-0142-parsing-never-fills-defaults.md) | Parsing a document never fills in defaults; readers apply documented defaults | accepted | 2026-09-27 |
 
 ## ADR required when

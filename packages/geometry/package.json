@@ -22,5 +22,12 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "dependencies": {
+    "flatbush": "catalog:",
+    "rbush": "catalog:"
+  },
+  "devDependencies": {
+    "@types/rbush": "catalog:"
   }
 }
