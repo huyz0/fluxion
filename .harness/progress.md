@@ -846,3 +846,6 @@ ci.yml build job: after the build, the built CLI renders the demo to r0-static.h
 tests: cli.render.test.ts "FR-CLI-001: examples/r0-static.flux.json validates with no errors and renders two screens of shapes, connectors and token styles"
 review F1: the demo case checks the demo's own token styles per screen (primary, accent-1, stroke.thin; secondary, accent-3), not the background default every screen carries
 the CLI e2e suites get a 30 s per-test timeout (E2E_TIMEOUT in spawn-bin.ts): the --screen case spawns the bin five times and exceeded the 5 s default under load in a staged run
+
+## 2026-09-29 M4.33 (claude)
+m4-complete CLI e2e leg: the spawn check reads each suite plus the helpers it imports from its own folder ('./x.js' → x.ts); checked against the real suites (spawning found through spawn-bin.ts) and against a suite alone (no spawn: red)

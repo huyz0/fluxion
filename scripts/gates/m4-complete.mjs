@@ -3,7 +3,7 @@
 // Written first and red (M4.1). Legs are behavioural: each runs the real tool, test or gate.
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import * as checks from './milestone-checks.mjs';
 import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews, namedCases, titled, verifyLeg } from './milestone-checks.mjs';
@@ -167,9 +167,15 @@ const CLI_E2E = ['packages/cli/src/e2e/cli.validate.test.ts', 'packages/cli/src/
 leg('CLI e2e suites spawn the built bin and pass', () => {
   const missing = CLI_E2E.filter((f) => !exists(f));
   if (missing.length) return `missing ${missing.join(', ')}`;
-  // the suites spawn the built bin: a spawn call and the dist path in code, not in a comment (M4.1 review F5)
-  const spawnsBin = CLI_E2E.filter((f) => {
+  // the suites spawn the built bin: a spawn call and the dist path in code, not in a comment (M4.1
+  // review F5), in the suite itself or in a helper module it imports from its own folder (M4.33)
+  const withHelpers = (f) => {
     const src = code(readText(f));
+    const helpers = [...src.matchAll(/from\s+['"]\.\/([\w-]+)\.js['"]/g)].map((m) => join(dirname(f), `${m[1]}.ts`)).filter((p) => exists(p));
+    return [src, ...helpers.map((p) => code(readText(p)))].join('\n');
+  };
+  const spawnsBin = CLI_E2E.filter((f) => {
+    const src = withHelpers(f);
     return !/\b(spawnSync|spawn|execFileSync|execFile)\(/.test(src) || !/dist['"`/\\,\s]+bin\.js/.test(src);
   });
   if (spawnsBin.length) return `${spawnsBin.join(', ')} do not spawn the built bin`;
