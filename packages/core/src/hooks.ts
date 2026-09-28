@@ -3,7 +3,7 @@
 // document referentially valid when records are deleted: owned records go with their owner, optional
 // references are cleared. A deleted asset or theme that is still used is not cascaded (no hook can
 // guess the replacement): validation refuses that transaction.
-import type { AnyRecord, Point, RecordId } from '@fluxion/schema';
+import type { AnyRecord, Diagnostic, Point, RecordId } from '@fluxion/schema';
 import type { HookContext, IntegrityHook } from './hook-types.js';
 import type { IndexName } from './indexes.js';
 import { keysOf } from './indexes.js';
@@ -137,12 +137,16 @@ export const CORE_HOOKS: ReadonlyArray<readonly [string, IntegrityHook]> = [
 ];
 
 /**
- * Register the built-in hooks in `registry` as source `core`.
+ * Register the built-in hooks in `registry` as source `core`; returns the refused registrations (a
+ * plugin already holding a key), so a missing built-in is never silent (M3.14 review F1).
  *
  * @public
  */
-export function registerCoreHooks(registry: Registry<string, IntegrityHook>): void {
-  for (const [key, hook] of CORE_HOOKS) registry.register(key, hook, 'core');
+export function registerCoreHooks(registry: Registry<string, IntegrityHook>): Diagnostic[] {
+  return CORE_HOOKS.flatMap(([key, hook]) => {
+    const r = registry.register(key, hook, 'core');
+    return r.ok ? [] : [r.error];
+  });
 }
 
 /**

@@ -271,7 +271,6 @@ importers:
       alien-signals:
         specifier: 'catalog:'
         version: 3.2.1
-    devDependencies:
       zod:
         specifier: 'catalog:'
         version: 4.6.5

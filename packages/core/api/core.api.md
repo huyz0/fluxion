@@ -69,6 +69,9 @@ export type CommandFailure = TxFailure;
 export function computed<T>(fn: () => T): ReadSignal<T>;
 
 // @public
+export const CORE_COMMANDS: readonly AnyCommand[];
+
+// @public
 export const CORE_HOOKS: ReadonlyArray<readonly [string, IntegrityHook]>;
 
 // @public
@@ -190,7 +193,10 @@ export type ReadView = {
 };
 
 // @public
-export function registerCoreHooks(registry: Registry<string, IntegrityHook>): void;
+export function registerCoreCommands(registry: Registry<string, AnyCommand>): Diagnostic[];
+
+// @public
+export function registerCoreHooks(registry: Registry<string, IntegrityHook>): Diagnostic[];
 
 // @public
 export interface Registry<K extends string, V> {

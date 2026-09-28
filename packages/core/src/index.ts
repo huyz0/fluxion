@@ -1,6 +1,7 @@
 // Public entry of @fluxion/core; the package comment is the dts banner in tsdown.config.ts.
 
 export type { Random } from '@fluxion/schema';
+export { CORE_COMMANDS, registerCoreCommands } from './builtin-commands.js';
 export {
   type AnyCommand,
   type ArgsIssue,

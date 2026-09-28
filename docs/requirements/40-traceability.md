@@ -35,7 +35,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-009 | C | R6 | M28 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-DOC-010 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/fractional-index.test.ts` |
+| FR-DOC-010 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/builtin-commands.test.ts`, `packages/schema/src/fractional-index.test.ts` |
 | FR-SCR-001 | M | R0 | M2, M4 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/paint.test.ts`, `packages/schema/src/records/screen.test.ts` |
 | FR-SCR-002 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-003 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -237,7 +237,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-INT-009 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-010 | M | R5 | M24 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-011 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
-| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/commands.test.ts` +3 |
+| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/builtin-commands.test.ts` +4 |
 | FR-EXT-002 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-003 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-004 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
@@ -348,7 +348,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-MNT-003 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/biome.test.mjs`, `tests/harness/size.test.mjs` |
 | NFR-MNT-004 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `apps/docs/src/index.test.ts` +20 |
 | NFR-MNT-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-MNT-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/indexes.test.ts` +2 |
+| NFR-MNT-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/indexes.test.ts` +3 |
 | NFR-MNT-007 | M | R0 | M1, M33 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/result-convention.test.ts` +2 |
 | NFR-MNT-008 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/test-titles.test.mjs`, `tests/harness/trace.test.mjs` |
 | NFR-AI-001 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |

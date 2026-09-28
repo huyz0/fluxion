@@ -119,10 +119,13 @@ leg('NFR-MNT-006 store properties pass', () =>
     ['M3.11', 'NFR-MNT-006: every transaction emits record puts/deletes only', 'core'],
     ['M3.11', 'NFR-MNT-006: IF a put is invalid THEN the transaction SHALL roll back with diagnostics', 'core'],
     ['M3.12', 'NFR-MNT-006: incrementally maintained indexes equal indexes rebuilt from scratch', 'core'],
-    ['M3.17', 'NFR-MNT-006: no production code calls store.transact outside a command run', 'core'],
     ['M3.22', 'NFR-MNT-006: writes to a fork never reach the parent', 'core'],
     ['M3.22', 'NFR-MNT-006: a read-only store rejects element.update with a diagnostic', 'core'],
   ]),
+);
+// a harness test: a Vitest raw-import of every source would make coverage skip untested files (M3.17)
+leg('NFR-MNT-006: no production code calls store.transact outside a command run (named case)', () =>
+  namedCases('tests/harness/architecture.test.mjs', ['NFR-MNT-006: no production code calls store.transact outside a command run']),
 );
 leg('acceptance of M3.9-M3.20 passes under the planned titles', () =>
   titled([
