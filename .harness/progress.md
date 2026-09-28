@@ -714,3 +714,7 @@ CommandTxOptions (TxOptions without origin undo/redo) types CommandContext.optio
 tests: the gate's three titles + equal-neighbour-keys case + @ts-expect-error on CommandTxOptions; a test command in commands.test now forwards ctx.options (it silently dropped them)
 review F1-F3 (round 2): store.transact itself refuses undo/redo origins (FLX_ORIGIN_RESERVED; history replays through #replayable), so a command's run cannot forge them; a malformed neighbour key is named on its holder; FLX_INDEX_DUPLICATE keeps its registered severity
 round 3: history.batch runs through the store's checked transact (StoreHistory takes transact + replay); only undo/redo use the unchecked replay; forged-batch test; the hooks-skip test now drives history undo/redo (the direct undo-origin calls it made are refused now)
+
+## 2026-09-29 M4.5 (claude)
+createCore(file, options?) (bootstrap.ts): core registries with CORE_HOOKS and CORE_COMMANDS registered, store created with the hooks registry, `execute(id, args, options?)`; README and 03 §1 use it
+tests: "FR-EXT-001: the core bootstrap cascades a bound shape delete" (registries hold the built-ins; delete of a bound shape frees the connector end, 0 validation errors), options threading (read-only, system + mergeKey merge); "NFR-REL-005: the same command sequence twice gives equal diffs, history and document" (arbDocument × ≤10 generated commands, diffs serialized with entry order, results, history depth, document; asserts some commits happened) + a case showing Map toEqual ignores order while the serialized form does not

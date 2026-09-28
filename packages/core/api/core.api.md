@@ -78,6 +78,13 @@ export type CommandTxOptions = Omit<TxOptions, "origin"> & {
 export function computed<T>(fn: () => T): ReadSignal<T>;
 
 // @public
+export type Core = {
+    readonly store: Store;
+    readonly registries: CoreRegistries;
+    execute(id: string, args: unknown, options?: CommandTxOptions): Result<unknown, CommandFailure>;
+};
+
+// @public
 export const CORE_COMMANDS: readonly AnyCommand[];
 
 // @public
@@ -101,6 +108,9 @@ export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string
 
 // @public
 export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
+
+// @public
+export function createCore(file: DocumentFile, options?: Omit<StoreOptions, "hooks">): Core;
 
 // @public
 export function createCoreRegistries(): CoreRegistries;

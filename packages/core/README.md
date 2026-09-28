@@ -7,13 +7,11 @@ Document store (records + signals), transactions, commands, undo/redo, queries, 
 | L1 | yes | M3: store, transactions, hooks, commands, history, forks, registries |
 
 ```ts
-import { createCoreRegistries, createStore, executeCommand, registerCoreCommands, registerCoreHooks } from '@fluxion/core';
+import { createCore } from '@fluxion/core';
 
-const registries = createCoreRegistries();
-registerCoreHooks(registries.integrityHooks);
-registerCoreCommands(registries.commands);
-const store = createStore(file, { hooks: registries.integrityHooks });
-const r = executeCommand(registries.commands, { store }, 'element.update', { id, fields: { name: 'Box' } });
+// the store with the built-in hooks, and the registries with the built-in commands
+const { store, registries, execute } = createCore(file);
+const r = execute('element.update', { id, fields: { name: 'Box' } });
 if (!r.ok) console.log(r.error.diagnostics);
 store.history.undo();
 ```

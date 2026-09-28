@@ -36,9 +36,11 @@ type Diff = {
 };
 ```
 
-- `createStore` builds a store from a `DocumentFile`. `StoreOptions`: `validate` (default on;
-  only production builds may switch it off), `hooks` (the `integrityHooks` registry), `policy`
-  (`'read-write'` or `'read-only'`).
+- `createCore` wires a store for a `DocumentFile`: the core registries with the built-in hooks
+  (`CORE_HOOKS`) and commands (`CORE_COMMANDS`) registered, the store created with those hooks, and
+  `execute` for commands. `createStore` alone builds a bare store. `StoreOptions`: `validate`
+  (default on; only production builds may switch it off), `hooks` (the `integrityHooks` registry),
+  `policy` (`'read-write'` or `'read-only'`).
 - Records are immutable (frozen) values; `patch` produces a new object.
 - One signal per record (`record$`) and the `IndexName` indexes, kept from each diff; indexes are
   built on first use.
