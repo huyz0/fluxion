@@ -5,7 +5,7 @@
 > *and* a milestone review (fresh agent) has recorded a verdict. The command is written first,
 > red (see `docs/standards/sdd.md`, skill `plan-milestone`).
 
-**Current milestone: `M3`** (the `drive` skill reads this line).
+**Current milestone: `M4`** (the `drive` skill reads this line).
 
 Plans (`M<n>.md`) are hypotheses with ≤ ~20 tasks; the backlog (`docs/backlog/current.md`) is
 authoritative for the current milestone only.
@@ -97,5 +97,9 @@ receiving milestone's plan.
 | fast-check out of @fluxion/schema runtime deps before publishing (M2 final F6) | M2 | M11 | first release is M11 |
 | Valid fixtures behave as named (unknown-kind warns FLX_KIND_UNKNOWN) (M2 final F7) | M2 | M3 | fixture test strength |
 | Budget re-record path for agents after a lockfile change; cold setup on windows/macos (ADR-0143) (M2 delta D1, D3) | M2 | M3 | needs a design decision |
+| Undo/transact benches in a shared milestone bench leg or nightly perf (M3 final F1) | M3 | M4 | benches run only in m3-complete |
+| Core pre-release hardening: no undo/redo origin through commands, determinism test, argument error codes, non-lexical write-path test (M3 final F2, F4, F5, F6) | M3 | M4 (first) | before render consumes core |
+| One wired core bootstrap (registries with built-ins + store with hooks) (M3 final F3) | M3 | M4 | first consumer is render |
+| Mutation testing with tzap instead of StrykerJS (ADR), triage of the 187 M3 survivors | M3 | M4 (first) | user decision 2026-09-28 |
 | Completion gates share one CI-unset verify leg with a harness test (M2.29 review F1, F2) | M2 | M3 | gate code |
 | Cold-setup CI job + `check-budget --record` isolation test (M1 final F4); one three-OS verify matrix instead of gates.yml + ci.yml, restoring windows headroom under the 15-min budget (M1 final F5, D5) | M1 | M2 | CI hygiene |

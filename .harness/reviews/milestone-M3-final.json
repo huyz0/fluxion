@@ -1,0 +1,90 @@
+{
+  "milestone": "M3",
+  "checkpoint": "final",
+  "range": "a34a9c3..040a7ad",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "area": "gate honesty / spec fidelity (NFR-PERF-006)",
+      "detail": "The 5 000-record undo/redo/transact benches run only in m3-complete's bench leg; there is no shared bench leg in milestone-checks.mjs, pnpm verify/test do not run vitest bench, and the nightly perf job is still SKIP until M13. The ADR-0014 M3.23 amendment claims 'the bench leg of every milestone gate would show it', which nothing makes true. check-trace now counts the bench titles as NFR-PERF-006 coverage although no recurring job runs them. With O(n) validation per transaction at p99 5.4-9.1 ms vs 16 ms, the headroom is real but not large.",
+      "failure_scenario": "M4 adds per-transaction work (style resolution in a subscriber, a second full-map scan); undo p99 on 5 000 records crosses 16 ms while every gate, CI job and trace stays green until M13."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "area": "architecture / contracts (ADR-0014 History)",
+      "detail": "CommandContext.options is the full TxOptions, so any executeCommand caller can pass origin 'undo' or 'redo': the store then skips integrity hooks and the history does not record the write (nor clear the redo stack, since record() only clears it for user/system). ADR-0014 reserves undo/redo origins for the history module but the public command API does not enforce it. Cheap to fix while unreleased: restrict the origin in CommandContext.options (e.g. Exclude<TxOrigin,'undo'|'redo'>) or refuse it in executeCommand with a diagnostic.",
+      "failure_scenario": "User edits A, undoes; an MCP client or plugin runs element.update on the same record with options {origin:'redo'}: the edit is not recorded and the next redo writes A.after over it, losing it silently; with production validation off, element.delete with origin 'undo' leaves dangling bindings because hooks never run."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "coherence / API",
+      "detail": "createStore(file) has no integrity hooks by default and createCoreRegistries() returns empty commands and integrityHooks registries; nothing wires CORE_HOOKS/CORE_COMMANDS into a store or registry set. Every consumer must remember registerCoreHooks, registerCoreCommands and passing the hooks registry into the store options; tests and benches all do it by hand.",
+      "failure_scenario": "The first render or editor consumer in M4/M6 calls createStore(file) with createCoreRegistries(); element.delete of a bound shape fails with TX_INVALID (FLX_REF_MISSING) instead of cascading, or leaves dangling bindings with production validation off."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "spec fidelity (NFR-REL-005, carried)",
+      "detail": "NFR-REL-005 in core is covered only by the port fakes (seeded Random sequence, VirtualClock). No core test runs the same command sequence twice and compares diffs, history and document, which the NFR measurement ('snapshot determinism tests run twice') asks for and ADR-0014 names as a driver. Store.members is 'in no particular order' and feeds hooks, so diff-map entry order depends on index Set order: deterministic in JS today, but no test holds it.",
+      "failure_scenario": "A later index refactor (hash-sorted, a structure with unstable iteration) changes diff entry order between runs; autosave/CRDT outputs differ run to run while every M3 test stays green."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "coherence (error handling)",
+      "detail": "Argument-failure error codes drift: schema-failed args return COMMAND_ARGS, built-ins given an unknown or wrong-typed id return TX_INVALID with an FLX_COMMAND_ARGS diagnostic, and applyFork on a non-fork and screen.reorder's keyBetween failure return TX_INVALID with no diagnostics.",
+      "failure_scenario": "An MCP/AI client switching on error.code treats element.update {id:'missing'} as a document validation failure rather than a bad argument, retrying or reporting the wrong cause; an applyFork misuse reaches the user with no diagnostic."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "gate honesty (NFR-MNT-006 architecture test)",
+      "detail": "The write-path architecture test is lexical: it matches transact( and ['transact']( and allows any line containing ctx.store.transact(. It does not catch store.transact.call(store, ...), .apply(...) or const w = store.transact.bind(store); w(...), and it allows a non-command function that names its parameter ctx. Mutant: adding store.transact.call(store,'x',f) in packages/render/src stays green.",
+      "failure_scenario": "A later package writes around commands via .call or a ctx-named helper; no command audit, and the NFR-MNT-006 gate stays green."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "hand-off",
+      "target": "M4",
+      "note": "Shared bench leg in milestone-checks.mjs used by m4-complete onward (or nightly perf runs pnpm bench now); reword the ADR-0014 M3.23 amendment to what actually runs."
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand-off",
+      "target": "M4 (first row)",
+      "note": "Pre-release API fix: CommandContext.options cannot carry origin undo/redo (type + executeCommand refusal with a diagnostic)."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "target": "M4",
+      "note": "One wired bootstrap (core registries with CORE_HOOKS/CORE_COMMANDS registered, store created with the hooks) before the first render consumer."
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand-off",
+      "target": "M4 (first row)",
+      "note": "NFR-REL-005 in core: the same command sequence run twice gives equal diffs (entry order included), history and document."
+    },
+    {
+      "finding": "F5",
+      "disposition": "hand-off",
+      "target": "M4 (first row)",
+      "note": "One error-code rule for argument failures: unknown/wrong-typed ids -> COMMAND_ARGS; applyFork misuse and keyBetween failure carry a diagnostic."
+    },
+    {
+      "finding": "F6",
+      "disposition": "hand-off",
+      "target": "M4 (first row)",
+      "note": "Architecture test also catches transact .call/.apply/.bind and ctx-named non-command helpers (or an AST/type-aware check), with mutants."
+    }
+  ],
+  "planDelta": "26 rows vs 16 planned (1.63x), unchanged since cp1. All 16 plan items map to rows (M3.1, M3.9-M3.17, M3.19-M3.25); nothing from the plan or the six M2 hand-offs (M3.3-M3.8) was dropped. Growth is harness hand-offs and review hardening (ADR row, 6 M2 hand-offs, docs split, cp1/M3.26), not product scope. Late surprise: the NFR-PERF-006 trace gap (bench titles not read by check-trace) surfaced only in m3-complete after M3.23/M3.24 closed and was fixed under M3.25 (040a7ad); rows that add a requirement's first test should run check-trace --milestone before closing. Suggested hand-offs: F1 to M4 (shared bench leg or nightly perf running pnpm bench; correct the ADR-0014 amendment wording); F3 to M4/M6 (one wired session/registry bootstrap). F2, F4, F5, F6 are cheap pre-release fixes: a small M4 first row, or argue."
+}
