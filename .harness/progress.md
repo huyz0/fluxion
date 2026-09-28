@@ -849,3 +849,6 @@ the CLI e2e suites get a 30 s per-test timeout (E2E_TIMEOUT in spawn-bin.ts): th
 
 ## 2026-09-29 M4.33 (claude)
 m4-complete CLI e2e leg: the spawn check reads each suite plus the helpers it imports from its own folder ('./x.js' → x.ts); checked against the real suites (spawning found through spawn-bin.ts) and against a suite alone (no spawn: red)
+
+## 2026-09-29 M4.32 (claude)
+shape-view.browser.test "FR-SHP-001: a gradient fill matches the background gradient of the same paint": the four views (linear and radial, as background and as shape fill) render stacked in one root and are captured in one screenshot, sampled per 100 px band; assertions unchanged; still fails against the pre-M4.30 bounding-box gradients

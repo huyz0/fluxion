@@ -156,31 +156,43 @@ describe('shape view (FR-SHP-001)', () => {
         { offset: 1, color: '#2563eb' },
       ],
     };
-    /** The pixels of a 400x100 screen showing `paint` as its background, or as the fill of a shape covering it. */
-    const pixels = async (paint: object, on: 'background' | 'shape') => {
+    /** A 400x100 screen showing `paint` as its background, or as the fill of a shape covering it. */
+    const view = (paint: object, on: 'background' | 'shape') => {
       const b = documentBuilder({ seed: 430 });
       const screenId = b.screen({ size: { w: 400, h: 100 } });
       if (on === 'shape') b.rect(screenId, { x: 0, y: 0, w: 400, h: 100, style: { fill: paint as never, stroke: { color: '#000000', width: 0 } } });
       const file = b.build();
       const records = on === 'background' ? { ...file.records, [screenId]: { ...(file.records[screenId] as object), background: paint } } : file.records;
       const { store } = createCore({ ...file, records } as DocumentFile);
-      await act(async () => root.render(<ScreenView store={store} screenId={screenId} mode="export" view={{ kind: 'fit', box: { w: 400, h: 100 } }} />));
-      const png = await page.screenshot({ element: host.querySelector('.fx-screen') as HTMLElement, save: false });
-      const img = new Image();
-      img.src = `data:image/png;base64,${png}`;
-      await img.decode();
-      const canvas = document.createElement('canvas');
-      [canvas.width, canvas.height] = [img.width, img.height];
-      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-      ctx.drawImage(img, 0, 0);
-      const scale = img.width / 400;
-      // a grid of interior samples, clear of the edges
-      return [10, 50, 90].flatMap((y) =>
-        [10, 60, 130, 200, 270, 340, 390].map((x) => [...ctx.getImageData(Math.round(x * scale), Math.round(y * scale), 1, 1).data]),
+      return (
+        <ScreenView key={`${on}-${JSON.stringify(paint)}`} store={store} screenId={screenId} mode="export" view={{ kind: 'fit', box: { w: 400, h: 100 } }} />
       );
     };
-    for (const paint of [linear, radial]) {
-      const [background, shape] = [await pixels(paint, 'background'), await pixels(paint, 'shape')];
+    // the four views stacked in one page and captured in one screenshot (M4.32: one per view timed out once)
+    const views: readonly [object, 'background' | 'shape'][] = [
+      [linear, 'background'],
+      [linear, 'shape'],
+      [radial, 'background'],
+      [radial, 'shape'],
+    ];
+    await act(async () => root.render(<>{views.map(([paint, on]) => view(paint, on))}</>));
+    const png = await page.screenshot({ element: host, save: false });
+    const img = new Image();
+    img.src = `data:image/png;base64,${png}`;
+    await img.decode();
+    const canvas = document.createElement('canvas');
+    [canvas.width, canvas.height] = [img.width, img.height];
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    ctx.drawImage(img, 0, 0);
+    const scale = img.width / host.getBoundingClientRect().width;
+    /** A grid of interior samples of the view at `index` (each view is 100 px high), clear of its edges. */
+    const pixels = (index: number) =>
+      [10, 50, 90].flatMap((y) =>
+        [10, 60, 130, 200, 270, 340, 390].map((x) => [...ctx.getImageData(Math.round(x * scale), Math.round((index * 100 + y) * scale), 1, 1).data]),
+      );
+    expect(host.querySelectorAll('.fx-screen')).toHaveLength(4);
+    for (const index of [0, 2]) {
+      const [background, shape] = [pixels(index), pixels(index + 1)];
       const worst = Math.max(...shape.flatMap((rgba, i) => rgba.slice(0, 3).map((c, k) => Math.abs(c - (background[i]?.[k] ?? -99)))));
       expect(worst).toBeLessThanOrEqual(2);
     }
