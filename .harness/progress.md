@@ -733,3 +733,7 @@ review F1/F2: the validation-off scan walks the bench folder recursively (nested
 ## 2026-09-29 M4.8 (claude, triage by a subagent, verified)
 core mutation 84.2 % → 100.0 % (1 242 valid, 0 uncovered; re-measured independently): ~160 survivors killed by new tests (command title ids/labels, undo/redo labels, hook keys/source, failure messages name the command, diagnostics non-empty, the 8 NoCoverage: fork deletes, unsubscribe, patch identity, dropped), 4 message mutants disabled, 12 equivalent ones disabled with reasons (bindingsHook early free, pendingMembers, counters, no-hook fast path, patch's closed check)
 production simplifications that survivors proved redundant (no behaviour change): indexAfter default/ternary, binding.set unconditional free clear, ownedHook unreachable guard + lazy pointers, freeEnd redundant undefined check, indexes snapshot/add-bump, registry list via compareKeys, diffFrom jsonEqual, history mergeKey always held; floor 83.7 → 100
+
+## 2026-09-29 M4 cp1 (claude)
+fresh milestone-reviewer over 5832cef..b26cf09: changes-requested, F1 (SSR styling unchecked) and F2 (ladder budget) major, F3-F9 minor; F1/F8 amend M4.16/M4.22, F1-F3/F8 gate and ladder work in new M4.26 (before M4.11), F4-F7 in new M4.27, F6 commit type and F9 argued; M4.md Learned
+cp1 disposition review round 1: M4.26 acceptance catches F2 (scoped staged tests, suite rows re-record the budget) and names its gate legs; M4.27 acceptance checks the ADR amendments

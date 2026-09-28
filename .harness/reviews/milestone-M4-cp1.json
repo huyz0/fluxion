@@ -1,0 +1,129 @@
+{
+  "milestone": "M4",
+  "checkpoint": "cp1",
+  "range": "5832cef..b26cf09",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate honesty / spec fidelity (FR-THM-001, FR-SCR-001; plan risks 1-2)",
+      "detail": "No row or leg checks that the SSR/CLI HTML inlines the content CSS (@layer fx.content) or the --fx-* theme variables; goldens and the first baseline would lock in unstyled output; the plan risk mitigations (CSS string module in ssr.ts, SSR-vs-browser parity per fixture) were dropped from the rows silently.",
+      "failure_scenario": "ssr.ts forgets the theme vars or content CSS; T1 passes in the browser, goldens and baseline record unstyled shapes, m4-complete goes green."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "process health (NFR-DX-002, PRECOMMIT_BUDGET_MS)",
+      "detail": "The staged ladder reaches 100-130 s under load against the 120 s budget; budget.json records 53.7 s; M4.11-M4.20 add Chromium T1, SSR, CLI build and e2e, and a mode-policy step; no row profiles or scopes the ladder.",
+      "failure_scenario": "From M4.11 every commit exceeds 120 s; the driver is pushed to raise the budget or skip the step."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "gate cost / plan health",
+      "detail": "m4-complete runs benches (~171 s), a core tzap run, two coverage runs, a build, pnpm verify and one vitest invocation per titled test (~20, 7 starting Chromium).",
+      "failure_scenario": "Late iterations on one red leg take 10-15 min each."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "gate honesty (NFR-PERF-006)",
+      "detail": "The 3 s-sampling p99 margin is not recorded; the command list lives in three places (CORE_COMMANDS, bench fixture COMMANDS, BENCH_COMMANDS hard-coded) and the bench-leg test builds its report from BENCH_COMMANDS.",
+      "failure_scenario": "A ninth built-in is never benched while the leg stays green."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "spec fidelity (M4.3, ADR-0146)",
+      "detail": "The row and hand-off say the nightly job runs a diff-scoped tzap; it runs whole-package pnpm mutate --check (60 min timeout); neither row nor ADR reworded.",
+      "failure_scenario": "As pure packages grow the nightly job times out unnoticed."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "standards drift / mutation floor policy",
+      "detail": "e6ec407 is typed test(core) but simplifies production code in eight files (no behaviour change); the core floor is 100 % with no policy for a tzap upgrade that adds mutators.",
+      "failure_scenario": "A behaviour change hides in a test commit; a tzap bump turns the mutation leg red and a Threshold-change is argued in a hurry."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "spec fidelity (NFR-REL-005, M4.5)",
+      "detail": "The determinism property generates update/delete/screen.delete/document.update/screen.reorder only, not element.create, screen.create or binding.set.",
+      "failure_scenario": "Nondeterminism local to binding.set or create is never exercised."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "area": "gate honesty (M4.22 demo)",
+      "detail": "The demo leg checks validate, render, no script and two .fx-screen, not the plan content (rectangles, straight connectors, token styles).",
+      "failure_scenario": "A demo with two empty screens passes and CI uploads a blank R0 artifact."
+    },
+    {
+      "id": "F9",
+      "severity": "minor",
+      "area": "architecture",
+      "detail": "architecture.test.mjs loads the TS 6 compiler API through createRequire(apps/docs/package.json).",
+      "failure_scenario": "A docs upgrade drops catalog:typescript6 from apps/docs and the test breaks loudly for an unrelated reason."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M4.16 (amended) + M4.26 gate leg",
+      "note": "M4.16: the HTML inlines the @layer fx.content CSS and the theme vars, every var(--fx-…) it uses is defined, and a T1 case shows SSR markup equals the browser render per fixture (plan risk 2); the gate names both titles."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M4.26",
+      "note": "Before M4.11: profile the staged ladder per step, scope what can be scoped, re-record budget.json; PRECOMMIT_BUDGET_MS unchanged."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M4.26",
+      "note": "Batch titled() into one vitest run per project."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M4.27",
+      "note": "BENCH_COMMANDS checked equal to CORE_COMMANDS ids and the bench fixture COMMANDS; record the 3 s p99 max in the ADR-0014 amendment."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M4.27",
+      "note": "ADR-0146 and the M4.3 wording say whole-package nightly runs; the timeout grows with the packages or the job splits per package."
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "target": "M4.27 (floor policy) + argue (commit type)",
+      "note": "ADR-0146 amendment: a tzap upgrade that adds mutators re-measures before raising or holding floors. The commit type is argued in review-argued.txt."
+    },
+    {
+      "finding": "F7",
+      "disposition": "reopen",
+      "target": "M4.27",
+      "note": "arbOps adds element.create, screen.create and binding.set."
+    },
+    {
+      "finding": "F8",
+      "disposition": "reopen",
+      "target": "M4.22 (amended) + M4.26 gate leg",
+      "note": "Each demo screen has at least one shape .fx-el, one connector path, and uses a token style (var(--fx-…))."
+    },
+    {
+      "finding": "F9",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "The repo has one TS 6 pin, reached through apps/docs (ADR-0011); a failure there is loud, not a false green."
+    }
+  ],
+  "planDelta": "25 → 27 rows (+M4.26 ladder/gate speed and F1/F8 gate legs, +M4.27 bench list, determinism ops, ADR-0146 wording and floor policy); M4.16 and M4.22 acceptance amended; 27/18 = 1.5x, the growth being M3 hand-offs and review hardening, not product scope."
+}
