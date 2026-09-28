@@ -78,3 +78,11 @@ CSS) with the standalone player.
 Research: `docs/research/05-engineering-stack-and-tooling.md` §7.3;
 `docs/research/04-file-format-ai-generation-theming.md` §C.1. Standards:
 `../../standards/tech-stack.md`, `../../standards/design-ui.md`.
+
+## Amendments
+
+- 2026-09-28 (ADR-0015, M4.2): content CSS is one string module of `fx-`-prefixed rules in
+  `@layer fx.content`, not CSS Modules: Node has no CSS Modules loader, and SSR, the browser and
+  export must use byte-identical CSS. The layer is renamed: `@layer fx.content` (the name 04 §2.3
+  uses) replaces "`@layer fluxion`" above. The `fx-` prefix and the ban on Tailwind in content are
+  unchanged.

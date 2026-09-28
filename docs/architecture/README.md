@@ -37,8 +37,9 @@ Index, template and the "ADR required when" list: [`decisions/README.md`](decisi
 | [0007](decisions/ADR-0007-plugin-trust-model.md) | Plugin manifest, import-map shared deps, iframe sandbox for untrusted code |
 | [0008](decisions/ADR-0008-toolchain.md) | pnpm 11 / Turborepo / Vite 8 / tsdown / tsgo / Biome 2 / Vitest / Playwright / Storybook / Changesets |
 | [0009](decisions/ADR-0009-ai-harness.md) | AGENTS.md + portable skills + goal-driven milestone loop + hash-bound cross-vendor review |
-| [0010](decisions/ADR-0010-styling-isolation.md) | Tailwind/shadcn for editor chrome only; theme tokens + CSS Modules for content |
+| [0010](decisions/ADR-0010-styling-isolation.md) | Tailwind/shadcn for editor chrome only; theme tokens + `fx-` content CSS for content (amended by 0015: CSS strings, `@layer fx.content`) |
 | [0011](decisions/ADR-0011-source-resolution-dual-compiler.md) | Workspace source resolution and dual TypeScript compiler |
+| [0015](decisions/ADR-0015-static-render-path.md) | Static render path: `<ScreenView>` through `react-dom/server`, content CSS as an inlined string, styles resolved in `theme` |
 | [0137](decisions/ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) |
 | [0138](decisions/ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` |
 

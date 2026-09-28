@@ -27,7 +27,7 @@ never dictates how a deck looks.
 | | Editor chrome | Document / player content |
 |---|---|---|
 | Source | `apps/studio` Tailwind v4 `@theme` (`--ui-*`) | `theme` package tokens → `--fx-*` custom properties |
-| Styling | Tailwind utilities + shadcn/ui (Base UI) | CSS Modules, `fx-` classes, `@layer fluxion` |
+| Styling | Tailwind utilities + shadcn/ui (Base UI) | content CSS strings (`fx-` classes, `@layer fx.content`; ADR-0015) |
 | Light/dark | follows OS + user setting | follows deck theme only |
 
 2. **Chrome never uses `--fx-*`; content never uses Tailwind or `--ui-*`.** → `check-layering`

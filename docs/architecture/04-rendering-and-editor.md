@@ -89,10 +89,12 @@ variables, `emit`) and are wrapped in an error boundary (FR-CMP-007, NFR-REL-004
 
 - `theme` emits a flat CSS-variable map (`--fx-color-primary`, `--fx-font-body`, …) onto
   `.fx-screen`. Per-screen theme overrides re-emit on that screen only (FR-THM-004).
-- Views read **resolved styles** from a `core` computed per element (resolution order in 02 §2).
-  Token refs become `var(--fx-…)`, so a theme switch restyles without re-rendering views.
-- Content CSS: CSS Modules, `fx-` prefix, `@layer fx.content`; Tailwind never reaches content
-  (ADR-0010). Identical CSS in all modes is a precondition for parity.
+- Views read **resolved styles**: `theme`'s `resolveStyle` (resolution order in 02 §2), wrapped
+  per element in a core `computed` by `render` (core may not import theme; ADR-0015). Token refs
+  become `var(--fx-…)`, so a theme switch restyles without re-rendering views.
+- Content CSS: strings of `fx-`-prefixed rules in `@layer fx.content` (render's content CSS plus
+  each registered view's `css`), inlined by SSR and injected once in the browser (ADR-0015);
+  Tailwind never reaches content (ADR-0010). Identical CSS in all modes is a precondition for parity.
 
 ### 2.4 Measurement
 

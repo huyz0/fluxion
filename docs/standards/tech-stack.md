@@ -43,7 +43,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | Editor UI state | Zustand | 5.x | selectors, no provider |
 | Schema | Zod (+ `z.toJSONSchema`) | 4.x | Standard Schema, JSON Schema for spec and MCP |
 | Editor chrome | shadcn/ui on **Base UI** + Tailwind CSS | Base UI 1.x / Tailwind 4.3.x | accessible primitives, agent-fluent. **Editor only** (ADR-0010) |
-| Content styling | CSS custom properties from theme tokens + CSS Modules, `fx-` prefix, `@layer` | — | portable into `.flux.html`, Shadow DOM safe |
+| Content styling | CSS custom properties from theme tokens + content CSS strings, `fx-` prefix, `@layer fx.content` (ADR-0015) | — | portable into `.flux.html`, Shadow DOM safe, identical in SSR and browser |
 | Icons | Lucide (`lucide-react` in editor, raw SVG in player) | latest | ISC, tree-shakable |
 | i18n | Lingui (ICU) | latest | compile-time extraction, small runtime |
 | Zip / hashing | fflate, SubtleCrypto SHA-256 | latest | small, no native deps |
@@ -64,7 +64,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | tsup, unbuild | tsdown | tsup is in maintenance; tsdown is its successor |
 | Jest | Vitest | second runner, slower, no browser mode |
 | tldraw SDK, xyflow, JointJS as engine | own engine (ADR-0001) | licence (watermark / key), control over file format and player size |
-| Tailwind in rendered content | tokens + CSS Modules | leaks into exported files; `@property` breaks in Shadow DOM |
+| Tailwind in rendered content | tokens + content CSS strings (ADR-0015) | leaks into exported files; `@property` breaks in Shadow DOM |
 | Redux, MobX, Jotai for document | record store + alien-signals | per-record fine-grained updates, framework-free |
 | Valibot | Zod 4 | smaller, but weaker ecosystem; reconsider only if player size forces it |
 | Vite+ | its building blocks | beta, lock-in; migration later is cheap |

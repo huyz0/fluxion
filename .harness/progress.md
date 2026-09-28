@@ -699,3 +699,6 @@ final review (fresh milestone-reviewer, a34a9c3..040a7ad): pass, six minors (ben
 
 ## 2026-09-28 M4.1 (claude)
 m4-complete.mjs (red) from the plan's legs + the seven M3 final hand-offs (F1-F6, tzap); legs whose helper/artefact is missing fail with a reason (benchLeg looked up dynamically; built CLI checked before spawning); vitestNamed/namedCases/titled moved from m3-complete into milestone-checks.mjs (Vitest project option for the T1 browser titles); M3 backlog archived; 25 rows (resolved style lives in theme: core may not import theme; CLI e2e folded into each command row; tzap ADR + triage rows; core mutation target 90 % after triage)
+
+## 2026-09-28 M4.2 (claude)
+ADR-0015 static render path: react-dom/server renderToStaticMarkup of <ScreenView mode="export">; content CSS a string module in @layer fx.content inlined by ssr.ts (no CSS Modules loader; ADR-0010 amended: layer name + string module); Node TextMeasurer fixed metrics (R0 views do not measure); resolveStyle in theme wrapped in core computed by render (core may not import theme); shape view looks defId up in shapeDefs (fixtures use basic:rect); mode read only in mode-policy.ts

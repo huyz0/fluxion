@@ -108,7 +108,7 @@ Details, versions and rationale: `docs/standards/tech-stack.md`. Summary:
 | Editor UI state | Zustand 5 |
 | Schema | Zod 4 (+ `z.toJSONSchema`) |
 | Editor chrome UI | shadcn/ui on Base UI + Tailwind v4 (editor only; never in rendered content) |
-| Content styling | CSS custom properties from theme tokens + CSS Modules, `fx-` prefix, `@layer` |
+| Content styling | CSS custom properties from theme tokens + content CSS strings, `fx-` prefix, `@layer fx.content` (ADR-0015) |
 | Animation | Own scheduler + WAAPI for compositor properties; flubber (morph); d3-interpolate-path (routes); Motion for editor/overlay UI |
 | Layout | Own grid/stack/timeline/templates; @dagrejs/dagre (layered, default); d3-hierarchy + d3-flextree (tree/mindmap); d3-force (force); WebCola (constraints/overlap); elkjs (optional pack, lazy worker, EPL) |
 | Routing | Own A* orthogonal sparse-grid router + nudging; libavoid-js (optional pack, LGPL, wasm) |
