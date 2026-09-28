@@ -1,0 +1,103 @@
+{
+  "milestone": "M3",
+  "checkpoint": "cp1",
+  "range": "a34a9c3..0fc444d",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate honesty",
+      "detail": "M3.6's named cases sit inside an async describe that awaits a dist import; node --test with a name pattern reports 0 tests, so the m3-complete leg can never pass.",
+      "failure_scenario": "m3-complete stays red on this leg at M3.25; Node versions may disagree."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "spec fidelity (FR-EDT-006)",
+      "detail": "CommandDef/executeCommand carry no TxOptions (origin, mergeKey, metaBefore/After); the only production write path cannot merge a drag or carry undo meta.",
+      "failure_scenario": "The editor's drag through executeCommand('element.update') gives 60 undo entries without view meta; the merge title passes on raw store.transact in a test."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "area": "architecture (ADR-0014)",
+      "detail": "Every transaction copies the record map and runs validateReferences over the whole document, contradicting ADR-0014 Consequences; the M3.23 row does not require benches with validation on, and transact-5000 has no leg.",
+      "failure_scenario": "Benches pass with validate:false while dev/test drags and undo do an O(5000) scan."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "error handling",
+      "detail": "element.update/document.update accept fields that change id/type (patch throws); document.update throws without a document; screen.reorder with an unknown after returns TX_INVALID without a diagnostic.",
+      "failure_scenario": "An MCP client gets an uncaught error instead of a diagnostic."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "hooks fixed point",
+      "detail": "sameChanges compares by reference; an idempotent hook that re-writes an equal value never converges.",
+      "failure_scenario": "A normalising plugin hook makes every transaction TX_HOOK_DEPTH."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "gate scope",
+      "detail": "The architecture test skips apps/*; check-kind-switch skips layout, routing, anim, dsl, sdk, mcp, cli, packs and apps.",
+      "failure_scenario": "routing adds an if-chain on connector kinds and stays green."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "plan health",
+      "detail": "M3.2 F2/F3 argued decisions (fork.diffFrom base and apply; empty-diff merge rule) are not in the M3.22/M3.20 acceptance.",
+      "failure_scenario": "diffFrom is never implemented and the gate goes green."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M3.26",
+      "note": "Named cases discoverable under a name pattern (no async describe); 03 case in M3.24 kept out of it."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M3.19, M3.20",
+      "note": "Rows amended: executeCommand carries TxOptions into run; merging and undo meta tested through element.update."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M3.23",
+      "note": "Row amended: benches use default store options (validation on), a transact-5000 leg, ADR-0014 Consequences amended to the real cost."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M3.26",
+      "note": "Built-ins return diagnostics for identity changes, a missing document and an unknown after."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M3.26",
+      "note": "Hook fixed point compares values (jsonEqual)."
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "target": "M3.26",
+      "note": "Both gates scan every package, pack and app that can consume kinds or write."
+    },
+    {
+      "finding": "F7",
+      "disposition": "reopen",
+      "target": "M3.20, M3.22",
+      "note": "Rows amended: M3.20 decides the empty-diff merge rule with a test; M3.22 implements and tests fork.diffFrom."
+    }
+  ],
+  "planDelta": "25 -> 26 rows (M3.26 cp1 fixes) and four amended rows; 26/16 = 1.63x the plan, mostly M2 harness hand-offs and review-driven hardening: harness debt still spills into product milestones."
+}

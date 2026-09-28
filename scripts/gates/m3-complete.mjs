@@ -121,11 +121,15 @@ leg('NFR-MNT-006 store properties pass', () =>
     ['M3.12', 'NFR-MNT-006: incrementally maintained indexes equal indexes rebuilt from scratch', 'core'],
     ['M3.22', 'NFR-MNT-006: writes to a fork never reach the parent', 'core'],
     ['M3.22', 'NFR-MNT-006: a read-only store rejects element.update with a diagnostic', 'core'],
+    ['M3.22', 'NFR-MNT-006: fork.diffFrom applied to the parent keeps concurrent parent edits', 'core'],
   ]),
 );
 // a harness test: a Vitest raw-import of every source would make coverage skip untested files (M3.17)
 leg('NFR-MNT-006: no production code calls store.transact outside a command run (named case)', () =>
-  namedCases('tests/harness/architecture.test.mjs', ['NFR-MNT-006: no production code calls store.transact outside a command run']),
+  namedCases('tests/harness/architecture.test.mjs', [
+    'NFR-MNT-006: no production code calls store.transact outside a command run',
+    'a direct write in an app fails',
+  ]),
 );
 leg('acceptance of M3.9-M3.20 passes under the planned titles', () =>
   titled([
@@ -136,7 +140,12 @@ leg('acceptance of M3.9-M3.20 passes under the planned titles', () =>
     ['M3.16', 'FR-EDT-006: IF args fail the schema THEN THE SYSTEM SHALL return diagnostics and leave the store unchanged', 'core'],
     ['M3.17', 'FR-DOC-010: screen.reorder writes exactly one record', 'core'],
     ['M3.19', 'FR-EDT-006: WHEN undo then redo runs THE SYSTEM SHALL reproduce the post-state exactly', 'core'],
-    ['M3.20', 'FR-EDT-006: WHEN 60 merged transactions share a key THE SYSTEM SHALL create 1 history entry', 'core'],
+    ['M3.19', 'FR-EDT-006: undo restores the metaBefore an element.update command recorded', 'core'],
+    // through the command path, the only production write path (cp1 F2)
+    ['M3.20', 'FR-EDT-006: WHEN 60 merged element.update commands share a key THE SYSTEM SHALL create 1 history entry', 'core'],
+    ['M3.20', 'FR-EDT-006: an empty-diff transaction does not break a merge', 'core'],
+    ['M3.26', 'FR-EXT-001: an idempotent hook that re-writes an equal value settles', 'core'],
+    ['M3.26', 'FR-EXT-001: element.update with an identity field in fields returns a diagnostic', 'core'],
   ]),
 );
 
@@ -152,17 +161,22 @@ const BUILT_IN_COMMANDS = [
   'binding.set',
   'document.update',
 ];
-const BENCH = 'packages/core/bench/undo-5000.bench.ts';
-leg(`undo-5000 bench: undo and redo p99 <= UNDO_MAX_MS (${t('UNDO_MAX_MS')} ms)`, () => {
-  if (!exists(BENCH)) return `missing ${BENCH}`;
+// undo/redo and the forward transactions, both on stores with default options: validation on, as in
+// dev and test (cp1 F3); a bench that switches validation off cannot pass this leg
+const BENCHES = ['packages/core/bench/undo-5000.bench.ts', 'packages/core/bench/transact-5000.bench.ts'];
+leg(`undo-5000 and transact-5000 benches: p99 <= UNDO_MAX_MS (${t('UNDO_MAX_MS')} ms) with validation on`, () => {
+  const missingFiles = BENCHES.filter((b) => !exists(b));
+  if (missingFiles.length) return `missing ${missingFiles.join(', ')}`;
+  const off = BENCHES.filter((b) => /\bvalidate\s*:\s*false\b/.test(readText(b)));
+  if (off.length) return `validation switched off in ${off.join(', ')}`;
   const dir = mkdtempSync(join(tmpdir(), 'm3-bench-'));
   try {
     const out = join(dir, 'bench.json');
-    const r = pnpm('exec', 'vitest', 'bench', '--run', '--project', 'node', `--outputJson=${out}`, BENCH);
+    const r = pnpm('exec', 'vitest', 'bench', '--run', '--project', 'node', `--outputJson=${out}`, ...BENCHES);
     if (!existsSync(out)) return `no bench output: ${ok(r)}`;
     const benches = JSON.parse(readFileSync(out, 'utf8')).files.flatMap((f) => f.groups.flatMap((g) => g.benchmarks));
-    // names are exactly "<undo|redo> <command id>", one pair per built-in command (M3.1 review F1)
-    const want = BUILT_IN_COMMANDS.flatMap((c) => [`undo ${c}`, `redo ${c}`]);
+    // names are exactly "<undo|redo|transact> <command id>", one per built-in command (M3.1 review F1)
+    const want = BUILT_IN_COMMANDS.flatMap((c) => [`undo ${c}`, `redo ${c}`, `transact ${c}`]);
     const missing = want.filter((w) => !benches.some((b) => b.name === w));
     if (missing.length) return `no benchmark named: ${missing.join(', ')}`;
     const slow = benches.filter((b) => want.includes(b.name) && !(b.p99 <= t('UNDO_MAX_MS')));
@@ -176,7 +190,8 @@ leg('check-kind-switch: negative fixture fails and the repo passes', () => {
   if (!exists('scripts/gates/check-kind-switch.mjs')) return 'missing scripts/gates/check-kind-switch.mjs';
   const r = node('scripts/gates/check-kind-switch.mjs');
   if (r.status !== 0) return ok(r);
-  return namedCases('tests/harness/kind-switch.test.mjs', ['switch on el.kind in render fails']);
+  // cp1 F6: the scope covers every package, pack and app that consumes kinds
+  return namedCases('tests/harness/kind-switch.test.mjs', ['switch on el.kind in render fails', 'if-chain on connector kinds in routing fails']);
 });
 leg('check-layering green (core stays pure)', () => {
   if (!exists('packages/core/src/ports')) return 'missing packages/core/src/ports';
