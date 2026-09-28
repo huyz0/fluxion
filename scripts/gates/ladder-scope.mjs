@@ -32,21 +32,92 @@ export const SOURCE_HARNESS = [
  * reason: they copy a package only as sample material for a gate script whose real-repo run is a step
  * of the same staged ladder (api → typecheck/api, packages → publint/attw, ladder, layering →
  * layering, mutate → the Vitest step), or they read only non-source files (package.json, adapter
- * configs, licences) whose change is not a source path and so runs the whole harness (adapters,
- * licenses, turbo). --all runs them all.
+ * configs, licences): a manifest change runs them through MANIFEST_HARNESS, any other non-source
+ * path runs the whole harness (adapters, licenses, turbo). --all runs them all.
  */
 export const SAMPLE_HARNESS = ['adapters', 'api', 'ladder', 'layering', 'licenses', 'mutate', 'packages', 'turbo'];
 
 /**
- * The harness test files to run for `staged` (repo-relative paths) out of `all`: every file when a
- * staged path is neither a source nor bookkeeping; the SOURCE_HARNESS files when sources are staged;
- * none for a bookkeeping-only commit.
+ * Harness files that read a workspace manifest or the lockfile of the real repo (every harness file
+ * naming package.json, pnpm-lock or pnpm-workspace, pinned by tests/harness/ladder-scope.test), plus
+ * the source harness: run for a commit that changes a workspace's package.json, or a lockfile whose
+ * external packages are unchanged (M4.29).
  */
-export function harnessFiles(staged, all) {
-  const bookkeeping = (p) => BOOKKEEPING_PATHS.some((re) => re.test(p));
-  if (staged.some((p) => !SOURCE.test(p) && !bookkeeping(p))) return all;
-  if (!staged.some((p) => SOURCE.test(p))) return [];
-  return all.filter((f) => SOURCE_HARNESS.some((name) => f.endsWith(`/${name}.test.mjs`)));
+export const MANIFEST_HARNESS = [
+  ...SOURCE_HARNESS,
+  'adapters',
+  'budget',
+  'ci-workflow',
+  'layering',
+  'licenses',
+  'packages',
+  'test-titles',
+  'turbo',
+  'verify-leg',
+];
+
+/** A workspace's manifest. */
+const MANIFEST = /^(packages|packs|apps)\/[^/]+\/package\.json$/;
+/** A workspace's API report: written by check-api --update and checked by the ladder's api step. */
+const API_REPORT = /^(packages|packs|apps)\/[^/]+\/api\/[^/]+\.api\.md$/;
+/** The traceability matrix, generated from the tests by check-trace --write. */
+const TRACE_MATRIX = 'docs/requirements/40-traceability.md';
+
+// the importers section runs from its key to the next top-level key
+const IMPORTERS = /^importers:\n(?:[ \t][^\n]*\n|\n)*/m;
+
+/**
+ * The external dependencies the importers section resolves, as sorted `importer name version` lines:
+ * workspace links (`version: link:…`) and the dependency kind are left out, so adding a workspace
+ * link or moving a dependency between kinds does not change the list, while any external version an
+ * importer resolves to does (M4.29 review F1).
+ */
+function externalImports(section) {
+  const out = [];
+  let importer = '';
+  let name = '';
+  for (const line of section.split('\n')) {
+    const m = /^( *)(.*?):?\s*$/.exec(line);
+    const indent = m?.[1].length ?? 0;
+    const text = (m?.[2] ?? '').replace(/^'|'$/g, '');
+    if (indent === 2) importer = text;
+    else if (indent === 6) name = text;
+    else if (indent === 8 && text.startsWith('version: ') && !text.startsWith('version: link:')) out.push(`${importer} ${name} ${text}`);
+  }
+  return out.sort().join('\n');
+}
+
+/**
+ * True when two pnpm lockfiles differ only in workspace links: every external package, version,
+ * catalog and setting is byte-identical outside the `importers:` section, and inside it every
+ * importer resolves the same external dependencies to the same versions (`externalImports`).
+ */
+export function lockfileWorkspaceOnly(before, after) {
+  const [b, a] = [before, after].map((text) => text.replace(/\r\n/g, '\n'));
+  const section = (text) => IMPORTERS.exec(text)?.[0] ?? '';
+  return b.replace(IMPORTERS, '') === a.replace(IMPORTERS, '') && externalImports(section(b)) === externalImports(section(a));
+}
+
+/**
+ * The harness test files to run for `staged` (repo-relative paths) out of `all`, in `all`'s order:
+ * the SOURCE_HARNESS files for sources and API reports, the MANIFEST_HARNESS files for workspace
+ * manifests and a workspace-only lockfile change staged with a manifest (`lockfileWorkspaceOnly`), `trace` for the
+ * traceability matrix, nothing for bookkeeping, and every file for any other path.
+ */
+export function harnessFiles(staged, all, { lockfileWorkspaceOnly: workspaceLock = false } = {}) {
+  const needs = staged.map((p) => harnessFor(p, workspaceLock && staged.some((q) => MANIFEST.test(q))));
+  if (needs.includes(null)) return all;
+  const names = new Set(needs.flat());
+  return all.filter((f) => [...names].some((name) => f.endsWith(`/${name}.test.mjs`)));
+}
+
+/** The harness files one staged path needs, or null for every file. */
+function harnessFor(p, workspaceLock) {
+  if (BOOKKEEPING_PATHS.some((re) => re.test(p))) return [];
+  if (SOURCE.test(p) || API_REPORT.test(p)) return SOURCE_HARNESS;
+  if (MANIFEST.test(p) || (p === 'pnpm-lock.yaml' && workspaceLock)) return MANIFEST_HARNESS;
+  if (p === TRACE_MATRIX) return ['trace'];
+  return null;
 }
 
 /** Paths the Vitest run reads beyond the workspaces: its config, setup, fixtures, floors, toolchain. */
@@ -74,7 +145,9 @@ function withDependencies(dirs, workspaces) {
  * input; otherwise only the node project runs, and `include` limits coverage to the workspaces
  * without browser tests, so the browser packages' floors are never judged on node tests alone.
  */
-export function testScope(staged, workspaces, browserTested) {
+export function testScope(stagedPaths, workspaces, browserTested, { lockfileWorkspaceOnly: workspaceLock = false } = {}) {
+  // a workspace-only lockfile change is the staged manifests' change, scoped by their workspaces
+  const staged = workspaceLock && stagedPaths.some((p) => MANIFEST.test(p)) ? stagedPaths.filter((p) => p !== 'pnpm-lock.yaml') : stagedPaths;
   const workspaceOf = (p) => WORKSPACE.exec(p)?.[1];
   const run = staged.some(
     (p) => VITEST_GLOBAL.test(p) || /^examples\//.test(p) || (workspaceOf(p) !== undefined && workspaces.some((w) => w.dir === workspaceOf(p))),

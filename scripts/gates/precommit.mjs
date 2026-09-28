@@ -12,7 +12,7 @@
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
-import { harnessFiles, testScope } from './ladder-scope.mjs';
+import { harnessFiles, lockfileWorkspaceOnly, testScope } from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
@@ -28,13 +28,16 @@ const HARNESS = () =>
   readdirSync(repoPath('tests/harness'))
     .filter((f) => f.endsWith('.test.mjs'))
     .map((f) => `tests/harness/${f}`);
-const harnessToRun = () => (mode === 'staged' ? harnessFiles(stagedPaths(), HARNESS()) : HARNESS());
+// a staged lockfile whose external packages match HEAD's changes only workspace links (M4.29)
+const workspaceLock = () => lockfileStaged() && lockfileWorkspaceOnly(git(['show', 'HEAD:pnpm-lock.yaml']).stdout, git(['show', ':pnpm-lock.yaml']).stdout);
+const scopeOptions = () => ({ lockfileWorkspaceOnly: workspaceLock() });
+const harnessToRun = () => (mode === 'staged' ? harnessFiles(stagedPaths(), HARNESS(), scopeOptions()) : HARNESS());
 const workspaces = () => (exists('tools/gen/workspaces.json') ? JSON.parse(readFileSync(repoPath('tools/gen/workspaces.json'), 'utf8')).workspaces : []);
 const browserTested = () =>
   workspaces()
     .map((w) => w.dir)
     .filter((dir) => listFiles(`${dir}/src`).some((p) => /\.browser\.test\.[cm]?[jt]sx?$/.test(p)));
-const testPlan = () => (mode === 'staged' ? testScope(stagedPaths(), workspaces(), browserTested()) : { run: true, browser: true });
+const testPlan = () => (mode === 'staged' ? testScope(stagedPaths(), workspaces(), browserTested(), scopeOptions()) : { run: true, browser: true });
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */
 const STEPS = [

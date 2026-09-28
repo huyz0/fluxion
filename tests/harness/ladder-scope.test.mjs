@@ -4,13 +4,14 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { harnessFiles, SAMPLE_HARNESS, SOURCE_HARNESS, testScope } from '../../scripts/gates/ladder-scope.mjs';
+import { harnessFiles, lockfileWorkspaceOnly, MANIFEST_HARNESS, SAMPLE_HARNESS, SOURCE_HARNESS, testScope } from '../../scripts/gates/ladder-scope.mjs';
 import { checkDemoHtml, titled } from '../../scripts/gates/milestone-checks.mjs';
 import { REPO } from './helpers.mjs';
 
 const workspaces = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8')).workspaces;
 const BROWSER = ['packages/render', 'packages/editor'];
-const ALL = ['tests/harness/api.test.mjs', 'tests/harness/drift.test.mjs', ...SOURCE_HARNESS.map((n) => `tests/harness/${n}.test.mjs`)];
+const file = (n) => `tests/harness/${n}.test.mjs`;
+const ALL = [...new Set(['api', 'drift', 'trace', ...MANIFEST_HARNESS])].map(file);
 
 describe('staged ladder scope (NFR-DX-002)', () => {
   it('a staged change outside the browser packages runs no browser tests', () => {
@@ -44,9 +45,85 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     assert.deepEqual(harnessFiles(['packages/core/src/x.ts', 'scripts/gates/lib.mjs'], ALL), ALL);
     assert.deepEqual(harnessFiles(['docs/architecture/03-core-engine.md'], ALL), ALL);
-    assert.deepEqual(harnessFiles(['packages/core/api/core.api.md'], ALL), ALL);
+    // an API report is checked against dist by the ladder's api step: the source harness (M4.29)
+    assert.deepEqual(harnessFiles(['packages/core/api/core.api.md'], ALL), SOURCE_HARNESS.map(file));
     // bookkeeping only: nothing the harness reads changed
     assert.deepEqual(harnessFiles(['.harness/state.json', 'docs/backlog/current.md', 'docs/milestones/M4.md'], ALL), []);
+  });
+
+  it('a workspace manifest or a workspace-only lockfile runs the manifest harness; an external lockfile change runs them all (M4.29)', () => {
+    const manifest = MANIFEST_HARNESS.map(file);
+    assert.deepEqual(
+      harnessFiles(['packages/render/package.json', 'packages/render/src/x.tsx'], ALL),
+      ALL.filter((f) => manifest.includes(f)),
+    );
+    assert.deepEqual(
+      harnessFiles(['pnpm-lock.yaml', 'packages/render/package.json'], ALL, { lockfileWorkspaceOnly: true }),
+      ALL.filter((f) => manifest.includes(f)),
+    );
+    assert.deepEqual(harnessFiles(['pnpm-lock.yaml', 'packages/render/package.json'], ALL), ALL);
+    assert.deepEqual(harnessFiles(['package.json'], ALL, { lockfileWorkspaceOnly: true }), ALL);
+    // a lockfile staged without a workspace manifest is never taken as workspace-only (review F1)
+    assert.deepEqual(harnessFiles(['pnpm-lock.yaml'], ALL, { lockfileWorkspaceOnly: true }), ALL);
+    assert.deepEqual(testScope(['pnpm-lock.yaml'], workspaces, BROWSER, { lockfileWorkspaceOnly: true }), { run: true, browser: true });
+    assert.deepEqual(harnessFiles(['docs/requirements/40-traceability.md', '.harness/progress.md'], ALL), [file('trace')]);
+    // the Vitest scope: a workspace-only lockfile is the manifests' workspaces, not a global input
+    assert.deepEqual(testScope(['pnpm-lock.yaml', 'packages/cli/package.json'], workspaces, BROWSER, { lockfileWorkspaceOnly: true }).browser, false);
+    assert.deepEqual(testScope(['pnpm-lock.yaml', 'packages/cli/package.json'], workspaces, BROWSER), { run: true, browser: true });
+  });
+
+  it('lockfileWorkspaceOnly: only workspace links may differ', () => {
+    const lines = (...l) => `${l.join('\n')}\n`;
+    const react = (version, integrity) => lines(`  react@${version}:`, `    resolution: {integrity: ${integrity}}`, '');
+    const lock = (importers, packages) =>
+      lines("lockfileVersion: '9.0'", '', 'settings:', '  autoInstallPeers: true', '', 'importers:', '', '  .:', '    devDependencies: {}', '') +
+      importers +
+      lines('packages:', '') +
+      packages +
+      lines('snapshots:', '') +
+      packages;
+    const base = lock('', react('19.2.0', 'sha512-a'));
+    assert.equal(lockfileWorkspaceOnly(base, base), true);
+    // a workspace link added to a package's importer entry
+    const link = lines(
+      '  packages/render:',
+      '    dependencies:',
+      "      '@fluxion/geometry':",
+      '        specifier: workspace:*',
+      '        version: link:../geometry',
+      '',
+    );
+    assert.equal(lockfileWorkspaceOnly(base, lock(link, react('19.2.0', 'sha512-a'))), true);
+    // an importer resolving an external dependency to another version already in packages: is not (review F1)
+    const importsReact = (version) =>
+      lines('  packages/render:', '    dependencies:', '      react:', '        specifier: ^19.0.0', `        version: ${version}`, '');
+    const both = react('19.2.0', 'sha512-a') + react('19.2.1', 'sha512-b');
+    assert.equal(lockfileWorkspaceOnly(lock(importsReact('19.2.0'), both), lock(importsReact('19.2.1'), both)), false);
+    // the same external dependency moved between dependency kinds is
+    const asDev = lines('  packages/render:', '    devDependencies:', '      react:', '        specifier: ^19.0.0', '        version: 19.2.0', '');
+    assert.equal(lockfileWorkspaceOnly(lock(importsReact('19.2.0'), both), lock(asDev, both)), true);
+    // CRLF checkouts compare equal
+    assert.equal(lockfileWorkspaceOnly(base, base.replaceAll('\n', '\r\n')), true);
+    // an external version, a new package or a setting is not workspace-only
+    assert.equal(lockfileWorkspaceOnly(base, lock('', react('19.2.1', 'sha512-b'))), false);
+    assert.equal(
+      lockfileWorkspaceOnly(base, lock('', react('19.2.0', 'sha512-a') + lines('  left-pad@1.0.0:', '    resolution: {integrity: sha512-c}', ''))),
+      false,
+    );
+    assert.equal(lockfileWorkspaceOnly(base, base.replace('autoInstallPeers: true', 'autoInstallPeers: false')), false);
+  });
+
+  it('every harness file that names a manifest or the lockfile is a manifest harness file (M4.29)', () => {
+    const readers = readdirSync(join(REPO, 'tests/harness'))
+      .filter((f) => f.endsWith('.test.mjs') && f !== 'ladder-scope.test.mjs')
+      .filter((f) => /package.json|pnpm-lock|pnpm-workspace/.test(readFileSync(join(REPO, 'tests/harness', f), 'utf8')))
+      .map((f) => f.replace('.test.mjs', ''));
+    assert.ok(readers.length >= 5, `found ${readers.length} readers`);
+    assert.deepEqual(
+      readers.filter((f) => !MANIFEST_HARNESS.includes(f)),
+      [],
+    );
+    for (const name of MANIFEST_HARNESS) assert.ok(readdirSync(join(REPO, 'tests/harness')).includes(`${name}.test.mjs`), name);
   });
 
   // M4.26 review F1: a harness file that reads the repo's package paths is classified, never missed
