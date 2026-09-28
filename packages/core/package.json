@@ -32,5 +32,8 @@
     "@fluxion/geometry": "workspace:*",
     "@fluxion/schema": "workspace:*",
     "alien-signals": "catalog:"
+  },
+  "devDependencies": {
+    "zod": "catalog:"
   }
 }

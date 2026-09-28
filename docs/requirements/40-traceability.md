@@ -164,7 +164,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
-| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | — |
+| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `packages/core/src/commands.test.ts` |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
@@ -237,7 +237,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-INT-009 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-010 | M | R5 | M24 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-011 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
-| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/hooks.test.ts` +2 |
+| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/commands.test.ts` +3 |
 | FR-EXT-002 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-003 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-004 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |

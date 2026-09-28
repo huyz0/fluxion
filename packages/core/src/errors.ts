@@ -5,7 +5,15 @@
  *
  * @public
  */
-export type CoreErrorCode = 'FILE_NOT_FOUND' | 'FILE_IO' | 'TX_INVALID' | 'TX_HOOK_DEPTH' | 'TX_READ_ONLY';
+export type CoreErrorCode =
+  | 'FILE_NOT_FOUND'
+  | 'FILE_IO'
+  | 'TX_INVALID'
+  | 'TX_HOOK_DEPTH'
+  | 'TX_READ_ONLY'
+  | 'COMMAND_UNKNOWN'
+  | 'COMMAND_DISABLED'
+  | 'COMMAND_ARGS';
 
 /**
  * An expected failure reported by core or one of its ports.

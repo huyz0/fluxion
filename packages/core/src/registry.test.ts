@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CORE_REGISTRY_NAMES, createCoreRegistries, createRegistry } from './registry.js';
+import { CORE_REGISTRY_NAMES, createCoreRegistries } from './core-registries.js';
+import { createRegistry } from './registry.js';
 import { effect } from './signals.js';
 
 describe('registries (03-core-engine §4)', () => {

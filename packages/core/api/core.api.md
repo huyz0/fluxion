@@ -12,6 +12,34 @@ import { RecordId } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 
 // @public
+export type AnyCommand = CommandDef<unknown>;
+
+// @public
+export type ArgsIssue = {
+    readonly path: ReadonlyArray<PropertyKey>;
+    readonly message: string;
+};
+
+// @public
+export type ArgsParsed<A> = {
+    readonly success: true;
+    readonly data: A;
+};
+
+// @public
+export type ArgsRejected = {
+    readonly success: false;
+    readonly error: {
+        readonly issues: ReadonlyArray<ArgsIssue>;
+    };
+};
+
+// @public
+export type ArgsSchema<A> = {
+    safeParse(value: unknown): ArgsParsed<A> | ArgsRejected;
+};
+
+// @public
 export function batch(fn: () => void): void;
 
 // @public
@@ -19,6 +47,23 @@ export interface Clock {
     frame(callback: (time: number) => void): () => void;
     now(): number;
 }
+
+// @public
+export type CommandContext = {
+    readonly store: Store;
+};
+
+// @public
+export type CommandDef<A> = {
+    readonly id: string;
+    readonly title: MessageDescriptor;
+    readonly args: ArgsSchema<A>;
+    when?(ctx: CommandContext): boolean;
+    run(ctx: CommandContext, args: A): Result<unknown, TxFailure>;
+};
+
+// @public
+export type CommandFailure = TxFailure;
 
 // @public
 export function computed<T>(fn: () => T): ReadSignal<T>;
@@ -37,10 +82,10 @@ export type CoreError = {
 };
 
 // @public
-export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY";
+export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY" | "COMMAND_UNKNOWN" | "COMMAND_DISABLED" | "COMMAND_ARGS";
 
 // @public
-export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : unknown>; };
+export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : N extends "commands" ? AnyCommand : unknown>; };
 
 // @public
 export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
@@ -55,6 +100,9 @@ export function createRegistry<K extends string, V>(name: string): Registry<K, V
 export function createStore(file: DocumentFile, options?: StoreOptions): Store;
 
 // @public
+export function defineCommand<A>(def: CommandDef<A>): CommandDef<A>;
+
+// @public
 export type Diff = {
     readonly puts: ReadonlyMap<RecordId, PutChange>;
     readonly deletes: ReadonlyMap<RecordId, AnyRecord>;
@@ -67,6 +115,9 @@ export type Disposable = {
 
 // @public
 export function effect(fn: () => void): () => void;
+
+// @public
+export function executeCommand(registry: Registry<string, AnyCommand>, ctx: CommandContext, id: string, args: unknown): Result<unknown, CommandFailure>;
 
 // @public
 export interface FileIO {
@@ -108,6 +159,12 @@ export interface Logger {
 
 // @public
 export type LogLevel = "debug" | "info" | "warn" | "error";
+
+// @public
+export type MessageDescriptor = {
+    readonly id: string;
+    readonly defaultMessage: string;
+};
 
 // @public
 export type PluginId = string;
