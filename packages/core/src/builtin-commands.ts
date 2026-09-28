@@ -8,7 +8,11 @@ import type { Registry } from './registry.js';
 import type { TxFailure } from './transaction.js';
 
 const id = z.string().min(1);
-const fields = z.record(z.string(), z.unknown());
+// fields of a patch; a record's identity is not a field (a patch that changed it would throw; M3 cp1 F4)
+const fields = z.record(z.string(), z.unknown()).superRefine((value, check) => {
+  for (const key of ['id', 'type'])
+    if (Object.hasOwn(value, key)) check.addIssue({ code: 'custom', path: [key], message: `"${key}" is a record's identity, not a field it can change` });
+});
 /** A record body: validated in full by the transaction, so only its identity is checked here. */
 const recordOf = (type: string) => z.looseObject({ id, type: z.literal(type) });
 const title = (key: string, text: string) => ({ id: `command.${key}`, defaultMessage: text });
@@ -130,7 +134,9 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     // `after`: the screen it should follow; absent → first. Only the moved screen changes (FR-DOC-010).
     args: z.object({ id, after: id.optional() }),
     run: (ctx, args) => {
-      const bad = checkIds(ctx, 'screen.reorder', 'screen', [[['id'], args.id]]);
+      const refs: Array<readonly [ReadonlyArray<string>, string]> = [[['id'], args.id]];
+      if (args.after !== undefined) refs.push([['after'], args.after]);
+      const bad = checkIds(ctx, 'screen.reorder', 'screen', refs);
       if (bad) return bad;
       const index = indexAfter(ctx, args.id, args.after);
       if (!index.ok) return index;
@@ -171,7 +177,11 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     id: 'document.update',
     title: title('document.update', 'Change document'),
     args: z.object({ fields }),
-    run: (ctx, args) => ctx.store.transact('document.update', (tx) => tx.patch(ctx.store.members('byType', 'document')[0] as RecordId, args.fields)),
+    run: (ctx, args) => {
+      // a store without its document singleton is refused, not patched (M3 cp1 F4)
+      const doc = ctx.store.members('byType', 'document')[0] ?? '';
+      return checkIds(ctx, 'document.update', 'document', [[[], doc]]) ?? ctx.store.transact('document.update', (tx) => tx.patch(doc as RecordId, args.fields));
+    },
   }),
 ];
 

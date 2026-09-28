@@ -14,7 +14,7 @@ const gate = () => sb.node('scripts/gates/check-kind-switch.mjs');
 
 describe('check-kind-switch (FR-EXT-001)', () => {
   before(() => {
-    sb = sandbox(['scripts', 'packages/core/src', 'packages/render/src']);
+    sb = sandbox(['scripts', 'packages/core/src', 'packages/render/src', 'packages/routing/src', 'packages/schema/src', 'apps/studio/src']);
   });
   after(() => sb.cleanup());
   afterEach(() => {
@@ -35,6 +35,21 @@ describe('check-kind-switch (FR-EXT-001)', () => {
     const r = gate();
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /packages\/render\/src\/view\.ts:2: switch on a kind/);
+  });
+
+  it('if-chain on connector kinds in routing fails (every consuming workspace is scanned; M3 cp1 F6)', () => {
+    put(
+      'packages/routing/src/route.ts',
+      "export const r = (el: { kind: string }) => {\n  if (el.kind === 'connector') return 1;\n  else if (el.kind === 'shape') return 2;\n  return 0;\n};\n",
+    );
+    put('apps/studio/src/app-switch.ts', 'export const s = (el: { kind: string }) => {\n  switch (el.kind) {\n    default: return 0;\n  }\n};\n');
+    // schema defines the kinds: its own dispatch is not scanned
+    put('packages/schema/src/defines.ts', 'export const d = (el: { kind: string }) => {\n  switch (el.kind) {\n    default: return 0;\n  }\n};\n');
+    const r = gate();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /packages\/routing\/src\/route\.ts:3: if-chain on a kind/);
+    assert.match(r.stderr, /apps\/studio\/src\/app-switch\.ts:2: switch on a kind/);
+    assert.doesNotMatch(r.stderr, /packages\/schema/);
   });
 
   it('an else-if chain on a kind fails; a bare switch (kind) too', () => {

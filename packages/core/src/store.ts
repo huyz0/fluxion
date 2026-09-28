@@ -12,6 +12,7 @@ import {
   cloneJson,
   type Diff,
   deepFreeze,
+  jsonEqual,
   netDiff,
   referentialErrors,
   type Tx,
@@ -91,9 +92,12 @@ export type StoreOptions = {
 /** Passes after which non-converging hooks end the transaction with TX_HOOK_DEPTH (ADR-0014). */
 const MAX_HOOK_PASSES = 8;
 
-/** Whether two working-copy change maps hold the same values (by reference). */
+/**
+ * Whether two working-copy change maps hold equal values: a hook that re-writes a value that is
+ * already right changes nothing, so the fixed point is reached (M3 cp1 F5).
+ */
 function sameChanges(a: ReadonlyMap<RecordId, AnyRecord | null>, b: ReadonlyMap<RecordId, AnyRecord | null>): boolean {
-  return a.size === b.size && [...a].every(([id, v]) => b.has(id) && b.get(id) === v);
+  return a.size === b.size && [...a].every(([id, v]) => b.has(id) && jsonEqual(b.get(id), v));
 }
 
 /** The store implementation; `apply` is core-internal (transactions and history call it). */

@@ -273,6 +273,27 @@ describe('integrity hooks (ADR-0014, FR-EXT-001)', () => {
     expect(order).toEqual(['a', 'b']);
   });
 
+  it('FR-EXT-001: an idempotent hook that re-writes an equal value settles', () => {
+    const b = documentBuilder({ seed: 22 });
+    const a = b.rect(b.screen());
+    const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
+    let passes = 0;
+    // a normalising hook that always writes, even when the value is already right (M3 cp1 F5)
+    hooks.register(
+      'normalise',
+      ({ tx }) => {
+        passes++;
+        tx.patch(a, { name: 'normal' });
+      },
+      'x',
+    );
+    const store = new RecordStore(b.build(), { hooks });
+    const r = store.transact('rename', (tx) => tx.patch(a, { name: 'raw' }));
+    expect(r.ok, JSON.stringify(!r.ok && r.error)).toBe(true);
+    expect(rec(store, a)?.['name']).toBe('normal');
+    expect(passes).toBe(2);
+  });
+
   it('non-converging hooks end the transaction with TX_HOOK_DEPTH and change nothing', () => {
     const b = documentBuilder({ seed: 16 });
     const a = b.rect(b.screen());

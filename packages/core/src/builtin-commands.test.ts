@@ -118,6 +118,36 @@ describe('built-in record commands (FR-EXT-001)', () => {
     expect(store.toDocument()).toEqual(before);
   });
 
+  it('FR-EXT-001: element.update with an identity field in fields returns a diagnostic', () => {
+    const { store, run, a, s2 } = setup();
+    const before = store.toDocument();
+    for (const [id, cmd, extra] of [
+      [a, 'element.update', { type: 'screen' }],
+      [a, 'element.update', { id: 'Other' }],
+      [undefined, 'document.update', { type: 'screen' }],
+    ] as const) {
+      const r = run(cmd, { ...(id ? { id } : {}), fields: { name: 'x', ...extra } });
+      expect(!r.ok && r.error.code).toBe('COMMAND_ARGS');
+      expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', path: `/args/fields/${Object.keys(extra)[0]}` })]);
+    }
+    // an unknown `after` is a diagnostic too (M3 cp1 F4)
+    const after = run('screen.reorder', { id: s2, after: 'Gone' });
+    expect(!after.ok && after.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', path: '/args/after' })]);
+    expect(store.toDocument()).toEqual(before);
+  });
+
+  it('document.update on a store without a document is refused, not thrown', () => {
+    const b = documentBuilder({ seed: 41 });
+    b.screen();
+    const file = b.build();
+    const records = Object.fromEntries(Object.entries(file.records).filter(([, r]) => r.type !== 'document'));
+    const store = new RecordStore({ ...file, records }, { validate: false });
+    const commands = createRegistry<string, AnyCommand>('commands');
+    registerCoreCommands(commands);
+    const r = executeCommand(commands, { store }, 'document.update', { fields: { title: 'x' } });
+    expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', path: '/args' })]);
+  });
+
   it('binding.set refuses a new binding id that is taken', () => {
     const { store, run, a, c, line } = setup();
     expect(run('element.delete', { ids: [c] }).ok).toBe(true); // the target end is free now

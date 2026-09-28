@@ -7,11 +7,16 @@
 //   chains, ternary chains, either operand order)                  an if-chain on a kind
 // One comparison alone (a guard such as `if (el.kind === 'connector')`) is allowed. A line carrying
 // `// kind-switch-allow: <reason>` is exempt (a closed union such as a path command's kind).
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { listFiles, repoPath } from './lib.mjs';
 
-const PACKAGES = ['core', 'render', 'editor', 'player', 'exporters'];
+// every workspace that can consume element kinds: all packages but schema (which defines them) and
+// geometry (closed unions only), every pack and every app (M3 cp1 F6)
+const DEFINERS = new Set(['packages/schema', 'packages/geometry']);
+const WORKSPACES = ['packages', 'packs', 'apps']
+  .flatMap((top) => (existsSync(repoPath(top)) ? readdirSync(repoPath(top)).map((name) => `${top}/${name}`) : []))
+  .filter((dir) => !DEFINERS.has(dir) && existsSync(repoPath(dir, 'src')));
 const SOURCE = /\.tsx?$/;
 const TEST = /\.(test|spec|stories|bench)\.tsx?$|\/__fixtures__\//;
 const ALLOW = /\/\/\s*kind-switch-allow:\s*\S/;
@@ -53,7 +58,7 @@ function scan(text) {
   return out.sort(([a], [b]) => a - b);
 }
 
-const files = PACKAGES.flatMap((p) => listFiles(join('packages', p, 'src'))).filter((f) => SOURCE.test(f) && !TEST.test(f));
+const files = WORKSPACES.flatMap((w) => listFiles(join(w, 'src'))).filter((f) => SOURCE.test(f) && !TEST.test(f));
 const violations = [];
 for (const file of files) {
   for (const [line, what] of scan(readFileSync(repoPath(file), 'utf8')))
@@ -63,4 +68,4 @@ if (violations.length) {
   for (const v of violations) console.error(`kind-switch: ${v}`);
   process.exit(1);
 }
-console.log(`kind-switch: ${files.length} source files in ${PACKAGES.join(', ')}, no switch on a kind`);
+console.log(`kind-switch: ${files.length} source files in ${WORKSPACES.length} workspaces (all but schema and geometry), no switch on a kind`);

@@ -4,7 +4,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
+import { currentMilestone, exists, leg, listFiles, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews, passingTestTitles, verifyLeg } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
@@ -167,7 +167,8 @@ const BENCHES = ['packages/core/bench/undo-5000.bench.ts', 'packages/core/bench/
 leg(`undo-5000 and transact-5000 benches: p99 <= UNDO_MAX_MS (${t('UNDO_MAX_MS')} ms) with validation on`, () => {
   const missingFiles = BENCHES.filter((b) => !exists(b));
   if (missingFiles.length) return `missing ${missingFiles.join(', ')}`;
-  const off = BENCHES.filter((b) => /\bvalidate\s*:\s*false\b/.test(readText(b)));
+  // every file of the bench folder, helpers included: a shared fixture could switch validation off (M3.26 review F1)
+  const off = listFiles('packages/core/bench').filter((f) => /\bvalidate\s*:\s*false\b/.test(readText(f)));
   if (off.length) return `validation switched off in ${off.join(', ')}`;
   const dir = mkdtempSync(join(tmpdir(), 'm3-bench-'));
   try {

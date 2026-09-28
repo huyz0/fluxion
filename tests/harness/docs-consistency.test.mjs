@@ -8,6 +8,12 @@ import { pathToFileURL } from 'node:url';
 import { belowFloor } from '../../scripts/gates/lib.mjs';
 import { cleanEnv, out, REPO, sandbox } from './helpers.mjs';
 
+// the built schema, imported once at module level (see the catalogue suite below)
+const SCHEMA_DIST = join(REPO, 'packages/schema/dist/index.js');
+const schema = await import(pathToFileURL(SCHEMA_DIST).href).catch((e) => {
+  throw new Error(`${SCHEMA_DIST} not importable (run pnpm run build first): ${e.message}`);
+});
+
 // Tracked Markdown only: scratch files under .harness/tmp (review packets) quote diffs verbatim.
 const tracked = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '*.md'], { cwd: REPO, encoding: 'utf8', env: cleanEnv() });
 const files = tracked.stdout
@@ -112,11 +118,9 @@ describe('harness docs consistency (NFR-DX-003)', () => {
     }
   });
   // M2.23 (M2 cp1 F5): the 02-document-model record catalogue matches the built @fluxion/schema
-  describe('02-document-model catalogue vs @fluxion/schema dist', async () => {
-    const dist = join(REPO, 'packages/schema/dist/index.js');
-    const schema = await import(pathToFileURL(dist).href).catch((e) => {
-      throw new Error(`${dist} not importable (run pnpm run build first): ${e.message}`);
-    });
+  // a synchronous describe: node --test discovers the cases of an async one only in a full run, not
+  // under --test-name-pattern, which is how the completion gate runs them (M3 cp1 F1)
+  describe('02-document-model catalogue vs @fluxion/schema dist', () => {
     const doc = read('docs/architecture/02-document-model.md');
     const section = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to, doc.indexOf(from)));
     const catalogue = catalogueRows(section('| Record | Key fields |', '### Element kinds'));
