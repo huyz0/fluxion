@@ -79,9 +79,13 @@ describe('coverage floors (NFR-MNT-004)', () => {
     sb = sandbox(SHARED);
     for (const { dir } of workspaces) {
       for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
+      // generated contract snapshots the workspace's tests compare against (packages/cli/schemas, ADR-0147)
+      if (existsSync(join(REPO, dir, 'schemas'))) cpSync(join(REPO, dir, 'schemas'), sb.path(`${dir}/schemas`), { recursive: true });
     }
     linkInstalls(sb);
     for (const { dir } of workspaces) dropBrowserCovered(`${dir}/src`);
+    // e2e suites spawn a workspace's built bin (dist/, absent here) and cover no source (M4.17)
+    for (const { dir } of workspaces) rmSync(sb.path(`${dir}/src/e2e`), { recursive: true, force: true });
   });
   after(() => sb.cleanup());
   afterEach(() => {

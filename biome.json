@@ -6,7 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/dist", "!**/.tsbuild", "!**/coverage", "!pnpm-lock.yaml", "!tests/harness/fixtures/biome", "!.harness/reviews"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.tsbuild",
+      "!**/coverage",
+      "!pnpm-lock.yaml",
+      "!tests/harness/fixtures/biome",
+      "!.harness/reviews",
+      "!packages/cli/schemas"
+    ]
   },
   "formatter": {
     "enabled": true,

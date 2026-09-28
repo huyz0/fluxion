@@ -4,6 +4,8 @@
  * @packageDocumentation
  */
 
+export { type CliIo, type ExitCode, run } from './main.js';
+
 /**
  * Version of this package.
  *

@@ -51,7 +51,8 @@ export type DiagnosticCode =
   | 'FLX_READ_ONLY'
   | 'FLX_FORK_UNRELATED'
   | 'FLX_ORIGIN_RESERVED'
-  | 'FLX_TOKEN_UNKNOWN';
+  | 'FLX_TOKEN_UNKNOWN'
+  | 'FLX_CLI_USAGE';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -97,6 +98,7 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_FORK_UNRELATED: 'error',
   FLX_ORIGIN_RESERVED: 'error',
   FLX_TOKEN_UNKNOWN: 'warning',
+  FLX_CLI_USAGE: 'error',
 };
 
 /**

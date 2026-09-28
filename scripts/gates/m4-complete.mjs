@@ -182,10 +182,12 @@ leg('CLI e2e suites spawn the built bin and pass', () => {
     ['M4.20', 'FR-CLI-001: render writes the two-rects-line HTML matching the golden', 'cli'],
   ]);
 });
-leg('the CLI --json output has a schema in specs/cli/', () => {
-  const dir = repoPath('specs/cli');
-  const schemas = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.schema.json')) : [];
-  return schemas.length > 0 || 'no specs/cli/*.schema.json (M4.17)';
+// the reply schemas are generated snapshots where contracts.md §1 puts them (ADR-0147, M4.17 review F1)
+leg('the CLI --json replies have generated schemas in packages/cli/schemas/', () => {
+  const dir = repoPath('packages/cli/schemas');
+  const schemas = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.output.json')) : [];
+  const missing = ['validate', 'render'].filter((c) => !schemas.includes(`${c}.output.json`));
+  return missing.length === 0 || `no packages/cli/schemas/${missing.join(', ')}.output.json (M4.17)`;
 });
 
 // ── visual baseline and the R0 demo (plan rows 15-16) ──────────────────────────────────────────

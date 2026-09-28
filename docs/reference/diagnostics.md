@@ -93,3 +93,12 @@ Paths point into the engine (`/registries/<name>/<key>`), not into the document.
 | `FLX_READ_ONLY` | error | The store's policy is read-only; no transaction or command runs (ADR-0014). | Open the document for editing, or fork it. |
 | `FLX_ORIGIN_RESERVED` | error | A transaction asked for origin `undo` or `redo`, which only the history module replays with (they skip hooks and history); nothing was written (ADR-0014). | Use `user`, `system` or `remote`; undo through `store.history`. |
 | `FLX_FORK_UNRELATED` | error | `applyFork` was given a store that is not a fork of the target; nothing was written (ADR-0014). | Apply a fork to the store it was forked from. |
+
+## Command line
+
+Reported by `fluxion` (ADR-0147) in its `--json` output and on stderr. Paths point into the
+command line (`/argv/<index>`), not into a document.
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_CLI_USAGE` | error | The command line is not understood: an unknown command, an unknown or malformed option, or a missing argument; nothing ran, and the exit code is 2. | Run `fluxion --help` or `fluxion <command> --help`. |

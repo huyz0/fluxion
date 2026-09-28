@@ -264,7 +264,14 @@ importers:
 
   packages/anim: {}
 
-  packages/cli: {}
+  packages/cli:
+    dependencies:
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
 
   packages/core:
     dependencies:

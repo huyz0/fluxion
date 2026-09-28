@@ -110,7 +110,7 @@
       "name": "@fluxion/cli",
       "layer": "L5",
       "runtime": "node",
-      "dependsOn": ["format", "dsl", "layout", "routing", "anim", "render"],
+      "dependsOn": ["schema", "format", "dsl", "layout", "routing", "anim", "render"],
       "desc": "The fluxion command: validate, compile, render, lint, layout, convert, catalog, pack, site build."
     },
     {

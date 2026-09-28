@@ -5,6 +5,20 @@
 ```ts
 
 // @public
+export type CliIo = {
+    readonly stdout: (text: string) => void;
+    readonly stderr: (text: string) => void;
+};
+
+// @public
+export type ExitCode = 0 | 1 | 2 | 3;
+
+// @public
+export function run(argv: readonly string[], io: CliIo): Promise<ExitCode>;
+
+// @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```

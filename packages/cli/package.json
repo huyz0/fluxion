@@ -4,6 +4,9 @@
   "description": "The fluxion command: validate, compile, render, lint, layout, convert, catalog, pack, site build.",
   "license": "MIT",
   "type": "module",
+  "bin": {
+    "fluxion": "./dist/bin.js"
+  },
   "sideEffects": false,
   "exports": {
     ".": {
@@ -18,6 +21,10 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@fluxion/schema": "workspace:*",
+    "zod": "catalog:"
   },
   "publishConfig": {
     "access": "public",
