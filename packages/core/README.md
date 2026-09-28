@@ -4,6 +4,26 @@ Document store (records + signals), transactions, commands, undo/redo, queries, 
 
 | Layer | Pure | Status |
 |---|---|---|
-| L1 | yes | stub (M1) — exports `VERSION` only |
+| L1 | yes | M3: store, transactions, hooks, commands, history, forks, registries |
 
-Architecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).
+```ts
+import { createCoreRegistries, createStore, executeCommand, registerCoreCommands, registerCoreHooks } from '@fluxion/core';
+
+const registries = createCoreRegistries();
+registerCoreHooks(registries.integrityHooks);
+registerCoreCommands(registries.commands);
+const store = createStore(file, { hooks: registries.integrityHooks });
+const r = executeCommand(registries.commands, { store }, 'element.update', { id, fields: { name: 'Box' } });
+if (!r.ok) console.log(r.error.diagnostics);
+store.history.undo();
+```
+
+- Every write is a transaction that returns a `Result` and leaves the store unchanged on failure;
+  commands are the way in (ADR-0014).
+- `store.fork()` gives an O(1) copy-on-write preview; `applyFork(store, fork)` writes it back as
+  one undo step.
+- Benchmarks: `pnpm bench` (NFR-PERF-006, 5 000 records).
+
+Design: [docs/architecture/03-core-engine.md](../../docs/architecture/03-core-engine.md) ·
+[ADR-0014](../../docs/architecture/decisions/ADR-0014-command-and-transaction-semantics.md) ·
+API: [api/core.api.md](api/core.api.md).

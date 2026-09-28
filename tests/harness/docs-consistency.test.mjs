@@ -117,6 +117,26 @@ describe('harness docs consistency (NFR-DX-003)', () => {
       sb.cleanup();
     }
   });
+  // M3.24: 03-core-engine §1–§4 name only APIs @fluxion/core exports (its committed API report,
+  // which check-api holds equal to the build)
+  it('03 names core exports', () => {
+    const report = read('packages/core/api/core.api.md');
+    const doc = read('docs/architecture/03-core-engine.md');
+    const sections = doc.slice(doc.indexOf('## 1. Store'), doc.indexOf('## 5. '));
+    assert.ok(sections.includes('interface Store'), 'no §1 Store block found');
+    assert.deepEqual(unknownCoreNames(sections, report), []);
+    // reported: a member the Store lacks, a type a signature names that core does not export, a
+    // member of a one-line declaration, a function core does not export and a stale property path
+    const wrong =
+      sections.replace('  fork(): Store;', '  fork(): Store;\n  frobnicate(): void;').replace('readonly history: History;', 'readonly history: Hystory;') +
+      '\n```ts\ninterface Tx { put(record: AnyRecord): void; remove(id): void }\n```\nCall `renderAll()` after `store.frobnicat`.\n';
+    assert.deepEqual(unknownCoreNames(wrong, report), ['Hystory', 'Store.frobnicate', 'Tx.remove', 'renderAll', 'frobnicat']);
+    // the pre-M3 doc's stale signatures (Query, Signal, Unsubscribe, CommandResult, ZodType) are caught
+    const stale =
+      '```ts\ninterface Store {\n  query<T>(q: Query<T>): Signal<T[]>;\n  subscribe(listener: (diff: Diff) => void): Unsubscribe;\n}\n```\n```ts\ninterface CommandDef<A> {\n  args: ZodType<A>;\n  run(ctx: CommandContext, args: A): void | CommandResult;\n}\n```\n';
+    assert.deepEqual(unknownCoreNames(stale, report), ['Query', 'Signal', 'Unsubscribe', 'ZodType', 'CommandResult']);
+  });
+
   // M2.23 (M2 cp1 F5): the 02-document-model record catalogue matches the built @fluxion/schema
   // a synchronous describe: node --test discovers the cases of an async one only in a full run, not
   // under --test-name-pattern, which is how the completion gate runs them (M3 cp1 F1)
@@ -172,6 +192,87 @@ describe('harness docs consistency (NFR-DX-003)', () => {
     });
   });
 });
+
+/**
+ * What an API report declares: exported names (aliases like `History_2` under their export
+ * name), the members of each exported interface or object type, the names it imports from
+ * @fluxion/schema, and its string literals (registry names, error codes, origins).
+ */
+function coreApi(report) {
+  const alias = new Map([...report.matchAll(/export \{ (\w+) as (\w+) \}/g)].map((m) => [m[1], m[2]]));
+  const exports = new Set([...report.matchAll(/^export (?:declare )?(?:type|interface|function|const) (\w+)/gm)].map((m) => m[1]));
+  for (const m of report.matchAll(/^export \{ (\w+)(?: as (\w+))? \}/gm)) exports.add(m[2] ?? m[1]);
+  const imported = new Set([...report.matchAll(/^import \{ (\w+) \} from '@fluxion\/schema';/gm)].map((m) => m[1]));
+  const members = new Map();
+  for (const m of report.matchAll(/^(?:export )?(?:interface|type) (\w+)[^\n]*\{\n([\s\S]*?)^\}/gm)) {
+    const names = [...m[2].matchAll(/^ {4}(?:readonly )?([\w$]+)\??[(<:]/gm)].map((x) => x[1]);
+    members.set(alias.get(m[1]) ?? m[1], new Set(names));
+  }
+  const literals = new Set([...report.matchAll(/"([\w.-]+)"/g)].map((m) => m[1]));
+  return { exports, imported, members, literals };
+}
+
+/**
+ * Names a core-engine doc uses that core does not have: in ```ts blocks, see unknownInBlock; in
+ * prose, each inline code span that is an identifier, a path or a call (`name`, `a.name`,
+ * `a.name(…)`; the last name counts) must be an export, a member of an export, a schema import
+ * or a literal of the report.
+ */
+function unknownCoreNames(doc, report) {
+  const api = coreApi(report);
+  const blocks = [...doc.matchAll(/^```ts\n([\s\S]*?)^```/gm)].map((m) => m[1]);
+  const unknown = blocks.flatMap((block) => unknownInBlock(block, api));
+  const allMembers = new Set([...api.members.values()].flatMap((m) => [...m]));
+  const known = (name) => api.exports.has(name) || api.imported.has(name) || api.literals.has(name) || allMembers.has(name);
+  const prose = doc.replace(/^```[\s\S]*?^```/gm, '');
+  for (const [, span] of prose.matchAll(/`([^`\n]+)`/g)) {
+    const name = /^(?:[\w$]+\.)*([A-Za-z_$][\w$]*)(?:\(|$)/.exec(span)?.[1];
+    if (name && !known(name)) unknown.push(name);
+  }
+  return [...new Set(unknown)];
+}
+
+/** TypeScript's own types a signature may name. */
+const TS_TYPES = new Set([
+  'Array',
+  'Map',
+  'Set',
+  'Promise',
+  'Readonly',
+  'ReadonlyArray',
+  'ReadonlyMap',
+  'ReadonlySet',
+  'Record',
+  'Partial',
+  'Uint8Array',
+  'PropertyKey',
+]);
+
+/** A type name a signature may use: an export, a schema import, a TypeScript type or a type parameter. */
+const knownType = (type, api) => api.exports.has(type) || api.imported.has(type) || TS_TYPES.has(type) || type.length === 1;
+
+/**
+ * A ```ts block's names core lacks: declarations that are not exports, members their export lacks
+ * (`Owner.member`, also on a one-line declaration) and types a signature names that are neither an
+ * export, a schema import, a TypeScript type nor a one-letter type parameter.
+ */
+function unknownInBlock(block, api) {
+  const unknown = [];
+  let owner;
+  for (const raw of block.split('\n')) {
+    const code = raw.replace(/\/\/.*$/, '').replace(/'[^']*'/g, "''");
+    unknown.push(...[...code.matchAll(/\b[A-Z][\w$]*\b/g)].map(([type]) => type).filter((type) => !knownType(type, api)));
+    const decl = /^(?:interface|type) (\w+)[^{]*\{?(.*)$/.exec(code);
+    if (decl) owner = decl[1];
+    // a one-line declaration's members follow its brace, separated by semicolons
+    const memberLines = decl ? decl[2].split(';').map((m) => ` ${m.trim()}`) : [code];
+    for (const line of memberLines) {
+      const member = /^\s+(?:readonly )?([\w$]+)\??[(<:]/.exec(line)?.[1];
+      if (owner && member && !api.members.get(owner)?.has(member)) unknown.push(`${owner}.${member}`);
+    }
+  }
+  return unknown;
+}
 
 /** Fields of a schema shape that are required (undefined does not parse). */
 const requiredFields = (shape) =>
