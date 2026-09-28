@@ -306,21 +306,4 @@ describe('integrity hooks (ADR-0014, FR-EXT-001)', () => {
     expect(n).toBe(8);
     expect(rec(store, a)?.['name']).toBeUndefined();
   });
-
-  it('hooks do not run for undo and redo transactions', () => {
-    const b = documentBuilder({ seed: 17 });
-    const a = b.rect(b.screen());
-    const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
-    let runs = 0;
-    hooks.register('count', () => runs++, 'x');
-    const store = new RecordStore(b.build(), { hooks });
-    store.transact('user', (tx) => tx.patch(a, { name: '1' }));
-    const afterUser = runs;
-    // replays go through the history module (a direct undo/redo origin is refused: M4.4)
-    expect(store.history.undo().ok).toBe(true);
-    expect(store.history.redo().ok).toBe(true);
-    expect((store.get(a) as { name?: string }).name).toBe('1');
-    expect(afterUser).toBeGreaterThan(0);
-    expect(runs).toBe(afterUser);
-  });
 });

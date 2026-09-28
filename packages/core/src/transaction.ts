@@ -145,6 +145,7 @@ export class WorkingCopy implements Tx {
   }
 
   patch(id: RecordId, fields: Readonly<Record<string, unknown>>): void {
+    // tzap disable next-line CallExpression: patch reads its base through this.get, which makes the same closed check first
     this.#open();
     const base = this.get(id);
     // patching a missing record, or its identity, is a programmer error (ADR-0014: a throw rolls back)

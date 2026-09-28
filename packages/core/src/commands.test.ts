@@ -106,4 +106,29 @@ describe('commands (03-core-engine §2, ADR-0014)', () => {
     // undo itself still replays through the history module
     expect(store.history.undo().ok).toBe(true);
   });
+
+  it('FR-EXT-001: every refusal names the command in its message and explains each diagnostic', () => {
+    const { store, commands, a, disable } = setup();
+    const readOnly = new RecordStore(store.toDocument(), { policy: 'read-only' });
+    const cases: Array<[string, Parameters<typeof executeCommand>[1], unknown]> = [
+      ['element.missing', { store }, {}],
+      ['element.rename', { store, options: { origin: 'redo' } } as unknown as Parameters<typeof executeCommand>[1], { id: a, name: 'x' }],
+      ['element.rename', { store: readOnly }, { id: a, name: 'x' }],
+      ['element.rename', { store }, { id: a, name: '' }],
+    ];
+    const check = (id: string, ctx: Parameters<typeof executeCommand>[1], args: unknown) => {
+      const r = executeCommand(commands, ctx, id, args);
+      expect(r.ok, id).toBe(false);
+      if (r.ok) return;
+      expect(r.error.message, r.error.code).toContain(id);
+      expect(r.error.diagnostics.length).toBeGreaterThan(0);
+      for (const d of r.error.diagnostics) {
+        expect(d.message, r.error.code).not.toBe('');
+        if (r.error.code !== 'COMMAND_ARGS' && r.error.code !== 'TX_READ_ONLY') expect(d.message).toContain(id);
+      }
+    };
+    for (const [id, ctx, args] of cases) check(id, ctx, args);
+    disable();
+    check('element.rename', { store }, { id: a, name: 'x' });
+  });
 });

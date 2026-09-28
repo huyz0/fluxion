@@ -5,6 +5,7 @@ import { registerCoreCommands } from './builtin-commands.js';
 import { type AnyCommand, executeCommand } from './commands.js';
 import { applyFork } from './fork.js';
 import { type IntegrityHook, registerCoreHooks } from './hooks.js';
+import { SharedRecordMap } from './record-map.js';
 import { createRegistry } from './registry.js';
 import { RecordStore, type StoreOptions } from './store.js';
 
@@ -112,5 +113,47 @@ describe('forks and the read-only policy (ADR-0014 §Forks and policy)', () => {
       expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_FORK_UNRELATED', severity: 'error' })]);
     }
     expect([other.history.undoDepth, store.history.undoDepth]).toEqual([0, 0]);
+  });
+
+  it('NFR-MNT-006: a refused applyFork names its label and explains its diagnostic at the document root', () => {
+    const { store } = setup();
+    const other = setup().store;
+    const r = applyFork(store, other, 'try preview');
+    expect(!r.ok && r.error.message.startsWith('try preview: ')).toBe(true);
+    expect(!r.ok && r.error.diagnostics).toEqual([{ code: 'FLX_FORK_UNRELATED', severity: 'error', path: '', message: expect.stringMatching(/\S/) }]);
+  });
+
+  it('NFR-MNT-006: applyFork carries the fork deletes into the parent under the label apply fork by default', () => {
+    const { store, commands, a, c } = setup();
+    const fork = store.fork();
+    expect(executeCommand(commands, { store: fork }, 'element.delete', { ids: [c] }).ok).toBe(true);
+    const labels: string[] = [];
+    store.subscribe((_d, meta) => labels.push(meta.label));
+    const r = applyFork(store, fork);
+    expect(r.ok, JSON.stringify(!r.ok && r.error)).toBe(true);
+    expect(labels).toEqual(['apply fork']);
+    expect(store.has(c)).toBe(false);
+    expect(store.has(a)).toBe(true);
+    expect(store.toDocument()).toEqual(fork.toDocument());
+  });
+
+  it('NFR-MNT-006: copy-on-write copies a map only while another handle shares it', () => {
+    const own = new SharedRecordMap();
+    const map = own.map;
+    // alone: written in place
+    expect(own.writable()).toBe(map);
+    const other = own.share();
+    // shared: the writer copies, and the handle left behind is alone again, so it writes in place
+    expect(own.writable()).not.toBe(map);
+    expect(other.writable()).toBe(map);
+  });
+
+  it('NFR-MNT-006: diffFrom leaves out a record the fork changed and then changed back', () => {
+    const { store, a } = setup();
+    const fork = store.fork();
+    expect(fork.transact('rename', (tx) => tx.patch(a, { name: 'x' })).ok).toBe(true);
+    expect(fork.transact('rename back', (tx) => tx.patch(a, { name: undefined })).ok).toBe(true);
+    const diff = fork.diffFrom(store);
+    expect([diff?.puts.size, diff?.deletes.size]).toEqual([0, 0]);
   });
 });

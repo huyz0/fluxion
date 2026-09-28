@@ -2,8 +2,10 @@ import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { arbDocument, documentBuilder } from '@fluxion/schema/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { type IntegrityHook, registerCoreHooks } from './hooks.js';
+import { createRegistry } from './registry.js';
 import { RecordStore } from './store.js';
-import type { Diff, Tx, TxMeta } from './transaction.js';
+import { type Diff, jsonEqual, type Tx, type TxMeta } from './transaction.js';
 
 type Op = { readonly kind: 'patch' | 'delete' | 'recreate'; readonly pick: number; readonly n: number };
 const arbOps = fc.array(fc.record({ kind: fc.constantFrom<Op['kind']>('patch', 'delete', 'recreate'), pick: fc.nat(), n: fc.integer({ min: 0, max: 3 }) }), {
@@ -216,6 +218,97 @@ describe('transactions (ADR-0014, NFR-MNT-006)', () => {
     });
     const rec = store.get(a) as AnyRecord & { transform: object };
     expect(Object.isFrozen(rec.transform)).toBe(true);
+  });
+
+  it('NFR-MNT-006: jsonEqual tells an array from an object with the same entries', () => {
+    expect(jsonEqual([], {})).toBe(false);
+    expect(jsonEqual(['x'], { 0: 'x' })).toBe(false);
+    expect(jsonEqual({ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] })).toBe(true);
+  });
+
+  it('NFR-MNT-006: every Tx method throws once its transaction is over', () => {
+    const { file, a } = fixture();
+    const store = new RecordStore(file);
+    let kept: Tx | undefined;
+    store.transact('keep', (tx) => {
+      kept = tx;
+    });
+    const record = store.get(a) as AnyRecord;
+    expect(() => kept?.get(a)).toThrow(/transaction is closed/);
+    expect(() => kept?.put(record)).toThrow(/transaction is closed/);
+    expect(() => kept?.delete(a)).toThrow(/transaction is closed/);
+    expect(store.get(a)).toBe(record);
+  });
+
+  it('NFR-MNT-006: a patch may restate a record identity but never change it', () => {
+    const { file, a } = fixture();
+    const store = new RecordStore(file);
+    expect(store.transact('same identity', (tx) => tx.patch(a, { id: a, type: 'element', name: 'n' })).ok).toBe(true);
+    expect((store.get(a) as { name?: string }).name).toBe('n');
+    expect(() => store.transact('new id', (tx) => tx.patch(a, { id: 'OtherOtherOther1' }))).toThrow(/cannot change id or type/);
+    expect(() => store.transact('new type', (tx) => tx.patch(a, { type: 'screen' }))).toThrow(/cannot change id or type/);
+  });
+
+  it('NFR-MNT-006: warnings in a put do not block the transaction', () => {
+    const { file } = fixture();
+    const store = new RecordStore(file);
+    // a record type this version does not know is kept with an FLX_RECORD_UNKNOWN_TYPE warning
+    const plugin = { id: 'PluginPluginPlu1', type: 'acme:thing' };
+    const r = store.transact('plugin element', (tx) => tx.put(plugin as unknown as AnyRecord));
+    expect(r.ok, JSON.stringify(!r.ok && r.error)).toBe(true);
+    expect(store.has(plugin.id as RecordId)).toBe(true);
+  });
+
+  it('NFR-MNT-006: a savepoint rolled back keeps the records dropped before it and forgets its own', () => {
+    const { file, screen, a, line } = fixture();
+    const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
+    registerCoreHooks(hooks);
+    let store = new RecordStore(file, { hooks });
+    const group = {
+      id: 'GroupGroupGroup1',
+      type: 'element',
+      kind: 'group',
+      screenId: screen,
+      index: 'a8',
+      transform: { x: 0, y: 0, w: 9, h: 9 },
+    } as unknown as AnyRecord;
+    const child = { ...(store.get(a) as AnyRecord), id: 'ChildChildChild1', parentId: group.id, index: 'a0' } as AnyRecord;
+    const failInner = (fn: (tx: Tx) => void) => {
+      try {
+        store.transact('inner', (t) => {
+          fn(t);
+          throw new Error('inner');
+        });
+      } catch {
+        // the outer transaction carries on
+      }
+    };
+    // dropped before the savepoint: the child still goes with its group
+    const r = store.transact('outer', (tx) => {
+      tx.put(group);
+      tx.put(child);
+      tx.delete(group.id as RecordId);
+      failInner(() => {});
+    });
+    expect(r.ok, JSON.stringify(!r.ok && r.error)).toBe(true);
+    expect(store.has(child.id as RecordId)).toBe(false);
+    // dropped only inside the rolled-back savepoint: nothing is cascaded from it (seen on a connector
+    // end left neither bound nor free, which only an unvalidated store holds)
+    store = new RecordStore(file, { hooks, validate: false });
+    const target = store.members('bindingsByElement', line).find((id) => (store.get(id) as { end?: string }).end === 'target') as RecordId;
+    const binding = store.get(target) as AnyRecord;
+    expect(store.transact('unbind', (tx) => tx.delete(target)).ok).toBe(true);
+    expect(store.transact('unfree', (tx) => tx.patch(line, { freeTarget: undefined })).ok).toBe(true);
+    const flash = { ...binding, id: 'FlashFlashFlash1' } as AnyRecord;
+    const s = store.transact('outer again', (tx) => {
+      tx.delete(flash.id as RecordId);
+      failInner((t) => {
+        t.put(flash);
+        t.delete(flash.id as RecordId);
+      });
+    });
+    expect(s.ok, JSON.stringify(!s.ok && s.error)).toBe(true);
+    expect((store.get(line) as { freeTarget?: unknown }).freeTarget).toBeUndefined();
   });
 
   it('validation can be switched off by the store option (production builds only)', () => {

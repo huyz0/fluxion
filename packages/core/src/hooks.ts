@@ -65,13 +65,15 @@ function ownedPointers({ tx, members }: HookContext): Map<string, Array<readonly
 
 const ownedHook: IntegrityHook = (context) => {
   const { tx, deleted } = context;
-  if (!deleted.size) return;
-  const pointers = ownedPointers(context);
   // a worklist, so a chain of owned records (a reply to a reply to a comment) goes in one pass
   const queue = [...deleted.keys()].filter((id) => !tx.get(id));
+  // built when the first owner is reached (before any write here), so a pass that deletes nothing never scans
+  let pointers: ReturnType<typeof ownedPointers> | undefined;
   for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
+    pointers ??= ownedPointers(context);
+    // each owner is processed once, and every pointer was read from a live record, so no owned
+    // record is gone yet when it is reached (a screen is only ever cleared, never deleted, here)
     for (const [owned, key, action] of pointers.get(id) ?? []) {
-      if (!tx.get(owned)) continue;
       if (action === 'clear') tx.patch(owned, { [key]: undefined });
       else {
         tx.delete(owned);
@@ -99,6 +101,7 @@ const bindingsHook: IntegrityHook = (context) => {
       const binding = tx.get(id);
       if (!binding) continue;
       tx.delete(id);
+      // tzap disable next-line ConditionalExpression,EqualityOperator,StringLiteral: freeing here is early only; the next pass frees the end from the deleted binding at the same centre (deleted.get(element)), and a deleted connector has no end to free
       if (field(binding, 'connectorId') !== element) freeEnd(tx, members, binding, centre(before));
     }
   }
@@ -117,8 +120,9 @@ function freeEnd(tx: Tx, members: HookContext['members'], binding: AnyRecord, at
   const free = end === 'target' ? 'freeTarget' : 'freeSource';
   if (field(connector, free) !== undefined) return;
   const held = members('bindingsByElement', connectorId).some((id) => {
+    // a deleted binding reads as undefined, whose fields match no connector
     const other = tx.get(id);
-    return other !== undefined && field(other, 'connectorId') === connectorId && field(other, 'end') === end;
+    return field(other, 'connectorId') === connectorId && field(other, 'end') === end;
   });
   if (!held) tx.patch(connectorId, { [free]: at });
 }
@@ -175,6 +179,7 @@ export function pendingMembers(
     return record !== undefined && keysOf(record).some(([n, k]) => n === index && k === key);
   };
   return (index, key) => {
+    // tzap disable next-line BooleanLiteral: an unchanged committed member is always still filed, so `changes.has(id) || filed` keeps the same ids
     const out = new Set(committed(index, key).filter((id) => !changes.has(id) || filed(id, index, key)));
     for (const id of pending.get(`${index} ${key}`) ?? []) if (filed(id, index, key)) out.add(id);
     return [...out];

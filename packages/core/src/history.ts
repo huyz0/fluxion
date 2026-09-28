@@ -39,7 +39,7 @@ type Entry = {
   readonly metaBefore: unknown;
   readonly metaAfter: unknown;
   readonly origin: TxOrigin;
-  readonly mergeKey?: string;
+  readonly mergeKey: string | undefined;
 };
 
 /** A record's value across merged diffs: its first before and latest after (undefined: absent). */
@@ -150,7 +150,8 @@ export class StoreHistory implements History {
       metaBefore: meta.metaBefore,
       metaAfter: meta.metaAfter,
       origin: meta.origin,
-      ...(meta.mergeKey === undefined ? {} : { mergeKey: meta.mergeKey }),
+      // undefined never merges: a merge needs a defined key equal to it
+      mergeKey: meta.mergeKey,
     };
     this.#undo.push(entry);
     this.#open = entry;

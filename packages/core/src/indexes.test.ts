@@ -2,7 +2,7 @@ import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { arbDocument, documentBuilder } from '@fluxion/schema/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { Indexes } from './indexes.js';
+import { Indexes, keysOf } from './indexes.js';
 import { effect } from './signals.js';
 import { RecordStore } from './store.js';
 
@@ -138,6 +138,62 @@ describe('incremental indexes (03-core-engine §1)', () => {
       [['A', 'B'], true, [size + 1, size + 1]],
       [['A'], true, [size, size]],
     ]);
+    stop();
+  });
+
+  it('NFR-MNT-006: only elements are filed by screen and parent, only bindings by element, each key once', () => {
+    const rec = (fields: Record<string, unknown>) => ({ id: 'RecordRecordRec1', ...fields }) as unknown as AnyRecord;
+    expect(keysOf(rec({ type: 'timeline', screenId: 'S', parentId: 'P' }))).toEqual([['byType', 'timeline']]);
+    expect(keysOf(rec({ type: 'interaction', elementId: 'E', connectorId: 'C' }))).toEqual([['byType', 'interaction']]);
+    expect(keysOf(rec({ type: 'element', screenId: 'S', parentId: 'P' }))).toEqual([
+      ['byType', 'element'],
+      ['byScreen', 'S'],
+      ['byParent', 'P'],
+    ]);
+    expect(keysOf(rec({ type: 'binding', elementId: 'E', connectorId: 'C' }))).toEqual([
+      ['byType', 'binding'],
+      ['bindingsByElement', 'E'],
+      ['bindingsByElement', 'C'],
+    ]);
+    expect(keysOf(rec({ type: 'binding', elementId: 'E', connectorId: 'E' }))).toEqual([
+      ['byType', 'binding'],
+      ['bindingsByElement', 'E'],
+    ]);
+  });
+
+  it('NFR-REL-005: the index snapshot lists keys and members sorted, without emptied keys', () => {
+    const el = (id: string, screenId: string) => ({ id, type: 'element', screenId }) as unknown as AnyRecord;
+    const indexes = new Indexes([el('Z1', 'S2'), el('A1', 'S2'), el('M1', 'S1'), el('B1', 'S3')]);
+    indexes.update(el('B1', 'S3'), el('B1', 'S1'));
+    const snap = indexes.snapshot();
+    expect(Object.keys(snap.byScreen)).toEqual(['S1', 'S2']);
+    expect(snap.byScreen).toEqual({ S1: ['B1', 'M1'], S2: ['A1', 'Z1'] });
+    expect(snap.byType).toEqual({ element: ['A1', 'B1', 'M1', 'Z1'] });
+  });
+
+  it('NFR-MNT-006: a record refiled from one index to another under the same key string moves', () => {
+    const indexes = new Indexes([{ id: 'E1', type: 'element', screenId: 'K' } as unknown as AnyRecord]);
+    indexes.update({ id: 'E1', type: 'element', screenId: 'K' } as unknown as AnyRecord, { id: 'E1', type: 'element', parentId: 'K' } as unknown as AnyRecord);
+    expect([indexes.members('byScreen', 'K'), indexes.members('byParent', 'K')]).toEqual([[], ['E1']]);
+  });
+
+  it('NFR-MNT-006: a query on an index key re-runs on every change to it, in and out, whoever else read it', () => {
+    const b = documentBuilder({ seed: 10 });
+    const s1 = b.screen();
+    const s2 = b.screen();
+    const a = b.rect(s1);
+    const d = b.rect(s2);
+    const store = new RecordStore(b.build());
+    const counts: number[] = [];
+    const stop = effect(() => {
+      counts.push(store.members('byScreen', s1).length);
+    });
+    // an untracked read of the same key (a command, a hook) must not orphan the effect's signal
+    expect(store.members('byScreen', s1)).toEqual([a]);
+    store.transact('in', (tx) => tx.patch(d, { screenId: s1 }));
+    store.transact('out', (tx) => tx.patch(d, { screenId: s2 }));
+    store.transact('out too', (tx) => tx.patch(a, { screenId: s2 }));
+    expect(counts).toEqual([1, 2, 1, 0]);
     stop();
   });
 

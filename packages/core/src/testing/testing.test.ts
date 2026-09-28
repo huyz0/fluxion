@@ -44,6 +44,10 @@ describe('@fluxion/core/testing port fakes (NFR-REL-005)', () => {
     bytes[0] = 9;
     const read = await io.read('a.bin');
     expect(read.ok && [...read.value]).toEqual([1, 2, 3]);
+    // a read is a copy too: changing it leaves the stored file alone
+    if (read.ok) read.value[1] = 9;
+    const again = await io.read('a.bin');
+    expect(again.ok && [...again.value]).toEqual([1, 2, 3]);
     expect(await io.read('b.bin')).toEqual({ ok: false, error: { code: 'FILE_NOT_FOUND', message: 'no file at b.bin' } });
   });
 

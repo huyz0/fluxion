@@ -20,10 +20,11 @@ import type { Registry } from './registry.js';
 import type { Tx, TxFailure } from './transaction.js';
 
 const id = z.string().min(1);
+// tzap disable next-line StringLiteral: message text is not the contract (codes are)
+const identityMessage = (key: string) => `"${key}" is a record's identity, not a field it can change`;
 // fields of a patch; a record's identity is not a field (a patch that changed it would throw; M3 cp1 F4)
 const fields = z.record(z.string(), z.unknown()).superRefine((value, check) => {
-  for (const key of ['id', 'type'])
-    if (Object.hasOwn(value, key)) check.addIssue({ code: 'custom', path: [key], message: `"${key}" is a record's identity, not a field it can change` });
+  for (const key of ['id', 'type']) if (Object.hasOwn(value, key)) check.addIssue({ code: 'custom', path: [key], message: identityMessage(key) });
 });
 /** A record body: validated in full by the transaction, so only its identity is checked here. */
 const recordOf = (type: string) => z.looseObject({ id, type: z.literal(type) });
@@ -58,6 +59,7 @@ function checkIds(
 /** Why `record` (stored under `x`) is not what `want` asks for, or undefined. */
 function idProblem(record: AnyRecord | undefined, x: string, want: Want): string | undefined {
   if (want === 'new') return record ? `"${x}" already exists (a ${record.type})` : undefined;
+  // tzap disable next-line StringLiteral: message text is not the contract (codes are)
   return record?.type === want ? undefined : `"${x}" is ${record ? `a ${record.type}` : 'missing'}, not a ${want}`;
 }
 
@@ -77,7 +79,8 @@ function screensInOrder(ctx: CommandContext, except: string): Array<{ readonly i
  */
 function indexAfter(ctx: CommandContext, screen: string, after: string | undefined): Result<string, TxFailure> {
   const others = screensInOrder(ctx, screen);
-  const at = after === undefined ? 0 : others.findIndex((s) => s.id === after) + 1;
+  // no screen has an undefined id, so an absent `after` finds nothing: at 0, first
+  const at = others.findIndex((s) => s.id === after) + 1;
   if (after !== undefined && at === 0) {
     const message = 'a screen cannot follow itself';
     return err({
@@ -92,7 +95,8 @@ function indexAfter(ctx: CommandContext, screen: string, after: string | undefin
   // an equal pair names the later key; a malformed key names the neighbour holding it (M4.4 review F1);
   // the severity is the code's registered one (review F2)
   const malformed = [before, next].find((s) => s !== undefined && !isIndexKey(s.index));
-  const neighbour = key.error.code === 'INDEX_ORDER' ? (next ?? before) : (malformed ?? next ?? before);
+  // (an out-of-order pair has two valid keys, so no malformed one: it names `next` too)
+  const neighbour = malformed ?? next ?? before;
   const code = key.error.code === 'INDEX_ORDER' ? 'FLX_INDEX_DUPLICATE' : 'FLX_SCHEMA_INVALID';
   const found: Diagnostic = {
     code,
@@ -203,9 +207,9 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
       const free = args.end === 'source' ? 'freeSource' : 'freeTarget';
       return write(ctx, 'binding.set', (tx) => {
         tx.put(binding as unknown as AnyRecord);
-        // a bound end has no free point (FLX_CONNECTOR_END_CONFLICT otherwise)
-        if ((tx.get(args.connectorId as RecordId) as Record<string, unknown> | undefined)?.[free] !== undefined)
-          tx.patch(args.connectorId as RecordId, { [free]: undefined });
+        // a bound end has no free point (FLX_CONNECTOR_END_CONFLICT otherwise); removing an absent
+        // one nets to nothing, so the connector is patched unconditionally
+        tx.patch(args.connectorId as RecordId, { [free]: undefined });
       });
     },
   }),
@@ -215,7 +219,9 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     args: z.object({ fields }),
     run: (ctx, args) => {
       // a store without its document singleton is refused, not patched (M3 cp1 F4)
-      const doc = ctx.store.members('byType', 'document')[0] ?? '';
+      const docs = ctx.store.members('byType', 'document');
+      // tzap disable next-line StringLiteral: any id absent from the store is refused alike (COMMAND_ARGS at /args); the fallback only shows in message text
+      const doc = docs[0] ?? '';
       return checkIds(ctx, 'document.update', 'document', [[[], doc]]) ?? write(ctx, 'document.update', (tx) => tx.patch(doc as RecordId, args.fields));
     },
   }),

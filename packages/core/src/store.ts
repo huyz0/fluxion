@@ -204,8 +204,8 @@ export class RecordStore implements Store {
     const deletes = new Map<RecordId, AnyRecord>();
     for (const [id, after] of this.#records) {
       const before = base.get(id);
-      // unchanged records keep their (immutable) object, so identity settles most of them
-      if (before === after || jsonEqual(before, after)) continue;
+      // unchanged records keep their (immutable) object, so jsonEqual's identity test settles most of them
+      if (jsonEqual(before, after)) continue;
       puts.set(id, before ? { before, after } : { after });
     }
     for (const [id, before] of base) if (!this.#records.has(id)) deletes.set(id, before);
@@ -334,6 +334,7 @@ export class RecordStore implements Store {
   /** Run the hooks, sorted by key, until a pass writes nothing; false when that takes too many passes. */
   #runHooks(tx: WorkingCopy): boolean {
     const hooks = this.#hooks?.list() ?? [];
+    // tzap disable next-line ConditionalExpression: with no hooks the first pass writes nothing, so sameChanges returns true at once
     if (!hooks.length) return true;
     for (let pass = 0; pass < MAX_HOOK_PASSES; pass++) {
       const before = new Map(tx.changes);
@@ -364,6 +365,7 @@ export class RecordStore implements Store {
       const added = puts.filter((record) => !this.#records.has(record.id as RecordId)).length;
       for (const record of puts) this.#write(record.id as RecordId, record);
       for (const id of deletes) this.#write(id, undefined);
+      // tzap disable next-line UpdateOperator: counting down also gives the membership signal a new value on every bump
       if (added > 0 || deletes.length > 0) this.#membership.set(++this.#memberships);
       for (const record of puts) this.#signals.get(record.id as RecordId)?.set(this.#records.get(record.id as RecordId));
       for (const id of deletes) this.#signals.get(id)?.set(undefined);

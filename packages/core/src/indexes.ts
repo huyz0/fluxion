@@ -41,7 +41,8 @@ export class Indexes {
   readonly #counts = new Map<string, number>();
 
   constructor(records: Iterable<AnyRecord>) {
-    for (const record of records) this.#add(record, false);
+    // no key has a version signal yet, so nothing is bumped
+    for (const record of records) for (const [n, k] of keysOf(record)) this.#insert(n, k, record.id as RecordId);
   }
 
   /** Members of `key` in `index` (a snapshot); reading inside a signal context subscribes to the key. */
@@ -56,7 +57,10 @@ export class Indexes {
     const now = after ? keysOf(after) : [];
     const has = (list: Array<[IndexName, string]>, [n, k]: [IndexName, string]) => list.some(([m, j]) => m === n && j === k);
     for (const key of was.filter((key) => !has(now, key))) this.#remove(key[0], key[1], before?.id as RecordId);
-    for (const key of now.filter((key) => !has(was, key))) this.#insert(key[0], key[1], after?.id as RecordId, true);
+    for (const key of now.filter((key) => !has(was, key))) {
+      this.#insert(key[0], key[1], after?.id as RecordId);
+      this.#bump(key[0], key[1]);
+    }
   }
 
   /** Members of `key` in `index` without subscribing (for code running inside a transaction). */
@@ -68,17 +72,14 @@ export class Indexes {
   snapshot(): Record<IndexName, Record<string, RecordId[]>> {
     const out = {} as Record<IndexName, Record<string, RecordId[]>>;
     for (const [name, map] of this.#maps) {
-      const keys = [...map.keys()].filter((k) => (map.get(k)?.size ?? 0) > 0).sort();
+      // #remove drops a key with its last member, so every key here has members
+      const keys = [...map.keys()].sort();
       out[name] = Object.fromEntries(keys.map((k) => [k, [...(map.get(k) ?? [])].sort()]));
     }
     return out;
   }
 
-  #add(record: AnyRecord, bump: boolean): void {
-    for (const [n, k] of keysOf(record)) this.#insert(n, k, record.id as RecordId, bump);
-  }
-
-  #insert(index: IndexName, key: string, id: RecordId, bump: boolean): void {
+  #insert(index: IndexName, key: string, id: RecordId): void {
     const map = this.#maps.get(index);
     if (!map) return;
     let set = map.get(key);
@@ -87,7 +88,6 @@ export class Indexes {
       map.set(key, set);
     }
     set.add(id);
-    if (bump) this.#bump(index, key);
   }
 
   #remove(index: IndexName, key: string, id: RecordId): void {
@@ -111,6 +111,7 @@ export class Indexes {
     const id = `${index} ${key}`;
     const v = this.#versions.get(id);
     if (!v) return;
+    // tzap disable next-line ArithmeticOperator: counting down gives distinct values too; the signal only needs a value unlike its last
     const next = (this.#counts.get(id) ?? 0) + 1;
     this.#counts.set(id, next);
     v.set(next);

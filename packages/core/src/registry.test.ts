@@ -31,6 +31,9 @@ describe('registries (03-core-engine §4)', () => {
       ok: false,
       error: expect.objectContaining({ code: 'FLX_REGISTRY_DUPLICATE', severity: 'error', path: '/registries/routers/orthogonal' }),
     });
+    // the refusal names the key and suggests a namespaced one
+    expect(!clash.ok && clash.error.message).toContain('"orthogonal"');
+    expect(!clash.ok && clash.error.hint).toContain('acme:orthogonal');
     // the first registration stays
     expect(routers.get('orthogonal')).toBe('core-impl');
     expect(routers.source('orthogonal')).toBe('core');

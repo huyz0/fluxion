@@ -18,6 +18,7 @@ export class VirtualClock implements Clock {
   }
 
   frame(callback: (time: number) => void): () => void {
+    // tzap disable next-line UpdateOperator: counting down also gives each frame a distinct id, and frames run in insertion order either way
     const id = this.#nextId++;
     this.#frames.set(id, callback);
     return () => {

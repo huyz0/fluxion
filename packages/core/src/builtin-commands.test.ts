@@ -146,6 +146,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
     registerCoreCommands(commands);
     const r = executeCommand(commands, { store }, 'document.update', { fields: { title: 'x' } });
     expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', path: '/args' })]);
+    expect(!r.ok && r.error.message.startsWith('document.update: ')).toBe(true);
   });
 
   it('binding.set refuses a new binding id that is taken', () => {
@@ -219,5 +220,142 @@ describe('built-in record commands (FR-EXT-001)', () => {
     const broken = new RecordStore({ ...file, records: bad } as typeof file);
     const m = executeCommand(commands, { store: broken }, 'screen.reorder', { id: s3, after: s1 });
     expect(!m.ok && m.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_SCHEMA_INVALID', severity: 'error', path: `/records/${s1}/index` })]);
+  });
+
+  it('FR-EXT-001: each built-in is titled command.<id> and commits one transaction labelled with its id', () => {
+    for (const command of CORE_COMMANDS) {
+      expect(command.title.id).toBe(`command.${command.id}`);
+      expect(command.title.defaultMessage).not.toBe('');
+    }
+    const { store, run, s1, s2, a, c, line } = setup();
+    const labels: string[] = [];
+    store.subscribe((_d, meta) => labels.push(meta.label));
+    const element = {
+      id: 'LabelLabelLabel1',
+      type: 'element',
+      kind: 'shape',
+      defId: 'basic:rect',
+      screenId: s1,
+      index: 'a9',
+      transform: { x: 0, y: 0, w: 5, h: 5 },
+    };
+    const steps: Array<[string, unknown]> = [
+      ['element.create', { element }],
+      ['element.update', { id: a, fields: { name: 'A' } }],
+      ['binding.set', { id: 'LabelBindingLab1', connectorId: line, end: 'target', elementId: element.id, anchor: { kind: 'auto' } }],
+      ['element.delete', { ids: [c] }],
+      ['screen.create', { screen: { id: 'LabelScreenLabe1', type: 'screen', index: 'a9' } }],
+      ['screen.reorder', { id: s1, after: s2 }],
+      ['screen.delete', { id: 'LabelScreenLabe1' }],
+      ['document.update', { fields: { title: 'T' } }],
+    ];
+    for (const [id, args] of steps) {
+      const r = run(id, args);
+      expect(r.ok, `${id}: ${JSON.stringify(!r.ok && r.error)}`).toBe(true);
+    }
+    expect(labels).toEqual(steps.map(([id]) => id));
+  });
+
+  it('FR-EXT-001: a refused built-in names itself in its failure message and explains every diagnostic', () => {
+    const { run, s1, s2, a, c, line } = setup();
+    const clash = { id: a, type: 'element', kind: 'shape', defId: 'basic:rect', screenId: s1, index: 'a9', transform: { x: 0, y: 0, w: 1, h: 1 } };
+    const refusals: Array<[string, unknown]> = [
+      ['element.create', { element: clash }],
+      ['element.update', { id: s1, fields: { name: 'x' } }],
+      ['element.update', { id: a, fields: { type: 'screen' } }],
+      ['element.delete', { ids: [s1] }],
+      ['screen.create', { screen: { id: s1, type: 'screen', index: 'a9' } }],
+      ['screen.delete', { id: a }],
+      ['screen.reorder', { id: a }],
+      ['screen.reorder', { id: s1, after: s1 }],
+      ['binding.set', { id: 'FreshFreshFresh1', connectorId: line, end: 'target', elementId: s2, anchor: { kind: 'auto' } }],
+      ['document.update', { fields: { id: 'x' } }],
+    ];
+    // a new binding id that is taken (checked only when the end is not bound yet)
+    expect(run('element.delete', { ids: [c] }).ok).toBe(true);
+    refusals.push(['binding.set', { id: a, connectorId: line, end: 'target', elementId: a, anchor: { kind: 'auto' } }]);
+    for (const [id, args] of refusals) {
+      const r = run(id, args);
+      expect(r.ok, id).toBe(false);
+      if (r.ok) continue;
+      expect(r.error.message.startsWith(`${id}: `), r.error.message).toBe(true);
+      expect(r.error.diagnostics.length, id).toBeGreaterThan(0);
+      for (const d of r.error.diagnostics) expect(d.message, id).not.toBe('');
+    }
+    // an identity field is named in its diagnostic
+    const identity = run('element.update', { id: a, fields: { id: 'x' } });
+    expect(!identity.ok && identity.error.diagnostics[0]?.message).toContain('"id"');
+  });
+
+  it('FR-EXT-001: binding.set checks its connector argument and the anchor kind', () => {
+    const { store, run, a, line } = setup();
+    const before = store.toDocument();
+    const missing = run('binding.set', { id: 'FreshFreshFresh1', connectorId: 'MissingMissing01', end: 'target', elementId: a, anchor: { kind: 'auto' } });
+    expect(!missing.ok && missing.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', path: '/args/connectorId' })]);
+    const kindless = run('binding.set', { id: 'FreshFreshFresh1', connectorId: line, end: 'target', elementId: a, anchor: {} });
+    expect(!kindless.ok && kindless.error.code).toBe('COMMAND_ARGS');
+    expect(!kindless.ok && kindless.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', path: '/args/anchor/kind' })]);
+    expect(store.toDocument()).toEqual(before);
+  });
+
+  it('FR-EXT-001: binding.set clears the free point of the end it binds and only that end', () => {
+    const b = documentBuilder({ seed: 42 });
+    const s = b.screen();
+    const [a, c, e] = [b.rect(s), b.rect(s, { x: 300 }), b.rect(s, { x: 600 })];
+    const line = b.connect(a, c);
+    const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
+    registerCoreHooks(hooks);
+    const store = new RecordStore(b.build(), { hooks });
+    const commands = createRegistry<string, AnyCommand>('commands');
+    registerCoreCommands(commands);
+    const run = (id: string, args: unknown) => executeCommand(commands, { store }, id, args);
+    const ends = () => {
+      const r = store.get(line) as { freeSource?: unknown; freeTarget?: unknown };
+      return [r.freeSource !== undefined, r.freeTarget !== undefined];
+    };
+    expect(run('element.delete', { ids: [c] }).ok).toBe(true);
+    expect(ends()).toEqual([false, true]);
+    expect(run('binding.set', { id: 'TargetTargetTar1', connectorId: line, end: 'target', elementId: e, anchor: { kind: 'auto' } }).ok).toBe(true);
+    expect(ends()).toEqual([false, false]);
+    expect(run('element.delete', { ids: [a] }).ok).toBe(true);
+    expect(ends()).toEqual([true, false]);
+    expect(run('binding.set', { id: 'SourceSourceSrc1', connectorId: line, end: 'source', elementId: e, anchor: { kind: 'auto' } }).ok).toBe(true);
+    expect(ends()).toEqual([false, false]);
+    expect(store.members('bindingsByElement', line)).toHaveLength(2);
+  });
+
+  it('FR-DOC-010: screen.reorder names a malformed next neighbour, not the valid screen before it', () => {
+    const b = documentBuilder({ seed: 43 });
+    const [s1, s2, s3] = [b.screen(), b.screen(), b.screen()];
+    const file = b.build();
+    const at = (id: RecordId, index: string) => ({ ...(file.records[id] as AnyRecord), index });
+    // order: s1 (a0), s3 (a1), s2 (b!!, malformed)
+    const records = { ...file.records, [s1]: at(s1, 'a0'), [s3]: at(s3, 'a1'), [s2]: at(s2, 'b!!') };
+    const store = new RecordStore({ ...file, records } as typeof file, { validate: false });
+    const commands = createRegistry<string, AnyCommand>('commands');
+    registerCoreCommands(commands);
+    const r = executeCommand(commands, { store }, 'screen.reorder', { id: s1, after: s3 });
+    expect(!r.ok && r.error.code).toBe('TX_INVALID');
+    expect(!r.ok && r.error.message.startsWith('screen.reorder: ')).toBe(true);
+    expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_SCHEMA_INVALID', path: `/records/${s2}/index` })]);
+  });
+
+  it('FR-DOC-010: a screen without an index sorts first, before every valid key', () => {
+    const b = documentBuilder({ seed: 44 });
+    const [bare, low, moved] = [b.screen(), b.screen(), b.screen()];
+    const file = b.build();
+    const { index: _dropped, ...unindexed } = file.records[bare] as AnyRecord & { index: string };
+    // `R000000001` is a valid key far below `a0`
+    const records = { ...file.records, [bare]: unindexed, [low]: { ...(file.records[low] as AnyRecord), index: 'R000000001' } };
+    const store = new RecordStore({ ...file, records } as typeof file, { validate: false });
+    const commands = createRegistry<string, AnyCommand>('commands');
+    registerCoreCommands(commands);
+    // moving `moved` first puts it before the index-less screen, whose missing key has nothing before it
+    const r = executeCommand(commands, { store }, 'screen.reorder', { id: moved });
+    expect(!r.ok && r.error.code).toBe('TX_INVALID');
+    expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_SCHEMA_INVALID', path: `/records/${bare}/index` })]);
+    // with a valid first screen instead, moving first succeeds
+    const valid = new RecordStore({ ...file, records: { ...records, [bare]: { ...unindexed, index: 'a5' } } } as typeof file, { validate: false });
+    expect(executeCommand(commands, { store: valid }, 'screen.reorder', { id: moved }).ok).toBe(true);
   });
 });

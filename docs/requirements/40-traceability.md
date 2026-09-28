@@ -237,7 +237,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-INT-009 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-010 | M | R5 | M24 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-011 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
-| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/bootstrap.test.ts` +5 |
+| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/bootstrap.test.ts` +6 |
 | FR-EXT-002 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-003 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-004 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
@@ -326,7 +326,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/parse-robust.test.ts` +2 |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +7 |
+| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +8 |
 | NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/rich-text.test.ts` |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |

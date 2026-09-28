@@ -1,6 +1,6 @@
 // Typed registries (03-core-engine §4, FR-EXT-001): built-ins and plugins contribute through the
 // same API; every extensible kind is looked up here, never switched on.
-import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
+import { compareKeys, type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
 import { type ReadSignal, type WritableSignal, writable } from './signals.js';
 
 /**
@@ -92,7 +92,8 @@ class MapRegistry<K extends string, V> implements Registry<K, V> {
   }
 
   list(): ReadonlyArray<readonly [K, V]> {
-    return [...this.#entries].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([key, { value }]) => [key, value] as const);
+    // code-unit order, never locale order
+    return [...this.#entries].sort(([a], [b]) => compareKeys(a, b)).map(([key, { value }]) => [key, value] as const);
   }
 
   #bump(): void {
