@@ -594,3 +594,7 @@ review r3 (cap reached): F1 the CI api job also ran TypeDoc on a fresh checkout:
 ## 2026-09-28 M3.6 (claude)
 docs-consistency both ways (M2 final F4): unknownCatalogueFields checks the element row against the fields every core kind has (intersection); missingCatalogueFields requires every required schema field (id/type excepted) in the record row, for element kinds in element row + kind row; both named cases also show the helper reporting a planted gap (element.transform, asset.hash, element(shape).defId)
 02 catalogue: the element row listed transform and text?, which connector lacks (the new intersection check reported element.transform and element.text on the old text); they move to each boxed kind's row, with a note in the element row
+
+## 2026-09-28 M3.7 (claude)
+check-ci-evidence (M2 final F5): reading a run no longer exits on a transport failure; the failure is one more reported problem next to the floor/record problems (a runs-file entry with `error` simulates it); transportHint (ci-runs) appends "HTTPS_PROXY is set, but Node fetch ignores it unless NODE_USE_ENV_PROXY=1" for REST reads behind a proxy (not for gh); the list path (--record) fails with the same hint
+"stale sha reported with a transport failure": red on the old code (the exit hid the floor error), green now; hint unit case

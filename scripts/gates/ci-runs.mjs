@@ -63,6 +63,16 @@ export function ghSource(spawn = spawnSync) {
   };
 }
 
+/**
+ * Hint appended to a transport failure: Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY=1,
+ * so a REST read behind a proxy fails although gh or curl work (M2 final F5). '' when not relevant.
+ */
+export function transportHint({ env = process.env, gh = hasGh() } = {}) {
+  const proxy = env.HTTPS_PROXY || env.https_proxy;
+  if (gh || !proxy || env.NODE_USE_ENV_PROXY === '1') return '';
+  return ' (HTTPS_PROXY is set, but Node fetch ignores it unless NODE_USE_ENV_PROXY=1)';
+}
+
 /** gh when installed, else REST with GITHUB_TOKEN from `env` when set. */
 export function runSource({ gh = hasGh(), env = process.env, fetch = globalThis.fetch, spawn = spawnSync } = {}) {
   return gh ? ghSource(spawn) : restSource({ fetch, token: env.GITHUB_TOKEN || undefined });

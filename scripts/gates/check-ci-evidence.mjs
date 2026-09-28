@@ -15,7 +15,7 @@
 //                     objects used instead of GitHub (tests)
 // GitHub is read through `gh` when installed, else the REST API (GITHUB_TOKEN sent when set; ci-runs.mjs).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { runSource } from './ci-runs.mjs';
+import { runSource, transportHint } from './ci-runs.mjs';
 import { git, repoPath } from './lib.mjs';
 import { BOOKKEEPING_PATHS } from './milestone-checks.mjs';
 
@@ -42,8 +42,16 @@ const fail = (msg) => {
 
 const fixture = opt('runs-file') ? JSON.parse(readFileSync(opt('runs-file'), 'utf8')) : null;
 const source = fixture ? null : runSource();
-const live = (call) => call().catch((e) => fail(e.message));
-const view = async (id) => (fixture ? (fixture.find((r) => r.databaseId === id) ?? fail(`run ${id} not in --runs-file`)) : live(() => source.view(id)));
+const live = (call) => call().catch((e) => fail(`${e.message}${transportHint()}`));
+// a fixture entry with `error` stands for a transport failure (tests)
+const fromFixture = (id) => {
+  const r = fixture.find((x) => x.databaseId === id);
+  if (!r) throw new Error(`run ${id} not in --runs-file`);
+  if (r.error) throw new Error(r.error);
+  return r;
+};
+// throws on a transport failure; the check reports it with every other problem (M2 final F5)
+const view = async (id) => (fixture ? fromFixture(id) : source.view(id));
 const list = async (sha) => fixture ?? live(() => source.list(sha));
 
 /** Problems with one run for `sha`, [] when it is the evidence we need. */
@@ -102,7 +110,13 @@ else if (git(['merge-base', '--is-ancestor', base, record.sha]).status !== 0)
 for (const workflow of Object.keys(REQUIRED)) {
   const id = record.runs?.[workflow];
   if (!id) errors.push(`no ${workflow} run recorded`);
-  else errors.push(...problems(await view(id), workflow, record.sha));
+  else {
+    try {
+      errors.push(...problems(await view(id), workflow, record.sha));
+    } catch (e) {
+      errors.push(`reading ${workflow} run ${id} failed: ${e?.message ?? e}${fixture ? '' : transportHint()}`);
+    }
+  }
 }
 if (errors.length) fail(errors.join('\n  '));
 console.log(`ci-evidence: ${String(record.sha).slice(0, 7)} green on ${OSES.join(', ')} (gates ${record.runs.gates}, ci ${record.runs.ci})`);

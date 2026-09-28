@@ -71,6 +71,23 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.match(noWindows.stderr, /ci: job verify \(windows-latest\) cancelled/);
   });
 
+  // M2 final F5: a transport failure no longer hides the stale-evidence floor error
+  it('stale sha reported with a transport failure', () => {
+    const [gates, ci] = green(sha.old);
+    const r = check(record(sha.old), [{ databaseId: gates.databaseId, error: 'fetch failed' }, ci]);
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /is not at or after M1\.21/);
+    assert.match(r.stderr, /reading gates run 1 failed: fetch failed/);
+  });
+
+  it('a transport failure names HTTPS_PROXY when Node fetch would ignore it', async () => {
+    const { transportHint } = await import('../../scripts/gates/ci-runs.mjs');
+    assert.match(transportHint({ env: { HTTPS_PROXY: 'http://proxy:3128' }, gh: false }), /HTTPS_PROXY is set, but Node fetch ignores it/);
+    assert.equal(transportHint({ env: { HTTPS_PROXY: 'http://proxy:3128' }, gh: true }), '', 'gh honours the proxy itself');
+    assert.equal(transportHint({ env: { HTTPS_PROXY: 'http://proxy:3128', NODE_USE_ENV_PROXY: '1' }, gh: false }), '');
+    assert.equal(transportHint({ env: {}, gh: false }), '');
+  });
+
   it('fails a commit before M1.21, even with green runs', () => {
     const r = check(record(sha.old), green(sha.old));
     assert.equal(r.status, 1, out(r));
