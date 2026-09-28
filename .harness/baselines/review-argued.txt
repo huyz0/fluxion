@@ -39,3 +39,5 @@ M3.3 F1: geometry's err is internal (not exported); the public Result/Ok/Err typ
 M3.7 F1: the hint is diagnostic text only; on Node 22.19/22.20 the transport error itself still prints, and gh (which honours proxies) is the documented path; no gate outcome depends on the wording.
 M3.7 F2: a 404/rate-limit message already names its HTTP status next to the hint, so the cause stays visible; the hint cannot turn a failure green.
 M3.9 F1: VirtualClock in-frame cancellation of a sibling frame matters only to frame-driven code (anim, M21); no M3 code schedules frames; the M21 plan's runtime rows own the fake's frame semantics.
+M3.10 F1: fixed in M3.11, the first caller of apply(): the transaction freezes its own copies deeply (see M3.11).
+M3.11 F3 (cost part): the per-transaction referential pass is O(N) without Zod; M3.23's undo/transact benches on 5 000 records run with validation on and gate NFR-PERF-006, so a too-slow pass fails there and is optimised then (M3 plan risk row).

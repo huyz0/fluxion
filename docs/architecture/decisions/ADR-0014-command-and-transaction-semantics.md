@@ -139,6 +139,12 @@ errors`), merging (`FR-EDT-006: WHEN 60 merged transactions share a key THE SYST
 history entry`), undo exactness (`NFR-REL-003: …`), forks and policy (`NFR-MNT-006: writes to a
 fork never reach the parent`, `…a read-only store rejects element.update…`).
 
+## Amendments
+
+- 2026-09-28 (M3.11, M3.2 review F1): a nested `transact` is a savepoint. If the inner `fn`
+  throws, the inner writes are dropped (earlier writes of the outer transaction are kept) before
+  the exception propagates, so an outer command that catches it commits nothing half-done.
+
 ## Pros and Cons of the Options
 
 ### Result-returning transactions, fixed-point hooks, strict adjacency, inverse-diff undo

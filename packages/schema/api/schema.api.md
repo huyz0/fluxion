@@ -754,6 +754,12 @@ export type UnknownRecord = Extensible<{
 export function validate(doc: unknown): Diagnostic[];
 
 // @public
+export function validateRecord(key: string, value: unknown): Diagnostic[];
+
+// @public
+export function validateReferences(records: ReadonlyMap<string, AnyRecord>): Diagnostic[];
+
+// @public
 export type VariableRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "variable";

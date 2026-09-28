@@ -122,6 +122,32 @@ export function validate(doc: unknown): Diagnostic[] {
 }
 
 /**
+ * The per-record part of {@link validate}: the record's schema (by type and kind), its id against
+ * the map key it is stored under, and rich-text warnings. A store validates only the records a
+ * transaction changed with it (ADR-0014).
+ *
+ * @param key - the id the record is stored under
+ * @param value - the record
+ * @public
+ */
+export function validateRecord(key: string, value: unknown): Diagnostic[] {
+  const out: Diagnostic[] = [];
+  checkRecord(key, value, out, new Map());
+  return out;
+}
+
+/**
+ * The cross-record part of {@link validate} (references, singleton, parent trees, connector ends,
+ * sibling indices, slugs) over records that already passed their schemas.
+ *
+ * @param records - schema-valid records keyed by id
+ * @public
+ */
+export function validateReferences(records: ReadonlyMap<string, AnyRecord>): Diagnostic[] {
+  return checkReferences(records as ReadonlyMap<string, Fields>);
+}
+
+/**
  * Whether a list of diagnostics has no errors (warnings and info allowed).
  *
  * @public

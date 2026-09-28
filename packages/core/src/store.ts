@@ -1,11 +1,24 @@
 // The record store (ADR-0002, 03-core-engine §1): a flat map of frozen records with one signal per
-// record, so a change notifies only that record's readers (NFR-MNT-006). Writes arrive through
-// `apply`, which transactions (M3.11) are the only callers of.
-import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
+// record, so a change notifies only that record's readers (NFR-MNT-006). `transact` is the only
+// write path (ADR-0014).
+import { type AnyRecord, type Diagnostic, type DocumentFile, err, ok, type RecordId, type Result } from '@fluxion/schema';
 import { batch, type ReadSignal, type WritableSignal, writable } from './signals.js';
+import {
+  checkDiff,
+  cloneJson,
+  type Diff,
+  deepFreeze,
+  netDiff,
+  referentialErrors,
+  type Tx,
+  type TxFailure,
+  type TxMeta,
+  type TxOptions,
+  WorkingCopy,
+} from './transaction.js';
 
 /**
- * Read access to a document's records.
+ * A document's records: read them, watch them, and change them through transactions.
  *
  * @public
  */
@@ -22,31 +35,42 @@ export interface Store {
   record$(id: RecordId): ReadSignal<AnyRecord | undefined>;
   /** The document file: the envelope it was created from, with the current records. */
   toDocument(): DocumentFile;
+  /**
+   * Run `fn` as one transaction (ADR-0014): its net diff is validated, then applied and announced
+   * once. On an invalid result nothing changes and the failure carries the diagnostics; a throw
+   * from `fn` rolls back and is rethrown. A call inside an open transaction joins it.
+   */
+  transact<R>(label: string, fn: (tx: Tx) => R, options?: TxOptions): Result<R, TxFailure>;
+  /** Call `listener` after every committed transaction with a non-empty diff; returns an unsubscribe. */
+  subscribe(listener: (diff: Diff, meta: TxMeta) => void): () => void;
 }
 
-/** A deep copy of a JSON value (records are JSON; pure packages have no structuredClone). */
-function cloneJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
+/**
+ * Options of {@link createStore}.
+ *
+ * @public
+ */
+export type StoreOptions = {
+  /** Validate every transaction (default true); only production builds may switch it off (ADR-0014). */
+  readonly validate?: boolean;
+};
 
-/** Freeze a JSON value and everything in it (records are immutable values, coding-typescript rule 14). */
-function deepFreeze<T>(value: T): T {
-  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
-    for (const child of Object.values(value)) deepFreeze(child);
-    Object.freeze(value);
-  }
-  return value;
-}
-
-/** The store implementation; `apply` is core-internal. */
+/** The store implementation; `apply` is core-internal (transactions and history call it). */
 export class RecordStore implements Store {
   readonly #records = new Map<RecordId, AnyRecord>();
   readonly #signals = new Map<RecordId, WritableSignal<AnyRecord | undefined>>();
+  readonly #listeners = new Set<(diff: Diff, meta: TxMeta) => void>();
   readonly #envelope: Omit<DocumentFile, 'records'>;
+  readonly #validate: boolean;
+  #open: WorkingCopy | undefined;
+  // referential errors the document already has (computed on first use), so they do not block
+  // unrelated transactions; replaced by the post-state's after each commit
+  #knownErrors: Map<string, Diagnostic> | undefined;
 
-  constructor(file: DocumentFile) {
+  constructor(file: DocumentFile, options: StoreOptions = {}) {
     const { records, ...envelope } = cloneJson(file);
     this.#envelope = envelope;
+    this.#validate = options.validate ?? true;
     // map keys are the record ids (validate() reports a key/id mismatch as FLX_ID_MISMATCH)
     for (const [id, record] of Object.entries<AnyRecord>(records)) this.#records.set(id as RecordId, deepFreeze(record));
   }
@@ -80,6 +104,51 @@ export class RecordStore implements Store {
     return { ...cloneJson(this.#envelope), records: cloneJson(Object.fromEntries(this.#records)) } as DocumentFile;
   }
 
+  transact<R>(label: string, fn: (tx: Tx) => R, options: TxOptions = {}): Result<R, TxFailure> {
+    // nested: join the open transaction; its commit is the authoritative result (ADR-0014). A throw
+    // from the inner fn undoes the inner writes only (a savepoint), then propagates.
+    if (this.#open) return ok(this.#open.savepoint(fn));
+    const tx = new WorkingCopy((id) => this.#records.get(id));
+    this.#open = tx;
+    let value: R;
+    try {
+      value = fn(tx);
+    } finally {
+      this.#open = undefined;
+    }
+    const diff = netDiff(tx.changes, (id) => this.#records.get(id));
+    if (diff.puts.size === 0 && diff.deletes.size === 0) return ok(value);
+    if (this.#validate) {
+      const problems = this.#check(diff);
+      if (problems.length) return err({ code: 'TX_INVALID', message: `${label}: ${problems.length} validation error(s)`, diagnostics: problems });
+    }
+    this.apply(
+      [...diff.puts.values()].map((p) => p.after),
+      [...diff.deletes.keys()],
+    );
+    const meta: TxMeta = { ...options, label, origin: options.origin ?? 'user' };
+    for (const listener of [...this.#listeners]) listener(diff, meta);
+    return ok(value);
+  }
+
+  subscribe(listener: (diff: Diff, meta: TxMeta) => void): () => void {
+    this.#listeners.add(listener);
+    return () => {
+      this.#listeners.delete(listener);
+    };
+  }
+
+  /** Validation problems of `diff`; on none, the post-state's referential errors become the known ones. */
+  #check(diff: Diff): readonly Diagnostic[] {
+    this.#knownErrors ??= referentialErrors(this.#records);
+    const post = new Map(this.#records);
+    for (const [id, { after }] of diff.puts) post.set(id, after);
+    for (const id of diff.deletes.keys()) post.delete(id);
+    const { problems, after } = checkDiff(diff, post, this.#knownErrors);
+    if (!problems.length) this.#knownErrors = after;
+    return problems;
+  }
+
   /** Replace or add `puts` and remove `deletes`, then notify each changed record's signal once. */
   apply(puts: readonly AnyRecord[], deletes: readonly RecordId[]): void {
     for (const record of puts) this.#records.set(record.id as RecordId, deepFreeze(record));
@@ -96,6 +165,6 @@ export class RecordStore implements Store {
  *
  * @public
  */
-export function createStore(file: DocumentFile): Store {
-  return new RecordStore(file);
+export function createStore(file: DocumentFile, options?: StoreOptions): Store {
+  return new RecordStore(file, options);
 }

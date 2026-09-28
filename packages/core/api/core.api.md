@@ -5,6 +5,7 @@
 ```ts
 
 import { AnyRecord } from '@fluxion/schema';
+import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
@@ -30,10 +31,16 @@ export type CoreError = {
 };
 
 // @public
-export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO";
+export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY";
 
 // @public
-export function createStore(file: DocumentFile): Store;
+export function createStore(file: DocumentFile, options?: StoreOptions): Store;
+
+// @public
+export type Diff = {
+    readonly puts: ReadonlyMap<RecordId, PutChange>;
+    readonly deletes: ReadonlyMap<RecordId, AnyRecord>;
+};
 
 // @public
 export function effect(fn: () => void): () => void;
@@ -65,6 +72,12 @@ export interface Logger {
 // @public
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
+// @public
+export type PutChange = {
+    readonly before?: AnyRecord;
+    readonly after: AnyRecord;
+};
+
 export { Random }
 
 // @public
@@ -77,8 +90,15 @@ export interface Store {
     ids(): RecordId[];
     record$(id: RecordId): ReadSignal<AnyRecord | undefined>;
     readonly size: number;
+    subscribe(listener: (diff: Diff, meta: TxMeta) => void): () => void;
     toDocument(): DocumentFile;
+    transact<R>(label: string, fn: (tx: Tx) => R, options?: TxOptions): Result<R, TxFailure>;
 }
+
+// @public
+export type StoreOptions = {
+    readonly validate?: boolean;
+};
 
 // @public
 export interface TextMeasurer {
@@ -93,6 +113,36 @@ type TextMetrics_2 = {
     readonly descent: number;
 };
 export { TextMetrics_2 as TextMetrics }
+
+// @public
+export interface Tx {
+    delete(id: RecordId): void;
+    get(id: RecordId): AnyRecord | undefined;
+    patch(id: RecordId, fields: Readonly<Record<string, unknown>>): void;
+    put(record: AnyRecord): void;
+}
+
+// @public
+export type TxFailure = CoreError & {
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
+export type TxMeta = TxOptions & {
+    readonly label: string;
+    readonly origin: TxOrigin;
+};
+
+// @public
+export type TxOptions = {
+    readonly origin?: TxOrigin;
+    readonly mergeKey?: string;
+    readonly metaBefore?: unknown;
+    readonly metaAfter?: unknown;
+};
+
+// @public
+export type TxOrigin = "user" | "undo" | "redo" | "remote" | "system";
 
 // @public
 export const VERSION: string;

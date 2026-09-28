@@ -66,7 +66,7 @@ export {
   type Transform,
   transformRotation,
 } from './style.js';
-export { isValid, validate } from './validate.js';
+export { isValid, validate, validateRecord, validateReferences } from './validate.js';
 
 /**
  * Version of this package.

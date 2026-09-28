@@ -12,7 +12,7 @@ import structure from './__fixtures__/invalid/structure.flux.json' with { type: 
 import versionExpected from './__fixtures__/invalid/version.expected.json' with { type: 'json' };
 import version from './__fixtures__/invalid/version.flux.json' with { type: 'json' };
 import { DIAGNOSTIC_CODES, jsonPointer } from './diagnostics.js';
-import { isValid, validate } from './validate.js';
+import { isValid, validate, validateRecord, validateReferences } from './validate.js';
 
 const summary = (doc: unknown) => validate(doc).map(({ code, severity, path }) => ({ code, severity, path }));
 
@@ -107,5 +107,26 @@ describe('validate', () => {
   it('escapes JSON pointers and documents every code', () => {
     expect(jsonPointer(['records', 'a/b', 'c~d', 0])).toBe('/records/a~1b/c~0d/0');
     expect(Object.keys(DIAGNOSTIC_CODES).every((c) => c.startsWith('FLX_'))).toBe(true);
+  });
+});
+
+// the two halves of validate() a store runs per transaction (ADR-0014, M3.11)
+describe('validateRecord and validateReferences', () => {
+  it('FR-DOC-004: validateRecord reports one record structurally, under its key', () => {
+    expect(validateRecord('a', minimal.records.a)).toEqual([]);
+    const { transform: _t, ...noTransform } = minimal.records.a;
+    const missing = validateRecord('a', noTransform);
+    expect(missing.map((d) => d.code)).toContain('FLX_SCHEMA_INVALID');
+    expect(missing.every((d) => d.path.startsWith('/records/a'))).toBe(true);
+    expect(validateRecord('x', minimal.records.a).map((d) => d.code)).toContain('FLX_ID_MISMATCH');
+  });
+
+  it('FR-DOC-004: validateReferences equals the referential part of validate', () => {
+    const records = new Map(Object.entries(minimal.records)) as unknown as Parameters<typeof validateReferences>[0];
+    expect(validateReferences(records)).toEqual([]);
+    const { s1: _s, ...noScreen } = minimal.records;
+    const without = new Map(Object.entries(noScreen)) as unknown as Parameters<typeof validateReferences>[0];
+    expect(validateReferences(without)).toEqual(validate({ schemaVersion: '1.0', records: noScreen }));
+    expect(validateReferences(without).map((d) => d.code)).toContain('FLX_REF_MISSING');
   });
 });
