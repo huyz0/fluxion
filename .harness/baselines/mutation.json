@@ -1,0 +1,9 @@
+{
+  "$comment": "Mutation-score floors per package (percent, tzap: ADR-0146). They only move up: check-drift refuses a lowered or removed floor without Threshold-change (testing.md rule 17). Raise a floor to the measured score of a whole-package `pnpm mutate --package <dir>` run.",
+  "packages": {
+    "packages/core": {
+      "score": 83.7,
+      "measured": "2026-09-28 M4.3 (untriaged; M4.8 triages to MUTATION_CORE_TARGET)"
+    }
+  }
+}

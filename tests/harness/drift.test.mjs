@@ -90,6 +90,40 @@ describe('check-drift (NFR-DX-004)', () => {
     });
   }
 
+  // testing.md rule 17, ADR-0146: per-package mutation floors only move up
+  const FLOORS = '.harness/baselines/mutation.json';
+  const floors = (packages) => `${JSON.stringify({ packages }, null, 2)}\n`;
+  function commitFloors(packages) {
+    sb.write(FLOORS, floors(packages));
+    sb.git('add', FLOORS);
+    sb.git('commit', '-q', '-m', 'floors fixture', '--no-verify');
+  }
+
+  it('a lowered mutation floor fails', () => {
+    commitFloors({ 'packages/core': { score: 91 } });
+    sb.write(FLOORS, floors({ 'packages/core': { score: 84 } }));
+    sb.git('add', FLOORS);
+    const r = check();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /mutation floor of packages\/core 91 → 84/);
+    // and a removed floor fails too
+    sb.write(FLOORS, floors({}));
+    sb.git('add', FLOORS);
+    assert.match(check().stderr, /mutation floor of packages\/core removed/);
+    // with a justified trailer the lowering passes, like any threshold
+    sb.write(FLOORS, floors({ 'packages/core': { score: 84 } }));
+    sb.git('add', FLOORS);
+    assert.equal(check('M4.8: chore(gates): floor\n\nThreshold-change: flaky mutant (ADR-0042)\n').status, 0);
+  });
+
+  it('passes when a mutation floor is raised or a package floor is added', () => {
+    commitFloors({ 'packages/core': { score: 84 } });
+    sb.write(FLOORS, floors({ 'packages/core': { score: 92 }, 'packages/schema': { score: 70 } }));
+    sb.git('add', FLOORS);
+    const r = check();
+    assert.equal(r.status, 0, out(r));
+  });
+
   it('passes when the licence policy is narrowed (NFR-LIC-002)', () => {
     stageEdit("'ISC', '0BSD', ", "'ISC', ");
     assert.equal(check().status, 0);

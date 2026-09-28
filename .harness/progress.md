@@ -702,3 +702,9 @@ m4-complete.mjs (red) from the plan's legs + the seven M3 final hand-offs (F1-F6
 
 ## 2026-09-28 M4.2 (claude)
 ADR-0015 static render path: react-dom/server renderToStaticMarkup of <ScreenView mode="export">; content CSS a string module in @layer fx.content inlined by ssr.ts (no CSS Modules loader; ADR-0010 amended: layer name + string module); Node TextMeasurer fixed metrics (R0 views do not measure); resolveStyle in theme wrapped in core computed by render (core may not import theme); shape view looks defId up in shapeDefs (fixtures use basic:rect); mode read only in mode-policy.ts
+
+## 2026-09-28 M4.3 (claude)
+ADR-0146: tzap (@huyz0/tzap 0.1.1, Apache-2.0, catalog pin, root devDep, knip-ignored like other path-invoked tools) replaces StrykerJS; ADR-0008 amended; tech-stack/testing/ci-cd/01/M20/NFR-MNT-005 wording/AGENTS.md/tdd skill updated
+scripts/harness/mutate.mjs (`pnpm mutate [--package <dir>] [--from <ref>] [--out-dir] [--check]`): tzap discovery sees one root Vitest package (test.projects), so the script narrows the model's sources to the chosen packages and pins model.root to the repo (a model's root is relative to its file); per-package score from the report; --check against .harness/baselines/mutation.json floors (whole-package runs only)
+core measured 83.7 % (1 174 valid, 182 survived, 9 uncovered, 75 s) → floor 83.7; nightly mutation job runs `pnpm mutate --check` and uploads the report; check-drift also refuses a lowered/removed floor (harness cases "a lowered mutation floor fails", raise/add passes)
+review F1/F2: `--to=-Local-` (tzap parses `-Local-` as a flag otherwise) and a stale tzap.json is deleted before the run; any tzap exit other than 0/1 (or a signal) is a failure; tests/harness/mutate.test.mjs: a diff-scoped run writes a fresh report, a failing run exits non-zero and leaves no stale report

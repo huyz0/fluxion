@@ -2,7 +2,8 @@
 // Non-negotiable 2: thresholds only move in the strengthening direction.
 //   check-drift.mjs --msg <commit-msg-file>   commit-msg hook: staged thresholds vs HEAD
 //   check-drift.mjs --commit <sha>            CI: <sha> vs its first parent, using its message
-// Weakening (a value moving in its `weakens` direction, a removed key, or a changed `weakens`)
+// Weakening (a value moving in its `weakens` direction, a removed key, a changed `weakens`, or a
+// lowered or removed mutation floor in .harness/baselines/mutation.json)
 // requires a `Threshold-change: <reason>` trailer that cites an ADR (ADR-NNNN).
 import { readFileSync } from 'node:fs';
 import { git } from './lib.mjs';
@@ -31,40 +32,61 @@ function licenceWeakening(o, n) {
   for (const key of ['denyPrefixes', 'denyPackages']) out.push(...gained(n[key], o[key]).map((x) => `LICENSES.${key} lost ${x}`));
   return out;
 }
-const show = (rev) => {
-  const r = git(['show', `${rev}:${FILE}`]);
+// per-package mutation floors only move up too (testing.md rule 17, ADR-0146)
+const FLOORS = '.harness/baselines/mutation.json';
+const show = (rev, file = FILE) => {
+  const r = git(['show', `${rev}:${file}`]);
   return r.status === 0 ? r.stdout : null;
 };
 
-let before;
-let after;
 let msg;
 const sha = opt('commit');
-if (sha) {
-  before = show(`${sha}^`);
-  after = show(sha);
-  msg = git(['log', '-1', '--format=%B', sha]).stdout;
-} else {
-  before = show('HEAD');
-  after = show(''); // index (":<path>" form)
-  msg = opt('msg') ? readFileSync(opt('msg'), 'utf8').replace(/^#.*$/gm, '') : '';
-}
-if (before === null || before === after) process.exit(0);
+// the file before and after the change under check (after: the index, ":<path>" form)
+const versions = (file) => (sha ? [show(`${sha}^`, file), show(sha, file)] : [show('HEAD', file), show('', file)]);
+if (sha) msg = git(['log', '-1', '--format=%B', sha]).stdout;
+else msg = opt('msg') ? readFileSync(opt('msg'), 'utf8').replace(/^#.*$/gm, '') : '';
 
-// a deleted file removes every threshold (F2); a non-numeric value disables its gate (F1)
-const [oldMod, curMod] = [await load(before), after === null ? {} : await load(after)];
-const [old, cur] = [oldMod.THRESHOLDS ?? {}, curMod.THRESHOLDS ?? {}];
-const weakened = licenceWeakening(oldMod.LICENSES, curMod.LICENSES);
-for (const [key, o] of Object.entries(old)) {
-  const n = cur[key];
-  if (!n) {
-    weakened.push(`${key} removed`);
-    continue;
-  }
-  if (typeof n.value !== 'number' || !Number.isFinite(n.value)) weakened.push(`${key} value is not a finite number (${String(n.value)})`);
-  else if (n.weakens !== o.weakens) weakened.push(`${key} weakens-direction changed ${o.weakens} → ${n.weakens}`);
-  else if (o.weakens === 'up' ? n.value > o.value : n.value < o.value) weakened.push(`${key} ${o.value} → ${n.value} (weakens ${o.weakens})`);
+/** Weakenings of thresholds.mjs: a deleted file removes every threshold (F2); a non-numeric value disables its gate (F1). */
+async function thresholdWeakening() {
+  const [before, after] = versions(FILE);
+  if (before === null || before === after) return [];
+  const [oldMod, curMod] = [await load(before), after === null ? {} : await load(after)];
+  const [old, cur] = [oldMod.THRESHOLDS ?? {}, curMod.THRESHOLDS ?? {}];
+  const keys = Object.entries(old).map(([key, o]) => keyWeakening(key, o, cur[key]));
+  return [...licenceWeakening(oldMod.LICENSES, curMod.LICENSES), ...keys.filter((w) => w !== null)];
 }
+
+/** How threshold `key` weakened from `o` to `n`, or null. */
+function keyWeakening(key, o, n) {
+  if (!n) return `${key} removed`;
+  if (typeof n.value !== 'number' || !Number.isFinite(n.value)) return `${key} value is not a finite number (${String(n.value)})`;
+  if (n.weakens !== o.weakens) return `${key} weakens-direction changed ${o.weakens} → ${n.weakens}`;
+  return (o.weakens === 'up' ? n.value > o.value : n.value < o.value) ? `${key} ${o.value} → ${n.value} (weakens ${o.weakens})` : null;
+}
+
+/** Weakenings of the mutation floors: a lowered, removed or non-numeric package floor. */
+function floorWeakening() {
+  const [before, after] = versions(FLOORS);
+  if (before === null || before === after) return [];
+  const parse = (text) => {
+    try {
+      return JSON.parse(text ?? '{}').packages ?? {};
+    } catch {
+      return {};
+    }
+  };
+  const [old, cur] = [parse(before), parse(after)];
+  const weakened = [];
+  for (const [pkg, o] of Object.entries(old)) {
+    const n = cur[pkg]?.score;
+    if (n === undefined) weakened.push(`mutation floor of ${pkg} removed`);
+    else if (typeof n !== 'number' || !Number.isFinite(n)) weakened.push(`mutation floor of ${pkg} is not a finite number (${String(n)})`);
+    else if (n < o.score) weakened.push(`mutation floor of ${pkg} ${o.score} → ${n}`);
+  }
+  return weakened;
+}
+
+const weakened = [...(await thresholdWeakening()), ...floorWeakening()];
 if (weakened.length === 0) process.exit(0);
 
 // the cited ADR must exist in the tree being committed (F3)

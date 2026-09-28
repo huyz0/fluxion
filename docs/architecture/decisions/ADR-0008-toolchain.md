@@ -75,3 +75,9 @@ Extractor, size-limit, knip and license gates are required checks.
 
 Research: `docs/research/05-engineering-stack-and-tooling.md` §0–§4, §8. Standards:
 `../../standards/tech-stack.md`, `../../standards/ci-cd.md`, `../../standards/testing.md`.
+
+## Amendments
+
+- 2026-09-28 (ADR-0146, M4.3): mutation testing uses **tzap** (`@huyz0/tzap`), not StrykerJS,
+  from M4 on: `pnpm mutate`, a nightly job and per-package floors. Stryker no longer needs the
+  TS 6 pin.

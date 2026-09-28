@@ -89,7 +89,7 @@ failure); default 200 runs in pre-commit, 10 000 nightly.
 
 ## 6. Floors
 
-| Scope | Lines | Branches | Mutation (nightly) |
+| Scope | Lines | Branches | Mutation (nightly, tzap: ADR-0146) |
 |---|---|---|---|
 | schema, geometry, core, layout, routing, anim | ≥ 90 % | ≥ 85 % | ≥ 70 % (core, schema, layout, routing) |
 | format, dsl, theme | ≥ 90 % | ≥ 85 % | — |
@@ -99,7 +99,7 @@ failure); default 200 runs in pre-commit, 10 000 nightly.
 | # | Rule | Enforced by |
 |---|---|---|
 | 17 | Floors live in `scripts/gates/thresholds.mjs` and `.harness/baselines/mutation.json` and only move up. | `check-drift.mjs` |
-| 18 | Coverage is a floor, not a goal: a test that executes code without asserting on its result is a defect. Surviving mutants in touched files are reviewed. | Stryker nightly, reviewer |
+| 18 | Coverage is a floor, not a goal: a test that executes code without asserting on its result is a defect. Surviving mutants in touched files are reviewed. | nightly `pnpm mutate --check`, reviewer (`pnpm mutate --package <dir> --from <base>`) |
 
 ## 7. E2E conventions
 

@@ -48,5 +48,5 @@ without reading the diff.
 
 - Every acceptance criterion observed passing (paste the test output lines).
 - Package suite + `node scripts/gates/precommit.mjs --staged` green.
-- Optional for pure packages: scoped mutation run (`pnpm mutate --package <name>` from M1)
-  — a surviving mutant means a line executed but unconstrained.
+- Optional for pure packages: scoped mutation run (`pnpm mutate --package packages/<name> --from HEAD`,
+  tzap) — a surviving mutant means a line executed but unconstrained.

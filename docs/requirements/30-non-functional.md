@@ -93,7 +93,7 @@ via 4× CPU throttling.
 | NFR-MNT-002 | M | R0 | TypeScript strict (incl. `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`); no `any` except in allowlisted adapters. | tsc + lint gate. |
 | NFR-MNT-003 | M | R0 | Size limits: file ≤ 400 lines (soft 300), function ≤ 60 lines, cyclomatic complexity ≤ 12. | Lint + check-size gate. |
 | NFR-MNT-004 | M | R0 | Test coverage floors: core/schema/layout/routing/anim ≥ 90 % lines & ≥ 85 % branches; render/player ≥ 80 %; editor ≥ 70 % + E2E flows. | Coverage gate; floors only rise. |
-| NFR-MNT-005 | S | R3 | Mutation score floors (Stryker) for core, schema, layout, routing ≥ 70 %. | Nightly mutation job. |
+| NFR-MNT-005 | S | R3 | Mutation score floors (tzap; ADR-0146) for core, schema, layout, routing ≥ 70 %. | Nightly mutation job. |
 | NFR-MNT-006 | M | R0 | CRDT-ready model (see FR-DOC-010): operations expressible as record-level puts/deletes. | Architecture test: every command emits record diffs only. |
 | NFR-MNT-007 | M | R0 | Public APIs documented (TSDoc) with API reports; breaking changes require changeset `major` + ADR. | API Extractor gate. |
 | NFR-MNT-008 | M | R0 | Every requirement traceable to tests (ID in test title) and milestone tasks. | `check-trace` gate. |

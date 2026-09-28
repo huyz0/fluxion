@@ -79,7 +79,7 @@ reusable call from `ci.yml`.
 ```yaml
 on: { schedule: [{ cron: '17 2 * * *' }], workflow_dispatch: {} }
 jobs:
-  mutation:     # Stryker incremental on pure packages; floor in .harness/baselines/mutation.json
+  mutation:     # pnpm mutate --check (tzap, ADR-0146) on pure packages; floors in .harness/baselines/mutation.json
   properties:   # FC_NUM_RUNS=10000 pnpm test:props
   perf:         # pnpm bench; compare to baseline ±15 % (NFR-PERF-005); upload trend
   eval-live:    # pnpm eval --live (needs AI key secret; environment: nightly)

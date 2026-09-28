@@ -347,7 +347,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-MNT-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/biome.test.mjs` +2 |
 | NFR-MNT-003 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/biome.test.mjs`, `tests/harness/size.test.mjs` |
 | NFR-MNT-004 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `apps/docs/src/index.test.ts` +20 |
-| NFR-MNT-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-MNT-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | `tests/harness/mutate.test.mjs` |
 | NFR-MNT-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/fork.test.ts` +4 |
 | NFR-MNT-007 | M | R0 | M1, M33 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/result-convention.test.ts` +2 |
 | NFR-MNT-008 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/test-titles.test.mjs`, `tests/harness/trace.test.mjs` |

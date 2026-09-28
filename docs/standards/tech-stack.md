@@ -17,7 +17,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | Runtime (dev, CLI, MCP) | Node.js LTS | ≥ 22.19 (24.x preferred) | `engines.node` / `.node-version`; tsdown needs ≥ 22.18, size-limit ≥ 22.19; npm OIDC publishing needs ≥ 22.14 |
 | Package manager | pnpm workspaces + **catalogs** | 11.x, pinned via `packageManager` | strict `node_modules`, one version per dep, release-age gating on by default. pnpm 12 (Rust rewrite, same lockfile) is evaluated later |
 | Task runner | Turborepo + remote cache | 2.11.x | tiny config, `--affected`, agents rarely misconfigure it |
-| Language | TypeScript, strict, ESM only | TS 7.0.x as `typescript` (`tsc -b`) for typecheck; TS 6.0.x only from the `typescript6` catalog, the single TS 6 pin (one YAML-anchored string in pnpm-workspace.yaml) | TS 7 is ~10x faster; TypeDoc and dependency-cruiser (later Stryker) need the TS 6 compiler API until TS 7.1; API Extractor bundles its own compiler and reads the emitted `.d.ts` (ADR-0011) |
+| Language | TypeScript, strict, ESM only | TS 7.0.x as `typescript` (`tsc -b`) for typecheck; TS 6.0.x only from the `typescript6` catalog, the single TS 6 pin (one YAML-anchored string in pnpm-workspace.yaml) | TS 7 is ~10x faster; TypeDoc and dependency-cruiser need the TS 6 compiler API until TS 7.1; API Extractor bundles its own compiler and reads the emitted `.d.ts` (ADR-0011) |
 | App build | Vite (Rolldown) + `@vitejs/plugin-react` (Oxc, React Compiler) | 8.1.x / 6.1.x | one fast bundler, no Babel anywhere |
 | Library build | tsdown | 0.2x (pre-1.0) | Rolldown + fast `.d.ts` via `isolatedDeclarations` |
 | Player single file | Vite library mode + `vite-plugin-singlefile` | latest Vite 8-aware | self-contained `.flux.html` |
@@ -28,7 +28,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | Property tests | fast-check (+ `@fast-check/vitest`) | latest | geometry, undo, serialisation invariants |
 | E2E / visual / a11y | Playwright (pinned Docker image for pixels) + `@axe-core/playwright` | 1.62.x | isolated retries, traces |
 | UI catalog | Storybook + a11y addon; story tests via portable stories (addon-vitest once it supports Vitest 5, ADR-0139) | 10.6.x | every story is also a browser test |
-| Mutation | StrykerJS + vitest-runner (nightly) | latest | test-quality signal on pure packages |
+| Mutation | tzap (`@huyz0/tzap`; ADR-0146) | 0.1.x | test-quality signal on pure packages: `pnpm mutate`, diff-scoped runs, nightly floors |
 | Hooks / commits | Tracked `.githooks/` → Node gate scripts (`precommit.mjs`, `check-commit-msg.mjs`); subject `<TaskID>: <type>(<scope>): …` | — | Zero extra deps, identical on Windows/macOS/Linux, single gate definition shared with CI (lefthook/commitlint evaluated, not needed) |
 | Release | Changesets + npm trusted publishing (OIDC, provenance) | latest | no long-lived npm tokens |
 | Docs | Astro Starlight + TypeDoc + API Extractor + `starlight-llms-txt` | Starlight 0.42.x | docs as code, API diffs, LLM-ready |

@@ -115,7 +115,7 @@ Details, versions and rationale: `docs/standards/tech-stack.md`. Summary:
 | Text measurement | Port interface; browser: canvas `measureText` + DOM verify; Node: fontkit-based measurer |
 | File container | fflate (zip/deflate), SubtleCrypto SHA-256, `DecompressionStream` bootstrap in HTML |
 | DSL parsing | `yaml` (source ranges) + small hand-written edge-shorthand parser |
-| Testing | Vitest (unit, browser mode), fast-check, Playwright (E2E, visual, a11y via axe), Storybook (editor UI), Stryker (nightly) |
+| Testing | Vitest (unit, browser mode), fast-check, Playwright (E2E, visual, a11y via axe), Storybook (editor UI), tzap mutation testing (ADR-0146) |
 | Docs | Astro Starlight, TypeDoc, API Extractor, MADR ADRs, llms.txt |
 | CI/CD | GitHub Actions, Changesets, Renovate, CodeQL, OSV-Scanner, Cloudflare preview deploys |
 | i18n | Lingui (ICU) |

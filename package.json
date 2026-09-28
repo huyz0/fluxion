@@ -24,13 +24,15 @@
     "format": "biome check --write .",
     "verify": "node scripts/gates/precommit.mjs --all",
     "verify:fast": "node scripts/gates/precommit.mjs --quick",
-    "release": "turbo run build --filter=./packages/* --filter=./packs/* && changeset publish"
+    "release": "turbo run build --filter=./packages/* --filter=./packs/* && changeset publish",
+    "mutate": "node scripts/harness/mutate.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
     "@axe-core/playwright": "catalog:",
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
+    "@huyz0/tzap": "catalog:",
     "@microsoft/api-extractor": "catalog:",
     "@playwright/test": "catalog:",
     "@size-limit/preset-small-lib": "catalog:",
