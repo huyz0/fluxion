@@ -1,47 +1,45 @@
-/**
- * A stable geometry error code (add, never rename).
- *
- * @public
- */
-export type GeometryErrorCode = 'MATRIX_SINGULAR' | 'PATH_MISSING_MOVE' | 'PATH_MULTIPLE_SUBPATHS' | 'PATH_COMMAND_AFTER_CLOSE' | 'PATH_INVALID_POINT';
+// Expected failures are values, not exceptions (coding-typescript rules 10-12). Same shape and
+// signatures as @fluxion/schema's Result, so a geometry Result<T> is a schema Result<T, GeometryError>
+// (ADR-0144); geometry may not import schema (both are L0), so the shape is repeated here.
+import type { GeometryError } from './errors.js';
 
 /**
- * An expected failure reported by a geometry function.
+ * A successful {@link Result}.
  *
  * @public
  */
-export type GeometryError = {
-  /** Stable machine-readable error code. */
-  readonly code: GeometryErrorCode;
-  /** Developer-facing description of the failure. */
-  readonly message: string;
+export type Ok<T> = {
+  /** Always `true`. */
+  readonly ok: true;
+  /** The result value. */
+  readonly value: T;
 };
 
 /**
- * Outcome of an operation that can fail for expected reasons: either a value or a {@link GeometryError}.
+ * A failed {@link Result}.
  *
  * @public
  */
-export type Result<T> =
-  | {
-      /** Discriminant: the operation succeeded. */
-      readonly ok: true;
-      /** The produced value. */
-      readonly value: T;
-    }
-  | {
-      /** Discriminant: the operation failed. */
-      readonly ok: false;
-      /** Why it failed. */
-      readonly error: GeometryError;
-    };
+export type Err<E> = {
+  /** Always `false`. */
+  readonly ok: false;
+  /** What went wrong. */
+  readonly error: E;
+};
 
-/** Wraps a value in a successful {@link Result}. */
-export function ok<T>(value: T): Result<T> {
+/**
+ * Success with a value or failure with an error; geometry functions fail with a {@link GeometryError}.
+ *
+ * @public
+ */
+export type Result<T, E = GeometryError> = Ok<T> | Err<E>;
+
+/** Wraps a success value. */
+export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
 
-/** Builds a failed {@link Result} with the given code and message. */
-export function err<T>(code: GeometryErrorCode, message: string): Result<T> {
-  return { ok: false, error: { code, message } };
+/** Wraps a failure. */
+export function err<E>(error: E): Err<E> {
+  return { ok: false, error };
 }

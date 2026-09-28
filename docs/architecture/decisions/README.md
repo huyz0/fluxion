@@ -34,6 +34,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0141](ADR-0141-spatial-index-rbush-flatbush.md) | Spatial index: `rbush` and `flatbush` behind one `SpatialIndex` interface | accepted | 2026-09-27 |
 | [0142](ADR-0142-parsing-never-fills-defaults.md) | Parsing a document never fills in defaults; readers apply documented defaults | accepted | 2026-09-27 |
 | [0143](ADR-0143-ci-cold-setup-authority.md) | Inside CI the cold-setup job is the cold-setup authority; locally the recorded budget is | accepted | 2026-09-28 |
+| [0144](ADR-0144-one-result-convention.md) | One Result shape across pure packages; each package owns its error-code union | accepted | 2026-09-28 |
 
 ## ADR required when
 

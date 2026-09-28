@@ -80,13 +80,15 @@ export type Align = (typeof Align)[keyof typeof Align];
 ## 4. Errors
 
 10. **Expected failures are values, not exceptions.** Functions that can fail for normal reasons
-    (invalid input, missing record, unsupported feature) return `Result<T, FluxError>`. →
-    review + `check-api` (exported signatures)
+    (invalid input, missing record, unsupported feature) return `Result<T, E>` — one shape
+    everywhere (`Ok`/`Err`, `ok(value)`, `err(error)`), with the package's error type as `E`
+    (`FluxError` in schema, `GeometryError` in geometry; ADR-0144). → review + `check-api`
+    (exported signatures) + `result-convention.test.ts`
 11. **Never throw across a package boundary for an expected failure.** `throw` is reserved for
     programmer errors (broken invariants) and is caught at the app edge. → review
-12. **`FluxError` has a stable `code`** (`"FORMAT_ZIP_CORRUPT"`, `"SCHEMA_INVALID"`), a
-    developer message, optional `path` and `cause`. Codes are part of the public API and listed
-    in `schema/src/errors.ts`. → `check-api`
+12. **Errors have a stable `code`** (`"FORMAT_ZIP_CORRUPT"`, `"SCHEMA_INVALID"`), a
+    developer message, optional `path` and `cause`. Codes are part of the public API and each
+    package lists its own in `src/errors.ts` (schema: `FluxErrorCode`; ADR-0144). → `check-api`
 
 ```ts
 // ✅

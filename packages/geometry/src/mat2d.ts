@@ -83,7 +83,7 @@ export function invert(m: Mat2d): Result<Mat2d> {
   // relative to the matrix scale: |det| is quadratic in the entries (M2.15 review F3)
   const scale = Math.max(1, Math.abs(m[0]), Math.abs(m[1]), Math.abs(m[2]), Math.abs(m[3]));
   if (!Number.isFinite(det) || Math.abs(det) < SINGULAR_EPS * scale * scale) {
-    return err('MATRIX_SINGULAR', `Matrix is not invertible (determinant ${det}).`);
+    return err({ code: 'MATRIX_SINGULAR', message: `Matrix is not invertible (determinant ${det}).` });
   }
   const [a, b, c, d, e, f] = m;
   return ok([d / det, -b / det, -c / det, a / det, (c * f - d * e) / det, (b * e - a * f) / det]);

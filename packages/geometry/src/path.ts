@@ -115,11 +115,11 @@ function segmentFor(cmd: PathCommand, from: Vec2, start: Vec2): CubicSegment | n
 
 function validate(cmds: readonly PathCommand[]): Result<Vec2> {
   const first = cmds[0];
-  if (first === undefined || first.kind !== 'M') return err('PATH_MISSING_MOVE', 'A path must start with an M command.');
+  if (first === undefined || first.kind !== 'M') return err({ code: 'PATH_MISSING_MOVE', message: 'A path must start with an M command.' });
   for (const [i, cmd] of cmds.entries()) {
-    if (i > 0 && cmd.kind === 'M') return err('PATH_MULTIPLE_SUBPATHS', `Command ${i} starts a second subpath; only one is supported.`);
-    if (cmds[i - 1]?.kind === 'Z') return err('PATH_COMMAND_AFTER_CLOSE', `Command ${i} follows Z; nothing may follow a close.`);
-    if (!commandPoints(cmd).every(isFinitePoint)) return err('PATH_INVALID_POINT', `Command ${i} has a non-finite coordinate.`);
+    if (i > 0 && cmd.kind === 'M') return err({ code: 'PATH_MULTIPLE_SUBPATHS', message: `Command ${i} starts a second subpath; only one is supported.` });
+    if (cmds[i - 1]?.kind === 'Z') return err({ code: 'PATH_COMMAND_AFTER_CLOSE', message: `Command ${i} follows Z; nothing may follow a close.` });
+    if (!commandPoints(cmd).every(isFinitePoint)) return err({ code: 'PATH_INVALID_POINT', message: `Command ${i} has a non-finite coordinate.` });
   }
   return ok(first.to);
 }

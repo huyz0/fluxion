@@ -108,6 +108,12 @@ export type ElementTransform = {
 export function equalsApprox(a: Vec2, b: Vec2, eps?: number): boolean;
 
 // @public
+export type Err<E> = {
+    readonly ok: false;
+    readonly error: E;
+};
+
+// @public
 export type FillRule = "nonzero" | "evenodd";
 
 // @public
@@ -171,6 +177,12 @@ export function nearestPoint(path: Path, p: Vec2): NearestPoint | null;
 export function normalize(v: Vec2): Vec2;
 
 // @public
+export type Ok<T> = {
+    readonly ok: true;
+    readonly value: T;
+};
+
+// @public
 export type Path = {
     readonly segments: readonly CubicSegment[];
     readonly closed: boolean;
@@ -222,13 +234,7 @@ export function pointAt(seg: CubicSegment, t: number): Vec2;
 export function pointInPath(path: Path, p: Vec2, rule?: FillRule): boolean;
 
 // @public
-export type Result<T> = {
-    readonly ok: true;
-    readonly value: T;
-} | {
-    readonly ok: false;
-    readonly error: GeometryError;
-};
+export type Result<T, E = GeometryError> = Ok<T> | Err<E>;
 
 // @public
 export function rotate(v: Vec2, radians: number): Vec2;

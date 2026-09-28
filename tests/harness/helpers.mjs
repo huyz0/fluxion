@@ -1,7 +1,7 @@
 // Test helpers for the harness gates. Each gate derives REPO_ROOT from its own location, so we
 // copy the harness into a temp directory and run the copy against a deliberately broken tree.
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,9 +31,27 @@ const DEFAULT_PATHS = ['scripts', '.agents', '.claude/skills', 'AGENTS.md', 'CLA
 export function linkInstalls(sb) {
   symlinkSync(join(REPO, 'node_modules'), sb.path('node_modules'), 'junction');
   const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
+  const dirOf = new Map(workspaces.map((w) => [w.name, w.dir]));
   for (const { dir } of workspaces) {
-    if (existsSync(join(REPO, dir, 'node_modules')) && existsSync(sb.path(dir)))
-      symlinkSync(join(REPO, dir, 'node_modules'), sb.path(`${dir}/node_modules`), 'junction');
+    if (existsSync(join(REPO, dir, 'node_modules')) && existsSync(sb.path(dir))) linkWorkspaceInstall(sb, dir, dirOf);
+  }
+}
+
+/**
+ * One workspace's node_modules, entry by entry: a workspace dependency (@fluxion/x) resolves to the
+ * sandbox's copy, not the repo's, or tools would leave the sandbox (on Windows joining a C: temp
+ * path with the repo's E: path); every other entry is the repo's install.
+ */
+function linkWorkspaceInstall(sb, dir, dirOf) {
+  const installed = join(REPO, dir, 'node_modules');
+  mkdirSync(sb.path(`${dir}/node_modules/@fluxion`), { recursive: true });
+  for (const entry of readdirSync(installed).filter((e) => e !== '@fluxion')) {
+    symlinkSync(join(installed, entry), sb.path(`${dir}/node_modules/${entry}`), 'junction');
+  }
+  const scoped = join(installed, '@fluxion');
+  for (const name of existsSync(scoped) ? readdirSync(scoped) : []) {
+    const target = dirOf.get(`@fluxion/${name}`);
+    if (target && existsSync(sb.path(target))) symlinkSync(sb.path(target), sb.path(`${dir}/node_modules/@fluxion/${name}`), 'junction');
   }
 }
 

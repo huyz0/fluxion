@@ -257,7 +257,14 @@ importers:
 
   packages/cli: {}
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      '@fluxion/geometry':
+        specifier: workspace:*
+        version: link:../geometry
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
 
   packages/dsl: {}
 

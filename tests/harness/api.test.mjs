@@ -1,6 +1,7 @@
 // NFR-MNT-007: public APIs have committed API reports and release tags; a signature change without an
 // updated report fails check-api.
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
@@ -15,6 +16,12 @@ const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.
 function fullCopy() {
   const full = sandbox(['scripts', 'tools', 'docs/architecture', 'typedoc.json', 'tsconfig.base.json', 'tsconfig.json', ...workspaces.map((w) => w.dir)]);
   linkInstalls(full);
+  // TypeDoc follows project references into each dependency's .tsbuild declarations, which the
+  // sandbox does not copy (TRANSIENT): build them here, as the ladder's typecheck does in the repo
+  // (the copied workspaces only: the root solution also references e2e/, which is not copied)
+  const tsc = [join(REPO, 'node_modules/typescript/bin/tsc'), '-b', ...workspaces.map((w) => w.dir)];
+  const built = spawnSync(process.execPath, tsc, { cwd: full.dir, encoding: 'utf8' });
+  assert.equal(built.status, 0, out(built));
   return full;
 }
 
