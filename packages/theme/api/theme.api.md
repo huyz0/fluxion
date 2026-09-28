@@ -37,6 +37,15 @@ export type NoPaint = {
 };
 
 // @public
+export type PaintResolution = {
+    readonly paint: ResolvedPaint;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
+export function resolveBackground(background: Style["fill"] | undefined, theme: Theme, at?: ReadonlyArray<string | number>): PaintResolution;
+
+// @public
 export type ResolvedColorPaint = {
     readonly type: "color";
     readonly css: string;

@@ -154,6 +154,7 @@ type Layer = { readonly values: unknown; readonly at: ReadonlyArray<string | num
 /** Built-in fallbacks: the last layer, so every field has a value even with an empty theme. */
 const FALLBACK = {
   fill: 'transparent',
+  background: 'transparent',
   stroke: { color: 'currentColor', width: 1, cap: 'butt', join: 'miter' },
   opacity: 1,
   radius: 0,
@@ -280,8 +281,8 @@ const colorPaint = (css: string | undefined): ResolvedPaint | undefined =>
   css === undefined ? undefined : css === 'transparent' || css === 'none' ? { type: 'none' } : { type: 'color', css };
 
 /** A fill: colour value, gradient (stops sorted, colours resolved) or image. */
-function paint(r: Resolver): ResolvedPaint {
-  return r.pick<ResolvedPaint>(['fill'], (v, where) => {
+function paint(r: Resolver, field = 'fill'): ResolvedPaint {
+  return r.pick<ResolvedPaint>([field], (v, where) => {
     const type = isObject(v) ? v['type'] : undefined;
     if (isObject(v) && (type === 'linear-gradient' || type === 'radial-gradient')) return gradient(r, v, where);
     if (isObject(v) && type === 'image' && typeof v['assetId'] === 'string') return image(v);
@@ -338,4 +339,33 @@ export function resolveStyle(style: Style | undefined, kind: string, theme: Them
     },
   };
   return { style: resolved, diagnostics: r.diagnostics };
+}
+
+/**
+ * A paint and what resolving it reported.
+ *
+ * @public
+ */
+export type PaintResolution = {
+  /** The resolved paint. */
+  readonly paint: ResolvedPaint;
+  /** FLX_TOKEN_UNKNOWN warnings at their JSON pointers. */
+  readonly diagnostics: readonly Diagnostic[];
+};
+
+/**
+ * Resolve a screen's `background` (FR-SCR-001): the screen's own paint → theme
+ * `defaults.screen.background` → theme globals → none. `at` is the screen record's pointer, e.g.
+ * `['records', id]`; the same validation as {@link resolveStyle} applies to every value.
+ *
+ * @public
+ */
+export function resolveBackground(background: Style['fill'] | undefined, theme: Theme, at: ReadonlyArray<string | number> = []): PaintResolution {
+  const defaults = theme.defaults ?? {};
+  const r = new Resolver(theme, [
+    { values: { background }, at },
+    { values: defaults['screen'], at: ['theme', 'defaults', 'screen'] },
+    { values: defaults['*'], at: ['theme', 'defaults', '*'] },
+  ]);
+  return { paint: paint(r, 'background'), diagnostics: r.diagnostics };
 }

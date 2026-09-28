@@ -5,6 +5,7 @@ export { LIGHT_THEME } from './light.js';
 export { cssValue, resolveToken, toCssVars, tokenPath } from './resolve.js';
 export {
   type NoPaint,
+  type PaintResolution,
   type ResolvedColorPaint,
   type ResolvedFont,
   type ResolvedGradientPaint,
@@ -13,6 +14,7 @@ export {
   type ResolvedStop,
   type ResolvedStroke,
   type ResolvedStyle,
+  resolveBackground,
   resolveStyle,
   type StyleResolution,
 } from './resolve-style.js';

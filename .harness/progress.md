@@ -765,3 +765,8 @@ tests: T1 "FR-SCR-001: a 1920x1080 screen fits a 960x540 box at scale 0.5" + let
 coverage.test's dropBrowserCovered also removes the package entry's re-exports of the modules it drops (render's index re-exports screen-view); use-value.browser.test.tsx tests the hook's re-render (and keeps the harness convention: a module covered only in the browser has a browser test of its name)
 review F1-F4: the mode gate ignores optional members/parameters (mode?:) and ?? defaults, and now catches destructuring renames, computed ['mode'] keys, membership (includes/has) and method calls on the mode; its header states the limits; React is a peerDependency of render (one React per host), react and react-dom devDependencies until SSR uses react-dom/server
 review round 2 F1: the React peer is a range (^19.0.0), not the catalog's exact pin that publishing would write; the dev copy stays on the catalog
+
+## 2026-09-29 M4.12 (claude)
+theme: resolveBackground(background, theme, at) (colour/gradient/image/token; theme default defaults.screen.background = {color.background})
+render: background.ts paintCss (resolved paint → background CSS; an image is a hatch placeholder until M10, its asset id a data attribute, never CSS); DocumentView renders screens by screensInOrder (fractional index, id tiebreak); ModePolicy.showHidden (edit only)
+tests: T1 "FR-SCR-001: renders each background kind" and "FR-SCR-001: screens render in fractional-index order" (reorder command, hidden in present vs edit); node paintCss/screensInOrder

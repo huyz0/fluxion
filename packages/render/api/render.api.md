@@ -4,16 +4,33 @@
 
 ```ts
 
+import { CSSProperties } from 'react';
 import { ReactNode } from 'react';
 import { ReadSignal } from '@fluxion/core';
+import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Rect } from '@fluxion/schema';
+import { ResolvedPaint } from '@fluxion/theme';
 import { ScreenRecord } from '@fluxion/schema';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 
 // @public
 export const CONTENT_CSS: string;
+
+// @public
+export function DocumentView(props: DocumentViewProps): ReactNode;
+
+// @public
+export type DocumentViewProps = {
+    readonly store: Store;
+    readonly mode: RenderMode;
+    readonly box: {
+        readonly w: number;
+        readonly h: number;
+    };
+    readonly theme?: Theme;
+};
 
 // @public
 export type FitTransform = {
@@ -36,16 +53,23 @@ export type ModePolicy = {
     readonly editOverlay: boolean;
     readonly interactive: boolean;
     readonly measure: boolean;
+    readonly showHidden: boolean;
 };
 
 // @public
 export function modePolicy(mode: RenderMode): ModePolicy;
 
 // @public
+export function paintCss(paint: ResolvedPaint): CSSProperties;
+
+// @public
 export type RenderMode = "edit" | "present" | "export" | "thumbnail";
 
 // @public
 export function screenArea(screen: Pick<ScreenRecord, "kind" | "size" | "viewport">): Rect;
+
+// @public
+export function screensInOrder(view: ReadView, showHidden: boolean): RecordId[];
 
 // @public
 export function ScreenView(props: ScreenViewProps): ReactNode;

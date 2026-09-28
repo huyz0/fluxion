@@ -3,7 +3,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { LIGHT_THEME } from './light.js';
 import { toCssVars } from './resolve.js';
-import { resolveStyle } from './resolve-style.js';
+import { resolveBackground, resolveStyle } from './resolve-style.js';
 import type { Theme } from './tokens.js';
 
 const ROLES = ['primary', 'secondary', 'surface', 'text', 'muted', 'connector', 'accent-1', 'accent-6'];
@@ -273,5 +273,39 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
         { offset: 1, css: '#222' },
       ],
     });
+  });
+
+  it('FR-SCR-001: a screen background resolves its own paint, then the theme screen default', () => {
+    expect(resolveBackground(undefined, LIGHT_THEME).paint).toEqual({ type: 'color', css: 'var(--fx-color-background, #ffffff)' });
+    expect(resolveBackground('#102030', LIGHT_THEME).paint).toEqual({ type: 'color', css: '#102030' });
+    expect(resolveBackground('{color.primary}', LIGHT_THEME).paint).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
+    const g = resolveBackground(
+      {
+        type: 'radial-gradient',
+        stops: [
+          { offset: 0, color: '#fff' },
+          { offset: 1, color: '{color.surface}' },
+        ],
+      },
+      LIGHT_THEME,
+    ).paint;
+    expect(g).toEqual({
+      type: 'radial-gradient',
+      angle: 0,
+      stops: [
+        { offset: 0, css: '#fff' },
+        { offset: 1, css: 'var(--fx-color-surface, #f8fafc)' },
+      ],
+    });
+    expect(resolveBackground({ type: 'image', assetId: 'a1' as RecordId, fit: 'contain' }, LIGHT_THEME).paint).toEqual({
+      type: 'image',
+      assetId: 'a1',
+      fit: 'contain',
+    });
+    const bad = resolveBackground('{color.gone}', LIGHT_THEME, ['records', 's1']);
+    expect(bad.paint).toEqual({ type: 'color', css: 'var(--fx-color-background, #ffffff)' });
+    expect(bad.diagnostics.map((d) => [d.code, d.path])).toEqual([['FLX_TOKEN_UNKNOWN', '/records/s1/background']]);
+    // no screen default anywhere: no background
+    expect(resolveBackground(undefined, { name: 'e', tokens: {} }).paint).toEqual({ type: 'none' });
   });
 });

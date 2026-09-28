@@ -21,13 +21,15 @@ export type ModePolicy = {
   readonly interactive: boolean;
   /** Views may measure the DOM after mounting (not in export or thumbnails: static output). */
   readonly measure: boolean;
+  /** Hidden screens are shown (edit only: presentation and export skip them, FR-SCR-001). */
+  readonly showHidden: boolean;
 };
 
 const POLICIES: { readonly [M in RenderMode]: ModePolicy } = {
-  edit: { editOverlay: true, interactive: false, measure: true },
-  present: { editOverlay: false, interactive: true, measure: true },
-  export: { editOverlay: false, interactive: false, measure: false },
-  thumbnail: { editOverlay: false, interactive: false, measure: false },
+  edit: { editOverlay: true, interactive: false, measure: true, showHidden: true },
+  present: { editOverlay: false, interactive: true, measure: true, showHidden: false },
+  export: { editOverlay: false, interactive: false, measure: false, showHidden: false },
+  thumbnail: { editOverlay: false, interactive: false, measure: false, showHidden: false },
 };
 
 /**

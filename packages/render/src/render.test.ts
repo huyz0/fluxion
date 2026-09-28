@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { paintCss } from './background.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
 import { modePolicy } from './mode-policy.js';
+import { screensInOrder } from './screen-order.js';
 
 describe('fit view (FR-SCR-001) and mode policy (04 §2.6)', () => {
   it('FR-SCR-001: a screen fits its box at the largest uniform scale, centred', () => {
@@ -19,10 +21,10 @@ describe('fit view (FR-SCR-001) and mode policy (04 §2.6)', () => {
   });
 
   it('only edit mounts the overlay; only present is interactive; export and thumbnails do not measure', () => {
-    expect(modePolicy('edit')).toEqual({ editOverlay: true, interactive: false, measure: true });
-    expect(modePolicy('present')).toEqual({ editOverlay: false, interactive: true, measure: true });
-    expect(modePolicy('export')).toEqual({ editOverlay: false, interactive: false, measure: false });
-    expect(modePolicy('thumbnail')).toEqual({ editOverlay: false, interactive: false, measure: false });
+    expect(modePolicy('edit')).toEqual({ editOverlay: true, interactive: false, measure: true, showHidden: true });
+    expect(modePolicy('present')).toEqual({ editOverlay: false, interactive: true, measure: true, showHidden: false });
+    expect(modePolicy('export')).toEqual({ editOverlay: false, interactive: false, measure: false, showHidden: false });
+    expect(modePolicy('thumbnail')).toEqual({ editOverlay: false, interactive: false, measure: false, showHidden: false });
   });
 
   it('content CSS is fx-prefixed and in @layer fx.content (ADR-0010, ADR-0015)', () => {
@@ -30,5 +32,49 @@ describe('fit view (FR-SCR-001) and mode policy (04 §2.6)', () => {
     const selectors = [...CONTENT_CSS.matchAll(/^\.([\w-]+)/gm)].map((m) => m[1]);
     expect(selectors.length).toBeGreaterThan(3);
     expect(selectors.every((s) => s?.startsWith('fx-'))).toBe(true);
+  });
+});
+
+describe('background CSS and screen order (FR-SCR-001)', () => {
+  it('FR-SCR-001: each resolved paint has its background CSS', () => {
+    expect(paintCss({ type: 'color', css: '#fff' })).toEqual({ backgroundColor: '#fff' });
+    expect(
+      paintCss({
+        type: 'linear-gradient',
+        angle: 45,
+        stops: [
+          { offset: 0, css: 'red' },
+          { offset: 0.333, css: 'blue' },
+        ],
+      }),
+    ).toEqual({
+      backgroundImage: 'linear-gradient(135deg, red 0%, blue 33.3%)',
+    });
+    expect(
+      paintCss({
+        type: 'radial-gradient',
+        angle: 0,
+        stops: [
+          { offset: 0, css: 'red' },
+          { offset: 1, css: 'blue' },
+        ],
+      }),
+    ).toEqual({
+      backgroundImage: 'radial-gradient(circle, red 0%, blue 100%)',
+    });
+    expect(paintCss({ type: 'image', assetId: 'x"); url(evil', fit: 'cover' }).backgroundImage).not.toContain('evil');
+    expect(paintCss({ type: 'none' })).toEqual({});
+  });
+
+  it('FR-DOC-010: screens sort by index, then id; hidden ones only when asked', () => {
+    const records: Record<string, { type: string; index: string; hidden?: boolean }> = {
+      b: { type: 'screen', index: 'a1' },
+      a: { type: 'screen', index: 'a1' },
+      c: { type: 'screen', index: 'a0', hidden: true },
+      d: { type: 'screen', index: 'Zz' },
+    };
+    const view = { members: () => Object.keys(records), get: (id: string) => records[id] } as unknown as Parameters<typeof screensInOrder>[0];
+    expect(screensInOrder(view, false)).toEqual(['d', 'a', 'b']);
+    expect(screensInOrder(view, true)).toEqual(['d', 'c', 'a', 'b']);
   });
 });

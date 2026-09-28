@@ -3,8 +3,9 @@
 // are the background, the content (element views, M4.13) and the editor's overlay slot (edit only).
 import type { Store } from '@fluxion/core';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
-import { LIGHT_THEME, type Theme, toCssVars } from '@fluxion/theme';
+import { LIGHT_THEME, resolveBackground, type Theme, toCssVars } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useInsertionEffect, useMemo } from 'react';
+import { paintCss } from './background.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
@@ -73,6 +74,7 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   const vars = useMemo(() => toCssVars(theme), [theme]);
   if (!screen || screen.type !== 'screen') return null;
   const area = screenArea(screen);
+  const background = resolveBackground(screen.background, theme, ['records', screenId]).paint;
   const fit = fitTransform(area, view.box);
   const style = {
     ...vars,
@@ -85,7 +87,7 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   return (
     <div className="fx-view" style={{ width: view.box.w, height: view.box.h }}>
       <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
-        <div className="fx-layer fx-background" />
+        <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
         <div className="fx-layer fx-content" style={origin}>
           {children}
         </div>
