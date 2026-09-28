@@ -67,3 +67,12 @@ and reports each change (02-document-model §4). Validation runs on the repaired
 | `FLX_REPAIRED_BINDING` | warning | A binding pointed at a missing connector or element; it was removed and the connector end became a free point (the screen centre when it had none). | Re-attach the end. |
 | `FLX_REPAIRED_PARENT` | warning | `parentId` named a missing element or looped; the element moved to the screen root. | Regroup if needed. |
 | `FLX_REPAIRED_INDEX` | warning | A sibling `index` was missing, invalid or shared; it was appended after its siblings. | None needed. |
+
+## Engine
+
+Reported by `@fluxion/core` while plugins and built-ins register or commands run (03-core-engine).
+Paths point into the engine (`/registries/<name>/<key>`), not into the document.
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_REGISTRY_DUPLICATE` | error | A key is already registered by another source (plugin); the first registration stays (FR-EXT-001). | Rename the key or namespace it `<plugin>:<name>`. |

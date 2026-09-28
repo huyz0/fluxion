@@ -24,6 +24,9 @@ export interface Clock {
 export function computed<T>(fn: () => T): ReadSignal<T>;
 
 // @public
+export const CORE_REGISTRY_NAMES: readonly ["elementKinds", "shapeDefs", "markers", "routers", "layouts", "effects", "transitions", "themes", "fonts", "commands", "integrityHooks", "importers", "exporters", "dslMacros", "lintRules"];
+
+// @public
 export type CoreError = {
     readonly code: CoreErrorCode;
     readonly message: string;
@@ -34,12 +37,29 @@ export type CoreError = {
 export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY";
 
 // @public
+export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, unknown>; };
+
+// @public
+export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
+
+// @public
+export function createCoreRegistries(): CoreRegistries;
+
+// @public
+export function createRegistry<K extends string, V>(name: string): Registry<K, V>;
+
+// @public
 export function createStore(file: DocumentFile, options?: StoreOptions): Store;
 
 // @public
 export type Diff = {
     readonly puts: ReadonlyMap<RecordId, PutChange>;
     readonly deletes: ReadonlyMap<RecordId, AnyRecord>;
+};
+
+// @public
+export type Disposable = {
+    dispose(): void;
 };
 
 // @public
@@ -76,6 +96,9 @@ export interface Logger {
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 // @public
+export type PluginId = string;
+
+// @public
 export type PutChange = {
     readonly before?: AnyRecord;
     readonly after: AnyRecord;
@@ -94,6 +117,16 @@ export type ReadView = {
     readonly size: number;
     members(index: IndexName, key: string): RecordId[];
 };
+
+// @public
+export interface Registry<K extends string, V> {
+    readonly changes$: ReadSignal<number>;
+    get(key: K): V | undefined;
+    list(): ReadonlyArray<readonly [K, V]>;
+    readonly name: string;
+    register(key: K, value: V, source: PluginId): Result<Disposable, Diagnostic>;
+    source(key: K): PluginId | undefined;
+}
 
 // @public
 export interface Store {
