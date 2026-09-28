@@ -1,6 +1,7 @@
-// The built-in views of R0 (ADR-0015 §5): the shape view and the `basic:rect` outline, registered
+// The built-in views of R0 (ADR-0015 §5): the shape and connector views and the `basic:rect` outline, registered
 // through the same API as plugins (source `core`). The basic pack takes the shapes over in M5.
 import { BASIC_RECT } from './basic-rect.js';
+import { ConnectorView } from './connector-view.js';
 import { createRenderRegistries, type RenderRegistries } from './registries.js';
 import { ShapeView } from './shape-view.js';
 
@@ -12,6 +13,7 @@ import { ShapeView } from './shape-view.js';
  */
 export function registerBuiltinViews(registries: RenderRegistries): void {
   registries.elementViews.register('shape', { Component: ShapeView }, 'core');
+  registries.elementViews.register('connector', { Component: ConnectorView }, 'core');
   registries.shapeDefs.register('basic:rect', BASIC_RECT, 'core');
 }
 

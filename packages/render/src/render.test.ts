@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { paintCss } from './background.js';
 import { BASIC_RECT } from './basic-rect.js';
+import { connectorEnds } from './connector-ends.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
 import { plainParagraphs } from './label.js';
@@ -143,5 +144,33 @@ describe('shape outlines and labels (FR-SHP-001)', () => {
     };
     expect(plainParagraphs(doc)).toEqual(['Hello world', '']);
     expect(plainParagraphs(undefined)).toEqual([]);
+  });
+});
+
+describe('connector ends (FR-CON-001)', () => {
+  const view = (records: Record<string, unknown>) =>
+    ({
+      get: (id: string) => records[id],
+      members: (_: string, key: string) => Object.keys(records).filter((id) => (records[id] as { connectorId?: string }).connectorId === key),
+    }) as unknown as Parameters<typeof connectorEnds>[0];
+  const box = { x: 0, y: 0, w: 100, h: 100 };
+
+  it('FR-CON-001: bound ends clip to the box towards the other end; free ends are their points', () => {
+    const records = {
+      c: { type: 'element', kind: 'connector', freeTarget: { x: 300, y: 50 } },
+      s: { type: 'element', transform: box },
+      b: { type: 'binding', connectorId: 'c', end: 'source', elementId: 's' },
+    };
+    expect(connectorEnds(view(records), 'c' as never)).toEqual({ source: { x: 100, y: 50 }, target: { x: 300, y: 50 } });
+    // the other end inside the box: the line does not leave it, so the end stays at the centre
+    expect(connectorEnds(view({ ...records, c: { ...records.c, freeTarget: { x: 60, y: 50 } } }), 'c' as never)?.source).toEqual({ x: 50, y: 50 });
+  });
+
+  it('FR-CON-001: an end that can be placed neither from a binding nor from a point leaves no line', () => {
+    const c = { type: 'element', kind: 'connector', freeTarget: { x: 1, y: 1 } };
+    expect(connectorEnds(view({ c }), 'c' as never)).toBeUndefined();
+    const boxless = { c, g: { type: 'element' }, b: { type: 'binding', connectorId: 'c', end: 'source', elementId: 'g' } };
+    expect(connectorEnds(view(boxless), 'c' as never)).toBeUndefined();
+    expect(connectorEnds(view({}), 'c' as never)).toBeUndefined();
   });
 });

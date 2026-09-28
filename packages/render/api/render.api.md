@@ -19,12 +19,25 @@ import { RichTextDoc } from '@fluxion/schema';
 import { ScreenRecord } from '@fluxion/schema';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+import { Vec2 } from '@fluxion/geometry';
 
 // @public
 export const BASIC_RECT: ShapeOutline;
 
 // @public
 export function builtinRegistries(): RenderRegistries;
+
+// @public
+export type ConnectorEnds = {
+    readonly source: Vec2;
+    readonly target: Vec2;
+};
+
+// @public
+export function connectorEnds(view: ReadView, connectorId: RecordId): ConnectorEnds | undefined;
+
+// @public
+export function ConnectorView(props: ElementViewProps): ReactNode;
 
 // @public
 export const CONTENT_CSS: string;

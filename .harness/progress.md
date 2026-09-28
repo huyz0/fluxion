@@ -787,3 +787,9 @@ theme: LIGHT_THEME defaults['*'].font = body font, md size, normal line height, 
 ADR-0015 amended: render-level shapeDefs in R0; core shapeDefs typed with the basic pack (M5)
 tests: T1 "FR-SHP-001: rendered bounds equal the transform", "FR-SHP-001: rotation is about the center", fills/dash/unknown def; builtins registration; node pathData, BASIC_RECT, plainParagraphs
 review F1-F5: budget re-measured after M4.28 (the packet's own ladder had run 126 s); the rotation test also measures the drawn outline; gradient stops keyed by position (hard stops share an offset); gradient ids unique per mounted view (useId), tested with one record drawn in two views
+
+## 2026-09-29 M4.15 (claude)
+render: connector-ends.ts connectorEnds(view, id): a bound end starts at the bound element's centre (rotated corners from geometry elementCorners) and is clipped where the centre line leaves its outline (intersectSegments); a free end is freeSource/freeTarget; undefined when an end cannot be placed. ConnectorView draws the straight line (pathData) in screen coordinates from a store query (moving a bound shape redraws), stroke from resolveStyle 'connector', end/start markers from a marker table (arrow; the markers registry arrives in M5), marker ids per mounted view; registered as a built-in; .fx-el defaults to left/top 0 so a boxless connector wrapper sits at the origin
+anchors read as auto until M5, non-straight routes and waypoints draw straight until M9
+tests: T1 "FR-CON-001: renders straight line between bound shapes" (ends on the borders ±0.5 px, marker, theme stroke, redraw on move), free ends/rotated clip/no arrow, delete frees the end at the centre; node connectorEnds
+backlog: M4.30 added (M4.14 review F1, gradient parity between shape fills and backgrounds)
