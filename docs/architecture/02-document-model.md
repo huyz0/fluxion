@@ -50,7 +50,7 @@ not in schema `1.0`; until added (minor version) they are preserved but not chec
 |---|---|---|
 | `document` (singleton) | `title?`, `lang?`, `themeId?`, `settings?` (`responsive`, `reducedMotion`, `lineJumps`), `authors?`, `created?`, `modified?` | One per file |
 | `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints`, `layout` (screen-level layout intent, e.g. layered LR — FR-LAY-005) |
-| `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `transform {x,y,w,h,rot?,flipX?,flipY?}` (all kinds but connector), `style?`, `text?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`. Planned: `layout` (container layout spec), `overrides` (per state/breakpoint) |
+| `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `style?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`; fields common to every core kind. Boxed kinds (all but connector) add transform {x,y,w,h,rot?,flipX?,flipY?} and text? (element kinds table). Planned: `layout` (container layout spec), `overrides` (per state/breakpoint) |
 | `binding` | `connectorId`, `end: 'source'\|'target'`, `elementId`, `anchor: AnchorRef` | Separate record → moving/deleting shapes updates bindings cleanly (tldraw pattern) |
 | `asset` | `hash` (sha256), `mime`, `size`, `name`, `w?`, `h?`, `source?` (URL if external) | Bytes live in the container, not in the record |
 | `theme` | `name`, `tokens` (DTCG token tree), `defaults?` (per kind/variant styles) | Themes may also come from packs |
@@ -65,13 +65,13 @@ not in schema `1.0`; until added (minor version) they are preserved but not chec
 
 | `kind` | Extra fields | Planned |
 |---|---|---|
-| `shape` | `defId` (e.g. `basic:rect`), `params?` (definition params), `anchors?` (instance-custom) | `textRegions` |
+| `shape` | `transform`, `text?`, `defId` (e.g. `basic:rect`), `params?` (definition params), `anchors?` (instance-custom) | `textRegions` |
 | `connector` | `route {type: 'straight'\|'curved'\|'orthogonal'\|'polyline'\|<plugin>, waypoints?, cornerRadius?}`, `markers? {start?,end?,mid?}`, `labels?[]`, `freeSource?`, `freeTarget?` (points for an end without a `binding` record); no transform | `riders`, `effects`, `jumps` |
-| `group` | none (children via `parentId`) | |
-| `frame` | `clip?`, `padding?` | `layout` (live container) |
-| `text` | `text` (rich text doc, required), `autoSize?` | |
-| `image` | `assetId`, `crop?`, `fit?`, `maskDefId?` | |
-| `component` | `componentId` (`<plugin>:<name>`), `props`, `snapshotAssetId?` (fallback) | |
+| `group` | `transform`, `text?` (children via `parentId`) | |
+| `frame` | `transform`, `text?`, `clip?`, `padding?` | `layout` (live container) |
+| `text` | `transform`, `text` (rich text doc, required), `autoSize?` | |
+| `image` | `transform`, `text?`, `assetId`, `crop?`, `fit?`, `maskDefId?` | |
+| `component` | `transform`, `text?`, `componentId` (`<plugin>:<name>`), `props`, `snapshotAssetId?` (fallback) | |
 | `<plugin>:<name>` | `props?` — validated by plugin schema if loaded | |
 
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with

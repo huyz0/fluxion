@@ -121,7 +121,6 @@ describe('harness docs consistency (NFR-DX-003)', () => {
     const section = (from, to) => doc.slice(doc.indexOf(from), doc.indexOf(to, doc.indexOf(from)));
     const catalogue = catalogueRows(section('| Record | Key fields |', '### Element kinds'));
     const kinds = catalogueRows(section('| `kind` | Extra fields |', '### Anchors'));
-    const shape = (record) => Object.keys(schema.schemaForRecord(record).schema.shape ?? {});
 
     it('lists exactly the exported RECORD_TYPES, in the table and in the RecordType union', () => {
       assert.deepEqual([...catalogue.keys()].sort(), [...schema.RECORD_TYPES].sort());
@@ -133,21 +132,34 @@ describe('harness docs consistency (NFR-DX-003)', () => {
       assert.deepEqual([...kinds.keys()].filter((k) => !k.includes('<')).sort(), [...schema.ELEMENT_KINDS].sort());
     });
 
+    const real = { catalogue, kinds, elementKinds: schema.ELEMENT_KINDS, shape: (record) => schema.schemaForRecord(record).schema.shape ?? {} };
+
     it("names only fields the record's schema has", () => {
-      // element: the fields common to the kinds are checked against the union of the core kinds
-      const recordFields = (type) => (type === 'element' ? schema.ELEMENT_KINDS.flatMap((kind) => shape({ type, kind })) : shape({ type }));
-      const unknown = (label, fields, known) => {
-        assert.ok(known.length > 0, `${label}: schema has no object shape`);
-        return fields.filter((f) => !known.includes(f)).map((f) => `${label}.${f}`);
-      };
       for (const [type, fields] of catalogue) assert.ok(fields.length > 0, `${type}: no key fields parsed`);
-      const missing = [
-        ...[...catalogue].flatMap(([type, fields]) => unknown(type, fields, recordFields(type))),
-        ...[...kinds]
-          .filter(([kind]) => !kind.includes('<'))
-          .flatMap(([kind, fields]) => unknown(`element(${kind})`, fields, shape({ type: 'element', kind }))),
-      ];
-      assert.deepEqual(missing, []);
+      assert.deepEqual(unknownCatalogueFields(real), []);
+    });
+
+    // M2 final F4: the element row names only fields every core kind has (the intersection, not the union)
+    it('element-row field outside the core-kind intersection fails', () => {
+      assert.deepEqual(unknownCatalogueFields(real), []);
+      // connector has no transform: listing it in the element row is reported
+      const withTransform = new Map(catalogue).set('element', [...catalogue.get('element'), 'transform']);
+      assert.deepEqual(unknownCatalogueFields({ ...real, catalogue: withTransform }), ['element.transform']);
+    });
+
+    // M2 final F4: every required field of a record or core kind is in the catalogue (schema → docs)
+    it('schema field missing from the catalogue fails', () => {
+      assert.deepEqual(missingCatalogueFields(real), []);
+      const noHash = new Map(catalogue).set(
+        'asset',
+        catalogue.get('asset').filter((f) => f !== 'hash'),
+      );
+      assert.deepEqual(missingCatalogueFields({ ...real, catalogue: noHash }), ['asset.hash']);
+      const noDefId = new Map(kinds).set(
+        'shape',
+        kinds.get('shape').filter((f) => f !== 'defId'),
+      );
+      assert.deepEqual(missingCatalogueFields({ ...real, kinds: noDefId }), ['element(shape).defId']);
     });
 
     it('the row parser reads names outside parentheses and skips values', () => {
@@ -156,6 +168,43 @@ describe('harness docs consistency (NFR-DX-003)', () => {
     });
   });
 });
+
+/** Fields of a schema shape that are required (undefined does not parse). */
+const requiredFields = (shape) =>
+  Object.entries(shape)
+    .filter(([, field]) => !field.safeParse(undefined).success)
+    .map(([key]) => key);
+/** Every BaseRecord has these; the catalogue states them once, in the BaseRecord type. */
+const BASE_FIELDS = ['id', 'type'];
+
+/**
+ * Catalogue fields the schemas lack: a record row against its record's shape, the element row
+ * against the fields every core kind has (intersection), a kind row against that kind's shape.
+ */
+function unknownCatalogueFields({ catalogue, kinds, elementKinds, shape }) {
+  const keys = (record) => Object.keys(shape(record));
+  const common = elementKinds.map((kind) => keys({ type: 'element', kind })).reduce((acc, fields) => acc.filter((f) => fields.includes(f)));
+  const unknown = (label, fields, known) => {
+    assert.ok(known.length > 0, `${label}: schema has no object shape`);
+    return fields.filter((f) => !known.includes(f)).map((f) => `${label}.${f}`);
+  };
+  return [
+    ...[...catalogue].flatMap(([type, fields]) => unknown(type, fields, type === 'element' ? common : keys({ type }))),
+    ...[...kinds].filter(([kind]) => !kind.includes('<')).flatMap(([kind, fields]) => unknown(`element(${kind})`, fields, keys({ type: 'element', kind }))),
+  ];
+}
+
+/** Required schema fields the catalogue does not list (element kinds: element row plus kind row). */
+function missingCatalogueFields({ catalogue, kinds, elementKinds, shape }) {
+  const absent = (label, record, listed) =>
+    requiredFields(shape(record))
+      .filter((f) => !BASE_FIELDS.includes(f) && !listed.includes(f))
+      .map((f) => `${label}.${f}`);
+  return [
+    ...[...catalogue].filter(([type]) => type !== 'element').flatMap(([type, fields]) => absent(type, { type }, fields)),
+    ...elementKinds.flatMap((kind) => absent(`element(${kind})`, { type: 'element', kind }, [...(catalogue.get('element') ?? []), ...(kinds.get(kind) ?? [])])),
+  ];
+}
 
 /**
  * Body rows (below `|---`) `| \`name\` … | fields | … |` → Map(name → field names): the leading identifier of
