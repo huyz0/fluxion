@@ -19,7 +19,7 @@
       "outputs": ["dist/**"]
     },
     "@fluxion/docs#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "@fluxion/core#typecheck"],
       "inputs": [
         "src/**",
         "!src/content/docs/api/**",

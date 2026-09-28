@@ -54,6 +54,7 @@ node scripts/gates/precommit.mjs           pre-commit ladder (hook runs it with 
 pnpm test | pnpm test:e2e | pnpm run build  Vitest (node+browser) | Playwright | Turborepo build
 node scripts/gates/m<N>-complete.mjs       completion gate of milestone N
 node scripts/gates/check-budget.mjs --record          re-measure gate timings after a lockfile change
+node scripts/gates/check-budget.mjs --record --cold-pending | --cold-from-ci <sha>   same without Chromium (ADR-0145)
 node scripts/gates/check-ci-evidence.mjs --record <sha>  record a green three-OS CI run (gh, else GitHub REST)
 node scripts/harness/review.mjs context --task M3.4     reviewer packet
 node scripts/harness/run-reviewer.mjs --task M3.4       optional cross-vendor reviewer (default: isolated subagent)

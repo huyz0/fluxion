@@ -124,6 +124,107 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.equal(JSON.parse(sb.read('budget.json')).coldSetupMs, null);
   });
 
+  it('cold setup recorded from a CI run: --cold-from-ci takes the cold-setup step of a green ci run of that lockfile (ADR-0145)', () => {
+    sb.cleanup();
+    sb = coldSandbox();
+    sb.git('checkout', '--', 'pnpm-lock.yaml'); // the working tree carries HEAD's lockfile
+    const head = sb.git('rev-parse', 'HEAD').stdout.trim();
+    const step = { name: 'cold setup within COLD_SETUP_MAX_MS', conclusion: 'success', startedAt: '2026-09-27T23:12:24Z', completedAt: '2026-09-27T23:14:52Z' };
+    const ciRun = (conclusion) => [{ databaseId: 7, workflowName: 'ci', headSha: head, conclusion, jobs: [{ name: 'cold-setup', conclusion, steps: [step] }] }];
+    const record = (runs) => {
+      sb.write('runs.json', JSON.stringify(runs));
+      const args = ['--record', '--cold-from-ci', 'HEAD', '--runs-file', sb.path('runs.json'), '--file', sb.path('budget.json')];
+      return sb.node('scripts/gates/check-budget.mjs', args, { env: { ...fakeEnv(sb), CI: '' } });
+    };
+
+    const ok = record(ciRun('success'));
+    assert.equal(ok.status, 0, out(ok));
+    const rec = JSON.parse(sb.read('budget.json'));
+    assert.equal(rec.coldSetupMs, 148_000, 'the step took 2 min 28 s');
+    assert.equal(rec.coldSetupSource, 'ci:7');
+    const lock = createHash('sha256')
+      .update(readFileSync(sb.path('pnpm-lock.yaml')))
+      .digest('hex');
+    assert.equal(rec.lockfile, lock);
+    assert.deepEqual(pnpmCalls(sb), [], 'no local cold clone');
+
+    const red = record(ciRun('failure'));
+    assert.equal(red.status, 1, out(red));
+    assert.match(red.stderr, /no green ci run of [0-9a-f]{7}/);
+    sb.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n# not what HEAD's run installed\n");
+    const other = record(ciRun('success'));
+    assert.equal(other.status, 1, out(other));
+    assert.match(other.stderr, /has another pnpm-lock\.yaml than the tree being recorded/);
+    assert.equal(JSON.parse(sb.read('budget.json')).coldSetupMs, null);
+
+    // the step this mode reads is the one ci.yml runs
+    assert.match(
+      readFileSync(join(REPO, '.github/workflows/ci.yml'), 'utf8'),
+      /- name: cold setup within COLD_SETUP_MAX_MS\n\s+run: node scripts\/gates\/check-budget\.mjs --cold/,
+    );
+  });
+
+  it('pending cold setup: --cold-pending carries the number; staged and CI accept it, a local full check does not (ADR-0145)', () => {
+    sb.cleanup();
+    sb = coldSandbox(); // the working tree has an uncommitted lockfile change, as in a lockfile commit
+    sb.write('budget.json', JSON.stringify({ ...OK, coldSetupMs: 130_000, coldSetupSource: 'local' }));
+    const rec = sb.node('scripts/gates/check-budget.mjs', ['--record', '--cold-pending', '--file', sb.path('budget.json')], {
+      env: { ...fakeEnv(sb), CI: 'true' },
+    });
+    assert.equal(rec.status, 0, out(rec));
+    const pending = JSON.parse(sb.read('budget.json'));
+    assert.equal(pending.coldSetupMs, 130_000, 'the previous number is carried');
+    assert.equal(pending.coldSetupSource, 'pending-ci');
+    assert.deepEqual(pnpmCalls(sb), [], 'no local cold clone');
+    assert.deepEqual(sb.read('ladder.log').trim().split('\n'), ['--quick --no-review --no-budget', '--staged --no-review --no-budget']);
+    const check = (args, ci) => sb.node('scripts/gates/check-budget.mjs', ['--file', sb.path('budget.json'), ...args], { env: { ...process.env, CI: ci } });
+    assert.equal(check(['--staged'], '').status, 0, 'the staged ladder accepts it');
+    assert.equal(check([], 'true').status, 0, 'CI accepts it');
+    const local = check([], '');
+    assert.equal(local.status, 1, out(local));
+    assert.match(local.stderr, /cold setup pending CI: after the push run check-budget\.mjs --record --cold-from-ci/);
+    // nothing to carry: the record cannot be made
+    sb.write('budget.json', JSON.stringify({ ...OK, coldSetupMs: null }));
+    const none = sb.node('scripts/gates/check-budget.mjs', ['--record', '--cold-pending', '--file', sb.path('budget.json')], { env: fakeEnv(sb) });
+    assert.equal(none.status, 1, out(none));
+    assert.match(none.stderr, /no previous cold-setup number to carry/);
+  });
+
+  it('staged lockfile runs the budget step; other staged commits skip it (ADR-0145)', () => {
+    sb.cleanup();
+    sb = sandbox(undefined, { git: true });
+    const budgetLine = () =>
+      sb
+        // CI pinned: an inherited CI=true would accept the old record (ADR-0143; M3.5 review r2 F1)
+        .node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review'], { env: { ...process.env, CI: '' } })
+        .stdout.split(/\r?\n/)
+        .find((l) => / budget\b/.test(l) && /^(PASS|FAIL|SKIP) /.test(l));
+    // a workspace, so the step is available and really runs check-budget (not SKIP)
+    sb.write('package.json', '{}\n');
+    sb.write('turbo.json', '{}\n');
+    sb.write('notes.txt', 'x\n');
+    sb.git('add', 'notes.txt');
+    assert.equal(budgetLine(), undefined, 'no lockfile staged: the step does not apply');
+    const lock = "lockfileVersion: '9.0'\n";
+    sb.write('pnpm-lock.yaml', lock);
+    sb.git('add', 'pnpm-lock.yaml');
+    const hash = createHash('sha256').update(lock).digest('hex');
+    // a pending-ci record for the staged lockfile passes only through check-budget --staged
+    sb.write('.harness/budget.json', JSON.stringify({ ...OK, lockfile: hash, coldSetupSource: 'pending-ci' }));
+    assert.match(String(budgetLine()), /^PASS budget\b/);
+    // the old record fails the commit
+    sb.write('.harness/budget.json', JSON.stringify(OK));
+    assert.match(String(budgetLine()), /^FAIL budget\b/);
+    // an inherited CI=true does not relax the staged check (M3.5 review r3 F2)
+    const underCi = sb.node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review'], { env: { ...process.env, CI: 'true' } }).stdout;
+    assert.match(underCi, /^FAIL budget\b/m);
+    // --no-budget (the ladder check-budget --record times) leaves it out
+    const noBudget = sb.node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review', '--no-budget'], {
+      env: { ...process.env, CI: '' },
+    }).stdout;
+    assert.doesNotMatch(noBudget, /^(PASS|FAIL|SKIP) budget\b/m);
+  });
+
   it('--cold measures only the isolated cold setup, writes no record, and fails when the setup fails (NFR-DX-001)', () => {
     sb.cleanup();
     sb = coldSandbox();
@@ -163,13 +264,18 @@ if (args[0] === process.env.FAKE_PNPM_FAIL) {
 if (args[0] === 'install' && !process.env.FAKE_PNPM_NO_STORE) mkdirSync(args[args.indexOf('--store-dir') + 1], { recursive: true });
 `;
 
+const LADDER_STUB = `import { appendFileSync } from 'node:fs';
+appendFileSync(process.env.FAKE_LADDER_LOG, process.argv.slice(2).join(' ') + '\\n');
+`;
+
 /** A git sandbox with a stub ladder, an uncommitted lockfile change and the fake pnpm in bin/. */
 function coldSandbox() {
   const s = sandbox(['scripts', '.harness/state.json'], { git: true });
   s.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n");
   s.git('add', 'pnpm-lock.yaml');
   s.git('commit', '-q', '--no-verify', '-m', 'fixture lockfile');
-  s.write('scripts/gates/precommit.mjs', 'process.exit(0);\n');
+  // the timed ladder: logs its arguments (--record must pass --no-budget, M3.5 review F1)
+  s.write('scripts/gates/precommit.mjs', LADDER_STUB);
   s.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n# uncommitted change\n");
   s.write('bin/fake-pnpm.mjs', FAKE_PNPM);
   s.write('bin/pnpm', `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-pnpm.mjs" "$@"\n`);
@@ -181,7 +287,13 @@ function coldSandbox() {
 /** process.env with the fake pnpm first on PATH (whatever the key's case on Windows). */
 function fakeEnv(s, extra = {}) {
   const key = Object.keys(process.env).find((k) => k.toUpperCase() === 'PATH') ?? 'PATH';
-  return { ...process.env, [key]: `${s.path('bin')}${delimiter}${process.env[key] ?? ''}`, FAKE_PNPM_LOG: s.path('pnpm.log'), ...extra };
+  return {
+    ...process.env,
+    [key]: `${s.path('bin')}${delimiter}${process.env[key] ?? ''}`,
+    FAKE_PNPM_LOG: s.path('pnpm.log'),
+    FAKE_LADDER_LOG: s.path('ladder.log'),
+    ...extra,
+  };
 }
 
 /** The fake pnpm's calls since the last read. */

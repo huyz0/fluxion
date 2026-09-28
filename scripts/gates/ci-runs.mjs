@@ -16,7 +16,12 @@ export const toGhRun = (run, jobs) => ({
   workflowName: run.name,
   headSha: run.head_sha,
   conclusion: run.conclusion,
-  jobs: jobs.map((j) => ({ name: j.name, conclusion: j.conclusion })),
+  // steps with their times: check-budget --cold-from-ci reads the cold-setup step's duration
+  jobs: jobs.map((j) => ({
+    name: j.name,
+    conclusion: j.conclusion,
+    steps: (j.steps ?? []).map((s) => ({ name: s.name, conclusion: s.conclusion, startedAt: s.started_at, completedAt: s.completed_at })),
+  })),
 });
 
 /**

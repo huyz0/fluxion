@@ -6,16 +6,18 @@
 //   --quick      fast subset for iteration
 //   --summary    one line per step only
 //   --no-review  skip check-reviewed (used when building the review packet)
+//   --no-budget  skip the budget step (check-budget --record times the ladder it is writing a record for)
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { exists, nestedSkip, nodeAsync as node, runAsync } from './lib.mjs';
+import { exists, git, nestedSkip, nodeAsync as node, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
 const argv = new Set(process.argv.slice(2));
 const mode = argv.has('--all') ? 'all' : argv.has('--quick') ? 'quick' : 'staged';
 const hasPkg = exists('package.json') && exists('turbo.json');
 const pnpm = (...a) => runAsync('pnpm', a);
+const lockfileStaged = () => git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).includes('pnpm-lock.yaml');
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */
 const STEPS = [
@@ -33,6 +35,11 @@ const STEPS = [
     () => exists('scripts/gates/check-size.mjs') || 'check-size.mjs not written yet (M0)',
     () => node('scripts/gates/check-size.mjs', [`--${mode}`]),
   ],
+  // one typecheck path (M1 cp1 F4): the root solution `tsc -b` covers every workspace incl. apps;
+  // incremental .tsbuildinfo keeps it fast. Per-package `typecheck` scripts exist for turbo filtering.
+  // Before the build barrier: TypeDoc (docs build, api) reads the .tsbuild declarations of project
+  // references, which a fresh checkout has only after tsc -b (M3.5, first cross-workspace import)
+  ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('run', 'typecheck')],
   // build before harness-tests and package hygiene: both need dist (turbo-cached, ~1 s when unchanged)
   // --all (verify, CI) builds everything; a staged commit builds libraries only: later steps read their
   // dist/ (publint, attw, api, size-limit), and the docs site and studio bundle are too slow for the
@@ -50,9 +57,6 @@ const STEPS = [
     // spec reporter: it closes with a "failing tests" list, which the FAIL detail starts at (M1.39)
     () => runAsync(process.execPath, ['--test-reporter=spec', '--test', 'tests/harness/*.test.mjs']),
   ],
-  // one typecheck path (M1 cp1 F4): the root solution `tsc -b` covers every workspace incl. apps;
-  // incremental .tsbuildinfo keeps it fast. Per-package `typecheck` scripts exist for turbo filtering.
-  ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('run', 'typecheck')],
   ['lint', () => true, () => (hasPkg && exists('biome.json')) || 'biome not configured yet (M1.9)', () => pnpm('run', 'lint')],
   [
     'test',
@@ -92,12 +96,13 @@ const STEPS = [
     () => (exists('scripts/gates/check-api.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
     () => node('scripts/gates/check-api.mjs'),
   ],
-  // recorded cold-setup / quick / staged timings within the thresholds (NFR-DX-001, NFR-DX-002)
+  // recorded cold-setup / quick / staged timings within the thresholds (NFR-DX-001, NFR-DX-002); a
+  // commit that stages pnpm-lock.yaml must carry a record for it (ADR-0145)
   [
     'budget',
-    (m) => m === 'all',
+    (m) => !argv.has('--no-budget') && (m === 'all' || (m === 'staged' && lockfileStaged())),
     () => (exists('scripts/gates/check-budget.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
-    () => node('scripts/gates/check-budget.mjs'),
+    () => node('scripts/gates/check-budget.mjs', mode === 'staged' ? ['--staged'] : []),
   ],
   ['reviewed', (m) => m === 'staged' && !argv.has('--no-review'), () => true, () => node('scripts/gates/check-reviewed.mjs')],
 ];

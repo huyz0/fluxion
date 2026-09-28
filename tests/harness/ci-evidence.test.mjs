@@ -154,7 +154,8 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     const { restSource } = await import('../../scripts/gates/ci-runs.mjs');
     const calls = [];
     const rest = restSource({ fetch: fakeFetch(calls) });
-    assert.deepEqual(await rest.view(11), run(11, 'gates', 'a'.repeat(40), 'gates'));
+    const withSteps = run(11, 'gates', 'a'.repeat(40), 'gates');
+    assert.deepEqual(await rest.view(11), { ...withSteps, jobs: withSteps.jobs.map((j) => ({ ...j, steps: [] })) });
     assert.deepEqual(await rest.list('a'.repeat(40)), [
       { databaseId: 11, workflowName: 'gates', conclusion: 'success' },
       { databaseId: 12, workflowName: 'ci', conclusion: 'failure' },

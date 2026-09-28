@@ -94,6 +94,8 @@ the record predates the lockfile" runs with CI unset.
 - 2026-09-28 (M3.4, M2.29 review F1/F2, delta E1–E3): Considered Options 1 no longer says the
   pre-commit hook fails a stale record; Consequences name the shared completion-gate verify leg
   (`verifyLeg`, m3-complete on) instead of "every completion gate". The decision is unchanged.
+- 2026-09-28 (M3.5): ADR-0145 extends this decision: the staged ladder runs the budget step when
+  `pnpm-lock.yaml` is staged, and a record can be `pending-ci` or taken from the CI cold-setup step.
 
 ## More Information
 
