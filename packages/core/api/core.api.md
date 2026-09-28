@@ -144,10 +144,12 @@ export interface Hasher {
 
 // @public
 interface History_2 {
+    batch<R>(label: string, fn: () => R, options?: TxOptions): Result<R, TxFailure>;
     canRedo(): boolean;
     canUndo(): boolean;
     redo(): Result<unknown, TxFailure>;
     readonly redoDepth: number;
+    seal(): void;
     undo(): Result<unknown, TxFailure>;
     readonly undoDepth: number;
 }
