@@ -3,7 +3,8 @@ import { paintCss } from './background.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
 import { modePolicy } from './mode-policy.js';
-import { screensInOrder } from './screen-order.js';
+import { createRenderRegistries } from './registries.js';
+import { elementsInOrder, screensInOrder } from './screen-order.js';
 
 describe('fit view (FR-SCR-001) and mode policy (04 §2.6)', () => {
   it('FR-SCR-001: a screen fits its box at the largest uniform scale, centred', () => {
@@ -76,5 +77,35 @@ describe('background CSS and screen order (FR-SCR-001)', () => {
     const view = { members: () => Object.keys(records), get: (id: string) => records[id] } as unknown as Parameters<typeof screensInOrder>[0];
     expect(screensInOrder(view, false)).toEqual(['d', 'a', 'b']);
     expect(screensInOrder(view, true)).toEqual(['d', 'c', 'a', 'b']);
+  });
+});
+
+describe('element order (FR-DOC-010)', () => {
+  it('FR-DOC-010: a parent’s visible elements sort by index, then id; the screen root excludes nested ones', () => {
+    const records: Record<string, { type: string; index: string; parentId?: string; hidden?: boolean }> = {
+      b: { type: 'element', index: 'a1' },
+      a: { type: 'element', index: 'a1' },
+      g: { type: 'element', index: 'a0' },
+      n: { type: 'element', index: 'Zz', parentId: 'g' },
+      h: { type: 'element', index: 'a2', hidden: true },
+    };
+    const members = (index: string, key: string) =>
+      index === 'byScreen' ? Object.keys(records) : Object.keys(records).filter((id) => records[id]?.parentId === key);
+    const view = { members, get: (id: string) => records[id] } as unknown as Parameters<typeof elementsInOrder>[0];
+    expect(elementsInOrder(view, 's' as never)).toEqual(['g', 'a', 'b']);
+    expect(elementsInOrder(view, 's' as never, 'g' as never)).toEqual(['n']);
+  });
+});
+
+describe('render registries (FR-EXT-001)', () => {
+  it('FR-EXT-001: element views register by kind; a kind held by another source is refused', () => {
+    const { elementViews } = createRenderRegistries();
+    expect(elementViews.name).toBe('elementViews');
+    const view = { Component: () => null };
+    expect(elementViews.register('acme:gauge', view, 'acme').ok).toBe(true);
+    expect(elementViews.get('acme:gauge')).toBe(view);
+    expect(elementViews.register('acme:gauge', view, 'other').ok).toBe(false);
+    // each call is a fresh set: nothing leaks between hosts
+    expect(createRenderRegistries().elementViews.list()).toEqual([]);
   });
 });

@@ -4,6 +4,7 @@ import type { Store } from '@fluxion/core';
 import type { Theme } from '@fluxion/theme';
 import { type ReactNode, useMemo } from 'react';
 import { modePolicy, type RenderMode } from './mode-policy.js';
+import type { RenderRegistries } from './registries.js';
 import { screensInOrder } from './screen-order.js';
 import { ScreenView } from './screen-view.js';
 import { useValue } from './use-value.js';
@@ -27,6 +28,8 @@ export type DocumentViewProps = {
   };
   /** The theme (default: the light theme). */
   readonly theme?: Theme;
+  /** Where element views are looked up. */
+  readonly registries?: RenderRegistries;
 };
 
 /**
@@ -35,13 +38,21 @@ export type DocumentViewProps = {
  * @public
  */
 export function DocumentView(props: DocumentViewProps): ReactNode {
-  const { store, box, theme } = props;
+  const { store, box, theme, registries } = props;
   const { showHidden } = modePolicy(props.mode);
   const ids = useValue(useMemo(() => store.query((view) => screensInOrder(view, showHidden)), [store, showHidden]));
   return (
     <div className="fx-document">
       {ids.map((id) => (
-        <ScreenView key={id} store={store} screenId={id} mode={props.mode} view={{ kind: 'fit', box }} {...(theme ? { theme } : {})} />
+        <ScreenView
+          key={id}
+          store={store}
+          screenId={id}
+          mode={props.mode}
+          view={{ kind: 'fit', box }}
+          {...(theme ? { theme } : {})}
+          {...(registries ? { registries } : {})}
+        />
       ))}
     </div>
   );

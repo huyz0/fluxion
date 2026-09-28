@@ -4,12 +4,15 @@
 
 ```ts
 
+import { ComponentType } from 'react';
 import { CSSProperties } from 'react';
+import { ElementRecord } from '@fluxion/schema';
 import { ReactNode } from 'react';
 import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Rect } from '@fluxion/schema';
+import { Registry } from '@fluxion/core';
 import { ResolvedPaint } from '@fluxion/theme';
 import { ScreenRecord } from '@fluxion/schema';
 import { Store } from '@fluxion/core';
@@ -17,6 +20,9 @@ import { Theme } from '@fluxion/theme';
 
 // @public
 export const CONTENT_CSS: string;
+
+// @public
+export function createRenderRegistries(): RenderRegistries;
 
 // @public
 export function DocumentView(props: DocumentViewProps): ReactNode;
@@ -30,6 +36,33 @@ export type DocumentViewProps = {
         readonly h: number;
     };
     readonly theme?: Theme;
+    readonly registries?: RenderRegistries;
+};
+
+// @public
+export function ElementList(props: ElementListProps): ReactNode;
+
+// @public
+export type ElementListProps = {
+    readonly store: Store;
+    readonly screenId: RecordId;
+    readonly parentId?: RecordId;
+    readonly registries: RenderRegistries;
+};
+
+// @public
+export function elementsInOrder(view: ReadView, screenId: RecordId, parentId?: RecordId): RecordId[];
+
+// @public
+export type ElementView = {
+    readonly Component: ComponentType<ElementViewProps>;
+};
+
+// @public
+export type ElementViewProps = {
+    readonly element: ElementRecord;
+    readonly store: Store;
+    readonly children?: ReactNode;
 };
 
 // @public
@@ -66,6 +99,11 @@ export function paintCss(paint: ResolvedPaint): CSSProperties;
 export type RenderMode = "edit" | "present" | "export" | "thumbnail";
 
 // @public
+export type RenderRegistries = {
+    readonly elementViews: Registry<string, ElementView>;
+};
+
+// @public
 export function screenArea(screen: Pick<ScreenRecord, "kind" | "size" | "viewport">): Rect;
 
 // @public
@@ -82,6 +120,7 @@ export type ScreenViewProps = {
     readonly view: ScreenViewSpec;
     readonly theme?: Theme;
     readonly editOverlay?: ReactNode;
+    readonly registries?: RenderRegistries;
     readonly children?: ReactNode;
 };
 

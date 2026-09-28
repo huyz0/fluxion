@@ -30,12 +30,12 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/ids.test.ts` |
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/migrate.test.ts`, `packages/schema/src/repair.test.ts` |
 | FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
-| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/checked-schema.test.ts` +11 |
+| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/render/src/elements.browser.test.tsx` +12 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-009 | C | R6 | M28 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-DOC-010 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/builtin-commands.test.ts` +2 |
+| FR-DOC-010 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/builtin-commands.test.ts` +3 |
 | FR-SCR-001 | M | R0 | M2, M4 | [10-document-and-file.md](10-document-and-file.md) | `packages/render/src/document-view.browser.test.tsx` +5 |
 | FR-SCR-002 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-003 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -237,7 +237,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-INT-009 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-010 | M | R5 | M24 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-011 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
-| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/bootstrap.test.ts` +6 |
+| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/core/src/bootstrap.test.ts` +8 |
 | FR-EXT-002 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-003 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-004 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
