@@ -3,56 +3,18 @@
 // stdout, parsed by its schema (output.ts) before it is printed. `run` takes the argument list and
 // an IO port and returns the exit code, so tests run it in-process as well as through the built bin.
 import { parseArgs } from 'node:util';
-import { type Diagnostic, jsonPointer } from '@fluxion/schema';
+import { type CliIo, type Command, type ExitCode, internal, type Options, type Outcome, ok, usage } from './command.js';
 import { API_VERSION, OUTPUT_SCHEMAS } from './output.js';
+import { VALIDATE } from './validate.js';
 
-/**
- * Where the CLI writes; the bin passes process.stdout and process.stderr.
- *
- * @public
- */
-export type CliIo = {
-  /** Machine-readable output (the `--json` reply) and requested output such as help. */
-  readonly stdout: (text: string) => void;
-  /** Human messages: errors, warnings, progress. */
-  readonly stderr: (text: string) => void;
-};
-
-/**
- * An exit code of the CLI (contracts.md rule 14): 0 ok, 1 input errors, 2 usage error, 3 internal
- * error.
- *
- * @public
- */
-export type ExitCode = 0 | 1 | 2 | 3;
-
-/** What a command returns: its exit code, what it reported, and its result when it succeeds. */
-type Outcome = { readonly exitCode: ExitCode; readonly diagnostics: readonly Diagnostic[]; readonly result?: unknown };
-
-type Options = NonNullable<NonNullable<Parameters<typeof parseArgs>[0]>['options']>;
-
-/** One command of the table. */
-export type Command = {
-  /** One line for the command list. */
-  readonly summary: string;
-  /** The usage line after `fluxion`. */
-  readonly usage: string;
-  /** Options besides the global ones. */
-  readonly options: Options;
-  /** Runs the command on its parsed values and positionals. */
-  readonly run: (args: { readonly values: Record<string, unknown>; readonly positionals: readonly string[] }, io: CliIo) => Outcome | Promise<Outcome>;
-};
-
-/** A command whose implementation lands in a later row (M4.18, M4.20): an internal error until then. */
+/** A command whose implementation lands in a later row (M4.20): an internal error until then. */
 const notYet =
   (name: string): Command['run'] =>
-  (_args, io) => {
-    io.stderr(`fluxion ${name}: not available in this build yet\n`);
-    return { exitCode: 3, diagnostics: [] };
-  };
+  () =>
+    internal(`fluxion ${name} is not available in this build yet`);
 
 const COMMANDS: { readonly [name: string]: Command } = {
-  validate: { summary: 'Check a document and list its diagnostics', usage: 'validate <file>', options: {}, run: notYet('validate') },
+  validate: VALIDATE,
   render: {
     summary: 'Render a document to a static HTML file',
     usage: 'render <file> -o <out.html> [--screen <id>]',
@@ -72,13 +34,6 @@ function helpText(): string {
   const options = ['  -h, --help  Show help', '  --version   Show the version', '  --json      Print one JSON reply on stdout'];
   return ['Usage: fluxion <command> [options]', '', 'Commands:', ...list, '', 'Options:', ...options, ''].join('\n');
 }
-
-const usage = (message: string, at: readonly (string | number)[] = ['argv']): Outcome => ({
-  exitCode: 2,
-  diagnostics: [{ code: 'FLX_CLI_USAGE', severity: 'error', path: jsonPointer(at), message, hint: 'Run fluxion --help.' }],
-});
-
-const ok = (result: unknown): Outcome => ({ exitCode: 0, diagnostics: [], result });
 
 /** The arguments before `--` (after it, every argument is a positional, never an option). */
 const options = (argv: readonly string[]) => (argv.includes('--') ? argv.slice(0, argv.indexOf('--')) : argv);
@@ -116,20 +71,27 @@ function reply(command: string | null, outcome: Outcome): unknown {
   return outcome.exitCode === 0 ? { ...base, result: outcome.result ?? {} } : { ...base, errors: outcome.diagnostics };
 }
 
-/** Writes the outcome: diagnostics to stderr, then the reply (json) or the requested text. */
-function report(command: string | null, outcome: Outcome, json: boolean, io: CliIo): ExitCode {
-  for (const d of outcome.diagnostics) io.stderr(`${d.severity} ${d.code} ${d.path}: ${d.message}${d.hint ? ` (${d.hint})` : ''}\n`);
-  if (json) {
-    const checked = OUTPUT_SCHEMAS[command ?? 'fluxion']?.safeParse(reply(command, outcome));
-    if (!checked?.success) {
-      // a reply outside its schema is our bug: say so, and still print a reply that conforms
-      io.stderr(`fluxion: internal error: the reply does not match its schema: ${checked?.error.message ?? 'no schema'}\n`);
-      io.stdout(`${JSON.stringify(reply(command, { exitCode: 3, diagnostics: [] }))}\n`);
-      return 3;
-    }
+const printDiagnostics = (outcome: Outcome, io: CliIo) => {
+  for (const d of outcome.diagnostics) io.stderr(`${d.severity} ${d.code}${d.path ? ` ${d.path}` : ''}: ${d.message}${d.hint ? ` (${d.hint})` : ''}\n`);
+};
+
+/** Prints the reply after parsing it with its schema; a reply outside it is our bug, reported as such. */
+function printReply(command: string | null, outcome: Outcome, io: CliIo): ExitCode {
+  const checked = OUTPUT_SCHEMAS[command ?? 'fluxion']?.safeParse(reply(command, outcome));
+  if (checked?.success) {
     io.stdout(`${JSON.stringify(checked.data)}\n`);
     return outcome.exitCode;
   }
+  const failure = internal(`the reply does not match its schema: ${checked?.error.message ?? 'no schema'}`);
+  printDiagnostics(failure, io);
+  io.stdout(`${JSON.stringify(reply(command, failure))}\n`);
+  return failure.exitCode;
+}
+
+/** Writes the outcome: diagnostics to stderr, then the reply (json) or the requested text. */
+function report(command: string | null, outcome: Outcome, json: boolean, io: CliIo): ExitCode {
+  printDiagnostics(outcome, io);
+  if (json) return printReply(command, outcome, io);
   // help and version are the requested output in human mode; with --json they are the result
   const { help, version } = (outcome.result ?? {}) as { readonly help?: unknown; readonly version?: unknown };
   if (typeof help === 'string') io.stdout(help);
@@ -158,8 +120,7 @@ export async function runCommands(commands: { readonly [name: string]: Command }
     else if (command === undefined) outcome = usage(`unknown command "${name}"`, ['argv', index]);
     else outcome = await withCommand(command, argv.toSpliced(index, 1), io);
   } catch (e) {
-    io.stderr(`fluxion: internal error: ${e instanceof Error ? e.message : String(e)}\n`);
-    outcome = { exitCode: 3, diagnostics: [] };
+    outcome = internal(e instanceof Error ? e.message : String(e));
   }
   return report(known, outcome, options(argv).includes('--json'), io);
 }

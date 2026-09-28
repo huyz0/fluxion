@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`fluxion validate (FR-CLI-001, ADR-0147) > FR-CLI-001: validate reports JSON-pointer diagnostics and exits 1 1`] = `
+{
+  "apiVersion": 1,
+  "command": "validate",
+  "errors": [
+    {
+      "code": "FLX_REF_MISSING",
+      "hint": "existing screen ids: rX_C6DIMA8co-OdW",
+      "message": "no record "NoSuchScreen0000"",
+      "path": "/records/DhGD9zA_E_hMrDx6/screenId",
+      "severity": "error",
+    },
+  ],
+  "exitCode": 1,
+  "ok": false,
+}
+`;
+
+exports[`fluxion validate (FR-CLI-001, ADR-0147) > FR-CLI-001: validate reports JSON-pointer diagnostics and exits 1 2`] = `
+{
+  "apiVersion": 1,
+  "command": "validate",
+  "errors": [
+    {
+      "code": "FLX_SCHEMA_INVALID",
+      "message": "Invalid input: expected number, received string",
+      "path": "/records/DhGD9zA_E_hMrDx6/transform/w",
+      "severity": "error",
+    },
+  ],
+  "exitCode": 1,
+  "ok": false,
+}
+`;

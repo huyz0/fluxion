@@ -77,3 +77,11 @@ Chosen option **A**.
 
 FR-CLI-001, FR-CLI-002, FR-CLI-005; ADR-0015 (the render command's HTML); 06-ai-authoring (agents
 use the CLI and MCP).
+
+## Amendments
+
+- 2026-09-29 (M4.17 review F1, M4.18): a failure reply always says why: `errors` has at least one
+  diagnostic. Besides `FLX_CLI_USAGE` (exit 2) the command line reports `FLX_CLI_IO` (a named file
+  cannot be read or written, exit 1) and `FLX_CLI_INTERNAL` (an exception, a command not in this
+  build, or a reply outside its schema, exit 3). `validate` succeeds with `{ diagnostics }` (the
+  warnings) and fails with every diagnostic of the document as `errors`, each with its JSON pointer.

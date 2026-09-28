@@ -89,6 +89,7 @@
           ]
         },
         "errors": {
+          "minItems": 1,
           "type": "array",
           "items": {
             "type": "object",
@@ -133,7 +134,9 @@
                   "FLX_FORK_UNRELATED",
                   "FLX_ORIGIN_RESERVED",
                   "FLX_TOKEN_UNKNOWN",
-                  "FLX_CLI_USAGE"
+                  "FLX_CLI_USAGE",
+                  "FLX_CLI_IO",
+                  "FLX_CLI_INTERNAL"
                 ]
               },
               "severity": {

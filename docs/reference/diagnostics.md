@@ -97,8 +97,11 @@ Paths point into the engine (`/registries/<name>/<key>`), not into the document.
 ## Command line
 
 Reported by `fluxion` (ADR-0147) in its `--json` output and on stderr. Paths point into the
-command line (`/argv/<index>`), not into a document.
+command line, not into a document: `/argv/<index>` names one argument, `/argv` the command line as a
+whole (an option parse error, a file that cannot be read); an internal error has the empty path.
 
 | Code | Severity | Meaning | Typical fix |
 |---|---|---|---|
 | `FLX_CLI_USAGE` | error | The command line is not understood: an unknown command, an unknown or malformed option, or a missing argument; nothing ran, and the exit code is 2. | Run `fluxion --help` or `fluxion <command> --help`. |
+| `FLX_CLI_IO` | error | A file the command line names cannot be read or written (missing, a directory, no permission); the exit code is 1. | Check the path and its permissions. |
+| `FLX_CLI_INTERNAL` | error | The command failed for a reason that is not the input's: an exception, a command not available in this build, or a reply outside its own schema; the exit code is 3. | Report it with the command line and the input. |

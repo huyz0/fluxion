@@ -277,7 +277,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-011 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.usage.test.ts` +3 |
+| FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.usage.test.ts` +4 |
 | FR-CLI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-003 | M | R6 | M26 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-004 | S | R7 | M31 | [20-ai-authoring.md](20-ai-authoring.md) | — |

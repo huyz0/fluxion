@@ -31,7 +31,8 @@ function reply<C extends z.ZodType, R extends z.ZodType>(command: C, result: R) 
         command,
         ok: z.literal(false),
         exitCode: z.union([z.literal(1), z.literal(2), z.literal(3)]),
-        errors: z.array(diagnosticSchema),
+        // a failure always says why (M4.17 review F1)
+        errors: z.array(diagnosticSchema).min(1),
       })
       .strict(),
   ]);

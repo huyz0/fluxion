@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { type CliIo, type Command, run, runCommands } from './main.js';
+import type { CliIo, Command } from './command.js';
+import { run, runCommands } from './main.js';
 import { OUTPUT_SCHEMAS } from './output.js';
 
 /** Runs the CLI in-process (optionally over its own command table), capturing what it writes. */
@@ -45,18 +46,21 @@ describe('run (FR-CLI-001, ADR-0147)', () => {
   });
 
   it('FR-CLI-001: options after -- are positionals; --version works after a command (M4.17 review F3)', async () => {
-    // "--json" after the terminator is a file name, not the output mode
+    // "--json" after the terminator is a second file name, not the output mode
     const literal = await cli(['validate', 'x', '--', '--json']);
     expect(literal.stdout).toBe('');
-    expect(literal.code).toBe(3);
+    expect(literal.code).toBe(2);
+    expect(literal.stderr).toContain('validate takes one file, got 2');
     expect((await cli(['render', '--version'])).stdout).toBe('0.0.0\n');
     expect(json((await cli(['render', '--version', '--json'])).stdout)).toMatchObject({ command: 'render', ok: true, result: { version: '0.0.0' } });
   });
 
   it('FR-CLI-001: a command not available yet, or one that throws, is an internal error that keeps its name (review F4)', async () => {
-    const r = await cli(['validate', 'doc.flux.json']);
+    const r = await cli(['render', 'doc.flux.json', '--json']);
     expect(r.code).toBe(3);
-    expect(r.stderr).toContain('not available');
+    expect(json(r.stdout).errors).toEqual([
+      expect.objectContaining({ code: 'FLX_CLI_INTERNAL', message: 'fluxion render is not available in this build yet' }),
+    ]);
     const throwing: Command = {
       summary: 's',
       usage: 'validate',
@@ -67,8 +71,14 @@ describe('run (FR-CLI-001, ADR-0147)', () => {
     };
     const crashed = await cli(['validate', '--json'], { validate: throwing });
     expect(crashed.code).toBe(3);
-    expect(crashed.stderr).toContain('internal error: boom');
-    expect(json(crashed.stdout)).toEqual({ apiVersion: 1, command: 'validate', ok: false, exitCode: 3, errors: [] });
+    expect(crashed.stderr).toContain('error FLX_CLI_INTERNAL: boom');
+    expect(json(crashed.stdout)).toMatchObject({
+      apiVersion: 1,
+      command: 'validate',
+      ok: false,
+      exitCode: 3,
+      errors: [{ code: 'FLX_CLI_INTERNAL', message: 'boom' }],
+    });
   });
 
   it('FR-CLI-001: a reply outside its schema is reported as an internal error, with a reply that conforms', async () => {
