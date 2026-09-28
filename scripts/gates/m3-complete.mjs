@@ -173,9 +173,14 @@ leg(`undo-5000 and transact-5000 benches: p99 <= UNDO_MAX_MS (${t('UNDO_MAX_MS')
   const dir = mkdtempSync(join(tmpdir(), 'm3-bench-'));
   try {
     const out = join(dir, 'bench.json');
-    const r = pnpm('exec', 'vitest', 'bench', '--run', '--project', 'node', `--outputJson=${out}`, ...BENCHES);
+    // Vitest 5: `vitest bench` adds a "<project> (bench)" variant; benches run inside tests
+    // (`context.bench`) and the JSON reporter lists each test's results under `benchmarks`
+    const r = pnpm('exec', 'vitest', 'bench', '--run', '--project', 'node (bench)', '--reporter=json', `--outputFile=${out}`, ...BENCHES);
     if (!existsSync(out)) return `no bench output: ${ok(r)}`;
-    const benches = JSON.parse(readFileSync(out, 'utf8')).files.flatMap((f) => f.groups.flatMap((g) => g.benchmarks));
+    const tests = JSON.parse(readFileSync(out, 'utf8')).testResults.flatMap((f) => f.assertionResults);
+    const failed = tests.filter((a) => a.status !== 'passed');
+    if (r.status !== 0 || failed.length) return `bench run failed: ${failed.map((a) => a.title).join(', ') || ok(r)}`;
+    const benches = tests.flatMap((a) => a.benchmarks.flatMap((b) => b.tasks)).map((b) => ({ name: b.name, p99: b.latency?.p99 }));
     // names are exactly "<undo|redo|transact> <command id>", one per built-in command (M3.1 review F1)
     const want = BUILT_IN_COMMANDS.flatMap((c) => [`undo ${c}`, `redo ${c}`, `transact ${c}`]);
     const missing = want.filter((w) => !benches.some((b) => b.name === w));

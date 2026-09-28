@@ -125,8 +125,8 @@ Chosen option 1.
 ### Consequences
 
 - Good: undo is exact by construction (inverse diffs, no re-execution), which NFR-REL-003 tests.
-- Good: undo cost is proportional to the entry's records; hooks and full validation do not run on
-  the whole document.
+- Good: undo applies only the entry's records and runs no hooks. Validation, which is on in dev
+  and test, is not proportional: see the 2026-09-28 (M3.23) amendment.
 - Good: plugin load order cannot change hook results; merging cannot depend on timing.
 - Bad: callers must handle a `Result` from every write (commands wrap it once).
 - Bad: a hook that should run on undo (none known) cannot; its effect must be in the forward diff.
@@ -146,6 +146,14 @@ fork never reach the parent`, `…a read-only store rejects element.update…`).
 - 2026-09-28 (M3.11, M3.2 review F1): a nested `transact` is a savepoint. If the inner `fn`
   throws, the inner writes are dropped (earlier writes of the outer transaction are kept) before
   the exception propagates, so an outer command that catches it commits nothing half-done.
+- 2026-09-28 (M3.23, M3 cp1 F3): the real cost of validation. Structural checks cover only the
+  diff's records, but the referential check (`referentialErrors`) scans the whole post-state, so
+  every validated transaction (undo and redo included) is O(n) in the document. Measured by the
+  NFR-PERF-006 benches (`packages/core/bench`, default options, 5 000 records): about 5 ms mean
+  for any of the 8 built-in commands, even `document.update`; p99 5.4–9.1 ms on the dev
+  machine, within the 16 ms budget. An incremental referential check (only the records a diff
+  touches and the records that reference them) is the fix if larger documents or slower machines
+  exceed the budget; the bench leg of every milestone gate would show it.
 
 ## Pros and Cons of the Options
 
