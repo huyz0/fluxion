@@ -564,3 +564,8 @@ m3-complete.mjs red (2/22): test-backed legs by the exact titles the rows quote 
 M3.3's type test lives in core (geometry may not import schema)
 review r1 F2/F3: the NFR-REL-003 leg requires core/src/undo-property.test.ts to count runs against the global numRuns with no local numRuns (M2.25 F1) and reruns both titles at FC_RUNS=1000
 review r2: the r1 edits were applied by a script that dropped regex escapes and missed the bench filter; fixed by hand and checked (a valid readConfigureGlobal().numRuns source passes; numRuns: / numRuns : / { numRuns } overrides are caught; bench leg requires all 16 undo/redo names)
+
+## 2026-09-28 M3.2 (claude)
+ADR-0014 accepted: transact returns Result (rollback on invalid data or hook depth; a throw rolls back and rethrows), net diffs (create+delete absent, deep-equal writes dropped, empty diff silent), hooks sorted by key to a fixed point (8 passes, TX_HOOK_DEPTH) and skipped on undo/redo, history = inverse diffs + opaque metaBefore/metaAfter, merge only same key + no commit in between + not sealed (no time window), fork = O(1) snapshot with parent copy-on-write, read-only policy → TX_READ_ONLY
+03-core-engine §1: transact signature returns Result<R, TxFailure> and points at ADR-0014; index row added
+review r1 (6 findings): merge also needs the same origin; metaBefore/metaAfter come from the caller for this transaction (cross-screen undo); nested transact returns a provisional ok, outermost opts win; transact callers are command run, core history and core fork apply; copy-on-write on both sides; rows M3.14/16/17/19/20/22 cite ADR-0014

@@ -10,7 +10,7 @@ interface Store {
   get<T extends AnyRecord>(id: RecordId): T | undefined;
   query<T>(q: Query<T>): Signal<T[]>;           // reactive, memoized (alien-signals computed)
   record$(id: RecordId): Signal<AnyRecord | undefined>;
-  transact<R>(label: string, fn: (tx: Tx) => R, opts?: TxOptions): R;  // only write path
+  transact<R>(label: string, fn: (tx: Tx) => R, opts?: TxOptions): Result<R, TxFailure>;  // only write path (ADR-0014)
   subscribe(listener: (diff: Diff, meta: TxMeta) => void): Unsubscribe;
 }
 
@@ -24,6 +24,7 @@ interface Diff { puts: Map<RecordId, { before?: AnyRecord; after: AnyRecord }>; 
 - `transact` validates changed records in dev/test (full Zod) and runs **integrity hooks**
   (registered per kind) inside the same transaction: e.g. deleting an element deletes its
   bindings or converts them to free endpoints; deleting a screen deletes its elements.
+- Semantics (net diffs, rollback as a `Result`, hook order, merging, forks): ADR-0014.
 - Every transaction emits one `Diff` → undo stack, autosave, dirty tracking, (future) CRDT
   bridge, MCP live link.
 
