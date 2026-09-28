@@ -793,3 +793,7 @@ render: connector-ends.ts connectorEnds(view, id): a bound end starts at the bou
 anchors read as auto until M5, non-straight routes and waypoints draw straight until M9
 tests: T1 "FR-CON-001: renders straight line between bound shapes" (ends on the borders ±0.5 px, marker, theme stroke, redraw on move), free ends/rotated clip/no arrow, delete frees the end at the centre; node connectorEnds
 backlog: M4.30 added (M4.14 review F1, gradient parity between shape fills and backgrounds)
+
+## 2026-09-29 M4.30 (claude)
+render shape-view: gradient fills in user space and following CSS: linear through the centre at the paint angle over the CSS gradient-line half-length (abs(w cos a) + abs(h sin a))/2, radial a farthest-corner circle (r = hypot(w, h)/2); coordinates rounded to 1/1000 px
+tests: T1 "FR-SHP-001: a gradient fill matches the background gradient of the same paint" (screenshots of a 400x100 screen with the paint as background vs as a covering shape's fill, 21 interior samples, linear 45° and radial, max channel difference ≤ 2); fails on the previous bounding-box gradients

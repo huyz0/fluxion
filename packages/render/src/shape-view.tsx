@@ -14,24 +14,46 @@ const stops = (paint: { readonly stops: ReadonlyArray<{ readonly offset: number;
   // biome-ignore lint/suspicious/noArrayIndexKey: see above
   paint.stops.map((s, i) => <stop key={i} offset={s.offset} style={{ stopColor: s.css }} />);
 
-/** The SVG fill of `paint`: a colour, or a gradient defined next to the path. Images arrive in M10. */
-function svgFill(paint: ResolvedPaint, id: string): { readonly fill: string; readonly defs?: ReactNode } {
+/** Rounded to 1/1000 px, like path data, so the markup is stable across platforms. */
+const r3 = (v: number) => Math.round(v * 1000) / 1000 || 0;
+
+/**
+ * The SVG fill of `paint` on a `w` × `h` box: a colour, or a gradient defined next to the path.
+ * Gradients follow CSS (M4.30), so a paint looks the same on a shape as on a screen background
+ * (background.ts): a linear gradient runs through the centre at the paint's angle (0° left to right,
+ * clockwise) over the CSS gradient-line length, so the corners sit at 0 % and 100 %; a radial one is
+ * a farthest-corner circle. Images arrive in M10.
+ */
+function svgFill(paint: ResolvedPaint, id: string, w: number, h: number): { readonly fill: string; readonly defs?: ReactNode } {
   switch (paint.type) {
     case 'color':
       return { fill: paint.css };
     case 'linear-gradient': {
-      // the document's 0° runs left to right, clockwise, across the bounding box
       const a = (paint.angle * Math.PI) / 180;
-      const [dx, dy] = [Math.cos(a) / 2, Math.sin(a) / 2];
+      const [cos, sin] = [Math.cos(a), Math.sin(a)];
+      const half = (Math.abs(w * cos) + Math.abs(h * sin)) / 2;
       const defs = (
-        <linearGradient id={id} x1={0.5 - dx} y1={0.5 - dy} x2={0.5 + dx} y2={0.5 + dy}>
+        <linearGradient
+          id={id}
+          gradientUnits="userSpaceOnUse"
+          x1={r3(w / 2 - half * cos)}
+          y1={r3(h / 2 - half * sin)}
+          x2={r3(w / 2 + half * cos)}
+          y2={r3(h / 2 + half * sin)}
+        >
           {stops(paint)}
         </linearGradient>
       );
       return { fill: `url(#${id})`, defs };
     }
-    case 'radial-gradient':
-      return { fill: `url(#${id})`, defs: <radialGradient id={id}>{stops(paint)}</radialGradient> };
+    case 'radial-gradient': {
+      const defs = (
+        <radialGradient id={id} gradientUnits="userSpaceOnUse" cx={r3(w / 2)} cy={r3(h / 2)} r={r3(Math.hypot(w, h) / 2)}>
+          {stops(paint)}
+        </radialGradient>
+      );
+      return { fill: `url(#${id})`, defs };
+    }
     default:
       return { fill: 'none' };
   }
@@ -68,7 +90,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const def = registries.shapeDefs.get(element.defId);
   if (def === undefined) return <PlaceholderView {...props} />;
   const { w, h } = element.transform;
-  const { fill, defs } = svgFill(style.fill, fillId);
+  const { fill, defs } = svgFill(style.fill, fillId, w, h);
   const paragraphs = plainParagraphs(element.text);
   const outline: CSSProperties = {
     fill,

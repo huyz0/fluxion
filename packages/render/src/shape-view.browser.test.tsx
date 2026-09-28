@@ -4,6 +4,7 @@ import { documentBuilder, type RectOptions } from '@fluxion/schema/testing';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 import { ScreenView } from './screen-view.js';
 
 let host: HTMLElement;
@@ -103,7 +104,7 @@ describe('shape view (FR-SHP-001)', () => {
     expect(grad?.id).toMatch(/^fx-fill-[\w-]+$/);
     expect(getComputedStyle(gradient.el?.querySelector('path.fx-outline') as Element).fill).toContain(`#${grad?.id}`);
     expect([grad?.getAttribute('x1'), grad?.getAttribute('y1'), grad?.getAttribute('y2')].map(Number).map((v) => Math.round(v * 1000) / 1000)).toEqual([
-      0.5, 0, 1,
+      80, 0, 80,
     ]);
     const unknown = await showRect({ defId: 'acme:star' });
     expect(unknown.el?.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('Unsupported element: shape');
@@ -137,5 +138,51 @@ describe('shape view (FR-SHP-001)', () => {
     const ids = [...host.querySelectorAll('radialGradient')].map((g) => g.id);
     expect(ids).toHaveLength(2);
     expect(new Set(ids).size).toBe(2);
+  });
+
+  it('FR-SHP-001: a gradient fill matches the background gradient of the same paint', async () => {
+    const linear = {
+      type: 'linear-gradient',
+      angle: 45,
+      stops: [
+        { offset: 0, color: '#000000' },
+        { offset: 1, color: '#ffffff' },
+      ],
+    };
+    const radial = {
+      type: 'radial-gradient',
+      stops: [
+        { offset: 0, color: '#ffffff' },
+        { offset: 1, color: '#2563eb' },
+      ],
+    };
+    /** The pixels of a 400x100 screen showing `paint` as its background, or as the fill of a shape covering it. */
+    const pixels = async (paint: object, on: 'background' | 'shape') => {
+      const b = documentBuilder({ seed: 430 });
+      const screenId = b.screen({ size: { w: 400, h: 100 } });
+      if (on === 'shape') b.rect(screenId, { x: 0, y: 0, w: 400, h: 100, style: { fill: paint as never, stroke: { color: '#000000', width: 0 } } });
+      const file = b.build();
+      const records = on === 'background' ? { ...file.records, [screenId]: { ...(file.records[screenId] as object), background: paint } } : file.records;
+      const { store } = createCore({ ...file, records } as DocumentFile);
+      await act(async () => root.render(<ScreenView store={store} screenId={screenId} mode="export" view={{ kind: 'fit', box: { w: 400, h: 100 } }} />));
+      const png = await page.screenshot({ element: host.querySelector('.fx-screen') as HTMLElement, save: false });
+      const img = new Image();
+      img.src = `data:image/png;base64,${png}`;
+      await img.decode();
+      const canvas = document.createElement('canvas');
+      [canvas.width, canvas.height] = [img.width, img.height];
+      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+      ctx.drawImage(img, 0, 0);
+      const scale = img.width / 400;
+      // a grid of interior samples, clear of the edges
+      return [10, 50, 90].flatMap((y) =>
+        [10, 60, 130, 200, 270, 340, 390].map((x) => [...ctx.getImageData(Math.round(x * scale), Math.round(y * scale), 1, 1).data]),
+      );
+    };
+    for (const paint of [linear, radial]) {
+      const [background, shape] = [await pixels(paint, 'background'), await pixels(paint, 'shape')];
+      const worst = Math.max(...shape.flatMap((rgba, i) => rgba.slice(0, 3).map((c, k) => Math.abs(c - (background[i]?.[k] ?? -99)))));
+      expect(worst).toBeLessThanOrEqual(2);
+    }
   });
 });
