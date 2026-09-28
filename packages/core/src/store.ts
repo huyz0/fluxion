@@ -2,7 +2,8 @@
 // record, so a change notifies only that record's readers (NFR-MNT-006). `transact` is the only
 // write path (ADR-0014).
 import { type AnyRecord, type Diagnostic, type DocumentFile, err, ok, type RecordId, type Result } from '@fluxion/schema';
-import { batch, type ReadSignal, type WritableSignal, writable } from './signals.js';
+import { Indexes, type IndexName } from './indexes.js';
+import { batch, computed, type ReadSignal, type WritableSignal, writable } from './signals.js';
 import {
   checkDiff,
   cloneJson,
@@ -16,6 +17,26 @@ import {
   type TxOptions,
   WorkingCopy,
 } from './transaction.js';
+
+/**
+ * What a {@link Store.query} function reads: every read is tracked, so the query re-runs when
+ * anything it read changes (a record through `get`/`has`, the id set through `ids`/`size`,
+ * an index key through `members`).
+ *
+ * @public
+ */
+export type ReadView = {
+  /** The record with `id`; tracks that record. */
+  get(id: RecordId): AnyRecord | undefined;
+  /** Whether `id` exists; tracks that record. */
+  has(id: RecordId): boolean;
+  /** Every record id; tracks additions and removals. */
+  ids(): RecordId[];
+  /** Number of records; tracks additions and removals. */
+  readonly size: number;
+  /** Ids under `key` in `index`; tracks that key. */
+  members(index: IndexName, key: string): RecordId[];
+};
 
 /**
  * A document's records: read them, watch them, and change them through transactions.
@@ -43,6 +64,13 @@ export interface Store {
   transact<R>(label: string, fn: (tx: Tx) => R, options?: TxOptions): Result<R, TxFailure>;
   /** Call `listener` after every committed transaction with a non-empty diff; returns an unsubscribe. */
   subscribe(listener: (diff: Diff, meta: TxMeta) => void): () => void;
+  /**
+   * Ids filed under `key` in `index` (elements by screen or parent, records by type, bindings by
+   * element), in no particular order. Inside {@link Store.query} or an effect it subscribes to that key.
+   */
+  members(index: IndexName, key: string): RecordId[];
+  /** A memoized reactive query over a tracked {@link ReadView}: re-runs only when something it read changes. */
+  query<T>(fn: (view: ReadView) => T): ReadSignal<T>;
 }
 
 /**
@@ -62,6 +90,10 @@ export class RecordStore implements Store {
   readonly #listeners = new Set<(diff: Diff, meta: TxMeta) => void>();
   readonly #envelope: Omit<DocumentFile, 'records'>;
   readonly #validate: boolean;
+  readonly #indexes: Indexes;
+  // bumped when a record is added or removed (tracked ids/size); a plain counter, never read tracked
+  readonly #membership: WritableSignal<number> = writable(0);
+  #memberships = 0;
   #open: WorkingCopy | undefined;
   // referential errors the document already has (computed on first use), so they do not block
   // unrelated transactions; replaced by the post-state's after each commit
@@ -73,6 +105,34 @@ export class RecordStore implements Store {
     this.#validate = options.validate ?? true;
     // map keys are the record ids (validate() reports a key/id mismatch as FLX_ID_MISMATCH)
     for (const [id, record] of Object.entries<AnyRecord>(records)) this.#records.set(id as RecordId, deepFreeze(record));
+    this.#indexes = new Indexes(this.#records.values());
+  }
+
+  members(index: IndexName, key: string): RecordId[] {
+    return this.#indexes.members(index, key);
+  }
+
+  query<T>(fn: (view: ReadView) => T): ReadSignal<T> {
+    return computed(() => fn(this.#view));
+  }
+
+  // the tracked view a query reads (M3.12 review r2 F1: plain get/has/ids would go stale)
+  readonly #view: ReadView = {
+    get: (id) => this.record$(id)(),
+    has: (id) => this.record$(id)() !== undefined,
+    ids: () => {
+      this.#membership.get();
+      return this.ids();
+    },
+    get size() {
+      return this.ids().length;
+    },
+    members: (index, key) => this.members(index, key),
+  };
+
+  /** Every index as sorted plain data (core-internal; tests compare it with rebuilt indexes). */
+  indexSnapshot(): ReturnType<Indexes['snapshot']> {
+    return this.#indexes.snapshot();
   }
 
   get(id: RecordId): AnyRecord | undefined {
@@ -115,6 +175,8 @@ export class RecordStore implements Store {
       value = fn(tx);
     } finally {
       this.#open = undefined;
+      // a Tx kept past its transaction (an async fn, a stored reference) must not lose writes silently
+      tx.close();
     }
     const diff = netDiff(tx.changes, (id) => this.#records.get(id));
     if (diff.puts.size === 0 && diff.deletes.size === 0) return ok(value);
@@ -151,12 +213,22 @@ export class RecordStore implements Store {
 
   /** Replace or add `puts` and remove `deletes`, then notify each changed record's signal once. */
   apply(puts: readonly AnyRecord[], deletes: readonly RecordId[]): void {
-    for (const record of puts) this.#records.set(record.id as RecordId, deepFreeze(record));
-    for (const id of deletes) this.#records.delete(id);
     batch(() => {
+      // indexes are maintained here, not by a subscriber: they can never miss or reorder a change
+      const added = puts.filter((record) => !this.#records.has(record.id as RecordId)).length;
+      for (const record of puts) this.#write(record.id as RecordId, record);
+      for (const id of deletes) this.#write(id, undefined);
+      if (added > 0 || deletes.length > 0) this.#membership.set(++this.#memberships);
       for (const record of puts) this.#signals.get(record.id as RecordId)?.set(this.#records.get(record.id as RecordId));
       for (const id of deletes) this.#signals.get(id)?.set(undefined);
     });
+  }
+
+  /** Store `record` under `id` (undefined removes it) and move it in the indexes. */
+  #write(id: RecordId, record: AnyRecord | undefined): void {
+    this.#indexes.update(this.#records.get(id), record);
+    if (record) this.#records.set(id, deepFreeze(record));
+    else this.#records.delete(id);
   }
 }
 

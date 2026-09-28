@@ -65,6 +65,9 @@ export interface Hasher {
 }
 
 // @public
+export type IndexName = "byScreen" | "byParent" | "byType" | "bindingsByElement";
+
+// @public
 export interface Logger {
     log(level: LogLevel, message: string, fields?: Readonly<Record<string, unknown>>): void;
 }
@@ -84,10 +87,21 @@ export { Random }
 export type ReadSignal<T> = () => T;
 
 // @public
+export type ReadView = {
+    get(id: RecordId): AnyRecord | undefined;
+    has(id: RecordId): boolean;
+    ids(): RecordId[];
+    readonly size: number;
+    members(index: IndexName, key: string): RecordId[];
+};
+
+// @public
 export interface Store {
     get(id: RecordId): AnyRecord | undefined;
     has(id: RecordId): boolean;
     ids(): RecordId[];
+    members(index: IndexName, key: string): RecordId[];
+    query<T>(fn: (view: ReadView) => T): ReadSignal<T>;
     record$(id: RecordId): ReadSignal<AnyRecord | undefined>;
     readonly size: number;
     subscribe(listener: (diff: Diff, meta: TxMeta) => void): () => void;

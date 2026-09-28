@@ -116,21 +116,34 @@ export function jsonEqual(a: unknown, b: unknown): boolean {
 export class WorkingCopy implements Tx {
   readonly changes: Map<RecordId, AnyRecord | null> = new Map();
   readonly #read: (id: RecordId) => AnyRecord | undefined;
+  #closed = false;
 
   constructor(read: (id: RecordId) => AnyRecord | undefined) {
     this.#read = read;
   }
 
+  /** End the transaction: any later use throws (M3.11 review F2). */
+  close(): void {
+    this.#closed = true;
+  }
+
+  #open(): void {
+    if (this.#closed) throw new Error('transaction is closed: use the Tx only inside its transact callback');
+  }
+
   get(id: RecordId): AnyRecord | undefined {
+    this.#open();
     const pending = this.changes.get(id);
     return pending === undefined ? this.#read(id) : (pending ?? undefined);
   }
 
   put(record: AnyRecord): void {
+    this.#open();
     this.changes.set(record.id as RecordId, deepFreeze(cloneJson(record)));
   }
 
   patch(id: RecordId, fields: Readonly<Record<string, unknown>>): void {
+    this.#open();
     const base = this.get(id);
     // patching a missing record, or its identity, is a programmer error (ADR-0014: a throw rolls back)
     if (!base) throw new Error(`patch: no record ${id}`);
@@ -144,6 +157,7 @@ export class WorkingCopy implements Tx {
   }
 
   delete(id: RecordId): void {
+    this.#open();
     this.changes.set(id, null);
   }
 
