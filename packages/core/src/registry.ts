@@ -1,6 +1,7 @@
 // Typed registries (03-core-engine §4, FR-EXT-001): built-ins and plugins contribute through the
 // same API; every extensible kind is looked up here, never switched on.
 import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
+import type { IntegrityHook } from './hook-types.js';
 import { type ReadSignal, type WritableSignal, writable } from './signals.js';
 
 /**
@@ -141,11 +142,11 @@ export const CORE_REGISTRY_NAMES = [
 export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
 
 /**
- * The core registries, one per name.
+ * The core registries, one per name; values are typed where core consumes them.
  *
  * @public
  */
-export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, unknown> };
+export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends 'integrityHooks' ? IntegrityHook : unknown> };
 
 /**
  * A fresh set of empty core registries.

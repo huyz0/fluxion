@@ -115,6 +115,8 @@ export function jsonEqual(a: unknown, b: unknown): boolean {
 /** The transaction's working copy: pending changes over the store's records (null = deleted). */
 export class WorkingCopy implements Tx {
   readonly changes: Map<RecordId, AnyRecord | null> = new Map();
+  /** Records created and then deleted in this transaction, with their last value (M3.14 review F2). */
+  readonly dropped: Map<RecordId, AnyRecord> = new Map();
   readonly #read: (id: RecordId) => AnyRecord | undefined;
   #closed = false;
 
@@ -158,17 +160,22 @@ export class WorkingCopy implements Tx {
 
   delete(id: RecordId): void {
     this.#open();
+    const pending = this.changes.get(id);
+    if (pending && !this.#read(id)) this.dropped.set(id, pending);
     this.changes.set(id, null);
   }
 
   /** Run `fn` on this copy; if it throws, drop its changes (keeping earlier ones) and rethrow. */
   savepoint<R>(fn: (tx: Tx) => R): R {
     const saved = new Map(this.changes);
+    const dropped = new Map(this.dropped);
     try {
       return fn(this);
     } catch (e) {
       this.changes.clear();
       for (const [id, record] of saved) this.changes.set(id, record);
+      this.dropped.clear();
+      for (const [id, record] of dropped) this.dropped.set(id, record);
       throw e;
     }
   }

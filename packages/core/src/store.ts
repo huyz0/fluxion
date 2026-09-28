@@ -2,7 +2,10 @@
 // record, so a change notifies only that record's readers (NFR-MNT-006). `transact` is the only
 // write path (ADR-0014).
 import { type AnyRecord, type Diagnostic, type DocumentFile, err, ok, type RecordId, type Result } from '@fluxion/schema';
+import type { IntegrityHook } from './hook-types.js';
+import { pendingMembers } from './hooks.js';
 import { Indexes, type IndexName } from './indexes.js';
+import type { Registry } from './registry.js';
 import { batch, computed, type ReadSignal, type WritableSignal, writable } from './signals.js';
 import {
   checkDiff,
@@ -81,7 +84,17 @@ export interface Store {
 export type StoreOptions = {
   /** Validate every transaction (default true); only production builds may switch it off (ADR-0014). */
   readonly validate?: boolean;
+  /** Integrity hooks to run in every transaction except undo and redo (ADR-0014). */
+  readonly hooks?: Registry<string, IntegrityHook>;
 };
+
+/** Passes after which non-converging hooks end the transaction with TX_HOOK_DEPTH (ADR-0014). */
+const MAX_HOOK_PASSES = 8;
+
+/** Whether two working-copy change maps hold the same values (by reference). */
+function sameChanges(a: ReadonlyMap<RecordId, AnyRecord | null>, b: ReadonlyMap<RecordId, AnyRecord | null>): boolean {
+  return a.size === b.size && [...a].every(([id, v]) => b.has(id) && b.get(id) === v);
+}
 
 /** The store implementation; `apply` is core-internal (transactions and history call it). */
 export class RecordStore implements Store {
@@ -90,6 +103,7 @@ export class RecordStore implements Store {
   readonly #listeners = new Set<(diff: Diff, meta: TxMeta) => void>();
   readonly #envelope: Omit<DocumentFile, 'records'>;
   readonly #validate: boolean;
+  readonly #hooks: Registry<string, IntegrityHook> | undefined;
   readonly #indexes: Indexes;
   // bumped when a record is added or removed (tracked ids/size); a plain counter, never read tracked
   readonly #membership: WritableSignal<number> = writable(0);
@@ -103,6 +117,7 @@ export class RecordStore implements Store {
     const { records, ...envelope } = cloneJson(file);
     this.#envelope = envelope;
     this.#validate = options.validate ?? true;
+    this.#hooks = options.hooks;
     // map keys are the record ids (validate() reports a key/id mismatch as FLX_ID_MISMATCH)
     for (const [id, record] of Object.entries<AnyRecord>(records)) this.#records.set(id as RecordId, deepFreeze(record));
     this.#indexes = new Indexes(this.#records.values());
@@ -173,6 +188,10 @@ export class RecordStore implements Store {
     let value: R;
     try {
       value = fn(tx);
+      const replay = options.origin === 'undo' || options.origin === 'redo';
+      if (!replay && !this.#runHooks(tx)) {
+        return err({ code: 'TX_HOOK_DEPTH', message: `${label}: integrity hooks did not settle in ${MAX_HOOK_PASSES} passes`, diagnostics: [] });
+      }
     } finally {
       this.#open = undefined;
       // a Tx kept past its transaction (an async fn, a stored reference) must not lose writes silently
@@ -198,6 +217,21 @@ export class RecordStore implements Store {
     return () => {
       this.#listeners.delete(listener);
     };
+  }
+
+  /** Run the hooks, sorted by key, until a pass writes nothing; false when that takes too many passes. */
+  #runHooks(tx: WorkingCopy): boolean {
+    const hooks = this.#hooks?.list() ?? [];
+    if (!hooks.length) return true;
+    for (let pass = 0; pass < MAX_HOOK_PASSES; pass++) {
+      const before = new Map(tx.changes);
+      const diff = netDiff(tx.changes, (id) => this.#records.get(id));
+      const deleted = new Map([...diff.deletes, ...[...tx.dropped].filter(([id]) => tx.changes.get(id) === null)]);
+      const members = pendingMembers((index, key) => this.#indexes.peek(index, key), tx.changes, tx);
+      for (const [, hook] of hooks) hook({ tx, diff, deleted, members });
+      if (sameChanges(before, tx.changes)) return true;
+    }
+    return false;
   }
 
   /** Validation problems of `diff`; on none, the post-state's referential errors become the known ones. */

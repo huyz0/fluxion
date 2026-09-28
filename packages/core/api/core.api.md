@@ -24,6 +24,9 @@ export interface Clock {
 export function computed<T>(fn: () => T): ReadSignal<T>;
 
 // @public
+export const CORE_HOOKS: ReadonlyArray<readonly [string, IntegrityHook]>;
+
+// @public
 export const CORE_REGISTRY_NAMES: readonly ["elementKinds", "shapeDefs", "markers", "routers", "layouts", "effects", "transitions", "themes", "fonts", "commands", "integrityHooks", "importers", "exporters", "dslMacros", "lintRules"];
 
 // @public
@@ -37,7 +40,7 @@ export type CoreError = {
 export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY";
 
 // @public
-export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, unknown>; };
+export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : unknown>; };
 
 // @public
 export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
@@ -85,7 +88,18 @@ export interface Hasher {
 }
 
 // @public
+export type HookContext = {
+    readonly tx: Tx;
+    readonly diff: Diff;
+    readonly deleted: ReadonlyMap<RecordId, AnyRecord>;
+    members(index: IndexName, key: string): RecordId[];
+};
+
+// @public
 export type IndexName = "byScreen" | "byParent" | "byType" | "bindingsByElement";
+
+// @public
+export type IntegrityHook = (context: HookContext) => void;
 
 // @public
 export interface Logger {
@@ -119,6 +133,9 @@ export type ReadView = {
 };
 
 // @public
+export function registerCoreHooks(registry: Registry<string, IntegrityHook>): void;
+
+// @public
 export interface Registry<K extends string, V> {
     readonly changes$: ReadSignal<number>;
     get(key: K): V | undefined;
@@ -145,6 +162,7 @@ export interface Store {
 // @public
 export type StoreOptions = {
     readonly validate?: boolean;
+    readonly hooks?: Registry<string, IntegrityHook>;
 };
 
 // @public

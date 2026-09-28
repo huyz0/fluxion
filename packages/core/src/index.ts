@@ -2,6 +2,7 @@
 
 export type { Random } from '@fluxion/schema';
 export type { CoreError, CoreErrorCode } from './errors.js';
+export { CORE_HOOKS, type HookContext, type IntegrityHook, registerCoreHooks } from './hooks.js';
 export type { IndexName } from './indexes.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, TextMeasurer, TextMetrics } from './ports/ports.js';
 export {

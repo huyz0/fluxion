@@ -54,12 +54,18 @@ interface CommandDef<A> {
 
 ```ts
 interface Registry<K extends string, V> {
-  register(key: K, value: V, source: PluginId): Disposable;
+  readonly name: string;
+  // a key held by another source is refused: err(FLX_REGISTRY_DUPLICATE), the first entry stays
+  register(key: K, value: V, source: PluginId): Result<Disposable, Diagnostic>;
   get(key: K): V | undefined;
-  list(): ReadonlyArray<[K, V]>;
-  changes$: Signal<number>;
+  source(key: K): PluginId | undefined;
+  list(): ReadonlyArray<readonly [K, V]>;       // sorted by key
+  readonly changes$: ReadSignal<number>;
 }
 ```
+Integrity hooks (`integrityHooks`, ADR-0014) run inside each transaction, sorted by key, to a
+fixed point; the built-ins (`registerCoreHooks`) cascade screen and subtree deletes and keep
+connector ends bound or free.
 Registries in core: `elementKinds`, `shapeDefs`, `markers`, `routers`, `layouts`, `effects`,
 `transitions`, `themes`, `fonts`, `commands`, `integrityHooks`, `importers`, `exporters`,
 `dslMacros`, `lintRules`. Render-level registries (`elementViews`, `components`) live in

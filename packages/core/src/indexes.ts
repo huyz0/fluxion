@@ -14,7 +14,7 @@ export type IndexName = 'byScreen' | 'byParent' | 'byType' | 'bindingsByElement'
 const NAMES: readonly IndexName[] = ['byScreen', 'byParent', 'byType', 'bindingsByElement'];
 
 /** The keys `record` is filed under in each index. */
-function keysOf(record: AnyRecord): Array<[IndexName, string]> {
+export function keysOf(record: AnyRecord): Array<[IndexName, string]> {
   const r = record as {
     readonly type: string;
     readonly screenId?: unknown;
@@ -57,6 +57,11 @@ export class Indexes {
     const has = (list: Array<[IndexName, string]>, [n, k]: [IndexName, string]) => list.some(([m, j]) => m === n && j === k);
     for (const key of was.filter((key) => !has(now, key))) this.#remove(key[0], key[1], before?.id as RecordId);
     for (const key of now.filter((key) => !has(was, key))) this.#insert(key[0], key[1], after?.id as RecordId, true);
+  }
+
+  /** Members of `key` in `index` without subscribing (for code running inside a transaction). */
+  peek(index: IndexName, key: string): RecordId[] {
+    return [...(this.#maps.get(index)?.get(key) ?? [])];
   }
 
   /** Every index as sorted plain data (tests compare incremental and rebuilt indexes with it). */
