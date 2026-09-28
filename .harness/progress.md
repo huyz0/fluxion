@@ -852,3 +852,8 @@ m4-complete CLI e2e leg: the spawn check reads each suite plus the helpers it im
 
 ## 2026-09-29 M4.32 (claude)
 shape-view.browser.test "FR-SHP-001: a gradient fill matches the background gradient of the same paint": the four views (linear and radial, as background and as shape fill) render stacked in one root and are captured in one screenshot, sampled per 100 px band; assertions unchanged; still fails against the pre-M4.30 bounding-box gradients
+
+## 2026-09-29 M4.31 (claude)
+the preservation property ("FR-DOC-005: any extra field at any depth…") failed once in the M4.17 staged ladder (stack through fc.assert: a property failure, not a timeout); its seed was not in the ladder's 40-line FAIL detail; no counterexample in 1.3 million cases (rerun: FC_SEED=<seed> FC_RUNS=100000 npx vitest run --project node packages/schema/src/preservation.test.ts -t "any extra field" --test-timeout=900000, with FC_SEED 7919, 15838, 23757 and ten runs without FC_SEED); the property is an inline constant with no shared file, and a forced timeout reports as a plain timeout
+precommit.mjs: a failed step's detail keeps up to 6 fast-check lines (Property failed after, { seed: …, Counterexample:) found anywhere in its report, above the tail; ladder harness case
+review F1-F2: the progress note no longer claims a kept ladder log (that was a local script, not repo machinery) and records the search command; testing.md §4 states that a failure's shrunk counterexample becomes a named case in the fixing commit and that the ladder keeps the seed lines

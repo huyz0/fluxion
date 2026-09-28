@@ -157,7 +157,11 @@ async function runStep([name, , available, exec]) {
   // a node:test spec report ends with a "failing tests" list, but one long assertion message pushes
   // the test names out of a plain tail: start at that list when there is one (M1.39)
   const failing = all.findIndex((l) => l.startsWith('✖ failing tests:'));
-  const shown = failing >= 0 ? all.slice(failing, failing + 40) : all.slice(-40);
+  const tail = failing >= 0 ? all.slice(failing, failing + 40) : all.slice(-40);
+  // a failed fast-check property names its seed and counterexample near the top of the report, above
+  // the tail: keep those lines, so an intermittent property failure can be replayed (M4.31)
+  const replay = all.filter((l) => /Property failed after|Counterexample:|\{ seed: -?\d+/.test(l) && !tail.includes(l)).slice(0, 6);
+  const shown = [...replay, ...tail];
   const detail = argv.has('--summary') ? [] : shown.map((l) => `    ${l}`);
   return { lines: [`FAIL ${name} (${ms}ms)`, ...detail], ok: false };
 }

@@ -60,6 +60,24 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
     }
   });
 
+  it('a failed fast-check property keeps its seed and counterexample in the FAIL detail (M4.31)', () => {
+    const sb = sandbox();
+    try {
+      sb.write('.github/workflows/ci.yml', 'name: ci\n');
+      const report =
+        "console.log(['Error: Property failed after 12 tests', '{ seed: -1234567, path: \"11:0\", endOnFailure: true }', 'Counterexample: [\"x\",0]', ...Array(200).fill('  noise')].join('\\n')); process.exit(1);\n";
+      sb.write('scripts/gates/check-workflows.mjs', report);
+      const r = sb.node('scripts/gates/precommit.mjs', ['--all']);
+      assert.match(
+        r.stdout,
+        /^FAIL workflows[^\n]*\n {4}Error: Property failed after 12 tests\n {4}\{ seed: -1234567, path: "11:0"[^\n]*\n {4}Counterexample: \["x",0\]\n {4} {2}noise$/m,
+        out(r),
+      );
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('runAsync reports a missing command as a failure instead of throwing', async () => {
     const r = await runAsync('fluxion-no-such-command-xyz', []);
     assert.notEqual(r.status, 0);

@@ -62,7 +62,9 @@ describe('orthogonal router', () => {
 ## 4. Property tests
 
 Use fast-check (`@fast-check/vitest`) for invariants. Seed is fixed in CI (`FC_SEED` printed on
-failure); default 200 runs in pre-commit, 10 000 nightly.
+failure); default 200 runs in pre-commit, 10 000 nightly. A failure's shrunk counterexample becomes a named
+example-based case next to the property, in the commit that fixes it; the pre-commit ladder keeps the
+seed and counterexample lines in its FAIL detail, so a local failure can be replayed with `FC_SEED`.
 
 | Area | Required properties |
 |---|---|
