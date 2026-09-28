@@ -602,3 +602,7 @@ check-ci-evidence (M2 final F5): reading a run no longer exits on a transport fa
 ## 2026-09-28 M3.8 (claude)
 "FR-DOC-005: the unknown-kind fixture parses with FLX_KIND_UNKNOWN" was red on the M2 fixture: its only unknown element was acme:gauge, a plugin-qualified kind the schema accepts as a plugin element (FLX_KIND_UNKNOWN is for unqualified kinds from a newer version); gen.mjs adds a `hologram` element (future core kind, extra field) so the fixture is what its name says; regenerated, --check current, schema suite 110 pass
 budget record refreshed with ADR-0145's CI path: check-budget --record --cold-from-ci 268b58e (ci 36378108726, cold setup 156 s; first green CI after M3.3's lockfile change); M3.7 review minors argued
+
+## 2026-09-28 M3.9 (claude)
+core ports (ports/ports.ts): Clock (now, frame → cancel), TextMeasurer (FontSpec → TextMetrics), FileIO (Result<…, CoreError>), Hasher (sha256 hex), Logger (log(level, message, fields)); Random re-exported from schema; CoreError/CoreErrorCode in core/src/errors.ts (ADR-0144)
+@fluxion/core/testing (own tsdown entry and exports path, like schema's): VirtualClock (moves only on advance; frames requested during a frame run on the next advance), FixedTextMeasurer, MemoryFileIO (copies in and out), CaptureLogger, seededRandom (schema's); 5 tests incl. the gate's NFR-REL-005 title; core API report regenerated

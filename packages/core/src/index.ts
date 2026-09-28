@@ -1,8 +1,8 @@
-/**
- * `@fluxion/core` — Document store (records + signals), transactions, commands, undo/redo, queries, registries.
- *
- * @packageDocumentation
- */
+// Public entry of @fluxion/core; the package comment is the dts banner in tsdown.config.ts.
+
+export type { Random } from '@fluxion/schema';
+export type { CoreError, CoreErrorCode } from './errors.js';
+export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, TextMeasurer, TextMetrics } from './ports/ports.js';
 
 /**
  * Version of this package.

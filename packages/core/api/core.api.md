@@ -4,6 +4,68 @@
 
 ```ts
 
+import { Random } from '@fluxion/schema';
+import { Result } from '@fluxion/schema';
+
+// @public
+export interface Clock {
+    frame(callback: (time: number) => void): () => void;
+    now(): number;
+}
+
+// @public
+export type CoreError = {
+    readonly code: CoreErrorCode;
+    readonly message: string;
+    readonly cause?: unknown;
+};
+
+// @public
+export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO";
+
+// @public
+export interface FileIO {
+    read(path: string): Promise<Result<Uint8Array, CoreError>>;
+    write(path: string, bytes: Uint8Array): Promise<Result<void, CoreError>>;
+}
+
+// @public
+export type FontSpec = {
+    readonly family: string;
+    readonly size: number;
+    readonly weight?: number;
+    readonly lineHeight?: number;
+};
+
+// @public
+export interface Hasher {
+    sha256(bytes: Uint8Array): Promise<string>;
+}
+
+// @public
+export interface Logger {
+    log(level: LogLevel, message: string, fields?: Readonly<Record<string, unknown>>): void;
+}
+
+// @public
+export type LogLevel = "debug" | "info" | "warn" | "error";
+
+export { Random }
+
+// @public
+export interface TextMeasurer {
+    measure(text: string, font: FontSpec): TextMetrics_2;
+}
+
+// @public
+type TextMetrics_2 = {
+    readonly width: number;
+    readonly height: number;
+    readonly ascent: number;
+    readonly descent: number;
+};
+export { TextMetrics_2 as TextMetrics }
+
 // @public
 export const VERSION: string;
 

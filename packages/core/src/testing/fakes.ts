@@ -1,0 +1,89 @@
+// Deterministic port implementations for tests (testing.md T0: fakes for ports; NFR-REL-005).
+import { err, ok, type Result } from '@fluxion/schema';
+import type { CoreError } from '../errors.js';
+import type { Clock, FileIO, FontSpec, Logger, LogLevel, TextMeasurer, TextMetrics } from '../ports/ports.js';
+
+/** A {@link Clock} that moves only when told: `advance(ms)` runs the frames due. */
+export class VirtualClock implements Clock {
+  #time: number;
+  #frames = new Map<number, (time: number) => void>();
+  #nextId = 0;
+
+  constructor(start = 0) {
+    this.#time = start;
+  }
+
+  now(): number {
+    return this.#time;
+  }
+
+  frame(callback: (time: number) => void): () => void {
+    const id = this.#nextId++;
+    this.#frames.set(id, callback);
+    return () => {
+      this.#frames.delete(id);
+    };
+  }
+
+  /** Move time forward by `ms` and run the frames scheduled before this call, in order. */
+  advance(ms: number): void {
+    this.#time += ms;
+    const due = [...this.#frames];
+    this.#frames.clear();
+    for (const [, callback] of due) callback(this.#time);
+  }
+}
+
+/**
+ * A {@link TextMeasurer} with fixed metrics: every character is `advance` em wide, lines are
+ * `lineHeight` em tall (1.2 default), ascent 0.8 em and descent 0.2 em.
+ */
+export class FixedTextMeasurer implements TextMeasurer {
+  readonly #advance: number;
+
+  constructor(advance = 0.6) {
+    this.#advance = advance;
+  }
+
+  measure(text: string, font: FontSpec): TextMetrics {
+    const lines = text.split('\n');
+    const widest = Math.max(...lines.map((line) => [...line].length));
+    return {
+      width: widest * this.#advance * font.size,
+      height: lines.length * (font.lineHeight ?? 1.2) * font.size,
+      ascent: 0.8 * font.size,
+      descent: 0.2 * font.size,
+    };
+  }
+}
+
+/** A {@link FileIO} over a map; `files` exposes what was written. */
+export class MemoryFileIO implements FileIO {
+  readonly files: Map<string, Uint8Array> = new Map();
+
+  async read(path: string): Promise<Result<Uint8Array, CoreError>> {
+    const bytes = this.files.get(path);
+    return bytes ? ok(bytes.slice()) : err({ code: 'FILE_NOT_FOUND', message: `no file at ${path}` });
+  }
+
+  async write(path: string, bytes: Uint8Array): Promise<Result<void, CoreError>> {
+    this.files.set(path, bytes.slice());
+    return ok(undefined);
+  }
+}
+
+/** One entry recorded by {@link CaptureLogger}. */
+export type LogEntry = {
+  readonly level: LogLevel;
+  readonly message: string;
+  readonly fields?: Readonly<Record<string, unknown>>;
+};
+
+/** A {@link Logger} that keeps every entry in `entries`. */
+export class CaptureLogger implements Logger {
+  readonly entries: LogEntry[] = [];
+
+  log(level: LogLevel, message: string, fields?: Readonly<Record<string, unknown>>): void {
+    this.entries.push(fields === undefined ? { level, message } : { level, message, fields });
+  }
+}
