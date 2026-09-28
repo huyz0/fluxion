@@ -147,7 +147,7 @@ export class RecordStore implements Store {
   readonly #hooks: Registry<string, IntegrityHook> | undefined;
   // built on first use, so forking stays O(1)
   #indexCache: Indexes | undefined;
-  readonly #history: StoreHistory = new StoreHistory(this.transact.bind(this));
+  readonly #history: StoreHistory = new StoreHistory(this, (label, fn, options) => this.#replayable(label, fn, options ?? {}));
   // bumped when a record is added or removed (tracked ids/size); a plain counter, never read tracked
   readonly #membership: WritableSignal<number> = writable(0);
   #memberships = 0;
@@ -273,6 +273,17 @@ export class RecordStore implements Store {
   }
 
   transact<R>(label: string, fn: (tx: Tx) => R, options: TxOptions = {}): Result<R, TxFailure> {
+    // undo and redo skip the hooks and are not recorded: only the history module replays with them,
+    // through #replayable (M4.4 review F3)
+    if (options.origin === 'undo' || options.origin === 'redo') {
+      const message = `origin "${options.origin}" is reserved for the history module`;
+      return err({ code: 'TX_INVALID', message: `${label}: ${message}`, diagnostics: [{ code: 'FLX_ORIGIN_RESERVED', severity: 'error', path: '', message }] });
+    }
+    return this.#replayable(label, fn, options);
+  }
+
+  /** `transact` without the origin check: the history module's entry point (undo/redo replays). */
+  #replayable<R>(label: string, fn: (tx: Tx) => R, options: TxOptions): Result<R, TxFailure> {
     // nested: join the open transaction; its commit is the authoritative result (ADR-0014). A throw
     // from the inner fn undoes the inner writes only (a savepoint), then propagates.
     if (this.#open) return ok(this.#open.savepoint(fn));

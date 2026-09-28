@@ -97,4 +97,20 @@ describe('forks and the read-only policy (ADR-0014 §Forks and policy)', () => {
     expect(executeCommand(commands, { store: fork }, 'element.update', { id: a, fields: { name: 'preview' } }).ok).toBe(true);
     expect(store.toDocument()).toEqual(before);
   });
+
+  it('NFR-MNT-006: applying a store that is not a fork carries a diagnostic', () => {
+    const { store } = setup();
+    const other = setup().store;
+    const fork = store.fork();
+    for (const [parent, child] of [
+      [other, fork],
+      [fork, store],
+      [store, other],
+    ] as const) {
+      const r = applyFork(parent, child, 'apply');
+      expect(!r.ok && r.error.code).toBe('TX_INVALID');
+      expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_FORK_UNRELATED', severity: 'error' })]);
+    }
+    expect([other.history.undoDepth, store.history.undoDepth]).toEqual([0, 0]);
+  });
 });

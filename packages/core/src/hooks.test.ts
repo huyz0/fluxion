@@ -316,8 +316,10 @@ describe('integrity hooks (ADR-0014, FR-EXT-001)', () => {
     const store = new RecordStore(b.build(), { hooks });
     store.transact('user', (tx) => tx.patch(a, { name: '1' }));
     const afterUser = runs;
-    store.transact('undo', (tx) => tx.patch(a, { name: '2' }), { origin: 'undo' });
-    store.transact('redo', (tx) => tx.patch(a, { name: '3' }), { origin: 'redo' });
+    // replays go through the history module (a direct undo/redo origin is refused: M4.4)
+    expect(store.history.undo().ok).toBe(true);
+    expect(store.history.redo().ok).toBe(true);
+    expect((store.get(a) as { name?: string }).name).toBe('1');
     expect(afterUser).toBeGreaterThan(0);
     expect(runs).toBe(afterUser);
   });

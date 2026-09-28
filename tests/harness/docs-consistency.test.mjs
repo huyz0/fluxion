@@ -129,8 +129,8 @@ describe('harness docs consistency (NFR-DX-003)', () => {
     // member of a one-line declaration, a function core does not export and a stale property path
     const wrong =
       sections.replace('  fork(): Store;', '  fork(): Store;\n  frobnicate(): void;').replace('readonly history: History;', 'readonly history: Hystory;') +
-      '\n```ts\ninterface Tx { put(record: AnyRecord): void; remove(id): void }\n```\nCall `renderAll()` after `store.frobnicat`.\n';
-    assert.deepEqual(unknownCoreNames(wrong, report), ['Hystory', 'Store.frobnicate', 'Tx.remove', 'renderAll', 'frobnicat']);
+      '\n```ts\ninterface Tx { put(record: AnyRecord): void; remove(id): void }\n```\nCall `renderAll()` after `store.frobnicat` (`FLX_NO_SUCH_CODE`, not `FLX_READ_ONLY`).\n';
+    assert.deepEqual(unknownCoreNames(wrong, report), ['Hystory', 'Store.frobnicate', 'Tx.remove', 'renderAll', 'frobnicat', 'FLX_NO_SUCH_CODE']);
     // the pre-M3 doc's stale signatures (Query, Signal, Unsubscribe, CommandResult, ZodType) are caught
     const stale =
       '```ts\ninterface Store {\n  query<T>(q: Query<T>): Signal<T[]>;\n  subscribe(listener: (diff: Diff) => void): Unsubscribe;\n}\n```\n```ts\ninterface CommandDef<A> {\n  args: ZodType<A>;\n  run(ctx: CommandContext, args: A): void | CommandResult;\n}\n```\n';
@@ -216,14 +216,14 @@ function coreApi(report) {
  * Names a core-engine doc uses that core does not have: in ```ts blocks, see unknownInBlock; in
  * prose, each inline code span that is an identifier, a path or a call (`name`, `a.name`,
  * `a.name(…)`; the last name counts) must be an export, a member of an export, a schema import
- * or a literal of the report.
+ * a literal of the report, or a diagnostic code the built schema registers (`codes`).
  */
-function unknownCoreNames(doc, report) {
+function unknownCoreNames(doc, report, codes = Object.keys(schema.DIAGNOSTIC_CODES)) {
   const api = coreApi(report);
   const blocks = [...doc.matchAll(/^```ts\n([\s\S]*?)^```/gm)].map((m) => m[1]);
   const unknown = blocks.flatMap((block) => unknownInBlock(block, api));
   const allMembers = new Set([...api.members.values()].flatMap((m) => [...m]));
-  const known = (name) => api.exports.has(name) || api.imported.has(name) || api.literals.has(name) || allMembers.has(name);
+  const known = (name) => api.exports.has(name) || api.imported.has(name) || api.literals.has(name) || allMembers.has(name) || codes.includes(name);
   const prose = doc.replace(/^```[\s\S]*?^```/gm, '');
   for (const [, span] of prose.matchAll(/`([^`\n]+)`/g)) {
     const name = /^(?:[\w$]+\.)*([A-Za-z_$][\w$]*)(?:\(|$)/.exec(span)?.[1];

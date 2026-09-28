@@ -48,7 +48,9 @@ export type DiagnosticCode =
   | 'FLX_COMMAND_UNKNOWN'
   | 'FLX_COMMAND_DISABLED'
   | 'FLX_COMMAND_ARGS'
-  | 'FLX_READ_ONLY';
+  | 'FLX_READ_ONLY'
+  | 'FLX_FORK_UNRELATED'
+  | 'FLX_ORIGIN_RESERVED';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -91,6 +93,8 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_COMMAND_DISABLED: 'error',
   FLX_COMMAND_ARGS: 'error',
   FLX_READ_ONLY: 'error',
+  FLX_FORK_UNRELATED: 'error',
+  FLX_ORIGIN_RESERVED: 'error',
 };
 
 /**

@@ -92,12 +92,16 @@ function replay(tx: Tx, diff: Diff, direction: 'undo' | 'redo'): void {
 export class StoreHistory implements History {
   readonly #undo: Entry[] = [];
   readonly #redo: Entry[] = [];
-  readonly #transact: Transact;
+  // batch goes through the store's checked transact; only undo and redo replay (with their
+  // reserved origins, skipping hooks) through the unchecked entry point (M4.4 review)
+  readonly #store: { readonly transact: Transact };
+  readonly #replay: Transact;
   // the entry the next transaction may merge into: the latest one, until another commit or seal()
   #open: Entry | undefined;
 
-  constructor(transact: Transact) {
-    this.#transact = transact;
+  constructor(store: { readonly transact: Transact }, replayTransact: Transact) {
+    this.#store = store;
+    this.#replay = replayTransact;
   }
 
   get undoDepth(): number {
@@ -158,13 +162,13 @@ export class StoreHistory implements History {
 
   batch<R>(label: string, fn: () => R, options?: TxOptions): Result<R, TxFailure> {
     // commands run inside join this transaction (a nested transact is a savepoint)
-    return this.#transact(label, () => fn(), options);
+    return this.#store.transact(label, () => fn(), options);
   }
 
   undo(): Result<unknown, TxFailure> {
     const entry = this.#undo.at(-1);
     if (!entry) return empty('undo');
-    const r = this.#transact(`undo ${entry.label}`, (tx) => replay(tx, entry.diff, 'undo'), { origin: 'undo' });
+    const r = this.#replay(`undo ${entry.label}`, (tx) => replay(tx, entry.diff, 'undo'), { origin: 'undo' });
     if (!r.ok) return r;
     this.#undo.pop();
     this.#redo.push(entry);
@@ -174,7 +178,7 @@ export class StoreHistory implements History {
   redo(): Result<unknown, TxFailure> {
     const entry = this.#redo.at(-1);
     if (!entry) return empty('redo');
-    const r = this.#transact(`redo ${entry.label}`, (tx) => replay(tx, entry.diff, 'redo'), { origin: 'redo' });
+    const r = this.#replay(`redo ${entry.label}`, (tx) => replay(tx, entry.diff, 'redo'), { origin: 'redo' });
     if (!r.ok) return r;
     this.#redo.pop();
     this.#undo.push(entry);

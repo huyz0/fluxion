@@ -154,6 +154,13 @@ fork never reach the parent`, `…a read-only store rejects element.update…`).
   machine, within the 16 ms budget. An incremental referential check (only the records a diff
   touches and the records that reference them) is the fix if larger documents or slower machines
   exceed the budget; the bench leg of every milestone gate would show it.
+- 2026-09-28 (M4.4, M3 final F2, F5): a command's options cannot carry origin `undo` or `redo`
+  (`CommandTxOptions`; `executeCommand` refuses them with `COMMAND_ARGS` for untyped callers):
+  those origins skip hooks and history, so only the history module uses them. `store.transact`
+  itself refuses them too (`FLX_ORIGIN_RESERVED`), so a command's `run` cannot write with them; the
+  history module replays through the store's internal entry point. A built-in given a
+  missing or wrong-typed id returns `COMMAND_ARGS`; `TX_INVALID` stays for an invalid document,
+  and every refusal carries a diagnostic (`FLX_FORK_UNRELATED` for `applyFork` misuse).
 
 ## Pros and Cons of the Options
 

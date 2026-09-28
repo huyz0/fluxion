@@ -72,7 +72,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       expect(d.deletes.size).toBe(0);
     }
     const missing = run('screen.reorder', { id: s1, after: 'nope' });
-    expect(!missing.ok && missing.error.code).toBe('TX_INVALID');
+    expect(!missing.ok && missing.error.code).toBe('COMMAND_ARGS');
   });
 
   it('element create, update and delete (with cascades through the hooks)', () => {
@@ -112,7 +112,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       [run('binding.set', { id: a, connectorId: line, end: 'target', elementId: s1, anchor: { kind: 'auto' } }), '/args/elementId'],
     ] as const;
     for (const [r, path] of refusals) {
-      expect(!r.ok && r.error.code).toBe('TX_INVALID');
+      expect(!r.ok && r.error.code).toBe('COMMAND_ARGS');
       expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', path })]);
     }
     expect(store.toDocument()).toEqual(before);
@@ -181,5 +181,43 @@ describe('built-in record commands (FR-EXT-001)', () => {
     expect(run('binding.set', { id: 'SourceSourceSrc1', connectorId: line, end: 'source', elementId: a, anchor: { kind: 'floating' } }).ok).toBe(true);
     expect(bindingOf('source')?.elementId).toBe(a);
     expect((store.get(line) as { freeSource?: unknown }).freeSource).toBeUndefined();
+  });
+
+  it('FR-EXT-001: an unknown id argument returns COMMAND_ARGS', () => {
+    const { store, run, s1 } = setup();
+    const before = store.toDocument();
+    const cases = [
+      ['element.update', { id: 'MissingMissing01', fields: { name: 'x' } }, '/args/id'],
+      ['element.delete', { ids: ['MissingMissing01'] }, '/args/ids/0'],
+      ['screen.delete', { id: 'MissingMissing01' }, '/args/id'],
+      ['screen.reorder', { id: s1, after: 'MissingMissing01' }, '/args/after'],
+      // a screen cannot follow itself: an argument error too (M3 final F5)
+      ['screen.reorder', { id: s1, after: s1 }, '/args/after'],
+    ] as const;
+    for (const [command, args, path] of cases) {
+      const r = run(command, args);
+      expect(!r.ok && r.error.code, command).toBe('COMMAND_ARGS');
+      expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_COMMAND_ARGS', severity: 'error', path })]);
+    }
+    expect(store.toDocument()).toEqual(before);
+  });
+
+  it('screen.reorder between equal neighbour keys names the duplicate index', () => {
+    const b = documentBuilder({ seed: 41 });
+    const [s1, s2, s3] = [b.screen(), b.screen(), b.screen()];
+    const file = b.build();
+    // two screens share a key (a document with FLX_INDEX_DUPLICATE loads; the store tolerates known errors)
+    const records = { ...file.records, [s2]: { ...(file.records[s2] as AnyRecord), index: (file.records[s1] as { index: string }).index } };
+    const store = new RecordStore({ ...file, records } as typeof file);
+    const commands = createRegistry<string, AnyCommand>('commands');
+    registerCoreCommands(commands);
+    const r = executeCommand(commands, { store }, 'screen.reorder', { id: s3, after: s1 });
+    expect(!r.ok && r.error.code).toBe('TX_INVALID');
+    expect(!r.ok && r.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_INDEX_DUPLICATE', severity: 'warning', path: `/records/${s2}/index` })]);
+    // a malformed key is named on the neighbour that holds it, not the valid one (M4.4 review F1)
+    const bad = { ...file.records, [s1]: { ...(file.records[s1] as AnyRecord), index: '!!' } };
+    const broken = new RecordStore({ ...file, records: bad } as typeof file);
+    const m = executeCommand(commands, { store: broken }, 'screen.reorder', { id: s3, after: s1 });
+    expect(!m.ok && m.error.diagnostics).toEqual([expect.objectContaining({ code: 'FLX_SCHEMA_INVALID', severity: 'error', path: `/records/${s1}/index` })]);
   });
 });

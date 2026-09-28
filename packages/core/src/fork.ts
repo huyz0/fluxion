@@ -15,7 +15,10 @@ import type { Diff, TxFailure, TxOptions } from './transaction.js';
  */
 export function applyFork(parent: Store, fork: Store, label = 'apply fork', options: TxOptions = {}): Result<Diff, TxFailure> {
   const diff = fork.diffFrom(parent);
-  if (!diff) return err({ code: 'TX_INVALID', message: `${label}: the store is not a fork of the parent`, diagnostics: [] });
+  if (!diff) {
+    const message = 'the store is not a fork of the parent';
+    return err({ code: 'TX_INVALID', message: `${label}: ${message}`, diagnostics: [{ code: 'FLX_FORK_UNRELATED', severity: 'error', path: '', message }] });
+  }
   return parent.transact(
     label,
     (tx) => {

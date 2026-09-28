@@ -6,11 +6,10 @@ import { arbDocument, documentBuilder } from '@fluxion/schema/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { registerCoreCommands } from './builtin-commands.js';
-import { type AnyCommand, executeCommand } from './commands.js';
+import { type AnyCommand, type CommandTxOptions, executeCommand } from './commands.js';
 import { type IntegrityHook, registerCoreHooks } from './hooks.js';
 import { createRegistry } from './registry.js';
 import { RecordStore } from './store.js';
-import type { TxOptions } from './transaction.js';
 
 const COMMANDS = [
   'element.update',
@@ -84,7 +83,7 @@ function build(file: DocumentFile): Built {
     const element = pick('element', op.a);
     const screen = pick('screen', op.a);
     const args = ARGS[op.command]({ op, n, pick, ...(element ? { element } : {}), ...(screen ? { screen } : {}) });
-    const options: TxOptions = op.merge ? { mergeKey: op.command } : {};
+    const options: CommandTxOptions = op.merge ? { mergeKey: op.command } : {};
     executeCommand(commands, { store, options }, op.command, args);
   };
   return {

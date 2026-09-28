@@ -3,7 +3,7 @@
 import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
 import type { Registry } from './registry.js';
 import type { Store } from './store.js';
-import type { TxFailure, TxOptions } from './transaction.js';
+import type { TxFailure, TxOptions, TxOrigin } from './transaction.js';
 
 /**
  * A translatable text: a stable id and the English default (i18n).
@@ -68,6 +68,18 @@ export type ArgsRejected = {
 };
 
 /**
+ * Transaction options a command caller may pass: every {@link TxOptions} field, but the origin is
+ * never `undo` or `redo`. Those belong to the history module: they skip integrity hooks and are not
+ * recorded, so a command run with them could corrupt history (ADR-0014; M3 final F2).
+ *
+ * @public
+ */
+export type CommandTxOptions = Omit<TxOptions, 'origin'> & {
+  /** Who made the change (default `user`); `undo` and `redo` are refused. */
+  readonly origin?: Exclude<TxOrigin, 'undo' | 'redo'>;
+};
+
+/**
  * What a command runs against.
  *
  * @public
@@ -79,8 +91,11 @@ export type CommandContext = {
    * Options for the command's transaction (origin, mergeKey, metaBefore/metaAfter): a command is the
    * only production write path, so it carries what the write needs (ADR-0014; M3 cp1 F2).
    */
-  readonly options?: TxOptions;
+  readonly options?: CommandTxOptions;
 };
+
+/** History-only origins a command caller may not pass (checked at run time for untyped callers). */
+const HISTORY_ORIGINS: ReadonlySet<string> = new Set(['undo', 'redo']);
 
 /**
  * A command: id, title, Zod-validated arguments, an optional availability test, and `run`, the only
@@ -127,8 +142,9 @@ export function defineCommand<A>(def: CommandDef<A>): CommandDef<A> {
 const fail = (code: CommandFailure['code'], message: string, diagnostics: Diagnostic[]): Result<never, CommandFailure> => err({ code, message, diagnostics });
 
 /**
- * Run the command `id` with `args`: unknown ids, a false `when` and arguments that fail the schema
- * return diagnostics without running anything; otherwise the command's transaction result.
+ * Run the command `id` with `args`: unknown ids, an undo/redo origin, a read-only store, a false `when`
+ * and arguments that fail the schema return diagnostics without running anything; otherwise the
+ * command's transaction result.
  *
  * @public
  */
@@ -138,6 +154,12 @@ export function executeCommand(registry: Registry<string, AnyCommand>, ctx: Comm
   if (!command)
     return fail('COMMAND_UNKNOWN', `no command "${id}"`, [
       { code: 'FLX_COMMAND_UNKNOWN', severity: 'error', path: at, message: `no command "${id}" is registered` },
+    ]);
+  // undo/redo origins skip hooks and history: only the history module may use them (M3 final F2)
+  const origin: unknown = ctx.options?.origin;
+  if (typeof origin === 'string' && HISTORY_ORIGINS.has(origin))
+    return fail('COMMAND_ARGS', `${id}: origin "${origin}" is reserved for undo and redo`, [
+      { code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['options', 'origin']), message: `a command cannot run with origin "${origin}"` },
     ]);
   // a read-only store refuses before the command runs (ADR-0014 §Forks and policy)
   if (ctx.store.readOnly)

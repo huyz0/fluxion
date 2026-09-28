@@ -2,11 +2,10 @@ import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { registerCoreCommands } from './builtin-commands.js';
-import { type AnyCommand, executeCommand } from './commands.js';
+import { type AnyCommand, type CommandTxOptions, executeCommand } from './commands.js';
 import { type IntegrityHook, registerCoreHooks } from './hooks.js';
 import { createRegistry } from './registry.js';
 import { RecordStore } from './store.js';
-import type { TxOptions } from './transaction.js';
 
 function setup() {
   const b = documentBuilder({ seed: 50 });
@@ -20,7 +19,7 @@ function setup() {
   const store = new RecordStore(b.build(), { hooks });
   const commands = createRegistry<string, AnyCommand>('commands');
   registerCoreCommands(commands);
-  const run = (id: string, args: unknown, options?: TxOptions) => {
+  const run = (id: string, args: unknown, options?: CommandTxOptions) => {
     const r = executeCommand(commands, options ? { store, options } : { store }, id, args);
     expect(r.ok, JSON.stringify(!r.ok && r.error)).toBe(true);
   };

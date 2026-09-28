@@ -1,7 +1,19 @@
 // Built-in record commands (FR-EXT-001, NFR-MNT-006): the basic writes every client needs, registered
 // through the same registry as plugin commands. Each `run` is one transaction; integrity hooks and
 // validation do the rest (ADR-0014).
-import { type AnyRecord, compareKeys, type Diagnostic, err, jsonPointer, keyBetween, ok, type RecordId, type Result } from '@fluxion/schema';
+import {
+  type AnyRecord,
+  compareKeys,
+  DIAGNOSTIC_CODES,
+  type Diagnostic,
+  err,
+  isIndexKey,
+  jsonPointer,
+  keyBetween,
+  ok,
+  type RecordId,
+  type Result,
+} from '@fluxion/schema';
 import { z } from 'zod';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
 import type { Registry } from './registry.js';
@@ -21,7 +33,8 @@ type Want = 'new' | string;
 
 /**
  * The first id that is not what the command needs (`new`: unused; a type: an existing record of
- * it), as TX_INVALID with an FLX_COMMAND_ARGS diagnostic at its argument path; null when all fit.
+ * it), as COMMAND_ARGS with an FLX_COMMAND_ARGS diagnostic at its argument path (a bad argument, not
+ * an invalid document; M3 final F5); null when all fit.
  * Creating never replaces a record, and a command never touches another type (M3.17 review).
  */
 function checkIds(
@@ -34,7 +47,7 @@ function checkIds(
     const problem = idProblem(ctx.store.get(x as RecordId), x, want);
     if (problem)
       return err({
-        code: 'TX_INVALID',
+        code: 'COMMAND_ARGS',
         message: `${command}: ${problem}`,
         diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', ...path]), message: problem }],
       });
@@ -57,13 +70,37 @@ function screensInOrder(ctx: CommandContext, except: string): Array<{ readonly i
     .sort((a, b) => compareKeys(a.index, b.index));
 }
 
-/** The index that puts a screen right after `after` (first when absent), or why none exists. */
+/**
+ * The index that puts a screen right after `after` (first when absent), or why none exists: a screen
+ * cannot follow itself (COMMAND_ARGS), and neighbours with equal or malformed keys have no key between
+ * them (TX_INVALID naming the neighbour's index; M3 final F5).
+ */
 function indexAfter(ctx: CommandContext, screen: string, after: string | undefined): Result<string, TxFailure> {
   const others = screensInOrder(ctx, screen);
   const at = after === undefined ? 0 : others.findIndex((s) => s.id === after) + 1;
-  if (after !== undefined && at === 0) return err({ code: 'TX_INVALID', message: `screen.reorder: no screen ${after}`, diagnostics: [] });
-  const key = keyBetween(others[at - 1]?.index ?? null, others[at]?.index ?? null);
-  return key.ok ? ok(key.value) : err({ code: 'TX_INVALID', message: `screen.reorder: ${key.error.message}`, diagnostics: [] });
+  if (after !== undefined && at === 0) {
+    const message = 'a screen cannot follow itself';
+    return err({
+      code: 'COMMAND_ARGS',
+      message: `screen.reorder: ${message}`,
+      diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', 'after']), message }],
+    });
+  }
+  const [before, next] = [others[at - 1], others[at]];
+  const key = keyBetween(before?.index ?? null, next?.index ?? null);
+  if (key.ok) return ok(key.value);
+  // an equal pair names the later key; a malformed key names the neighbour holding it (M4.4 review F1);
+  // the severity is the code's registered one (review F2)
+  const malformed = [before, next].find((s) => s !== undefined && !isIndexKey(s.index));
+  const neighbour = key.error.code === 'INDEX_ORDER' ? (next ?? before) : (malformed ?? next ?? before);
+  const code = key.error.code === 'INDEX_ORDER' ? 'FLX_INDEX_DUPLICATE' : 'FLX_SCHEMA_INVALID';
+  const found: Diagnostic = {
+    code,
+    severity: DIAGNOSTIC_CODES[code],
+    path: jsonPointer(['records', neighbour?.id ?? screen, 'index']),
+    message: key.error.message,
+  };
+  return err({ code: 'TX_INVALID', message: `screen.reorder: ${key.error.message}`, diagnostics: [found] });
 }
 
 /** The binding holding `end` of `connectorId`, if any. */

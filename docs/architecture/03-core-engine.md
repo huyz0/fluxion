@@ -46,7 +46,8 @@ type Diff = {
   validates the net diff (structural checks on the changed records, the referential check over
   the whole post-state: ADR-0014 amendment M3.23), then commits, or fails (`TX_INVALID`,
   `TX_HOOK_DEPTH`, `TX_READ_ONLY`) with diagnostics and leaves the store unchanged. A nested
-  `transact` is a savepoint.
+  `transact` is a savepoint. An `undo` or `redo` origin is refused (`TX_INVALID`,
+  `FLX_ORIGIN_RESERVED`): only the history module replays with them.
 - Each committed transaction emits one `Diff` with its `TxMeta` to subscribers, after the history
   has recorded it: undo, autosave, dirty tracking, a future CRDT bridge and the MCP live link all
   read this one stream.
@@ -69,10 +70,13 @@ type CommandDef<A> = {
 
 - `defineCommand` types a definition, and definitions live in the `commands` registry.
   `executeCommand` looks the id up and refuses, with a diagnostic and the store untouched, an
-  unknown id (`COMMAND_UNKNOWN`), a read-only store (`TX_READ_ONLY`), `when` returning false
+  unknown id (`COMMAND_UNKNOWN`), an `undo` or `redo` origin (`COMMAND_ARGS` at
+  `/options/origin`), a read-only store (`TX_READ_ONLY`), `when` returning false
   (`COMMAND_DISABLED`) and arguments the schema rejects (`COMMAND_ARGS`); then it runs the command.
-- `CommandContext` carries the `store` and optional `options` (`TxOptions`: `mergeKey`, `origin`,
-  `metaBefore`, `metaAfter`) for the command's transaction.
+  A built-in given an id that is missing or of the wrong type also returns `COMMAND_ARGS` (a bad
+  argument, not an invalid document).
+- `CommandContext` carries the `store` and optional `options` (`CommandTxOptions`: `mergeKey`,
+  `origin` other than `undo`/`redo`, `metaBefore`, `metaAfter`) for the command's transaction.
 - `CORE_COMMANDS` (registered by `registerCoreCommands`): element.create, element.update,
   element.delete, screen.create, screen.delete, screen.reorder, binding.set, document.update.
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through

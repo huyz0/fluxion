@@ -11,6 +11,7 @@ export {
   type CommandContext,
   type CommandDef,
   type CommandFailure,
+  type CommandTxOptions,
   defineCommand,
   executeCommand,
   type MessageDescriptor,

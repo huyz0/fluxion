@@ -54,7 +54,7 @@ export interface Clock {
 // @public
 export type CommandContext = {
     readonly store: Store;
-    readonly options?: TxOptions;
+    readonly options?: CommandTxOptions;
 };
 
 // @public
@@ -68,6 +68,11 @@ export type CommandDef<A> = {
 
 // @public
 export type CommandFailure = TxFailure;
+
+// @public
+export type CommandTxOptions = Omit<TxOptions, "origin"> & {
+    readonly origin?: Exclude<TxOrigin, "undo" | "redo">;
+};
 
 // @public
 export function computed<T>(fn: () => T): ReadSignal<T>;
