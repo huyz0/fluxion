@@ -78,6 +78,8 @@ const STEPS = [
     () => (exists('scripts/gates/check-layering.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
     () => node('scripts/gates/check-layering.mjs'),
   ],
+  // no switch or if-chain on an extensible kind outside registries (FR-EXT-001, M3.15)
+  ['kind-switch', () => true, () => exists('scripts/gates/check-kind-switch.mjs') || 'not written yet (M3)', () => node('scripts/gates/check-kind-switch.mjs')],
   [
     'licenses',
     (m) => m !== 'quick',
