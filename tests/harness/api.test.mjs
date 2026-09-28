@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, it } from 'node:test';
+import { after, afterEach, before, beforeEach, describe, it } from 'node:test';
 import { linkInstalls, out, REPO, sandbox } from './helpers.mjs';
 
 let sb;
@@ -25,35 +25,42 @@ function fullCopy() {
   return full;
 }
 
+// one copy of the repo, built once, for both full-repo cases (M4.28: a full copy and build of every
+// workspace is the costliest step of the harness); the passing case runs first, on the unedited copy
+describe('check-api on a copy of the repo (NFR-MNT-007)', () => {
+  let full;
+  before(() => {
+    full = fullCopy();
+  });
+  after(() => full?.cleanup());
+  const check = () => full.node('scripts/gates/check-api.mjs', ['--dir', full.dir], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
+
+  it('passes on the real repo: every library matches its committed report', () => {
+    // a copy of the repo: API Extractor writes temp reports and must not race the ladder's api step (M1.36)
+    const r = check();
+    assert.equal(r.status, 0, out(r));
+    assert.match(r.stdout, /17 API report\(s\) match/);
+  });
+
+  it('fails when a public export has no TSDoc (TypeDoc notDocumented, M1 cp3 F3)', () => {
+    const index = 'packages/core/src/index.ts';
+    const original = full.read(index);
+    full.edit(index, (t) => `${t}\nexport const UNDOCUMENTED: number = 1;\n`);
+    try {
+      const r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /typedoc \(typedoc\.json\)[\s\S]*UNDOCUMENTED/);
+    } finally {
+      full.write(index, original);
+    }
+  });
+});
+
 describe('check-api (NFR-MNT-007)', () => {
   beforeEach(() => {
     sb = sandbox(['scripts', 'tools', 'packages/core']);
   });
   afterEach(() => sb.cleanup());
-
-  it('passes on the real repo: every library matches its committed report', () => {
-    // a copy of the repo: API Extractor writes temp reports and must not race the ladder's api step (M1.36)
-    const full = fullCopy();
-    try {
-      const r = full.node('scripts/gates/check-api.mjs', ['--dir', full.dir], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
-      assert.equal(r.status, 0, out(r));
-      assert.match(r.stdout, /17 API report\(s\) match/);
-    } finally {
-      full.cleanup();
-    }
-  });
-
-  it('fails when a public export has no TSDoc (TypeDoc notDocumented, M1 cp3 F3)', () => {
-    const full = fullCopy();
-    try {
-      full.edit('packages/core/src/index.ts', (t) => `${t}\nexport const UNDOCUMENTED: number = 1;\n`);
-      const r = full.node('scripts/gates/check-api.mjs', ['--dir', full.dir], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
-      assert.equal(r.status, 1, out(r));
-      assert.match(r.stderr, /typedoc \(typedoc\.json\)[\s\S]*UNDOCUMENTED/);
-    } finally {
-      full.cleanup();
-    }
-  });
 
   it('fails when an exported signature changes without an updated report', () => {
     sb.edit(DTS, (t) => `${t}\n/**\n * Added.\n *\n * @public\n */\nexport declare const EXTRA: number;\n`);
