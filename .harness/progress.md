@@ -672,3 +672,7 @@ merging (ADR-0014 §Merging): a recorded commit merges into the open entry only 
 decided (M3.2 F3): an empty-diff transaction is never recorded, so it does not break a merge
 history.seal() and history.batch(label, fn, options) (one transaction around commands, whose nested transacts are savepoints; in history.ts, one of ADR-0014's allowed callers)
 tests: the gate's 60 element.update commands through executeCommand with a mergeKey = 1 entry (undo returns the first metaBefore, redo the last metaAfter), the empty-diff title, interleaving/seal/key/origin/undo breaking the merge, a net-zero gesture, batch; mutation (merge disabled) caught
+
+## 2026-09-28 M3.21 (claude)
+undo-property.test.ts: arbDocument × up to 12 generated built-in commands (all eight, args resolved against the current state, some merged under their command id, refusals part of the model) with the core hooks; full undo equals the initial document, redo-all the final one; both properties count their runs against fc.readConfigureGlobal().numRuns and set no local count (FC_RUNS=1000: 3 pass in 1.9 s); a deterministic case shows the model commits (not all refusals)
+mutation (undo skips restoring deletes unless the diff also has puts) caught in 38 ms at FC_SEED=1; M3.20 review minors fixed: per-step metaBefore (undo returns the first), undo+redo then a same-key move starts a new entry

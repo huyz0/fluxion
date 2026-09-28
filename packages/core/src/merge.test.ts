@@ -30,7 +30,8 @@ describe('transaction merging (ADR-0014 §Merging)', () => {
   it('FR-EDT-006: WHEN 60 merged element.update commands share a key THE SYSTEM SHALL create 1 history entry', () => {
     const { store, move, a } = setup();
     const before = store.toDocument();
-    for (let i = 1; i <= 60; i++) expect(move(i * 5, { mergeKey: 'drag', metaBefore: { at: 0 }, metaAfter: { at: i } }).ok).toBe(true);
+    // each step's metaBefore differs: the merged entry must keep the first one (M3.20 review F1)
+    for (let i = 1; i <= 60; i++) expect(move(i * 5, { mergeKey: 'drag', metaBefore: { at: i - 1 }, metaAfter: { at: i } }).ok).toBe(true);
     expect(store.history.undoDepth).toBe(1);
     expect(x(store, a)).toBe(300);
     // one undo takes the whole drag back, to the meta the gesture started with
@@ -65,6 +66,15 @@ describe('transaction merging (ADR-0014 §Merging)', () => {
     store.history.undo();
     move(60, { mergeKey: 'other', origin: 'system' });
     expect(store.history.undoDepth).toBe(6);
+  });
+
+  it('an undo and redo in between break a merge, even with the redone entry back on top (M3.20 review F2)', () => {
+    const { store, move } = setup();
+    move(10);
+    store.history.undo();
+    store.history.redo();
+    move(20);
+    expect(store.history.undoDepth).toBe(2);
   });
 
   it('a merged gesture that ends where it started leaves no entry', () => {
