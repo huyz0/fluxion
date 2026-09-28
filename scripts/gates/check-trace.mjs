@@ -66,7 +66,8 @@ for (const inc of new Set([...reqs.values()].map((r) => r.inc))) {
 }
 
 // test titles
-const TEST_FILE = /\.(test|spec)\.[cm]?[jt]sx?$/;
+// Vitest 5 benches are tests (`context.bench` inside `test`), so their titles trace too (M3.25)
+const TEST_FILE = /\.(test|spec|bench)\.[cm]?[jt]sx?$/;
 const SKIP_DIR = new Set(['node_modules', 'dist', '.tsbuild', 'coverage', '.git', 'fixtures', '__fixtures__']);
 function* walk(dir) {
   if (!existsSync(dir)) return;

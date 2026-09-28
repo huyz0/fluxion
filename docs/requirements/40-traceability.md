@@ -308,7 +308,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PERF-003 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-004 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-005 | M | R2 | M13 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-PERF-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-PERF-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/bench/transact-5000.bench.ts`, `packages/core/bench/undo-5000.bench.ts` |
 | NFR-PERF-007 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-008 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |

@@ -34,6 +34,7 @@ describe('check-trace (NFR-MNT-008)', () => {
   const unknown = {
     'a node:test title': ['tests/harness/x.test.mjs', nodeTest(['FR-DOC-999: nope'])],
     'a vitest title': ['packages/core/src/a.test.ts', "import { it } from 'vitest';\nit('NFR-MNT-999 does not exist', () => {});\n"],
+    'a Vitest bench title': ['packages/core/bench/a.bench.ts', "import { test } from 'vitest';\ntest('NFR-PERF-999 bench', async () => {});\n"],
     'a Playwright describe title': ['e2e/a.spec.ts', "import { test } from '@playwright/test';\ntest.describe('FR-ZZZ-001 flows', () => {});\n"],
   };
   for (const [where, [path, text]] of Object.entries(unknown)) {
