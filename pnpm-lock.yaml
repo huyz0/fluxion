@@ -352,7 +352,14 @@ importers:
 
   packages/sdk: {}
 
-  packages/theme: {}
+  packages/theme:
+    dependencies:
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
 
   packs/basic: {}
 

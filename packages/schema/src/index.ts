@@ -14,7 +14,18 @@ export type { FluxError, FluxErrorCode } from './errors.js';
 export { compareKeys, type IndexKey, isIndexKey, keyBetween, nKeysBetween } from './fractional-index.js';
 export { createId, ID_ALPHABET, ID_LENGTH, isGeneratedId, isRecordId, type Random, type RecordId, seededRandom } from './ids.js';
 export { MIGRATIONS, type Migrated, type Migration, migrate, type RawDocument } from './migrate.js';
-export type { Color, ColorTransform, ColorValue, GradientPaint, GradientStop, ImagePaint, Paint, TokenRef, TransformedToken } from './paint.js';
+export {
+  type Color,
+  type ColorTransform,
+  type ColorValue,
+  colorSchema,
+  type GradientPaint,
+  type GradientStop,
+  type ImagePaint,
+  type Paint,
+  type TokenRef,
+  type TransformedToken,
+} from './paint.js';
 export type { Extensible, Meta } from './primitives.js';
 export type {
   BehaviourRecord,

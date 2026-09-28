@@ -71,6 +71,9 @@ export function checkRichText(value: unknown): RichTextIssue[];
 export type Color = string;
 
 // @public
+export const colorSchema: z.ZodType<Color>;
+
+// @public
 export type ColorTransform = Extensible<{
     readonly alpha?: number;
     readonly lighten?: number;

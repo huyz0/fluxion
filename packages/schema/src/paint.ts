@@ -43,7 +43,12 @@ function isColorFunction(value: string): boolean {
   return channels.length >= 3 && channels.length <= 4 && channels.every((a) => a.toLowerCase() === 'none' || NUMBER.test(a));
 }
 
-/** A literal colour field. */
+/**
+ * Schema of a literal CSS colour ({@link Color}): a hex colour, a colour function with numeric channels
+ * or a CSS named colour — nothing that could carry other CSS.
+ *
+ * @public
+ */
 export const colorSchema: z.ZodType<Color> = z.string().refine((v) => HEX.test(v) || isColorFunction(v) || CSS_NAMED_COLORS.has(v.toLowerCase()), {
   message: 'expected a CSS colour (#hex, a colour function or a named colour)',
 });

@@ -4,6 +4,75 @@
 
 ```ts
 
+import { Result } from '@fluxion/schema';
+import { TokenRef } from '@fluxion/schema';
+import { z } from 'zod';
+
+// @public
+export function cssValue(token: Token): string;
+
+// @public
+export const cssVarName: (path: string) => string;
+
+// @public
+export type Dimension = {
+    readonly value: number;
+    readonly unit: "px";
+};
+
+// @public
+export const isToken: (node: Token | TokenGroup | undefined) => node is Token;
+
+// @public
+export const LIGHT_THEME: Theme;
+
+// @public
+export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeError>;
+
+// @public
+export type Theme = {
+    readonly name: string;
+    readonly tokens: TokenGroup;
+    readonly defaults?: {
+        readonly [kind: string]: {
+            readonly [field: string]: unknown;
+        };
+    };
+};
+
+// @public
+export type ThemeError = {
+    readonly code: ThemeErrorCode;
+    readonly message: string;
+};
+
+// @public
+export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID";
+
+// @public
+export const themeSchema: z.ZodType<Theme>;
+
+// @public
+export function toCssVars(theme: Theme): Record<string, string>;
+
+// @public
+export type Token = TypedToken<"color", string> | TypedToken<"dimension", Dimension> | TypedToken<"fontFamily", string | readonly string[]> | TypedToken<"fontWeight", number> | TypedToken<"number", number>;
+
+// @public
+export type TokenGroup = {
+    readonly [name: string]: Token | TokenGroup;
+};
+
+// @public
+export const tokenPath: (ref: TokenRef) => string;
+
+// @public
+export type TypedToken<T extends string, V> = {
+    readonly $type: T;
+    readonly $value: V;
+    readonly $description?: string;
+};
+
 // @public
 export const VERSION: string;
 

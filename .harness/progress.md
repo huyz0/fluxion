@@ -737,3 +737,8 @@ production simplifications that survivors proved redundant (no behaviour change)
 ## 2026-09-29 M4 cp1 (claude)
 fresh milestone-reviewer over 5832cef..b26cf09: changes-requested, F1 (SSR styling unchecked) and F2 (ladder budget) major, F3-F9 minor; F1/F8 amend M4.16/M4.22, F1-F3/F8 gate and ladder work in new M4.26 (before M4.11), F4-F7 in new M4.27, F6 commit type and F9 argued; M4.md Learned
 cp1 disposition review round 1: M4.26 acceptance catches F2 (scoped staged tests, suite rows re-record the budget) and names its gate legs; M4.27 acceptance checks the ADR amendments
+
+## 2026-09-29 M4.9 (claude)
+@fluxion/theme: DTCG-shaped Token/TokenGroup/Theme types and themeSchema (Zod; tokens are objects with $value/$type: color, dimension {value, unit: px}, fontFamily, fontWeight, number; names letters/digits/_/-; issue paths point into the tree), LIGHT_THEME (every FR-THM-001 colour role, heading/body/mono families, font size/weight/line-height, space, radius, stroke; shape/connector defaults with token refs for M4.10), resolveToken (TOKEN_UNKNOWN / TOKEN_NOT_A_VALUE; own properties only), cssVarName, cssValue, toCssVars (one --fx-<path> per token, tree order); errors.ts per ADR-0144; deps schema + zod (lockfile, budget re-recorded)
+tests: the gate's two titles + roles, schema refusals, paths/values; theme coverage 100 % (50 statements; M4.10 adds resolveStyle)
+review F1-F3: themeSchema refuses tokens sharing a CSS variable; colours are schema's colorSchema (now exported from @fluxion/schema); family names refuse control chars and <>, and every non-generic name is quoted with \ and " escaped; the package comment is a tsdown dts banner
