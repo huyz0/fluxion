@@ -43,4 +43,15 @@ describe('shared document fixtures (FR-DOC-001)', () => {
       else expectInvalid(name, text, code);
     }
   });
+
+  // M2 final F7: a valid fixture behaves as named too, not only "valid"
+  it('FR-DOC-005: the unknown-kind fixture parses with FLX_KIND_UNKNOWN', () => {
+    const text = entries.find(([name]) => name === 'unknown-kind.flux.json')?.[1];
+    expect(text).toBeDefined();
+    const r = parseDocument(text ?? '');
+    expect(r.ok).toBe(true);
+    const warnings = r.ok ? r.value.diagnostics.filter((d) => d.code === 'FLX_KIND_UNKNOWN') : [];
+    expect(warnings.length).toBeGreaterThan(0);
+    expect(warnings.every((d) => d.severity === 'warning')).toBe(true);
+  });
 });

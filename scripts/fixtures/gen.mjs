@@ -39,7 +39,8 @@ const FIXTURES = {
     return b.build();
   },
   'two-rects-line': () => twoRectsLine('Two rects and a line').doc,
-  // a plugin element kind and unknown fields are kept verbatim (FR-DOC-005)
+  // a plugin element kind, a core kind from a newer version (FLX_KIND_UNKNOWN warning, M2 final F7)
+  // and unknown fields are all kept verbatim (FR-DOC-005)
   'unknown-kind': () => {
     const { doc, screen } = twoRectsLine('Unknown kind');
     const gauge = {
@@ -52,7 +53,16 @@ const FIXTURES = {
       props: { value: 0.42 },
       future: { x: 1 },
     };
-    return { ...doc, records: { ...doc.records, [gauge.id]: gauge } };
+    const hologram = {
+      id: 'HologramHologram',
+      type: 'element',
+      screenId: screen,
+      index: 'aA',
+      kind: 'hologram',
+      transform: { x: 320, y: 400, w: 160, h: 80 },
+      depth: 3,
+    };
+    return { ...doc, records: { ...doc.records, [gauge.id]: gauge, [hologram.id]: hologram } };
   },
   // an element on a screen that does not exist
   'invalid-ref-missing': () => {

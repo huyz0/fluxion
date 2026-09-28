@@ -36,3 +36,5 @@ M3.2 F2: fork.diffFrom's base (the fork-time snapshot, so concurrent parent edit
 M3.2 F3: whether an empty-diff transaction breaks a merge is decided in M3.20 with the "interleaved transaction breaks the merge" case.
 M3.2 F4: M3.14 requires each built-in hook to handle its whole cascade (all descendants) in one pass, tested with a group nested deeper than the pass limit.
 M3.3 F1: geometry's err is internal (not exported); the public Result/Ok/Err types, which consumers see, are pinned by result-convention.test.ts, so an internal signature drift cannot reach a consumer; ADR-0144 Confirmation covers the public shape.
+M3.7 F1: the hint is diagnostic text only; on Node 22.19/22.20 the transport error itself still prints, and gh (which honours proxies) is the documented path; no gate outcome depends on the wording.
+M3.7 F2: a 404/rate-limit message already names its HTTP status next to the hint, so the cause stays visible; the hint cannot turn a failure green.

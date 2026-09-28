@@ -81,6 +81,20 @@
       },
       "type": "element"
     },
+    "HologramHologram": {
+      "depth": 3,
+      "id": "HologramHologram",
+      "index": "aA",
+      "kind": "hologram",
+      "screenId": "rX_C6DIMA8co-OdW",
+      "transform": {
+        "h": 80,
+        "w": 160,
+        "x": 320,
+        "y": 400
+      },
+      "type": "element"
+    },
     "RWiBS1KxZaZ2e-QF": {
       "anchor": {
         "kind": "floating"

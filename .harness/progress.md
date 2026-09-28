@@ -598,3 +598,7 @@ docs-consistency both ways (M2 final F4): unknownCatalogueFields checks the elem
 ## 2026-09-28 M3.7 (claude)
 check-ci-evidence (M2 final F5): reading a run no longer exits on a transport failure; the failure is one more reported problem next to the floor/record problems (a runs-file entry with `error` simulates it); transportHint (ci-runs) appends "HTTPS_PROXY is set, but Node fetch ignores it unless NODE_USE_ENV_PROXY=1" for REST reads behind a proxy (not for gh); the list path (--record) fails with the same hint
 "stale sha reported with a transport failure": red on the old code (the exit hid the floor error), green now; hint unit case
+
+## 2026-09-28 M3.8 (claude)
+"FR-DOC-005: the unknown-kind fixture parses with FLX_KIND_UNKNOWN" was red on the M2 fixture: its only unknown element was acme:gauge, a plugin-qualified kind the schema accepts as a plugin element (FLX_KIND_UNKNOWN is for unqualified kinds from a newer version); gen.mjs adds a `hologram` element (future core kind, extra field) so the fixture is what its name says; regenerated, --check current, schema suite 110 pass
+budget record refreshed with ADR-0145's CI path: check-budget --record --cold-from-ci 268b58e (ci 36378108726, cold setup 156 s; first green CI after M3.3's lockfile change); M3.7 review minors argued
