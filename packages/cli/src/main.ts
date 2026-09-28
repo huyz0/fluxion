@@ -5,22 +5,12 @@
 import { parseArgs } from 'node:util';
 import { type CliIo, type Command, type ExitCode, internal, type Options, type Outcome, ok, usage } from './command.js';
 import { API_VERSION, OUTPUT_SCHEMAS } from './output.js';
+import { RENDER } from './render.js';
 import { VALIDATE } from './validate.js';
-
-/** A command whose implementation lands in a later row (M4.20): an internal error until then. */
-const notYet =
-  (name: string): Command['run'] =>
-  () =>
-    internal(`fluxion ${name} is not available in this build yet`);
 
 const COMMANDS: { readonly [name: string]: Command } = {
   validate: VALIDATE,
-  render: {
-    summary: 'Render a document to a static HTML file',
-    usage: 'render <file> -o <out.html> [--screen <id>]',
-    options: { out: { type: 'string', short: 'o' }, screen: { type: 'string', multiple: true } },
-    run: notYet('render'),
-  },
+  render: RENDER,
 };
 
 const GLOBAL: Options = { help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, json: { type: 'boolean' } };

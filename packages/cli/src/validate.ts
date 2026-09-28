@@ -5,6 +5,15 @@ import { readFile } from 'node:fs/promises';
 import { parseDocument } from '@fluxion/schema';
 import { type Command, io, type Outcome, usage } from './command.js';
 
+/** The text of the document at `file`, or the IO error outcome when it cannot be read. */
+export async function readInput(file: string): Promise<string | Outcome> {
+  try {
+    return await readFile(file, 'utf8');
+  } catch (e) {
+    return io(`cannot read ${file}: ${e instanceof Error ? e.message : String(e)}`, ['argv']);
+  }
+}
+
 /** The outcome of validating the text of a document. */
 export function validateText(text: string): Outcome {
   const r = parseDocument(text);
@@ -21,12 +30,8 @@ export const VALIDATE: Command = {
     const [file, ...extra] = positionals;
     if (file === undefined) return usage('validate needs a document file');
     if (extra.length > 0) return usage(`validate takes one file, got ${positionals.length}`);
-    let text: string;
-    try {
-      text = await readFile(file, 'utf8');
-    } catch (e) {
-      return io(`cannot read ${file}: ${e instanceof Error ? e.message : String(e)}`, ['argv']);
-    }
+    const text = await readInput(file);
+    if (typeof text !== 'string') return text;
     const outcome = validateText(text);
     const errors = outcome.diagnostics.filter((d) => d.severity === 'error').length;
     const warnings = outcome.diagnostics.length - errors;

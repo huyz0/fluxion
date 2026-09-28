@@ -55,12 +55,7 @@ describe('run (FR-CLI-001, ADR-0147)', () => {
     expect(json((await cli(['render', '--version', '--json'])).stdout)).toMatchObject({ command: 'render', ok: true, result: { version: '0.0.0' } });
   });
 
-  it('FR-CLI-001: a command not available yet, or one that throws, is an internal error that keeps its name (review F4)', async () => {
-    const r = await cli(['render', 'doc.flux.json', '--json']);
-    expect(r.code).toBe(3);
-    expect(json(r.stdout).errors).toEqual([
-      expect.objectContaining({ code: 'FLX_CLI_INTERNAL', message: 'fluxion render is not available in this build yet' }),
-    ]);
+  it('FR-CLI-001: a command that throws is an internal error that keeps its name (review F4)', async () => {
     const throwing: Command = {
       summary: 's',
       usage: 'validate',
