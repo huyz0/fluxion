@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // The single definition of the pre-commit ladder. Used by .githooks/pre-commit (--staged),
 // by `pnpm verify` / CI (--all), and by agents (--quick while iterating).
-//   --staged     check what is staged (default when run from the hook)
+//   --staged     check what is staged (default when run from the hook); the harness tests and the
+//                Vitest run are scoped to what the staged paths can affect (ladder-scope.mjs, M4.26)
 //   --all        whole repo (CI)
 //   --quick      fast subset for iteration
 //   --summary    one line per step only
@@ -10,14 +11,30 @@
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { exists, git, nestedSkip, nodeAsync as node, runAsync } from './lib.mjs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { harnessFiles, testScope } from './ladder-scope.mjs';
+import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
 const argv = new Set(process.argv.slice(2));
 const mode = argv.has('--all') ? 'all' : argv.has('--quick') ? 'quick' : 'staged';
 const hasPkg = exists('package.json') && exists('turbo.json');
 const pnpm = (...a) => runAsync('pnpm', a);
-const lockfileStaged = () => git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).includes('pnpm-lock.yaml');
+const stagedPaths = () => git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).filter(Boolean);
+const lockfileStaged = () => stagedPaths().includes('pnpm-lock.yaml');
+
+// staged mode runs what the staged paths can affect (M4 cp1 F2; ladder-scope.mjs); --all runs everything
+const HARNESS = () =>
+  readdirSync(repoPath('tests/harness'))
+    .filter((f) => f.endsWith('.test.mjs'))
+    .map((f) => `tests/harness/${f}`);
+const harnessToRun = () => (mode === 'staged' ? harnessFiles(stagedPaths(), HARNESS()) : HARNESS());
+const workspaces = () => (exists('tools/gen/workspaces.json') ? JSON.parse(readFileSync(repoPath('tools/gen/workspaces.json'), 'utf8')).workspaces : []);
+const browserTested = () =>
+  workspaces()
+    .map((w) => w.dir)
+    .filter((dir) => listFiles(`${dir}/src`).some((p) => /\.browser\.test\.[cm]?[jt]sx?$/.test(p)));
+const testPlan = () => (mode === 'staged' ? testScope(stagedPaths(), workspaces(), browserTested()) : { run: true, browser: true });
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */
 const STEPS = [
@@ -53,18 +70,25 @@ const STEPS = [
   [
     'harness-tests',
     (m) => m !== 'quick',
-    () => exists('tests/harness') || 'tests/harness not written yet (M0)',
+    () => (!exists('tests/harness') ? 'tests/harness not written yet (M0)' : harnessToRun().length > 0 || 'no staged path the harness tests read'),
     // spec reporter: it closes with a "failing tests" list, which the FAIL detail starts at (M1.39)
-    () => runAsync(process.execPath, ['--test-reporter=spec', '--test', 'tests/harness/*.test.mjs']),
+    () => runAsync(process.execPath, ['--test-reporter=spec', '--test', ...harnessToRun()]),
   ],
   ['lint', () => true, () => (hasPkg && exists('biome.json')) || 'biome not configured yet (M1.9)', () => pnpm('run', 'lint')],
   [
     'test',
     () => true,
-    () => hasPkg || 'no workspace yet (M1)',
+    () => (!hasPkg ? 'no workspace yet (M1)' : mode === 'quick' || testPlan().run || 'no staged path the Vitest run reads'),
     // one root Vitest run (node + browser projects); coverage floors are enforced on every full run.
-    // quick mode runs only tests related to uncommitted changes, without coverage.
-    () => (mode === 'quick' ? pnpm('exec', 'vitest', 'run', '--changed') : pnpm('run', 'test:coverage')),
+    // quick mode runs only tests related to uncommitted changes, without coverage. A staged commit that
+    // touches no browser-tested workspace nor its dependencies runs the node project only, its
+    // coverage limited to the workspaces without browser tests (ladder-scope.mjs).
+    () => {
+      if (mode === 'quick') return pnpm('exec', 'vitest', 'run', '--changed');
+      const plan = testPlan();
+      if (plan.browser) return pnpm('run', 'test:coverage');
+      return pnpm('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`));
+    },
   ],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
   ['knip', (m) => m !== 'quick', () => (hasPkg && exists('knip.json')) || 'knip not configured', () => pnpm('exec', 'knip', '--no-progress')],

@@ -238,25 +238,37 @@ const tail = (r) => (r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(
  * cannot satisfy it (shared from m4-complete on; written for m3).
  */
 export function vitestNamed(title, paths, { env = {}, min = 1, project = 'node' } = {}) {
+  return vitestTitles([title], paths, { env, min, project })[0];
+}
+
+/**
+ * Run one Vitest project once on `paths` for every title in `titles` (`-t` with the literal titles
+ * joined as alternatives), then judge each title as {@link vitestNamed} does: true | '<reason>' per
+ * title, in order. `runner(args, env)` is injectable for tests (M4 cp1 F3).
+ */
+export function vitestTitles(titles, paths, { env = {}, min = 1, project = 'node', runner = runVitest } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'gate-vitest-'));
   try {
     const out = join(dir, 'report.json');
-    // -t takes a regular expression; the title is literal (M2 cp1 F1)
-    const literal = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', project, '--reporter=json', `--outputFile=${out}`, '-t', literal, ...paths], {
-      env: { ...process.env, ...env },
-    });
-    if (!existsSync(out)) return `vitest wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`;
+    // -t takes a regular expression; each title is literal (M2 cp1 F1)
+    const pattern = titles.map((title) => title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    const r = runner(['run', '--project', project, '--reporter=json', `--outputFile=${out}`, '-t', pattern, ...paths], env);
+    if (!existsSync(out)) return titles.map(() => `vitest wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`);
     const tests = JSON.parse(readFileSync(out, 'utf8')).testResults.flatMap((f) => f.assertionResults);
-    const named = tests.filter((x) => x.fullName.includes(title));
-    const failed = named.filter((x) => x.status === 'failed');
-    const passed = named.filter((x) => x.status === 'passed');
-    if (r.status !== 0 || failed.length) return `"${title}": ${failed.length} failed (${r.status === 0 ? 'exit 0' : tail(r)})`;
-    return passed.length >= min || `"${title}": ${passed.length} passing test(s), need ${min}`;
+    return titles.map((title) => {
+      const named = tests.filter((x) => x.fullName.includes(title));
+      const failed = named.filter((x) => x.status === 'failed');
+      const passed = named.filter((x) => x.status === 'passed');
+      // a failed run fails every title in it: another title's failure is not this one's pass
+      if (r.status !== 0 || failed.length) return `"${title}": ${failed.length} failed (${r.status === 0 ? 'exit 0' : tail(r)})`;
+      return passed.length >= min || `"${title}": ${passed.length} passing test(s), need ${min}`;
+    });
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
+
+const runVitest = (args, env) => run('pnpm', ['exec', 'vitest', ...args], { env: { ...process.env, ...env } });
 
 /** Run named node:test cases of one harness file; each pattern needs a passing case titled with it. */
 export function namedCases(file, patterns) {
@@ -270,9 +282,28 @@ export function namedCases(file, patterns) {
 }
 
 /** Every [row, title, package, env?, project?] passes under its exact title. */
-export function titled(list) {
-  const bad = list.map(([row, title, pkg, env, project]) => [row, vitestNamed(title, [`packages/${pkg}`], { env, project })]).filter(([, r]) => r !== true);
-  return bad.length === 0 || bad.map(([row, r]) => `${row} ${r}`).join('; ');
+export function titled(list, { runner } = {}) {
+  // one Vitest run per project and environment, over every package the titles name (M4 cp1 F3)
+  const groups = new Map();
+  for (const [row, title, pkg, env = {}, project = 'node'] of list) {
+    const key = `${project} ${JSON.stringify(env)}`;
+    const g = groups.get(key) ?? { project, env, entries: [] };
+    g.entries.push({ row, title, pkg });
+    groups.set(key, g);
+  }
+  const bad = [];
+  for (const { project, env, entries } of groups.values()) {
+    const paths = [...new Set(entries.map((e) => `packages/${e.pkg}`))];
+    const verdicts = vitestTitles(
+      entries.map((e) => e.title),
+      paths,
+      { env, project, ...(runner ? { runner } : {}) },
+    );
+    entries.forEach((e, i) => {
+      if (verdicts[i] !== true) bad.push(`${e.row} ${verdicts[i]}`);
+    });
+  }
+  return bad.length === 0 || bad.join('; ');
 }
 
 // ── NFR-PERF-006: the undo budget, measured by every completion gate from M4 on (M3 final F1) ────
@@ -339,4 +370,45 @@ export function benchLeg(maxMs, { runner = runBenches, root = repoPath() } = {})
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// ── R0 demo content (M4 cp1 F8): a rendered demo screen shows shapes, connectors and token styles ───
+/** The HTML of each `.fx-screen` in `html`, from its opening tag to the next screen's (or the end). */
+function screensOf(html) {
+  const starts = [...html.matchAll(/<[a-z]+\b[^>]*\bclass="[^"]*\bfx-screen\b[^"]*"/g)].map((m) => m.index);
+  return starts.map((start, i) => html.slice(start, starts[i + 1] ?? html.length));
+}
+
+/**
+ * Whether a rendered demo shows what R0 promises: at least `minScreens` `.fx-screen`s, and in each a
+ * shape (`.fx-el` with `data-kind="shape"`), a connector drawn as an SVG path or line (`.fx-el` with
+ * `data-kind="connector"`), and a token style (`var(--fx-…)`). This is the render rows' markup
+ * contract (M4.13-M4.15): element wrappers carry `data-kind`.
+ */
+export function checkDemoHtml(html, minScreens = 2) {
+  const screens = screensOf(html);
+  if (screens.length < minScreens) return `${screens.length} .fx-screen (want ${minScreens})`;
+  const problems = screens.flatMap((screen, i) => {
+    const missing = screenLacks(screen);
+    return missing.length ? [`screen ${i + 1} lacks ${missing.join(', ')}`] : [];
+  });
+  return problems.length === 0 || problems.join('; ');
+}
+
+/** What one rendered screen lacks of a shape, a connector path and a token style. */
+function screenLacks(screen) {
+  const shape = /class="[^"]*\bfx-el\b[^"]*"[^>]*\bdata-kind="shape"|data-kind="shape"[^>]*class="[^"]*\bfx-el\b/.test(screen);
+  // a connector wrapper, up to the next element wrapper, holds an SVG path or line
+  const at = screen.search(/<[a-z]+\b[^>]*data-kind="connector"/);
+  const rest = at < 0 ? '' : screen.slice(at + 1);
+  const next = rest.search(/<[a-z]+\b[^>]*\bdata-kind="/);
+  const connector = at >= 0 && /<(path|line)\b/.test(next < 0 ? rest : rest.slice(0, next));
+  const token = /var\(--fx-/.test(screen);
+  return [
+    [shape, 'a shape'],
+    [connector, 'a connector path'],
+    [token, 'a token style'],
+  ]
+    .filter(([has]) => !has)
+    .map(([, what]) => what);
 }

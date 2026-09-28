@@ -149,8 +149,14 @@ leg('mode is read only in render/src/mode-policy.ts (gate + negative case)', () 
   if (r.status !== 0) return ok(r);
   return namedCases('tests/harness/mode-policy.test.mjs', ['a mode read outside mode-policy fails']);
 });
-leg('ssr: static HTML with no scripts and one .fx-screen per visible screen', () =>
-  titled([['M4.16', 'FR-CLI-001: static HTML has no script and one .fx-screen per visible screen', 'render']]),
+// the SSR HTML is styled (inlined content CSS, every --fx var it uses defined) and equals the browser
+// render per fixture (plan risks 1-2; M4 cp1 F1)
+leg('ssr: static HTML with no scripts, styled, and equal to the browser render', () =>
+  titled([
+    ['M4.16', 'FR-CLI-001: static HTML has no script and one .fx-screen per visible screen', 'render'],
+    ['M4.16', 'FR-THM-001: the static HTML inlines the content CSS and defines every --fx variable it uses', 'render'],
+    browser('M4.16', 'FR-SCR-001: SSR markup equals the browser render for each fixture'),
+  ]),
 );
 leg('SVG goldens match and a second render is byte-identical', () =>
   titled([['M4.19', 'NFR-REL-005: SVG goldens match and a second render is byte-identical', 'render']]),
@@ -206,8 +212,9 @@ leg(`${DEMO} validates and renders to HTML with no scripts; CI renders it and up
     if (r.status !== 0 || !existsSync(out)) return `render: ${ok(r)}`;
     const html = readFileSync(out, 'utf8');
     if (/<script\b/i.test(html)) return 'the demo HTML has a <script>';
-    const screens = (html.match(/class="[^"]*\bfx-screen\b/g) ?? []).length;
-    if (screens < 2) return `the demo HTML has ${screens} .fx-screen (want 2 screens)`;
+    // two screens, each with a shape, a connector path and a token style (M4 cp1 F8)
+    const content = checks.checkDemoHtml(html, 2);
+    if (content !== true) return `the demo HTML: ${content}`;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

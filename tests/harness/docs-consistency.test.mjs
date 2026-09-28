@@ -35,8 +35,10 @@ describe('harness docs consistency (NFR-DX-003)', () => {
   });
 
   it('describe the gate-test glob that precommit actually runs', () => {
+    // every tests/harness/*.test.mjs file (staged mode scopes them: ladder-scope.mjs, M4.26)
     const pre = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
-    assert.match(pre, /'--test', 'tests\/harness\/\*\.test\.mjs'/);
+    assert.match(pre, /readdirSync\(repoPath\('tests\/harness'\)\)\s*\.filter\(\(f\) => f\.endsWith\('\.test\.mjs'\)\)/);
+    assert.match(pre, /'--test', \.\.\.harnessToRun\(\)/);
   });
 
   // M1.37 (M1 cp2 F4, cp3 F4): the docs agents follow say what the toolchain does

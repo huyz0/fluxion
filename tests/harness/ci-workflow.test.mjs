@@ -207,7 +207,10 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
   });
 
   it('CI names failing harness tests and ships every built workspace to later jobs (M1.39, NFR-PORT-005)', () => {
-    assert.match(readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8'), /'--test-reporter=spec', '--test', 'tests\/harness\/\*\.test\.mjs'/);
+    // the spec reporter over every harness file outside staged mode (--all: verify, CI); staged mode scopes (M4.26)
+    const pre = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
+    assert.match(pre, /'--test-reporter=spec', '--test', \.\.\.harnessToRun\(\)/);
+    assert.match(pre, /mode === 'staged' \? harnessFiles\(stagedPaths\(\), HARNESS\(\)\) : HARNESS\(\)/);
     // after a ladder failure only: a green ladder already ran the suite (M1.42: windows timeout);
     // in ci.yml's verify job since M2.22
     assert.match(ci, /- run: pnpm verify\n(?:\s+#.*\n)*\s+- name: harness tests\n\s+if: failure\(\)\n/);
