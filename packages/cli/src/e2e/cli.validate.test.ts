@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OUTPUT_SCHEMAS } from '../output.js';
-import { fluxion } from './spawn-bin.js';
+import { E2E_TIMEOUT, fluxion } from './spawn-bin.js';
 
 type Reply = {
   readonly ok: boolean;
@@ -17,7 +17,7 @@ function validate(file: string): { status: number | null; reply: Reply; stderr: 
   return { status: r.status, reply: parsed?.data as Reply, stderr: r.stderr };
 }
 
-describe('fluxion validate (FR-CLI-001, ADR-0147)', () => {
+describe('fluxion validate (FR-CLI-001, ADR-0147)', { timeout: E2E_TIMEOUT }, () => {
   it('FR-CLI-001: validate reports JSON-pointer diagnostics and exits 1', () => {
     for (const fixture of ['invalid-ref-missing', 'invalid-schema-invalid']) {
       const { status, reply, stderr } = validate(`fixtures/docs/${fixture}.flux.json`);

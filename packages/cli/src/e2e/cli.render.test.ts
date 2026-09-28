@@ -6,7 +6,7 @@ import { type DocumentFile, serializeDocument } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { OUTPUT_SCHEMAS } from '../output.js';
-import { fluxion, REPO } from './spawn-bin.js';
+import { E2E_TIMEOUT, fluxion, REPO } from './spawn-bin.js';
 
 let dir: string;
 beforeEach(() => {
@@ -22,7 +22,7 @@ function render(args: readonly string[]) {
   return { status: r.status, reply: parsed?.data as { ok: boolean; result?: { out: string; screens: number }; errors?: { code: string }[] } };
 }
 
-describe('fluxion render (FR-CLI-001, FR-SCR-001, ADR-0015)', () => {
+describe('fluxion render (FR-CLI-001, FR-SCR-001, ADR-0015)', { timeout: E2E_TIMEOUT }, () => {
   it('FR-CLI-001: render writes the two-rects-line HTML matching the golden', () => {
     const out = join(dir, 'two-rects-line.html');
     const { status, reply } = render(['fixtures/docs/two-rects-line.flux.json', '-o', out]);
@@ -73,5 +73,25 @@ describe('fluxion render (FR-CLI-001, FR-SCR-001, ADR-0015)', () => {
     const unwritable = render(['fixtures/docs/two-rects-line.flux.json', '-o', join(dir, 'no', 'such', 'dir', 'x.html')]);
     expect(unwritable.status).toBe(1);
     expect(unwritable.reply.errors?.[0]?.code).toBe('FLX_CLI_IO');
+  });
+});
+
+describe('the R0 demo (FR-CLI-001, M4.22)', { timeout: E2E_TIMEOUT }, () => {
+  it('FR-CLI-001: examples/r0-static.flux.json validates with no errors and renders two screens of shapes, connectors and token styles', () => {
+    const validated = fluxion(['validate', 'examples/r0-static.flux.json', '--json']);
+    expect(validated.status).toBe(0);
+    expect(JSON.parse(validated.stdout).result.diagnostics).toEqual([]);
+    const out = join(dir, 'r0-static.html');
+    expect(render(['examples/r0-static.flux.json', '-o', out]).reply.result?.screens).toBe(2);
+    const screens = readFileSync(out, 'utf8').split('<section class="fx-screen"').slice(1);
+    expect(screens).toHaveLength(2);
+    for (const screen of screens) {
+      expect(screen).toContain('data-kind="shape"');
+      expect(screen).toMatch(/data-kind="connector"[\s\S]*?class="fx-route"/);
+    }
+    // the demo's own token styles, not only the theme defaults every screen carries (review F1)
+    const [first, second] = screens as [string, string];
+    for (const token of ['fill:var(--fx-color-primary', 'fill:var(--fx-color-accent-1', 'stroke-width:var(--fx-stroke-thin']) expect(first).toContain(token);
+    for (const token of ['fill:var(--fx-color-secondary', 'fill:var(--fx-color-accent-3']) expect(second).toContain(token);
   });
 });

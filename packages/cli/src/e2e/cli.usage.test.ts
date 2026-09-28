@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OUTPUT_SCHEMAS } from '../output.js';
-import { fluxion } from './spawn-bin.js';
+import { E2E_TIMEOUT, fluxion } from './spawn-bin.js';
 
 /** The reply on stdout, parsed by its command's schema (contracts.md rule 13). */
 function reply(stdout: string, command = 'fluxion') {
@@ -14,7 +14,7 @@ function reply(stdout: string, command = 'fluxion') {
   };
 }
 
-describe('fluxion usage (FR-CLI-001, ADR-0147)', () => {
+describe('fluxion usage (FR-CLI-001, ADR-0147)', { timeout: E2E_TIMEOUT }, () => {
   it('FR-CLI-001: --help lists validate and render', () => {
     const r = fluxion(['--help']);
     expect(r.status).toBe(0);

@@ -14,3 +14,6 @@ export function fluxion(args: readonly string[], cwd: string = REPO): { status: 
   const r = spawnSync(process.execPath, [BIN, ...args], { cwd, encoding: 'utf8' });
   return { status: r.status, stdout: r.stdout, stderr: r.stderr };
 }
+
+/** Per-test timeout of the e2e suites: each case spawns Node several times, slow on a loaded machine. */
+export const E2E_TIMEOUT = 30_000;

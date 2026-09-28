@@ -87,6 +87,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
+      # the R0 demo rendered by the built CLI: a static page anyone can open from the run (M4.22, FR-CLI-001)
+      - run: node packages/cli/dist/bin.js render examples/r0-static.flux.json -o r0-static.html
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: r0-static-demo
+          path: r0-static.html
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist
