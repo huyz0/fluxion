@@ -60,6 +60,12 @@ function withUncovered(dirs) {
 // The sandbox runs the node project only (a browser launch per case would double this suite).
 // Modules covered only by a sibling *.browser.test (stories, components) are not part of the floor
 // mechanics tested here; the ladder's test step checks the real coverage with both projects.
+/** A workspace's sources and configs, and the generated snapshots its tests compare against (CLI reply schemas, ADR-0147; SVG goldens, M4.19). */
+function copyWorkspace(dir) {
+  for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
+  for (const f of ['schemas', '__golden__']) if (existsSync(join(REPO, dir, f))) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
+}
+
 function dropBrowserCovered(src) {
   const files = readdirSync(sb.path(src));
   const stem = (f) => f.split('.')[0];
@@ -77,11 +83,7 @@ function dropBrowserCovered(src) {
 describe('coverage floors (NFR-MNT-004)', () => {
   before(() => {
     sb = sandbox(SHARED);
-    for (const { dir } of workspaces) {
-      for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
-      // generated contract snapshots the workspace's tests compare against (packages/cli/schemas, ADR-0147)
-      if (existsSync(join(REPO, dir, 'schemas'))) cpSync(join(REPO, dir, 'schemas'), sb.path(`${dir}/schemas`), { recursive: true });
-    }
+    for (const { dir } of workspaces) copyWorkspace(dir);
     linkInstalls(sb);
     for (const { dir } of workspaces) dropBrowserCovered(`${dir}/src`);
     // e2e suites spawn a workspace's built bin (dist/, absent here) and cover no source (M4.17)

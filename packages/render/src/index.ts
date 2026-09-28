@@ -9,6 +9,7 @@ export { CONTENT_CSS } from './content-css.js';
 export { DocumentView, type DocumentViewProps } from './document-view.js';
 export { ElementList, type ElementListProps, PlaceholderView } from './elements.js';
 export { type FitTransform, fitTransform, screenArea } from './fit.js';
+export { normalizeSvg } from './golden.js';
 export { plainParagraphs } from './label.js';
 export { type ModePolicy, modePolicy, type RenderMode } from './mode-policy.js';
 export { pathData } from './path-data.js';

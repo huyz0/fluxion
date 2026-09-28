@@ -14,7 +14,8 @@
       "!pnpm-lock.yaml",
       "!tests/harness/fixtures/biome",
       "!.harness/reviews",
-      "!packages/cli/schemas"
+      "!packages/cli/schemas",
+      "!packages/render/__golden__"
     ]
   },
   "formatter": {

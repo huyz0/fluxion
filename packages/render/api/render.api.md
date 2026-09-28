@@ -118,6 +118,9 @@ export type ModePolicy = {
 export function modePolicy(mode: RenderMode): ModePolicy;
 
 // @public
+export function normalizeSvg(html: string): string;
+
+// @public
 export function paintCss(paint: ResolvedPaint): CSSProperties;
 
 // @public
