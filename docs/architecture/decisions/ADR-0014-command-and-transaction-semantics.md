@@ -163,6 +163,11 @@ fork never reach the parent`, `…a read-only store rejects element.update…`).
   history module replays through the store's internal entry point. A built-in given a
   missing or wrong-typed id returns `COMMAND_ARGS`; `TX_INVALID` stays for an invalid document,
   and every refusal carries a diagnostic (`FLX_FORK_UNRELATED` for `applyFork` misuse).
+- 2026-09-29 (M4.27, M4 cp1 F4): measured again at the benches' sampling since M4.7 (3 s after a
+  0.5 s warm-up, about 600 samples per benchmark): p99 5.65–9.17 ms over the 24 undo, redo and
+  transact benchmarks (worst `undo screen.delete`), means ≤ 7.1 ms, on the dev machine; the budget
+  stays 16 ms. The benchmark list is CORE_COMMANDS itself: a harness case fails when the shared leg's
+  BENCH_COMMANDS or the bench fixture's list drifts from it.
 
 ## Pros and Cons of the Options
 

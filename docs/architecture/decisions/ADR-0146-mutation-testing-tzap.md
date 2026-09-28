@@ -73,3 +73,13 @@ a harness case shows check-drift refusing a lowered floor; the nightly job runs 
 
 tzap docs: usage, mutators, status (github.com/huyz0/tzap/docs). Amends ADR-0008 (toolchain),
 tech-stack.md (Mutation row), testing.md §6, ci-cd.md (nightly), M20 plan row 15.
+
+## Amendments
+
+- 2026-09-29 (M4.27, M4 cp1 F5, F6): the nightly `mutation` job runs whole pure packages
+  (`pnpm mutate --check`), because floors judge whole-package runs; diff-scoped runs
+  (`--from <ref>`) are for reviews. Once a nightly run exceeds 45 min, split the job per package (a
+  matrix over the packages with floors) rather than raising its timeout. After a tzap upgrade
+  (new or changed mutators), re-measure every floor with a whole-package run before raising or
+  holding it; a floor the new tzap cannot reach is lowered only with `Threshold-change:` citing this
+  ADR and the survivors triaged in the same row.

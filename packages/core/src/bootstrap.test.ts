@@ -46,9 +46,44 @@ describe('createCore (M3 final F3)', () => {
 
 // NFR-REL-005: document operations are deterministic. The same command sequence on the same document
 // gives equal diffs (entry order included), history and document, every run.
-const COMMANDS = ['element.update', 'element.delete', 'screen.delete', 'document.update', 'screen.reorder'] as const;
-type Op = { readonly command: (typeof COMMANDS)[number]; readonly pick: number; readonly value: number };
+// every built-in command, create and binding.set included (M4 cp1 F7): the list is CORE_COMMANDS itself
+const COMMANDS = CORE_COMMANDS.map((c) => c.id);
+type Op = { readonly command: string; readonly pick: number; readonly value: number };
 const arbOps = fc.array(fc.record({ command: fc.constantFrom(...COMMANDS), pick: fc.nat(), value: fc.nat(99) }), { minLength: 1, maxLength: 10 });
+const newId = (n: number) => `Det${String(n).padStart(13, '0')}`;
+
+/** The arguments of one generated op against the current state (refusals are part of the model). */
+function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string): unknown {
+  const screen = pick('screen');
+  const element = pick('element');
+  const build: { readonly [id: string]: () => unknown } = {
+    'element.create': () => ({
+      element: {
+        id: newId(n),
+        type: 'element',
+        kind: 'shape',
+        defId: 'basic:rect',
+        screenId: screen,
+        index: 'a0',
+        transform: { x: op.value, y: 0, w: 10, h: 10 },
+      },
+    }),
+    'element.update': () => ({ id: element, fields: { name: `n${op.value}` } }),
+    'element.delete': () => ({ ids: [element] }),
+    'screen.create': () => ({ screen: { id: newId(n), type: 'screen', index: 'a0' } }),
+    'screen.delete': () => ({ id: screen }),
+    'screen.reorder': () => ({ id: screen }),
+    'binding.set': () => ({
+      id: newId(n),
+      connectorId: pick('element', 'connector'),
+      end: op.value % 2 ? 'source' : 'target',
+      elementId: pick('element', 'shape'),
+      anchor: { kind: 'auto' },
+    }),
+    'document.update': () => ({ fields: { title: `t${op.value}` } }),
+  };
+  return build[op.command]?.();
+}
 
 /** Serialize a diff with its entry order (Maps keep insertion order; toEqual on Maps would not check it). */
 const ordered = (d: Diff) => ({ puts: [...d.puts.entries()], deletes: [...d.deletes.entries()] });
@@ -57,20 +92,15 @@ function play(file: DocumentFile, ops: readonly Op[]) {
   const core = createCore(file);
   const diffs: unknown[] = [];
   core.store.subscribe((d, m) => diffs.push([ordered(d), m.label, m.origin]));
-  const ids = (type: string) => core.store.members('byType', type).sort();
-  const results = ops.map((op) => {
-    const elements = ids('element');
-    const screens = ids('screen');
-    const element = elements[op.pick % Math.max(1, elements.length)] ?? 'none';
-    const screen = screens[op.pick % Math.max(1, screens.length)] ?? 'none';
-    const args = {
-      'element.update': { id: element, fields: { name: `n${op.value}` } },
-      'element.delete': { ids: [element] },
-      'screen.delete': { id: screen },
-      'document.update': { fields: { title: `t${op.value}` } },
-      'screen.reorder': { id: screen },
-    }[op.command];
-    const r = core.execute(op.command, args);
+  const results = ops.map((op, n) => {
+    const pick = (type: string, kind?: string) => {
+      const ids = core.store
+        .members('byType', type)
+        .filter((id) => kind === undefined || (core.store.get(id) as { kind?: string } | undefined)?.kind === kind)
+        .sort();
+      return ids[op.pick % Math.max(1, ids.length)] ?? 'none';
+    };
+    const r = core.execute(op.command, argsOf(op, n, pick));
     return r.ok ? 'ok' : r.error.code;
   });
   return { diffs, results, depth: core.store.history.undoDepth, doc: core.store.toDocument() };
@@ -79,16 +109,21 @@ function play(file: DocumentFile, ops: readonly Op[]) {
 describe('core determinism (NFR-REL-005, M3 final F4)', () => {
   it('NFR-REL-005: the same command sequence twice gives equal diffs, history and document', () => {
     let committed = 0;
+    const committedBy = new Set<string>();
     fc.assert(
       fc.property(arbDocument, arbOps, (file, ops) => {
         const first = play(file, ops);
         const second = play(file, ops);
         expect(second).toEqual(first);
         committed += first.diffs.length;
+        ops.forEach((op, i) => {
+          if (first.results[i] === 'ok') committedBy.add(op.command);
+        });
       }),
     );
-    // the property exercised real commits, not only refusals
+    // the property exercised real commits of every built-in, not only refusals (M4 cp1 F7)
     expect(committed).toBeGreaterThan(0);
+    expect([...committedBy].sort()).toEqual([...COMMANDS].sort());
   });
 
   // toEqual on Maps ignores insertion order; the serialized form the property compares does not

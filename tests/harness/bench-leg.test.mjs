@@ -1,10 +1,12 @@
 // NFR-PERF-006 (M3 final F1): the undo budget is judged by one shared leg that every completion gate
 // from M4 on runs; these cases feed it fake bench reports instead of running the benches.
 import assert from 'node:assert/strict';
-import { rmSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { BENCH_COMMANDS, BENCH_FILES, benchLeg, checkBenchReport } from '../../scripts/gates/milestone-checks.mjs';
-import { sandbox } from './helpers.mjs';
+import { REPO, sandbox } from './helpers.mjs';
 
 /** A Vitest 5 JSON bench report: one passing test per command, each with its undo/redo/transact tasks. */
 function report(p99 = () => 5, { status = 'passed', drop = [] } = {}) {
@@ -94,5 +96,16 @@ describe('shared bench leg (NFR-PERF-006)', () => {
     } finally {
       sb.cleanup();
     }
+  });
+
+  // M4 cp1 F4: the leg and the benches cover every built-in command, not a list kept by hand
+  it('bench commands match the built-in commands', async () => {
+    const core = await import(pathToFileURL(join(REPO, 'packages/core/dist/index.js')).href);
+    const builtIns = core.CORE_COMMANDS.map((c) => c.id).sort();
+    assert.equal(builtIns.length >= 8, true);
+    assert.deepEqual([...BENCH_COMMANDS].sort(), builtIns);
+    const fixture = readFileSync(join(REPO, 'packages/core/bench/fixture.ts'), 'utf8');
+    const listed = /export const COMMANDS = \[([\s\S]*?)\]/.exec(fixture)?.[1] ?? '';
+    assert.deepEqual([...listed.matchAll(/'([a-z.]+)'/g)].map((m) => m[1]).sort(), builtIns);
   });
 });
