@@ -10,6 +10,11 @@ import { pathData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
 import { useValue } from './use-value.js';
 
+/** Room around a route for its stroke and markers, px. */
+const ROUTE_MARGIN = 24;
+
+const round = (v: number) => Math.round(v * 1000) / 1000 || 0;
+
 /** Marker shapes in a 10 × 10 box whose tip is at (10, 5); unlisted markers draw nothing yet. */
 const MARKER_PATHS: { readonly [marker: string]: string } = { arrow: 'M0 0 L10 5 L0 10 Z' };
 
@@ -47,8 +52,15 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
     strokeLinecap: style.stroke.cap as CSSProperties['strokeLinecap'],
     ...(style.stroke.dash === undefined ? {} : { strokeDasharray: style.stroke.dash }),
   };
+  // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
+  // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
+  const x = Math.min(ends.source.x, ends.target.x) - ROUTE_MARGIN;
+  const y = Math.min(ends.source.y, ends.target.y) - ROUTE_MARGIN;
+  const w = Math.abs(ends.source.x - ends.target.x) + 2 * ROUTE_MARGIN;
+  const h = Math.abs(ends.source.y - ends.target.y) + 2 * ROUTE_MARGIN;
+  const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
-    <svg className="fx-connector" aria-hidden="true" style={{ opacity: style.opacity }}>
+    <svg className="fx-connector" aria-hidden="true" viewBox={`${round(x)} ${round(y)} ${round(w)} ${round(h)}`} style={box}>
       {start === null && end === null ? null : (
         <defs>
           {start}

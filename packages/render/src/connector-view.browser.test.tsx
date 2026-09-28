@@ -59,6 +59,12 @@ describe('connector view (FR-CON-001)', () => {
     const box = route()?.getBoundingClientRect() as DOMRect;
     near({ x: box.left - screen.left, y: box.top - screen.top }, { x: 187.5, y: 150 });
     near({ x: box.right - screen.left, y: box.bottom - screen.top }, { x: 412.5, y: 300 });
+    // the SVG itself has a box around the route: an empty box is not painted by Chromium (M4.21)
+    const svg = route()?.ownerSVGElement?.getBoundingClientRect() as DOMRect;
+    expect(svg.left).toBeLessThan(box.left);
+    expect(svg.top).toBeLessThan(box.top);
+    expect(svg.right).toBeGreaterThan(box.right);
+    expect(svg.bottom).toBeGreaterThan(box.bottom);
     // the arrow marker sits at the target end; the stroke comes from the theme's connector defaults
     expect(route()?.getAttribute('marker-end')).toMatch(/^url\(#fx-marker-[\w-]+-end\)$/);
     expect(route()?.getAttribute('marker-start')).toBeNull();

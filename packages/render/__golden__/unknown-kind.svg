@@ -22,7 +22,7 @@
     </g>
   </g>
   <g data-el-id="cWB8Ucz36bNpnt8N" data-kind="connector">
-    <svg aria-hidden="true" class="fx-connector" style="opacity:1">
+    <svg aria-hidden="true" class="fx-connector" style="left:256px;top:216px;width:288px;height:48px;opacity:1" viewBox="256 216 288 48">
       <defs>
         <marker id="fx-id-0-end" markerHeight="5" markerWidth="5" orient="auto-start-reverse" refX="10" refY="5" viewBox="0 0 10 10">
           <path d="M0 0 L10 5 L0 10 Z" style="fill:var(--fx-color-connector, #334155)">

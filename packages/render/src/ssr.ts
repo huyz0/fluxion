@@ -29,9 +29,12 @@ export type RenderHtmlOptions = {
   readonly registries?: RenderRegistries;
 };
 
-/** The page around the screens: stacked, each at its own size, on a neutral backdrop. */
+/**
+ * The page around the screens: stacked, each at its own size, on a neutral backdrop; centred when the
+ * window is wider than the widest screen, and starting at the left edge (so scrollable) when it is not.
+ */
 const PAGE_CSS =
-  'body { margin: 0; background: #e5e7eb; } .fx-document { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px; }';
+  'body { margin: 0; background: #e5e7eb; } .fx-document { display: flex; flex-direction: column; gap: 24px; padding: 24px; width: max-content; margin: 0 auto; }';
 
 const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
