@@ -153,7 +153,9 @@ fork never reach the parent`, `…a read-only store rejects element.update…`).
   for any of the 8 built-in commands, even `document.update`; p99 5.4–9.1 ms on the dev
   machine, within the 16 ms budget. An incremental referential check (only the records a diff
   touches and the records that reference them) is the fix if larger documents or slower machines
-  exceed the budget; the bench leg of every milestone gate would show it.
+  exceed the budget. The shared bench leg (`benchLeg` in `scripts/gates/milestone-checks.mjs`,
+  M4.7) runs these benches in every completion gate from M3 on, so a regression shows at the
+  next milestone's end; `pnpm bench` shows it at any time.
 - 2026-09-28 (M4.4, M3 final F2, F5): a command's options cannot carry origin `undo` or `redo`
   (`CommandTxOptions`; `executeCommand` refuses them with `COMMAND_ARGS` for untyped callers):
   those origins skip hooks and history, so only the history module uses them. `store.transact`

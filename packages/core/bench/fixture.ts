@@ -9,6 +9,13 @@ import { type IntegrityHook, registerCoreHooks } from '../src/hooks.js';
 import { createRegistry } from '../src/registry.js';
 import { createStore, type Store } from '../src/store.js';
 
+/**
+ * Sampling of every bench: 3 s after a 0.5 s warm-up (about 600 samples at ~5 ms), so a p99 is not
+ * decided by one or two GC or scheduler pauses the way ~190 samples of tinybench's 1 s default are
+ * (M4.7: the shared gate leg judges these p99s at every milestone end).
+ */
+export const RUN_OPTIONS = { time: 3_000, warmupTime: 500 } as const;
+
 /** Records in the bench document (NFR-PERF-006: ≤ 5 000 records). */
 export const RECORDS = 5_000;
 

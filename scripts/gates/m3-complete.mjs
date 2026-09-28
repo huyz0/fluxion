@@ -4,8 +4,8 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { currentMilestone, exists, leg, listFiles, node, readText, repoPath, run, runLegs } from './lib.mjs';
-import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews, namedCases, titled, verifyLeg } from './milestone-checks.mjs';
+import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
+import { backlogTextFor, benchLeg, checkBacklogDone, checkFinalReview, loadMilestoneReviews, namedCases, titled, verifyLeg } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
@@ -107,48 +107,9 @@ leg('acceptance of M3.9-M3.20 passes under the planned titles', () =>
   ]),
 );
 
-// NFR-PERF-006: vitest bench JSON; an undo and a redo benchmark for every built-in record command
-// (M3.17), each p99 within UNDO_MAX_MS (M3.1 review F1)
-const BUILT_IN_COMMANDS = [
-  'element.create',
-  'element.update',
-  'element.delete',
-  'screen.create',
-  'screen.delete',
-  'screen.reorder',
-  'binding.set',
-  'document.update',
-];
-// undo/redo and the forward transactions, both on stores with default options: validation on, as in
-// dev and test (cp1 F3); a bench that switches validation off cannot pass this leg
-const BENCHES = ['packages/core/bench/undo-5000.bench.ts', 'packages/core/bench/transact-5000.bench.ts'];
-leg(`undo-5000 and transact-5000 benches: p99 <= UNDO_MAX_MS (${t('UNDO_MAX_MS')} ms) with validation on`, () => {
-  const missingFiles = BENCHES.filter((b) => !exists(b));
-  if (missingFiles.length) return `missing ${missingFiles.join(', ')}`;
-  // every file of the bench folder, helpers included: a shared fixture could switch validation off (M3.26 review F1)
-  const off = listFiles('packages/core/bench').filter((f) => /\bvalidate\s*:\s*false\b/.test(readText(f)));
-  if (off.length) return `validation switched off in ${off.join(', ')}`;
-  const dir = mkdtempSync(join(tmpdir(), 'm3-bench-'));
-  try {
-    const out = join(dir, 'bench.json');
-    // Vitest 5: `vitest bench` adds a "<project> (bench)" variant; benches run inside tests
-    // (`context.bench`) and the JSON reporter lists each test's results under `benchmarks`
-    const r = pnpm('exec', 'vitest', 'bench', '--run', '--project', 'node (bench)', '--reporter=json', `--outputFile=${out}`, ...BENCHES);
-    if (!existsSync(out)) return `no bench output: ${ok(r)}`;
-    const tests = JSON.parse(readFileSync(out, 'utf8')).testResults.flatMap((f) => f.assertionResults);
-    const failed = tests.filter((a) => a.status !== 'passed');
-    if (r.status !== 0 || failed.length) return `bench run failed: ${failed.map((a) => a.title).join(', ') || ok(r)}`;
-    const benches = tests.flatMap((a) => a.benchmarks.flatMap((b) => b.tasks)).map((b) => ({ name: b.name, p99: b.latency?.p99 }));
-    // names are exactly "<undo|redo|transact> <command id>", one per built-in command (M3.1 review F1)
-    const want = BUILT_IN_COMMANDS.flatMap((c) => [`undo ${c}`, `redo ${c}`, `transact ${c}`]);
-    const missing = want.filter((w) => !benches.some((b) => b.name === w));
-    if (missing.length) return `no benchmark named: ${missing.join(', ')}`;
-    const slow = benches.filter((b) => want.includes(b.name) && !(b.p99 <= t('UNDO_MAX_MS')));
-    return slow.length === 0 || slow.map((b) => `${b.name} p99 ${Number(b.p99).toFixed(2)} ms`).join('; ');
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
+// NFR-PERF-006: undo/redo/transact benches of every built-in command, validation on, each p99 within
+// UNDO_MAX_MS: the shared leg every gate from M4 on uses (M3 final F1)
+leg(`undo-5000 and transact-5000 benches: p99 <= UNDO_MAX_MS (${t('UNDO_MAX_MS')} ms) with validation on`, () => benchLeg(t('UNDO_MAX_MS')));
 
 leg('check-kind-switch: negative fixture fails and the repo passes', () => {
   if (!exists('scripts/gates/check-kind-switch.mjs')) return 'missing scripts/gates/check-kind-switch.mjs';

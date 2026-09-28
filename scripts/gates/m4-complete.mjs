@@ -67,7 +67,7 @@ leg('write-path test catches transact through call, apply and bind (M3 final F6)
 leg('undo/redo/transact benches within UNDO_MAX_MS through the shared bench leg (M3 final F1)', () => {
   if (typeof checks.benchLeg !== 'function') return 'milestone-checks.mjs exports no benchLeg (M4.7)';
   const shared = namedCases('tests/harness/bench-leg.test.mjs', ['a bench over UNDO_MAX_MS fails the shared leg']);
-  return shared === true ? checks.benchLeg() : shared;
+  return shared === true ? checks.benchLeg(t('UNDO_MAX_MS')) : shared;
 });
 /** `pnpm mutate` runs tzap, directly or through a wrapper script that calls it; the leg's run proves it. */
 function mutateScriptProblem() {

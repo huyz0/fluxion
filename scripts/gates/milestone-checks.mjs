@@ -2,7 +2,7 @@
 // file exists can be satisfied by a stub). Each returns true | '<reason>' for lib.mjs leg().
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { exists, git, repoPath, run } from './lib.mjs';
 
 /** Paths a commit may touch after the final review range without invalidating the review. */
@@ -273,4 +273,70 @@ export function namedCases(file, patterns) {
 export function titled(list) {
   const bad = list.map(([row, title, pkg, env, project]) => [row, vitestNamed(title, [`packages/${pkg}`], { env, project })]).filter(([, r]) => r !== true);
   return bad.length === 0 || bad.map(([row, r]) => `${row} ${r}`).join('; ');
+}
+
+// ── NFR-PERF-006: the undo budget, measured by every completion gate from M4 on (M3 final F1) ────
+/** The built-in record commands (M3.17) whose undo, redo and transact are benchmarked. */
+export const BENCH_COMMANDS = [
+  'element.create',
+  'element.update',
+  'element.delete',
+  'screen.create',
+  'screen.delete',
+  'screen.reorder',
+  'binding.set',
+  'document.update',
+];
+/** undo/redo and the forward transactions on 5 000 records, stores with default options (validation on). */
+export const BENCH_FILES = ['packages/core/bench/undo-5000.bench.ts', 'packages/core/bench/transact-5000.bench.ts'];
+const BENCH_DIR = 'packages/core/bench';
+
+/**
+ * Judge a Vitest 5 JSON bench report (benches run inside tests; each test lists its results under
+ * `benchmarks`): every test passed, a benchmark named `<undo|redo|transact> <command id>` exists for
+ * every built-in command, and each p99 is within `maxMs`.
+ */
+export function checkBenchReport(report, maxMs, commands = BENCH_COMMANDS) {
+  const tests = report.testResults.flatMap((f) => f.assertionResults);
+  const failed = tests.filter((a) => a.status !== 'passed');
+  if (failed.length) return `bench tests failed: ${failed.map((a) => a.title).join(', ')}`;
+  const benches = tests.flatMap((a) => (a.benchmarks ?? []).flatMap((b) => b.tasks)).map((b) => ({ name: b.name, p99: b.latency?.p99 }));
+  // names are exactly "<undo|redo|transact> <command id>", one per built-in command (M3.1 review F1)
+  const want = commands.flatMap((c) => [`undo ${c}`, `redo ${c}`, `transact ${c}`]);
+  const missing = want.filter((w) => !benches.some((b) => b.name === w));
+  if (missing.length) return `no benchmark named: ${missing.join(', ')}`;
+  const slow = benches.filter((b) => want.includes(b.name) && !(b.p99 <= maxMs));
+  return slow.length === 0 || slow.map((b) => `${b.name} p99 ${Number(b.p99).toFixed(2)} ms`).join('; ');
+}
+
+/** Run the benches with Vitest 5 (`vitest bench` adds a "<project> (bench)" variant), JSON to `out`. */
+function runBenches(out) {
+  return run('pnpm', ['exec', 'vitest', 'bench', '--run', '--project', 'node (bench)', '--reporter=json', `--outputFile=${out}`, ...BENCH_FILES]);
+}
+
+/**
+ * Completion-gate leg for NFR-PERF-006: the bench files exist, no file of the bench folder (helpers
+ * included) switches validation off (cp1 F3, M3.26 review F1), and the report passes
+ * {@link checkBenchReport} at `maxMs`. `runner(out)` and `root` are injectable for tests.
+ */
+export function benchLeg(maxMs, { runner = runBenches, root = repoPath() } = {}) {
+  const missingFiles = BENCH_FILES.filter((b) => !existsSync(join(root, b)));
+  if (missingFiles.length) return `missing ${missingFiles.join(', ')}`;
+  const benchDir = join(root, BENCH_DIR);
+  // every file under the folder, nested helpers included (M4.7 review F1, M3.26 review F1)
+  const files = readdirSync(benchDir, { recursive: true, withFileTypes: true })
+    .filter((e) => e.isFile())
+    .map((e) => relative(benchDir, join(e.parentPath, e.name)).split(sep).join('/'));
+  const off = files.filter((f) => /\bvalidate\s*:\s*false\b/.test(readFileSync(join(benchDir, f), 'utf8')));
+  if (off.length) return `validation switched off in ${off.map((f) => `${BENCH_DIR}/${f}`).join(', ')}`;
+  const dir = mkdtempSync(join(tmpdir(), 'gate-bench-'));
+  try {
+    const out = join(dir, 'bench.json');
+    const r = runner(out);
+    if (!existsSync(out)) return `no bench output: ${tail(r)}`;
+    const judged = checkBenchReport(JSON.parse(readFileSync(out, 'utf8')), maxMs);
+    return r.status !== 0 && judged === true ? `bench run exited ${r.status}: ${tail(r)}` : judged;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
