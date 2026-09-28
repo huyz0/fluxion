@@ -68,6 +68,17 @@ and reports each change (02-document-model §4). Validation runs on the repaired
 | `FLX_REPAIRED_PARENT` | warning | `parentId` named a missing element or looped; the element moved to the screen root. | Regroup if needed. |
 | `FLX_REPAIRED_INDEX` | warning | A sibling `index` was missing, invalid or shared; it was appended after its siblings. | None needed. |
 
+## Styles and themes
+
+Reported by `@fluxion/theme` `resolveStyle` when a style is resolved for rendering (02-document-model
+§Style, ADR-0015). Paths point at the style field that holds the reference: into the document
+(`/records/<id>/style/fill`), or into the theme's own defaults (`/theme/defaults/<kind>/…`, including
+`/theme/defaults/<kind>/variants/<name>/…` and the globals `/theme/defaults/*/…`).
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_TOKEN_UNKNOWN` | warning | A style or a theme default names a token the theme does not have (`{color.nope}`); the field falls back through the next layers: the variant defaults, the kind defaults, the theme globals, then the built-in fallback. | Use a token of the theme, or a literal value. |
+
 ## Engine
 
 Reported by `@fluxion/core` while plugins and built-ins register or commands run (03-core-engine).

@@ -67,7 +67,7 @@ export type Theme = {
 const NAME = /^[A-Za-z0-9_-]+$/;
 // a family name reaches CSS quoted and escaped (cssValue); markup and control characters could still
 // end a <style> element or an attribute, so they are refused (M4.9 review F2)
-const FAMILY = /^[^\p{Cc}<>]+$/u;
+export const FAMILY: RegExp = /^[^\p{Cc}<>]+$/u;
 const family = z.string().regex(FAMILY, 'a font family name has no control characters, "<" or ">"');
 const described = { $description: z.string().optional() };
 const tokenSchema = z.discriminatedUnion('$type', [
@@ -99,6 +99,18 @@ const groupSchema: z.ZodType<TokenGroup> = z.lazy(() =>
  * @public
  */
 export const cssVarName = (path: string): string => `--fx-${path.split('.').join('-')}`;
+
+/**
+ * Whether `token` is a valid token of the model (the schema a parsed theme passed). Emitters check it,
+ * so a theme object that never went through `themeSchema` cannot put other CSS into their output
+ * (M4.10 review round 2 F1).
+ *
+ * @public
+ */
+export const isValidToken = (token: unknown): token is Token => tokenSchema.safeParse(token).success;
+
+/** A token reference whose path segments are token names: the only form emitters turn into `var(--fx-…)`. */
+export const TOKEN_REF: RegExp = /^\{[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*\}$/;
 
 /** Every token of `group` with its dot path, in tree order (core-internal to the package). */
 export function tokenEntries(group: TokenGroup, prefix = ''): Array<readonly [string, Token]> {

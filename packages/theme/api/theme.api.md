@@ -4,7 +4,9 @@
 
 ```ts
 
+import { Diagnostic } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
+import { Style } from '@fluxion/schema';
 import { TokenRef } from '@fluxion/schema';
 import { z } from 'zod';
 
@@ -24,10 +26,86 @@ export type Dimension = {
 export const isToken: (node: Token | TokenGroup | undefined) => node is Token;
 
 // @public
+export const isValidToken: (token: unknown) => token is Token;
+
+// @public
 export const LIGHT_THEME: Theme;
 
 // @public
+export type NoPaint = {
+    readonly type: "none";
+};
+
+// @public
+export type ResolvedColorPaint = {
+    readonly type: "color";
+    readonly css: string;
+};
+
+// @public
+export type ResolvedFont = {
+    readonly family: string;
+    readonly size: string;
+    readonly weight: string;
+    readonly lineHeight: string;
+    readonly color: string;
+    readonly style: string;
+    readonly align: string;
+    readonly verticalAlign: string;
+};
+
+// @public
+export type ResolvedGradientPaint = {
+    readonly type: "linear-gradient" | "radial-gradient";
+    readonly angle: number;
+    readonly stops: readonly ResolvedStop[];
+};
+
+// @public
+export type ResolvedImagePaint = {
+    readonly type: "image";
+    readonly assetId: string;
+    readonly fit: "cover" | "contain" | "fill" | "tile";
+};
+
+// @public
+export type ResolvedPaint = ResolvedColorPaint | ResolvedGradientPaint | ResolvedImagePaint | NoPaint;
+
+// @public
+export type ResolvedStop = {
+    readonly offset: number;
+    readonly css: string;
+};
+
+// @public
+export type ResolvedStroke = {
+    readonly color: string;
+    readonly width: string;
+    readonly dash?: string;
+    readonly cap: string;
+    readonly join: string;
+};
+
+// @public
+export type ResolvedStyle = {
+    readonly fill: ResolvedPaint;
+    readonly stroke: ResolvedStroke;
+    readonly opacity: string;
+    readonly radius: string;
+    readonly font: ResolvedFont;
+};
+
+// @public
+export function resolveStyle(style: Style | undefined, kind: string, theme: Theme, at?: ReadonlyArray<string | number>): StyleResolution;
+
+// @public
 export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeError>;
+
+// @public
+export type StyleResolution = {
+    readonly style: ResolvedStyle;
+    readonly diagnostics: readonly Diagnostic[];
+};
 
 // @public
 export type Theme = {

@@ -105,3 +105,12 @@ visual baseline of the CLI output (pinned Playwright image), and `check-mode-pol
 
 04-rendering-and-editor §2; ADR-0010 (styling isolation); ADR-0001 (own DOM+SVG engine);
 01-overview §3 (layering). M4 plan "Decide before coding".
+
+## Amendments
+
+- 2026-09-29 (M4.10 review F1, F2): the theme defaults' shape is `defaults[kind]` with an optional
+  `variants[name]` sub-object and the globals under `defaults['*']`, as 02 §Style now states.
+  `resolveStyle` validates every value it emits (colours through the schema's `colorSchema`, family
+  names quoted and escaped, keywords from their allow-lists, finite numbers) and skips anything else
+  to the next layer, so neither a style literal nor a theme default can inject CSS into the rendered
+  output.

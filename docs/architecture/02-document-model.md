@@ -108,8 +108,11 @@ interface Style {
   font?: FontStyle; variant?: string;               // theme variant name, e.g. 'emphasis'
 }
 ```
-Resolution order: element literal → element token ref → theme `defaults[kind][variant]` →
-theme `defaults[kind]` → theme globals.
+Resolution order, per field: element literal → element token ref → theme
+`defaults[kind].variants[variant]` → theme `defaults[kind]` → theme globals (`defaults['*']`) →
+built-in fallbacks (`@fluxion/theme` `resolveStyle`, ADR-0015). An unknown token reference
+(FLX_TOKEN_UNKNOWN) or a value that is not valid for its field (a non-colour, a keyword outside its
+set) is skipped and the next layer is used, so no resolved value carries other CSS.
 
 ## 3. IDs & human slugs
 

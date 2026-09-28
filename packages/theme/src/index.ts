@@ -3,7 +3,20 @@
 export type { ThemeError, ThemeErrorCode } from './errors.js';
 export { LIGHT_THEME } from './light.js';
 export { cssValue, resolveToken, toCssVars, tokenPath } from './resolve.js';
-export { cssVarName, type Dimension, isToken, type Theme, type Token, type TokenGroup, type TypedToken, themeSchema } from './tokens.js';
+export {
+  type NoPaint,
+  type ResolvedColorPaint,
+  type ResolvedFont,
+  type ResolvedGradientPaint,
+  type ResolvedImagePaint,
+  type ResolvedPaint,
+  type ResolvedStop,
+  type ResolvedStroke,
+  type ResolvedStyle,
+  resolveStyle,
+  type StyleResolution,
+} from './resolve-style.js';
+export { cssVarName, type Dimension, isToken, isValidToken, type Theme, type Token, type TokenGroup, type TypedToken, themeSchema } from './tokens.js';
 
 /**
  * Version of this package.

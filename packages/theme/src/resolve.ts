@@ -3,7 +3,7 @@
 // to `var(--fx-color-primary)` and a theme switch restyles without re-rendering.
 import { err, ok, type Result, type TokenRef } from '@fluxion/schema';
 import type { ThemeError } from './errors.js';
-import { cssVarName, isToken, type Theme, type Token, type TokenGroup, tokenEntries } from './tokens.js';
+import { cssVarName, isToken, isValidToken, type Theme, type Token, type TokenGroup, tokenEntries } from './tokens.js';
 
 /**
  * The dot path of a token reference: `{color.primary}` → `color.primary`.
@@ -39,8 +39,8 @@ const GENERIC_FAMILIES = new Set([
   'fangsong',
 ]);
 
-/** A family name as CSS: a generic keyword bare, any other name as a string with `\` and `"` escaped. */
-const familyCss = (name: string): string => (GENERIC_FAMILIES.has(name) ? name : `"${name.replace(/[\\"]/g, (c) => `\\${c}`)}"`);
+/** A family name as CSS (package-internal): a generic keyword bare, any other name as a string with `\` and `"` escaped. */
+export const familyCss = (name: string): string => (GENERIC_FAMILIES.has(name) ? name : `"${name.replace(/[\\"]/g, (c) => `\\${c}`)}"`);
 
 /**
  * A token's value as CSS text: a colour as written (a validated CSS colour), a dimension with its
@@ -77,10 +77,13 @@ export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeEr
 }
 
 /**
- * Every token of `theme` as a CSS custom property: `{ '--fx-color-primary': '#2563eb', … }`.
+ * Every valid token of `theme` as a CSS custom property: `{ '--fx-color-primary': '#2563eb', … }`;
+ * a token the model does not accept is left out.
  *
  * @public
  */
 export function toCssVars(theme: Theme): Record<string, string> {
-  return Object.fromEntries(tokenEntries(theme.tokens).map(([path, token]) => [cssVarName(path), cssValue(token)]));
+  // only valid tokens with name-only paths: an unparsed theme object cannot emit other CSS (M4.10 review)
+  const safe = tokenEntries(theme.tokens).filter(([path, token]) => /^[A-Za-z0-9_.-]+$/.test(path) && isValidToken(token));
+  return Object.fromEntries(safe.map(([path, token]) => [cssVarName(path), cssValue(token)]));
 }
