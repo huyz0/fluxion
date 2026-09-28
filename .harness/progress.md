@@ -779,3 +779,11 @@ review F1-F2: members of a group/frame are stored in screen coordinates, so thei
 ## 2026-09-29 M4.28 (claude)
 M4.14's staged ladder (lockfile, API reports and an ADR staged: the whole harness plus the browser Vitest run) measured 86-126 s against 120 s. Profile: harness files alone sum to ~246 s sequential, api.test (~30-45 s) and budget.test (~19-45 s) the longest; the full harness alone runs in ~44 s wall, so the overrun is contention with the browser test run and the package-hygiene steps
 api.test: the passing real-repo case and the undocumented-export case share one full copy (before/after), the edit restored after its case; 24 s instead of 30 s
+
+## 2026-09-29 M4.14 (claude)
+render: ShapeView (kind shape): the defId's outline from the render-level shapeDefs registry (ShapeOutline → geometry PathCommands → pathData, rounded 1/1000 px) as an SVG path over the wrapper's box; fill (colour, linear/radial gradient defs; images M10) and stroke from theme resolveStyle; centred plain-text label (plainParagraphs) in the resolved font; unknown defId → PlaceholderView. basic-rect.ts BASIC_RECT; builtins.ts registerBuiltinViews/builtinRegistries (source core), ScreenView's default; ElementViewProps gains theme and registries; render depends on geometry (lockfile; budget re-recorded: staged 107.5 s after M4.28, under 120 s; the ≤ 84 s target of the lockfile rows is M4.29, before M4.16)
+path-data.ts switches on a path command's closed union (kind-switch-allow)
+theme: LIGHT_THEME defaults['*'].font = body font, md size, normal line height, text colour
+ADR-0015 amended: render-level shapeDefs in R0; core shapeDefs typed with the basic pack (M5)
+tests: T1 "FR-SHP-001: rendered bounds equal the transform", "FR-SHP-001: rotation is about the center", fills/dash/unknown def; builtins registration; node pathData, BASIC_RECT, plainParagraphs
+review F1-F5: budget re-measured after M4.28 (the packet's own ladder had run 126 s); the rotation test also measures the drawn outline; gradient stops keyed by position (hard stops share an offset); gradient ids unique per mounted view (useId), tested with one record drawn in two views

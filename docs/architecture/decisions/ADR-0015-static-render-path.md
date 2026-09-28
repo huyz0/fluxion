@@ -114,3 +114,9 @@ visual baseline of the CLI output (pinned Playwright image), and `check-mode-pol
   names quoted and escaped, keywords from their allow-lists, finite numbers) and skips anything else
   to the next layer, so neither a style literal nor a theme default can inject CSS into the rendered
   output.
+- 2026-09-29 (M4.14): in R0 the outlines of §5 sit in a render-level `shapeDefs` registry
+  (`RenderRegistries.shapeDefs`, a `ShapeOutline` per definition id, returning geometry path
+  commands). Core's `shapeDefs` stays untyped until the JSON `ShapeDef` of 03 §5 arrives with the
+  basic pack (M5), which replaces the render-level registry. Built-ins (`shape` view, `basic:rect`)
+  register as source `core` through `registerBuiltinViews`. `<ScreenView>` defaults to
+  `builtinRegistries()`.

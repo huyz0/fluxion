@@ -1,7 +1,10 @@
-// Render-level registries (03-core-engine §4, 04 §2.2, FR-EXT-001): element views are looked up by
-// kind here, never switched on; built-in views register through the same API as plugins.
+// Render-level registries (03-core-engine §4, 04 §2.2, FR-EXT-001): element views and shape outlines
+// are looked up by kind or definition id here, never switched on; built-ins register through the
+// same API as plugins.
 import { createRegistry, type Registry, type Store } from '@fluxion/core';
+import type { PathCommand } from '@fluxion/geometry';
 import type { ElementRecord } from '@fluxion/schema';
+import type { Theme } from '@fluxion/theme';
 import type { ComponentType, ReactNode } from 'react';
 
 /**
@@ -14,6 +17,10 @@ export type ElementViewProps = {
   readonly element: ElementRecord;
   /** The document store (for views that read related records, such as a connector's ends). */
   readonly store: Store;
+  /** The theme styles resolve against. */
+  readonly theme: Theme;
+  /** The registries the view was looked up in (a shape view reads `shapeDefs`). */
+  readonly registries: RenderRegistries;
   /** The element's children (a group's or frame's members), already wrapped and ordered. */
   readonly children?: ReactNode;
 };
@@ -30,6 +37,22 @@ export type ElementView = {
 };
 
 /**
+ * The outline of a shape definition (03 §5), as the renderer needs it. In R0 render holds these
+ * itself; the JSON `ShapeDef` of the core `shapeDefs` registry replaces them with the basic pack (M5).
+ *
+ * @public
+ */
+export type ShapeOutline = {
+  /** The outline of a `w` × `h` shape, in its own box (origin at the top-left corner). */
+  outline(size: {
+    /** Width. */
+    readonly w: number;
+    /** Height. */
+    readonly h: number;
+  }): readonly PathCommand[];
+};
+
+/**
  * The render-level registries.
  *
  * @public
@@ -37,6 +60,8 @@ export type ElementView = {
 export type RenderRegistries = {
   /** Element views by element kind (`shape`, `connector`, `<plugin>:<name>`, …). */
   readonly elementViews: Registry<string, ElementView>;
+  /** Shape outlines by definition id (`basic:rect`, …). */
+  readonly shapeDefs: Registry<string, ShapeOutline>;
 };
 
 /**
@@ -45,5 +70,5 @@ export type RenderRegistries = {
  * @public
  */
 export function createRenderRegistries(): RenderRegistries {
-  return { elementViews: createRegistry<string, ElementView>('elementViews') };
+  return { elementViews: createRegistry<string, ElementView>('elementViews'), shapeDefs: createRegistry<string, ShapeOutline>('shapeDefs') };
 }

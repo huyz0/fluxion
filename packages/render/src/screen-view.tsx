@@ -7,11 +7,12 @@ import type { RecordId, ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME, resolveBackground, type Theme, toCssVars } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useInsertionEffect, useMemo } from 'react';
 import { paintCss } from './background.js';
+import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
 import { ElementList } from './elements.js';
 import { fitTransform, screenArea } from './fit.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
-import { createRenderRegistries, type RenderRegistries } from './registries.js';
+import type { RenderRegistries } from './registries.js';
 import { useValue } from './use-value.js';
 
 /**
@@ -49,7 +50,7 @@ export type ScreenViewProps = {
   readonly theme?: Theme;
   /** Editor chrome in screen coordinates, mounted in edit mode only. */
   readonly editOverlay?: ReactNode;
-  /** Where element views are looked up (default: empty registries, so every element is a placeholder). */
+  /** Where element views are looked up (default: the built-in views, {@link builtinRegistries}). */
   readonly registries?: RenderRegistries;
   /** Extra content drawn above the elements. */
   readonly children?: ReactNode;
@@ -73,7 +74,7 @@ function useContentCss(): void {
  */
 export function ScreenView(props: ScreenViewProps): ReactNode {
   const { store, screenId, view, theme = LIGHT_THEME, editOverlay, children } = props;
-  const registries = useMemo(() => props.registries ?? createRenderRegistries(), [props.registries]);
+  const registries = useMemo(() => props.registries ?? builtinRegistries(), [props.registries]);
   const policy = modePolicy(props.mode);
   useContentCss();
   const screen = useValue(useMemo(() => store.record$(screenId), [store, screenId])) as ScreenRecord | undefined;
@@ -95,7 +96,7 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
       <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
         <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
         <div className="fx-layer fx-content" style={origin}>
-          <ElementList store={store} screenId={screenId} registries={registries} />
+          <ElementList store={store} screenId={screenId} registries={registries} theme={theme} />
           {children}
         </div>
         {policy.editOverlay && editOverlay !== undefined ? <div className="fx-layer fx-overlay">{editOverlay}</div> : null}

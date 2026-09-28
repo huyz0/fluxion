@@ -342,6 +342,9 @@ importers:
       '@fluxion/core':
         specifier: workspace:*
         version: link:../core
+      '@fluxion/geometry':
+        specifier: workspace:*
+        version: link:../geometry
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema

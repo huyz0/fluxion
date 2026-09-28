@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@fluxion/core": "workspace:*",
+    "@fluxion/geometry": "workspace:*",
     "@fluxion/schema": "workspace:*",
     "@fluxion/theme": "workspace:*"
   },

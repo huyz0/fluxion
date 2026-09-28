@@ -7,6 +7,7 @@
 import { ComponentType } from 'react';
 import { CSSProperties } from 'react';
 import { ElementRecord } from '@fluxion/schema';
+import { PathCommand } from '@fluxion/geometry';
 import { ReactNode } from 'react';
 import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
@@ -14,9 +15,16 @@ import { RecordId } from '@fluxion/schema';
 import { Rect } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { ResolvedPaint } from '@fluxion/theme';
+import { RichTextDoc } from '@fluxion/schema';
 import { ScreenRecord } from '@fluxion/schema';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+
+// @public
+export const BASIC_RECT: ShapeOutline;
+
+// @public
+export function builtinRegistries(): RenderRegistries;
 
 // @public
 export const CONTENT_CSS: string;
@@ -48,6 +56,7 @@ export type ElementListProps = {
     readonly screenId: RecordId;
     readonly parentId?: RecordId;
     readonly registries: RenderRegistries;
+    readonly theme: Theme;
 };
 
 // @public
@@ -62,6 +71,8 @@ export type ElementView = {
 export type ElementViewProps = {
     readonly element: ElementRecord;
     readonly store: Store;
+    readonly theme: Theme;
+    readonly registries: RenderRegistries;
     readonly children?: ReactNode;
 };
 
@@ -96,11 +107,24 @@ export function modePolicy(mode: RenderMode): ModePolicy;
 export function paintCss(paint: ResolvedPaint): CSSProperties;
 
 // @public
+export function pathData(commands: readonly PathCommand[]): string;
+
+// @public
+export function PlaceholderView(props: ElementViewProps): ReactNode;
+
+// @public
+export function plainParagraphs(doc: RichTextDoc | undefined): string[];
+
+// @public
+export function registerBuiltinViews(registries: RenderRegistries): void;
+
+// @public
 export type RenderMode = "edit" | "present" | "export" | "thumbnail";
 
 // @public
 export type RenderRegistries = {
     readonly elementViews: Registry<string, ElementView>;
+    readonly shapeDefs: Registry<string, ShapeOutline>;
 };
 
 // @public
@@ -132,6 +156,17 @@ export type ScreenViewSpec = {
         readonly h: number;
     };
 };
+
+// @public
+export type ShapeOutline = {
+    outline(size: {
+        readonly w: number;
+        readonly h: number;
+    }): readonly PathCommand[];
+};
+
+// @public
+export function ShapeView(props: ElementViewProps): ReactNode;
 
 // @public
 export function useValue<T>(signal: ReadSignal<T>): T;

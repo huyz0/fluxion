@@ -48,5 +48,6 @@ export const LIGHT_THEME: Theme = {
     shape: { fill: '{color.surface}', stroke: { color: '{color.text}', width: '{stroke.regular}' }, radius: '{radius.none}' },
     connector: { stroke: { color: '{color.connector}', width: '{stroke.regular}' } },
     screen: { background: '{color.background}' },
+    '*': { font: { family: '{font.body}', size: '{font.size.md}', lineHeight: '{font.line-height.normal}', color: '{color.text}' } },
   },
 };

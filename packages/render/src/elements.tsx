@@ -5,6 +5,7 @@
 // the parent's placement: nesting is kept in the DOM, the parent's box is not applied twice.
 import type { Store } from '@fluxion/core';
 import { type ElementRecord, type RecordId, type Transform, transformRotation } from '@fluxion/schema';
+import type { Theme } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useMemo } from 'react';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { elementsInOrder } from './screen-order.js';
@@ -29,8 +30,13 @@ function unplacement(element: ElementRecord): CSSProperties | undefined {
   return { left: -t.x, top: -t.y, transformOrigin: `${t.x + t.w / 2}px ${t.y + t.h / 2}px`, transform: turns.join(' ') };
 }
 
-/** Drawn for a kind no view is registered for: the kind is shown, the record left as it is. */
-function PlaceholderView(props: ElementViewProps): ReactNode {
+/**
+ * Drawn for a kind no view is registered for (or a shape whose definition is unknown): the kind is
+ * shown, the record left as it is (FR-DOC-005).
+ *
+ * @public
+ */
+export function PlaceholderView(props: ElementViewProps): ReactNode {
   const label = `Unsupported element: ${props.element.kind}`;
   // members stay outside the img role, whose descendants are presentational
   return (
@@ -43,17 +49,18 @@ function PlaceholderView(props: ElementViewProps): ReactNode {
   );
 }
 
-function ElementNode(props: { readonly store: Store; readonly id: RecordId; readonly registries: RenderRegistries }): ReactNode {
-  const { store, id, registries } = props;
+function ElementNode(props: { readonly store: Store; readonly id: RecordId; readonly registries: RenderRegistries; readonly theme: Theme }): ReactNode {
+  const { store, id, registries, theme } = props;
   const element = useValue(useMemo(() => store.record$(id), [store, id])) as ElementRecord | undefined;
   useValue(registries.elementViews.changes$);
+  useValue(registries.shapeDefs.changes$);
   if (!element || element.type !== 'element') return null;
   const View = registries.elementViews.get(element.kind)?.Component ?? PlaceholderView;
   return (
     <div className="fx-el" data-el-id={id} data-kind={element.kind} style={placement(element)}>
-      <View element={element} store={store}>
+      <View element={element} store={store} theme={theme} registries={registries}>
         <div className="fx-members" style={unplacement(element)}>
-          <ElementList store={store} screenId={element.screenId} parentId={id} registries={registries} />
+          <ElementList store={store} screenId={element.screenId} parentId={id} registries={registries} theme={theme} />
         </div>
       </View>
     </div>
@@ -74,6 +81,8 @@ export type ElementListProps = {
   readonly parentId?: RecordId;
   /** Where element views are looked up. */
   readonly registries: RenderRegistries;
+  /** The theme styles resolve against. */
+  readonly theme: Theme;
 };
 
 /**
@@ -82,7 +91,7 @@ export type ElementListProps = {
  * @public
  */
 export function ElementList(props: ElementListProps): ReactNode {
-  const { store, screenId, parentId, registries } = props;
+  const { store, screenId, parentId, registries, theme } = props;
   const ids = useValue(useMemo(() => store.query((view) => elementsInOrder(view, screenId, parentId)), [store, screenId, parentId]));
-  return ids.map((id) => <ElementNode key={id} store={store} id={id} registries={registries} />);
+  return ids.map((id) => <ElementNode key={id} store={store} id={id} registries={registries} theme={theme} />);
 }

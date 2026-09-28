@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { paintCss } from './background.js';
+import { BASIC_RECT } from './basic-rect.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
+import { plainParagraphs } from './label.js';
 import { modePolicy } from './mode-policy.js';
+import { pathData } from './path-data.js';
 import { createRenderRegistries } from './registries.js';
 import { elementsInOrder, screensInOrder } from './screen-order.js';
 
@@ -107,5 +110,38 @@ describe('render registries (FR-EXT-001)', () => {
     expect(elementViews.register('acme:gauge', view, 'other').ok).toBe(false);
     // each call is a fresh set: nothing leaks between hosts
     expect(createRenderRegistries().elementViews.list()).toEqual([]);
+  });
+});
+
+describe('shape outlines and labels (FR-SHP-001)', () => {
+  it('FR-SHP-001: basic:rect is its box; path data is rounded to 1/1000 px', () => {
+    expect(pathData(BASIC_RECT.outline({ w: 40, h: 20 }))).toBe('M0 0 L40 0 L40 20 L0 20 Z');
+    expect(
+      pathData([
+        { kind: 'M', to: { x: 1 / 3, y: -0.0001 } },
+        { kind: 'Q', control: { x: 1, y: 2 }, to: { x: 3, y: 4 } },
+        { kind: 'C', control1: { x: 5, y: 6 }, control2: { x: 7, y: 8 }, to: { x: 9, y: 10 } },
+        { kind: 'Z' },
+      ]),
+    ).toBe('M0.333 0 Q1 2 3 4 C5 6 7 8 9 10 Z');
+    expect(createRenderRegistries().shapeDefs.name).toBe('shapeDefs');
+  });
+
+  it('FR-SHP-001: a label is the plain text of each paragraph', () => {
+    const doc = {
+      type: 'doc' as const,
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Hello ' },
+            { type: 'text', text: 'world', marks: [{ type: 'bold' }] },
+          ],
+        },
+        { type: 'paragraph' },
+      ],
+    };
+    expect(plainParagraphs(doc)).toEqual(['Hello world', '']);
+    expect(plainParagraphs(undefined)).toEqual([]);
   });
 });
