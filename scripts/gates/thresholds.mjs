@@ -30,6 +30,10 @@ export const THRESHOLDS = {
   COVERAGE_RENDER_BRANCHES: { value: 75, weakens: 'down' }, // testing.md §6 (render, player)
   COVERAGE_EDITOR_LINES: { value: 70, weakens: 'down' },
   COVERAGE_EDITOR_BRANCHES: { value: 65, weakens: 'down' }, // testing.md §6
+
+  // mutation score (NFR-MNT-005 minimum 70 %), percent: core's target after triaging the M3 trial's
+  // survivors (ADR-0146, M4.8); a package's recorded floor lives in .harness/baselines/mutation.json
+  MUTATION_CORE_TARGET: { value: 90, weakens: 'down' },
   MUTATION_PURE_SCORE: { value: 70, weakens: 'down' },
 
   // bundle & file size (NFR-SIZE), bytes gzip

@@ -5,54 +5,12 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { currentMilestone, exists, leg, listFiles, node, readText, repoPath, run, runLegs } from './lib.mjs';
-import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews, passingTestTitles, verifyLeg } from './milestone-checks.mjs';
+import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews, namedCases, titled, verifyLeg } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
 const pnpm = (...a) => run('pnpm', a);
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
-
-/**
- * Run the Vitest node project on `paths` filtered by `-t title`; at least `min` tests whose full
- * name contains the title must pass and none may fail. A comment or a skipped test cannot satisfy it.
- */
-function vitestNamed(title, paths, { env = {}, min = 1 } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), 'm3-gate-'));
-  try {
-    const out = join(dir, 'report.json');
-    // -t takes a regular expression; the title is literal (M2 cp1 F1)
-    const literal = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', '--reporter=json', `--outputFile=${out}`, '-t', literal, ...paths], {
-      env: { ...process.env, ...env },
-    });
-    if (!existsSync(out)) return `vitest wrote no report: ${ok(r)}`;
-    const tests = JSON.parse(readFileSync(out, 'utf8')).testResults.flatMap((f) => f.assertionResults);
-    const named = tests.filter((x) => x.fullName.includes(title));
-    const failed = named.filter((x) => x.status === 'failed');
-    const passed = named.filter((x) => x.status === 'passed');
-    if (r.status !== 0 || failed.length) return `"${title}": ${failed.length} failed (${ok(r)})`;
-    return passed.length >= min || `"${title}": ${passed.length} passing test(s), need ${min}`;
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-/** Run named node:test cases of one harness file; each pattern needs a passing case titled with it. */
-function namedCases(file, patterns) {
-  if (!exists(file)) return `missing ${file}`;
-  for (const p of patterns) {
-    const r = run(process.execPath, ['--test-reporter=spec', `--test-name-pattern=${p}`, file]);
-    const titles = passingTestTitles(r.stdout).filter((x) => x.includes(p));
-    if (r.status !== 0 || titles.length < 1) return `${file}: no passing test titled with "${p}"`;
-  }
-  return true;
-}
-
-/** Every [row, title, package] passes under its exact title. */
-function titled(list) {
-  const bad = list.map(([row, title, pkg, env]) => [row, vitestNamed(title, [`packages/${pkg}`], { env })]).filter(([, r]) => r !== true);
-  return bad.length === 0 || bad.map(([row, r]) => `${row} ${r}`).join('; ');
-}
 
 leg('check-trace --milestone M3 green', () => ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M3'])));
 

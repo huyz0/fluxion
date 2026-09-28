@@ -1,8 +1,9 @@
 // Behavioural checks shared by milestone completion gates (M0 cp1 F1: a leg that only checks a
 // file exists can be satisfied by a stub). Each returns true | '<reason>' for lib.mjs leg().
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { git, repoPath, run } from './lib.mjs';
+import { exists, git, repoPath, run } from './lib.mjs';
 
 /** Paths a commit may touch after the final review range without invalidating the review. */
 export const BOOKKEEPING_PATHS = [/^\.harness\//, /^docs\/backlog\//, /^docs\/milestones\/(roadmap|M\d+)\.md$/];
@@ -227,4 +228,49 @@ export function verifyLeg(required, { command = ['pnpm', ['verify']], cwd } = {}
   const skips = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('SKIP') && !TOLERATED_SKIP.test(l.trim()));
   if (skips.length) return `skipped: ${skips.join(' | ')}`;
   return checkVerifyOutput(r.stdout, required);
+}
+
+const tail = (r) => (r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ');
+
+/**
+ * Run one Vitest project (`node` or `browser`) on `paths` filtered by `-t title`; at least `min`
+ * tests whose full name contains the title must pass and none may fail. A comment or a skipped test
+ * cannot satisfy it (shared from m4-complete on; written for m3).
+ */
+export function vitestNamed(title, paths, { env = {}, min = 1, project = 'node' } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), 'gate-vitest-'));
+  try {
+    const out = join(dir, 'report.json');
+    // -t takes a regular expression; the title is literal (M2 cp1 F1)
+    const literal = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', project, '--reporter=json', `--outputFile=${out}`, '-t', literal, ...paths], {
+      env: { ...process.env, ...env },
+    });
+    if (!existsSync(out)) return `vitest wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`;
+    const tests = JSON.parse(readFileSync(out, 'utf8')).testResults.flatMap((f) => f.assertionResults);
+    const named = tests.filter((x) => x.fullName.includes(title));
+    const failed = named.filter((x) => x.status === 'failed');
+    const passed = named.filter((x) => x.status === 'passed');
+    if (r.status !== 0 || failed.length) return `"${title}": ${failed.length} failed (${r.status === 0 ? 'exit 0' : tail(r)})`;
+    return passed.length >= min || `"${title}": ${passed.length} passing test(s), need ${min}`;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/** Run named node:test cases of one harness file; each pattern needs a passing case titled with it. */
+export function namedCases(file, patterns) {
+  if (!exists(file)) return `missing ${file}`;
+  for (const p of patterns) {
+    const r = run(process.execPath, ['--test-reporter=spec', `--test-name-pattern=${p}`, file]);
+    const titles = passingTestTitles(r.stdout).filter((x) => x.includes(p));
+    if (r.status !== 0 || titles.length < 1) return `${file}: no passing test titled with "${p}"`;
+  }
+  return true;
+}
+
+/** Every [row, title, package, env?, project?] passes under its exact title. */
+export function titled(list) {
+  const bad = list.map(([row, title, pkg, env, project]) => [row, vitestNamed(title, [`packages/${pkg}`], { env, project })]).filter(([, r]) => r !== true);
+  return bad.length === 0 || bad.map(([row, r]) => `${row} ${r}`).join('; ');
 }
