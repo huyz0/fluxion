@@ -576,3 +576,8 @@ core depends on @fluxion/schema and @fluxion/geometry (workspace:*; lockfile imp
 geometry API report regenerated (Ok, Err exported; errors.ts); argued M3.2 minors carried in this commit
 first cross-workspace import exposed two harness sandbox leaks: linkInstalls junctioned whole workspace node_modules, so @fluxion/* links escaped to the real repo (Windows: C: temp + E: path in dependency-cruiser); it now links entry by entry with @fluxion/* pointing at the sandbox copies. api.test fullCopy builds the copied workspaces (tsc -b) because TypeDoc follows project references into .tsbuild, which sandboxes do not copy
 40-traceability Tests column rewritten (check-trace --write: NFR-MNT-007 now named)
+
+## 2026-09-28 M3.4 (claude)
+verifyLeg(required, {command, cwd}) in milestone-checks.mjs: runs `pnpm verify` with CI unset, tolerates only the Docker SKIP, needs PASS for every required step; m3-complete uses it (kind-switch in its step list)
+verify-leg.test: "stale budget record fails the shared verify leg under CI=true" (control: the budget step alone passes with the inherited CI=true; through verifyLeg it fails with "predates"); mutation check: dropping the CI unset turns the case red; step/SKIP handling case
+ADR-0143: Considered Options 1 and Consequences reworded, and an Amendments section records this and the M2.29 correction (documentation.md rule 8); M3.4 review argued lines from M3.3 carried

@@ -5,7 +5,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
-import { backlogTextFor, checkBacklogDone, checkFinalReview, checkVerifyOutput, loadMilestoneReviews, passingTestTitles } from './milestone-checks.mjs';
+import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews, passingTestTitles, verifyLeg } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
@@ -212,9 +212,7 @@ leg('valid fixtures behave as named (unknown-kind warns)', () =>
   titled([['M3.8', 'FR-DOC-005: the unknown-kind fixture parses with FLX_KIND_UNKNOWN', 'schema']]),
 );
 
-// every planned verify step must PASS; `workflows` needs Docker plus the linter images, which CI
-// runs with --require-docker — locally it may SKIP only for a missing engine. M3.4 moves this leg
-// into milestone-checks.mjs (verifyLeg).
+// every planned verify step must PASS, through the shared leg (CI unset, Docker-only SKIP; M3.4)
 const VERIFY_STEPS = [
   'build',
   'harness-tests',
@@ -230,15 +228,9 @@ const VERIFY_STEPS = [
   'trace',
   'api',
   'budget',
+  'kind-switch',
 ];
-leg('pnpm verify exits 0 with every planned step PASS', () => {
-  // CI unset: under CI=true the budget step accepts a stale record (ADR-0143)
-  const r = run('pnpm', ['verify'], { env: { ...process.env, CI: '' } });
-  if (r.status !== 0) return ok(r);
-  const skips = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('SKIP') && !/^SKIP workflows — Docker not available$/.test(l.trim()));
-  if (skips.length) return `skipped: ${skips.join(' | ')}`;
-  return checkVerifyOutput(r.stdout, [...VERIFY_STEPS, 'kind-switch']);
-});
+leg('pnpm verify exits 0 with every planned step PASS', () => verifyLeg(VERIFY_STEPS));
 leg('no open test quarantines', () => {
   const r = run('git', ['grep', '-n', '-I', '-E', 'QUARANTINE|test\\.fixme\\(', '--', 'packages', 'apps', 'packs', 'e2e', 'tests']);
   const hits = r.stdout

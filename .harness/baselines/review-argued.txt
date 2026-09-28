@@ -35,3 +35,4 @@ M3.2 F1: nested-throw savepoint semantics are decided and tested in M3.11 (the t
 M3.2 F2: fork.diffFrom's base (the fork-time snapshot, so concurrent parent edits are not reverted) and the apply origin are decided in M3.22 with a test.
 M3.2 F3: whether an empty-diff transaction breaks a merge is decided in M3.20 with the "interleaved transaction breaks the merge" case.
 M3.2 F4: M3.14 requires each built-in hook to handle its whole cascade (all descendants) in one pass, tested with a group nested deeper than the pass limit.
+M3.3 F1: geometry's err is internal (not exported); the public Result/Ok/Err types, which consumers see, are pinned by result-convention.test.ts, so an internal signature drift cannot reach a consumer; ADR-0144 Confirmation covers the public shape.

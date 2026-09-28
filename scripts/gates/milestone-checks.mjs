@@ -2,7 +2,7 @@
 // file exists can be satisfied by a stub). Each returns true | '<reason>' for lib.mjs leg().
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { git, repoPath } from './lib.mjs';
+import { git, repoPath, run } from './lib.mjs';
 
 /** Paths a commit may touch after the final review range without invalidating the review. */
 export const BOOKKEEPING_PATHS = [/^\.harness\//, /^docs\/backlog\//, /^docs\/milestones\/(roadmap|M\d+)\.md$/];
@@ -209,4 +209,22 @@ export function checkHooksExecutable(hooks = ['pre-commit', 'commit-msg']) {
   const modes = git(['ls-files', '-s', ...hooks.map((h) => `.githooks/${h}`)]).stdout;
   const bad = hooks.filter((h) => !new RegExp(`^100755 \\S+ 0\\t\\.githooks/${h}$`, 'm').test(modes));
   return bad.length === 0 || `not tracked as 100755: ${bad.join(', ')}`;
+}
+
+/** The one tolerated SKIP line of the full ladder: the workflow linters need a Docker engine. */
+const TOLERATED_SKIP = /^SKIP workflows — Docker not available$/;
+
+/**
+ * Completion-gate leg "pnpm verify exits 0 with every planned step PASS", shared by every gate from
+ * m3-complete on (M2.29 review F1/F2). The ladder runs with CI unset: under CI=true the budget step
+ * accepts a record older than the lockfile (ADR-0143), and a completion gate must judge the recorded
+ * budget. `command` is injectable for tests; it defaults to `pnpm verify` in the repo.
+ */
+export function verifyLeg(required, { command = ['pnpm', ['verify']], cwd } = {}) {
+  const env = { ...process.env, CI: '' };
+  const r = run(command[0], command[1], { env, ...(cwd ? { cwd } : {}) });
+  if (r.status !== 0) return `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`;
+  const skips = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('SKIP') && !TOLERATED_SKIP.test(l.trim()));
+  if (skips.length) return `skipped: ${skips.join(' | ')}`;
+  return checkVerifyOutput(r.stdout, required);
 }

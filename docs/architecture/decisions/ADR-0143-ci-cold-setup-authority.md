@@ -31,8 +31,8 @@ under budget. The M2 final review (F1) found that no agent-runnable path turns i
 ## Considered Options
 
 1. **In CI, the budget step accepts a record older than the lockfile** (with a note); the
-   `cold-setup` job measures the lockfile live. Locally (and in the pre-commit hook) a stale
-   record still fails.
+   `cold-setup` job measures the lockfile live. Locally (the full ladder and the completion
+   gates, not the staged pre-commit hook) a stale record still fails.
 2. Always require a fresh record: every lockfile change commits a re-recorded `budget.json`.
 3. The `cold-setup` job uploads its measurement and the verify matrix waits for and reads it.
 
@@ -48,7 +48,9 @@ cold-setup numbers must still be within their thresholds, and a missing record s
 - Good: a lockfile-only change is judged by a live cold-setup measurement in the same run; verify
   stays green on three OSes.
 - Good: the local rule (M1.19 review F2) is intact in the full ladder: local `pnpm verify` and
-  every completion gate's verify leg (which runs with `CI` unset) fail on a stale record.
+  the completion gates' verify leg (`verifyLeg` in `milestone-checks.mjs`, used from m3-complete on;
+  it runs with `CI` unset) fail on a stale record. m1- and m2-complete predate it: m2-complete
+  unsets `CI` itself, m1-complete (closed) does not.
 - Bad: the staged pre-commit hook does not run the budget step (it runs only in `--all`), so no
   gate forces a re-record in the commit that changes the lockfile; the stale record surfaces at
   the next local `pnpm verify` or completion gate. Re-recording needs a machine that can download
@@ -58,7 +60,7 @@ cold-setup numbers must still be within their thresholds, and a missing record s
 - Bad: the cold-setup job runs on ubuntu only, so under this rule a lockfile change is not
   measured on Windows or macOS until the next local record there (handed to M3; delta review D3).
 - Bad: the `CI` variable changes a gate's outcome; the harness test pins it both ways and the
-  completion gates' verify legs unset it.
+  shared completion-gate verify leg unsets it (`verify-leg.test.mjs`).
 
 ### Confirmation
 
@@ -83,6 +85,15 @@ the record predates the lockfile" runs with CI unset.
 - Good: verify checks the exact number measured.
 - Bad: verify would depend on and wait for cold-setup (about 10 extra minutes on the critical
   path), plus artifact plumbing across jobs.
+
+## Amendments
+
+- 2026-09-28 (M2.29, M2 delta review D1): Consequences corrected — the staged pre-commit hook does
+  not run the budget step (it runs only in `--all`), so a stale record surfaces at the next full
+  verify or completion gate; the cold-setup job measures ubuntu only.
+- 2026-09-28 (M3.4, M2.29 review F1/F2, delta E1–E3): Considered Options 1 no longer says the
+  pre-commit hook fails a stale record; Consequences name the shared completion-gate verify leg
+  (`verifyLeg`, m3-complete on) instead of "every completion gate". The decision is unchanged.
 
 ## More Information
 
