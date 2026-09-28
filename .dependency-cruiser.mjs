@@ -86,10 +86,11 @@ export default {
     { name: 'no-circular', severity: 'error', from: {}, to: { circular: true } },
     {
       name: 'not-to-dev-dep',
-      comment: 'shipped source must not import devDependencies',
+      comment:
+        'shipped source must not import devDependencies; a peerDependency the package also lists as a devDependency (so its own tests install it) is the host-provided singleton, not a dev tool (React in render, M4.11)',
       severity: 'error',
       from: { path: '^(packages|packs)/[^/]+/src/', pathNot: '\\.(test|spec|stories)\\.[cm]?[jt]sx?$|/__fixtures__/' },
-      to: { dependencyTypes: ['npm-dev'] },
+      to: { dependencyTypes: ['npm-dev'], dependencyTypesNot: ['npm-peer'] },
     },
     {
       name: 'not-to-undeclared-dep',

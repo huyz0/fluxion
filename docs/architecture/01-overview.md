@@ -39,7 +39,7 @@ All packages live in a pnpm + Turborepo monorepo. `@fluxion/*` names; folders un
 | L2 | `anim` | Animation/timeline/interaction **model evaluation**: sampling effects at time t, build-state reduction, morph interpolation, rider LUTs, expression interpreter | core, geometry, theme | ✅ (clock injected) |
 | L2 | `format` | `.flux` zip / `.flux.html` / `.flux.json` read & write, asset store (content addressing), sanitizers, lockfile | schema, core | ✅ (I/O via ports) |
 | L2 | `dsl` | FluxScript parser, compiler, decompiler, diagnostics, Mermaid/Markdown importers | schema, core, layout (for compile-time layout), theme | ✅ |
-| L3 | `render` | React 19 DOM+SVG renderer of a screen: element views, shape/connector/rider views, CSS variables, measurement adapter; **identical in edit & present** | core, theme, anim, geometry | DOM |
+| L3 | `render` | React 19 DOM+SVG renderer of a screen: element views, shape/connector/rider views, CSS variables, measurement adapter; **identical in edit & present** | schema, core, theme, anim, geometry | DOM |
 | L4 | `player` | Present runtime: navigation, clock & scheduler, transition manager, trigger bus, interaction engine, overlays, responsive, speaker sync, `<fluxion-player>` web component | render, anim, format | DOM |
 | L4 | `editor` | Edit overlay (selection, handles, guides), tools state machine, panels, inspector, library, timeline & interaction editors, AI panel | render, player, core, layout, routing, format, dsl, theme | DOM |
 | L4 | `sdk` | Public plugin API (re-exports stable contracts), manifest schema, component contract, test harness | core, render (types), schema | — |

@@ -337,7 +337,30 @@ importers:
 
   packages/player: {}
 
-  packages/render: {}
+  packages/render:
+    dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../core
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@fluxion/theme':
+        specifier: workspace:*
+        version: link:../theme
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
 
   packages/routing: {}
 

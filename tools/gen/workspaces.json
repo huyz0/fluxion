@@ -78,7 +78,7 @@
       "name": "@fluxion/render",
       "layer": "L3",
       "runtime": "dom",
-      "dependsOn": ["core", "theme", "anim", "geometry"],
+      "dependsOn": ["schema", "core", "theme", "anim", "geometry"],
       "desc": "React 19 DOM+SVG renderer of a screen, identical in edit and present mode."
     },
     {

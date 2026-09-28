@@ -1,6 +1,6 @@
 // NFR-MNT-004: coverage floors from thresholds.mjs fail `test:coverage` for a package below them.
 import assert from 'node:assert/strict';
-import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { after, afterEach, before, describe, it } from 'node:test';
 import { cleanEnv, linkInstalls, out, REPO, sandbox } from './helpers.mjs';
@@ -65,7 +65,13 @@ function dropBrowserCovered(src) {
   const stem = (f) => f.split('.')[0];
   const covered = new Set(files.filter((f) => /\.browser\.test\.tsx?$/.test(f)).map(stem));
   covered.delete('index');
-  for (const f of files.filter((f) => covered.has(stem(f)))) rmSync(sb.path(`${src}/${f}`));
+  const dropped = files.filter((f) => covered.has(stem(f)));
+  for (const f of dropped) rmSync(sb.path(`${src}/${f}`));
+  // the package entry re-exports what was dropped: remove those re-exports so the entry still loads (M4.11)
+  const index = `${src}/index.ts`;
+  const gone = new Set(dropped.map(stem));
+  if (gone.size > 0 && existsSync(sb.path(index)))
+    sb.edit(index, (t) => t.replace(/export\s[^;]*?\sfrom\s+'\.\/([\w-]+)\.js';\n?/g, (m, name) => (gone.has(name) ? '' : m)));
 }
 
 describe('coverage floors (NFR-MNT-004)', () => {

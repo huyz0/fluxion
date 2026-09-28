@@ -10,7 +10,7 @@ const SOURCE = /^(packages|packs|apps)\/[^/]+\/(src|bench)\//;
 /**
  * Harness test files that read the repo's own package sources or reports (the write-path and
  * kind-switch scans, the docs-to-API and diagnostics-to-docs checks, the open-object scan of the schema,
- * the bench folder, the workspace shape, and the coverage floors over every workspace's real sources,
+ * the bench folder, the mode-policy scan of render, the workspace shape, and the coverage floors over every workspace's real sources,
  * which no other staged step judges on node tests alone): run for a sources-only commit.
  * tests/harness/ladder-scope.test pins that every harness file reading package paths is here or in
  * SAMPLE_HARNESS (M4.26 review F1, round 2 F1-F2).
@@ -22,6 +22,7 @@ export const SOURCE_HARNESS = [
   'diagnostics-doc',
   'docs-consistency',
   'kind-switch',
+  'mode-policy',
   'schema-open-objects',
   'workspace-shape',
 ];

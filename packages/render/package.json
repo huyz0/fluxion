@@ -19,6 +19,20 @@
     "build": "tsdown",
     "typecheck": "tsc -b"
   },
+  "dependencies": {
+    "@fluxion/core": "workspace:*",
+    "@fluxion/schema": "workspace:*",
+    "@fluxion/theme": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true

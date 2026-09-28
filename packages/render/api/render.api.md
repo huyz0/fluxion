@@ -4,6 +4,75 @@
 
 ```ts
 
+import { ReactNode } from 'react';
+import { ReadSignal } from '@fluxion/core';
+import { RecordId } from '@fluxion/schema';
+import { Rect } from '@fluxion/schema';
+import { ScreenRecord } from '@fluxion/schema';
+import { Store } from '@fluxion/core';
+import { Theme } from '@fluxion/theme';
+
+// @public
+export const CONTENT_CSS: string;
+
+// @public
+export type FitTransform = {
+    readonly scale: number;
+    readonly x: number;
+    readonly y: number;
+};
+
+// @public
+export function fitTransform(area: {
+    readonly w: number;
+    readonly h: number;
+}, box: {
+    readonly w: number;
+    readonly h: number;
+}): FitTransform;
+
+// @public
+export type ModePolicy = {
+    readonly editOverlay: boolean;
+    readonly interactive: boolean;
+    readonly measure: boolean;
+};
+
+// @public
+export function modePolicy(mode: RenderMode): ModePolicy;
+
+// @public
+export type RenderMode = "edit" | "present" | "export" | "thumbnail";
+
+// @public
+export function screenArea(screen: Pick<ScreenRecord, "kind" | "size" | "viewport">): Rect;
+
+// @public
+export function ScreenView(props: ScreenViewProps): ReactNode;
+
+// @public
+export type ScreenViewProps = {
+    readonly store: Store;
+    readonly screenId: RecordId;
+    readonly mode: RenderMode;
+    readonly view: ScreenViewSpec;
+    readonly theme?: Theme;
+    readonly editOverlay?: ReactNode;
+    readonly children?: ReactNode;
+};
+
+// @public
+export type ScreenViewSpec = {
+    readonly kind: "fit";
+    readonly box: {
+        readonly w: number;
+        readonly h: number;
+    };
+};
+
+// @public
+export function useValue<T>(signal: ReadSignal<T>): T;
+
 // @public
 export const VERSION: string;
 
