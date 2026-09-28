@@ -17,6 +17,7 @@ export {
 } from './commands.js';
 export { CORE_REGISTRY_NAMES, type CoreRegistries, type CoreRegistryName, createCoreRegistries } from './core-registries.js';
 export type { CoreError, CoreErrorCode } from './errors.js';
+export { applyFork } from './fork.js';
 export type { History } from './history.js';
 export { CORE_HOOKS, type HookContext, type IntegrityHook, registerCoreHooks } from './hooks.js';
 export type { IndexName } from './indexes.js';

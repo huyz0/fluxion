@@ -108,6 +108,8 @@ Chosen option 1.
   first** copies it before writing (copy-on-write on both sides; with several forks every sharer
   copies on its first write, so no store ever writes into a map another store reads). `fork.diffFrom(parent)` gives the net diff, so a preview (AI patch, dry run)
   can be applied to the parent as one transaction.
+- A fork is a preview, so it is read-write even when its parent is read-only; `diffFrom` is
+  undefined for any store but the fork's own parent, so a fork cannot be applied elsewhere.
 - A store created with `policy: 'read-only'` returns `err` code `TX_READ_ONLY` from every
   `transact`, and `executeCommand` returns the same diagnostic before running a command.
 

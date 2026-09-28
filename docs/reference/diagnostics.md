@@ -79,3 +79,4 @@ Paths point into the engine (`/registries/<name>/<key>`), not into the document.
 | `FLX_COMMAND_UNKNOWN` | error | No command is registered under the id (`/commands/<id>`). | Check the id; load the plugin that provides it. |
 | `FLX_COMMAND_DISABLED` | error | The command's `when` is false in the current context; nothing ran. | Change the selection or state it needs. |
 | `FLX_COMMAND_ARGS` | error | An argument does not match the command's schema (`/args/<path>`); nothing ran. | Fix the argument the path names. |
+| `FLX_READ_ONLY` | error | The store's policy is read-only; no transaction or command runs (ADR-0014). | Open the document for editing, or fork it. |

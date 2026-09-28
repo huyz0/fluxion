@@ -676,3 +676,9 @@ tests: the gate's 60 element.update commands through executeCommand with a merge
 ## 2026-09-28 M3.21 (claude)
 undo-property.test.ts: arbDocument × up to 12 generated built-in commands (all eight, args resolved against the current state, some merged under their command id, refusals part of the model) with the core hooks; full undo equals the initial document, redo-all the final one; both properties count their runs against fc.readConfigureGlobal().numRuns and set no local count (FC_RUNS=1000: 3 pass in 1.9 s); a deterministic case shows the model commits (not all refusals)
 mutation (undo skips restoring deletes unless the diff also has puts) caught in 38 ms at FC_SEED=1; M3.20 review minors fixed: per-step metaBefore (undo returns the first), undo+redo then a same-key move starts a new entry
+
+## 2026-09-28 M3.22 (claude)
+SharedRecordMap (record-map.ts): stores share one record map, the first writer copies (sharers count); Store.fork() is O(1) (shares the map, own signals/history, indexes built lazily) and holds an extra share of its fork-time base, so every writer copies while the snapshot is needed; fork.diffFrom(parent) = net change against that base (undefined for any other store); forks are read-write
+fork.ts (ADR-0014's other allowed transact caller): applyFork(parent, fork, label, options) writes the fork's diff into the parent as one user transaction (validated, hooks run, one undo step); the parent's concurrent edits to other records survive; where both changed a record the fork wins (documented)
+policy 'read-only': transact returns TX_READ_ONLY with FLX_READ_ONLY (new schema code, documented), executeCommand refuses before when/args; transact's commit half moved to #commit (complexity); M3.21 review F1 fixed (redo property asserts each undo)
+tests: the gate's three titles (fork isolation both ways incl. indexes/history, diffFrom keeps concurrent edits, read-only element.update), forks of forks; mutation (no copy on write) caught

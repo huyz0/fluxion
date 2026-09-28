@@ -6,6 +6,7 @@ import { type History, StoreHistory } from './history.js';
 import type { IntegrityHook } from './hook-types.js';
 import { pendingMembers } from './hooks.js';
 import { Indexes, type IndexName } from './indexes.js';
+import { SharedRecordMap } from './record-map.js';
 import type { Registry } from './registry.js';
 import { batch, computed, type ReadSignal, type WritableSignal, writable } from './signals.js';
 import {
@@ -15,6 +16,7 @@ import {
   deepFreeze,
   jsonEqual,
   netDiff,
+  type PutChange,
   referentialErrors,
   type Tx,
   type TxFailure,
@@ -76,6 +78,20 @@ export interface Store {
   members(index: IndexName, key: string): RecordId[];
   /** Undo and redo of this store's user and system transactions (ADR-0014 §History). */
   readonly history: History;
+  /** Whether the store refuses every write (policy `read-only`; TX_READ_ONLY). */
+  readonly readOnly: boolean;
+  /**
+   * A store that starts from this one's current state (O(1), copy-on-write, ADR-0014 §Forks): writes
+   * to it never reach this store, and this store's later writes are not visible in it. A fork is a
+   * preview, so it is read-write even when this store is read-only.
+   */
+  fork(): Store;
+  /**
+   * For a fork of `parent`: the net change since it was forked, against the fork-time snapshot (so
+   * applying it to the parent keeps the parent's own concurrent edits); undefined when this store is
+   * not a fork of `parent`.
+   */
+  diffFrom(parent: Store): Diff | undefined;
   /** A memoized reactive query over a tracked {@link ReadView}: re-runs only when something it read changes. */
   query<T>(fn: (view: ReadView) => T): ReadSignal<T>;
 }
@@ -90,7 +106,21 @@ export type StoreOptions = {
   readonly validate?: boolean;
   /** Integrity hooks to run in every transaction except undo and redo (ADR-0014). */
   readonly hooks?: Registry<string, IntegrityHook>;
+  /** `read-only` refuses every transaction and command with TX_READ_ONLY (default `read-write`). */
+  readonly policy?: 'read-write' | 'read-only';
 };
+
+/** What a fork starts from (core-internal). */
+type ForkSeed = {
+  readonly parent: Store;
+  readonly data: SharedRecordMap;
+  readonly base: SharedRecordMap;
+  readonly envelope: Omit<DocumentFile, 'records'>;
+  readonly known: Map<string, Diagnostic> | undefined;
+};
+
+/** The diagnostic of a refused write on a read-only store. */
+const READ_ONLY: Diagnostic = { code: 'FLX_READ_ONLY', severity: 'error', path: '', message: 'the document is read-only' };
 
 /** Passes after which non-converging hooks end the transaction with TX_HOOK_DEPTH (ADR-0014). */
 const MAX_HOOK_PASSES = 8;
@@ -105,13 +135,18 @@ function sameChanges(a: ReadonlyMap<RecordId, AnyRecord | null>, b: ReadonlyMap<
 
 /** The store implementation; `apply` is core-internal (transactions and history call it). */
 export class RecordStore implements Store {
-  readonly #records = new Map<RecordId, AnyRecord>();
+  readonly #data: SharedRecordMap;
+  // a fork's own share of the fork-time map: while it is held, every writer copies first
+  readonly #base: SharedRecordMap | undefined;
+  readonly #parent: Store | undefined;
+  readonly #options: StoreOptions;
   readonly #signals = new Map<RecordId, WritableSignal<AnyRecord | undefined>>();
   readonly #listeners = new Set<(diff: Diff, meta: TxMeta) => void>();
   readonly #envelope: Omit<DocumentFile, 'records'>;
   readonly #validate: boolean;
   readonly #hooks: Registry<string, IntegrityHook> | undefined;
-  readonly #indexes: Indexes;
+  // built on first use, so forking stays O(1)
+  #indexCache: Indexes | undefined;
   readonly #history: StoreHistory = new StoreHistory(this.transact.bind(this));
   // bumped when a record is added or removed (tracked ids/size); a plain counter, never read tracked
   readonly #membership: WritableSignal<number> = writable(0);
@@ -121,14 +156,60 @@ export class RecordStore implements Store {
   // unrelated transactions; replaced by the post-state's after each commit
   #knownErrors: Map<string, Diagnostic> | undefined;
 
-  constructor(file: DocumentFile, options: StoreOptions = {}) {
-    const { records, ...envelope } = cloneJson(file);
-    this.#envelope = envelope;
+  constructor(file: DocumentFile, options: StoreOptions = {}, seed?: ForkSeed) {
+    this.#options = options;
     this.#validate = options.validate ?? true;
     this.#hooks = options.hooks;
+    if (seed) {
+      this.#data = seed.data;
+      this.#base = seed.base;
+      this.#parent = seed.parent;
+      this.#envelope = seed.envelope;
+      this.#knownErrors = seed.known;
+      return;
+    }
+    const { records, ...envelope } = cloneJson(file);
+    this.#envelope = envelope;
+    this.#base = undefined;
+    this.#parent = undefined;
     // map keys are the record ids (validate() reports a key/id mismatch as FLX_ID_MISMATCH)
-    for (const [id, record] of Object.entries<AnyRecord>(records)) this.#records.set(id as RecordId, deepFreeze(record));
-    this.#indexes = new Indexes(this.#records.values());
+    const map = new Map<RecordId, AnyRecord>();
+    for (const [id, record] of Object.entries<AnyRecord>(records)) map.set(id as RecordId, deepFreeze(record));
+    this.#data = new SharedRecordMap(map);
+  }
+
+  get #records(): ReadonlyMap<RecordId, AnyRecord> {
+    return this.#data.map;
+  }
+
+  get #indexes(): Indexes {
+    this.#indexCache ??= new Indexes(this.#records.values());
+    return this.#indexCache;
+  }
+
+  get readOnly(): boolean {
+    return this.#options.policy === 'read-only';
+  }
+
+  fork(): Store {
+    const seed: ForkSeed = { parent: this, data: this.#data.share(), base: this.#data.share(), envelope: this.#envelope, known: this.#knownErrors };
+    // a fork is a preview: editable even when this store is read-only
+    return new RecordStore({ schemaVersion: '', records: {} } as DocumentFile, { ...this.#options, policy: 'read-write' }, seed);
+  }
+
+  diffFrom(parent: Store): Diff | undefined {
+    const base = this.#base?.map;
+    if (!base || parent !== this.#parent) return undefined;
+    const puts = new Map<RecordId, PutChange>();
+    const deletes = new Map<RecordId, AnyRecord>();
+    for (const [id, after] of this.#records) {
+      const before = base.get(id);
+      // unchanged records keep their (immutable) object, so identity settles most of them
+      if (before === after || jsonEqual(before, after)) continue;
+      puts.set(id, before ? { before, after } : { after });
+    }
+    for (const [id, before] of base) if (!this.#records.has(id)) deletes.set(id, before);
+    return { puts, deletes };
   }
 
   get history(): History {
@@ -195,6 +276,7 @@ export class RecordStore implements Store {
     // nested: join the open transaction; its commit is the authoritative result (ADR-0014). A throw
     // from the inner fn undoes the inner writes only (a savepoint), then propagates.
     if (this.#open) return ok(this.#open.savepoint(fn));
+    if (this.readOnly) return err({ code: 'TX_READ_ONLY', message: `${label}: the store is read-only`, diagnostics: [READ_ONLY] });
     const tx = new WorkingCopy((id) => this.#records.get(id));
     this.#open = tx;
     let value: R;
@@ -209,6 +291,11 @@ export class RecordStore implements Store {
       // a Tx kept past its transaction (an async fn, a stored reference) must not lose writes silently
       tx.close();
     }
+    return this.#commit(label, tx, options, value);
+  }
+
+  /** Validate, apply and announce a finished working copy; `value` is the fn's result. */
+  #commit<R>(label: string, tx: WorkingCopy, options: TxOptions, value: R): Result<R, TxFailure> {
     const diff = netDiff(tx.changes, (id) => this.#records.get(id));
     if (diff.puts.size === 0 && diff.deletes.size === 0) return ok(value);
     if (this.#validate) {
@@ -274,9 +361,10 @@ export class RecordStore implements Store {
 
   /** Store `record` under `id` (undefined removes it) and move it in the indexes. */
   #write(id: RecordId, record: AnyRecord | undefined): void {
-    this.#indexes.update(this.#records.get(id), record);
-    if (record) this.#records.set(id, deepFreeze(record));
-    else this.#records.delete(id);
+    this.#indexCache?.update(this.#records.get(id), record);
+    const map = this.#data.writable();
+    if (record) map.set(id, deepFreeze(record));
+    else map.delete(id);
   }
 }
 

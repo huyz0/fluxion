@@ -120,7 +120,8 @@ describe('undo exactness over command sequences (NFR-REL-003)', () => {
         const { store, runAll } = build(file);
         runAll(ops);
         const final = store.toDocument();
-        while (store.history.canUndo()) store.history.undo();
+        // a failing undo fails the property instead of looping (M3.21 review F1)
+        while (store.history.canUndo()) expect(store.history.undo().ok).toBe(true);
         while (store.history.canRedo()) expect(store.history.redo().ok).toBe(true);
         expect(store.toDocument()).toEqual(final);
         expect(Object.keys(final.records as Record<string, AnyRecord>).length).toBeGreaterThan(0);

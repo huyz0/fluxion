@@ -139,6 +139,11 @@ export function executeCommand(registry: Registry<string, AnyCommand>, ctx: Comm
     return fail('COMMAND_UNKNOWN', `no command "${id}"`, [
       { code: 'FLX_COMMAND_UNKNOWN', severity: 'error', path: at, message: `no command "${id}" is registered` },
     ]);
+  // a read-only store refuses before the command runs (ADR-0014 §Forks and policy)
+  if (ctx.store.readOnly)
+    return fail('TX_READ_ONLY', `${id}: the store is read-only`, [
+      { code: 'FLX_READ_ONLY', severity: 'error', path: at, message: 'the document is read-only' },
+    ]);
   if (command.when && !command.when(ctx))
     return fail('COMMAND_DISABLED', `${id} is not available`, [
       { code: 'FLX_COMMAND_DISABLED', severity: 'error', path: at, message: `${id} is not available now` },

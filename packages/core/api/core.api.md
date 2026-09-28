@@ -15,6 +15,9 @@ import { Result } from '@fluxion/schema';
 export type AnyCommand = CommandDef<unknown>;
 
 // @public
+export function applyFork(parent: Store, fork: Store, label?: string, options?: TxOptions): Result<Diff, TxFailure>;
+
+// @public
 export type ArgsIssue = {
     readonly path: ReadonlyArray<PropertyKey>;
     readonly message: string;
@@ -224,12 +227,15 @@ export interface Registry<K extends string, V> {
 
 // @public
 export interface Store {
+    diffFrom(parent: Store): Diff | undefined;
+    fork(): Store;
     get(id: RecordId): AnyRecord | undefined;
     has(id: RecordId): boolean;
     readonly history: History_2;
     ids(): RecordId[];
     members(index: IndexName, key: string): RecordId[];
     query<T>(fn: (view: ReadView) => T): ReadSignal<T>;
+    readonly readOnly: boolean;
     record$(id: RecordId): ReadSignal<AnyRecord | undefined>;
     readonly size: number;
     subscribe(listener: (diff: Diff, meta: TxMeta) => void): () => void;
@@ -241,6 +247,7 @@ export interface Store {
 export type StoreOptions = {
     readonly validate?: boolean;
     readonly hooks?: Registry<string, IntegrityHook>;
+    readonly policy?: "read-write" | "read-only";
 };
 
 // @public
