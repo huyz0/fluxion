@@ -18,15 +18,19 @@ const SHARED = [
 ];
 // every workspace: tsconfig project references must resolve for Vite's tsconfig loader
 const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
-// untested branchy code: well under any floor once added to a package
-const UNCOVERED = `export function grade(n: number): string {
+// untested branchy code: well under any floor once added to a package. Many copies, so the package
+// drops below its floor however much tested code it already has (M3.10: core outgrew one copy).
+const UNCOVERED = Array.from(
+  { length: 400 },
+  (_, i) => `export function grade${i}(n: number): string {
   if (n > 90) return 'a';
   if (n > 80) return 'b';
   if (n > 70) return 'c';
   if (n > 60) return 'd';
   return 'f';
 }
-`;
+`,
+).join('\n');
 let sb;
 const added = [];
 

@@ -4,14 +4,23 @@
 
 ```ts
 
+import { AnyRecord } from '@fluxion/schema';
+import { DocumentFile } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
+import { RecordId } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
+
+// @public
+export function batch(fn: () => void): void;
 
 // @public
 export interface Clock {
     frame(callback: (time: number) => void): () => void;
     now(): number;
 }
+
+// @public
+export function computed<T>(fn: () => T): ReadSignal<T>;
 
 // @public
 export type CoreError = {
@@ -22,6 +31,12 @@ export type CoreError = {
 
 // @public
 export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO";
+
+// @public
+export function createStore(file: DocumentFile): Store;
+
+// @public
+export function effect(fn: () => void): () => void;
 
 // @public
 export interface FileIO {
@@ -51,6 +66,19 @@ export interface Logger {
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export { Random }
+
+// @public
+export type ReadSignal<T> = () => T;
+
+// @public
+export interface Store {
+    get(id: RecordId): AnyRecord | undefined;
+    has(id: RecordId): boolean;
+    ids(): RecordId[];
+    record$(id: RecordId): ReadSignal<AnyRecord | undefined>;
+    readonly size: number;
+    toDocument(): DocumentFile;
+}
 
 // @public
 export interface TextMeasurer {

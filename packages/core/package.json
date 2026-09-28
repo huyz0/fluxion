@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@fluxion/geometry": "workspace:*",
-    "@fluxion/schema": "workspace:*"
+    "@fluxion/schema": "workspace:*",
+    "alien-signals": "catalog:"
   }
 }

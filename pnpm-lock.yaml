@@ -60,6 +60,9 @@ catalogs:
     '@vitest/coverage-v8':
       specifier: 5.0.2
       version: 5.0.2
+    alien-signals:
+      specifier: 3.2.1
+      version: 3.2.1
     astro:
       specifier: 7.3.5
       version: 7.3.5
@@ -265,6 +268,9 @@ importers:
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      alien-signals:
+        specifier: 'catalog:'
+        version: 3.2.1
 
   packages/dsl: {}
 
@@ -2484,6 +2490,9 @@ packages:
 
   ajv@8.20.0:
     resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==}
+
+  alien-signals@3.2.1:
+    resolution: {integrity: sha512-I8FjmltrfnDFoZedi5CG8DghVYNhzb/Ijluz7tCSJH0xpd0484Kowhbb1XDYOxfJpU1p5wnM2X54dA+IfGyD1g==}
 
   am-i-vibing@0.4.0:
     resolution: {integrity: sha512-MxT4XZL7pzLHpuvhDKdMaQHMGGkJDLluKBLsbstn+8wv9sWcFT6h+0ve9qkml95amVTZtZV83gQe2hY+ojgHLg==}
@@ -6589,6 +6598,8 @@ snapshots:
       fast-uri: 3.1.8
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
+
+  alien-signals@3.2.1: {}
 
   am-i-vibing@0.4.0:
     dependencies:

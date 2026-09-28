@@ -606,3 +606,9 @@ budget record refreshed with ADR-0145's CI path: check-budget --record --cold-fr
 ## 2026-09-28 M3.9 (claude)
 core ports (ports/ports.ts): Clock (now, frame → cancel), TextMeasurer (FontSpec → TextMetrics), FileIO (Result<…, CoreError>), Hasher (sha256 hex), Logger (log(level, message, fields)); Random re-exported from schema; CoreError/CoreErrorCode in core/src/errors.ts (ADR-0144)
 @fluxion/core/testing (own tsdown entry and exports path, like schema's): VirtualClock (moves only on advance; frames requested during a frame run on the next advance), FixedTextMeasurer, MemoryFileIO (copies in and out), CaptureLogger, seededRandom (schema's); 5 tests incl. the gate's NFR-REL-005 title; core API report regenerated
+
+## 2026-09-28 M3.10 (claude)
+alien-signals 3.2.1 (MIT, catalog pin; ADR-0002 names it; first third-party runtime dependency of core, so of the player later) behind core/src/signals.ts: ReadSignal, computed, effect, batch (public), writable (internal)
+RecordStore/createStore: records copied (JSON clone: pure packages have no structuredClone) and deep-frozen; get/has/size/ids/record$ (one lazy signal per record)/toDocument (envelope kept); `apply(puts, deletes)` is core-internal (transactions, M3.11) and notifies each changed record once in a batch; 4 tests incl. the gate's NFR-MNT-006 subscriber title
+budget re-recorded locally (lockfile staged: the staged ladder now requires it, ADR-0145): cold setup 86.8 s; lessons: record only after staging new files (the cold clone applies `git diff HEAD`, which omits untracked files), and a failed --record writes nulls the next attempt's harness test reads (restore budget.json first)
+coverage.test "fails when a pure package is below the floor" relied on core being a stub: one uncovered 6-line function no longer dragged core under 90 %; the fixture now adds 400 copies
