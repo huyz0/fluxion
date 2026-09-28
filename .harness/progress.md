@@ -557,3 +557,10 @@ D1 residual (agent-runnable re-record) and D3 handed to M3 (M3.md + roadmap Defe
 ## 2026-09-28 M2.24 (claude) — M2 closed
 second delta review (fresh, 23a6cf0..1262dea): pass, E1-E4 minor; final record range now 1a9aa22..1262dea with D1-D3 and E1-E4 dispositioned (D1/D2 reopened as M2.29, done; D3, E1-E3 handed to M3; E4 fixed here); M2.29 review F1/F2 argued (same M3 hand-off)
 M2.24 and M2.29 done; roadmap Current milestone -> M3; CI evidence re-recorded at 1262dea, the range end (gates 36357856795, ci 36357856939, verify green on 3 OSes); review r1 F1 (close only with evidence) fixed by recording it in this commit
+
+## 2026-09-28 M3.1 (claude)
+M2 backlog archived (docs/backlog/archive/M2.md); 25 M3 rows: plan 16, ADR-0014 its own row, 6 M2 final/delta hand-offs (M3.3-M3.8), checkpoint cp1 (M3.18), docs split from the final review
+m3-complete.mjs red (2/22): test-backed legs by the exact titles the rows quote (Vitest JSON report, full name), harness hand-offs by named node:test cases, bench leg reads vitest bench --outputJson (an `undo <id>` and a `redo <id>` benchmark for each of the 8 built-in commands, each p99 <= UNDO_MAX_MS; review r1 F1), verify leg also needs the M3.15 `kind-switch` step; the CI-evidence leg passes now (no M3 code commits yet) and turns red with the first one
+M3.3's type test lives in core (geometry may not import schema)
+review r1 F2/F3: the NFR-REL-003 leg requires core/src/undo-property.test.ts to count runs against the global numRuns with no local numRuns (M2.25 F1) and reruns both titles at FC_RUNS=1000
+review r2: the r1 edits were applied by a script that dropped regex escapes and missed the bench filter; fixed by hand and checked (a valid readConfigureGlobal().numRuns source passes; numRuns: / numRuns : / { numRuns } overrides are caught; bench leg requires all 16 undo/redo names)
