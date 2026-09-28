@@ -51,6 +51,7 @@ export interface Clock {
 // @public
 export type CommandContext = {
     readonly store: Store;
+    readonly options?: TxOptions;
 };
 
 // @public
@@ -85,7 +86,7 @@ export type CoreError = {
 };
 
 // @public
-export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY" | "COMMAND_UNKNOWN" | "COMMAND_DISABLED" | "COMMAND_ARGS";
+export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY" | "COMMAND_UNKNOWN" | "COMMAND_DISABLED" | "COMMAND_ARGS" | "HISTORY_EMPTY";
 
 // @public
 export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : N extends "commands" ? AnyCommand : unknown>; };
@@ -140,6 +141,17 @@ export type FontSpec = {
 export interface Hasher {
     sha256(bytes: Uint8Array): Promise<string>;
 }
+
+// @public
+interface History_2 {
+    canRedo(): boolean;
+    canUndo(): boolean;
+    redo(): Result<unknown, TxFailure>;
+    readonly redoDepth: number;
+    undo(): Result<unknown, TxFailure>;
+    readonly undoDepth: number;
+}
+export { History_2 as History }
 
 // @public
 export type HookContext = {
@@ -212,6 +224,7 @@ export interface Registry<K extends string, V> {
 export interface Store {
     get(id: RecordId): AnyRecord | undefined;
     has(id: RecordId): boolean;
+    readonly history: History_2;
     ids(): RecordId[];
     members(index: IndexName, key: string): RecordId[];
     query<T>(fn: (view: ReadView) => T): ReadSignal<T>;

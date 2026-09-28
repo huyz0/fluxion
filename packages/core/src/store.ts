@@ -2,6 +2,7 @@
 // record, so a change notifies only that record's readers (NFR-MNT-006). `transact` is the only
 // write path (ADR-0014).
 import { type AnyRecord, type Diagnostic, type DocumentFile, err, ok, type RecordId, type Result } from '@fluxion/schema';
+import { type History, StoreHistory } from './history.js';
 import type { IntegrityHook } from './hook-types.js';
 import { pendingMembers } from './hooks.js';
 import { Indexes, type IndexName } from './indexes.js';
@@ -73,6 +74,8 @@ export interface Store {
    * element), in no particular order. Inside {@link Store.query} or an effect it subscribes to that key.
    */
   members(index: IndexName, key: string): RecordId[];
+  /** Undo and redo of this store's user and system transactions (ADR-0014 §History). */
+  readonly history: History;
   /** A memoized reactive query over a tracked {@link ReadView}: re-runs only when something it read changes. */
   query<T>(fn: (view: ReadView) => T): ReadSignal<T>;
 }
@@ -109,6 +112,7 @@ export class RecordStore implements Store {
   readonly #validate: boolean;
   readonly #hooks: Registry<string, IntegrityHook> | undefined;
   readonly #indexes: Indexes;
+  readonly #history: StoreHistory = new StoreHistory(this.transact.bind(this));
   // bumped when a record is added or removed (tracked ids/size); a plain counter, never read tracked
   readonly #membership: WritableSignal<number> = writable(0);
   #memberships = 0;
@@ -125,6 +129,10 @@ export class RecordStore implements Store {
     // map keys are the record ids (validate() reports a key/id mismatch as FLX_ID_MISMATCH)
     for (const [id, record] of Object.entries<AnyRecord>(records)) this.#records.set(id as RecordId, deepFreeze(record));
     this.#indexes = new Indexes(this.#records.values());
+  }
+
+  get history(): History {
+    return this.#history;
   }
 
   members(index: IndexName, key: string): RecordId[] {
@@ -212,6 +220,8 @@ export class RecordStore implements Store {
       [...diff.deletes.keys()],
     );
     const meta: TxMeta = { ...options, label, origin: options.origin ?? 'user' };
+    // history records inside the commit, before any subscriber can react (M3.11 review F1)
+    this.#history.record(diff, meta);
     for (const listener of [...this.#listeners]) listener(diff, meta);
     return ok(value);
   }

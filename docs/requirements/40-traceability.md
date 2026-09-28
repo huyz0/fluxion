@@ -164,7 +164,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
-| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `packages/core/src/commands.test.ts` |
+| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `packages/core/src/commands.test.ts`, `packages/core/src/history.test.ts` |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |

@@ -3,7 +3,7 @@
 import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
 import type { Registry } from './registry.js';
 import type { Store } from './store.js';
-import type { TxFailure } from './transaction.js';
+import type { TxFailure, TxOptions } from './transaction.js';
 
 /**
  * A translatable text: a stable id and the English default (i18n).
@@ -75,6 +75,11 @@ export type ArgsRejected = {
 export type CommandContext = {
   /** The document store; `run` writes through `store.transact`. */
   readonly store: Store;
+  /**
+   * Options for the command's transaction (origin, mergeKey, metaBefore/metaAfter): a command is the
+   * only production write path, so it carries what the write needs (ADR-0014; M3 cp1 F2).
+   */
+  readonly options?: TxOptions;
 };
 
 /**

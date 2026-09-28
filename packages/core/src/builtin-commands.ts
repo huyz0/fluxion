@@ -5,7 +5,7 @@ import { type AnyRecord, compareKeys, type Diagnostic, err, jsonPointer, keyBetw
 import { z } from 'zod';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
 import type { Registry } from './registry.js';
-import type { TxFailure } from './transaction.js';
+import type { Tx, TxFailure } from './transaction.js';
 
 const id = z.string().min(1);
 // fields of a patch; a record's identity is not a field (a patch that changed it would throw; M3 cp1 F4)
@@ -76,6 +76,9 @@ function bindingAt(ctx: CommandContext, connectorId: string, end: string): Recor
 
 const endSchema = z.enum(['source', 'target']);
 
+/** The command's one transaction, with the options its caller passed (origin, mergeKey, meta). */
+const write = <R>(ctx: CommandContext, label: string, fn: (tx: Tx) => R): Result<R, TxFailure> => ctx.store.transact(label, fn, ctx.options);
+
 /**
  * The built-in record commands (FR-EXT-001).
  *
@@ -87,16 +90,14 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     title: title('element.create', 'Add element'),
     args: z.object({ element: recordOf('element') }),
     run: (ctx, args) =>
-      checkIds(ctx, 'element.create', 'new', [[['element', 'id'], args.element.id]]) ??
-      ctx.store.transact('element.create', (tx) => tx.put(args.element as AnyRecord)),
+      checkIds(ctx, 'element.create', 'new', [[['element', 'id'], args.element.id]]) ?? write(ctx, 'element.create', (tx) => tx.put(args.element as AnyRecord)),
   }),
   defineCommand({
     id: 'element.update',
     title: title('element.update', 'Change element'),
     args: z.object({ id, fields }),
     run: (ctx, args) =>
-      checkIds(ctx, 'element.update', 'element', [[['id'], args.id]]) ??
-      ctx.store.transact('element.update', (tx) => tx.patch(args.id as RecordId, args.fields)),
+      checkIds(ctx, 'element.update', 'element', [[['id'], args.id]]) ?? write(ctx, 'element.update', (tx) => tx.patch(args.id as RecordId, args.fields)),
   }),
   defineCommand({
     id: 'element.delete',
@@ -109,7 +110,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
         'element',
         args.ids.map((x, i) => [['ids', i], x] as const),
       ) ??
-      ctx.store.transact('element.delete', (tx) => {
+      write(ctx, 'element.delete', (tx) => {
         for (const x of args.ids) tx.delete(x as RecordId);
       }),
   }),
@@ -118,15 +119,13 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     title: title('screen.create', 'Add screen'),
     args: z.object({ screen: recordOf('screen') }),
     run: (ctx, args) =>
-      checkIds(ctx, 'screen.create', 'new', [[['screen', 'id'], args.screen.id]]) ??
-      ctx.store.transact('screen.create', (tx) => tx.put(args.screen as AnyRecord)),
+      checkIds(ctx, 'screen.create', 'new', [[['screen', 'id'], args.screen.id]]) ?? write(ctx, 'screen.create', (tx) => tx.put(args.screen as AnyRecord)),
   }),
   defineCommand({
     id: 'screen.delete',
     title: title('screen.delete', 'Delete screen'),
     args: z.object({ id }),
-    run: (ctx, args) =>
-      checkIds(ctx, 'screen.delete', 'screen', [[['id'], args.id]]) ?? ctx.store.transact('screen.delete', (tx) => tx.delete(args.id as RecordId)),
+    run: (ctx, args) => checkIds(ctx, 'screen.delete', 'screen', [[['id'], args.id]]) ?? write(ctx, 'screen.delete', (tx) => tx.delete(args.id as RecordId)),
   }),
   defineCommand({
     id: 'screen.reorder',
@@ -140,7 +139,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
       if (bad) return bad;
       const index = indexAfter(ctx, args.id, args.after);
       if (!index.ok) return index;
-      return ctx.store.transact('screen.reorder', (tx) => tx.patch(args.id as RecordId, { index: index.value }));
+      return write(ctx, 'screen.reorder', (tx) => tx.patch(args.id as RecordId, { index: index.value }));
     },
   }),
   defineCommand({
@@ -165,7 +164,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
         anchor: args.anchor,
       };
       const free = args.end === 'source' ? 'freeSource' : 'freeTarget';
-      return ctx.store.transact('binding.set', (tx) => {
+      return write(ctx, 'binding.set', (tx) => {
         tx.put(binding as unknown as AnyRecord);
         // a bound end has no free point (FLX_CONNECTOR_END_CONFLICT otherwise)
         if ((tx.get(args.connectorId as RecordId) as Record<string, unknown> | undefined)?.[free] !== undefined)
@@ -180,7 +179,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     run: (ctx, args) => {
       // a store without its document singleton is refused, not patched (M3 cp1 F4)
       const doc = ctx.store.members('byType', 'document')[0] ?? '';
-      return checkIds(ctx, 'document.update', 'document', [[[], doc]]) ?? ctx.store.transact('document.update', (tx) => tx.patch(doc as RecordId, args.fields));
+      return checkIds(ctx, 'document.update', 'document', [[[], doc]]) ?? write(ctx, 'document.update', (tx) => tx.patch(doc as RecordId, args.fields));
     },
   }),
 ];

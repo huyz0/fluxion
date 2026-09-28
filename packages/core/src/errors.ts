@@ -13,7 +13,8 @@ export type CoreErrorCode =
   | 'TX_READ_ONLY'
   | 'COMMAND_UNKNOWN'
   | 'COMMAND_DISABLED'
-  | 'COMMAND_ARGS';
+  | 'COMMAND_ARGS'
+  | 'HISTORY_EMPTY';
 
 /**
  * An expected failure reported by core or one of its ports.
