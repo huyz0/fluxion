@@ -26,7 +26,8 @@
     "@fluxion/theme": "workspace:*"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/react": "catalog:",

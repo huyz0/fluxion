@@ -6,6 +6,7 @@
 
 import { ComponentType } from 'react';
 import { CSSProperties } from 'react';
+import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';
 import { PathCommand } from '@fluxion/geometry';
 import { ReactNode } from 'react';
@@ -130,6 +131,16 @@ export function plainParagraphs(doc: RichTextDoc | undefined): string[];
 
 // @public
 export function registerBuiltinViews(registries: RenderRegistries): void;
+
+// @public
+export function renderDocumentToHtml(file: DocumentFile, options?: RenderHtmlOptions): string;
+
+// @public
+export type RenderHtmlOptions = {
+    readonly screens?: readonly RecordId[];
+    readonly theme?: Theme;
+    readonly registries?: RenderRegistries;
+};
 
 // @public
 export type RenderMode = "edit" | "present" | "export" | "thumbnail";
