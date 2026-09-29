@@ -1016,3 +1016,11 @@ Carried minors:
 - M5.34 F1: the shape effects margin is now `strokeReach`: half the drawn width (the full width for outside strokes), times the miter limit 4 for miter joins, else √2 for square caps.
 - M5.19 r2: the tzap wording now matches the ±45 px grid test.
 Review r1 minors fixed: the test now covers opacity on the SVG and a radius token ({radius.md}).
+
+## 2026-09-29 M5.22 (claude)
+
+- routing: `labelPosition(commands, t, offset)` places a label by arc length through geometry's PathSampler; t is clamped by the sampler.
+- render: the connector view draws each label as `.fx-connector-label`: plain paragraphs, the resolved font, the screen's background, centred on its point, rounded to 1/1000. `labelStyle` moves to label.ts, shared with shapes. The golden normalizer keeps a connector label's placement.
+- Tests: the T1 browser test checks the midpoint within 0.5 px before and after a move. Node SSR tests cover the label positions and markers per end.
+
+Mutation score is 100% for both packages.

@@ -115,6 +115,8 @@ class Writer {
     if (hasClass(t, 'fx-placeholder')) return { name: 'g', attrs: pick(t.attrs, ['role', 'aria-label'], [['class', 'fx-placeholder']]), keepsText: true };
     if (hasClass(t, 'fx-members')) return { name: 'g', attrs: pick(t.attrs, ['style'], [['class', 'fx-members']]), keepsText: false };
     if (hasClass(t, 'fx-label')) return { name: 'text', attrs: new Map([['class', 'fx-label']]), keepsText: true };
+    // a connector label is placed on the screen: its placement is kept
+    if (hasClass(t, 'fx-connector-label')) return { name: 'text', attrs: pick(t.attrs, ['style'], [['class', 'fx-connector-label']]), keepsText: true };
     return undefined;
   }
 

@@ -37,6 +37,9 @@ export const curvedRouter: Router;
 export const DEFAULT_ANCHORS: readonly AnchorDef[];
 
 // @public
+export function labelPosition(commands: readonly PathCommand[], t: number, offset?: Vec2): Vec2;
+
+// @public
 export const ORTHOGONAL_STUB = 20;
 
 // @public

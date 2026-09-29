@@ -146,3 +146,51 @@ describe('routers (FR-RTE-001)', () => {
     }
   });
 });
+
+describe('connector labels (FR-CON-006)', () => {
+  it('FR-CON-006: a label at t 0.5 stays at the path midpoint when the endpoints move', async () => {
+    let a = '' as RecordId;
+    const { core, route, connectorId } = await show((b, s) => {
+      a = b.rect(s, { x: 50, y: 50, w: 100, h: 60 });
+      const c = b.rect(s, { x: 500, y: 300, w: 100, h: 60 });
+      return b.connect(a, c, { route: 'orthogonal' });
+    });
+    const text = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }] };
+    await act(async () => {
+      core.execute('element.update', {
+        id: connectorId,
+        fields: {
+          labels: [
+            { text, position: 0.5 },
+            { text, position: 0, offset: { x: 0, y: -20 } },
+          ],
+        },
+      });
+    });
+    const label = (k: number) => host.querySelectorAll<HTMLElement>(`.fx-el[data-el-id="${connectorId}"] .fx-connector-label`)[k] as HTMLElement;
+    /** The label's centre and the path's midpoint, in screen coordinates. */
+    const centres = () => {
+      const screen = host.querySelector('.fx-screen')?.getBoundingClientRect() as DOMRect;
+      const box = label(0).getBoundingClientRect();
+      const p = route() as SVGPathElement;
+      const mid = p.getPointAtLength(p.getTotalLength() / 2);
+      return { label: { x: (box.left + box.right) / 2 - screen.left, y: (box.top + box.bottom) / 2 - screen.top }, mid: { x: mid.x, y: mid.y } };
+    };
+    expect(label(0).textContent).toBe('Hello');
+    near(centres().label, centres().mid);
+    // the second label sits at the source end, 20 px above it
+    const screen = host.querySelector('.fx-screen')?.getBoundingClientRect() as DOMRect;
+    const second = label(1).getBoundingClientRect();
+    near(
+      { x: (second.left + second.right) / 2 - screen.left, y: (second.top + second.bottom) / 2 - screen.top },
+      { x: ends(route()).source.x, y: ends(route()).source.y - 20 },
+    );
+    // moving an endpoint moves the midpoint, and the label with it
+    const before = centres().mid;
+    await act(async () => {
+      core.execute('element.update', { id: a, fields: { transform: { x: 50, y: 400, w: 100, h: 60 } } });
+    });
+    expect(centres().mid).not.toEqual(before);
+    near(centres().label, centres().mid);
+  });
+});

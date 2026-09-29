@@ -6,16 +6,21 @@ import { renderDocumentToHtml } from './ssr.js';
 import { testRegistries } from './test-registries.js';
 
 /** The static HTML of one orthogonal connector from (0, 0) to (200, 100) with `route` and `style`: its path's `d` and style, and its SVG's style. */
-function drawn(route: Partial<Route>, style?: Style) {
+function drawn(route: Partial<Route>, style?: Style, extra: Record<string, unknown> = {}) {
   const b = documentBuilder({ seed: 521 });
   b.screen({ size: { w: 400, h: 300 } });
   const id = b.connect({ x: 0, y: 0 }, { x: 200, y: 100 }, { route: 'orthogonal', arrow: false });
   const file = b.build();
-  const connector = { ...(file.records[id as RecordId] as object), route: { type: 'orthogonal', ...route }, ...(style === undefined ? {} : { style }) };
+  const connector = {
+    ...(file.records[id as RecordId] as object),
+    route: { type: 'orthogonal', ...route },
+    ...(style === undefined ? {} : { style }),
+    ...extra,
+  };
   const html = renderDocumentToHtml({ ...file, records: { ...file.records, [id]: connector } } as DocumentFile, { registries: testRegistries() }).html;
   const path = /<path class="fx-route" d="([^"]*)" style="([^"]*)"/.exec(html);
   const svg = /<svg class="fx-connector"[^>]*style="([^"]*)"/.exec(html);
-  return { d: path?.[1] ?? '', style: path?.[2] ?? '', box: svg?.[1] ?? '' };
+  return { d: path?.[1] ?? '', style: path?.[2] ?? '', box: svg?.[1] ?? '', html };
 }
 
 describe('connector style (FR-CON-005)', () => {
@@ -44,6 +49,35 @@ describe('connector style (FR-CON-005)', () => {
     expect(drawn({}, { opacity: 0.5 }).box).toContain('opacity:0.5');
     // a token ref becomes the theme's CSS variable
     expect(drawn({}, { stroke: { color: '{color.primary}' } }).style).toMatch(/stroke:var\(--fx-color-primary/);
+  });
+});
+
+describe('connector markers and labels in static HTML (FR-CON-003, FR-CON-006)', () => {
+  it('FR-CON-006: labels render at their fractions of the drawn route as plain paragraphs', () => {
+    const para = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+    const labels = [
+      { text: { type: 'doc', content: [para('A'), para('B')] }, position: 0.5 },
+      { text: { type: 'doc', content: [para('C')] }, position: 1, offset: { x: 4, y: -6 } },
+    ];
+    const { html } = drawn({}, undefined, { labels });
+    // the route is 300 px long: halfway is the middle of its vertical leg
+    expect(html).toMatch(/<div class="fx-connector-label" style="[^"]*left:100px;top:50px"><p>A<\/p><p>B<\/p><\/div>/);
+    expect(html).toMatch(/<div class="fx-connector-label" style="[^"]*left:204px;top:94px"><p>C<\/p><\/div>/);
+    // no labels, none drawn
+    expect(drawn({}).html).not.toContain('<div class="fx-connector-label"');
+  });
+
+  it('FR-CON-003: end markers are defined only for the ends that have one', () => {
+    const both = drawn({}, undefined, { markers: { start: 'arrow', end: 'arrow' } }).html;
+    expect(both).toMatch(/marker-start="url\(#fx-marker-[\w-]+-start\)"/);
+    expect(both).toMatch(/marker-end="url\(#fx-marker-[\w-]+-end\)"/);
+    const start = drawn({}, undefined, { markers: { start: 'arrow' } }).html;
+    expect(start).toContain('marker-start=');
+    expect(start).toMatch(/<marker id="fx-marker-[\w-]+-start"/);
+    expect(start).not.toContain('marker-end=');
+    const none = drawn({}).html;
+    expect(none).not.toContain('<defs>');
+    expect(none).not.toContain('marker-');
   });
 });
 

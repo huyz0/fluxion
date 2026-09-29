@@ -68,3 +68,15 @@ describe('SVG normalizer (NFR-REL-005)', () => {
     expect(svg).toContain('url(#fx-id-0)');
   });
 });
+
+describe('SVG normalizer: connector labels (NFR-REL-005, FR-CON-006)', () => {
+  it('NFR-REL-005: a connector label becomes text that keeps its placement', () => {
+    const html = [
+      '<section class="fx-screen" data-screen-id="S1"><div class="fx-layer fx-content">',
+      '<div class="fx-el" data-kind="connector" data-el-id="c1"><svg class="fx-connector"><path class="fx-route" d="M0 0 L10 0"></path></svg>',
+      '<div class="fx-connector-label" style="left:5.004px;top:-0.001px"><p>Yes</p></div></div>',
+      '</div></section>',
+    ].join('');
+    expect(normalizeSvg(html)).toContain(['    <text class="fx-connector-label" data-place="left:5px;top:0px">', '      Yes', '    </text>'].join('\n'));
+  });
+});

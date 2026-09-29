@@ -2,13 +2,15 @@
 // through their bindings and anchors, the path from the router registered for its type), stroked with
 // the resolved style (colour, width, dash, cap, join, opacity, token refs; FR-CON-005) with its bends
 // rounded by the route's corner radius or else the style's, with end markers from a marker table (R0:
-// `arrow`; the markers registry arrives with M5.20). The wrapper has no box, so the SVG draws in screen coordinates; the route is a store
+// `arrow`; the markers registry arrives with M5.20), and its labels at their fractions of the route
+// (FR-CON-006; routing's labelPosition): plain paragraphs on the screen's background colour. The wrapper has no box, so the SVG draws in screen coordinates; the route is a store
 // query, so moving a bound shape redraws it.
 import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
-import { routeConnector } from '@fluxion/routing';
+import { labelPosition, routeConnector } from '@fluxion/routing';
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
+import { labelStyle, plainParagraphs } from './label.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
 import { concreteLength } from './text-measurer.js';
@@ -74,21 +76,36 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const w = Math.max(...xs) - Math.min(...xs) + 2 * ROUTE_MARGIN;
   const h = Math.max(...ys) - Math.min(...ys) + 2 * ROUTE_MARGIN;
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
+  const labels = (element.labels ?? []).map((label, k) => {
+    const at = labelPosition(drawn, label.position, label.offset);
+    return (
+      // biome-ignore lint/suspicious/noArrayIndexKey: a connector's labels have no identity but their order
+      <div key={k} className="fx-connector-label" style={{ ...labelStyle(style.font, style.opacity), left: round(at.x), top: round(at.y) }}>
+        {plainParagraphs(label.text).map((text, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: paragraphs have no identity but their order
+          <p key={i}>{text}</p>
+        ))}
+      </div>
+    );
+  });
   return (
-    <svg className="fx-connector" aria-hidden="true" viewBox={`${round(x)} ${round(y)} ${round(w)} ${round(h)}`} style={box}>
-      {start === null && end === null ? null : (
-        <defs>
-          {start}
-          {end}
-        </defs>
-      )}
-      <path
-        className="fx-route"
-        d={pathData(drawn)}
-        style={line}
-        markerStart={start === null ? undefined : `url(#${base}-start)`}
-        markerEnd={end === null ? undefined : `url(#${base}-end)`}
-      />
-    </svg>
+    <>
+      <svg className="fx-connector" aria-hidden="true" viewBox={`${round(x)} ${round(y)} ${round(w)} ${round(h)}`} style={box}>
+        {start === null && end === null ? null : (
+          <defs>
+            {start}
+            {end}
+          </defs>
+        )}
+        <path
+          className="fx-route"
+          d={pathData(drawn)}
+          style={line}
+          markerStart={start === null ? undefined : `url(#${base}-start)`}
+          markerEnd={end === null ? undefined : `url(#${base}-end)`}
+        />
+      </svg>
+      {labels}
+    </>
   );
 }

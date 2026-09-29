@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { paintCss } from './background.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
-import { plainParagraphs } from './label.js';
+import { labelStyle, plainParagraphs } from './label.js';
 import { modePolicy } from './mode-policy.js';
 import { pathData } from './path-data.js';
 import { createRenderRegistries } from './registries.js';
@@ -127,6 +127,23 @@ describe('shape outlines and labels (FR-SHP-001)', () => {
       ]),
     ).toBe('M0.333 0 Q1 2 3 4 C5 6 7 8 9 10 Z');
     expect([createRenderRegistries().shapeDefs.name, createRenderRegistries().routers.name]).toEqual(['shapeDefs', 'routers']);
+  });
+
+  it('FR-SHP-001: a label is drawn with its resolved font, aligned vertically by flex', () => {
+    const font = { family: 'F', size: '12px', weight: '700', style: 'italic', lineHeight: '1.5', color: 'red', align: 'center', verticalAlign: 'top' };
+    expect(labelStyle(font as never, '0.5')).toEqual({
+      fontFamily: 'F',
+      fontSize: '12px',
+      fontWeight: '700',
+      fontStyle: 'italic',
+      lineHeight: '1.5',
+      color: 'red',
+      textAlign: 'center',
+      justifyContent: 'flex-start',
+      opacity: '0.5',
+    });
+    const justify = (verticalAlign: string) => labelStyle({ ...font, verticalAlign } as never, '1').justifyContent;
+    expect(['middle', 'bottom', 'nope'].map(justify)).toEqual(['center', 'flex-end', 'center']);
   });
 
   it('FR-SHP-001: a label is the plain text of each paragraph', () => {

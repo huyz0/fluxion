@@ -11,7 +11,7 @@ import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from '
 import { type ImageSource, useImage } from './assets.js';
 import { EffectsFilter } from './effects.js';
 import { PlaceholderView } from './elements.js';
-import { plainParagraphs } from './label.js';
+import { labelStyle, plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
 import { browserMeasurer, concreteFont, concreteLength, MeasurerContext, useFontGeneration } from './text-measurer.js';
@@ -113,8 +113,6 @@ export function strokeReach(width: number, align: string, join: string): number 
   return half * (join === 'miter' ? MITER_LIMIT : Math.SQRT2);
 }
 
-const JUSTIFY: { readonly [align: string]: string } = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
-
 /**
  * Where and how a shape's text is laid out (ADR-0018, FR-SHP-006): its definition's text region, the
  * `textFit` padding and overflow, and for `shrink` the largest size that fits (measured; without a
@@ -188,20 +186,6 @@ function Outline(props: {
       />
     </>
   );
-}
-
-function labelStyle(font: ResolvedFont, opacity: string): CSSProperties {
-  return {
-    fontFamily: font.family,
-    fontSize: font.size,
-    fontWeight: font.weight as CSSProperties['fontWeight'],
-    fontStyle: font.style,
-    lineHeight: font.lineHeight,
-    color: font.color,
-    textAlign: font.align as CSSProperties['textAlign'],
-    justifyContent: JUSTIFY[font.verticalAlign] ?? 'center',
-    opacity,
-  };
 }
 
 /**
