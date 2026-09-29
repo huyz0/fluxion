@@ -1068,3 +1068,11 @@ CI run 36583393628 was red. The 1000-run attachment property took more than Vite
 - Visual: `e2e/render.shapes-gallery.spec.ts` @visual, with baselines for all three engines from the pinned Playwright image (Docker). The two-rects-line baselines were unchanged.
 - Carried M5.22 F1: the screen sets `--fx-screen-background` (its colour, else transparent) and connector labels use it.
 Review r1 minors: F1 fixed (marker connectors at stroke 4, markers about 20 px; baselines regenerated in the pinned image). F2: static HTML never measures text, so the gallery carries the text-fit fields but cannot exercise fitting; the comment says so, and fitting stays covered by render's browser tests.
+
+## 2026-09-30 M5.25 (claude)
+
+- `examples/shapes-gallery.flux.json` is written by gen.mjs from the gallery fixture (and `--check` fails when it goes stale). CI renders it and uploads it as the `shapes-gallery-demo` artifact; the examples README lists it.
+- The packs/basic, routing and sdk READMEs now describe M5, passing the docs leg (21 ids and markers; routes and all five anchor kinds; definePack, registerShapeDef, evaluateOutline).
+- Changesets m5-* cover the nine packages changed in the range.
+Review r1 F1 fixed: basic:line has no points param (README).
+Review r2 F1 fixed: the polyline and freehand params are named vertices and stroke.

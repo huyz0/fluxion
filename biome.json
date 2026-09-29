@@ -17,7 +17,8 @@
       "!packages/cli/schemas",
       "!packages/render/__golden__",
       "!packages/cli/__golden__",
-      "!fixtures/docs"
+      "!fixtures/docs",
+      "!examples/**/*.flux.json"
     ]
   },
   "formatter": {

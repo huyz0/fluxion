@@ -95,6 +95,14 @@ jobs:
           path: r0-static.html
           if-no-files-found: error
           retention-days: 14
+      # the M5 shapes gallery (every basic shape, route type and marker) rendered the same way (M5.25, FR-SHP-002)
+      - run: node packages/cli/dist/bin.js render examples/shapes-gallery.flux.json -o shapes-gallery.html
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: shapes-gallery-demo
+          path: shapes-gallery.html
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist
