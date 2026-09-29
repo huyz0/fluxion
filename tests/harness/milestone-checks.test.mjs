@@ -1,6 +1,7 @@
 // NFR-DX-003 (M0 cp1 F1): completion legs reject stubs; only real evidence turns them green.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import {
   changesetGaps,
@@ -493,5 +494,59 @@ describe('M5 legs made honest (M5 cp1 F4)', () => {
     const data = { 'E:/repo/packs/basic/src/shapes/rect.ts': entry(44, 44, 0, 0) };
     assert.equal(coverageGaps(data, 'packs/basic', floors, 40), true);
     assert.match(String(coverageGaps(data, 'packs/basic', floors, 60)), /^packs\/basic: 44 statements \(< 60\)$/);
+  });
+});
+
+describe('M6 Playwright legs (M6.1)', () => {
+  const report = (entries) => ({
+    suites: [
+      {
+        file: 'editor.boot.spec.ts',
+        specs: [{ title: 'boots', tests: entries.map(([projectName, status]) => ({ projectName, status })) }],
+      },
+    ],
+  });
+
+  it('checkPlaywrightReport needs every spec on every project, passed on its first run', async () => {
+    const { checkPlaywrightReport } = await import('../../scripts/gates/milestone-checks.mjs');
+    const all = [
+      ['chromium', 'expected'],
+      ['firefox', 'expected'],
+      ['webkit', 'expected'],
+    ];
+    assert.equal(checkPlaywrightReport(report(all), ['e2e/editor.boot.spec.ts'], ['chromium', 'firefox', 'webkit']), true);
+    // a project that ran nothing, a failure, and a pass on retry (flaky) all fail the leg
+    assert.match(String(checkPlaywrightReport(report(all.slice(0, 2)), ['e2e/editor.boot.spec.ts'], ['chromium', 'webkit'])), /\[webkit\]: no test ran/);
+    assert.match(String(checkPlaywrightReport(report([['chromium', 'unexpected']]), ['e2e/editor.boot.spec.ts'], ['chromium'])), /"boots": unexpected/);
+    assert.match(String(checkPlaywrightReport(report([['chromium', 'flaky']]), ['e2e/editor.boot.spec.ts'], ['chromium'])), /"boots": flaky/);
+    assert.match(String(checkPlaywrightReport(report([['chromium', 'skipped']]), ['e2e/editor.boot.spec.ts'], ['chromium'])), /skipped/);
+    // another spec's tests do not count
+    assert.match(
+      String(checkPlaywrightReport(report(all), ['e2e/canvas.pan-zoom.spec.ts'], ['chromium'])),
+      /canvas\.pan-zoom\.spec\.ts \[chromium\]: no test ran/,
+    );
+    // nested describe suites are walked, Windows paths normalised
+    const nested = {
+      suites: [{ file: 'e2e\\x.spec.ts', suites: [{ title: 'group', specs: [{ title: 't', tests: [{ projectName: 'chromium', status: 'expected' }] }] }] }],
+    };
+    assert.equal(checkPlaywrightReport(nested, ['e2e/x.spec.ts'], ['chromium']), true);
+  });
+
+  it('playwrightSpecs refuses a missing spec and judges the report the runner writes', async () => {
+    const { playwrightSpecs } = await import('../../scripts/gates/milestone-checks.mjs');
+    assert.match(String(playwrightSpecs(['e2e/no-such.spec.ts'], ['chromium'])), /missing e2e\/no-such\.spec\.ts/);
+    const spec = 'e2e/smoke.studio-boots.spec.ts';
+    let seen;
+    const runner = (args, env) => {
+      seen = args;
+      writeFileSync(
+        env.PLAYWRIGHT_JSON_OUTPUT_NAME,
+        JSON.stringify({ suites: [{ file: 'smoke.studio-boots.spec.ts', specs: [{ title: 's', tests: [{ projectName: 'chromium', status: 'expected' }] }] }] }),
+      );
+      return { status: 0, stdout: '', stderr: '' };
+    };
+    assert.equal(playwrightSpecs([spec], ['chromium'], { runner }), true);
+    assert.deepEqual(seen, [spec, '--project=chromium', '--reporter=json']);
+    assert.match(String(playwrightSpecs([spec], ['chromium'], { runner: () => ({ status: 1, stdout: '', stderr: 'boom' }) })), /wrote no report: boom/);
   });
 });

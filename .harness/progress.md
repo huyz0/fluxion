@@ -1109,3 +1109,11 @@ The final review ran as two fresh milestone-reviewer passes, recorded in milesto
 - M5.md Learned has two final lines. The backlog header count is corrected.
 - CI at 602a355: cold-setup failed once. The tail showed only the steps after the failing one, and a local cold run passed (156 s), so the failed job was re-run.
 - Roadmap: current milestone M6.
+
+## 2026-09-30 M6.1 (claude)
+
+M6 planned: 26 rows including checkpoints cp1 and cp2. The completion gate `m6-complete.mjs` is red at 3/32 legs.
+- E2E legs run through the new `playwrightSpecs` helper (named specs on named projects; flaky counts as red). The coverage leg judges the editor's own numbers; the CI-evidence leg waits for the M6 final review.
+- New threshold `HIT_TEST_2000_MAX_MS` = 1. M5 backlog archived.
+- M5 final F4: only the three colliding planned ADRs moved, to 0028, 0029 and 0064 (a full shift would hit the harness ADRs).
+- Review fixes: stale ADR refs; a behavioural pack leg; cp2 deps; a changeset leg.

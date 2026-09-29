@@ -83,7 +83,7 @@ receiving milestone's plan.
 | Item | From | To | Reason |
 |---|---|---|---|
 | Grow on text edit: the text-edit command applies `fitShapeText`'s grow height (ADR-0018 item 4) (M5 final F3) | M5 | M7 | the edit command arrives there |
-| Renumber the ADRs planned in M6-M9 from ADR-0020 (M5 used 0017-0019); ADR legs match titles (M5 final F4) | M5 | M6 (planning, first) | plan text only |
+| Renumber the ADRs planned in M6-M9 from ADR-0020 (M5 used 0017-0019); ADR legs match titles (M5 final F4); done in M6.1: the three collisions moved to ADR-0028, 0029 and 0064 | M5 | M6 (planning, first) | plan text only |
 | Router contract end check, one routers registry, duplicate routing/render helpers (M5 final F6) | M5 | M16 | routers and custom anchors |
 | A procedural pattern paint (hatch, dots, no asset): M5 reads FR-SHP-004's "pattern" as an image paint with `fit: tile`; a pattern of its own needs a `Paint` schema change (format contract, ADR) (M5.13 review F4) | M5 | M9 | a paint and schema decision, with themes |
 | check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |

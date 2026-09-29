@@ -508,3 +508,57 @@ export function coverageGaps(summary, dir, { lines, branches }, min) {
   if (pct('branches') < branches) bad.push(`branches ${pct('branches').toFixed(1)}%`);
   return bad.length === 0 || `${dir}: ${bad.join('; ')}`;
 }
+
+/** The tests of a Playwright JSON report, flattened: spec file (repo-relative), project and status. */
+function playwrightTests(report) {
+  const out = [];
+  const walk = (suite, file) => {
+    const here = suite.file ?? file;
+    for (const spec of suite.specs ?? []) {
+      for (const t of spec.tests ?? []) out.push({ file: String(here ?? '').replace(/\\/g, '/'), project: t.projectName, status: t.status, title: spec.title });
+    }
+    for (const child of suite.suites ?? []) walk(child, here);
+  };
+  for (const s of report?.suites ?? []) walk(s, s.file);
+  return out;
+}
+
+/**
+ * Judge a Playwright JSON report: every spec of `specs` (paths under e2e/) ran at least one test on
+ * every project of `projects`, and every one of them passed on its first run (a pass on retry is
+ * flaky, and flaky is not green; M6.1). true | '<reason>'.
+ */
+export function checkPlaywrightReport(report, specs, projects) {
+  const tests = playwrightTests(report);
+  const bad = [];
+  for (const spec of specs) {
+    const name = spec.replace(/^e2e\//, '');
+    for (const project of projects) {
+      const mine = tests.filter((t) => (t.file === name || t.file.endsWith(`/${name}`)) && t.project === project);
+      if (mine.length === 0) bad.push(`${spec} [${project}]: no test ran`);
+      for (const t of mine.filter((x) => x.status !== 'expected')) bad.push(`${spec} [${project}] "${t.title}": ${t.status}`);
+    }
+  }
+  return bad.length === 0 || bad.slice(0, 6).join('; ') + (bad.length > 6 ? `; … ${bad.length - 6} more` : '');
+}
+
+const runPlaywright = (args, env) => run('pnpm', ['exec', 'playwright', 'test', ...args], { env: { ...process.env, ...env } });
+
+/**
+ * Run the Playwright specs `specs` on `projects` (the built studio, playwright.config.ts) and judge
+ * them with {@link checkPlaywrightReport}. A missing spec fails without running anything.
+ * `runner(args, env)` is injectable for tests.
+ */
+export function playwrightSpecs(specs, projects, { runner = runPlaywright } = {}) {
+  const missing = specs.filter((s) => !exists(s));
+  if (missing.length) return `missing ${missing.join(', ')}`;
+  const dir = mkdtempSync(join(tmpdir(), 'gate-playwright-'));
+  try {
+    const out = join(dir, 'report.json');
+    const r = runner([...specs, ...projects.map((p) => `--project=${p}`), '--reporter=json'], { PLAYWRIGHT_JSON_OUTPUT_NAME: out });
+    if (!existsSync(out)) return `playwright wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`;
+    return checkPlaywrightReport(JSON.parse(readFileSync(out, 'utf8')), specs, projects);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}

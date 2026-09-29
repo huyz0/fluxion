@@ -9,7 +9,7 @@ decision-makers: harness (M2 "Decide before coding"; within FR-DOC-001, FR-DOC-0
 ## Context and Problem Statement
 
 Shapes, text elements and screen notes carry rich text (02-document-model §"Rich text"). The
-editor library that edits it is chosen in M7 (ADR-0019, TipTap/ProseMirror or Lexical per
+editor library that edits it is chosen in M7 (ADR-0064, renumbered in M6.1; TipTap/ProseMirror or Lexical per
 docs/research/01), but the stored shape must be fixed now: `schema` validates documents
 without an editor, the renderer (M4) and player draw it without one, and AI/DSL output
 (FR-AI-*) produces it. Rich text is also untrusted input from files (NFR-SEC-001).

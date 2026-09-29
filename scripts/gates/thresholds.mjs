@@ -44,6 +44,7 @@ export const THRESHOLDS = {
 
   // performance (NFR-PERF)
   EDITOR_DRAG_MIN_FPS: { value: 55, weakens: 'down' },
+  HIT_TEST_2000_MAX_MS: { value: 1, weakens: 'up' }, // M6: point hit-test among 2000 elements (FR-EDT-004)
   PRESENT_ANIM_MIN_FPS_DESKTOP: { value: 58, weakens: 'down' },
   PRESENT_ANIM_MIN_FPS_MOBILE: { value: 55, weakens: 'down' },
   LAYOUT_100_NODES_MS: { value: 200, weakens: 'up' },
