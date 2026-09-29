@@ -120,3 +120,6 @@ visual baseline of the CLI output (pinned Playwright image), and `check-mode-pol
   basic pack (M5), which replaces the render-level registry. Built-ins (`shape` view, `basic:rect`)
   register as source `core` through `registerBuiltinViews`. `<ScreenView>` defaults to
   `builtinRegistries()`.
+- 2026-09-29 (M5.5): ADR-0016 replaces the render-level `shapeDefs` of the M4.14 amendment: the outlines
+  are core `ShapeDef`s evaluated by `evaluateOutline`, supplied by packs (`packs/basic`), and render's
+  built-in `basic:rect` goes (M5.9).

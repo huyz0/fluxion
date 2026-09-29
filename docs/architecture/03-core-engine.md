@@ -130,21 +130,24 @@ screen and subtree deletes and keep connector ends either bound or free.
 ```ts
 interface ShapeDef {
   id: string;                               // 'basic:star'
-  params?: Record<string, ParamSpec>;       // { points: {type:'int',min:3,max:24,default:5} }
-  outline: OutlineSpec;                     // { svgPath: template } | { fn: 'basic.star' }
+  params?: Record<string, ParamSpec>;       // number | int | enum | points, with ranges and defaults
+  outline: OutlineSpec;                     // { path } | { polygon: { n, x, y } } | { points, closed?, smooth? }
   anchors?: AnchorDef[];                    // default: n,e,s,w,center
   textRegions?: TextRegionDef[];            // default: inset box
   handles?: HandleDef[];                    // param-bound drag handles
   defaultSize: { w: number; h: number };
   defaultStyle?: Partial<Style>;
-  decorations?: SvgFragmentSpec[];          // non-outline strokes/icons (e.g., cylinder top ellipse)
+  decorations?: { path: string }[];         // stroke-only templates (e.g., cylinder top ellipse)
   keywords?: string[]; category?: string; license?: string;
 }
 ```
-`outline` evaluates to a normalized path (absolute cubic beziers) in unit box → used for
-render, hit-testing, perimeter projection, morphing, boolean ops, export.
-Path templates use a tiny safe expression language (`w`, `h`, params, arithmetic, `min/max`),
-evaluated by the same interpreter as bindings (no `eval`).
+ADR-0016 decides the outline representation, the expression language and where `ShapeDef` lives (core).
+Outlines are written in the shape's own box (`0…w`, `0…h`), not a unit box.
+`outline` evaluates to one normalized subpath (absolute cubic beziers), closed or open → used for
+render, hit-testing, perimeter projection, morphing, boolean ops, export. Path templates use the
+safe expression language of ADR-0016 (numbers, `w`, `h`, params, arithmetic, comparisons, a fixed
+function set; enum params are their value's index), evaluated with a step budget and reused later
+for bindings (no `eval`).
 
 ## 6. Geometry (`@fluxion/geometry`)
 
