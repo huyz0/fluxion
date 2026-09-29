@@ -171,4 +171,62 @@ describe('check-drift (NFR-DX-004)', () => {
     const amended = sb.git('rev-parse', 'HEAD').stdout.trim();
     assert.equal(sb.node('scripts/gates/check-drift.mjs', ['--commit', amended]).status, 0);
   });
+  it('fails when a golden or screenshot baseline is re-recorded or deleted without a Threshold-change trailer (M5 final F2)', () => {
+    // the baselines as they stood before the change
+    sb.write('packages/demo/__golden__/two.svg', '<svg>one</svg>\n');
+    sb.write('e2e/demo.spec.ts-snapshots/two-chromium-linux.png', 'png-one');
+    sb.git('add', '-A');
+    sb.git('commit', '-q', '-m', 'baselines', '--no-verify');
+    // re-recording one: refused without a trailer, accepted with one naming the behaviour (no ADR needed)
+    sb.write('packages/demo/__golden__/two.svg', '<svg>two</svg>\n');
+    sb.git('add', '-A');
+    const bare = check();
+    assert.equal(bare.status, 1, out(bare));
+    assert.match(bare.stderr, /packages\/demo\/__golden__\/two\.svg re-recorded/);
+    assert.equal(check('M5.40: test: arrow\n\nThreshold-change: the arrow marker is notched\n').status, 0);
+    // deleting a screenshot baseline is refused too
+    sb.git('reset', '-q', '--hard');
+    sb.git('rm', '-q', 'e2e/demo.spec.ts-snapshots/two-chromium-linux.png');
+    const deleted = check();
+    assert.equal(deleted.status, 1, out(deleted));
+    assert.match(deleted.stderr, /two-chromium-linux\.png deleted/);
+    // a new baseline records a behaviour for the first time: no trailer
+    sb.git('reset', '-q', '--hard');
+    sb.write('packages/demo/__golden__/three.svg', '<svg/>\n');
+    sb.write('e2e/demo.spec.ts-snapshots/three-webkit-linux.png', 'png');
+    sb.git('add', '-A');
+    assert.equal(check().status, 0);
+    // --commit reads the committed change the same way (CI)
+    sb.write('packages/demo/__golden__/two.svg', '<svg>three</svg>\n');
+    sb.git('add', '-A');
+    sb.git('commit', '-q', '-m', 'M5.40: test: sneak', '--no-verify');
+    assert.equal(sb.node('scripts/gates/check-drift.mjs', ['--commit', sb.git('rev-parse', 'HEAD').stdout.trim()]).status, 1);
+  });
+
+  it('covers Vitest snapshots and unusual paths, and does not re-judge commits made before the rule (M5.40 review)', () => {
+    sb.write('packages/demo/src/__snapshots__/a.test.ts.snap', 'one\n');
+    sb.write('e2e/demo.spec.ts-snapshots/café-chromium-linux.png', 'png-one');
+    sb.git('add', '-A');
+    sb.git('commit', '-q', '-m', 'baselines', '--no-verify');
+    // a re-recorded Vitest snapshot, and a screenshot whose name git would quote
+    sb.write('packages/demo/src/__snapshots__/a.test.ts.snap', 'two\n');
+    sb.write('e2e/demo.spec.ts-snapshots/café-chromium-linux.png', 'png-two');
+    sb.git('add', '-A');
+    const r = check();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /a\.test\.ts\.snap re-recorded/);
+    assert.match(r.stderr, /café-chromium-linux\.png re-recorded/);
+    // a commit whose parent did not have the rule yet is not judged by it (history stays green)
+    sb.git('reset', '-q', '--hard');
+    sb.edit('scripts/gates/check-drift.mjs', (t) =>
+      t.replaceAll('function baselineChanges()', 'function baselineChangesOld()').replace('baselineChanges()', 'baselineChangesOld()'),
+    );
+    sb.git('add', '-A');
+    sb.git('commit', '-q', '-m', 'before the rule', '--no-verify');
+    sb.git('checkout', '-q', base, '--', 'scripts/gates/check-drift.mjs');
+    sb.write('packages/demo/src/__snapshots__/a.test.ts.snap', 'three\n');
+    sb.git('add', '-A');
+    sb.git('commit', '-q', '-m', 'M4.21: test: old re-record', '--no-verify');
+    assert.equal(sb.node('scripts/gates/check-drift.mjs', ['--commit', sb.git('rev-parse', 'HEAD').stdout.trim()]).status, 0);
+  });
 });
