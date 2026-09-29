@@ -909,3 +909,6 @@ core/src/shape: ShapeDef type + Zod schema proven equal (checkedSchema, now expo
 
 ## 2026-09-29 M5.8 (claude)
 ADR-0017: packs rank 5 in check-layering; hosts list the packs they bundle (cli: sdk, basic); sdk definePack/registerShapeDef (validate all first, register all or none, namespace <pack>:, FLX_PACK_INVALID) and re-exports of core's shape contracts, createCoreRegistries and evaluateOutline; packs/basic basicPack with basic:rect (imports only @fluxion/sdk); cli host.ts registers the bundled packs (render reports a failure as internal; M5.9 hands the registries to render); M5.7 review minors: int params need integer bounds, a raw __proto__ param key is refused (Zod's record drops it)
+
+## 2026-09-29 M5.29 (claude)
+M5.9's staged ladder failed every browser test ("Failed to fetch dynamically imported module", iframe not ready) whenever the harness suite ran: mutate.test.mjs runs tzap on packages/sdk, which M5.8/M5.9 give a diff, so tzap's Vitest ran in the checkout with the shared .vitest-cache and rewrote the optimized deps the ladder's browser run was serving; vitest.config.ts reads FLUXION_VITEST_CACHE and mutate.mjs points it next to the report; harness case

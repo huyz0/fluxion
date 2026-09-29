@@ -1,11 +1,11 @@
 // NFR-MNT-005 (ADR-0146): `pnpm mutate` runs tzap scoped to a diff, and never scores a stale report.
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
-import { node } from '../../scripts/gates/lib.mjs';
-import { out } from './helpers.mjs';
+import { node, run } from '../../scripts/gates/lib.mjs';
+import { out, REPO } from './helpers.mjs';
 
 const dirs = [];
 const fresh = () => {
@@ -27,6 +27,18 @@ describe('pnpm mutate (NFR-MNT-005, ADR-0146)', () => {
     assert.equal(r.status, 0, out(r));
     assert.ok(existsSync(join(dir, 'tzap.json')), 'no tzap.json');
     assert.match(r.stdout, /mutate: packages\/sdk: [\d.]+ % of \d+ valid mutants/);
+  });
+
+  it('tzap runs get their own Vite cache, apart from the one a concurrent browser run serves (M5.29)', () => {
+    // Vitest honours FLUXION_VITEST_CACHE ...
+    const cache = join(fresh(), 'vite');
+    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', 'packages/schema/src/ids.test.ts'], {
+      env: { ...process.env, FLUXION_VITEST_CACHE: cache },
+    });
+    assert.equal(r.status, 0, out(r));
+    assert.ok(existsSync(cache), 'Vitest did not write the cache it was given');
+    // ... and pnpm mutate hands tzap one next to its report
+    assert.match(readFileSync(join(REPO, 'scripts/harness/mutate.mjs'), 'utf8'), /env: \{ \.\.\.process\.env, FLUXION_VITEST_CACHE: viteCache \}/);
   });
 
   it('a failing tzap run exits non-zero and leaves no stale report', () => {

@@ -35,8 +35,10 @@ const conditions = ['@fluxion/source', 'module', 'development|production'];
 
 export default defineConfig({
   // per checkout, not node_modules/.vite: harness sandboxes link the repo's node_modules, and a
-  // shared cache would be written by the sandbox and the ladder's test step at once (M1.36)
-  cacheDir: '.vitest-cache',
+  // shared cache would be written by the sandbox and the ladder's test step at once (M1.36).
+  // FLUXION_VITEST_CACHE moves it: a tzap run in this checkout (pnpm mutate, also from the harness
+  // suite during the ladder) must not rewrite the optimized deps a browser run is serving (M5.29)
+  cacheDir: process.env['FLUXION_VITEST_CACHE'] ?? '.vitest-cache',
   resolve: { conditions: [...conditions, 'browser'] },
   ssr: { resolve: { conditions: [...conditions, 'node'] } },
   test: {

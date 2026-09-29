@@ -37,7 +37,17 @@ for (const p of packages) {
 
 // discovery sees one root Vitest package (test.projects); the model narrows its sources to the
 // chosen packages, so their mutants are killed by every project's tests
-const tzap = (args, opts = {}) => spawnSync(process.execPath, [TZAP, ...args], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, ...opts });
+// its Vitest runs get their own Vite cache next to the report: the ladder's test step may be serving
+// browser tests from the checkout's .vitest-cache at the same time (M5.29)
+const viteCache = join(outDir, 'vitest-cache');
+const tzap = (args, opts = {}) =>
+  spawnSync(process.execPath, [TZAP, ...args], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 256 * 1024 * 1024,
+    env: { ...process.env, FLUXION_VITEST_CACHE: viteCache },
+    ...opts,
+  });
 const discovered = tzap(['model']);
 const model = JSON.parse(discovered.stdout.slice(discovered.stdout.indexOf('{')));
 if (model.packages.length !== 1) {
