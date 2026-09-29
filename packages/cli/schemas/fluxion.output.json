@@ -136,7 +136,11 @@
                   "FLX_TOKEN_UNKNOWN",
                   "FLX_CLI_USAGE",
                   "FLX_CLI_IO",
-                  "FLX_CLI_INTERNAL"
+                  "FLX_CLI_INTERNAL",
+                  "FLX_EXPR_SYNTAX",
+                  "FLX_EXPR_UNKNOWN",
+                  "FLX_EXPR_DOMAIN",
+                  "FLX_EXPR_BUDGET"
                 ]
               },
               "severity": {

@@ -54,7 +54,11 @@ export type DiagnosticCode =
   | 'FLX_TOKEN_UNKNOWN'
   | 'FLX_CLI_USAGE'
   | 'FLX_CLI_IO'
-  | 'FLX_CLI_INTERNAL';
+  | 'FLX_CLI_INTERNAL'
+  | 'FLX_EXPR_SYNTAX'
+  | 'FLX_EXPR_UNKNOWN'
+  | 'FLX_EXPR_DOMAIN'
+  | 'FLX_EXPR_BUDGET';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -103,6 +107,10 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_CLI_USAGE: 'error',
   FLX_CLI_IO: 'error',
   FLX_CLI_INTERNAL: 'error',
+  FLX_EXPR_SYNTAX: 'error',
+  FLX_EXPR_UNKNOWN: 'error',
+  FLX_EXPR_DOMAIN: 'error',
+  FLX_EXPR_BUDGET: 'error',
 };
 
 /**

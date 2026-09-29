@@ -46,6 +46,9 @@ export type ArgsSchema<A> = {
 export function batch(fn: () => void): void;
 
 // @public
+export type BinaryOp = "+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "==" | "!=";
+
+// @public
 export interface Clock {
     frame(callback: (time: number) => void): () => void;
     now(): number;
@@ -139,7 +142,55 @@ export type Disposable = {
 export function effect(fn: () => void): () => void;
 
 // @public
+export function evaluateExpr(expr: Expr, scope: ExprScope, budget: ExprBudget, where?: ExprWhere): Result<number, Diagnostic>;
+
+// @public
 export function executeCommand(registry: Registry<string, AnyCommand>, ctx: CommandContext, id: string, args: unknown): Result<unknown, CommandFailure>;
+
+// @public
+export type Expr = {
+    readonly node: "num";
+    readonly value: number;
+} | {
+    readonly node: "id";
+    readonly name: string;
+    readonly at: number;
+} | {
+    readonly node: "neg";
+    readonly arg: Expr;
+} | {
+    readonly node: "bin";
+    readonly op: BinaryOp;
+    readonly left: Expr;
+    readonly right: Expr;
+    readonly at: number;
+} | {
+    readonly node: "cond";
+    readonly test: Expr;
+    readonly then: Expr;
+    readonly otherwise: Expr;
+} | {
+    readonly node: "call";
+    readonly name: string;
+    readonly args: readonly Expr[];
+    readonly at: number;
+};
+
+// @public
+export type ExprBudget = {
+    steps: number;
+};
+
+// @public
+export type ExprScope = {
+    readonly [name: string]: number;
+};
+
+// @public
+export type ExprWhere = {
+    readonly at?: ReadonlyArray<string | number>;
+    readonly src?: string;
+};
 
 // @public
 export interface FileIO {
@@ -202,6 +253,9 @@ export type MessageDescriptor = {
 };
 
 // @public
+export function parseExpr(src: string, at?: ReadonlyArray<string | number>): Result<Expr, Diagnostic>;
+
+// @public
 export type PluginId = string;
 
 // @public
@@ -239,6 +293,9 @@ export interface Registry<K extends string, V> {
     register(key: K, value: V, source: PluginId): Result<Disposable, Diagnostic>;
     source(key: K): PluginId | undefined;
 }
+
+// @public
+export function runExpr(src: string, scope: ExprScope, budget: ExprBudget, at?: ReadonlyArray<string | number>): Result<number, Diagnostic>;
 
 // @public
 export interface Store {

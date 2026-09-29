@@ -94,6 +94,18 @@ Paths point into the engine (`/registries/<name>/<key>`), not into the document.
 | `FLX_ORIGIN_RESERVED` | error | A transaction asked for origin `undo` or `redo`, which only the history module replays with (they skip hooks and history); nothing was written (ADR-0014). | Use `user`, `system` or `remote`; undo through `store.history`. |
 | `FLX_FORK_UNRELATED` | error | `applyFork` was given a store that is not a fork of the target; nothing was written (ADR-0014). | Apply a fork to the store it was forked from. |
 
+## Expressions
+
+Reported by `@fluxion/core` when it evaluates the expressions of a shape definition (ADR-0016): outline
+templates now, bindings later. Paths point into the definition (`/outline/path`, `/outline/polygon/x`).
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_EXPR_SYNTAX` | error | The expression does not parse (an unexpected character or token, a missing parenthesis, the wrong number of arguments, more than 2 000 characters or 64 levels of nesting). | Fix the expression the message quotes. |
+| `FLX_EXPR_UNKNOWN` | error | A name or function the expression uses is not defined: only `w`, `h`, the definition's params, `i`, `n`, `pi` and the listed functions are. | Declare the param, or use a listed function. |
+| `FLX_EXPR_DOMAIN` | error | A division or modulo by zero, or a result that is not a finite number (`sqrt(-1)`, an overflow). | Guard the value, e.g. with `max(x, 1)`. |
+| `FLX_EXPR_BUDGET` | error | The evaluation used up its step budget (an outline and its decorations share one); nothing more was computed. | Simplify the definition, or lower a vertex count. |
+
 ## Command line
 
 Reported by `fluxion` (ADR-0147) in its `--json` output and on stderr. Paths point into the
