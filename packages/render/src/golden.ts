@@ -73,7 +73,8 @@ class Writer {
   #stable(name: string, value: string): string {
     // rounded first: a numbered id such as fx-id-0 must not read as the number -0
     const rounded = NAMES.has(name) ? value : round(value);
-    return rounded.replace(/fx-(?:fill|marker)-[\w-]+/g, (id) => {
+    // every per-render id the views emit: fills, markers, image masks and crops, stroke clips and masks (M5.15 review)
+    return rounded.replace(/fx-(?:fill|marker|mask|crop|clip|edge)-[\w-]+/g, (id) => {
       const suffix = /-(?:start|end)$/.exec(id)?.[0] ?? '';
       const base = id.slice(0, id.length - suffix.length);
       if (!this.#ids.has(base)) this.#ids.set(base, `fx-id-${this.#ids.size}`);

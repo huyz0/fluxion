@@ -674,6 +674,7 @@ export type Stroke = Extensible<{
     readonly dash?: readonly number[];
     readonly cap?: "butt" | "round" | "square";
     readonly join?: "miter" | "round" | "bevel";
+    readonly align?: "center" | "inside" | "outside";
 }>;
 
 // @public

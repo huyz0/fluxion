@@ -96,7 +96,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     const bare = resolveStyle(undefined, 'shape', { name: 'empty', tokens: {} }).style;
     expect(bare).toEqual({
       fill: { type: 'none' },
-      stroke: { color: 'currentColor', width: '1px', cap: 'butt', join: 'miter' },
+      stroke: { color: 'currentColor', width: '1px', cap: 'butt', join: 'miter', align: 'center' },
       opacity: '1',
       radius: '0px',
       font: {
@@ -172,7 +172,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
   it('stroke and font fields', () => {
     const r = resolveStyle(
       {
-        stroke: { color: '#000', width: 3, dash: [4, 2], cap: 'round', join: 'bevel' },
+        stroke: { color: '#000', width: 3, dash: [4, 2], cap: 'round', join: 'bevel', align: 'inside' },
         font: {
           family: 'Georgia',
           size: '{font.size.lg}',
@@ -187,7 +187,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
       'text',
       LIGHT_THEME,
     ).style;
-    expect(r.stroke).toEqual({ color: '#000', width: '3px', dash: '4 2', cap: 'round', join: 'bevel' });
+    expect(r.stroke).toEqual({ color: '#000', width: '3px', dash: '4 2', cap: 'round', join: 'bevel', align: 'inside' });
     expect(r.font).toEqual({
       family: '"Georgia"',
       size: 'var(--fx-font-size-lg)',
@@ -220,7 +220,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     const r = resolveStyle(undefined, 'shape', hostile).style;
     // every hostile value is skipped and the next layer is used
     expect(r.fill).toEqual({ type: 'color', css: '#ffffff' });
-    expect(r.stroke).toEqual({ color: '#000', width: '1px', cap: 'square', join: 'bevel' });
+    expect(r.stroke).toEqual({ color: '#000', width: '1px', cap: 'square', join: 'bevel', align: 'center' });
     // a literal family is one quoted, escaped name (a name with digits and spaces stays valid CSS)
     expect(r.font.family).toBe('"Noto Sans 3"');
     expect(r.font.align).toBe('center');

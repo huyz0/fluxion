@@ -54,4 +54,17 @@ describe('SVG normalizer (NFR-REL-005)', () => {
       ].join('\n'),
     );
   });
+
+  it('NFR-REL-005: image masks and crops and stroke clips and masks get numbered ids too (M5.15 review)', () => {
+    const html = [
+      '<section class="fx-screen" data-screen-id="S1"><div class="fx-layer fx-content">',
+      '<div class="fx-el" data-kind="image" data-el-id="i1"><svg><clipPath id="fx-mask-s0-_R_7_"></clipPath><g clip-path="url(#fx-mask-s0-_R_7_)"></g>',
+      '<clipPath id="fx-crop-s0-_R_7_"></clipPath><clipPath id="fx-clip-s0-_R_8_"></clipPath><mask id="fx-edge-s0-_R_8_"></mask></svg></div>',
+      '</div></section>',
+    ].join('');
+    const svg = normalizeSvg(html);
+    expect(svg).not.toMatch(/_R_/);
+    for (const id of ['fx-id-0', 'fx-id-1', 'fx-id-2', 'fx-id-3']) expect(svg).toContain(`id="${id}"`);
+    expect(svg).toContain('url(#fx-id-0)');
+  });
 });

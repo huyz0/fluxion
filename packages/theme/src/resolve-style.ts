@@ -94,6 +94,8 @@ export type ResolvedStroke = {
   readonly cap: string;
   /** Line join. */
   readonly join: string;
+  /** `center`, `inside` or `outside` the outline (ADR-0019). */
+  readonly align: string;
 };
 
 /**
@@ -156,7 +158,7 @@ type Layer = { readonly values: unknown; readonly at: ReadonlyArray<string | num
 const FALLBACK = {
   fill: 'transparent',
   background: 'transparent',
-  stroke: { color: 'currentColor', width: 1, cap: 'butt', join: 'miter' },
+  stroke: { color: 'currentColor', width: 1, cap: 'butt', join: 'miter', align: 'center' },
   opacity: 1,
   radius: 0,
   font: { family: 'sans-serif', size: 16, weight: 400, lineHeight: 1.2, color: 'currentColor', style: 'normal', align: 'center', verticalAlign: 'middle' },
@@ -233,6 +235,7 @@ class Resolver {
 
 const CAPS: ReadonlySet<string> = new Set(['butt', 'round', 'square']);
 const JOINS: ReadonlySet<string> = new Set(['miter', 'round', 'bevel']);
+const ALIGNS_STROKE: ReadonlySet<string> = new Set(['center', 'inside', 'outside']);
 const FONT_STYLES: ReadonlySet<string> = new Set(['normal', 'italic']);
 const ALIGNS: ReadonlySet<string> = new Set(['left', 'center', 'right', 'justify']);
 const VERTICAL_ALIGNS: ReadonlySet<string> = new Set(['top', 'middle', 'bottom']);
@@ -347,6 +350,7 @@ export function resolveStyle(style: Style | undefined, of: StyleKind, theme: The
       ...(dash !== undefined ? { dash } : {}),
       cap: keyword(['stroke', 'cap'], CAPS),
       join: keyword(['stroke', 'join'], JOINS),
+      align: keyword(['stroke', 'align'], ALIGNS_STROKE),
     },
     opacity: r.pick(['opacity'], unitless),
     radius: r.pick(['radius'], px),

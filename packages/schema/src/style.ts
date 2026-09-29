@@ -35,6 +35,8 @@ export type Stroke = Extensible<{
   readonly cap?: 'butt' | 'round' | 'square';
   /** Line join. */
   readonly join?: 'miter' | 'round' | 'bevel';
+  /** Where the stroke sits: centred on the outline (default), inside it or outside it (ADR-0019). */
+  readonly align?: 'center' | 'inside' | 'outside';
 }>;
 
 /**
@@ -158,6 +160,7 @@ const strokeSchema = checkedSchema<Stroke>()(
     dash: z.array(nonNegative).optional(),
     cap: z.enum(['butt', 'round', 'square']).optional(),
     join: z.enum(['miter', 'round', 'bevel']).optional(),
+    align: z.enum(['center', 'inside', 'outside']).optional(),
   }),
 );
 const shadowSchema = checkedSchema<Shadow>()(

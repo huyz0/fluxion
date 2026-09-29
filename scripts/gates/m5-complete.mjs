@@ -139,7 +139,7 @@ leg('shape style, text layout and image views (T1)', () =>
     browser('M5.13', 'FR-SHP-004: solid, gradient, pattern, image and none fills render with decorations'),
     ['M5.30', "FR-SHP-004: a definition's default style applies under the element's style, and open outlines are stroked without fill", 'render'],
     browser('M5.28', 'FR-SHP-004: stroke align inside and outside draw inside and outside the outline'),
-    browser('M5.28', 'FR-SHP-004: dash, cap, join, opacity, shadow, blur and glow render from the resolved style'),
+    browser('M5.34', 'FR-SHP-004: dash, cap, join, opacity, shadow, blur and glow render from the resolved style'),
     browser('M5.14', 'FR-SHP-006: grow-shape height equals the measured text within 1 px'),
     browser('M5.14', 'FR-SHP-006: shrink keeps the bounds and the font at or above its minimum'),
     browser('M5.15', 'FR-SHP-012: mask with ellipse clips image'),

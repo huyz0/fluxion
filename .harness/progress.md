@@ -948,3 +948,6 @@ render: createCanvasMeasurer (canvas measureText, width cache per font and line,
 
 ## 2026-09-29 M5.15 (claude)
 render ImageView (built-in for kind image): the asset from the host URLs (useImage); uncropped one image fitted to the box (its own aspect kept); cropped by a nested svg viewBox in the asset natural pixels plus a crop clipPath (review F1: contain showed cut-away parts; a crop without a recorded size is ignored, review F2), fitted contain/cover/fill via preserveAspectRatio, masked by any shape definition outline as a clipPath (an unknown mask def leaves it unclipped); T1 pixel probe (the view svg rasterized through an img and a canvas): an ellipse mask clips the corners, crop and fit attributes, contain letterboxing
+
+## 2026-09-29 M5.28 (claude)
+split: effects to M5.34 (gate title moved); ADR-0019: schema stroke.align (center/inside/outside, resolved by theme), inside = doubled stroke clipped to the outline, outside = doubled stroke with the outline masked out (render Outline); geometry roundCorners (fillet arcs at straight corners, tangent distance min(r/tan(phi/2), half of each side), tzap 100 %), the shape view rounds the drawn outline by the style radius (concrete px from the theme); M5.15 review minor: normalizeSvg numbers mask/crop/clip/edge ids; T1 pixel probes for align and radius

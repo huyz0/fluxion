@@ -93,6 +93,7 @@ export type ResolvedStroke = {
     readonly dash?: string;
     readonly cap: string;
     readonly join: string;
+    readonly align: string;
 };
 
 // @public

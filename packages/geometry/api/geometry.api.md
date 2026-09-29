@@ -256,6 +256,9 @@ export function rotate(v: Vec2, radians: number): Vec2;
 export function rotation(radians: number): Mat2d;
 
 // @public
+export function roundCorners(cmds: readonly PathCommand[], radius: number): readonly PathCommand[];
+
+// @public
 export function scale(v: Vec2, k: number): Vec2;
 
 // @public

@@ -100,6 +100,21 @@ export function useFontGeneration(): number {
 /** The host's measurer, provided by `<ScreenView>` (default: the page's canvas measurer). */
 export const MeasurerContext: Context<TextMeasurer | undefined> = createContext<TextMeasurer | undefined>(undefined);
 
+/** `css` with its `var(--fx-…)` references replaced by `theme`'s values (unknown ones by nothing). */
+function substitute(css: string, theme: Theme): string {
+  const vars = toCssVars(theme) as { readonly [name: string]: string | undefined };
+  return css.replace(/var\((--[\w-]+)\)/g, (_, name: string) => vars[name] ?? '');
+}
+
+/**
+ * A resolved length (`4px`, `var(--fx-radius-md)`) as a number of px with `theme`'s values; 0 when it
+ * is none.
+ */
+export function concreteLength(css: string, theme: Theme): number {
+  const n = Number.parseFloat(substitute(css, theme));
+  return Number.isFinite(n) ? n : 0;
+}
+
 /**
  * The concrete font of a resolved style: its `var(--fx-…)` values replaced by `theme`'s, for measuring.
  */
@@ -107,8 +122,7 @@ export function concreteFont(
   font: { readonly family: string; readonly size: string; readonly weight: string; readonly lineHeight: string; readonly style: string },
   theme: Theme,
 ): FontSpec {
-  const vars = toCssVars(theme) as { readonly [name: string]: string | undefined };
-  const value = (css: string) => css.replace(/var\((--[\w-]+)\)/g, (_, name: string) => vars[name] ?? '');
+  const value = (css: string) => substitute(css, theme);
   const number = (css: string, fallback: number) => {
     const n = Number.parseFloat(value(css));
     return Number.isFinite(n) ? n : fallback;
