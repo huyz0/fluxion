@@ -84,8 +84,10 @@ export function fitShapeText(input: ShapeTextInput, measurer: TextMeasurer): Res
   const region = textRegion(input.def, input.size, input.params);
   if (!region.ok) return region;
   const fitted = fitText({ paragraphs: input.paragraphs, font: input.font, region: region.value, fit: input.fit }, measurer);
-  // the region is a fraction of the box's height: the box grows by the same factor as the region must
-  const share = input.size.h > 0 ? region.value.h / input.size.h : 1;
+  // the region's share of the box's height, from its fractions (the region of a box 1 px tall), so a
+  // flat box grows by the right factor too (M5.33 review F1)
+  const unit = textRegion(input.def, { w: input.size.w, h: 1 }, input.params);
+  const share = unit.ok ? unit.value.h : 0;
   const needed = share > 0 ? fitted.regionHeight / share : input.size.h;
   return ok({ ...fitted, region: region.value, height: Math.max(input.size.h, needed) });
 }

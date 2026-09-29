@@ -29,6 +29,8 @@ export type FontSpec = {
   readonly weight?: number;
   /** Line height as a multiple of `size`, 1.2 when omitted. */
   readonly lineHeight?: number;
+  /** CSS font style (`normal`, `italic`), `normal` when omitted. */
+  readonly style?: string;
 };
 
 /**

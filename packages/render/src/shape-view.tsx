@@ -2,15 +2,16 @@
 // `shapeDefs` registry, its outline evaluated for the element's size and params and drawn as an SVG
 // path filling the wrapper's box, filled and stroked with the resolved style; its text is a centred
 // plain-text label. An unknown `defId`, or an outline that does not evaluate, renders the placeholder.
-import { evaluateOutline } from '@fluxion/core';
+import { evaluateOutline, fitShapeText, type ShapeDef, shrinksText, TEXT_FIT_DEFAULTS, type TextMeasurer, textRegion } from '@fluxion/core';
 import type { ShapeElement } from '@fluxion/schema';
-import { type ResolvedFont, type ResolvedPaint, resolveStyle } from '@fluxion/theme';
-import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
+import { type ResolvedFont, type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
+import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
 import { type ImageSource, useImage } from './assets.js';
 import { PlaceholderView } from './elements.js';
 import { plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
+import { browserMeasurer, concreteFont, MeasurerContext, useFontGeneration } from './text-measurer.js';
 
 const stops = (paint: { readonly stops: ReadonlyArray<{ readonly offset: number; readonly css: string }> }) =>
   // stops may share an offset (a hard stop), so their position is their key; the theme sorts them
@@ -98,6 +99,33 @@ function imageFill(
 
 const JUSTIFY: { readonly [align: string]: string } = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
 
+/**
+ * Where and how a shape's text is laid out (ADR-0018, FR-SHP-006): its definition's text region, the
+ * `textFit` padding and overflow, and for `shrink` the largest size that fits (measured; without a
+ * measurer, as in server rendering, the styled size).
+ */
+function textBox(
+  input: { readonly element: ShapeElement; readonly def: ShapeDef; readonly paragraphs: readonly string[]; readonly font: ResolvedFont; readonly theme: Theme },
+  measurer: TextMeasurer | undefined,
+): CSSProperties {
+  const { element, def, paragraphs } = input;
+  const size = { w: element.transform.w, h: element.transform.h };
+  const fit = element.textFit;
+  const found = textRegion(def, size, element.params);
+  const region = found.ok ? found.value : { x: 0, y: 0, ...size };
+  const box: CSSProperties = {
+    left: region.x,
+    top: region.y,
+    width: region.w,
+    height: region.h,
+    padding: fit?.padding ?? TEXT_FIT_DEFAULTS.padding,
+    overflow: fit?.overflow === 'clip' ? 'hidden' : 'visible',
+  };
+  if (!shrinksText(fit) || measurer === undefined || paragraphs.length === 0) return box;
+  const fitted = fitShapeText({ def, size, params: element.params, paragraphs, font: concreteFont(input.font, input.theme), fit }, measurer);
+  return fitted.ok ? { ...box, fontSize: fitted.value.size } : box;
+}
+
 function labelStyle(font: ResolvedFont, opacity: string): CSSProperties {
   return {
     fontFamily: font.family,
@@ -131,12 +159,20 @@ export function ShapeView(props: ElementViewProps): ReactNode {
     return resolveStyle(element.style, of, theme, ['records', id, 'style']);
   }, [element.style, element.defId, def, theme, id]);
   const image = useImage(store, style.fill.type === 'image' ? style.fill.assetId : undefined);
+  const measurer = useContext(MeasurerContext) ?? browserMeasurer();
+  const fonts = useFontGeneration();
   const { w, h } = element.transform;
   const outlined = useMemo(() => (def === undefined ? undefined : evaluateOutline(def, { w, h }, element.params)), [def, w, h, element.params]);
+  const paragraphs = useMemo(() => plainParagraphs(element.text), [element.text]);
+  // laid out once per change of what it depends on (M5.14 review F3); again when fonts load
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fonts is the re-measure signal
+  const text = useMemo(
+    () => (def === undefined ? {} : textBox({ element, def, paragraphs, font: style.font, theme }, measurer)),
+    [element, def, paragraphs, style.font, theme, measurer, fonts],
+  );
   if (outlined === undefined || !outlined.ok) return <PlaceholderView {...props} />;
   // an open outline is a stroke: it has no inside to fill (ADR-0016 item 2)
   const { fill, defs } = outlined.value.path.closed ? svgFill(style.fill, fillId, { w, h }, image) : { fill: 'none', defs: undefined };
-  const paragraphs = plainParagraphs(element.text);
   const stroke: CSSProperties = {
     stroke: style.stroke.color,
     strokeWidth: style.stroke.width,
@@ -157,7 +193,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
         ))}
       </svg>
       {paragraphs.length === 0 ? null : (
-        <div className="fx-label" style={labelStyle(style.font, style.opacity)}>
+        <div className="fx-label" style={{ ...labelStyle(style.font, style.opacity), ...text }}>
           {paragraphs.map((text, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: paragraphs have no identity; their position is their key
             <p key={i}>{text}</p>

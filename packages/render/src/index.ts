@@ -18,6 +18,7 @@ export { elementsInOrder, screensInOrder } from './screen-order.js';
 export { ScreenView, type ScreenViewProps, type ScreenViewSpec } from './screen-view.js';
 export { ShapeView } from './shape-view.js';
 export { type RenderedHtml, type RenderHtmlOptions, renderDocumentToHtml } from './ssr.js';
+export { type CanvasTextMeasurer, createCanvasMeasurer } from './text-measurer.js';
 export { useValue } from './use-value.js';
 
 /**

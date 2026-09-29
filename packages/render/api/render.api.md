@@ -21,6 +21,7 @@ import { RichTextDoc } from '@fluxion/schema';
 import { ScreenRecord } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
+import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { Vec2 } from '@fluxion/geometry';
 
@@ -29,6 +30,11 @@ export type AssetUrls = (assetId: RecordId) => string | undefined;
 
 // @public
 export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;
+
+// @public
+export type CanvasTextMeasurer = TextMeasurer & {
+    ready(): Promise<void>;
+};
 
 // @public
 export type ConnectorEnds = {
@@ -44,6 +50,9 @@ export function ConnectorView(props: ElementViewProps): ReactNode;
 
 // @public
 export const CONTENT_CSS: string;
+
+// @public
+export function createCanvasMeasurer(): CanvasTextMeasurer;
 
 // @public
 export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;
@@ -62,6 +71,7 @@ export type DocumentViewProps = {
     readonly theme?: Theme;
     readonly registries?: RenderRegistries;
     readonly assets?: AssetUrls;
+    readonly measurer?: TextMeasurer;
 };
 
 // @public
@@ -153,6 +163,7 @@ export type RenderHtmlOptions = {
     readonly theme?: Theme;
     readonly registries?: RenderRegistries;
     readonly assets?: AssetUrls;
+    readonly measurer?: TextMeasurer;
 };
 
 // @public
@@ -183,6 +194,7 @@ export type ScreenViewProps = {
     readonly editOverlay?: ReactNode;
     readonly registries?: RenderRegistries;
     readonly assets?: AssetUrls;
+    readonly measurer?: TextMeasurer;
     readonly children?: ReactNode;
 };
 

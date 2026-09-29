@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FixedTextMeasurer } from '../testing/fakes.js';
-import { fitText, TEXT_FIT_DEFAULTS } from './fit.js';
+import { fitText, shrinksText, TEXT_FIT_DEFAULTS } from './fit.js';
 import { wrapText } from './wrap.js';
 
 // every character 0.5 em: 5 px at 10 px; lines 1.2 em
@@ -17,6 +17,9 @@ describe('text by words (ADR-0018, FR-SHP-006)', () => {
     // spaces collapse; each paragraph starts a line; an empty paragraph is an empty line
     expect(wrapText(['  one   two ', '', 'three'], font, 1000, measurer).lines).toEqual(['one two', '', 'three']);
     expect(wrapText([], font, 100, measurer)).toEqual({ lines: [], width: 0, height: 0 });
+    // a no-break space keeps its words together, and stays what it is
+    expect(wrapText(['go 10 km now'], font, 30, measurer).lines).toEqual(['go', '10 km', 'now']);
+    expect(wrapText(['a\tb\nc'], font, 5, measurer).lines).toEqual(['a', 'b', 'c']);
     expect(wrapText(['x'], { ...font, size: 20 }, 100, measurer)).toEqual({ lines: ['x'], width: 10, height: 24 });
   });
 
@@ -38,6 +41,7 @@ describe('text by words (ADR-0018, FR-SHP-006)', () => {
     expect(shrunk.width).toBeLessThanOrEqual(84);
     const larger = fitText({ paragraphs: text, font: { ...big, size: shrunk.size + 0.05 }, region, fit: { mode: 'none' } }, measurer);
     expect(larger.height > 24 || larger.width > 84).toBe(true);
+    expect([shrinksText(undefined), shrinksText({}), shrinksText({ mode: 'grow' }), shrinksText({ mode: 'shrink' })]).toEqual([false, false, false, true]);
     // text exactly as wide as the inner box fits
     expect(fitText({ paragraphs: ['abcdefghij'], font, region: { w: 50, h: 20 }, fit: { mode: 'shrink', padding: 0 } }, measurer).size).toBe(10);
     // text that already fits keeps its size

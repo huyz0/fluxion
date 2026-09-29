@@ -18,8 +18,9 @@ export type WrappedText = {
 
 /** One paragraph's lines: words joined while they fit `maxWidth`. */
 function paragraphLines(paragraph: string, maxWidth: number, width: (text: string) => number): string[] {
+  // words break at ASCII whitespace only: a no-break space keeps its words together (M5.33 review F2)
   // tzap disable next-line Regex: split on one space or on a run of them, the empty words are dropped alike
-  const [first, ...rest] = paragraph.split(/\s+/).filter((w) => w !== '');
+  const [first, ...rest] = paragraph.split(/[ \t\n\r\f\v]+/).filter((w) => w !== '');
   if (first === undefined) return [''];
   const lines: string[] = [];
   let line = first;

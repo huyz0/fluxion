@@ -43,6 +43,9 @@ describe('shape text regions and fitting (ADR-0018, FR-SHP-006)', () => {
     // a flat box has no region height to scale by: it grows to the height the whole-box region needs
     const flat = fitShapeText({ def: plain, size: { w: 200, h: 0 }, paragraphs, font }, measurer);
     expect(flat.ok ? flat.value.height : -1).toBe(40);
+    // a flat box whose region is a share of it grows by that share (M5.33 review F1): 40 px of text in 0.75
+    const flatBubble = fitShapeText({ def: bubble, size: { w: 200, h: 0 }, paragraphs, font, fit: { mode: 'grow' } }, measurer);
+    expect(flatBubble.ok ? flatBubble.value.height : -1).toBeCloseTo(40 / 0.75, 9);
     // a region with no height cannot hold text however tall the box: the box keeps its height
     const slit = { ...plain, textRegions: [{ name: 's', x: 0, y: 0.5, w: 1, h: 0 }] };
     const kept = fitShapeText({ def: slit, size: { w: 200, h: 60 }, paragraphs, font, fit: { mode: 'grow' } }, measurer);

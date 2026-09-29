@@ -2,7 +2,7 @@
 // and export. The `.fx-screen` root carries the theme's CSS variables and the fit transform; its layers
 // are the background, the content (the elements, drawn by their registered views) and the editor's
 // overlay slot (edit only).
-import type { Store } from '@fluxion/core';
+import type { Store, TextMeasurer } from '@fluxion/core';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME, resolveBackground, styleKey, type Theme, toCssVars } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useInsertionEffect, useMemo } from 'react';
@@ -14,6 +14,7 @@ import { ElementList } from './elements.js';
 import { fitTransform, screenArea } from './fit.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
 import type { RenderRegistries } from './registries.js';
+import { MeasurerContext } from './text-measurer.js';
 import { useValue } from './use-value.js';
 
 /**
@@ -55,6 +56,8 @@ export type ScreenViewProps = {
   readonly registries?: RenderRegistries;
   /** The URLs images are drawn from, by asset id; keep it stable (default: none, images draw nothing). */
   readonly assets?: AssetUrls;
+  /** Measures text for `shrink` (default in a browser: the page's canvas measurer; none on a server). */
+  readonly measurer?: TextMeasurer;
   /** Extra content drawn above the elements. */
   readonly children?: ReactNode;
 };
@@ -101,16 +104,18 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   const origin = area.x !== 0 || area.y !== 0 ? { transform: `translate(${-area.x}px, ${-area.y}px)` } : undefined;
   return (
     <AssetsContext.Provider value={props.assets}>
-      <div className="fx-view" style={{ width: view.box.w, height: view.box.h }}>
-        <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
-          <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
-          <div className="fx-layer fx-content" style={origin}>
-            <ElementList store={store} screenId={screenId} registries={registries} theme={styling} />
-            {children}
-          </div>
-          {policy.editOverlay && editOverlay !== undefined ? <div className="fx-layer fx-overlay">{editOverlay}</div> : null}
-        </section>
-      </div>
+      <MeasurerContext.Provider value={props.measurer}>
+        <div className="fx-view" style={{ width: view.box.w, height: view.box.h }}>
+          <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
+            <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
+            <div className="fx-layer fx-content" style={origin}>
+              <ElementList store={store} screenId={screenId} registries={registries} theme={styling} />
+              {children}
+            </div>
+            {policy.editOverlay && editOverlay !== undefined ? <div className="fx-layer fx-overlay">{editOverlay}</div> : null}
+          </section>
+        </div>
+      </MeasurerContext.Provider>
     </AssetsContext.Provider>
   );
 }

@@ -27,6 +27,16 @@ export const TEXT_FIT_DEFAULTS: {
 };
 
 /**
+ * Whether `fit` shrinks its text to the region (so a view must measure it); `none` and `grow` draw the
+ * text at its styled size.
+ *
+ * @public
+ */
+export function shrinksText(fit: TextFit | undefined): boolean {
+  return (fit?.mode ?? TEXT_FIT_DEFAULTS.mode) === 'shrink';
+}
+
+/**
  * Text laid out in a region.
  *
  * @public
@@ -79,7 +89,7 @@ export function fitText(input: FitInput, measurer: TextMeasurer): FittedText {
   const full = at(input.font.size);
   const minSize = Math.min(input.fit?.minSize ?? TEXT_FIT_DEFAULTS.minSize, input.font.size);
   const fits = (t: FittedText) => t.height <= inner.h && t.width <= inner.w;
-  if ((input.fit?.mode ?? TEXT_FIT_DEFAULTS.mode) !== 'shrink' || fits(full)) return full;
+  if (!shrinksText(input.fit) || fits(full)) return full;
   // the largest fitting size between the minimum and the font's, by bisection
   let [lo, hi] = [minSize, input.font.size];
   // tzap disable next-line EqualityOperator: one halving more is as valid an answer; the step count is a precision choice

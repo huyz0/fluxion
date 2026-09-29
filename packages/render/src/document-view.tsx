@@ -1,6 +1,6 @@
 // Every screen of a document, in order (FR-SCR-001, FR-DOC-010; order in screen-order.ts). The static
 // render path (ssr.ts, M4.16) renders this view.
-import type { Store } from '@fluxion/core';
+import type { Store, TextMeasurer } from '@fluxion/core';
 import type { Theme } from '@fluxion/theme';
 import { type ReactNode, useMemo } from 'react';
 import type { AssetUrls } from './assets.js';
@@ -33,6 +33,8 @@ export type DocumentViewProps = {
   readonly registries?: RenderRegistries;
   /** The URLs images are drawn from, by asset id; keep it stable (default: none, images draw nothing). */
   readonly assets?: AssetUrls;
+  /** Measures text for `shrink` (default in a browser: the page's canvas measurer; none on a server). */
+  readonly measurer?: TextMeasurer;
 };
 
 /**
@@ -41,7 +43,7 @@ export type DocumentViewProps = {
  * @public
  */
 export function DocumentView(props: DocumentViewProps): ReactNode {
-  const { store, box, theme, registries, assets } = props;
+  const { store, box, theme, registries, assets, measurer } = props;
   const { showHidden } = modePolicy(props.mode);
   const ids = useValue(useMemo(() => store.query((view) => screensInOrder(view, showHidden)), [store, showHidden]));
   return (
@@ -56,6 +58,7 @@ export function DocumentView(props: DocumentViewProps): ReactNode {
           {...(theme ? { theme } : {})}
           {...(registries ? { registries } : {})}
           {...(assets ? { assets } : {})}
+          {...(measurer ? { measurer } : {})}
         />
       ))}
     </div>

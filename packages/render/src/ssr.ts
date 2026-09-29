@@ -2,7 +2,7 @@
 // visible screen is the live <ScreenView> in `export` mode rendered by react-dom/server's
 // renderToStaticMarkup, so nothing is drawn twice; the content CSS is inlined and each screen
 // carries its theme variables, so the page needs no script and no network.
-import { createCore } from '@fluxion/core';
+import { createCore, type TextMeasurer } from '@fluxion/core';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { LIGHT_THEME, type Theme } from '@fluxion/theme';
 import { createElement } from 'react';
@@ -30,6 +30,8 @@ export type RenderHtmlOptions = {
   readonly registries?: RenderRegistries;
   /** The URLs images are drawn from, by asset id; keep it stable (default: none, images draw nothing). */
   readonly assets?: AssetUrls;
+  /** Measures text for `shrink` (default in a browser: the page's canvas measurer; none on a server). */
+  readonly measurer?: TextMeasurer;
 };
 
 /**
@@ -81,6 +83,7 @@ export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOpti
       theme,
       registries,
       ...(options.assets ? { assets: options.assets } : {}),
+      ...(options.measurer ? { measurer: options.measurer } : {}),
     });
     return renderToStaticMarkup(element, { identifierPrefix: `s${index}-` });
   });

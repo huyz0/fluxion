@@ -259,6 +259,7 @@ export type FontSpec = {
     readonly size: number;
     readonly weight?: number;
     readonly lineHeight?: number;
+    readonly style?: string;
 };
 
 // @public
@@ -448,6 +449,9 @@ export type ShapeTextInput = {
     readonly font: FontSpec;
     readonly fit?: TextFit | undefined;
 };
+
+// @public
+export function shrinksText(fit: TextFit | undefined): boolean;
 
 // @public
 export interface Store {
