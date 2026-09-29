@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-09-29T11:49:21.127Z",
-  "commit": "aa1406a64b3aa63a6ebfc7947c679528bb1734c3",
-  "lockfile": "e718268fb45f271ad04c64b552c1af823cb5e2b135dd433d9b8ca478119d849a",
+  "recordedAt": "2026-09-29T12:27:59.760Z",
+  "commit": "b377804866ffa08d771385f41799ee36d049546c",
+  "lockfile": "3f5466fd78523b975f2187e40a32849ad8bc38e5a33dd69c6229663a2f92a3d4",
   "node": "26.7.0",
   "platform": "win32-x64",
-  "quickMs": 10670,
-  "stagedMs": 68418,
-  "coldSetupMs": 125314,
+  "quickMs": 10024,
+  "stagedMs": 58686,
+  "coldSetupMs": 106721,
   "coldSetupSource": "local"
 }

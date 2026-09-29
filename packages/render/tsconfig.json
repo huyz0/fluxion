@@ -25,6 +25,9 @@
     },
     {
       "path": "../../packages/geometry"
+    },
+    {
+      "path": "../../packages/routing"
     }
   ]
 }

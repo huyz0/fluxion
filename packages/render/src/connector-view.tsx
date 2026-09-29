@@ -1,11 +1,13 @@
-// The connector view (FR-CON-001): a straight line between the connector's ends (connector-ends.ts),
-// stroked with the resolved style, with end markers from a marker table (R0: `arrow`; the markers
-// registry arrives with M5). The wrapper has no box, so the SVG draws in screen coordinates; the ends
-// are a store query, so moving a bound shape redraws the line.
+// The connector view (FR-CON-001, FR-RTE-001): the connector's route (routing's routeConnector: its ends
+// through their bindings and anchors, the path from the router registered for its type), stroked with
+// the resolved style, with end markers from a marker table (R0: `arrow`; the markers registry arrives
+// with M5.20). The wrapper has no box, so the SVG draws in screen coordinates; the route is a store
+// query, so moving a bound shape redraws it.
+import type { PathCommand, Vec2 } from '@fluxion/geometry';
+import { routeConnector } from '@fluxion/routing';
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
-import { connectorEnds } from './connector-ends.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
 import { useValue } from './use-value.js';
@@ -14,6 +16,10 @@ import { useValue } from './use-value.js';
 const ROUTE_MARGIN = 24;
 
 const round = (v: number) => Math.round(v * 1000) / 1000 || 0;
+
+/** Every point a path's commands name (ends and control points): its drawing lies within their box. */
+const pointsOf = (commands: readonly PathCommand[]): Vec2[] =>
+  commands.flatMap((c) => [...('control1' in c ? [c.control1, c.control2] : []), ...('control' in c ? [c.control] : []), ...('to' in c ? [c.to] : [])]);
 
 /** Marker shapes in a 10 × 10 box whose tip is at (10, 5); unlisted markers draw nothing yet. */
 const MARKER_PATHS: { readonly [marker: string]: string } = { arrow: 'M0 0 L10 5 L0 10 Z' };
@@ -36,13 +42,13 @@ function markerDef(marker: Marker | undefined, id: string, color: string): React
  * @public
  */
 export function ConnectorView(props: ElementViewProps): ReactNode {
-  const { store, theme } = props;
+  const { store, theme, registries } = props;
   const element = props.element as ConnectorElement;
   const { id } = element;
   const base = `fx-marker-${useId().replace(/[^\w-]/g, '')}`;
-  const ends = useValue(useMemo(() => store.query((view) => connectorEnds(view, id)), [store, id]));
+  const routed = useValue(useMemo(() => store.query((view) => routeConnector(view, registries, id)), [store, registries, id]));
   const { style } = useMemo(() => resolveStyle(element.style, 'connector', theme, ['records', id, 'style']), [element.style, theme, id]);
-  if (ends === undefined) return null;
+  if (routed === undefined) return null;
   const start = markerDef(element.markers?.start, `${base}-start`, style.stroke.color);
   const end = markerDef(element.markers?.end, `${base}-end`, style.stroke.color);
   const line: CSSProperties = {
@@ -54,10 +60,13 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   };
   // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
-  const x = Math.min(ends.source.x, ends.target.x) - ROUTE_MARGIN;
-  const y = Math.min(ends.source.y, ends.target.y) - ROUTE_MARGIN;
-  const w = Math.abs(ends.source.x - ends.target.x) + 2 * ROUTE_MARGIN;
-  const h = Math.abs(ends.source.y - ends.target.y) + 2 * ROUTE_MARGIN;
+  const points = pointsOf(routed.commands);
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const x = Math.min(...xs) - ROUTE_MARGIN;
+  const y = Math.min(...ys) - ROUTE_MARGIN;
+  const w = Math.max(...xs) - Math.min(...xs) + 2 * ROUTE_MARGIN;
+  const h = Math.max(...ys) - Math.min(...ys) + 2 * ROUTE_MARGIN;
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
     <svg className="fx-connector" aria-hidden="true" viewBox={`${round(x)} ${round(y)} ${round(w)} ${round(h)}`} style={box}>
@@ -69,10 +78,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
       )}
       <path
         className="fx-route"
-        d={pathData([
-          { kind: 'M', to: ends.source },
-          { kind: 'L', to: ends.target },
-        ])}
+        d={pathData(routed.commands)}
         style={line}
         markerStart={start === null ? undefined : `url(#${base}-start)`}
         markerEnd={end === null ? undefined : `url(#${base}-end)`}

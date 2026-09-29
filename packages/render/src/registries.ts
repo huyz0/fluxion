@@ -1,7 +1,8 @@
-// Render-level registries (03-core-engine §4, 04 §2.2, FR-EXT-001): element views by kind, and the
-// host's core `shapeDefs` registry (ADR-0016, ADR-0017), looked up here and never switched on;
-// built-ins register through the same API as plugins.
+// Render-level registries (03-core-engine §4, 04 §2.2, FR-EXT-001): element views by kind, the
+// host's core `shapeDefs` registry (ADR-0016, ADR-0017) and its `routers` (FR-RTE-001), looked up here
+// and never switched on; built-ins register through the same API as plugins.
 import { createRegistry, type Registry, type ShapeDef, type Store } from '@fluxion/core';
+import type { Router } from '@fluxion/routing';
 import type { ElementRecord } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
 import type { ComponentType, ReactNode } from 'react';
@@ -50,14 +51,19 @@ export type RenderRegistries = {
   readonly elementViews: Registry<string, ElementView>;
   /** Shape definitions by id (`basic:rect`, …): the host's core registry, where packs register. */
   readonly shapeDefs: Registry<string, ShapeDef>;
+  /** Routers by route type (`straight`, `<plugin>:<name>`, …): a connector view routes with its type's. */
+  readonly routers: Registry<string, Router>;
 };
 
 /**
- * Render registries with no element views, reading shape definitions from `shapeDefs` (a host's core
- * registry, holding its packs; default: a fresh empty one).
+ * Render registries with no element views, reading shape definitions from `shapeDefs` and routers
+ * from `routers` (a host's core registries, holding its packs; default: fresh empty ones).
  *
  * @public
  */
-export function createRenderRegistries(shapeDefs: Registry<string, ShapeDef> = createRegistry<string, ShapeDef>('shapeDefs')): RenderRegistries {
-  return { elementViews: createRegistry<string, ElementView>('elementViews'), shapeDefs };
+export function createRenderRegistries(
+  shapeDefs: Registry<string, ShapeDef> = createRegistry<string, ShapeDef>('shapeDefs'),
+  routers: Registry<string, Router> = createRegistry<string, Router>('routers'),
+): RenderRegistries {
+  return { elementViews: createRegistry<string, ElementView>('elementViews'), shapeDefs, routers };
 }

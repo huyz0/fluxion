@@ -3,7 +3,6 @@
 export type { AssetUrls } from './assets.js';
 export { paintCss } from './background.js';
 export { builtinRegistries, registerBuiltinViews } from './builtins.js';
-export { type ConnectorEnds, connectorEnds } from './connector-ends.js';
 export { ConnectorView } from './connector-view.js';
 export { CONTENT_CSS } from './content-css.js';
 export { DocumentView, type DocumentViewProps } from './document-view.js';

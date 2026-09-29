@@ -18,32 +18,23 @@ import { Rect } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { ResolvedPaint } from '@fluxion/theme';
 import { RichTextDoc } from '@fluxion/schema';
+import { Router } from '@fluxion/routing';
 import { ScreenRecord } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
-import { Vec2 } from '@fluxion/geometry';
 
 // @public
 export type AssetUrls = (assetId: RecordId) => string | undefined;
 
 // @public
-export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;
+export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>): RenderRegistries;
 
 // @public
 export type CanvasTextMeasurer = TextMeasurer & {
     ready(): Promise<void>;
 };
-
-// @public
-export type ConnectorEnds = {
-    readonly source: Vec2;
-    readonly target: Vec2;
-};
-
-// @public
-export function connectorEnds(view: ReadView, connectorId: RecordId): ConnectorEnds | undefined;
 
 // @public
 export function ConnectorView(props: ElementViewProps): ReactNode;
@@ -55,7 +46,7 @@ export const CONTENT_CSS: string;
 export function createCanvasMeasurer(): CanvasTextMeasurer;
 
 // @public
-export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;
+export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>): RenderRegistries;
 
 // @public
 export function DocumentView(props: DocumentViewProps): ReactNode;
@@ -176,6 +167,7 @@ export type RenderMode = "edit" | "present" | "export" | "thumbnail";
 export type RenderRegistries = {
     readonly elementViews: Registry<string, ElementView>;
     readonly shapeDefs: Registry<string, ShapeDef>;
+    readonly routers: Registry<string, Router>;
 };
 
 // @public

@@ -976,3 +976,13 @@ Mutation score is 100%.
 Review r1 minors fixed:
 - F1: a router's path must start with an M at the source point exactly; the tests now cover each coordinate being off.
 - F2: the test rounding helper keeps NaN as NaN.
+
+## 2026-09-29 M5.35 (claude)
+
+render now depends on routing (overview map, workspaces.json and tsconfig regenerated).
+- `RenderRegistries.routers`: `createRenderRegistries` and `builtinRegistries` take an optional second registry, the host's routers; `builtinRegistries` registers the built-in routers.
+- The connector view draws `routeConnector`'s commands and sizes its SVG from every command point, control points included.
+- render's `connectorEnds` is retired. Its two node tests are removed; routing's connector-route tests cover the same cases.
+- The browser test registers `test:zigzag` and `test:wave` (Q and C) and checks the path d and the SVG box.
+
+tzap on render runs only the node project, so the survivors in the connector view's box and memo are covered by the browser tests. The CLI keeps render's own routers until packs can register routers.

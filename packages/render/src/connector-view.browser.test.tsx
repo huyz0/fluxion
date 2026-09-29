@@ -1,4 +1,5 @@
 import { createCore } from '@fluxion/core';
+import type { Router } from '@fluxion/routing';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { act } from 'react';
@@ -105,5 +106,43 @@ describe('connector view (FR-CON-001)', () => {
     });
     near(ends(route()).source, { x: 25, y: 25 });
     near(ends(route()).target, { x: 300, y: 300 });
+  });
+});
+
+describe('routers (FR-RTE-001)', () => {
+  it('FR-RTE-001: a registered test:zigzag router routes connectors of that type', async () => {
+    // a zigzag through the midpoint, 40 px up: no built-in draws it
+    const zigzag: Router = {
+      route: ({ source, target }) => [
+        { kind: 'M', to: source.point },
+        { kind: 'L', to: { x: (source.point.x + target.point.x) / 2, y: (source.point.y + target.point.y) / 2 - 40 } },
+        { kind: 'L', to: target.point },
+      ],
+    };
+    // a quadratic bump up then a cubic dip down: its control points reach y 100 and y 280
+    const wave: Router = {
+      route: ({ source, target }) => [
+        { kind: 'M', to: source.point },
+        { kind: 'Q', control: { x: 150, y: 100 }, to: { x: 200, y: 200 } },
+        { kind: 'C', control1: { x: 230, y: 280 }, control2: { x: 270, y: 280 }, to: target.point },
+      ],
+    };
+    const registered = [registries.routers.register('test:zigzag', zigzag, 'test'), registries.routers.register('test:wave', wave, 'test')];
+    try {
+      const zig = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:zigzag' }));
+      expect(zig.route()?.getAttribute('d')).toBe('M100 200 L200 160 L300 200');
+      // the SVG box holds the whole route plus room for the stroke and markers (24 px): peak to baseline
+      const box = (svg: SVGSVGElement | null | undefined) => [svg?.style.left, svg?.style.top, svg?.style.width, svg?.style.height];
+      expect(box(zig.route()?.ownerSVGElement)).toEqual(['76px', '136px', '248px', '88px']);
+      // and every control point of a curved route
+      const curved = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:wave' }));
+      expect(curved.route()?.getAttribute('d')).toBe('M100 200 Q150 100 200 200 C230 280 270 280 300 200');
+      expect(box(curved.route()?.ownerSVGElement)).toEqual(['76px', '76px', '248px', '228px']);
+      // an unregistered type draws straight
+      const plain = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:unknown' }));
+      expect(plain.route()?.getAttribute('d')).toBe('M100 200 L300 200');
+    } finally {
+      for (const r of registered) if (r.ok) r.value.dispose();
+    }
   });
 });

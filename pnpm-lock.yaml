@@ -367,6 +367,9 @@ importers:
       '@fluxion/geometry':
         specifier: workspace:*
         version: link:../geometry
+      '@fluxion/routing':
+        specifier: workspace:*
+        version: link:../routing
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
