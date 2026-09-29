@@ -71,7 +71,8 @@ function offOutline(t: Transform, def: ShapeDef, p: Vec2): number {
 }
 
 describe('attachment invariant (FR-CON-012)', () => {
-  it('FR-CON-012: after random transforms endpoints lie on anchors', () => {
+  // 1000 runs, each building a document and a store: seconds on a loaded CI runner or under coverage (M5.37)
+  it('FR-CON-012: after random transforms endpoints lie on anchors', { timeout: 60_000 }, () => {
     const ctx = context();
     let [runs, edited] = [0, 0];
     fc.assert(

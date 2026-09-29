@@ -1056,3 +1056,7 @@ Pack markers, recorded in an ADR-0017 amendment:
 
 The gate's pack-marker title runs in the CLI, the host that bundles the pack; packs import only the SDK. Mutation score is 100% for core, sdk and basic.
 Review r1 minors fixed. F1: open markers use bevel joins and the open arrow's vertex sits at 9.5, so its stroke ends at the tip. F2: marker paths are trimmed, subpath errors are named, and all subpaths share the template segment cap.
+
+## 2026-09-30 M5.37 (claude)
+
+CI run 36583393628 was red. The 1000-run attachment property took more than Vitest's 5 s default on the ubuntu runner, and in the coverage harness sandbox. It gets `{ timeout: 60_000 }`. The run count is unchanged, and the gate leg still reads 1000.
