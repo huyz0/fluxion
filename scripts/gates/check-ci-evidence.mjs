@@ -29,10 +29,11 @@ const after = opt('after') ?? 'M1.21';
 const milestone = opt('milestone');
 const OSES = ['ubuntu-latest', 'windows-latest', 'macos-latest'];
 // workflow -> the jobs that must pass, each as its accepted names. ci's verify matrix is the one
-// three-OS ladder; gates is ubuntu-only since M2.22 (`gates`), earlier runs named it `gates (ubuntu-latest)`.
+// three-OS ladder, and its visual job the pinned-image screenshot check; gates is ubuntu-only since M2.22 (`gates`), earlier runs named it `gates (ubuntu-latest)`.
 const REQUIRED = {
   gates: [['gates', 'gates (ubuntu-latest)']],
-  ci: OSES.map((os) => [`verify (${os})`]),
+  // the visual job compares screenshots with their baselines: pixel matches are evidence too (M5.3)
+  ci: [...OSES.map((os) => [`verify (${os})`]), ['visual']],
 };
 
 const fail = (msg) => {

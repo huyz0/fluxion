@@ -50,6 +50,7 @@ export const MANIFEST_HARNESS = [
   'ci-workflow',
   'layering',
   'licenses',
+  'milestone-checks',
   'packages',
   'test-titles',
   'turbo',

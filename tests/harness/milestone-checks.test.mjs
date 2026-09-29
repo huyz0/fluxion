@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { describe, it } from 'node:test';
 import {
+  changesetGaps,
   checkBacklogDone,
   checkDistArtifacts,
   checkDryRuns,
@@ -359,5 +360,53 @@ describe('passingTestTitles (M1.23 review: named cases are leaf tests)', () => {
   it('returns leaf titles without their durations', () => {
     const spec = '▶ suite\n  ✔ fails on skipIf without a trailer (12.5ms)\n  ✖ broken (1ms)\n✔ suite (20ms)\nℹ pass 1\n';
     assert.deepEqual(passingTestTitles(spec), ['fails on skipIf without a trailer']);
+  });
+});
+
+describe('changesetGaps (M5.3, M4 final F1)', () => {
+  const workspaces = [
+    { dir: 'packages/core', name: '@fluxion/core', private: false },
+    { dir: 'packages/routing', name: '@fluxion/routing', private: false },
+    { dir: 'apps/studio', name: '@fluxion/studio', private: true },
+  ];
+  it('a package changed in the range without a changeset fails', () => {
+    const changed = ['packages/core/src/a.ts', 'packages/routing/package.json', 'apps/studio/src/App.tsx', 'docs/x.md'];
+    assert.deepEqual(changesetGaps(changed, ["---\n'@fluxion/core': minor\n---\n"], workspaces), ['@fluxion/routing']);
+    // named in double quotes counts too; private workspaces and non-shipped files need none
+    assert.deepEqual(changesetGaps(changed, ["---\n'@fluxion/core': minor\n---\n", '---\n"@fluxion/routing": patch\n---\n'], workspaces), []);
+    assert.deepEqual(changesetGaps(['packages/routing/README.md', 'packages/core/api/core.api.md'], [], workspaces), []);
+    // a name in the prose is no release: only frontmatter lines count (review F2)
+    assert.deepEqual(changesetGaps(['packages/core/src/a.ts'], ["---\n'@fluxion/cli': minor\n---\n\nNow uses '@fluxion/core' outlines.\n"], workspaces), [
+      '@fluxion/core',
+    ]);
+  });
+
+  it('an older changeset does not cover a change of the range; one the range adds does (review F1)', () => {
+    const sb = sandbox(['scripts', 'tools/gen'], { git: true });
+    try {
+      const commit = (path, text) => {
+        sb.write(path, text);
+        sb.git('add', path);
+        sb.git('commit', '-q', '--no-verify', '-m', `M9.1: chore(x): ${path}`);
+        return sb.git('rev-parse', 'HEAD').stdout.trim();
+      };
+      const base = commit('.changeset/old.md', "---\n'@fluxion/core': minor\n---\n\nOld.\n");
+      commit('packages/core/src/a.ts', 'export const a = 1;\n');
+      assert.match(inRepo(sb, `c.changesetsCoverRange('${base}')`), /no changeset for @fluxion\/core/);
+      commit('.changeset/new.md', "---\n'@fluxion/core': minor\n---\n\nNew.\n");
+      assert.equal(inRepo(sb, `c.changesetsCoverRange('${base}')`), true);
+      // a file moved from core to routing changes both workspaces (review r2 F1)
+      const moved = sb.git('rev-parse', 'HEAD').stdout.trim();
+      sb.write('packages/routing/src/a.ts', 'export const a = 1;\n');
+      sb.git('rm', '-q', 'packages/core/src/a.ts');
+      sb.git('add', 'packages/routing/src/a.ts');
+      sb.git('commit', '-q', '--no-verify', '-m', 'M9.2: chore(x): move');
+      // git sees the identical file as a rename
+      assert.match(sb.git('show', '--name-status', '--format=', 'HEAD').stdout, /^R100/m);
+      commit('.changeset/move.md', "---\n'@fluxion/routing': minor\n---\n\nMoved.\n");
+      assert.match(inRepo(sb, `c.changesetsCoverRange('${moved}')`), /no changeset for @fluxion\/core/);
+    } finally {
+      sb.cleanup();
+    }
   });
 });

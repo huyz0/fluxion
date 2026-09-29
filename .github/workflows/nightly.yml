@@ -87,7 +87,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       # NFR-PORT-006: the visual suite on every OS, Chromium only
-      - run: pnpm exec playwright test --grep @visual --project=chromium --pass-with-no-tests
+      - run: pnpm exec playwright test --grep @visual --project=chromium
 
   report:
     needs: [mutation, properties, perf, eval-live, visual-xos]

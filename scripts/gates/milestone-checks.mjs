@@ -413,3 +413,43 @@ function screenLacks(screen) {
     .filter(([has]) => !has)
     .map(([, what]) => what);
 }
+
+/**
+ * The published workspaces whose shipped files (`src/`, `package.json`) `changed` touches and that no
+ * changeset text names (M4 final F1): pure, over repo-relative paths, the changeset file contents
+ * and the workspaces as `{ dir, name, private }`.
+ */
+export function changesetGaps(changed, changesetTexts, workspaces) {
+  // only the release lines of each changeset's frontmatter count, not a name in its prose (review F2)
+  const released = new Set(
+    changesetTexts.flatMap((t) => {
+      const front = /^---\r?\n([\s\S]*?)\r?\n---/.exec(t)?.[1] ?? '';
+      return [...front.matchAll(/^\s*['"]([^'"]+)['"]\s*:/gm)].map((m) => m[1]);
+    }),
+  );
+  const named = (name) => released.has(name);
+  const touched = (dir) => changed.some((p) => p.startsWith(`${dir}/src/`) || p === `${dir}/package.json`);
+  return workspaces.filter((w) => !w.private && touched(w.dir) && !named(w.name)).map((w) => w.name);
+}
+
+/**
+ * Every published workspace the range `base..HEAD` changed has a changeset naming it (M4 final F1).
+ * Only changesets the range added or changed count, read as committed at HEAD: an older, not yet
+ * released changeset covers the milestone that wrote it, not this one (M5.3 review F1).
+ */
+export function changesetsCoverRange(base) {
+  // --no-renames: a file moved between workspaces changes both of them (review r2 F1)
+  const diff = git(['diff', '--name-only', '--no-renames', base, 'HEAD']);
+  if (diff.status !== 0) return `git diff ${base}..HEAD failed: ${diff.stderr.trim()}`;
+  const sets = git(['diff', '--name-only', '--no-renames', '--diff-filter=AM', base, 'HEAD', '--', '.changeset']);
+  const texts = sets.stdout
+    .split(/\r?\n/)
+    .filter((f) => f.endsWith('.md') && !f.endsWith('/README.md'))
+    .map((f) => git(['show', `HEAD:${f}`]).stdout);
+  const workspaces = JSON.parse(readFileSync(repoPath('tools/gen/workspaces.json'), 'utf8')).workspaces.map((w) => {
+    const pkg = join(repoPath(w.dir), 'package.json');
+    return { dir: w.dir, name: w.name, private: existsSync(pkg) && JSON.parse(readFileSync(pkg, 'utf8')).private === true };
+  });
+  const gaps = changesetGaps(diff.stdout.split(/\r?\n/).filter(Boolean), texts, workspaces);
+  return gaps.length === 0 || `no changeset for ${gaps.join(', ')} (changed since ${base.slice(0, 8)})`;
+}
