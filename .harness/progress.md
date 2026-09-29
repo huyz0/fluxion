@@ -864,3 +864,7 @@ changesets (minor): theme, render, cli, core, schema
 
 ## 2026-09-29 M4.34 (claude)
 CI verify (windows-latest) has failed since 70cec10 (M4.20, cli → render): api.test's fullCopy runs tsc -b in a sandbox under os.tmpdir(), which on the runner is C:\Users\RUNNER~1\…; tsc printed long-name render sources relative to the short-name cwd and reported TS6142 (.tsx without --jsx) from the cli project, i.e. render's sources were not matched to the referenced render project; helpers.sandbox now creates sandboxes under realpathSync.native(tmpdir()) (the long form); not reproducible locally (no short names here), checked by the CI run after the push. macOS verify timed out once (core hooks property, 147 ms locally): watched, not changed
+
+## 2026-09-29 M4.24 (claude)
+docs/milestones/R0-exit.md: the five common exit criteria (01-scope §2) as seven checked items with evidence: check-trace --increment R0 ("every Must of R0 covered"), CI run 36501640817 at 343aa78 green on every job and OS (the M4.34 windows fix confirmed), the first visual baseline (M4.21), docs (CLI quickstart, API reference, READMEs, AGENTS.md, 04 §2.2), changesets, the demo rendered in CI, and the format note (no container in R0; schemaVersion 1.0 with migrations and round-trip tests; no record schema change since M2)
+M4.23 review F1: the quickstart's sample shows the summary line and the hint in parentheses, as the CLI prints them

@@ -18,9 +18,14 @@ node packages/cli/dist/bin.js --help
 node packages/cli/dist/bin.js validate examples/r0-static.flux.json
 ```
 
-A valid document exits with code 0. An invalid one exits with 1 and lists every diagnostic with a
-JSON pointer into the document, for example
-`error FLX_REF_MISSING /records/DhGD9zA_E_hMrDx6/screenId: no record "NoSuchScreen0000"`.
+A valid document exits with code 0. An invalid one exits with 1 and lists every diagnostic on
+stderr: severity, code, a JSON pointer into the document and the message, then a hint in
+parentheses when there is one. For `fixtures/docs/invalid-ref-missing.flux.json`:
+
+```text
+fixtures/docs/invalid-ref-missing.flux.json: 1 error
+error FLX_REF_MISSING /records/DhGD9zA_E_hMrDx6/screenId: no record "NoSuchScreen0000" (existing screen ids: rX_C6DIMA8co-OdW)
+```
 
 ## Render to HTML
 
