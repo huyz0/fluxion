@@ -39,12 +39,25 @@ const PAGE_CSS =
 const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /**
- * `file` as a static HTML page: one `.fx-screen` per visible screen (or per requested screen), the
- * content CSS inlined in `<head>`, the theme's variables on each screen, and no script.
+ * What {@link renderDocumentToHtml} rendered.
  *
  * @public
  */
-export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOptions = {}): string {
+export type RenderedHtml = {
+  /** The page. */
+  readonly html: string;
+  /** The ids of the screens on the page, in page order (M4 final F2: callers read them, not the markup). */
+  readonly screens: readonly RecordId[];
+};
+
+/**
+ * `file` as a static HTML page: one `.fx-screen` per visible screen (or per requested screen), the
+ * content CSS inlined in `<head>`, the theme's variables on each screen, and no script; with the ids
+ * of the screens it drew.
+ *
+ * @public
+ */
+export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOptions = {}): RenderedHtml {
   const { store } = createCore(file);
   const theme = options.theme ?? LIGHT_THEME;
   const registries = options.registries ?? builtinRegistries();
@@ -61,7 +74,7 @@ export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOpti
     return renderToStaticMarkup(element, { identifierPrefix: `s${index}-` });
   });
   const title = Object.values(file.records).find((r) => r.type === 'document') as { readonly title?: string } | undefined;
-  return [
+  const html = [
     '<!doctype html>',
     '<html lang="en">',
     '<head>',
@@ -77,4 +90,5 @@ export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOpti
     '</html>',
     '',
   ].join('\n');
+  return { html, screens: ids };
 }

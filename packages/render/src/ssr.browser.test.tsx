@@ -63,7 +63,7 @@ describe('SSR parity (FR-SCR-001, ADR-0015)', () => {
       const { store } = createCore(file);
       for (const id of store.query((view) => screensInOrder(view, modePolicy('export').showHidden))()) {
         const parsed = document.createElement('div');
-        parsed.innerHTML = /<main class="fx-document">([\s\S]*)<\/main>/.exec(renderDocumentToHtml(file, { screens: [id] }))?.[1] ?? '';
+        parsed.innerHTML = /<main class="fx-document">([\s\S]*)<\/main>/.exec(renderDocumentToHtml(file, { screens: [id] }).html)?.[1] ?? '';
         const area = screenArea((store.get(id) ?? {}) as Parameters<typeof screenArea>[0]);
         await act(async () => root.render(<ScreenView store={store} screenId={id} mode="export" view={{ kind: 'fit', box: { w: area.w, h: area.h } }} />));
         const [server, client] = [parsed.querySelector('.fx-screen'), host.querySelector('.fx-screen')];

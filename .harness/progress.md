@@ -891,3 +891,7 @@ tests: harness "a package changed in the range without a changeset fails", "evid
 ladder-scope: milestone-checks joins MANIFEST_HARNESS (its changesetGaps case names package.json paths; the manifest-reader pin)
 review F1-F3: changesetsCoverRange counts only changesets the range added or modified (git diff --diff-filter=AM, read at HEAD: M4's unreleased changesets cover M4, not M5; git-sandbox case); changesetGaps reads only frontmatter release lines (a name in prose is no release); nightly visual-xos drops --pass-with-no-tests too
 review r2 F1: both git diffs run with --no-renames (a file moved between workspaces changes both; the sandbox case fails without the flag)
+
+## 2026-09-29 M5.4 (claude)
+render: renderDocumentToHtml returns RenderedHtml { html, screens } (the ids it drew, page order; exported type); cli render counts result.screens from them instead of matching `<section class="fx-screen"` in the markup; render README and 04 §2.2 show the new shape; callers and tests read `.html`
+tests: "FR-CLI-001: renderDocumentToHtml reports the ids of the screens it rendered" (visible screens in order equal to the page's data-screen-id list, a filter, a requested hidden screen draws nothing); render 40 node, SSR parity T1, cli 21 e2e pass

@@ -28,26 +28,37 @@ function threeScreens() {
 describe('static HTML (FR-CLI-001, FR-THM-001, ADR-0015)', () => {
   it('FR-CLI-001: static HTML has no script and one .fx-screen per visible screen', () => {
     const { file, ids } = threeScreens();
-    const html = renderDocumentToHtml(file);
+    const html = renderDocumentToHtml(file).html;
     expect(html.startsWith('<!doctype html>\n<html lang="en">')).toBe(true);
     expect(html).not.toMatch(/<script|\son[a-z]+=|javascript:/i);
     const screens = [...html.matchAll(/<section class="fx-screen" data-screen-id="([^"]+)"/g)].map((m) => m[1]);
     // the hidden screen is skipped, the others keep document order
     expect(screens).toEqual([ids[0], ids[2]]);
     // a screen filter keeps only the requested screens
-    expect([...renderDocumentToHtml(file, { screens: [ids[2] as RecordId] }).matchAll(/class="fx-screen"/g)]).toHaveLength(1);
+    expect([...renderDocumentToHtml(file, { screens: [ids[2] as RecordId] }).html.matchAll(/class="fx-screen"/g)]).toHaveLength(1);
     // the title is the document's, escaped
     expect(html).toContain('<title>Deck &#60;1&#62; &#38; &#34;two&#34;</title>');
     // the same input gives the same bytes
-    expect(renderDocumentToHtml(file)).toBe(html);
+    expect(renderDocumentToHtml(file).html).toBe(html);
     // the fixture's shapes and connector are drawn
-    const fixtureHtml = renderDocumentToHtml(fixture('two-rects-line'));
+    const fixtureHtml = renderDocumentToHtml(fixture('two-rects-line')).html;
     expect([...fixtureHtml.matchAll(/data-kind="shape"/g)]).toHaveLength(2);
     expect(fixtureHtml).toMatch(/data-kind="connector"[^>]*>(?:(?!<\/div>).)*class="fx-route"/s);
   });
 
+  it('FR-CLI-001: renderDocumentToHtml reports the ids of the screens it rendered', () => {
+    const { file, ids } = threeScreens();
+    const all = renderDocumentToHtml(file);
+    // the visible screens in page order (the hidden one is not drawn), equal to what the page holds
+    expect(all.screens).toEqual([ids[0], ids[2]]);
+    expect([...all.html.matchAll(/data-screen-id="([^"]+)"/g)].map((m) => m[1])).toEqual(all.screens);
+    expect(renderDocumentToHtml(file, { screens: [ids[2] as RecordId] }).screens).toEqual([ids[2]]);
+    // asking for the hidden screen draws nothing
+    expect(renderDocumentToHtml(file, { screens: [ids[1] as RecordId] }).screens).toEqual([]);
+  });
+
   it('FR-THM-001: the static HTML inlines the content CSS and defines every --fx variable it uses', () => {
-    const html = renderDocumentToHtml(fixture('two-rects-line'));
+    const html = renderDocumentToHtml(fixture('two-rects-line')).html;
     expect(html).toContain(`<style data-fx-content>${CONTENT_CSS}</style>`);
     const used = new Set([...html.matchAll(/var\((--fx-[\w-]+)/g)].map((m) => m[1]));
     const defined = new Set([...html.matchAll(/(--fx-[\w-]+):/g)].map((m) => m[1]));
@@ -72,7 +83,7 @@ describe('static HTML (FR-CLI-001, FR-THM-001, ADR-0015)', () => {
       };
       b.connect(b.rect(s, { x: 0, y: 0, style: { fill } }), b.rect(s, { x: 400, y: 0 }));
     }
-    const html = renderDocumentToHtml(b.build());
+    const html = renderDocumentToHtml(b.build()).html;
     const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
     expect(ids.length).toBe(4);
     expect(new Set(ids).size).toBe(ids.length);

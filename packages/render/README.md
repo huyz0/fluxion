@@ -15,7 +15,7 @@ const { store } = createCore(file);
 <ScreenView store={store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 960, h: 540 } }} />;
 
 // on a server or in the CLI: the whole document as one static page, no script
-const html = renderDocumentToHtml(file);
+const { html, screens } = renderDocumentToHtml(file); // screens: the ids it drew
 ```
 
 `react` and `react-dom` are peer dependencies (one React per host). Element views are looked up in

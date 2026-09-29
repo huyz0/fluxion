@@ -76,7 +76,7 @@ function createRenderRegistries(): RenderRegistries;       // empty
 function registerBuiltinViews(r: RenderRegistries): void;  // shape, connector, basic:rect (source `core`)
 function builtinRegistries(): RenderRegistries;
 
-function renderDocumentToHtml(file: DocumentFile, options?: { screens?; theme?; registries? }): string;  // ADR-0015
+function renderDocumentToHtml(file: DocumentFile, options?: { screens?; theme?; registries? }): { html: string; screens: RecordId[] };  // ADR-0015
 function normalizeSvg(html: string): string;              // the goldens' normal form (NFR-REL-005)
 ```
 

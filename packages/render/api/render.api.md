@@ -136,7 +136,13 @@ export function plainParagraphs(doc: RichTextDoc | undefined): string[];
 export function registerBuiltinViews(registries: RenderRegistries): void;
 
 // @public
-export function renderDocumentToHtml(file: DocumentFile, options?: RenderHtmlOptions): string;
+export function renderDocumentToHtml(file: DocumentFile, options?: RenderHtmlOptions): RenderedHtml;
+
+// @public
+export type RenderedHtml = {
+    readonly html: string;
+    readonly screens: readonly RecordId[];
+};
 
 // @public
 export type RenderHtmlOptions = {

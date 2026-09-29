@@ -27,13 +27,14 @@ async function render(file: string, out: string, screens: readonly string[] | un
   if (!parsed.ok) return { exitCode: 1, diagnostics: parsed.error.diagnostics };
   const problem = screenProblem(parsed.value.document, screens ?? [], file);
   if (problem !== undefined) return usage(problem);
-  const html = renderDocumentToHtml(parsed.value.document, screens === undefined ? {} : { screens: screens as readonly RecordId[] });
+  const { html, screens: drawn } = renderDocumentToHtml(parsed.value.document, screens === undefined ? {} : { screens: screens as readonly RecordId[] });
   try {
     await writeFile(out, html, 'utf8');
   } catch (e) {
     return io(`cannot write ${out}: ${e instanceof Error ? e.message : String(e)}`, ['argv']);
   }
-  const count = html.match(/<section class="fx-screen"/g)?.length ?? 0;
+  // the renderer says what it drew; the markup is not parsed for it (M4 final F2)
+  const count = drawn.length;
   log(`${out}: ${count} screen${count === 1 ? '' : 's'}\n`);
   return { exitCode: 0, diagnostics: parsed.value.diagnostics, result: { out, screens: count } };
 }

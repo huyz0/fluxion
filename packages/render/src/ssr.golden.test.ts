@@ -21,9 +21,9 @@ describe('SVG goldens (NFR-REL-005, FR-SCR-001)', () => {
   it('NFR-REL-005: SVG goldens match and a second render is byte-identical', async () => {
     expect(FIXTURES.map(([name]) => name)).toEqual(['minimal', 'two-rects-line', 'unknown-kind']);
     for (const [name, file] of FIXTURES) {
-      const svg = normalizeSvg(renderDocumentToHtml(file));
+      const svg = normalizeSvg(renderDocumentToHtml(file).html);
       // rendered twice from a fresh store: the same bytes
-      expect(normalizeSvg(renderDocumentToHtml(file)), name).toBe(svg);
+      expect(normalizeSvg(renderDocumentToHtml(file).html), name).toBe(svg);
       await expect(svg, name).toMatchFileSnapshot(`../__golden__/${name}.svg`);
     }
   });
