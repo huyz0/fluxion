@@ -67,6 +67,18 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     };
     expect(resolveStyle({ variant: 'emphasis' }, 'shape', theme).style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
     expect(resolveStyle({ variant: 'unknown' }, 'shape', theme).style.fill).toEqual({ type: 'color', css: '#111111' });
+    // a definition's defaults sit under the element and its variant, over the theme's defaults (02 §2)
+    const star = { kind: 'shape', defaults: { fill: '#ff0000', stroke: { width: 3 }, opacity: 0.25 } };
+    expect(resolveStyle(undefined, star, theme).style).toMatchObject({ fill: { type: 'color', css: '#ff0000' }, opacity: '0.25' });
+    expect(resolveStyle(undefined, star, theme).style.stroke.width).toBe('3px');
+    expect(resolveStyle({ fill: '#00ff00' }, star, theme).style.fill).toEqual({ type: 'color', css: '#00ff00' });
+    expect(resolveStyle({ variant: 'emphasis' }, star, theme).style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
+    expect(resolveStyle(undefined, { kind: 'shape' }, theme).style.fill).toEqual({ type: 'color', css: '#111111' });
+    // an unknown token in the defaults is reported where the definition keeps it, and skipped
+    const odd = resolveStyle(undefined, { kind: 'shape', defaults: { fill: '{color.nope}' }, defaultsAt: ['shapeDefs', 'x:y', 'defaultStyle'] }, theme);
+    expect(odd.style.fill).toEqual({ type: 'color', css: '#111111' });
+    expect(odd.diagnostics.map((d) => d.path)).toEqual(['/shapeDefs/x:y/defaultStyle/fill']);
+    expect(resolveStyle(undefined, { kind: 'shape', defaults: { fill: '{color.nope}' } }, theme).diagnostics[0]?.path).toBe('/definition/defaultStyle/fill');
     const plain = resolveStyle(undefined, 'shape', theme).style;
     expect(plain.opacity).toBe('0.5');
     expect(plain.font.family).toBe('var(--fx-font-body, "Inter", system-ui, sans-serif)');

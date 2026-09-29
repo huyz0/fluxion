@@ -129,3 +129,37 @@ describe('shapes from core definitions (ADR-0016, M5.9)', () => {
     expect([...html.matchAll(/class="fx-placeholder"/g)]).toHaveLength(2);
   });
 });
+
+describe('shape views read their definition (ADR-0016 item 2, M5 cp1 F1)', () => {
+  it("FR-SHP-004: a definition's default style applies under the element's style, and open outlines are stroked without fill", () => {
+    const defs = testShapeDefs();
+    const boxed: ShapeDef = {
+      id: 'test:boxed',
+      outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' },
+      defaultSize: { w: 10, h: 10 },
+      defaultStyle: { fill: '#ff0000', stroke: { width: 0 } },
+    };
+    const open: ShapeDef = { id: 'test:open', outline: { path: 'M 0 {h/2} L {w} {h/2}' }, defaultSize: { w: 10, h: 10 }, defaultStyle: { fill: '#ff0000' } };
+    defs.register(boxed.id, boxed, 'test');
+    defs.register(open.id, open, 'test');
+    const b = documentBuilder({ seed: 591 });
+    const s = b.screen();
+    b.rect(s, { defId: 'test:boxed', x: 0, y: 0 });
+    b.rect(s, { defId: 'test:boxed', x: 0, y: 200, style: { fill: '#00ff00' } });
+    b.rect(s, { defId: 'test:open', x: 0, y: 400 });
+    b.rect(s, { defId: 'basic:rect', x: 0, y: 600 });
+    const html = renderDocumentToHtml(b.build(), { registries: builtinRegistries(defs) }).html;
+    const styles = [...html.matchAll(/class="fx-outline" d="[^"]*" style="([^"]*)"/g)].map((m) => m[1] ?? '');
+    expect(styles).toHaveLength(4);
+    // the definition's fill and stroke width, where the element sets none
+    expect(styles[0]).toContain('fill:#ff0000');
+    expect(styles[0]).toContain('stroke-width:0');
+    // the element's own fill wins; the definition's stroke width still applies
+    expect(styles[1]).toContain('fill:#00ff00');
+    expect(styles[1]).toContain('stroke-width:0');
+    // an open outline is not filled, whatever its style says
+    expect(styles[2]).toContain('fill:none');
+    // a definition without defaults: the theme's
+    expect(styles[3]).toContain('fill:var(--fx-color-surface');
+  });
+});

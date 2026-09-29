@@ -291,12 +291,32 @@ function paint(r: Resolver, field = 'fill'): ResolvedPaint {
 }
 
 /**
- * Resolve `style` for an element of `kind` against `theme` (02 §Style resolution order). `at` is the
- * JSON pointer prefix of the style in the document (for diagnostics), e.g. `['records', id, 'style']`.
+ * The element kind a style is resolved for, optionally with its definition's default style (a shape's
+ * `ShapeDef.defaultStyle`) and that style's JSON pointer for diagnostics.
  *
  * @public
  */
-export function resolveStyle(style: Style | undefined, kind: string, theme: Theme, at: ReadonlyArray<string | number> = ['style']): StyleResolution {
+export type StyleKind =
+  | string
+  | {
+      /** The element kind (`shape`, `connector`, …). */
+      readonly kind: string;
+      /** The definition's default style: under the element's style and variant, over the theme. */
+      readonly defaults?: Style;
+      /** Where `defaults` is, for diagnostics (default `['definition', 'defaultStyle']`). */
+      readonly defaultsAt?: ReadonlyArray<string | number>;
+    };
+
+/**
+ * Resolve `style` for an element of `kind` against `theme` (02 §2 resolution order: the element, its
+ * theme variant, its definition's defaults, the theme's defaults for the kind, the theme's globals).
+ * `at` is the JSON pointer prefix of the style in the document (for diagnostics), e.g.
+ * `['records', id, 'style']`.
+ *
+ * @public
+ */
+export function resolveStyle(style: Style | undefined, of: StyleKind, theme: Theme, at: ReadonlyArray<string | number> = ['style']): StyleResolution {
+  const { kind, defaults: definition, defaultsAt = ['definition', 'defaultStyle'] } = typeof of === 'string' ? { kind: of } : of;
   const defaults = theme.defaults ?? {};
   const own = defaults[kind];
   const variant = style?.variant;
@@ -306,6 +326,7 @@ export function resolveStyle(style: Style | undefined, kind: string, theme: Them
     ...(variant !== undefined && variants && isObject(variants[variant])
       ? [{ values: variants[variant], at: ['theme', 'defaults', kind, 'variants', variant] }]
       : []),
+    { values: definition, at: defaultsAt },
     { values: own, at: ['theme', 'defaults', kind] },
     { values: defaults['*'], at: ['theme', 'defaults', '*'] },
   ];

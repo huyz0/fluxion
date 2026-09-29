@@ -88,12 +88,18 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const { id } = element;
   // unique per mounted view: one record may be drawn twice on a page (a thumbnail beside the main view)
   const fillId = `fx-fill-${useId().replace(/[^\w-]/g, '')}`;
-  const { style } = useMemo(() => resolveStyle(element.style, 'shape', theme, ['records', id, 'style']), [element.style, theme, id]);
   const def = registries.shapeDefs.get(element.defId);
+  const { style } = useMemo(() => {
+    // the definition's defaults sit under the element's style (02 §2)
+    const defaults = def?.defaultStyle;
+    const of = defaults === undefined ? 'shape' : { kind: 'shape', defaults, defaultsAt: ['shapeDefs', element.defId, 'defaultStyle'] };
+    return resolveStyle(element.style, of, theme, ['records', id, 'style']);
+  }, [element.style, element.defId, def, theme, id]);
   const { w, h } = element.transform;
   const outlined = useMemo(() => (def === undefined ? undefined : evaluateOutline(def, { w, h }, element.params)), [def, w, h, element.params]);
   if (outlined === undefined || !outlined.ok) return <PlaceholderView {...props} />;
-  const { fill, defs } = svgFill(style.fill, fillId, w, h);
+  // an open outline is a stroke: it has no inside to fill (ADR-0016 item 2)
+  const { fill, defs } = outlined.value.path.closed ? svgFill(style.fill, fillId, w, h) : { fill: 'none', defs: undefined };
   const paragraphs = plainParagraphs(element.text);
   const outline: CSSProperties = {
     fill,

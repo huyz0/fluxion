@@ -109,7 +109,8 @@ interface Style {
 }
 ```
 Resolution order, per field: element literal → element token ref → theme
-`defaults[kind].variants[variant]` → theme `defaults[kind]` → theme globals (`defaults['*']`) →
+`defaults[kind].variants[variant]` → the element's definition defaults (a shape's
+`ShapeDef.defaultStyle`, ADR-0016) → theme `defaults[kind]` → theme globals (`defaults['*']`) →
 built-in fallbacks (`@fluxion/theme` `resolveStyle`, ADR-0015). An unknown token reference
 (FLX_TOKEN_UNKNOWN) or a value that is not valid for its field (a non-colour, a keyword outside its
 set) is skipped and the next layer is used, so no resolved value carries other CSS.

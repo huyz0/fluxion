@@ -927,3 +927,6 @@ core shape/hit.ts: hitTestShape (closed: nonzero inside or within tolerance; ope
 
 ## 2026-09-29 M5.26 (claude)
 cp1 milestone review (fresh milestone-reviewer, a0d31fd..e26cb9d): changes-requested. F1 major (shape view ignores defaultStyle and fills open outlines) → M5.30 before M5.24; F2 (parseShapeDef stops at strings) → M5.31; F3 (pack markers need an SDK contract change) → M5.20 amended; F4 (weak legs, no packs/basic floor) → M5.32; the gate names the new titles and the pending pack-marker title; M5.md Learned
+
+## 2026-09-29 M5.30 (claude)
+cp1 F1: theme resolveStyle takes a StyleKind, the kind optionally with its definition defaults, a layer under the element and its variant and over the theme defaults (02 §2 updated); the shape view passes ShapeDef.defaultStyle (diagnostics at /shapeDefs/<id>/defaultStyle) and fills an open outline with none; SSR test through the gate title

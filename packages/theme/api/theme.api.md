@@ -105,10 +105,17 @@ export type ResolvedStyle = {
 };
 
 // @public
-export function resolveStyle(style: Style | undefined, kind: string, theme: Theme, at?: ReadonlyArray<string | number>): StyleResolution;
+export function resolveStyle(style: Style | undefined, of: StyleKind, theme: Theme, at?: ReadonlyArray<string | number>): StyleResolution;
 
 // @public
 export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeError>;
+
+// @public
+export type StyleKind = string | {
+    readonly kind: string;
+    readonly defaults?: Style;
+    readonly defaultsAt?: ReadonlyArray<string | number>;
+};
 
 // @public
 export type StyleResolution = {
