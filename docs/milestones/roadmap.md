@@ -5,7 +5,7 @@
 > *and* a milestone review (fresh agent) has recorded a verdict. The command is written first,
 > red (see `docs/standards/sdd.md`, skill `plan-milestone`).
 
-**Current milestone: `M5`** (the `drive` skill reads this line).
+**Current milestone: `M6`** (the `drive` skill reads this line).
 
 Plans (`M<n>.md`) are hypotheses with ≤ ~20 tasks; the backlog (`docs/backlog/current.md`) is
 authoritative for the current milestone only.
@@ -82,6 +82,9 @@ receiving milestone's plan.
 
 | Item | From | To | Reason |
 |---|---|---|---|
+| Grow on text edit: the text-edit command applies `fitShapeText`'s grow height (ADR-0018 item 4) (M5 final F3) | M5 | M7 | the edit command arrives there |
+| Renumber the ADRs planned in M6-M9 from ADR-0020 (M5 used 0017-0019); ADR legs match titles (M5 final F4) | M5 | M6 (planning, first) | plan text only |
+| Router contract end check, one routers registry, duplicate routing/render helpers (M5 final F6) | M5 | M16 | routers and custom anchors |
 | A procedural pattern paint (hatch, dots, no asset): M5 reads FR-SHP-004's "pattern" as an image paint with `fit: tile`; a pattern of its own needs a `Paint` schema change (format contract, ADR) (M5.13 review F4) | M5 | M9 | a paint and schema decision, with themes |
 | check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |
 | `/goal` dry runs in interactive Claude Code and Codex sessions (M0.14/M0.15; kit in docs/harness/kits/dry-run.md), including the live Codex-session check moved there from M0.11 (13 skills via `/skills`, PostToolUse quick gate observed) — descoped by user decision; reviews use subagents only | M0 | unscheduled (on human request) | user decision 2026-09-26 |

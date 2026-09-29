@@ -1,0 +1,104 @@
+{
+  "milestone": "M5",
+  "checkpoint": "final",
+  "range": "ab9dd76..602a355",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "approve",
+  "passes": [
+    {
+      "range": "ab9dd76..b97f034",
+      "verdict": "changes-requested",
+      "note": "first final pass: two majors reopened as M5.39 and M5.40"
+    },
+    {
+      "range": "b97f034..602a355",
+      "verdict": "approve",
+      "note": "second pass, fresh reviewer: F1 and F2 resolved in code; F8-F10 minor"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "spec fidelity / gate honesty (FR-CON-003)",
+      "detail": "The connector view drew only markers.start and markers.end; markers.mid (FR-CON-003, schema Markers.mid) was never drawn, and the gallery leg counted mid markers toward 'every marker'.",
+      "failure_scenario": "A document with markers.mid renders without it; a gallery edit moving a marker to mid keeps the leg green."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "standards drift / gate honesty (testing.md rule 8, non-negotiable 2)",
+      "detail": "testing.md rule 8 said check-drift gates re-recorded goldens and screenshots; it did not, and M5.13, M5.20 and M5.21 re-recorded render goldens without a trailer.",
+      "failure_scenario": "A later commit re-records a baseline to hide a regression and every gate passes."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "plan health / hand-offs (FR-SHP-006, ADR-0018 item 4)",
+      "detail": "Grow-on-edit is a write the M7 text-edit command applies; M7.md had no row and the roadmap no Deferred entry.",
+      "failure_scenario": "M7 builds inline text editing without applying fitShapeText's height; textFit grow stays a stored field no code acts on."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "plan health (ADR numbering)",
+      "detail": "M5 used ADR-0017 to 0019; the M6 to M9 plans still cite those numbers for other decisions.",
+      "failure_scenario": "An m6 ADR leg matching the number prefix passes on the existing ADR-0017 before the editor-interaction ADR exists."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "gate honesty (coverage and attachment legs)",
+      "detail": "The packs/basic coverage leg is near-vacuous for a data pack; the FR-CON-012 property's reparent edits are route-neutral because members are stored in screen coordinates.",
+      "failure_scenario": "An unexercised pack shape passes the coverage leg; a future parent-relative transform change is not caught by the property."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "coherence (routing, render)",
+      "detail": "routeConnector checks that a router path starts at the source but not that it ends at the target; curved.ts duplicates geometry helpers and render has two rounding helpers; routers live in RenderRegistries while core's routers registry stays unknown and unused.",
+      "failure_scenario": "A plugin router ending off the target draws a detached connector; a pack registering a router in core's registry is never used."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "process (checkpoint cadence, backlog header)",
+      "detail": "24 task commits landed after cp1 with no further checkpoint; the backlog header said 28 planned rows while the table held 38.",
+      "failure_scenario": "Cross-commit drift (F1, F2) goes unseen until the final review."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "area": "gate honesty (check-drift history cutoff)",
+      "detail": "check-drift decides whether CI judges a commit by finding 'function baselineChanges()' in the parent's check-drift source; renaming it would stop CI judging later commits, though the M5.40 harness case's --commit assertion would fail first.",
+      "failure_scenario": "A rename plus a removed harness assertion; check-tests-kept demands a Removes-test trailer, so not silently."
+    },
+    {
+      "id": "F9",
+      "severity": "minor",
+      "area": "plan health / bookkeeping",
+      "detail": "The first pass's hand-offs and argued items had not landed anywhere yet, and m5-complete checks only that the final review file exists.",
+      "failure_scenario": "M5.27 records the verdict and advances the roadmap without the hand-off rows."
+    },
+    {
+      "id": "F10",
+      "severity": "minor",
+      "area": "tests (visual tolerance)",
+      "detail": "The two-rects-line screenshots kept the pre-M5.20 arrow within maxDiffPixelRatio 0.001; the SVG goldens caught the change, as testing.md rule 15 intends.",
+      "failure_scenario": "A pixel-only marker regression the SVG golden cannot see passes a small fixture's screenshot."
+    }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "target": "M5.39 (done: a39db56)" },
+    { "finding": "F2", "disposition": "reopen", "target": "M5.40 (done: 181ee1e); the historical re-recordings argued in review-argued.txt" },
+    { "finding": "F3", "disposition": "hand-off", "target": "M7 (row in M7.md, roadmap Deferred)" },
+    { "finding": "F4", "disposition": "hand-off", "target": "M6 planning, first (row in M6.md, roadmap Deferred)" },
+    { "finding": "F5", "disposition": "argue", "target": "review-argued.txt" },
+    { "finding": "F6", "disposition": "hand-off", "target": "M16 (row in M16.md, roadmap Deferred)" },
+    { "finding": "F7", "disposition": "argue", "target": "review-argued.txt; M5.md Learned; backlog header corrected" },
+    { "finding": "F8", "disposition": "argue", "target": "review-argued.txt" },
+    { "finding": "F9", "disposition": "argue", "target": "addressed in M5.27: this record, the M6/M7/M16 plans, roadmap Deferred and review-argued.txt" },
+    { "finding": "F10", "disposition": "argue", "target": "review-argued.txt" }
+  ],
+  "planDelta": "40 rows against 19 planned (2.1x): 4 M4 hand-offs, the ADR rows (0016, 0018, 0019, the 0017 amendment), splits of the style, text, connector-view and marker rows, 3 cp1 reopenings, 3 fixes (harness cache, CI timeout, coverage leg) and the 2 final-review reopenings. Rows that change a contract or the view pipeline were split in two once coding began; later milestones should plan contract, ADR and view rows separately from the start, and take a checkpoint every ~8 task commits."
+}

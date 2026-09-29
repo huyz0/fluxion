@@ -1098,3 +1098,14 @@ M5 final F1 (reopen): mid markers are drawn.
 
 Mutation score is 100%.
 Review r1 F1 fixed: the class is fx-mid-marker, outside the golden normaliser's id pattern; the CLI golden now shows it by name.
+
+## 2026-09-30 M5.27 (claude)
+
+The final review ran as two fresh milestone-reviewer passes, recorded in milestone-M5-final.json.
+- First pass, a0d31fd..b97f034: changes requested. F1 and F2 were reopened as M5.39 and M5.40.
+- Second pass, over the delta to 602a355: approved.
+- Hand-offs: F3 to M7 (grow on text edit), F4 to M6 planning (ADR renumbering), F6 to M16 (router end check and registry). Each is in its plan and in the roadmap's Deferred table.
+- Argued: F5, F7, F8, F10. F9 (the hand-offs landing) is done here.
+- M5.md Learned has two final lines. The backlog header count is corrected.
+- CI at 602a355: cold-setup failed once. The tail showed only the steps after the failing one, and a local cold run passed (156 s), so the failed job was re-run.
+- Roadmap: current milestone M6.
