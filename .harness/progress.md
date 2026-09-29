@@ -1156,3 +1156,8 @@ Editor chrome (ADR-0029): toolbar (a pressed button per panel, focus mode), left
 ## 2026-09-30 M6.6 (claude)
 
 Session store (ADR-0028): core exports `writable`/`WritableSignal`; editor `createSession(docId)` holds selection, camera `{x, y, z}` (default 0, 0, 1), tool (`select`) and hover as separate writable signals, and `createSessions()` keeps one per document id until dropped. T0: a saved snapshot is byte-identical after session writes and holds no session keys; a hover change notifies no selection reader.
+
+## 2026-09-30 M6.7 (claude)
+
+Camera math in `editor/src/camera.ts`, pure: screen = (page - (x, y)) * z; `zoomAt`/`zoomBy` about a canvas point (the page point under it stays), clamp 5 %-3200 % (NaN is 100 %, an infinite zoom its limit), `panBy`, `fitBox` with 32 px padding (a line fits along its length, a point centres at 100 %), `zoomTo100` about the centre. Fit selection is `fitBox` of the selection's bounds. Property tests on fast-check.
+Map: editor may depend on geometry (Box, Vec2 now; spatial index and matrices for hit-testing and transforms next).

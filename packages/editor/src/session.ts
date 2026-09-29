@@ -3,20 +3,7 @@
 // serialized; undo carries the selection through transaction meta instead (ADR-0014).
 import { type WritableSignal, writable } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
-
-/**
- * The camera: the page point at the canvas's top-left (`x`, `y`) and the zoom `z` (1 = 100 %).
- *
- * @public
- */
-export type Camera = {
-  /** Page x at the viewport's left edge. */
-  readonly x: number;
-  /** Page y at the viewport's top edge. */
-  readonly y: number;
-  /** Zoom: screen px per page unit. */
-  readonly z: number;
-};
+import type { Camera } from './camera.js';
 
 /**
  * The session state of one open document.

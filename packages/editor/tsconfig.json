@@ -36,6 +36,9 @@
       "path": "../../packages/theme"
     },
     {
+      "path": "../../packages/geometry"
+    },
+    {
       "path": "../../packages/schema"
     }
   ]

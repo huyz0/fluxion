@@ -325,6 +325,9 @@ importers:
       '@fluxion/core':
         specifier: workspace:*
         version: link:../core
+      '@fluxion/geometry':
+        specifier: workspace:*
+        version: link:../geometry
       '@fluxion/player':
         specifier: workspace:*
         version: link:../player
@@ -356,6 +359,9 @@ importers:
       axe-core:
         specifier: 'catalog:'
         version: 4.13.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       storybook:
         specifier: 'catalog:'
         version: 10.6.0(@types/react@19.3.0)(react@19.3.0)

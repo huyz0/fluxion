@@ -94,7 +94,7 @@
       "name": "@fluxion/editor",
       "layer": "L4",
       "runtime": "dom",
-      "dependsOn": ["render", "player", "core", "layout", "routing", "format", "dsl", "theme", "schema"],
+      "dependsOn": ["render", "player", "core", "layout", "routing", "format", "dsl", "theme", "geometry", "schema"],
       "desc": "Edit overlay, tools state machine, panels, inspector, library, timeline and interaction editors, AI panel."
     },
     {

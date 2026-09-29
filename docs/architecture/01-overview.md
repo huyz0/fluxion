@@ -41,7 +41,7 @@ All packages live in a pnpm + Turborepo monorepo. `@fluxion/*` names; folders un
 | L2 | `dsl` | FluxScript parser, compiler, decompiler, diagnostics, Mermaid/Markdown importers | schema, core, layout (for compile-time layout), theme | ✅ |
 | L3 | `render` | React 19 DOM+SVG renderer of a screen: element views, shape/connector/rider views, CSS variables, measurement adapter; **identical in edit & present** | schema, core, theme, anim, geometry, routing | DOM |
 | L4 | `player` | Present runtime: navigation, clock & scheduler, transition manager, trigger bus, interaction engine, overlays, responsive, speaker sync, `<fluxion-player>` web component | render, anim, format, core, schema | DOM |
-| L4 | `editor` | Edit overlay (selection, handles, guides), tools state machine, panels, inspector, library, timeline & interaction editors, AI panel | render, player, core, layout, routing, format, dsl, theme, schema | DOM |
+| L4 | `editor` | Edit overlay (selection, handles, guides), tools state machine, panels, inspector, library, timeline & interaction editors, AI panel | render, player, core, layout, routing, format, dsl, theme, geometry, schema | DOM |
 | L4 | `sdk` | Public plugin API (re-exports stable contracts), manifest schema, component contract, test harness | core, render (types), schema | — |
 | L5 | `cli` | `fluxion` command: validate, compile, render, lint, layout, convert, catalog, pack, site build | schema, format, dsl, layout, routing, anim, render (SSR), sdk, basic (bundled pack, ADR-0017) | Node |
 | L5 | `mcp` | MCP server over the same operations as the CLI | cli internals (`ops`), format, dsl | Node |

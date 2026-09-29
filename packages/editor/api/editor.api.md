@@ -4,12 +4,14 @@
 
 ```ts
 
+import { Box } from '@fluxion/geometry';
 import { DocumentFile } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
 import { RecordId } from '@fluxion/schema';
 import { RenderRegistries } from '@fluxion/render';
 import { Store } from '@fluxion/core';
+import { Vec2 } from '@fluxion/geometry';
 import { WritableSignal } from '@fluxion/core';
 
 // @public
@@ -18,6 +20,9 @@ export type Camera = {
     readonly y: number;
     readonly z: number;
 };
+
+// @public
+export function clampZoom(z: number): number;
 
 // @public
 export function createSession(docId: string): Session;
@@ -39,6 +44,15 @@ export type EditorRootProps = {
 };
 
 // @public
+export const FIT_PADDING = 32;
+
+// @public
+export function fitBox(box: Box, viewport: {
+    readonly w: number;
+    readonly h: number;
+}, padding?: number): Camera;
+
+// @public
 export const LAYOUT_KEY = "fluxion.editor.layout.v1";
 
 // @public
@@ -48,6 +62,15 @@ export function memorySettings(initial?: {
 
 // @public
 export function newDocument(random: Random): DocumentFile;
+
+// @public
+export function pageToScreen(camera: Camera, p: Vec2): Vec2;
+
+// @public
+export function panBy(camera: Camera, d: Vec2): Camera;
+
+// @public
+export function screenToPage(camera: Camera, p: Vec2): Vec2;
 
 // @public
 export type Session = {
@@ -72,5 +95,23 @@ export type SettingsStore = {
 
 // @public
 export const VERSION: string;
+
+// @public
+export const ZOOM_LIMITS: {
+    readonly min: number;
+    readonly max: number;
+};
+
+// @public
+export function zoomAt(camera: Camera, at: Vec2, z: number): Camera;
+
+// @public
+export function zoomBy(camera: Camera, at: Vec2, factor: number): Camera;
+
+// @public
+export function zoomTo100(camera: Camera, viewport: {
+    readonly w: number;
+    readonly h: number;
+}): Camera;
 
 ```
