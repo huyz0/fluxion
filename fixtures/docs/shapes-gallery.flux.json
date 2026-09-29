@@ -176,6 +176,7 @@
       "kind": "connector",
       "markers": {
         "end": "arrow",
+        "mid": "diamond",
         "start": "none"
       },
       "route": {

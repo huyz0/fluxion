@@ -384,6 +384,10 @@
       </defs>
       <path class="fx-route" d="M1000 760 L1200 760 L1200 900 L1389.5 900" marker-end="url(#fx-id-5-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:3px;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:8 4">
       </path>
+      <g class="fx-mid-marker" transform="translate(1200 830) rotate(90) scale(1.5) translate(-5 -5)">
+        <path d="M0 5 L5 0 L10 5 L5 10 Z" style="fill:var(--fx-color-connector);stroke:none">
+        </path>
+      </g>
     </svg>
   </g>
 </svg>

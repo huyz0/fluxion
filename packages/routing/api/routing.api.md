@@ -76,6 +76,15 @@ export type RouteEnd = {
 };
 
 // @public
+export type RoutePoint = {
+    readonly point: Vec2;
+    readonly dir: Vec2;
+};
+
+// @public
+export function routePoint(commands: readonly PathCommand[], t: number): RoutePoint;
+
+// @public
 export type Router = {
     route(request: RouteRequest): readonly PathCommand[];
 };

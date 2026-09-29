@@ -4,7 +4,7 @@ export { type AnchorTarget, DEFAULT_ANCHORS, type ResolvedAnchor, resolveAnchor,
 export { registerBuiltinRouters } from './builtins.js';
 export { type ConnectorRoute, type RouteContext, routeConnector } from './connector-route.js';
 export { curvedRouter, polylineRouter } from './curved.js';
-export { labelPosition } from './labels.js';
+export { labelPosition, type RoutePoint, routePoint } from './labels.js';
 export { ORTHOGONAL_STUB, orthogonalRouter } from './orthogonal.js';
 export { type RouteEnd, type RouteRequest, type Router, straightRouter } from './router.js';
 export { type TrimmedRoute, trimRoute } from './trim.js';

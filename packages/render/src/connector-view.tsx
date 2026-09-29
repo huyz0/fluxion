@@ -2,19 +2,19 @@
 // through their bindings and anchors, the path from the router registered for its type), stroked with
 // the resolved style (colour, width, dash, cap, join, opacity, token refs; FR-CON-005) with its bends
 // rounded by the route's corner radius or else the style's; end markers from the markers registry,
-// sized in stroke widths, with the route trimmed under them (FR-CON-003); and its labels at their
+// sized in stroke widths, with the route trimmed under them, and a mid marker at its midpoint (FR-CON-003); and its labels at their
 // fractions of the route (FR-CON-006; routing's labelPosition): plain paragraphs on the screen's
 // background colour. The
 // wrapper has no box, so the SVG draws in screen coordinates; the route is a store query, so moving a
 // bound shape redraws it.
 import { type MarkerDef, markerTrim } from '@fluxion/core';
 import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
-import { labelPosition, routeConnector, trimRoute } from '@fluxion/routing';
+import { labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
 import { labelStyle, plainParagraphs } from './label.js';
-import { MarkerView } from './markers.js';
+import { MarkerView, MidMarker } from './markers.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { concreteLength } from './text-measurer.js';
@@ -62,7 +62,11 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const routed = useValue(useMemo(() => store.query((view) => routeConnector(view, registries, id)), [store, registries, id]));
   const { style } = useMemo(() => resolveStyle(element.style, 'connector', theme, ['records', id, 'style']), [element.style, theme, id]);
   if (routed === undefined) return null;
-  const [start, end] = [markerOf(registries, element.markers?.start), markerOf(registries, element.markers?.end)];
+  const [start, end, mid] = [
+    markerOf(registries, element.markers?.start),
+    markerOf(registries, element.markers?.end),
+    markerOf(registries, element.markers?.mid),
+  ];
   const line: CSSProperties = {
     fill: 'none',
     stroke: style.stroke.color,
@@ -103,6 +107,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
           markerStart={start === undefined ? undefined : `url(#${base}-start)`}
           markerEnd={end === undefined ? undefined : `url(#${base}-end)`}
         />
+        {mid === undefined ? null : <MidMarker def={mid} at={routePoint(drawn, 0.5)} color={style.stroke.color} width={width} />}
       </svg>
       <Labels element={element} route={drawn} style={labelStyle(style.font, style.opacity)} />
     </>

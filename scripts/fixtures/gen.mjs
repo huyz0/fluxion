@@ -121,7 +121,7 @@ function shapesGallery() {
     markers: { start: 'basic:crows-foot-zero-one', end: 'basic:crows-foot-zero-many' },
     labels: [{ text: plain('zero or one — zero or many'), position: 0.5, offset: { x: 0, y: -14 } }],
   });
-  set(er2, { markers: { start: 'none', end: 'arrow' }, style: { stroke: { width: 3, dash: [8, 4] } } });
+  set(er2, { markers: { start: 'none', mid: 'diamond', end: 'arrow' }, style: { stroke: { width: 3, dash: [8, 4] } } });
   return doc;
 }
 

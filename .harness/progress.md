@@ -1087,3 +1087,14 @@ The gate's geometry leg failed once (1 test) and could not be reproduced in 3 co
 
 The M5 final review (fresh milestone-reviewer, a0d31fd..b97f034) requested changes. It reopened F1 (mid markers are never drawn) as M5.39 and F2 (testing.md rule 8 said check-drift gates re-recorded baselines; it did not) as this row. check-drift now refuses a re-recorded or deleted file under `__golden__/` or `-snapshots/*.png` without a `Threshold-change:` trailer (no ADR needed); new baselines pass. Harness case added. The three M5 re-recordings are argued in review-argued.txt. F3, F4 and F6 are handed off and F5 and F7 argued in M5.27.
 Review r1 fixed. F1 (major): CI's check-commits would have re-judged old commits, so --commit applies the rule only where the parent already has it; the four historical commits pass. F2: M4.21 is added to the argued entry. F3: Vitest __snapshots__/*.snap are covered. F4: the git diff is parsed NUL-separated with quotepath off.
+
+## 2026-09-30 M5.39 (claude)
+
+M5 final F1 (reopen): mid markers are drawn.
+- routing: `routePoint(commands, t)` gives the point and tangent (labelPosition uses it).
+- render: `MidMarker` draws the marker as a group centred on the route midpoint, turned along the tangent, scaled in stroke widths. SVG's marker-mid sits at every vertex, so it is not used. Marker paint is shared with the end markers.
+- The gallery adds a mid diamond on the dashed route. The CLI golden and all six visual baselines are re-recorded with a Threshold-change trailer: two-rects-line had kept the pre-M5.20 arrow within tolerance.
+- Gate: the M5.39 title joins the markers leg.
+
+Mutation score is 100%.
+Review r1 F1 fixed: the class is fx-mid-marker, outside the golden normaliser's id pattern; the CLI golden now shows it by name.

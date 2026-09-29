@@ -152,6 +152,24 @@ describe('connector markers and labels in static HTML (FR-CON-003, FR-CON-006)',
     expect(none.html).not.toContain('<marker');
   });
 
+  it("FR-CON-003: a mid marker sits at the route's midpoint, turned along it", () => {
+    // the orthogonal route M0 0 L100 0 L100 100 L200 100 is 300 px long: halfway is (100, 50), heading down
+    const at2 = drawn({}, { stroke: { width: 2 } }, { markers: { mid: 'arrow' } }).html;
+    expect(at2).toContain(
+      '<g class="fx-mid-marker" transform="translate(100 50) rotate(90) scale(1) translate(-5 -5)"><path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none"></path></g>',
+    );
+    // sized in stroke widths like the end markers
+    expect(drawn({}, { stroke: { width: 4 } }, { markers: { mid: 'arrow' } }).html).toContain(
+      'transform="translate(100 50) rotate(90) scale(2) translate(-5 -5)"',
+    );
+    // a straight route to the left turns it half round; no mid marker, or an unregistered one, draws none
+    expect(drawn({ type: 'straight' }, undefined, { freeTarget: { x: -200, y: 0 }, markers: { mid: 'diamond' } }).html).toContain(
+      'transform="translate(-100 0) rotate(180) scale(1) translate(-5 -5)"',
+    );
+    expect(drawn({}).html).not.toContain('<g class="fx-mid-marker"');
+    expect(drawn({}, undefined, { markers: { mid: 'test:missing' } }).html).not.toContain('<g class="fx-mid-marker"');
+  });
+
   it('FR-CON-003: end markers are defined only for the ends that have one', () => {
     const both = drawn({}, undefined, { markers: { start: 'arrow', end: 'arrow' } }).html;
     expect(both).toMatch(/marker-start="url\(#fx-marker-[\w-]+-start\)"/);

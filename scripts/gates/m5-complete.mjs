@@ -167,6 +167,7 @@ leg('markers, connector style and labels', () =>
     ['M5.20', 'FR-CON-003: every marker scales with the stroke width and trims the path under it', 'render'],
     // drawn by the CLI, the host that bundles the pack (packs import only the SDK, ADR-0017)
     ['M5.36', 'FR-CON-003: every basic pack marker scales with the stroke width and trims the path under it', 'cli'],
+    ['M5.39', "FR-CON-003: a mid marker sits at the route's midpoint, turned along it", 'render'],
     ['M5.21', 'FR-CON-005: rounded corners render with given radius', 'render'],
     browser('M5.22', 'FR-CON-006: a label at t 0.5 stays at the path midpoint when the endpoints move'),
   ]),

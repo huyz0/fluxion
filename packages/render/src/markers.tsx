@@ -3,7 +3,8 @@
 // (markerUnits strokeWidth), so it scales with the connector's stroke; its `inset` tells the view how
 // far to trim the route so the line stops under the marker and the tip lands on the route's end.
 import { MARKER_SIZE, type MarkerDef, type Registry } from '@fluxion/core';
-import type { ReactNode } from 'react';
+import type { RoutePoint } from '@fluxion/routing';
+import type { CSSProperties, ReactNode } from 'react';
 
 /**
  * The built-in markers of the schema's `Marker` type (`none` draws nothing and is not registered).
@@ -31,6 +32,17 @@ export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): vo
 }
 
 /**
+ * How a marker's path is painted: filled with `color`, or (an open marker) stroked in it as wide as the
+ * connector, since 10 box units span MARKER_SIZE stroke widths. A bevel join keeps a sharp tip within
+ * half a stroke of its vertex: a miter would reach past it (M5.36 review F1).
+ */
+function markerPaint(def: MarkerDef, color: string): CSSProperties {
+  return def.filled
+    ? { fill: color, stroke: 'none' }
+    : { fill: 'none', stroke: color, strokeWidth: 10 / MARKER_SIZE, strokeLinejoin: 'bevel', strokeLinecap: 'butt' };
+}
+
+/**
  * The `<marker>` element `id` drawing `def` in `color` on a route of stroke `width` px whose end was
  * trimmed by `trim` px: the reference point sits that far back from the tip, so the tip lands on the
  * route's end even when the trim was capped short of the inset (M5.20 review F1).
@@ -46,11 +58,6 @@ export function MarkerView(props: {
   const unit = (MARKER_SIZE * props.width) / 10;
   // box units back from the tip; a stroke of no width draws no marker, where any reference point does
   const back = unit > 0 ? props.trim / unit : def.inset;
-  // an open marker's stroke is as wide as the connector's: 10 box units span MARKER_SIZE stroke widths
-  // a bevel join keeps a sharp tip within half a stroke of its vertex: a miter would reach past it (M5.36 review F1)
-  const paint = def.filled
-    ? { fill: color, stroke: 'none' }
-    : { fill: 'none', stroke: color, strokeWidth: 10 / MARKER_SIZE, strokeLinejoin: 'bevel' as const, strokeLinecap: 'butt' as const };
   // auto-start-reverse turns the start marker to point away from the line, like the end one; the
   // reference point is where the trimmed route ends
   return (
@@ -65,7 +72,24 @@ export function MarkerView(props: {
       orient="auto-start-reverse"
       overflow="visible"
     >
-      <path d={def.path} style={paint} />
+      <path d={def.path} style={markerPaint(def, color)} />
     </marker>
+  );
+}
+
+/**
+ * The mid marker `def` of a route of stroke `width` px (FR-CON-003; M5 final F1): its box centred on the
+ * point `at` of the route and turned along the route's direction there, sized in stroke widths like
+ * the end markers. SVG's own marker-mid would sit at every vertex, not at the middle.
+ */
+export function MidMarker(props: { readonly def: MarkerDef; readonly at: RoutePoint; readonly color: string; readonly width: number }): ReactNode {
+  const { def, at } = props;
+  const angle = (Math.atan2(at.dir.y, at.dir.x) * 180) / Math.PI;
+  const scale = (MARKER_SIZE * props.width) / 10;
+  const n = (v: number) => Math.round(v * 1000) / 1000 || 0;
+  return (
+    <g className="fx-mid-marker" transform={`translate(${n(at.point.x)} ${n(at.point.y)}) rotate(${n(angle)}) scale(${n(scale)}) translate(-5 -5)`}>
+      <path d={def.path} style={markerPaint(def, props.color)} />
+    </g>
   );
 }
