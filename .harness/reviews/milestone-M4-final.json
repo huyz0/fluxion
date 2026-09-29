@@ -1,0 +1,64 @@
+{
+  "milestone": "M4",
+  "checkpoint": "final",
+  "range": "5832cef..c70b53a",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "area": "gate honesty",
+      "detail": "The m4-complete changeset leg checks a hard-coded list (theme, render, cli, core); M4 also changed @fluxion/schema (new diagnostic codes, paint/index exports), covered only by .changeset/m4-schema.md, which no leg requires. From M5 on the leg should derive the packages from the range's diff.",
+      "failure_scenario": "A later edit removes .changeset/m4-schema.md; the leg stays green while schema's new public codes ship without a CHANGELOG entry and the R0-exit changeset claim becomes false."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "area": "coherence",
+      "detail": "packages/cli/src/render.ts counts screens for its --json reply by matching `<section class=\"fx-screen\"` in the HTML it just produced; renderDocumentToHtml does not return what it rendered, so this is a third private parser of render markup (beside golden.ts and milestone-checks).",
+      "failure_scenario": "ScreenView's section gains another class or an attribute before class; `fluxion render --json` exits 0 with result.screens 0 for a correct page and the schema accepts it."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "plan health / process",
+      "detail": "CI verify on windows-latest was red from M4.20 (17bbb09) until M4.34 (f32c5d0); seven task commits landed on a red main because the per-task loop never looks at the previous push's CI conclusion. The fix (realpathSync.native(tmpdir()) in the harness sandbox) is sound and run 36501640817 at 343aa78 is green.",
+      "failure_scenario": "A platform-specific break in M5 sits under several commits before the CI-evidence leg surfaces it, and the bisect spans many tasks."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "gate honesty",
+      "detail": "ci.yml's visual job keeps the stale comment 'no @visual specs exist before the renderer milestones' and test:visual still passes --pass-with-no-tests; the m4-complete visual leg checks the spec's title and toHaveScreenshot, not that Playwright selected a test.",
+      "failure_scenario": "A rename of the spec folder, the grep tag or a project filter leaves test:visual selecting nothing; the visual job and CI evidence go green with no screenshot compared."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "hand-off",
+      "target": "M5",
+      "note": "Milestone gates take the changeset package list from the packages the milestone's range changed (git diff over the range), not a literal; M4's own list is complete (m4-schema.md covers schema)."
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand-off",
+      "target": "M5",
+      "note": "renderDocumentToHtml returns the ids of the screens it rendered (with the HTML); the CLI's result.screens uses them, not a regex over the markup; normalizeSvg and the gate checks keep reading markup only where markup is the artefact under test."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "target": "M5 (first row)",
+      "note": "The drive loop checks the previous push's CI conclusion before starting a task (gh run list for main's last pushed sha; a red run is fixed first); M4.md Learned records it."
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand-off",
+      "target": "M5",
+      "note": "test:visual drops --pass-with-no-tests now that @visual specs exist, and ci.yml's stale visual comment goes; M5's gallery screenshots (row 18) extend the visual leg."
+    }
+  ],
+  "planDelta": "The plan had 18 rows and the backlog planned 25 (7 M3 hand-offs, 2 ADR rows, a docs split, the CLI e2e fold-in); M4 ends with 34 done. The 9 extra rows are 2 from cp1 (M4.26, M4.27) and 7 found in flight: ladder speed (M4.28, M4.29), render correctness (M4.30), flake hardening (M4.31, M4.32), gate precision (M4.33) and the Windows CI fix (M4.34): 1.9x the plan, 1.36x the planned backlog, about a third of it harness latency and flakes, so M5 budgets ladder and flake rows from the start. Every plan item and cited requirement is delivered."
+}

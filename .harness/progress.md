@@ -868,3 +868,7 @@ CI verify (windows-latest) has failed since 70cec10 (M4.20, cli → render): api
 ## 2026-09-29 M4.24 (claude)
 docs/milestones/R0-exit.md: the five common exit criteria (01-scope §2) as seven checked items with evidence: check-trace --increment R0 ("every Must of R0 covered"), CI run 36501640817 at 343aa78 green on every job and OS (the M4.34 windows fix confirmed), the first visual baseline (M4.21), docs (CLI quickstart, API reference, READMEs, AGENTS.md, 04 §2.2), changesets, the demo rendered in CI, and the format note (no container in R0; schemaVersion 1.0 with migrations and round-trip tests; no record schema change since M2)
 M4.23 review F1: the quickstart's sample shows the summary line and the hint in parentheses, as the CLI prints them
+
+## 2026-09-29 M4.25 (claude)
+final milestone review 5832cef..c70b53a (fresh milestone-reviewer): pass with four minor findings, all handed off to M5 (drive loop reads the last push's CI first; changeset leg from the range; renderDocumentToHtml returns rendered ids; test:visual without --pass-with-no-tests); CI evidence at c70b53a (gates 36502852777, ci 36502853068); roadmap Current milestone M5; M4 Learned +2 lines
+m4-complete: GATE m4 27/27 legs green on this tree
