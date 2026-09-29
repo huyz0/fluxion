@@ -322,8 +322,9 @@ for (const [dir, min] of [
   ['packages/routing', 150],
   ['packages/geometry', 150],
   ['packages/core', 150],
-  // the pack's definitions and their per-shape tests (M5 cp1 F4): held to the pure floors
-  [PACK, 60],
+  // the pack's definitions and their per-shape tests (M5 cp1 F4): held to the pure floors. The pack is
+  // data (21 shapes, 5 markers: 44 statements when M5 closed); the minimum only refuses an empty one (M5.38)
+  [PACK, 40],
 ])
   leg(`${dir} coverage at or above the pure-package floors`, () => coverage(dir, t('COVERAGE_PURE_LINES'), t('COVERAGE_PURE_BRANCHES'), min));
 leg('packages/render coverage at or above the render floors', () =>

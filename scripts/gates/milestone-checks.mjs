@@ -499,7 +499,9 @@ export function propertyRuns(source, title) {
 export function coverageGaps(summary, dir, { lines, branches }, min) {
   const files = Object.entries(summary).filter(([f]) => f.replace(/\\/g, '/').includes(`/${dir}/src/`));
   const sum = (k, f) => files.reduce((a, [, v]) => a + v[k][f], 0);
-  const pct = (k) => (sum(k, 'total') === 0 ? 0 : (100 * sum(k, 'covered')) / sum(k, 'total'));
+  // nothing to cover is fully covered: a data-only pack has statements but no branches (M5.38);
+  // an empty package still fails, on its statement count
+  const pct = (k) => (sum(k, 'total') === 0 ? 100 : (100 * sum(k, 'covered')) / sum(k, 'total'));
   const bad = [];
   if (sum('statements', 'total') < min) bad.push(`${sum('statements', 'total')} statements (< ${min})`);
   if (pct('lines') < lines) bad.push(`lines ${pct('lines').toFixed(1)}%`);

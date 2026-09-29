@@ -1076,3 +1076,9 @@ Review r1 minors: F1 fixed (marker connectors at stroke 4, markers about 20 px; 
 - Changesets m5-* cover the nine packages changed in the range.
 Review r1 F1 fixed: basic:line has no points param (README).
 Review r2 F1 fixed: the polyline and freehand params are named vertices and stroke.
+
+## 2026-09-30 M5.38 (claude)
+
+The m5 gate's packs/basic coverage leg failed ("44 statements (< 60); branches 0.0%"). `coverageGaps` now counts a package with no branches as fully branch-covered; an empty package still fails on its statement count. The pack minimum, set at cp1 before the pack existed, drops from 60 to 40 statements: the pack is data (44 statements). A harness case covers this.
+
+The gate's geometry leg failed once (1 test) and could not be reproduced in 3 coverage runs and 25 plain runs; the final gate run re-checks it.

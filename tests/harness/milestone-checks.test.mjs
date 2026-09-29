@@ -489,5 +489,9 @@ describe('M5 legs made honest (M5 cp1 F4)', () => {
     const low = { ...summary, 'E:/repo/packs/basic/src/shapes/cloud.ts': entry(30, 0, 10, 2) };
     assert.match(String(coverageGaps(low, 'packs/basic', floors, 60)), /packs\/basic: lines 70\.0%; branches 66\.7%/);
     assert.match(String(coverageGaps({}, 'packs/basic', floors, 1)), /0 statements/);
+    // a package with no branches is not below a branch floor (M5.38): its statements still count
+    const data = { 'E:/repo/packs/basic/src/shapes/rect.ts': entry(44, 44, 0, 0) };
+    assert.equal(coverageGaps(data, 'packs/basic', floors, 40), true);
+    assert.match(String(coverageGaps(data, 'packs/basic', floors, 60)), /^packs\/basic: 44 statements \(< 60\)$/);
   });
 });
