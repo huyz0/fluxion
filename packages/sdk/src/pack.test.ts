@@ -1,4 +1,4 @@
-import { createCoreRegistries, type ShapeDef } from '@fluxion/core';
+import { createCoreRegistries, type MarkerDef, type ShapeDef } from '@fluxion/core';
 import { describe, expect, it } from 'vitest';
 import { definePack, registerShapeDef } from './pack.js';
 
@@ -67,6 +67,46 @@ describe('packs (ADR-0017)', () => {
     expect(registries.shapeDefs.get('demo:c')).toBeUndefined();
     const dup = definePack({ id: 'demo', shapes: [shape('demo:taken')] }).register(registries);
     expect(dup.ok ? '' : dup.error[0]?.message).toBe('"demo:taken" is already registered in shapeDefs by intruder');
+  });
+
+  it('FR-EXT-001: a pack registers its connector markers too, all of them with its shapes or none (ADR-0017 amendment)', () => {
+    const registries = createCoreRegistries();
+    const marker = (id: string, extra: Partial<MarkerDef> = {}): MarkerDef => ({ id, path: 'M0 0 L10 5 L0 10', inset: 0, filled: false, ...extra });
+    const pack = definePack({ id: 'demo', shapes: [shape('demo:a')], markers: [marker('demo:m'), marker('demo:n', { filled: true, inset: 10 })] });
+    expect(pack.markers.map((m) => m.id)).toEqual(['demo:m', 'demo:n']);
+    expect(definePack({ id: 'bare' }).markers).toEqual([]);
+    const r = pack.register(registries);
+    expect(r.ok).toBe(true);
+    expect([registries.markers.get('demo:m'), registries.markers.source('demo:n')]).toEqual([marker('demo:m'), 'demo']);
+    if (r.ok) r.value.dispose();
+    expect([registries.markers.get('demo:m'), registries.shapeDefs.get('demo:a')]).toEqual([undefined, undefined]);
+    // every marker problem is reported, and nothing (shapes included) is registered
+    registries.markers.register('demo:held', marker('demo:held'), 'other');
+    const broken = definePack({
+      id: 'demo',
+      shapes: [shape('demo:ok')],
+      markers: [
+        marker('demo:m', { inset: 12 }),
+        marker('else:m'),
+        marker('demo:x'),
+        marker('demo:x'),
+        marker('demo:held'),
+        marker('demo:t', { path: 'M0 0 L{w} 5' }),
+      ],
+    }).register(registries);
+    expect(codes(broken)).toEqual([
+      'FLX_PACK_INVALID /markers/0/inset',
+      'FLX_PACK_INVALID /markers/1/id',
+      'FLX_PACK_INVALID /markers/3/id',
+      'FLX_REGISTRY_DUPLICATE /markers/4/id',
+      'FLX_PACK_INVALID /markers/5/path',
+    ]);
+    expect(broken.ok ? [] : broken.error.map((d) => d.message).slice(1, 4)).toEqual([
+      'marker id "else:m" is outside the namespace "demo:" of demo',
+      'marker id "demo:x" is defined twice (also /markers/2)',
+      '"demo:held" is already registered in markers by other',
+    ]);
+    expect([registries.shapeDefs.get('demo:ok'), registries.markers.get('demo:x')]).toEqual([undefined, undefined]);
   });
 
   it('registerShapeDef validates one definition of unknown shape against its source namespace', () => {

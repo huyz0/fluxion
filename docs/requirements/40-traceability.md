@@ -98,7 +98,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ANC-008 | S | R6 | M27 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-001 | M | R0 | M2 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/geometry/src/intersections.test.ts` +7 |
 | FR-CON-002 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/curved.test.ts`, `packages/routing/src/orthogonal.test.ts` |
-| FR-CON-003 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/connector-view.test.tsx` +2 |
+| FR-CON-003 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/cli/src/e2e/cli.markers.test.ts` +5 |
 | FR-CON-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-005 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/geometry/src/round.test.ts`, `packages/render/src/connector-view.test.tsx` |
 | FR-CON-006 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/connector-view.browser.test.tsx` +3 |
@@ -237,7 +237,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-INT-009 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-010 | M | R5 | M24 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-011 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
-| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/cli/src/host.test.ts` +13 |
+| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/cli/src/host.test.ts` +15 |
 | FR-EXT-002 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-003 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-004 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |

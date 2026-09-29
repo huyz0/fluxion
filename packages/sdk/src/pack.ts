@@ -1,6 +1,16 @@
-// Packs (FR-EXT-001, ADR-0016, ADR-0017): a namespace of shape definitions, registered into core's
-// registries through the public registry API only. First-party packs use exactly this.
-import { type CoreRegistries, type Disposable, type PluginId, parseShapeDef, type ShapeDef } from '@fluxion/core';
+// Packs (FR-EXT-001, ADR-0016, ADR-0017 and its M5.36 amendment): a namespace of shape definitions and
+// connector end markers, registered into core's registries through the public registry API only.
+// First-party packs use exactly this.
+import {
+  type CoreRegistries,
+  type Disposable,
+  type MarkerDef,
+  type PluginId,
+  parseMarkerDef,
+  parseShapeDef,
+  type Registry,
+  type ShapeDef,
+} from '@fluxion/core';
 import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
 
 /**
@@ -9,10 +19,12 @@ import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/sch
  * @public
  */
 export type PackSpec = {
-  /** The pack's namespace, lower case (`basic`); every definition id starts with `<id>:`. */
+  /** The pack's namespace, lower case (`basic`); every definition and marker id starts with `<id>:`. */
   readonly id: string;
   /** Shape definitions (validated when the pack is registered). */
   readonly shapes?: readonly ShapeDef[];
+  /** Connector end markers (validated when the pack is registered). */
+  readonly markers?: readonly MarkerDef[];
 };
 
 /**
@@ -20,7 +32,7 @@ export type PackSpec = {
  *
  * @public
  */
-export type PackRegistries = Pick<CoreRegistries, 'shapeDefs'>;
+export type PackRegistries = Pick<CoreRegistries, 'shapeDefs' | 'markers'>;
 
 /**
  * A defined pack.
@@ -32,6 +44,8 @@ export type Pack = {
   readonly id: string;
   /** Its shape definitions. */
   readonly shapes: readonly ShapeDef[];
+  /** Its connector end markers. */
+  readonly markers: readonly MarkerDef[];
   /**
    * Validate and register everything under the pack's id as source: all of it, or nothing and the
    * diagnostics (`FLX_PACK_INVALID`, `FLX_SHAPE_DEF_INVALID`, `FLX_REGISTRY_DUPLICATE`).
@@ -55,7 +69,7 @@ const packProblem = (at: ReadonlyArray<string | number>, message: string): Diagn
  * @public
  */
 export function registerShapeDef(
-  registries: PackRegistries,
+  registries: Pick<PackRegistries, 'shapeDefs'>,
   def: unknown,
   source: PluginId,
   at: ReadonlyArray<string | number> = [],
@@ -68,29 +82,37 @@ export function registerShapeDef(
   return registered.ok ? registered : err([{ ...registered.error, path: jsonPointer([...at, 'id']) }]);
 }
 
+/** One kind of entry a pack holds: its field, what an entry is called, its parser and its registry. */
+type Part<T extends { readonly id: string }> = {
+  readonly field: 'shapes' | 'markers';
+  readonly noun: string;
+  readonly parse: (input: unknown, at: ReadonlyArray<string | number>) => Result<T, readonly Diagnostic[]>;
+  readonly registry: Registry<string, T>;
+};
+
 /**
- * Every problem of `pack` in `registries`, before anything is registered: invalid definitions, ids
- * outside the namespace or defined twice, and keys another source holds (M5.8 review F2).
+ * Every problem of the entries `items` of `pack` (one part) before anything is registered: invalid
+ * entries, ids outside the namespace or given twice, and keys another source holds (M5.8 review F2).
  */
-function packProblems(pack: Pack, registries: PackRegistries): Diagnostic[] {
+function partProblems<T extends { readonly id: string }>(pack: Pack, part: Part<T>, items: readonly T[]): Diagnostic[] {
   const first = new Map<string, number>();
-  return pack.shapes.flatMap((def, k) => {
-    const parsed = parseShapeDef(def, ['shapes', k]);
+  return items.flatMap((item, k) => {
+    const parsed = part.parse(item, [part.field, k]);
     if (!parsed.ok) return [...parsed.error];
     const { id } = parsed.value;
-    const at = ['shapes', k, 'id'];
-    if (!id.startsWith(`${pack.id}:`)) return [packProblem(at, `shape id "${id}" is outside the namespace "${pack.id}:" of ${pack.id}`)];
+    const at = [part.field, k, 'id'];
+    if (!id.startsWith(`${pack.id}:`)) return [packProblem(at, `${part.noun} id "${id}" is outside the namespace "${pack.id}:" of ${pack.id}`)];
     const earlier = first.get(id);
     first.set(id, earlier ?? k);
-    if (earlier !== undefined) return [packProblem(at, `shape id "${id}" is defined twice (also /shapes/${earlier})`)];
-    const holder = registries.shapeDefs.source(id);
+    if (earlier !== undefined) return [packProblem(at, `${part.noun} id "${id}" is defined twice (also /${part.field}/${earlier})`)];
+    const holder = part.registry.source(id);
     if (holder !== undefined && holder !== pack.id)
       return [
         {
           code: 'FLX_REGISTRY_DUPLICATE',
           severity: 'error',
           path: jsonPointer(at),
-          message: `"${id}" is already registered in shapeDefs by ${holder}`,
+          message: `"${id}" is already registered in ${part.registry.name} by ${holder}`,
         } as const,
       ];
     return [];
@@ -98,22 +120,17 @@ function packProblems(pack: Pack, registries: PackRegistries): Diagnostic[] {
 }
 
 /**
- * Registers every shape of a pack `packProblems` found nothing wrong with. Nothing can be refused then
+ * Registers every entry of a part `partProblems` found nothing wrong with. Nothing can be refused then
  * (registries are synchronous, and only another source's key is refused), so there is no rollback that
  * could remove this pack's live entries (M5.8 review F1).
  */
-function registerAll(pack: Pack, registries: PackRegistries): Disposable {
-  const done = pack.shapes.map((def) => {
-    const r = registries.shapeDefs.register(def.id, def, pack.id);
+function registerPart<T extends { readonly id: string }>(pack: Pack, registry: Registry<string, T>, items: readonly T[]): Disposable[] {
+  return items.map((item) => {
+    const r = registry.register(item.id, item, pack.id);
     // tzap disable next-line ConditionalExpression,BlockStatement,StringLiteral: refused only for another source's key, checked above
     if (!r.ok) throw new Error(`pack ${pack.id}: ${r.error.message}`);
     return r.value;
   });
-  return {
-    dispose: () => {
-      for (const d of done) d.dispose();
-    },
-  };
 }
 
 /**
@@ -121,7 +138,7 @@ function registerAll(pack: Pack, registries: PackRegistries): Disposable {
  *
  * @example
  * ```ts
- * export const basicPack = definePack({ id: 'basic', shapes: [rect, ellipse] });
+ * export const basicPack = definePack({ id: 'basic', shapes: [rect, ellipse], markers: [openArrow] });
  * const registered = basicPack.register(registries); // Result: all registered, or diagnostics
  * ```
  *
@@ -131,11 +148,20 @@ export function definePack(spec: PackSpec): Pack {
   const pack: Pack = {
     id: spec.id,
     shapes: spec.shapes ?? [],
+    markers: spec.markers ?? [],
     register: (registries) => {
       if (!PACK_ID.test(pack.id)) return err([packProblem(['id'], `pack id "${pack.id}" must be lower-case letters, digits and "-"`)]);
+      const shapes: Part<ShapeDef> = { field: 'shapes', noun: 'shape', parse: parseShapeDef, registry: registries.shapeDefs };
+      const markers: Part<MarkerDef> = { field: 'markers', noun: 'marker', parse: parseMarkerDef, registry: registries.markers };
       // everything is checked first, so a broken pack reports all its problems and registers nothing
-      const problems = packProblems(pack, registries);
-      return problems.length > 0 ? err(problems) : ok(registerAll(pack, registries));
+      const problems = [...partProblems(pack, shapes, pack.shapes), ...partProblems(pack, markers, pack.markers)];
+      if (problems.length > 0) return err(problems);
+      const done = [...registerPart(pack, registries.shapeDefs, pack.shapes), ...registerPart(pack, registries.markers, pack.markers)];
+      return ok({
+        dispose: () => {
+          for (const d of done) d.dispose();
+        },
+      });
     },
   };
   return pack;

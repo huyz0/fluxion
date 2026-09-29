@@ -118,12 +118,6 @@ export function fitTransform(area: {
 export function ImageView(props: ElementViewProps): ReactNode;
 
 // @public
-export const MARKER_SIZE = 5;
-
-// @public
-export function markerTrim(def: MarkerDef | undefined, width: number): number;
-
-// @public
 export type ModePolicy = {
     readonly editOverlay: boolean;
     readonly interactive: boolean;

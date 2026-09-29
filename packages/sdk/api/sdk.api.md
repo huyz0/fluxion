@@ -13,10 +13,14 @@ import { EvaluatedOutline } from '@fluxion/core';
 import { evaluateOutline } from '@fluxion/core';
 import { HandleDef } from '@fluxion/core';
 import { hitTestShape } from '@fluxion/core';
+import { MARKER_SIZE } from '@fluxion/core';
+import { MarkerDef } from '@fluxion/core';
+import { markerTrim } from '@fluxion/core';
 import { NumberParam } from '@fluxion/core';
 import { outlineDistance } from '@fluxion/core';
 import { OutlineSpec } from '@fluxion/core';
 import { ParamSpec } from '@fluxion/core';
+import { parseMarkerDef } from '@fluxion/core';
 import { PluginId } from '@fluxion/core';
 import { PointsParam } from '@fluxion/core';
 import { projectToOutline } from '@fluxion/core';
@@ -43,6 +47,12 @@ export { HandleDef }
 
 export { hitTestShape }
 
+export { MARKER_SIZE }
+
+export { MarkerDef }
+
+export { markerTrim }
+
 export { NumberParam }
 
 export { outlineDistance }
@@ -53,19 +63,23 @@ export { OutlineSpec }
 export type Pack = {
     readonly id: string;
     readonly shapes: readonly ShapeDef[];
+    readonly markers: readonly MarkerDef[];
     register(registries: PackRegistries): Result<Disposable, readonly Diagnostic[]>;
 };
 
 // @public
-export type PackRegistries = Pick<CoreRegistries, "shapeDefs">;
+export type PackRegistries = Pick<CoreRegistries, "shapeDefs" | "markers">;
 
 // @public
 export type PackSpec = {
     readonly id: string;
     readonly shapes?: readonly ShapeDef[];
+    readonly markers?: readonly MarkerDef[];
 };
 
 export { ParamSpec }
+
+export { parseMarkerDef }
 
 export { PluginId }
 
@@ -74,7 +88,7 @@ export { PointsParam }
 export { projectToOutline }
 
 // @public
-export function registerShapeDef(registries: PackRegistries, def: unknown, source: PluginId, at?: ReadonlyArray<string | number>): Result<Disposable, readonly Diagnostic[]>;
+export function registerShapeDef(registries: Pick<PackRegistries, "shapeDefs">, def: unknown, source: PluginId, at?: ReadonlyArray<string | number>): Result<Disposable, readonly Diagnostic[]>;
 
 export { ShapeDef }
 

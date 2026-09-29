@@ -62,7 +62,7 @@ describe('registries (03-core-engine §4)', () => {
     expect(CORE_REGISTRY_NAMES).toHaveLength(15);
     for (const name of CORE_REGISTRY_NAMES) expect(regs[name].name).toBe(name);
     // independent instances
-    regs.markers.register('x', 1, 'core');
-    expect(regs.effects.get('x')).toBeUndefined();
+    regs.effects.register('x', 1, 'core');
+    expect(regs.markers.get('x')).toBeUndefined();
   });
 });

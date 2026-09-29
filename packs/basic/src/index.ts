@@ -1,5 +1,6 @@
 // Public entry of @fluxion/pack-basic; the package comment is the dts banner in tsdown.config.ts.
 import { definePack, type Pack } from '@fluxion/sdk';
+import { basicMarkers } from './markers.js';
 import { blockArrow } from './shapes/block-arrow.js';
 import { callout } from './shapes/callout.js';
 import { cloud } from './shapes/cloud.js';
@@ -30,7 +31,7 @@ import { triangle } from './shapes/triangle.js';
 export const VERSION: string = '0.0.0';
 
 /**
- * The basic shapes (FR-SHP-002), namespace `basic`. Hosts register it into their core registries
+ * The basic shapes (FR-SHP-002) and connector markers (FR-CON-003), namespace `basic`. Hosts register it into their core registries
  * (ADR-0017): `basicPack.register(registries)`.
  *
  * @public
@@ -60,9 +61,11 @@ export const basicPack: Pack = definePack({
     textBox,
     imageFrame,
   ],
+  markers: basicMarkers,
 });
 
 export {
+  basicMarkers,
   blockArrow,
   callout,
   cloud,

@@ -1,7 +1,8 @@
+import { MARKER_SIZE, markerTrim } from '@fluxion/core';
 import type { DocumentFile, RecordId, Route, Style } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_MARKERS, MARKER_SIZE, markerTrim } from './markers.js';
+import { BUILTIN_MARKERS } from './markers.js';
 import { strokeReach } from './shape-view.js';
 import { renderDocumentToHtml } from './ssr.js';
 import { testRegistries } from './test-registries.js';
@@ -116,7 +117,9 @@ describe('connector markers and labels in static HTML (FR-CON-003, FR-CON-006)',
     } as DocumentFile;
     const open = renderDocumentToHtml(opened, { registries }).html;
     expect(open).toContain('refX="10"');
-    expect(open).toContain(`<path d="M0 0 L10 5 L0 10" style="fill:none;stroke:var(--fx-color-connector);stroke-width:${10 / MARKER_SIZE}"></path>`);
+    expect(open).toContain(
+      `<path d="M0 0 L10 5 L0 10" style="fill:none;stroke:var(--fx-color-connector);stroke-width:${10 / MARKER_SIZE};stroke-linejoin:bevel;stroke-linecap:butt"></path>`,
+    );
     // none, and an unregistered marker, draw nothing and trim nothing
     const none = drawn({ type: 'straight' }, undefined, { freeTarget: { x: 200, y: 0 }, markers: { start: 'none', end: 'test:missing' } });
     expect(none.d).toBe('M0 0 L200 0');

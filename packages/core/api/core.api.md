@@ -117,7 +117,7 @@ export type CoreError = {
 export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY" | "COMMAND_UNKNOWN" | "COMMAND_DISABLED" | "COMMAND_ARGS" | "HISTORY_EMPTY";
 
 // @public
-export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : N extends "commands" ? AnyCommand : N extends "shapeDefs" ? ShapeDef : unknown>; };
+export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : N extends "commands" ? AnyCommand : N extends "shapeDefs" ? ShapeDef : N extends "markers" ? MarkerDef : unknown>; };
 
 // @public
 export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
@@ -313,12 +313,21 @@ export interface Logger {
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 // @public
+export const MARKER_SIZE = 5;
+
+// @public
 export type MarkerDef = {
     readonly id: string;
     readonly path: string;
     readonly inset: number;
     readonly filled: boolean;
 };
+
+// @public
+export const markerDefSchema: z.ZodType<MarkerDef>;
+
+// @public
+export function markerTrim(def: MarkerDef | undefined, width: number): number;
 
 // @public
 export type MessageDescriptor = {
@@ -357,6 +366,9 @@ export type ParamSpec = NumberParam | EnumParam | PointsParam;
 
 // @public
 export function parseExpr(src: string, at?: ReadonlyArray<string | number>): Result<Expr, Diagnostic>;
+
+// @public
+export function parseMarkerDef(input: unknown, at?: ReadonlyArray<string | number>): Result<MarkerDef, readonly Diagnostic[]>;
 
 // @public
 export function parseShapeDef(input: unknown, at?: ReadonlyArray<string | number>): Result<ShapeDef, readonly Diagnostic[]>;

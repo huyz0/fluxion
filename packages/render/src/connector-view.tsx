@@ -6,14 +6,14 @@
 // fractions of the route (FR-CON-006; routing's labelPosition): plain paragraphs on a background. The
 // wrapper has no box, so the SVG draws in screen coordinates; the route is a store query, so moving a
 // bound shape redraws it.
-import type { MarkerDef } from '@fluxion/core';
+import { type MarkerDef, markerTrim } from '@fluxion/core';
 import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
 import { labelPosition, routeConnector, trimRoute } from '@fluxion/routing';
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
 import { labelStyle, plainParagraphs } from './label.js';
-import { MarkerView, markerTrim } from './markers.js';
+import { MarkerView } from './markers.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { concreteLength } from './text-measurer.js';

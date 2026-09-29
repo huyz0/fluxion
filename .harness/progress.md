@@ -1045,3 +1045,14 @@ M5.20 is split: this row covers the marker type, registry, built-ins and trimmin
 Mutation score is 100% for routing and render.
 Review r1 F1 fixed: each trim takes at most half its end segment, so the direction survives. trimRoute returns the trims it used, and MarkerView sets refX to 10 minus that trim in box units, so the tip always lands on the end. Tests cover a 10 px end leg at stroke 5 and a zero-width stroke.
 Review r2 F2 fixed: a trim is a straight distance. Curves are cut by chord from the old end, the cut end's handle is aimed at the old end so the marker spans the cut exactly, and a single curve is cut at both parameters found on the original. Tests cover chord distance, points on the curve, tangents toward the old ends, quadratics, caps and untouched segments.
+
+## 2026-09-30 M5.36 (claude)
+
+Pack markers, recorded in an ADR-0017 amendment:
+- core: `markerDefSchema`/`parseMarkerDef` (each subpath is parsed; no `{…}` templates) and `MARKER_SIZE`/`markerTrim`, which moved from render; the `markers` registry is typed.
+- SDK: `PackSpec.markers` and `PackRegistries` with `markers`; a shared problems/register path covers shapes and markers.
+- basic: five open markers; the ringed ones stop the route at the ring and draw their own line to the tip.
+- CLI: passes the host's markers to render.
+
+The gate's pack-marker title runs in the CLI, the host that bundles the pack; packs import only the SDK. Mutation score is 100% for core, sdk and basic.
+Review r1 minors fixed. F1: open markers use bevel joins and the open arrow's vertex sits at 9.5, so its stroke ends at the tip. F2: marker paths are trimmed, subpath errors are named, and all subpaths share the template segment cap.

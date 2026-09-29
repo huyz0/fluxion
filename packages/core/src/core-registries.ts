@@ -2,6 +2,7 @@
 // Its own module, so registry.ts stays a leaf that the store and hooks can import without a cycle.
 import type { AnyCommand } from './commands.js';
 import type { IntegrityHook } from './hook-types.js';
+import type { MarkerDef } from './marker.js';
 import { createRegistry, type Registry } from './registry.js';
 import type { ShapeDef } from './shape/shape-def.js';
 
@@ -44,7 +45,15 @@ export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
 export type CoreRegistries = {
   readonly [N in CoreRegistryName]: Registry<
     string,
-    N extends 'integrityHooks' ? IntegrityHook : N extends 'commands' ? AnyCommand : N extends 'shapeDefs' ? ShapeDef : unknown
+    N extends 'integrityHooks'
+      ? IntegrityHook
+      : N extends 'commands'
+        ? AnyCommand
+        : N extends 'shapeDefs'
+          ? ShapeDef
+          : N extends 'markers'
+            ? MarkerDef
+            : unknown
   >;
 };
 

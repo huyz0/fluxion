@@ -56,3 +56,12 @@ bundled pack; and the CLI test that a pack failing to register is an internal er
 
 01-overview §2 (package map), ADR-0007 (plugin trust: first-party packs are trusted and in-page),
 ADR-0016 (shape definitions).
+
+## Amendments
+
+- 2026-09-30 (M5.36; M5 cp1 F3): packs also carry connector end markers.
+  - Core defines `MarkerDef`: absolute path data in a 10 x 10 box with its tip at (10, 5), an inset, and filled or open. Core also defines `markerDefSchema`, `parseMarkerDef` (`FLX_PACK_INVALID`), `MARKER_SIZE` and `markerTrim`. Core's `markers` registry is typed `MarkerDef`.
+  - The SDK re-exports them. `PackSpec.markers` joins `shapes`, and `PackRegistries` widens to `Pick<CoreRegistries, 'shapeDefs' | 'markers'>`. A pack's markers are checked and registered like its shapes: every problem first, then all or nothing, ids in the pack's namespace.
+  - Render reads markers from `RenderRegistries.markers`, where the schema's built-ins register as source `core`. A host passes its core registry: the CLI hands `builtinRegistries` the host's `shapeDefs` and `markers`.
+  - `packs/basic` adds `basic:open-arrow` and the crow's-foot `-one`, `-many`, `-zero-one` and `-zero-many`.
+  - Confirmation: the SDK's pack test covers markers, all or nothing. The CLI test (the host that bundles the pack) draws every basic marker at two stroke widths and checks its size and the trim under it.

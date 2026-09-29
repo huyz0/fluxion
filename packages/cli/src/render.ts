@@ -31,8 +31,8 @@ async function render(file: string, out: string, screens: readonly string[] | un
   if (!parsed.ok) return { exitCode: 1, diagnostics: parsed.error.diagnostics };
   const problem = screenProblem(parsed.value.document, screens ?? [], file);
   if (problem !== undefined) return usage(problem);
-  // shapes come from the bundled packs, registered in the host's core registries (ADR-0017)
-  const registries = builtinRegistries(host.registries.shapeDefs);
+  // shapes and markers come from the bundled packs, registered in the host's core registries (ADR-0017)
+  const registries = builtinRegistries(host.registries.shapeDefs, undefined, host.registries.markers);
   const { html, screens: drawn } = renderDocumentToHtml(
     parsed.value.document,
     screens === undefined ? { registries } : { registries, screens: screens as readonly RecordId[] },

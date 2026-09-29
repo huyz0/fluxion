@@ -4,8 +4,12 @@
 
 ```ts
 
+import { MarkerDef } from '@fluxion/sdk';
 import { Pack } from '@fluxion/sdk';
 import { ShapeDef } from '@fluxion/sdk';
+
+// @public
+export const basicMarkers: readonly MarkerDef[];
 
 // @public
 export const basicPack: Pack;

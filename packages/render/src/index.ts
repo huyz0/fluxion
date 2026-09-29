@@ -11,7 +11,7 @@ export { type FitTransform, fitTransform, screenArea } from './fit.js';
 export { normalizeSvg } from './golden.js';
 export { ImageView } from './image-view.js';
 export { plainParagraphs } from './label.js';
-export { BUILTIN_MARKERS, MARKER_SIZE, markerTrim, registerBuiltinMarkers } from './markers.js';
+export { BUILTIN_MARKERS, registerBuiltinMarkers } from './markers.js';
 export { type ModePolicy, modePolicy, type RenderMode } from './mode-policy.js';
 export { pathData } from './path-data.js';
 export { createRenderRegistries, type ElementView, type ElementViewProps, type RenderRegistries } from './registries.js';
