@@ -105,6 +105,7 @@ leg('the 21 basic shapes: parametric outlines, validated, inside their box', () 
   titled([
     ['M5.10', 'FR-SHP-003: star points 5 to 8 gives 16 outline vertices', PACK],
     ['M5.11', 'FR-SHP-002: all 21 basic shapes validate and their outlines evaluate inside their box', PACK],
+    ['M5.31', 'FR-SHP-003: a definition whose templates, expressions or handles do not parse or read unknown names is refused at validation', 'core'],
   ]),
 );
 leg('FR-SHP-005 per shape: projected points on the outline, interior and exterior hit samples', () =>
@@ -119,6 +120,7 @@ leg('shape style, text layout and image views (T1)', () =>
   titled([
     browser('M5.13', 'FR-SHP-004: a theme change restyles token-bound shapes without re-rendering views'),
     browser('M5.13', 'FR-SHP-004: solid, gradient, pattern, image and none fills render with decorations'),
+    ['M5.30', "FR-SHP-004: a definition's default style applies under the element's style, and open outlines are stroked without fill", 'render'],
     browser('M5.28', 'FR-SHP-004: stroke align inside and outside draw inside and outside the outline'),
     browser('M5.28', 'FR-SHP-004: dash, cap, join, opacity, shadow, blur and glow render from the resolved style'),
     browser('M5.14', 'FR-SHP-006: grow-shape height equals the measured text within 1 px'),
@@ -145,6 +147,7 @@ leg('routers: pluggable by name; straight, curved, polyline and orthogonal', () 
 leg('markers, connector style and labels', () =>
   titled([
     ['M5.20', 'FR-CON-003: every marker scales with the stroke width and trims the path under it', 'render'],
+    ['M5.20', 'FR-CON-003: every basic pack marker scales with the stroke width and trims the path under it', PACK],
     ['M5.21', 'FR-CON-005: rounded corners render with given radius', 'render'],
     browser('M5.22', 'FR-CON-006: a label at t 0.5 stays at the path midpoint when the endpoints move'),
   ]),

@@ -1,0 +1,64 @@
+{
+  "milestone": "M5",
+  "checkpoint": "cp1",
+  "range": "a0d31fd..e26cb9d",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "spec fidelity / gate honesty (FR-SHP-002, FR-SHP-004, ADR-0016 item 2)",
+      "detail": "shape-view.tsx never reads ShapeDef.defaultStyle (theme defaults apply to every def) and fills every outline, open ones included, although ADR-0016 item 2 says open outlines have no fill; text-box and freehand defaults are dead data; no row or leg covers it.",
+      "failure_scenario": "M5.24 records goldens and baselines with a stroked, surface-filled text-box and filled polyline/freehand polygons; every m5-complete leg stays green."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "area": "coherence / FR-SHP-003, FR-EXT-001",
+      "detail": "parseShapeDef checks templates and expressions only as strings; it never parses them or checks the identifiers of outlines, decorations and handles, so a definition that registers can fail every evaluateOutline, and handle typos go unnoticed until M7.",
+      "failure_scenario": "A pack ships a handle y of \"2 * hh\" or an outline typo {w - rr}; register() returns ok; the outline shows as a placeholder at render time, the handle typo lands unnoticed."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "architecture / contracts (ADR-0017, SDK public API)",
+      "detail": "M5.20 has packs/basic register marker definitions, but PackSpec has only shapes, PackRegistries picks shapeDefs, and the markers registry is unknown in core; the row does not name the SDK contract growth.",
+      "failure_scenario": "The M5.20 author registers the ER markers from render or the CLI host under basic: to pass the gallery check (a dogfooding violation), or grows definePack without weighing it as a contract change."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "gate honesty (m5-complete legs)",
+      "detail": "The docs leg only checks that stub (M1) is gone from three READMEs; the FR-CON-012 leg checks a passing title, not the 1000 runs the plan names; no coverage floor applies to packs/basic.",
+      "failure_scenario": "One-line READMEs and a 100-run property pass the gate while the plan is not met."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M5.30 (new, before M5.24) + m5-complete shape-views leg",
+      "note": "The shape view merges ShapeDef.defaultStyle under the element style (theme under both) and strokes open outlines without fill; the gate names the title."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M5.31 (new) + m5-complete shapes leg",
+      "note": "parseShapeDef parses every template and expression and checks the identifiers each may read (outline, decorations, handles; i and n only in a polygon); the gate names the title."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M5.20 (amended) + m5-complete markers leg",
+      "note": "M5.20 names the SDK contract change: a core marker definition type, PackSpec.markers and PackRegistries widened to markers, recorded as an ADR-0017 amendment; the gate also names the pack-marker title (the pending M5.1 review minor)."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M5.32 (new)",
+      "note": "The docs leg checks README content, the FR-CON-012 leg checks the 1000-run count, and packs/basic gets a coverage floor, each with a harness case."
+    }
+  ],
+  "planDelta": "Three rows added (M5.30-M5.32) and M5.20 amended; rows at 31 of 19 planned (1.6x: M4 hand-offs, the ADR row, style splits and review follow-ups). M5.7 and M5.12 exceeded the 400-line split risk: split the routing rows M5.16-M5.23 before starting them."
+}

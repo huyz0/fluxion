@@ -924,3 +924,6 @@ packs/basic batch 2: callout (tail, tip, width), cloud (eight outward arcs on an
 
 ## 2026-09-29 M5.12 (claude)
 core shape/hit.ts: hitTestShape (closed: nonzero inside or within tolerance; open: within tolerance), outlineDistance, projectToOutline (outermost crossing of a ray, or the far end of an edge the ray runs along (review F1), snapped onto the outline; nearest point on a miss or a zero direction), re-exported by the SDK; per-shape tests in packs/basic (interior/exterior samples for all 21, 24 rays from inside and outside land on the outline within 1e-6); M5.11 review F1 follow-up: smooth.ts gives each vertex one fitted tangent (C1; out-of-box components at an edge dropped, the rest scaled to fit); ADR-0016 amendment
+
+## 2026-09-29 M5.26 (claude)
+cp1 milestone review (fresh milestone-reviewer, a0d31fd..e26cb9d): changes-requested. F1 major (shape view ignores defaultStyle and fills open outlines) → M5.30 before M5.24; F2 (parseShapeDef stops at strings) → M5.31; F3 (pack markers need an SDK contract change) → M5.20 amended; F4 (weak legs, no packs/basic floor) → M5.32; the gate names the new titles and the pending pack-marker title; M5.md Learned
