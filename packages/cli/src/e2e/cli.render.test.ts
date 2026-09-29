@@ -36,6 +36,21 @@ describe('fluxion render (FR-CLI-001, FR-SCR-001, ADR-0015)', { timeout: E2E_TIM
     expect(normalizeSvg(html)).toBe(readFileSync(join(REPO, 'packages/render/__golden__/two-rects-line.svg'), 'utf8'));
   });
 
+  it('FR-SHP-002: the shapes gallery SVG goldens match', async () => {
+    // every basic shape, route type and marker, drawn from the bundled pack (M5.24)
+    const out = join(dir, 'shapes-gallery.html');
+    const { status } = render(['fixtures/docs/shapes-gallery.flux.json', '-o', out]);
+    expect(status).toBe(0);
+    const html = readFileSync(out, 'utf8');
+    // nothing is a placeholder: the pack draws every shape
+    expect(html).not.toContain('class="fx-placeholder"');
+    const svg = normalizeSvg(html);
+    // a second render is byte-identical
+    render(['fixtures/docs/shapes-gallery.flux.json', '-o', out]);
+    expect(normalizeSvg(readFileSync(out, 'utf8'))).toBe(svg);
+    await expect(svg).toMatchFileSnapshot('../../__golden__/shapes-gallery.svg');
+  });
+
   it('FR-CLI-001: --screen keeps only the named screens; an unknown or hidden screen is a usage error', () => {
     // three screens, the last one hidden (M4.20 review F1, F2)
     const b = documentBuilder({ seed: 420 });

@@ -32,6 +32,98 @@ function twoRectsLine(title) {
 /** Put `patch` into record `id` of `doc` (a copy). */
 const patched = (doc, id, patch) => ({ ...doc, records: { ...doc.records, [id]: { ...doc.records[id], ...patch } } });
 
+/** A plain rich-text document of one paragraph. */
+const plain = (text) => ({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] });
+
+/** The 21 basic shapes (FR-SHP-002) in the gallery's grid, with a label each. */
+const GALLERY_SHAPES = [
+  'rect',
+  'rounded-rect',
+  'ellipse',
+  'triangle',
+  'diamond',
+  'parallelogram',
+  'trapezoid',
+  'hexagon',
+  'octagon',
+  'star',
+  'block-arrow',
+  'callout',
+  'cloud',
+  'cylinder',
+  'document',
+  'note',
+  'line',
+  'polyline',
+  'freehand',
+  'text-box',
+  'image-frame',
+];
+
+/**
+ * The shapes gallery (FR-SHP-002, FR-CON-002, FR-CON-003; M5.24): every basic shape in a 7 x 3 grid,
+ * then connectors of the four route types between four more shapes and between free points, carrying
+ * every built-in and basic-pack marker (at stroke width 4, large enough for the visual diff to see: M5.24
+ * review F1), labels, a corner radius, and text-fit fields (ADR-0018). Static HTML does not measure
+ * text, so the gallery does not exercise the fitting itself (M5.24 review F2).
+ */
+function shapesGallery() {
+  const b = documentBuilder({ title: 'Shapes gallery', seed: 524 });
+  const s = b.screen({ name: 'Gallery', size: { w: 1920, h: 1080 } });
+  const cells = GALLERY_SHAPES.map((name, k) => {
+    const [col, row] = [k % 7, Math.floor(k / 7)];
+    return b.rect(s, { x: 80 + 260 * col, y: 60 + 170 * row, w: 180, h: 110, defId: `basic:${name}`, label: name, slug: `shape-${name}` });
+  });
+  // the connector band: four bound shapes and routes of every type between them
+  const a = b.rect(s, { x: 120, y: 640, w: 180, h: 100, defId: 'basic:rect', label: 'A', slug: 'a' });
+  const c = b.rect(s, { x: 620, y: 600, w: 180, h: 110, defId: 'basic:ellipse', label: 'B', slug: 'b' });
+  const d = b.rect(s, { x: 120, y: 900, w: 160, h: 120, defId: 'basic:diamond', label: 'C', slug: 'c' });
+  const e = b.rect(s, { x: 640, y: 880, w: 160, h: 120, defId: 'basic:hexagon', label: 'D', slug: 'd' });
+  const straight = b.connect(a, c, { route: 'straight' });
+  const curved = b.connect(a, d, { route: 'curved', sourceAnchor: { kind: 'named', name: 's' }, targetAnchor: { kind: 'named', name: 'n' } });
+  const orthogonal = b.connect(c, e, { route: 'orthogonal', sourceAnchor: { kind: 'named', name: 'e' }, targetAnchor: { kind: 'named', name: 'e' } });
+  const polyline = b.connect(d, e, { route: 'polyline' });
+  // free-standing connectors for the crow's-foot markers
+  const er1 = b.connect({ x: 1000, y: 640 }, { x: 1400, y: 640 }, { route: 'straight' });
+  const er2 = b.connect({ x: 1000, y: 760 }, { x: 1400, y: 900 }, { route: 'orthogonal' });
+  const doc = b.build();
+  const set = (id, patch) => {
+    doc.records[id] = { ...doc.records[id], ...patch };
+  };
+  // text-fit fields (ADR-0018): a note set to grow with its text, a callout set to shrink it. Their
+  // texts fit as written, so the static HTML (which never measures) draws them cleanly; the fitting
+  // itself is tested where text is measured (render's browser tests, M5.14)
+  set(cells[GALLERY_SHAPES.indexOf('note')], {
+    text: plain('a note grows to fit its text, however long it runs'),
+    textFit: { mode: 'grow' },
+  });
+  set(cells[GALLERY_SHAPES.indexOf('callout')], {
+    text: plain('a callout shrinks its text to fit'),
+    textFit: { mode: 'shrink', minSize: 8 },
+  });
+  const thick = { stroke: { width: 4 } };
+  set(straight, { style: thick, markers: { start: 'circle', end: 'arrow' }, labels: [{ text: plain('straight'), position: 0.5, offset: { x: 0, y: -14 } }] });
+  set(curved, { style: thick, markers: { start: 'diamond', end: 'triangle' }, labels: [{ text: plain('curved'), position: 0.5 }] });
+  set(orthogonal, {
+    style: thick,
+    route: { type: 'orthogonal', cornerRadius: 12 },
+    markers: { start: 'bar', end: 'basic:open-arrow' },
+    labels: [{ text: plain('orthogonal'), position: 0.5 }],
+  });
+  set(polyline, {
+    style: thick,
+    route: { type: 'polyline', waypoints: [{ x: 460, y: 1050 }] },
+    markers: { start: 'basic:crows-foot-one', end: 'basic:crows-foot-many' },
+  });
+  set(er1, {
+    style: thick,
+    markers: { start: 'basic:crows-foot-zero-one', end: 'basic:crows-foot-zero-many' },
+    labels: [{ text: plain('zero or one — zero or many'), position: 0.5, offset: { x: 0, y: -14 } }],
+  });
+  set(er2, { markers: { start: 'none', end: 'arrow' }, style: { stroke: { width: 3, dash: [8, 4] } } });
+  return doc;
+}
+
 const FIXTURES = {
   minimal: () => {
     const b = documentBuilder({ title: 'Minimal', seed: 1 });
@@ -64,6 +156,7 @@ const FIXTURES = {
     };
     return { ...doc, records: { ...doc.records, [gauge.id]: gauge, [hologram.id]: hologram } };
   },
+  'shapes-gallery': shapesGallery,
   // an element on a screen that does not exist
   'invalid-ref-missing': () => {
     const { doc, rect } = twoRectsLine('Missing screen');

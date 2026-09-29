@@ -1060,3 +1060,11 @@ Review r1 minors fixed. F1: open markers use bevel joins and the open arrow's ve
 ## 2026-09-30 M5.37 (claude)
 
 CI run 36583393628 was red. The 1000-run attachment property took more than Vitest's 5 s default on the ubuntu runner, and in the coverage harness sandbox. It gets `{ timeout: 60_000 }`. The run count is unchanged, and the gate leg still reads 1000.
+
+## 2026-09-30 M5.24 (claude)
+
+- Gallery fixture `fixtures/docs/shapes-gallery.flux.json` (gen.mjs): the 21 basic shapes, the 4 route types, all 10 markers, labels, a corner radius, a dash, and text-fit fields.
+- CLI: SVG golden at packages/cli/__golden__, drawn by the built bin with no placeholder and byte-identical twice. Render's own golden test skips the gallery, which needs the pack.
+- Visual: `e2e/render.shapes-gallery.spec.ts` @visual, with baselines for all three engines from the pinned Playwright image (Docker). The two-rects-line baselines were unchanged.
+- Carried M5.22 F1: the screen sets `--fx-screen-background` (its colour, else transparent) and connector labels use it.
+Review r1 minors: F1 fixed (marker connectors at stroke 4, markers about 20 px; baselines regenerated in the pinned image). F2: static HTML never measures text, so the gallery carries the text-fit fields but cannot exercise fitting; the comment says so, and fitting stays covered by render's browser tests.

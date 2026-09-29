@@ -33,6 +33,7 @@ describe('shared document fixtures (FR-DOC-001)', () => {
       'invalid-ref-missing.flux.json',
       'invalid-schema-invalid.flux.json',
       'minimal.flux.json',
+      'shapes-gallery.flux.json',
       'two-rects-line.flux.json',
       'unknown-kind.flux.json',
     ]);

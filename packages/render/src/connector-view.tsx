@@ -3,7 +3,8 @@
 // the resolved style (colour, width, dash, cap, join, opacity, token refs; FR-CON-005) with its bends
 // rounded by the route's corner radius or else the style's; end markers from the markers registry,
 // sized in stroke widths, with the route trimmed under them (FR-CON-003); and its labels at their
-// fractions of the route (FR-CON-006; routing's labelPosition): plain paragraphs on a background. The
+// fractions of the route (FR-CON-006; routing's labelPosition): plain paragraphs on the screen's
+// background colour. The
 // wrapper has no box, so the SVG draws in screen coordinates; the route is a store query, so moving a
 // bound shape redraws it.
 import { type MarkerDef, markerTrim } from '@fluxion/core';

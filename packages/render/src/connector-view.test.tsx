@@ -2,6 +2,7 @@ import { MARKER_SIZE, markerTrim } from '@fluxion/core';
 import type { DocumentFile, RecordId, Route, Style } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { CONTENT_CSS } from './content-css.js';
 import { BUILTIN_MARKERS } from './markers.js';
 import { strokeReach } from './shape-view.js';
 import { renderDocumentToHtml } from './ssr.js';
@@ -55,6 +56,31 @@ describe('connector style (FR-CON-005)', () => {
 });
 
 describe('connector markers and labels in static HTML (FR-CON-003, FR-CON-006)', () => {
+  it("FR-CON-006: a label's background is its screen's colour, not the theme's (M5.22 review F1)", () => {
+    const onScreen = (background: unknown) => {
+      const b = documentBuilder({ seed: 5241 });
+      const screenId = b.screen();
+      b.connect({ x: 0, y: 0 }, { x: 100, y: 0 }, { arrow: false });
+      const file = b.build();
+      const screen = { ...(file.records[screenId as string] as object), background };
+      return renderDocumentToHtml({ ...file, records: { ...file.records, [screenId as string]: screen } } as DocumentFile, { registries: testRegistries() })
+        .html;
+    };
+    expect(onScreen('#0f172a')).toMatch(/<section class="fx-screen"[^>]*style="[^"]*--fx-screen-background:#0f172a/);
+    // a gradient has no one colour: the label keeps no background
+    expect(
+      onScreen({
+        type: 'linear-gradient',
+        angle: 0,
+        stops: [
+          { offset: 0, color: '#000000' },
+          { offset: 1, color: '#ffffff' },
+        ],
+      }),
+    ).toMatch(/<section class="fx-screen"[^>]*style="[^"]*--fx-screen-background:transparent/);
+    expect(CONTENT_CSS).toContain('background: var(--fx-screen-background, transparent)');
+  });
+
   it('FR-CON-006: labels render at their fractions of the drawn route as plain paragraphs', () => {
     const para = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
     const labels = [

@@ -1,4 +1,4 @@
-import { type CubicSegment, derivativeAt, nearestPoint, type PathCommand, pathFromCommands, type Vec2 } from '@fluxion/geometry';
+import { type CubicSegment, derivativeAt, nearestPoint, type PathCommand, type Vec2 } from '@fluxion/geometry';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { trimRoute } from './trim.js';

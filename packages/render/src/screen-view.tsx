@@ -96,6 +96,9 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   const fit = fitTransform(area, view.box);
   const style = {
     ...vars,
+    // what a connector label knocks its background out with: the screen's own colour (none for a
+    // gradient or image), not the theme's (M5.22 review F1)
+    '--fx-screen-background': background.type === 'color' ? background.css : 'transparent',
     width: area.w,
     height: area.h,
     transform: `translate(${fit.x}px, ${fit.y}px) scale(${fit.scale})`,

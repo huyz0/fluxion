@@ -15,7 +15,9 @@
       "!tests/harness/fixtures/biome",
       "!.harness/reviews",
       "!packages/cli/schemas",
-      "!packages/render/__golden__"
+      "!packages/render/__golden__",
+      "!packages/cli/__golden__",
+      "!fixtures/docs"
     ]
   },
   "formatter": {
