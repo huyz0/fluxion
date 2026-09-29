@@ -20,6 +20,9 @@ type Checked = {
     | { readonly points: string };
   readonly decorations?: readonly { readonly path: string }[] | undefined;
   readonly handles?: readonly { readonly x: string; readonly y: string }[] | undefined;
+  readonly textRegions?:
+    | readonly { readonly x: number | string; readonly y: number | string; readonly w: number | string; readonly h: number | string }[]
+    | undefined;
 };
 
 type Place = { readonly at: readonly (string | number)[]; readonly allowed: ReadonlySet<string> };
@@ -75,8 +78,8 @@ function outlineIssues(outline: Checked['outline'], base: ReadonlySet<string>): 
 
 /**
  * The problems of `def`'s templates and expressions: outline and decorations read `w`, `h`, `pi` and
- * the number, int and enum params; a polygon's vertices add `i` and `n`; handles read what the
- * outline reads.
+ * the number, int and enum params; a polygon's vertices add `i` and `n`; handles and text regions read
+ * what the outline reads.
  */
 export function definitionIssues(def: Checked): DefinitionIssue[] {
   const scalars = Object.entries(def.params ?? {}).filter(([, p]) => p.type !== 'points');
@@ -88,5 +91,11 @@ export function definitionIssues(def: Checked): DefinitionIssue[] {
       ...expressionIssues(h.x, { at: ['handles', k, 'x'], allowed: base }),
       ...expressionIssues(h.y, { at: ['handles', k, 'y'], allowed: base }),
     ]),
+    ...(def.textRegions ?? []).flatMap((r, k) =>
+      (['x', 'y', 'w', 'h'] as const).flatMap((axis) => {
+        const v = r[axis];
+        return typeof v === 'string' ? expressionIssues(v, { at: ['textRegions', k, axis], allowed: base }) : [];
+      }),
+    ),
   ];
 }

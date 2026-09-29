@@ -7,6 +7,22 @@ import type { RichTextDoc } from '../rich-text.js';
 import type { AnchorDef, BoxedBase, ElementBase, Point, QualifiedName } from './element-base.js';
 
 /**
+ * How a shape's text fits its region (FR-SHP-006, ADR-0018). Alignment is `style.font`'s.
+ *
+ * @public
+ */
+export type TextFit = Extensible<{
+  /** `none`: the text keeps its size; `shrink`: its size falls until it fits; `grow`: the shape's height rises to fit it (applied by the command that edits the text). Default `none`. */
+  readonly mode?: 'none' | 'shrink' | 'grow';
+  /** Space between the text region's edges and the text, in px (default 8). */
+  readonly padding?: number;
+  /** The smallest size `shrink` goes to, in px (default 8). */
+  readonly minSize?: number;
+  /** Text that does not fit: drawn beyond the region (`visible`, the default) or cut at it (`clip`). */
+  readonly overflow?: 'visible' | 'clip';
+}>;
+
+/**
  * A shape drawn from a shape definition (FR-SHP-001).
  *
  * @public
@@ -21,6 +37,8 @@ export type ShapeElement = Extensible<
     readonly params?: { readonly [key: string]: unknown };
     /** Instance-specific anchors in addition to the definition's. */
     readonly anchors?: readonly AnchorDef[];
+    /** How the text fits its region (ADR-0018). */
+    readonly textFit?: TextFit;
   }
 >;
 

@@ -23,6 +23,26 @@ describe('element kinds', () => {
     expect(elementKindSchemas.shape.parse(shape)).toEqual(shape);
   });
 
+  it('FR-SHP-006: a shape may say how its text fits: mode, padding, minimum size, overflow (ADR-0018)', () => {
+    const shape = {
+      ...el,
+      id: 'e1',
+      kind: 'shape',
+      defId: 'basic:rect',
+      transform: box,
+      text: doc('fit'),
+      textFit: { mode: 'shrink', padding: 4, minSize: 10, overflow: 'clip' },
+    };
+    expect(elementKindSchemas.shape.parse(shape)).toEqual(shape);
+    // every field is optional, and a later field is kept (older readers preserve it)
+    expect(elementKindSchemas.shape.parse({ ...shape, textFit: {} })).toMatchObject({ textFit: {} });
+    expect(elementKindSchemas.shape.parse({ ...shape, textFit: { mode: 'grow', maxLines: 3 } })).toMatchObject({ textFit: { maxLines: 3 } });
+    for (const textFit of [{ mode: 'fill' }, { padding: -1 }, { minSize: 0 }, { overflow: 'ellipsis' }, 'grow']) {
+      const r = elementKindSchemas.shape.safeParse({ ...shape, textFit });
+      expect(r.success ? '' : r.error.issues[0]?.path[0], JSON.stringify(textFit)).toBe('textFit');
+    }
+  });
+
   it('FR-SHP-001: a shape without defId fails at defId', () => {
     const r = elementKindSchemas.shape.safeParse({ ...el, id: 'e1', kind: 'shape', transform: box });
     expect(r.success ? [] : r.error.issues.map((i) => i.path.join('/'))).toEqual(['defId']);

@@ -14,6 +14,7 @@ import type {
   PluginElement,
   ShapeElement,
   TextElement,
+  TextFit,
   UnknownElement,
 } from './element.js';
 import { type AnchorDef, pointSchema, qualifiedNameSchema } from './element-base.js';
@@ -69,6 +70,14 @@ export const anchorDefSchema: z.ZodType<AnchorDef> = checkedSchema<AnchorDef>()(
     max: z.number().int().min(1).optional(),
   }),
 );
+const textFitSchema = checkedSchema<TextFit>()(
+  z.looseObject({
+    mode: z.enum(['none', 'shrink', 'grow']).optional(),
+    padding: z.number().min(0).optional(),
+    minSize: z.number().positive().optional(),
+    overflow: z.enum(['visible', 'clip']).optional(),
+  }),
+);
 const markerSchema: z.ZodType<Marker> = z.union([z.enum(['none', 'arrow', 'triangle', 'circle', 'diamond', 'bar']), qualifiedNameSchema]);
 
 /** Schemas of the core element kinds and of plugin kinds, by kind. */
@@ -84,7 +93,14 @@ export const elementKindSchemas: {
   readonly unknown: z.ZodType<UnknownElement>;
 } = {
   shape: checkedSchema<ShapeElement>()(
-    z.looseObject({ ...boxed, kind: z.literal('shape'), defId: qualifiedNameSchema, params: props.optional(), anchors: z.array(anchorDefSchema).optional() }),
+    z.looseObject({
+      ...boxed,
+      kind: z.literal('shape'),
+      defId: qualifiedNameSchema,
+      params: props.optional(),
+      anchors: z.array(anchorDefSchema).optional(),
+      textFit: textFitSchema.optional(),
+    }),
   ),
   connector: checkedSchema<ConnectorElement>()(
     z.looseObject({

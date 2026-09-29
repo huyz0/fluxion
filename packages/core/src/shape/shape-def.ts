@@ -103,7 +103,8 @@ export type OutlineSpec =
     };
 
 /**
- * A region holding the element's text, as fractions of the box.
+ * A region holding the element's text, as fractions of the box: each a number, or an expression
+ * (ADR-0016) evaluating to one with the outline's names, so a region can follow a param (ADR-0018).
  *
  * @public
  */
@@ -111,13 +112,13 @@ export type TextRegionDef = {
   /** Region name, unique on the definition. */
   readonly name: string;
   /** Left edge, 0 … 1. */
-  readonly x: number;
+  readonly x: number | string;
   /** Top edge, 0 … 1. */
-  readonly y: number;
+  readonly y: number | string;
   /** Width, 0 … 1. */
-  readonly w: number;
+  readonly w: number | string;
   /** Height, 0 … 1. */
-  readonly h: number;
+  readonly h: number | string;
 };
 
 /**
@@ -182,6 +183,8 @@ export const MAX_POINTS = 10_000;
 
 const expr = z.string().min(1).max(2000);
 const unit = z.number().min(0).max(1);
+/** A fraction of the box: a number, or an expression evaluating to one (ADR-0018). */
+const fraction = z.union([unit, expr]);
 const numberParam = z.strictObject({ type: z.enum(['number', 'int']), min: z.number().optional(), max: z.number().optional(), default: z.number() });
 const enumParam = z.strictObject({ type: z.literal('enum'), values: z.array(z.string().min(1)).min(1), default: z.string() });
 const pointsParam = z.strictObject({
@@ -231,7 +234,7 @@ const shapeDefObject = z.strictObject({
   params: paramsSchema.optional(),
   outline: outlineSchema,
   anchors: z.array(anchorDefSchema).optional(),
-  textRegions: z.array(z.strictObject({ name: z.string().min(1), x: unit, y: unit, w: unit, h: unit })).optional(),
+  textRegions: z.array(z.strictObject({ name: z.string().min(1), x: fraction, y: fraction, w: fraction, h: fraction })).optional(),
   handles: z.array(z.strictObject({ param: z.string().min(1), x: expr, y: expr })).optional(),
   defaultSize: z.strictObject({ w: z.number().positive(), h: z.number().positive() }),
   defaultStyle: styleSchema.optional(),

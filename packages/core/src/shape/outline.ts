@@ -62,8 +62,8 @@ function pointsValue(spec: PointsParam, v: unknown, at: At): readonly Pair[] {
 /** The element's own value of `name` (own keys only), else undefined. */
 const own = (params: { readonly [key: string]: unknown }, name: string): unknown => (Object.hasOwn(params, name) ? params[name] : undefined);
 
-/** The scope of the expressions: the size, `pi`, and every number, int and enum param. */
-function scopeOf(def: ShapeDef, size: Size, params: { readonly [key: string]: unknown }): ExprScope {
+/** The scope of the expressions: the size, `pi`, and every number, int and enum param (also read by shape-text.ts). */
+export function scopeOf(def: ShapeDef, size: Size, params: { readonly [key: string]: unknown }): ExprScope {
   const scope: { [name: string]: number } = { w: size.w, h: size.h, pi: Math.PI };
   for (const [name, spec] of Object.entries(def.params ?? {})) {
     if (spec.type === 'enum') scope[name] = enumValue(spec, own(params, name));

@@ -19,7 +19,8 @@ export const callout: ShapeDef = {
   },
   outline: { path: `M 0 0 H {w} V {${body}} H {${start} + w * width} L {w * tip} {h} L {${start}} {${body}} H 0 Z` },
   handles: [{ param: 'tip', x: 'w * tip', y: 'h' }],
-  textRegions: [{ name: 'body', x: 0.05, y: 0.05, w: 0.9, h: 0.6 }],
+  // the body shrinks as the tail grows: the region follows the param (ADR-0018, M5.11 review F2)
+  textRegions: [{ name: 'body', x: 0.05, y: 0.05, w: 0.9, h: '1 - tail - 0.1' }],
   defaultSize: { w: 180, h: 110 },
   keywords: ['callout', 'speech', 'bubble', 'comment'],
   category: 'basic',

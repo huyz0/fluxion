@@ -58,6 +58,7 @@ export {
   type Route,
   type ShapeElement,
   type TextElement,
+  type TextFit,
   type UnknownElement,
 } from './records/element.js';
 export type { AnchorDef, BoxedBase, ElementBase, Locks, Point, QualifiedName, Semantic } from './records/element-base.js';

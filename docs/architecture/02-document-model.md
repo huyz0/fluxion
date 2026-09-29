@@ -65,7 +65,7 @@ not in schema `1.0`; until added (minor version) they are preserved but not chec
 
 | `kind` | Extra fields | Planned |
 |---|---|---|
-| `shape` | `transform`, `text?`, `defId` (e.g. `basic:rect`), `params?` (definition params), `anchors?` (instance-custom) | `textRegions` |
+| `shape` | `transform`, `text?`, `defId` (e.g. `basic:rect`), `params?` (definition params), `anchors?` (instance-custom), `textFit? {mode?, padding?, minSize?, overflow?}` (ADR-0018) | |
 | `connector` | `route {type: 'straight'\|'curved'\|'orthogonal'\|'polyline'\|<plugin>, waypoints?, cornerRadius?}`, `markers? {start?,end?,mid?}`, `labels?[]`, `freeSource?`, `freeTarget?` (points for an end without a `binding` record); no transform | `riders`, `effects`, `jumps` |
 | `group` | `transform`, `text?` (children via `parentId`) | |
 | `frame` | `transform`, `text?`, `clip?`, `padding?` | `layout` (live container) |

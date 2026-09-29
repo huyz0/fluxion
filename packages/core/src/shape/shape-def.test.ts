@@ -194,6 +194,12 @@ describe('templates and expressions are checked at validation (M5 cp1 F2)', () =
       'FLX_EXPR_UNKNOWN /defs/0/handles/0/y "hh" is not a name this expression may read, in "2 * hh"',
     ]);
     expect(check({ outline: { path: 'M 0 0' }, handles: [{ param: 'r', x: 'min(', y: 'h' }] })[0]).toMatch(/^FLX_EXPR_SYNTAX \/defs\/0\/handles\/0\/x /);
+    // text regions are fractions or expressions of them, read like the outline (ADR-0018)
+    expect(check({ outline: { path: 'M 0 0' }, textRegions: [{ name: 't', x: 0.1, y: '0.1 * r', w: 0.8, h: '1 - e / 10' }] })).toEqual([]);
+    expect(check({ outline: { path: 'M 0 0' }, textRegions: [{ name: 't', x: 0, y: 0, w: 'ww', h: 2 }] })).toEqual([
+      'FLX_SHAPE_DEF_INVALID /defs/0/textRegions/0/h Too big: expected number to be <=1',
+      'FLX_EXPR_UNKNOWN /defs/0/textRegions/0/w "ww" is not a name this expression may read, in "ww"',
+    ]);
     // a points outline has no expressions of its own
     expect(check({ outline: { points: 'p' } })).toEqual([]);
     // the whole definition validates only when all of it evaluates

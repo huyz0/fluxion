@@ -6,6 +6,7 @@
 
 import { AnchorDef } from '@fluxion/schema';
 import { AnyRecord } from '@fluxion/schema';
+import { Box } from '@fluxion/geometry';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Path } from '@fluxion/geometry';
@@ -16,6 +17,7 @@ import { RecordId } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { Size } from '@fluxion/schema';
 import { Style } from '@fluxion/schema';
+import { TextFit } from '@fluxion/schema';
 import { Vec2 } from '@fluxion/geometry';
 import { z } from 'zod';
 
@@ -229,6 +231,29 @@ export interface FileIO {
 }
 
 // @public
+export type FitInput = {
+    readonly paragraphs: readonly string[];
+    readonly font: FontSpec;
+    readonly region: {
+        readonly w: number;
+        readonly h: number;
+    };
+    readonly fit?: TextFit | undefined;
+};
+
+// @public
+export function fitShapeText(input: ShapeTextInput, measurer: TextMeasurer): Result<ShapeText, Diagnostic>;
+
+// @public
+export type FittedText = WrappedText & {
+    readonly size: number;
+    readonly regionHeight: number;
+};
+
+// @public
+export function fitText(input: FitInput, measurer: TextMeasurer): FittedText;
+
+// @public
 export type FontSpec = {
     readonly family: string;
     readonly size: number;
@@ -407,6 +432,24 @@ export type ShapeDef = {
 export const shapeDefSchema: z.ZodType<ShapeDef>;
 
 // @public
+export type ShapeText = FittedText & {
+    readonly region: Box;
+    readonly height: number;
+};
+
+// @public
+export type ShapeTextInput = {
+    readonly def: ShapeDef;
+    readonly size: Size;
+    readonly params?: {
+        readonly [key: string]: unknown;
+    } | undefined;
+    readonly paragraphs: readonly string[];
+    readonly font: FontSpec;
+    readonly fit?: TextFit | undefined;
+};
+
+// @public
 export interface Store {
     diffFrom(parent: Store): Diff | undefined;
     fork(): Store;
@@ -432,6 +475,14 @@ export type StoreOptions = {
 };
 
 // @public
+export const TEXT_FIT_DEFAULTS: {
+    readonly mode: "none";
+    readonly padding: number;
+    readonly minSize: number;
+    readonly overflow: "visible";
+};
+
+// @public
 export interface TextMeasurer {
     measure(text: string, font: FontSpec): TextMetrics_2;
 }
@@ -446,12 +497,17 @@ type TextMetrics_2 = {
 export { TextMetrics_2 as TextMetrics }
 
 // @public
+export function textRegion(def: ShapeDef, size: Size, params?: {
+    readonly [key: string]: unknown;
+}, budget?: ExprBudget): Result<Box, Diagnostic>;
+
+// @public
 export type TextRegionDef = {
     readonly name: string;
-    readonly x: number;
-    readonly y: number;
-    readonly w: number;
-    readonly h: number;
+    readonly x: number | string;
+    readonly y: number | string;
+    readonly w: number | string;
+    readonly h: number | string;
 };
 
 // @public
@@ -486,5 +542,15 @@ export type TxOrigin = "user" | "undo" | "redo" | "remote" | "system";
 
 // @public
 export const VERSION: string;
+
+// @public
+export type WrappedText = {
+    readonly lines: readonly string[];
+    readonly width: number;
+    readonly height: number;
+};
+
+// @public
+export function wrapText(paragraphs: readonly string[], font: FontSpec, maxWidth: number, measurer: TextMeasurer): WrappedText;
 
 ```

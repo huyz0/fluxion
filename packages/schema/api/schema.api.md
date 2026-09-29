@@ -634,6 +634,7 @@ export type ShapeElement = Extensible<BoxedBase & {
         readonly [key: string]: unknown;
     };
     readonly anchors?: readonly AnchorDef[];
+    readonly textFit?: TextFit;
 }>;
 
 // @public
@@ -706,6 +707,14 @@ export type TextElement = Extensible<BoxedBase & {
     readonly kind: "text";
     readonly text: RichTextDoc;
     readonly autoSize?: "none" | "width" | "height";
+}>;
+
+// @public
+export type TextFit = Extensible<{
+    readonly mode?: "none" | "shrink" | "grow";
+    readonly padding?: number;
+    readonly minSize?: number;
+    readonly overflow?: "visible" | "clip";
 }>;
 
 // @public

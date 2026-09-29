@@ -66,7 +66,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-003 | M | R1 | M5, M7 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/expr/expr.test.ts` +7 |
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/render/src/shape-fills.browser.test.tsx` +2 |
 | FR-SHP-005 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/hit.test.ts`, `packs/basic/src/hit.test.ts` |
-| FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/shape-text.test.ts` +2 |
 | FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-008 | M | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-009 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
