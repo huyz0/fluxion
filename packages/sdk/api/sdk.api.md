@@ -12,11 +12,14 @@ import { EnumParam } from '@fluxion/core';
 import { EvaluatedOutline } from '@fluxion/core';
 import { evaluateOutline } from '@fluxion/core';
 import { HandleDef } from '@fluxion/core';
+import { hitTestShape } from '@fluxion/core';
 import { NumberParam } from '@fluxion/core';
+import { outlineDistance } from '@fluxion/core';
 import { OutlineSpec } from '@fluxion/core';
 import { ParamSpec } from '@fluxion/core';
 import { PluginId } from '@fluxion/core';
 import { PointsParam } from '@fluxion/core';
+import { projectToOutline } from '@fluxion/core';
 import { Result } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { TextRegionDef } from '@fluxion/core';
@@ -38,7 +41,11 @@ export { evaluateOutline }
 
 export { HandleDef }
 
+export { hitTestShape }
+
 export { NumberParam }
+
+export { outlineDistance }
 
 export { OutlineSpec }
 
@@ -63,6 +70,8 @@ export { ParamSpec }
 export { PluginId }
 
 export { PointsParam }
+
+export { projectToOutline }
 
 // @public
 export function registerShapeDef(registries: PackRegistries, def: unknown, source: PluginId, at?: ReadonlyArray<string | number>): Result<Disposable, readonly Diagnostic[]>;

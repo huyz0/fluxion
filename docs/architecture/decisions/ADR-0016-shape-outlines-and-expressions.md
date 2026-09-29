@@ -106,8 +106,15 @@ a polygon over the vertex cap, a budget exhausted across evaluations), per-shape
   malformed or outside its param's `min … max` uses the default (item 5). The segment cap applies
   twice: to the commands as written, and to the commands after arcs expand to cubics.
 - **Budget**: every number of a template spends a step, literals too.
-- **Smooth points outlines** keep their Catmull-Rom control points inside the box (clamped), so a
-  stroke that turns at an edge of its box stays inside it (M5.11).
+- **Smooth points outlines** give each vertex one Catmull-Rom tangent, shared by its two segments
+  (C1). The tangent is fitted to the box: at a vertex on the box's edge, a component pointing out
+  of it is dropped, and the rest is scaled until both control points are inside. A stroke that
+  turns at an edge of its box stays inside it (M5.11, M5.12).
+- **Hit-testing and projection** (`hitTestShape`, `projectToOutline`, `outlineDistance`) read the
+  evaluated path. A closed outline hits inside (nonzero rule) or within a tolerance of its edge; an
+  open one only within the tolerance. Projection lands on the outermost crossing of a ray (or the far
+  end of an edge the ray runs along), snapped onto the outline, or on the nearest outline point when
+  the ray misses (M5.12).
 - **`ShapeDef` fields**: `anchors` are the schema's `AnchorDef` (box fractions, a direction, a
   role); `textRegions` are named box fractions; `handles` are `{ param, x, y }`, with `x` and `y`
   expressions, bound to a number or int param. Param names are identifiers that shadow none of

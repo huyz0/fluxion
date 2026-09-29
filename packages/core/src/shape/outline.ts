@@ -5,6 +5,7 @@ import { arcToCubics, type Path, type PathCommand, pathFromCommands, type Vec2 }
 import { type Diagnostic, err, jsonPointer, ok, type Result, type Size } from '@fluxion/schema';
 import { type ExprBudget, type ExprScope, evaluateExpr, parseExpr } from '../expr/expr.js';
 import { type EnumParam, MAX_POINTS, type NumberParam, type OutlineSpec, type PointsParam, type ShapeDef } from './shape-def.js';
+import { catmullRom } from './smooth.js';
 import { MAX_SEGMENTS, parseTemplate, type TemplateArg, type TemplateCommand, TemplateFailure, type TemplateLetter } from './template.js';
 
 /**
@@ -151,27 +152,6 @@ function polygon(spec: { readonly n: string; readonly x: string; readonly y: str
     return pt(value(x, vertex, [...at, 'x']), value(y, vertex, [...at, 'y']));
   });
   return [...vertices.map((to, i): PathCommand => ({ kind: i === 0 ? 'M' : 'L', to })), { kind: 'Z' }];
-}
-
-/**
- * A uniform Catmull-Rom curve through `p` as cubics (ends repeat, a closed curve wraps). Control points
- * are clamped to the `size` box: the vertices are in it, so the curve, inside its control points' hull,
- * stays in it too, where a stroke turning at an edge would otherwise overshoot (M5.11 review F1).
- */
-function catmullRom(p: readonly Vec2[], closed: boolean, size: Size): PathCommand[] {
-  const inBox = (x: number, y: number) => pt(clamp(x, 0, size.w), clamp(y, 0, size.h));
-  const m = p.length;
-  const at = (k: number) => (closed ? p[(k + m) % m] : p[clamp(k, 0, m - 1)]) as Vec2;
-  const segments = Array.from({ length: closed ? m : m - 1 }, (_, k): PathCommand => {
-    const [prev, a, b, next] = [at(k - 1), at(k), at(k + 1), at(k + 2)];
-    return {
-      kind: 'C',
-      control1: inBox(a.x + (b.x - prev.x) / 6, a.y + (b.y - prev.y) / 6),
-      control2: inBox(b.x - (next.x - a.x) / 6, b.y - (next.y - a.y) / 6),
-      to: b,
-    };
-  });
-  return [{ kind: 'M', to: at(0) }, ...segments];
 }
 
 /** The vertices of a points param, scaled to the box; straight or smooth, open or closed. */

@@ -26,6 +26,7 @@ export { CORE_HOOKS, type HookContext, type IntegrityHook, registerCoreHooks } f
 export type { IndexName } from './indexes.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, TextMeasurer, TextMetrics } from './ports/ports.js';
 export { createRegistry, type Disposable, type PluginId, type Registry } from './registry.js';
+export { hitTestShape, outlineDistance, projectToOutline } from './shape/hit.js';
 export { DEFAULT_OUTLINE_BUDGET, type EvaluatedOutline, evaluateOutline } from './shape/outline.js';
 export {
   type EnumParam,

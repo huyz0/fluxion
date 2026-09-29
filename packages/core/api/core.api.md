@@ -16,6 +16,7 @@ import { RecordId } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { Size } from '@fluxion/schema';
 import { Style } from '@fluxion/schema';
+import { Vec2 } from '@fluxion/geometry';
 import { z } from 'zod';
 
 // @public
@@ -261,6 +262,9 @@ interface History_2 {
 export { History_2 as History }
 
 // @public
+export function hitTestShape(path: Path, p: Vec2, tolerance?: number): boolean;
+
+// @public
 export type HookContext = {
     readonly tx: Tx;
     readonly diff: Diff;
@@ -297,6 +301,9 @@ export type NumberParam = {
 };
 
 // @public
+export function outlineDistance(path: Path, p: Vec2): number;
+
+// @public
 export type OutlineSpec = {
     readonly path: string;
 } | {
@@ -330,6 +337,9 @@ export type PointsParam = {
     readonly max?: number;
     readonly default: readonly (readonly [number, number])[];
 };
+
+// @public
+export function projectToOutline(path: Path, from: Vec2, dir: Vec2): Vec2 | null;
 
 // @public
 export type PutChange = {
