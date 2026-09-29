@@ -1,7 +1,8 @@
-// The built-in views (ADR-0015 §5): the shape and connector views, registered through the same API as
+// The built-in views (ADR-0015 §5): the shape, connector and image views, registered through the same API as
 // plugins (source `core`). Shape definitions come from packs the host registers (ADR-0016, ADR-0017).
 import type { Registry, ShapeDef } from '@fluxion/core';
 import { ConnectorView } from './connector-view.js';
+import { ImageView } from './image-view.js';
 import { createRenderRegistries, type RenderRegistries } from './registries.js';
 import { ShapeView } from './shape-view.js';
 
@@ -14,6 +15,7 @@ import { ShapeView } from './shape-view.js';
 export function registerBuiltinViews(registries: RenderRegistries): void {
   registries.elementViews.register('shape', { Component: ShapeView }, 'core');
   registries.elementViews.register('connector', { Component: ConnectorView }, 'core');
+  registries.elementViews.register('image', { Component: ImageView }, 'core');
 }
 
 /**

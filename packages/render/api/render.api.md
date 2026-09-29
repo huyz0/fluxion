@@ -120,6 +120,9 @@ export function fitTransform(area: {
 }): FitTransform;
 
 // @public
+export function ImageView(props: ElementViewProps): ReactNode;
+
+// @public
 export type ModePolicy = {
     readonly editOverlay: boolean;
     readonly interactive: boolean;

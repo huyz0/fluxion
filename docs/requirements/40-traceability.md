@@ -72,7 +72,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-009 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-010 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-011 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-SHP-012 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-SHP-012 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/render/src/image-view.browser.test.tsx` |
 | FR-SHP-013 | M | R6 | M27 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-014 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-015 | S | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
