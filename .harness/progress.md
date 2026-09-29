@@ -1117,3 +1117,8 @@ M6 planned: 26 rows including checkpoints cp1 and cp2. The completion gate `m6-c
 - New threshold `HIT_TEST_2000_MAX_MS` = 1. M5 backlog archived.
 - M5 final F4: only the three colliding planned ADRs moved, to 0028, 0029 and 0064 (a full shift would hit the harness ADRs).
 - Review fixes: stale ADR refs; a behavioural pack leg; cp2 deps; a changeset leg.
+
+## 2026-09-30 M6.2 (claude)
+
+ADR-0028 accepted: hand-rolled statechart tools, a session store of core signals per document (no Zustand, no new dependency; core will export `writable` in M6.6), one screen-space SVG overlay (Canvas2D fallback criteria set), and a frame-batched pointer pipeline writing one transaction per frame with the gesture's `mergeKey` and sealing at pointer-up. ADR-0002's "Editor UI state stays in Zustand" sentence is superseded; 01, 03, 04, the coding standard, the ADR index and M6.md follow.
+Review r1 fixed: F1 tech-stack's editor-state row names core signals; F2 M6.md's decision line; F3 the drivers cite ADR-0014 and 04 for undo and handle size.

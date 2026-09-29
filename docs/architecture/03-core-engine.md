@@ -172,4 +172,4 @@ for bindings (no `eval`).
 ## 8. Selection & editor state (not in document)
 
 Editor/session state (selection, camera, active tool, hover, preview clock) lives in a
-separate **session store** (Zustand) keyed by document ID, never serialized into the file.
+separate **session store** (core signals, ADR-0028) keyed by document ID, never serialized into the file.

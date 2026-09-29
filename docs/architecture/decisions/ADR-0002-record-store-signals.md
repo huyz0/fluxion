@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted (the editor UI state sentence superseded by ADR-0028)
 date: 2026-09-26
 decision-makers: Fluxion maintainers
 ---

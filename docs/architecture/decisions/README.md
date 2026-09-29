@@ -14,7 +14,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | ADR | Title | Status | Date |
 |---|---|---|---|
 | [0001](ADR-0001-own-engine-dom-svg.md) | Build our own engine on React DOM + SVG | accepted | 2026-09-26 |
-| [0002](ADR-0002-record-store-signals.md) | Normalized record store with signals and record-diff undo | accepted | 2026-09-26 |
+| [0002](ADR-0002-record-store-signals.md) | Normalized record store with signals and record-diff undo | accepted (editor UI state: superseded by 0028) | 2026-09-26 |
 | [0003](ADR-0003-file-format.md) | `.flux` zip + `.flux.html` self-contained player + `.flux.json` | accepted | 2026-09-26 |
 | [0004](ADR-0004-fluxscript-dsl.md) | FluxScript YAML-shaped DSL; AI never computes coordinates | accepted | 2026-09-26 |
 | [0005](ADR-0005-layout-routing-stack.md) | Pluggable layout/routing pipeline; permissive defaults; ELK/libavoid optional | accepted | 2026-09-26 |
@@ -32,6 +32,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0017](ADR-0017-hosts-bundle-first-party-packs.md) | Hosts bundle first-party packs as listed dependencies (packs at rank 5) | accepted | 2026-09-29 |
 | [0018](ADR-0018-shape-text-fitting.md) | Shape text fitting: an optional `textFit` on shapes, pure layout in core | accepted | 2026-09-29 |
 | [0019](ADR-0019-stroke-alignment-and-corner-radius.md) | Stroke alignment and corner radius on any outline | accepted | 2026-09-29 |
+| [0028](ADR-0028-editor-interaction-architecture.md) | Editor interaction: statechart tools, a signal session store, a screen-space SVG overlay, a frame-batched pointer pipeline | accepted | 2026-09-30 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
 | [0139](ADR-0139-storybook-portable-stories.md) | Story tests through portable stories until `@storybook/addon-vitest` supports Vitest 5 | accepted | 2026-09-27 |

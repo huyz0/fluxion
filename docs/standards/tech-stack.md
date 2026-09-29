@@ -40,7 +40,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 |---|---|---|---|
 | UI | React + React Compiler | 19.3.x / 1.0 | stable; `<ViewTransition>` fits slide transitions |
 | Document reactivity | own record store in `core` + **alien-signals** | latest | tiny, framework-free, runs in Node |
-| Editor UI state | Zustand | 5.x | selectors, no provider |
+| Editor UI state | core signals (`@fluxion/core`) | — | a per-document session of signals read with `useValue` (ADR-0028); no Zustand |
 | Schema | Zod (+ `z.toJSONSchema`) | 4.x | Standard Schema, JSON Schema for spec and MCP |
 | Editor chrome | shadcn/ui on **Base UI** + Tailwind CSS | Base UI 1.x / Tailwind 4.3.x | accessible primitives, agent-fluent. **Editor only** (ADR-0010) |
 | Content styling | CSS custom properties from theme tokens + content CSS strings, `fx-` prefix, `@layer fx.content` (ADR-0015) | — | portable into `.flux.html`, Shadow DOM safe, identical in SSR and browser |

@@ -105,7 +105,7 @@ Details, versions and rationale: `docs/standards/tech-stack.md`. Summary:
 | Lint/format | Biome 2 (lint + format) + dependency-cruiser + knip + size-limit + publint |
 | UI framework | React 19 (+ React Compiler) |
 | Doc state | Own record store in `core` with `alien-signals` reactivity |
-| Editor UI state | Zustand 5 |
+| Editor UI state | core signals in a per-document session (ADR-0028) |
 | Schema | Zod 4 (+ `z.toJSONSchema`) |
 | Editor chrome UI | shadcn/ui on Base UI + Tailwind v4 (editor only; never in rendered content) |
 | Content styling | CSS custom properties from theme tokens + content CSS strings, `fx-` prefix, `@layer fx.content` (ADR-0015) |

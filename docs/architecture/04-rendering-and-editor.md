@@ -161,7 +161,7 @@ hit-test: overlay handles first (screen space) → rbush candidates near pagePt
    ▼
 tool FSM (current state node) ── emits ──▶ commands (core) ──▶ store.transact(mergeKey)
    │                                                   │ diff
-   └── session store (Zustand): hover, selection, camera, snap guides ◀──┘ render + overlay
+   └── session store (core signals, ADR-0028): hover, selection, camera, snap guides ◀──┘ render + overlay
 ```
 
 Hit-testing uses geometry, not `elementFromPoint`, so rotated shapes, thin strokes and hollow

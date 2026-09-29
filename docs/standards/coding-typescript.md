@@ -129,7 +129,7 @@ export function sampleTimeline(tl: Timeline, clock: Clock): Frame { return evalu
 20. **No `useMemo`/`useCallback`/`memo` by hand without a profile** showing the gain; the
     compiler memoises. → review
 21. **Document data enters components via `useRecord(id)` / `useValue(signal$)`**, not by
-    passing whole documents down. Editor UI state via Zustand selectors. → review
+    passing whole documents down. Editor UI state via the session's signals and `useValue` (ADR-0028). → review
 22. **User-visible strings go through Lingui** (`<Trans>`, `t`). → Lingui lint (NFR-I18N-001)
 
 ## 7. Signals
