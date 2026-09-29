@@ -1145,3 +1145,10 @@ Studio shell:
 
 E2E: this host's Firefox cannot launch ("Permission denied"; I did not touch OS security settings). `scripts/e2e/image.mjs` runs Playwright in ci.yml's pinned image, and the M6 gate runs its E2E specs once per project group there when Docker is available. Boot and smoke pass on all three desktop engines in the image.
 Review r1 fixed: F1 the player and use-box tests name FR-EDT-001, not FR-EDT-009/010, which they do not verify; F2 the unused imagePlaywrightRunner is gone.
+
+## 2026-09-30 M6.5 (claude)
+
+Editor chrome (ADR-0029): toolbar (a pressed button per panel, focus mode), left tabs (screens, library, layers placeholders), canvas, inspector and timeline placeholders, own WAI-ARIA splitters (drag, arrows, shift, Home/End, Enter).
+- Layout model is pure in `layout.ts`: read from settings with validation and clamping, written back on change through `SettingsStore` under `fluxion.editor.layout.v1`; the studio adapter is on localStorage.
+- `CHROME_CSS` in `@layer fx.chrome`, `--ui-*` tokens with dark values. A T0 test checks every selector's last compound is a chrome class, and that no inherited property is set on CANVAS_PATH (M6.3 r3 F1); a T1 test checks CANVAS_PATH matches the DOM.
+- Narrow viewports squeeze the canvas to nothing when both side panels are open; M6.19 (touch/mobile) owns that.

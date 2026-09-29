@@ -17,10 +17,25 @@ export function EditorRoot(props: EditorRootProps): ReactNode;
 export type EditorRootProps = {
     readonly store: Store;
     readonly registries: RenderRegistries;
+    readonly settings?: SettingsStore;
 };
 
 // @public
+export const LAYOUT_KEY = "fluxion.editor.layout.v1";
+
+// @public
+export function memorySettings(initial?: {
+    readonly [key: string]: unknown;
+}): SettingsStore;
+
+// @public
 export function newDocument(random: Random): DocumentFile;
+
+// @public
+export type SettingsStore = {
+    get(key: string): unknown;
+    set(key: string, value: unknown): void;
+};
 
 // @public
 export const VERSION: string;

@@ -20,6 +20,21 @@ export class EditorPage {
     this.placeholders = this.canvas.locator('.fx-placeholder');
   }
 
+  /** The chrome panel labelled `name` (Screens, library and layers; Inspector; Timeline). */
+  panel(name: string): Locator {
+    return this.root.getByRole(name === 'Timeline' ? 'region' : 'complementary', { name, exact: true });
+  }
+
+  /** The splitter labelled `name`, e.g. "Resize the left panel". */
+  splitter(name: string): Locator {
+    return this.root.getByRole('separator', { name });
+  }
+
+  /** The toolbar button named `name` (a panel's name, or "Focus mode"). */
+  toolbarButton(name: string): Locator {
+    return this.root.getByRole('button', { name, exact: true });
+  }
+
   /** Open the document `docId` (`new`, or `example-<name>`) in the editor. */
   async open(docId: string): Promise<void> {
     await this.page.goto(`/edit/${docId}`);

@@ -5,6 +5,7 @@ import { PlayerRoot } from '@fluxion/player';
 import { type JSX, type MouseEvent, type ReactNode, useMemo, useSyncExternalStore } from 'react';
 import { cryptoRandom, openDocument } from './bootstrap.js';
 import { exampleNames, loadDocument } from './documents.js';
+import { localSettings } from './local-settings.js';
 import { routeOf } from './routes.js';
 
 const subscribe = (onChange: () => void) => {
@@ -72,9 +73,14 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
     const file = loadDocument(docId, cryptoRandom);
     return file.ok ? openDocument(file.value) : file;
   }, [docId]);
+  const settings = useMemo(() => localSettings(), []);
   if (!opened.ok) return <Problem message={opened.error} />;
   const { core, registries } = opened.value;
-  return mode === 'edit' ? <EditorRoot store={core.store} registries={registries} /> : <PlayerRoot store={core.store} registries={registries} />;
+  return mode === 'edit' ? (
+    <EditorRoot store={core.store} registries={registries} settings={settings} />
+  ) : (
+    <PlayerRoot store={core.store} registries={registries} />
+  );
 }
 
 /**
