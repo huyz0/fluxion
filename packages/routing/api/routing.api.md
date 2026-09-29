@@ -31,7 +31,13 @@ export type ConnectorRoute = {
 };
 
 // @public
+export const curvedRouter: Router;
+
+// @public
 export const DEFAULT_ANCHORS: readonly AnchorDef[];
+
+// @public
+export const polylineRouter: Router;
 
 // @public
 export function registerBuiltinRouters(routers: Registry<string, Router>): void;

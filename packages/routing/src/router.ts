@@ -1,7 +1,7 @@
 // Routers (FR-RTE-001): a router turns a connector's two resolved ends into a path. Routers are
 // looked up by the route's type in a `routers` registry (the host's core registry, where packs
-// register theirs as `<namespace>:<name>`); the built-ins register there under source `core`.
-import type { Registry } from '@fluxion/core';
+// register theirs as `<namespace>:<name>`); the built-ins register there under source `core`
+// (builtins.ts).
 import type { PathCommand, Vec2 } from '@fluxion/geometry';
 import type { Route } from '@fluxion/schema';
 
@@ -53,13 +53,3 @@ export const straightRouter: Router = {
     { kind: 'L', to: target.point },
   ],
 };
-
-/**
- * Register the built-in routers into `routers` (source `core`); a type another source already holds
- * keeps that source's router.
- *
- * @public
- */
-export function registerBuiltinRouters(routers: Registry<string, Router>): void {
-  routers.register('straight', straightRouter, 'core');
-}

@@ -986,3 +986,12 @@ render now depends on routing (overview map, workspaces.json and tsconfig regene
 - The browser test registers `test:zigzag` and `test:wave` (Q and C) and checks the path d and the SVG box.
 
 tzap on render runs only the node project, so the survivors in the connector view's box and memo are covered by the browser tests. The CLI keeps render's own routers until packs can register routers.
+
+## 2026-09-29 M5.18 (claude)
+
+routing adds `curvedRouter` and `polylineRouter`, both registered as built-ins.
+- Curved draws one cubic per leg through the waypoints. The ends' tangents are the anchor directions, or the direction toward the next stop when an anchor has none. Tangents at waypoints are Catmull-Rom. Control points sit a third of the leg out.
+- Polyline draws lines through the waypoints.
+- The M5.17 fallback test no longer lists `curved` as unregistered.
+
+Property tests cover the normals, legs and waypoints. Mutation score is 100%.

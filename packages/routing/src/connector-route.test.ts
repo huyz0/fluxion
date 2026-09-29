@@ -3,8 +3,9 @@ import type { PathCommand } from '@fluxion/geometry';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { registerBuiltinRouters } from './builtins.js';
 import { type RouteContext, routeConnector } from './connector-route.js';
-import { type Router, registerBuiltinRouters, straightRouter } from './router.js';
+import { type Router, straightRouter } from './router.js';
 
 const ellipse = {
   id: 'test:ellipse',
@@ -111,7 +112,7 @@ describe('routers by route type (FR-RTE-001)', () => {
       },
       'test',
     );
-    for (const type of ['test:missing', 'test:boom', 'test:empty', 'test:lines', 'test:left', 'test:beside', 'curved'] as const) {
+    for (const type of ['test:missing', 'test:boom', 'test:empty', 'test:lines', 'test:left', 'test:beside'] as const) {
       const { store, line } = scene((records, ids) => {
         (records[ids.line] as { route: unknown }).route = { type };
       });
