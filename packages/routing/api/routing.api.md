@@ -37,6 +37,12 @@ export const curvedRouter: Router;
 export const DEFAULT_ANCHORS: readonly AnchorDef[];
 
 // @public
+export const ORTHOGONAL_STUB = 20;
+
+// @public
+export const orthogonalRouter: Router;
+
+// @public
 export const polylineRouter: Router;
 
 // @public

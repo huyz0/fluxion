@@ -995,3 +995,12 @@ routing adds `curvedRouter` and `polylineRouter`, both registered as built-ins.
 - The M5.17 fallback test no longer lists `curved` as unregistered.
 
 Property tests cover the normals, legs and waypoints. Mutation score is 100%.
+
+## 2026-09-29 M5.19 (claude)
+
+routing adds `orthogonalRouter` (built in) and `ORTHOGONAL_STUB` (20 px).
+- End directions snap to an axis, else face the other end or waypoint. Each end runs a stub out.
+- The stubs join with the first candidate that never U-turns. Every candidate is a Z turning at a chosen coordinate: halfway along (same axis), either corner, halfway across, then detours two stubs beyond both tips on each side of each axis. Review F1 added the missing sides: tips a stub apart across the axis on different axes had U-turned.
+- Waypoints take one corner each.
+
+Properties over 500 runs, with small 5 px offsets (review F2): axis-aligned, no zero-length segments, normals at both ends, no U-turns, through every waypoint. An exhaustive ±45 px grid test covers U-turns and normals. Mutation score is 100%.

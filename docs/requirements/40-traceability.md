@@ -97,7 +97,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ANC-007 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-ANC-008 | S | R6 | M27 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-001 | M | R0 | M2 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/geometry/src/intersections.test.ts` +7 |
-| FR-CON-002 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/curved.test.ts` |
+| FR-CON-002 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/curved.test.ts`, `packages/routing/src/orthogonal.test.ts` |
 | FR-CON-003 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-005 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/geometry/src/round.test.ts` |

@@ -4,6 +4,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { registerBuiltinRouters } from './builtins.js';
 import { curvedRouter, polylineRouter } from './curved.js';
+import { orthogonalRouter } from './orthogonal.js';
 import { type RouteEnd, type Router, straightRouter } from './router.js';
 
 const point = fc.record({ x: fc.double({ min: -1000, max: 1000, noNaN: true }), y: fc.double({ min: -1000, max: 1000, noNaN: true }) });
@@ -92,13 +93,14 @@ describe('polyline routes (FR-CON-002)', () => {
     expect(polylineRouter.route({ source: { point: { x: 0, y: 0 } }, target: { point: { x: 1, y: 1 } }, route: { type: 'polyline' } })).toHaveLength(2);
   });
 
-  it('FR-RTE-001: curved and polyline are built in', () => {
+  it('FR-RTE-001: curved, polyline and orthogonal are built in', () => {
     const routers = createRegistry<string, Router>('routers');
     registerBuiltinRouters(routers);
-    expect(['straight', 'curved', 'polyline'].map((type) => [routers.get(type), routers.source(type)])).toEqual([
+    expect(['straight', 'curved', 'polyline', 'orthogonal'].map((type) => [routers.get(type), routers.source(type)])).toEqual([
       [straightRouter, 'core'],
       [curvedRouter, 'core'],
       [polylineRouter, 'core'],
+      [orthogonalRouter, 'core'],
     ]);
   });
 });
