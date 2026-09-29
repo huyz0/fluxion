@@ -16,7 +16,12 @@ export type ElementViewProps = {
   readonly element: ElementRecord;
   /** The document store (for views that read related records, such as a connector's ends). */
   readonly store: Store;
-  /** The theme styles resolve against. */
+  /**
+   * The theme styles resolve against. Its colour values may lag a colour-only change: they reach the
+   * view as CSS variables the screen defines, so draw colours from resolved styles (`var(--fx-…)`),
+   * never from token values (ADR-0015 amendment, M5.13). A view needs an ancestor carrying
+   * `toCssVars(theme)` (`<ScreenView>`'s `.fx-screen`).
+   */
   readonly theme: Theme;
   /** The registries the view was looked up in (a shape view reads `shapeDefs`). */
   readonly registries: RenderRegistries;

@@ -19,6 +19,7 @@ export {
   type StyleKind,
   type StyleResolution,
 } from './resolve-style.js';
+export { styleKey } from './style-key.js';
 export { cssVarName, type Dimension, isToken, isValidToken, type Theme, type Token, type TokenGroup, type TypedToken, themeSchema } from './tokens.js';
 
 /**

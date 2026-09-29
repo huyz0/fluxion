@@ -1,5 +1,6 @@
 // Public entry of @fluxion/render; the package comment is the dts banner in tsdown.config.ts.
 
+export type { AssetUrls } from './assets.js';
 export { paintCss } from './background.js';
 export { builtinRegistries, registerBuiltinViews } from './builtins.js';
 export { type ConnectorEnds, connectorEnds } from './connector-ends.js';

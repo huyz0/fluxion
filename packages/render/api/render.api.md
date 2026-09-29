@@ -8,6 +8,7 @@ import { ComponentType } from 'react';
 import { CSSProperties } from 'react';
 import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';
+import { NamedExoticComponent } from 'react';
 import { PathCommand } from '@fluxion/geometry';
 import { ReactNode } from 'react';
 import { ReadSignal } from '@fluxion/core';
@@ -22,6 +23,9 @@ import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { Vec2 } from '@fluxion/geometry';
+
+// @public
+export type AssetUrls = (assetId: RecordId) => string | undefined;
 
 // @public
 export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;
@@ -57,10 +61,11 @@ export type DocumentViewProps = {
     };
     readonly theme?: Theme;
     readonly registries?: RenderRegistries;
+    readonly assets?: AssetUrls;
 };
 
 // @public
-export function ElementList(props: ElementListProps): ReactNode;
+export const ElementList: NamedExoticComponent<ElementListProps>;
 
 // @public
 export type ElementListProps = {
@@ -147,6 +152,7 @@ export type RenderHtmlOptions = {
     readonly screens?: readonly RecordId[];
     readonly theme?: Theme;
     readonly registries?: RenderRegistries;
+    readonly assets?: AssetUrls;
 };
 
 // @public
@@ -176,6 +182,7 @@ export type ScreenViewProps = {
     readonly theme?: Theme;
     readonly editOverlay?: ReactNode;
     readonly registries?: RenderRegistries;
+    readonly assets?: AssetUrls;
     readonly children?: ReactNode;
 };
 

@@ -1,7 +1,7 @@
 <svg data-screen-id="rX_C6DIMA8co-OdW" xmlns="http://www.w3.org/2000/svg">
   <g data-el-id="DhGD9zA_E_hMrDx6" data-kind="shape" data-place="left:120px;top:200px;width:160px;height:80px;transform:rotate(0deg)">
     <svg aria-hidden="true" style="opacity:1" viewBox="0 0 160 80">
-      <path class="fx-outline" d="M0 0 L160 0 L160 80 L0 80 Z" style="fill:var(--fx-color-surface, #f8fafc);stroke:var(--fx-color-text, #0f172a);stroke-width:var(--fx-stroke-regular, 2px);stroke-linecap:butt;stroke-linejoin:miter">
+      <path class="fx-outline" d="M0 0 L160 0 L160 80 L0 80 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
       </path>
     </svg>
     <text class="fx-label">
@@ -12,7 +12,7 @@
   </g>
   <g data-el-id="0c8Et_1phC21jU57" data-kind="shape" data-place="left:520px;top:200px;width:160px;height:80px;transform:rotate(0deg)">
     <svg aria-hidden="true" style="opacity:1" viewBox="0 0 160 80">
-      <path class="fx-outline" d="M0 0 L160 0 L160 80 L0 80 Z" style="fill:var(--fx-color-surface, #f8fafc);stroke:var(--fx-color-text, #0f172a);stroke-width:var(--fx-stroke-regular, 2px);stroke-linecap:butt;stroke-linejoin:miter">
+      <path class="fx-outline" d="M0 0 L160 0 L160 80 L0 80 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
       </path>
     </svg>
     <text class="fx-label">
@@ -25,11 +25,11 @@
     <svg aria-hidden="true" class="fx-connector" style="left:256px;top:216px;width:288px;height:48px;opacity:1" viewBox="256 216 288 48">
       <defs>
         <marker id="fx-id-0-end" markerHeight="5" markerWidth="5" orient="auto-start-reverse" refX="10" refY="5" viewBox="0 0 10 10">
-          <path d="M0 0 L10 5 L0 10 Z" style="fill:var(--fx-color-connector, #334155)">
+          <path d="M0 0 L10 5 L0 10 Z" style="fill:var(--fx-color-connector)">
           </path>
         </marker>
       </defs>
-      <path class="fx-route" d="M280 240 L520 240" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector, #334155);stroke-width:var(--fx-stroke-regular, 2px);stroke-linecap:butt">
+      <path class="fx-route" d="M280 240 L520 240" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt">
       </path>
     </svg>
   </g>

@@ -34,7 +34,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
           expect(diagnostics).toEqual([]);
           // and a token on the element beats the theme's defaults
           const byRef = resolveStyle({ fill: fillRef }, kind, themeWith(kind, '{color.danger}', strokeRef)).style;
-          expect(byRef.fill).toEqual({ type: 'color', css: expect.stringContaining(`var(--fx-color-${fillRef.slice(7, -1)}, `) });
+          expect(byRef.fill).toEqual({ type: 'color', css: `var(--fx-color-${fillRef.slice(7, -1)})` });
         },
       ),
     );
@@ -43,8 +43,8 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
   it('FR-THM-001: an unknown token falls back with FLX_TOKEN_UNKNOWN', () => {
     const { style, diagnostics } = resolveStyle({ fill: '{color.nope}', stroke: { width: '{stroke.huge}' } }, 'shape', LIGHT_THEME, ['records', 'r1', 'style']);
     // the shape defaults of the theme take over, as CSS variables with the theme value as fallback
-    expect(style.fill).toEqual({ type: 'color', css: 'var(--fx-color-surface, #f8fafc)' });
-    expect(style.stroke.width).toBe('var(--fx-stroke-regular, 2px)');
+    expect(style.fill).toEqual({ type: 'color', css: 'var(--fx-color-surface)' });
+    expect(style.stroke.width).toBe('var(--fx-stroke-regular)');
     expect(diagnostics).toEqual([
       { code: 'FLX_TOKEN_UNKNOWN', severity: 'warning', path: '/records/r1/style/fill', message: 'theme light has no token {color.nope}' },
       { code: 'FLX_TOKEN_UNKNOWN', severity: 'warning', path: '/records/r1/style/stroke/width', message: 'theme light has no token {stroke.huge}' },
@@ -65,19 +65,19 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
         '*': { opacity: 0.5, font: { family: '{font.body}', size: 14 } },
       },
     };
-    expect(resolveStyle({ variant: 'emphasis' }, 'shape', theme).style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
+    expect(resolveStyle({ variant: 'emphasis' }, 'shape', theme).style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary)' });
     expect(resolveStyle({ variant: 'unknown' }, 'shape', theme).style.fill).toEqual({ type: 'color', css: '#111111' });
     // a definition's defaults sit under the element and its variant, over the theme's defaults (02 §2)
     const star = { kind: 'shape', defaults: { fill: '#ff0000', stroke: { width: 3 }, opacity: 0.25 } };
     expect(resolveStyle(undefined, star, theme).style).toMatchObject({ fill: { type: 'color', css: '#ff0000' }, opacity: '0.25' });
     expect(resolveStyle(undefined, star, theme).style.stroke.width).toBe('3px');
     expect(resolveStyle({ fill: '#00ff00' }, star, theme).style.fill).toEqual({ type: 'color', css: '#00ff00' });
-    expect(resolveStyle({ variant: 'emphasis' }, star, theme).style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
+    expect(resolveStyle({ variant: 'emphasis' }, star, theme).style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary)' });
     expect(resolveStyle(undefined, { kind: 'shape' }, theme).style.fill).toEqual({ type: 'color', css: '#111111' });
     // a definition may choose a variant too; the element's own variant wins (M5.30 review F1)
     expect(resolveStyle(undefined, { kind: 'shape', defaults: { variant: 'emphasis' } }, theme).style.fill).toEqual({
       type: 'color',
-      css: 'var(--fx-color-primary, #2563eb)',
+      css: 'var(--fx-color-primary)',
     });
     expect(resolveStyle({ variant: 'unknown' }, { kind: 'shape', defaults: { variant: 'emphasis' } }, theme).style.fill).toEqual({
       type: 'color',
@@ -90,7 +90,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     expect(resolveStyle(undefined, { kind: 'shape', defaults: { fill: '{color.nope}' } }, theme).diagnostics[0]?.path).toBe('/definition/defaultStyle/fill');
     const plain = resolveStyle(undefined, 'shape', theme).style;
     expect(plain.opacity).toBe('0.5');
-    expect(plain.font.family).toBe('var(--fx-font-body, "Inter", system-ui, sans-serif)');
+    expect(plain.font.family).toBe('var(--fx-font-body)');
     expect(plain.font.size).toBe('14px');
     // nothing anywhere: the built-in fallbacks
     const bare = resolveStyle(undefined, 'shape', { name: 'empty', tokens: {} }).style;
@@ -112,14 +112,14 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     });
     // the light theme's own defaults
     const connector = resolveStyle(undefined, 'connector', LIGHT_THEME).style;
-    expect(connector.stroke).toMatchObject({ color: 'var(--fx-color-connector, #334155)', width: 'var(--fx-stroke-regular, 2px)' });
+    expect(connector.stroke).toMatchObject({ color: 'var(--fx-color-connector)', width: 'var(--fx-stroke-regular)' });
   });
 
   it('paints: transformed tokens, gradients, images, none', () => {
     const lighter = resolveStyle({ fill: { token: '{color.primary}', transform: { lighten: 0.2, alpha: 0.5 } } }, 'shape', LIGHT_THEME).style.fill;
-    expect(lighter).toEqual({ type: 'color', css: 'color-mix(in oklch, color-mix(in oklch, var(--fx-color-primary, #2563eb), white 20%) 50%, transparent)' });
+    expect(lighter).toEqual({ type: 'color', css: 'color-mix(in oklch, color-mix(in oklch, var(--fx-color-primary), white 20%) 50%, transparent)' });
     const darker = resolveStyle({ fill: { token: '{color.primary}', transform: { lighten: -0.3 } } }, 'shape', LIGHT_THEME).style.fill;
-    expect(darker).toEqual({ type: 'color', css: 'color-mix(in oklch, var(--fx-color-primary, #2563eb), black 30%)' });
+    expect(darker).toEqual({ type: 'color', css: 'color-mix(in oklch, var(--fx-color-primary), black 30%)' });
     const bad = resolveStyle({ fill: { token: '{color.nope}', transform: {} } }, 'shape', LIGHT_THEME);
     expect(bad.diagnostics.map((d) => d.path)).toEqual(['/style/fill/token']);
     const gradient = resolveStyle(
@@ -142,7 +142,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
       angle: 90,
       stops: [
         { offset: 0, css: '#000' },
-        { offset: 1, css: 'var(--fx-color-secondary, #7c3aed)' },
+        { offset: 1, css: 'var(--fx-color-secondary)' },
       ],
     });
     expect(gradient.diagnostics.map((d) => d.path)).toEqual(['/style/fill/stops/2/color']);
@@ -190,17 +190,17 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     expect(r.stroke).toEqual({ color: '#000', width: '3px', dash: '4 2', cap: 'round', join: 'bevel' });
     expect(r.font).toEqual({
       family: '"Georgia"',
-      size: 'var(--fx-font-size-lg, 24px)',
-      weight: 'var(--fx-font-weight-bold, 700)',
+      size: 'var(--fx-font-size-lg)',
+      weight: 'var(--fx-font-weight-bold)',
       lineHeight: '1.5',
-      color: 'var(--fx-color-text, #0f172a)',
+      color: 'var(--fx-color-text)',
       style: 'italic',
       align: 'left',
       verticalAlign: 'top',
     });
     // a value of the wrong shape is skipped like an absent one
     const odd = resolveStyle({ radius: 'big' as never, stroke: { dash: ['x'] as never } }, 'shape', LIGHT_THEME).style;
-    expect(odd.radius).toBe('var(--fx-radius-none, 0px)');
+    expect(odd.radius).toBe('var(--fx-radius-none)');
     expect(odd.stroke.dash).toBeUndefined();
   });
 
@@ -243,7 +243,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
       'shape',
       LIGHT_THEME,
     );
-    expect(r.style.fill).toEqual({ type: 'color', css: 'var(--fx-color-surface, #f8fafc)' });
+    expect(r.style.fill).toEqual({ type: 'color', css: 'var(--fx-color-surface)' });
     expect(r.diagnostics.map((d) => d.path)).toEqual(['/style/fill/stops/0/color']);
   });
 
@@ -258,7 +258,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     } as unknown as Theme;
     const r = resolveStyle(undefined, 'shape', unparsed);
     // the invalid token is reported and skipped; the malformed reference is not a reference at all
-    expect(r.style.fill).toEqual({ type: 'color', css: 'var(--fx-color-ok, #010203)' });
+    expect(r.style.fill).toEqual({ type: 'color', css: 'var(--fx-color-ok)' });
     expect(r.style.opacity).toBe('1');
     expect(r.diagnostics).toEqual([
       expect.objectContaining({ code: 'FLX_TOKEN_UNKNOWN', path: '/theme/defaults/shape/fill', message: 'token {color.x} of theme u is not a valid token' }),
@@ -269,9 +269,9 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
 
   it('non-finite transform numbers and stop offsets are not emitted (M4.10 review round 2 F2, F3)', () => {
     const nan = resolveStyle({ fill: { token: '{color.primary}', transform: { lighten: Number.NaN, alpha: Number.POSITIVE_INFINITY } } }, 'shape', LIGHT_THEME);
-    expect(nan.style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
+    expect(nan.style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary)' });
     const clamped = resolveStyle({ fill: { token: '{color.primary}', transform: { lighten: 5, alpha: -1 } } }, 'shape', LIGHT_THEME).style.fill;
-    expect(clamped).toEqual({ type: 'color', css: 'color-mix(in oklch, color-mix(in oklch, var(--fx-color-primary, #2563eb), white 100%) 0%, transparent)' });
+    expect(clamped).toEqual({ type: 'color', css: 'color-mix(in oklch, color-mix(in oklch, var(--fx-color-primary), white 100%) 0%, transparent)' });
     const stops = resolveStyle(
       {
         fill: {
@@ -297,9 +297,9 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
   });
 
   it('FR-SCR-001: a screen background resolves its own paint, then the theme screen default', () => {
-    expect(resolveBackground(undefined, LIGHT_THEME).paint).toEqual({ type: 'color', css: 'var(--fx-color-background, #ffffff)' });
+    expect(resolveBackground(undefined, LIGHT_THEME).paint).toEqual({ type: 'color', css: 'var(--fx-color-background)' });
     expect(resolveBackground('#102030', LIGHT_THEME).paint).toEqual({ type: 'color', css: '#102030' });
-    expect(resolveBackground('{color.primary}', LIGHT_THEME).paint).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
+    expect(resolveBackground('{color.primary}', LIGHT_THEME).paint).toEqual({ type: 'color', css: 'var(--fx-color-primary)' });
     const g = resolveBackground(
       {
         type: 'radial-gradient',
@@ -315,7 +315,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
       angle: 0,
       stops: [
         { offset: 0, css: '#fff' },
-        { offset: 1, css: 'var(--fx-color-surface, #f8fafc)' },
+        { offset: 1, css: 'var(--fx-color-surface)' },
       ],
     });
     expect(resolveBackground({ type: 'image', assetId: 'a1' as RecordId, fit: 'contain' }, LIGHT_THEME).paint).toEqual({
@@ -324,7 +324,7 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
       fit: 'contain',
     });
     const bad = resolveBackground('{color.gone}', LIGHT_THEME, ['records', 's1']);
-    expect(bad.paint).toEqual({ type: 'color', css: 'var(--fx-color-background, #ffffff)' });
+    expect(bad.paint).toEqual({ type: 'color', css: 'var(--fx-color-background)' });
     expect(bad.diagnostics.map((d) => [d.code, d.path])).toEqual([['FLX_TOKEN_UNKNOWN', '/records/s1/background']]);
     // no screen default anywhere: no background
     expect(resolveBackground(undefined, { name: 'e', tokens: {} }).paint).toEqual({ type: 'none' });

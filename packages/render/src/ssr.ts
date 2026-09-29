@@ -7,6 +7,7 @@ import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { LIGHT_THEME, type Theme } from '@fluxion/theme';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import type { AssetUrls } from './assets.js';
 import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
 import { screenArea } from './fit.js';
@@ -27,6 +28,8 @@ export type RenderHtmlOptions = {
   readonly theme?: Theme;
   /** Where element views are looked up (default: the built-ins). */
   readonly registries?: RenderRegistries;
+  /** The URLs images are drawn from, by asset id; keep it stable (default: none, images draw nothing). */
+  readonly assets?: AssetUrls;
 };
 
 /**
@@ -70,7 +73,15 @@ export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOpti
     const area = screenArea((store.get(id) ?? {}) as Parameters<typeof screenArea>[0]);
     const view = { kind: 'fit', box: { w: area.w, h: area.h } } as const;
     // each render restarts useId: a per-screen prefix keeps gradient and marker ids unique on the page
-    const element = createElement(ScreenView, { store, screenId: id, mode: 'export', view, theme, registries });
+    const element = createElement(ScreenView, {
+      store,
+      screenId: id,
+      mode: 'export',
+      view,
+      theme,
+      registries,
+      ...(options.assets ? { assets: options.assets } : {}),
+    });
     return renderToStaticMarkup(element, { identifierPrefix: `s${index}-` });
   });
   const title = Object.values(file.records).find((r) => r.type === 'document') as { readonly title?: string } | undefined;

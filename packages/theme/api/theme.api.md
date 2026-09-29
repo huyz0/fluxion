@@ -111,6 +111,9 @@ export function resolveStyle(style: Style | undefined, of: StyleKind, theme: The
 export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeError>;
 
 // @public
+export function styleKey(theme: Theme): string;
+
+// @public
 export type StyleKind = string | {
     readonly kind: string;
     readonly defaults?: Style;

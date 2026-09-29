@@ -6,7 +6,7 @@
 import type { Store } from '@fluxion/core';
 import { type ElementRecord, type RecordId, type Transform, transformRotation } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
-import { type CSSProperties, type ReactNode, useMemo } from 'react';
+import { type CSSProperties, memo, type NamedExoticComponent, type ReactNode, useMemo } from 'react';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { elementsInOrder } from './screen-order.js';
 import { useValue } from './use-value.js';
@@ -49,7 +49,13 @@ export function PlaceholderView(props: ElementViewProps): ReactNode {
   );
 }
 
-function ElementNode(props: { readonly store: Store; readonly id: RecordId; readonly registries: RenderRegistries; readonly theme: Theme }): ReactNode {
+/** One element and its members; memoized, so a render above it re-renders it only when its props change. */
+const ElementNode = memo(function ElementNode(props: {
+  readonly store: Store;
+  readonly id: RecordId;
+  readonly registries: RenderRegistries;
+  readonly theme: Theme;
+}): ReactNode {
   const { store, id, registries, theme } = props;
   const element = useValue(useMemo(() => store.record$(id), [store, id])) as ElementRecord | undefined;
   useValue(registries.elementViews.changes$);
@@ -65,7 +71,7 @@ function ElementNode(props: { readonly store: Store; readonly id: RecordId; read
       </View>
     </div>
   );
-}
+});
 
 /**
  * Props of {@link ElementList}.
@@ -86,12 +92,15 @@ export type ElementListProps = {
 };
 
 /**
- * The visible elements under `parentId` (or at the root of `screenId`), back to front.
+ * The visible elements under `parentId` (or at the root of `screenId`), back to front. Memoized: a
+ * render above it (a theme's colours changing, 04 §2.3) re-renders it only when its props change. Its
+ * views resolve token refs to `var(--fx-…)`, so it draws styled only under an element carrying
+ * `toCssVars(theme)`, as `<ScreenView>` does (ADR-0015 amendment, M5.13).
  *
  * @public
  */
-export function ElementList(props: ElementListProps): ReactNode {
+export const ElementList: NamedExoticComponent<ElementListProps> = memo(function ElementList(props: ElementListProps): ReactNode {
   const { store, screenId, parentId, registries, theme } = props;
   const ids = useValue(useMemo(() => store.query((view) => elementsInOrder(view, screenId, parentId)), [store, screenId, parentId]));
   return ids.map((id) => <ElementNode key={id} store={store} id={id} registries={registries} theme={theme} />);
-}
+});

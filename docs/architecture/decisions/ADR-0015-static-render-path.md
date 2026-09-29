@@ -123,3 +123,13 @@ visual baseline of the CLI output (pinned Playwright image), and `check-mode-pol
 - 2026-09-29 (M5.5): ADR-0016 replaces the render-level `shapeDefs` of the M4.14 amendment: the outlines
   are core `ShapeDef`s evaluated by `evaluateOutline`, supplied by packs (`packs/basic`), and render's
   built-in `basic:rect` goes (M5.9).
+- 2026-09-29 (M5.13): item 4's token refs become `var(--fx-<token>)` with no literal fallback. The
+  fallback carried the theme's value into every resolved style, so a change of token values changed
+  each view's markup and re-rendered it; inside a screen it never applied, because `.fx-screen`
+  defines every variable its content uses (checked since M4.16), and element views need such an
+  ancestor (documented on `ElementViewProps.theme` and `ElementList`). `<ScreenView>` now hands views
+  the theme keyed on `styleKey(theme)` (defaults, token paths, types and validity, and every value
+  that is not a colour, since sizes and fonts feed measurement), and element lists are memoized, so
+  a change of colours restyles through the CSS variables alone (FR-SHP-004, 04 §2.3); a view's theme
+  may carry stale colour values and must draw colours from resolved styles. The SVG goldens changed
+  only by the dropped fallbacks.

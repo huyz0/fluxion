@@ -82,6 +82,7 @@ receiving milestone's plan.
 
 | Item | From | To | Reason |
 |---|---|---|---|
+| A procedural pattern paint (hatch, dots, no asset): M5 reads FR-SHP-004's "pattern" as an image paint with `fit: tile`; a pattern of its own needs a `Paint` schema change (format contract, ADR) (M5.13 review F4) | M5 | M9 | a paint and schema decision, with themes |
 | check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |
 | `/goal` dry runs in interactive Claude Code and Codex sessions (M0.14/M0.15; kit in docs/harness/kits/dry-run.md), including the live Codex-session check moved there from M0.11 (13 skills via `/skills`, PostToolUse quick gate observed) — descoped by user decision; reviews use subagents only | M0 | unscheduled (on human request) | user decision 2026-09-26 |
 | Close descoping loophole: a `descoped (...)` State change is never review-exempt; its reason must cite an ADR or Deferred entry (M0 final F1) | M0 | M1 (first) | shared gate code reused by later milestones |

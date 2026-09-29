@@ -1,8 +1,9 @@
 // Resolved styles (FR-THM-001/002, 02 §Style, ADR-0015): an element's style becomes CSS-ready values.
 // Each field resolves through layers, first match wins: element literal or token ref → theme
 // `defaults[kind].variants[variant]` → `defaults[kind]` → `defaults['*']` (theme globals) → built-in
-// fallbacks. A token ref becomes `var(--fx-<path>, <theme value>)`, so a theme switch restyles through
-// CSS variables; an unknown token is reported (FLX_TOKEN_UNKNOWN) and the next layer is used.
+// fallbacks. A token ref becomes `var(--fx-<path>)`, with no value of its own, so a change of token values
+// restyles through the screen's CSS variables alone (ADR-0015 amendment, M5.13); an unknown token is
+// reported (FLX_TOKEN_UNKNOWN) and the next layer is used.
 import { colorSchema, DIAGNOSTIC_CODES, type Diagnostic, jsonPointer, type Style, type TokenRef } from '@fluxion/schema';
 import { cssValue, familyCss, resolveToken, tokenPath } from './resolve.js';
 import { cssVarName, FAMILY, isValidToken, type Theme, TOKEN_REF } from './tokens.js';
@@ -120,7 +121,7 @@ export type ResolvedFont = {
 };
 
 /**
- * An element's style as CSS values: every field set, token refs as `var(--fx-…, fallback)`.
+ * An element's style as CSS values: every field set, token refs as `var(--fx-…)`.
  *
  * @public
  */
@@ -180,12 +181,12 @@ class Resolver {
   }
 
   /**
-   * A token ref as `var(--fx-…, theme value)`, or undefined (reported) when the theme has no such token
+   * A token ref as `var(--fx-…)`, or undefined (reported) when the theme has no such token
    * or its value is not a valid token (a theme object never parsed; M4.10 review round 2 F1).
    */
   ref(ref: TokenRef, where: ReadonlyArray<string | number>): string | undefined {
     const token = resolveToken(this.theme, ref);
-    if (token.ok && isValidToken(token.value)) return `var(${cssVarName(tokenPath(ref))}, ${cssValue(token.value)})`;
+    if (token.ok && isValidToken(token.value)) return `var(${cssVarName(tokenPath(ref))})`;
     this.diagnostics.push({
       code: 'FLX_TOKEN_UNKNOWN',
       severity: DIAGNOSTIC_CODES.FLX_TOKEN_UNKNOWN,

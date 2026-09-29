@@ -4,8 +4,9 @@
 // overlay slot (edit only).
 import type { Store } from '@fluxion/core';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
-import { LIGHT_THEME, resolveBackground, type Theme, toCssVars } from '@fluxion/theme';
+import { LIGHT_THEME, resolveBackground, styleKey, type Theme, toCssVars } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useInsertionEffect, useMemo } from 'react';
+import { AssetsContext, type AssetUrls } from './assets.js';
 import { paintCss } from './background.js';
 import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
@@ -52,6 +53,8 @@ export type ScreenViewProps = {
   readonly editOverlay?: ReactNode;
   /** Where element views are looked up (default: the built-in views, {@link builtinRegistries}). */
   readonly registries?: RenderRegistries;
+  /** The URLs images are drawn from, by asset id; keep it stable (default: none, images draw nothing). */
+  readonly assets?: AssetUrls;
   /** Extra content drawn above the elements. */
   readonly children?: ReactNode;
 };
@@ -79,6 +82,11 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   useContentCss();
   const screen = useValue(useMemo(() => store.record$(screenId), [store, screenId])) as ScreenRecord | undefined;
   const vars = useMemo(() => toCssVars(theme), [theme]);
+  // views resolve styles against the theme's structure; colour values reach them as CSS variables, so
+  // a change of colours alone restyles without re-rendering them (04 §2.3, ADR-0015 amendment)
+  const key = useMemo(() => styleKey(theme), [theme]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the structure, see above
+  const styling = useMemo(() => theme, [key]);
   if (!screen || screen.type !== 'screen') return null;
   const area = screenArea(screen);
   const background = resolveBackground(screen.background, theme, ['records', screenId]).paint;
@@ -92,15 +100,17 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   // an infinite screen shows its viewport: the content moves so the viewport's corner is the origin
   const origin = area.x !== 0 || area.y !== 0 ? { transform: `translate(${-area.x}px, ${-area.y}px)` } : undefined;
   return (
-    <div className="fx-view" style={{ width: view.box.w, height: view.box.h }}>
-      <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
-        <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
-        <div className="fx-layer fx-content" style={origin}>
-          <ElementList store={store} screenId={screenId} registries={registries} theme={theme} />
-          {children}
-        </div>
-        {policy.editOverlay && editOverlay !== undefined ? <div className="fx-layer fx-overlay">{editOverlay}</div> : null}
-      </section>
-    </div>
+    <AssetsContext.Provider value={props.assets}>
+      <div className="fx-view" style={{ width: view.box.w, height: view.box.h }}>
+        <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
+          <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
+          <div className="fx-layer fx-content" style={origin}>
+            <ElementList store={store} screenId={screenId} registries={registries} theme={styling} />
+            {children}
+          </div>
+          {policy.editOverlay && editOverlay !== undefined ? <div className="fx-layer fx-overlay">{editOverlay}</div> : null}
+        </section>
+      </div>
+    </AssetsContext.Provider>
   );
 }

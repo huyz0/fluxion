@@ -107,7 +107,10 @@ variables, `emit`) and be wrapped in an error boundary (FR-CMP-007, NFR-REL-004)
   `.fx-screen`. Per-screen theme overrides re-emit on that screen only (FR-THM-004).
 - Views read **resolved styles**: `theme`'s `resolveStyle` (resolution order in 02 §2), wrapped
   per element in a core `computed` by `render` (core may not import theme; ADR-0015). Token refs
-  become `var(--fx-…)`, so a theme switch restyles without re-rendering views.
+  become `var(--fx-…)`, with no value of their own, and `<ScreenView>` hands views the theme keyed
+  on `styleKey` (its structure), so a change of token values restyles without re-rendering views
+  (ADR-0015 amendment, M5.13). Image fills draw only from the host's `assets` URLs (an
+  `AssetUrls` prop); an asset's external `source` is never fetched by a page on its own (NFR-PORT-002).
 - Content CSS: strings of `fx-`-prefixed rules in `@layer fx.content` (render's content CSS plus
   each registered view's `css`), inlined by SSR and injected once in the browser (ADR-0015);
   Tailwind never reaches content (ADR-0010). Identical CSS in all modes is a precondition for parity.

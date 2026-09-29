@@ -3,6 +3,7 @@
 import type { Store } from '@fluxion/core';
 import type { Theme } from '@fluxion/theme';
 import { type ReactNode, useMemo } from 'react';
+import type { AssetUrls } from './assets.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
 import type { RenderRegistries } from './registries.js';
 import { screensInOrder } from './screen-order.js';
@@ -30,6 +31,8 @@ export type DocumentViewProps = {
   readonly theme?: Theme;
   /** Where element views are looked up. */
   readonly registries?: RenderRegistries;
+  /** The URLs images are drawn from, by asset id; keep it stable (default: none, images draw nothing). */
+  readonly assets?: AssetUrls;
 };
 
 /**
@@ -38,7 +41,7 @@ export type DocumentViewProps = {
  * @public
  */
 export function DocumentView(props: DocumentViewProps): ReactNode {
-  const { store, box, theme, registries } = props;
+  const { store, box, theme, registries, assets } = props;
   const { showHidden } = modePolicy(props.mode);
   const ids = useValue(useMemo(() => store.query((view) => screensInOrder(view, showHidden)), [store, showHidden]));
   return (
@@ -52,6 +55,7 @@ export function DocumentView(props: DocumentViewProps): ReactNode {
           view={{ kind: 'fit', box }}
           {...(theme ? { theme } : {})}
           {...(registries ? { registries } : {})}
+          {...(assets ? { assets } : {})}
         />
       ))}
     </div>
