@@ -3,7 +3,7 @@
 > Read when: building or changing any editor panel, tool, dialog, overlay, player control or
 > UX copy; adding a Storybook story; touching focus, motion or keyboard handling.
 > Family: Design · Related: [coding-typescript.md](coding-typescript.md), [performance.md](performance.md),
-> ADR-0010 (styling isolation).
+> ADR-0010 (styling isolation), ADR-0029 (editor chrome primitives).
 
 Fluxion has two visual worlds: **editor chrome** (our UI) and **content** (the user's deck,
 styled by the document theme). This standard governs the chrome and the player controls; it
@@ -26,8 +26,8 @@ never dictates how a deck looks.
 
 | | Editor chrome | Document / player content |
 |---|---|---|
-| Source | `apps/studio` Tailwind v4 `@theme` (`--ui-*`) | `theme` package tokens → `--fx-*` custom properties |
-| Styling | Tailwind utilities + shadcn/ui (Base UI) | content CSS strings (`fx-` classes, `@layer fx.content`; ADR-0015) |
+| Source | `--ui-*` custom properties: the chrome stylesheet in M6, Tailwind v4 `@theme` from M7 (ADR-0029) | `theme` package tokens → `--fx-*` custom properties |
+| Styling | M6: `CHROME_CSS` in `@layer fx.chrome` under `.fx-editor`; from M7: Tailwind utilities + shadcn/ui (Base UI), no preflight (ADR-0029) | content CSS strings (`fx-` classes, `@layer fx.content`; ADR-0015) |
 | Light/dark | follows OS + user setting | follows deck theme only |
 
 2. **Chrome never uses `--fx-*`; content never uses Tailwind or `--ui-*`.** → `check-layering`

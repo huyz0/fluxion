@@ -86,3 +86,4 @@ Research: `docs/research/05-engineering-stack-and-tooling.md` §7.3;
   export must use byte-identical CSS. The layer is renamed: `@layer fx.content` (the name 04 §2.3
   uses) replaces "`@layer fluxion`" above. The `fx-` prefix and the ban on Tailwind in content are
   unchanged.
+- 2026-09-30 (ADR-0029, M6.3): Tailwind v4 and shadcn/Base UI enter the chrome with its first composite widget (M7), importing Tailwind's theme and utilities but never its base reset. Until then the chrome is a scoped `@layer fx.chrome` stylesheet under `.fx-editor`.

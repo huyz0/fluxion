@@ -1122,3 +1122,15 @@ M6 planned: 26 rows including checkpoints cp1 and cp2. The completion gate `m6-c
 
 ADR-0028 accepted: hand-rolled statechart tools, a session store of core signals per document (no Zustand, no new dependency; core will export `writable` in M6.6), one screen-space SVG overlay (Canvas2D fallback criteria set), and a frame-batched pointer pipeline writing one transaction per frame with the gesture's `mergeKey` and sealing at pointer-up. ADR-0002's "Editor UI state stays in Zustand" sentence is superseded; 01, 03, 04, the coding standard, the ADR index and M6.md follow.
 Review r1 fixed: F1 tech-stack's editor-state row names core signals; F2 M6.md's decision line; F3 the drivers cite ADR-0014 and 04 for undo and handle size.
+
+## 2026-09-30 M6.3 (claude)
+
+ADR-0029 accepted:
+- own WAI-ARIA splitters (no `react-resizable-panels`);
+- the M6 chrome is a `CHROME_CSS` string in `@layer fx.chrome`, scoped under `.fx-editor`, with `--ui-*` properties (design-ui rule 2) and native elements;
+- Tailwind and shadcn (ADR-0010) enter with M7's first composite widget, never with the preflight reset (parity safety);
+- the layout persists through a `SettingsStore` port (the studio adapts `localStorage`) under `fluxion.editor.layout.v1`.
+
+ADR-0010 is amended, and the index and tech-stack follow.
+Review r1 fixed: F1 chrome tokens are `--ui-*` (design-ui rule 2); F2 design-ui's table and Related name ADR-0029.
+Review r2 F1 fixed: every CHROME_CSS selector's last compound names a chrome class (fx-editor or fx-chrome-*), since .fx-view sits inside .fx-editor; a T0 test will check it.

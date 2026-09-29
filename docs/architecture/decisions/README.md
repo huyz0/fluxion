@@ -22,7 +22,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0007](ADR-0007-plugin-trust-model.md) | Plugin manifest, import-map shared deps, iframe sandbox for untrusted code | accepted | 2026-09-26 |
 | [0008](ADR-0008-toolchain.md) | pnpm 11 / Turborepo / Vite 8 / tsdown / tsgo / Biome 2 / Vitest / Playwright / Storybook / Changesets | accepted | 2026-09-26 |
 | [0009](ADR-0009-ai-harness.md) | AGENTS.md + portable skills + goal-driven milestone loop + hash-bound cross-vendor review | accepted | 2026-09-26 |
-| [0010](ADR-0010-styling-isolation.md) | Tailwind/shadcn for editor chrome only; tokens + `fx-` content CSS for content (amended by 0015: CSS strings, `@layer fx.content`) | accepted | 2026-09-26 |
+| [0010](ADR-0010-styling-isolation.md) | Tailwind/shadcn for editor chrome only; tokens + `fx-` content CSS for content (amended by 0015: CSS strings, `@layer fx.content`; by 0029: chrome Tailwind from M7, no preflight) | accepted | 2026-09-26 |
 | [0011](ADR-0011-source-resolution-dual-compiler.md) | Workspace source resolution (`@fluxion/source` condition) and dual TypeScript compiler (TS 7 check, TS 6 for TypeDoc and dependency-cruiser) | accepted | 2026-09-26 |
 | [0012](ADR-0012-ids-and-fractional-indices.md) | Record IDs and fractional-index keys are own code in `@fluxion/schema` | accepted | 2026-09-27 |
 | [0013](ADR-0013-rich-text-subset.md) | Rich text is a ProseMirror-compatible JSON subset validated by Zod | accepted | 2026-09-27 |
@@ -33,6 +33,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0018](ADR-0018-shape-text-fitting.md) | Shape text fitting: an optional `textFit` on shapes, pure layout in core | accepted | 2026-09-29 |
 | [0019](ADR-0019-stroke-alignment-and-corner-radius.md) | Stroke alignment and corner radius on any outline | accepted | 2026-09-29 |
 | [0028](ADR-0028-editor-interaction-architecture.md) | Editor interaction: statechart tools, a signal session store, a screen-space SVG overlay, a frame-batched pointer pipeline | accepted | 2026-09-30 |
+| [0029](ADR-0029-editor-chrome-primitives.md) | Editor chrome: own splitters, a scoped `@layer fx.chrome` stylesheet, the panel layout in a settings port (amends 0010's timing) | accepted | 2026-09-30 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
 | [0139](ADR-0139-storybook-portable-stories.md) | Story tests through portable stories until `@storybook/addon-vitest` supports Vitest 5 | accepted | 2026-09-27 |

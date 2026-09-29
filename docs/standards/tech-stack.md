@@ -42,7 +42,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | Document reactivity | own record store in `core` + **alien-signals** | latest | tiny, framework-free, runs in Node |
 | Editor UI state | core signals (`@fluxion/core`) | — | a per-document session of signals read with `useValue` (ADR-0028); no Zustand |
 | Schema | Zod (+ `z.toJSONSchema`) | 4.x | Standard Schema, JSON Schema for spec and MCP |
-| Editor chrome | shadcn/ui on **Base UI** + Tailwind CSS | Base UI 1.x / Tailwind 4.3.x | accessible primitives, agent-fluent. **Editor only** (ADR-0010) |
+| Editor chrome | shadcn/ui on **Base UI** + Tailwind CSS | Base UI 1.x / Tailwind 4.3.x | accessible primitives, agent-fluent. **Editor only** (ADR-0010), from M7 without preflight; M6 chrome is a scoped `@layer fx.chrome` stylesheet with own splitters (ADR-0029) |
 | Content styling | CSS custom properties from theme tokens + content CSS strings, `fx-` prefix, `@layer fx.content` (ADR-0015) | — | portable into `.flux.html`, Shadow DOM safe, identical in SSR and browser |
 | Icons | Lucide (`lucide-react` in editor, raw SVG in player) | latest | ISC, tree-shakable |
 | i18n | Lingui (ICU) | latest | compile-time extraction, small runtime |
