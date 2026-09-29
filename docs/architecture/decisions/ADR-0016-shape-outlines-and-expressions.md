@@ -106,6 +106,8 @@ a polygon over the vertex cap, a budget exhausted across evaluations), per-shape
   malformed or outside its param's `min … max` uses the default (item 5). The segment cap applies
   twice: to the commands as written, and to the commands after arcs expand to cubics.
 - **Budget**: every number of a template spends a step, literals too.
+- **Smooth points outlines** keep their Catmull-Rom control points inside the box (clamped), so a
+  stroke that turns at an edge of its box stays inside it (M5.11).
 - **`ShapeDef` fields**: `anchors` are the schema's `AnchorDef` (box fractions, a direction, a
   role); `textRegions` are named box fractions; `handles` are `{ param, x, y }`, with `x` and `y`
   expressions, bound to a number or int param. Param names are identifiers that shadow none of

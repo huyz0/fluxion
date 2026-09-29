@@ -918,3 +918,6 @@ render draws shapes from core ShapeDefs: RenderRegistries.shapeDefs is the host'
 
 ## 2026-09-29 M5.10 (claude)
 packs/basic batch 1: rect, rounded-rect (r, clamped to half the shorter side), ellipse (two half arcs), triangle (apex), diamond, parallelogram (skew), trapezoid (inset), hexagon (inset), octagon (cut of the shorter side), star (points int 3..64, inner; polygon of 2*points), block-arrow (head, shaft); handles on every param; tests: closed and inside the box at four sizes and every param extreme, star 5→8 gives 16 vertices, params reshape outlines
+
+## 2026-09-29 M5.11 (claude)
+packs/basic batch 2: callout (tail, tip, width), cloud (eight outward arcs on an ellipse, template written from fixed fractions), cylinder (depth; front rim decoration), document (wave), note (fold; crease decoration), line (open, horizontal), polyline (points param), freehand (smooth points), text-box (transparent, no stroke), image-frame (mountain and sun decorations); all 21 register, close unless a stroke, and stay (with decorations) inside the box at four sizes and every param extreme; M5.10 review minor: block-arrow head and shaft capped at 0.95; review F1: smooth points outlines clamp their Catmull-Rom control points to the box (core), so strokes turning at an edge stay inside (ADR-0016 amendment)

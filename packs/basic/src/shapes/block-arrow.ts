@@ -13,8 +13,8 @@ const edge = 'h * (1 - shaft) / 2';
 export const blockArrow: ShapeDef = {
   id: 'basic:block-arrow',
   params: {
-    head: { type: 'number', min: 0.05, max: 1, default: 0.35 },
-    shaft: { type: 'number', min: 0.05, max: 1, default: 0.5 },
+    head: { type: 'number', min: 0.05, max: 0.95, default: 0.35 },
+    shaft: { type: 'number', min: 0.05, max: 0.95, default: 0.5 },
   },
   outline: {
     path: `M 0 {${edge}} L {${neck}} {${edge}} L {${neck}} 0 L {w} {h/2} L {${neck}} {h} L {${neck}} {h - ${edge}} L 0 {h - ${edge}} Z`,

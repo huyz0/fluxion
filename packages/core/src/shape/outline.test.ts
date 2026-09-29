@@ -267,8 +267,11 @@ describe('evaluateOutline (ADR-0016)', () => {
     const first = outline(smooth).path.segments[0];
     // ends repeat: the first tangent is (P1 - P0) / 6, the next one (P2 - P0) / 6
     expect(first?.p1).toEqual({ x: 100 / 6, y: 0 });
-    expect(first?.p2).toEqual({ x: 100 - 100 / 6, y: -50 / 6 });
+    // (P2 - P0) / 6 would put the control above the box, (100 - 100/6, -50/6): it is clamped to the box
+    expect(first?.p2).toEqual({ x: 100 - 100 / 6, y: 0 });
     expect(outline(smooth).path.segments[1]?.p2).toEqual({ x: 100, y: 50 - 50 / 6 });
+    // (P2 - P0) / 6 from P1: x clamped to the box, y inside it
+    expect(outline(smooth).path.segments[1]?.p1).toEqual({ x: 100, y: 50 / 6 });
     const loop = def({ points: 'v', smooth: true, closed: true }, { params });
     expect(outline(loop).path.closed).toBe(true);
     expect(through(loop)).toEqual([
@@ -277,8 +280,26 @@ describe('evaluateOutline (ADR-0016)', () => {
       { x: 0, y: 0 },
     ]);
     // closed: the first tangent wraps to the last vertex, (P1 - P2) / 6
-    expect(outline(loop).path.segments[0]?.p1).toEqual({ x: 0 + (100 - 100) / 6, y: (0 - 50) / 6 });
+    expect(outline(loop).path.segments[0]?.p1).toEqual({ x: 0, y: 0 }); // (0, -50/6), clamped
     expect(outline(loop).path.segments[2]?.p2).toEqual({ x: 0 - (100 - 100) / 6, y: 0 - (0 - 50) / 6 });
+    // a stroke turning at an edge of its box stays inside it (M5.11 review F1)
+    const turn = outline(smooth, {
+      v: [
+        [0, 1],
+        [0, 0],
+        [1, 0],
+        [1, 1],
+      ],
+    });
+    const controls = turn.path.segments.flatMap((s) => [s.p1, s.p2]);
+    expect(controls.filter((p) => p.x < 0 || p.x > 100 || p.y < 0 || p.y > 50)).toEqual([]);
+    expect(turn.path.segments.map((s) => s.p3)).toEqual([
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 100, y: 50 },
+    ]);
+    expect(Math.min(...controls.map((p) => p.y))).toBe(0);
+    expect(Math.max(...controls.map((p) => p.x))).toBe(100);
   });
 
   it('FR-SHP-003: decorations are evaluated with the outline, stroke-only paths in order', () => {

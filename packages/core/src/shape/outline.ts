@@ -153,16 +153,21 @@ function polygon(spec: { readonly n: string; readonly x: string; readonly y: str
   return [...vertices.map((to, i): PathCommand => ({ kind: i === 0 ? 'M' : 'L', to })), { kind: 'Z' }];
 }
 
-/** A uniform Catmull-Rom curve through `p` as cubics (ends repeat, a closed curve wraps). */
-function catmullRom(p: readonly Vec2[], closed: boolean): PathCommand[] {
+/**
+ * A uniform Catmull-Rom curve through `p` as cubics (ends repeat, a closed curve wraps). Control points
+ * are clamped to the `size` box: the vertices are in it, so the curve, inside its control points' hull,
+ * stays in it too, where a stroke turning at an edge would otherwise overshoot (M5.11 review F1).
+ */
+function catmullRom(p: readonly Vec2[], closed: boolean, size: Size): PathCommand[] {
+  const inBox = (x: number, y: number) => pt(clamp(x, 0, size.w), clamp(y, 0, size.h));
   const m = p.length;
   const at = (k: number) => (closed ? p[(k + m) % m] : p[clamp(k, 0, m - 1)]) as Vec2;
   const segments = Array.from({ length: closed ? m : m - 1 }, (_, k): PathCommand => {
     const [prev, a, b, next] = [at(k - 1), at(k), at(k + 1), at(k + 2)];
     return {
       kind: 'C',
-      control1: pt(a.x + (b.x - prev.x) / 6, a.y + (b.y - prev.y) / 6),
-      control2: pt(b.x - (next.x - a.x) / 6, b.y - (next.y - a.y) / 6),
+      control1: inBox(a.x + (b.x - prev.x) / 6, a.y + (b.y - prev.y) / 6),
+      control2: inBox(b.x - (next.x - a.x) / 6, b.y - (next.y - a.y) / 6),
       to: b,
     };
   });
@@ -177,7 +182,8 @@ function points(
 ): PathCommand[] {
   const param = def.params?.[spec.points] as PointsParam;
   const vertices = pointsValue(param, own(input.params, spec.points), ['params', spec.points]).map(([x, y]) => pt(x * input.size.w, y * input.size.h));
-  const open = spec.smooth === true ? catmullRom(vertices, spec.closed === true) : vertices.map((to, i): PathCommand => ({ kind: i === 0 ? 'M' : 'L', to }));
+  const open =
+    spec.smooth === true ? catmullRom(vertices, spec.closed === true, input.size) : vertices.map((to, i): PathCommand => ({ kind: i === 0 ? 'M' : 'L', to }));
   return spec.closed === true ? [...open, { kind: 'Z' }] : open;
 }
 

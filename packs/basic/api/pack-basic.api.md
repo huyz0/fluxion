@@ -14,19 +14,47 @@ export const basicPack: Pack;
 export const blockArrow: ShapeDef;
 
 // @public
+export const callout: ShapeDef;
+
+// @public
+export const cloud: ShapeDef;
+
+// @public
+export const cylinder: ShapeDef;
+
+// @public
 export const diamond: ShapeDef;
+
+// @public
+const document_2: ShapeDef;
+export { document_2 as document }
 
 // @public
 export const ellipse: ShapeDef;
 
 // @public
+export const freehand: ShapeDef;
+
+// @public
 export const hexagon: ShapeDef;
+
+// @public
+export const imageFrame: ShapeDef;
+
+// @public
+export const line: ShapeDef;
+
+// @public
+export const note: ShapeDef;
 
 // @public
 export const octagon: ShapeDef;
 
 // @public
 export const parallelogram: ShapeDef;
+
+// @public
+export const polyline: ShapeDef;
 
 // @public
 export const rect: ShapeDef;
@@ -36,6 +64,9 @@ export const roundedRect: ShapeDef;
 
 // @public
 export const star: ShapeDef;
+
+// @public
+export const textBox: ShapeDef;
 
 // @public
 export const trapezoid: ShapeDef;
