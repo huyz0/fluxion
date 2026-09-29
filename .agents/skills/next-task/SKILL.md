@@ -24,6 +24,8 @@ description: Choose the next task and confirm it is genuinely ready. Use at the 
 - [ ] Fits one commit that leaves the tree green (rule of thumb: ≤ ~400 changed lines excl.
       fixtures/snapshots). If not, split into new rows now.
 - [ ] Not already done: check `git log --grep "<ID>:"`.
+- [ ] Main's CI is not red: `node scripts/harness/last-ci.mjs` exits 0. A red run (exit 1) is fixed
+      before this row starts; exit 2 means the fix's run is pending: wait for it (M4 final F3).
 
 ## Then
 

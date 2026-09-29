@@ -47,6 +47,17 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
         workflowName: r.name,
         conclusion: r.conclusion,
       })),
+    // newest first, with status, pushes only (a PR from a fork's main is not main): the loop reads
+    // main's last runs before a task (M5.2)
+    branch: async (name) =>
+      ((await get(`actions/runs?branch=${encodeURIComponent(name)}&event=push&per_page=30`)).workflow_runs ?? []).map((r) => ({
+        databaseId: r.id,
+        workflowName: r.name,
+        headSha: r.head_sha,
+        status: r.status,
+        conclusion: r.conclusion,
+        createdAt: r.created_at,
+      })),
   };
 }
 
@@ -60,6 +71,8 @@ export function ghSource(spawn = spawnSync) {
   return {
     view: async (id) => gh(['run', 'view', String(id), '--json', FIELDS]),
     list: async (sha) => gh(['run', 'list', '--commit', sha, '--limit', '50', '--json', 'databaseId,workflowName,conclusion']),
+    branch: async (name) =>
+      gh(['run', 'list', '--branch', name, '--event', 'push', '--limit', '30', '--json', 'databaseId,workflowName,headSha,status,conclusion,createdAt']),
   };
 }
 

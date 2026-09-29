@@ -15,7 +15,10 @@ milestone's completion command exiting 0 — never by your opinion.
    `git log -10 --oneline`, and the **Current milestone** line of `docs/milestones/roadmap.md`.
 2. Run `node scripts/gates/precommit.mjs --quick` (or `pnpm verify:fast` from M1). If red and
    the cause is not your in-progress task, fixing the tree is the first task.
-3. If `state.json.blockedReason` is set, report it and stop — a human must clear it.
+3. Run `node scripts/harness/last-ci.mjs` (main's newest completed `ci` and `gates` runs). If it
+   exits 1, main's CI is red: fixing it is the first task, before any row (M4 final F3). Exit 2
+   means a newer run (the fix) is still pending: wait for it and run last-ci again; do not fix twice.
+4. If `state.json.blockedReason` is set, report it and stop — a human must clear it.
 
 ## 2. Preconditions
 

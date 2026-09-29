@@ -57,6 +57,7 @@ node scripts/gates/check-budget.mjs --record          re-measure gate timings af
 node scripts/gates/check-budget.mjs --record --cold-pending | --cold-from-ci <sha>   same without Chromium (ADR-0145)
 pnpm mutate [--package packages/<n>] [--from <ref>]   mutation testing (tzap, ADR-0146)
 node scripts/gates/check-ci-evidence.mjs --record <sha>  record a green three-OS CI run (gh, else GitHub REST)
+node scripts/harness/last-ci.mjs                      main's last completed CI; 1 = red: fix first, 2 = fix pending: wait
 node scripts/harness/review.mjs context --task M3.4     reviewer packet
 node scripts/harness/run-reviewer.mjs --task M3.4       optional cross-vendor reviewer (default: isolated subagent)
 node scripts/harness/review.mjs record --file v.json    store verdict (bound to staged diff hash)
