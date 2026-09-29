@@ -933,3 +933,6 @@ cp1 F1: theme resolveStyle takes a StyleKind, the kind optionally with its defin
 
 ## 2026-09-29 M5.31 (claude)
 cp1 F2: core shape/check.ts parses every template and expression of a definition and checks the names each may read (outline and decorations: w, h, pi, scalar params; polygon vertices add i, n; handles as the outline); parseShapeDef reports them with their own codes; M5.30 review minor: a definition default variant applies when the element has none
+
+## 2026-09-29 M5.32 (claude)
+cp1 F4: milestone-checks gains readmeGaps (no stub, 8+ lines, names what it must), propertyRuns (numRuns of the titled property) and coverageGaps (moved out of m5-complete); m5-complete docs leg names the 21 shape ids, the routes and anchors, and the SDK functions; the FR-CON-012 leg reads the property's runs (>= 1 000) from the routing test; packs/basic joins the coverage legs, and vitest.config gives packs the pure floors (testing.md §6 row); harness cases; M5.31 review minor: the Packs section of the diagnostics reference names the template and expression codes

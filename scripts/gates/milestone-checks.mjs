@@ -453,3 +453,49 @@ export function changesetsCoverRange(base) {
   const gaps = changesetGaps(diff.stdout.split(/\r?\n/).filter(Boolean), texts, workspaces);
   return gaps.length === 0 || `no changeset for ${gaps.join(', ')} (changed since ${base.slice(0, 8)})`;
 }
+
+/**
+ * What a README lacks to describe its package: `true`, or the problem (M5 cp1 F4: a heading alone
+ * is not a description). `required` are words or ids the text must name; a leftover M1 stub fails.
+ */
+export function readmeGaps(text, required, { minLines = 8 } = {}) {
+  if (/stub \(M1\)/.test(text)) return 'still the M1 stub';
+  const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '').length;
+  if (lines < minLines) return `${lines} non-empty lines (< ${minLines})`;
+  const missing = required.filter((w) => !text.includes(w));
+  return missing.length === 0 || `does not name ${missing.join(', ')}`;
+}
+
+/** An `it`/`test`/`describe` call, with any modifier (`.skip`, `.each(…)`). */
+const CASE_CALL = /\b(?:it|test|describe)(?:\.\w+)*\(/g;
+
+/**
+ * The number of runs the fast-check property titled `title` asks for in `source`: the `numRuns` in
+ * the body of the `it`/`test` call with that title, up to the next test or suite call (M5.32 review
+ * F2); 0 when it names none (fast-check's default is 100) or no such call exists.
+ */
+export function propertyRuns(source, title) {
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const call = new RegExp(`\\b(?:it|test)(?:\\.\\w+)*\\(\\s*(['"\`])${escaped}\\1`).exec(source);
+  if (call === null) return 0;
+  const from = call.index + call[0].length;
+  CASE_CALL.lastIndex = from;
+  const next = CASE_CALL.exec(source);
+  const runs = /numRuns:\s*([\d_]+)/.exec(source.slice(from, next === null ? undefined : next.index))?.[1];
+  return runs === undefined ? 0 : Number(runs.replace(/_/g, ''));
+}
+
+/**
+ * Whether the coverage `summary` (Vitest json-summary) of `dir`'s sources meets `floors`: `true`, or
+ * what falls short. Fewer than `min` statements is a failure too: an empty package proves nothing.
+ */
+export function coverageGaps(summary, dir, { lines, branches }, min) {
+  const files = Object.entries(summary).filter(([f]) => f.replace(/\\/g, '/').includes(`/${dir}/src/`));
+  const sum = (k, f) => files.reduce((a, [, v]) => a + v[k][f], 0);
+  const pct = (k) => (sum(k, 'total') === 0 ? 0 : (100 * sum(k, 'covered')) / sum(k, 'total'));
+  const bad = [];
+  if (sum('statements', 'total') < min) bad.push(`${sum('statements', 'total')} statements (< ${min})`);
+  if (pct('lines') < lines) bad.push(`lines ${pct('lines').toFixed(1)}%`);
+  if (pct('branches') < branches) bad.push(`branches ${pct('branches').toFixed(1)}%`);
+  return bad.length === 0 || `${dir}: ${bad.join('; ')}`;
+}

@@ -410,3 +410,73 @@ describe('changesetGaps (M5.3, M4 final F1)', () => {
     }
   });
 });
+
+describe('M5 legs made honest (M5 cp1 F4)', () => {
+  it('readmeGaps rejects a stub, a heading alone and a README that names too little', async () => {
+    const { readmeGaps } = await import('../../scripts/gates/milestone-checks.mjs');
+    const full = [
+      '# @fluxion/pack-basic',
+      '',
+      'The basic shapes:',
+      '- basic:rect',
+      '- basic:ellipse',
+      'Register with definePack.',
+      'More.',
+      'Even more.',
+      'Last line.',
+    ].join('\n');
+    assert.equal(readmeGaps(full, ['basic:rect', 'basic:ellipse']), true);
+    assert.match(String(readmeGaps('# x\n\nstub (M1)\n', [])), /M1 stub/);
+    assert.match(String(readmeGaps('# @fluxion/pack-basic\n', [])), /1 non-empty lines \(< 8\)/);
+    assert.match(String(readmeGaps(full, ['basic:rect', 'basic:star', 'basic:cloud'])), /does not name basic:star, basic:cloud/);
+  });
+
+  it('propertyRuns reads the numRuns of the titled property, 0 when it relies on the default', async () => {
+    const { propertyRuns } = await import('../../scripts/gates/milestone-checks.mjs');
+    const src = [
+      "it('A: first', () => { fc.assert(fc.property(x, f), { numRuns: 50 }); });",
+      "it('FR-CON-012: after random transforms endpoints lie on anchors', () => {",
+      '  fc.assert(fc.property(t, f), { numRuns: 1_000 });',
+      '});',
+      "it('C: other', () => { fc.assert(fc.property(x, f), { numRuns: 5000 }); });",
+    ].join('\n');
+    assert.equal(propertyRuns(src, 'FR-CON-012: after random transforms endpoints lie on anchors'), 1000);
+    assert.equal(propertyRuns(src, 'A: first'), 50);
+    // a property without numRuns runs fast-check's default: below the plan's 1 000
+    assert.equal(propertyRuns("it('B', () => { fc.assert(fc.property(x, f)); });\nit('C', () => { fc.assert(p, { numRuns: 9000 }); });", 'B'), 0);
+    assert.equal(propertyRuns(src, 'no such title'), 0);
+    // the body ends at the next test or suite call in any style: a later property's runs do not count
+    const loose = [
+      "it('FR-CON-012: t', () => { fc.assert(fc.property(t, f)); });",
+      "test('other', () => fc.assert(p, { numRuns: 5000 }));",
+      'it("third", () => fc.assert(p, { numRuns: 7000 }));',
+      "it.each([1])('fourth', () => fc.assert(p, { numRuns: 8000 }));",
+      "describe('suite', () => { it('x', () => fc.assert(p, { numRuns: 9000 })); });",
+    ];
+    for (const next of loose.slice(1)) assert.equal(propertyRuns(`${loose[0]}\n${next}`, 'FR-CON-012: t'), 0, next);
+    // the title in a comment, or inside another test, is not the test
+    const commented = `// FR-CON-012: t runs a thousand times\nit('A', () => fc.assert(p, { numRuns: 3000 }));\ntest("FR-CON-012: t", () => fc.assert(p, { numRuns: 1200 }));`;
+    assert.equal(propertyRuns(commented, 'FR-CON-012: t'), 1200);
+    assert.equal(propertyRuns("it.skip('R (a+b)', () => fc.assert(p, { numRuns: 42 }));", 'R (a+b)'), 42);
+  });
+
+  it('coverageGaps fails a package under its floor or with too few statements', async () => {
+    const { coverageGaps } = await import('../../scripts/gates/milestone-checks.mjs');
+    const entry = (total, covered, btotal, bcovered) => ({
+      statements: { total, covered },
+      lines: { total, covered },
+      branches: { total: btotal, covered: bcovered },
+    });
+    const summary = {
+      'E:/repo/packs/basic/src/shapes/star.ts': entry(40, 40, 10, 10),
+      'E:\\repo\\packs\\basic\\src\\index.ts': entry(30, 30, 4, 4),
+      'E:/repo/packages/core/src/x.ts': entry(100, 0, 10, 0),
+    };
+    const floors = { lines: 90, branches: 85 };
+    assert.equal(coverageGaps(summary, 'packs/basic', floors, 60), true);
+    assert.match(String(coverageGaps(summary, 'packs/basic', floors, 100)), /70 statements \(< 100\)/);
+    const low = { ...summary, 'E:/repo/packs/basic/src/shapes/cloud.ts': entry(30, 0, 10, 2) };
+    assert.match(String(coverageGaps(low, 'packs/basic', floors, 60)), /packs\/basic: lines 70\.0%; branches 66\.7%/);
+    assert.match(String(coverageGaps({}, 'packs/basic', floors, 1)), /0 statements/);
+  });
+});

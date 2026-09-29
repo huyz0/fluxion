@@ -6,7 +6,18 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import * as checks from './milestone-checks.mjs';
-import { backlogTextFor, checkBacklogDone, checkFinalReview, loadMilestoneReviews, namedCases, titled, verifyLeg } from './milestone-checks.mjs';
+import {
+  backlogTextFor,
+  checkBacklogDone,
+  checkFinalReview,
+  coverageGaps,
+  loadMilestoneReviews,
+  namedCases,
+  propertyRuns,
+  readmeGaps,
+  titled,
+  verifyLeg,
+} from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
@@ -31,6 +42,12 @@ function cli(args) {
   if (b !== true) return { status: 1, stdout: '', stderr: `build failed: ${b}` };
   if (!exists(CLI_BIN)) return { status: 1, stdout: '', stderr: `missing ${CLI_BIN} after the build` };
   return run(process.execPath, [repoPath(CLI_BIN), ...args]);
+}
+
+/** Test files (Vitest T0) of the workspaces under `roots`, tracked or new. */
+function testFiles(roots) {
+  const r = run('git', ['ls-files', '--cached', '--others', '--exclude-standard', '--', ...roots]);
+  return r.stdout.split(/\r?\n/).filter((f) => /\/src\/.*\.test\.[cm]?[jt]sx?$/.test(f));
 }
 
 /** Shipped source files (no tests) of the workspaces under `roots`. */
@@ -152,9 +169,15 @@ leg('markers, connector style and labels', () =>
     browser('M5.22', 'FR-CON-006: a label at t 0.5 stays at the path midpoint when the endpoints move'),
   ]),
 );
-leg('attachment invariant: after random transforms endpoints lie on anchors (1000 runs)', () =>
-  titled([['M5.23', 'FR-CON-012: after random transforms endpoints lie on anchors', 'routing']]),
-);
+const ATTACHMENT = 'FR-CON-012: after random transforms endpoints lie on anchors';
+leg('attachment invariant: after random transforms endpoints lie on anchors (1000 runs)', () => {
+  // the plan's 1 000 runs, not fast-check's default 100 (M5 cp1 F4)
+  const file = testFiles(['packages/routing']).find((p) => readText(p).includes(ATTACHMENT));
+  if (file === undefined) return `no routing test titled "${ATTACHMENT}"`;
+  const runs = propertyRuns(readText(file), ATTACHMENT);
+  if (runs < 1000) return `${file}: the property runs ${runs || 'the default 100'} times (< 1 000)`;
+  return titled([['M5.23', ATTACHMENT, 'routing']]);
+});
 
 // ── snapshots and the gallery (plan rows 18-19) ───────────────────────────────────────────────
 /** The 21 basic shape ids of the plan (FR-SHP-002), the four route types and the markers of FR-CON-003. */
@@ -251,9 +274,19 @@ leg(
     /run:[^\n]*(fluxion|dist\/bin\.js)[^\n]*\brender\s+examples\/shapes-gallery\.flux\.json/.test(yamlCode(readText('.github/workflows/ci.yml'))) ||
     'ci.yml has no run step rendering the shapes gallery',
 );
-leg('docs: packs/basic and routing READMEs describe M5', () => {
-  const stubs = ['packs/basic/README.md', 'packages/routing/README.md', 'packages/sdk/README.md'].filter((f) => !exists(f) || /stub \(M1\)/.test(readText(f)));
-  return stubs.length === 0 || `still stubs: ${stubs.join(', ')}`;
+// what each README must name to describe M5 (M5 cp1 F4: a heading alone is not a description)
+const README_NAMES = {
+  'packs/basic/README.md': BASIC_SHAPES,
+  // the routes, and the five anchor kinds of the schema's AnchorRef, backticked (M5.32 review F1)
+  'packages/routing/README.md': [...ROUTES, '`auto`', '`floating`', '`named`', '`side`', '`point`'],
+  'packages/sdk/README.md': ['definePack', 'registerShapeDef', 'evaluateOutline'],
+};
+leg('docs: packs/basic, routing and sdk READMEs describe M5', () => {
+  const gaps = Object.entries(README_NAMES).flatMap(([f, names]) => {
+    const r = exists(f) ? readmeGaps(readText(f), names) : 'missing';
+    return r === true ? [] : [`${f}: ${r}`];
+  });
+  return gaps.length === 0 || gaps.join('; ');
 });
 
 // ── coverage floors (plan legs) ────────────────────────────────────────────────────────────────
@@ -277,14 +310,7 @@ function coverage(dir, lines, branches, min) {
     if (numFailedTests > 0 || numPassedTests === 0) return `${dir}: ${numFailedTests} failed, ${numPassedTests} passed`;
     const summary = join(out, 'coverage-summary.json');
     if (!existsSync(summary)) return `no coverage summary: ${ok(r)}`;
-    const files = Object.entries(JSON.parse(readFileSync(summary, 'utf8'))).filter(([f]) => f.replace(/\\/g, '/').includes(`/${dir}/src/`));
-    const sum = (k, f) => files.reduce((a, [, v]) => a + v[k][f], 0);
-    const pct = (k) => (sum(k, 'total') === 0 ? 0 : (100 * sum(k, 'covered')) / sum(k, 'total'));
-    const bad = [];
-    if (sum('statements', 'total') < min) bad.push(`${sum('statements', 'total')} statements (< ${min})`);
-    if (pct('lines') < lines) bad.push(`lines ${pct('lines').toFixed(1)}%`);
-    if (pct('branches') < branches) bad.push(`branches ${pct('branches').toFixed(1)}%`);
-    return bad.length === 0 || `${dir}: ${bad.join('; ')}`;
+    return coverageGaps(JSON.parse(readFileSync(summary, 'utf8')), dir, { lines, branches }, min);
   } finally {
     rmSync(out, { recursive: true, force: true });
   }
@@ -293,6 +319,8 @@ for (const [dir, min] of [
   ['packages/routing', 150],
   ['packages/geometry', 150],
   ['packages/core', 150],
+  // the pack's definitions and their per-shape tests (M5 cp1 F4): held to the pure floors
+  [PACK, 60],
 ])
   leg(`${dir} coverage at or above the pure-package floors`, () => coverage(dir, t('COVERAGE_PURE_LINES'), t('COVERAGE_PURE_BRANCHES'), min));
 leg('packages/render coverage at or above the render floors', () =>

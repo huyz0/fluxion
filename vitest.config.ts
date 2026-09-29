@@ -10,12 +10,14 @@ import { t } from './scripts/gates/thresholds.mjs';
 interface Workspace {
   dir: string;
   runtime: string;
+  layer: string;
 }
 const { workspaces } = JSON.parse(readFileSync(new URL('./tools/gen/workspaces.json', import.meta.url), 'utf8')) as { workspaces: Workspace[] };
 
-// testing.md §6: pure packages 90/85, render + player 80/75, editor 70/65; the rest have no floor yet
+// testing.md §6: pure packages and packs 90/85, render + player 80/75, editor 70/65; the rest have no floor yet
 const floorFor = (w: Workspace): { lines: number; branches: number } | undefined => {
-  if (w.runtime === 'pure') return { lines: t('COVERAGE_PURE_LINES'), branches: t('COVERAGE_PURE_BRANCHES') };
+  // packs are definitions (data) and small helpers: held to the pure floors (M5 cp1 F4)
+  if (w.runtime === 'pure' || w.layer === 'Pack') return { lines: t('COVERAGE_PURE_LINES'), branches: t('COVERAGE_PURE_BRANCHES') };
   if (w.dir === 'packages/render' || w.dir === 'packages/player') return { lines: t('COVERAGE_RENDER_LINES'), branches: t('COVERAGE_RENDER_BRANCHES') };
   if (w.dir === 'packages/editor') return { lines: t('COVERAGE_EDITOR_LINES'), branches: t('COVERAGE_EDITOR_BRANCHES') };
   return undefined;

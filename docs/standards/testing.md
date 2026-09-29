@@ -95,6 +95,7 @@ seed and counterexample lines in its FAIL detail, so a local failure can be repl
 |---|---|---|---|
 | schema, geometry, core, layout, routing, anim | ≥ 90 % | ≥ 85 % | ≥ 70 % (core, schema, layout, routing) |
 | format, dsl, theme | ≥ 90 % | ≥ 85 % | — |
+| packs (definitions) | ≥ 90 % | ≥ 85 % | — |
 | render, player | ≥ 80 % | ≥ 75 % | — |
 | editor | ≥ 70 % + E2E flows | ≥ 65 % | — |
 

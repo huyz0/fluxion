@@ -122,8 +122,10 @@ template and expression and checks the names each may read, reporting them with 
 ## Packs
 
 Reported by `@fluxion/sdk` when a host registers a pack (`pack.register(registries)`, ADR-0017).
-A pack registers everything or nothing; definition problems are `FLX_SHAPE_DEF_INVALID` at
-`/shapes/<n>/…`, and a key another source holds is `FLX_REGISTRY_DUPLICATE`.
+A pack registers everything or nothing; definition problems are reported at `/shapes/<n>/…` with
+the codes of shape definitions (`FLX_SHAPE_DEF_INVALID`, and `FLX_SHAPE_PATH`, `FLX_EXPR_SYNTAX` or
+`FLX_EXPR_UNKNOWN` for templates and expressions), and a key another source holds is
+`FLX_REGISTRY_DUPLICATE`.
 
 | Code | Severity | Meaning | Typical fix |
 |---|---|---|---|
