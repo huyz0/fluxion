@@ -51,39 +51,56 @@ NFR-PERF-002) memoized views plus culling keep that within budget (§5).
 
 ### 2.2 Public API
 
+The R0 API as built (M4; `packages/render/api/render.api.md` is the snapshot):
+
 ```ts
 type RenderMode = 'edit' | 'present' | 'export' | 'thumbnail';
+function modePolicy(mode: RenderMode): ModePolicy;   // editOverlay, interactive, measure, showHidden
 
 interface ScreenViewProps {
   store: Store; screenId: RecordId; mode: RenderMode;
-  view: { kind: 'fit'; box: Box } | { kind: 'camera'; camera: Camera };  // camera = {x,y,z}
-  breakpoint?: string;                   // applies element.overrides[bp] (FR-RSP-003)
-  animState?: Signal<AnimState>;         // from @fluxion/anim; structure-level (visibility, variants)
-  handles?: ElementHandleSink;           // player/editor get refs for per-frame direct writes
-  editOverlay?: ReactNode;               // editor only
-  cull?: boolean;                        // default: true for camera views
+  view: { kind: 'fit'; box: { w: number; h: number } };
+  theme?: Theme;                          // default LIGHT_THEME; its tokens become --fx-* variables
+  registries?: RenderRegistries;          // default builtinRegistries()
+  editOverlay?: ReactNode;                // mounted in edit only (mode policy)
+  children?: ReactNode;                   // extra content above the elements
 }
+function ScreenView(props: ScreenViewProps): ReactNode;
+function DocumentView(props: { store; mode; box; theme?; registries? }): ReactNode;  // every screen, in order
 
-interface ElementHandle {                // per-frame writes bypass React (research 03 §8.1 rule 10)
-  id: RecordId; root: HTMLElement; geometry?: SVGGraphicsElement;
-  setStyleVar(name: string, value: string): void;   // e.g. --fx-anim-opacity
-  setAttr(target: 'path' | 'stroke', name: string, value: string): void;
-}
+interface ElementViewProps { element: ElementRecord; store: Store; theme: Theme; registries: RenderRegistries; children?: ReactNode }
+interface ElementView { Component: ComponentType<ElementViewProps> }   // must be pure: same record, same markup
+interface ShapeOutline { outline(size: { w: number; h: number }): readonly PathCommand[] }
+interface RenderRegistries { elementViews: Registry<string, ElementView>; shapeDefs: Registry<string, ShapeOutline> }
+function createRenderRegistries(): RenderRegistries;       // empty
+function registerBuiltinViews(r: RenderRegistries): void;  // shape, connector, basic:rect (source `core`)
+function builtinRegistries(): RenderRegistries;
 
-interface ElementView<E extends ElementRecord = ElementRecord> {
-  kind: E['kind'] | `${string}:${string}`;
-  Component: React.ComponentType<ElementViewProps<E>>;   // must be pure: (record, resolved, mode) → UI
-  measure?(el: E, m: TextMeasurer): Size | undefined;  // intrinsic size for autoSize/layout
-  a11y(el: E): { role?: string; label?: string; hidden?: boolean };
-  exportSvg?(el: E, ctx: ExportCtx): string;           // default: DOM → SVG serializer
-  cull: 'hide' | 'unmount' | 'never';                  // components default 'hide' (keep state)
-}
+function renderDocumentToHtml(file: DocumentFile, options?: { screens?; theme?; registries? }): string;  // ADR-0015
+function normalizeSvg(html: string): string;              // the goldens' normal form (NFR-REL-005)
 ```
 
-`elementViews` and `components` are render-level registries (03 §4). Packs register views, the
-same way third parties do; an unknown kind renders a placeholder that keeps its record (FR-DOC-005,
-FR-EXT-008). Component views receive the FR-CMP-002 contract (`props`, tokens, `mode`, step,
-variables, `emit`) and are wrapped in an error boundary (FR-CMP-007, NFR-REL-004).
+Also exported: the built-in views (`ShapeView`, `ConnectorView`, `PlaceholderView`, `ElementList`),
+`CONTENT_CSS`, `useValue` (a React view of a core signal) and the pure helpers `fitTransform`,
+`screenArea`, `screensInOrder`, `elementsInOrder`, `connectorEnds`, `paintCss`, `pathData`,
+`plainParagraphs` and `BASIC_RECT`.
+
+Planned additions, each with the milestone that needs it:
+
+- `view: { kind: 'camera'; camera }`, `breakpoint` (FR-RSP-003), `cull` (§2.5) — editor and responsive
+  milestones;
+- `animState` (structure-level animation state from `@fluxion/anim`) and `handles`: an
+  `ElementHandle { id, root, geometry?, setStyleVar, setAttr }` sink for per-frame writes that bypass
+  React (research 03 §8.1 rule 10) — the player milestones;
+- on `ElementView`: `kind`, `measure(el, measurer)` (intrinsic size for autoSize/layout), `a11y(el)`,
+  `exportSvg(el, ctx)` and `cull: 'hide' | 'unmount' | 'never'`; a `css` string of view content CSS;
+- the JSON `ShapeDef` of 03 §5 in core's `shapeDefs`, replacing the render-level outlines (M5,
+  ADR-0015 amendment).
+
+`elementViews` (and later `components`) are render-level registries (03 §4). Packs register views
+the same way third parties do; an unknown kind renders a placeholder that keeps its record (FR-DOC-005,
+FR-EXT-008). Component views will receive the FR-CMP-002 contract (`props`, tokens, `mode`, step,
+variables, `emit`) and be wrapped in an error boundary (FR-CMP-007, NFR-REL-004).
 
 ### 2.3 Styling
 
