@@ -4,7 +4,8 @@
 import { writeFile } from 'node:fs/promises';
 import { renderDocumentToHtml } from '@fluxion/render';
 import { type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
-import { type Command, io, type Outcome, usage } from './command.js';
+import { type Command, internal, io, type Outcome, usage } from './command.js';
+import { hostRegistries } from './host.js';
 import { readInput } from './validate.js';
 
 /**
@@ -21,6 +22,9 @@ function screenProblem(document: DocumentFile, wanted: readonly string[], file: 
 
 /** Renders the document at `file` to `out`. */
 async function render(file: string, out: string, screens: readonly string[] | undefined, log: (text: string) => void): Promise<Outcome> {
+  // the bundled packs are the CLI's own: one failing to register is an internal error (ADR-0017)
+  const host = hostRegistries();
+  if (host.problems.length > 0) return internal(host.problems.map((d) => d.message).join('; '));
   const text = await readInput(file);
   if (typeof text !== 'string') return text;
   const parsed = parseDocument(text);

@@ -207,15 +207,27 @@ function enumIssue(p: z.infer<typeof enumParam>): string | null {
 /** Cross-field rules of one param: a default inside its range, a known enum default, a list inside its count. */
 function paramIssue(p: z.infer<typeof numberParam> | z.infer<typeof enumParam> | z.infer<typeof pointsParam>): string | null {
   if (p.type === 'enum') return enumIssue(p);
+  if (p.type === 'int' && ![p.min, p.max, p.default].every((v) => v === undefined || Number.isInteger(v)))
+    return 'an int param has integer min, max and default';
   const [min, max] = [p.min ?? Number.NEGATIVE_INFINITY, p.max ?? Number.POSITIVE_INFINITY];
   if (min > max) return `min ${min} is greater than max ${max}`;
   const count = p.type === 'points' ? p.default.length : p.default;
   return count < min || count > max ? `default is outside ${p.min ?? '…'} … ${p.max ?? '…'}` : null;
 }
 
+// the raw object is checked first: Zod's record skips a __proto__ key (as JSON.parse makes it), which
+// would leave a param that expressions cannot read (M5.7 review F1)
+const paramsSchema = z
+  .unknown()
+  .refine((v) => !(typeof v === 'object' && v !== null && Object.hasOwn(v, '__proto__')), {
+    message: 'param name "__proto__" is reserved',
+    path: ['__proto__'],
+  })
+  .pipe(z.record(z.string(), z.union([numberParam, enumParam, pointsParam])));
+
 const shapeDefObject = z.strictObject({
   id: qualifiedNameSchema,
-  params: z.record(z.string(), z.union([numberParam, enumParam, pointsParam])).optional(),
+  params: paramsSchema.optional(),
   outline: outlineSchema,
   anchors: z.array(anchorDefSchema).optional(),
   textRegions: z.array(z.strictObject({ name: z.string().min(1), x: unit, y: unit, w: unit, h: unit })).optional(),

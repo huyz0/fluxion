@@ -56,6 +56,11 @@ describe('shape definitions (ADR-0016, 03 §5)', () => {
       'FLX_SHAPE_DEF_INVALID /defs/0/params/w param name "w" must be an identifier other than w, h, i, n and pi',
     ]);
     for (const name of ['h', 'i', 'n', 'pi', '1x', 'a-b', '']) expect(withParams({ [name]: { type: 'number', default: 1 } }), name).toHaveLength(1);
+    // a __proto__ key (as JSON.parse makes it) is refused before parsing could drop it
+    expect(problems({ ...base, params: JSON.parse('{"__proto__":{"type":"number","default":3}}') })).toEqual([
+      'FLX_SHAPE_DEF_INVALID /defs/0/params/__proto__ param name "__proto__" is reserved',
+    ]);
+    expect(withParams({ constructor: { type: 'number', default: 1 } })).toEqual([]);
     expect(withParams({ _ok9: { type: 'number', default: 1 } })).toEqual([]);
     expect(withParams({ r: { type: 'number', min: 0, max: 10, default: 11 } })).toEqual(['FLX_SHAPE_DEF_INVALID /defs/0/params/r default is outside 0 … 10']);
     expect(withParams({ r: { type: 'number', min: 0, default: -1 } })).toEqual(['FLX_SHAPE_DEF_INVALID /defs/0/params/r default is outside 0 … …']);
@@ -64,6 +69,12 @@ describe('shape definitions (ADR-0016, 03 §5)', () => {
     expect(withParams({ r: { type: 'number', min: 0, max: 10, default: 10 } })).toEqual([]);
     expect(withParams({ r: { type: 'number', min: 5, max: 4, default: 4 } })).toEqual(['FLX_SHAPE_DEF_INVALID /defs/0/params/r min 5 is greater than max 4']);
     expect(withParams({ r: { type: 'number', min: 4, max: 4, default: 4 } })).toEqual([]);
+    for (const bad of [{ min: 1.2 }, { max: 7.5 }, { default: 1.5 }])
+      expect(withParams({ k: { type: 'int', default: 2, ...bad } }), JSON.stringify(bad)).toEqual([
+        'FLX_SHAPE_DEF_INVALID /defs/0/params/k an int param has integer min, max and default',
+      ]);
+    expect(withParams({ k: { type: 'int', min: 1, max: 9, default: 2 } })).toEqual([]);
+    expect(withParams({ k: { type: 'number', min: 1.2, max: 7.5, default: 1.5 } })).toEqual([]);
     expect(withParams({ e: { type: 'enum', values: ['a', 'b'], default: 'c' } })).toEqual([
       'FLX_SHAPE_DEF_INVALID /defs/0/params/e default "c" is not one of the values',
     ]);

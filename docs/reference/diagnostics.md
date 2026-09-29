@@ -117,6 +117,16 @@ outline (`evaluateOutline`, ADR-0016). Paths point into the definition.
 | `FLX_SHAPE_PATH` | error | A path template is not one subpath of absolute `M L H V C Q A Z` commands: a relative or unknown command, a missing or extra number, a second `M`, or a command after `Z`. | Write absolute commands, one `M` first, `Z` last if closed. |
 | `FLX_SHAPE_LIMIT` | error | An outline exceeds a cap: a polygon's `n` is not an integer from 2 to 1 024, a template expands to more than 1 024 segments, an element's points list has more than 10 000 vertices, or a coordinate overflows the number range once combined (a control point between `-1e308` and `1e308`). | Lower the count, or keep the numbers smaller. |
 
+## Packs
+
+Reported by `@fluxion/sdk` when a host registers a pack (`pack.register(registries)`, ADR-0017).
+A pack registers everything or nothing; definition problems are `FLX_SHAPE_DEF_INVALID` at
+`/shapes/<n>/…`, and a key another source holds is `FLX_REGISTRY_DUPLICATE`.
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_PACK_INVALID` | error | The pack id is not lower-case letters, digits and `-`, or a definition's id is outside the pack's namespace (`<pack>:<name>`). | Rename the pack or the definition. |
+
 ## Command line
 
 Reported by `fluxion` (ADR-0147) in its `--json` output and on stderr. Paths point into the

@@ -4,6 +4,15 @@
 
 ```ts
 
+import { Pack } from '@fluxion/sdk';
+import { ShapeDef } from '@fluxion/sdk';
+
+// @public
+export const basicPack: Pack;
+
+// @public
+export const rect: ShapeDef;
+
 // @public
 export const VERSION: string;
 

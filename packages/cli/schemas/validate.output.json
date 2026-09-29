@@ -80,7 +80,8 @@
                           "FLX_EXPR_BUDGET",
                           "FLX_SHAPE_DEF_INVALID",
                           "FLX_SHAPE_PATH",
-                          "FLX_SHAPE_LIMIT"
+                          "FLX_SHAPE_LIMIT",
+                          "FLX_PACK_INVALID"
                         ]
                       },
                       "severity": {
@@ -239,7 +240,8 @@
                   "FLX_EXPR_BUDGET",
                   "FLX_SHAPE_DEF_INVALID",
                   "FLX_SHAPE_PATH",
-                  "FLX_SHAPE_LIMIT"
+                  "FLX_SHAPE_LIMIT",
+                  "FLX_PACK_INVALID"
                 ]
               },
               "severity": {

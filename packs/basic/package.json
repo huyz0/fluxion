@@ -19,6 +19,9 @@
     "build": "tsdown",
     "typecheck": "tsc -b"
   },
+  "dependencies": {
+    "@fluxion/sdk": "workspace:*"
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true

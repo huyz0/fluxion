@@ -61,7 +61,8 @@ export type DiagnosticCode =
   | 'FLX_EXPR_BUDGET'
   | 'FLX_SHAPE_DEF_INVALID'
   | 'FLX_SHAPE_PATH'
-  | 'FLX_SHAPE_LIMIT';
+  | 'FLX_SHAPE_LIMIT'
+  | 'FLX_PACK_INVALID';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -117,6 +118,7 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_SHAPE_DEF_INVALID: 'error',
   FLX_SHAPE_PATH: 'error',
   FLX_SHAPE_LIMIT: 'error',
+  FLX_PACK_INVALID: 'error',
 };
 
 /**

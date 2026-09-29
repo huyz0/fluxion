@@ -29,6 +29,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0014](ADR-0014-command-and-transaction-semantics.md) | Command and transaction semantics of the record store (Result-returning transactions, fixed-point hooks, merge adjacency, inverse-diff undo, snapshot forks) | accepted | 2026-09-28 |
 | [0015](ADR-0015-static-render-path.md) | Static render path: `<ScreenView>` through `react-dom/server`, content CSS as an inlined string, styles resolved in `theme` | accepted | 2026-09-28 |
 | [0016](ADR-0016-shape-outlines-and-expressions.md) | Shape outlines as path templates, and a safe expression language | accepted | 2026-09-29 |
+| [0017](ADR-0017-hosts-bundle-first-party-packs.md) | Hosts bundle first-party packs as listed dependencies (packs at rank 5) | accepted | 2026-09-29 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
 | [0139](ADR-0139-storybook-portable-stories.md) | Story tests through portable stories until `@storybook/addon-vitest` supports Vitest 5 | accepted | 2026-09-27 |

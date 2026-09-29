@@ -23,8 +23,10 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@fluxion/pack-basic": "workspace:*",
     "@fluxion/render": "workspace:*",
     "@fluxion/schema": "workspace:*",
+    "@fluxion/sdk": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zod": "catalog:"

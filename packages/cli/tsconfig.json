@@ -30,6 +30,12 @@
     },
     {
       "path": "../../packages/render"
+    },
+    {
+      "path": "../../packages/sdk"
+    },
+    {
+      "path": "../../packs/basic"
     }
   ]
 }

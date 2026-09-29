@@ -19,7 +19,8 @@ const errors = [];
 const { workspaces } = JSON.parse(readFileSync(join(root, 'tools/gen/workspaces.json'), 'utf8'));
 const short = (w) => w.dir.split('/').at(-1);
 const byShort = new Map(workspaces.map((w) => [short(w), w]));
-const RANK = { L0: 0, L1: 1, L2: 2, L3: 3, L4: 4, L5: 5, App: 6, Pack: 6 };
+// packs sit at the host layer: a host may bundle a pack its map row names (ADR-0017)
+const RANK = { L0: 0, L1: 1, L2: 2, L3: 3, L4: 4, L5: 5, App: 6, Pack: 5 };
 
 // the overview's package table: | Layer | `pkg` | responsibility | may depend on | pure |
 const mapped = new Map();

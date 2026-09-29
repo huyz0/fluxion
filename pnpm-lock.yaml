@@ -266,12 +266,18 @@ importers:
 
   packages/cli:
     dependencies:
+      '@fluxion/pack-basic':
+        specifier: workspace:*
+        version: link:../../packs/basic
       '@fluxion/render':
         specifier: workspace:*
         version: link:../render
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      '@fluxion/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -392,7 +398,14 @@ importers:
         specifier: 'catalog:'
         version: 4.6.5
 
-  packages/sdk: {}
+  packages/sdk:
+    dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../core
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
 
   packages/theme:
     dependencies:
@@ -403,7 +416,11 @@ importers:
         specifier: 'catalog:'
         version: 4.6.5
 
-  packs/basic: {}
+  packs/basic:
+    dependencies:
+      '@fluxion/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
 
 packages:
 

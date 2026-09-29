@@ -4,6 +4,73 @@
 
 ```ts
 
+import { CoreRegistries } from '@fluxion/core';
+import { createCoreRegistries } from '@fluxion/core';
+import { Diagnostic } from '@fluxion/schema';
+import { Disposable } from '@fluxion/core';
+import { EnumParam } from '@fluxion/core';
+import { EvaluatedOutline } from '@fluxion/core';
+import { evaluateOutline } from '@fluxion/core';
+import { HandleDef } from '@fluxion/core';
+import { NumberParam } from '@fluxion/core';
+import { OutlineSpec } from '@fluxion/core';
+import { ParamSpec } from '@fluxion/core';
+import { PluginId } from '@fluxion/core';
+import { PointsParam } from '@fluxion/core';
+import { Result } from '@fluxion/schema';
+import { ShapeDef } from '@fluxion/core';
+import { TextRegionDef } from '@fluxion/core';
+
+export { CoreRegistries }
+
+export { createCoreRegistries }
+
+// @public
+export function definePack(spec: PackSpec): Pack;
+
+export { Disposable }
+
+export { EnumParam }
+
+export { EvaluatedOutline }
+
+export { evaluateOutline }
+
+export { HandleDef }
+
+export { NumberParam }
+
+export { OutlineSpec }
+
+// @public
+export type Pack = {
+    readonly id: string;
+    readonly shapes: readonly ShapeDef[];
+    register(registries: PackRegistries): Result<Disposable, readonly Diagnostic[]>;
+};
+
+// @public
+export type PackRegistries = Pick<CoreRegistries, "shapeDefs">;
+
+// @public
+export type PackSpec = {
+    readonly id: string;
+    readonly shapes?: readonly ShapeDef[];
+};
+
+export { ParamSpec }
+
+export { PluginId }
+
+export { PointsParam }
+
+// @public
+export function registerShapeDef(registries: PackRegistries, def: unknown, source: PluginId, at?: ReadonlyArray<string | number>): Result<Disposable, readonly Diagnostic[]>;
+
+export { ShapeDef }
+
+export { TextRegionDef }
+
 // @public
 export const VERSION: string;
 
