@@ -333,22 +333,30 @@ function call(e: Extract<Expr, { node: 'call' }>, scope: ExprScope, budget: Expr
   return finite(f.fn(e.args.map((a) => run(a, scope, budget))), `${e.name}(…) at ${e.at}`);
 }
 
+/** A binary operator of the table's own keys (an AST may be built by hand). */
+function binary(e: Extract<Expr, { node: 'bin' }>, scope: ExprScope, budget: ExprBudget): number {
+  if (!Object.hasOwn(BINARY, e.op)) throw new ExprError('FLX_EXPR_SYNTAX', `unknown operator "${e.op}" at ${e.at}`);
+  return finite(BINARY[e.op](run(e.left, scope, budget), run(e.right, scope, budget)), `"${e.op}" at ${e.at}`);
+}
+
 function run(e: Expr, scope: ExprScope, budget: ExprBudget): number {
   if (--budget.steps < 0) throw new ExprError('FLX_EXPR_BUDGET', 'the step budget is exhausted');
   switch (e.node) {
     case 'num':
-      return e.value;
+      // the parser refuses overflowing literals; a hand-built AST is checked here
+      return finite(e.value, 'a number literal');
     case 'id':
       return lookup(e, scope);
     case 'neg':
       return -run(e.arg, scope, budget);
     case 'bin':
-      return finite(BINARY[e.op](run(e.left, scope, budget), run(e.right, scope, budget)), `"${e.op}" at ${e.at}`);
+      return binary(e, scope, budget);
     case 'cond':
       return run(e.test, scope, budget) !== 0 ? run(e.then, scope, budget) : run(e.otherwise, scope, budget);
     case 'call':
       return call(e, scope, budget);
   }
+  throw new ExprError('FLX_EXPR_SYNTAX', `unknown node ${JSON.stringify((e as { node: unknown }).node)}`);
 }
 
 /**

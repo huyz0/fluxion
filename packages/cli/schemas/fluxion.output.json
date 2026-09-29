@@ -140,7 +140,10 @@
                   "FLX_EXPR_SYNTAX",
                   "FLX_EXPR_UNKNOWN",
                   "FLX_EXPR_DOMAIN",
-                  "FLX_EXPR_BUDGET"
+                  "FLX_EXPR_BUDGET",
+                  "FLX_SHAPE_DEF_INVALID",
+                  "FLX_SHAPE_PATH",
+                  "FLX_SHAPE_LIMIT"
                 ]
               },
               "severity": {

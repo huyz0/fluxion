@@ -11,6 +11,19 @@ export function add(a: Vec2, b: Vec2): Vec2;
 export function apply(m: Mat2d, p: Vec2): Vec2;
 
 // @public
+export type ArcSpec = {
+    readonly rx: number;
+    readonly ry: number;
+    readonly rotation: number;
+    readonly largeArc: boolean;
+    readonly sweep: boolean;
+    readonly to: Vec2;
+};
+
+// @public
+export function arcToCubics(from: Vec2, arc: ArcSpec): readonly CubicSegment[];
+
+// @public
 export type Box = {
     readonly x: number;
     readonly y: number;

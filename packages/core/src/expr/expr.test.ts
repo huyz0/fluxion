@@ -187,6 +187,15 @@ describe('expression diagnostics and limits (ADR-0016)', () => {
     expect(handBuilt('hypot', [at0])).toBe('unknown function "hypot" at 0');
     expect(handBuilt('abs', [at0, at0])).toBe('abs takes 1 argument, got 2');
     expect(handBuilt('abs', [at0])).toBe(0);
+    const built = (e: unknown) => {
+      const r = evaluateExpr(e as Expr, {}, budget());
+      return r.ok ? r.value : `${r.error.code} ${r.error.message}`;
+    };
+    expect(built({ node: 'num', value: Number.POSITIVE_INFINITY })).toBe('FLX_EXPR_DOMAIN a number literal is not a finite number');
+    expect(built({ node: 'neg', arg: { node: 'num', value: Number.NaN } })).toBe('FLX_EXPR_DOMAIN a number literal is not a finite number');
+    expect(built({ node: 'bin', op: '**', left: at0, right: at0, at: 3 })).toBe('FLX_EXPR_SYNTAX unknown operator "**" at 3');
+    expect(built({ node: 'bin', op: 'toString', left: at0, right: at0, at: 0 })).toBe('FLX_EXPR_SYNTAX unknown operator "toString" at 0');
+    expect(built({ node: 'loop' })).toBe('FLX_EXPR_SYNTAX unknown node "loop"');
     // evaluating a parsed expression without a location reports at the root, unquoted
     const parsed = parseExpr('1 / 0');
     const bare0 = parsed.ok ? evaluateExpr(parsed.value, {}, budget()) : parsed;

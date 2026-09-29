@@ -17,6 +17,9 @@ export type AnchorDef = Extensible<{
 }>;
 
 // @public
+export const anchorDefSchema: z.ZodType<AnchorDef>;
+
+// @public
 export type AnchorRef = AutoAnchor | FloatingAnchor | NamedAnchor | SideAnchor | PointAnchor;
 
 // @public
@@ -63,6 +66,11 @@ export type BoxedBase = ElementBase & {
 
 // @public
 export function canonicalNumber(n: number): number;
+
+// @public
+export const checkedSchema: <T>() => <S extends z.ZodType>(schema: S & (SameType<NormalizedJson<z.output<S>>, NormalizedJson<T>> extends true ? unknown : {
+    readonly schemaDoesNotMatchType: never;
+})) => z.ZodType<T>;
 
 // @public
 export function checkRichText(value: unknown): RichTextIssue[];
@@ -154,7 +162,7 @@ export type Diagnostic = {
 export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSeverity; };
 
 // @public
-export type DiagnosticCode = "FLX_JSON_INVALID" | "FLX_JSON_TOO_DEEP" | "FLX_DOC_NOT_OBJECT" | "FLX_VERSION_INVALID" | "FLX_VERSION_UNSUPPORTED" | "FLX_VERSION_NEWER" | "FLX_RECORDS_INVALID" | "FLX_SCHEMA_INVALID" | "FLX_ID_MISMATCH" | "FLX_RECORD_UNKNOWN_TYPE" | "FLX_KIND_UNKNOWN" | "FLX_TEXT_INVALID" | "FLX_TEXT_UNSAFE_LINK" | "FLX_TEXT_UNKNOWN_NODE" | "FLX_TEXT_UNKNOWN_MARK" | "FLX_DOCUMENT_MISSING" | "FLX_DOCUMENT_DUPLICATE" | "FLX_REF_MISSING" | "FLX_REF_WRONG_TYPE" | "FLX_PARENT_INVALID" | "FLX_PARENT_CYCLE" | "FLX_BINDING_DUPLICATE" | "FLX_CONNECTOR_END_MISSING" | "FLX_CONNECTOR_END_CONFLICT" | "FLX_INDEX_DUPLICATE" | "FLX_SLUG_DUPLICATE" | "FLX_REPAIRED_BINDING" | "FLX_REPAIRED_PARENT" | "FLX_REPAIRED_INDEX" | "FLX_REGISTRY_DUPLICATE" | "FLX_COMMAND_UNKNOWN" | "FLX_COMMAND_DISABLED" | "FLX_COMMAND_ARGS" | "FLX_READ_ONLY" | "FLX_FORK_UNRELATED" | "FLX_ORIGIN_RESERVED" | "FLX_TOKEN_UNKNOWN" | "FLX_CLI_USAGE" | "FLX_CLI_IO" | "FLX_CLI_INTERNAL" | "FLX_EXPR_SYNTAX" | "FLX_EXPR_UNKNOWN" | "FLX_EXPR_DOMAIN" | "FLX_EXPR_BUDGET";
+export type DiagnosticCode = "FLX_JSON_INVALID" | "FLX_JSON_TOO_DEEP" | "FLX_DOC_NOT_OBJECT" | "FLX_VERSION_INVALID" | "FLX_VERSION_UNSUPPORTED" | "FLX_VERSION_NEWER" | "FLX_RECORDS_INVALID" | "FLX_SCHEMA_INVALID" | "FLX_ID_MISMATCH" | "FLX_RECORD_UNKNOWN_TYPE" | "FLX_KIND_UNKNOWN" | "FLX_TEXT_INVALID" | "FLX_TEXT_UNSAFE_LINK" | "FLX_TEXT_UNKNOWN_NODE" | "FLX_TEXT_UNKNOWN_MARK" | "FLX_DOCUMENT_MISSING" | "FLX_DOCUMENT_DUPLICATE" | "FLX_REF_MISSING" | "FLX_REF_WRONG_TYPE" | "FLX_PARENT_INVALID" | "FLX_PARENT_CYCLE" | "FLX_BINDING_DUPLICATE" | "FLX_CONNECTOR_END_MISSING" | "FLX_CONNECTOR_END_CONFLICT" | "FLX_INDEX_DUPLICATE" | "FLX_SLUG_DUPLICATE" | "FLX_REPAIRED_BINDING" | "FLX_REPAIRED_PARENT" | "FLX_REPAIRED_INDEX" | "FLX_REGISTRY_DUPLICATE" | "FLX_COMMAND_UNKNOWN" | "FLX_COMMAND_DISABLED" | "FLX_COMMAND_ARGS" | "FLX_READ_ONLY" | "FLX_FORK_UNRELATED" | "FLX_ORIGIN_RESERVED" | "FLX_TOKEN_UNKNOWN" | "FLX_CLI_USAGE" | "FLX_CLI_IO" | "FLX_CLI_INTERNAL" | "FLX_EXPR_SYNTAX" | "FLX_EXPR_UNKNOWN" | "FLX_EXPR_DOMAIN" | "FLX_EXPR_BUDGET" | "FLX_SHAPE_DEF_INVALID" | "FLX_SHAPE_PATH" | "FLX_SHAPE_LIMIT";
 
 // @public
 export type DiagnosticSeverity = "error" | "warning" | "info";
@@ -410,6 +418,9 @@ export type NamedAnchor = Extensible<{
 export function nKeysBetween(a: string | null, b: string | null, n: number): Result<IndexKey[]>;
 
 // @public
+export type NormalizedJson<T> = T extends string | number | boolean | bigint | symbol | null | undefined ? T : T extends readonly (infer U)[] ? NormalizedJson<U>[] : T extends object ? { -readonly [K in keyof T as string extends K ? "__open" : number extends K ? never : K]: NormalizedJson<Exclude<T[K], undefined>>; } : T;
+
+// @public
 export type Ok<T> = {
     readonly ok: true;
     readonly value: T;
@@ -464,6 +475,9 @@ export type PointAnchor = Extensible<{
 
 // @public
 export type QualifiedName = `${string}:${string}`;
+
+// @public
+export const qualifiedNameSchema: z.ZodType<QualifiedName>;
 
 // @public
 export interface Random {
@@ -554,6 +568,9 @@ export type Route = Extensible<{
     readonly waypoints?: readonly Point[];
     readonly cornerRadius?: number;
 }>;
+
+// @public
+export type SameType<A, B> = (<G>() => G extends A ? 1 : 2) extends (<G>() => G extends B ? 1 : 2) ? true : false;
 
 // @public
 export const SCHEMA_VERSION: string;
@@ -672,6 +689,9 @@ export type Style = Extensible<{
 
 // @public
 export type StyleNumber = StyleValue<number>;
+
+// @public
+export const styleSchema: z.ZodType<Style>;
 
 // @public
 export type StyleValue<T> = T | TokenRef;

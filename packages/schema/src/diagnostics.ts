@@ -58,7 +58,10 @@ export type DiagnosticCode =
   | 'FLX_EXPR_SYNTAX'
   | 'FLX_EXPR_UNKNOWN'
   | 'FLX_EXPR_DOMAIN'
-  | 'FLX_EXPR_BUDGET';
+  | 'FLX_EXPR_BUDGET'
+  | 'FLX_SHAPE_DEF_INVALID'
+  | 'FLX_SHAPE_PATH'
+  | 'FLX_SHAPE_LIMIT';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -111,6 +114,9 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_EXPR_UNKNOWN: 'error',
   FLX_EXPR_DOMAIN: 'error',
   FLX_EXPR_BUDGET: 'error',
+  FLX_SHAPE_DEF_INVALID: 'error',
+  FLX_SHAPE_PATH: 'error',
+  FLX_SHAPE_LIMIT: 'error',
 };
 
 /**

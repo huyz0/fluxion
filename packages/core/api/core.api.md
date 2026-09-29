@@ -4,12 +4,19 @@
 
 ```ts
 
+import { AnchorDef } from '@fluxion/schema';
 import { AnyRecord } from '@fluxion/schema';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
+import { Path } from '@fluxion/geometry';
+import { PathCommand } from '@fluxion/geometry';
+import { QualifiedName } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
+import { Size } from '@fluxion/schema';
+import { Style } from '@fluxion/schema';
+import { z } from 'zod';
 
 // @public
 export type AnyCommand = CommandDef<unknown>;
@@ -107,7 +114,7 @@ export type CoreError = {
 export type CoreErrorCode = "FILE_NOT_FOUND" | "FILE_IO" | "TX_INVALID" | "TX_HOOK_DEPTH" | "TX_READ_ONLY" | "COMMAND_UNKNOWN" | "COMMAND_DISABLED" | "COMMAND_ARGS" | "HISTORY_EMPTY";
 
 // @public
-export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : N extends "commands" ? AnyCommand : unknown>; };
+export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string, N extends "integrityHooks" ? IntegrityHook : N extends "commands" ? AnyCommand : N extends "shapeDefs" ? ShapeDef : unknown>; };
 
 // @public
 export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
@@ -123,6 +130,9 @@ export function createRegistry<K extends string, V>(name: string): Registry<K, V
 
 // @public
 export function createStore(file: DocumentFile, options?: StoreOptions): Store;
+
+// @public
+export const DEFAULT_OUTLINE_BUDGET = 1e5;
 
 // @public
 export function defineCommand<A>(def: CommandDef<A>): CommandDef<A>;
@@ -142,7 +152,26 @@ export type Disposable = {
 export function effect(fn: () => void): () => void;
 
 // @public
+export type EnumParam = {
+    readonly type: "enum";
+    readonly values: readonly string[];
+    readonly default: string;
+};
+
+// @public
+export type EvaluatedOutline = {
+    readonly commands: readonly PathCommand[];
+    readonly path: Path;
+    readonly decorations: readonly Path[];
+};
+
+// @public
 export function evaluateExpr(expr: Expr, scope: ExprScope, budget: ExprBudget, where?: ExprWhere): Result<number, Diagnostic>;
+
+// @public
+export function evaluateOutline(def: ShapeDef, size: Size, params?: {
+    readonly [key: string]: unknown;
+}, budget?: ExprBudget): Result<EvaluatedOutline, Diagnostic>;
 
 // @public
 export function executeCommand(registry: Registry<string, AnyCommand>, ctx: CommandContext, id: string, args: unknown): Result<unknown, CommandFailure>;
@@ -207,6 +236,13 @@ export type FontSpec = {
 };
 
 // @public
+export type HandleDef = {
+    readonly param: string;
+    readonly x: string;
+    readonly y: string;
+};
+
+// @public
 export interface Hasher {
     sha256(bytes: Uint8Array): Promise<string>;
 }
@@ -253,10 +289,47 @@ export type MessageDescriptor = {
 };
 
 // @public
+export type NumberParam = {
+    readonly type: "number" | "int";
+    readonly min?: number;
+    readonly max?: number;
+    readonly default: number;
+};
+
+// @public
+export type OutlineSpec = {
+    readonly path: string;
+} | {
+    readonly polygon: {
+        readonly n: string;
+        readonly x: string;
+        readonly y: string;
+    };
+} | {
+    readonly points: string;
+    readonly closed?: boolean;
+    readonly smooth?: boolean;
+};
+
+// @public
+export type ParamSpec = NumberParam | EnumParam | PointsParam;
+
+// @public
 export function parseExpr(src: string, at?: ReadonlyArray<string | number>): Result<Expr, Diagnostic>;
 
 // @public
+export function parseShapeDef(input: unknown, at?: ReadonlyArray<string | number>): Result<ShapeDef, readonly Diagnostic[]>;
+
+// @public
 export type PluginId = string;
+
+// @public
+export type PointsParam = {
+    readonly type: "points";
+    readonly min?: number;
+    readonly max?: number;
+    readonly default: readonly (readonly [number, number])[];
+};
 
 // @public
 export type PutChange = {
@@ -298,6 +371,32 @@ export interface Registry<K extends string, V> {
 export function runExpr(src: string, scope: ExprScope, budget: ExprBudget, at?: ReadonlyArray<string | number>): Result<number, Diagnostic>;
 
 // @public
+export type ShapeDef = {
+    readonly id: QualifiedName;
+    readonly params?: {
+        readonly [name: string]: ParamSpec;
+    };
+    readonly outline: OutlineSpec;
+    readonly anchors?: readonly AnchorDef[];
+    readonly textRegions?: readonly TextRegionDef[];
+    readonly handles?: readonly HandleDef[];
+    readonly defaultSize: {
+        readonly w: number;
+        readonly h: number;
+    };
+    readonly defaultStyle?: Style;
+    readonly decorations?: readonly {
+        readonly path: string;
+    }[];
+    readonly keywords?: readonly string[];
+    readonly category?: string;
+    readonly license?: string;
+};
+
+// @public
+export const shapeDefSchema: z.ZodType<ShapeDef>;
+
+// @public
 export interface Store {
     diffFrom(parent: Store): Diff | undefined;
     fork(): Store;
@@ -335,6 +434,15 @@ type TextMetrics_2 = {
     readonly descent: number;
 };
 export { TextMetrics_2 as TextMetrics }
+
+// @public
+export type TextRegionDef = {
+    readonly name: string;
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+};
 
 // @public
 export interface Tx {

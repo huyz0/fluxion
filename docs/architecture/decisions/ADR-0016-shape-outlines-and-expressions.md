@@ -96,6 +96,27 @@ Chosen option **A**.
 a polygon over the vertex cap, a budget exhausted across evaluations), per-shape outline tests in
 `packs/basic`, and the M5 gate's no-`eval` leg.
 
+## Amendment (M5.7, implementation)
+
+- **One subpath, closed last**: a template starts with `M`, has no second `M`, and nothing follows
+  `Z` (the M5.5 review's rule). Template problems are `FLX_SHAPE_PATH` (also relative commands,
+  a missing or extra number, an unclosed `{`); a definition breaking its schema is
+  `FLX_SHAPE_DEF_INVALID` (`parseShapeDef`); a cap exceeded is `FLX_SHAPE_LIMIT`.
+- **Caps**: a points list of more than 10 000 vertices is `FLX_SHAPE_LIMIT`. A list that is
+  malformed or outside its param's `min … max` uses the default (item 5). The segment cap applies
+  twice: to the commands as written, and to the commands after arcs expand to cubics.
+- **Budget**: every number of a template spends a step, literals too.
+- **`ShapeDef` fields**: `anchors` are the schema's `AnchorDef` (box fractions, a direction, a
+  role); `textRegions` are named box fractions; `handles` are `{ param, x, y }`, with `x` and `y`
+  expressions, bound to a number or int param. Param names are identifiers that shadow none of
+  `w h i n pi`. There are at most 16 decorations. `evaluateOutline` takes a definition that
+  `parseShapeDef` has already accepted.
+- **Arcs**: `arcToCubics` works in the ellipse's unit frame. Radii too small are scaled up to
+  reach the end point, even when they are close to zero. Radii so large, or so unequal, that the
+  centre or the ratio overflows give the straight line (the chord). The output is finite for finite
+  input. `evaluateOutline` still checks every coordinate of its paths, because finite numbers can
+  overflow once combined (a line from `-1e308` to `1e308`); such an outline is `FLX_SHAPE_LIMIT`.
+
 ## More Information
 
 03-core-engine §5, ADR-0015 (render path), ADR-0005 (layout/routing stack), FR-SHP-002/003/005.

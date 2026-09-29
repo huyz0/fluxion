@@ -17,7 +17,11 @@ export type QualifiedName = `${string}:${string}`;
 
 const QUALIFIED = /^[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9.-]*$/;
 
-/** A `<namespace>:<name>` field. */
+/**
+ * Schema of a `<namespace>:<name>` field.
+ *
+ * @public
+ */
 export const qualifiedNameSchema: z.ZodType<QualifiedName> = z.custom<QualifiedName>((v) => typeof v === 'string' && QUALIFIED.test(v), {
   message: 'expected "<namespace>:<name>" in lower case, e.g. "basic:rect"',
 });

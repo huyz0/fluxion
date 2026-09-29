@@ -26,6 +26,19 @@ export { CORE_HOOKS, type HookContext, type IntegrityHook, registerCoreHooks } f
 export type { IndexName } from './indexes.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, TextMeasurer, TextMetrics } from './ports/ports.js';
 export { createRegistry, type Disposable, type PluginId, type Registry } from './registry.js';
+export { DEFAULT_OUTLINE_BUDGET, type EvaluatedOutline, evaluateOutline } from './shape/outline.js';
+export {
+  type EnumParam,
+  type HandleDef,
+  type NumberParam,
+  type OutlineSpec,
+  type ParamSpec,
+  type PointsParam,
+  parseShapeDef,
+  type ShapeDef,
+  shapeDefSchema,
+  type TextRegionDef,
+} from './shape/shape-def.js';
 export { batch, computed, effect, type ReadSignal } from './signals.js';
 export { createStore, type ReadView, type Store, type StoreOptions } from './store.js';
 export type { Diff, PutChange, Tx, TxFailure, TxMeta, TxOptions, TxOrigin } from './transaction.js';

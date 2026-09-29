@@ -3,6 +3,7 @@
 import type { AnyCommand } from './commands.js';
 import type { IntegrityHook } from './hook-types.js';
 import { createRegistry, type Registry } from './registry.js';
+import type { ShapeDef } from './shape/shape-def.js';
 
 /**
  * The names of the core registries (03-core-engine §4). Value types are opaque here; the packages
@@ -41,7 +42,10 @@ export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
  * @public
  */
 export type CoreRegistries = {
-  readonly [N in CoreRegistryName]: Registry<string, N extends 'integrityHooks' ? IntegrityHook : N extends 'commands' ? AnyCommand : unknown>;
+  readonly [N in CoreRegistryName]: Registry<
+    string,
+    N extends 'integrityHooks' ? IntegrityHook : N extends 'commands' ? AnyCommand : N extends 'shapeDefs' ? ShapeDef : unknown
+  >;
 };
 
 /**

@@ -54,7 +54,12 @@ const base = {
 };
 const boxed = { ...base, transform: transformSchema, text: richTextSchema.optional() };
 const unit = z.number().min(0).max(1);
-const anchorDefSchema = checkedSchema<AnchorDef>()(
+/**
+ * Schema of a named anchor (fractions of the box).
+ *
+ * @public
+ */
+export const anchorDefSchema: z.ZodType<AnchorDef> = checkedSchema<AnchorDef>()(
   z.looseObject({
     name: z.string().min(1),
     x: unit,

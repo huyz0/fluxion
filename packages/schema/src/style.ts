@@ -178,7 +178,11 @@ const fontSchema = checkedSchema<FontStyle>()(
   }),
 );
 
-/** Schema of an element style. */
+/**
+ * Schema of an element style.
+ *
+ * @public
+ */
 export const styleSchema: z.ZodType<Style> = checkedSchema<Style>()(
   z.looseObject({
     fill: paintSchema.optional(),

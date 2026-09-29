@@ -903,3 +903,6 @@ review F1-F6: ADR-0016 states open outlines (a path without Z, points with close
 
 ## 2026-09-29 M5.6 (claude)
 core/src/expr: hand-written tokenizer, recursive-descent parser (depth ≤ 64, source ≤ 2000 chars) to an AST keyed by `node`, tree-walking evaluator spending a shared step budget; identifiers resolved with Object.hasOwn (prototype names are unknown); FLX_EXPR_SYNTAX/UNKNOWN/DOMAIN/BUDGET diagnostics with a JSON pointer and the quoted source, never throws; fuzz 10 000 templates; tzap 100 % on the diff (tag checks before operator text marked equivalent)
+
+## 2026-09-29 M5.7 (claude)
+core/src/shape: ShapeDef type + Zod schema proven equal (checkedSchema, now exported by schema with anchorDefSchema, styleSchema, qualifiedNameSchema), parseShapeDef → FLX_SHAPE_DEF_INVALID; path templates (M L H V C Q A Z, {expr} numbers, command repetition, one subpath, nothing after Z) → FLX_SHAPE_PATH; evaluateOutline(def, size, params, budget) for path / polygon / points (straight or Catmull-Rom) outlines and decorations, one budget (100 000), caps → FLX_SHAPE_LIMIT; params clamped, own keys only; shapeDefs registry typed; geometry arcToCubics (unit-frame, robust to tiny and huge radii); M5.6 review minor: evaluateExpr checks hand-built num values, operators and node kinds; ADR-0016 amendment; tzap 100 % core and geometry

@@ -6,6 +6,7 @@
  */
 export const VERSION: string = '0.0.0';
 
+export { type ArcSpec, arcToCubics } from './arc.js';
 export {
   type Box,
   boxCenter,

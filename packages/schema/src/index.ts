@@ -1,5 +1,6 @@
 // Public entry of @fluxion/schema; the package comment is the dts banner in tsdown.config.ts.
 
+export { checkedSchema, type NormalizedJson, type SameType } from './checked-schema.js';
 export { DIAGNOSTIC_CODES, type Diagnostic, type DiagnosticCode, type DiagnosticSeverity, jsonPointer } from './diagnostics.js';
 export {
   type AnyRecord,
@@ -60,6 +61,8 @@ export {
   type UnknownElement,
 } from './records/element.js';
 export type { AnchorDef, BoxedBase, ElementBase, Locks, Point, QualifiedName, Semantic } from './records/element-base.js';
+export { qualifiedNameSchema } from './records/element-base.js';
+export { anchorDefSchema } from './records/element-schemas.js';
 export type { AssetRecord, PluginRefRecord, ResourceRecord, ThemeRecord } from './records/resources.js';
 export { DEFAULT_SCREEN_SIZE, type Rect, type ScreenRecord, type Size, screenKind, screenSize } from './records/screen.js';
 export { type Repaired, repair } from './repair.js';
@@ -74,6 +77,7 @@ export {
   type Style,
   type StyleNumber,
   type StyleValue,
+  styleSchema,
   type Transform,
   transformRotation,
 } from './style.js';

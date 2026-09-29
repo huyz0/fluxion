@@ -106,6 +106,17 @@ templates now, bindings later. Paths point into the definition (`/outline/path`,
 | `FLX_EXPR_DOMAIN` | error | A division or modulo by zero, or a result that is not a finite number (`sqrt(-1)`, an overflow). | Guard the value, e.g. with `max(x, 1)`. |
 | `FLX_EXPR_BUDGET` | error | The evaluation used up its step budget (an outline and its decorations share one); nothing more was computed. | Simplify the definition, or lower a vertex count. |
 
+## Shape definitions
+
+Reported by `@fluxion/core` when it validates a shape definition (`parseShapeDef`) or evaluates its
+outline (`evaluateOutline`, ADR-0016). Paths point into the definition.
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_SHAPE_DEF_INVALID` | error | The definition breaks its schema: a missing or mistyped field, a param name that is not an identifier or shadows `w`, `h`, `i`, `n`, `pi`, a default outside its range, an outline or handle naming a param of the wrong type. | Fix the field the path names. |
+| `FLX_SHAPE_PATH` | error | A path template is not one subpath of absolute `M L H V C Q A Z` commands: a relative or unknown command, a missing or extra number, a second `M`, or a command after `Z`. | Write absolute commands, one `M` first, `Z` last if closed. |
+| `FLX_SHAPE_LIMIT` | error | An outline exceeds a cap: a polygon's `n` is not an integer from 2 to 1 024, a template expands to more than 1 024 segments, an element's points list has more than 10 000 vertices, or a coordinate overflows the number range once combined (a control point between `-1e308` and `1e308`). | Lower the count, or keep the numbers smaller. |
+
 ## Command line
 
 Reported by `fluxion` (ADR-0147) in its `--json` output and on stderr. Paths point into the
