@@ -48,8 +48,9 @@ Chosen option **A**.
 
 ### Confirmation
 
-`check-layering` (rank change, map rows), `tests/harness` layering cases, and the CLI test that the
-basic pack is registered when a document is rendered.
+`check-layering` (rank change, map rows); the `tests/harness` layering case that a package below the
+host layer may not bundle a pack; the CLI's render golden test, which draws `basic:rect` from the
+bundled pack; and the CLI test that a pack failing to register is an internal error.
 
 ## More Information
 

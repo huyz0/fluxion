@@ -1,8 +1,12 @@
+import type { ShapeDef } from '@fluxion/core';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
 import { renderDocumentToHtml } from './ssr.js';
+import { testRegistries } from './test-registries.js';
+import { testShapeDefs } from './test-shapes.js';
 
 declare global {
   interface ImportMeta {
@@ -28,37 +32,39 @@ function threeScreens() {
 describe('static HTML (FR-CLI-001, FR-THM-001, ADR-0015)', () => {
   it('FR-CLI-001: static HTML has no script and one .fx-screen per visible screen', () => {
     const { file, ids } = threeScreens();
-    const html = renderDocumentToHtml(file).html;
+    const html = renderDocumentToHtml(file, { registries: testRegistries() }).html;
     expect(html.startsWith('<!doctype html>\n<html lang="en">')).toBe(true);
     expect(html).not.toMatch(/<script|\son[a-z]+=|javascript:/i);
     const screens = [...html.matchAll(/<section class="fx-screen" data-screen-id="([^"]+)"/g)].map((m) => m[1]);
     // the hidden screen is skipped, the others keep document order
     expect(screens).toEqual([ids[0], ids[2]]);
     // a screen filter keeps only the requested screens
-    expect([...renderDocumentToHtml(file, { screens: [ids[2] as RecordId] }).html.matchAll(/class="fx-screen"/g)]).toHaveLength(1);
+    expect([...renderDocumentToHtml(file, { registries: testRegistries(), screens: [ids[2] as RecordId] }).html.matchAll(/class="fx-screen"/g)]).toHaveLength(
+      1,
+    );
     // the title is the document's, escaped
     expect(html).toContain('<title>Deck &#60;1&#62; &#38; &#34;two&#34;</title>');
     // the same input gives the same bytes
-    expect(renderDocumentToHtml(file).html).toBe(html);
+    expect(renderDocumentToHtml(file, { registries: testRegistries() }).html).toBe(html);
     // the fixture's shapes and connector are drawn
-    const fixtureHtml = renderDocumentToHtml(fixture('two-rects-line')).html;
+    const fixtureHtml = renderDocumentToHtml(fixture('two-rects-line'), { registries: testRegistries() }).html;
     expect([...fixtureHtml.matchAll(/data-kind="shape"/g)]).toHaveLength(2);
     expect(fixtureHtml).toMatch(/data-kind="connector"[^>]*>(?:(?!<\/div>).)*class="fx-route"/s);
   });
 
   it('FR-CLI-001: renderDocumentToHtml reports the ids of the screens it rendered', () => {
     const { file, ids } = threeScreens();
-    const all = renderDocumentToHtml(file);
+    const all = renderDocumentToHtml(file, { registries: testRegistries() });
     // the visible screens in page order (the hidden one is not drawn), equal to what the page holds
     expect(all.screens).toEqual([ids[0], ids[2]]);
     expect([...all.html.matchAll(/data-screen-id="([^"]+)"/g)].map((m) => m[1])).toEqual(all.screens);
-    expect(renderDocumentToHtml(file, { screens: [ids[2] as RecordId] }).screens).toEqual([ids[2]]);
+    expect(renderDocumentToHtml(file, { registries: testRegistries(), screens: [ids[2] as RecordId] }).screens).toEqual([ids[2]]);
     // asking for the hidden screen draws nothing
-    expect(renderDocumentToHtml(file, { screens: [ids[1] as RecordId] }).screens).toEqual([]);
+    expect(renderDocumentToHtml(file, { registries: testRegistries(), screens: [ids[1] as RecordId] }).screens).toEqual([]);
   });
 
   it('FR-THM-001: the static HTML inlines the content CSS and defines every --fx variable it uses', () => {
-    const html = renderDocumentToHtml(fixture('two-rects-line')).html;
+    const html = renderDocumentToHtml(fixture('two-rects-line'), { registries: testRegistries() }).html;
     expect(html).toContain(`<style data-fx-content>${CONTENT_CSS}</style>`);
     const used = new Set([...html.matchAll(/var\((--fx-[\w-]+)/g)].map((m) => m[1]));
     const defined = new Set([...html.matchAll(/(--fx-[\w-]+):/g)].map((m) => m[1]));
@@ -83,7 +89,7 @@ describe('static HTML (FR-CLI-001, FR-THM-001, ADR-0015)', () => {
       };
       b.connect(b.rect(s, { x: 0, y: 0, style: { fill } }), b.rect(s, { x: 400, y: 0 }));
     }
-    const html = renderDocumentToHtml(b.build()).html;
+    const html = renderDocumentToHtml(b.build(), { registries: testRegistries() }).html;
     const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
     expect(ids.length).toBe(4);
     expect(new Set(ids).size).toBe(ids.length);
@@ -94,5 +100,32 @@ describe('static HTML (FR-CLI-001, FR-THM-001, ADR-0015)', () => {
       expect(refs.length).toBeGreaterThanOrEqual(2);
       for (const ref of refs) expect(screen).toContain(`id="${ref}"`);
     }
+  });
+});
+
+describe('shapes from core definitions (ADR-0016, M5.9)', () => {
+  it('FR-SHP-003: a shape draws its definition’s outline for its size and params; an unknown or failing one is a placeholder', () => {
+    const defs = testShapeDefs();
+    const inset: ShapeDef = {
+      id: 'test:inset',
+      params: { k: { type: 'number', min: 0, max: 50, default: 5 } },
+      outline: { path: 'M {k} 0 L {w} {h} L 0 {h} Z' },
+      defaultSize: { w: 10, h: 10 },
+    };
+    defs.register(inset.id, inset, 'test');
+    defs.register('test:broken', { ...inset, id: 'test:broken', outline: { path: 'M {nope} 0' } }, 'test');
+    const b = documentBuilder({ seed: 590 });
+    const s = b.screen();
+    b.rect(s, { defId: 'test:inset', x: 0, y: 0, w: 100, h: 40 });
+    const tuned = b.rect(s, { defId: 'test:inset', x: 0, y: 100, w: 100, h: 40 });
+    b.rect(s, { defId: 'test:broken', x: 0, y: 200 });
+    b.rect(s, { defId: 'acme:unknown', x: 0, y: 300 });
+    const file = b.build();
+    const records = { ...file.records, [tuned]: { ...(file.records[tuned] as object), params: { k: 80 } } };
+    const html = renderDocumentToHtml({ ...file, records } as DocumentFile, { registries: builtinRegistries(defs) }).html;
+    const paths = [...html.matchAll(/class="fx-outline" d="([^"]+)"/g)].map((m) => m[1]);
+    // the default param, then the element's own value clamped to the param's max
+    expect(paths).toEqual(['M5 0 L100 40 L0 40 Z', 'M50 0 L100 40 L0 40 Z']);
+    expect([...html.matchAll(/class="fx-placeholder"/g)]).toHaveLength(2);
   });
 });

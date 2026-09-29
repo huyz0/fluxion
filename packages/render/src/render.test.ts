@@ -1,6 +1,6 @@
+import { evaluateOutline } from '@fluxion/core';
 import { describe, expect, it } from 'vitest';
 import { paintCss } from './background.js';
-import { BASIC_RECT } from './basic-rect.js';
 import { connectorEnds } from './connector-ends.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
@@ -9,6 +9,7 @@ import { modePolicy } from './mode-policy.js';
 import { pathData } from './path-data.js';
 import { createRenderRegistries } from './registries.js';
 import { elementsInOrder, screensInOrder } from './screen-order.js';
+import { TEST_RECT } from './test-shapes.js';
 
 describe('fit view (FR-SCR-001) and mode policy (04 §2.6)', () => {
   it('FR-SCR-001: a screen fits its box at the largest uniform scale, centred', () => {
@@ -116,7 +117,8 @@ describe('render registries (FR-EXT-001)', () => {
 
 describe('shape outlines and labels (FR-SHP-001)', () => {
   it('FR-SHP-001: basic:rect is its box; path data is rounded to 1/1000 px', () => {
-    expect(pathData(BASIC_RECT.outline({ w: 40, h: 20 }))).toBe('M0 0 L40 0 L40 20 L0 20 Z');
+    const rect = evaluateOutline(TEST_RECT, { w: 40, h: 20 });
+    expect(rect.ok ? pathData(rect.value.commands) : rect.error).toBe('M0 0 L40 0 L40 20 L0 20 Z');
     expect(
       pathData([
         { kind: 'M', to: { x: 1 / 3, y: -0.0001 } },

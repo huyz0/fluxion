@@ -140,5 +140,13 @@ describe('check-layering (NFR-MNT-001)', () => {
       assert.equal(r.status, 1, out(r));
       assert.match(r.stderr, /core \(L1\) depends on higher layer render \(L3\)/);
     });
+
+    it('packs sit at the host layer: a package below it may not bundle one, even if listed (ADR-0017)', () => {
+      edit((j) => ({ ...j, workspaces: j.workspaces.map((w) => (w.dir === 'packages/sdk' ? { ...w, dependsOn: [...w.dependsOn, 'basic'] } : w)) }));
+      sb.edit('docs/architecture/01-overview.md', (t) => t.replace('| core, render (types), schema |', '| core, render (types), schema, basic |'));
+      const r = layering();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /sdk \(L4\) depends on higher layer basic \(Pack\)/);
+    });
   });
 });

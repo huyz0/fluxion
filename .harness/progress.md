@@ -912,3 +912,6 @@ ADR-0017: packs rank 5 in check-layering; hosts list the packs they bundle (cli:
 
 ## 2026-09-29 M5.29 (claude)
 M5.9's staged ladder failed every browser test ("Failed to fetch dynamically imported module", iframe not ready) whenever the harness suite ran: mutate.test.mjs runs tzap on packages/sdk, which M5.8/M5.9 give a diff, so tzap's Vitest ran in the checkout with the shared .vitest-cache and rewrote the optimized deps the ladder's browser run was serving; vitest.config.ts reads FLUXION_VITEST_CACHE and mutate.mjs points it next to the report; harness case
+
+## 2026-09-29 M5.9 (claude)
+render draws shapes from core ShapeDefs: RenderRegistries.shapeDefs is the host's core registry (createRenderRegistries/builtinRegistries take it), the shape view evaluates the outline for size and params (unknown or failing definition → placeholder); ShapeOutline and BASIC_RECT removed; render tests register their own rect (test-shapes.ts), goldens unchanged; the CLI passes its host registries (packs/basic draws basic:rect); M5.8 review minors: packs check every problem before registering (namespaces, repeated ids, keys another source holds) so a failed reload keeps the live entries; CLI internal-error test for a failing bundled pack; harness case that a package below the host layer may not bundle a pack; 04 §2 and ADR-0017 Confirmation updated

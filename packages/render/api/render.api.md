@@ -18,15 +18,13 @@ import { Registry } from '@fluxion/core';
 import { ResolvedPaint } from '@fluxion/theme';
 import { RichTextDoc } from '@fluxion/schema';
 import { ScreenRecord } from '@fluxion/schema';
+import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { Vec2 } from '@fluxion/geometry';
 
 // @public
-export const BASIC_RECT: ShapeOutline;
-
-// @public
-export function builtinRegistries(): RenderRegistries;
+export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;
 
 // @public
 export type ConnectorEnds = {
@@ -44,7 +42,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode;
 export const CONTENT_CSS: string;
 
 // @public
-export function createRenderRegistries(): RenderRegistries;
+export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;
 
 // @public
 export function DocumentView(props: DocumentViewProps): ReactNode;
@@ -157,7 +155,7 @@ export type RenderMode = "edit" | "present" | "export" | "thumbnail";
 // @public
 export type RenderRegistries = {
     readonly elementViews: Registry<string, ElementView>;
-    readonly shapeDefs: Registry<string, ShapeOutline>;
+    readonly shapeDefs: Registry<string, ShapeDef>;
 };
 
 // @public
@@ -188,14 +186,6 @@ export type ScreenViewSpec = {
         readonly w: number;
         readonly h: number;
     };
-};
-
-// @public
-export type ShapeOutline = {
-    outline(size: {
-        readonly w: number;
-        readonly h: number;
-    }): readonly PathCommand[];
 };
 
 // @public

@@ -1,29 +1,29 @@
-// The built-in views of R0 (ADR-0015 §5): the shape and connector views and the `basic:rect` outline, registered
-// through the same API as plugins (source `core`). The basic pack takes the shapes over in M5.
-import { BASIC_RECT } from './basic-rect.js';
+// The built-in views (ADR-0015 §5): the shape and connector views, registered through the same API as
+// plugins (source `core`). Shape definitions come from packs the host registers (ADR-0016, ADR-0017).
+import type { Registry, ShapeDef } from '@fluxion/core';
 import { ConnectorView } from './connector-view.js';
 import { createRenderRegistries, type RenderRegistries } from './registries.js';
 import { ShapeView } from './shape-view.js';
 
 /**
- * Register the built-in views and outlines into `registries` (source `core`); a key another source
- * already holds keeps that source's entry.
+ * Register the built-in views into `registries` (source `core`); a key another source already holds
+ * keeps that source's entry.
  *
  * @public
  */
 export function registerBuiltinViews(registries: RenderRegistries): void {
   registries.elementViews.register('shape', { Component: ShapeView }, 'core');
   registries.elementViews.register('connector', { Component: ConnectorView }, 'core');
-  registries.shapeDefs.register('basic:rect', BASIC_RECT, 'core');
 }
 
 /**
- * Fresh render registries holding the built-ins.
+ * Fresh render registries holding the built-in views, reading shape definitions from `shapeDefs` (the
+ * host's core registry with its packs; default: none, so every shape is a placeholder).
  *
  * @public
  */
-export function builtinRegistries(): RenderRegistries {
-  const registries = createRenderRegistries();
+export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries {
+  const registries = createRenderRegistries(shapeDefs);
   registerBuiltinViews(registries);
   return registries;
 }

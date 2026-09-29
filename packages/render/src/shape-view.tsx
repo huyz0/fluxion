@@ -1,6 +1,8 @@
-// The shape view (FR-SHP-001, ADR-0015 §5): the outline of the element's `defId`, looked up in the
-// `shapeDefs` registry, drawn as an SVG path filling the wrapper's box, filled and stroked with the
-// resolved style; its text is a centred plain-text label. An unknown `defId` renders the placeholder.
+// The shape view (FR-SHP-001, ADR-0015 §5, ADR-0016): the element's `defId` looked up in the
+// `shapeDefs` registry, its outline evaluated for the element's size and params and drawn as an SVG
+// path filling the wrapper's box, filled and stroked with the resolved style; its text is a centred
+// plain-text label. An unknown `defId`, or an outline that does not evaluate, renders the placeholder.
+import { evaluateOutline } from '@fluxion/core';
 import type { ShapeElement } from '@fluxion/schema';
 import { type ResolvedFont, type ResolvedPaint, resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
@@ -88,8 +90,9 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const fillId = `fx-fill-${useId().replace(/[^\w-]/g, '')}`;
   const { style } = useMemo(() => resolveStyle(element.style, 'shape', theme, ['records', id, 'style']), [element.style, theme, id]);
   const def = registries.shapeDefs.get(element.defId);
-  if (def === undefined) return <PlaceholderView {...props} />;
   const { w, h } = element.transform;
+  const outlined = useMemo(() => (def === undefined ? undefined : evaluateOutline(def, { w, h }, element.params)), [def, w, h, element.params]);
+  if (outlined === undefined || !outlined.ok) return <PlaceholderView {...props} />;
   const { fill, defs } = svgFill(style.fill, fillId, w, h);
   const paragraphs = plainParagraphs(element.text);
   const outline: CSSProperties = {
@@ -104,7 +107,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
     <>
       <svg viewBox={`0 0 ${w} ${h}`} aria-hidden="true" style={{ opacity: style.opacity }}>
         {defs === undefined ? null : <defs>{defs}</defs>}
-        <path className="fx-outline" d={pathData(def.outline({ w, h }))} style={outline} />
+        <path className="fx-outline" d={pathData(outlined.value.commands)} style={outline} />
       </svg>
       {paragraphs.length === 0 ? null : (
         <div className="fx-label" style={labelStyle(style.font, style.opacity)}>

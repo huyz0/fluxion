@@ -6,6 +6,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { RenderMode } from './mode-policy.js';
 import { ScreenView } from './screen-view.js';
+import { testRegistries } from './test-registries.js';
+
+/** The built-in views and the basic rectangle (render ships no shape definitions: ADR-0016). */
+const registries = testRegistries();
 
 let host: HTMLElement;
 let root: Root;
@@ -36,6 +40,7 @@ async function show(props: {
   await act(async () =>
     root.render(
       <ScreenView
+        registries={registries}
         store={props.store}
         screenId={props.screenId}
         mode={props.mode ?? 'present'}

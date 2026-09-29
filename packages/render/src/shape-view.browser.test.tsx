@@ -6,6 +6,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { ScreenView } from './screen-view.js';
+import { testRegistries } from './test-registries.js';
+
+/** The built-in views and the basic rectangle (render ships no shape definitions: ADR-0016). */
+const registries = testRegistries();
 
 let host: HTMLElement;
 let root: Root;
@@ -27,7 +31,9 @@ async function showRect(options: RectOptions, patch: (el: Record<string, unknown
   const file = b.build();
   const records = { ...file.records, [id]: patch({ ...(file.records[id] as object) }) } as DocumentFile['records'];
   const core = createCore({ ...file, records });
-  await act(async () => root.render(<ScreenView store={core.store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 800, h: 600 } }} />));
+  await act(async () =>
+    root.render(<ScreenView registries={registries} store={core.store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 800, h: 600 } }} />),
+  );
   const screen = host.querySelector('.fx-screen')?.getBoundingClientRect() as DOMRect;
   const el = host.querySelector<HTMLElement>(`.fx-el[data-el-id="${id}"]`);
   return { id: id as RecordId, el, screen, core };
@@ -130,8 +136,8 @@ describe('shape view (FR-SHP-001)', () => {
     await act(async () =>
       root.render(
         <>
-          <ScreenView store={store} screenId={screenId} mode="thumbnail" view={view} />
-          <ScreenView store={store} screenId={screenId} mode="present" view={view} />
+          <ScreenView registries={registries} store={store} screenId={screenId} mode="thumbnail" view={view} />
+          <ScreenView registries={registries} store={store} screenId={screenId} mode="present" view={view} />
         </>,
       ),
     );
@@ -165,7 +171,14 @@ describe('shape view (FR-SHP-001)', () => {
       const records = on === 'background' ? { ...file.records, [screenId]: { ...(file.records[screenId] as object), background: paint } } : file.records;
       const { store } = createCore({ ...file, records } as DocumentFile);
       return (
-        <ScreenView key={`${on}-${JSON.stringify(paint)}`} store={store} screenId={screenId} mode="export" view={{ kind: 'fit', box: { w: 400, h: 100 } }} />
+        <ScreenView
+          registries={registries}
+          key={`${on}-${JSON.stringify(paint)}`}
+          store={store}
+          screenId={screenId}
+          mode="export"
+          view={{ kind: 'fit', box: { w: 400, h: 100 } }}
+        />
       );
     };
     // the four views stacked in one page and captured in one screenshot (M4.32: one per view timed out once)

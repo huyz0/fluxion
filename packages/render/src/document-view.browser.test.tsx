@@ -6,6 +6,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DocumentView } from './document-view.js';
 import type { RenderMode } from './mode-policy.js';
+import { testRegistries } from './test-registries.js';
+
+/** The built-in views and the basic rectangle (render ships no shape definitions: ADR-0016). */
+const registries = testRegistries();
 
 let host: HTMLElement;
 let root: Root;
@@ -33,7 +37,7 @@ function documentWith(patches: ReadonlyArray<Record<string, unknown>>): { file: 
 
 async function render(file: DocumentFile, mode: RenderMode = 'present') {
   const core = createCore(file);
-  await act(async () => root.render(<DocumentView store={core.store} mode={mode} box={{ w: 400, h: 200 }} />));
+  await act(async () => root.render(<DocumentView registries={registries} store={core.store} mode={mode} box={{ w: 400, h: 200 }} />));
   return core;
 }
 

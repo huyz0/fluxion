@@ -2,7 +2,7 @@
 // document as one static HTML page, written by render's renderDocumentToHtml. An invalid document
 // exits 1 with its diagnostics (as validate reports them); an unknown screen id is a usage error.
 import { writeFile } from 'node:fs/promises';
-import { renderDocumentToHtml } from '@fluxion/render';
+import { builtinRegistries, renderDocumentToHtml } from '@fluxion/render';
 import { type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
 import { type Command, internal, io, type Outcome, usage } from './command.js';
 import { hostRegistries } from './host.js';
@@ -31,7 +31,12 @@ async function render(file: string, out: string, screens: readonly string[] | un
   if (!parsed.ok) return { exitCode: 1, diagnostics: parsed.error.diagnostics };
   const problem = screenProblem(parsed.value.document, screens ?? [], file);
   if (problem !== undefined) return usage(problem);
-  const { html, screens: drawn } = renderDocumentToHtml(parsed.value.document, screens === undefined ? {} : { screens: screens as readonly RecordId[] });
+  // shapes come from the bundled packs, registered in the host's core registries (ADR-0017)
+  const registries = builtinRegistries(host.registries.shapeDefs);
+  const { html, screens: drawn } = renderDocumentToHtml(
+    parsed.value.document,
+    screens === undefined ? { registries } : { registries, screens: screens as readonly RecordId[] },
+  );
   try {
     await writeFile(out, html, 'utf8');
   } catch (e) {

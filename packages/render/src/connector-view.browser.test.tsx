@@ -5,6 +5,10 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ScreenView } from './screen-view.js';
+import { testRegistries } from './test-registries.js';
+
+/** The built-in views and the basic rectangle (render ships no shape definitions: ADR-0016). */
+const registries = testRegistries();
 
 let host: HTMLElement;
 let root: Root;
@@ -26,7 +30,9 @@ async function show(build: (b: Build, screenId: RecordId) => RecordId) {
   const screenId = b.screen({ size: { w: 800, h: 600 } });
   const connectorId = build(b, screenId);
   const core = createCore(b.build());
-  await act(async () => root.render(<ScreenView store={core.store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 800, h: 600 } }} />));
+  await act(async () =>
+    root.render(<ScreenView registries={registries} store={core.store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 800, h: 600 } }} />),
+  );
   const route = () => host.querySelector<SVGPathElement>(`.fx-el[data-el-id="${connectorId}"] path.fx-route`);
   return { core, route, connectorId };
 }

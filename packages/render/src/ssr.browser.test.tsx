@@ -8,6 +8,10 @@ import { modePolicy } from './mode-policy.js';
 import { screensInOrder } from './screen-order.js';
 import { ScreenView } from './screen-view.js';
 import { renderDocumentToHtml } from './ssr.js';
+import { testRegistries } from './test-registries.js';
+
+/** The built-in views and the basic rectangle (render ships no shape definitions: ADR-0016). */
+const registries = testRegistries();
 
 declare global {
   interface ImportMeta {
@@ -63,9 +67,11 @@ describe('SSR parity (FR-SCR-001, ADR-0015)', () => {
       const { store } = createCore(file);
       for (const id of store.query((view) => screensInOrder(view, modePolicy('export').showHidden))()) {
         const parsed = document.createElement('div');
-        parsed.innerHTML = /<main class="fx-document">([\s\S]*)<\/main>/.exec(renderDocumentToHtml(file, { screens: [id] }).html)?.[1] ?? '';
+        parsed.innerHTML = /<main class="fx-document">([\s\S]*)<\/main>/.exec(renderDocumentToHtml(file, { registries, screens: [id] }).html)?.[1] ?? '';
         const area = screenArea((store.get(id) ?? {}) as Parameters<typeof screenArea>[0]);
-        await act(async () => root.render(<ScreenView store={store} screenId={id} mode="export" view={{ kind: 'fit', box: { w: area.w, h: area.h } }} />));
+        await act(async () =>
+          root.render(<ScreenView registries={registries} store={store} screenId={id} mode="export" view={{ kind: 'fit', box: { w: area.w, h: area.h } }} />),
+        );
         const [server, client] = [parsed.querySelector('.fx-screen'), host.querySelector('.fx-screen')];
         expect(server, name).not.toBeNull();
         expect(comparable(server as Element), name).toBe(comparable(client as Element));

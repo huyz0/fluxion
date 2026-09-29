@@ -68,22 +68,52 @@ export function registerShapeDef(
   return registered.ok ? registered : err([{ ...registered.error, path: jsonPointer([...at, 'id']) }]);
 }
 
-/** Registers every shape of `pack`; on the first refusal, undoes the ones already registered. */
-function registerAll(pack: Pack, registries: PackRegistries): Result<Disposable, readonly Diagnostic[]> {
-  const done: Disposable[] = [];
-  for (const [k, def] of pack.shapes.entries()) {
-    const r = registerShapeDef(registries, def, pack.id, ['shapes', k]);
-    if (!r.ok) {
-      for (const d of done) d.dispose();
-      return r;
-    }
-    done.push(r.value);
-  }
-  return ok({
+/**
+ * Every problem of `pack` in `registries`, before anything is registered: invalid definitions, ids
+ * outside the namespace or defined twice, and keys another source holds (M5.8 review F2).
+ */
+function packProblems(pack: Pack, registries: PackRegistries): Diagnostic[] {
+  const first = new Map<string, number>();
+  return pack.shapes.flatMap((def, k) => {
+    const parsed = parseShapeDef(def, ['shapes', k]);
+    if (!parsed.ok) return [...parsed.error];
+    const { id } = parsed.value;
+    const at = ['shapes', k, 'id'];
+    if (!id.startsWith(`${pack.id}:`)) return [packProblem(at, `shape id "${id}" is outside the namespace "${pack.id}:" of ${pack.id}`)];
+    const earlier = first.get(id);
+    first.set(id, earlier ?? k);
+    if (earlier !== undefined) return [packProblem(at, `shape id "${id}" is defined twice (also /shapes/${earlier})`)];
+    const holder = registries.shapeDefs.source(id);
+    if (holder !== undefined && holder !== pack.id)
+      return [
+        {
+          code: 'FLX_REGISTRY_DUPLICATE',
+          severity: 'error',
+          path: jsonPointer(at),
+          message: `"${id}" is already registered in shapeDefs by ${holder}`,
+        } as const,
+      ];
+    return [];
+  });
+}
+
+/**
+ * Registers every shape of a pack `packProblems` found nothing wrong with. Nothing can be refused then
+ * (registries are synchronous, and only another source's key is refused), so there is no rollback that
+ * could remove this pack's live entries (M5.8 review F1).
+ */
+function registerAll(pack: Pack, registries: PackRegistries): Disposable {
+  const done = pack.shapes.map((def) => {
+    const r = registries.shapeDefs.register(def.id, def, pack.id);
+    // tzap disable next-line ConditionalExpression,BlockStatement,StringLiteral: refused only for another source's key, checked above
+    if (!r.ok) throw new Error(`pack ${pack.id}: ${r.error.message}`);
+    return r.value;
+  });
+  return {
     dispose: () => {
       for (const d of done) d.dispose();
     },
-  });
+  };
 }
 
 /**
@@ -103,12 +133,9 @@ export function definePack(spec: PackSpec): Pack {
     shapes: spec.shapes ?? [],
     register: (registries) => {
       if (!PACK_ID.test(pack.id)) return err([packProblem(['id'], `pack id "${pack.id}" must be lower-case letters, digits and "-"`)]);
-      // validate everything first, so a broken pack reports all its problems at once
-      const problems = pack.shapes.flatMap((def, k) => {
-        const r = parseShapeDef(def, ['shapes', k]);
-        return r.ok ? [] : r.error;
-      });
-      return problems.length > 0 ? err(problems) : registerAll(pack, registries);
+      // everything is checked first, so a broken pack reports all its problems and registers nothing
+      const problems = packProblems(pack, registries);
+      return problems.length > 0 ? err(problems) : ok(registerAll(pack, registries));
     },
   };
   return pack;

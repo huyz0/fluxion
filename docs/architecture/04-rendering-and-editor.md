@@ -70,11 +70,10 @@ function DocumentView(props: { store; mode; box; theme?; registries? }): ReactNo
 
 interface ElementViewProps { element: ElementRecord; store: Store; theme: Theme; registries: RenderRegistries; children?: ReactNode }
 interface ElementView { Component: ComponentType<ElementViewProps> }   // must be pure: same record, same markup
-interface ShapeOutline { outline(size: { w: number; h: number }): readonly PathCommand[] }
-interface RenderRegistries { elementViews: Registry<string, ElementView>; shapeDefs: Registry<string, ShapeOutline> }
-function createRenderRegistries(): RenderRegistries;       // empty
-function registerBuiltinViews(r: RenderRegistries): void;  // shape, connector, basic:rect (source `core`)
-function builtinRegistries(): RenderRegistries;
+interface RenderRegistries { elementViews: Registry<string, ElementView>; shapeDefs: Registry<string, ShapeDef> }  // core's ShapeDef (ADR-0016)
+function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;  // no views; the host's shapeDefs
+function registerBuiltinViews(r: RenderRegistries): void;  // shape, connector (source `core`)
+function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;  // shapes from the host's packs (ADR-0017)
 
 function renderDocumentToHtml(file: DocumentFile, options?: { screens?; theme?; registries? }): { html: string; screens: RecordId[] };  // ADR-0015
 function normalizeSvg(html: string): string;              // the goldens' normal form (NFR-REL-005)
@@ -83,7 +82,9 @@ function normalizeSvg(html: string): string;              // the goldens' normal
 Also exported: the built-in views (`ShapeView`, `ConnectorView`, `PlaceholderView`, `ElementList`),
 `CONTENT_CSS`, `useValue` (a React view of a core signal) and the pure helpers `fitTransform`,
 `screenArea`, `screensInOrder`, `elementsInOrder`, `connectorEnds`, `paintCss`, `pathData`,
-`plainParagraphs` and `BASIC_RECT`.
+`plainParagraphs`. Render ships no shape definitions: a host passes its core `shapeDefs` registry, where
+its packs registered (ADR-0016 item 7, ADR-0017), and the shape view draws `evaluateOutline` of the
+element's definition, size and params (an unknown or failing definition is the placeholder).
 
 Planned additions, each with the milestone that needs it:
 
@@ -94,8 +95,6 @@ Planned additions, each with the milestone that needs it:
   React (research 03 §8.1 rule 10) — the player milestones;
 - on `ElementView`: `kind`, `measure(el, measurer)` (intrinsic size for autoSize/layout), `a11y(el)`,
   `exportSvg(el, ctx)` and `cull: 'hide' | 'unmount' | 'never'`; a `css` string of view content CSS;
-- the JSON `ShapeDef` of 03 §5 in core's `shapeDefs`, replacing the render-level outlines (M5,
-  ADR-0015 amendment).
 
 `elementViews` (and later `components`) are render-level registries (03 §4). Packs register views
 the same way third parties do; an unknown kind renders a placeholder that keeps its record (FR-DOC-005,

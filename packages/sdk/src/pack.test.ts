@@ -52,6 +52,21 @@ describe('packs (ADR-0017)', () => {
     expect(codes(clash)).toEqual(['FLX_REGISTRY_DUPLICATE /shapes/1/id']);
     expect(registries.shapeDefs.get('demo:first')).toBeUndefined();
     expect(registries.shapeDefs.source('demo:taken')).toBe('intruder');
+    // a failed reload leaves the live registration as it was (M5.8 review F1)
+    const v1 = definePack({ id: 'demo', shapes: [shape('demo:first')] });
+    expect(v1.register(registries).ok).toBe(true);
+    const v2 = definePack({ id: 'demo', shapes: [shape('demo:first', { category: 'v2' }), shape('demo:taken')] });
+    expect(codes(v2.register(registries))).toEqual(['FLX_REGISTRY_DUPLICATE /shapes/1/id']);
+    expect(registries.shapeDefs.get('demo:first')).toEqual(shape('demo:first'));
+    // every namespace problem and every repeated id is reported (M5.8 review F2)
+    const messy = definePack({ id: 'demo', shapes: [shape('other:a'), shape('other:b'), shape('demo:c'), shape('demo:c')] });
+    const all = messy.register(registries);
+    expect(codes(all)).toEqual(['FLX_PACK_INVALID /shapes/0/id', 'FLX_PACK_INVALID /shapes/1/id', 'FLX_PACK_INVALID /shapes/3/id']);
+    expect(all.ok ? '' : all.error[2]?.message).toBe('shape id "demo:c" is defined twice (also /shapes/2)');
+    expect(all.ok ? '' : all.error[0]?.message).toBe('shape id "other:a" is outside the namespace "demo:" of demo');
+    expect(registries.shapeDefs.get('demo:c')).toBeUndefined();
+    const dup = definePack({ id: 'demo', shapes: [shape('demo:taken')] }).register(registries);
+    expect(dup.ok ? '' : dup.error[0]?.message).toBe('"demo:taken" is already registered in shapeDefs by intruder');
   });
 
   it('registerShapeDef validates one definition of unknown shape against its source namespace', () => {

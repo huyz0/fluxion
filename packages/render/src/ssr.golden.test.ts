@@ -2,6 +2,7 @@ import type { DocumentFile } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
 import { normalizeSvg } from './golden.js';
 import { renderDocumentToHtml } from './ssr.js';
+import { testRegistries } from './test-registries.js';
 
 declare global {
   interface ImportMeta {
@@ -21,9 +22,9 @@ describe('SVG goldens (NFR-REL-005, FR-SCR-001)', () => {
   it('NFR-REL-005: SVG goldens match and a second render is byte-identical', async () => {
     expect(FIXTURES.map(([name]) => name)).toEqual(['minimal', 'two-rects-line', 'unknown-kind']);
     for (const [name, file] of FIXTURES) {
-      const svg = normalizeSvg(renderDocumentToHtml(file).html);
+      const svg = normalizeSvg(renderDocumentToHtml(file, { registries: testRegistries() }).html);
       // rendered twice from a fresh store: the same bytes
-      expect(normalizeSvg(renderDocumentToHtml(file).html), name).toBe(svg);
+      expect(normalizeSvg(renderDocumentToHtml(file, { registries: testRegistries() }).html), name).toBe(svg);
       await expect(svg, name).toMatchFileSnapshot(`../__golden__/${name}.svg`);
     }
   });
