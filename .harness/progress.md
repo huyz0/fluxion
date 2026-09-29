@@ -1024,3 +1024,12 @@ Review r1 minors fixed: the test now covers opacity on the SVG and a radius toke
 - Tests: the T1 browser test checks the midpoint within 0.5 px before and after a move. Node SSR tests cover the label positions and markers per end.
 
 Mutation score is 100% for both packages.
+
+## 2026-09-29 M5.23 (claude)
+
+routing: the attachment property runs 1000 times (counted in the test):
+- setup: an ellipse and a diamond with random anchors (floating, named, side, point), a random route type, and up to 6 edits (place with move/resize/rotate/flip, or reparent into or out of a group);
+- after the edits, fixed anchors sit at their box fraction through the placement, floating ends lie on the outline within 1e-6, and the route runs from end to end.
+
+Gate (M5.32 review minors): `propertyRuns` reads a declared constant and returns NaN for other expressions; the leg names the runner default 200; `CASE_CALL` skips `.test(` method calls. Harness cases added.
+Review r1 F1 fixed: numRuns is read to the next , or }, so an expression is NaN, not its first operand.

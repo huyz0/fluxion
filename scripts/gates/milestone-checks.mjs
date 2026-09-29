@@ -467,12 +467,15 @@ export function readmeGaps(text, required, { minLines = 8 } = {}) {
 }
 
 /** An `it`/`test`/`describe` call, with any modifier (`.skip`, `.each(…)`). */
-const CASE_CALL = /\b(?:it|test|describe)(?:\.\w+)*\(/g;
+// a test or suite call, not a method of that name (`re.test(s)`: M5.32 review F2)
+const CASE_CALL = /(?<![.\w])(?:it|test|describe)(?:\.\w+)*\(/g;
 
 /**
  * The number of runs the fast-check property titled `title` asks for in `source`: the `numRuns` in
  * the body of the `it`/`test` call with that title, up to the next test or suite call (M5.32 review
- * F2); 0 when it names none (fast-check's default is 100) or no such call exists.
+ * F2): a number, or a constant the file declares as one (M5.32 review F1); 0 when it names none (the
+ * runner's default applies: 200, tools/vitest/fast-check.setup.ts) or no such call exists; NaN when
+ * it is computed some other way and cannot be read.
  */
 export function propertyRuns(source, title) {
   const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -481,8 +484,12 @@ export function propertyRuns(source, title) {
   const from = call.index + call[0].length;
   CASE_CALL.lastIndex = from;
   const next = CASE_CALL.exec(source);
-  const runs = /numRuns:\s*([\d_]+)/.exec(source.slice(from, next === null ? undefined : next.index))?.[1];
-  return runs === undefined ? 0 : Number(runs.replace(/_/g, ''));
+  // the whole value up to the next `,` or `}`: an expression such as `5000 - 4999` is not its first operand (M5.23 review F1)
+  const runs = /numRuns:\s*([^,}]+?)\s*[,}]/.exec(source.slice(from, next === null ? undefined : next.index))?.[1];
+  if (runs === undefined) return 0;
+  // a named constant: its declared value
+  const value = /^[A-Za-z_$][\w$]*$/.test(runs) ? new RegExp(`\\b(?:const|let)\\s+${runs}\\s*=\\s*([\\d_]+)\\s*;`).exec(source)?.[1] : runs;
+  return value !== undefined && /^[\d_]+$/.test(value) ? Number(value.replace(/_/g, '')) : Number.NaN;
 }
 
 /**

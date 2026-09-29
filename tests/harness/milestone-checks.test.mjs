@@ -458,6 +458,17 @@ describe('M5 legs made honest (M5 cp1 F4)', () => {
     const commented = `// FR-CON-012: t runs a thousand times\nit('A', () => fc.assert(p, { numRuns: 3000 }));\ntest("FR-CON-012: t", () => fc.assert(p, { numRuns: 1200 }));`;
     assert.equal(propertyRuns(commented, 'FR-CON-012: t'), 1200);
     assert.equal(propertyRuns("it.skip('R (a+b)', () => fc.assert(p, { numRuns: 42 }));", 'R (a+b)'), 42);
+    // a constant the file declares counts; any other expression cannot be read (M5.32 review F1)
+    const named = "const RUNS = 1_500;\nit('N', () => fc.assert(p, { numRuns: RUNS }));";
+    assert.equal(propertyRuns(named, 'N'), 1500);
+    assert.ok(Number.isNaN(propertyRuns("it('N', () => fc.assert(p, { numRuns: runs() }));", 'N')));
+    assert.ok(Number.isNaN(propertyRuns("it('N', () => fc.assert(p, { numRuns: MISSING }));", 'N')));
+    // an expression is not its first operand (M5.23 review F1)
+    assert.ok(Number.isNaN(propertyRuns("it('N', () => fc.assert(p, { numRuns: 5000 - 4999 }));", 'N')));
+    assert.ok(Number.isNaN(propertyRuns(`${named.split('\n')[0]}\nit('N', () => fc.assert(p, { numRuns: RUNS / 100 }));`, 'N')));
+    assert.equal(propertyRuns("it('N', () => fc.assert(p, { seed: 1, numRuns: 2_000 , verbose: true }));", 'N'), 2000);
+    // a method named test inside the body does not end it (M5.32 review F2)
+    assert.equal(propertyRuns("it('M', () => { if (/x/.test(s)) f(); fc.assert(p, { numRuns: 1200 }); });", 'M'), 1200);
   });
 
   it('coverageGaps fails a package under its floor or with too few statements', async () => {

@@ -176,7 +176,8 @@ leg('attachment invariant: after random transforms endpoints lie on anchors (100
   const file = testFiles(['packages/routing']).find((p) => readText(p).includes(ATTACHMENT));
   if (file === undefined) return `no routing test titled "${ATTACHMENT}"`;
   const runs = propertyRuns(readText(file), ATTACHMENT);
-  if (runs < 1000) return `${file}: the property runs ${runs || 'the default 100'} times (< 1 000)`;
+  if (Number.isNaN(runs)) return `${file}: the property's numRuns is computed and cannot be read: use a number or a constant`;
+  if (runs < 1000) return `${file}: the property runs ${runs || "the runner's default 200"} times (< 1 000)`;
   return titled([['M5.23', ATTACHMENT, 'routing']]);
 });
 
