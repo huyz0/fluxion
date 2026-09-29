@@ -4,6 +4,7 @@ import { paintCss } from './background.js';
 import { CONTENT_CSS } from './content-css.js';
 import { fitTransform, screenArea } from './fit.js';
 import { labelStyle, plainParagraphs } from './label.js';
+import { BUILTIN_MARKERS, registerBuiltinMarkers } from './markers.js';
 import { modePolicy } from './mode-policy.js';
 import { pathData } from './path-data.js';
 import { createRenderRegistries } from './registries.js';
@@ -126,7 +127,21 @@ describe('shape outlines and labels (FR-SHP-001)', () => {
         { kind: 'Z' },
       ]),
     ).toBe('M0.333 0 Q1 2 3 4 C5 6 7 8 9 10 Z');
-    expect([createRenderRegistries().shapeDefs.name, createRenderRegistries().routers.name]).toEqual(['shapeDefs', 'routers']);
+    const named = createRenderRegistries();
+    expect([named.shapeDefs.name, named.routers.name, named.markers.name]).toEqual(['shapeDefs', 'routers', 'markers']);
+  });
+
+  it('FR-CON-003: the built-in markers: their shapes, where the line stops, and core as their source', () => {
+    expect(BUILTIN_MARKERS.map((m) => [m.id, m.path, m.inset, m.filled])).toEqual([
+      ['arrow', 'M0 0 L10 5 L0 10 L3 5 Z', 7, true],
+      ['triangle', 'M0 0 L10 5 L0 10 Z', 10, true],
+      ['diamond', 'M0 5 L5 0 L10 5 L5 10 Z', 10, true],
+      ['circle', 'M0 5 A5 5 0 1 1 10 5 A5 5 0 1 1 0 5 Z', 10, true],
+      ['bar', 'M8 0 L10 0 L10 10 L8 10 Z', 2, true],
+    ]);
+    const markers = createRenderRegistries().markers;
+    registerBuiltinMarkers(markers);
+    expect(BUILTIN_MARKERS.map((m) => markers.source(m.id))).toEqual(BUILTIN_MARKERS.map(() => 'core'));
   });
 
   it('FR-SHP-001: a label is drawn with its resolved font, aligned vertically by flex', () => {

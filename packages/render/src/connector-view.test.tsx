@@ -1,6 +1,7 @@
 import type { DocumentFile, RecordId, Route, Style } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { BUILTIN_MARKERS, MARKER_SIZE, markerTrim } from './markers.js';
 import { strokeReach } from './shape-view.js';
 import { renderDocumentToHtml } from './ssr.js';
 import { testRegistries } from './test-registries.js';
@@ -65,6 +66,61 @@ describe('connector markers and labels in static HTML (FR-CON-003, FR-CON-006)',
     expect(html).toMatch(/<div class="fx-connector-label" style="[^"]*left:204px;top:94px"><p>C<\/p><\/div>/);
     // no labels, none drawn
     expect(drawn({}).html).not.toContain('<div class="fx-connector-label"');
+  });
+
+  it('FR-CON-003: every marker scales with the stroke width and trims the path under it', () => {
+    // a straight route from (0, 0) to (200, 0) with the marker at both ends, at two stroke widths
+    for (const def of BUILTIN_MARKERS) {
+      for (const width of [2, 4]) {
+        const { d, html } = drawn({ type: 'straight' }, { stroke: { width } }, { freeTarget: { x: 200, y: 0 }, markers: { start: def.id, end: def.id } });
+        // sized in stroke widths: the marker box is MARKER_SIZE stroke widths whatever the width
+        const marker = new RegExp(
+          `<marker id="fx-marker-[\\w-]+-end" viewBox="0 0 10 10" refX="${10 - def.inset}" refY="5" markerWidth="${MARKER_SIZE}" markerHeight="${MARKER_SIZE}" markerUnits="strokeWidth" orient="auto-start-reverse" overflow="visible">`,
+        );
+        expect(html, def.id).toMatch(marker);
+        // filled with the stroke colour
+        expect(html).toContain(`<path d="${def.path}" style="fill:var(--fx-color-connector);stroke:none"></path>`);
+        // the line stops `inset` box units (MARKER_SIZE / 10 stroke widths each) back from each end
+        const trim = (def.inset * MARKER_SIZE * width) / 10;
+        expect(d, `${def.id} at ${width}`).toBe(`M${trim} 0 L${200 - trim} 0`);
+        expect(markerTrim(def, width)).toBe(trim);
+      }
+    }
+    expect(BUILTIN_MARKERS.map((m) => m.id)).toEqual(['arrow', 'triangle', 'diamond', 'circle', 'bar']);
+    expect(markerTrim(undefined, 4)).toBe(0);
+    // an end segment shorter than the trim (review F1): the trim takes half of it, and the reference
+    // point moves toward the tip so the tip still lands on the end, along the segment's direction
+    const short = drawn(
+      { type: 'polyline', waypoints: [{ x: 190, y: 0 }] },
+      { stroke: { width: 5 } },
+      { freeTarget: { x: 200, y: 0 }, markers: { end: 'triangle' } },
+    );
+    expect(short.d).toBe('M0 0 L190 0 L195 0');
+    // 5 px of a 2.5 px box unit: 2 units back from the tip
+    expect(short.html).toMatch(/<marker id="fx-marker-[\w-]+-end" viewBox="0 0 10 10" refX="8"/);
+    // a stroke of no width: no trim, the marker's own inset as its reference
+    const hairline = drawn({ type: 'straight' }, { stroke: { width: 0 } }, { freeTarget: { x: 200, y: 0 }, markers: { end: 'triangle' } });
+    expect(hairline.d).toBe('M0 0 L200 0');
+    expect(hairline.html).toMatch(/refX="0"/);
+    // an open marker is stroked as wide as the connector: 10 box units span MARKER_SIZE stroke widths
+    const registries = testRegistries();
+    registries.markers.register('test:open', { id: 'test:open', path: 'M0 0 L10 5 L0 10', inset: 0, filled: false }, 'test');
+    const b = documentBuilder({ seed: 5201 });
+    b.screen();
+    b.connect({ x: 0, y: 0 }, { x: 100, y: 0 }, { arrow: false });
+    const file = b.build();
+    const [id] = Object.entries(file.records).find(([, r]) => (r as { kind?: string }).kind === 'connector') ?? [];
+    const opened = {
+      ...file,
+      records: { ...file.records, [id as string]: { ...(file.records[id as string] as object), markers: { end: 'test:open' } } },
+    } as DocumentFile;
+    const open = renderDocumentToHtml(opened, { registries }).html;
+    expect(open).toContain('refX="10"');
+    expect(open).toContain(`<path d="M0 0 L10 5 L0 10" style="fill:none;stroke:var(--fx-color-connector);stroke-width:${10 / MARKER_SIZE}"></path>`);
+    // none, and an unregistered marker, draw nothing and trim nothing
+    const none = drawn({ type: 'straight' }, undefined, { freeTarget: { x: 200, y: 0 }, markers: { start: 'none', end: 'test:missing' } });
+    expect(none.d).toBe('M0 0 L200 0');
+    expect(none.html).not.toContain('<marker');
   });
 
   it('FR-CON-003: end markers are defined only for the ends that have one', () => {

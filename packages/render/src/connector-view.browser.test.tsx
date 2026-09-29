@@ -60,12 +60,15 @@ describe('connector view (FR-CON-001)', () => {
     });
     // the centre line (150,125)→(450,325) leaves each box through its bottom/top edge
     near(ends(route()).source, { x: 187.5, y: 150 });
-    near(ends(route()).target, { x: 412.5, y: 300 });
-    // the drawn line in screen space ends on the borders as well
+    // the line stops under the arrow (FR-CON-003): 7 box units of a 5-stroke-width marker at stroke 2 is 7 px back along it
+    const [dx, dy] = [225 / Math.hypot(225, 150), 150 / Math.hypot(225, 150)];
+    const under = { x: 412.5 - 7 * dx, y: 300 - 7 * dy };
+    near(ends(route()).target, under);
+    // the drawn line in screen space ends on the border and under the arrow as well
     const screen = host.querySelector('.fx-screen')?.getBoundingClientRect() as DOMRect;
     const box = route()?.getBoundingClientRect() as DOMRect;
     near({ x: box.left - screen.left, y: box.top - screen.top }, { x: 187.5, y: 150 });
-    near({ x: box.right - screen.left, y: box.bottom - screen.top }, { x: 412.5, y: 300 });
+    near({ x: box.right - screen.left, y: box.bottom - screen.top }, under);
     // the SVG itself has a box around the route: an empty box is not painted by Chromium (M4.21)
     const svg = route()?.ownerSVGElement?.getBoundingClientRect() as DOMRect;
     expect(svg.left).toBeLessThan(box.left);
@@ -98,7 +101,7 @@ describe('connector view (FR-CON-001)', () => {
     let a = '' as RecordId;
     const { core, route } = await show((b, s) => {
       a = b.rect(s, { x: 0, y: 0, w: 50, h: 50 });
-      return b.connect(a, { x: 300, y: 300 });
+      return b.connect(a, { x: 300, y: 300 }, { arrow: false });
     });
     near(ends(route()).source, { x: 50, y: 50 });
     await act(async () => {
@@ -129,17 +132,17 @@ describe('routers (FR-RTE-001)', () => {
     };
     const registered = [registries.routers.register('test:zigzag', zigzag, 'test'), registries.routers.register('test:wave', wave, 'test')];
     try {
-      const zig = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:zigzag' }));
+      const zig = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:zigzag', arrow: false }));
       expect(zig.route()?.getAttribute('d')).toBe('M100 200 L200 160 L300 200');
       // the SVG box holds the whole route plus room for the stroke and markers (24 px): peak to baseline
       const box = (svg: SVGSVGElement | null | undefined) => [svg?.style.left, svg?.style.top, svg?.style.width, svg?.style.height];
       expect(box(zig.route()?.ownerSVGElement)).toEqual(['76px', '136px', '248px', '88px']);
       // and every control point of a curved route
-      const curved = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:wave' }));
+      const curved = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:wave', arrow: false }));
       expect(curved.route()?.getAttribute('d')).toBe('M100 200 Q150 100 200 200 C230 280 270 280 300 200');
       expect(box(curved.route()?.ownerSVGElement)).toEqual(['76px', '76px', '248px', '228px']);
       // an unregistered type draws straight
-      const plain = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:unknown' }));
+      const plain = await show((b) => b.connect({ x: 100, y: 200 }, { x: 300, y: 200 }, { route: 'test:unknown', arrow: false }));
       expect(plain.route()?.getAttribute('d')).toBe('M100 200 L300 200');
     } finally {
       for (const r of registered) if (r.ok) r.value.dispose();
@@ -153,7 +156,7 @@ describe('connector labels (FR-CON-006)', () => {
     const { core, route, connectorId } = await show((b, s) => {
       a = b.rect(s, { x: 50, y: 50, w: 100, h: 60 });
       const c = b.rect(s, { x: 500, y: 300, w: 100, h: 60 });
-      return b.connect(a, c, { route: 'orthogonal' });
+      return b.connect(a, c, { route: 'orthogonal', arrow: false });
     });
     const text = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }] };
     await act(async () => {

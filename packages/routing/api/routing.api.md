@@ -99,6 +99,16 @@ export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefine
 export const straightRouter: Router;
 
 // @public
+export type TrimmedRoute = {
+    readonly commands: readonly PathCommand[];
+    readonly start: number;
+    readonly end: number;
+};
+
+// @public
+export function trimRoute(commands: readonly PathCommand[], start: number, end: number): TrimmedRoute;
+
+// @public
 export const VERSION: string;
 
 ```

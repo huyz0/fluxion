@@ -313,6 +313,14 @@ export interface Logger {
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 // @public
+export type MarkerDef = {
+    readonly id: string;
+    readonly path: string;
+    readonly inset: number;
+    readonly filled: boolean;
+};
+
+// @public
 export type MessageDescriptor = {
     readonly id: string;
     readonly defaultMessage: string;

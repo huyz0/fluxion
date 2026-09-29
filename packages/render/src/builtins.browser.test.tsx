@@ -2,6 +2,7 @@ import { createRegistry, type ShapeDef } from '@fluxion/core';
 import { type Router, straightRouter } from '@fluxion/routing';
 import { describe, expect, it } from 'vitest';
 import { builtinRegistries, registerBuiltinViews } from './builtins.js';
+import { BUILTIN_MARKERS } from './markers.js';
 import { createRenderRegistries } from './registries.js';
 import { ShapeView } from './shape-view.js';
 
@@ -23,6 +24,8 @@ describe('built-in views (FR-EXT-001, ADR-0015 §5)', () => {
     expect(taken.elementViews.source('connector')).toBe('core');
     // the built-in routers too (FR-RTE-001), into the host's routers when it passes them
     expect([registries.routers.get('straight'), registries.routers.source('straight')]).toEqual([straightRouter, 'core']);
+    // and the built-in markers (FR-CON-003)
+    expect(BUILTIN_MARKERS.map((m) => [registries.markers.get(m.id), registries.markers.source(m.id)])).toEqual(BUILTIN_MARKERS.map((m) => [m, 'core']));
     const routers = createRegistry<string, Router>('routers');
     expect(builtinRegistries(host, routers).routers.get('straight')).toBe(straightRouter);
   });

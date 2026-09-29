@@ -7,6 +7,7 @@ export { curvedRouter, polylineRouter } from './curved.js';
 export { labelPosition } from './labels.js';
 export { ORTHOGONAL_STUB, orthogonalRouter } from './orthogonal.js';
 export { type RouteEnd, type RouteRequest, type Router, straightRouter } from './router.js';
+export { type TrimmedRoute, trimRoute } from './trim.js';
 
 /**
  * Version of this package.

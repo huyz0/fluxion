@@ -24,12 +24,12 @@
   <g data-el-id="cWB8Ucz36bNpnt8N" data-kind="connector">
     <svg aria-hidden="true" class="fx-connector" style="left:256px;top:216px;width:288px;height:48px;opacity:1" viewBox="256 216 288 48">
       <defs>
-        <marker id="fx-id-0-end" markerHeight="5" markerWidth="5" orient="auto-start-reverse" refX="10" refY="5" viewBox="0 0 10 10">
-          <path d="M0 0 L10 5 L0 10 Z" style="fill:var(--fx-color-connector)">
+        <marker id="fx-id-0-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
           </path>
         </marker>
       </defs>
-      <path class="fx-route" d="M280 240 L520 240" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      <path class="fx-route" d="M280 240 L513 240" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
       </path>
     </svg>
   </g>

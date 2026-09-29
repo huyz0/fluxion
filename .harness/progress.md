@@ -1033,3 +1033,15 @@ routing: the attachment property runs 1000 times (counted in the test):
 
 Gate (M5.32 review minors): `propertyRuns` reads a declared constant and returns NaN for other expressions; the leg names the runner default 200; `CASE_CALL` skips `.test(` method calls. Harness cases added.
 Review r1 F1 fixed: numRuns is read to the next , or }, so an expression is NaN, not its first operand.
+
+## 2026-09-29 M5.20 (claude)
+
+M5.20 is split: this row covers the marker type, registry, built-ins and trimming; M5.36 covers the pack markers and SDK contract (ADR-0017 amendment). The gate's pack-marker title moves to M5.36.
+- core: the `MarkerDef` type (10x10 box, tip at (10,5), inset, filled).
+- routing: `trimRoute`: lines are shortened, curves split by bisection on the chord length.
+- render: `RenderRegistries.markers` holds the five built-ins; `MarkerView` is sized in stroke widths, with refX = 10 - inset; the connector trims under each marker. `none` or unregistered markers draw nothing.
+- Goldens updated. The arrow is now notched with inset 7, so M4 browser tests expect the trimmed end. Visual baselines regenerated in the pinned Playwright image were byte-identical, so none changed.
+
+Mutation score is 100% for routing and render.
+Review r1 F1 fixed: each trim takes at most half its end segment, so the direction survives. trimRoute returns the trims it used, and MarkerView sets refX to 10 minus that trim in box units, so the tip always lands on the end. Tests cover a 10 px end leg at stroke 5 and a zero-width stroke.
+Review r2 F2 fixed: a trim is a straight distance. Curves are cut by chord from the old end, the cut end's handle is aimed at the old end so the marker spans the cut exactly, and a single curve is cut at both parameters found on the original. Tests cover chord distance, points on the curve, tangents toward the old ends, quadratics, caps and untouched segments.

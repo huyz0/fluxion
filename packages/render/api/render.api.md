@@ -8,6 +8,7 @@ import { ComponentType } from 'react';
 import { CSSProperties } from 'react';
 import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';
+import { MarkerDef } from '@fluxion/core';
 import { NamedExoticComponent } from 'react';
 import { PathCommand } from '@fluxion/geometry';
 import { ReactNode } from 'react';
@@ -29,7 +30,10 @@ import { Theme } from '@fluxion/theme';
 export type AssetUrls = (assetId: RecordId) => string | undefined;
 
 // @public
-export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>): RenderRegistries;
+export const BUILTIN_MARKERS: readonly MarkerDef[];
+
+// @public
+export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>): RenderRegistries;
 
 // @public
 export type CanvasTextMeasurer = TextMeasurer & {
@@ -46,7 +50,7 @@ export const CONTENT_CSS: string;
 export function createCanvasMeasurer(): CanvasTextMeasurer;
 
 // @public
-export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>): RenderRegistries;
+export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>): RenderRegistries;
 
 // @public
 export function DocumentView(props: DocumentViewProps): ReactNode;
@@ -114,6 +118,12 @@ export function fitTransform(area: {
 export function ImageView(props: ElementViewProps): ReactNode;
 
 // @public
+export const MARKER_SIZE = 5;
+
+// @public
+export function markerTrim(def: MarkerDef | undefined, width: number): number;
+
+// @public
 export type ModePolicy = {
     readonly editOverlay: boolean;
     readonly interactive: boolean;
@@ -138,6 +148,9 @@ export function PlaceholderView(props: ElementViewProps): ReactNode;
 
 // @public
 export function plainParagraphs(doc: RichTextDoc | undefined): string[];
+
+// @public
+export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): void;
 
 // @public
 export function registerBuiltinViews(registries: RenderRegistries): void;
@@ -168,6 +181,7 @@ export type RenderRegistries = {
     readonly elementViews: Registry<string, ElementView>;
     readonly shapeDefs: Registry<string, ShapeDef>;
     readonly routers: Registry<string, Router>;
+    readonly markers: Registry<string, MarkerDef>;
 };
 
 // @public

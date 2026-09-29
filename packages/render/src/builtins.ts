@@ -1,10 +1,11 @@
-// The built-in views (ADR-0015 §5): the shape, connector and image views, and the built-in routers
-// (FR-RTE-001), registered through the same API as plugins (source `core`). Shape definitions come from
+// The built-in views (ADR-0015 §5): the shape, connector and image views, the built-in routers
+// (FR-RTE-001) and markers (FR-CON-003), registered through the same API as plugins (source `core`). Shape definitions come from
 // packs the host registers (ADR-0016, ADR-0017).
-import type { Registry, ShapeDef } from '@fluxion/core';
+import type { MarkerDef, Registry, ShapeDef } from '@fluxion/core';
 import { type Router, registerBuiltinRouters } from '@fluxion/routing';
 import { ConnectorView } from './connector-view.js';
 import { ImageView } from './image-view.js';
+import { registerBuiltinMarkers } from './markers.js';
 import { createRenderRegistries, type RenderRegistries } from './registries.js';
 import { ShapeView } from './shape-view.js';
 
@@ -21,15 +22,20 @@ export function registerBuiltinViews(registries: RenderRegistries): void {
 }
 
 /**
- * Fresh render registries holding the built-in views and routers, reading shape definitions from
- * `shapeDefs` and routers from `routers` (the host's core registries with its packs; default: none, so
- * every shape is a placeholder and only the built-in routers route).
+ * Fresh render registries holding the built-in views, routers and markers, reading shape definitions
+ * from `shapeDefs`, routers from `routers` and markers from `markers` (the host's core registries with
+ * its packs; default: none, so every shape is a placeholder and only the built-ins route and mark).
  *
  * @public
  */
-export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>): RenderRegistries {
-  const registries = createRenderRegistries(shapeDefs, routers);
+export function builtinRegistries(
+  shapeDefs?: Registry<string, ShapeDef>,
+  routers?: Registry<string, Router>,
+  markers?: Registry<string, MarkerDef>,
+): RenderRegistries {
+  const registries = createRenderRegistries(shapeDefs, routers, markers);
   registerBuiltinViews(registries);
   registerBuiltinRouters(registries.routers);
+  registerBuiltinMarkers(registries.markers);
   return registries;
 }
