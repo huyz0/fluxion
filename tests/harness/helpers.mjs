@@ -1,7 +1,7 @@
 // Test helpers for the harness gates. Each gate derives REPO_ROOT from its own location, so we
 // copy the harness into a temp directory and run the copy against a deliberately broken tree.
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -57,7 +57,9 @@ function linkWorkspaceInstall(sb, dir, dirOf) {
 
 /** Copy harness files into a fresh temp dir. Returns helpers bound to it. */
 export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), 'fluxion-harness-'));
+  // the long form of the temp path: Windows runners report it with 8.3 short names (RUNNER~1), which
+  // module resolution expands, so TypeScript no longer saw a referenced project's sources as its own (M4.34)
+  const dir = mkdtempSync(join(realpathSync.native(tmpdir()), 'fluxion-harness-'));
   for (const p of paths) cpSync(join(REPO, p), join(dir, p), { recursive: true, filter: (src) => !TRANSIENT.test(src) });
   const sb = {
     dir,
