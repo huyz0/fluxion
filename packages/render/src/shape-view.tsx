@@ -9,6 +9,7 @@ import type { ShapeElement } from '@fluxion/schema';
 import { type ResolvedFont, type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
 import { type ImageSource, useImage } from './assets.js';
+import { EffectsFilter } from './effects.js';
 import { PlaceholderView } from './elements.js';
 import { plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
@@ -128,6 +129,11 @@ function textBox(
   return fitted.ok ? { ...box, fontSize: fitted.value.size } : box;
 }
 
+/** `children` under the effects filter `id` when `on`; as they are otherwise (no extra markup). */
+function Effected(props: { readonly on: boolean; readonly id: string; readonly children: ReactNode }): ReactNode {
+  return props.on ? <g filter={`url(#${props.id})`}>{props.children}</g> : props.children;
+}
+
 /** Where an outside stroke's mask reaches: far beyond any box, so the outside half always shows. */
 const EDGE_AREA = { x: -1e4, y: -1e4, width: 2e4, height: 2e4 };
 
@@ -234,12 +240,21 @@ export function ShapeView(props: ElementViewProps): ReactNode {
     <>
       <svg viewBox={`0 0 ${w} ${h}`} aria-hidden="true" style={{ opacity: style.opacity }}>
         {defs === undefined ? null : <defs>{defs}</defs>}
-        <Outline d={pathData(drawn)} fill={fill} stroke={stroke} align={closed ? style.stroke.align : 'center'} ids={ids} />
-        {outlined.value.decorations.map((d, k) => (
-          // decorations are strokes over the outline (ADR-0016 item 3), in definition order
-          // biome-ignore lint/suspicious/noArrayIndexKey: a definition's decorations have no identity but their order
-          <path key={k} className="fx-decoration" d={segmentsData(d)} style={{ fill: 'none', ...stroke }} />
-        ))}
+        <EffectsFilter
+          id={`fx-effects-${ids}`}
+          shadows={style.shadows}
+          effects={style.effects}
+          box={{ w, h }}
+          margin={concreteLength(style.stroke.width, theme)}
+        />
+        <Effected on={style.shadows.length + style.effects.length > 0} id={`fx-effects-${ids}`}>
+          <Outline d={pathData(drawn)} fill={fill} stroke={stroke} align={closed ? style.stroke.align : 'center'} ids={ids} />
+          {outlined.value.decorations.map((d, k) => (
+            // decorations are strokes over the outline (ADR-0016 item 3), in definition order
+            // biome-ignore lint/suspicious/noArrayIndexKey: a definition's decorations have no identity but their order
+            <path key={k} className="fx-decoration" d={segmentsData(d)} style={{ fill: 'none', ...stroke }} />
+          ))}
+        </Effected>
       </svg>
       {paragraphs.length === 0 ? null : (
         <div className="fx-label" style={{ ...labelStyle(style.font, style.opacity), ...text }}>

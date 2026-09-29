@@ -52,6 +52,13 @@ export type ResolvedColorPaint = {
 };
 
 // @public
+export type ResolvedEffect = {
+    readonly type: "blur" | "glow";
+    readonly radius: number;
+    readonly color: string;
+};
+
+// @public
 export type ResolvedFont = {
     readonly family: string;
     readonly size: string;
@@ -81,6 +88,16 @@ export type ResolvedImagePaint = {
 export type ResolvedPaint = ResolvedColorPaint | ResolvedGradientPaint | ResolvedImagePaint | NoPaint;
 
 // @public
+export type ResolvedShadow = {
+    readonly x: number;
+    readonly y: number;
+    readonly blur: number;
+    readonly spread: number;
+    readonly color: string;
+    readonly inset: boolean;
+};
+
+// @public
 export type ResolvedStop = {
     readonly offset: number;
     readonly css: string;
@@ -103,6 +120,8 @@ export type ResolvedStyle = {
     readonly opacity: string;
     readonly radius: string;
     readonly font: ResolvedFont;
+    readonly shadows: readonly ResolvedShadow[];
+    readonly effects: readonly ResolvedEffect[];
 };
 
 // @public

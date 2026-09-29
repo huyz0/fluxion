@@ -4,9 +4,10 @@
 // fallbacks. A token ref becomes `var(--fx-<path>)`, with no value of its own, so a change of token values
 // restyles through the screen's CSS variables alone (ADR-0015 amendment, M5.13); an unknown token is
 // reported (FLX_TOKEN_UNKNOWN) and the next layer is used.
-import { colorSchema, DIAGNOSTIC_CODES, type Diagnostic, jsonPointer, type Style, type TokenRef } from '@fluxion/schema';
-import { cssValue, familyCss, resolveToken, tokenPath } from './resolve.js';
-import { cssVarName, FAMILY, isValidToken, type Theme, TOKEN_REF } from './tokens.js';
+import type { Diagnostic, Style } from '@fluxion/schema';
+import { effectsOf, type ResolvedEffect, type ResolvedShadow, shadowsOf } from './effects.js';
+import { finiteIn, isObject, type Layer, Resolver } from './resolver.js';
+import type { Theme } from './tokens.js';
 
 /**
  * A colour fill as CSS (a literal or `var(…)`).
@@ -138,6 +139,10 @@ export type ResolvedStyle = {
   readonly radius: string;
   /** Text styling. */
   readonly font: ResolvedFont;
+  /** Shadows, painted in order (M5.34). */
+  readonly shadows: readonly ResolvedShadow[];
+  /** Effects, applied in order (M5.34). */
+  readonly effects: readonly ResolvedEffect[];
 };
 
 /**
@@ -152,8 +157,6 @@ export type StyleResolution = {
   readonly diagnostics: readonly Diagnostic[];
 };
 
-type Layer = { readonly values: unknown; readonly at: ReadonlyArray<string | number> };
-
 /** Built-in fallbacks: the last layer, so every field has a value even with an empty theme. */
 const FALLBACK = {
   fill: 'transparent',
@@ -164,96 +167,12 @@ const FALLBACK = {
   font: { family: 'sans-serif', size: 16, weight: 400, lineHeight: 1.2, color: 'currentColor', style: 'normal', align: 'center', verticalAlign: 'middle' },
 } as const;
 
-// the strict reference syntax (names only), so a ref can never put other CSS into a var() name
-const isRef = (v: unknown): v is TokenRef => typeof v === 'string' && TOKEN_REF.test(v);
-const isObject = (v: unknown): v is { readonly [k: string]: unknown } => typeof v === 'object' && v !== null && !Array.isArray(v);
-
-/** The value at `path` in `values`, or undefined. */
-const at = (values: unknown, path: readonly string[]): unknown => path.reduce<unknown>((v, k) => (isObject(v) ? v[k] : undefined), values);
-
-/** The resolution context: the theme, the layers, and the diagnostics it collects. */
-class Resolver {
-  readonly diagnostics: Diagnostic[] = [];
-  readonly theme: Theme;
-  readonly layers: readonly Layer[];
-
-  constructor(theme: Theme, layers: readonly Layer[]) {
-    this.theme = theme;
-    this.layers = layers;
-  }
-
-  /**
-   * A token ref as `var(--fx-…)`, or undefined (reported) when the theme has no such token
-   * or its value is not a valid token (a theme object never parsed; M4.10 review round 2 F1).
-   */
-  ref(ref: TokenRef, where: ReadonlyArray<string | number>): string | undefined {
-    const token = resolveToken(this.theme, ref);
-    if (token.ok && isValidToken(token.value)) return `var(${cssVarName(tokenPath(ref))})`;
-    this.diagnostics.push({
-      code: 'FLX_TOKEN_UNKNOWN',
-      severity: DIAGNOSTIC_CODES.FLX_TOKEN_UNKNOWN,
-      path: jsonPointer([...where]),
-      message: token.ok ? `token ${ref} of theme ${this.theme.name} is not a valid token` : token.error.message,
-    });
-    return undefined;
-  }
-
-  /** The first layer's value at `path` that `convert` accepts; FALLBACK's otherwise. */
-  pick<T>(path: readonly string[], convert: (v: unknown, where: ReadonlyArray<string | number>) => T | undefined): T {
-    for (const layer of this.layers) {
-      const v = at(layer.values, path);
-      if (v === undefined) continue;
-      const out = convert(v, [...layer.at, ...path]);
-      if (out !== undefined) return out;
-    }
-    return convert(at(FALLBACK, path), []) as T;
-  }
-
-  /** A colour field: literal, token ref, or transformed token (color-mix in OKLCH). */
-  color: (v: unknown, where: ReadonlyArray<string | number>) => string | undefined = (v, where) => {
-    if (isRef(v)) return this.ref(v, where);
-    // only a CSS colour: a literal from unvalidated theme defaults cannot carry other CSS (M4.10 review F2)
-    if (typeof v === 'string') return colorSchema.safeParse(v).success ? v : undefined;
-    if (isObject(v) && isRef(v['token'])) {
-      const base = this.ref(v['token'], [...where, 'token']);
-      return base === undefined ? undefined : transformed(base, isObject(v['transform']) ? v['transform'] : {});
-    }
-    return undefined;
-  };
-
-  /** A numeric field with a CSS unit (`px`, or '' for unitless): number or token ref. */
-  number = (unit: string) => (v: unknown, where: ReadonlyArray<string | number>) =>
-    isRef(v) ? this.ref(v, where) : typeof v === 'number' && Number.isFinite(v) ? `${v}${unit}` : undefined;
-
-  /** A font family: a token ref, or one name quoted and escaped as CSS (markup and control characters refused). */
-  family: (v: unknown, where: ReadonlyArray<string | number>) => string | undefined = (v, where) =>
-    isRef(v) ? this.ref(v, where) : typeof v === 'string' && FAMILY.test(v) ? familyCss(v) : undefined;
-
-  /** A keyword field: only a value of its allow-list (M4.10 review F2). */
-  keyword = (allowed: ReadonlySet<string>) => (v: unknown) => (typeof v === 'string' && allowed.has(v) ? v : undefined);
-}
-
 const CAPS: ReadonlySet<string> = new Set(['butt', 'round', 'square']);
 const JOINS: ReadonlySet<string> = new Set(['miter', 'round', 'bevel']);
 const ALIGNS_STROKE: ReadonlySet<string> = new Set(['center', 'inside', 'outside']);
 const FONT_STYLES: ReadonlySet<string> = new Set(['normal', 'italic']);
 const ALIGNS: ReadonlySet<string> = new Set(['left', 'center', 'right', 'justify']);
 const VERTICAL_ALIGNS: ReadonlySet<string> = new Set(['top', 'middle', 'bottom']);
-
-/** `v` clamped to [min, max] when it is a finite number; `otherwise` when it is not. */
-const finiteIn = (v: unknown, min: number, max: number, otherwise: number): number =>
-  typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : otherwise;
-
-/** A colour with a ColorTransform: lighten mixes with white (black when negative), alpha with transparent. */
-function transformed(base: string, t: { readonly [k: string]: unknown }): string {
-  let css = base;
-  // finite and clamped, so the percentages are valid CSS (M4.10 review round 2 F2)
-  const lighten = finiteIn(t['lighten'], -1, 1, 0);
-  if (lighten !== 0) css = `color-mix(in oklch, ${css}, ${lighten > 0 ? 'white' : 'black'} ${Math.round(Math.abs(lighten) * 100)}%)`;
-  const alpha = finiteIn(t['alpha'], 0, 1, 1);
-  if (alpha !== 1) css = `color-mix(in oklch, ${css} ${Math.round(alpha * 100)}%, transparent)`;
-  return css;
-}
 
 /**
  * A gradient paint with its stops' colours resolved and sorted by offset; undefined when fewer than two
@@ -335,7 +254,7 @@ export function resolveStyle(style: Style | undefined, of: StyleKind, theme: The
     { values: own, at: ['theme', 'defaults', kind] },
     { values: defaults['*'], at: ['theme', 'defaults', '*'] },
   ];
-  const r = new Resolver(theme, layers);
+  const r = new Resolver(theme, layers, FALLBACK);
   const px = r.number('px');
   const unitless = r.number('');
   const keyword = (path: readonly string[], allowed: ReadonlySet<string>) => r.pick(path, r.keyword(allowed));
@@ -364,6 +283,8 @@ export function resolveStyle(style: Style | undefined, of: StyleKind, theme: The
       align: keyword(['font', 'align'], ALIGNS),
       verticalAlign: keyword(['font', 'verticalAlign'], VERTICAL_ALIGNS),
     },
+    shadows: shadowsOf(r),
+    effects: effectsOf(r),
   };
   return { style: resolved, diagnostics: r.diagnostics };
 }
@@ -389,10 +310,14 @@ export type PaintResolution = {
  */
 export function resolveBackground(background: Style['fill'] | undefined, theme: Theme, at: ReadonlyArray<string | number> = []): PaintResolution {
   const defaults = theme.defaults ?? {};
-  const r = new Resolver(theme, [
-    { values: { background }, at },
-    { values: defaults['screen'], at: ['theme', 'defaults', 'screen'] },
-    { values: defaults['*'], at: ['theme', 'defaults', '*'] },
-  ]);
+  const r = new Resolver(
+    theme,
+    [
+      { values: { background }, at },
+      { values: defaults['screen'], at: ['theme', 'defaults', 'screen'] },
+      { values: defaults['*'], at: ['theme', 'defaults', '*'] },
+    ],
+    FALLBACK,
+  );
   return { paint: paint(r, 'background'), diagnostics: r.diagnostics };
 }

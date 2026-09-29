@@ -109,6 +109,8 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
         align: 'center',
         verticalAlign: 'middle',
       },
+      shadows: [],
+      effects: [],
     });
     // the light theme's own defaults
     const connector = resolveStyle(undefined, 'connector', LIGHT_THEME).style;

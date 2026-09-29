@@ -1,5 +1,6 @@
 // Public entry of @fluxion/theme; the package comment is the dts banner in tsdown.config.ts.
 
+export type { ResolvedEffect, ResolvedShadow } from './effects.js';
 export type { ThemeError, ThemeErrorCode } from './errors.js';
 export { LIGHT_THEME } from './light.js';
 export { cssValue, resolveToken, toCssVars, tokenPath } from './resolve.js';
