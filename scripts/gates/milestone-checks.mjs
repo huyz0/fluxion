@@ -293,7 +293,8 @@ export function titled(list, { runner } = {}) {
   }
   const bad = [];
   for (const { project, env, entries } of groups.values()) {
-    const paths = [...new Set(entries.map((e) => `packages/${e.pkg}`))];
+    // a package name (`core`) or a workspace path (`packs/basic`)
+    const paths = [...new Set(entries.map((e) => (e.pkg.includes('/') ? e.pkg : `packages/${e.pkg}`)))];
     const verdicts = vitestTitles(
       entries.map((e) => e.title),
       paths,

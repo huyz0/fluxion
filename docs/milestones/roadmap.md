@@ -105,3 +105,5 @@ receiving milestone's plan.
 | Cold-setup CI job + `check-budget --record` isolation test (M1 final F4); one three-OS verify matrix instead of gates.yml + ci.yml, restoring windows headroom under the 15-min budget (M1 final F5, D5) | M1 | M2 | CI hygiene |
 | Drive loop reads the last push's CI conclusion before a task (M4 final F3) | M4 | M5 (first) | process |
 | Changeset leg derives packages from the range; renderDocumentToHtml returns rendered screen ids; test:visual without --pass-with-no-tests (M4 final F1, F2, F4) | M4 | M5 | gate honesty, coherence |
+| The studio registers packs/basic (M5 plan row 3; M5.1 review F5) | M5 | M6 | the studio renders no document before its M6 bootstrap |
+| Connector labels render rich-text marks, links and lists (FR-CON-006; M5.1 review F5) | M5 | M7 | the text engine arrives in M7 |
