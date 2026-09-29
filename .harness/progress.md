@@ -915,3 +915,6 @@ M5.9's staged ladder failed every browser test ("Failed to fetch dynamically imp
 
 ## 2026-09-29 M5.9 (claude)
 render draws shapes from core ShapeDefs: RenderRegistries.shapeDefs is the host's core registry (createRenderRegistries/builtinRegistries take it), the shape view evaluates the outline for size and params (unknown or failing definition → placeholder); ShapeOutline and BASIC_RECT removed; render tests register their own rect (test-shapes.ts), goldens unchanged; the CLI passes its host registries (packs/basic draws basic:rect); M5.8 review minors: packs check every problem before registering (namespaces, repeated ids, keys another source holds) so a failed reload keeps the live entries; CLI internal-error test for a failing bundled pack; harness case that a package below the host layer may not bundle a pack; 04 §2 and ADR-0017 Confirmation updated
+
+## 2026-09-29 M5.10 (claude)
+packs/basic batch 1: rect, rounded-rect (r, clamped to half the shorter side), ellipse (two half arcs), triangle (apex), diamond, parallelogram (skew), trapezoid (inset), hexagon (inset), octagon (cut of the shorter side), star (points int 3..64, inner; polygon of 2*points), block-arrow (head, shaft); handles on every param; tests: closed and inside the box at four sizes and every param extreme, star 5→8 gives 16 vertices, params reshape outlines

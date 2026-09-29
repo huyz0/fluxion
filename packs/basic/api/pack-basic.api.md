@@ -11,7 +11,37 @@ import { ShapeDef } from '@fluxion/sdk';
 export const basicPack: Pack;
 
 // @public
+export const blockArrow: ShapeDef;
+
+// @public
+export const diamond: ShapeDef;
+
+// @public
+export const ellipse: ShapeDef;
+
+// @public
+export const hexagon: ShapeDef;
+
+// @public
+export const octagon: ShapeDef;
+
+// @public
+export const parallelogram: ShapeDef;
+
+// @public
 export const rect: ShapeDef;
+
+// @public
+export const roundedRect: ShapeDef;
+
+// @public
+export const star: ShapeDef;
+
+// @public
+export const trapezoid: ShapeDef;
+
+// @public
+export const triangle: ShapeDef;
 
 // @public
 export const VERSION: string;
