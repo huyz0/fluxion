@@ -77,13 +77,13 @@ function candidates(a: Vec2, da: Vec2, b: Vec2, db: Vec2): Vec2[][] {
     along(aAlong),
     along(midAlong),
     across(midAcross),
-    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (exhaustive 5 px grid within ±120 px), where min and max coincide
+    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (the 5 px grid test within ±45 px; ±120 px checked while writing M5.19), where min and max coincide
     across(Math.min(aAcross, bAcross) - reach),
-    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (exhaustive 5 px grid within ±120 px), where min and max coincide
+    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (the 5 px grid test within ±45 px; ±120 px checked while writing M5.19), where min and max coincide
     across(Math.max(aAcross, bAcross) + reach),
-    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (exhaustive 5 px grid within ±120 px), where min and max coincide
+    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (the 5 px grid test within ±45 px; ±120 px checked while writing M5.19), where min and max coincide
     along(Math.min(aAlong, bAlong) - reach),
-    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (exhaustive 5 px grid within ±120 px), where min and max coincide
+    // tzap disable next-line MethodExpression: a detour is reached only when both tips share its coordinate (the 5 px grid test within ±45 px; ±120 px checked while writing M5.19), where min and max coincide
     along(Math.max(aAlong, bAlong) + reach),
   ];
 }

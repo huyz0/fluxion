@@ -100,6 +100,19 @@ function imageFill(
   return { fill: `url(#${id})`, defs };
 }
 
+/** SVG's default stroke-miterlimit: a miter join reaches at most this many half-widths from its vertex. */
+const MITER_LIMIT = 4;
+
+/**
+ * How far a stroke of `width` reaches beyond the outline (M5.34 review F1): half its drawn width (an
+ * outside stroke is drawn twice as wide and clipped), times the miter limit for miter joins, or √2
+ * for the corners of square caps.
+ */
+export function strokeReach(width: number, align: string, join: string): number {
+  const half = align === 'outside' ? width : width / 2;
+  return half * (join === 'miter' ? MITER_LIMIT : Math.SQRT2);
+}
+
 const JUSTIFY: { readonly [align: string]: string } = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
 
 /**
@@ -236,6 +249,9 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const radius = concreteLength(style.radius, theme);
   const closed = outlined.value.path.closed;
   const drawn = closed && radius > 0 ? roundCorners(outlined.value.commands, radius) : outlined.value.commands;
+  // an open outline has no inside or outside: its stroke is centred
+  // tzap disable next-line StringLiteral: any align but inside and outside draws centred
+  const align = closed ? style.stroke.align : 'center';
   return (
     <>
       <svg viewBox={`0 0 ${w} ${h}`} aria-hidden="true" style={{ opacity: style.opacity }}>
@@ -245,10 +261,10 @@ export function ShapeView(props: ElementViewProps): ReactNode {
           shadows={style.shadows}
           effects={style.effects}
           box={{ w, h }}
-          margin={concreteLength(style.stroke.width, theme)}
+          margin={strokeReach(concreteLength(style.stroke.width, theme), align, style.stroke.join)}
         />
         <Effected on={style.shadows.length + style.effects.length > 0} id={`fx-effects-${ids}`}>
-          <Outline d={pathData(drawn)} fill={fill} stroke={stroke} align={closed ? style.stroke.align : 'center'} ids={ids} />
+          <Outline d={pathData(drawn)} fill={fill} stroke={stroke} align={align} ids={ids} />
           {outlined.value.decorations.map((d, k) => (
             // decorations are strokes over the outline (ADR-0016 item 3), in definition order
             // biome-ignore lint/suspicious/noArrayIndexKey: a definition's decorations have no identity but their order

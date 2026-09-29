@@ -1004,3 +1004,15 @@ routing adds `orthogonalRouter` (built in) and `ORTHOGONAL_STUB` (20 px).
 - Waypoints take one corner each.
 
 Properties over 500 runs, with small 5 px offsets (review F2): axis-aligned, no zero-length segments, normals at both ends, no U-turns, through every waypoint. An exhaustive ±45 px grid test covers U-turns and normals. Mutation score is 100%.
+
+## 2026-09-29 M5.21 (claude)
+
+Connector style:
+- the connector view gains a line join, and bends round with `route.cornerRadius`, else the style's radius (token refs resolved), through geometry's `roundCorners`, each fillet at most halfway along its legs;
+- node SSR tests cover the radius, the halfway cap, the style fallback and the stroke props;
+- the goldens gain stroke-linejoin.
+
+Carried minors:
+- M5.34 F1: the shape effects margin is now `strokeReach`: half the drawn width (the full width for outside strokes), times the miter limit 4 for miter joins, else √2 for square caps.
+- M5.19 r2: the tzap wording now matches the ±45 px grid test.
+Review r1 minors fixed: the test now covers opacity on the SVG and a radius token ({radius.md}).

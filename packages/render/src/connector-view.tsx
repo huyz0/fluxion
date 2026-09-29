@@ -1,15 +1,17 @@
 // The connector view (FR-CON-001, FR-RTE-001): the connector's route (routing's routeConnector: its ends
 // through their bindings and anchors, the path from the router registered for its type), stroked with
-// the resolved style, with end markers from a marker table (R0: `arrow`; the markers registry arrives
-// with M5.20). The wrapper has no box, so the SVG draws in screen coordinates; the route is a store
+// the resolved style (colour, width, dash, cap, join, opacity, token refs; FR-CON-005) with its bends
+// rounded by the route's corner radius or else the style's, with end markers from a marker table (R0:
+// `arrow`; the markers registry arrives with M5.20). The wrapper has no box, so the SVG draws in screen coordinates; the route is a store
 // query, so moving a bound shape redraws it.
-import type { PathCommand, Vec2 } from '@fluxion/geometry';
+import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
 import { routeConnector } from '@fluxion/routing';
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
 import { pathData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
+import { concreteLength } from './text-measurer.js';
 import { useValue } from './use-value.js';
 
 /** Room around a route for its stroke and markers, px. */
@@ -56,11 +58,15 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
     stroke: style.stroke.color,
     strokeWidth: style.stroke.width,
     strokeLinecap: style.stroke.cap as CSSProperties['strokeLinecap'],
+    strokeLinejoin: style.stroke.join as CSSProperties['strokeLinejoin'],
     ...(style.stroke.dash === undefined ? {} : { strokeDasharray: style.stroke.dash }),
   };
+  // bends round with the route's corner radius, else the style's (0: none); each fillet at most halfway along its segments
+  const radius = element.route.cornerRadius ?? concreteLength(style.radius, theme);
+  const drawn = roundCorners(routed.commands, radius);
   // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
-  const points = pointsOf(routed.commands);
+  const points = pointsOf(drawn);
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
   const x = Math.min(...xs) - ROUTE_MARGIN;
@@ -78,7 +84,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
       )}
       <path
         className="fx-route"
-        d={pathData(routed.commands)}
+        d={pathData(drawn)}
         style={line}
         markerStart={start === null ? undefined : `url(#${base}-start)`}
         markerEnd={end === null ? undefined : `url(#${base}-end)`}

@@ -29,7 +29,7 @@
           </path>
         </marker>
       </defs>
-      <path class="fx-route" d="M280 240 L520 240" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt">
+      <path class="fx-route" d="M280 240 L520 240" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
       </path>
     </svg>
   </g>
