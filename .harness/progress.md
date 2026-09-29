@@ -954,3 +954,12 @@ split: effects to M5.34 (gate title moved); ADR-0019: schema stroke.align (cente
 
 ## 2026-09-29 M5.34 (claude)
 theme: Resolver and helpers moved to resolver.ts (resolve-style under the size cap); review F1-F4: negative spread erodes, effects apply in order (glow of what is drawn so far, blur of it), the filter region is as large as the style needs, effects act on the drawing not the label (documented); effects.ts resolves shadow[] (x, y, blur, spread, colour, inset) and effects[] (blur, glow and colour), the first valid list winning, colours as tokens; ResolvedStyle gains shadows and effects; render effects.tsx builds one SVG filter (drop shadows and glows below, the source, inset shadows over it clipped to the shape, then blur) and the shape view applies it only when the style has any; T1 pixel probes: dash, cap, join, opacity, drop shadow, glow, blur, inset
+
+## 2026-09-29 M5.16 (claude)
+
+routing: `resolveAnchor(target, ref, toward)`, which gives an end's point and outward direction in screen coordinates:
+- floating/auto: casts a ray from the element's centre toward the other end and projects it onto the outline in the element's own frame, then maps it back through the placement (rotation and flips);
+- named: the instance's anchors, then the definition's, then `DEFAULT_ANCHORS` (n/e/s/w/center); an unknown name floats;
+- side and point: fractions of the box.
+
+`shapeAnchorTarget(transform, def, element)` evaluates the outline with the element's params and falls back to the box when there is no definition or the outline fails. Mutation score is 100%. Render wiring is M5.17.

@@ -4,6 +4,40 @@
 
 ```ts
 
+import { AnchorDef } from '@fluxion/schema';
+import { AnchorRef } from '@fluxion/schema';
+import { Path } from '@fluxion/geometry';
+import { ShapeDef } from '@fluxion/core';
+import { Transform } from '@fluxion/schema';
+import { Vec2 } from '@fluxion/geometry';
+
+// @public
+export type AnchorTarget = {
+    readonly transform: Transform;
+    readonly outline?: Path | undefined;
+    readonly anchors: readonly AnchorDef[];
+};
+
+// @public
+export const DEFAULT_ANCHORS: readonly AnchorDef[];
+
+// @public
+export function resolveAnchor(target: AnchorTarget, ref: AnchorRef, toward: Vec2): ResolvedAnchor;
+
+// @public
+export type ResolvedAnchor = {
+    readonly point: Vec2;
+    readonly dir?: Vec2 | undefined;
+};
+
+// @public
+export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefined, element?: {
+    readonly params?: {
+        readonly [key: string]: unknown;
+    } | undefined;
+    readonly anchors?: readonly AnchorDef[] | undefined;
+}): AnchorTarget;
+
 // @public
 export const VERSION: string;
 

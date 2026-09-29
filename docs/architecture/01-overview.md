@@ -35,7 +35,7 @@ All packages live in a pnpm + Turborepo monorepo. `@fluxion/*` names; folders un
 | L1 | `core` | Document store (records + signals), transactions, commands, undo/redo, queries, registries (kinds, defs, routers, layouts, effects…), bindings resolution | schema, geometry | ✅ |
 | L1 | `theme` | Token model (DTCG), token resolution, palette generation (OKLCH/culori), contrast checks, CSS-variable emission | schema | ✅ |
 | L2 | `layout` | Layout interface + built-in algorithms, worker host, constraint/overlap pass, text-measure port | core, geometry | ✅ (worker glue isolated in `layout/worker`) |
-| L2 | `routing` | Router interface, straight/bezier/orthogonal A* router, anchor selection, nudging, hops, label placement | core, geometry | ✅ |
+| L2 | `routing` | Router interface, straight/bezier/orthogonal A* router, anchor selection, nudging, hops, label placement | schema, core, geometry | ✅ |
 | L2 | `anim` | Animation/timeline/interaction **model evaluation**: sampling effects at time t, build-state reduction, morph interpolation, rider LUTs, expression interpreter | core, geometry, theme | ✅ (clock injected) |
 | L2 | `format` | `.flux` zip / `.flux.html` / `.flux.json` read & write, asset store (content addressing), sanitizers, lockfile | schema, core | ✅ (I/O via ports) |
 | L2 | `dsl` | FluxScript parser, compiler, decompiler, diagnostics, Mermaid/Markdown importers | schema, core, layout (for compile-time layout), theme | ✅ |

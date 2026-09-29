@@ -387,7 +387,21 @@ importers:
         specifier: 'catalog:'
         version: 19.3.0(react@19.3.0)
 
-  packages/routing: {}
+  packages/routing:
+    dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../core
+      '@fluxion/geometry':
+        specifier: workspace:*
+        version: link:../geometry
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
+    devDependencies:
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
 
   packages/schema:
     dependencies:

@@ -22,5 +22,13 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "dependencies": {
+    "@fluxion/core": "workspace:*",
+    "@fluxion/geometry": "workspace:*",
+    "@fluxion/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "catalog:"
   }
 }

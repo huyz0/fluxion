@@ -46,7 +46,7 @@
       "name": "@fluxion/routing",
       "layer": "L2",
       "runtime": "pure",
-      "dependsOn": ["core", "geometry"],
+      "dependsOn": ["schema", "core", "geometry"],
       "desc": "Router interface, straight/bezier/orthogonal A* routers, anchor selection, nudging, hops, label placement."
     },
     {
