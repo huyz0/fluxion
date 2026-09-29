@@ -1,0 +1,93 @@
+// The editor session (ADR-0028): selection, camera, tool and hover of one open document, as core's
+// writable signals. Never part of the document: nothing here is passed to `store.transact` or
+// serialized; undo carries the selection through transaction meta instead (ADR-0014).
+import { type WritableSignal, writable } from '@fluxion/core';
+import type { RecordId } from '@fluxion/schema';
+
+/**
+ * The camera: the page point at the canvas's top-left (`x`, `y`) and the zoom `z` (1 = 100 %).
+ *
+ * @public
+ */
+export type Camera = {
+  /** Page x at the viewport's left edge. */
+  readonly x: number;
+  /** Page y at the viewport's top edge. */
+  readonly y: number;
+  /** Zoom: screen px per page unit. */
+  readonly z: number;
+};
+
+/**
+ * The session state of one open document.
+ *
+ * @public
+ */
+export type Session = {
+  /** The document it belongs to. */
+  readonly docId: string;
+  /** The selected elements, in selection order. */
+  readonly selection: WritableSignal<readonly RecordId[]>;
+  /** Where the canvas looks. */
+  readonly camera: WritableSignal<Camera>;
+  /** The active tool's id. */
+  readonly tool: WritableSignal<string>;
+  /** The element under the pointer, if any. */
+  readonly hover: WritableSignal<RecordId | undefined>;
+};
+
+/**
+ * The camera of a new session: page origin at the top-left, 100 %.
+ *
+ * @public
+ */
+export const DEFAULT_CAMERA: Camera = { x: 0, y: 0, z: 1 };
+
+/**
+ * A fresh session for the document `docId`: nothing selected or hovered, the select tool, the
+ * default camera.
+ *
+ * @public
+ */
+export function createSession(docId: string): Session {
+  return {
+    docId,
+    selection: writable<readonly RecordId[]>([]),
+    camera: writable(DEFAULT_CAMERA),
+    tool: writable('select'),
+    hover: writable<RecordId | undefined>(undefined),
+  };
+}
+
+/**
+ * The sessions of the open documents, one per document id.
+ *
+ * @public
+ */
+export type Sessions = {
+  /** The session of `docId`, created on first use. */
+  get(docId: string): Session;
+  /** Forget the session of `docId` (its document closed); the next `get` starts afresh. */
+  drop(docId: string): void;
+};
+
+/**
+ * An empty set of sessions.
+ *
+ * @public
+ */
+export function createSessions(): Sessions {
+  const open = new Map<string, Session>();
+  return {
+    get: (docId) => {
+      const known = open.get(docId);
+      if (known) return known;
+      const session = createSession(docId);
+      open.set(docId, session);
+      return session;
+    },
+    drop: (docId) => {
+      open.delete(docId);
+    },
+  };
+}

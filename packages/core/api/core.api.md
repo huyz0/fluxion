@@ -577,4 +577,13 @@ export type WrappedText = {
 // @public
 export function wrapText(paragraphs: readonly string[], font: FontSpec, maxWidth: number, measurer: TextMeasurer): WrappedText;
 
+// @public
+export function writable<T>(initial: T): WritableSignal<T>;
+
+// @public
+export type WritableSignal<T> = {
+    readonly get: ReadSignal<T>;
+    set(value: T): void;
+};
+
 ```

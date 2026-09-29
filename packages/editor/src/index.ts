@@ -3,6 +3,7 @@
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
+export { type Camera, createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';
 export { memorySettings, type SettingsStore } from './settings.js';
 
 /**

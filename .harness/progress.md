@@ -1152,3 +1152,7 @@ Editor chrome (ADR-0029): toolbar (a pressed button per panel, focus mode), left
 - Layout model is pure in `layout.ts`: read from settings with validation and clamping, written back on change through `SettingsStore` under `fluxion.editor.layout.v1`; the studio adapter is on localStorage.
 - `CHROME_CSS` in `@layer fx.chrome`, `--ui-*` tokens with dark values. A T0 test checks every selector's last compound is a chrome class, and that no inherited property is set on CANVAS_PATH (M6.3 r3 F1); a T1 test checks CANVAS_PATH matches the DOM.
 - Narrow viewports squeeze the canvas to nothing when both side panels are open; M6.19 (touch/mobile) owns that.
+
+## 2026-09-30 M6.6 (claude)
+
+Session store (ADR-0028): core exports `writable`/`WritableSignal`; editor `createSession(docId)` holds selection, camera `{x, y, z}` (default 0, 0, 1), tool (`select`) and hover as separate writable signals, and `createSessions()` keeps one per document id until dropped. T0: a saved snapshot is byte-identical after session writes and holds no session keys; a hover change notifies no selection reader.

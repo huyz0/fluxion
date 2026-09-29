@@ -41,10 +41,24 @@ export function batch(fn: () => void): void {
   }
 }
 
-/** A writable signal (core-internal: only the store writes). */
-export type WritableSignal<T> = { readonly get: ReadSignal<T>; set(value: T): void };
+/**
+ * A writable signal. The store's own records are written only through transactions; editor session
+ * state (selection, camera, tool, hover) is plain writable signals (ADR-0028).
+ *
+ * @public
+ */
+export type WritableSignal<T> = {
+  /** Read the value (subscribing, inside {@link effect} or {@link computed}). */
+  readonly get: ReadSignal<T>;
+  /** Replace the value; the same value again does not notify. */
+  set(value: T): void;
+};
 
-/** A writable signal holding `initial`; setting an identical value does not notify. */
+/**
+ * A writable signal holding `initial`; setting an identical value does not notify.
+ *
+ * @public
+ */
 export function writable<T>(initial: T): WritableSignal<T> {
   const s = alienSignal(initial);
   return { get: () => s(), set: (value) => s(value) };

@@ -7,8 +7,26 @@
 import { DocumentFile } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
+import { RecordId } from '@fluxion/schema';
 import { RenderRegistries } from '@fluxion/render';
 import { Store } from '@fluxion/core';
+import { WritableSignal } from '@fluxion/core';
+
+// @public
+export type Camera = {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+};
+
+// @public
+export function createSession(docId: string): Session;
+
+// @public
+export function createSessions(): Sessions;
+
+// @public
+export const DEFAULT_CAMERA: Camera;
 
 // @public
 export function EditorRoot(props: EditorRootProps): ReactNode;
@@ -30,6 +48,21 @@ export function memorySettings(initial?: {
 
 // @public
 export function newDocument(random: Random): DocumentFile;
+
+// @public
+export type Session = {
+    readonly docId: string;
+    readonly selection: WritableSignal<readonly RecordId[]>;
+    readonly camera: WritableSignal<Camera>;
+    readonly tool: WritableSignal<string>;
+    readonly hover: WritableSignal<RecordId | undefined>;
+};
+
+// @public
+export type Sessions = {
+    get(docId: string): Session;
+    drop(docId: string): void;
+};
 
 // @public
 export type SettingsStore = {
