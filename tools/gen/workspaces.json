@@ -86,7 +86,7 @@
       "name": "@fluxion/player",
       "layer": "L4",
       "runtime": "dom",
-      "dependsOn": ["render", "anim", "format"],
+      "dependsOn": ["render", "anim", "format", "core", "schema"],
       "desc": "Present runtime: navigation, clock and scheduler, transitions, trigger bus, interactions, overlays, responsive, speaker sync."
     },
     {
@@ -94,7 +94,7 @@
       "name": "@fluxion/editor",
       "layer": "L4",
       "runtime": "dom",
-      "dependsOn": ["render", "player", "core", "layout", "routing", "format", "dsl", "theme"],
+      "dependsOn": ["render", "player", "core", "layout", "routing", "format", "dsl", "theme", "schema"],
       "desc": "Edit overlay, tools state machine, panels, inspector, library, timeline and interaction editors, AI panel."
     },
     {
@@ -135,7 +135,7 @@
       "layer": "App",
       "runtime": "dom",
       "private": true,
-      "dependsOn": ["editor", "player"],
+      "dependsOn": ["editor", "player", "core", "schema", "basic"],
       "desc": "Vite PWA: editor + player shell, file handling, provider adapters."
     },
     {

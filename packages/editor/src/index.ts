@@ -1,8 +1,7 @@
-/**
- * `@fluxion/editor` — Edit overlay, tools state machine, panels, inspector, library, timeline and interaction editors, AI panel.
- *
- * @packageDocumentation
- */
+// Public entry of @fluxion/editor; the package comment is the dts banner in tsdown.config.ts.
+
+export { EditorRoot, type EditorRootProps } from './editor-root.js';
+export { newDocument } from './new-document.js';
 
 /**
  * Version of this package.

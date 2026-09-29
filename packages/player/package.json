@@ -22,5 +22,16 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "dependencies": {
+    "@fluxion/core": "workspace:*",
+    "@fluxion/render": "workspace:*",
+    "@fluxion/schema": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
   }
 }

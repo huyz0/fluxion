@@ -16,6 +16,15 @@
     },
     {
       "path": "../../packages/player"
+    },
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/schema"
+    },
+    {
+      "path": "../../packs/basic"
     }
   ]
 }

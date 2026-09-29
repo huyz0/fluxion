@@ -4,6 +4,33 @@
 
 ```ts
 
+import { CoreRegistries } from '@fluxion/core';
+import { ReactNode } from 'react';
+import { RefObject } from 'react';
+import { RenderRegistries } from '@fluxion/render';
+import { Store } from '@fluxion/core';
+
+// @public
+export type Box = {
+    readonly w: number;
+    readonly h: number;
+};
+
+// @public
+export function PlayerRoot(props: PlayerRootProps): ReactNode;
+
+// @public
+export type PlayerRootProps = {
+    readonly store: Store;
+    readonly registries: RenderRegistries;
+};
+
+// @public
+export function renderRegistriesFor(host: CoreRegistries): RenderRegistries;
+
+// @public
+export function useElementBox(ref: RefObject<HTMLElement | null>): Box;
+
 // @public
 export const VERSION: string;
 

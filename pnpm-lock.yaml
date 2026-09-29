@@ -242,6 +242,21 @@ importers:
 
   apps/studio:
     dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@fluxion/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
+      '@fluxion/pack-basic':
+        specifier: workspace:*
+        version: link:../../packs/basic
+      '@fluxion/player':
+        specifier: workspace:*
+        version: link:../../packages/player
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -307,6 +322,18 @@ importers:
 
   packages/editor:
     dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../core
+      '@fluxion/player':
+        specifier: workspace:*
+        version: link:../player
+      '@fluxion/render':
+        specifier: workspace:*
+        version: link:../render
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -357,7 +384,30 @@ importers:
 
   packages/mcp: {}
 
-  packages/player: {}
+  packages/player:
+    dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../core
+      '@fluxion/render':
+        specifier: workspace:*
+        version: link:../render
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
 
   packages/render:
     dependencies:

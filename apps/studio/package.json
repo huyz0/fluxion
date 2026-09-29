@@ -22,6 +22,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fluxion/core": "workspace:*",
+    "@fluxion/editor": "workspace:*",
+    "@fluxion/pack-basic": "workspace:*",
+    "@fluxion/player": "workspace:*",
+    "@fluxion/schema": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

@@ -4,16 +4,19 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { runInImage } from '../e2e/image.mjs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import * as checks from './milestone-checks.mjs';
 import {
   backlogTextFor,
   checkBacklogDone,
   checkFinalReview,
+  checkPlaywrightReport,
   coverageGaps,
+  dockerAvailable,
   loadMilestoneReviews,
   namedCases,
-  playwrightSpecs,
+  playwrightReport,
   readmeGaps,
   titled,
   verifyLeg,
@@ -30,6 +33,48 @@ const DESKTOP = ['chromium', 'firefox', 'webkit'];
 const MOBILE = ['mobile-chrome', 'mobile-safari'];
 const EDITOR = 'editor';
 const browser = (row, title, pkg = EDITOR) => [row, title, pkg, {}, 'browser'];
+
+// ── E2E: every spec of a project group runs once per gate, then each leg judges its specs ─────────
+// In ci.yml's pinned image through Docker when it is available (the browsers CI uses, on any host),
+// else with the local browsers; FLUXION_E2E=local forces the local ones.
+const GROUPS = {
+  desktop: {
+    projects: DESKTOP,
+    specs: [
+      'e2e/smoke.studio-boots.spec.ts',
+      'e2e/editor.boot.spec.ts',
+      'e2e/editor.layout-persists.spec.ts',
+      'e2e/canvas.pan-zoom.spec.ts',
+      'e2e/tools.select-hand.spec.ts',
+      ...['shape', 'text', 'frame', 'image', 'connector', 'pen', 'freehand'].map((tool) => `e2e/tools.${tool}.spec.ts`),
+      'e2e/selection.marquee.spec.ts',
+      'e2e/move.nudge-and-duplicate.spec.ts',
+      'e2e/transform.resize-rotate-undo.spec.ts',
+      'e2e/present.mode-switch.spec.ts',
+      'e2e/parity.edit-vs-present.spec.ts',
+      'e2e/perf.drag-500.spec.ts',
+      'e2e/a11y.editor-shell.spec.ts',
+    ],
+  },
+  mobile: { projects: MOBILE, specs: ['e2e/touch.edit-basics.spec.ts'] },
+};
+const reports = new Map();
+const runner = () =>
+  process.env.FLUXION_E2E !== 'local' && dockerAvailable() ? (args, env) => runInImage(args, { report: env.PLAYWRIGHT_JSON_OUTPUT_NAME }) : undefined;
+/** Whether `specs` pass on `projects` in their group's one run; a missing spec fails first. */
+function e2e(specs, projects) {
+  const missing = specs.filter((s) => !exists(s));
+  if (missing.length) return `missing ${missing.join(', ')}`;
+  const group = projects === MOBILE ? 'mobile' : 'desktop';
+  if (!reports.has(group)) {
+    const { specs: all, projects: ps } = GROUPS[group];
+    const present = all.filter((s) => exists(s));
+    const r = runner();
+    reports.set(group, playwrightReport(present, ps, r ? { runner: r } : {}));
+  }
+  const report = reports.get(group);
+  return typeof report === 'string' ? report : checkPlaywrightReport(report, specs, projects);
+}
 
 leg('check-trace --milestone M6 green', () => ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M6'])));
 
@@ -64,15 +109,15 @@ leg('the studio bundles packs/basic and draws its shapes (M5 hand-off, ADR-0017)
   if (!exists(spec)) return `missing ${spec}`;
   return code(readText(spec)).includes(PACK_TITLE) || `${spec} has no test "${PACK_TITLE}"`;
 });
-leg('studio boots /edit/new to an empty 16:9 screen (editor.boot)', () => playwrightSpecs(['e2e/editor.boot.spec.ts'], DESKTOP));
-leg('panel layout persists across a reload (editor.layout-persists)', () => playwrightSpecs(['e2e/editor.layout-persists.spec.ts'], DESKTOP));
+leg('studio boots /edit/new to an empty 16:9 screen (editor.boot)', () => e2e(['e2e/editor.boot.spec.ts'], DESKTOP));
+leg('panel layout persists across a reload (editor.layout-persists)', () => e2e(['e2e/editor.layout-persists.spec.ts'], DESKTOP));
 leg('session state is never saved; camera math clamps and anchors zoom', () =>
   titled([
     ['M6.6', 'FR-EDT-004: a saved document snapshot holds no session keys', EDITOR],
     ['M6.7', 'FR-EDT-002: zoom stays within 5 % and 3200 % and keeps the point under the cursor still', EDITOR],
   ]),
 );
-leg('canvas pans and zooms, clamped to 5 %-3200 % (canvas.pan-zoom)', () => playwrightSpecs(['e2e/canvas.pan-zoom.spec.ts'], DESKTOP));
+leg('canvas pans and zooms, clamped to 5 %-3200 % (canvas.pan-zoom)', () => e2e(['e2e/canvas.pan-zoom.spec.ts'], DESKTOP));
 
 // ── pipeline, hit-testing and tools (plan rows 6-9) ───────────────────────────────────────────────
 leg('pointer pipeline batches to one store diff per frame; hit-testing; Esc returns to select', () =>
@@ -87,10 +132,10 @@ leg(`hit-test-2000 bench within HIT_TEST_2000_MAX_MS (${t('HIT_TEST_2000_MAX_MS'
     ? checks.benchUnder('packages/editor/bench/hit-test-2000.bench.ts', 'hit-test-2000', t('HIT_TEST_2000_MAX_MS'))
     : 'milestone-checks.mjs exports no benchUnder (M6.10)',
 );
-leg('select and hand tools; Esc returns to select (tools.select-hand)', () => playwrightSpecs(['e2e/tools.select-hand.spec.ts'], DESKTOP));
+leg('select and hand tools; Esc returns to select (tools.select-hand)', () => e2e(['e2e/tools.select-hand.spec.ts'], DESKTOP));
 const CREATION_TOOLS = ['shape', 'text', 'frame', 'image', 'connector', 'pen', 'freehand'];
 leg('each creation tool creates one element, undoable in one step (tools.<tool>)', () =>
-  playwrightSpecs(
+  e2e(
     CREATION_TOOLS.map((tool) => `e2e/tools.${tool}.spec.ts`),
     DESKTOP,
   ),
@@ -109,20 +154,18 @@ leg('resize and rotate geometry per handle (T0)', () =>
     ['M6.15', 'FR-EDT-004: shift snaps rotation to 15° steps', EDITOR],
   ]),
 );
-leg('marquee selects by contain and by intersect (selection.marquee)', () => playwrightSpecs(['e2e/selection.marquee.spec.ts'], DESKTOP));
-leg('move, nudge and alt-drag duplicate (move.nudge-and-duplicate)', () => playwrightSpecs(['e2e/move.nudge-and-duplicate.spec.ts'], DESKTOP));
-leg('resize and rotate are one undo step each (transform.resize-rotate-undo)', () => playwrightSpecs(['e2e/transform.resize-rotate-undo.spec.ts'], DESKTOP));
+leg('marquee selects by contain and by intersect (selection.marquee)', () => e2e(['e2e/selection.marquee.spec.ts'], DESKTOP));
+leg('move, nudge and alt-drag duplicate (move.nudge-and-duplicate)', () => e2e(['e2e/move.nudge-and-duplicate.spec.ts'], DESKTOP));
+leg('resize and rotate are one undo step each (transform.resize-rotate-undo)', () => e2e(['e2e/transform.resize-rotate-undo.spec.ts'], DESKTOP));
 
 // ── touch, mode switch, parity, performance (plan rows 14-17) ─────────────────────────────────────
-leg('touch editing basics on both mobile projects (touch.edit-basics)', () => playwrightSpecs(['e2e/touch.edit-basics.spec.ts'], MOBILE));
-leg('F5 presents in place; input while presenting never changes the document (present.mode-switch)', () =>
-  playwrightSpecs(['e2e/present.mode-switch.spec.ts'], DESKTOP),
-);
+leg('touch editing basics on both mobile projects (touch.edit-basics)', () => e2e(['e2e/touch.edit-basics.spec.ts'], MOBILE));
+leg('F5 presents in place; input while presenting never changes the document (present.mode-switch)', () => e2e(['e2e/present.mode-switch.spec.ts'], DESKTOP));
 /** A spec that passes and reads its bound from thresholds.mjs (a literal would drift from it). */
 function thresholdSpec(spec, key, projects) {
   if (!exists(spec)) return `missing ${spec}`;
   if (!code(readText(spec)).includes(key)) return `${spec} does not read ${key} from thresholds.mjs`;
-  return playwrightSpecs([spec], projects);
+  return e2e([spec], projects);
 }
 leg(`edit and present draw the same pixels within PARITY_MAX_DIFF_PCT (${t('PARITY_MAX_DIFF_PCT')} %)`, () =>
   thresholdSpec('e2e/parity.edit-vs-present.spec.ts', 'PARITY_MAX_DIFF_PCT', DESKTOP),
@@ -133,7 +176,7 @@ leg(`dragging 1 of 500 elements stays at or above EDITOR_DRAG_MIN_FPS (${t('EDIT
   if (elements < 500) return `fixtures/docs/perf-500.flux.json has ${elements} elements (< 500)`;
   return thresholdSpec('e2e/perf.drag-500.spec.ts', 'EDITOR_DRAG_MIN_FPS', ['chromium']);
 });
-leg('axe finds no serious or critical issue on the editor shell (a11y.editor-shell)', () => playwrightSpecs(['e2e/a11y.editor-shell.spec.ts'], DESKTOP));
+leg('axe finds no serious or critical issue on the editor shell (a11y.editor-shell)', () => e2e(['e2e/a11y.editor-shell.spec.ts'], DESKTOP));
 
 // ── coverage and docs (plan row 18) ─────────────────────────────────────────────────────────────────
 leg(`packages/editor coverage at or above COVERAGE_EDITOR_LINES/BRANCHES`, () => {

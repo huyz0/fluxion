@@ -23,6 +23,10 @@
     "test:storybook": "vitest run --root ../.. --project browser packages/editor/src"
   },
   "dependencies": {
+    "@fluxion/core": "workspace:*",
+    "@fluxion/player": "workspace:*",
+    "@fluxion/render": "workspace:*",
+    "@fluxion/schema": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

@@ -544,6 +544,25 @@ export function checkPlaywrightReport(report, specs, projects) {
 
 const runPlaywright = (args, env) => run('pnpm', ['exec', 'playwright', 'test', ...args], { env: { ...process.env, ...env } });
 
+/** Whether Docker answers on this host. */
+export const dockerAvailable = () => run('docker', ['version', '--format', '{{.Server.Version}}']).status === 0;
+
+/**
+ * Run the Playwright specs `specs` on `projects` once and return the JSON report, or a reason when the
+ * run wrote none. `runner(args, env)` is injectable (tests; the pinned image).
+ */
+export function playwrightReport(specs, projects, { runner = runPlaywright } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), 'gate-playwright-'));
+  try {
+    const out = join(dir, 'report.json');
+    const r = runner([...specs, ...projects.map((p) => `--project=${p}`), '--reporter=json'], { PLAYWRIGHT_JSON_OUTPUT_NAME: out });
+    if (!existsSync(out)) return `playwright wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`;
+    return JSON.parse(readFileSync(out, 'utf8'));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 /**
  * Run the Playwright specs `specs` on `projects` (the built studio, playwright.config.ts) and judge
  * them with {@link checkPlaywrightReport}. A missing spec fails without running anything.
@@ -552,13 +571,6 @@ const runPlaywright = (args, env) => run('pnpm', ['exec', 'playwright', 'test', 
 export function playwrightSpecs(specs, projects, { runner = runPlaywright } = {}) {
   const missing = specs.filter((s) => !exists(s));
   if (missing.length) return `missing ${missing.join(', ')}`;
-  const dir = mkdtempSync(join(tmpdir(), 'gate-playwright-'));
-  try {
-    const out = join(dir, 'report.json');
-    const r = runner([...specs, ...projects.map((p) => `--project=${p}`), '--reporter=json'], { PLAYWRIGHT_JSON_OUTPUT_NAME: out });
-    if (!existsSync(out)) return `playwright wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`;
-    return checkPlaywrightReport(JSON.parse(readFileSync(out, 'utf8')), specs, projects);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  const report = playwrightReport(specs, projects, { runner });
+  return typeof report === 'string' ? report : checkPlaywrightReport(report, specs, projects);
 }

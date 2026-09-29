@@ -1134,3 +1134,14 @@ ADR-0029 accepted:
 ADR-0010 is amended, and the index and tech-stack follow.
 Review r1 fixed: F1 chrome tokens are `--ui-*` (design-ui rule 2); F2 design-ui's table and Related name ADR-0029.
 Review r2 F1 fixed: every CHROME_CSS selector's last compound names a chrome class (fx-editor or fx-chrome-*), since .fx-view sits inside .fx-editor; a T0 test will check it.
+
+## 2026-09-30 M6.4 (claude)
+
+Studio shell:
+- History API routes: `/`, `/edit/:docId`, `/present/:docId`. Documents are `new` (the editor's `newDocument`: one 1920x1080 screen) or `example-<name>` (bundled examples parsed like files).
+- Bootstrap: `createCore`, then `basicPack.register(core.registries)`, then player's `renderRegistriesFor`.
+- `EditorRoot` and `PlayerRoot` draw the first screen through `<ScreenView>`, fitted.
+- Map: player may use core, editor schema, and the studio core, schema and basic.
+
+E2E: this host's Firefox cannot launch ("Permission denied"; I did not touch OS security settings). `scripts/e2e/image.mjs` runs Playwright in ci.yml's pinned image, and the M6 gate runs its E2E specs once per project group there when Docker is available. Boot and smoke pass on all three desktop engines in the image.
+Review r1 fixed: F1 the player and use-box tests name FR-EDT-001, not FR-EDT-009/010, which they do not verify; F2 the unused imagePlaywrightRunner is gone.

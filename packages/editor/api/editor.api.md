@@ -4,6 +4,24 @@
 
 ```ts
 
+import { DocumentFile } from '@fluxion/schema';
+import { Random } from '@fluxion/schema';
+import { ReactNode } from 'react';
+import { RenderRegistries } from '@fluxion/render';
+import { Store } from '@fluxion/core';
+
+// @public
+export function EditorRoot(props: EditorRootProps): ReactNode;
+
+// @public
+export type EditorRootProps = {
+    readonly store: Store;
+    readonly registries: RenderRegistries;
+};
+
+// @public
+export function newDocument(random: Random): DocumentFile;
+
 // @public
 export const VERSION: string;
 
