@@ -2,7 +2,8 @@
 // Every selector's last compound names a chrome class (`fx-editor`, or one starting `fx-chrome-`),
 // so no rule matches content. The canvas and its ancestors (CANVAS_PATH) set no inherited property:
 // fonts and colours go on the chrome containers beside the canvas, so none reaches the content drawn
-// in it (FR-EDT-010). chrome-css.test.ts checks both rules.
+// in it (FR-EDT-010). chrome-css.test.ts checks both rules. The canvas keeps at least 320 px (or the
+// whole width, if less): on a narrow viewport the panels scroll aside instead of squeezing it away.
 
 /**
  * The chrome classes on the canvas and on each of its ancestors inside the editor, outermost first.
@@ -15,13 +16,13 @@ export const CANVAS_PATH: readonly string[] = ['fx-editor', 'fx-chrome-body', 'f
  */
 export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-editor { --ui-bg: #f8fafc; --ui-panel: #ffffff; --ui-border: #cbd5e1; --ui-text: #0f172a; --ui-muted: #64748b; --ui-accent: #2563eb; --ui-pressed: #dbeafe; --ui-canvas: #e2e8f0; --ui-focus: #2563eb; position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--ui-bg); }
-.fx-chrome-toolbar { display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 8px; box-sizing: border-box; border-bottom: 1px solid var(--ui-border); background: var(--ui-panel); color: var(--ui-text); font: 13px/1.2 system-ui, sans-serif; }
+.fx-chrome-toolbar { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; overflow-x: auto; padding: 0 8px; box-sizing: border-box; border-bottom: 1px solid var(--ui-border); background: var(--ui-panel); color: var(--ui-text); font: 13px/1.2 system-ui, sans-serif; }
 .fx-chrome-toolbar .fx-chrome-spacer { flex: 1; }
-.fx-chrome-toolbar .fx-chrome-button { font: inherit; color: inherit; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; cursor: pointer; }
+.fx-chrome-toolbar .fx-chrome-button { flex: none; white-space: nowrap; font: inherit; color: inherit; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; cursor: pointer; }
 .fx-chrome-toolbar .fx-chrome-button:hover { border-color: var(--ui-border); }
 .fx-chrome-toolbar .fx-chrome-button[aria-pressed="true"] { background: var(--ui-pressed); border-color: var(--ui-accent); }
-.fx-chrome-body { flex: 1; display: flex; min-height: 0; }
-.fx-chrome-center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.fx-chrome-body { flex: 1; display: flex; min-height: 0; overflow-x: auto; }
+.fx-chrome-center { flex: 1; display: flex; flex-direction: column; min-width: min(100%, 320px); }
 .fx-chrome-canvas { flex: 1; position: relative; overflow: hidden; min-height: 0; background: var(--ui-canvas); }
 .fx-chrome-panel { flex: none; overflow: auto; box-sizing: border-box; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; }
 .fx-chrome-panel .fx-chrome-heading { margin: 0; padding: 8px 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ui-muted); }

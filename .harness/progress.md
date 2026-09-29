@@ -1161,3 +1161,7 @@ Session store (ADR-0028): core exports `writable`/`WritableSignal`; editor `crea
 
 Camera math in `editor/src/camera.ts`, pure: screen = (page - (x, y)) * z; `zoomAt`/`zoomBy` about a canvas point (the page point under it stays), clamp 5 %-3200 % (NaN is 100 %, an infinite zoom its limit), `panBy`, `fitBox` with 32 px padding (a line fits along its length, a point centres at 100 %), `zoomTo100` about the centre. Fit selection is `fitBox` of the selection's bounds. Property tests on fast-check.
 Map: editor may depend on geometry (Box, Vec2 now; spatial index and matrices for hit-testing and transforms next).
+
+## 2026-09-30 M6.5 fix (claude)
+
+CI went red at 2933fed: on mobile-chrome and mobile-safari, the open side panels squeezed the canvas to 0 px, so no screen was drawn. The canvas now keeps at least min(100 %, 320 px); the panel row scrolls sideways on a narrow viewport, and the toolbar scrolls without wrapping its buttons. The whole E2E suite passes in the pinned image (41, every project). M6.19 still owns the real phone layout.

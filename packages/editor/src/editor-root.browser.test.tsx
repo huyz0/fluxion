@@ -112,4 +112,18 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect(panel('left')?.getBoundingClientRect().width).toBe(DEFAULT_LAYOUT.panels.left.size);
     expect(host.querySelector('.fx-editor')?.hasAttribute('data-focus')).toBe(false);
   });
+
+  it('FR-EDT-001: on a phone-width viewport the open panels scroll aside and the canvas keeps its screen', async () => {
+    await page.viewport(390, 844);
+    const core = createCore(newDocument(seededRandom(6)));
+    await act(async () => root.render(<EditorRoot store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(frame);
+    const canvas = host.querySelector('main[aria-label="Canvas"]') as HTMLElement;
+    expect(canvas.getBoundingClientRect().width).toBe(320);
+    expect(canvas.querySelector('.fx-screen')?.getBoundingClientRect().width).toBeGreaterThan(0);
+    // both panels keep their sizes; the row scrolls instead
+    expect((host.querySelector('[data-panel="right"]') as HTMLElement).getBoundingClientRect().width).toBe(280);
+    const body = host.querySelector('.fx-chrome-body') as HTMLElement;
+    expect(body.scrollWidth).toBeGreaterThan(body.clientWidth);
+  });
 });
