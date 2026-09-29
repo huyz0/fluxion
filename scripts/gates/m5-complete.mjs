@@ -155,7 +155,8 @@ leg('anchors: floating projection and named anchors under resize and rotation', 
 );
 leg('routers: pluggable by name; straight, curved, polyline and orthogonal', () =>
   titled([
-    browser('M5.17', 'FR-RTE-001: a registered test:zigzag router routes connectors of that type'),
+    ['M5.17', 'FR-RTE-001: routeConnector routes with the router registered for the route type', 'routing'],
+    browser('M5.35', 'FR-RTE-001: a registered test:zigzag router routes connectors of that type'),
     ['M5.18', 'FR-CON-002: curved routes leave their anchors along the anchor normals', 'routing'],
     ['M5.18', 'FR-CON-002: polyline routes pass through their waypoints', 'routing'],
     ['M5.19', 'FR-CON-002: orthogonal routes are axis-aligned and leave along the anchor normal', 'routing'],

@@ -963,3 +963,16 @@ routing: `resolveAnchor(target, ref, toward)`, which gives an end's point and ou
 - side and point: fractions of the box.
 
 `shapeAnchorTarget(transform, def, element)` evaluates the outline with the element's params and falls back to the box when there is no definition or the outline fails. Mutation score is 100%. Render wiring is M5.17.
+
+## 2026-09-29 M5.17 (claude)
+
+M5.17 is split: this row is the routing half and M5.35 wires the connector view (cp1 asked for the routing rows to be split). The gate's zigzag browser title moves to M5.35, and M5.17 gets a routing title.
+
+routing:
+- `Router`, `straightRouter` and `registerBuiltinRouters`, which registers under source core and leaves a type another source already holds alone.
+- `routeConnector(view, {shapeDefs, routers}, id)`: an end is either bound (binding, then the element's anchor target with its definition outline) or free (its point). A floating end aims at the nearest waypoint, else at the other end's centre or point. An unregistered route type, a router that throws, or a router whose path does not start with M draws straight.
+
+Mutation score is 100%.
+Review r1 minors fixed:
+- F1: a router's path must start with an M at the source point exactly; the tests now cover each coordinate being off.
+- F2: the test rounding helper keeps NaN as NaN.

@@ -7,6 +7,11 @@
 import { AnchorDef } from '@fluxion/schema';
 import { AnchorRef } from '@fluxion/schema';
 import { Path } from '@fluxion/geometry';
+import { PathCommand } from '@fluxion/geometry';
+import { ReadView } from '@fluxion/core';
+import { RecordId } from '@fluxion/schema';
+import { Registry } from '@fluxion/core';
+import { Route } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { Transform } from '@fluxion/schema';
 import { Vec2 } from '@fluxion/geometry';
@@ -19,7 +24,17 @@ export type AnchorTarget = {
 };
 
 // @public
+export type ConnectorRoute = {
+    readonly source: RouteEnd;
+    readonly target: RouteEnd;
+    readonly commands: readonly PathCommand[];
+};
+
+// @public
 export const DEFAULT_ANCHORS: readonly AnchorDef[];
+
+// @public
+export function registerBuiltinRouters(routers: Registry<string, Router>): void;
 
 // @public
 export function resolveAnchor(target: AnchorTarget, ref: AnchorRef, toward: Vec2): ResolvedAnchor;
@@ -31,12 +46,42 @@ export type ResolvedAnchor = {
 };
 
 // @public
+export function routeConnector(view: ReadView, ctx: RouteContext, connectorId: RecordId): ConnectorRoute | undefined;
+
+// @public
+export type RouteContext = {
+    readonly shapeDefs: Registry<string, ShapeDef>;
+    readonly routers: Registry<string, Router>;
+};
+
+// @public
+export type RouteEnd = {
+    readonly point: Vec2;
+    readonly dir?: Vec2 | undefined;
+};
+
+// @public
+export type Router = {
+    route(request: RouteRequest): readonly PathCommand[];
+};
+
+// @public
+export type RouteRequest = {
+    readonly source: RouteEnd;
+    readonly target: RouteEnd;
+    readonly route: Route;
+};
+
+// @public
 export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefined, element?: {
     readonly params?: {
         readonly [key: string]: unknown;
     } | undefined;
     readonly anchors?: readonly AnchorDef[] | undefined;
 }): AnchorTarget;
+
+// @public
+export const straightRouter: Router;
 
 // @public
 export const VERSION: string;
