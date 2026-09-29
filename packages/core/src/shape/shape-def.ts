@@ -16,6 +16,7 @@ import {
   styleSchema,
 } from '@fluxion/schema';
 import { z } from 'zod';
+import { definitionIssues } from './check.js';
 
 /**
  * A number or integer parameter; element values are clamped into `min … max`.
@@ -243,7 +244,7 @@ const shapeDefObject = z.strictObject({
   license: z.string().optional(),
 });
 
-type Issue = { readonly path: readonly (string | number)[]; readonly message: string };
+type Issue = { readonly path: readonly (string | number)[]; readonly message: string; readonly code?: Diagnostic['code'] };
 
 /** A param's name is an identifier that shadows no reserved name, and its spec is consistent. */
 function paramIssues(name: string, p: z.infer<typeof numberParam> | z.infer<typeof enumParam> | z.infer<typeof pointsParam>): Issue[] {
@@ -255,7 +256,10 @@ function paramIssues(name: string, p: z.infer<typeof numberParam> | z.infer<type
   return issues;
 }
 
-/** Rules spanning fields: param names and ranges, and the params that outlines and handles name. */
+/**
+ * Rules spanning fields: param names and ranges, the params that outlines and handles name, and every
+ * template and expression, which must parse and read only the names its place allows (M5 cp1 F2).
+ */
 function crossIssues(def: z.infer<typeof shapeDefObject>): Issue[] {
   const params = def.params ?? {};
   const issues: Issue[] = Object.entries(params).flatMap(([name, p]) => paramIssues(name, p));
@@ -265,7 +269,7 @@ function crossIssues(def: z.infer<typeof shapeDefObject>): Issue[] {
     const type = params[h.param]?.type;
     if (type !== 'number' && type !== 'int') issues.push({ path: ['handles', i, 'param'], message: `"${h.param}" is not a number or int param` });
   }
-  return issues;
+  return [...issues, ...definitionIssues(def)];
 }
 
 /**
@@ -275,13 +279,14 @@ function crossIssues(def: z.infer<typeof shapeDefObject>): Issue[] {
  */
 export const shapeDefSchema: z.ZodType<ShapeDef> = checkedSchema<ShapeDef>()(
   shapeDefObject.superRefine((def, ctx) => {
-    for (const issue of crossIssues(def)) ctx.addIssue({ code: 'custom', path: [...issue.path], message: issue.message });
+    for (const issue of crossIssues(def)) ctx.addIssue({ code: 'custom', path: [...issue.path], message: issue.message, params: { code: issue.code } });
   }),
 );
 
 /**
- * Validate `input` as a shape definition; every problem is a `FLX_SHAPE_DEF_INVALID` diagnostic at
- * its JSON pointer under `at`.
+ * Validate `input` as a shape definition; every problem is a diagnostic at its JSON pointer under `at`:
+ * `FLX_SHAPE_DEF_INVALID` for the schema, and a template's or expression's own code (`FLX_SHAPE_PATH`,
+ * `FLX_EXPR_SYNTAX`, `FLX_EXPR_UNKNOWN`, …) for what it holds.
  *
  * @public
  */
@@ -290,7 +295,7 @@ export function parseShapeDef(input: unknown, at: ReadonlyArray<string | number>
   if (r.success) return ok(r.data);
   return err(
     r.error.issues.map((issue) => ({
-      code: 'FLX_SHAPE_DEF_INVALID',
+      code: (issue.code === 'custom' ? (issue.params?.['code'] as Diagnostic['code'] | undefined) : undefined) ?? 'FLX_SHAPE_DEF_INVALID',
       severity: 'error',
       path: jsonPointer([...at, ...issue.path.map((p) => (typeof p === 'symbol' ? String(p) : p))]),
       message: issue.message,

@@ -930,3 +930,6 @@ cp1 milestone review (fresh milestone-reviewer, a0d31fd..e26cb9d): changes-reque
 
 ## 2026-09-29 M5.30 (claude)
 cp1 F1: theme resolveStyle takes a StyleKind, the kind optionally with its definition defaults, a layer under the element and its variant and over the theme defaults (02 §2 updated); the shape view passes ShapeDef.defaultStyle (diagnostics at /shapeDefs/<id>/defaultStyle) and fills an open outline with none; SSR test through the gate title
+
+## 2026-09-29 M5.31 (claude)
+cp1 F2: core shape/check.ts parses every template and expression of a definition and checks the names each may read (outline and decorations: w, h, pi, scalar params; polygon vertices add i, n; handles as the outline); parseShapeDef reports them with their own codes; M5.30 review minor: a definition default variant applies when the element has none

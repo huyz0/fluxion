@@ -109,7 +109,9 @@ templates now, bindings later. Paths point into the definition (`/outline/path`,
 ## Shape definitions
 
 Reported by `@fluxion/core` when it validates a shape definition (`parseShapeDef`) or evaluates its
-outline (`evaluateOutline`, ADR-0016). Paths point into the definition.
+outline (`evaluateOutline`, ADR-0016). Paths point into the definition. Validation also parses every
+template and expression and checks the names each may read, reporting them with their own codes
+(`FLX_SHAPE_PATH`, `FLX_EXPR_SYNTAX`, `FLX_EXPR_UNKNOWN`), so a definition that validates evaluates.
 
 | Code | Severity | Meaning | Typical fix |
 |---|---|---|---|

@@ -142,3 +142,62 @@ describe('shape definitions (ADR-0016, 03 §5)', () => {
     expect(bare.ok ? '' : bare.error[0]?.path).toBe('/id');
   });
 });
+
+describe('templates and expressions are checked at validation (M5 cp1 F2)', () => {
+  const base = {
+    id: 'x:y',
+    defaultSize: { w: 1, h: 1 },
+    params: {
+      r: { type: 'number', default: 1 },
+      e: { type: 'enum', values: ['a'], default: 'a' },
+      p: {
+        type: 'points',
+        default: [
+          [0, 0],
+          [1, 1],
+        ],
+      },
+    },
+  };
+  const check = (extra: object) => problems({ ...base, ...extra });
+
+  it('FR-SHP-003: a definition whose templates, expressions or handles do not parse or read unknown names is refused at validation', () => {
+    // names: w, h, pi and the number, int and enum params; not a points param, not a typo
+    expect(check({ outline: { path: 'M 0 0 L {w - r} {h * pi + e}' } })).toEqual([]);
+    expect(check({ outline: { path: 'M 0 0 L {w - rr} 0' } })).toEqual([
+      'FLX_EXPR_UNKNOWN /defs/0/outline/path "rr" is not a name this expression may read, in "w - rr"',
+    ]);
+    expect(check({ outline: { path: 'M 0 0 L {p} {i}' } })).toEqual([
+      'FLX_EXPR_UNKNOWN /defs/0/outline/path "p" is not a name this expression may read, in "p"',
+      'FLX_EXPR_UNKNOWN /defs/0/outline/path "i" is not a name this expression may read, in "i"',
+    ]);
+    // names inside negations, conditionals, calls and operators are all read
+    expect(check({ outline: { path: 'M 0 0 L {-rr} {r ? qq : max(1, zz) + 1}' } }).map((d) => d.split(' ').slice(2, 3)[0])).toEqual(['"rr"', '"qq"', '"zz"']);
+    // a template or expression that does not parse keeps its own code
+    expect(check({ outline: { path: 'M 0 0 l 1 1' } })[0]).toMatch(/^FLX_SHAPE_PATH \/defs\/0\/outline\/path relative command "l"/);
+    expect(check({ outline: { path: 'M 0 0 L {w +} 0' } })[0]).toMatch(/^FLX_EXPR_SYNTAX \/defs\/0\/outline\/path /);
+    expect(check({ outline: { path: 'M 0 0 L {hypot(w)} 0' } })[0]).toMatch(/^FLX_EXPR_UNKNOWN \/defs\/0\/outline\/path unknown function "hypot"/);
+    // a polygon's vertices read i and n; its count reads neither
+    expect(check({ outline: { polygon: { n: '3 + r', x: 'i / n * w', y: 'e' } } })).toEqual([]);
+    expect(check({ outline: { polygon: { n: 'i', x: 'q', y: '(' } } })).toEqual([
+      'FLX_EXPR_UNKNOWN /defs/0/outline/polygon/n "i" is not a name this expression may read, in "i"',
+      'FLX_EXPR_UNKNOWN /defs/0/outline/polygon/x "q" is not a name this expression may read, in "q"',
+      'FLX_EXPR_SYNTAX /defs/0/outline/polygon/y expected a number, a name or "(" at 1, found "end" in "("',
+    ]);
+    // decorations read what the outline reads, not i or n
+    expect(check({ outline: { path: 'M 0 0' }, decorations: [{ path: 'M 0 0' }, { path: 'M {n} 0' }] })).toEqual([
+      'FLX_EXPR_UNKNOWN /defs/0/decorations/1/path "n" is not a name this expression may read, in "n"',
+    ]);
+    expect(check({ outline: { path: 'M 0 0' }, decorations: [{ path: 'M 0 0 Z L 1 1' }] })[0]).toMatch(/^FLX_SHAPE_PATH \/defs\/0\/decorations\/0\/path /);
+    // handles too (they are evaluated only by the editor, M7)
+    expect(check({ outline: { path: 'M 0 0' }, handles: [{ param: 'r', x: 'w / 2', y: '2 * hh' }] })).toEqual([
+      'FLX_EXPR_UNKNOWN /defs/0/handles/0/y "hh" is not a name this expression may read, in "2 * hh"',
+    ]);
+    expect(check({ outline: { path: 'M 0 0' }, handles: [{ param: 'r', x: 'min(', y: 'h' }] })[0]).toMatch(/^FLX_EXPR_SYNTAX \/defs\/0\/handles\/0\/x /);
+    // a points outline has no expressions of its own
+    expect(check({ outline: { points: 'p' } })).toEqual([]);
+    // the whole definition validates only when all of it evaluates
+    const r = parseShapeDef({ ...base, outline: { path: 'M 0 0 L {w - rr} 0' } });
+    expect(r.ok).toBe(false);
+  });
+});

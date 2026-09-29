@@ -74,6 +74,15 @@ describe('resolved style (FR-THM-001, 02 §Style)', () => {
     expect(resolveStyle({ fill: '#00ff00' }, star, theme).style.fill).toEqual({ type: 'color', css: '#00ff00' });
     expect(resolveStyle({ variant: 'emphasis' }, star, theme).style.fill).toEqual({ type: 'color', css: 'var(--fx-color-primary, #2563eb)' });
     expect(resolveStyle(undefined, { kind: 'shape' }, theme).style.fill).toEqual({ type: 'color', css: '#111111' });
+    // a definition may choose a variant too; the element's own variant wins (M5.30 review F1)
+    expect(resolveStyle(undefined, { kind: 'shape', defaults: { variant: 'emphasis' } }, theme).style.fill).toEqual({
+      type: 'color',
+      css: 'var(--fx-color-primary, #2563eb)',
+    });
+    expect(resolveStyle({ variant: 'unknown' }, { kind: 'shape', defaults: { variant: 'emphasis' } }, theme).style.fill).toEqual({
+      type: 'color',
+      css: '#111111',
+    });
     // an unknown token in the defaults is reported where the definition keeps it, and skipped
     const odd = resolveStyle(undefined, { kind: 'shape', defaults: { fill: '{color.nope}' }, defaultsAt: ['shapeDefs', 'x:y', 'defaultStyle'] }, theme);
     expect(odd.style.fill).toEqual({ type: 'color', css: '#111111' });

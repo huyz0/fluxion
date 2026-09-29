@@ -319,7 +319,8 @@ export function resolveStyle(style: Style | undefined, of: StyleKind, theme: The
   const { kind, defaults: definition, defaultsAt = ['definition', 'defaultStyle'] } = typeof of === 'string' ? { kind: of } : of;
   const defaults = theme.defaults ?? {};
   const own = defaults[kind];
-  const variant = style?.variant;
+  // an element's variant, else its definition's (M5.30 review F1)
+  const variant = style?.variant ?? definition?.variant;
   const variants = isObject(own?.['variants']) ? own['variants'] : undefined;
   const layers: Layer[] = [
     { values: style, at },
