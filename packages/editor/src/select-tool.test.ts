@@ -48,6 +48,7 @@ function setup() {
         return t !== undefined && p.x >= t.x && p.x <= t.x + t.w && p.y >= t.y && p.y <= t.y + t.h;
       }),
     elementsIn: () => [],
+    screen: undefined,
     allElements: () => [],
   });
   const xy = (id: RecordId) => [place(id)?.x, place(id)?.y];

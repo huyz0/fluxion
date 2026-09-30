@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AnyRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
@@ -35,6 +36,19 @@ export function clampZoom(z: number): number;
 export function clickSelection(current: readonly RecordId[], hit: RecordId | undefined, shift: boolean): readonly RecordId[];
 
 // @public
+export type CreateDeps = {
+    readonly view: ReadView;
+    readonly screen: RecordId | undefined;
+    newId(): RecordId;
+    readonly execute: Execute;
+    seal(): void;
+    readonly session: Session;
+};
+
+// @public
+export function createElement(deps: CreateDeps, box: Box, make: ElementMaker): RecordId | undefined;
+
+// @public
 export function createHitIndex(store: Store, context: HitContext): HitIndex;
 
 // @public
@@ -50,10 +64,34 @@ export function createToolDispatcher(registry: Registry<string, Tool>, ctx: Tool
 export function createToolRegistry(): Registry<string, Tool>;
 
 // @public
+export type CreationSpec = {
+    readonly id: string;
+    readonly title: string;
+    readonly shortcut: string;
+    readonly size: {
+        readonly w: number;
+        readonly h: number;
+    };
+    place(ctx: ToolCtx, box: Box): void;
+};
+
+// @public
+export function creationTool(spec: CreationSpec): Tool;
+
+// @public
 export const DEFAULT_CAMERA: Camera;
 
 // @public
 export const DRAG_PX = 4;
+
+// @public
+export function dragBox(from: Vec2, to: Vec2, size: {
+    readonly w: number;
+    readonly h: number;
+}, drag: {
+    readonly z: number;
+    readonly shift: boolean;
+}): Box;
 
 // @public
 export function EditorRoot(props: EditorRootProps): ReactNode;
@@ -70,6 +108,9 @@ export type EditorRootProps = {
 };
 
 // @public
+export type ElementMaker = (at: Placement) => AnyRecord;
+
+// @public
 export type Execute = (id: string, args: unknown, options?: CommandTxOptions) => Result<unknown, CommandFailure>;
 
 // @public
@@ -80,6 +121,12 @@ export function fitBox(box: Box, viewport: {
     readonly w: number;
     readonly h: number;
 }, padding?: number): Camera;
+
+// @public
+export const frameMaker: ElementMaker;
+
+// @public
+export const frameTool: () => Tool;
 
 // @public
 export function handTool(): Tool;
@@ -98,6 +145,12 @@ export type HitIndex = {
     selectableOf(id: RecordId): RecordId;
     dispose(): void;
 };
+
+// @public
+export const imageMaker: (assetId: RecordId) => ElementMaker;
+
+// @public
+export const imageTool: () => Tool;
 
 // @public
 export type KeyInfo = {
@@ -138,6 +191,14 @@ export function panBy(camera: Camera, d: Vec2): Camera;
 
 // @public
 export const PICK_PX = 4;
+
+// @public
+export type Placement = {
+    readonly id: RecordId;
+    readonly screenId: RecordId;
+    readonly index: string;
+    readonly transform: Box;
+};
 
 // @public
 export type PointerInfo = {
@@ -184,6 +245,8 @@ export type Session = {
     readonly tool: WritableSignal<string>;
     readonly hover: WritableSignal<RecordId | undefined>;
     readonly marquee: WritableSignal<Box | undefined>;
+    readonly draft: WritableSignal<Box | undefined>;
+    readonly imagePick: WritableSignal<Box | undefined>;
 };
 
 // @public
@@ -199,6 +262,12 @@ export type SettingsStore = {
 };
 
 // @public
+export const shapeMaker: (defId?: string) => ElementMaker;
+
+// @public
+export const shapeTool: (defId?: string) => Tool;
+
+// @public
 export type StateNode = {
     readonly id: string;
     onEnter?(ctx: ToolCtx, info?: unknown): void;
@@ -209,6 +278,12 @@ export type StateNode = {
     onKeyDown?(ctx: ToolCtx, e: KeyInfo): Transition | undefined;
     onCancel?(ctx: ToolCtx): Transition | undefined;
 };
+
+// @public
+export const textMaker: ElementMaker;
+
+// @public
+export const textTool: () => Tool;
 
 // @public
 export type Tool = {
@@ -228,6 +303,7 @@ export type ToolCtx = {
     elementsIn(box: Box, mode: MarqueeMode): readonly RecordId[];
     allElements(): readonly RecordId[];
     readonly view: ReadView;
+    readonly screen: RecordId | undefined;
     newId(): RecordId;
     readonly execute: Execute;
     seal(): void;

@@ -12,6 +12,7 @@ import { fitBox } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
+import { ImagePicker } from './image-picker.js';
 import { type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
@@ -72,6 +73,7 @@ function useTools(props: EditorRootProps, session: Session, screenId: RecordId |
           return hit === undefined ? undefined : hits.current?.selectableOf(hit);
         },
         view: store,
+        screen: screenId,
         newId: () => createId(random),
         elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
         allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),
@@ -126,6 +128,10 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   // hidden screens are edited too
   const screenId = useValue(useMemo(() => store.query((view) => screensInOrder(view, true)[0]), [store]));
   const tools = useTools(props, session, screenId);
+  const newId = useMemo(() => {
+    const random = props.random ?? cryptoRandom;
+    return () => createId(random);
+  }, [props.random]);
   // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
   const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -165,6 +171,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
           {splitter('bottom')}
           {panel('bottom', <Timeline />)}
         </div>
+        <ImagePicker store={store} session={session} execute={props.execute} screenId={screenId} newId={newId} />
         {splitter('right')}
         {panel('right', <Inspector session={session} />)}
       </div>

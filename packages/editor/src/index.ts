@@ -14,6 +14,23 @@ export {
   zoomBy,
   zoomTo100,
 } from './camera.js';
+export {
+  type CreateDeps,
+  type CreationSpec,
+  createElement,
+  creationTool,
+  dragBox,
+  type ElementMaker,
+  frameMaker,
+  frameTool,
+  imageMaker,
+  imageTool,
+  type Placement,
+  shapeMaker,
+  shapeTool,
+  textMaker,
+  textTool,
+} from './create-tool.js';
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
 export { createHitIndex, type HitContext, type HitIndex, PICK_PX } from './hit-test.js';
 export { LAYOUT_KEY } from './layout.js';

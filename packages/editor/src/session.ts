@@ -24,6 +24,10 @@ export type Session = {
   readonly hover: WritableSignal<RecordId | undefined>;
   /** The marquee being dragged, page units, if any. */
   readonly marquee: WritableSignal<Box | undefined>;
+  /** The box a creation tool is being dragged out to, page units, if any. */
+  readonly draft: WritableSignal<Box | undefined>;
+  /** The box the image tool placed, waiting for an image to be picked, if any. */
+  readonly imagePick: WritableSignal<Box | undefined>;
 };
 
 /**
@@ -34,8 +38,8 @@ export type Session = {
 export const DEFAULT_CAMERA: Camera = { x: 0, y: 0, z: 1 };
 
 /**
- * A fresh session for the document `docId`: nothing selected or hovered, no marquee, the select
- * tool, the default camera.
+ * A fresh session for the document `docId`: nothing selected or hovered, no marquee, draft or pending
+ * image, the select tool, the default camera.
  *
  * @public
  */
@@ -47,6 +51,8 @@ export function createSession(docId: string): Session {
     tool: writable('select'),
     hover: writable<RecordId | undefined>(undefined),
     marquee: writable<Box | undefined>(undefined),
+    draft: writable<Box | undefined>(undefined),
+    imagePick: writable<Box | undefined>(undefined),
   };
 }
 

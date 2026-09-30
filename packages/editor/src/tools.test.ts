@@ -36,6 +36,7 @@ function setup(under = 'shape1' as RecordId) {
       boxes.push(`${mode} ${box.x},${box.y},${box.w},${box.h}`);
       return mode === 'contain' ? (['inside'] as RecordId[]) : (['inside', 'touched'] as RecordId[]);
     },
+    screen: undefined,
     allElements: () => ['one', 'two'] as RecordId[],
     view: createCore(documentBuilder({ seed: 1 }).build()).store,
     newId: () => 'new' as RecordId,

@@ -45,7 +45,9 @@ export type ToolCtx = {
   allElements(): readonly RecordId[];
   /** The document, to read. */
   readonly view: ReadView;
-  /** A fresh record id (a duplicate's). */
+  /** The canvas's screen, where creation tools add elements; undefined without one. */
+  readonly screen: RecordId | undefined;
+  /** A fresh record id (a duplicate's, a new element's). */
   newId(): RecordId;
   /** Run a command (the only write path). */
   readonly execute: Execute;

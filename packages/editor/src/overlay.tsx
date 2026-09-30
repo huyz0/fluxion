@@ -28,6 +28,7 @@ export function Overlay(props: OverlayProps): ReactNode {
   const selection = useValue(session.selection.get);
   const hover = useValue(session.hover.get);
   const marquee = useValue(session.marquee.get);
+  const draft = useValue(session.draft.get);
   const placed = useValue(useMemo(() => store.query((view) => placements(view, selection)), [store, selection]));
   // a selected element is outlined by its frame already
   const hovered = useValue(
@@ -36,6 +37,7 @@ export function Overlay(props: OverlayProps): ReactNode {
   const frame = selectionFrame(placed, camera);
   const outline = selectionFrame(hovered, camera);
   const band = marquee === undefined ? undefined : screenBox(marquee, camera);
+  const sketch = draft === undefined ? undefined : screenBox(draft, camera);
   const half = HANDLE_PX / 2;
   return (
     <svg className="fx-chrome-overlay" width={box.w} height={box.h} aria-hidden="true" data-testid="overlay">
@@ -60,6 +62,7 @@ export function Overlay(props: OverlayProps): ReactNode {
         </g>
       )}
       {band === undefined ? null : <rect className="fx-chrome-marquee" x={band.x} y={band.y} width={band.w} height={band.h} />}
+      {sketch === undefined ? null : <rect className="fx-chrome-draft" x={sketch.x} y={sketch.y} width={sketch.w} height={sketch.h} />}
     </svg>
   );
 }

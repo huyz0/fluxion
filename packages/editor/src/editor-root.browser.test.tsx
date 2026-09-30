@@ -164,7 +164,14 @@ describe('edit-mode root (FR-EDT-001)', () => {
     click({ x: 1500, y: 900 });
     expect([session.selection.get(), said()]).toEqual([[], 'Select an element to see its properties.']);
     // the toolbar lists the built-in tools; H switches to the hand, Esc back
-    expect([...host.querySelectorAll('fieldset[aria-label="Tools"] button')].map((x) => x.textContent)).toEqual(['Hand', 'Select']);
+    expect([...host.querySelectorAll('fieldset[aria-label="Tools"] button')].map((x) => x.textContent)).toEqual([
+      'Frame',
+      'Hand',
+      'Image',
+      'Select',
+      'Shape',
+      'Text',
+    ]);
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'h', bubbles: true }));
     });
