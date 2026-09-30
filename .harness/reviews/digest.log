@@ -296,3 +296,4 @@ M6.31	17dfc4c1e04f76705cd7e36e22872ae90e1cf06adbcc06872308ab57405311d2	r1	pass	c
 M6.17	ea5d9ea63aebe44ad9250b86e7f671cbf24fb465e222204cbac2a46b2cbea39f	r1	pass	claude-subagent:reviewer	0 findings
 M6.18	412b20a58a7b220e70657826d094f532c88ff15ad9ad2920361c29ff9a018ee0	r1	pass	claude:opus-5.5-subagent	1 findings
 M6.32	cfe31ff37a39d0e93beddc004ad3209ec0833f540fc9555c670ca2e1378cd639	r1	pass	claude-subagent:reviewer	0 findings
+M6.33	e8faa068406b3b1112694cefd30504ba59805817f68143628bfedfa409f241f6	r1	pass	claude:isolated-subagent	1 findings
