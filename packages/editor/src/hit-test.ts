@@ -14,16 +14,15 @@ import {
   elementMatrix,
   invert,
   type Mat2d,
-  type Path,
   pathBounds,
-  pathFromCommands,
   transformBox,
   type Vec2,
 } from '@fluxion/geometry';
-import { type RouteContext, routeConnector } from '@fluxion/routing';
 import { type AnyRecord, type ElementRecord, type RecordId, type RichTextDoc, transformRotation } from '@fluxion/schema';
-import { resolveStyle, type Theme, toCssVars } from '@fluxion/theme';
-import { boxTouches, PAGE_FRAME, rectOutline } from './box-touch.js';
+import { resolveStyle, toCssVars } from '@fluxion/theme';
+import { boxTouches, rectOutline } from './box-touch.js';
+import { connectorHittable } from './connector-hit.js';
+import { type HitContext, type Hittable, inBox, type Resolving } from './hittable.js';
 import { affected, paintOrder } from './paint-order.js';
 import { grow, onStroked, reachOf, stroked, strokedBounds } from './stroke-band.js';
 
@@ -34,44 +33,12 @@ import { grow, onStroked, reachOf, stroked, strokedBounds } from './stroke-band.
  */
 export const PICK_PX = 4;
 
-/**
- * What hit-testing reads besides the store: shape definitions and routers (render's registries
- * have both), and the theme styles resolve against.
- *
- * @public
- */
-export type HitContext = {
-  /** Shape definitions and connector routers. */
-  readonly registries: RouteContext;
-  /** The theme element styles resolve against (a new theme needs a new index). */
-  readonly theme: Theme;
-};
-
-/** An element as hit-testing sees it: its drawn bounds and an exact test in page coordinates. */
-type Hittable = {
-  readonly screenId: RecordId;
-  /** Drawn bounds, stroke included. */
-  readonly bounds: Box;
-  /** Whether `p` hits it, with `tolerance` page units of margin. */
-  hits(p: Vec2, tolerance: number): boolean;
-  /** Whether the page box `box` touches what is drawn (a marquee). */
-  touches(box: Box): boolean;
-};
-
 type Transform = { readonly x: number; readonly y: number; readonly w: number; readonly h: number; readonly flipX?: boolean; readonly flipY?: boolean };
-
-/** What hit-testing resolves styles with: the context, and the theme's CSS variables. */
-type Resolving = HitContext & { readonly vars: { readonly [name: string]: string | undefined } };
 
 /** Whether a label has any text to draw. */
 const labelled = (doc: RichTextDoc | undefined): boolean =>
   // tzap disable next-line ArrayDeclaration: a string in place of the missing paragraphs has no content either
   (doc?.content ?? []).some((paragraph) => ((paragraph as { content?: readonly unknown[] }).content ?? []).length > 0);
-
-/** Whether `l` is within `box`, or `tolerance` of it. */
-const inBox = (l: Vec2, box: Box, tolerance: number): boolean =>
-  // tzap disable next-line EqualityOperator: a point exactly at the margin's edge
-  l.x >= box.x - tolerance && l.y >= box.y - tolerance && l.x <= box.x + box.w + tolerance && l.y <= box.y + box.h + tolerance;
 
 /** The element's placement matrix, and its inverse (page to local). */
 function placement(t: Transform): { readonly m: Mat2d; readonly inv: Mat2d } {
@@ -131,27 +98,6 @@ function shapeHittable(element: ElementRecord & { readonly transform: Transform 
     touches: (box) =>
       boxTouches(path, filled, grow(box, reachOf(outline.stroke)), inv) || (labelOutline !== undefined && boxTouches(labelOutline, true, box, labelFrame)),
   };
-}
-
-/** A connector hit along its route, within its stroke's reach. */
-function connectorHittable(store: Store, ctx: Resolving, element: ElementRecord): Hittable | undefined {
-  const routed = routeConnector(store, ctx.registries, element.id);
-  if (routed === undefined) return undefined;
-  const built = pathFromCommands(routed.commands);
-  if (!built.ok) return undefined;
-  const path: Path = built.value;
-  const bounds = pathBounds(path);
-  if (bounds === null) return undefined;
-  // tzap disable next-line StringLiteral, ArrayDeclaration: the path only locates diagnostics, which hit-testing drops
-  const { style } = resolveStyle((element as { style?: unknown }).style as never, 'connector', ctx.theme, ['records', element.id, 'style']);
-  // a route is open: its stroke is centred, whatever the style's alignment
-  const line = stroked(path, style.stroke, ctx.vars);
-  const hits = (p: Vec2, tol: number) =>
-    // tzap disable next-line BooleanLiteral: a centred stroke's band is the same on both sides
-    onStroked(line, p, false, tol);
-  // tzap disable next-line BooleanLiteral: a route is open, so it has no inside to fill
-  const touches = (box: Box) => boxTouches(path, false, grow(box, reachOf(line.stroke)), PAGE_FRAME);
-  return { screenId: element.screenId, bounds: strokedBounds(line, bounds), hits, touches };
 }
 
 /** Whether element `r` is drawn: neither it nor any parent it sits in is hidden; a missing parent draws nothing. */
@@ -249,6 +195,7 @@ class Index implements HitIndex {
     const stopRegistries = effect(() => {
       context.registries.shapeDefs.changes$();
       context.registries.routers.changes$();
+      context.registries.markers?.changes$();
       this.#stale = !first;
       first = false;
     });

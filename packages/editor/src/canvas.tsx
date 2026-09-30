@@ -9,7 +9,7 @@ import type { Box } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
 import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
+import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { type FitTargets, shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
 import { Overlay } from './overlay.js';
@@ -259,6 +259,8 @@ export function ZoomControls(props: ZoomControlsProps): ReactNode {
   const { store, session, box, area } = props;
   const camera = useValue(session.camera.get);
   const selection = useValue(session.selection.get);
+  // nothing placed selected (none, or connectors only): nothing to fit, the control is disabled
+  const bounds = useValue(useMemo(() => store.query((view) => selectionBounds(placements(view, selection))), [store, selection]));
   const centre = { x: box.w / 2, y: box.h / 2 };
   const set = (next: typeof camera) => session.camera.set(next);
   return (
@@ -289,11 +291,8 @@ export function ZoomControls(props: ZoomControlsProps): ReactNode {
         type="button"
         className="fx-chrome-button"
         aria-label="Zoom to selection"
-        disabled={selection.length === 0}
-        onClick={() => {
-          const bounds = selectedBounds(store, session);
-          if (bounds !== undefined) set(fitBox(bounds, box));
-        }}
+        disabled={bounds === undefined}
+        onClick={() => bounds && set(fitBox(bounds, box))}
       >
         Selection
       </button>

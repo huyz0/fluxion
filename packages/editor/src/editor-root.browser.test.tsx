@@ -165,6 +165,7 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect([session.selection.get(), said()]).toEqual([[], 'Select an element to see its properties.']);
     // the toolbar lists the built-in tools; H switches to the hand, Esc back
     expect([...host.querySelectorAll('fieldset[aria-label="Tools"] button')].map((x) => x.textContent)).toEqual([
+      'Connector',
       'Frame',
       'Hand',
       'Image',

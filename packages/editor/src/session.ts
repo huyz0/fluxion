@@ -2,7 +2,7 @@
 // writable signals. Never part of the document: nothing here is passed to `store.transact` or
 // serialized; undo carries the selection through transaction meta instead (ADR-0014).
 import { type WritableSignal, writable } from '@fluxion/core';
-import type { Box } from '@fluxion/geometry';
+import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import type { Camera } from './camera.js';
 
@@ -26,6 +26,8 @@ export type Session = {
   readonly marquee: WritableSignal<Box | undefined>;
   /** The box a creation tool is being dragged out to, page units, if any. */
   readonly draft: WritableSignal<Box | undefined>;
+  /** The line a tool is drawing (a connector's, a path's), page points, if any. */
+  readonly sketch: WritableSignal<readonly Vec2[] | undefined>;
   /** The box the image tool placed, waiting for an image to be picked, if any. */
   readonly imagePick: WritableSignal<Box | undefined>;
 };
@@ -38,7 +40,7 @@ export type Session = {
 export const DEFAULT_CAMERA: Camera = { x: 0, y: 0, z: 1 };
 
 /**
- * A fresh session for the document `docId`: nothing selected or hovered, no marquee, draft or pending
+ * A fresh session for the document `docId`: nothing selected or hovered, no marquee, draft, sketch or pending
  * image, the select tool, the default camera.
  *
  * @public
@@ -52,6 +54,7 @@ export function createSession(docId: string): Session {
     hover: writable<RecordId | undefined>(undefined),
     marquee: writable<Box | undefined>(undefined),
     draft: writable<Box | undefined>(undefined),
+    sketch: writable<readonly Vec2[] | undefined>(undefined),
     imagePick: writable<Box | undefined>(undefined),
   };
 }

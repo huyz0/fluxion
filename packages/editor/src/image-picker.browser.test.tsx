@@ -98,7 +98,7 @@ describe('image picker (FR-EDT-003)', () => {
     expect(added()).toEqual([expect.objectContaining({ kind: 'shape', defId: 'basic:image-frame' })]);
   });
 
-  it('FR-EDT-003: the overlay draws the creation draft through the camera', async () => {
+  it('FR-EDT-003: the overlay draws the creation draft and sketch through the camera', async () => {
     const core = createCore(documentBuilder({ seed: 174 }).build());
     session.camera.set({ x: 10, y: 0, z: 2 });
     await act(async () => root.render(<Overlay store={core.store} session={session} box={{ w: 400, h: 300 }} />));
@@ -106,5 +106,14 @@ describe('image picker (FR-EDT-003)', () => {
     act(() => session.draft.set({ x: 20, y: 5, w: 30, h: 10 }));
     const draft = host.querySelector('rect.fx-chrome-draft');
     expect(['x', 'y', 'width', 'height'].map((a) => draft?.getAttribute(a))).toEqual(['20', '10', '60', '20']);
+    // and a tool's sketch line
+    expect(host.querySelector('.fx-chrome-sketch')).toBeNull();
+    act(() =>
+      session.sketch.set([
+        { x: 10, y: 0 },
+        { x: 30, y: 5 },
+      ]),
+    );
+    expect(host.querySelector('polyline.fx-chrome-sketch')?.getAttribute('points')).toBe('0,0 40,10');
   });
 });

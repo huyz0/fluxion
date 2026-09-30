@@ -1250,3 +1250,10 @@ Container views, found while planning M6.17: groups and frames had no registered
 ## 2026-09-30 M6.17 (claude)
 
 Creation tools (FR-EDT-003) in `create-tool.ts`: shape (R, `basic:rect` until the library panel picks the item), text (T, a `basic:text-box` shape, since `kind: 'text'` has no view), frame (F; drawn since M6.31) and image (I). A drag draws `session.draft` in the overlay and places its box; shift keeps it square. A click places the tool's default size, centred. `createElement` adds the element in front of the screen's root elements with one `element.create` (one undo step), selects it and returns to select. The image tool leaves its box in `session.imagePick` for `ImagePicker`, which lists the document's image assets and an image-frame placeholder; importing images arrives later (FR-AST-001). `ToolCtx` gains `screen`. E2E `tools.shape/text/frame/image` pass on the desktop projects; the full suite passes 95 of 95. Editor mutation shows no survivors. Review r1: the picker mounts, and queries asset records only, while a pick is pending; its keys stay in the dialog, with Tab cycling; an axis dragged less than DRAG_PX takes the default size, so no element is placed flat; the text tool's text box is pinned by the tests.
+
+## 2026-09-30 M6.18 (claude)
+
+The connector tool (C) is in `connector-tool.ts`. A drag between elements adds a connector (arrow at the end) bound at both ends with auto anchors; an end dropped on nothing, or on a connector, stays free. Alt at the release makes the route curved. The connector and its bindings share one merge key, so one undo step. While dragging, the overlay draws the line (`session.sketch`) and hovers the target. Carried minors:
+- Hit-testing moves into `connector-hit.ts`; registered markers are hit within MARKER_SIZE stroke widths, and labels on an estimated text box at labelPosition. `HitContext` moves to `hittable.ts` and takes the markers registry.
+- The zoom-to-selection control is disabled while nothing placed is selected.
+The row is split: pen and freehand move to M6.32, the laser to M6.33. E2E `tools.connector` passes; the full suite passes 98 of 98. Editor mutation shows no survivors.

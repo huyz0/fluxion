@@ -106,6 +106,7 @@ describe('editor chrome panels (FR-EDT-001)', () => {
     const state = () => buttons().map((b) => `${b.textContent}:${b.getAttribute('aria-pressed')}:${b.title}:${b.getAttribute('aria-keyshortcuts')}`);
     expect(host.querySelector('fieldset')?.getAttribute('aria-label')).toBe('Tools');
     expect(state()).toEqual([
+      'Connector:false:Connector (C):C',
       'Frame:false:Frame (F):F',
       'Hand:false:Hand (H):H',
       'Image:false:Image (I):I',
@@ -113,12 +114,12 @@ describe('editor chrome panels (FR-EDT-001)', () => {
       'Shape:false:Shape (R):R',
       'Text:false:Text (T):T',
     ]);
-    click(buttons()[1]);
-    expect([session.tool.get(), state()[1]]).toEqual(['hand', 'Hand:true:Hand (H):H']);
+    click(buttons()[2]);
+    expect([session.tool.get(), state()[2]]).toEqual(['hand', 'Hand:true:Hand (H):H']);
     // a tool without a shortcut is titled by its name alone
     registry.register('plain', { id: 'plain', title: 'Plain', initial: 'idle', states: { idle: { id: 'idle' } } }, 'test');
     await act(async () => root.render(<ToolButtons session={session} tools={tools} key="again" />));
-    expect(state()[3]).toBe('Plain:false:Plain:null');
+    expect(state()[4]).toBe('Plain:false:Plain:null');
   });
 
   it('FR-EDT-001: the inspector and the timeline are titled placeholders', async () => {

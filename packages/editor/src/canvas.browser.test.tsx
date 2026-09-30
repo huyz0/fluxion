@@ -368,9 +368,15 @@ describe('zoom controls (FR-EDT-002)', () => {
     // bounds (100, 100)-(500, 400): 400 wide in 736 px of room, 300 high in 536; the height is tighter
     const z = 536 / 300;
     expect(session.camera.get()).toEqual({ x: 300 - 400 / z, y: 250 - 300 / z, z });
-    // a selection of nothing placed (the screen) fits nothing
+    // a selection of nothing placed (a connector, the screen) has nothing to fit: the control is disabled
     act(() => session.selection.set([screen]));
+    expect(buttons()[3]?.disabled).toBe(true);
     click('Zoom to selection');
     expect(session.camera.get().z).toBe(z);
+    // and follows the selection's elements: one moved still fits, one deleted no more
+    act(() => session.selection.set([one]));
+    expect(buttons()[3]?.disabled).toBe(false);
+    act(() => void doc.transact('gone', (tx) => tx.delete(one)));
+    expect(buttons()[3]?.disabled).toBe(true);
   });
 });

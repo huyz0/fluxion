@@ -14,6 +14,7 @@ export {
   zoomBy,
   zoomTo100,
 } from './camera.js';
+export { connectorTool, createConnector, type Link } from './connector-tool.js';
 export {
   type CreateDeps,
   type CreationSpec,
@@ -32,7 +33,8 @@ export {
   textTool,
 } from './create-tool.js';
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
-export { createHitIndex, type HitContext, type HitIndex, PICK_PX } from './hit-test.js';
+export { createHitIndex, type HitIndex, PICK_PX } from './hit-test.js';
+export type { HitContext } from './hittable.js';
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';

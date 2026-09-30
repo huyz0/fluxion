@@ -9,6 +9,7 @@ import { Box } from '@fluxion/geometry';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
+import { MarkerDef } from '@fluxion/core';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
 import { ReadView } from '@fluxion/core';
@@ -34,6 +35,12 @@ export function clampZoom(z: number): number;
 
 // @public
 export function clickSelection(current: readonly RecordId[], hit: RecordId | undefined, shift: boolean): readonly RecordId[];
+
+// @public
+export function connectorTool(): Tool;
+
+// @public
+export function createConnector(deps: CreateDeps, link: Link): RecordId | undefined;
 
 // @public
 export type CreateDeps = {
@@ -133,7 +140,9 @@ export function handTool(): Tool;
 
 // @public
 export type HitContext = {
-    readonly registries: RouteContext;
+    readonly registries: RouteContext & {
+        readonly markers?: Registry<string, MarkerDef>;
+    };
     readonly theme: Theme;
 };
 
@@ -162,6 +171,15 @@ export type KeyInfo = {
 
 // @public
 export const LAYOUT_KEY = "fluxion.editor.layout.v1";
+
+// @public
+export type Link = {
+    readonly from: Vec2;
+    readonly to: Vec2;
+    readonly source: RecordId | undefined;
+    readonly target: RecordId | undefined;
+    readonly curved: boolean;
+};
 
 // @public
 export type Marquee = {
@@ -246,6 +264,7 @@ export type Session = {
     readonly hover: WritableSignal<RecordId | undefined>;
     readonly marquee: WritableSignal<Box | undefined>;
     readonly draft: WritableSignal<Box | undefined>;
+    readonly sketch: WritableSignal<readonly Vec2[] | undefined>;
     readonly imagePick: WritableSignal<Box | undefined>;
 };
 

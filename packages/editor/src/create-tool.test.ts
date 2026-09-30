@@ -130,6 +130,7 @@ describe('creation tools (FR-EDT-003)', () => {
       .map(([, t]) => [t.id, t.title, t.shortcut])
       .filter(([id]) => !['select', 'hand'].includes(id as string));
     expect(creation).toEqual([
+      ['connector', 'Connector', 'c'],
       ['frame', 'Frame', 'f'],
       ['image', 'Image', 'i'],
       ['shape', 'Shape', 'r'],
