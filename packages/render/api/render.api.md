@@ -122,6 +122,12 @@ export function fitTransform(area: {
 }): FitTransform;
 
 // @public
+export function FrameView(props: ElementViewProps): ReactNode;
+
+// @public
+export function GroupView(props: ElementViewProps): ReactNode;
+
+// @public
 export function ImageView(props: ElementViewProps): ReactNode;
 
 // @public

@@ -1,6 +1,7 @@
 import type { ShapeDef } from '@fluxion/core';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
+import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
 import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
@@ -161,5 +162,53 @@ describe('shape views read their definition (ADR-0016 item 2, M5 cp1 F1)', () =>
     expect(styles[2]).toContain('fill:none');
     // a definition without defaults: the theme's
     expect(styles[3]).toContain('fill:var(--fx-color-surface');
+  });
+
+  it('FR-EDT-010: groups and frames are drawn by the built-in container views, not placeholders', () => {
+    const b = documentBuilder({ seed: 592 });
+    const s = b.screen();
+    const file = b.build();
+    const box = { x: 0, y: 0, w: 100, h: 50 };
+    const records = {
+      ...file.records,
+      GroupGroupGroupG1: { id: 'GroupGroupGroupG1', type: 'element', screenId: s, kind: 'group', index: 'a0', transform: box },
+      FrameFrameFrameF1: { id: 'FrameFrameFrameF1', type: 'element', screenId: s, kind: 'frame', index: 'a1', transform: box },
+      OpenFrameOpenFr1: {
+        id: 'OpenFrameOpenFr1',
+        type: 'element',
+        screenId: s,
+        kind: 'frame',
+        index: 'a2',
+        clip: false,
+        style: { opacity: 0.5, radius: 12, stroke: { width: 2, dash: [4, 2] } },
+        transform: box,
+      },
+    };
+    const registries = builtinRegistries();
+    expect(['shape', 'connector', 'image', 'group', 'frame'].map((k) => registries.elementViews.source(k))).toEqual(['core', 'core', 'core', 'core', 'core']);
+    const html = renderDocumentToHtml({ ...file, records } as unknown as DocumentFile, { registries }).html;
+    expect(html).not.toContain('class="fx-placeholder"');
+    // the frame: its box in the light theme's frame default (surface, no stroke), its members clipped to it
+    const frame = html.slice(html.indexOf('FrameFrameFrameF1'), html.indexOf('OpenFrameOpenFr1'));
+    expect(frame).toMatch(/<rect width="100" height="50" rx="0" style="fill:var\(--fx-color-surface\);stroke:currentColor;stroke-width:0px;/);
+    expect(frame).toContain('<div style="position:absolute;inset:0;overflow:hidden;border-radius:0"><div class="fx-members"');
+    expect(frame).toContain('<svg viewBox="0 0 100 50" aria-hidden="true" style="opacity:1"><rect');
+    // clip: false leaves the members unclipped; its own style: opacity, corner radius, a dashed stroke
+    const open = html.slice(html.indexOf('OpenFrameOpenFr1'));
+    expect(open).toContain('<svg viewBox="0 0 100 50" aria-hidden="true" style="opacity:0.5"><rect width="100" height="50" rx="12"');
+    expect(open).toMatch(/stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:4 2"/);
+    expect(open).toMatch(/<\/svg><div class="fx-members"/);
+    // a clipped frame's radius rounds the clip too
+    const rounded = renderDocumentToHtml(
+      { ...file, records: { ...records, FrameFrameFrameF1: { ...records.FrameFrameFrameF1, style: { radius: 8 } } } } as unknown as DocumentFile,
+      { registries },
+    ).html;
+    expect(rounded).toContain('<div style="position:absolute;inset:0;overflow:hidden;border-radius:8px"><div class="fx-members"');
+    // a theme's defaults for frames style every frame without its own style
+    const themed = renderDocumentToHtml({ ...file, records } as unknown as DocumentFile, {
+      registries,
+      theme: { ...LIGHT_THEME, defaults: { ...LIGHT_THEME.defaults, frame: { fill: '#654321', stroke: { color: '#123456', width: 2 } } } },
+    }).html;
+    expect(themed).toMatch(/style="fill:#654321;stroke:#123456;stroke-width:2px;/);
   });
 });

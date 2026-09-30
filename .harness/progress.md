@@ -1242,3 +1242,7 @@ Transform-only drags (ADR-0028 §4, 04 §5, cp1 F3). In render's `ElementNode` t
 ## 2026-09-30 M6.30 (claude)
 
 Gate honesty (cp1 F4). `milestone-checks` gains `checkPlaywrightTitles(report, spec, titles, projects)`: each title must name a test of that spec that passed on its first run on every project. m6-complete's parity and perf legs keep their threshold-read check and now also require the plan's conditions by title (PARITY_TITLES: pixels with an empty selection and the overlay unmounted, and content DOM equal after the allowlist; PERF_TITLES: one element of 500 dragged, frames measured). Rows M6.22 and M6.23 quote those titles. Both legs fail today (the specs are missing). Harness tests cover the new check.
+
+## 2026-09-30 M6.31 (claude)
+
+Container views, found while planning M6.17: groups and frames had no registered view, so they drew as "Unsupported element" placeholders around their members. `container-views.tsx` adds `GroupView` (its members only) and `FrameView` (its box in its resolved style, its own style over the theme's `defaults.frame`; the light theme sets frames to a surface fill with no stroke). The view draws the stroke's dash, cap and join and the corner radius, which also rounds the clip. A frame clips its members unless `clip: false`. Styles are inline, so CONTENT_CSS and the goldens are unchanged. Both views are registered as built-ins (source `core`). Browser and SSR tests cover them; render mutation shows no survivors.
