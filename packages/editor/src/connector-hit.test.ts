@@ -1,5 +1,6 @@
 import { createCore, createRegistry, type MarkerDef } from '@fluxion/core';
-import { type Router, registerBuiltinRouters } from '@fluxion/routing';
+import type { Vec2 } from '@fluxion/geometry';
+import { type Router, registerBuiltinRouters, routeConnector } from '@fluxion/routing';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
@@ -27,14 +28,15 @@ function setup(fields: Record<string, unknown>, withMarkers = true) {
 const text = (t: string) => ({ type: 'doc', content: [{ type: 'paragraph', content: t === '' ? [] : [{ type: 'text', text: t }] }] });
 
 describe('connector hit-testing (FR-EDT-004)', () => {
-  it('FR-EDT-004: a connector`s registered markers are hit within 5 stroke widths of where they are drawn', () => {
+  it('FR-EDT-004: a connector`s registered markers are hit where they are drawn: from the tip back along the route', () => {
     const { link, at } = setup({ markers: { start: 'acme:nope', end: 'arrow', mid: 'arrow' } });
-    // the route ends at x 500; its arrow is drawn 10 px (5 × 2 px) about there, plus the 4 px pick margin
-    expect([at(513, 100), at(515, 100), at(500, 113), at(500, 115)]).toEqual([link, undefined, link, undefined]);
+    // the route ends at x 500; its arrow is drawn back from there, 10 px long and 10 px across (5 × 2 px):
+    // hit beside the route within 5 + 4 px, and not in front of its tip beyond the stroke
+    expect([at(495, 108), at(495, 110), at(506, 100), at(486, 108), at(484, 108)]).toEqual([link, undefined, undefined, link, undefined]);
     // an unregistered marker is not drawn: the start is hit by its stroke only (1 px + 4 px)
-    expect([at(96, 100), at(90, 100)]).toEqual([link, undefined]);
-    // the middle marker, at the route's middle
-    expect([at(300, 113), at(300, 115), at(200, 113)]).toEqual([link, undefined, undefined]);
+    expect([at(105, 108), at(96, 100), at(90, 100)]).toEqual([undefined, link, undefined]);
+    // the middle marker, about the route's middle: 5 px each way along it
+    expect([at(300, 108), at(300, 110), at(291, 108), at(289, 108)]).toEqual([link, undefined, link, undefined]);
   });
 
   it('FR-EDT-004: without a markers registry, markers are not hit beyond the route', () => {
@@ -66,24 +68,23 @@ describe('connector hit-testing (FR-EDT-004)', () => {
     });
     expect(LABEL_MAX_W).toBe(240);
     expect([at(300 + 124, 0), at(300 + 126, 0)]).toEqual([link, undefined]);
-    expect(hits.within(screen, { x: 506, y: 95, w: 5, h: 10 }, 'intersect')).toEqual([link]);
-    expect(hits.within(screen, { x: 512, y: 95, w: 5, h: 10 }, 'intersect')).toEqual([]);
+    // the arrow's box spans y 95-105 behind the tip: a marquee just below it, or just clear of it
+    expect(hits.within(screen, { x: 492, y: 105, w: 4, h: 4 }, 'intersect')).toEqual([link]);
+    expect(hits.within(screen, { x: 492, y: 106, w: 4, h: 4 }, 'intersect')).toEqual([]);
     // a marquee box containing the whole connector, label and arrow included
     expect(hits.within(screen, { x: 50, y: -20, w: 520, h: 140 }, 'contain')).toEqual([link]);
-    expect(hits.within(screen, { x: 50, y: 50, w: 520, h: 70 }, 'contain')).toEqual([]);
+    expect(hits.within(screen, { x: 50, y: -20, w: 520, h: 124 }, 'contain')).toEqual([]);
   });
 });
 
 describe('connector hit-testing, edges (FR-EDT-004)', () => {
-  it('FR-EDT-004: a start marker widens the index bounds backwards; a marquee is picked at a marker`s reach on every side', () => {
+  it('FR-EDT-004: a start marker is drawn from the start into the route; marquees touch its box on each side', () => {
     const { screen, link, at, hits } = setup({ markers: { start: 'arrow' } });
-    // the start's arrow reaches back past the route's start, beyond the stroke's own bounds
-    expect([at(87, 100), at(85, 100)]).toEqual([link, undefined]);
-    // marquees left of, above and below the start's arrow: within its 10 px reach, or just beyond
+    expect([at(105, 108), at(105, 110), at(113, 108), at(115, 108)]).toEqual([link, undefined, link, undefined]);
     const pick = (x: number, y: number, w: number, h: number) => hits.within(screen, { x, y, w, h }, 'intersect');
-    expect([pick(85, 95, 5, 10), pick(80, 95, 5, 10)]).toEqual([[link], []]);
-    expect([pick(97, 80, 5, 11), pick(97, 80, 5, 8)]).toEqual([[link], []]);
-    expect([pick(97, 109, 5, 5), pick(97, 112, 5, 5)]).toEqual([[link], []]);
+    // its box spans x 100-110, y 95-105
+    expect([pick(102, 91, 4, 4), pick(102, 89, 4, 4)]).toEqual([[link], []]);
+    expect([pick(102, 105, 4, 4), pick(102, 106, 4, 4)]).toEqual([[link], []]);
   });
 
   it('FR-EDT-004: a label is picked by a marquee touching its box, not by one beside it within the bounds', () => {
@@ -115,7 +116,7 @@ describe('connector hit-testing, edges (FR-EDT-004)', () => {
     expect([at(300 + 63 + 3, 20), at(300 + 63 + 5, 20)]).toEqual([link, undefined]);
   });
 
-  it('FR-EDT-004: an end marker sits at the route`s last point, after its bends', () => {
+  it('FR-EDT-004: an end marker sits at the route`s last point, after its bends, along its last segment', () => {
     const b = documentBuilder({ seed: 182 });
     const screen = b.screen({ size: { w: 1000, h: 1000 } });
     const link = b.connect({ x: 100, y: 100 }, { x: 500, y: 300 }, { route: 'orthogonal' });
@@ -124,9 +125,18 @@ describe('connector hit-testing, edges (FR-EDT-004)', () => {
     registerBuiltinRouters(routers);
     const markers = createRegistry<string, MarkerDef>('markers');
     markers.register(ARROW.id, ARROW, 'test');
-    const hits = createHitIndex(core.store, { registries: { ...registries(), routers, markers }, theme: LIGHT_THEME });
-    // off the route near its end, within the arrow's reach
-    expect([hits.hitTest(screen, { x: 509, y: 309 }, 1), hits.hitTest(screen, { x: 512, y: 312 }, 1)]).toEqual([link, undefined]);
+    const context = { ...registries(), routers, markers };
+    const hits = createHitIndex(core.store, { registries: context, theme: LIGHT_THEME });
+    const points = (routeConnector(core.store, context, link)?.commands ?? []).flatMap((c) => ('to' in c ? [c.to] : []));
+    expect(points.length).toBeGreaterThan(2);
+    const [prev, last, elbow] = [points.at(-2), points.at(-1), points[1]] as [Vec2, Vec2, Vec2];
+    const l = Math.hypot(last.x - prev.x, last.y - prev.y);
+    const u = { x: (last.x - prev.x) / l, y: (last.y - prev.y) / l };
+    // 5 px behind the tip, 8 px beside the last segment: on the arrow, not on the stroke
+    const beside = (p: Vec2, d: number) => ({ x: p.x - 5 * u.x - d * u.y, y: p.y - 5 * u.y + d * u.x });
+    expect([hits.hitTest(screen, beside(last, 8), 1), hits.hitTest(screen, beside(last, 10), 1)]).toEqual([link, undefined]);
+    // nothing is drawn at the first bend
+    expect(hits.hitTest(screen, { x: elbow.x + 7, y: elbow.y + 7 }, 1)).toBeUndefined();
   });
 
   it('FR-EDT-004: a label box`s top and bottom edges are part of it', () => {
@@ -138,5 +148,42 @@ describe('connector hit-testing, edges (FR-EDT-004)', () => {
     });
     const pick = (y: number, h: number) => hits.within(screen, { x: 290, y, w: 5, h }, 'intersect');
     expect([pick(76, 5), pick(39, 5), pick(77, 5)]).toEqual([[link], [link], []]);
+  });
+
+  it('FR-EDT-004: markers on a slanted route turn with it: boxes along the route, in bounds and marquees', () => {
+    // (100, 100) to (500, 400): along u = (0.8, 0.6), across n = (-0.6, 0.8); markers 10 px, 5 px each side
+    const b = documentBuilder({ seed: 184 });
+    const screen = b.screen({ size: { w: 1000, h: 1000 } });
+    const link = b.connect({ x: 100, y: 100 }, { x: 500, y: 400 });
+    const bare = b.connect({ x: 100, y: 600 }, { x: 500, y: 900 });
+    const dot = b.connect({ x: 800, y: 100 }, { x: 800, y: 100 });
+    const core = createCore(b.build());
+    const patched = core.store.transact('markers', (tx) => {
+      tx.patch(link, { markers: { start: 'arrow', end: 'arrow', mid: 'arrow' } });
+      tx.patch(bare, { markers: { start: 'arrow' } });
+      tx.patch(dot, { markers: { end: 'arrow' } });
+    });
+    expect(patched.ok).toBe(true);
+    const markers = createRegistry<string, MarkerDef>('markers');
+    markers.register(ARROW.id, ARROW, 'test');
+    const hits = createHitIndex(core.store, { registries: { ...registries(), markers }, theme: LIGHT_THEME });
+    const at = (x: number, y: number) => hits.hitTest(screen, { x, y }, 1);
+    // the end's box runs from (492, 394) to the tip: 8 px beside it on either side, 3 px behind it, 13 in front
+    expect([at(491.2, 403.4), at(490, 405), at(500.8, 390.6), at(484.8, 398.6), at(482.4, 396.8)]).toEqual([link, undefined, link, link, undefined]);
+    expect([at(498.8, 406.6), at(500.4, 407.8)]).toEqual([link, undefined]);
+    // the start's from the tip into the route; the middle one's about (300, 250)
+    expect([at(99.2, 109.4), at(98, 111)]).toEqual([link, undefined]);
+    expect([at(295.2, 256.4), at(288.8, 251.6), at(287.6, 250.7), at(286.4, 249.8)]).toEqual([link, link, undefined, undefined]);
+    // a connector without an end marker has no box at its end
+    expect(at(491.2, 903.4)).toBeUndefined();
+    // a route of no length: its marker lies along x, back from its point
+    expect([at(795, 103), at(805, 103)]).toEqual([dot, undefined]);
+    // marquees: a corner of the end's box, a spot inside its body away from the route, and just clear
+    const pick = (x: number, y: number, w: number, h: number) => hits.within(screen, { x, y, w, h }, 'intersect');
+    expect([pick(494.5, 389.5, 1, 1), pick(494.1, 399.3, 0.2, 0.2), pick(494.5, 387, 1, 1)]).toEqual([[link], [link], []]);
+    // the drawn bounds are the markers' corners: x 97-503, y 96-404
+    const contained = (x: number, y: number, x2: number, y2: number) => hits.within(screen, { x, y, w: x2 - x, h: y2 - y }, 'contain').includes(link);
+    expect([contained(96.5, 95.5, 503.5, 404.5), contained(97.5, 95.5, 503.5, 404.5), contained(96.5, 96.5, 503.5, 404.5)]).toEqual([true, false, false]);
+    expect([contained(96.5, 95.5, 502.5, 404.5), contained(96.5, 95.5, 503.5, 403.5)]).toEqual([false, false]);
   });
 });

@@ -132,7 +132,9 @@ describe('creation tools (FR-EDT-003)', () => {
     expect(creation).toEqual([
       ['connector', 'Connector', 'c'],
       ['frame', 'Frame', 'f'],
+      ['freehand', 'Freehand', 'd'],
       ['image', 'Image', 'i'],
+      ['pen', 'Pen', 'p'],
       ['shape', 'Shape', 'r'],
       ['text', 'Text', 't'],
     ]);

@@ -167,8 +167,10 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect([...host.querySelectorAll('fieldset[aria-label="Tools"] button')].map((x) => x.textContent)).toEqual([
       'Connector',
       'Frame',
+      'Freehand',
       'Hand',
       'Image',
+      'Pen',
       'Select',
       'Shape',
       'Text',

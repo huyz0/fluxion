@@ -108,18 +108,20 @@ describe('editor chrome panels (FR-EDT-001)', () => {
     expect(state()).toEqual([
       'Connector:false:Connector (C):C',
       'Frame:false:Frame (F):F',
+      'Freehand:false:Freehand (D):D',
       'Hand:false:Hand (H):H',
       'Image:false:Image (I):I',
+      'Pen:false:Pen (P):P',
       'Select:true:Select (V):V',
       'Shape:false:Shape (R):R',
       'Text:false:Text (T):T',
     ]);
-    click(buttons()[2]);
-    expect([session.tool.get(), state()[2]]).toEqual(['hand', 'Hand:true:Hand (H):H']);
+    click(buttons()[3]);
+    expect([session.tool.get(), state()[3]]).toEqual(['hand', 'Hand:true:Hand (H):H']);
     // a tool without a shortcut is titled by its name alone
     registry.register('plain', { id: 'plain', title: 'Plain', initial: 'idle', states: { idle: { id: 'idle' } } }, 'test');
     await act(async () => root.render(<ToolButtons session={session} tools={tools} key="again" />));
-    expect(state()[4]).toBe('Plain:false:Plain:null');
+    expect(state()[6]).toBe('Plain:false:Plain:null');
   });
 
   it('FR-EDT-001: the inspector and the timeline are titled placeholders', async () => {

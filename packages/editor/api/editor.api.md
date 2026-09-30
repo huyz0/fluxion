@@ -136,6 +136,12 @@ export const frameMaker: ElementMaker;
 export const frameTool: () => Tool;
 
 // @public
+export const FREEHAND_STEP_PX = 2;
+
+// @public
+export function freehandTool(): Tool;
+
+// @public
 export function handTool(): Tool;
 
 // @public
@@ -194,6 +200,9 @@ export function marquee(start: Vec2, end: Vec2): Marquee;
 export type MarqueeMode = "contain" | "intersect";
 
 // @public
+export const MAX_PATH_POINTS = 1e4;
+
+// @public
 export function memorySettings(initial?: {
     readonly [key: string]: unknown;
 }): SettingsStore;
@@ -206,6 +215,18 @@ export function pageToScreen(camera: Camera, p: Vec2): Vec2;
 
 // @public
 export function panBy(camera: Camera, d: Vec2): Camera;
+
+// @public
+export type PathBox = {
+    readonly box: Box;
+    readonly fractions: readonly (readonly [number, number])[];
+};
+
+// @public
+export function pathBox(points: readonly Vec2[]): PathBox | undefined;
+
+// @public
+export function penTool(): Tool;
 
 // @public
 export const PICK_PX = 4;

@@ -37,6 +37,7 @@ export { createHitIndex, type HitIndex, PICK_PX } from './hit-test.js';
 export type { HitContext } from './hittable.js';
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
+export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
 export { selectTool } from './select-tool.js';
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';

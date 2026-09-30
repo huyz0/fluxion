@@ -1257,3 +1257,7 @@ The connector tool (C) is in `connector-tool.ts`. A drag between elements adds a
 - Hit-testing moves into `connector-hit.ts`; registered markers are hit within MARKER_SIZE stroke widths, and labels on an estimated text box at labelPosition. `HitContext` moves to `hittable.ts` and takes the markers registry.
 - The zoom-to-selection control is disabled while nothing placed is selected.
 The row is split: pen and freehand move to M6.32, the laser to M6.33. E2E `tools.connector` passes; the full suite passes 98 of 98. Editor mutation shows no survivors.
+
+## 2026-09-30 M6.32 (claude)
+
+Pen (P) and freehand (D) in `path-tool.ts`. Pen clicks place vertices; Enter, or a click back on the last vertex, ends the path; Esc drops it. Freehand keeps a drag's points (coalesced ones too) FREEHAND_STEP_PX canvas px apart, and thins a stroke to MAX_PATH_POINTS. Each adds one `basic:polyline` or `basic:freehand` shape whose points are fractions of the box (`pathBox`), in one undo step; the overlay's sketch shows the path so far. Carried M6.18 review F1: a marker is now hit on the box it is drawn in (from the tip back along the route, turned with it), not a disc about the tip, so clicks inside a target near an arrow reach the shape. E2E `tools.pen` and `tools.freehand` pass. Editor mutation is 100%. Review r1: a pen path in progress is cleared on leaving `placing` however that happens (another tool picked from the toolbar included).
