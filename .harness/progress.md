@@ -1222,3 +1222,7 @@ Resize and rotate (FR-EDT-004). `transform.ts` is pure:
 - `carry(from, to, p)` maps points between frames; `move.reframed` applies it to every record in the frame (centres carried, sizes scaled, turns turned, free ends carried), so multi-selections and group members follow.
 `overlay-geometry` gains `frameBox`, which the overlay and tools share, and `handleAt`. The select tool presses a handle before anything else and goes to `resizing` or `rotating`: one command per frame, one undo step, Esc restores. The canvas takes ctrl/cmd + Z for undo and shift + Z or Y for redo. E2E `transform.resize-rotate-undo` restores the box exactly.
 Review r1: a record turned against the frame scales along its own axes (`reframedBox`); inside the frame a handle is picked only within its drawn square, so small elements still move; undo and redo cancel the gesture under way first.
+
+## 2026-09-30 M6.16 (claude)
+
+cp1 (fresh milestone-reviewer, 77d8405..ec72018): changes requested, 7 findings. Reopened M6.27 (hit-test-2000 back under budget; the bench regressed in M6.13), M6.28 (zoom to selection, FR-EDT-002), M6.29 (transform-only drags per ADR-0028 §4), and M6.30 (parity/perf legs pin titles). Handed off select-same and the keymap absorption to M7 rows 15 and 14 (roadmap Deferred). cp2 now runs after M6.18 and the reopened rows.

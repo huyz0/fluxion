@@ -1,0 +1,103 @@
+{
+  "milestone": "M6",
+  "checkpoint": "cp1",
+  "range": "77d8405..ec72018",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate honesty / spec fidelity (FR-EDT-004, M6.10)",
+      "detail": "The hit-test-2000 bench leg is red (p99 1.03-1.15 ms against 1 ms) while row M6.10 is done: M6.13's rewrite of hit-test.ts regressed it from about 0.68 ms, and no per-commit step runs the bench; a 2 s run of a ~0.3 ms operation sits on the noise edge.",
+      "failure_scenario": "The driver closes later rows believing the leg green and first sees it red at M6.26, or a lucky run passes and a hit-test over budget ships."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "spec fidelity (FR-EDT-002)",
+      "detail": "Zoom to selection (FR-EDT-002, plan row 5) was narrowed away in M6.8 without a disposition: fitBox exists, but no shortcut, button or command zooms to the selection, and a test asserts shift+2 is not a camera shortcut.",
+      "failure_scenario": "M6 closes with the gate and check-trace green while a user cannot zoom to the selection; nothing records the gap."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "area": "coherence / architecture (ADR-0028 §4, 04 §5, NFR-PERF-001)",
+      "detail": "ADR-0028 point 4 and 04 §5 say a translate re-renders wrappers only; ElementNode passes the whole record and a fresh children element, so the inner view re-renders on every transform write, and M6.14's T1 test pins that behaviour.",
+      "failure_scenario": "perf.drag-500 or a multi-selection drag re-runs every inner view per frame and misses EDITOR_DRAG_MIN_FPS; a later author trusts the ADR's guarantee."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "gate honesty (parity and perf legs)",
+      "detail": "The parity leg only needs the spec to pass and to contain PARITY_MAX_DIFF_PCT; the perf leg only checks the fixture's size and the string EDITOR_DRAG_MIN_FPS. Neither pins the plan's conditions (overlay unmounted, empty selection, DOM equality; one element dragged, frames measured).",
+      "failure_scenario": "A screenshot-only parity spec with the overlay hidden by CSS, or a perf spec measuring an idle page, passes the legs."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "spec fidelity / plan hygiene (FR-EDT-004)",
+      "detail": "Select same type/style was carried to M7 row 15 without a roadmap Deferred entry.",
+      "failure_scenario": "If M7 row 15 is split or descoped, nothing records that the select-same part of FR-EDT-004 is still owed."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "coherence (keyboard handling)",
+      "detail": "Undo/redo (canvas.tsx), zoom shortcuts (canvas-input.ts) and nudges (select-tool.ts) are separate hard-wired key handlers; M7 row 14 plans one keymap with user overrides.",
+      "failure_scenario": "The M7 keymap lands beside these handlers: a rebound undo still undoes on ctrl+Z, or fires twice."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "plan health",
+      "detail": "cp1 ran after 15 task rows although M5's Learned line asks for a checkpoint every ~8; cp2 is planned after M6.20.",
+      "failure_scenario": "A regression introduced at M6.17 is found only at M6.21 or M6.26, after dependent rows are built on it."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M6.27 (new, next)",
+      "note": "Bring hit-test-2000 back under HIT_TEST_2000_MAX_MS on this host with margin (profile the M6.13 index class and exact tests), and make the bench judge enough samples that its p99 is not noise; the threshold stays."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M6.28 (new)",
+      "note": "Zoom to selection: shift+2 and a toolbar control fit the selection's frame (fitBox); the test that asserted shift+2 is no shortcut changes with it; E2E canvas.pan-zoom covers it."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M6.29 (new, before M6.23)",
+      "note": "Build the transform-only path ADR-0028 §4 and 04 §5 describe: during a translate only the element wrapper re-renders, the inner view stays memoized; the M6.14 T1 test changes to assert the inner view did not re-render."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M6.30 (new) + m6-complete parity and perf legs",
+      "note": "The gate names titles pinning the plan's conditions: parity with an empty selection and the overlay unmounted, content DOM equal after an allowlist; perf dragging one element among 500 and measuring frames."
+    },
+    {
+      "finding": "F5",
+      "disposition": "hand off",
+      "target": "roadmap Deferred table (M6 -> M7 row 15)",
+      "note": "The select-same trigger is recorded as a Deferred entry beside M7 row 15."
+    },
+    {
+      "finding": "F6",
+      "disposition": "hand off",
+      "target": "M7 row 14 + roadmap Deferred table",
+      "note": "M7's keymap absorbs the canvas's hard-wired undo/redo, zoom and nudge keys, so each key has one binding and user overrides apply."
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "target": "backlog: cp2 moved before M6.19",
+      "note": "Not a defect of built work; the plan changes: cp2 now runs after M6.18 and the reopened rows, before touch, mode switch, parity and perf."
+    }
+  ],
+  "planDelta": "Four reopened rows (M6.27-M6.30) bring the backlog to 30 rows (1.67x the plan's 18; the growth is review fixes, not new scope), and cp2 moves up to run after M6.18."
+}
