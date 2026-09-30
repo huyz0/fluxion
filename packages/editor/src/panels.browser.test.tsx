@@ -1,8 +1,11 @@
 import { act, type ReactNode, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { registerBuiltinTools } from './builtin-tools.js';
 import { DEFAULT_LAYOUT, type EditorLayout } from './layout.js';
-import { Inspector, LeftTabs, Timeline, Toolbar } from './panels.js';
+import { Inspector, LeftTabs, Timeline, ToolButtons, Toolbar } from './panels.js';
+import { createSession } from './session.js';
+import { createToolDispatcher, createToolRegistry } from './tools.js';
 
 let host: HTMLElement;
 let root: Root;
@@ -84,16 +87,41 @@ describe('editor chrome panels (FR-EDT-001)', () => {
     expect(state()[1]).toBe('Library:true:0');
   });
 
+  it('FR-EDT-003: a button per tool, titled with its shortcut and pressed while it is the tool', async () => {
+    const session = createSession('doc');
+    const registry = createToolRegistry();
+    registerBuiltinTools(registry);
+    const tools = createToolDispatcher(registry, { session, hitTest: () => undefined, execute: () => ({ ok: true, value: undefined }), seal: () => {} });
+    await act(async () => root.render(<ToolButtons session={session} tools={tools} />));
+    const state = () => buttons().map((b) => `${b.textContent}:${b.getAttribute('aria-pressed')}:${b.title}:${b.getAttribute('aria-keyshortcuts')}`);
+    expect(host.querySelector('fieldset')?.getAttribute('aria-label')).toBe('Tools');
+    expect(state()).toEqual(['Hand:false:Hand (H):H', 'Select:true:Select (V):V']);
+    click(buttons()[0]);
+    expect([session.tool.get(), state()[0]]).toEqual(['hand', 'Hand:true:Hand (H):H']);
+    // a tool without a shortcut is titled by its name alone
+    registry.register('plain', { id: 'plain', title: 'Plain', initial: 'idle', states: { idle: { id: 'idle' } } }, 'test');
+    await act(async () => root.render(<ToolButtons session={session} tools={tools} key="again" />));
+    expect(state()[1]).toBe('Plain:false:Plain:null');
+  });
+
   it('FR-EDT-001: the inspector and the timeline are titled placeholders', async () => {
+    const session = createSession('doc');
     await act(async () =>
       root.render(
         <>
-          <Inspector />
+          <Inspector session={session} />
           <Timeline />
         </>,
       ),
     );
     expect([...host.querySelectorAll('h2')].map((h) => h.textContent)).toEqual(['Inspector', 'Timeline']);
     expect(host.querySelectorAll('p.fx-chrome-placeholder').length).toBe(2);
+    // the inspector says how much is selected
+    const said = () => host.querySelector('p[aria-live]')?.textContent;
+    expect(said()).toBe('Select an element to see its properties.');
+    act(() => session.selection.set(['a' as never]));
+    expect(said()).toBe('1 element selected');
+    act(() => session.selection.set(['a' as never, 'b' as never]));
+    expect(said()).toBe('2 elements selected');
   });
 });

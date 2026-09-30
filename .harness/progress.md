@@ -1190,3 +1190,8 @@ Hit-testing (`hit-test.ts`): `createHitIndex(store, {registries, theme})` keeps 
 - Hidden elements, members of hidden groups, and groups themselves are never hit.
 - Review r1: miter spikes are hit (`stroke-join.ts`, SVG miter limit 4, on the drawn side of aligned strokes); a shape's label region is hit over a hollow inside; siblings order as render does (`compareKeys`, then the id); a changed shapeDefs or routers registry rebuilds the index on the next hit-test (a new theme needs a new index).
 Gate: `benchUnder(file, name, maxMs)` + `checkBenchTask` in milestone-checks. The bench `hit-test-2000` has p99 ≈ 0.68 ms against 1 ms; long connectors dominate.
+
+## 2026-09-30 M6.11 (claude)
+
+Tools (ADR-0028): `tools.ts` holds hand-rolled statecharts. A `Tool` is `{id, title, shortcut, initial, states}`, and `StateNode` handlers return `Transition` data. `createToolDispatcher(registry, ctx)` first starts the tool `session.tool` names on every input (unknown: select). Shortcuts switch tools, cancelling a gesture first. Esc runs the state's `onCancel`, else returns to the tool's start, and from the start goes to `select`. A pointer cancel or window blur cancels.
+Built-ins: `select` (V) selects the topmost hit or none and tracks the hover; `hand` (H) drags the page with any button. The editor root keeps a hit index (LIGHT_THEME) and a dispatcher. The canvas sends presses and keys to the tools, except middle-drag, space-drag and camera shortcuts. The toolbar shows tool buttons, and the inspector the selection count. `EditorRoot` now takes `execute`.

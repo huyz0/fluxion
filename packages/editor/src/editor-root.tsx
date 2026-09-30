@@ -1,19 +1,24 @@
 // The edit-mode root (FR-EDT-001): the chrome (ADR-0029) around the canvas, where the document's first
 // screen is drawn by the same <ScreenView> as present mode (FR-EDT-010) through the session camera
-// (FR-EDT-002), fitted on open. Tools (M6.11) build on this root.
-import type { ReadView, Store } from '@fluxion/core';
+// (FR-EDT-002), fitted on open, with the tools (FR-EDT-003) working on it.
+import type { ReadView, Registry, Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { type RenderRegistries, screenArea, screensInOrder, useValue } from '@fluxion/render';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
-import { type ReactNode, useEffect, useId, useInsertionEffect, useMemo, useState } from 'react';
+import { LIGHT_THEME } from '@fluxion/theme';
+import { type ReactNode, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import { registerBuiltinTools } from './builtin-tools.js';
 import { fitBox } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
+import { createHitIndex, type HitIndex } from './hit-test.js';
 import { type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
-import { Inspector, LeftTabs, PANEL_NAMES, Timeline, Toolbar } from './panels.js';
+import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
+import type { Execute } from './pointer.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { Splitter } from './splitter.js';
+import { createToolDispatcher, createToolRegistry, type Tool, type ToolDispatcher } from './tools.js';
 
 /**
  * Props of {@link EditorRoot}.
@@ -29,7 +34,39 @@ export type EditorRootProps = {
   readonly settings?: SettingsStore;
   /** The document's session: selection, camera, tool, hover (default: a new one for this root). */
   readonly session?: Session;
+  /** Runs a command: `Core.execute`, the only write path. */
+  readonly execute: Execute;
+  /** The tools (default: the built-in ones). */
+  readonly tools?: Registry<string, Tool>;
 };
+
+/** The tools of `props` dispatched over the session, hit-testing the screen `screenId` by geometry. */
+function useTools(props: EditorRootProps, session: Session, screenId: RecordId | undefined): ToolDispatcher {
+  const { store, registries, execute } = props;
+  const registry = useMemo(() => {
+    if (props.tools !== undefined) return props.tools;
+    const builtins = createToolRegistry();
+    registerBuiltinTools(builtins);
+    return builtins;
+  }, [props.tools]);
+  // the index follows the store until the root unmounts or its inputs change
+  const hits = useRef<HitIndex | undefined>(undefined);
+  useEffect(() => {
+    const index = createHitIndex(store, { registries, theme: LIGHT_THEME });
+    hits.current = index;
+    return () => index.dispose();
+  }, [store, registries]);
+  return useMemo(
+    () =>
+      createToolDispatcher(registry, {
+        session,
+        hitTest: (p) => (screenId === undefined ? undefined : hits.current?.hitTest(screenId, p, session.camera.get().z)),
+        execute,
+        seal: () => store.history.seal(),
+      }),
+    [registry, session, screenId, execute, store],
+  );
+}
 
 /** Chrome CSS injected once per document (ADR-0029, like the content CSS of ADR-0015). */
 function useChromeCss(): void {
@@ -74,6 +111,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const session = useMemo(() => props.session ?? createSession('local'), [props.session]);
   // hidden screens are edited too
   const screenId = useValue(useMemo(() => store.query((view) => screensInOrder(view, true)[0]), [store]));
+  const tools = useTools(props, session, screenId);
   // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
   const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -102,18 +140,19 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   return (
     <div className="fx-editor" data-testid="editor-root" data-focus={layout.focus || undefined}>
       <Toolbar layout={layout} onLayout={setLayout}>
+        <ToolButtons session={session} tools={tools} />
         <ZoomControls session={session} box={box} area={area} />
       </Toolbar>
       <div className="fx-chrome-body">
         {panel('left', <LeftTabs />)}
         {splitter('left')}
         <div className="fx-chrome-center">
-          <Canvas store={store} registries={registries} screenId={screenId} area={area} session={session} onBox={setBox} />
+          <Canvas store={store} registries={registries} screenId={screenId} area={area} session={session} tools={tools} onBox={setBox} />
           {splitter('bottom')}
           {panel('bottom', <Timeline />)}
         </div>
         {splitter('right')}
-        {panel('right', <Inspector />)}
+        {panel('right', <Inspector session={session} />)}
       </div>
     </div>
   );

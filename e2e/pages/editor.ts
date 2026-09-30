@@ -45,6 +45,21 @@ export class EditorPage {
     return this.root.getByRole('group', { name: 'Zoom' }).getByRole('button', { name, exact: true });
   }
 
+  /** A tool's toolbar button: "Select", "Hand", … */
+  toolButton(name: string): Locator {
+    return this.root.getByRole('group', { name: 'Tools' }).getByRole('button', { name, exact: true });
+  }
+
+  /** What the inspector says about the selection. */
+  get inspectorText(): Locator {
+    return this.panel('Inspector').locator('p[aria-live]');
+  }
+
+  /** The drawn element with this record id. */
+  element(id: string): Locator {
+    return this.canvas.locator(`.fx-el[data-el-id="${id}"]`);
+  }
+
   /** The first screen's box on the page. */
   async screenBox(): Promise<{ x: number; y: number; width: number; height: number }> {
     const box = await this.screens.first().boundingBox();

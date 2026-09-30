@@ -32,7 +32,7 @@ const frame = () => new Promise((resolve) => requestAnimationFrame(() => request
 describe('edit-mode root (FR-EDT-001)', () => {
   it('FR-EDT-001: the editor shows the first screen on a named canvas, hidden screens included', async () => {
     const core = createCore(newDocument(seededRandom(3)));
-    await act(async () => root.render(<EditorRoot store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} />));
     await act(frame);
     const canvas = host.querySelector('main[aria-label="Canvas"]');
     expect(canvas).not.toBeNull();
@@ -46,7 +46,9 @@ describe('edit-mode root (FR-EDT-001)', () => {
     const hidden = b.screen({ size: { w: 800, h: 600 } });
     const doc = b.build();
     const withHidden = createCore({ ...doc, records: { ...doc.records, [hidden]: { ...(doc.records[hidden] as object), hidden: true } } } as typeof doc);
-    await act(async () => root.render(<EditorRoot store={withHidden.store} registries={renderRegistriesFor(withHidden.registries)} />));
+    await act(async () =>
+      root.render(<EditorRoot store={withHidden.store} execute={withHidden.execute} registries={renderRegistriesFor(withHidden.registries)} />),
+    );
     await act(frame);
     expect(host.querySelector('.fx-screen')?.getAttribute('data-screen-id')).toBe(hidden);
   });
@@ -57,8 +59,8 @@ describe('edit-mode root (FR-EDT-001)', () => {
     await act(async () =>
       root.render(
         <>
-          <EditorRoot store={core.store} registries={registries} />
-          <EditorRoot store={core.store} registries={registries} />
+          <EditorRoot store={core.store} execute={core.execute} registries={registries} />
+          <EditorRoot store={core.store} execute={core.execute} registries={registries} />
         </>,
       ),
     );
@@ -87,7 +89,9 @@ describe('edit-mode root (FR-EDT-001)', () => {
     const settings = memorySettings({
       [LAYOUT_KEY]: { panels: { left: { size: 300, collapsed: false }, right: { size: 250, collapsed: true }, bottom: { size: 120, collapsed: false } } },
     });
-    await act(async () => root.render(<EditorRoot store={core.store} registries={renderRegistriesFor(core.registries)} settings={settings} />));
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} settings={settings} />),
+    );
     const panel = (p: string) => host.querySelector(`[data-panel="${p}"]`) as HTMLElement | null;
     expect(panel('left')?.getBoundingClientRect().width).toBe(300);
     expect(panel('right')).toBeNull();
@@ -108,8 +112,8 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect(host.querySelector('.fx-editor')?.getAttribute('data-focus')).toBe('true');
     expect((settings.get(LAYOUT_KEY) as { focus: boolean }).focus).toBe(true);
     // without settings, a root starts from the defaults
-    await act(async () => root.render(<EditorRoot store={core.store} registries={renderRegistriesFor(core.registries)} />));
-    await act(async () => root.render(<EditorRoot key="fresh" store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} />));
+    await act(async () => root.render(<EditorRoot key="fresh" store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} />));
     expect(panel('left')?.getBoundingClientRect().width).toBe(DEFAULT_LAYOUT.panels.left.size);
     expect(host.querySelector('.fx-editor')?.hasAttribute('data-focus')).toBe(false);
   });
@@ -117,7 +121,7 @@ describe('edit-mode root (FR-EDT-001)', () => {
   it('FR-EDT-001: on a phone-width viewport the open panels scroll aside and the canvas keeps its screen', async () => {
     await page.viewport(390, 844);
     const core = createCore(newDocument(seededRandom(6)));
-    await act(async () => root.render(<EditorRoot store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} />));
     await act(frame);
     const canvas = host.querySelector('main[aria-label="Canvas"]') as HTMLElement;
     expect(canvas.getBoundingClientRect().width).toBe(320);
@@ -128,11 +132,53 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect(body.scrollWidth).toBeGreaterThan(body.clientWidth);
   });
 
+  it('FR-EDT-003: with the select tool a click selects the element under it, and a click on nothing clears', async () => {
+    const b = documentBuilder({ seed: 70 });
+    const screen = b.screen();
+    const rect = b.rect(screen, { x: 100, y: 100, w: 400, h: 200, defId: 'basic:rect' });
+    const core = createCore(b.build());
+    const registries = renderRegistriesFor(core.registries);
+    core.registries.shapeDefs.register(
+      'basic:rect',
+      { id: 'basic:rect', outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' }, defaultSize: { w: 160, h: 100 } },
+      'test',
+    );
+    const session = createSession('doc');
+    await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={registries} session={session} />));
+    await act(frame);
+    const main = host.querySelector('main') as HTMLElement;
+    const at = (page: { x: number; y: number }) => {
+      const c = session.camera.get();
+      const r = main.getBoundingClientRect();
+      return { clientX: r.left + (page.x - c.x) * c.z, clientY: r.top + (page.y - c.y) * c.z };
+    };
+    const click = (page: { x: number; y: number }) =>
+      act(() => {
+        for (const type of ['pointerdown', 'pointerup'])
+          main.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, button: 0, ...at(page) }));
+      });
+    const said = () => host.querySelector('aside[aria-label="Inspector"] p')?.textContent;
+    click({ x: 300, y: 200 });
+    expect([session.selection.get(), said()]).toEqual([[rect], '1 element selected']);
+    click({ x: 1500, y: 900 });
+    expect([session.selection.get(), said()]).toEqual([[], 'Select an element to see its properties.']);
+    // the toolbar lists the built-in tools; H switches to the hand, Esc back
+    expect([...host.querySelectorAll('fieldset[aria-label="Tools"] button')].map((x) => x.textContent)).toEqual(['Hand', 'Select']);
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'h', bubbles: true }));
+    });
+    expect(session.tool.get()).toBe('hand');
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(session.tool.get()).toBe('select');
+  });
+
   it('FR-EDT-002: a fresh session camera fits the screen on open; a moved one is kept', async () => {
     const core = createCore(newDocument(seededRandom(7)));
     const registries = renderRegistriesFor(core.registries);
     const session = createSession('doc');
-    await act(async () => root.render(<EditorRoot store={core.store} registries={registries} session={session} />));
+    await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={registries} session={session} />));
     await act(frame);
     const canvas = host.querySelector('main') as HTMLElement;
     const fitted = session.camera.get();
@@ -157,7 +203,7 @@ describe('edit-mode root (FR-EDT-001)', () => {
     root = createRoot(host);
     const moved = { x: 5, y: 6, z: 2 };
     session.camera.set(moved);
-    await act(async () => root.render(<EditorRoot store={core.store} registries={registries} session={session} />));
+    await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={registries} session={session} />));
     await act(frame);
     expect(session.camera.get()).toBe(moved);
   });

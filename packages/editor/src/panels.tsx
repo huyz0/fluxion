@@ -1,7 +1,10 @@
 // The chrome around the canvas (FR-EDT-001, ADR-0029): the toolbar, the left tabs (screens, library,
 // layers), the inspector and the timeline. The panels are placeholders their milestones fill (M7, M8).
+import { useValue } from '@fluxion/render';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
+import type { Session } from './session.js';
+import type { Tool, ToolDispatcher } from './tools.js';
 
 /** Each panel's name: its landmark's label and its toolbar button's text. */
 export const PANEL_NAMES: { readonly [P in PanelId]: string } = { left: 'Screens, library and layers', right: 'Inspector', bottom: 'Timeline' };
@@ -90,13 +93,47 @@ export function LeftTabs(): ReactNode {
   );
 }
 
-/** The inspector's placeholder. */
-export function Inspector(): ReactNode {
+/** The inspector's placeholder: how much is selected (its properties arrive with M7). */
+export function Inspector(props: { readonly session: Session }): ReactNode {
+  const count = useValue(props.session.selection.get).length;
   return (
     <>
       <h2 className="fx-chrome-heading">Inspector</h2>
-      <p className="fx-chrome-placeholder">Select an element to see its properties.</p>
+      <p className="fx-chrome-placeholder" aria-live="polite">
+        {count === 0 ? 'Select an element to see its properties.' : `${count} ${count === 1 ? 'element' : 'elements'} selected`}
+      </p>
     </>
+  );
+}
+
+/** Props of {@link ToolButtons}. */
+export type ToolButtonsProps = {
+  /** The session whose tool they show and set. */
+  readonly session: Session;
+  /** The dispatcher, whose tools they list. */
+  readonly tools: ToolDispatcher;
+};
+
+/** A pressed-state button per tool, titled with its shortcut. */
+export function ToolButtons(props: ToolButtonsProps): ReactNode {
+  const { session } = props;
+  const current = useValue(session.tool.get);
+  return (
+    <fieldset className="fx-chrome-zoom" aria-label="Tools">
+      {props.tools.list().map((tool: Tool) => (
+        <button
+          key={tool.id}
+          type="button"
+          className="fx-chrome-button"
+          aria-pressed={current === tool.id}
+          aria-keyshortcuts={tool.shortcut?.toUpperCase()}
+          title={tool.shortcut === undefined ? tool.title : `${tool.title} (${tool.shortcut.toUpperCase()})`}
+          onClick={() => session.tool.set(tool.id)}
+        >
+          {tool.title}
+        </button>
+      ))}
+    </fieldset>
   );
 }
 

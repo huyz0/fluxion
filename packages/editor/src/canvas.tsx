@@ -2,8 +2,8 @@
 // wheel, space-drag and middle-drag, zoomed by ctrl/meta + wheel (a trackpad pinch; Safari's pinch
 // sends gesture events instead) and shortcuts;
 // and the toolbar's zoom controls. What input does to the camera is pure (canvas-input.ts); this is
-// the DOM glue. Pointer input comes through the frame-batched pipeline (pointer-input.ts); tools
-// (M6.11) take over the primary button.
+// the DOM glue. Pointer input comes through the frame-batched pipeline (pointer-input.ts) to the
+// tools, but for the middle button and space-drag, which pan whatever the tool.
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
@@ -12,8 +12,10 @@ import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
+import type { PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
+import type { ToolDispatcher } from './tools.js';
 
 /** Whether `target` takes text (keys typed there are not canvas shortcuts). */
 function isEditable(target: EventTarget | null): boolean {
@@ -87,22 +89,37 @@ function holdSpace(e: KeyboardEvent, space: RefObject<boolean>): void {
 }
 
 /** A shortcut's camera, if it was one, taken instead of the browser's own meaning of the key. */
-function applyShortcut(e: KeyboardEvent, session: Session, next: Camera | undefined): void {
-  if (next === undefined) return;
+function applyShortcut(e: KeyboardEvent, session: Session, next: Camera | undefined): boolean {
+  if (next === undefined) return false;
   e.preventDefault();
   session.camera.set(next);
+  return true;
 }
 
-/** Space held (for space-drag) and the camera shortcuts, on the window while the canvas is mounted. */
-function useKeys(session: Session, box: Viewport, area: Box | undefined, space: RefObject<boolean>): void {
+/** A key for the tools (Esc, their shortcuts, their states), taken when they take it. */
+function toolKey(e: KeyboardEvent, tools: ToolDispatcher | undefined): void {
+  if (tools?.key({ key: e.key, shift: e.shiftKey, alt: e.altKey, mod: e.ctrlKey || e.metaKey }) === true) e.preventDefault();
+}
+
+/** Space held (for space-drag), the camera shortcuts, then the tools' keys, on the window while the canvas is mounted. */
+function useKeys(input: {
+  readonly session: Session;
+  readonly box: Viewport;
+  readonly area: Box | undefined;
+  readonly space: RefObject<boolean>;
+  readonly tools: ToolDispatcher | undefined;
+}): void {
+  const { session, box, area, space, tools } = input;
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (isEditable(e.target)) return;
       if (e.key === ' ') holdSpace(e, space);
-      else applyShortcut(e, session, shortcut(e, session, box, area));
+      else if (!applyShortcut(e, session, shortcut(e, session, box, area))) toolKey(e, tools);
     };
     const release = (e: Event) => {
       if (e.type === 'blur' || (e as KeyboardEvent).key === ' ') space.current = false;
+      // losing the window ends what the tool was doing
+      if (e.type === 'blur') tools?.cancel();
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', release);
@@ -112,7 +129,7 @@ function useKeys(session: Session, box: Viewport, area: Box | undefined, space: 
       window.removeEventListener('keyup', release);
       window.removeEventListener('blur', release);
     };
-  }, [session, box, area, space]);
+  }, [session, box, area, space, tools]);
 }
 
 /** Props of {@link Canvas}. */
@@ -127,6 +144,8 @@ export type CanvasProps = {
   readonly area: Box | undefined;
   /** The session whose camera it draws through. */
   readonly session: Session;
+  /** The tools that take the pointer and keys (none: the canvas only pans and zooms). */
+  readonly tools?: ToolDispatcher | undefined;
   /** Told the canvas size whenever it changes. */
   readonly onBox: (box: Viewport) => void;
 };
@@ -134,34 +153,37 @@ export type CanvasProps = {
 type Drag = { readonly pointerId: number; x: number; y: number };
 
 /**
- * The canvas's own use of the pointer pipeline until tools arrive (M6.11): a middle press, or a
- * primary press with space held, pans; the camera moves once per frame with the latest point.
+ * The canvas's pointer input: a middle press, or a primary press with space held, pans whatever the
+ * tool (the camera moving once per frame with the latest point); anything else goes to the tools.
  */
-function panConsumer(session: Session, space: RefObject<boolean>, drag: RefObject<Drag | undefined>): PointerConsumer {
+function canvasConsumer(session: Session, space: RefObject<boolean>, drag: RefObject<Drag | undefined>, tools: ToolDispatcher | undefined): PointerConsumer {
+  const pan = (i: PointerInfo, d: Drag) => {
+    if (i.phase !== 'move') drag.current = undefined;
+    else {
+      session.camera.set(panBy(session.camera.get(), { x: i.screen.x - d.x, y: i.screen.y - d.y }));
+      d.x = i.screen.x;
+      d.y = i.screen.y;
+    }
+    return undefined;
+  };
   return {
     deliver: (i) => {
-      if (i.phase === 'down') {
-        if (i.button !== 1 && !(i.button === 0 && space.current)) return undefined;
+      if (i.phase === 'down' && (i.button === 1 || (i.button === 0 && space.current))) {
         drag.current = { pointerId: i.pointerId, x: i.screen.x, y: i.screen.y };
         // taken: a middle click would otherwise start the browser's autoscroll or paste
         return true;
       }
       const d = drag.current;
-      if (d?.pointerId !== i.pointerId) return undefined;
-      if (i.phase !== 'move') drag.current = undefined;
-      else {
-        session.camera.set(panBy(session.camera.get(), { x: i.screen.x - d.x, y: i.screen.y - d.y }));
-        d.x = i.screen.x;
-        d.y = i.screen.y;
-      }
-      return undefined;
+      if (d?.pointerId === i.pointerId) return pan(i, d);
+      // a press a tool takes is not also the browser's (text selection, dragging an image)
+      return tools?.pointer(i) === true && i.phase === 'down' ? true : undefined;
     },
   };
 }
 
 /** The canvas: the screen at the session camera, panned and zoomed. */
 export function Canvas(props: CanvasProps): ReactNode {
-  const { store, registries, screenId, area, session, onBox } = props;
+  const { store, registries, screenId, area, session, tools, onBox } = props;
   const ref = useRef<HTMLElement>(null);
   const box = useElementBox(ref);
   const camera = useValue(session.camera.get);
@@ -172,8 +194,8 @@ export function Canvas(props: CanvasProps): ReactNode {
   }, [box, onBox]);
   useWheel(ref, session, box);
   useGesture(ref, session);
-  useKeys(session, box, area, space);
-  usePointerInput(ref, session.camera.get, panConsumer(session, space, drag));
+  useKeys({ session, box, area, space, tools });
+  usePointerInput(ref, session.camera.get, canvasConsumer(session, space, drag, tools));
   return (
     <main ref={ref} aria-label="Canvas" className="fx-chrome-canvas" tabIndex={-1} onPointerDown={(e) => e.currentTarget.focus({ preventScroll: true })}>
       {screenId === undefined || box.w === 0 ? null : (

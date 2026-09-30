@@ -9,6 +9,7 @@ import type { Camera } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { newDocument } from './new-document.js';
 import { createSession, type Session } from './session.js';
+import type { ToolDispatcher } from './tools.js';
 
 let host: HTMLElement;
 let root: Root;
@@ -31,7 +32,26 @@ afterEach(() => {
 
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-async function mount(camera: Camera = { x: 0, y: 0, z: 0.5 }) {
+/** A dispatcher that records what reaches it and takes what `takes` says. */
+function recording(takes: (what: string) => boolean) {
+  const seen: string[] = [];
+  const tools: ToolDispatcher = {
+    pointer: (e) => {
+      seen.push(`${e.phase}:${e.button}`);
+      return takes(e.phase);
+    },
+    key: (e) => {
+      seen.push(`key:${e.key}`);
+      return takes(e.key);
+    },
+    cancel: () => seen.push('cancel'),
+    current: 'x.y',
+    list: () => [],
+  };
+  return { seen, tools };
+}
+
+async function mount(camera: Camera = { x: 0, y: 0, z: 0.5 }, tools?: ToolDispatcher) {
   session.camera.set(camera);
   const core = createCore(newDocument(seededRandom(9)));
   const screenId = core.store.ids().find((id) => core.store.get(id)?.type === 'screen');
@@ -43,6 +63,7 @@ async function mount(camera: Camera = { x: 0, y: 0, z: 0.5 }) {
         screenId={screenId}
         area={area}
         session={session}
+        tools={tools}
         onBox={(b) => boxes.push(b)}
       />,
     ),
@@ -168,6 +189,31 @@ describe('canvas camera input (FR-EDT-002)', () => {
       input.remove();
       button.remove();
     }
+  });
+
+  it('FR-EDT-003: presses and keys go to the tools, but for panning; a press a tool takes is not the browser`s', async () => {
+    const { seen, tools } = recording((what) => what === 'down' || what === 'h');
+    const main = await mount({ x: 0, y: 0, z: 1 }, tools);
+    expect(pointer(main, 'pointerdown', [10, 10])).toBe(true);
+    pointer(main, 'pointermove', [20, 10]);
+    await act(frame);
+    expect(pointer(main, 'pointerup', [20, 10])).toBe(false);
+    // the middle button pans instead, and never reaches the tool
+    pointer(main, 'pointerdown', [10, 10], { button: 1 });
+    pointer(main, 'pointerup', [10, 10], { button: 1 });
+    expect(seen).toEqual(['down:0', 'move:0', 'up:0']);
+    expect(key('keydown', { key: 'h' })).toBe(true);
+    expect(key('keydown', { key: 'q' })).toBe(false);
+    // a camera shortcut is the camera's
+    key('keydown', { key: '=', ctrlKey: true });
+    act(() => {
+      window.dispatchEvent(new Event('blur'));
+    });
+    expect(seen.slice(3)).toEqual(['key:h', 'key:q', 'cancel']);
+    // a press no tool takes stays the browser's
+    const loose = recording(() => false);
+    const other = await mount({ x: 0, y: 0, z: 1 }, loose.tools);
+    expect(pointer(other, 'pointerdown', [10, 10])).toBe(false);
   });
 
   it('FR-EDT-002: zoom shortcuts act on the window unless typed into a field', async () => {

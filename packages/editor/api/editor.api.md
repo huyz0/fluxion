@@ -5,11 +5,15 @@
 ```ts
 
 import { Box } from '@fluxion/geometry';
+import { CommandFailure } from '@fluxion/core';
+import { CommandTxOptions } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
 import { RecordId } from '@fluxion/schema';
+import { Registry } from '@fluxion/core';
 import { RenderRegistries } from '@fluxion/render';
+import { Result } from '@fluxion/schema';
 import { RouteContext } from '@fluxion/routing';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
@@ -36,6 +40,12 @@ export function createSession(docId: string): Session;
 export function createSessions(): Sessions;
 
 // @public
+export function createToolDispatcher(registry: Registry<string, Tool>, ctx: ToolCtx): ToolDispatcher;
+
+// @public
+export function createToolRegistry(): Registry<string, Tool>;
+
+// @public
 export const DEFAULT_CAMERA: Camera;
 
 // @public
@@ -47,7 +57,12 @@ export type EditorRootProps = {
     readonly registries: RenderRegistries;
     readonly settings?: SettingsStore;
     readonly session?: Session;
+    readonly execute: Execute;
+    readonly tools?: Registry<string, Tool>;
 };
+
+// @public
+export type Execute = (id: string, args: unknown, options?: CommandTxOptions) => Result<unknown, CommandFailure>;
 
 // @public
 export const FIT_PADDING = 32;
@@ -59,6 +74,9 @@ export function fitBox(box: Box, viewport: {
 }, padding?: number): Camera;
 
 // @public
+export function handTool(): Tool;
+
+// @public
 export type HitContext = {
     readonly registries: RouteContext;
     readonly theme: Theme;
@@ -68,6 +86,14 @@ export type HitContext = {
 export type HitIndex = {
     hitTest(screenId: RecordId, p: Vec2, zoom: number): RecordId | undefined;
     dispose(): void;
+};
+
+// @public
+export type KeyInfo = {
+    readonly key: string;
+    readonly shift: boolean;
+    readonly alt: boolean;
+    readonly mod: boolean;
 };
 
 // @public
@@ -91,7 +117,35 @@ export function panBy(camera: Camera, d: Vec2): Camera;
 export const PICK_PX = 4;
 
 // @public
+export type PointerInfo = {
+    readonly phase: PointerPhase;
+    readonly pointerId: number;
+    readonly pointerType: string;
+    readonly screen: Vec2;
+    readonly page: Vec2;
+    readonly button: number;
+    readonly buttons: number;
+    readonly shift: boolean;
+    readonly alt: boolean;
+    readonly mod: boolean;
+    readonly pressure: number;
+    readonly coalesced: readonly PointerInfo[];
+};
+
+// @public
+export type PointerPhase = "down" | "move" | "up" | "cancel";
+
+// @public
+export function registerBuiltinTools(registry: Registry<string, Tool>): void;
+
+// @public
 export function screenToPage(camera: Camera, p: Vec2): Vec2;
+
+// @public
+export const SELECT_TOOL = "select";
+
+// @public
+export function selectTool(): Tool;
 
 // @public
 export type Session = {
@@ -112,6 +166,52 @@ export type Sessions = {
 export type SettingsStore = {
     get(key: string): unknown;
     set(key: string, value: unknown): void;
+};
+
+// @public
+export type StateNode = {
+    readonly id: string;
+    onEnter?(ctx: ToolCtx, info?: unknown): void;
+    onExit?(ctx: ToolCtx): void;
+    onPointerDown?(ctx: ToolCtx, e: PointerInfo): Transition | undefined;
+    onPointerMove?(ctx: ToolCtx, e: PointerInfo): Transition | undefined;
+    onPointerUp?(ctx: ToolCtx, e: PointerInfo): Transition | undefined;
+    onKeyDown?(ctx: ToolCtx, e: KeyInfo): Transition | undefined;
+    onCancel?(ctx: ToolCtx): Transition | undefined;
+};
+
+// @public
+export type Tool = {
+    readonly id: string;
+    readonly title: string;
+    readonly shortcut?: string;
+    readonly initial: string;
+    readonly states: {
+        readonly [id: string]: StateNode;
+    };
+};
+
+// @public
+export type ToolCtx = {
+    readonly session: Session;
+    hitTest(p: Vec2): RecordId | undefined;
+    readonly execute: Execute;
+    seal(): void;
+};
+
+// @public
+export type ToolDispatcher = {
+    pointer(e: PointerInfo): boolean;
+    key(e: KeyInfo): boolean;
+    cancel(): void;
+    readonly current: string;
+    list(): readonly Tool[];
+};
+
+// @public
+export type Transition = {
+    readonly to: string;
+    readonly info?: unknown;
 };
 
 // @public

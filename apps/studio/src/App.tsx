@@ -79,7 +79,7 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
   if (!opened.ok) return <Problem message={opened.error} />;
   const { core, registries } = opened.value;
   return mode === 'edit' ? (
-    <EditorRoot store={core.store} registries={registries} settings={settings} session={session} />
+    <EditorRoot store={core.store} execute={core.execute} registries={registries} settings={settings} session={session} />
   ) : (
     <PlayerRoot store={core.store} registries={registries} />
   );
