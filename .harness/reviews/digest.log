@@ -281,3 +281,4 @@ M6.5	1971bc250985704d8f402965d967d6a9d949a2ec7b7a02ace6e5e3e7218506dd	r2	pass	cl
 M6.8	e6d680b7a5af2a620d2cf402f817cfd6f12a772ea3590522ef0b15122fae459b	r1	pass	claude-subagent:reviewer	0 findings
 M6.9	5d244b816b49db8a962cc8c57211c60f903d4d37a1058c8d23ae9ff286dc80df	r1	pass	claude-subagent:reviewer	0 findings
 M6.10	384c5ebba96b53cc461b8dabb827372de40c4eff9723ba7387cab1dd3307370b	r1	pass	claude:opus-5.5 (isolated subagent)	2 findings
+M6.11	9ddcefb6ac353243e9d3f4eec39e9c028c24cd2204c4402bc37ea92e04085d7c	r1	pass	claude:opus-5.5-subagent	1 findings
