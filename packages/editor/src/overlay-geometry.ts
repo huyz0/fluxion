@@ -3,6 +3,7 @@
 // they keep HANDLE_PX whatever the zoom. One element's frame turns with it; several share their
 // upright bounds. Pure: the overlay component only draws what this returns.
 import { apply, type Box, boxFromPoints, elementMatrix, type Vec2 } from '@fluxion/geometry';
+import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { type Camera, pageToScreen } from './camera.js';
 
 /**
@@ -141,6 +142,29 @@ export function frameBox(placed: readonly Placed[]): Box2 | undefined {
   if (only !== undefined) return { x: only.x, y: only.y, w: only.w, h: only.h, rot: only.rot ?? 0 };
   const bounds: Box | null = boxFromPoints(placed.flatMap(pageCorners));
   return bounds === null ? undefined : { ...bounds, rot: 0 };
+}
+
+/**
+ * The upright bounds on the page of the elements placed at `placed` (turned ones by their corners):
+ * what zoom to selection fits. Undefined when nothing is placed.
+ *
+ * @public
+ */
+export function selectionBounds(placed: readonly Placed[]): Box | undefined {
+  return boxFromPoints(placed.flatMap(pageCorners)) ?? undefined;
+}
+
+/**
+ * The placements of the elements `ids` that have a box, in order (other records are left out).
+ *
+ * @public
+ */
+export function placements(view: { get(id: RecordId): AnyRecord | undefined }, ids: readonly RecordId[]): Placed[] {
+  return ids.flatMap((id) => {
+    const r = view.get(id);
+    const t = r?.type === 'element' ? (r as { transform?: Placed }).transform : undefined;
+    return t === undefined ? [] : [t];
+  });
 }
 
 /** Whether canvas point `p` lies inside the frame's outline, whose corners run clockwise on the canvas. */

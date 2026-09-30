@@ -2,6 +2,7 @@ import { createCore } from '@fluxion/core';
 import { renderRegistriesFor } from '@fluxion/player';
 import type { RecordId } from '@fluxion/schema';
 import { seededRandom } from '@fluxion/schema';
+import { documentBuilder } from '@fluxion/schema/testing';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -285,6 +286,8 @@ describe('canvas camera input (FR-EDT-002)', () => {
     expect(session.camera.get().z).toBe(1);
     key('keydown', { key: '!', code: 'Digit1', shiftKey: true });
     expect(session.camera.get().z).toBeCloseTo(736 / 1920, 10);
+    // nothing selected: shift + 2 has nothing to fit and is left to the tools
+    expect(key('keydown', { key: '@', code: 'Digit2', shiftKey: true })).toBe(false);
     expect(key('keydown', { key: 'a' })).toBe(false);
     const input = document.createElement('textarea');
     document.body.append(input);
@@ -324,9 +327,11 @@ describe('zoom controls (FR-EDT-002)', () => {
         ?.click(),
     );
 
+  const store = createCore(newDocument(seededRandom(9))).store;
+
   it('FR-EDT-002: the controls show the zoom and step, fit and reset it; each end disables its button', async () => {
     session.camera.set({ x: 0, y: 0, z: 0.5 });
-    await act(async () => root.render(<ZoomControls session={session} box={{ w: 800, h: 600 }} area={area} />));
+    await act(async () => root.render(<ZoomControls store={store} session={session} box={{ w: 800, h: 600 }} area={area} />));
     expect(host.querySelector('fieldset')?.getAttribute('aria-label')).toBe('Zoom');
     expect(value()).toBe('50 %');
     click('Zoom in');
@@ -339,12 +344,33 @@ describe('zoom controls (FR-EDT-002)', () => {
     click('100 %');
     expect(value()).toBe('100 %');
     act(() => session.camera.set({ x: 0, y: 0, z: 32 }));
-    expect(buttons().map((b) => b.disabled)).toEqual([false, true, false, false]);
+    // nothing selected: zoom to selection (the fourth) is disabled too
+    expect(buttons().map((b) => b.disabled)).toEqual([false, true, false, true, false]);
     act(() => session.camera.set({ x: 0, y: 0, z: 0.05 }));
-    expect([value(), ...buttons().map((b) => b.disabled)]).toEqual(['5 %', true, false, false, false]);
-    await act(async () => root.render(<ZoomControls session={session} box={{ w: 800, h: 600 }} area={undefined} />));
+    expect([value(), ...buttons().map((b) => b.disabled)]).toEqual(['5 %', true, false, false, true, false]);
+    await act(async () => root.render(<ZoomControls store={store} session={session} box={{ w: 800, h: 600 }} area={undefined} />));
     click('Fit');
     expect(buttons()[2]?.disabled).toBe(true);
     expect(value()).toBe('5 %');
+  });
+
+  it('FR-EDT-002: zoom to selection fits the selected elements` bounds in the canvas', async () => {
+    const b = documentBuilder({ seed: 121 });
+    const screen = b.screen();
+    const one = b.rect(screen, { x: 100, y: 100, w: 200, h: 100 });
+    const two = b.rect(screen, { x: 400, y: 300, w: 100, h: 100 });
+    const doc = createCore(b.build()).store;
+    session.camera.set({ x: 0, y: 0, z: 1 });
+    await act(async () => root.render(<ZoomControls store={doc} session={session} box={{ w: 800, h: 600 }} area={area} />));
+    act(() => session.selection.set([one, two]));
+    expect(buttons()[3]?.disabled).toBe(false);
+    click('Zoom to selection');
+    // bounds (100, 100)-(500, 400): 400 wide in 736 px of room, 300 high in 536; the height is tighter
+    const z = 536 / 300;
+    expect(session.camera.get()).toEqual({ x: 300 - 400 / z, y: 250 - 300 / z, z });
+    // a selection of nothing placed (the screen) fits nothing
+    act(() => session.selection.set([screen]));
+    click('Zoom to selection');
+    expect(session.camera.get().z).toBe(z);
   });
 });

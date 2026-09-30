@@ -1230,3 +1230,7 @@ cp1 (fresh milestone-reviewer, 77d8405..ec72018): changes requested, 7 findings.
 ## 2026-09-30 M6.27 (claude)
 
 Hit-test back under budget (cp1 F1). The outline check was sampling every cubic segment of every candidate. The new `outline-distance.ts` `distanceWithin(path, p, limit)` caches each path's segments with their bounds (a WeakMap), skips segments whose bounds lie beyond the limit, and measures straight segments (both controls on the chord) exactly; only a curve within reach falls back to geometry's `nearestPoint`. `stroke-band.onStroked` uses it. hit-test-2000: mean ≈0.02 ms, p99 ≈0.11 ms (was 1.03–1.15 ms). `benchUnder(…, HIT_TEST_2000_MAX_MS)` passed 3 runs in a row. Editor mutation score is 100%.
+
+## 2026-09-30 M6.28 (claude)
+
+Zoom to selection (FR-EDT-002, cp1 F2). `overlay-geometry` gains `selectionBounds` (upright page bounds of the selected elements; turned ones counted by their corners) and `placements`, now shared with the overlay. `shortcutCamera` takes `FitTargets {screen, selection}`: shift + 1 fits the screen, shift + 2 fits the selection, and with nothing to fit the key is left to the tools. The toolbar has a "Zoom to selection" button, disabled while nothing is selected. E2E `canvas.pan-zoom` covers both the key and the button. On a phone the extra button made the zoom group shrink over the panel buttons; the group is now `flex: none`, so the toolbar scrolls instead, and a CSS test pins that.

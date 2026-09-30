@@ -94,4 +94,35 @@ test.describe('canvas pan and zoom', { tag: '@desktop' }, () => {
     await editor.zoomButton('Fit').click();
     await expect(editor.zoomValue).toHaveText(fitted ?? '');
   });
+
+  test('FR-EDT-002: shift + 2 and the toolbar control fit the selection in the canvas', async ({ page }) => {
+    const editor = new EditorPage(page);
+    await editor.open('example-shapes-gallery');
+    await expect(editor.zoomButton('Zoom to selection')).toBeDisabled();
+    // select the first row's rectangle and rounded rectangle (page x 80-520, y 60-170) with a marquee
+    const screen = await editor.screenBox();
+    const scale = screen.width / 1920;
+    await page.mouse.move(screen.x + 60 * scale, screen.y + 40 * scale);
+    await page.mouse.down();
+    await page.mouse.move(screen.x + 540 * scale, screen.y + 190 * scale, { steps: 6 });
+    await page.mouse.up();
+    await expect(editor.inspectorText).toHaveText('2 elements selected');
+    const canvas = await editor.canvas.boundingBox();
+    if (canvas === null) throw new Error('no canvas');
+    // fitted: the selection's centre (300, 115) at the canvas centre, its 440 px width filling the
+    // canvas less the 32 px padding on each side (it is the tighter side)
+    const expectFitted = async () => {
+      await expect.poll(async () => (await editor.screenBox()).width / 1920).toBeCloseTo((canvas.width - 64) / 440, 2);
+      const s = await editor.screenBox();
+      const z = s.width / 1920;
+      expect(s.x + 300 * z).toBeCloseTo(canvas.x + canvas.width / 2, 0);
+      expect(s.y + 115 * z).toBeCloseTo(canvas.y + canvas.height / 2, 0);
+    };
+    await page.keyboard.press('Shift+Digit2');
+    await expectFitted();
+    await page.keyboard.press('Shift+Digit1');
+    await expect.poll(async () => (await editor.screenBox()).width).toBeCloseTo(screen.width, 0);
+    await editor.zoomButton('Zoom to selection').click();
+    await expectFitted();
+  });
 });

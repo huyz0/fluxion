@@ -155,7 +155,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
     <div className="fx-editor" data-testid="editor-root" data-focus={layout.focus || undefined}>
       <Toolbar layout={layout} onLayout={setLayout}>
         <ToolButtons session={session} tools={tools} />
-        <ZoomControls session={session} box={box} area={area} />
+        <ZoomControls store={store} session={session} box={box} area={area} />
       </Toolbar>
       <div className="fx-chrome-body">
         {panel('left', <LeftTabs />)}

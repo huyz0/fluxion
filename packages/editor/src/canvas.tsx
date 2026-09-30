@@ -11,8 +11,9 @@ import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
-import { shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
+import { type FitTargets, shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
 import { Overlay } from './overlay.js';
+import { placements, selectionBounds } from './overlay-geometry.js';
 import type { PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
@@ -76,11 +77,15 @@ function useWheel(ref: RefObject<HTMLElement | null>, session: Session, box: Vie
   }, [ref, session, box]);
 }
 
+/** The page bounds of what `session` has selected in `store`, for zoom to selection. */
+const selectedBounds = (store: Store, session: Session): Box | undefined => selectionBounds(placements(store, session.selection.get()));
+
 /** The camera after the shortcut `e`, or undefined when it is none or the canvas has nothing to show. */
-function shortcut(e: KeyboardEvent, session: Session, box: Viewport, area: Box | undefined) {
-  if (area === undefined || box.w === 0) return undefined;
+function shortcut(e: KeyboardEvent, session: Session, box: Viewport, targetsOf: () => FitTargets) {
+  const targets = targetsOf();
+  if (targets.screen === undefined || box.w === 0) return undefined;
   const k = { key: e.key, code: e.code, mod: e.ctrlKey || e.metaKey, shift: e.shiftKey, alt: e.altKey };
-  return shortcutCamera(session.camera.get(), k, box, area);
+  return shortcutCamera(session.camera.get(), k, box, targets);
 }
 
 /** Space pressed: held for space-drag; a focused button keeps its own space. */
@@ -129,11 +134,13 @@ function useKeys(input: {
 }): void {
   const { store, session, box, area, space, tools } = input;
   useEffect(() => {
+    // read at the key press: the selection's bounds for shift + 2
+    const targets = (): FitTargets => ({ screen: area, selection: selectedBounds(store, session) });
     const onKeyDown = (e: KeyboardEvent) => {
       // a key typed into a field, or taken already (a tab list's or splitter's arrows), is not the canvas's
       if (e.defaultPrevented || isEditable(e.target)) return;
       if (e.key === ' ') holdSpace(e, space);
-      else if (!applyShortcut(e, session, shortcut(e, session, box, area)) && !historyKey(e, store, tools)) toolKey(e, tools);
+      else if (!applyShortcut(e, session, shortcut(e, session, box, targets)) && !historyKey(e, store, tools)) toolKey(e, tools);
     };
     const release = (e: Event) => {
       if (e.type === 'blur' || (e as KeyboardEvent).key === ' ') space.current = false;
@@ -237,6 +244,8 @@ export function Canvas(props: CanvasProps): ReactNode {
 
 /** Props of {@link ZoomControls}. */
 export type ZoomControlsProps = {
+  /** The document store (the selection's bounds, for zoom to selection). */
+  readonly store: Store;
   /** The session whose camera they move. */
   readonly session: Session;
   /** The canvas size. */
@@ -245,10 +254,11 @@ export type ZoomControlsProps = {
   readonly area: Box | undefined;
 };
 
-/** The toolbar's zoom controls: out, the zoom as a percentage, in, fit, 100 %. */
+/** The toolbar's zoom controls: out, the zoom as a percentage, in, fit, zoom to selection, 100 %. */
 export function ZoomControls(props: ZoomControlsProps): ReactNode {
-  const { session, box, area } = props;
+  const { store, session, box, area } = props;
   const camera = useValue(session.camera.get);
+  const selection = useValue(session.selection.get);
   const centre = { x: box.w / 2, y: box.h / 2 };
   const set = (next: typeof camera) => session.camera.set(next);
   return (
@@ -274,6 +284,18 @@ export function ZoomControls(props: ZoomControlsProps): ReactNode {
       </button>
       <button type="button" className="fx-chrome-button" disabled={area === undefined} onClick={() => area && set(fitBox(area, box))}>
         Fit
+      </button>
+      <button
+        type="button"
+        className="fx-chrome-button"
+        aria-label="Zoom to selection"
+        disabled={selection.length === 0}
+        onClick={() => {
+          const bounds = selectedBounds(store, session);
+          if (bounds !== undefined) set(fitBox(bounds, box));
+        }}
+      >
+        Selection
       </button>
       <button type="button" className="fx-chrome-button" onClick={() => set(zoomTo100(camera, box))}>
         100 %

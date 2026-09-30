@@ -160,7 +160,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-TXT-007 | S | R4 | M23 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-008 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-EDT-001 | M | R1 | M6 | [15-editor.md](15-editor.md) | `apps/studio/src/bootstrap.browser.test.ts` +14 |
-| FR-EDT-002 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/canvas.pan-zoom.spec.ts` +6 |
+| FR-EDT-002 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/canvas.pan-zoom.spec.ts` +7 |
 | FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/tools.select-hand.spec.ts` +6 |
 | FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/selection.marquee.spec.ts` +18 |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +4 |

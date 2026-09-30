@@ -50,6 +50,15 @@ describe('CHROME_CSS (ADR-0029)', () => {
     expect(unscoped(CHROME_CSS)).toEqual([]);
   });
 
+  it('FR-EDT-001: the toolbar scrolls and its controls keep their size, so on a phone none overlaps another', () => {
+    const declarations = (selector: string) =>
+      CHROME_CSS.split('\n')
+        .find((line) => line.startsWith(`${selector} {`))
+        ?.slice(selector.length) ?? '';
+    expect(declarations('.fx-chrome-toolbar')).toContain('overflow-x: auto');
+    for (const s of ['.fx-chrome-toolbar .fx-chrome-button', '.fx-chrome-toolbar .fx-chrome-zoom']) expect(declarations(s)).toContain('flex: none');
+  });
+
   it('FR-EDT-010: the canvas and its ancestors set no inherited property', () => {
     // the path is the chrome's own classes, each laid out by a rule (the browser test matches it to the DOM)
     const styled = new Set(rulesOf(CHROME_CSS).flatMap((r) => r.selectors.flatMap((s) => classesOf(lastCompound(s)))));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { frameBox, HANDLE_PX, HANDLES, handleAt, ROTATE_OFFSET_PX, screenBox, selectionFrame } from './overlay-geometry.js';
+import { frameBox, HANDLE_PX, HANDLES, handleAt, placements, ROTATE_OFFSET_PX, screenBox, selectionBounds, selectionFrame } from './overlay-geometry.js';
 
 const round = (p: { x: number; y: number }) => [Math.round(p.x * 1000) / 1000, Math.round(p.y * 1000) / 1000];
 
@@ -101,6 +101,24 @@ describe('overlay geometry (FR-EDT-004)', () => {
     // turned frames too: inside by their own outline
     const turned = selectionFrame([{ x: 0, y: 0, w: 10, h: 10, rot: 45 }], { x: 0, y: 0, z: 1 });
     expect(handleAt(turned, { x: 5, y: 5 })).toBeUndefined();
+  });
+
+  it('FR-EDT-002: zoom to selection fits the upright bounds of the selected elements, turned ones by their corners', () => {
+    expect(selectionBounds([{ x: 1, y: 2, w: 3, h: 4 }])).toEqual({ x: 1, y: 2, w: 3, h: 4 });
+    const turned = selectionBounds([
+      { x: 0, y: 0, w: 10, h: 10 },
+      { x: 20, y: 0, w: 20, h: 10, rot: 90 },
+    ]);
+    expect([turned?.x, turned?.y, turned?.w, turned?.h].map((n) => +(n ?? 0).toFixed(9))).toEqual([0, -5, 35, 20]);
+    expect(selectionBounds([])).toBeUndefined();
+    // only elements with a box are placed
+    const records: Record<string, unknown> = {
+      a: { type: 'element', transform: { x: 1, y: 1, w: 2, h: 2 } },
+      c: { type: 'element' },
+      s: { type: 'screen', transform: { x: 9, y: 9, w: 9, h: 9 } },
+    };
+    const view = { get: (id: string) => records[id] as never };
+    expect(placements(view, ['s', 'a', 'c', 'x'] as never)).toEqual([{ x: 1, y: 1, w: 2, h: 2 }]);
   });
 
   it('FR-EDT-004: a page box (the marquee) is drawn through the camera', () => {

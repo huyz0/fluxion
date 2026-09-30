@@ -2,22 +2,12 @@
 // no pointer events (the tools read the pointer on the canvas). It draws the hovered element's
 // outline, the selection frame with its eight resize handles and rotate handle, and the marquee.
 // Handles are drawn in canvas px, so they keep their size at any zoom.
-import type { ReadView, Store } from '@fluxion/core';
+import type { Store } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
-import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { type ReactNode, useMemo } from 'react';
-import { HANDLE_PX, type Placed, screenBox, selectionFrame } from './overlay-geometry.js';
+import { HANDLE_PX, placements, screenBox, selectionFrame } from './overlay-geometry.js';
 import type { Session } from './session.js';
-
-/** The placement of record `r`, when it is an element with a box. */
-function placementOf(r: AnyRecord | undefined): Placed | undefined {
-  return r?.type === 'element' ? (r as { transform?: Placed }).transform : undefined;
-}
-
-/** The placements of the elements `ids` that have a box, in order. */
-const placements = (view: ReadView, ids: readonly RecordId[]): Placed[] =>
-  ids.map((id) => placementOf(view.get(id))).filter((p): p is Placed => p !== undefined);
 
 const points = (ps: readonly Vec2[]) => ps.map((p) => `${p.x},${p.y}`).join(' ');
 

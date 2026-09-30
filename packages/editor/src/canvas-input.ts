@@ -80,13 +80,25 @@ export type KeyInput = {
 };
 
 /**
- * `camera` after the shortcut `k`, or undefined when `k` is no camera shortcut: ctrl/meta + `=` or
- * `+` zooms in, ctrl/meta + `-` zooms out (about the centre), ctrl/meta + `0` and shift + `0` go to
- * 100 %, shift + `1` fits `area` (the screen).
+ * What the fit shortcuts fit, on the page.
  *
  * @public
  */
-export function shortcutCamera(camera: Camera, k: KeyInput, viewport: { readonly w: number; readonly h: number }, area: Box): Camera | undefined {
+export type FitTargets = {
+  /** The screen's area (shift + 1). */
+  readonly screen?: Box | undefined;
+  /** The selection's bounds (shift + 2). */
+  readonly selection?: Box | undefined;
+};
+
+/**
+ * `camera` after the shortcut `k`, or undefined when `k` is no camera shortcut: ctrl/meta + `=` or
+ * `+` zooms in, ctrl/meta + `-` zooms out (about the centre), ctrl/meta + `0` and shift + `0` go to
+ * 100 %, shift + `1` fits the screen and shift + `2` the selection (none when there is none to fit).
+ *
+ * @public
+ */
+export function shortcutCamera(camera: Camera, k: KeyInput, viewport: { readonly w: number; readonly h: number }, fit: FitTargets): Camera | undefined {
   if (k.alt) return undefined;
   const centre = { x: viewport.w / 2, y: viewport.h / 2 };
   if (k.mod) {
@@ -96,5 +108,12 @@ export function shortcutCamera(camera: Camera, k: KeyInput, viewport: { readonly
   }
   if (!k.shift) return undefined;
   if (k.code === 'Digit0') return zoomTo100(camera, viewport);
-  return k.code === 'Digit1' ? fitBox(area, viewport) : undefined;
+  const target = FIT_KEYS[k.code]?.(fit);
+  return target === undefined ? undefined : fitBox(target, viewport);
 }
+
+/** What shift + each digit fits. */
+const FIT_KEYS: Readonly<Record<string, (fit: FitTargets) => Box | undefined>> = {
+  Digit1: (fit) => fit.screen,
+  Digit2: (fit) => fit.selection,
+};
