@@ -38,19 +38,19 @@ async function contentDom(page: Page): Promise<string> {
 }
 
 /**
- * The share of pixels, in percent, that differ between two same-sized PNGs. A pixel differs when a
- * channel is off by more than PARITY_CHANNEL_DELTA, unless it is anti-aliasing: a stroke the browser
- * smooths a little differently elsewhere on the page, so a pixel on an edge (a neighbour more than
- * PARITY_EDGE_DELTA apart) in both images. A fill's pixels are never excused, so a uniform shift of
- * colour or brightness counts in full. `darken` scales the second image's channels first (the
- * spec's check that such a shift is seen).
+ * The share of pixels, in percent, that differ between two same-sized images. A pixel differs when
+ * a channel is off by more than PARITY_CHANNEL_DELTA, unless it is anti-aliasing in either image as
+ * pixelmatch (Playwright's comparator) judges it: a pixel between a darker and a brighter neighbour,
+ * at most two neighbours like it, whose darkest or brightest neighbour is part of a flat area in both
+ * images, and those neighbours more than PARITY_EDGE_DELTA apart in brightness. A pixel of a fill or
+ * of a hard edge is never excused, so a uniform tint and a 1 px shift both count (M6 final F1).
  */
-async function diffPct(page: Page, a: Buffer, b: Buffer, darken = 1): Promise<number> {
-  const [x, y] = [await pixels(page, a), await pixels(page, b)];
+function diffPct(x: Pixels, y: Pixels): number {
   if (x.w !== y.w || x.h !== y.h) return 100;
-  for (let i = 0; i < y.data.length; i++) if (i % 4 !== 3) y.data[i] = Math.round((y.data[i] as number) * darken);
   let differ = 0;
-  for (let p = 0; p < x.w * x.h; p++) if (apart(x.data, y.data, p * 4, p * 4) > PARITY_CHANNEL_DELTA && !(onEdge(x, p) && onEdge(y, p))) differ++;
+  for (let p = 0; p < x.w * x.h; p++) {
+    if (apart(x.data, y.data, p * 4, p * 4) > PARITY_CHANNEL_DELTA && !antialiased(x, p, y) && !antialiased(y, p, x)) differ++;
+  }
   return (differ / (x.w * x.h)) * 100;
 }
 
@@ -61,16 +61,56 @@ function apart(d: Uint8Array, e: Uint8Array, i: number, j: number): number {
   return Math.max(...[0, 1, 2, 3].map((c) => Math.abs((d[i + c] as number) - (e[j + c] as number))));
 }
 
-/** The eight neighbours' offsets. */
-const AROUND = [-1, 0, 1].flatMap((dy) => [-1, 0, 1].map((dx) => [dx, dy] as const)).filter(([dx, dy]) => dx !== 0 || dy !== 0);
+/** The brightness of pixel `p` of `img` (the YIQ luma pixelmatch compares). */
+const luma = (img: Pixels, p: number) =>
+  0.29889531 * (img.data[p * 4] as number) + 0.58662247 * (img.data[p * 4 + 1] as number) + 0.11448223 * (img.data[p * 4 + 2] as number);
 
-/** Whether pixel `p` of `img` is on an edge: a neighbour differs from it by more than PARITY_EDGE_DELTA. */
-function onEdge(img: Pixels, p: number): boolean {
+/** The pixels around `p` in `img` (up to eight, fewer at the border). */
+function around(img: Pixels, p: number): number[] {
   const [px, py] = [p % img.w, Math.floor(p / img.w)];
-  return AROUND.some(([dx, dy]) => {
-    const [nx, ny] = [px + dx, py + dy];
-    return nx >= 0 && ny >= 0 && nx < img.w && ny < img.h && apart(img.data, img.data, p * 4, (ny * img.w + nx) * 4) > PARITY_EDGE_DELTA;
-  });
+  const out: number[] = [];
+  for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++) {
+      const [nx, ny] = [px + dx, py + dy];
+      if ((dx !== 0 || dy !== 0) && nx >= 0 && ny >= 0 && nx < img.w && ny < img.h) out.push(ny * img.w + nx);
+    }
+  return out;
+}
+
+/** How many of `p`'s neighbours in `img` equal it, a border counting as one (pixelmatch). */
+function alike(img: Pixels, p: number): number {
+  const n = around(img, p);
+  return (n.length < 8 ? 1 : 0) + n.filter((q) => apart(img.data, img.data, p * 4, q * 4) === 0).length;
+}
+
+/** Whether pixel `p` of `img` is anti-aliasing (pixelmatch's `antialiased`), `other` the image compared. */
+function antialiased(img: Pixels, p: number, other: Pixels): boolean {
+  if (alike(img, p) > 2) return false;
+  const lp = luma(img, p);
+  const differing = around(img, p).filter((q) => apart(img.data, img.data, p * 4, q * 4) !== 0);
+  const darker = differing.filter((q) => luma(img, q) < lp);
+  const brighter = differing.filter((q) => luma(img, q) > lp);
+  if (darker.length === 0 || brighter.length === 0) return false;
+  const darkest = darker.reduce((a, q) => (luma(img, q) < luma(img, a) ? q : a));
+  const brightest = brighter.reduce((a, q) => (luma(img, q) > luma(img, a) ? q : a));
+  // an edge: the neighbours span more than PARITY_EDGE_DELTA in brightness (a faint ramp is no edge)
+  if (luma(img, brightest) - luma(img, darkest) <= PARITY_EDGE_DELTA) return false;
+  const flat = (q: number) => alike(img, q) > 2 && alike(other, q) > 2;
+  return flat(darkest) || flat(brightest);
+}
+
+/** `img` with its channels scaled by `k` (a uniform darkening). */
+const darkened = (img: Pixels, k: number): Pixels => ({ ...img, data: img.data.map((v, i) => (i % 4 === 3 ? v : Math.round(v * k))) });
+
+/** `img` moved `dx`, `dy` px, the edge it leaves repeated. */
+function shifted(img: Pixels, dx: number, dy: number): Pixels {
+  const data = new Uint8Array(img.data.length);
+  for (let y = 0; y < img.h; y++)
+    for (let x = 0; x < img.w; x++) {
+      const from = (Math.min(Math.max(y - dy, 0), img.h - 1) * img.w + Math.min(Math.max(x - dx, 0), img.w - 1)) * 4;
+      data.set(img.data.subarray(from, from + 4), (y * img.w + x) * 4);
+    }
+  return { ...img, data };
 }
 
 /** A PNG decoded by the browser into RGBA pixels. */
@@ -127,10 +167,14 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
     expect([PARITY_MAX_DIFF_PCT, PARITY_CHANNEL_DELTA, PARITY_EDGE_DELTA]).toEqual([0.1, 8, 64]);
     for (const name of EXAMPLES) {
       const { edit, present } = await bothModes(page, name);
-      const pct = await diffPct(page, edit.png, present.png);
+      const [e, p] = [await pixels(page, edit.png), await pixels(page, present.png)];
+      const pct = diffPct(e, p);
       expect(pct, `${name}: ${pct.toFixed(4)} % of the pixels differ`).toBeLessThanOrEqual(PARITY_MAX_DIFF_PCT);
-      // the comparison sees a uniform shift: the same screen 10 % darker is far over the bound
-      expect(await diffPct(page, edit.png, edit.png, 0.9), name).toBeGreaterThan(10 * PARITY_MAX_DIFF_PCT);
+      // the comparison sees what it must not excuse: the screen 10 % darker (far over the bound), or
+      // moved by 1 px (over it)
+      expect(diffPct(e, darkened(e, 0.9)), `${name}, darker`).toBeGreaterThan(10 * PARITY_MAX_DIFF_PCT);
+      expect(diffPct(e, shifted(e, 1, 0)), `${name}, 1 px right`).toBeGreaterThan(PARITY_MAX_DIFF_PCT);
+      expect(diffPct(e, shifted(e, 0, 1)), `${name}, 1 px down`).toBeGreaterThan(PARITY_MAX_DIFF_PCT);
     }
   });
 

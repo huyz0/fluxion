@@ -1307,3 +1307,7 @@ Carried review minors:
 ## 2026-09-30 M6.26 (claude)
 
 Before the final review: the player's changeset now lists what M6 added to it, the root, registries, box hook and laser trail, and its first runtime dependencies, React and three Fluxion packages (M6.25 review F1).
+
+## 2026-09-30 M6.34 (claude)
+
+Final review pass 1: changes requested. F1 was major: the parity metric excused every differing pixel that lay on an edge in both images, so a 1 px shift of all the content scored 0 %. This row reopens it. The metric now ports pixelmatch's anti-aliasing test, the one Playwright's comparator uses: a differing pixel is excused only if its brightness lies between a darker and a brighter neighbour, at most two neighbours are identical to it, and its darkest or brightest neighbour is in a flat area in both images. Pixels of fills and hard edges always count. PARITY_EDGE_DELTA (64) stays as a further condition: the excusing neighbours must differ by more than it in brightness, so the metric is stricter than pixelmatch alone. PARITY_CHANNEL_DELTA (8) stays too. The spec checks, per example, that the edit screen darkened by 10 % and moved by 1 px right and down all score over PARITY_MAX_DIFF_PCT. Edit versus present stays under it on the three desktop browsers.
