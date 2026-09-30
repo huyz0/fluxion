@@ -23,7 +23,9 @@ export type ToolbarProps = {
 export function Toolbar(props: ToolbarProps): ReactNode {
   const { layout, onLayout } = props;
   return (
-    <header className="fx-chrome-toolbar">
+    // a named banner landmark: biome takes a <header> as interactive once it has a role, so a div
+    // biome-ignore lint/a11y/useSemanticElements: <header> with a label is refused by useAriaPropsSupportedByRole
+    <div className="fx-chrome-toolbar" role="banner" aria-label="Toolbar">
       {props.children}
       <span className="fx-chrome-spacer" />
       {panelIds().map((p) => (
@@ -34,7 +36,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
       <button type="button" className="fx-chrome-button" aria-pressed={layout.focus} onClick={() => onLayout(toggleFocus(layout))}>
         Focus mode
       </button>
-    </header>
+    </div>
   );
 }
 

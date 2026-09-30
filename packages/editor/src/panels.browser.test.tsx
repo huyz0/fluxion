@@ -43,7 +43,8 @@ const key = (el: Element, k: string) => {
 describe('editor chrome panels (FR-EDT-001)', () => {
   it('FR-EDT-001: the toolbar has a pressed button per shown panel and one for focus mode', async () => {
     await act(async () => root.render(<Harness />));
-    expect(host.querySelector('header')?.className).toBe('fx-chrome-toolbar');
+    const banner = host.querySelector('[role="banner"]');
+    expect([banner?.className, banner?.getAttribute('aria-label')]).toEqual(['fx-chrome-toolbar', 'Toolbar']);
     expect(pressed()).toEqual(['Screens, library and layers:true', 'Inspector:true', 'Timeline:false', 'Focus mode:false']);
     click(buttons()[2]);
     click(buttons()[0]);

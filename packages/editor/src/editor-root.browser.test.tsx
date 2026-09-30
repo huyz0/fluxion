@@ -69,9 +69,9 @@ describe('edit-mode root (FR-EDT-001)', () => {
     const editor = host.querySelector('.fx-editor') as HTMLElement;
     expect(getComputedStyle(editor).position).toBe('fixed');
     const landmarks = [...editor.querySelectorAll('.fx-chrome-toolbar, .fx-chrome-panel, .fx-chrome-canvas')].map(
-      (e) => `${e.tagName}:${e.getAttribute('aria-label') ?? ''}`,
+      (e) => `${e.getAttribute('role') ?? e.tagName}:${e.getAttribute('aria-label') ?? ''}`,
     );
-    expect(landmarks).toEqual(['HEADER:', 'ASIDE:Screens, library and layers', 'MAIN:Canvas', 'ASIDE:Inspector']);
+    expect(landmarks).toEqual(['banner:Toolbar', 'ASIDE:Screens, library and layers', 'MAIN:Canvas', 'ASIDE:Inspector']);
     expect([...editor.querySelectorAll('[role="separator"]')].map((s) => s.getAttribute('aria-label'))).toEqual([
       'Resize the left panel',
       'Resize the timeline',
@@ -108,7 +108,7 @@ describe('edit-mode root (FR-EDT-001)', () => {
       panels: { left: { size: 310, collapsed: false }, right: { size: 250, collapsed: true }, bottom: { size: 120, collapsed: false } },
       focus: false,
     });
-    act(() => ([...host.querySelectorAll('header button')].find((b) => b.textContent === 'Focus mode') as HTMLElement).click());
+    act(() => ([...host.querySelectorAll('[role="banner"] button')].find((b) => b.textContent === 'Focus mode') as HTMLElement).click());
     expect([panel('left'), panel('bottom'), host.querySelector('[role="separator"]')]).toEqual([null, null, null]);
     expect(host.querySelector('.fx-editor')?.getAttribute('data-focus')).toBe('true');
     expect((settings.get(LAYOUT_KEY) as { focus: boolean }).focus).toBe(true);
@@ -288,6 +288,6 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect([(renders.get(moving) ?? 0) - before.moving, (renders.get(still) ?? 0) - before.still]).toEqual([0, 0]);
     // and the overlay's frame followed it, 80 page units on the canvas
     expect(framed() - startX).toBeCloseTo(80 * session.camera.get().z, 3);
-    expect(host.querySelector('.fx-el[data-el-id="' + still + '"]')).not.toBeNull();
+    expect(host.querySelector(`.fx-el[data-el-id="${still}"]`)).not.toBeNull();
   });
 });
