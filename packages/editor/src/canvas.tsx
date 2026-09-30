@@ -97,6 +97,22 @@ function applyShortcut(e: KeyboardEvent, session: Session, next: Camera | undefi
   return true;
 }
 
+/**
+ * Ctrl/cmd + Z undoes, with shift (or ctrl/cmd + Y) redoes; true when it was one of them. A gesture
+ * under way is cancelled first, so it cannot write over what the undo put back (M6.15 review F3).
+ */
+function historyKey(e: KeyboardEvent, store: Store, tools: ToolDispatcher | undefined): boolean {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return false;
+  const key = e.key.toLowerCase();
+  const redo = (key === 'z' && e.shiftKey) || key === 'y';
+  if (!redo && key !== 'z') return false;
+  e.preventDefault();
+  tools?.cancel();
+  if (redo) store.history.redo();
+  else store.history.undo();
+  return true;
+}
+
 /** A key for the tools (Esc, their shortcuts, their states), taken when they take it. */
 function toolKey(e: KeyboardEvent, tools: ToolDispatcher | undefined): void {
   if (tools?.key({ key: e.key, shift: e.shiftKey, alt: e.altKey, mod: e.ctrlKey || e.metaKey }) === true) e.preventDefault();
@@ -104,19 +120,20 @@ function toolKey(e: KeyboardEvent, tools: ToolDispatcher | undefined): void {
 
 /** Space held (for space-drag), the camera shortcuts, then the tools' keys, on the window while the canvas is mounted. */
 function useKeys(input: {
+  readonly store: Store;
   readonly session: Session;
   readonly box: Viewport;
   readonly area: Box | undefined;
   readonly space: RefObject<boolean>;
   readonly tools: ToolDispatcher | undefined;
 }): void {
-  const { session, box, area, space, tools } = input;
+  const { store, session, box, area, space, tools } = input;
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       // a key typed into a field, or taken already (a tab list's or splitter's arrows), is not the canvas's
       if (e.defaultPrevented || isEditable(e.target)) return;
       if (e.key === ' ') holdSpace(e, space);
-      else if (!applyShortcut(e, session, shortcut(e, session, box, area))) toolKey(e, tools);
+      else if (!applyShortcut(e, session, shortcut(e, session, box, area)) && !historyKey(e, store, tools)) toolKey(e, tools);
     };
     const release = (e: Event) => {
       if (e.type === 'blur' || (e as KeyboardEvent).key === ' ') space.current = false;
@@ -131,7 +148,7 @@ function useKeys(input: {
       window.removeEventListener('keyup', release);
       window.removeEventListener('blur', release);
     };
-  }, [session, box, area, space, tools]);
+  }, [store, session, box, area, space, tools]);
 }
 
 /** Props of {@link Canvas}. */
@@ -196,7 +213,7 @@ export function Canvas(props: CanvasProps): ReactNode {
   }, [box, onBox]);
   useWheel(ref, session, box);
   useGesture(ref, session);
-  useKeys({ session, box, area, space, tools });
+  useKeys({ store, session, box, area, space, tools });
   usePointerInput(ref, session.camera.get, canvasConsumer(session, space, drag, tools));
   return (
     <main

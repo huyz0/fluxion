@@ -1213,3 +1213,12 @@ Move (FR-EDT-005): core gains `element.createMany` and `element.updateMany`, so 
 `move.ts` is pure. `starts` covers the selection plus members all the way down, and connector free ends and waypoints. `moved` gives absolute fields from the start. `duplicates` makes fresh ids, the copy just in front of its original, the parent remapped, slugs dropped and bound connectors left out.
 Select tool (`select-tool.ts`, split out): a drag from an element is `translating`, one command per frame, so the gesture is one undo step. Alt-drag copies in the same gesture (on refusal it moves the originals). Esc puts it back. Arrows nudge 1 px, or 10 with shift. `ToolCtx` gains `view` and `newId`, and `EditorRoot` gains `random`. T1: a drag re-renders only the dragged element. E2E `move.nudge-and-duplicate`.
 Review r1: keys another handler prevented (tab list, splitter) are not the canvas's; Esc in an alt-drag deletes the copies in the same gesture (net-empty steps are dropped); a shift-press on a selected element drags, and toggles only on a click; `duplicates` sorts each parent's siblings once (binary search); T1 checks the frame moved.
+
+## 2026-09-30 M6.15 (claude)
+
+Resize and rotate (FR-EDT-004). `transform.ts` is pure:
+- `resize(box, handle, to, {shift, alt})` works in the box's own turned frame: the opposite side stays, alt keeps the centre, shift keeps the aspect (a side handle scales the other side about its middle), and `MIN_SIZE` is 1.
+- `rotation(box, from, to, shift)` turns about the centre in `ROTATE_STEP` (15°) steps with shift, within [0, 360).
+- `carry(from, to, p)` maps points between frames; `move.reframed` applies it to every record in the frame (centres carried, sizes scaled, turns turned, free ends carried), so multi-selections and group members follow.
+`overlay-geometry` gains `frameBox`, which the overlay and tools share, and `handleAt`. The select tool presses a handle before anything else and goes to `resizing` or `rotating`: one command per frame, one undo step, Esc restores. The canvas takes ctrl/cmd + Z for undo and shift + Z or Y for redo. E2E `transform.resize-rotate-undo` restores the box exactly.
+Review r1: a record turned against the frame scales along its own axes (`reframedBox`); inside the frame a handle is picked only within its drawn square, so small elements still move; undo and redo cancel the gesture under way first.

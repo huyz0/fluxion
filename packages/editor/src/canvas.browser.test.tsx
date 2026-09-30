@@ -1,5 +1,6 @@
 import { createCore } from '@fluxion/core';
 import { renderRegistriesFor } from '@fluxion/player';
+import type { RecordId } from '@fluxion/schema';
 import { seededRandom } from '@fluxion/schema';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -58,6 +59,10 @@ function recording(takes: (what: string) => boolean) {
   return { seen, tools };
 }
 
+/** The document each mounted canvas draws, by its canvas element. */
+const documents = new WeakMap<HTMLElement, { readonly store: ReturnType<typeof createCore>['store']; readonly screen: RecordId }>();
+const storeOf = (main: HTMLElement) => documents.get(main) as { readonly store: ReturnType<typeof createCore>['store']; readonly screen: RecordId };
+
 async function mount(camera: Camera = { x: 0, y: 0, z: 0.5 }, tools?: ToolDispatcher) {
   session.camera.set(camera);
   const core = createCore(newDocument(seededRandom(9)));
@@ -76,7 +81,9 @@ async function mount(camera: Camera = { x: 0, y: 0, z: 0.5 }, tools?: ToolDispat
     ),
   );
   await act(frame);
-  return host.querySelector('main') as HTMLElement;
+  const main = host.querySelector('main') as HTMLElement;
+  documents.set(main, { store: core.store, screen: screenId as RecordId });
+  return main;
 }
 
 const fire = (target: EventTarget, e: Event) => {
@@ -237,6 +244,34 @@ describe('canvas camera input (FR-EDT-002)', () => {
     // React's leave comes from the pointer going out to something outside
     fire(main, new PointerEvent('pointerout', { bubbles: true, relatedTarget: document.body, pointerId: 1 }));
     expect(session.hover.get()).toBeUndefined();
+  });
+
+  it('FR-EDT-006: ctrl/cmd + Z undoes; with shift, or ctrl/cmd + Y, redoes; with alt it is neither', async () => {
+    const main = await mount({ x: 0, y: 0, z: 1 });
+    const doc = storeOf(main);
+    const name = () => (doc.store.get(doc.screen) as { name?: string }).name;
+    doc.store.transact('name', (tx) => tx.patch(doc.screen, { name: 'one' }));
+    expect(key('keydown', { key: 'z', ctrlKey: true })).toBe(true);
+    expect(name()).toBe('Screen 1');
+    expect(key('keydown', { key: 'Z', metaKey: true, shiftKey: true })).toBe(true);
+    expect(name()).toBe('one');
+    key('keydown', { key: 'z', ctrlKey: true });
+    expect(key('keydown', { key: 'y', ctrlKey: true })).toBe(true);
+    expect(name()).toBe('one');
+    expect([key('keydown', { key: 'z', ctrlKey: true, altKey: true }), key('keydown', { key: 'x', ctrlKey: true }), key('keydown', { key: 'z' })]).toEqual([
+      false,
+      false,
+      false,
+    ]);
+    expect(name()).toBe('one');
+  });
+
+  it('FR-EDT-006: undo first cancels the gesture under way', async () => {
+    const { seen, tools } = recording(() => false);
+    const main = await mount({ x: 0, y: 0, z: 1 }, tools);
+    expect(storeOf(main).store.history.canUndo()).toBe(false);
+    key('keydown', { key: 'z', ctrlKey: true });
+    expect(seen).toEqual(['cancel']);
   });
 
   it('FR-EDT-002: zoom shortcuts act on the window unless typed into a field', async () => {

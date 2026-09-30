@@ -54,6 +54,50 @@ function setup() {
   return { core, screen, session, tools, a, c, xy };
 }
 
+describe('resizing and rotating with the select tool (FR-EDT-004)', () => {
+  it('FR-EDT-004: a handle of the selection resizes it, a drag being one undo step; Esc puts it back', () => {
+    const { core, session, tools, a } = setup();
+    const box = () => (core.store.get(a) as { transform: { x: number; y: number; w: number; h: number; rot?: number } }).transform;
+    session.selection.set([a]);
+    // the camera is at 100 %: the se handle is at the box's corner (100, 100)
+    tools.pointer(at('down', 100, 100));
+    expect(tools.current).toBe('select.resizing');
+    tools.pointer(at('move', 150, 120));
+    tools.pointer(at('move', 160, 130));
+    tools.pointer(at('up', 160, 130));
+    expect([tools.current, box()]).toEqual(['select.idle', { x: 0, y: 0, w: 160, h: 130, rot: 0 }]);
+    expect(core.store.history.undoDepth).toBe(1);
+    // the se handle is now at (160, 130): pressed, dragged about the centre, then Esc
+    tools.pointer(at('down', 160, 130));
+    tools.pointer(at('move', 200, 200, { alt: true }));
+    expect(box().w).toBe(240);
+    tools.key(key('Escape'));
+    expect(tools.current).toBe('select.idle');
+    expect(box()).toEqual({ x: 0, y: 0, w: 160, h: 130, rot: 0 });
+    expect(core.store.history.undoDepth).toBe(1);
+  });
+
+  it('FR-EDT-004: the rotate handle turns the selection about its centre, in 15° steps with shift', () => {
+    const { core, session, tools, a, c } = setup();
+    const rot = (id: RecordId) => (core.store.get(id) as { transform: { rot?: number } }).transform.rot;
+    session.selection.set([a]);
+    // the rotate handle sits 24 px above the top edge's middle (50, 0)
+    tools.pointer(at('down', 50, -24));
+    expect(tools.current).toBe('select.rotating');
+    tools.pointer(at('move', 150, 52, { shift: true }));
+    tools.pointer(at('up', 150, 52));
+    expect(rot(a)).toBe(90);
+    // two elements turn together about their shared frame's centre
+    session.selection.set([a, c]);
+    const frameTop = { x: 150, y: -24 };
+    tools.pointer(at('down', frameTop.x, frameTop.y));
+    tools.pointer(at('move', 300, 50, { shift: true }));
+    tools.pointer(at('up', 300, 50));
+    expect([rot(a), rot(c)]).toEqual([180, 90]);
+    expect(core.store.history.undoDepth).toBe(2);
+  });
+});
+
 describe('moving with the select tool (FR-EDT-005)', () => {
   it('FR-EDT-005: a drag moves the element under it with the pointer; the whole drag is one undo step', () => {
     const { core, session, tools, a, c, xy } = setup();

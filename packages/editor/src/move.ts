@@ -5,6 +5,7 @@
 import type { ReadView } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
 import { type AnyRecord, keyBetween, type RecordId } from '@fluxion/schema';
+import { type Box2, carry } from './transform.js';
 
 /**
  * A moved record's place as it started: its box, or a connector's free ends and waypoints.
@@ -59,6 +60,43 @@ export function moved(from: readonly Start[], d: Vec2): { readonly id: RecordId;
     if (s.route?.waypoints) fields['route'] = { ...s.route, waypoints: s.route.waypoints.map((w) => shift(w, d)) };
     return Object.keys(fields).length === 0 ? [] : [{ id: s.id, fields }];
   });
+}
+
+/**
+ * The fields that carry each record of `from` from the frame `before` to the frame `after` (a resize
+ * or rotation of the selection): a box's centre carried, its size scaled, its turn turned; a free
+ * connector's ends and waypoints carried.
+ *
+ * @public
+ */
+export function reframed(from: readonly Start[], before: Box2, after: Box2): { readonly id: RecordId; readonly fields: Record<string, unknown> }[] {
+  const at = (p: Vec2) => carry(before, after, p);
+  return from.flatMap((s) => {
+    const fields: Record<string, unknown> = {};
+    if (s.transform) fields['transform'] = reframedBox(s.transform as Placed & Record<string, unknown>, before, after);
+    if (s.freeSource) fields['freeSource'] = at(s.freeSource);
+    if (s.freeTarget) fields['freeTarget'] = at(s.freeTarget);
+    if (s.route?.waypoints) fields['route'] = { ...s.route, waypoints: s.route.waypoints.map(at) };
+    return Object.keys(fields).length === 0 ? [] : [{ id: s.id, fields }];
+  });
+}
+
+type Placed = { readonly x: number; readonly y: number; readonly w: number; readonly h: number; readonly rot?: number };
+
+/**
+ * The box `t` carried from the frame `before` to `after`: its centre carried, its turn turned, its
+ * size scaled along its own axes, each taken into the frame's and stretched by the frame's scales
+ * (exact for turns by quarters against the frame, M6.15 review F1).
+ */
+function reframedBox(t: Placed & Record<string, unknown>, before: Box2, after: Box2): Record<string, unknown> {
+  const sx = before.w === 0 ? 1 : after.w / before.w;
+  const sy = before.h === 0 ? 1 : after.h / before.h;
+  const r = (((t.rot ?? 0) - before.rot) * Math.PI) / 180;
+  const w = t.w * Math.hypot(Math.cos(r) * sx, Math.sin(r) * sy);
+  const h = t.h * Math.hypot(Math.sin(r) * sx, Math.cos(r) * sy);
+  const centre = carry(before, after, { x: t.x + t.w / 2, y: t.y + t.h / 2 });
+  const rot = ((((t.rot ?? 0) + after.rot - before.rot) % 360) + 360) % 360;
+  return { ...t, x: centre.x - w / 2, y: centre.y - h / 2, w, h, rot };
 }
 
 /** The first of the sorted `indexes` after `index`, if any (a binary search). */

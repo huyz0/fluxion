@@ -6,6 +6,13 @@ import { apply, type Box, boxFromPoints, elementMatrix, type Vec2 } from '@fluxi
 import { type Camera, pageToScreen } from './camera.js';
 
 /**
+ * A box on the page: its unturned place and size, and its turn in degrees clockwise about its centre.
+ *
+ * @public
+ */
+export type Box2 = { readonly x: number; readonly y: number; readonly w: number; readonly h: number; readonly rot: number };
+
+/**
  * The side of a resize handle, px on the canvas at any zoom.
  *
  * @public
@@ -117,23 +124,49 @@ function frameOf(corners: readonly [Vec2, Vec2, Vec2, Vec2], rotation: number): 
  * @public
  */
 export function selectionFrame(placed: readonly Placed[], camera: Camera): SelectionFrame | undefined {
-  const only = placed.length === 1 ? placed[0] : undefined;
-  if (only !== undefined) {
-    const [a, b, c, d] = pageCorners(only).map((p) => pageToScreen(camera, p)) as [Vec2, Vec2, Vec2, Vec2];
-    return frameOf([a, b, c, d], only.rot ?? 0);
-  }
-  const bounds = unionOf(placed);
-  if (bounds === undefined) return undefined;
-  const at = (x: number, y: number) => pageToScreen(camera, { x, y });
-  return frameOf(
-    [at(bounds.x, bounds.y), at(bounds.x + bounds.w, bounds.y), at(bounds.x + bounds.w, bounds.y + bounds.h), at(bounds.x, bounds.y + bounds.h)],
-    0,
-  );
+  const box = frameBox(placed);
+  if (box === undefined) return undefined;
+  const [a, b, c, d] = pageCorners(box).map((p) => pageToScreen(camera, p)) as [Vec2, Vec2, Vec2, Vec2];
+  return frameOf([a, b, c, d], box.rot);
 }
 
-/** The upright page bounds of several placed boxes, each turned. */
-function unionOf(placed: readonly Placed[]): Box | undefined {
-  return boxFromPoints(placed.flatMap(pageCorners)) ?? undefined;
+/**
+ * The frame of the elements placed at `placed`, on the page: one element's own box and turn, or the
+ * upright bounds of several. What the handles resize and rotate. Undefined when nothing is placed.
+ *
+ * @public
+ */
+export function frameBox(placed: readonly Placed[]): Box2 | undefined {
+  const only = placed.length === 1 ? placed[0] : undefined;
+  if (only !== undefined) return { x: only.x, y: only.y, w: only.w, h: only.h, rot: only.rot ?? 0 };
+  const bounds: Box | null = boxFromPoints(placed.flatMap(pageCorners));
+  return bounds === null ? undefined : { ...bounds, rot: 0 };
+}
+
+/** Whether canvas point `p` lies inside the frame's outline, whose corners run clockwise on the canvas. */
+function insideFrame(frame: SelectionFrame, p: Vec2): boolean {
+  const c = frame.corners;
+  return c.every((a, i) => {
+    const b = c[(i + 1) % 4] as Vec2;
+    // tzap disable next-line EqualityOperator: a point exactly on the outline
+    return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) >= 0;
+  });
+}
+
+/**
+ * The handle of `frame` at canvas point `p`: a resize handle, or `rotate`. Outside the frame a handle
+ * is picked within its size; inside it only where it is drawn, so the middle of a small element is
+ * still the element's, to move (M6.15 review F2).
+ *
+ * @public
+ */
+export function handleAt(frame: SelectionFrame | undefined, p: Vec2): HandleId | 'rotate' | undefined {
+  if (frame === undefined) return undefined;
+  const reach = insideFrame(frame, p) ? HANDLE_PX / 2 : HANDLE_PX;
+  // tzap disable next-line EqualityOperator: a press exactly a handle's reach away
+  const near = (at: Vec2) => Math.hypot(p.x - at.x, p.y - at.y) <= reach;
+  if (near(frame.rotate)) return 'rotate';
+  return frame.handles.find(([, at]) => near(at))?.[0];
 }
 
 /**

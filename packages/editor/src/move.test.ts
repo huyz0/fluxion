@@ -2,7 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { duplicates, moved, starts } from './move.js';
+import { duplicates, moved, reframed, starts } from './move.js';
 
 function setup() {
   const b = documentBuilder({ seed: 140 });
@@ -48,6 +48,49 @@ describe('moving and duplicating (FR-EDT-005)', () => {
     ]);
     // a record that is no element does not move
     expect(starts(core.store, [(core.store.members('byType', 'screen') as RecordId[])[0] as RecordId])).toEqual([]);
+  });
+
+  it('FR-EDT-004: a resized or turned frame carries each record: centres carried, sizes scaled, turns turned', () => {
+    const { core, a, group, member, free } = setup();
+    const before = { x: 0, y: 300, w: 100, h: 100, rot: 0 };
+    // the group doubled rightwards: its member too, its place in the group kept
+    expect(reframed(starts(core.store, [group]), before, { ...before, w: 200 })).toEqual([
+      { id: group, fields: { transform: { x: 0, y: 300, w: 200, h: 100, rot: 0 } } },
+      { id: member, fields: { transform: { x: 10, y: 305, w: 20, h: 10, rot: 0 } } },
+    ]);
+    // turned a quarter: a's own turn of 15° becomes 105°; free ends are carried too
+    const frame = { x: 0, y: 0, w: 100, h: 100, rot: 0 };
+    const turned = reframed(starts(core.store, [a, free]), frame, { ...frame, rot: 90 });
+    const field = (updates: ReturnType<typeof reframed>, i: number, name: string) => (updates[i] as { fields: Record<string, unknown> }).fields[name];
+    expect((field(turned, 0, 'transform') as { rot: number }).rot).toBe(105);
+    const freeSource = turned[1]?.fields['freeSource'] as { x: number; y: number };
+    expect([+freeSource.x.toFixed(9), +freeSource.y.toFixed(9)]).toEqual([100, 0]);
+    expect(turned[1]?.fields['route']).toEqual({ type: 'straight', waypoints: [expect.objectContaining({})] });
+    // a turn past a full one comes back within [0, 360); a frame of no size scales nothing
+    const round = reframed(starts(core.store, [a]), { ...frame, rot: 300 }, { ...frame, rot: 0 });
+    expect((field(round, 0, 'transform') as { rot: number }).rot).toBe(75);
+    const flat = { x: 0, y: 0, w: 0, h: 0, rot: 0 };
+    const same = field(reframed(starts(core.store, [a]), flat, flat), 0, 'transform') as { w: number; h: number };
+    expect([+same.w.toFixed(9), +same.h.toFixed(9)]).toEqual([30, 40]);
+    expect(field(turned, 1, 'freeTarget')).toBeDefined();
+    // turned a quarter against the frame, a record's own width is the frame's height: stretching the
+    // frame twice as wide makes it twice as tall (its own h), not twice as long (M6.15 review F1)
+    core.store.transact('upright', (tx) => tx.patch(a, { transform: { x: 0, y: 0, w: 100, h: 20, rot: 90 } }));
+    const wide = reframed(starts(core.store, [a]), frame, { ...frame, w: 200 });
+    const t = field(wide, 0, 'transform') as { w: number; h: number };
+    expect([+t.w.toFixed(9), +t.h.toFixed(9)]).toEqual([100, 40]);
+    // one turned element resized in its own frame: its own sides scale as the frame's (a turn of 45°)
+    core.store.transact('slant', (tx) => tx.patch(a, { transform: { x: 0, y: 0, w: 100, h: 20, rot: 45 } }));
+    const slanted = { x: 0, y: 0, w: 100, h: 20, rot: 45 };
+    const own = field(reframed(starts(core.store, [a]), slanted, { ...slanted, w: 200 }), 0, 'transform') as { w: number; h: number };
+    expect([+own.w.toFixed(9), +own.h.toFixed(9)]).toEqual([200, 20]);
+    // turned a quarter against the frame, the frame made twice as tall doubles its own width
+    core.store.transact('upright', (tx) => tx.patch(a, { transform: { x: 0, y: 0, w: 100, h: 20, rot: 90 } }));
+    const tall = field(reframed(starts(core.store, [a]), frame, { ...frame, h: 200 }), 0, 'transform') as { w: number; h: number };
+    expect([+tall.w.toFixed(9), +tall.h.toFixed(9)]).toEqual([200, 20]);
+    // nothing placed: nothing to carry
+    const { bound } = setup();
+    expect(reframed(starts(core.store, [bound]), frame, frame)).toEqual([]);
   });
 
   it('FR-EDT-005: duplicates have fresh ids, sit just in front of their originals, keep their copied parent', () => {

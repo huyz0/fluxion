@@ -4,10 +4,12 @@
 // or 10 px with shift; ctrl/cmd + A selects all. A drag is one gesture, so one undo step.
 import type { Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
-import { duplicates, moved, type Start, starts } from './move.js';
+import { duplicates, moved, reframed, type Start, starts } from './move.js';
+import { frameBox, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
 import { type KeyInfo, SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
+import { type Box2, resize, rotation } from './transform.js';
 
 /** The nudge of each arrow key, page units (shift: ten times as far). */
 const ARROWS: { readonly [key: string]: Vec2 } = {
@@ -65,6 +67,52 @@ function follow(drag: Drag, page: Vec2): void {
   drag.gesture.commit();
 }
 
+/** A press on a handle of the selection frame: which, the frame and what is in it as they started. */
+type Handle = { readonly id: HandleId | 'rotate'; readonly box: Box2; readonly page: Vec2; readonly from: readonly Start[] };
+
+/** The handle of the selection's frame under canvas point `e.screen`, if any. */
+function handleUnder(ctx: ToolCtx, e: PointerInfo): Handle | undefined {
+  const selected = ctx.session.selection.get();
+  const placed = selected.map((id) => (ctx.view.get(id) as { transform?: Placed } | undefined)?.transform).filter((t): t is Placed => t !== undefined);
+  const id = handleAt(selectionFrame(placed, ctx.session.camera.get()), e.screen);
+  const box = frameBox(placed);
+  return id === undefined || box === undefined ? undefined : { id, box, page: e.page, from: starts(ctx.view, selected) };
+}
+
+/**
+ * The state that drags a handle: each move sets the frame `after(handle, e)` and carries what is in it
+ * along, one command a frame; the whole drag is one undo step; Esc puts it all back.
+ */
+function transforming(p: Press, id: string, after: (h: Handle, e: PointerInfo) => Box2): StateNode {
+  let gesture: Gesture | undefined;
+  const set = (h: Handle, box: Box2) => {
+    gesture?.update('element.updateMany', { updates: reframed(h.from, h.box, box) });
+    gesture?.commit();
+  };
+  return {
+    id,
+    onEnter: (ctx) => {
+      gesture = beginGesture(ctx.execute, ctx.seal);
+    },
+    onPointerMove: (_ctx, e) => {
+      const h = p.handle as Handle;
+      set(h, after(h, e));
+      return undefined;
+    },
+    onPointerUp: () => ({ to: 'idle' }),
+    onCancel: () => {
+      const h = p.handle as Handle;
+      set(h, h.box);
+      return { to: 'idle' };
+    },
+    // tzap disable next-line BlockStatement: each frame commits at once, and the next gesture's own merge key starts a new undo step anyway
+    onExit: () => {
+      gesture?.end();
+      gesture = undefined;
+    },
+  };
+}
+
 /** What a press left for the states after it. */
 type Press = {
   /** A press on empty canvas: where, with shift or not, and what was selected before. */
@@ -77,6 +125,8 @@ type Press = {
   grab?: { readonly screen: Vec2; readonly page: Vec2; readonly alt: boolean } | undefined;
   /** The drag under way. */
   drag?: Drag | undefined;
+  /** A press on a handle of the selection frame. */
+  handle?: Handle | undefined;
 };
 
 /**
@@ -105,6 +155,9 @@ function idle(p: Press): StateNode {
     },
     onPointerDown: (ctx, e) => {
       if (e.button !== 0) return undefined;
+      // a handle of the selection's frame first: it lies over what it frames
+      p.handle = handleUnder(ctx, e);
+      if (p.handle !== undefined) return { to: p.handle.id === 'rotate' ? 'rotating' : 'resizing' };
       pressed(ctx, e, p);
       return { to: 'pointing' };
     },
@@ -207,6 +260,13 @@ export function selectTool(): Tool {
     title: 'Select',
     shortcut: 'v',
     initial: 'idle',
-    states: { idle: idle(p), pointing: pointing(p), translating: translating(p), brushing: brushing(p) },
+    states: {
+      idle: idle(p),
+      pointing: pointing(p),
+      translating: translating(p),
+      brushing: brushing(p),
+      resizing: transforming(p, 'resizing', (h, e) => resize(h.box, h.id as HandleId, e.page, e)),
+      rotating: transforming(p, 'rotating', (h, e) => ({ ...h.box, rot: rotation(h.box, h.page, e.page, e.shift) })),
+    },
   };
 }
