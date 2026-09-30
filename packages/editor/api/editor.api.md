@@ -10,6 +10,7 @@ import { CommandTxOptions } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
+import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { RenderRegistries } from '@fluxion/render';
@@ -31,6 +32,9 @@ export type Camera = {
 export function clampZoom(z: number): number;
 
 // @public
+export function clickSelection(current: readonly RecordId[], hit: RecordId | undefined, shift: boolean): readonly RecordId[];
+
+// @public
 export function createHitIndex(store: Store, context: HitContext): HitIndex;
 
 // @public
@@ -47,6 +51,9 @@ export function createToolRegistry(): Registry<string, Tool>;
 
 // @public
 export const DEFAULT_CAMERA: Camera;
+
+// @public
+export const DRAG_PX = 4;
 
 // @public
 export function EditorRoot(props: EditorRootProps): ReactNode;
@@ -85,6 +92,9 @@ export type HitContext = {
 // @public
 export type HitIndex = {
     hitTest(screenId: RecordId, p: Vec2, zoom: number): RecordId | undefined;
+    within(screenId: RecordId, box: Box, mode: "contain" | "intersect"): RecordId[];
+    all(screenId: RecordId): RecordId[];
+    selectableOf(id: RecordId): RecordId;
     dispose(): void;
 };
 
@@ -98,6 +108,18 @@ export type KeyInfo = {
 
 // @public
 export const LAYOUT_KEY = "fluxion.editor.layout.v1";
+
+// @public
+export type Marquee = {
+    readonly box: Box;
+    readonly mode: MarqueeMode;
+};
+
+// @public
+export function marquee(start: Vec2, end: Vec2): Marquee;
+
+// @public
+export type MarqueeMode = "contain" | "intersect";
 
 // @public
 export function memorySettings(initial?: {
@@ -137,6 +159,12 @@ export type PointerPhase = "down" | "move" | "up" | "cancel";
 
 // @public
 export function registerBuiltinTools(registry: Registry<string, Tool>): void;
+
+// @public
+export function sameStyle(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
+
+// @public
+export function sameType(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
 
 // @public
 export function screenToPage(camera: Camera, p: Vec2): Vec2;
@@ -196,6 +224,8 @@ export type Tool = {
 export type ToolCtx = {
     readonly session: Session;
     hitTest(p: Vec2): RecordId | undefined;
+    elementsIn(box: Box, mode: MarqueeMode): readonly RecordId[];
+    allElements(): readonly RecordId[];
     readonly execute: Execute;
     seal(): void;
 };
@@ -214,6 +244,9 @@ export type Transition = {
     readonly to: string;
     readonly info?: unknown;
 };
+
+// @public
+export function union(base: readonly RecordId[], picked: readonly RecordId[]): readonly RecordId[];
 
 // @public
 export const VERSION: string;

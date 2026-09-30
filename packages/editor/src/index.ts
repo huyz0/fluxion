@@ -19,6 +19,7 @@ export { createHitIndex, type HitContext, type HitIndex, PICK_PX } from './hit-t
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
+export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
 export { createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';
 export { memorySettings, type SettingsStore } from './settings.js';
 export {

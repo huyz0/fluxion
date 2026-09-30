@@ -91,7 +91,14 @@ describe('editor chrome panels (FR-EDT-001)', () => {
     const session = createSession('doc');
     const registry = createToolRegistry();
     registerBuiltinTools(registry);
-    const tools = createToolDispatcher(registry, { session, hitTest: () => undefined, execute: () => ({ ok: true, value: undefined }), seal: () => {} });
+    const tools = createToolDispatcher(registry, {
+      session,
+      hitTest: () => undefined,
+      elementsIn: () => [],
+      allElements: () => [],
+      execute: () => ({ ok: true, value: undefined }),
+      seal: () => {},
+    });
     await act(async () => root.render(<ToolButtons session={session} tools={tools} />));
     const state = () => buttons().map((b) => `${b.textContent}:${b.getAttribute('aria-pressed')}:${b.title}:${b.getAttribute('aria-keyshortcuts')}`);
     expect(host.querySelector('fieldset')?.getAttribute('aria-label')).toBe('Tools');

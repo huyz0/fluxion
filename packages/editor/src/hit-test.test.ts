@@ -1,29 +1,11 @@
-import { createCore, createRegistry, type ShapeDef } from '@fluxion/core';
-import type { RouteContext, Router } from '@fluxion/routing';
+import { createCore } from '@fluxion/core';
+import type { Router } from '@fluxion/routing';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
+import { FRAME, registries } from './__fixtures__/hit-shapes.js';
 import { createHitIndex, PICK_PX } from './hit-test.js';
-
-/** `basic:rect` and `basic:line` as packs/basic defines them. */
-const RECT: ShapeDef = { id: 'basic:rect', outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' }, defaultSize: { w: 160, h: 100 } };
-const LINE: ShapeDef = { id: 'basic:line', outline: { path: 'M 0 {h/2} L {w} {h/2}' }, defaultSize: { w: 160, h: 16 } };
-/** An outline no expression can evaluate: hit as its box. */
-const BROKEN: ShapeDef = { id: 'test:broken', outline: { path: 'M 0 0 L {nope} 0 Z' }, defaultSize: { w: 10, h: 10 } };
-/** A right triangle, its right angle at the top-left: flips move it. */
-const TRIANGLE: ShapeDef = { id: 'test:triangle', outline: { path: 'M 0 0 L {w} 0 L 0 {h} Z' }, defaultSize: { w: 100, h: 100 } };
-/** A notch cut up into the bottom edge: a concave corner at the box's centre. */
-const NOTCHED: ShapeDef = { id: 'test:notched', outline: { path: 'M 0 0 L {w} 0 L {w} {h} L {w/2} {h/2} L 0 {h} Z' }, defaultSize: { w: 200, h: 200 } };
-/** A rectangle whose definition leaves it unfilled. */
-const FRAME: ShapeDef = { ...RECT, id: 'test:frame', defaultStyle: { fill: 'transparent' } };
-
-function registries(): RouteContext {
-  const shapeDefs = createRegistry<string, ShapeDef>('shapeDefs');
-  for (const def of [RECT, LINE, BROKEN, TRIANGLE, FRAME, NOTCHED]) shapeDefs.register(def.id, def, 'test');
-  // no routers: every connector draws straight
-  return { shapeDefs, routers: createRegistry('routers') };
-}
 
 describe('hit-testing (FR-EDT-004)', () => {
   it('FR-EDT-004: rotated, hollow and thin-stroke shapes hit where they are drawn', () => {

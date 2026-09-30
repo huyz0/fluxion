@@ -25,15 +25,21 @@ const key = (k: string, o: Partial<KeyInfo> = {}): KeyInfo => ({ key: k, shift: 
 function setup(under = 'shape1' as RecordId) {
   const session = createSession('doc');
   const log: string[] = [];
+  const boxes: string[] = [];
   const ctx: ToolCtx = {
     session,
     hitTest: (p) => (p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100 ? under : undefined),
+    elementsIn: (box, mode) => {
+      boxes.push(`${mode} ${box.x},${box.y},${box.w},${box.h}`);
+      return mode === 'contain' ? (['inside'] as RecordId[]) : (['inside', 'touched'] as RecordId[]);
+    },
+    allElements: () => ['one', 'two'] as RecordId[],
     execute: () => ({ ok: true, value: undefined }),
     seal: () => log.push('seal'),
   };
   const registry = createToolRegistry();
   registerBuiltinTools(registry);
-  return { session, ctx, registry, log };
+  return { session, ctx, registry, log, boxes };
 }
 
 /** A tool that records what its states see. */
@@ -209,6 +215,77 @@ describe('built-in tools (FR-EDT-003)', () => {
     expect(tools.current).toBe('select.idle');
     expect([selectTool().shortcut, handTool().shortcut, selectTool().title, handTool().title]).toEqual(['v', 'h', 'Select', 'Hand']);
     expect([registry.source('select'), registry.source('hand')]).toEqual(['editor', 'editor']);
+  });
+
+  it('FR-EDT-004: shift-click toggles; a press on a selected element keeps the selection; ctrl/cmd + A selects all', () => {
+    const { session, ctx, registry } = setup('shape1' as RecordId);
+    const tools = createToolDispatcher(registry, ctx);
+    const shifted = (phase: PointerPhase, x: number, y: number) => ({ ...at(phase, x, y), shift: true });
+    session.selection.set(['other' as RecordId]);
+    tools.pointer(shifted('down', 50, 50));
+    tools.pointer(shifted('up', 50, 50));
+    expect(session.selection.get()).toEqual(['other', 'shape1']);
+    tools.pointer(shifted('down', 50, 50));
+    tools.pointer(shifted('up', 50, 50));
+    expect(session.selection.get()).toEqual(['other']);
+    // a shifted click on nothing keeps the selection
+    tools.pointer(shifted('down', 500, 50));
+    tools.pointer(shifted('up', 500, 50));
+    expect(session.selection.get()).toEqual(['other']);
+    // a press on an element already selected keeps the others (for a drag); released, the click picks it alone
+    session.selection.set(['other' as RecordId, 'shape1' as RecordId]);
+    tools.pointer(at('down', 50, 50));
+    expect(session.selection.get()).toEqual(['other', 'shape1']);
+    tools.pointer(at('up', 50, 50));
+    expect(session.selection.get()).toEqual(['shape1']);
+    // a click on an element not selected, then released, stays as it was set
+    session.selection.set(['other' as RecordId]);
+    tools.pointer(at('down', 50, 50));
+    tools.pointer(at('up', 50, 50));
+    expect(session.selection.get()).toEqual(['shape1']);
+    expect(session.marquee.get()).toBeUndefined();
+    expect(tools.key(key('a', { mod: true }))).toBe(true);
+    expect(session.selection.get()).toEqual(['one', 'two']);
+    expect(tools.key(key('a'))).toBe(false);
+    expect(tools.key(key('b', { mod: true }))).toBe(false);
+    expect(tools.key(key('A', { mod: true, shift: true }))).toBe(true);
+  });
+
+  it('FR-EDT-004: a drag from empty canvas is a marquee: rightwards contains, leftwards touches; shift adds; Esc undoes it', () => {
+    const { session, ctx, registry, boxes } = setup('shape1' as RecordId);
+    const tools = createToolDispatcher(registry, ctx);
+    session.selection.set(['old' as RecordId]);
+    tools.pointer(at('down', 200, 200));
+    expect(session.selection.get()).toEqual([]);
+    // under 4 px it is still a click
+    tools.pointer(at('move', 203, 200));
+    expect([tools.current, session.marquee.get()]).toEqual(['select.pointing', undefined]);
+    tools.pointer(at('move', 260, 240));
+    expect(tools.current).toBe('select.brushing');
+    expect(session.marquee.get()).toEqual({ x: 200, y: 200, w: 60, h: 40 });
+    expect(session.selection.get()).toEqual(['inside']);
+    tools.pointer(at('move', 150, 240));
+    expect([session.marquee.get(), session.selection.get()]).toEqual([{ x: 150, y: 200, w: 50, h: 40 }, ['inside', 'touched']]);
+    tools.pointer(at('up', 150, 240));
+    expect([tools.current, session.marquee.get(), session.selection.get()]).toEqual(['select.idle', undefined, ['inside', 'touched']]);
+    expect(boxes).toEqual(['contain 200,200,60,40', 'intersect 150,200,50,40']);
+    // shift adds to what was selected
+    session.selection.set(['old' as RecordId]);
+    tools.pointer({ ...at('down', 200, 200), shift: true });
+    tools.pointer({ ...at('move', 260, 240), shift: true });
+    expect(session.selection.get()).toEqual(['old', 'inside']);
+    tools.pointer(at('up', 260, 240));
+    // Esc puts the selection back and drops the marquee
+    session.selection.set(['old' as RecordId]);
+    tools.pointer(at('down', 200, 200));
+    tools.pointer(at('move', 260, 240));
+    tools.key(key('Escape'));
+    expect([tools.current, session.marquee.get(), session.selection.get()]).toEqual(['select.idle', undefined, ['old']]);
+    // a press on an element does not start a marquee
+    tools.pointer(at('down', 50, 50));
+    tools.pointer(at('move', 90, 90));
+    expect(tools.current).toBe('select.pointing');
+    tools.pointer(at('up', 90, 90));
   });
 
   it('FR-EDT-003: the hand drags the page with the pointer, with any button', () => {

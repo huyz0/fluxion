@@ -60,7 +60,13 @@ function useTools(props: EditorRootProps, session: Session, screenId: RecordId |
     () =>
       createToolDispatcher(registry, {
         session,
-        hitTest: (p) => (screenId === undefined ? undefined : hits.current?.hitTest(screenId, p, session.camera.get().z)),
+        hitTest: (p) => {
+          const hit = screenId === undefined ? undefined : hits.current?.hitTest(screenId, p, session.camera.get().z);
+          // a click on a group's member selects the group
+          return hit === undefined ? undefined : hits.current?.selectableOf(hit);
+        },
+        elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
+        allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),
         execute,
         seal: () => store.history.seal(),
       }),

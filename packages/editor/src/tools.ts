@@ -4,9 +4,10 @@
 // tools by their shortcuts, and on Esc cancels: a state returns to its tool's start, and a tool at its
 // start returns to `select`.
 import { createRegistry, type Registry } from '@fluxion/core';
-import type { Vec2 } from '@fluxion/geometry';
+import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import type { Execute, PointerInfo } from './pointer.js';
+import type { MarqueeMode } from './selection.js';
 import type { Session } from './session.js';
 
 /**
@@ -33,8 +34,15 @@ export type KeyInfo = {
 export type ToolCtx = {
   /** The document's session: selection, camera, tool, hover. */
   readonly session: Session;
-  /** The topmost element drawn at page point `p` on the canvas's screen, at the current zoom. */
+  /**
+   * What a click at page point `p` picks on the canvas's screen, at the current zoom: the topmost
+   * drawn element, or the outermost group it sits in.
+   */
   hitTest(p: Vec2): RecordId | undefined;
+  /** The selectable elements of the canvas's screen a page box contains, or touches, back to front. */
+  elementsIn(box: Box, mode: MarqueeMode): readonly RecordId[];
+  /** Every selectable element of the canvas's screen inside no other one, back to front. */
+  allElements(): readonly RecordId[];
   /** Run a command (the only write path). */
   readonly execute: Execute;
   /** Close the current undo step (at the end of a gesture). */
