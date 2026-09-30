@@ -373,6 +373,45 @@ export function benchLeg(maxMs, { runner = runBenches, root = repoPath() } = {})
   }
 }
 
+// ── one named benchmark under a budget (M6.10: the hit-test-2000 bench) ─────────────────────────────
+/**
+ * Judge a Vitest 5 JSON bench report for one benchmark: every test passed, exactly one task is named
+ * `name`, and its p99 is within `maxMs`.
+ */
+export function checkBenchTask(report, name, maxMs) {
+  const tests = report.testResults.flatMap((f) => f.assertionResults);
+  const failed = tests.filter((a) => a.status !== 'passed');
+  if (failed.length) return `bench tests failed: ${failed.map((a) => a.title).join(', ')}`;
+  const tasks = tests.flatMap((a) => (a.benchmarks ?? []).flatMap((b) => b.tasks)).filter((t) => t.name === name);
+  if (tasks.length !== 1) return `${tasks.length} benchmarks named ${name} (want 1)`;
+  const p99 = tasks[0].latency?.p99;
+  return p99 <= maxMs || `${name} p99 ${Number(p99).toFixed(3)} ms > ${maxMs} ms`;
+}
+
+/**
+ * Completion-gate leg: run the bench file `file` (Vitest 5, the node bench project) and judge its
+ * benchmark `name` with {@link checkBenchTask}. A missing file fails without running anything.
+ * `runner(file, out)` and `root` are injectable for tests.
+ */
+export function benchUnder(file, name, maxMs, { runner = runBenchFile, root = repoPath() } = {}) {
+  if (!existsSync(join(root, file))) return `missing ${file}`;
+  const dir = mkdtempSync(join(tmpdir(), 'gate-bench-'));
+  try {
+    const out = join(dir, 'bench.json');
+    const r = runner(file, out);
+    if (!existsSync(out)) return `no bench output: ${tail(r)}`;
+    const judged = checkBenchTask(JSON.parse(readFileSync(out, 'utf8')), name, maxMs);
+    return r.status !== 0 && judged === true ? `bench run exited ${r.status}: ${tail(r)}` : judged;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/** Run one bench file with Vitest 5, JSON to `out`. */
+function runBenchFile(file, out) {
+  return run('pnpm', ['exec', 'vitest', 'bench', '--run', '--project', 'node (bench)', '--reporter=json', `--outputFile=${out}`, file]);
+}
+
 // ── R0 demo content (M4 cp1 F8): a rendered demo screen shows shapes, connectors and token styles ───
 /** The HTML of each `.fx-screen` in `html`, from its opening tag to the next screen's (or the end). */
 function screensOf(html) {

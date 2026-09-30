@@ -1182,3 +1182,11 @@ Pointer pipeline (ADR-0028): `pointer.ts` is pure.
 - `beginGesture(execute, seal)` writes through commands only (NFR-MNT-006): one command per frame (a frame's latest `update` wins, since tools compute from the gesture start) under `mergeKey: gesture:<n>`; `end()` seals the history.
 
 `usePointerInput` is the DOM side: one listener per type, `getCoalescedEvents` unpacked, rAF frames, pointer capture on down. The canvas pan now goes through it, so the camera moves once per frame.
+
+## 2026-09-30 M6.10 (claude)
+
+Hit-testing (`hit-test.ts`): `createHitIndex(store, {registries, theme})` keeps a dynamic rbush index of each drawn element's bounds, stroke included. It is updated from store diffs: a changed element, its members and the connectors bound to it are refreshed.
+- `hitTest(screen, page point, zoom)` tests candidates exactly. A shape uses its evaluated outline via core `hitTestShape`/`outlineDistance`: a hollow (unfilled) shape hits on its stroke only, and the stroke is a band of signed distance from the resolved style (centred, inside or outside per ADR-0019; a transparent stroke is none). A connector uses its route. Anything else, or a shape whose outline fails, uses its box. The pick margin is `PICK_PX` / zoom, and the topmost in paint order wins.
+- Hidden elements, members of hidden groups, and groups themselves are never hit.
+- Review r1: miter spikes are hit (`stroke-join.ts`, SVG miter limit 4, on the drawn side of aligned strokes); a shape's label region is hit over a hollow inside; siblings order as render does (`compareKeys`, then the id); a changed shapeDefs or routers registry rebuilds the index on the next hit-test (a new theme needs a new index).
+Gate: `benchUnder(file, name, maxMs)` + `checkBenchTask` in milestone-checks. The bench `hit-test-2000` has p99 ≈ 0.68 ms against 1 ms; long connectors dominate.

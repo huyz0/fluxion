@@ -27,7 +27,9 @@
     "@fluxion/geometry": "workspace:*",
     "@fluxion/player": "workspace:*",
     "@fluxion/render": "workspace:*",
+    "@fluxion/routing": "workspace:*",
     "@fluxion/schema": "workspace:*",
+    "@fluxion/theme": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

@@ -162,7 +162,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-001 | M | R1 | M6 | [15-editor.md](15-editor.md) | `apps/studio/src/bootstrap.browser.test.ts` +14 |
 | FR-EDT-002 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/canvas.pan-zoom.spec.ts` +6 |
 | FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | `packages/editor/src/pointer-input.browser.test.tsx`, `packages/editor/src/pointer.test.ts` |
-| FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `packages/core/src/signals.test.ts`, `packages/editor/src/session.test.ts` |
+| FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `packages/core/src/signals.test.ts` +5 |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `packages/core/src/commands.test.ts` +2 |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |

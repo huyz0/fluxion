@@ -10,7 +10,9 @@ import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
 import { RecordId } from '@fluxion/schema';
 import { RenderRegistries } from '@fluxion/render';
+import { RouteContext } from '@fluxion/routing';
 import { Store } from '@fluxion/core';
+import { Theme } from '@fluxion/theme';
 import { Vec2 } from '@fluxion/geometry';
 import { WritableSignal } from '@fluxion/core';
 
@@ -23,6 +25,9 @@ export type Camera = {
 
 // @public
 export function clampZoom(z: number): number;
+
+// @public
+export function createHitIndex(store: Store, context: HitContext): HitIndex;
 
 // @public
 export function createSession(docId: string): Session;
@@ -54,6 +59,18 @@ export function fitBox(box: Box, viewport: {
 }, padding?: number): Camera;
 
 // @public
+export type HitContext = {
+    readonly registries: RouteContext;
+    readonly theme: Theme;
+};
+
+// @public
+export type HitIndex = {
+    hitTest(screenId: RecordId, p: Vec2, zoom: number): RecordId | undefined;
+    dispose(): void;
+};
+
+// @public
 export const LAYOUT_KEY = "fluxion.editor.layout.v1";
 
 // @public
@@ -69,6 +86,9 @@ export function pageToScreen(camera: Camera, p: Vec2): Vec2;
 
 // @public
 export function panBy(camera: Camera, d: Vec2): Camera;
+
+// @public
+export const PICK_PX = 4;
 
 // @public
 export function screenToPage(camera: Camera, p: Vec2): Vec2;

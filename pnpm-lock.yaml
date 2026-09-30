@@ -334,9 +334,15 @@ importers:
       '@fluxion/render':
         specifier: workspace:*
         version: link:../render
+      '@fluxion/routing':
+        specifier: workspace:*
+        version: link:../routing
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      '@fluxion/theme':
+        specifier: workspace:*
+        version: link:../theme
       react:
         specifier: 'catalog:'
         version: 19.3.0
