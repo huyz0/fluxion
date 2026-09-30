@@ -1,5 +1,6 @@
-// The fit view (04 §2.2 `view: { kind: 'fit', box }`): a screen scaled uniformly to fit a box and
-// centred in it. Pure, so the arithmetic is tested in Node and the browser test checks the DOM.
+// The views of a screen (04 §2.2): `fit` scales it uniformly to fit a box, centred (present mode);
+// `camera` draws page point p at (p - (x, y)) * z (the editor canvas, 04 §3.3). Pure, so the
+// arithmetic is tested in Node and the browser test checks the DOM.
 import { type Rect, type ScreenRecord, screenKind, screenSize } from '@fluxion/schema';
 
 /**
@@ -36,4 +37,14 @@ export type FitTransform = {
 export function fitTransform(area: { readonly w: number; readonly h: number }, box: { readonly w: number; readonly h: number }): FitTransform {
   const scale = area.w > 0 && area.h > 0 ? Math.min(box.w / area.w, box.h / area.h) : 1;
   return { scale, x: (box.w - area.w * scale) / 2, y: (box.h - area.h * scale) / 2 };
+}
+
+/**
+ * The transform that draws `area` through the camera `{x, y, z}`: page point p lands at
+ * (p - (x, y)) * z in the box.
+ *
+ * @public
+ */
+export function cameraTransform(area: Rect, camera: { readonly x: number; readonly y: number; readonly z: number }): FitTransform {
+  return { scale: camera.z, x: (area.x - camera.x) * camera.z, y: (area.y - camera.y) * camera.z };
 }

@@ -1165,3 +1165,11 @@ Map: editor may depend on geometry (Box, Vec2 now; spatial index and matrices fo
 ## 2026-09-30 M6.5 fix (claude)
 
 CI went red at 2933fed: on mobile-chrome and mobile-safari, the open side panels squeezed the canvas to 0 px, so no screen was drawn. The canvas now keeps at least min(100 %, 320 px); the panel row scrolls sideways on a narrow viewport, and the toolbar scrolls without wrapping its buttons. The whole E2E suite passes in the pinned image (41, every project). M6.19 still owns the real phone layout.
+
+## 2026-09-30 M6.8 (claude)
+
+Canvas camera: render's `ScreenViewSpec` gains `{ kind: 'camera', box, camera }` (`cameraTransform`: page p at (p - (x, y)) * z). The editor canvas draws the first screen through the session camera, fitted on open while the camera is still `DEFAULT_CAMERA`. Input maps are pure in `canvas-input.ts`:
+- a wheel pans (lines and pages scaled; shift turns it sideways); ctrl/meta + wheel zooms 2x per 100 px about the pointer (a trackpad pinch arrives as ctrl + wheel);
+- ctrl + `=`/`+`/`-`/`0`, shift + `0` (100 %) and shift + `1` (fit) are the shortcuts;
+- space-drag and middle-drag pan; toolbar zoom controls are out, value, in, Fit, 100 %.
+The studio gives each document page a session. Safari's trackpad pinch (`gesture*` events) zooms from its start zoom. The fit area follows the screen record reactively. Phones skip `@desktop` specs (wheel and mouse input); touch pinch is M6.19's.

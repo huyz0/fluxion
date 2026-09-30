@@ -12,13 +12,16 @@ export type ToolbarProps = {
   readonly layout: EditorLayout;
   /** Called with each new layout. */
   readonly onLayout: (layout: EditorLayout) => void;
+  /** Controls at the toolbar's start (the zoom controls). */
+  readonly children?: ReactNode;
 };
 
-/** The top toolbar: a button per panel and focus mode, each pressed while on. */
+/** The top toolbar: its controls, then a button per panel and focus mode, each pressed while on. */
 export function Toolbar(props: ToolbarProps): ReactNode {
   const { layout, onLayout } = props;
   return (
     <header className="fx-chrome-toolbar">
+      {props.children}
       <span className="fx-chrome-spacer" />
       {panelIds().map((p) => (
         <button key={p} type="button" className="fx-chrome-button" aria-pressed={panelShown(layout, p)} onClick={() => onLayout(togglePanelShown(layout, p))}>

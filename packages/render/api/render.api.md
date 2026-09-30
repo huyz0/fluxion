@@ -36,6 +36,13 @@ export const BUILTIN_MARKERS: readonly MarkerDef[];
 export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>): RenderRegistries;
 
 // @public
+export function cameraTransform(area: Rect, camera: {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+}): FitTransform;
+
+// @public
 export type CanvasTextMeasurer = TextMeasurer & {
     ready(): Promise<void>;
 };
@@ -204,9 +211,14 @@ export type ScreenViewProps = {
 // @public
 export type ScreenViewSpec = {
     readonly kind: "fit";
-    readonly box: {
-        readonly w: number;
-        readonly h: number;
+    readonly box: ViewBox;
+} | {
+    readonly kind: "camera";
+    readonly box: ViewBox;
+    readonly camera: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
     };
 };
 
@@ -218,5 +230,11 @@ export function useValue<T>(signal: ReadSignal<T>): T;
 
 // @public
 export const VERSION: string;
+
+// @public
+export type ViewBox = {
+    readonly w: number;
+    readonly h: number;
+};
 
 ```

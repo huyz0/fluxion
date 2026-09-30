@@ -36,6 +36,7 @@ async function show(props: {
   screenId: RecordId;
   store: ReturnType<typeof createCore>['store'];
   overlay?: boolean;
+  camera?: { x: number; y: number; z: number };
 }) {
   await act(async () =>
     root.render(
@@ -44,7 +45,7 @@ async function show(props: {
         store={props.store}
         screenId={props.screenId}
         mode={props.mode ?? 'present'}
-        view={{ kind: 'fit', box: props.box }}
+        view={props.camera ? { kind: 'camera', box: props.box, camera: props.camera } : { kind: 'fit', box: props.box }}
         editOverlay={props.overlay ? <svg data-testid="overlay" /> : undefined}
       />,
     ),
@@ -75,6 +76,17 @@ describe('<ScreenView> (FR-SCR-001, 04 §2)', () => {
     const view = host.querySelector<HTMLElement>('.fx-view')?.getBoundingClientRect() as DOMRect;
     expect([rect.width, rect.height]).toEqual([200, 200]);
     expect(rect.left - view.left).toBeCloseTo(100, 3);
+  });
+
+  it('FR-EDT-002: a camera view draws the screen at the camera`s offset and zoom, clipped to its box', async () => {
+    const { core, screenId } = setup();
+    const screen = (await show({ store: core.store, screenId, box: { w: 600, h: 400 }, mode: 'edit', camera: { x: -100, y: 50, z: 0.25 } })) as HTMLElement;
+    const view = host.querySelector<HTMLElement>('.fx-view') as HTMLElement;
+    const rect = screen.getBoundingClientRect();
+    const box = view.getBoundingClientRect();
+    expect([box.width, box.height]).toEqual([600, 400]);
+    expect([rect.left - box.left, rect.top - box.top, rect.width, rect.height]).toEqual([25, -12.5, 480, 270]);
+    expect(getComputedStyle(view).overflow).toBe('hidden');
   });
 
   it('the theme variables sit on the screen, the content CSS is injected once, the overlay only in edit', async () => {

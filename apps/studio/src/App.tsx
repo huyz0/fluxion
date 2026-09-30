@@ -1,6 +1,6 @@
 // The studio shell (04 §4): History API routes to the home page, the editor and present mode. A
 // document id opens through documents.ts and bootstrap.ts; the roots come from editor and player.
-import { EditorRoot } from '@fluxion/editor';
+import { createSession, EditorRoot } from '@fluxion/editor';
 import { PlayerRoot } from '@fluxion/player';
 import { type JSX, type MouseEvent, type ReactNode, useMemo, useSyncExternalStore } from 'react';
 import { cryptoRandom, openDocument } from './bootstrap.js';
@@ -74,10 +74,12 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
     return file.ok ? openDocument(file.value) : file;
   }, [docId]);
   const settings = useMemo(() => localSettings(), []);
+  // the session (selection, camera, tool) lives as long as the document is open here
+  const session = useMemo(() => createSession(docId), [docId]);
   if (!opened.ok) return <Problem message={opened.error} />;
   const { core, registries } = opened.value;
   return mode === 'edit' ? (
-    <EditorRoot store={core.store} registries={registries} settings={settings} />
+    <EditorRoot store={core.store} registries={registries} settings={settings} session={session} />
   ) : (
     <PlayerRoot store={core.store} registries={registries} />
   );

@@ -41,6 +41,7 @@ export type EditorRootProps = {
     readonly store: Store;
     readonly registries: RenderRegistries;
     readonly settings?: SettingsStore;
+    readonly session?: Session;
 };
 
 // @public

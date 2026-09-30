@@ -28,8 +28,10 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
     { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] }, grepInvert: /@visual/ },
-    { name: 'mobile-safari', use: { ...devices['iPhone 14'] }, grepInvert: /@visual/ },
+    // phones skip the visual baselines (desktop-sized) and @desktop specs, whose input (wheel, mouse
+    // buttons, hover) a touch device does not have; touch input has its own specs (touch.*)
+    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] }, grepInvert: /@visual|@desktop/ },
+    { name: 'mobile-safari', use: { ...devices['iPhone 14'] }, grepInvert: /@visual|@desktop/ },
   ],
   webServer: {
     // the built studio (testing.md T2), not the dev server

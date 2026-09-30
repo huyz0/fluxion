@@ -10,6 +10,7 @@ import { CANVAS_PATH } from './chrome-css.js';
 import { EditorRoot } from './editor-root.js';
 import { DEFAULT_LAYOUT, LAYOUT_KEY } from './layout.js';
 import { newDocument } from './new-document.js';
+import { createSession, DEFAULT_CAMERA } from './session.js';
 import { memorySettings } from './settings.js';
 
 let host: HTMLElement;
@@ -102,7 +103,7 @@ describe('edit-mode root (FR-EDT-001)', () => {
       panels: { left: { size: 310, collapsed: false }, right: { size: 250, collapsed: true }, bottom: { size: 120, collapsed: false } },
       focus: false,
     });
-    act(() => (host.querySelectorAll('header button')[3] as HTMLElement).click());
+    act(() => ([...host.querySelectorAll('header button')].find((b) => b.textContent === 'Focus mode') as HTMLElement).click());
     expect([panel('left'), panel('bottom'), host.querySelector('[role="separator"]')]).toEqual([null, null, null]);
     expect(host.querySelector('.fx-editor')?.getAttribute('data-focus')).toBe('true');
     expect((settings.get(LAYOUT_KEY) as { focus: boolean }).focus).toBe(true);
@@ -125,5 +126,39 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect((host.querySelector('[data-panel="right"]') as HTMLElement).getBoundingClientRect().width).toBe(280);
     const body = host.querySelector('.fx-chrome-body') as HTMLElement;
     expect(body.scrollWidth).toBeGreaterThan(body.clientWidth);
+  });
+
+  it('FR-EDT-002: a fresh session camera fits the screen on open; a moved one is kept', async () => {
+    const core = createCore(newDocument(seededRandom(7)));
+    const registries = renderRegistriesFor(core.registries);
+    const session = createSession('doc');
+    await act(async () => root.render(<EditorRoot store={core.store} registries={registries} session={session} />));
+    await act(frame);
+    const canvas = host.querySelector('main') as HTMLElement;
+    const fitted = session.camera.get();
+    expect(fitted).not.toBe(DEFAULT_CAMERA);
+    // 1920 wide into the canvas less 32 px each side
+    expect(fitted.z).toBeCloseTo((canvas.clientWidth - 64) / 1920, 10);
+    expect(host.querySelector('output')?.textContent).toBe(`${Math.round(fitted.z * 100)} %`);
+    // a resized screen is fitted at its new size
+    const screenId = core.store.ids().find((i) => core.store.get(i)?.type === 'screen') as never;
+    act(() => {
+      core.store.transact('resize', (tx) => tx.patch(screenId, { size: { w: 960, h: 1080 } }));
+    });
+    act(() => ([...host.querySelectorAll('button')].find((b) => b.textContent === 'Fit') as HTMLElement).click());
+    expect(session.camera.get().z).toBeCloseTo(Math.min((canvas.clientWidth - 64) / 960, (canvas.clientHeight - 64) / 1080), 10);
+    // deleting the open screen leaves the editor empty, and the delete succeeds
+    const deleted = core.store.transact('delete', (tx) => tx.delete(screenId));
+    expect(deleted.ok).toBe(true);
+    await act(frame);
+    expect(host.querySelector('.fx-screen')).toBeNull();
+    expect(([...host.querySelectorAll('button')].find((b) => b.textContent === 'Fit') as HTMLButtonElement).disabled).toBe(true);
+    act(() => root.unmount());
+    root = createRoot(host);
+    const moved = { x: 5, y: 6, z: 2 };
+    session.camera.set(moved);
+    await act(async () => root.render(<EditorRoot store={core.store} registries={registries} session={session} />));
+    await act(frame);
+    expect(session.camera.get()).toBe(moved);
   });
 });

@@ -2,7 +2,7 @@ import { evaluateOutline } from '@fluxion/core';
 import { describe, expect, it } from 'vitest';
 import { paintCss } from './background.js';
 import { CONTENT_CSS } from './content-css.js';
-import { fitTransform, screenArea } from './fit.js';
+import { cameraTransform, fitTransform, screenArea } from './fit.js';
 import { labelStyle, plainParagraphs } from './label.js';
 import { BUILTIN_MARKERS, registerBuiltinMarkers } from './markers.js';
 import { modePolicy } from './mode-policy.js';
@@ -18,6 +18,12 @@ describe('fit view (FR-SCR-001) and mode policy (04 §2.6)', () => {
     expect(fitTransform({ w: 1024, h: 768 }, { w: 1600, h: 900 })).toEqual({ scale: 900 / 768, x: (1600 - 1024 * (900 / 768)) / 2, y: 0 });
     // a degenerate area does not divide by zero
     expect(fitTransform({ w: 0, h: 10 }, { w: 100, h: 100 })).toEqual({ scale: 1, x: 50, y: 45 });
+  });
+
+  it('FR-EDT-002: a camera view draws page point p at (p - (x, y)) * z, an infinite screen included', () => {
+    expect(cameraTransform({ x: 0, y: 0, w: 1920, h: 1080 }, { x: 100, y: -50, z: 2 })).toEqual({ scale: 2, x: -200, y: 100 });
+    // the viewport's corner (-100, 50) is drawn where the camera puts that page point
+    expect(cameraTransform({ x: -100, y: 50, w: 400, h: 300 }, { x: -120, y: 40, z: 0.5 })).toEqual({ scale: 0.5, x: 10, y: 5 });
   });
 
   it('FR-SCR-001: the area of a screen is its size (default 1920x1080) or an infinite screen viewport', () => {

@@ -1,13 +1,17 @@
 // The edit-mode root (FR-EDT-001): the chrome (ADR-0029) around the canvas, where the document's first
-// screen is drawn by the same <ScreenView> as present mode (FR-EDT-010), fitted in. The camera (M6.8)
-// and tools (M6.11) build on this root.
-import type { Store } from '@fluxion/core';
-import { useElementBox } from '@fluxion/player';
-import { type RenderRegistries, ScreenView, screensInOrder, useValue } from '@fluxion/render';
-import { type ReactNode, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
+// screen is drawn by the same <ScreenView> as present mode (FR-EDT-010) through the session camera
+// (FR-EDT-002), fitted on open. Tools (M6.11) build on this root.
+import type { ReadView, Store } from '@fluxion/core';
+import type { Box } from '@fluxion/geometry';
+import { type RenderRegistries, screenArea, screensInOrder, useValue } from '@fluxion/render';
+import type { RecordId, ScreenRecord } from '@fluxion/schema';
+import { type ReactNode, useEffect, useId, useInsertionEffect, useMemo, useState } from 'react';
+import { fitBox } from './camera.js';
+import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
 import { type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, Toolbar } from './panels.js';
+import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { Splitter } from './splitter.js';
 
@@ -23,6 +27,8 @@ export type EditorRootProps = {
   readonly registries: RenderRegistries;
   /** Where the panel layout persists (default: in memory, for this root only). */
   readonly settings?: SettingsStore;
+  /** The document's session: selection, camera, tool, hover (default: a new one for this root). */
+  readonly session?: Session;
 };
 
 /** Chrome CSS injected once per document (ADR-0029, like the content CSS of ADR-0015). */
@@ -43,26 +49,17 @@ function useLayout(settings: SettingsStore): readonly [EditorLayout, (layout: Ed
   return [layout, setLayout];
 }
 
-/** The canvas: the first screen, hidden ones included, fitted into it. */
-function Canvas(props: Pick<EditorRootProps, 'store' | 'registries'>): ReactNode {
-  const { store, registries } = props;
-  const ref = useRef<HTMLElement>(null);
-  const box = useElementBox(ref);
-  const first = useValue(useMemo(() => store.query((view) => screensInOrder(view, true)[0]), [store]));
-  return (
-    <main ref={ref} aria-label="Canvas" className="fx-chrome-canvas">
-      {first === undefined || box.w === 0 ? null : (
-        <ScreenView store={store} screenId={first} mode="edit" view={{ kind: 'fit', box }} registries={registries} />
-      )}
-    </main>
-  );
-}
-
 const SPLITTERS: { readonly [P in PanelId]: string } = {
   left: 'Resize the left panel',
   right: 'Resize the inspector',
   bottom: 'Resize the timeline',
 };
+
+/** The area of the screen `id`; undefined when there is none, or it was just deleted. */
+function areaOf(view: ReadView, id: RecordId | undefined): Box | undefined {
+  const screen = id === undefined ? undefined : view.get(id);
+  return screen?.type === 'screen' ? screenArea(screen as ScreenRecord) : undefined;
+}
 
 /**
  * The editor for the document in `store`: toolbar, panels and the canvas.
@@ -74,6 +71,16 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   useChromeCss();
   const settings = useMemo(() => props.settings ?? memorySettings(), [props.settings]);
   const [layout, setLayout] = useLayout(settings);
+  const session = useMemo(() => props.session ?? createSession('local'), [props.session]);
+  // hidden screens are edited too
+  const screenId = useValue(useMemo(() => store.query((view) => screensInOrder(view, true)[0]), [store]));
+  // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
+  const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  // a camera never moved (still the default) is fitted to the screen once the canvas has a size
+  useEffect(() => {
+    if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
+  }, [area, box, session]);
   const id = useId();
   const panel = (p: PanelId, content: ReactNode) => {
     if (!panelShown(layout, p)) return null;
@@ -94,12 +101,14 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
     );
   return (
     <div className="fx-editor" data-testid="editor-root" data-focus={layout.focus || undefined}>
-      <Toolbar layout={layout} onLayout={setLayout} />
+      <Toolbar layout={layout} onLayout={setLayout}>
+        <ZoomControls session={session} box={box} area={area} />
+      </Toolbar>
       <div className="fx-chrome-body">
         {panel('left', <LeftTabs />)}
         {splitter('left')}
         <div className="fx-chrome-center">
-          <Canvas store={store} registries={registries} />
+          <Canvas store={store} registries={registries} screenId={screenId} area={area} session={session} onBox={setBox} />
           {splitter('bottom')}
           {panel('bottom', <Timeline />)}
         </div>

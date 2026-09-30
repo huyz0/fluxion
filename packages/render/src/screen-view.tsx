@@ -11,28 +11,52 @@ import { paintCss } from './background.js';
 import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
 import { ElementList } from './elements.js';
-import { fitTransform, screenArea } from './fit.js';
+import { cameraTransform, fitTransform, screenArea } from './fit.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
 import type { RenderRegistries } from './registries.js';
 import { MeasurerContext } from './text-measurer.js';
 import { useValue } from './use-value.js';
 
 /**
- * How a screen is shown: fitted into a box (camera views arrive with the editor, M6).
+ * A box in CSS pixels.
  *
  * @public
  */
-export type ScreenViewSpec = {
-  /** View type. */
-  readonly kind: 'fit';
-  /** The box to fit into, in CSS pixels. */
-  readonly box: {
-    /** Width. */
-    readonly w: number;
-    /** Height. */
-    readonly h: number;
-  };
+export type ViewBox = {
+  /** Width. */
+  readonly w: number;
+  /** Height. */
+  readonly h: number;
 };
+
+/**
+ * How a screen is shown: fitted into a box (present mode), or through a camera (the editor canvas):
+ * page point p at (p - (x, y)) * z in the box.
+ *
+ * @public
+ */
+export type ScreenViewSpec =
+  | {
+      /** View type. */
+      readonly kind: 'fit';
+      /** The box to fit into, in CSS pixels. */
+      readonly box: ViewBox;
+    }
+  | {
+      /** View type. */
+      readonly kind: 'camera';
+      /** The box drawn into, in CSS pixels. */
+      readonly box: ViewBox;
+      /** The page point at the box's top-left (`x`, `y`) and the zoom `z`. */
+      readonly camera: {
+        /** Page x at the box's left edge. */
+        readonly x: number;
+        /** Page y at the box's top edge. */
+        readonly y: number;
+        /** Zoom: box px per page unit. */
+        readonly z: number;
+      };
+    };
 
 /**
  * Props of {@link ScreenView}.
@@ -74,7 +98,7 @@ function useContentCss(): void {
 }
 
 /**
- * One screen of `store`, fitted into `view.box`, styled by `theme`.
+ * One screen of `store` in `view.box`, fitted or through a camera, styled by `theme`.
  *
  * @public
  */
@@ -93,7 +117,7 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   if (!screen || screen.type !== 'screen') return null;
   const area = screenArea(screen);
   const background = resolveBackground(screen.background, theme, ['records', screenId]).paint;
-  const fit = fitTransform(area, view.box);
+  const fit = view.kind === 'camera' ? cameraTransform(area, view.camera) : fitTransform(area, view.box);
   const style = {
     ...vars,
     // what a connector label knocks its background out with: the screen's own colour (none for a
