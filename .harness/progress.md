@@ -1303,3 +1303,7 @@ Docs and changesets:
 Carried review minors:
 - M6.23 F1: `pnpm test:e2e` now runs `--grep-invert @perf`, and a new `pnpm test:perf` runs the benchmark alone with one worker.
 - M6.24 F1: the a11y spec asserts the selection frame and the inspector's text before its second axe run, and that the picker closed before F5.
+
+## 2026-09-30 M6.26 (claude)
+
+Before the final review: the player's changeset now lists what M6 added to it, the root, registries, box hook and laser trail, and its first runtime dependencies, React and three Fluxion packages (M6.25 review F1).
