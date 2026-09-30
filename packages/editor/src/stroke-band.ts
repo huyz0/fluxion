@@ -1,9 +1,9 @@
 // A stroke as drawn (ADR-0019, FR-EDT-004): the band of signed distance it covers along its outline
 // (centred on it, inside it or outside it), and its miter spikes. Hit-testing and its index bounds
 // read strokes through this module.
-import { outlineDistance } from '@fluxion/core';
 import { type Box, boxFromPoints, boxUnion, type Path, pointInPath, type Vec2 } from '@fluxion/geometry';
 import type { ResolvedStroke } from '@fluxion/theme';
+import { distanceWithin } from './outline-distance.js';
 import { miterWedges, nearWedge, type Wedge } from './stroke-join.js';
 
 /**
@@ -70,7 +70,8 @@ export function stroked(path: Path, resolved: ResolvedStroke, vars: CssVars): St
 
 /** Whether `l`, `inside` the outline or not, is on the stroke or within `tolerance` of it. */
 export const onStroked = (s: Stroked, l: Vec2, inside: boolean, tolerance: number): boolean =>
-  onStroke(s.stroke, outlineDistance(s.path, l), inside, tolerance) || s.wedges.some((w) => nearWedge(l, w, tolerance));
+  // only a distance within the stroke's reach decides: farther segments are not measured
+  onStroke(s.stroke, distanceWithin(s.path, l, reachOf(s.stroke) + tolerance), inside, tolerance) || s.wedges.some((w) => nearWedge(l, w, tolerance));
 
 /** The box of a stroked outline: its outline's, grown by the stroke, and its spikes'. */
 export function strokedBounds(s: Stroked, outline: Box): Box {

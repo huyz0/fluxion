@@ -1226,3 +1226,7 @@ Review r1: a record turned against the frame scales along its own axes (`reframe
 ## 2026-09-30 M6.16 (claude)
 
 cp1 (fresh milestone-reviewer, 77d8405..ec72018): changes requested, 7 findings. Reopened M6.27 (hit-test-2000 back under budget; the bench regressed in M6.13), M6.28 (zoom to selection, FR-EDT-002), M6.29 (transform-only drags per ADR-0028 §4), and M6.30 (parity/perf legs pin titles). Handed off select-same and the keymap absorption to M7 rows 15 and 14 (roadmap Deferred). cp2 now runs after M6.18 and the reopened rows.
+
+## 2026-09-30 M6.27 (claude)
+
+Hit-test back under budget (cp1 F1). The outline check was sampling every cubic segment of every candidate. The new `outline-distance.ts` `distanceWithin(path, p, limit)` caches each path's segments with their bounds (a WeakMap), skips segments whose bounds lie beyond the limit, and measures straight segments (both controls on the chord) exactly; only a curve within reach falls back to geometry's `nearestPoint`. `stroke-band.onStroked` uses it. hit-test-2000: mean ≈0.02 ms, p99 ≈0.11 ms (was 1.03–1.15 ms). `benchUnder(…, HIT_TEST_2000_MAX_MS)` passed 3 runs in a row. Editor mutation score is 100%.
