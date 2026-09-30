@@ -22,6 +22,20 @@ export type OverlayProps = {
   readonly box: { readonly w: number; readonly h: number };
 };
 
+/**
+ * Whether the overlay has anything to draw: a selection, a hovered element, a marquee, a draft or a
+ * sketch. Without, it is not mounted, so the canvas holds the content alone (the parity suite's
+ * "overlay unmounted", FR-EDT-010).
+ */
+export function useOverlayShown(session: Session): boolean {
+  const selection = useValue(session.selection.get);
+  const hover = useValue(session.hover.get);
+  const marquee = useValue(session.marquee.get);
+  const draft = useValue(session.draft.get);
+  const sketch = useValue(session.sketch.get);
+  return selection.length > 0 || hover !== undefined || marquee !== undefined || draft !== undefined || sketch !== undefined;
+}
+
 /** The overlay over the canvas. */
 export function Overlay(props: OverlayProps): ReactNode {
   const { store, session, box } = props;

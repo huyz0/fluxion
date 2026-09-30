@@ -1,0 +1,145 @@
+import { readFileSync } from 'node:fs';
+import type { Page } from '@playwright/test';
+import { EditorPage } from './pages/editor.js';
+import { expect, test } from './test.js';
+
+// Edit/present parity (FR-EDT-010, 04 §2.4): each example's screen, in edit with an empty selection
+// and the overlay unmounted and in present, draws the same content DOM (after the allowlist) and
+// the same pixels within PARITY_MAX_DIFF_PCT. Both are taken at scale 1 and whole-pixel offsets: in
+// edit, focus mode at 100 % in a 2200 × 1400 window centres the 1920 × 1080 screen 140 px in; present
+// in place fits it exactly into a 1920 × 1080 window.
+
+/** The bounds from thresholds.mjs (read as text: the spec does not import the gate's module). */
+const THRESHOLDS = readFileSync(new URL('../scripts/gates/thresholds.mjs', import.meta.url), 'utf8');
+const bound = (key: string) => Number(new RegExp(`${key}: \\{ value: ([\\d.]+)`).exec(THRESHOLDS)?.[1]);
+const PARITY_MAX_DIFF_PCT = bound('PARITY_MAX_DIFF_PCT');
+const PARITY_CHANNEL_DELTA = bound('PARITY_CHANNEL_DELTA');
+const PARITY_EDGE_DELTA = bound('PARITY_EDGE_DELTA');
+
+/** The examples the studio opens: their first screens are the fixture screens edit and present show. */
+const EXAMPLES = ['shapes-gallery', 'r0-static'];
+
+/**
+ * The content layer's markup with the allowlist applied: ids React generates per mount (fills,
+ * markers, effects) renumbered by first appearance, everywhere they are referenced.
+ */
+async function contentDom(page: Page): Promise<string> {
+  return page
+    .locator('.fx-screen .fx-content')
+    .first()
+    .evaluate((el) => {
+      let html = el.outerHTML;
+      const ids = [...new Set([...html.matchAll(/ id="([^"]+)"/g)].map((m) => m[1] as string))];
+      ids.forEach((id, i) => {
+        html = html.split(id).join(`ID${i}`);
+      });
+      return html;
+    });
+}
+
+/**
+ * The share of pixels, in percent, that differ between two same-sized PNGs. A pixel differs when a
+ * channel is off by more than PARITY_CHANNEL_DELTA, unless it is anti-aliasing: a stroke the browser
+ * smooths a little differently elsewhere on the page, so a pixel on an edge (a neighbour more than
+ * PARITY_EDGE_DELTA apart) in both images. A fill's pixels are never excused, so a uniform shift of
+ * colour or brightness counts in full. `darken` scales the second image's channels first (the
+ * spec's check that such a shift is seen).
+ */
+async function diffPct(page: Page, a: Buffer, b: Buffer, darken = 1): Promise<number> {
+  const [x, y] = [await pixels(page, a), await pixels(page, b)];
+  if (x.w !== y.w || x.h !== y.h) return 100;
+  for (let i = 0; i < y.data.length; i++) if (i % 4 !== 3) y.data[i] = Math.round((y.data[i] as number) * darken);
+  let differ = 0;
+  for (let p = 0; p < x.w * x.h; p++) if (apart(x.data, y.data, p * 4, p * 4) > PARITY_CHANNEL_DELTA && !(onEdge(x, p) && onEdge(y, p))) differ++;
+  return (differ / (x.w * x.h)) * 100;
+}
+
+type Pixels = { readonly w: number; readonly h: number; readonly data: Uint8Array };
+
+/** How far apart pixels `i` of `d` and `j` of `e` are: their largest channel difference. */
+function apart(d: Uint8Array, e: Uint8Array, i: number, j: number): number {
+  return Math.max(...[0, 1, 2, 3].map((c) => Math.abs((d[i + c] as number) - (e[j + c] as number))));
+}
+
+/** The eight neighbours' offsets. */
+const AROUND = [-1, 0, 1].flatMap((dy) => [-1, 0, 1].map((dx) => [dx, dy] as const)).filter(([dx, dy]) => dx !== 0 || dy !== 0);
+
+/** Whether pixel `p` of `img` is on an edge: a neighbour differs from it by more than PARITY_EDGE_DELTA. */
+function onEdge(img: Pixels, p: number): boolean {
+  const [px, py] = [p % img.w, Math.floor(p / img.w)];
+  return AROUND.some(([dx, dy]) => {
+    const [nx, ny] = [px + dx, py + dy];
+    return nx >= 0 && ny >= 0 && nx < img.w && ny < img.h && apart(img.data, img.data, p * 4, (ny * img.w + nx) * 4) > PARITY_EDGE_DELTA;
+  });
+}
+
+/** A PNG decoded by the browser into RGBA pixels. */
+async function pixels(page: Page, png: Buffer): Promise<Pixels> {
+  const r = await page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const g = c.getContext('2d') as CanvasRenderingContext2D;
+    g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, img.width, img.height).data;
+    let raw = '';
+    for (let i = 0; i < d.length; i += 0x8000) raw += String.fromCharCode(...d.subarray(i, i + 0x8000));
+    return { w: img.width, h: img.height, data: btoa(raw) };
+  }, png.toString('base64'));
+  return { w: r.w, h: r.h, data: new Uint8Array(Buffer.from(r.data, 'base64')) };
+}
+
+/** The example `name` in edit at scale 1 with nothing selected or hovered, then presented in place. */
+async function bothModes(page: Page, name: string) {
+  await page.setViewportSize({ width: 2200, height: 1400 });
+  const editor = new EditorPage(page);
+  await editor.open(`example-${name}`);
+  // focus mode (it persists: set it only when off), then the canvas has the window below the toolbar
+  const focus = editor.toolbarButton('Focus mode');
+  if ((await focus.getAttribute('aria-pressed')) !== 'true') await focus.click();
+  await expect.poll(async () => (await editor.canvas.boundingBox())?.width).toBe(2200);
+  // fit the resized canvas, then 100 % about its centre
+  await page.keyboard.press('Shift+Digit1');
+  await page.keyboard.press('Shift+Digit0');
+  await expect(editor.zoomValue).toHaveText('100 %');
+  // the pointer is off the canvas, nothing is selected: the overlay is not mounted
+  await page.mouse.move(0, 0);
+  await expect(page.locator('svg.fx-chrome-overlay')).toHaveCount(0);
+  const screen = editor.screens.first();
+  // centred at whole pixels: 140 px in from the canvas (0, 40) each way
+  expect(await screen.boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
+  const edit = { dom: await contentDom(page), png: await screen.screenshot({ animations: 'disabled' }) };
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.keyboard.press('F5');
+  await expect(page.getByTestId('editor-root')).toHaveAttribute('data-mode', 'present');
+  const presented = page.getByTestId('present-in-place').locator('.fx-screen');
+  await expect(presented).toHaveCount(1);
+  const present = { dom: await contentDom(page), png: await presented.screenshot({ animations: 'disabled' }) };
+  return { edit, present };
+}
+
+// window sizes and the keyboard: desktop
+test.describe('edit and present parity', { tag: '@desktop' }, () => {
+  test('FR-EDT-010: with an empty selection and the overlay unmounted, each fixture screen draws the same pixels in edit and present', async ({ page }) => {
+    expect([PARITY_MAX_DIFF_PCT, PARITY_CHANNEL_DELTA, PARITY_EDGE_DELTA]).toEqual([0.1, 8, 64]);
+    for (const name of EXAMPLES) {
+      const { edit, present } = await bothModes(page, name);
+      const pct = await diffPct(page, edit.png, present.png);
+      expect(pct, `${name}: ${pct.toFixed(4)} % of the pixels differ`).toBeLessThanOrEqual(PARITY_MAX_DIFF_PCT);
+      // the comparison sees a uniform shift: the same screen 10 % darker is far over the bound
+      expect(await diffPct(page, edit.png, edit.png, 0.9), name).toBeGreaterThan(10 * PARITY_MAX_DIFF_PCT);
+    }
+  });
+
+  test('FR-EDT-010: the content layer DOM is equal in edit and present after the allowlist', async ({ page }) => {
+    for (const name of EXAMPLES) {
+      const { edit, present } = await bothModes(page, name);
+      expect(present.dom, name).toBe(edit.dom);
+      // the allowlist only renumbers generated ids: the screen's elements are all there
+      expect(edit.dom.match(/class="fx-el"/g)?.length ?? 0, name).toBeGreaterThan(5);
+    }
+  });
+});

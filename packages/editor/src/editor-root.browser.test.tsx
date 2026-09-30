@@ -268,9 +268,10 @@ describe('edit-mode root (FR-EDT-001)', () => {
       act(() => {
         main.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, button: 0, buttons: 1, ...client(x, y) }));
       });
-    const overlay = host.querySelector('svg.fx-chrome-overlay') as SVGSVGElement;
     fire('pointerdown', 250, 200);
     await act(frame);
+    // the overlay mounts with the selection
+    const overlay = host.querySelector('svg.fx-chrome-overlay') as SVGSVGElement;
     const framed = () => (overlay.querySelector('polygon.fx-chrome-frame') as SVGPolygonElement).points[0]?.x ?? Number.NaN;
     const startX = framed();
     const before = { moving: renders.get(moving) ?? 0, still: renders.get(still) ?? 0 };

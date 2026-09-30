@@ -55,6 +55,10 @@ export const THRESHOLDS = {
 
   // visual
   PARITY_MAX_DIFF_PCT: { value: 0.1, weakens: 'up' },
+  // a parity pixel differs when a channel is off by more than this (of 255)...
+  PARITY_CHANNEL_DELTA: { value: 8, weakens: 'up' },
+  // ...unless it is anti-aliasing: on an edge (a neighbour this much apart) in both images
+  PARITY_EDGE_DELTA: { value: 64, weakens: 'down' },
 
   // AI quality (NFR-AI)
   AI_ONE_SHOT_VALID_PCT: { value: 90, weakens: 'down' },

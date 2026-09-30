@@ -12,7 +12,7 @@ import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { type FitTargets, shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
-import { Overlay } from './overlay.js';
+import { Overlay, useOverlayShown } from './overlay.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
 import type { PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
@@ -239,6 +239,7 @@ export function Canvas(props: CanvasProps): ReactNode {
     [session, tools],
   );
   usePointerInput(ref, session.camera.get, consumer);
+  const overlay = useOverlayShown(session);
   return (
     <main
       ref={ref}
@@ -252,7 +253,7 @@ export function Canvas(props: CanvasProps): ReactNode {
       {screenId === undefined || box.w === 0 ? null : (
         <>
           <ScreenView store={store} screenId={screenId} mode="edit" view={{ kind: 'camera', box, camera }} registries={registries} />
-          <Overlay store={store} session={session} box={box} />
+          {overlay ? <Overlay store={store} session={session} box={box} /> : null}
         </>
       )}
     </main>

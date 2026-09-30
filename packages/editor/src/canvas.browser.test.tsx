@@ -239,12 +239,14 @@ describe('canvas camera input (FR-EDT-002)', () => {
 
   it('FR-EDT-004: the overlay lies over the canvas; a pointer leaving the canvas hovers nothing', async () => {
     const main = await mount();
+    // nothing to draw: no overlay at all (FR-EDT-010: the content alone); something hovered: there it is
+    expect(main.querySelector('svg.fx-chrome-overlay')).toBeNull();
+    act(() => session.hover.set('x' as never));
     const overlay = main.querySelector('svg.fx-chrome-overlay') as SVGSVGElement;
     expect([getComputedStyle(overlay).position, getComputedStyle(overlay).pointerEvents]).toEqual(['absolute', 'none']);
-    act(() => session.hover.set('x' as never));
     // React's leave comes from the pointer going out to something outside
     fire(main, new PointerEvent('pointerout', { bubbles: true, relatedTarget: document.body, pointerId: 1 }));
-    expect(session.hover.get()).toBeUndefined();
+    expect([session.hover.get(), main.querySelector('svg.fx-chrome-overlay')]).toEqual([undefined, null]);
   });
 
   it('FR-EDT-006: ctrl/cmd + Z undoes; with shift, or ctrl/cmd + Y, redoes; with alt it is neither', async () => {
