@@ -277,6 +277,10 @@ The editor creates a `player` `PresentationController` bound to the same store w
 step" runs the clock, and the result flows into `<ScreenView animState handles>`. The editor
 shows the final state by default. Present in place (F5) swaps the root tool set to the player
 input layer and puts the store in read-only mode (a policy guard rejects commands, FR-PRS-004).
+As built in M6 (M6.20): the edit chrome unmounts, the present-mode tools (the laser) take the
+pointer, and their commands go through a read-only guard that refuses every write; the edit keys go
+with the canvas. The store's own `read-only` policy is fixed at creation, so it stays for hosts that
+open a document read-only (the player).
 
 ## 4. Studio app shell
 

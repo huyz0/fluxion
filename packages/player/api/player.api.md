@@ -17,6 +17,24 @@ export type Box = {
 };
 
 // @public
+export const LASER_FADE = "0.8s";
+
+// @public
+export type LaserPoint = {
+    readonly x: number;
+    readonly y: number;
+};
+
+// @public
+export function LaserTrail(props: LaserTrailProps): ReactNode;
+
+// @public
+export type LaserTrailProps = {
+    readonly points: readonly LaserPoint[];
+    readonly scale: number;
+};
+
+// @public
 export function PlayerRoot(props: PlayerRootProps): ReactNode;
 
 // @public
@@ -27,6 +45,15 @@ export type PlayerRootProps = {
 
 // @public
 export function renderRegistriesFor(host: CoreRegistries): RenderRegistries;
+
+// @public
+export type TrailDot = {
+    readonly p: LaserPoint;
+    readonly key: string;
+};
+
+// @public
+export function trailKeys(points: readonly LaserPoint[]): readonly TrailDot[];
 
 // @public
 export function useElementBox(ref: RefObject<HTMLElement | null>): Box;

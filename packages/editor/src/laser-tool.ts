@@ -1,6 +1,6 @@
 // The laser (FR-EDT-003, FR-PRS-008): a presenter's pointer, registered for present mode only. It
-// follows the pointer with a short trail (the session's `laser`, newest last) that the overlay draws
-// fading, and never writes to the document. The present-mode switch (M6.20) dispatches it.
+// follows the pointer with a short trail (the session's `laser`, newest last) that present in place
+// draws over the screen, each dot fading (player's LaserTrail), and never writes to the document.
 import type { Vec2 } from '@fluxion/geometry';
 import type { Tool, ToolCtx } from './tools.js';
 

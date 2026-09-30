@@ -301,6 +301,7 @@ export type Session = {
     readonly marquee: WritableSignal<Box | undefined>;
     readonly draft: WritableSignal<Box | undefined>;
     readonly sketch: WritableSignal<readonly Vec2[] | undefined>;
+    readonly mode: WritableSignal<"edit" | "present">;
     readonly laser: WritableSignal<readonly Vec2[]>;
     readonly imagePick: WritableSignal<Box | undefined>;
 };

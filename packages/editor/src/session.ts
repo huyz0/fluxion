@@ -28,6 +28,8 @@ export type Session = {
   readonly draft: WritableSignal<Box | undefined>;
   /** The line a tool is drawing (a connector's, a path's), page points, if any. */
   readonly sketch: WritableSignal<readonly Vec2[] | undefined>;
+  /** Editing, or presenting in place (F5). */
+  readonly mode: WritableSignal<'edit' | 'present'>;
   /** The laser's recent positions, page points, newest last (present mode). */
   readonly laser: WritableSignal<readonly Vec2[]>;
   /** The box the image tool placed, waiting for an image to be picked, if any. */
@@ -57,6 +59,7 @@ export function createSession(docId: string): Session {
     marquee: writable<Box | undefined>(undefined),
     draft: writable<Box | undefined>(undefined),
     sketch: writable<readonly Vec2[] | undefined>(undefined),
+    mode: writable<'edit' | 'present'>('edit'),
     laser: writable<readonly Vec2[]>([]),
     imagePick: writable<Box | undefined>(undefined),
   };

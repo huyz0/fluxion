@@ -16,10 +16,12 @@ import { ImagePicker } from './image-picker.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
+import { PresentInPlace, useModeKeys, useRevision } from './present.js';
+import { readOnly } from './present-mode.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { Splitter } from './splitter.js';
-import { createToolDispatcher, createToolRegistry, type Tool, type ToolDispatcher } from './tools.js';
+import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
 
 /**
  * Props of {@link EditorRoot}.
@@ -47,7 +49,11 @@ export type EditorRootProps = {
 const cryptoRandom: Random = { next: () => (crypto.getRandomValues(new Uint32Array(1))[0] as number) / 2 ** 32 };
 
 /** The tools of `props` dispatched over the session, hit-testing the screen `screenId` by geometry. */
-function useTools(props: EditorRootProps, session: Session, screenId: RecordId | undefined): ToolDispatcher {
+function useTools(
+  props: EditorRootProps,
+  session: Session,
+  screenId: RecordId | undefined,
+): { readonly tools: ToolDispatcher; readonly present: ToolDispatcher } {
   const { store, registries, execute } = props;
   const random = props.random ?? cryptoRandom;
   const registry = useMemo(() => {
@@ -63,25 +69,25 @@ function useTools(props: EditorRootProps, session: Session, screenId: RecordId |
     hits.current = index;
     return () => index.dispose();
   }, [store, registries]);
-  return useMemo(
-    () =>
-      createToolDispatcher(registry, {
-        session,
-        hitTest: (p) => {
-          const hit = screenId === undefined ? undefined : hits.current?.hitTest(screenId, p, session.camera.get().z);
-          // a click on a group's member selects the group
-          return hit === undefined ? undefined : hits.current?.selectableOf(hit);
-        },
-        view: store,
-        screen: screenId,
-        newId: () => createId(random),
-        elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
-        allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),
-        execute,
-        seal: () => store.history.seal(),
-      }),
-    [registry, session, screenId, execute, store, random],
-  );
+  return useMemo(() => {
+    const ctx: ToolCtx = {
+      session,
+      hitTest: (p) => {
+        const hit = screenId === undefined ? undefined : hits.current?.hitTest(screenId, p, session.camera.get().z);
+        // a click on a group's member selects the group
+        return hit === undefined ? undefined : hits.current?.selectableOf(hit);
+      },
+      view: store,
+      screen: screenId,
+      newId: () => createId(random),
+      elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
+      allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),
+      execute,
+      seal: () => store.history.seal(),
+    };
+    // while presenting, the same tools' context with every write refused (FR-PRS-004)
+    return { tools: createToolDispatcher(registry, ctx), present: createToolDispatcher(registry, { ...ctx, execute: readOnly }, 'present') };
+  }, [registry, session, screenId, execute, store, random]);
 }
 
 /** Chrome CSS injected once per document (ADR-0029, like the content CSS of ADR-0015). */
@@ -128,7 +134,10 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const session = useMemo(() => props.session ?? createSession('local'), [props.session]);
   // hidden screens are edited too
   const screenId = useValue(useMemo(() => store.query((view) => screensInOrder(view, true)[0]), [store]));
-  const tools = useTools(props, session, screenId);
+  const { tools, present } = useTools(props, session, screenId);
+  const switchMode = useModeKeys(session, tools, present);
+  const mode = useValue(session.mode.get);
+  const revision = useRevision(store);
   const newId = useMemo(() => {
     const random = props.random ?? cryptoRandom;
     return () => createId(random);
@@ -158,11 +167,20 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
     layout.focus ? null : (
       <Splitter panel={p} label={SPLITTERS[p]} controls={layout.panels[p].collapsed ? undefined : `${id}-${p}`} layout={layout} onLayout={setLayout} />
     );
+  if (mode === 'present')
+    return (
+      <div data-testid="editor-root" data-mode="present" data-revision={revision}>
+        <PresentInPlace store={store} registries={registries} screenId={screenId} area={area} session={session} tools={present} />
+      </div>
+    );
   return (
-    <div className="fx-editor" data-testid="editor-root" data-focus={layout.focus || undefined}>
+    <div className="fx-editor" data-testid="editor-root" data-mode="edit" data-revision={revision} data-focus={layout.focus || undefined}>
       <Toolbar layout={layout} onLayout={setLayout}>
         <ToolButtons session={session} tools={tools} />
         <ZoomControls store={store} session={session} box={box} area={area} />
+        <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={switchMode}>
+          Present
+        </button>
       </Toolbar>
       <div className="fx-chrome-body">
         {panel('left', <LeftTabs />)}
