@@ -1292,3 +1292,14 @@ Drag benchmark (NFR-PERF-001). `gen.mjs` builds `fixtures/docs/perf-500.flux.jso
 ## 2026-09-30 M6.24 (claude)
 
 Editor shell accessibility (FR-EDT-001, NFR-A11Y-001). The toolbar landmark gets its name (`<div role="banner" aria-label="Toolbar">`: biome refuses a label on `<header>`, and a role on it too). E2E `a11y.editor-shell` checks the named landmarks (banner Toolbar, main Canvas, complementary side panels, the Tools and Zoom groups) and runs axe, finding nothing serious or critical, in four states: as the shell opens, with a selection and the timeline open, with the image picker (a named modal dialog, focus on its first choice) open, and while presenting. It passes on the three desktop browsers. Review r1 passed with a minor, carried to M6.25: the a11y spec asserts the selection frame before its second axe run, and that the picker closed before F5.
+
+## 2026-09-30 M6.25 (claude)
+
+Docs and changesets:
+- The user guide `apps/docs/.../guides/canvas-basics.md` covers moving around, selecting, moving, resizing and rotating, the tools and their keys, touch, and presenting.
+- `packages/editor/AGENTS.md` maps session, camera, pointer pipeline, tools, hit-testing, overlay and chrome.
+- Storybook stories for the toolbar (default and focus mode) and the panels (left, inspector empty and with a selection, timeline) are each browser-tested with axe.
+- Changesets cover the six packages M6 changed (schema, core, theme, render, player, editor).
+Carried review minors:
+- M6.23 F1: `pnpm test:e2e` now runs `--grep-invert @perf`, and a new `pnpm test:perf` runs the benchmark alone with one worker.
+- M6.24 F1: the a11y spec asserts the selection frame and the inspector's text before its second axe run, and that the picker closed before F5.

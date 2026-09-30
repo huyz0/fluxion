@@ -16,9 +16,12 @@ test.describe('editor shell accessibility', { tag: '@desktop' }, () => {
     await expect(page.getByRole('group', { name: 'Tools' })).toHaveCount(1);
     await expect(page.getByRole('group', { name: 'Zoom' })).toHaveCount(1);
     await expectAccessible();
-    // a selection (the overlay mounts), the timeline open
-    const c = await editor.canvasCentre();
-    await page.mouse.click(c.x, c.y);
+    // a selection (the overlay mounts): the gallery's first shape, a filled rectangle; the timeline open
+    const rect = await editor.shapes.first().boundingBox();
+    if (rect === null) throw new Error('the first shape is not drawn');
+    await page.mouse.click(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    await expect(page.locator('svg.fx-chrome-overlay polygon.fx-chrome-frame')).toHaveCount(1);
+    await expect(editor.inspectorText).toHaveText('1 element selected');
     await editor.toolbarButton('Timeline').click();
     await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(1);
     await expectAccessible();
@@ -35,6 +38,7 @@ test.describe('editor shell accessibility', { tag: '@desktop' }, () => {
     await expect(picker.getByRole('button', { name: 'Image placeholder' })).toBeFocused();
     await expectAccessible();
     await page.keyboard.press('Escape');
+    await expect(picker).toHaveCount(0);
     await page.keyboard.press('F5');
     await expect(page.getByTestId('present-in-place')).toBeVisible();
     await expectAccessible();

@@ -34,7 +34,8 @@ export default defineConfig({
     { name: 'mobile-chrome', use: { ...devices['Pixel 7'] }, grepInvert: /@visual|@desktop|@perf/ },
     { name: 'mobile-safari', use: { ...devices['iPhone 14'] }, grepInvert: /@visual|@desktop|@perf/ },
     // benchmarks (@perf) measure frames: their own chromium project, run alone with one worker
-    // (`playwright test --project=perf --workers=1`; m6-complete's perf group), never in the shards
+    // (`pnpm test:perf`; m6-complete's perf group), never in the shards; `pnpm test:e2e` leaves them
+    // out (M6.23 review F1)
     { name: 'perf', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grep: /@perf/ },
   ],
   webServer: {
