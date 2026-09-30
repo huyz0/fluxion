@@ -79,9 +79,9 @@ describe('stop-check (NFR-DX-003)', () => {
   });
 
   it('blocks when the milestone has no completion gate yet, but still honours the cap', () => {
-    setState({ milestone: 'M7' });
+    setState({ milestone: 'M99' });
     const cap = { FLUXION_STOP_BLOCK_CAP: '1' };
-    assert.match(JSON.parse(hook(cap).stdout).reason, /m7-complete\.mjs does not exist/);
+    assert.match(JSON.parse(hook(cap).stdout).reason, /m99-complete\.mjs does not exist/);
     const r = hook(cap);
     assert.equal(r.stdout, '', out(r));
     assert.match(r.stderr, /block cap 1 reached/);
