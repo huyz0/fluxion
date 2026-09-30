@@ -532,6 +532,39 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.equal(checkPlaywrightReport(nested, ['e2e/x.spec.ts'], ['chromium']), true);
   });
 
+  it('checkPlaywrightTitles needs each title passed on its first run on every project, in that spec', async () => {
+    const { checkPlaywrightTitles } = await import('../../scripts/gates/milestone-checks.mjs');
+    const titled = (file, specs) => ({ suites: [{ file, specs: specs.map(([title, projectName, status]) => ({ title, tests: [{ projectName, status }] })) }] });
+    const spec = 'e2e/parity.edit-vs-present.spec.ts';
+    const both = [
+      ['pixels', 'chromium', 'expected'],
+      ['dom', 'chromium', 'expected'],
+    ];
+    assert.equal(checkPlaywrightTitles(titled('parity.edit-vs-present.spec.ts', both), spec, ['pixels', 'dom'], ['chromium']), true);
+    // a missing title, a missing project, a failure or a retry, and another spec's test all fail
+    assert.match(
+      String(checkPlaywrightTitles(titled('parity.edit-vs-present.spec.ts', both.slice(0, 1)), spec, ['pixels', 'dom'], ['chromium'])),
+      /\[chromium\]: no test titled "dom"/,
+    );
+    assert.match(
+      String(checkPlaywrightTitles(titled('parity.edit-vs-present.spec.ts', both), spec, ['pixels'], ['chromium', 'webkit'])),
+      /\[webkit\]: no test titled "pixels"/,
+    );
+    assert.match(
+      String(checkPlaywrightTitles(titled('parity.edit-vs-present.spec.ts', [['pixels', 'chromium', 'flaky']]), spec, ['pixels'], ['chromium'])),
+      /"pixels": flaky/,
+    );
+    assert.match(String(checkPlaywrightTitles(titled('other.spec.ts', both), spec, ['pixels'], ['chromium'])), /no test titled "pixels"/);
+    // a title must match whole: a longer title does not stand in for it
+    assert.match(
+      String(checkPlaywrightTitles(titled('parity.edit-vs-present.spec.ts', [['pixels too', 'chromium', 'expected']]), spec, ['pixels'], ['chromium'])),
+      /no test titled/,
+    );
+    // at most six reasons, then a count
+    const many = Array.from({ length: 8 }, (_, i) => `t${i}`);
+    assert.match(String(checkPlaywrightTitles(titled('parity.edit-vs-present.spec.ts', []), spec, many, ['chromium'])), /; … 2 more$/);
+  });
+
   it('playwrightSpecs refuses a missing spec and judges the report the runner writes', async () => {
     const { playwrightSpecs } = await import('../../scripts/gates/milestone-checks.mjs');
     assert.match(String(playwrightSpecs(['e2e/no-such.spec.ts'], ['chromium'])), /missing e2e\/no-such\.spec\.ts/);

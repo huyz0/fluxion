@@ -12,6 +12,7 @@ import {
   checkBacklogDone,
   checkFinalReview,
   checkPlaywrightReport,
+  checkPlaywrightTitles,
   coverageGaps,
   dockerAvailable,
   loadMilestoneReviews,
@@ -65,6 +66,12 @@ const runner = () =>
 function e2e(specs, projects) {
   const missing = specs.filter((s) => !exists(s));
   if (missing.length) return `missing ${missing.join(', ')}`;
+  const report = groupReport(projects);
+  return typeof report === 'string' ? report : checkPlaywrightReport(report, specs, projects);
+}
+
+/** The report of the group `projects` belong to, run once per gate. */
+function groupReport(projects) {
   const group = projects === MOBILE ? 'mobile' : 'desktop';
   if (!reports.has(group)) {
     const { specs: all, projects: ps } = GROUPS[group];
@@ -72,8 +79,7 @@ function e2e(specs, projects) {
     const r = runner();
     reports.set(group, playwrightReport(present, ps, r ? { runner: r } : {}));
   }
-  const report = reports.get(group);
-  return typeof report === 'string' ? report : checkPlaywrightReport(report, specs, projects);
+  return reports.get(group);
 }
 
 leg('check-trace --milestone M6 green', () => ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M6'])));
@@ -161,20 +167,31 @@ leg('resize and rotate are one undo step each (transform.resize-rotate-undo)', (
 // ── touch, mode switch, parity, performance (plan rows 14-17) ─────────────────────────────────────
 leg('touch editing basics on both mobile projects (touch.edit-basics)', () => e2e(['e2e/touch.edit-basics.spec.ts'], MOBILE));
 leg('F5 presents in place; input while presenting never changes the document (present.mode-switch)', () => e2e(['e2e/present.mode-switch.spec.ts'], DESKTOP));
-/** A spec that passes and reads its bound from thresholds.mjs (a literal would drift from it). */
-function thresholdSpec(spec, key, projects) {
+/**
+ * A spec that passes, reads its bound from thresholds.mjs (a literal would drift from it), and has a
+ * passing test under each of `titles`: the conditions the plan names, not only a passing file (cp1 F4).
+ */
+function thresholdSpec(spec, key, projects, titles) {
   if (!exists(spec)) return `missing ${spec}`;
   if (!code(readText(spec)).includes(key)) return `${spec} does not read ${key} from thresholds.mjs`;
-  return e2e([spec], projects);
+  const passed = e2e([spec], projects);
+  if (passed !== true) return passed;
+  return checkPlaywrightTitles(groupReport(projects), spec, titles, projects);
 }
+// the plan's conditions (M6.md rows 16-17), pinned by title: the specs must prove them, not only pass
+const PARITY_TITLES = [
+  'FR-EDT-010: with an empty selection and the overlay unmounted, each fixture screen draws the same pixels in edit and present',
+  'FR-EDT-010: the content layer DOM is equal in edit and present after the allowlist',
+];
+const PERF_TITLES = ['NFR-PERF-001: dragging one element among 500 keeps at least EDITOR_DRAG_MIN_FPS over the measured frames'];
 leg(`edit and present draw the same pixels within PARITY_MAX_DIFF_PCT (${t('PARITY_MAX_DIFF_PCT')} %)`, () =>
-  thresholdSpec('e2e/parity.edit-vs-present.spec.ts', 'PARITY_MAX_DIFF_PCT', DESKTOP),
+  thresholdSpec('e2e/parity.edit-vs-present.spec.ts', 'PARITY_MAX_DIFF_PCT', DESKTOP, PARITY_TITLES),
 );
 leg(`dragging 1 of 500 elements stays at or above EDITOR_DRAG_MIN_FPS (${t('EDITOR_DRAG_MIN_FPS')})`, () => {
   const doc = json('fixtures/docs/perf-500.flux.json');
   const elements = Object.values(doc?.records ?? {}).filter((r) => r.type === 'element').length;
   if (elements < 500) return `fixtures/docs/perf-500.flux.json has ${elements} elements (< 500)`;
-  return thresholdSpec('e2e/perf.drag-500.spec.ts', 'EDITOR_DRAG_MIN_FPS', ['chromium']);
+  return thresholdSpec('e2e/perf.drag-500.spec.ts', 'EDITOR_DRAG_MIN_FPS', ['chromium'], PERF_TITLES);
 });
 leg('axe finds no serious or critical issue on the editor shell (a11y.editor-shell)', () => e2e(['e2e/a11y.editor-shell.spec.ts'], DESKTOP));
 

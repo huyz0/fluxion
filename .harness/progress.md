@@ -1238,3 +1238,7 @@ Zoom to selection (FR-EDT-002, cp1 F2). `overlay-geometry` gains `selectionBound
 ## 2026-09-30 M6.29 (claude)
 
 Transform-only drags (ADR-0028 §4, 04 §5, cp1 F3). In render's `ElementNode` the view now sits behind `Body`, a memo whose comparator `sameButPlace` (pure, in `same-but-place.ts`) ignores a change to the box's x and y alone. The members container `Members` follows its parent's record itself, so a moved group still places its members, and the markup is unchanged (goldens and static HTML are byte-identical). The registry versions are passed through, so a registry change still redraws the views. `ElementViewProps.element` now documents that a view draws in its box's own coordinates. Editor T1 asserts that neither view draws again during a drag.
+
+## 2026-09-30 M6.30 (claude)
+
+Gate honesty (cp1 F4). `milestone-checks` gains `checkPlaywrightTitles(report, spec, titles, projects)`: each title must name a test of that spec that passed on its first run on every project. m6-complete's parity and perf legs keep their threshold-read check and now also require the plan's conditions by title (PARITY_TITLES: pixels with an empty selection and the overlay unmounted, and content DOM equal after the allowlist; PERF_TITLES: one element of 500 dragged, frames measured). Rows M6.22 and M6.23 quote those titles. Both legs fail today (the specs are missing). Harness tests cover the new check.

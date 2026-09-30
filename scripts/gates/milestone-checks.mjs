@@ -583,6 +583,25 @@ export function checkPlaywrightReport(report, specs, projects) {
   return bad.length === 0 || bad.slice(0, 6).join('; ') + (bad.length > 6 ? `; … ${bad.length - 6} more` : '');
 }
 
+/**
+ * Judge a Playwright JSON report for named tests: each title of `titles` names a test of `spec` that
+ * ran and passed on its first run on every project of `projects` (a leg pinning what a spec proves,
+ * not only that it passes; M6 cp1 F4). true | '<reason>'.
+ */
+export function checkPlaywrightTitles(report, spec, titles, projects) {
+  const name = spec.replace(/^e2e\//, '');
+  const tests = playwrightTests(report).filter((t) => t.file === name || t.file.endsWith(`/${name}`));
+  const bad = [];
+  for (const title of titles) {
+    for (const project of projects) {
+      const run = tests.filter((t) => t.title === title && t.project === project);
+      if (run.length === 0) bad.push(`${spec} [${project}]: no test titled "${title}"`);
+      else if (run.some((t) => t.status !== 'expected')) bad.push(`${spec} [${project}] "${title}": ${run.map((t) => t.status).join(', ')}`);
+    }
+  }
+  return bad.length === 0 || bad.slice(0, 6).join('; ') + (bad.length > 6 ? `; … ${bad.length - 6} more` : '');
+}
+
 const runPlaywright = (args, env) => run('pnpm', ['exec', 'playwright', 'test', ...args], { env: { ...process.env, ...env } });
 
 /** Whether Docker answers on this host. */
