@@ -166,7 +166,16 @@ leg('resize and rotate are one undo step each (transform.resize-rotate-undo)', (
 
 // ── touch, mode switch, parity, performance (plan rows 14-17) ─────────────────────────────────────
 leg('touch editing basics on both mobile projects (touch.edit-basics)', () => e2e(['e2e/touch.edit-basics.spec.ts'], MOBILE));
-leg('F5 presents in place; input while presenting never changes the document (present.mode-switch)', () => e2e(['e2e/present.mode-switch.spec.ts'], DESKTOP));
+/** A spec that passes and has a passing test under each of `titles` on every project (cp1 F4). */
+function titledSpec(spec, projects, titles) {
+  const passed = e2e([spec], projects);
+  return passed === true ? checkPlaywrightTitles(groupReport(projects), spec, titles, projects) : passed;
+}
+// the laser is drawn while presenting, with no edit chrome (M6 cp2 F1)
+const PRESENT_TITLES = ['FR-EDT-003: while presenting, the pointer draws the laser trail and no edit chrome'];
+leg('F5 presents in place; input while presenting never changes the document; the laser draws (present.mode-switch)', () =>
+  titledSpec('e2e/present.mode-switch.spec.ts', DESKTOP, PRESENT_TITLES),
+);
 /**
  * A spec that passes, reads its bound from thresholds.mjs (a literal would drift from it), and has a
  * passing test under each of `titles`: the conditions the plan names, not only a passing file (cp1 F4).

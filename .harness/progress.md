@@ -1265,3 +1265,7 @@ Pen (P) and freehand (D) in `path-tool.ts`. Pen clicks place vertices; Enter, or
 ## 2026-09-30 M6.33 (claude)
 
 The laser is registered for present mode. `Tool.modes` (default edit) and `createToolDispatcher(registry, ctx, mode = 'edit')` make the dispatcher list, pick by shortcut, and fall back only to tools of its mode. In present mode, select isn't available, so the fallback is the mode's first tool. `laserTool` (L, present) keeps the last LASER_TRAIL pointer positions in `session.laser`, and the overlay draws them fading. It writes nothing, and cancel or leaving it clears the trail. The edit toolbar doesn't list it; the mode switch (M6.20) will dispatch present mode. Review r1 passed with a minor, carried to M6.20: fade the trail over time and clear it when the pointer leaves the stage.
+
+## 2026-09-30 M6.21 (claude)
+
+cp2 (fresh milestone-reviewer, ec72018..b37467d): changes requested, 7 findings. Reopened F1 into M6.20: the laser is drawn in the present layer with no edit chrome, pinned by an E2E title (M6.20 also carries M6.33 review F1, the trail fading over time). Handed off, with roadmap Deferred entries: F2 (shape tool follows the library's current item) to M8 row 15; F3 (kind 'text' drawn) to M7 row 12; F4 (frame defaults and clip hit-testing) to M19 row 3; F5 (connector selection outline) to M7 row 10. Argued F6 (views draw in box coordinates) and F7 (row growth). M6.md gains two Learned lines.

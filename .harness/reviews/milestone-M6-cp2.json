@@ -1,0 +1,103 @@
+{
+  "milestone": "M6",
+  "checkpoint": "cp2",
+  "range": "ec72018..b37467d",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "coherence / architecture / spec fidelity (FR-EDT-003 laser, FR-EDT-009, 04 §2.1)",
+      "detail": "M6.33 draws the laser trail in the editor's edit Overlay; 04 §2.1 puts presenter ink & laser in the player's overlays layer and has no edit overlay while presenting. M6.20 does not say it dispatches or draws the laser, and the laser has no E2E although FR-EDT-003's acceptance is 'Each tool E2E'.",
+      "failure_scenario": "M6.20 unmounts the Overlay while presenting (per 04): the present dispatcher falls back to the laser, which swallows input and updates session.laser, but nothing draws it; M6 closes with a laser no one sees. Or M6.20 keeps the Overlay mounted, and presenting shows selection frames and hover."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "area": "spec fidelity (FR-EDT-003 'shape (current library item)')",
+      "detail": "M6.17 narrowed the shape tool to basic:rect, fixed at registration; M8's library rows do not say the shape tool follows the library's current item, and no Deferred entry records it.",
+      "failure_scenario": "M8 ships the library panel and R draws rectangles forever; check-trace stays green on FR-EDT-003's titled tests."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "coherence / spec fidelity (kind 'text', FR-EDT-003, FR-EDT-010)",
+      "detail": "Core kind 'text' still draws a placeholder; the text tool avoids it with a basic:text-box shape, but documentBuilder.text, the arbitraries and M7 row 12 (plain text paste) produce kind 'text'. Recorded only in progress.md.",
+      "failure_scenario": "M7 row 12 pastes plain text as a kind 'text' element that shows as a labelled placeholder; parity passes (both modes draw it); tool and paste make two different 'text' things."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "architecture / spec fidelity (M6.31 frame clipping vs M19 ADR-0052, FR-EDT-004)",
+      "detail": "M6.31 settled frame semantics early (clip on by default, radius-rounded clip, theme default surface fill); M19's ADR-0052 is planned to decide them. Hit-testing ignores the clip, so an overflowing member's invisible part is hit and marquee-selected.",
+      "failure_scenario": "A document with a child overflowing its frame: a click beside the frame selects the hidden child. ADR-0052 later picks other defaults and silently changes how documents render."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "spec fidelity / UX (FR-EDT-004 selection bounds, connectors)",
+      "detail": "Connectors have no transform, so the Overlay draws no frame or hover outline for a selected or hovered connector; M7 row 10 plans connector handles without saying they give selection and hover chrome.",
+      "failure_scenario": "A user draws or clicks a connector: nothing shows it selected, and Delete or a nudge acts on a selection the user cannot see."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "architecture (render contract meaning, ElementViewProps)",
+      "detail": "M6.29 means a view is not redrawn for a move, so it must draw in box coordinates; documented in TSDoc and ADR-0028 §4, not enforced for third-party views.",
+      "failure_scenario": "An M26 plugin view positions content from element.transform.x and stays at its old place after every move."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "plan health",
+      "detail": "33 rows against the plan's 18 (1.83x): cp1's 4 reopenings, 2 ADR rows, 2 checkpoints, M6.31 found in planning, and plan row 9 (seven tools and the laser) split three times. The riskiest legs (parity, perf-500) are still unbuilt.",
+      "failure_scenario": "Later milestones keep bundling many tools or widgets per row, each splitting mid-flight and hiding growth until the final review."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M6.20 (carry; deps gain M6.33) + m6-complete mode-switch leg",
+      "note": "While presenting the laser trail is drawn in the present layer (04 §2.1's overlays layer; or 04 amended in the same commit), with no selection frame, handles or hover; an E2E in present.mode-switch.spec.ts titled for FR-EDT-003 (after F5, pointer moves draw the laser trail, no fx-chrome selection or hover element exists, the document hash is unchanged), which m6-complete pins. With M6.33 review F1: the trail fades over time and clears when the pointer leaves."
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand off",
+      "target": "M8 row 15 + roadmap Deferred table",
+      "note": "The shape tool (R) places the library's current item, read when it places the element; the E2E picks a non-rect item and draws it with R."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand off",
+      "target": "M7 row 12 + roadmap Deferred table",
+      "note": "One decision for text shared by the text tool and paste: a built-in view for kind 'text', or text mapped onto the text-box shape; a render test that a kind 'text' element is not a placeholder."
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand off",
+      "target": "M19 row 3 / ADR-0052 + roadmap Deferred table",
+      "note": "ADR-0052 ratifies or revises M6.31's defaults (clip on, radius-rounded clip, theme defaults.frame) with a migration if they change; hit-testing and the marquee honour the clip (an overflowing child is not hit outside a clipping frame)."
+    },
+    {
+      "finding": "F5",
+      "disposition": "hand off",
+      "target": "M7 row 10 + roadmap Deferred table",
+      "note": "A selected or hovered connector draws an outline along its route (screen-space, constant width) besides its handles; the E2E asserts a selected connector shows selection chrome."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Decided by ADR-0028 §4 and documented on ElementViewProps; no third-party views exist before the M26 SDK, whose plugin-view guide repeats the rule."
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt + M6.md Learned",
+      "note": "Growth is review fixes and splits, not new scope; lesson: a plan row bundling more than ~3 user-facing tools or widgets is split at planning time."
+    }
+  ],
+  "planDelta": "No new rows. M6.20 carries F1 (the laser in the present layer without edit chrome, an E2E m6-complete pins) and M6.33 review F1, and depends on M6.33. Four hand-offs in the roadmap Deferred table (F2 M8 row 15, F3 M7 row 12, F4 M19 row 3, F5 M7 row 10). 33 rows (1.83x the plan's 18)."
+}

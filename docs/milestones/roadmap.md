@@ -86,6 +86,10 @@ receiving milestone's plan.
 | Renumber the ADRs planned in M6-M9 from ADR-0020 (M5 used 0017-0019); ADR legs match titles (M5 final F4); done in M6.1: the three collisions moved to ADR-0028, 0029 and 0064 | M5 | M6 (planning, first) | plan text only |
 | Select same type and select same style get a trigger: the element context menu offers the editor's `sameType`/`sameStyle` (FR-EDT-004; M6.13 review, M6 cp1 F5) | M6 | M7 row 15 | the context menu arrives there |
 | One keymap absorbs M6's hard-wired canvas keys (undo/redo, zoom, tool shortcuts, nudges) so each key has one binding and user overrides apply (M6 cp1 F6) | M6 | M7 row 14 | the keymap arrives there |
+| The shape tool places the library's current item, not a fixed `basic:rect` (FR-EDT-003; M6 cp2 F2) | M6 | M8 row 15 | the library's current item arrives there |
+| Kind 'text' elements are drawn (a view, or mapped onto the text-box shape), one decision shared by the text tool and paste (M6 cp2 F3) | M6 | M7 row 12 | plain-text paste makes text elements there |
+| Frame defaults (clip on, radius-rounded clip, theme `defaults.frame`, M6.31) ratified or revised by ADR-0052; hit-testing honours the clip (M6 cp2 F4) | M6 | M19 row 3 | frames and containers are decided there |
+| A selected or hovered connector shows an outline along its route (FR-EDT-004; M6 cp2 F5) | M6 | M7 row 10 | connector handles arrive there |
 | Router contract end check, one routers registry, duplicate routing/render helpers (M5 final F6) | M5 | M16 | routers and custom anchors |
 | A procedural pattern paint (hatch, dots, no asset): M5 reads FR-SHP-004's "pattern" as an image paint with `fit: tile`; a pattern of its own needs a `Paint` schema change (format contract, ADR) (M5.13 review F4) | M5 | M9 | a paint and schema decision, with themes |
 | check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |
