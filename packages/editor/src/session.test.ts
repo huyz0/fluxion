@@ -32,6 +32,7 @@ describe('editor session (FR-EDT-004, ADR-0028)', () => {
     expect(s.docId).toBe('doc-2');
     expect(s.selection.get()).toEqual([]);
     expect(s.hover.get()).toBeUndefined();
+    expect(s.marquee.get()).toBeUndefined();
     expect(s.tool.get()).toBe('select');
     expect(s.camera.get()).toBe(DEFAULT_CAMERA);
     expect(DEFAULT_CAMERA).toEqual({ x: 0, y: 0, z: 1 });

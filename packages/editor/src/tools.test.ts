@@ -187,6 +187,12 @@ describe('built-in tools (FR-EDT-003)', () => {
     expect(session.hover.get()).toBe('shape1');
     tools.pointer(at('move', 500, 50));
     expect(session.hover.get()).toBeUndefined();
+    // changing tools forgets the hover
+    tools.pointer(at('move', 50, 50));
+    session.tool.set('hand');
+    expect(tools.current).toBe('hand.idle');
+    expect(session.hover.get()).toBeUndefined();
+    session.tool.set(SELECT_TOOL);
     tools.pointer(at('down', 50, 50));
     expect([session.selection.get(), tools.current]).toEqual([['shape1'], 'select.pointing']);
     tools.pointer(at('up', 50, 50));

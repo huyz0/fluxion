@@ -2,6 +2,7 @@
 // writable signals. Never part of the document: nothing here is passed to `store.transact` or
 // serialized; undo carries the selection through transaction meta instead (ADR-0014).
 import { type WritableSignal, writable } from '@fluxion/core';
+import type { Box } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import type { Camera } from './camera.js';
 
@@ -21,6 +22,8 @@ export type Session = {
   readonly tool: WritableSignal<string>;
   /** The element under the pointer, if any. */
   readonly hover: WritableSignal<RecordId | undefined>;
+  /** The marquee being dragged, page units, if any. */
+  readonly marquee: WritableSignal<Box | undefined>;
 };
 
 /**
@@ -31,8 +34,8 @@ export type Session = {
 export const DEFAULT_CAMERA: Camera = { x: 0, y: 0, z: 1 };
 
 /**
- * A fresh session for the document `docId`: nothing selected or hovered, the select tool, the
- * default camera.
+ * A fresh session for the document `docId`: nothing selected or hovered, no marquee, the select
+ * tool, the default camera.
  *
  * @public
  */
@@ -43,6 +46,7 @@ export function createSession(docId: string): Session {
     camera: writable(DEFAULT_CAMERA),
     tool: writable('select'),
     hover: writable<RecordId | undefined>(undefined),
+    marquee: writable<Box | undefined>(undefined),
   };
 }
 

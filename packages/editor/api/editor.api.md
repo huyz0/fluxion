@@ -154,6 +154,7 @@ export type Session = {
     readonly camera: WritableSignal<Camera>;
     readonly tool: WritableSignal<string>;
     readonly hover: WritableSignal<RecordId | undefined>;
+    readonly marquee: WritableSignal<Box | undefined>;
 };
 
 // @public

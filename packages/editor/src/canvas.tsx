@@ -12,6 +12,7 @@ import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
+import { Overlay } from './overlay.js';
 import type { PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
@@ -197,9 +198,20 @@ export function Canvas(props: CanvasProps): ReactNode {
   useKeys({ session, box, area, space, tools });
   usePointerInput(ref, session.camera.get, canvasConsumer(session, space, drag, tools));
   return (
-    <main ref={ref} aria-label="Canvas" className="fx-chrome-canvas" tabIndex={-1} onPointerDown={(e) => e.currentTarget.focus({ preventScroll: true })}>
+    <main
+      ref={ref}
+      aria-label="Canvas"
+      className="fx-chrome-canvas"
+      tabIndex={-1}
+      onPointerDown={(e) => e.currentTarget.focus({ preventScroll: true })}
+      // nothing on the canvas is under a pointer that has left it (M6.11 review F1)
+      onPointerLeave={() => session.hover.set(undefined)}
+    >
       {screenId === undefined || box.w === 0 ? null : (
-        <ScreenView store={store} screenId={screenId} mode="edit" view={{ kind: 'camera', box, camera }} registries={registries} />
+        <>
+          <ScreenView store={store} screenId={screenId} mode="edit" view={{ kind: 'camera', box, camera }} registries={registries} />
+          <Overlay store={store} session={session} box={box} />
+        </>
       )}
     </main>
   );

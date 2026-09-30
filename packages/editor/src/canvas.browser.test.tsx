@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import type { Camera } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
+import { CHROME_CSS } from './chrome-css.js';
 import { newDocument } from './new-document.js';
 import { createSession, type Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
@@ -16,8 +17,13 @@ let root: Root;
 let session: Session;
 let boxes: { w: number; h: number }[];
 const area = { x: 0, y: 0, w: 1920, h: 1080 };
+let css: HTMLStyleElement;
 beforeEach(async () => {
   await page.viewport(1000, 700);
+  // the chrome's own CSS, as the editor root injects it (the overlay lies over the canvas)
+  css = document.createElement('style');
+  css.textContent = CHROME_CSS;
+  document.head.append(css);
   host = document.createElement('div');
   host.style.cssText = 'position: fixed; left: 0; top: 0; width: 800px; height: 600px; display: grid;';
   document.body.append(host);
@@ -28,6 +34,7 @@ beforeEach(async () => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+  css.remove();
 });
 
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -214,6 +221,16 @@ describe('canvas camera input (FR-EDT-002)', () => {
     const loose = recording(() => false);
     const other = await mount({ x: 0, y: 0, z: 1 }, loose.tools);
     expect(pointer(other, 'pointerdown', [10, 10])).toBe(false);
+  });
+
+  it('FR-EDT-004: the overlay lies over the canvas; a pointer leaving the canvas hovers nothing', async () => {
+    const main = await mount();
+    const overlay = main.querySelector('svg.fx-chrome-overlay') as SVGSVGElement;
+    expect([getComputedStyle(overlay).position, getComputedStyle(overlay).pointerEvents]).toEqual(['absolute', 'none']);
+    act(() => session.hover.set('x' as never));
+    // React's leave comes from the pointer going out to something outside
+    fire(main, new PointerEvent('pointerout', { bubbles: true, relatedTarget: document.body, pointerId: 1 }));
+    expect(session.hover.get()).toBeUndefined();
   });
 
   it('FR-EDT-002: zoom shortcuts act on the window unless typed into a field', async () => {

@@ -132,83 +132,112 @@ export type ToolDispatcher = {
 type Handler = 'onPointerDown' | 'onPointerMove' | 'onPointerUp';
 const HANDLERS: { readonly [phase: string]: Handler } = { down: 'onPointerDown', move: 'onPointerMove', up: 'onPointerUp' };
 
+/** The dispatcher: the current tool and state, and how input moves between them. */
+class Dispatcher implements ToolDispatcher {
+  #tool: Tool | undefined;
+  #state: StateNode | undefined;
+  readonly #registry: Registry<string, Tool>;
+  readonly #ctx: ToolCtx;
+
+  constructor(registry: Registry<string, Tool>, ctx: ToolCtx) {
+    this.#registry = registry;
+    this.#ctx = ctx;
+  }
+
+  #enter(tool: Tool | undefined, id: string, info?: unknown): void {
+    this.#state?.onExit?.(this.#ctx);
+    this.#tool = tool;
+    this.#state = tool?.states[id];
+    this.#state?.onEnter?.(this.#ctx, info);
+  }
+
+  /** Start the tool the session names, if it is not the current one (the toolbar, another view). */
+  #sync(): void {
+    const wanted = this.#registry.get(this.#ctx.session.tool.get()) ?? this.#registry.get(SELECT_TOOL);
+    if (wanted === this.#tool) return;
+    // what the last tool hovered is not the new one's (M6.11 review F1)
+    this.#ctx.session.hover.set(undefined);
+    // tzap disable next-line StringLiteral: without a tool there is no state, whatever the id
+    this.#enter(wanted, wanted?.initial ?? '');
+  }
+
+  #go(t: Transition | undefined): void {
+    if (t !== undefined) this.#enter(this.#tool, t.to, t.info);
+  }
+
+  /** Switch to tool `id`, cancelling a gesture under way first. */
+  #switchTo(id: string): void {
+    this.#go(this.#state?.onCancel?.(this.#ctx));
+    this.#ctx.session.tool.set(id);
+    this.#sync();
+  }
+
+  /** Esc: the state's own cancel; else back to the tool's start; from the start, to `select`. */
+  #escape(): void {
+    const back = this.#state?.onCancel?.(this.#ctx);
+    // tzap disable next-line StringLiteral: without a tool there is no state, whatever the id
+    const start: Transition = { to: this.#tool?.initial ?? '' };
+    if (back !== undefined) this.#go(back);
+    else if (this.#state?.id !== this.#tool?.initial) this.#go(start);
+    else this.#switchTo(SELECT_TOOL);
+  }
+
+  /** The tool whose shortcut `e` is, if any: an unmodified key. */
+  #shortcut(e: KeyInfo): string | undefined {
+    if (e.mod || e.alt) return undefined;
+    return this.#registry.list().find(([, t]) => t.shortcut === e.key.toLowerCase())?.[0];
+  }
+
+  pointer(e: PointerInfo): boolean {
+    this.#sync();
+    if (e.phase === 'cancel') {
+      this.#go(this.#state?.onCancel?.(this.#ctx));
+      return true;
+    }
+    const handler = this.#state?.[HANDLERS[e.phase] as Handler];
+    if (handler === undefined) return false;
+    this.#go(handler.call(this.#state, this.#ctx, e));
+    return true;
+  }
+
+  key(e: KeyInfo): boolean {
+    this.#sync();
+    if (e.key === 'Escape') {
+      this.#escape();
+      return true;
+    }
+    const own = this.#state?.onKeyDown?.(this.#ctx, e);
+    if (own !== undefined) {
+      this.#go(own);
+      return true;
+    }
+    const id = this.#shortcut(e);
+    if (id === undefined) return false;
+    this.#switchTo(id);
+    return true;
+  }
+
+  cancel(): void {
+    this.#sync();
+    this.#go(this.#state?.onCancel?.(this.#ctx));
+  }
+
+  get current(): string {
+    this.#sync();
+    return `${this.#tool?.id ?? ''}.${this.#state?.id ?? ''}`;
+  }
+
+  list(): readonly Tool[] {
+    return this.#registry.list().map(([, t]) => t);
+  }
+}
+
 /**
  * A dispatcher over the tools of `registry`, for the tool `ctx.session.tool` names; an unknown tool
- * falls back to `select`.
+ * falls back to `select`. Every input first starts that tool, entering its first state on first use.
  *
  * @public
  */
 export function createToolDispatcher(registry: Registry<string, Tool>, ctx: ToolCtx): ToolDispatcher {
-  let tool: Tool | undefined;
-  let state: StateNode | undefined;
-  const toolNamed = (id: string) => registry.get(id) ?? registry.get(SELECT_TOOL);
-  const enter = (t: Tool | undefined, id: string, info?: unknown) => {
-    state?.onExit?.(ctx);
-    tool = t;
-    state = t?.states[id];
-    state?.onEnter?.(ctx, info);
-  };
-  // the session's tool may have changed (the toolbar, another view): start that tool
-  const sync = () => {
-    const wanted = toolNamed(ctx.session.tool.get());
-    // tzap disable next-line StringLiteral: without a tool there is no state, whatever the id
-    if (wanted !== tool) enter(wanted, wanted?.initial ?? '');
-  };
-  const go = (t: Transition | undefined) => {
-    if (t === undefined) return;
-    enter(tool, t.to, t.info);
-  };
-  const switchTo = (id: string) => {
-    // a gesture under way is cancelled first
-    go(state?.onCancel?.(ctx));
-    ctx.session.tool.set(id);
-    sync();
-  };
-  const onEscape = () => {
-    const back = state?.onCancel?.(ctx);
-    if (back !== undefined) return go(back);
-    // tzap disable next-line StringLiteral: without a tool there is no state, whatever the id
-    if (state?.id !== tool?.initial) return enter(tool, tool?.initial ?? '');
-    switchTo(SELECT_TOOL);
-  };
-  const shortcut = (e: KeyInfo) => (e.mod || e.alt ? undefined : registry.list().find(([, t]) => t.shortcut === e.key.toLowerCase())?.[0]);
-  // every input first starts the tool the session names (entering its first state on first use)
-  return {
-    pointer: (e) => {
-      sync();
-      if (e.phase === 'cancel') {
-        go(state?.onCancel?.(ctx));
-        return true;
-      }
-      const handler = state?.[HANDLERS[e.phase] as Handler];
-      if (handler === undefined) return false;
-      go(handler.call(state, ctx, e));
-      return true;
-    },
-    key: (e) => {
-      sync();
-      if (e.key === 'Escape') {
-        onEscape();
-        return true;
-      }
-      const own = state?.onKeyDown?.(ctx, e);
-      if (own !== undefined) {
-        go(own);
-        return true;
-      }
-      const id = shortcut(e);
-      if (id === undefined) return false;
-      switchTo(id);
-      return true;
-    },
-    cancel: () => {
-      sync();
-      go(state?.onCancel?.(ctx));
-    },
-    get current() {
-      sync();
-      return `${tool?.id ?? ''}.${state?.id ?? ''}`;
-    },
-    list: () => registry.list().map(([, t]) => t),
-  };
+  return new Dispatcher(registry, ctx);
 }

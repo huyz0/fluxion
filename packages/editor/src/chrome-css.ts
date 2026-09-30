@@ -15,7 +15,7 @@ export const CANVAS_PATH: readonly string[] = ['fx-editor', 'fx-chrome-body', 'f
  * The editor chrome's CSS.
  */
 export const CHROME_CSS: string = `@layer fx.chrome {
-.fx-editor { --ui-bg: #f8fafc; --ui-panel: #ffffff; --ui-border: #cbd5e1; --ui-text: #0f172a; --ui-muted: #64748b; --ui-accent: #2563eb; --ui-pressed: #dbeafe; --ui-canvas: #e2e8f0; --ui-focus: #2563eb; position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--ui-bg); }
+.fx-editor { --ui-bg: #f8fafc; --ui-panel: #ffffff; --ui-border: #cbd5e1; --ui-text: #0f172a; --ui-muted: #64748b; --ui-accent: #2563eb; --ui-pressed: #dbeafe; --ui-canvas: #e2e8f0; --ui-focus: #2563eb; --ui-marquee: rgba(37, 99, 235, 0.08); position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--ui-bg); }
 .fx-chrome-toolbar { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; overflow-x: auto; padding: 0 8px; box-sizing: border-box; border-bottom: 1px solid var(--ui-border); background: var(--ui-panel); color: var(--ui-text); font: 13px/1.2 system-ui, sans-serif; }
 .fx-chrome-toolbar .fx-chrome-spacer { flex: 1; }
 .fx-chrome-toolbar .fx-chrome-button { flex: none; white-space: nowrap; font: inherit; color: inherit; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; cursor: pointer; }
@@ -33,12 +33,17 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-panel .fx-chrome-tabs { display: flex; border-bottom: 1px solid var(--ui-border); }
 .fx-chrome-panel .fx-chrome-tab { flex: 1; font: inherit; color: var(--ui-muted); padding: 8px 4px; border: 0; border-bottom: 2px solid transparent; background: transparent; cursor: pointer; }
 .fx-chrome-panel .fx-chrome-tab[aria-selected="true"] { color: var(--ui-text); border-bottom-color: var(--ui-accent); }
+.fx-chrome-overlay { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.fx-chrome-overlay .fx-chrome-frame { fill: none; stroke: var(--ui-accent); stroke-width: 1; }
+.fx-chrome-overlay .fx-chrome-hover { fill: none; stroke: var(--ui-accent); stroke-width: 2; }
+.fx-chrome-overlay .fx-chrome-handle { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1; }
+.fx-chrome-overlay .fx-chrome-marquee { fill: var(--ui-marquee); stroke: var(--ui-accent); stroke-width: 1; }
 .fx-chrome-splitter { flex: none; background: var(--ui-border); touch-action: none; }
 .fx-chrome-splitter[aria-orientation="vertical"] { width: 4px; cursor: col-resize; }
 .fx-chrome-splitter[aria-orientation="horizontal"] { height: 4px; cursor: row-resize; }
 .fx-chrome-splitter:hover, .fx-chrome-splitter.fx-chrome-dragging { background: var(--ui-accent); }
 .fx-editor .fx-chrome-button:focus-visible, .fx-editor .fx-chrome-tab:focus-visible, .fx-editor .fx-chrome-splitter:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: -2px; }
 @media (prefers-color-scheme: dark) {
-.fx-editor { --ui-bg: #0f172a; --ui-panel: #1e293b; --ui-border: #334155; --ui-text: #e2e8f0; --ui-muted: #94a3b8; --ui-accent: #60a5fa; --ui-pressed: #1e3a8a; --ui-canvas: #020617; --ui-focus: #93c5fd; }
+.fx-editor { --ui-bg: #0f172a; --ui-panel: #1e293b; --ui-border: #334155; --ui-text: #e2e8f0; --ui-muted: #94a3b8; --ui-accent: #60a5fa; --ui-pressed: #1e3a8a; --ui-canvas: #020617; --ui-focus: #93c5fd; --ui-marquee: rgba(96, 165, 250, 0.12); }
 }
 }`;

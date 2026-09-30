@@ -1195,3 +1195,8 @@ Gate: `benchUnder(file, name, maxMs)` + `checkBenchTask` in milestone-checks. Th
 
 Tools (ADR-0028): `tools.ts` holds hand-rolled statecharts. A `Tool` is `{id, title, shortcut, initial, states}`, and `StateNode` handlers return `Transition` data. `createToolDispatcher(registry, ctx)` first starts the tool `session.tool` names on every input (unknown: select). Shortcuts switch tools, cancelling a gesture first. Esc runs the state's `onCancel`, else returns to the tool's start, and from the start goes to `select`. A pointer cancel or window blur cancels.
 Built-ins: `select` (V) selects the topmost hit or none and tracks the hover; `hand` (H) drags the page with any button. The editor root keeps a hit index (LIGHT_THEME) and a dispatcher. The canvas sends presses and keys to the tools, except middle-drag, space-drag and camera shortcuts. The toolbar shows tool buttons, and the inspector the selection count. `EditorRoot` now takes `execute`.
+
+## 2026-09-30 M6.12 (claude)
+
+Overlay (ADR-0028 §3): `overlay-geometry.ts` is pure. `selectionFrame(placed, camera)` gives one element's frame turned with it, or several elements' upright bounds, in canvas px. It carries 8 handles (nw…w) and a rotate handle `ROTATE_OFFSET_PX` (24) past the top edge, whatever the flips; `screenBox` draws the marquee. `Overlay` is one SVG over the canvas (`fx-chrome-overlay`, no pointer events) drawing the hover outline (unless selected), the frame with `HANDLE_PX` (8) handles at any zoom, and `session.marquee` (new, page units).
+Carried M6.11 F1: the hover clears when the pointer leaves the canvas and when the tool changes. The tool dispatcher is now a small class (function length).
