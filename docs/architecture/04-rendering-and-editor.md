@@ -224,22 +224,25 @@ The lowest-distance candidate wins per axis, and Alt bypasses snapping.
   from packs and user overrides from local settings (FR-EDT-012). The `?` key opens the
   generated cheat sheet.
 
-### 3.5 Clipboard (FR-EDT-007)
+### 3.5 Clipboard (FR-EDT-007, ADR-0020)
 
 ```ts
 interface ClipboardPayload {
-  fluxion: '1'; schemaVersion: string; sourceDocId: string;
+  fluxion: 'clipboard'; version: 1; schemaVersion: string; sourceDocId: string;
   records: AnyRecord[];                  // elements + internal bindings + referenced step anims (opt.)
-  assets: { hash: string; mime: string; dataUrl?: string }[];  // inline if ≤ 1 MB, else by hash
+  assets: { hash: string; mime: string; size: number; dataUrl?: string }[];  // inline if ≤ 1 MB, else by hash
   themeTokens?: Record<string, string>;  // resolved fallbacks for cross-doc paste
   bounds: Box;
 }
 ```
 
-On copy the editor writes several representations: `web application/x-fluxion+json` (async
-Clipboard API custom format), `text/html` (rendered SVG plus the payload in
-`<template data-fluxion>`), `text/plain` (labels as an outline, or FluxScript for a whole screen),
-and `image/png` (rasterized selection). Paste tries them in that order. It then remaps IDs
+On copy the editor writes every representation in one operation (ADR-0020). The keyboard copy
+event writes a custom `application/x-fluxion+json` `DataTransfer` type. A menu copy makes one async
+`ClipboardItem`, with `web application/x-fluxion+json` where supported. Both also write `text/html`
+(rendered SVG plus the payload in `<template data-fluxion>`, parsed inertly with `DOMParser` on
+paste) and `text/plain` (the text in reading order; FluxScript for a whole screen from M12). Paste
+tries the custom type, then the template, image, SVG and text, and validates the payload as an
+opened file. It then remaps IDs
 through the `Random` port, keeps bindings whose both ends were copied, turns the others into free
 endpoints, and offsets by +16 px per repeated paste. System paste also accepts SVG (sanitized,
 NFR-SEC-001), images (asset + image element), and Mermaid or Markdown text (importers,

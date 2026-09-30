@@ -32,6 +32,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0017](ADR-0017-hosts-bundle-first-party-packs.md) | Hosts bundle first-party packs as listed dependencies (packs at rank 5) | accepted | 2026-09-29 |
 | [0018](ADR-0018-shape-text-fitting.md) | Shape text fitting: an optional `textFit` on shapes, pure layout in core | accepted | 2026-09-29 |
 | [0019](ADR-0019-stroke-alignment-and-corner-radius.md) | Stroke alignment and corner radius on any outline | accepted | 2026-09-29 |
+| [0020](ADR-0020-clipboard-format.md) | The clipboard format: one versioned Fluxion payload in every representation each path allows | accepted | 2026-10-01 |
 | [0028](ADR-0028-editor-interaction-architecture.md) | Editor interaction: statechart tools, a signal session store, a screen-space SVG overlay, a frame-batched pointer pipeline | accepted | 2026-09-30 |
 | [0029](ADR-0029-editor-chrome-primitives.md) | Editor chrome: own splitters, a scoped `@layer fx.chrome` stylesheet, the panel layout in a settings port (amends 0010's timing) | accepted | 2026-09-30 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
