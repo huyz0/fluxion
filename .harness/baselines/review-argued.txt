@@ -61,3 +61,6 @@ M5 final F8: check-drift's CI cutoff looks for 'function baselineChanges()' in t
 M5 final F10: screenshots do not guard small marker shapes (maxDiffPixelRatio 0.001 let M5.20's notched arrow through on two-rects-line); the SVG goldens caught it, as testing.md rule 15 intends, and the gallery draws markers at stroke 4.
 M6 cp2 F6: a view is not redrawn for a move (M6.29), so it draws in box coordinates; decided by ADR-0028 §4 and documented on ElementViewProps; no third-party views exist before the M26 SDK, whose plugin-view guide repeats the rule.
 M6 cp2 F7: 33 rows against 18 planned: review reopenings, ADR and checkpoint rows, M6.31 found in planning, and plan row 9 split three times; no new scope. Recorded in M6.md Learned.
+M6 cp1 F7: cp1 ran after 15 task rows; not a defect of built work: the plan changed so cp2 ran after M6.18 and the reopened rows, before touch and mode switch (recorded in the cp1 record's dispositions).
+M6 final F5: bookkeeping, done in the final commit (cp1 F7's line above; the final record spells 'hand-off').
+M6 final F6: the parity metric also flags a text anti-aliasing mode change (~1.1 % on text); correct under FR-EDT-010's pixel-identical wording and as pixelmatch judges; noted with the M8/M10 parity hand-off.

@@ -5,7 +5,7 @@
 > *and* a milestone review (fresh agent) has recorded a verdict. The command is written first,
 > red (see `docs/standards/sdd.md`, skill `plan-milestone`).
 
-**Current milestone: `M6`** (the `drive` skill reads this line).
+**Current milestone: `M7`** (the `drive` skill reads this line).
 
 Plans (`M<n>.md`) are hypotheses with ≤ ~20 tasks; the backlog (`docs/backlog/current.md`) is
 authoritative for the current milestone only.
@@ -90,6 +90,9 @@ receiving milestone's plan.
 | Kind 'text' elements are drawn (a view, or mapped onto the text-box shape), one decision shared by the text tool and paste (M6 cp2 F3) | M6 | M7 row 12 | plain-text paste makes text elements there |
 | Frame defaults (clip on, radius-rounded clip, theme `defaults.frame`, M6.31) ratified or revised by ADR-0052; hit-testing honours the clip (M6 cp2 F4) | M6 | M19 row 3 | frames and containers are decided there |
 | A selected or hovered connector shows an outline along its route (FR-EDT-004; M6 cp2 F5) | M6 | M7 row 10 | connector handles arrive there |
+| The parity suite covers every screen edit can show, examples and fixture documents (FR-EDT-010; M6 final F2, with F6's anti-aliasing-mode note) | M6 | M8 row 10, M10 row 15 | other screens and files open in edit there |
+| shift+F5 presents the current screen, F5 the first; present in place drives the PresentationController (FR-EDT-009; M6 final F3) | M6 | M8 row 10, M11 row 5 | the navigator and the controller arrive there |
+| hit-test-2000 and perf.drag-500 rerun by every later editor gate and the nightly perf job; a resize among 500 measured (NFR-PERF-001; M6 final F4) | M6 | M7 row 1, M13 row 15 | shared legs and the nightly job |
 | Router contract end check, one routers registry, duplicate routing/render helpers (M5 final F6) | M5 | M16 | routers and custom anchors |
 | A procedural pattern paint (hatch, dots, no asset): M5 reads FR-SHP-004's "pattern" as an image paint with `fit: tile`; a pattern of its own needs a `Paint` schema change (format contract, ADR) (M5.13 review F4) | M5 | M9 | a paint and schema decision, with themes |
 | check-tests-kept: detect vitest `skipIf`/`runIf`/`concurrent.skip` and net-swap of cases; add Biome noFocusedTests/noSkippedTests (cp1 F4) | M0 | M1 | vitest and Biome arrive in M1 |

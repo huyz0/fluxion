@@ -1,0 +1,111 @@
+{
+  "milestone": "M6",
+  "checkpoint": "final",
+  "range": "2576b7d..30ec085",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "approve",
+  "passes": [
+    {
+      "range": "2576b7d..fdc05b7",
+      "verdict": "changes-requested",
+      "findings": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5"
+      ]
+    },
+    {
+      "range": "2576b7d..30ec085",
+      "verdict": "approved",
+      "findings": [
+        "F6"
+      ],
+      "note": "F1 verified resolved by simulation (1 px shift 2.12 %, 10 % darker 97.4 %)."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate honesty / spec fidelity (FR-EDT-010, parity metric)",
+      "detail": "The parity metric excused any differing pixel on an edge in both images, so a 1 px displacement of all content, or a text anti-aliasing change, scored 0 %.",
+      "failure_scenario": "A chrome change shifts edit content by 1 px or changes its font smoothing; the content DOM is identical, diffPct reports ~0 %, and FR-EDT-010 breaks unseen.",
+      "resolution": "M6.34 (42ea954, 30ec085): pixelmatch's anti-aliasing test with a brightness-spread condition (PARITY_EDGE_DELTA); the spec asserts the screen darkened by 10 % and moved 1 px right and down all score over the bound. Pass 2 verified by simulation: a 1 px shift scores ~2.1 % against 0.1 %."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "area": "spec fidelity (FR-EDT-010, 'each fixture screen')",
+      "detail": "Parity compares only the first screens of the two examples; the editor cannot show other screens or open files yet.",
+      "failure_scenario": "Once later screens and files open in edit, a screen that draws differently in edit never enters the suite."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "spec fidelity (FR-EDT-009 shift+F5; player navigation)",
+      "detail": "F5 and shift+F5 are the same switch (always the editor's first screen), and present in place does not drive the player's PresentationController.",
+      "failure_scenario": "After M8 a user presses shift+F5 on screen 3 and presents screen 1; after M11 arrows navigate in /present but not in F5 in place."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "gate honesty over time (NFR-PERF-001: perf.drag-500, hit-test-2000)",
+      "detail": "The drag benchmark and the hit-test bench run only in m6-complete; no later gate or CI job reruns them; only a drag (not a resize) is measured; the spec's 'a second' comment disagrees with its 30-frame floor.",
+      "failure_scenario": "M7 or M19 slows the hit index or drag rendering and no gate notices until M32."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "bookkeeping",
+      "detail": "cp1 F7 was argued without a line in review-argued.txt; the checkpoint records spell 'hand off' where the gate's enum is 'hand-off'.",
+      "failure_scenario": "The final record copies 'hand off' and the final-review leg refuses it; a later reviewer finds no trace of the cp1 F7 argument."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "known sensitivity (pass 2)",
+      "detail": "The stricter metric also flags a text anti-aliasing mode change (LCD vs grayscale, e.g. a compositing layer on the edit canvas): ~1.1 % on text screens.",
+      "failure_scenario": "A later change composites the edit canvas and parity turns red although nothing is wrong to the eye; correct under FR-EDT-010's pixel-identical wording."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M6.34 (done: 42ea954, 30ec085)"
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand-off",
+      "target": "M8 row 10 + M10 row 15 + roadmap Deferred table",
+      "note": "When other screens and files open in edit, parity covers every screen of every example and fixture document; F6's anti-aliasing-mode sensitivity noted there."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "target": "M8 row 10 + M11 row 5 + roadmap Deferred table",
+      "note": "F5 presents the first visible screen, shift+F5 the navigator's current one, an E2E telling them apart; present in place drives the PresentationController so the navigation keys work there."
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand-off",
+      "target": "M7 row 1 + M13 row 15 + roadmap Deferred table",
+      "note": "m7-complete and later editor gates rerun hit-test-2000 and perf.drag-500 as shared legs; a resize-among-500 measurement joins the spec; the nightly perf job runs them in CI."
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Bookkeeping, done in this commit: cp1 F7's argued line added; this record uses 'hand-off'. The checkpoint records stay as history."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Not a defect (pixel-identical per FR-EDT-010, as pixelmatch judges); recorded with F2's hand-off."
+    }
+  ],
+  "planDelta": "34 rows (plan 18 + ADR, checkpoint and reopened rows; growth argued in cp2 F7). Pass 1 reopened M6.34. Three hand-offs (F2 to M8/M10, F3 to M8/M11, F4 to M7/M13), each in its receiving plan and the roadmap Deferred table. Roadmap moves to M7."
+}
