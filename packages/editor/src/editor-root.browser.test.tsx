@@ -254,9 +254,10 @@ describe('edit-mode root (FR-EDT-001)', () => {
     fire('pointerup', 330, 200);
     await act(frame);
     expect((core.store.get(moving) as { transform: { x: number } }).transform.x).toBeCloseTo(180, 6);
-    // the moved element drew again for its moves; the other one not once
-    expect((renders.get(moving) ?? 0) - before.moving).toBeGreaterThanOrEqual(4);
-    expect((renders.get(still) ?? 0) - before.still).toBe(0);
+    // a translate changes only the box's place: the moved element's wrapper followed it, while neither
+    // view drew again (ADR-0028 §4, 04 §5)
+    expect((host.querySelector(`.fx-el[data-el-id="${moving}"]`) as HTMLElement).style.left).toBe('180px');
+    expect([(renders.get(moving) ?? 0) - before.moving, (renders.get(still) ?? 0) - before.still]).toEqual([0, 0]);
     // and the overlay's frame followed it, 80 page units on the canvas
     expect(framed() - startX).toBeCloseTo(80 * session.camera.get().z, 3);
     expect(host.querySelector('.fx-el[data-el-id="' + still + '"]')).not.toBeNull();

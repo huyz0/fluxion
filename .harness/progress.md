@@ -1234,3 +1234,7 @@ Hit-test back under budget (cp1 F1). The outline check was sampling every cubic 
 ## 2026-09-30 M6.28 (claude)
 
 Zoom to selection (FR-EDT-002, cp1 F2). `overlay-geometry` gains `selectionBounds` (upright page bounds of the selected elements; turned ones counted by their corners) and `placements`, now shared with the overlay. `shortcutCamera` takes `FitTargets {screen, selection}`: shift + 1 fits the screen, shift + 2 fits the selection, and with nothing to fit the key is left to the tools. The toolbar has a "Zoom to selection" button, disabled while nothing is selected. E2E `canvas.pan-zoom` covers both the key and the button. On a phone the extra button made the zoom group shrink over the panel buttons; the group is now `flex: none`, so the toolbar scrolls instead, and a CSS test pins that.
+
+## 2026-09-30 M6.29 (claude)
+
+Transform-only drags (ADR-0028 §4, 04 §5, cp1 F3). In render's `ElementNode` the view now sits behind `Body`, a memo whose comparator `sameButPlace` (pure, in `same-but-place.ts`) ignores a change to the box's x and y alone. The members container `Members` follows its parent's record itself, so a moved group still places its members, and the markup is unchanged (goldens and static HTML are byte-identical). The registry versions are passed through, so a registry change still redraws the views. `ElementViewProps.element` now documents that a view draws in its box's own coordinates. Editor T1 asserts that neither view draws again during a drag.

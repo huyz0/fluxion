@@ -109,6 +109,48 @@ describe('element views (FR-EXT-001, FR-DOC-005)', () => {
     expect(wrappers().map((w) => w.dataset['elId'])).not.toContain(b);
   });
 
+  it('NFR-PERF-001: a move redraws the wrapper and members container only; any other change redraws the view', async () => {
+    const { file, screenId, rects } = setup((records, { rects: [a, b] }) => {
+      const { type, screenId: on } = records[a as string] as Record<string, unknown>;
+      records[GROUP] = { id: GROUP, type, screenId: on, kind: 'group', index: 'a9', transform: { x: 100, y: 50, w: 200, h: 120 } };
+      records[b as string] = { ...(records[b as string] as object), parentId: GROUP, transform: { x: 130, y: 80, w: 40, h: 20 } };
+    });
+    const drawn = new Map<string, number>();
+    const Counting = (props: ElementViewProps) => {
+      drawn.set(props.element.id, (drawn.get(props.element.id) ?? 0) + 1);
+      return <i data-view={props.element.kind}>{props.children}</i>;
+    };
+    const registries = createRenderRegistries();
+    registries.elementViews.register('shape', { Component: Counting }, 'test');
+    registries.elementViews.register('group', { Component: Counting }, 'test');
+    const core = await show(file, screenId, registries);
+    const [first, member] = rects as [RecordId, RecordId];
+    const count = () => [first, GROUP, member].map((id) => drawn.get(id) ?? 0);
+    const [b0, b1, b2] = count() as [number, number, number];
+    const before = [b0, b1, b2];
+    const patch = (id: RecordId, transform: object) => act(() => void core.store.transact('move', (tx) => tx.patch(id, { transform })));
+    // moved: placed anew, not drawn again
+    patch(first, { x: 30, y: 40, w: 100, h: 50 });
+    expect(count()).toEqual(before);
+    expect(host.querySelector<HTMLElement>(`.fx-el[data-el-id="${first}"]`)?.style.left).toBe('30px');
+    // a moved group's members container follows it: its member stays at its own stored box
+    patch(GROUP as RecordId, { x: 60, y: 10, w: 200, h: 120 });
+    expect(count()).toEqual(before);
+    const screen = host.querySelector('.fx-screen')?.getBoundingClientRect();
+    const box = host.querySelector(`.fx-el[data-el-id="${member}"]`)?.getBoundingClientRect();
+    expect([(box?.left ?? 0) - (screen?.left ?? 0), (box?.top ?? 0) - (screen?.top ?? 0)].map(Math.round)).toEqual([130, 80]);
+    // resized, turned, or a field besides the box changed: drawn again
+    patch(first, { x: 30, y: 40, w: 120, h: 50 });
+    patch(first, { x: 30, y: 40, w: 120, h: 50, rot: 10 });
+    act(() => void core.store.transact('name', (tx) => tx.patch(first, { name: 'first' })));
+    expect(count()).toEqual([b0 + 3, b1, b2]);
+    // a registry the views read changing draws them all again
+    await act(async () => {
+      registries.shapeDefs.register('acme:x', { id: 'acme:x', outline: { path: 'M 0 0 Z' }, defaultSize: { w: 1, h: 1 } }, 'test');
+    });
+    expect(count()).toEqual([b0 + 4, b1 + 1, b2 + 1]);
+  });
+
   it('FR-DOC-005: a member of an offset, rotated, flipped group is drawn at its own stored box', async () => {
     const { file, screenId, rects } = setup((records, { rects: [a, b] }) => {
       const { type, screenId: on } = records[a as string] as Record<string, unknown>;

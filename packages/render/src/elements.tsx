@@ -3,11 +3,14 @@
 // by a labelled placeholder when none is; the record is only read, never changed. Members of a group
 // or frame are stored in screen coordinates (02 §3), so their list sits in a container that undoes
 // the parent's placement: nesting is kept in the DOM, the parent's box is not applied twice.
+// A move changes only a box's x and y: the wrapper and the members container follow it, while the
+// view is not drawn again (ADR-0028 §4, 04 §5, transform-only drags).
 import type { Store } from '@fluxion/core';
 import { type ElementRecord, type RecordId, type Transform, transformRotation } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
-import { type CSSProperties, memo, type NamedExoticComponent, type ReactNode, useMemo } from 'react';
+import { type ComponentType, type CSSProperties, memo, type NamedExoticComponent, type ReactNode, useMemo } from 'react';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
+import { sameButPlace } from './same-but-place.js';
 import { elementsInOrder } from './screen-order.js';
 import { useValue } from './use-value.js';
 
@@ -49,26 +52,83 @@ export function PlaceholderView(props: ElementViewProps): ReactNode {
   );
 }
 
-/** One element and its members; memoized, so a render above it re-renders it only when its props change. */
-const ElementNode = memo(function ElementNode(props: {
-  readonly store: Store;
-  readonly id: RecordId;
-  readonly registries: RenderRegistries;
-  readonly theme: Theme;
-}): ReactNode {
+/** The props an element's own subtree is drawn from. */
+type NodeProps = { readonly store: Store; readonly id: RecordId; readonly registries: RenderRegistries; readonly theme: Theme };
+
+/** Element `id`'s record as it changes (undefined once it is gone or when it is no element). */
+function useElement(store: Store, id: RecordId): ElementRecord | undefined {
+  const record = useValue(useMemo(() => store.record$(id), [store, id])) as ElementRecord | undefined;
+  // tzap disable next-line ConditionalExpression: ElementList passes element ids only; a guard for a record replaced by another type
+  return record?.type === 'element' ? record : undefined;
+}
+
+/**
+ * The container of an element's members, undoing its placement. It follows the element's record
+ * itself, so a move re-renders it without drawing the element's view again.
+ */
+const Members = memo(function Members(props: NodeProps & { readonly screenId: RecordId }): ReactNode {
+  const { store, id, screenId, registries, theme } = props;
+  const element = useElement(store, id);
+  return (
+    <div className="fx-members" style={element === undefined ? undefined : unplacement(element)}>
+      <ElementList store={store} screenId={screenId} parentId={id} registries={registries} theme={theme} />
+    </div>
+  );
+});
+
+/** What an element's view is drawn from, and the registry versions it reads. */
+type BodyProps = ElementViewProps & {
+  readonly View: ComponentType<ElementViewProps>;
+  readonly versions: readonly unknown[];
+};
+
+/** The versions of the registries a view reads: when one changes, the view is drawn again. */
+const sameVersions = (a: readonly unknown[], b: readonly unknown[]) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+/**
+ * The element's view, drawn again only when something besides its place changes: its record (but
+ * for a move), its view, the store, theme, registries or their versions, or its members.
+ */
+const Body = memo(
+  function Body(props: BodyProps): ReactNode {
+    const { View, element, store, theme, registries, children } = props;
+    return (
+      <View element={element} store={store} theme={theme} registries={registries}>
+        {children}
+      </View>
+    );
+  },
+  (a, b) =>
+    a.View === b.View &&
+    a.store === b.store &&
+    a.theme === b.theme &&
+    a.registries === b.registries &&
+    a.children === b.children &&
+    sameVersions(a.versions, b.versions) &&
+    sameButPlace(a.element, b.element),
+);
+
+/**
+ * One element and its members; memoized, so a render above it re-renders it only when its props
+ * change. A move re-renders its wrapper and members container only (ADR-0028 §4).
+ */
+const ElementNode = memo(function ElementNode(props: NodeProps): ReactNode {
   const { store, id, registries, theme } = props;
-  const element = useValue(useMemo(() => store.record$(id), [store, id])) as ElementRecord | undefined;
-  useValue(registries.elementViews.changes$);
-  useValue(registries.shapeDefs.changes$);
-  if (!element || element.type !== 'element') return null;
+  const element = useElement(store, id);
+  const versions = [useValue(registries.elementViews.changes$), useValue(registries.shapeDefs.changes$)];
+  const screenId = element?.screenId;
+  const members = useMemo(
+    () => (screenId === undefined ? null : <Members store={store} id={id} screenId={screenId} registries={registries} theme={theme} />),
+    // tzap disable next-line ArrayDeclaration: only a re-render reads the list, which the node tests never do (browser-tested)
+    [store, id, screenId, registries, theme],
+  );
+  if (element === undefined) return null;
   const View = registries.elementViews.get(element.kind)?.Component ?? PlaceholderView;
   return (
     <div className="fx-el" data-el-id={id} data-kind={element.kind} style={placement(element)}>
-      <View element={element} store={store} theme={theme} registries={registries}>
-        <div className="fx-members" style={unplacement(element)}>
-          <ElementList store={store} screenId={element.screenId} parentId={id} registries={registries} theme={theme} />
-        </div>
-      </View>
+      <Body View={View} element={element} store={store} theme={theme} registries={registries} versions={versions}>
+        {members}
+      </Body>
     </div>
   );
 });

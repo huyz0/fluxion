@@ -14,7 +14,10 @@ import type { ComponentType, ReactNode } from 'react';
  * @public
  */
 export type ElementViewProps = {
-  /** The element to draw. */
+  /**
+   * The element to draw. A move (its box's `x` and `y` alone) does not draw the view again: the wrapper
+   * places it, so draw in the box's own coordinates (`w`, `h`), never from its place (ADR-0028 §4).
+   */
   readonly element: ElementRecord;
   /** The document store (for views that read related records, such as a connector's ends). */
   readonly store: Store;
