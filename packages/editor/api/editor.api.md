@@ -66,6 +66,7 @@ export type EditorRootProps = {
     readonly session?: Session;
     readonly execute: Execute;
     readonly tools?: Registry<string, Tool>;
+    readonly random?: Random;
 };
 
 // @public
@@ -226,6 +227,8 @@ export type ToolCtx = {
     hitTest(p: Vec2): RecordId | undefined;
     elementsIn(box: Box, mode: MarqueeMode): readonly RecordId[];
     allElements(): readonly RecordId[];
+    readonly view: ReadView;
+    newId(): RecordId;
     readonly execute: Execute;
     seal(): void;
 };

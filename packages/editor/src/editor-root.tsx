@@ -4,7 +4,7 @@
 import type { ReadView, Registry, Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { type RenderRegistries, screenArea, screensInOrder, useValue } from '@fluxion/render';
-import type { RecordId, ScreenRecord } from '@fluxion/schema';
+import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { type ReactNode, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { registerBuiltinTools } from './builtin-tools.js';
@@ -38,11 +38,17 @@ export type EditorRootProps = {
   readonly execute: Execute;
   /** The tools (default: the built-in ones). */
   readonly tools?: Registry<string, Tool>;
+  /** Where fresh record ids come from (default: the browser's crypto). */
+  readonly random?: Random;
 };
+
+/** Randomness from the browser's crypto. */
+const cryptoRandom: Random = { next: () => (crypto.getRandomValues(new Uint32Array(1))[0] as number) / 2 ** 32 };
 
 /** The tools of `props` dispatched over the session, hit-testing the screen `screenId` by geometry. */
 function useTools(props: EditorRootProps, session: Session, screenId: RecordId | undefined): ToolDispatcher {
   const { store, registries, execute } = props;
+  const random = props.random ?? cryptoRandom;
   const registry = useMemo(() => {
     if (props.tools !== undefined) return props.tools;
     const builtins = createToolRegistry();
@@ -65,12 +71,14 @@ function useTools(props: EditorRootProps, session: Session, screenId: RecordId |
           // a click on a group's member selects the group
           return hit === undefined ? undefined : hits.current?.selectableOf(hit);
         },
+        view: store,
+        newId: () => createId(random),
         elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
         allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),
         execute,
         seal: () => store.history.seal(),
       }),
-    [registry, session, screenId, execute, store],
+    [registry, session, screenId, execute, store, random],
   );
 }
 

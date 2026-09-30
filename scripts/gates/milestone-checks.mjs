@@ -311,7 +311,9 @@ export function titled(list, { runner } = {}) {
 /** The built-in record commands (M3.17) whose undo, redo and transact are benchmarked. */
 export const BENCH_COMMANDS = [
   'element.create',
+  'element.createMany',
   'element.update',
+  'element.updateMany',
   'element.delete',
   'screen.create',
   'screen.delete',

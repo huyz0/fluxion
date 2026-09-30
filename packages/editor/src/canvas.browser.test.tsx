@@ -213,6 +213,12 @@ describe('canvas camera input (FR-EDT-002)', () => {
     expect(key('keydown', { key: 'q' })).toBe(false);
     // a camera shortcut is the camera's
     key('keydown', { key: '=', ctrlKey: true });
+    // a key another handler took (a tab list's or splitter's arrows) is not the canvas's
+    const taker = document.createElement('div');
+    taker.addEventListener('keydown', (e) => e.preventDefault());
+    document.body.append(taker);
+    key('keydown', { key: 'ArrowRight' }, taker);
+    taker.remove();
     act(() => {
       window.dispatchEvent(new Event('blur'));
     });

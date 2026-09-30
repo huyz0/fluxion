@@ -3,7 +3,7 @@
 // it PointerInfo streams with no DOM. The dispatcher sends every input to the current state, switches
 // tools by their shortcuts, and on Esc cancels: a state returns to its tool's start, and a tool at its
 // start returns to `select`.
-import { createRegistry, type Registry } from '@fluxion/core';
+import { createRegistry, type ReadView, type Registry } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import type { Execute, PointerInfo } from './pointer.js';
@@ -43,6 +43,10 @@ export type ToolCtx = {
   elementsIn(box: Box, mode: MarqueeMode): readonly RecordId[];
   /** Every selectable element of the canvas's screen inside no other one, back to front. */
   allElements(): readonly RecordId[];
+  /** The document, to read. */
+  readonly view: ReadView;
+  /** A fresh record id (a duplicate's). */
+  newId(): RecordId;
   /** Run a command (the only write path). */
   readonly execute: Execute;
   /** Close the current undo step (at the end of a gesture). */

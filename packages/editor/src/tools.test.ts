@@ -1,7 +1,10 @@
+import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
+import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { handTool, registerBuiltinTools, selectTool } from './builtin-tools.js';
+import { handTool, registerBuiltinTools } from './builtin-tools.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
+import { selectTool } from './select-tool.js';
 import { createSession } from './session.js';
 import { createToolDispatcher, createToolRegistry, type KeyInfo, SELECT_TOOL, type Tool, type ToolCtx } from './tools.js';
 
@@ -34,6 +37,8 @@ function setup(under = 'shape1' as RecordId) {
       return mode === 'contain' ? (['inside'] as RecordId[]) : (['inside', 'touched'] as RecordId[]);
     },
     allElements: () => ['one', 'two'] as RecordId[],
+    view: createCore(documentBuilder({ seed: 1 }).build()).store,
+    newId: () => 'new' as RecordId,
     execute: () => ({ ok: true, value: undefined }),
     seal: () => log.push('seal'),
   };
@@ -281,10 +286,10 @@ describe('built-in tools (FR-EDT-003)', () => {
     tools.pointer(at('move', 260, 240));
     tools.key(key('Escape'));
     expect([tools.current, session.marquee.get(), session.selection.get()]).toEqual(['select.idle', undefined, ['old']]);
-    // a press on an element does not start a marquee
+    // a press on an element does not start a marquee: its drag moves the selection
     tools.pointer(at('down', 50, 50));
     tools.pointer(at('move', 90, 90));
-    expect(tools.current).toBe('select.pointing');
+    expect([tools.current, session.marquee.get()]).toEqual(['select.translating', undefined]);
     tools.pointer(at('up', 90, 90));
   });
 

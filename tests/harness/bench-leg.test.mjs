@@ -106,7 +106,8 @@ describe('shared bench leg (NFR-PERF-006)', () => {
     assert.deepEqual([...BENCH_COMMANDS].sort(), builtIns);
     const fixture = readFileSync(join(REPO, 'packages/core/bench/fixture.ts'), 'utf8');
     const listed = /export const COMMANDS = \[([\s\S]*?)\]/.exec(fixture)?.[1] ?? '';
-    assert.deepEqual([...listed.matchAll(/'([a-z.]+)'/g)].map((m) => m[1]).sort(), builtIns);
+    // command ids are dotted camelCase (element.createMany)
+    assert.deepEqual([...listed.matchAll(/'([a-zA-Z.]+)'/g)].map((m) => m[1]).sort(), builtIns);
   });
 });
 

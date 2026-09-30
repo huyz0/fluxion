@@ -35,15 +35,17 @@ const order = (store: RecordStore) =>
     .map(([id]) => id);
 
 describe('built-in record commands (FR-EXT-001)', () => {
-  it('FR-EXT-001: the eight built-ins are registered through the registry as source core', () => {
+  it('FR-EXT-001: the ten built-ins are registered through the registry as source core', () => {
     const commands = createRegistry<string, AnyCommand>('commands');
     expect(registerCoreCommands(commands)).toEqual([]);
     expect(commands.list().map(([id]) => id)).toEqual([
       'binding.set',
       'document.update',
       'element.create',
+      'element.createMany',
       'element.delete',
       'element.update',
+      'element.updateMany',
       'screen.create',
       'screen.delete',
       'screen.reorder',
@@ -242,6 +244,8 @@ describe('built-in record commands (FR-EXT-001)', () => {
     const steps: Array<[string, unknown]> = [
       ['element.create', { element }],
       ['element.update', { id: a, fields: { name: 'A' } }],
+      ['element.createMany', { elements: [{ ...element, id: 'LabelManyLabelM1', index: 'a8' }] }],
+      ['element.updateMany', { updates: [{ id: a, fields: { name: 'B' } }] }],
       ['binding.set', { id: 'LabelBindingLab1', connectorId: line, end: 'target', elementId: element.id, anchor: { kind: 'auto' } }],
       ['element.delete', { ids: [c] }],
       ['screen.create', { screen: { id: 'LabelScreenLabe1', type: 'screen', index: 'a9' } }],
@@ -263,6 +267,17 @@ describe('built-in record commands (FR-EXT-001)', () => {
       ['element.create', { element: clash }],
       ['element.update', { id: s1, fields: { name: 'x' } }],
       ['element.update', { id: a, fields: { type: 'screen' } }],
+      ['element.createMany', { elements: [clash] }],
+      [
+        'element.createMany',
+        {
+          elements: [
+            { ...clash, id: 'TwiceTwiceTwice1' },
+            { ...clash, id: 'TwiceTwiceTwice1' },
+          ],
+        },
+      ],
+      ['element.updateMany', { updates: [{ id: s1, fields: { name: 'x' } }] }],
       ['element.delete', { ids: [s1] }],
       ['screen.create', { screen: { id: s1, type: 'screen', index: 'a9' } }],
       ['screen.delete', { id: a }],

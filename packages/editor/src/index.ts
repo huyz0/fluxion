@@ -1,6 +1,6 @@
 // Public entry of @fluxion/editor; the package comment is the dts banner in tsdown.config.ts.
 
-export { handTool, registerBuiltinTools, selectTool } from './builtin-tools.js';
+export { handTool, registerBuiltinTools } from './builtin-tools.js';
 export {
   type Camera,
   clampZoom,
@@ -19,6 +19,7 @@ export { createHitIndex, type HitContext, type HitIndex, PICK_PX } from './hit-t
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
+export { selectTool } from './select-tool.js';
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
 export { createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';
 export { memorySettings, type SettingsStore } from './settings.js';

@@ -113,7 +113,8 @@ function useKeys(input: {
   const { session, box, area, space, tools } = input;
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (isEditable(e.target)) return;
+      // a key typed into a field, or taken already (a tab list's or splitter's arrows), is not the canvas's
+      if (e.defaultPrevented || isEditable(e.target)) return;
       if (e.key === ' ') holdSpace(e, space);
       else if (!applyShortcut(e, session, shortcut(e, session, box, area))) toolKey(e, tools);
     };

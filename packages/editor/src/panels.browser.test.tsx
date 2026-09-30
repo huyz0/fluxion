@@ -96,6 +96,8 @@ describe('editor chrome panels (FR-EDT-001)', () => {
       hitTest: () => undefined,
       elementsIn: () => [],
       allElements: () => [],
+      view: {} as never,
+      newId: () => 'new' as never,
       execute: () => ({ ok: true, value: undefined }),
       seal: () => {},
     });

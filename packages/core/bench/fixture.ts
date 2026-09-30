@@ -1,7 +1,7 @@
 // Shared fixture of the core benches (NFR-PERF-006): a 5 000-record document from the schema
 // builders, a store with default options (validation on, as in dev and test; ADR-0014) and the core
 // hooks, and one succeeding argument set per built-in command.
-import type { RecordId } from '@fluxion/schema';
+import { nKeysBetween, type RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { registerCoreCommands } from '../src/builtin-commands.js';
 import { type AnyCommand, executeCommand } from '../src/commands.js';
@@ -58,6 +58,13 @@ export function benchStore(): Bench {
   };
 }
 
+/** Fractional index keys for the 25 elements of element.createMany. */
+const MANY_KEYS = (() => {
+  const keys = nKeysBetween(null, null, 25);
+  if (!keys.ok) throw new Error('no keys');
+  return keys.value;
+})();
+
 /** Arguments that succeed against the fixture document (and again after the command is undone). */
 function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], lines: readonly RecordId[]): Record<string, unknown> {
   const screen = screens[3] as RecordId;
@@ -74,6 +81,22 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
       },
     },
     'element.update': { id: shapes[1200], fields: { name: 'renamed' } },
+    // a moved selection: 25 shapes, bound ones among them
+    'element.updateMany': {
+      updates: shapes.slice(1000, 1025).map((s, i) => ({ id: s, fields: { transform: { x: i * 60 + 5, y: 5, w: 160, h: 80 } } })),
+    },
+    // a duplicated selection: 25 new shapes
+    'element.createMany': {
+      elements: Array.from({ length: 25 }, (_, i) => ({
+        id: `BenchNewMany${String(i).padStart(5, '0')}`,
+        type: 'element',
+        kind: 'shape',
+        defId: 'basic:rect',
+        screenId: screen,
+        index: MANY_KEYS[i] as string,
+        transform: { x: i * 10, y: 0, w: 10, h: 10 },
+      })),
+    },
     // a bound shape: the delete cascades to its bindings through the hooks
     'element.delete': { ids: [shapes[1001]] },
     'screen.create': { screen: { id: 'BenchNewScreen001', type: 'screen', index: 'a0' } },
@@ -88,7 +111,9 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
 /** The built-in record commands (M3.17), in the order the benches report them. */
 export const COMMANDS = [
   'element.create',
+  'element.createMany',
   'element.update',
+  'element.updateMany',
   'element.delete',
   'screen.create',
   'screen.delete',

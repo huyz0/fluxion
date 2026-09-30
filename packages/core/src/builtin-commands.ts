@@ -56,6 +56,20 @@ function checkIds(
   return null;
 }
 
+/** COMMAND_ARGS for the first id `ids` lists twice (two new records cannot share one), or null. */
+function repeated(command: string, ids: readonly string[], at: string): Result<never, TxFailure> | null {
+  const twice = ids.findIndex((x, i) => ids.indexOf(x) !== i);
+  // tzap disable next-line EqualityOperator: a repeat is never the first entry
+  if (twice < 0) return null;
+  // tzap disable next-line StringLiteral: message text is not the contract (codes are)
+  const problem = `"${ids[twice]}" is listed twice`;
+  return err({
+    code: 'COMMAND_ARGS',
+    message: `${command}: ${problem}`,
+    diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', at, twice, 'id']), message: problem }],
+  });
+}
+
 /** Why `record` (stored under `x`) is not what `want` asks for, or undefined. */
 function idProblem(record: AnyRecord | undefined, x: string, want: Want): string | undefined {
   if (want === 'new') return record ? `"${x}" already exists (a ${record.type})` : undefined;
@@ -153,6 +167,43 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
       ) ??
       write(ctx, 'element.delete', (tx) => {
         for (const x of args.ids) tx.delete(x as RecordId);
+      }),
+  }),
+  // several elements in one transaction: what the editor's gestures and tools change at once (a move of
+  // a selection, a duplicate), one undo step and one diff (ADR-0028 amendment, M6.14)
+  defineCommand({
+    id: 'element.createMany',
+    title: title('element.createMany', 'Add elements'),
+    args: z.object({ elements: z.array(recordOf('element')).min(1) }),
+    run: (ctx, args) =>
+      repeated(
+        'element.createMany',
+        args.elements.map((e) => e.id),
+        'elements',
+      ) ??
+      checkIds(
+        ctx,
+        'element.createMany',
+        'new',
+        args.elements.map((e, i) => [['elements', i, 'id'], e.id] as const),
+      ) ??
+      write(ctx, 'element.createMany', (tx) => {
+        for (const e of args.elements) tx.put(e as AnyRecord);
+      }),
+  }),
+  defineCommand({
+    id: 'element.updateMany',
+    title: title('element.updateMany', 'Change elements'),
+    args: z.object({ updates: z.array(z.object({ id, fields })).min(1) }),
+    run: (ctx, args) =>
+      checkIds(
+        ctx,
+        'element.updateMany',
+        'element',
+        args.updates.map((u, i) => [['updates', i, 'id'], u.id] as const),
+      ) ??
+      write(ctx, 'element.updateMany', (tx) => {
+        for (const u of args.updates) tx.patch(u.id as RecordId, u.fields);
       }),
   }),
   defineCommand({

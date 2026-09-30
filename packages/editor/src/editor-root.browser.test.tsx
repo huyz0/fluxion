@@ -1,5 +1,6 @@
 import { createCore } from '@fluxion/core';
 import { renderRegistriesFor } from '@fluxion/player';
+import { createRenderRegistries, type ElementViewProps, ShapeView } from '@fluxion/render';
 import { seededRandom } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { act } from 'react';
@@ -206,5 +207,58 @@ describe('edit-mode root (FR-EDT-001)', () => {
     await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={registries} session={session} />));
     await act(frame);
     expect(session.camera.get()).toBe(moved);
+  });
+
+  it('FR-EDT-005: dragging one element re-renders only that element and the overlay', async () => {
+    const b = documentBuilder({ seed: 71 });
+    const screen = b.screen();
+    const moving = b.rect(screen, { x: 100, y: 100, w: 300, h: 200 });
+    const still = b.rect(screen, { x: 900, y: 100, w: 300, h: 200 });
+    const core = createCore(b.build());
+    core.registries.shapeDefs.register(
+      'basic:rect',
+      { id: 'basic:rect', outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' }, defaultSize: { w: 160, h: 100 } },
+      'test',
+    );
+    // every shape drawn is counted, by element
+    const renders = new Map<string, number>();
+    const Counting = (props: ElementViewProps) => {
+      renders.set(props.element.id, (renders.get(props.element.id) ?? 0) + 1);
+      return <ShapeView {...props} />;
+    };
+    const registries = createRenderRegistries(core.registries.shapeDefs);
+    registries.elementViews.register('shape', { Component: Counting }, 'test');
+    const session = createSession('doc');
+    await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={registries} session={session} />));
+    await act(frame);
+    const main = host.querySelector('main') as HTMLElement;
+    const client = (x: number, y: number) => {
+      const c = session.camera.get();
+      const r = main.getBoundingClientRect();
+      return { clientX: r.left + (x - c.x) * c.z, clientY: r.top + (y - c.y) * c.z };
+    };
+    const fire = (type: string, x: number, y: number) =>
+      act(() => {
+        main.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, button: 0, buttons: 1, ...client(x, y) }));
+      });
+    const overlay = host.querySelector('svg.fx-chrome-overlay') as SVGSVGElement;
+    fire('pointerdown', 250, 200);
+    await act(frame);
+    const framed = () => (overlay.querySelector('polygon.fx-chrome-frame') as SVGPolygonElement).points[0]?.x ?? Number.NaN;
+    const startX = framed();
+    const before = { moving: renders.get(moving) ?? 0, still: renders.get(still) ?? 0 };
+    for (const dx of [20, 40, 60, 80]) {
+      fire('pointermove', 250 + dx, 200);
+      await act(frame);
+    }
+    fire('pointerup', 330, 200);
+    await act(frame);
+    expect((core.store.get(moving) as { transform: { x: number } }).transform.x).toBeCloseTo(180, 6);
+    // the moved element drew again for its moves; the other one not once
+    expect((renders.get(moving) ?? 0) - before.moving).toBeGreaterThanOrEqual(4);
+    expect((renders.get(still) ?? 0) - before.still).toBe(0);
+    // and the overlay's frame followed it, 80 page units on the canvas
+    expect(framed() - startX).toBeCloseTo(80 * session.camera.get().z, 3);
+    expect(host.querySelector('.fx-el[data-el-id="' + still + '"]')).not.toBeNull();
   });
 });

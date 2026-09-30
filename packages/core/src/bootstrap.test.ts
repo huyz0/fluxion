@@ -69,6 +69,18 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
       },
     }),
     'element.update': () => ({ id: element, fields: { name: `n${op.value}` } }),
+    'element.createMany': () => ({
+      elements: [0, 1].map((k) => ({
+        id: newId(n * 2 + k + 1000),
+        type: 'element',
+        kind: 'shape',
+        defId: 'basic:rect',
+        screenId: screen,
+        index: `a${k}`,
+        transform: { x: op.value + k, y: 0, w: 10, h: 10 },
+      })),
+    }),
+    'element.updateMany': () => ({ updates: [{ id: element, fields: { name: `m${op.value}` } }] }),
     'element.delete': () => ({ ids: [element] }),
     'screen.create': () => ({ screen: { id: newId(n), type: 'screen', index: 'a0' } }),
     'screen.delete': () => ({ id: screen }),
