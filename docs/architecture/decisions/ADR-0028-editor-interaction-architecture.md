@@ -117,3 +117,12 @@ The m6-complete legs:
 04 §3.1-3.3 and §5 (updated in this commit: the session store is signals), ADR-0002 (signals),
 ADR-0014 (transactions, merge keys, `metaBefore`/`metaAfter`), ADR-0141 (the spatial index used for
 hit-testing).
+
+## Amendments
+
+- 2026-09-30 (M6.9): a gesture writes through commands (`Core.execute`), never `store.transact`:
+  commands are the only production write path (ADR-0014, the NFR-MNT-006 gate). A frame runs at
+  most one command. The latest `Gesture.update` of a frame replaces any earlier one, since a tool
+  computes the whole change from the gesture's start. The frame's command carries
+  `mergeKey: 'gesture:<n>'`, and `end()` seals the history. A tool that changes several elements
+  at once uses one command that takes them all.

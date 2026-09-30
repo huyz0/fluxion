@@ -1173,3 +1173,12 @@ Canvas camera: render's `ScreenViewSpec` gains `{ kind: 'camera', box, camera }`
 - ctrl + `=`/`+`/`-`/`0`, shift + `0` (100 %) and shift + `1` (fit) are the shortcuts;
 - space-drag and middle-drag pan; toolbar zoom controls are out, value, in, Fit, 100 %.
 The studio gives each document page a session. Safari's trackpad pinch (`gesture*` events) zooms from its start zoom. The fit area follows the screen record reactively. Phones skip `@desktop` specs (wheel and mouse input); touch pinch is M6.19's.
+
+## 2026-09-30 M6.9 (claude)
+
+Pointer pipeline (ADR-0028): `pointer.ts` is pure.
+- `pointerInfo` gives canvas and page points through the camera, button(s), modifiers and pressure.
+- `createPointerPipeline(schedule, deliver, frameEnd)` sends downs, ups and cancels at once, after flushing the waiting moves. Moves go once per frame per pointer: the latest, carrying `coalesced`.
+- `beginGesture(execute, seal)` writes through commands only (NFR-MNT-006): one command per frame (a frame's latest `update` wins, since tools compute from the gesture start) under `mergeKey: gesture:<n>`; `end()` seals the history.
+
+`usePointerInput` is the DOM side: one listener per type, `getCoalescedEvents` unpacked, rAF frames, pointer capture on down. The canvas pan now goes through it, so the camera moves once per frame.

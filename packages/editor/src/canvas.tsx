@@ -2,15 +2,17 @@
 // wheel, space-drag and middle-drag, zoomed by ctrl/meta + wheel (a trackpad pinch; Safari's pinch
 // sends gesture events instead) and shortcuts;
 // and the toolbar's zoom controls. What input does to the camera is pure (canvas-input.ts); this is
-// the DOM glue. The pointer pipeline (M6.9) and tools (M6.11) take over the primary button.
+// the DOM glue. Pointer input comes through the frame-batched pipeline (pointer-input.ts); tools
+// (M6.11) take over the primary button.
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
 import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type PointerEvent, type ReactNode, type RefObject, useEffect, useRef } from 'react';
+import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
+import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
 
 /** Whether `target` takes text (keys typed there are not canvas shortcuts). */
@@ -131,6 +133,32 @@ export type CanvasProps = {
 
 type Drag = { readonly pointerId: number; x: number; y: number };
 
+/**
+ * The canvas's own use of the pointer pipeline until tools arrive (M6.11): a middle press, or a
+ * primary press with space held, pans; the camera moves once per frame with the latest point.
+ */
+function panConsumer(session: Session, space: RefObject<boolean>, drag: RefObject<Drag | undefined>): PointerConsumer {
+  return {
+    deliver: (i) => {
+      if (i.phase === 'down') {
+        if (i.button !== 1 && !(i.button === 0 && space.current)) return undefined;
+        drag.current = { pointerId: i.pointerId, x: i.screen.x, y: i.screen.y };
+        // taken: a middle click would otherwise start the browser's autoscroll or paste
+        return true;
+      }
+      const d = drag.current;
+      if (d?.pointerId !== i.pointerId) return undefined;
+      if (i.phase !== 'move') drag.current = undefined;
+      else {
+        session.camera.set(panBy(session.camera.get(), { x: i.screen.x - d.x, y: i.screen.y - d.y }));
+        d.x = i.screen.x;
+        d.y = i.screen.y;
+      }
+      return undefined;
+    },
+  };
+}
+
 /** The canvas: the screen at the session camera, panned and zoomed. */
 export function Canvas(props: CanvasProps): ReactNode {
   const { store, registries, screenId, area, session, onBox } = props;
@@ -145,35 +173,9 @@ export function Canvas(props: CanvasProps): ReactNode {
   useWheel(ref, session, box);
   useGesture(ref, session);
   useKeys(session, box, area, space);
-  const onPointerDown = (e: PointerEvent<HTMLElement>) => {
-    e.currentTarget.focus({ preventScroll: true });
-    if (e.button !== 1 && !(e.button === 0 && space.current)) return;
-    // a middle click would otherwise start the browser's autoscroll or paste
-    e.preventDefault();
-    e.currentTarget.setPointerCapture(e.pointerId);
-    drag.current = { pointerId: e.pointerId, x: e.clientX, y: e.clientY };
-  };
-  const onPointerMove = (e: PointerEvent<HTMLElement>) => {
-    const d = drag.current;
-    if (d?.pointerId !== e.pointerId) return;
-    session.camera.set(panBy(session.camera.get(), { x: e.clientX - d.x, y: e.clientY - d.y }));
-    d.x = e.clientX;
-    d.y = e.clientY;
-  };
-  const onPointerEnd = (e: PointerEvent<HTMLElement>) => {
-    if (drag.current?.pointerId === e.pointerId) drag.current = undefined;
-  };
+  usePointerInput(ref, session.camera.get, panConsumer(session, space, drag));
   return (
-    <main
-      ref={ref}
-      aria-label="Canvas"
-      className="fx-chrome-canvas"
-      tabIndex={-1}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerEnd}
-      onPointerCancel={onPointerEnd}
-    >
+    <main ref={ref} aria-label="Canvas" className="fx-chrome-canvas" tabIndex={-1} onPointerDown={(e) => e.currentTarget.focus({ preventScroll: true })}>
       {screenId === undefined || box.w === 0 ? null : (
         <ScreenView store={store} screenId={screenId} mode="edit" view={{ kind: 'camera', box, camera }} registries={registries} />
       )}

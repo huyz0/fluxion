@@ -103,28 +103,36 @@ describe('canvas camera input (FR-EDT-002)', () => {
     const main = await mount();
     pointer(main, 'pointerdown', [10, 10]);
     pointer(main, 'pointermove', [60, 10]);
+    await act(frame);
     expect(session.camera.get()).toEqual({ x: 0, y: 0, z: 0.5 });
     pointer(main, 'pointerup', [60, 10]);
     expect(pointer(main, 'pointerdown', [10, 10], { button: 1 })).toBe(true);
     pointer(main, 'pointermove', [30, 20]);
     pointer(main, 'pointermove', [40, 20]);
+    // moves wait for the frame, which pans once to the latest point
+    expect(session.camera.get()).toEqual({ x: 0, y: 0, z: 0.5 });
+    await act(frame);
     expect(session.camera.get()).toEqual({ x: -60, y: -20, z: 0.5 });
     // another pointer neither moves nor ends the pan
     pointer(main, 'pointermove', [500, 500], { pointerId: 3 });
     pointer(main, 'pointerup', [500, 500], { pointerId: 3 });
     pointer(main, 'pointermove', [50, 20]);
+    await act(frame);
     expect(session.camera.get()).toEqual({ x: -80, y: -20, z: 0.5 });
     pointer(main, 'pointercancel', [50, 20]);
     pointer(main, 'pointermove', [90, 20]);
+    await act(frame);
     expect(session.camera.get().x).toBe(-80);
     expect(key('keydown', { key: ' ' })).toBe(true);
     pointer(main, 'pointerdown', [0, 0]);
     pointer(main, 'pointermove', [0, 30]);
+    // the up delivers the waiting move first
     pointer(main, 'pointerup', [0, 30]);
     expect(session.camera.get()).toEqual({ x: -80, y: -80, z: 0.5 });
     key('keyup', { key: ' ' });
     pointer(main, 'pointerdown', [0, 0]);
     pointer(main, 'pointermove', [0, 30]);
+    await act(frame);
     expect(session.camera.get().y).toBe(-80);
     expect(document.activeElement).toBe(main);
   });
@@ -147,12 +155,14 @@ describe('canvas camera input (FR-EDT-002)', () => {
       });
       pointer(main, 'pointerdown', [0, 0]);
       pointer(main, 'pointermove', [0, 30]);
+      await act(frame);
       expect(session.camera.get().y).toBe(0);
       pointer(main, 'pointerup', [0, 30]);
       key('keydown', { key: ' ' }, button);
       key('keyup', { key: 'a' });
       pointer(main, 'pointerdown', [0, 0]);
       pointer(main, 'pointermove', [0, 30]);
+      await act(frame);
       expect(session.camera.get().y).toBe(-60);
     } finally {
       input.remove();
