@@ -1316,3 +1316,7 @@ Final review (two fresh milestone-reviewer passes, 2576b7d..30ec085). Pass 1 req
 ## 2026-10-01 M7.1 (claude)
 
 M7 planned: 28 rows (plan 17; the ADRs, the keymap first, a minimal screen switch before undo across screens, rich text, connector handles and the clipboard split, cp1 and cp2 as rows). `scripts/gates/m7-complete.mjs` is written red: one leg per acceptance, all failing except the shared ones. `scripts/gates/editor-gate.mjs` holds the E2E groups and the performance legs every editor gate reruns (M6 final F4): hit-test-2000, and perf.drag-500 with a new resize among 500, its frame floor a second's worth (60). The rich-text bundle leg compares the player core with a baseline M7.12 measures at its parent commit, after the rendering rows (review F1); it builds first (F2). The gate pins a T1 golden per mark and per block (F3). The M6 backlog is archived.
+
+## 2026-10-01 M7.2 (claude)
+
+ADR-0064 accepted: ProseMirror used directly (MIT, 1.x), not TipTap or Lexical. ADR-0013 JSON is ProseMirror document JSON for a schema built from its table, so fromJSON/toJSON is the whole mapping. A thin load/save normalisation (optional attrs, extra keys, unknown nodes in every position the schema accepts them, list children included, unknown marks, mark order as a set) keeps the round trip lossless (review F1-F3). The library is an editor dependency only, loaded by dynamic import while editing. Esc commits one store transaction, and grow applies in it. tech-stack.md gains the row.
