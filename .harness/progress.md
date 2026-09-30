@@ -1261,3 +1261,7 @@ The row is split: pen and freehand move to M6.32, the laser to M6.33. E2E `tools
 ## 2026-09-30 M6.32 (claude)
 
 Pen (P) and freehand (D) in `path-tool.ts`. Pen clicks place vertices; Enter, or a click back on the last vertex, ends the path; Esc drops it. Freehand keeps a drag's points (coalesced ones too) FREEHAND_STEP_PX canvas px apart, and thins a stroke to MAX_PATH_POINTS. Each adds one `basic:polyline` or `basic:freehand` shape whose points are fractions of the box (`pathBox`), in one undo step; the overlay's sketch shows the path so far. Carried M6.18 review F1: a marker is now hit on the box it is drawn in (from the tip back along the route, turned with it), not a disc about the tip, so clicks inside a target near an arrow reach the shape. E2E `tools.pen` and `tools.freehand` pass. Editor mutation is 100%. Review r1: a pen path in progress is cleared on leaving `placing` however that happens (another tool picked from the toolbar included).
+
+## 2026-09-30 M6.33 (claude)
+
+The laser is registered for present mode. `Tool.modes` (default edit) and `createToolDispatcher(registry, ctx, mode = 'edit')` make the dispatcher list, pick by shortcut, and fall back only to tools of its mode. In present mode, select isn't available, so the fallback is the mode's first tool. `laserTool` (L, present) keeps the last LASER_TRAIL pointer positions in `session.laser`, and the overlay draws them fading. It writes nothing, and cancel or leaving it clears the trail. The edit toolbar doesn't list it; the mode switch (M6.20) will dispatch present mode.

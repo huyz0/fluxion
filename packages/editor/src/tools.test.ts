@@ -91,9 +91,9 @@ describe('tool state machine (FR-EDT-003, ADR-0028)', () => {
     const { session, ctx, registry, log } = setup();
     registry.register('rec', recorder(log), 'test');
     const tools = createToolDispatcher(registry, ctx);
-    for (const [id, tool] of registry.list()) {
-      session.tool.set(id);
-      expect(tools.current).toBe(`${id}.${tool.initial}`);
+    for (const tool of tools.list()) {
+      session.tool.set(tool.id);
+      expect(tools.current).toBe(`${tool.id}.${tool.initial}`);
       expect(tools.key(key('Escape'))).toBe(true);
       expect([session.tool.get(), tools.current]).toEqual([SELECT_TOOL, 'select.idle']);
     }

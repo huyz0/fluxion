@@ -31,6 +31,7 @@ export function Overlay(props: OverlayProps): ReactNode {
   const marquee = useValue(session.marquee.get);
   const draft = useValue(session.draft.get);
   const sketch = useValue(session.sketch.get);
+  const laser = useValue(session.laser.get);
   const placed = useValue(useMemo(() => store.query((view) => placements(view, selection)), [store, selection]));
   // a selected element is outlined by its frame already
   const hovered = useValue(
@@ -67,6 +68,11 @@ export function Overlay(props: OverlayProps): ReactNode {
       {band === undefined ? null : <rect className="fx-chrome-marquee" x={band.x} y={band.y} width={band.w} height={band.h} />}
       {drafted === undefined ? null : <rect className="fx-chrome-draft" x={drafted.x} y={drafted.y} width={drafted.w} height={drafted.h} />}
       {line === undefined ? null : <polyline className="fx-chrome-sketch" points={points(line)} />}
+      {laser.map((p, i) => {
+        const at = pageToScreen(camera, p);
+        // older points fade: the newest is solid
+        return <circle key={`${i}-${at.x}-${at.y}`} className="fx-chrome-laser" cx={at.x} cy={at.y} r={4} opacity={(i + 1) / laser.length} />;
+      })}
     </svg>
   );
 }

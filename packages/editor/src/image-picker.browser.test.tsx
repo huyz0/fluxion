@@ -98,7 +98,7 @@ describe('image picker (FR-EDT-003)', () => {
     expect(added()).toEqual([expect.objectContaining({ kind: 'shape', defId: 'basic:image-frame' })]);
   });
 
-  it('FR-EDT-003: the overlay draws the creation draft and sketch through the camera', async () => {
+  it('FR-EDT-003: the overlay draws the creation draft, sketch and laser through the camera', async () => {
     const core = createCore(documentBuilder({ seed: 174 }).build());
     session.camera.set({ x: 10, y: 0, z: 2 });
     await act(async () => root.render(<Overlay store={core.store} session={session} box={{ w: 400, h: 300 }} />));
@@ -115,5 +115,17 @@ describe('image picker (FR-EDT-003)', () => {
       ]),
     );
     expect(host.querySelector('polyline.fx-chrome-sketch')?.getAttribute('points')).toBe('0,0 40,10');
+    // and the laser's trail, fading from its oldest point to its newest
+    act(() =>
+      session.laser.set([
+        { x: 10, y: 0 },
+        { x: 20, y: 0 },
+      ]),
+    );
+    const dots = [...host.querySelectorAll('circle.fx-chrome-laser')];
+    expect(dots.map((d) => [d.getAttribute('cx'), d.getAttribute('opacity')])).toEqual([
+      ['0', '0.5'],
+      ['20', '1'],
+    ]);
   });
 });

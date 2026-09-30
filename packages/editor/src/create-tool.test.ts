@@ -134,6 +134,7 @@ describe('creation tools (FR-EDT-003)', () => {
       ['frame', 'Frame', 'f'],
       ['freehand', 'Freehand', 'd'],
       ['image', 'Image', 'i'],
+      ['laser', 'Laser', 'l'],
       ['pen', 'Pen', 'p'],
       ['shape', 'Shape', 'r'],
       ['text', 'Text', 't'],

@@ -1,10 +1,11 @@
 // The built-in tools (FR-EDT-003): `select` (select-tool.ts), `hand`, which pans with any button, and
 // the creation tools shape, text, frame and image (create-tool.ts), connector (connector-tool.ts), and
-// pen and freehand (path-tool.ts).
+// pen and freehand (path-tool.ts); and the laser, for present mode (laser-tool.ts).
 import type { Registry } from '@fluxion/core';
 import { panBy } from './camera.js';
 import { connectorTool } from './connector-tool.js';
 import { frameTool, imageTool, shapeTool, textTool } from './create-tool.js';
+import { laserTool } from './laser-tool.js';
 import { freehandTool, penTool } from './path-tool.js';
 import { selectTool } from './select-tool.js';
 import type { Tool } from './tools.js';
@@ -49,6 +50,6 @@ export function handTool(): Tool {
  * @public
  */
 export function registerBuiltinTools(registry: Registry<string, Tool>): void {
-  for (const tool of [selectTool(), handTool(), shapeTool(), textTool(), frameTool(), imageTool(), connectorTool(), penTool(), freehandTool()])
+  for (const tool of [selectTool(), handTool(), shapeTool(), textTool(), frameTool(), imageTool(), connectorTool(), penTool(), freehandTool(), laserTool()])
     registry.register(tool.id, tool, 'editor');
 }

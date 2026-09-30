@@ -65,7 +65,7 @@ export function createSession(docId: string): Session;
 export function createSessions(): Sessions;
 
 // @public
-export function createToolDispatcher(registry: Registry<string, Tool>, ctx: ToolCtx): ToolDispatcher;
+export function createToolDispatcher(registry: Registry<string, Tool>, ctx: ToolCtx, mode?: ToolMode): ToolDispatcher;
 
 // @public
 export function createToolRegistry(): Registry<string, Tool>;
@@ -174,6 +174,12 @@ export type KeyInfo = {
     readonly alt: boolean;
     readonly mod: boolean;
 };
+
+// @public
+export const LASER_TRAIL = 12;
+
+// @public
+export function laserTool(): Tool;
 
 // @public
 export const LAYOUT_KEY = "fluxion.editor.layout.v1";
@@ -286,6 +292,7 @@ export type Session = {
     readonly marquee: WritableSignal<Box | undefined>;
     readonly draft: WritableSignal<Box | undefined>;
     readonly sketch: WritableSignal<readonly Vec2[] | undefined>;
+    readonly laser: WritableSignal<readonly Vec2[]>;
     readonly imagePick: WritableSignal<Box | undefined>;
 };
 
@@ -327,6 +334,7 @@ export const textTool: () => Tool;
 
 // @public
 export type Tool = {
+    readonly modes?: readonly ToolMode[];
     readonly id: string;
     readonly title: string;
     readonly shortcut?: string;
@@ -357,6 +365,9 @@ export type ToolDispatcher = {
     readonly current: string;
     list(): readonly Tool[];
 };
+
+// @public
+export type ToolMode = "edit" | "present";
 
 // @public
 export type Transition = {

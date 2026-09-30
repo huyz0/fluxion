@@ -35,6 +35,7 @@ export {
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
 export { createHitIndex, type HitIndex, PICK_PX } from './hit-test.js';
 export type { HitContext } from './hittable.js';
+export { LASER_TRAIL, laserTool } from './laser-tool.js';
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
 export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
@@ -52,6 +53,7 @@ export {
   type Tool,
   type ToolCtx,
   type ToolDispatcher,
+  type ToolMode,
   type Transition,
 } from './tools.js';
 

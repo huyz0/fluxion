@@ -97,6 +97,8 @@ export type StateNode = {
  * @public
  */
 export type Tool = {
+  /** The modes it works in (default: edit only); the laser works in present mode. */
+  readonly modes?: readonly ToolMode[];
   /** Registry key and `session.tool` value, e.g. `select`. */
   readonly id: string;
   /** Toolbar title. */
@@ -108,6 +110,16 @@ export type Tool = {
   /** Its states, by id. */
   readonly states: { readonly [id: string]: StateNode };
 };
+
+/**
+ * The editor's modes a tool works in: editing, or presenting in place.
+ *
+ * @public
+ */
+export type ToolMode = 'edit' | 'present';
+
+/** Whether `tool` works in `mode`. */
+const inMode = (tool: Tool | undefined, mode: ToolMode): tool is Tool => tool !== undefined && (tool.modes ?? ['edit']).includes(mode);
 
 /**
  * The tool every other returns to on Esc.
@@ -139,7 +151,7 @@ export type ToolDispatcher = {
   cancel(): void;
   /** The current tool's id and state's id, e.g. `hand.panning`. */
   readonly current: string;
-  /** The registered tools, sorted by id. */
+  /** The registered tools of its mode, sorted by id. */
   list(): readonly Tool[];
 };
 
@@ -152,10 +164,20 @@ class Dispatcher implements ToolDispatcher {
   #state: StateNode | undefined;
   readonly #registry: Registry<string, Tool>;
   readonly #ctx: ToolCtx;
+  readonly #mode: ToolMode;
 
-  constructor(registry: Registry<string, Tool>, ctx: ToolCtx) {
+  constructor(registry: Registry<string, Tool>, ctx: ToolCtx, mode: ToolMode) {
     this.#registry = registry;
     this.#ctx = ctx;
+    this.#mode = mode;
+  }
+
+  /** The tool the session names if it works in this mode, else select, else this mode's first. */
+  #wanted(): Tool | undefined {
+    const named = this.#registry.get(this.#ctx.session.tool.get());
+    if (inMode(named, this.#mode)) return named;
+    const select = this.#registry.get(SELECT_TOOL);
+    return inMode(select, this.#mode) ? select : this.list()[0];
   }
 
   #enter(tool: Tool | undefined, id: string, info?: unknown): void {
@@ -167,7 +189,7 @@ class Dispatcher implements ToolDispatcher {
 
   /** Start the tool the session names, if it is not the current one (the toolbar, another view). */
   #sync(): void {
-    const wanted = this.#registry.get(this.#ctx.session.tool.get()) ?? this.#registry.get(SELECT_TOOL);
+    const wanted = this.#wanted();
     if (wanted === this.#tool) return;
     // what the last tool hovered is not the new one's (M6.11 review F1)
     this.#ctx.session.hover.set(undefined);
@@ -199,7 +221,7 @@ class Dispatcher implements ToolDispatcher {
   /** The tool whose shortcut `e` is, if any: an unmodified key. */
   #shortcut(e: KeyInfo): string | undefined {
     if (e.mod || e.alt) return undefined;
-    return this.#registry.list().find(([, t]) => t.shortcut === e.key.toLowerCase())?.[0];
+    return this.list().find((t) => t.shortcut === e.key.toLowerCase())?.id;
   }
 
   pointer(e: PointerInfo): boolean {
@@ -242,16 +264,20 @@ class Dispatcher implements ToolDispatcher {
   }
 
   list(): readonly Tool[] {
-    return this.#registry.list().map(([, t]) => t);
+    return this.#registry
+      .list()
+      .map(([, t]) => t)
+      .filter((t) => inMode(t, this.#mode));
   }
 }
 
 /**
- * A dispatcher over the tools of `registry`, for the tool `ctx.session.tool` names; an unknown tool
- * falls back to `select`. Every input first starts that tool, entering its first state on first use.
+ * A dispatcher over the tools of `registry` that work in `mode` (default `edit`), for the tool
+ * `ctx.session.tool` names; an unknown tool, or one of another mode, falls back to `select` (in present
+ * mode, to its first tool). Every input first starts that tool, entering its first state on first use.
  *
  * @public
  */
-export function createToolDispatcher(registry: Registry<string, Tool>, ctx: ToolCtx): ToolDispatcher {
-  return new Dispatcher(registry, ctx);
+export function createToolDispatcher(registry: Registry<string, Tool>, ctx: ToolCtx, mode: ToolMode = 'edit'): ToolDispatcher {
+  return new Dispatcher(registry, ctx, mode);
 }
