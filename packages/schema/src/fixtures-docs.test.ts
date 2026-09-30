@@ -33,12 +33,14 @@ describe('shared document fixtures (FR-DOC-001)', () => {
       'invalid-ref-missing.flux.json',
       'invalid-schema-invalid.flux.json',
       'minimal.flux.json',
+      'perf-500.flux.json',
       'shapes-gallery.flux.json',
       'two-rects-line.flux.json',
       'unknown-kind.flux.json',
     ]);
     for (const [name, text] of entries) {
-      expect(text.length, name).toBeLessThanOrEqual(50 * 1024);
+      // a benchmark fixture (perf-*) is as large as what it measures: 500 elements take ~210 KB
+      expect(text.length, name).toBeLessThanOrEqual((name.startsWith('perf-') ? 256 : 50) * 1024);
       const code = /^invalid-(.+)\.flux\.json$/.exec(name)?.[1];
       if (code === undefined) expectValid(name, text);
       else expectInvalid(name, text, code);

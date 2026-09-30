@@ -26,13 +26,16 @@ export default defineConfig({
   },
   projects: [
     // desktops skip @mobile specs: touch input (fingers) is the phones'
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile/ },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile/ },
-    { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile|@perf/ },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile|@perf/ },
+    { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile|@perf/ },
     // phones skip the visual baselines (desktop-sized) and @desktop specs, whose input (wheel, mouse
     // buttons, hover) a touch device does not have; touch input has its own specs (touch.*)
-    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] }, grepInvert: /@visual|@desktop/ },
-    { name: 'mobile-safari', use: { ...devices['iPhone 14'] }, grepInvert: /@visual|@desktop/ },
+    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] }, grepInvert: /@visual|@desktop|@perf/ },
+    { name: 'mobile-safari', use: { ...devices['iPhone 14'] }, grepInvert: /@visual|@desktop|@perf/ },
+    // benchmarks (@perf) measure frames: their own chromium project, run alone with one worker
+    // (`playwright test --project=perf --workers=1`; m6-complete's perf group), never in the shards
+    { name: 'perf', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grep: /@perf/ },
   ],
   webServer: {
     // the built studio (testing.md T2), not the dev server

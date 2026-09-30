@@ -1284,3 +1284,7 @@ Parity suite (FR-EDT-010). The canvas mounts its overlay only when it has someth
 - The content DOM is equal once React's generated ids are renumbered.
 - Pixels differ by at most PARITY_MAX_DIFF_PCT. A pixel counts as different when a channel is off by more than PARITY_CHANNEL_DELTA (8), unless it lies on an edge (a neighbour more than PARITY_EDGE_DELTA, 64, apart) in both images: stroke anti-aliasing that varies with the screen's place on the page. Both constants are new thresholds, so moving them is checked. The spec also asserts that the same screen darkened by 10 % is far over the bound (review r1: a tolerance of 51 would have let uniform shifts through).
 Both pass on the three desktop browsers.
+
+## 2026-09-30 M6.23 (claude)
+
+Drag benchmark (NFR-PERF-001). `gen.mjs` builds `fixtures/docs/perf-500.flux.json` and its copy `examples/perf-500.flux.json` (the studio opens examples): 460 basic-pack shapes (a third labelled) and 40 connectors, 500 elements in all, with one shape slugged `drag-me`. E2E `perf.drag-500` (@perf) drags that shape 180 × 90 px in 90 moves, recording rAF timestamps, and asserts the rate over the measured frames is at least EDITOR_DRAG_MIN_FPS (55, read from thresholds.mjs); it measures 60.0 fps over ~95 frames. Carried M6.4 r2 F1: a `perf` Playwright project (chromium, grep @perf) that every other project excludes. m6-complete runs it as its own group with one worker (`playwrightReport` takes `workers`), and CI's browser shards never run it.

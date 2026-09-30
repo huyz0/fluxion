@@ -611,11 +611,13 @@ export const dockerAvailable = () => run('docker', ['version', '--format', '{{.S
  * Run the Playwright specs `specs` on `projects` once and return the JSON report, or a reason when the
  * run wrote none. `runner(args, env)` is injectable (tests; the pinned image).
  */
-export function playwrightReport(specs, projects, { runner = runPlaywright } = {}) {
+export function playwrightReport(specs, projects, { runner = runPlaywright, workers } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'gate-playwright-'));
   try {
     const out = join(dir, 'report.json');
-    const r = runner([...specs, ...projects.map((p) => `--project=${p}`), '--reporter=json'], { PLAYWRIGHT_JSON_OUTPUT_NAME: out });
+    // a measuring run (a benchmark) takes one worker, alone on the machine (M6.4 review r2 F1)
+    const alone = workers === undefined ? [] : [`--workers=${workers}`];
+    const r = runner([...specs, ...projects.map((p) => `--project=${p}`), ...alone, '--reporter=json'], { PLAYWRIGHT_JSON_OUTPUT_NAME: out });
     if (!existsSync(out)) return `playwright wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`;
     return JSON.parse(readFileSync(out, 'utf8'));
   } finally {

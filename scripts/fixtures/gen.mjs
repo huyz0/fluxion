@@ -125,6 +125,31 @@ function shapesGallery() {
   return doc;
 }
 
+/** Cell `k` of the perf-500 grid: its box, a shape of the gallery's, every third labelled. */
+function perfCell(k) {
+  const [col, row] = [k % 23, Math.floor(k / 23)];
+  const label = k % 3 === 0 ? { label: `n${k}` } : {};
+  const slug = row === 10 && col === 11 ? { slug: 'drag-me' } : {};
+  return { x: 30 + 82 * col, y: 20 + 52 * row, w: 60, h: 36, defId: `basic:${GALLERY_SHAPES[k % GALLERY_SHAPES.length]}`, ...label, ...slug };
+}
+
+/**
+ * The drag benchmark's document (NFR-PERF-001, M6.23): 500 elements on one 1920 x 1080 screen, 460
+ * shapes of the basic pack in a 23 x 20 grid (a third labelled) and 40 connectors joining neighbours,
+ * one shape in the middle slugged `drag-me` for the spec to drag.
+ */
+function perf500() {
+  const b = documentBuilder({ title: 'Perf 500', seed: 500 });
+  const s = b.screen({ name: 'Five hundred', size: { w: 1920, h: 1080 } });
+  const shapes = Array.from({ length: 460 }, (_, k) => b.rect(s, perfCell(k)));
+  // 40 connectors between horizontal neighbours of the first two rows
+  for (let k = 0; k < 40; k++) {
+    const at = (k < 20 ? 0 : 23) + (k % 20);
+    b.connect(shapes[at], shapes[at + 1], { route: 'straight' });
+  }
+  return b.build();
+}
+
 const FIXTURES = {
   minimal: () => {
     const b = documentBuilder({ title: 'Minimal', seed: 1 });
@@ -158,6 +183,7 @@ const FIXTURES = {
     return { ...doc, records: { ...doc.records, [gauge.id]: gauge, [hologram.id]: hologram } };
   },
   'shapes-gallery': shapesGallery,
+  'perf-500': perf500,
   // an element on a screen that does not exist
   'invalid-ref-missing': () => {
     const { doc, rect } = twoRectsLine('Missing screen');
@@ -171,7 +197,7 @@ const FIXTURES = {
 };
 
 /** Examples that are copies of a fixture: `examples/<name>.flux.json`. */
-const EXAMPLES = ['shapes-gallery'];
+const EXAMPLES = ['shapes-gallery', 'perf-500'];
 const EXAMPLES_DIR = join(ROOT, 'examples');
 
 const wanted = new Map(Object.entries(FIXTURES).map(([name, build]) => [`${name}.flux.json`, serializeDocument(build())]));

@@ -580,6 +580,10 @@ describe('M6 Playwright legs (M6.1)', () => {
     };
     assert.equal(playwrightSpecs([spec], ['chromium'], { runner }), true);
     assert.deepEqual(seen, [spec, '--project=chromium', '--reporter=json']);
+    // a measuring run takes the workers it is given (the perf group: one)
+    const { playwrightReport } = await import('../../scripts/gates/milestone-checks.mjs');
+    assert.notEqual(typeof playwrightReport([spec], ['perf'], { runner, workers: 1 }), 'string');
+    assert.deepEqual(seen, [spec, '--project=perf', '--workers=1', '--reporter=json']);
     assert.match(String(playwrightSpecs([spec], ['chromium'], { runner: () => ({ status: 1, stdout: '', stderr: 'boom' }) })), /wrote no report: boom/);
   });
 });

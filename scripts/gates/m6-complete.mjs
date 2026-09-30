@@ -32,6 +32,7 @@ const code = (text) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\
 
 const DESKTOP = ['chromium', 'firefox', 'webkit'];
 const MOBILE = ['mobile-chrome', 'mobile-safari'];
+const PERF = ['perf'];
 const EDITOR = 'editor';
 const browser = (row, title, pkg = EDITOR) => [row, title, pkg, {}, 'browser'];
 
@@ -53,11 +54,12 @@ const GROUPS = {
       'e2e/transform.resize-rotate-undo.spec.ts',
       'e2e/present.mode-switch.spec.ts',
       'e2e/parity.edit-vs-present.spec.ts',
-      'e2e/perf.drag-500.spec.ts',
       'e2e/a11y.editor-shell.spec.ts',
     ],
   },
   mobile: { projects: MOBILE, specs: ['e2e/touch.edit-basics.spec.ts'] },
+  // the drag benchmark measures frames: its own chromium project (@perf), one worker, nothing beside it
+  perf: { projects: PERF, specs: ['e2e/perf.drag-500.spec.ts'], workers: 1 },
 };
 const reports = new Map();
 const runner = () =>
@@ -72,12 +74,12 @@ function e2e(specs, projects) {
 
 /** The report of the group `projects` belong to, run once per gate. */
 function groupReport(projects) {
-  const group = projects === MOBILE ? 'mobile' : 'desktop';
+  const group = projects === MOBILE ? 'mobile' : projects === PERF ? 'perf' : 'desktop';
   if (!reports.has(group)) {
-    const { specs: all, projects: ps } = GROUPS[group];
+    const { specs: all, projects: ps, workers } = GROUPS[group];
     const present = all.filter((s) => exists(s));
     const r = runner();
-    reports.set(group, playwrightReport(present, ps, r ? { runner: r } : {}));
+    reports.set(group, playwrightReport(present, ps, { ...(r ? { runner: r } : {}), ...(workers === undefined ? {} : { workers }) }));
   }
   return reports.get(group);
 }
@@ -200,7 +202,7 @@ leg(`dragging 1 of 500 elements stays at or above EDITOR_DRAG_MIN_FPS (${t('EDIT
   const doc = json('fixtures/docs/perf-500.flux.json');
   const elements = Object.values(doc?.records ?? {}).filter((r) => r.type === 'element').length;
   if (elements < 500) return `fixtures/docs/perf-500.flux.json has ${elements} elements (< 500)`;
-  return thresholdSpec('e2e/perf.drag-500.spec.ts', 'EDITOR_DRAG_MIN_FPS', ['chromium'], PERF_TITLES);
+  return thresholdSpec('e2e/perf.drag-500.spec.ts', 'EDITOR_DRAG_MIN_FPS', PERF, PERF_TITLES);
 });
 leg('axe finds no serious or critical issue on the editor shell (a11y.editor-shell)', () => e2e(['e2e/a11y.editor-shell.spec.ts'], DESKTOP));
 

@@ -303,7 +303,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SITE-003 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-SITE-004 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-SITE-005 | C | R8 | M33 | [21-import-export-publish.md](21-import-export-publish.md) | — |
-| NFR-PERF-001 | M | R1 | M6 | [30-non-functional.md](30-non-functional.md) | `packages/render/src/elements.browser.test.tsx`, `packages/render/src/same-but-place.test.ts` |
+| NFR-PERF-001 | M | R1 | M6 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.drag-500.spec.ts` +2 |
 | NFR-PERF-002 | M | R3 | M16 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-003 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-004 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |

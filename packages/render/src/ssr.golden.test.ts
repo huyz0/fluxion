@@ -14,8 +14,9 @@ declare global {
 // the shared valid fixtures at the repo root (scripts/fixtures/gen.mjs); invalid-* do not load
 const FIXTURES = Object.entries(import.meta.glob('../../../fixtures/docs/*.flux.json', { query: '?raw', import: 'default', eager: true }))
   .filter(([path]) => !path.includes('/invalid-'))
-  // the shapes gallery needs the basic pack: its golden is the CLI's, which bundles the pack (M5.24)
-  .filter(([path]) => !path.includes('/shapes-gallery.'))
+  // the shapes gallery needs the basic pack: its golden is the CLI's, which bundles the pack (M5.24);
+  // so does the drag benchmark, which has no golden (a benchmark, not a rendering reference)
+  .filter(([path]) => !path.includes('/shapes-gallery.') && !path.includes('/perf-'))
   .map(([path, text]) => [(path.split('/').at(-1) ?? path).replace('.flux.json', ''), JSON.parse(text) as DocumentFile] as const);
 
 // the fixture goldens render through ssr.ts: this file carries ssr's stem, so the coverage sandbox
