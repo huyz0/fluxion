@@ -6,6 +6,7 @@ const width = async (editor: EditorPage, name: string) => (await editor.panel(na
 test('FR-EDT-001: a resized panel keeps its width across a reload', async ({ page }) => {
   const editor = new EditorPage(page);
   await editor.open('new');
+  await editor.showSidePanels();
   expect(await width(editor, 'Screens, library and layers')).toBe(240);
   const splitter = editor.splitter('Resize the left panel');
   const box = await splitter.boundingBox();
@@ -29,6 +30,7 @@ test('FR-EDT-001: a resized panel keeps its width across a reload', async ({ pag
 test('FR-EDT-001: hidden panels and focus mode persist; the canvas keeps its screen', async ({ page }) => {
   const editor = new EditorPage(page);
   await editor.open('new');
+  await editor.showSidePanels();
   await expect(editor.panel('Timeline')).toHaveCount(0);
   await editor.toolbarButton('Timeline').click();
   await editor.toolbarButton('Inspector').click();

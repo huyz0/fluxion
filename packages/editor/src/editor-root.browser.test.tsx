@@ -122,7 +122,24 @@ describe('edit-mode root (FR-EDT-001)', () => {
   it('FR-EDT-001: on a phone-width viewport the open panels scroll aside and the canvas keeps its screen', async () => {
     await page.viewport(390, 844);
     const core = createCore(newDocument(seededRandom(6)));
+    // a first visit on a phone: the side panels start collapsed, the canvas has the width
     await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} />));
+    await act(frame);
+    const first = host.querySelector('main[aria-label="Canvas"]') as HTMLElement;
+    // (a collapsed panel keeps its 4 px splitter, to open it again)
+    expect([first.getBoundingClientRect().width, host.querySelector('[data-panel="left"]'), host.querySelector('[data-panel="right"]')]).toEqual([
+      382,
+      null,
+      null,
+    ]);
+    act(() => root.unmount());
+    root = createRoot(host);
+    // panels the user opened (a stored layout): they scroll aside
+    const settings = memorySettings();
+    settings.set(LAYOUT_KEY, DEFAULT_LAYOUT);
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} settings={settings} />),
+    );
     await act(frame);
     const canvas = host.querySelector('main[aria-label="Canvas"]') as HTMLElement;
     expect(canvas.getBoundingClientRect().width).toBe(320);

@@ -178,19 +178,25 @@ function insideFrame(frame: SelectionFrame, p: Vec2): boolean {
 }
 
 /**
- * The handle of `frame` at canvas point `p`: a resize handle, or `rotate`. Outside the frame a handle
- * is picked within its size; inside it only where it is drawn, so the middle of a small element is
- * still the element's, to move (M6.15 review F2).
+ * The nearest handle of `frame` to canvas point `p`: a resize handle, or `rotate`. Outside the frame a handle
+ * is picked within `size` canvas px (HANDLE_PX for a mouse, TOUCH.handlePx for a finger); inside it
+ * only where it is drawn (HANDLE_PX / 2), so the middle of a small element is still the element's, to
+ * move (M6.15 review F2), for a finger too.
  *
  * @public
  */
-export function handleAt(frame: SelectionFrame | undefined, p: Vec2): HandleId | 'rotate' | undefined {
+export function handleAt(frame: SelectionFrame | undefined, p: Vec2, size: number = HANDLE_PX): HandleId | 'rotate' | undefined {
   if (frame === undefined) return undefined;
-  const reach = insideFrame(frame, p) ? HANDLE_PX / 2 : HANDLE_PX;
-  // tzap disable next-line EqualityOperator: a press exactly a handle's reach away
-  const near = (at: Vec2) => Math.hypot(p.x - at.x, p.y - at.y) <= reach;
-  if (near(frame.rotate)) return 'rotate';
-  return frame.handles.find(([, at]) => near(at))?.[0];
+  // inside, only where a handle is drawn, whatever reaches it: a small element's middle stays movable
+  const reach = insideFrame(frame, p) ? HANDLE_PX / 2 : size;
+  // the nearest handle within reach (a finger's reach spans several on a small frame); rotate wins a tie
+  let best: { readonly id: HandleId | 'rotate'; readonly d: number } | undefined;
+  for (const [id, at] of [['rotate', frame.rotate] as const, ...frame.handles]) {
+    const d = Math.hypot(p.x - at.x, p.y - at.y);
+    // tzap disable next-line EqualityOperator: a press exactly a handle's reach away, or as near two
+    if (d <= reach && (best === undefined || d < best.d)) best = { id, d };
+  }
+  return best?.id;
 }
 
 /**

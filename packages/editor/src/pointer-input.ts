@@ -49,7 +49,14 @@ function feed(to: Feed, phase: PointerPhase, e: PointerEvent): void {
     for (const sub of unpack(e)) pipe.push(pointerInfo('move', sub, origin, camera));
     return;
   }
-  if (phase === 'down') el.setPointerCapture(e.pointerId);
+  // a pointer the browser no longer tracks (it lifted already, or was synthesized) cannot be captured
+  if (phase === 'down') {
+    try {
+      el.setPointerCapture(e.pointerId);
+    } catch {
+      // not captured: its moves still reach the canvas while over it
+    }
+  }
   if (pipe.push(pointerInfo(phase, e, origin, camera)) === true) e.preventDefault();
 }
 

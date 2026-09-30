@@ -177,7 +177,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-016 | S | R3 | M19 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-017 | S | R4 | M22 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-018 | S | R5 | M25 | [15-editor.md](15-editor.md) | — |
-| FR-EDT-019 | M | R1 | M6 | [15-editor.md](15-editor.md) | — |
+| FR-EDT-019 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/touch.edit-basics.spec.ts` +3 |
 | FR-EDT-020 | S | R8 | M32 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-021 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-022 | S | R2 | M12 | [15-editor.md](15-editor.md) | — |

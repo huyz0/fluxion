@@ -56,6 +56,7 @@ export {
   type ToolMode,
   type Transition,
 } from './tools.js';
+export { CONTEXT_MENU_EVENT, moved, pinchCamera, TOUCH } from './touch.js';
 
 /**
  * Version of this package.

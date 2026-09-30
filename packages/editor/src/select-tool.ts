@@ -5,11 +5,12 @@
 import type { Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { duplicates, moved, reframed, type Start, starts } from './move.js';
-import { frameBox, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
+import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
 import { type KeyInfo, SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
-import { type Box2, resize, rotation } from './transform.js';
+import { TOUCH } from './touch.js';
+import { type Box2, handlePoint, resize, rotation } from './transform.js';
 
 /** The nudge of each arrow key, page units (shift: ten times as far). */
 const ARROWS: { readonly [key: string]: Vec2 } = {
@@ -74,7 +75,8 @@ type Handle = { readonly id: HandleId | 'rotate'; readonly box: Box2; readonly p
 function handleUnder(ctx: ToolCtx, e: PointerInfo): Handle | undefined {
   const selected = ctx.session.selection.get();
   const placed = selected.map((id) => (ctx.view.get(id) as { transform?: Placed } | undefined)?.transform).filter((t): t is Placed => t !== undefined);
-  const id = handleAt(selectionFrame(placed, ctx.session.camera.get()), e.screen);
+  // a finger reaches a handle further than a mouse (FR-EDT-019)
+  const id = handleAt(selectionFrame(placed, ctx.session.camera.get()), e.screen, e.pointerType === 'touch' ? TOUCH.handlePx : HANDLE_PX);
   const box = frameBox(placed);
   return id === undefined || box === undefined ? undefined : { id, box, page: e.page, from: starts(ctx.view, selected) };
 }
@@ -265,7 +267,11 @@ export function selectTool(): Tool {
       pointing: pointing(p),
       translating: translating(p),
       brushing: brushing(p),
-      resizing: transforming(p, 'resizing', (h, e) => resize(h.box, h.id as HandleId, e.page, e)),
+      // the handle follows the pointer from where it was pressed (a finger presses beside it)
+      resizing: transforming(p, 'resizing', (h, e) => {
+        const at = handlePoint(h.box, h.id as HandleId);
+        return resize(h.box, h.id as HandleId, { x: at.x + e.page.x - h.page.x, y: at.y + e.page.y - h.page.y }, e);
+      }),
       rotating: transforming(p, 'rotating', (h, e) => ({ ...h.box, rot: rotation(h.box, h.page, e.page, e.shift) })),
     },
   };

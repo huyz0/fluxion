@@ -26,7 +26,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-toolbar .fx-chrome-button[aria-pressed="true"] { background: var(--ui-pressed); border-color: var(--ui-accent); }
 .fx-chrome-body { flex: 1; display: flex; min-height: 0; overflow-x: auto; }
 .fx-chrome-center { flex: 1; display: flex; flex-direction: column; min-width: min(100%, 320px); }
-.fx-chrome-canvas { flex: 1; position: relative; overflow: hidden; min-height: 0; background: var(--ui-canvas); }
+.fx-chrome-canvas { flex: 1; position: relative; overflow: hidden; min-height: 0; background: var(--ui-canvas); touch-action: none; }
 .fx-chrome-panel { flex: none; overflow: auto; box-sizing: border-box; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; }
 .fx-chrome-panel .fx-chrome-heading { margin: 0; padding: 8px 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ui-muted); }
 .fx-chrome-panel .fx-chrome-placeholder { margin: 0; padding: 8px 12px; color: var(--ui-muted); }

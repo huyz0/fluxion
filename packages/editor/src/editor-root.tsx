@@ -13,7 +13,7 @@ import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
 import { ImagePicker } from './image-picker.js';
-import { type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
+import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
@@ -97,7 +97,8 @@ function useChromeCss(): void {
 
 /** The layout, read from `settings` once and written back on every change. */
 function useLayout(settings: SettingsStore): readonly [EditorLayout, (layout: EditorLayout) => void] {
-  const [layout, setLayout] = useState(() => readLayout(settings.get(LAYOUT_KEY)));
+  // a first visit on a phone starts with the side panels collapsed
+  const [layout, setLayout] = useState(() => readLayout(settings.get(LAYOUT_KEY), defaultLayout(window.innerWidth)));
   useEffect(() => settings.set(LAYOUT_KEY, layout), [settings, layout]);
   return [layout, setLayout];
 }

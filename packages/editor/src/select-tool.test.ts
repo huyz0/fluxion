@@ -78,6 +78,23 @@ describe('resizing and rotating with the select tool (FR-EDT-004)', () => {
     expect(core.store.history.undoDepth).toBe(1);
   });
 
+  it('FR-EDT-019: a handle pressed beside it follows the pointer from there, not to it; a finger reaches further', () => {
+    const { core, session, tools, a } = setup();
+    const box = () => (core.store.get(a) as { transform: { x: number; y: number; w: number; h: number } }).transform;
+    session.selection.set([a]);
+    // 15 px right of the se handle (100, 100): out of a mouse's reach, within a finger's
+    tools.pointer(at('down', 115, 100));
+    expect(tools.current).toBe('select.pointing');
+    tools.pointer(at('up', 115, 100));
+    session.selection.set([a]);
+    tools.pointer(at('down', 115, 100, { pointerType: 'touch' }));
+    expect(tools.current).toBe('select.resizing');
+    tools.pointer(at('move', 155, 110, { pointerType: 'touch' }));
+    tools.pointer(at('up', 155, 110, { pointerType: 'touch' }));
+    // the edge moved as far as the finger did (40, 10), not to it
+    expect([box().w, +box().h.toFixed(9)]).toEqual([140, 110]);
+  });
+
   it('FR-EDT-004: the rotate handle turns the selection about its centre, in 15° steps with shift', () => {
     const { core, session, tools, a, c } = setup();
     const rot = (id: RecordId) => (core.store.get(id) as { transform: { rot?: number } }).transform.rot;

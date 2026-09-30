@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+import { expect } from '../test.js';
 
 /** Page object for the editor (e2e/pages: one object per screen, specs never use raw selectors). */
 export class EditorPage {
@@ -58,6 +59,15 @@ export class EditorPage {
   /** The drawn element with this record id. */
   element(id: string): Locator {
     return this.canvas.locator(`.fx-el[data-el-id="${id}"]`);
+  }
+
+  /** Open the side panels a first visit on a phone starts collapsed (FR-EDT-019). */
+  async showSidePanels(): Promise<void> {
+    for (const name of ['Screens, library and layers', 'Inspector']) {
+      const button = this.toolbarButton(name);
+      if ((await button.getAttribute('aria-pressed')) === 'false') await button.click();
+      await expect(button).toHaveAttribute('aria-pressed', 'true');
+    }
   }
 
   /** The first screen's box on the page. */

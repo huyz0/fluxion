@@ -40,6 +40,9 @@ export function clickSelection(current: readonly RecordId[], hit: RecordId | und
 export function connectorTool(): Tool;
 
 // @public
+export const CONTEXT_MENU_EVENT = "fx-contextmenu";
+
+// @public
 export function createConnector(deps: CreateDeps, link: Link): RecordId | undefined;
 
 // @public
@@ -214,6 +217,9 @@ export function memorySettings(initial?: {
 }): SettingsStore;
 
 // @public
+export const moved: (from: Vec2, to: Vec2) => boolean;
+
+// @public
 export function newDocument(random: Random): DocumentFile;
 
 // @public
@@ -236,6 +242,9 @@ export function penTool(): Tool;
 
 // @public
 export const PICK_PX = 4;
+
+// @public
+export function pinchCamera(start: Camera, from: readonly [Vec2, Vec2], to: readonly [Vec2, Vec2]): Camera;
 
 // @public
 export type Placement = {
@@ -368,6 +377,13 @@ export type ToolDispatcher = {
 
 // @public
 export type ToolMode = "edit" | "present";
+
+// @public
+export const TOUCH: {
+    readonly longPressMs: 500;
+    readonly slopPx: 8;
+    readonly handlePx: 22;
+};
 
 // @public
 export type Transition = {

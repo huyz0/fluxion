@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type Box2, carry, MIN_SIZE, ROTATE_STEP, resize, rotation } from './transform.js';
+import { type Box2, carry, handlePoint, MIN_SIZE, ROTATE_STEP, resize, rotation } from './transform.js';
 
 const box: Box2 = { x: 0, y: 0, w: 100, h: 50, rot: 0 };
 const plain = { shift: false, alt: false };
@@ -61,6 +61,19 @@ describe('resize and rotate (FR-EDT-004)', () => {
     const line = { x: 0, y: 0, w: 0, h: 10, rot: 0 };
     expect(carry(line, { ...line, w: 0, h: 20 }, { x: 0, y: 10 })).toEqual({ x: 0, y: 20 });
     expect(carry({ ...line, w: 10, h: 0 }, { ...line, w: 20, h: 0 }, { x: 10, y: 0 })).toEqual({ x: 20, y: 0 });
+  });
+
+  it('FR-EDT-004: a handle`s place on the page, its frame`s turn included', () => {
+    const b = { x: 0, y: 0, w: 100, h: 50, rot: 0 };
+    expect([handlePoint(b, 'nw'), handlePoint(b, 'e'), handlePoint(b, 's')]).toEqual([
+      { x: 0, y: 0 },
+      { x: 100, y: 25 },
+      { x: 50, y: 50 },
+    ]);
+    // turned a quarter about its centre (50, 25): its east edge's middle faces down
+    const e = handlePoint({ ...b, rot: 90 }, 'e');
+    const nw = handlePoint({ ...b, rot: 90 }, 'nw');
+    expect([+e.x.toFixed(9), +e.y.toFixed(9), +nw.x.toFixed(9), +nw.y.toFixed(9)]).toEqual([50, 75, 75, -25]);
   });
 
   it('FR-EDT-004: shift snaps rotation to 15° steps', () => {

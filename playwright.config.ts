@@ -25,9 +25,10 @@ export default defineConfig({
     serviceWorkers: 'block',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
+    // desktops skip @mobile specs: touch input (fingers) is the phones'
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile/ },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile/ },
+    { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, grepInvert: /@mobile/ },
     // phones skip the visual baselines (desktop-sized) and @desktop specs, whose input (wheel, mouse
     // buttons, hover) a touch device does not have; touch input has its own specs (touch.*)
     { name: 'mobile-chrome', use: { ...devices['Pixel 7'] }, grepInvert: /@visual|@desktop/ },

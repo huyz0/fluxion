@@ -18,6 +18,8 @@ import type { PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
+import { CONTEXT_MENU_EVENT } from './touch.js';
+import { touchConsumer } from './touch-input.js';
 
 /** Whether `target` takes text (keys typed there are not canvas shortcuts). */
 function isEditable(target: EventTarget | null): boolean {
@@ -221,7 +223,22 @@ export function Canvas(props: CanvasProps): ReactNode {
   useWheel(ref, session, box);
   useGesture(ref, session);
   useKeys({ store, session, box, area, space, tools });
-  usePointerInput(ref, session.camera.get, canvasConsumer(session, space, drag, tools));
+  // one consumer for the canvas's life: the fingers down are its state
+  const consumer = useMemo(
+    () =>
+      touchConsumer(canvasConsumer(session, space, drag, tools), {
+        session,
+        tools,
+        timer: (ms, fn) => {
+          const id = setTimeout(fn, ms);
+          return () => clearTimeout(id);
+        },
+        // the context-menu hook (M7's menus listen for it): where a finger was held
+        onLongPress: (i) => ref.current?.dispatchEvent(new CustomEvent(CONTEXT_MENU_EVENT, { bubbles: true, detail: { screen: i.screen, page: i.page } })),
+      }),
+    [session, tools],
+  );
+  usePointerInput(ref, session.camera.get, consumer);
   return (
     <main
       ref={ref}

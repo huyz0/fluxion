@@ -49,6 +49,22 @@ export const DEFAULT_LAYOUT: EditorLayout = {
 };
 
 /**
+ * Below this window width (px) the editor is on a phone: the side panels start collapsed, so the
+ * canvas has the width (FR-EDT-019; M6.5 note).
+ */
+export const NARROW_PX = 768;
+
+/**
+ * The layout of a first visit to a window `width` px wide: DEFAULT_LAYOUT, with the side panels
+ * collapsed below NARROW_PX.
+ */
+export function defaultLayout(width: number): EditorLayout {
+  if (width >= NARROW_PX) return DEFAULT_LAYOUT;
+  const { left, right } = DEFAULT_LAYOUT.panels;
+  return { ...DEFAULT_LAYOUT, panels: { ...DEFAULT_LAYOUT.panels, left: { ...left, collapsed: true }, right: { ...right, collapsed: true } } };
+}
+
+/**
  * The settings key the layout is stored under (ADR-0029).
  *
  * @public
@@ -72,10 +88,10 @@ function readPanel(panel: PanelId, v: unknown): PanelState {
 
 /**
  * A stored layout read back: every field validated and every size clamped; a missing or broken
- * value gives the defaults.
+ * value gives `fallback` (a first visit's layout; default DEFAULT_LAYOUT).
  */
-export function readLayout(value: unknown): EditorLayout {
-  if (!isObject(value)) return DEFAULT_LAYOUT;
+export function readLayout(value: unknown, fallback: EditorLayout = DEFAULT_LAYOUT): EditorLayout {
+  if (!isObject(value)) return fallback;
   const panels = isObject(value['panels']) ? value['panels'] : {};
   return {
     panels: { left: readPanel('left', panels['left']), right: readPanel('right', panels['right']), bottom: readPanel('bottom', panels['bottom']) },

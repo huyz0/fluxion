@@ -3,7 +3,7 @@
 // rotate handle turns the box about its centre (shift: in 15° steps). Pure: the select tool turns the
 // result into element.updateMany.
 import type { Vec2 } from '@fluxion/geometry';
-import type { Box2, HandleId } from './overlay-geometry.js';
+import { type Box2, HANDLES, type HandleId } from './overlay-geometry.js';
 
 export type { Box2 } from './overlay-geometry.js';
 
@@ -65,6 +65,19 @@ function scaled(
   if (by.alt || edge === 0) return [size / 2 - length / 2, size / 2 + length / 2];
   // tzap disable next-line EqualityOperator: an edge of 0 has returned above
   return edge < 0 ? [range[1] - length, range[1]] : [range[0], range[0] + length];
+}
+
+/**
+ * Where the handle `handle` of `box` is on the page (its turn included).
+ *
+ * @public
+ */
+export function handlePoint(box: Box2, handle: HandleId): Vec2 {
+  const [, u, v] = HANDLES.find(([id]) => id === handle) as readonly [HandleId, number, number];
+  const r = (box.rot * Math.PI) / 180;
+  const dx = (u - 0.5) * box.w;
+  const dy = (v - 0.5) * box.h;
+  return { x: box.x + box.w / 2 + dx * Math.cos(r) - dy * Math.sin(r), y: box.y + box.h / 2 + dx * Math.sin(r) + dy * Math.cos(r) };
 }
 
 /**
