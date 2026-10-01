@@ -1,0 +1,462 @@
+{
+  "records": {
+    "3xaDcEbsz63Db6Oq": {
+      "id": "3xaDcEbsz63Db6Oq",
+      "index": "a3",
+      "kind": "text",
+      "screenId": "LYMLPKjIBlLmjyhB",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "A text element: ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ],
+                "text": "bold",
+                "type": "text"
+              },
+              {
+                "text": " and a break",
+                "type": "text"
+              },
+              {
+                "type": "hardBreak"
+              },
+              {
+                "text": "on the next line.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 560,
+        "x": 700,
+        "y": 540
+      },
+      "type": "element"
+    },
+    "LYMLPKjIBlLmjyhB": {
+      "id": "LYMLPKjIBlLmjyhB",
+      "index": "a0",
+      "name": "Rich text",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "YlccxuZz6TNLTdfA": {
+      "defId": "basic:rect",
+      "id": "YlccxuZz6TNLTdfA",
+      "index": "a1",
+      "kind": "shape",
+      "screenId": "LYMLPKjIBlLmjyhB",
+      "text": {
+        "content": [
+          {
+            "attrs": {
+              "level": 1
+            },
+            "content": [
+              {
+                "text": "Heading one",
+                "type": "text"
+              }
+            ],
+            "type": "heading"
+          },
+          {
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "text": "Heading two",
+                "type": "text"
+              }
+            ],
+            "type": "heading"
+          },
+          {
+            "attrs": {
+              "level": 3
+            },
+            "content": [
+              {
+                "text": "Heading three",
+                "type": "text"
+              }
+            ],
+            "type": "heading"
+          },
+          {
+            "attrs": {
+              "align": "right"
+            },
+            "content": [
+              {
+                "text": "Right aligned, with a field {{page}} after it: ",
+                "type": "text"
+              },
+              {
+                "attrs": {
+                  "name": "page"
+                },
+                "type": "field"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "attrs": {
+              "lineHeight": 2,
+              "spaceAfter": 12,
+              "spaceBefore": 12
+            },
+            "content": [
+              {
+                "text": "Double spaced with space around, long enough to wrap onto a second line inside this box.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 420,
+        "w": 560,
+        "x": 700,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "a0JwBiyM6n1z_qXg": {
+      "id": "a0JwBiyM6n1z_qXg",
+      "title": "Rich text",
+      "type": "document"
+    },
+    "jcLu3lJdk54ZYZmK": {
+      "defId": "basic:rect",
+      "id": "jcLu3lJdk54ZYZmK",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "LYMLPKjIBlLmjyhB",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "content": [
+                  {
+                    "content": [
+                      {
+                        "text": "First",
+                        "type": "text"
+                      }
+                    ],
+                    "type": "paragraph"
+                  }
+                ],
+                "type": "listItem"
+              },
+              {
+                "content": [
+                  {
+                    "content": [
+                      {
+                        "text": "Second",
+                        "type": "text"
+                      }
+                    ],
+                    "type": "paragraph"
+                  },
+                  {
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "content": [
+                              {
+                                "text": "Nested one",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "paragraph"
+                          }
+                        ],
+                        "type": "listItem"
+                      },
+                      {
+                        "content": [
+                          {
+                            "content": [
+                              {
+                                "text": "Nested two",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "paragraph"
+                          }
+                        ],
+                        "type": "listItem"
+                      }
+                    ],
+                    "type": "bulletList"
+                  }
+                ],
+                "type": "listItem"
+              }
+            ],
+            "type": "bulletList"
+          },
+          {
+            "attrs": {
+              "start": 3
+            },
+            "content": [
+              {
+                "content": [
+                  {
+                    "content": [
+                      {
+                        "text": "Third",
+                        "type": "text"
+                      }
+                    ],
+                    "type": "paragraph"
+                  }
+                ],
+                "type": "listItem"
+              },
+              {
+                "content": [
+                  {
+                    "content": [
+                      {
+                        "text": "Fourth",
+                        "type": "text"
+                      }
+                    ],
+                    "type": "paragraph"
+                  }
+                ],
+                "type": "listItem"
+              }
+            ],
+            "type": "orderedList"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 360,
+        "w": 560,
+        "x": 80,
+        "y": 320
+      },
+      "type": "element"
+    },
+    "tfFKdE4S2_o6yRLi": {
+      "id": "tfFKdE4S2_o6yRLi",
+      "index": "a4",
+      "kind": "text",
+      "screenId": "LYMLPKjIBlLmjyhB",
+      "text": {
+        "content": [
+          {
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "text": "Note",
+                "type": "text"
+              }
+            ],
+            "type": "heading"
+          },
+          {
+            "content": [
+              {
+                "text": "A heading and two paragraphs in a text element.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "content": [
+              {
+                "text": "And a second one.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 300,
+        "w": 520,
+        "x": 1320,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "ypxiFtkE4d3nx6pc": {
+      "defId": "basic:rect",
+      "id": "ypxiFtkE4d3nx6pc",
+      "index": "a0",
+      "kind": "shape",
+      "screenId": "LYMLPKjIBlLmjyhB",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ],
+                "text": "Bold ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "type": "italic"
+                  }
+                ],
+                "text": "italic ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "type": "underline"
+                  }
+                ],
+                "text": "underline ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "type": "strike"
+                  }
+                ],
+                "text": "strike",
+                "type": "text"
+              },
+              {
+                "text": " and ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "type": "code"
+                  }
+                ],
+                "text": "code",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "content": [
+              {
+                "marks": [
+                  {
+                    "attrs": {
+                      "color": "#c62828"
+                    },
+                    "type": "color"
+                  }
+                ],
+                "text": "red",
+                "type": "text"
+              },
+              {
+                "text": " on ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "attrs": {
+                      "color": "#fff59d"
+                    },
+                    "type": "highlight"
+                  }
+                ],
+                "text": "yellow",
+                "type": "text"
+              },
+              {
+                "text": " at ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "attrs": {
+                      "size": 28
+                    },
+                    "type": "size"
+                  }
+                ],
+                "text": "28 px",
+                "type": "text"
+              },
+              {
+                "text": " and ",
+                "type": "text"
+              },
+              {
+                "marks": [
+                  {
+                    "attrs": {
+                      "href": "https://example.com",
+                      "title": "Example"
+                    },
+                    "type": "link"
+                  }
+                ],
+                "text": "a link",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 560,
+        "x": 80,
+        "y": 60
+      },
+      "type": "element"
+    }
+  },
+  "schemaVersion": "1.0"
+}

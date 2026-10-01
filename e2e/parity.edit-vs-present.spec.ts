@@ -186,4 +186,12 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
       expect(edit.dom.match(/class="fx-el"/g)?.length ?? 0, name).toBeGreaterThan(5);
     }
   });
+  test('FR-TXT-001: the rich-text fixture draws the same pixels in edit and present', async ({ page }) => {
+    const { edit, present } = await bothModes(page, 'rich-text');
+    const pct = diffPct(await pixels(page, edit.png), await pixels(page, present.png));
+    expect(pct, `rich-text: ${pct.toFixed(4)} % of the pixels differ`).toBeLessThanOrEqual(PARITY_MAX_DIFF_PCT);
+    // the same content DOM, and the text is drawn: marks and blocks are all there
+    expect(present.dom).toBe(edit.dom);
+    for (const tag of ['strong', 'em', 'u', 's', 'code', 'mark', 'a', 'h1', 'h2', 'h3', 'ul', 'ol', 'li']) expect(edit.dom, tag).toContain(`<${tag}`);
+  });
 });

@@ -79,5 +79,6 @@ describe('SSR parity (FR-SCR-001, ADR-0015)', () => {
       }
     }
     expect(compared).toBeGreaterThanOrEqual(3);
-  });
+    // every screen of every fixture, the 500-element one included: a loaded macOS runner needs more than the default 15 s
+  }, 90_000);
 });

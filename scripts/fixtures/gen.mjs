@@ -150,6 +150,103 @@ function perf500() {
   return b.build();
 }
 
+/** A text node with `marks` (`[type, attrs?]` pairs). */
+const run = (text, ...marks) => ({
+  type: 'text',
+  text,
+  ...(marks.length ? { marks: marks.map(([type, attrs]) => ({ type, ...(attrs ? { attrs } : {}) })) } : {}),
+});
+const para = (attrs, ...content) => ({ type: 'paragraph', ...(attrs ? { attrs } : {}), content });
+const item = (...content) => ({ type: 'listItem', content });
+
+/** The rich text of each element of the rich-text fixture, by the record id in `ids`. */
+function richDocs(ids) {
+  return {
+    [ids.marks]: {
+      type: 'doc',
+      content: [
+        para(
+          undefined,
+          run('Bold ', ['bold']),
+          run('italic ', ['italic']),
+          run('underline ', ['underline']),
+          run('strike', ['strike']),
+          run(' and '),
+          run('code', ['code']),
+        ),
+        para(
+          undefined,
+          run('red', ['color', { color: '#c62828' }]),
+          run(' on '),
+          run('yellow', ['highlight', { color: '#fff59d' }]),
+          run(' at '),
+          run('28 px', ['size', { size: 28 }]),
+          run(' and '),
+          run('a link', ['link', { href: 'https://example.com', title: 'Example' }]),
+        ),
+      ],
+    },
+    [ids.blocks]: {
+      type: 'doc',
+      content: [
+        { type: 'heading', attrs: { level: 1 }, content: [run('Heading one')] },
+        { type: 'heading', attrs: { level: 2 }, content: [run('Heading two')] },
+        { type: 'heading', attrs: { level: 3 }, content: [run('Heading three')] },
+        para({ align: 'right' }, run('Right aligned, with a field {{page}} after it: '), { type: 'field', attrs: { name: 'page' } }),
+        para(
+          { lineHeight: 2, spaceBefore: 12, spaceAfter: 12 },
+          run('Double spaced with space around, long enough to wrap onto a second line inside this box.'),
+        ),
+      ],
+    },
+    [ids.lists]: {
+      type: 'doc',
+      content: [
+        {
+          type: 'bulletList',
+          content: [
+            item(para(undefined, run('First'))),
+            item(para(undefined, run('Second')), {
+              type: 'bulletList',
+              content: [item(para(undefined, run('Nested one'))), item(para(undefined, run('Nested two')))],
+            }),
+          ],
+        },
+        { type: 'orderedList', attrs: { start: 3 }, content: [item(para(undefined, run('Third'))), item(para(undefined, run('Fourth')))] },
+      ],
+    },
+    [ids.free]: {
+      type: 'doc',
+      content: [para(undefined, run('A text element: '), run('bold', ['bold']), run(' and a break'), { type: 'hardBreak' }, run('on the next line.'))],
+    },
+    [ids.note]: {
+      type: 'doc',
+      content: [
+        { type: 'heading', attrs: { level: 2 }, content: [run('Note')] },
+        para(undefined, run('A heading and two paragraphs in a text element.')),
+        para(undefined, run('And a second one.')),
+      ],
+    },
+  };
+}
+
+/**
+ * The rich-text fixture (FR-TXT-001, M7.14): every mark and block on one screen, in shape labels and in
+ * `text` elements, for the edit-versus-present parity suite and the editor's own tests.
+ */
+function richText() {
+  const b = documentBuilder({ title: 'Rich text', seed: 714 });
+  const s = b.screen({ name: 'Rich text', size: { w: 1920, h: 1080 } });
+  const marks = b.rect(s, { x: 80, y: 60, w: 560, h: 200, defId: 'basic:rect' });
+  const blocks = b.rect(s, { x: 700, y: 60, w: 560, h: 420, defId: 'basic:rect' });
+  const lists = b.rect(s, { x: 80, y: 320, w: 560, h: 360, defId: 'basic:rect' });
+  const free = b.text(s, 'x', { x: 700, y: 540, w: 560, h: 200 });
+  const note = b.text(s, 'x', { x: 1320, y: 60, w: 520, h: 300 });
+  const docs = richDocs({ marks, blocks, lists, free, note });
+  const doc = b.build();
+  return { ...doc, records: Object.fromEntries(Object.entries(doc.records).map(([id, r]) => [id, docs[id] ? { ...r, text: docs[id] } : r])) };
+}
+
 const FIXTURES = {
   minimal: () => {
     const b = documentBuilder({ title: 'Minimal', seed: 1 });
@@ -184,6 +281,7 @@ const FIXTURES = {
   },
   'shapes-gallery': shapesGallery,
   'perf-500': perf500,
+  'rich-text': richText,
   // an element on a screen that does not exist
   'invalid-ref-missing': () => {
     const { doc, rect } = twoRectsLine('Missing screen');
@@ -197,7 +295,7 @@ const FIXTURES = {
 };
 
 /** Examples that are copies of a fixture: `examples/<name>.flux.json`. */
-const EXAMPLES = ['shapes-gallery', 'perf-500'];
+const EXAMPLES = ['shapes-gallery', 'perf-500', 'rich-text'];
 const EXAMPLES_DIR = join(ROOT, 'examples');
 
 const wanted = new Map(Object.entries(FIXTURES).map(([name, build]) => [`${name}.flux.json`, serializeDocument(build())]));
