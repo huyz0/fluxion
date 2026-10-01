@@ -7,8 +7,8 @@
 import type { FrameElement } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useMemo } from 'react';
+import { concreteLength } from './css-values.js';
 import type { ElementViewProps } from './registries.js';
-import { concreteLength } from './text-measurer.js';
 
 /**
  * The view of `kind: 'group'` elements: its members only.

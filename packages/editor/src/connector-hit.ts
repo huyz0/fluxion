@@ -4,12 +4,12 @@
 // label is centred at its place along the route (routing's labelPosition) and hit on an estimate of
 // its text's box: its paragraphs in the
 // style's font, at most LABEL_MAX_W wide as the content CSS draws it (the DOM is not measured).
-import { MARKER_SIZE, type Store } from '@fluxion/core';
+import { MARKER_SIZE, type Store, type TextMeasurer, wrapStyled } from '@fluxion/core';
 import { type Box, boxFromPoints, boxUnion, type Mat2d, type Path, type PathCommand, pathBounds, pathFromCommands, type Vec2 } from '@fluxion/geometry';
-import { plainParagraphs } from '@fluxion/render';
+import { styledBlocks } from '@fluxion/render';
 import { labelPosition, routeConnector, routePoint } from '@fluxion/routing';
 import type { ConnectorElement, ElementRecord } from '@fluxion/schema';
-import { resolveStyle } from '@fluxion/theme';
+import { resolveStyle, type Theme } from '@fluxion/theme';
 import { boxTouches, PAGE_FRAME, rectOutline } from './box-touch.js';
 import { type Hittable, inBox, type Resolving } from './hittable.js';
 import { grow, lengthOf, onStroked, reachOf, stroked, strokedBounds } from './stroke-band.js';
@@ -19,6 +19,15 @@ export const LABEL_MAX_W = 240;
 
 /** A character's estimated width, in font sizes (a label is not measured to be hit). */
 const CHAR_EM = 0.6;
+
+/** The label's side padding, both sides together (`.fx-connector-label`: 4 px each). */
+const LABEL_PAD = 8;
+
+/** A measurer that counts characters: no DOM, no font files (the hit box of a label is an estimate). */
+const estimate: TextMeasurer = {
+  // the layout takes line heights from the fonts, and gives the measurer one line at a time: only the width is asked
+  measure: (text, font) => ({ width: [...text].length * CHAR_EM * font.size, height: 0, ascent: 0, descent: 0 }),
+};
 
 /**
  * Where a marker is drawn: a box from `o` along the unit direction `u` for `len`, `half` to either side
@@ -93,14 +102,20 @@ function markerBoxes(element: ConnectorElement, commands: readonly PathCommand[]
 }
 
 /** The estimated boxes of the connector's labels with text, centred at their places along the route. */
-function labelBoxes(element: ConnectorElement, commands: readonly PathCommand[], font: { readonly size: number; readonly line: number }): Box[] {
+function labelBoxes(element: ConnectorElement, commands: readonly PathCommand[], font: { readonly size: number; readonly line: number }, theme: Theme): Box[] {
   return (element.labels ?? []).flatMap((label) => {
-    const lines = plainParagraphs(label.text);
+    // the label as it is drawn (a size mark, a heading, a list, the space around blocks), its characters estimated: the
+    // content CSS gives a label its text's width up to LABEL_MAX_W less its padding, and collapses the blocks' margins
+    // tzap disable next-line StringLiteral: the estimate takes no notice of the family
+    const laid = wrapStyled(styledBlocks(label.text, theme), { family: '', size: font.size, lineHeight: font.line }, estimate, {
+      maxWidth: LABEL_MAX_W - LABEL_PAD,
+      spacing: 'collapse',
+    });
     // a label without text draws nothing to hit
-    if (lines.every((l) => l === '')) return [];
+    if (laid.lines.every((l) => l === '')) return [];
     const at = labelPosition(commands, label.position, label.offset);
-    const w = Math.min(LABEL_MAX_W, Math.max(...lines.map((l) => l.length)) * CHAR_EM * font.size + 8);
-    const h = lines.length * font.size * font.line + 2;
+    const w = Math.min(LABEL_MAX_W, laid.width + LABEL_PAD);
+    const h = laid.height + 2;
     return [{ x: at.x - w / 2, y: at.y - h / 2, w, h }];
   });
 }
@@ -124,7 +139,12 @@ export function connectorHittable(store: Store, ctx: Resolving, element: Element
   // a route is open: its stroke is centred, whatever the style's alignment
   const line = stroked(path, style.stroke, ctx.vars);
   const markers = markerBoxes(connector, routed.commands, ctx, MARKER_SIZE * line.stroke.width);
-  const labels = labelBoxes(connector, routed.commands, { size: lengthOf(style.font.size, ctx.vars), line: lengthOf(style.font.lineHeight, ctx.vars) });
+  const labels = labelBoxes(
+    connector,
+    routed.commands,
+    { size: lengthOf(style.font.size, ctx.vars), line: lengthOf(style.font.lineHeight, ctx.vars) },
+    ctx.theme,
+  );
   const hits = (p: Vec2, tol: number) =>
     // tzap disable next-line BooleanLiteral: a centred stroke's band is the same on both sides
     onStroked(line, p, false, tol) || markers.some((m) => onMarker(m, p, tol)) || labels.some((b) => inBox(p, b, tol));

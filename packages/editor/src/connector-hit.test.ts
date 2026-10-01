@@ -116,6 +116,64 @@ describe('connector hit-testing, edges (FR-EDT-004)', () => {
     expect([at(300 + 63 + 3, 20), at(300 + 63 + 5, 20)]).toEqual([link, undefined]);
   });
 
+  it('FR-TXT-002: a label with a size mark, a heading or spacing is hit on the box it is drawn in, not on a plain estimate', () => {
+    const run = (text: string, marks?: unknown[]) => ({ type: 'text', text, ...(marks === undefined ? {} : { marks }) });
+    const big = { type: 'doc', content: [{ type: 'paragraph', content: [run('Hi'), run('BIG', [{ type: 'size', attrs: { size: 54 } }])] }] };
+    const plain = { type: 'doc', content: [{ type: 'paragraph', content: [run('Hi'), run('BIG')] }] };
+    // the 54 px run makes the line 54 × 1.3 = 70.2 tall (plus 2) and 5 characters wide: 2 × 10.8 + 3 × 32.4 + 8
+    const { at: withMark, link } = setup({ markers: {}, labels: [{ text: big, position: 0.5, offset: { x: 0, y: -200 } }] });
+    const { at: without } = setup({ markers: {}, labels: [{ text: plain, position: 0.5, offset: { x: 0, y: -200 } }] });
+    // 30 px above the label's centre: inside the tall box (72.2, half 36.1 and the pick margin), outside the plain one (25.4)
+    expect([withMark(300, -200 + 100 - 30), withMark(300, -200 + 100 - 48)]).toEqual([link, undefined]);
+    expect([without(300, -200 + 100 - 30), without(300, -200 + 100 - 20)]).toEqual([undefined, undefined]);
+    // a heading's lines are as tall as its scale: 2 × the size, two lines of it
+    const heading = {
+      type: 'doc',
+      content: [{ type: 'heading', attrs: { level: 1 }, content: [run('Title that is long enough to wrap onto lines of its own here')] }],
+    };
+    const { at: head } = setup({ markers: {}, labels: [{ text: heading, position: 0.5, offset: { x: 0, y: -300 } }] });
+    // 59 characters at 36 px (2 × 18): it wraps in LABEL_MAX_W less the padding, so the box is several lines tall: 60 px below its centre is still on it
+    expect([head(300, -300 + 100 + 60), head(300 + 100, -300 + 100)]).toEqual([expect.anything(), expect.anything()]);
+    // spacing around blocks counts: a 40 px gap after the first paragraph makes the label taller
+    const spaced = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', attrs: { spaceAfter: 40 }, content: [run('a')] },
+        { type: 'paragraph', content: [run('b')] },
+      ],
+    };
+    const tight = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [run('a')] },
+        { type: 'paragraph', content: [run('b')] },
+      ],
+    };
+    const { at: gap, link: gapLink } = setup({ markers: {}, labels: [{ text: spaced, position: 0.5, offset: { x: 0, y: -400 } }] });
+    const { at: nogap } = setup({ markers: {}, labels: [{ text: tight, position: 0.5, offset: { x: 0, y: -400 } }] });
+    // two lines of 23.4 plus 40 and the 2 px of padding: 88.8 tall; two lines alone are 48.8
+    expect([gap(300, -400 + 100 + 40), nogap(300, -400 + 100 + 40)]).toEqual([gapLink, undefined]);
+    // the space between blocks collapses as in a block layout: 40 after and 30 before is 40, not 70
+    const both = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', attrs: { spaceAfter: 40 }, content: [run('a')] },
+        { type: 'paragraph', attrs: { spaceBefore: 30 }, content: [run('b')] },
+      ],
+    };
+    const { at: collapsed, link: collapsedLink } = setup({ markers: {}, labels: [{ text: both, position: 0.5, offset: { x: 0, y: -400 } }] });
+    expect([collapsed(300, -400 + 100 + 40), collapsed(300, -400 + 100 + 52)]).toEqual([collapsedLink, undefined]);
+    // the width left for the text is the label's maximum less its padding: 22 characters (237.6 px) wrap, 21 (226.8) do not
+    const wide = (words: string) => ({ type: 'doc', content: [{ type: 'paragraph', content: [run(words)] }] });
+    const { at: wraps, link: wrapsLink } = setup({ markers: {}, labels: [{ text: wide('aaaaaaaaaaa bbbbbbbbbb'), position: 0.5, offset: { x: 0, y: -500 } }] });
+    const { at: fits } = setup({ markers: {}, labels: [{ text: wide('aaaaaaaaaaa bbbbbbbbb'), position: 0.5, offset: { x: 0, y: -500 } }] });
+    expect([wraps(300, -500 + 100 + 20), fits(300, -500 + 100 + 20)]).toEqual([wrapsLink, undefined]);
+    // a label of nothing but a line break draws nothing to hit
+    const empty = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'hardBreak' }] }] };
+    const { at: nothing } = setup({ markers: {}, labels: [{ text: empty, position: 0.5, offset: { x: 0, y: -600 } }] });
+    expect(nothing(300, -600 + 100)).toBeUndefined();
+  });
+
   it('FR-EDT-004: an end marker sits at the route`s last point, after its bends, along its last segment', () => {
     const b = documentBuilder({ seed: 182 });
     const screen = b.screen({ size: { w: 1000, h: 1000 } });

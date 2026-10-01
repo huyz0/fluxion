@@ -254,6 +254,7 @@ export interface FileIO {
 // @public
 export type FitInput = {
     readonly paragraphs: readonly string[];
+    readonly blocks?: readonly StyledBlock[] | undefined;
     readonly font: FontSpec;
     readonly region: {
         readonly w: number;
@@ -495,6 +496,7 @@ export type ShapeTextInput = {
         readonly [key: string]: unknown;
     } | undefined;
     readonly paragraphs: readonly string[];
+    readonly blocks?: readonly StyledBlock[] | undefined;
     readonly font: FontSpec;
     readonly fit?: TextFit | undefined;
 };
@@ -525,6 +527,33 @@ export type StoreOptions = {
     readonly validate?: boolean;
     readonly hooks?: Registry<string, IntegrityHook>;
     readonly policy?: "read-write" | "read-only";
+};
+
+// @public
+export type StyledBlock = {
+    readonly runs: readonly StyledRun[];
+    readonly scale?: number;
+    readonly weight?: number;
+    readonly lineHeight?: number;
+    readonly before?: number;
+    readonly after?: number;
+    readonly indentEm?: number;
+};
+
+// @public
+export type StyledOptions = {
+    readonly maxWidth: number;
+    readonly spacing?: "collapse" | "add";
+};
+
+// @public
+export type StyledRun = {
+    readonly text: string;
+    readonly size?: number;
+    readonly em?: number;
+    readonly weight?: number;
+    readonly style?: string;
+    readonly family?: string;
 };
 
 // @public
@@ -602,6 +631,9 @@ export type WrappedText = {
     readonly width: number;
     readonly height: number;
 };
+
+// @public
+export function wrapStyled(blocks: readonly StyledBlock[], base: FontSpec, measurer: TextMeasurer, options: StyledOptions): WrappedText;
 
 // @public
 export function wrapText(paragraphs: readonly string[], font: FontSpec, maxWidth: number, measurer: TextMeasurer): WrappedText;

@@ -3,6 +3,7 @@
 // the text needs; applying it to an element is the caller's write (a view never writes).
 import type { TextFit } from '@fluxion/schema';
 import type { FontSpec, TextMeasurer } from '../ports/ports.js';
+import { type StyledBlock, wrapStyled } from './styled.js';
 import { type WrappedText, wrapText } from './wrap.js';
 
 /**
@@ -56,6 +57,11 @@ export type FittedText = WrappedText & {
 export type FitInput = {
   /** The text, one string per paragraph. */
   readonly paragraphs: readonly string[];
+  /**
+   * The text as it is drawn (runs with their own sizes, headings, spacing, list indent); when given it is
+   * laid out instead of `paragraphs`, whose lines only say whether there is text.
+   */
+  readonly blocks?: readonly StyledBlock[] | undefined;
   /** The font at its styled size. */
   readonly font: FontSpec;
   /** The region's size, in px. */
@@ -83,7 +89,9 @@ export function fitText(input: FitInput, measurer: TextMeasurer): FittedText {
   const padding = input.fit?.padding ?? TEXT_FIT_DEFAULTS.padding;
   const inner = { w: Math.max(0, input.region.w - 2 * padding), h: Math.max(0, input.region.h - 2 * padding) };
   const at = (size: number): FittedText => {
-    const wrapped = wrapText(input.paragraphs, { ...input.font, size }, inner.w, measurer);
+    const font = { ...input.font, size };
+    const wrapped =
+      input.blocks === undefined ? wrapText(input.paragraphs, font, inner.w, measurer) : wrapStyled(input.blocks, font, measurer, { maxWidth: inner.w });
     return { ...wrapped, size, regionHeight: wrapped.height + 2 * padding };
   };
   const full = at(input.font.size);

@@ -3,19 +3,21 @@
 // path filling the wrapper's box, filled and stroked with the resolved style; its text is a centred
 // plain-text label. An unknown `defId`, or an outline that does not evaluate, renders the placeholder.
 
-import { evaluateOutline, fitShapeText, type ShapeDef, shrinksText, TEXT_FIT_DEFAULTS, type TextMeasurer, textRegion } from '@fluxion/core';
+import { evaluateOutline, fitShapeText, type ShapeDef, type StyledBlock, shrinksText, TEXT_FIT_DEFAULTS, type TextMeasurer, textRegion } from '@fluxion/core';
 import { roundCorners } from '@fluxion/geometry';
 import type { ShapeElement } from '@fluxion/schema';
 import { type ResolvedFont, type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
 import { type ImageSource, useImage } from './assets.js';
+import { concreteLength } from './css-values.js';
 import { EffectsFilter } from './effects.js';
 import { PlaceholderView } from './elements.js';
 import { labelStyle, plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
+import { styledBlocks } from './rich-layout.js';
 import { RichText } from './rich-text.js';
-import { browserMeasurer, concreteFont, concreteLength, MeasurerContext, useFontGeneration } from './text-measurer.js';
+import { browserMeasurer, concreteFont, MeasurerContext, useFontGeneration } from './text-measurer.js';
 
 const stops = (paint: { readonly stops: ReadonlyArray<{ readonly offset: number; readonly css: string }> }) =>
   // stops may share an offset (a hard stop), so their position is their key; the theme sorts them
@@ -120,10 +122,17 @@ export function strokeReach(width: number, align: string, join: string): number 
  * measurer, as in server rendering, the styled size).
  */
 function textBox(
-  input: { readonly element: ShapeElement; readonly def: ShapeDef; readonly paragraphs: readonly string[]; readonly font: ResolvedFont; readonly theme: Theme },
+  input: {
+    readonly element: ShapeElement;
+    readonly def: ShapeDef;
+    readonly paragraphs: readonly string[];
+    readonly blocks: readonly StyledBlock[];
+    readonly font: ResolvedFont;
+    readonly theme: Theme;
+  },
   measurer: TextMeasurer | undefined,
 ): CSSProperties {
-  const { element, def, paragraphs } = input;
+  const { element, def, paragraphs, blocks } = input;
   const size = { w: element.transform.w, h: element.transform.h };
   const fit = element.textFit;
   const found = textRegion(def, size, element.params);
@@ -137,7 +146,7 @@ function textBox(
     overflow: fit?.overflow === 'clip' ? 'hidden' : 'visible',
   };
   if (!shrinksText(fit) || measurer === undefined || paragraphs.length === 0) return box;
-  const fitted = fitShapeText({ def, size, params: element.params, paragraphs, font: concreteFont(input.font, input.theme), fit }, measurer);
+  const fitted = fitShapeText({ def, size, params: element.params, paragraphs, blocks, font: concreteFont(input.font, input.theme), fit }, measurer);
   return fitted.ok ? { ...box, fontSize: fitted.value.size } : box;
 }
 
@@ -214,11 +223,15 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const { w, h } = element.transform;
   const outlined = useMemo(() => (def === undefined ? undefined : evaluateOutline(def, { w, h }, element.params)), [def, w, h, element.params]);
   const paragraphs = useMemo(() => plainParagraphs(element.text), [element.text]);
+  // the text as it is drawn (sizes, headings, spacing, indents), which the fit measures
+  // tzap disable next-line ArrayDeclaration: the list only re-runs the memo
+  const blocks = useMemo(() => styledBlocks(element.text, theme), [element.text, theme]);
   // laid out once per change of what it depends on (M5.14 review F3); again when fonts load
   // biome-ignore lint/correctness/useExhaustiveDependencies: fonts is the re-measure signal
   const text = useMemo(
-    () => (def === undefined ? {} : textBox({ element, def, paragraphs, font: style.font, theme }, measurer)),
-    [element, def, paragraphs, style.font, theme, measurer, fonts],
+    () => (def === undefined ? {} : textBox({ element, def, paragraphs, blocks, font: style.font, theme }, measurer)),
+    // tzap disable next-line ArrayDeclaration: the list only re-runs the memo
+    [element, def, paragraphs, blocks, style.font, theme, measurer, fonts],
   );
   if (outlined === undefined || !outlined.ok) return <PlaceholderView {...props} />;
   // an open outline is a stroke: it has no inside to fill (ADR-0016 item 2)

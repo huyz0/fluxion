@@ -46,6 +46,7 @@ export { batch, computed, effect, type ReadSignal, type WritableSignal, writable
 export { createStore, type ReadView, type Store, type StoreOptions } from './store.js';
 export { type FitInput, type FittedText, fitText, shrinksText, TEXT_FIT_DEFAULTS } from './text/fit.js';
 export { createMetricsMeasurer, type FaceMetrics, type FontMetricsFile, readFontMetrics } from './text/metrics.js';
+export { type StyledBlock, type StyledOptions, type StyledRun, wrapStyled } from './text/styled.js';
 export { type WrappedText, wrapText } from './text/wrap.js';
 export type { Diff, PutChange, Tx, TxFailure, TxMeta, TxOptions, TxOrigin } from './transaction.js';
 

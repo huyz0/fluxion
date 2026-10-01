@@ -7,12 +7,15 @@
 // (ligatures such as ffi); the latter two are recorded as what they add to the sum of their parts. Writes
 //   fixtures/fonts/roboto.metrics.json    the faces' metrics (packages/core/src/text/metrics.ts)
 //   fixtures/fonts/roboto.rendered.json   what the DOM renders for a set of samples: their width and
-//                                         height, the reference the parity tests compare against
+//                                         height, the reference the parity tests compare against; and
+//                                         the height of the rich-text documents of rich-samples.json,
+//                                         drawn by the built `@fluxion/render` (pnpm run build first)
 // --check records into memory and fails when either file would change (the metrics by more than
 // a hundredth of a unit, the rendered sizes by more than a hundredth of a px).
 import { readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium } from '@playwright/test';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -55,15 +58,41 @@ const VARIANTS = [
 
 const round = (n, digits) => Math.round(n * 10 ** digits) / 10 ** digits;
 
+/** The markup the built renderer draws for each rich sample, and the content CSS it comes with. */
+async function richItems() {
+  const render = join(ROOT, 'packages', 'render');
+  const need = createRequire(join(render, 'package.json'));
+  const { createElement } = need('react');
+  const { renderToStaticMarkup } = need('react-dom/server');
+  const { RichText, CONTENT_CSS } = await import(pathToFileURL(join(render, 'dist', 'index.js')).href);
+  const { samples } = JSON.parse(readFileSync(join(DIR, 'rich-samples.json'), 'utf8'));
+  return {
+    css: CONTENT_CSS,
+    names: samples.map((s) => s.name),
+    items: samples.map((s) => ({ width: s.width, html: renderToStaticMarkup(createElement(RichText, { doc: s.doc })) })),
+  };
+}
+
 async function record() {
+  const rich = await richItems();
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage();
     await page.setContent('<!doctype html><meta charset="utf-8"><body></body>');
     await page.addScriptTag({ path: join(dirname(fileURLToPath(import.meta.url)), 'page-recorder.js') });
     const fonts = FACES.map((f) => ({ ...f, data: readFileSync(join(DIR, f.file)).toString('base64') }));
-    const args = { fonts, alphabet: ALPHABET, paired: PAIRED, letters: LETTERS, units: UNITS, texts: TEXTS, variants: VARIANTS };
-    return await page.evaluate((a) => window.fluxionRecordFonts(a), args);
+    const args = {
+      fonts,
+      alphabet: ALPHABET,
+      paired: PAIRED,
+      letters: LETTERS,
+      units: UNITS,
+      texts: TEXTS,
+      variants: VARIANTS,
+      rich: { css: rich.css, items: rich.items },
+    };
+    const result = await page.evaluate((a) => window.fluxionRecordFonts(a), args);
+    return { ...result, rich: result.rich.map((height, i) => ({ name: rich.names[i], width: rich.items[i].width, height })) };
   } finally {
     await browser.close();
   }
@@ -82,13 +111,14 @@ function metricsText(faces) {
 }
 
 /** The rendered file's text. */
-function renderedText(samples, userAgent) {
-  const body = samples.map((s) => JSON.stringify({ ...s, width: round(s.width, 3), height: round(s.height, 3) })).join(',\n  ');
-  return `{\n  "font": "Roboto",\n  "recordedWith": ${JSON.stringify(userAgent.replace(/^.*(Chrome\/[\d.]+).*$/, '$1'))},\n  "samples": [\n  ${body}\n  ]\n}\n`;
+function renderedText(samples, rich, userAgent) {
+  const lines = (list) => list.map((s) => JSON.stringify({ ...s, width: round(s.width, 3), height: round(s.height, 3) })).join(',\n  ');
+  const chrome = JSON.stringify(userAgent.replace(/^.*(Chrome\/[\d.]+).*$/, '$1'));
+  return `{\n  "font": "Roboto",\n  "recordedWith": ${chrome},\n  "samples": [\n  ${lines(samples)}\n  ],\n  "rich": [\n  ${lines(rich)}\n  ]\n}\n`;
 }
 
-const { faces, samples, userAgent } = await record();
-const files = { 'roboto.metrics.json': metricsText(faces), 'roboto.rendered.json': renderedText(samples, userAgent) };
+const { faces, samples, rich, userAgent } = await record();
+const files = { 'roboto.metrics.json': metricsText(faces), 'roboto.rendered.json': renderedText(samples, rich, userAgent) };
 if (process.argv.includes('--check')) {
   const drift = [];
   for (const [name, text] of Object.entries(files)) {

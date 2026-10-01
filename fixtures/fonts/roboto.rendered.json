@@ -50,5 +50,20 @@
   {"text":"Café déjà vu façade naïve Zürich","size":12,"weight":700,"width":175.375,"height":14.391},
   {"text":"one line\nand a second line\nand a third, longer line of text","size":12,"weight":700,"width":157.922,"height":43.172},
   {"text":"A paragraph of running text that goes on for a while so that small differences in each advance add up across the line.","size":12,"weight":700,"width":628.109,"height":14.391}
+  ],
+  "rich": [
+  {"name":"size-run","width":220,"height":93.563},
+  {"name":"small-run-in-line","width":200,"height":76.75},
+  {"name":"heading-1","width":200,"height":191.922},
+  {"name":"headings-all","width":260,"height":187.156},
+  {"name":"bold-and-weights","width":180,"height":95.938},
+  {"name":"list","width":220,"height":191.875},
+  {"name":"numbered-start","width":200,"height":95.938},
+  {"name":"spacing","width":200,"height":197.188},
+  {"name":"hard-break","width":150,"height":57.563},
+  {"name":"heading-spacing","width":220,"height":147.563},
+  {"name":"mixed","width":240,"height":195.109},
+  {"name":"list-spacing","width":220,"height":184.313},
+  {"name":"code-line","width":400,"height":19.188}
   ]
 }

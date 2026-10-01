@@ -74,3 +74,7 @@ the fixed-metrics measurer; the T1 tests of M5.14 (grow-shape height equals the 
 ## More Information
 
 FR-SHP-006, FR-TXT-002, 02-document-model §2, 04 §2.4, ADR-0016 (expressions), contracts.md §4.
+
+## Amendments
+
+- 2026-10-02 (M7.29): the fit measures the text as it is drawn. `FitInput` and `ShapeTextInput` take an optional `blocks` (core's `StyledBlock`: runs with their own size, weight, style and family, a heading's scale, a block's own line height and spacing, and a list's indent), laid out by `wrapStyled` instead of the plain `paragraphs`; the render package builds them from the rich text (`styledBlocks`) with the numbers the content CSS uses. A run's own size does not move when `shrink` reduces the label's size, as in the DOM. Heights agree with a browser's within 0.15 px on the recorded samples (ADR-0148's fixtures). The plain path stays for callers with strings.

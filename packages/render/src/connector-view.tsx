@@ -13,12 +13,12 @@ import { labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/r
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
+import { concreteLength } from './css-values.js';
 import { labelStyle } from './label.js';
 import { MarkerView, MidMarker } from './markers.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { RichText } from './rich-text.js';
-import { concreteLength } from './text-measurer.js';
 import { useValue } from './use-value.js';
 
 /** Room around a route for its stroke and markers, px. */

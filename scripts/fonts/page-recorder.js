@@ -88,8 +88,27 @@ function recordSamples(args) {
   });
 }
 
+/** The height of each `{html, width}` set in a `.fx-label` of that width, with the content CSS `css`. */
+function recordRich(args) {
+  const style = document.createElement('style');
+  style.textContent = args.css;
+  document.head.append(style);
+  const heights = args.items.map((item) => {
+    const box = document.createElement('div');
+    box.className = 'fx-label';
+    box.style.cssText = `position:absolute;left:0;top:0;right:auto;bottom:auto;height:auto;width:${item.width}px;font:400 16px/1.2 Roboto`;
+    box.innerHTML = item.html;
+    document.body.append(box);
+    const height = box.getBoundingClientRect().height;
+    box.remove();
+    return height;
+  });
+  style.remove();
+  return heights;
+}
+
 window.fluxionRecordFonts = async (args) => {
   for (const f of args.fonts) await load(f);
   await document.fonts.ready;
-  return { faces: args.fonts.map((f) => recordFace(f, args)), samples: recordSamples(args), userAgent: navigator.userAgent };
+  return { faces: args.fonts.map((f) => recordFace(f, args)), samples: recordSamples(args), rich: recordRich(args.rich), userAgent: navigator.userAgent };
 };

@@ -23,6 +23,7 @@ import { Router } from '@fluxion/routing';
 import { ScreenRecord } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
+import { StyledBlock } from '@fluxion/core';
 import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 
@@ -235,6 +236,9 @@ export type ScreenViewSpec = {
 
 // @public
 export function ShapeView(props: ElementViewProps): ReactNode;
+
+// @public
+export function styledBlocks(doc: RichTextDoc | undefined, theme: Theme): StyledBlock[];
 
 // @public
 export function TextView(props: ElementViewProps): ReactNode;

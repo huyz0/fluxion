@@ -3,8 +3,8 @@
 // on a measurement. Server rendering has no measurer (ADR-0018 item 4).
 import type { FontSpec, TextMeasurer, TextMetrics } from '@fluxion/core';
 import type { Theme } from '@fluxion/theme';
-import { toCssVars } from '@fluxion/theme';
 import { type Context, createContext, useSyncExternalStore } from 'react';
+import { substitute } from './css-values.js';
 
 /**
  * A text measurer backed by a canvas.
@@ -101,21 +101,6 @@ export function useFontGeneration(): number {
 
 /** The host's measurer, provided by `<ScreenView>` (default: the page's canvas measurer). */
 export const MeasurerContext: Context<TextMeasurer | undefined> = createContext<TextMeasurer | undefined>(undefined);
-
-/** `css` with its `var(--fx-…)` references replaced by `theme`'s values (unknown ones by nothing). */
-function substitute(css: string, theme: Theme): string {
-  const vars = toCssVars(theme) as { readonly [name: string]: string | undefined };
-  return css.replace(/var\((--[\w-]+)\)/g, (_, name: string) => vars[name] ?? '');
-}
-
-/**
- * A resolved length (`4px`, `var(--fx-radius-md)`) as a number of px with `theme`'s values; 0 when it
- * is none.
- */
-export function concreteLength(css: string, theme: Theme): number {
-  const n = Number.parseFloat(substitute(css, theme));
-  return Number.isFinite(n) ? n : 0;
-}
 
 /**
  * The concrete font of a resolved style: its `var(--fx-…)` values replaced by `theme`'s, for measuring.

@@ -7,6 +7,7 @@ import { err, ok } from '@fluxion/schema';
 import { type ExprBudget, evaluateExpr, parseExpr } from '../expr/expr.js';
 import type { FontSpec, TextMeasurer } from '../ports/ports.js';
 import { type FittedText, fitText } from '../text/fit.js';
+import type { StyledBlock } from '../text/styled.js';
 import { DEFAULT_OUTLINE_BUDGET, scopeOf } from './outline.js';
 import type { ShapeDef } from './shape-def.js';
 
@@ -68,6 +69,8 @@ export type ShapeTextInput = {
   readonly params?: { readonly [key: string]: unknown } | undefined;
   /** The text, one string per paragraph. */
   readonly paragraphs: readonly string[];
+  /** The text as it is drawn (see {@link FitInput.blocks}); laid out instead of `paragraphs` when given. */
+  readonly blocks?: readonly StyledBlock[] | undefined;
   /** The font at its styled size. */
   readonly font: FontSpec;
   /** The element's fit settings. */
@@ -83,7 +86,7 @@ export type ShapeTextInput = {
 export function fitShapeText(input: ShapeTextInput, measurer: TextMeasurer): Result<ShapeText, Diagnostic> {
   const region = textRegion(input.def, input.size, input.params);
   if (!region.ok) return region;
-  const fitted = fitText({ paragraphs: input.paragraphs, font: input.font, region: region.value, fit: input.fit }, measurer);
+  const fitted = fitText({ paragraphs: input.paragraphs, blocks: input.blocks, font: input.font, region: region.value, fit: input.fit }, measurer);
   // the region's share of the box's height, from its fractions (the region of a box 1 px tall), so a
   // flat box grows by the right factor too (M5.33 review F1)
   const unit = textRegion(input.def, { w: input.size.w, h: 1 }, input.params);

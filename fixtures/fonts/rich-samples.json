@@ -1,0 +1,686 @@
+{
+ "samples": [
+  {
+   "name": "size-run",
+   "width": 220,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Plain text then "
+       },
+       {
+        "type": "text",
+        "text": "BIG",
+        "marks": [
+         {
+          "type": "size",
+          "attrs": {
+           "size": 30
+          }
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "text": " and more words that go on for a while so the line has to wrap onto another one"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "small-run-in-line",
+   "width": 200,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Some "
+       },
+       {
+        "type": "text",
+        "text": "tiny",
+        "marks": [
+         {
+          "type": "size",
+          "attrs": {
+           "size": 8
+          }
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "text": " and normal words that go on for a while so the line has to wrap onto another one"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "heading-1",
+   "width": 200,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 1
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "A heading that wraps over lines"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Then a paragraph of words that go on for a while so the line has to wrap onto another one"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "headings-all",
+   "width": 260,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 1
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Heading level 1 here"
+       }
+      ]
+     },
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 2
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Heading level 2 here"
+       }
+      ]
+     },
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 3
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Heading level 3 here"
+       }
+      ]
+     },
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 4
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Heading level 4 here"
+       }
+      ]
+     },
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 5
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Heading level 5 here"
+       }
+      ]
+     },
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 6
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Heading level 6 here"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "bold-and-weights",
+   "width": 180,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Some "
+       },
+       {
+        "type": "text",
+        "text": "bold words",
+        "marks": [
+         {
+          "type": "bold"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "text": " among normal words that go on for a while so the line has to wrap onto another one"
+       },
+       {
+        "type": "text",
+        "text": " and bold again",
+        "marks": [
+         {
+          "type": "bold"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "list",
+   "width": 220,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "bulletList",
+      "content": [
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "First item with words that go on for a while so the line has to wrap onto another one"
+           }
+          ]
+         },
+         {
+          "type": "orderedList",
+          "content": [
+           {
+            "type": "listItem",
+            "content": [
+             {
+              "type": "paragraph",
+              "content": [
+               {
+                "type": "text",
+                "text": "Inner a words that go on for a while so the line has to wrap onto another one"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "listItem",
+            "content": [
+             {
+              "type": "paragraph",
+              "content": [
+               {
+                "type": "text",
+                "text": "Inner b"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "listItem",
+          "content": [
+           {
+            "type": "paragraph",
+            "content": [
+             {
+              "type": "text",
+              "text": "Second item"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "numbered-start",
+   "width": 200,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "orderedList",
+      "content": [
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Third words that go on for a while so the line has to wrap onto another one"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Fourth"
+           }
+          ]
+         }
+        ]
+       }
+      ],
+      "attrs": {
+       "start": 3
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "spacing",
+   "width": 200,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Tight words that go on for a while so the line has to wrap onto another one"
+       }
+      ],
+      "attrs": {
+       "lineHeight": 1
+      }
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Loose words that go on for a while so the line has to wrap onto another one"
+       }
+      ],
+      "attrs": {
+       "lineHeight": 2,
+       "spaceBefore": 10,
+       "spaceAfter": 20
+      }
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Last"
+       }
+      ],
+      "attrs": {
+       "spaceBefore": 4
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "hard-break",
+   "width": 150,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "one"
+       },
+       {
+        "type": "hardBreak"
+       },
+       {
+        "type": "text",
+        "text": "two three four five six seven eight"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "heading-spacing",
+   "width": 220,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 2,
+       "spaceBefore": 12,
+       "spaceAfter": 6,
+       "lineHeight": 1.5
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Spaced heading with words"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "words that go on for a while so the line has to wrap onto another one"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "mixed",
+   "width": 240,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "heading",
+      "attrs": {
+       "level": 3
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "Mixed content"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Intro "
+       },
+       {
+        "type": "text",
+        "text": "bold",
+        "marks": [
+         {
+          "type": "bold"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "text": " and "
+       },
+       {
+        "type": "text",
+        "text": "large",
+        "marks": [
+         {
+          "type": "size",
+          "attrs": {
+           "size": 24
+          }
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "text": " text words that go on for a while so the line has to wrap onto another one"
+       }
+      ]
+     },
+     {
+      "type": "bulletList",
+      "content": [
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Point one words that go on for a while so the line has to wrap onto another one"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Point two"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Closing line"
+       }
+      ],
+      "attrs": {
+       "spaceAfter": 8
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "list-spacing",
+   "width": 220,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Before the list"
+       }
+      ],
+      "attrs": {
+       "spaceAfter": 12
+      }
+     },
+     {
+      "type": "bulletList",
+      "content": [
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Item one has words that wrap onto a second line here"
+           }
+          ],
+          "attrs": {
+           "spaceAfter": 10
+          }
+         }
+        ]
+       },
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Item two"
+           }
+          ],
+          "attrs": {
+           "spaceBefore": 6,
+           "spaceAfter": 4
+          }
+         }
+        ]
+       },
+       {
+        "type": "listItem",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Item three"
+           }
+          ],
+          "attrs": {
+           "spaceBefore": 20
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "After the list"
+       }
+      ],
+      "attrs": {
+       "spaceBefore": 8
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "code-line",
+   "width": 400,
+   "doc": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Call "
+       },
+       {
+        "type": "text",
+        "text": "run()",
+        "marks": [
+         {
+          "type": "code"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "text": " now, then "
+       },
+       {
+        "type": "text",
+        "text": "again",
+        "marks": [
+         {
+          "type": "code"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "text": " please"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}

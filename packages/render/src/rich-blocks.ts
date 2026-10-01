@@ -17,23 +17,42 @@ export type BlockPlan = {
   readonly style?: { readonly [property: string]: string };
 };
 
+/** A heading's size as a multiple of the label's, h1 to h6 (the content CSS and the fit both read it). */
+export const HEADING_EM: readonly number[] = [2, 1.5, 1.25, 1.1, 1, 0.9];
+/** A list's indent, in ems of the label's size, per level. */
+export const LIST_INDENT_EM = 1.5;
+/** Inline code's size as a multiple of the text around it. */
+export const CODE_EM = 0.9;
+
 const ALIGN = new Set(['left', 'center', 'right', 'justify']);
-const HEADINGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
+/** The tags of headings 1 to 6. */
+export const HEADINGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 
 /** `value` when it is a finite number from `min` to `max`. */
 const within = (value: unknown, min: number, max: number): number | undefined =>
   typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : undefined;
+
+/**
+ * A text block's own line height (a multiple of its size) and the space above and below it (px), the
+ * ones in range.
+ */
+export function blockSpacing(attrs: { readonly [key: string]: unknown }): { readonly lineHeight?: number; readonly before?: number; readonly after?: number } {
+  const [lineHeight, before, after] = [within(attrs['lineHeight'], 0.5, 4), within(attrs['spaceBefore'], 0, 400), within(attrs['spaceAfter'], 0, 400)];
+  return {
+    ...(lineHeight === undefined ? {} : { lineHeight }),
+    ...(before === undefined ? {} : { before }),
+    ...(after === undefined ? {} : { after }),
+  };
+}
 
 /** The CSS of a text block's attributes: alignment, its own line height, the space above and below. */
 function textStyle(attrs: { readonly [key: string]: unknown }): { readonly [property: string]: string } | undefined {
   const css: { [property: string]: string } = {};
   const align = attrs['align'];
   if (typeof align === 'string' && ALIGN.has(align)) css['textAlign'] = align;
-  const lineHeight = within(attrs['lineHeight'], 0.5, 4);
+  const { lineHeight, before, after } = blockSpacing(attrs);
   if (lineHeight !== undefined) css['lineHeight'] = String(lineHeight);
-  const before = within(attrs['spaceBefore'], 0, 400);
   if (before !== undefined) css['marginTop'] = `${before}px`;
-  const after = within(attrs['spaceAfter'], 0, 400);
   if (after !== undefined) css['marginBottom'] = `${after}px`;
   return Object.keys(css).length === 0 ? undefined : css;
 }
