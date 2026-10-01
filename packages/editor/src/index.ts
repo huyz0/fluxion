@@ -49,6 +49,16 @@ export { EditorRoot, type EditorRootProps } from './editor-root.js';
 export { createHitIndex, type HitIndex, PICK_PX } from './hit-test.js';
 export type { HitContext } from './hittable.js';
 export {
+  applyField,
+  type InspectorCommand,
+  type InspectorField,
+  type InspectorGroup,
+  type InspectorModel,
+  type InspectorOverride,
+  type Inspectors,
+  inspect,
+} from './inspector-model.js';
+export {
   chordOf,
   DEFAULT_KEYMAP,
   EDIT_FLAGS,

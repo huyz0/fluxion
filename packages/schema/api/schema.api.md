@@ -150,6 +150,9 @@ export type Crop = Extensible<{
 export const DEFAULT_SCREEN_SIZE: Size;
 
 // @public
+export function describeFields(schema: z.ZodType): readonly FieldDef[];
+
+// @public
 export type Diagnostic = {
     readonly code: DiagnosticCode;
     readonly severity: DiagnosticSeverity;
@@ -230,6 +233,9 @@ export type ElementBase = {
 };
 
 // @public
+export function elementFields(kind: string): readonly FieldDef[];
+
+// @public
 export type ElementRecord = ShapeElement | ConnectorElement | GroupElement | FrameElement | TextElement | ImageElement | ComponentElement | PluginElement;
 
 // @public
@@ -244,6 +250,26 @@ export function err<E>(error: E): Err<E>;
 // @public
 export type Extensible<T> = T & {
     readonly [key: string]: unknown;
+};
+
+// @public
+export type FieldDef = {
+    readonly path: readonly string[];
+    readonly ui: string;
+    readonly group: string;
+    readonly order: number;
+    readonly label: string;
+    readonly options?: readonly string[];
+    readonly min?: number;
+    readonly max?: number;
+};
+
+// @public
+export type FieldMeta = {
+    readonly ui: string;
+    readonly group?: string;
+    readonly order?: number;
+    readonly label?: string;
 };
 
 // @public

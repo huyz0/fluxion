@@ -155,8 +155,8 @@ const styleNumber = (literal: z.ZodNumber): z.ZodType<StyleNumber> => z.union([l
 
 const strokeSchema = checkedSchema<Stroke>()(
   z.looseObject({
-    color: colorValueSchema.optional(),
-    width: styleNumber(nonNegative).optional(),
+    color: colorValueSchema.meta({ ui: 'paint', group: 'Stroke', order: 1, label: 'Colour' }).optional(),
+    width: styleNumber(nonNegative).meta({ ui: 'number', group: 'Stroke', order: 2, label: 'Width' }).optional(),
     dash: z.array(nonNegative).optional(),
     cap: z.enum(['butt', 'round', 'square']).optional(),
     join: z.enum(['miter', 'round', 'bevel']).optional(),
@@ -170,13 +170,13 @@ const effectSchema = checkedSchema<Effect>()(z.looseObject({ type: z.enum(['glow
 const fontSchema = checkedSchema<FontStyle>()(
   z.looseObject({
     family: z.union([tokenRefSchema, literalName]).optional(),
-    size: styleNumber(z.number().positive()).optional(),
+    size: styleNumber(z.number().positive()).meta({ ui: 'number', group: 'Text', order: 1, label: 'Size' }).optional(),
     weight: styleNumber(z.number().min(1).max(1000)).optional(),
     style: z.enum(['normal', 'italic']).optional(),
     lineHeight: styleNumber(z.number().positive()).optional(),
     letterSpacing: styleNumber(finite).optional(),
-    color: colorValueSchema.optional(),
-    align: z.enum(['left', 'center', 'right', 'justify']).optional(),
+    color: colorValueSchema.meta({ ui: 'paint', group: 'Text', order: 2, label: 'Colour' }).optional(),
+    align: z.enum(['left', 'center', 'right', 'justify']).meta({ ui: 'select', group: 'Text', order: 3, label: 'Align' }).optional(),
     verticalAlign: z.enum(['top', 'middle', 'bottom']).optional(),
   }),
 );
@@ -188,10 +188,10 @@ const fontSchema = checkedSchema<FontStyle>()(
  */
 export const styleSchema: z.ZodType<Style> = checkedSchema<Style>()(
   z.looseObject({
-    fill: paintSchema.optional(),
+    fill: paintSchema.meta({ ui: 'paint', group: 'Fill', order: 1, label: 'Fill' }).optional(),
     stroke: strokeSchema.optional(),
-    opacity: styleNumber(z.number().min(0).max(1)).optional(),
-    radius: styleNumber(nonNegative).optional(),
+    opacity: styleNumber(z.number().min(0).max(1)).meta({ ui: 'slider', group: 'Appearance', order: 1, label: 'Opacity' }).optional(),
+    radius: styleNumber(nonNegative).meta({ ui: 'number', group: 'Appearance', order: 2, label: 'Corner radius' }).optional(),
     shadow: z.array(shadowSchema).optional(),
     effects: z.array(effectSchema).optional(),
     font: fontSchema.optional(),
@@ -201,7 +201,15 @@ export const styleSchema: z.ZodType<Style> = checkedSchema<Style>()(
 
 /** Schema of an element transform. */
 export const transformSchema: z.ZodType<Transform> = checkedSchema<Transform>()(
-  z.looseObject({ x: finite, y: finite, w: nonNegative, h: nonNegative, rot: finite.optional(), flipX: z.boolean().optional(), flipY: z.boolean().optional() }),
+  z.looseObject({
+    x: finite.meta({ ui: 'number', group: 'Layout', order: 1, label: 'X' }),
+    y: finite.meta({ ui: 'number', group: 'Layout', order: 2, label: 'Y' }),
+    w: nonNegative.meta({ ui: 'number', group: 'Layout', order: 3, label: 'Width' }),
+    h: nonNegative.meta({ ui: 'number', group: 'Layout', order: 4, label: 'Height' }),
+    rot: finite.meta({ ui: 'number', group: 'Layout', order: 5, label: 'Rotation' }).optional(),
+    flipX: z.boolean().meta({ ui: 'toggle', group: 'Layout', order: 6, label: 'Flip horizontally' }).optional(),
+    flipY: z.boolean().meta({ ui: 'toggle', group: 'Layout', order: 7, label: 'Flip vertically' }).optional(),
+  }),
 );
 
 /**

@@ -48,6 +48,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0146](ADR-0146-mutation-testing-tzap.md) | Mutation testing with tzap instead of StrykerJS | accepted | 2026-09-28 |
 | [0147](ADR-0147-cli-v0-contract.md) | CLI v0: command shape, exit codes and the `--json` envelope | accepted | 2026-09-29 |
 | [0148](ADR-0148-text-measurement-from-recorded-metrics.md) | Text is measured from font metrics recorded from the engine that draws it | accepted | 2026-10-02 |
+| [0149](ADR-0149-inspector-fields-from-schema-meta.md) | The inspector's fields come from the Zod schemas' `.meta` | accepted | 2026-10-02 |
 
 ## ADR required when
 

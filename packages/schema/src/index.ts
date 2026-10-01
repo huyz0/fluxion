@@ -11,7 +11,9 @@ export {
   schemaForRecord,
   type UnknownRecord,
 } from './document-file.js';
+export { elementFields } from './element-fields.js';
 export type { FluxError, FluxErrorCode } from './errors.js';
+export { describeFields, type FieldDef, type FieldMeta } from './field-meta.js';
 export { compareKeys, type IndexKey, isIndexKey, keyBetween, nKeysBetween } from './fractional-index.js';
 export { createId, ID_ALPHABET, ID_LENGTH, isGeneratedId, isRecordId, type Random, type RecordId, seededRandom } from './ids.js';
 export { MIGRATIONS, type Migrated, type Migration, migrate, type RawDocument } from './migrate.js';

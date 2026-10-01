@@ -27,7 +27,7 @@ const base = {
   screenId: recordIdSchema,
   parentId: recordIdSchema.optional(),
   index: indexKeySchema,
-  name: z.string().optional(),
+  name: z.string().meta({ ui: 'text', group: 'Element', order: 1, label: 'Name' }).optional(),
   style: styleSchema.optional(),
   semantic: z
     .looseObject({
@@ -51,7 +51,7 @@ const base = {
     .optional(),
   matchKey: z.string().min(1).optional(),
   placement: z.enum(['auto', 'pinned']).optional(),
-  hidden: z.boolean().optional(),
+  hidden: z.boolean().meta({ ui: 'toggle', group: 'Element', order: 2, label: 'Hidden' }).optional(),
 };
 const boxed = { ...base, transform: transformSchema, text: richTextSchema.optional() };
 const unit = z.number().min(0).max(1);
@@ -72,8 +72,8 @@ export const anchorDefSchema: z.ZodType<AnchorDef> = checkedSchema<AnchorDef>()(
 );
 const textFitSchema = checkedSchema<TextFit>()(
   z.looseObject({
-    mode: z.enum(['none', 'shrink', 'grow']).optional(),
-    padding: z.number().min(0).optional(),
+    mode: z.enum(['none', 'shrink', 'grow']).meta({ ui: 'select', group: 'Text', order: 10, label: 'Fit' }).optional(),
+    padding: z.number().min(0).meta({ ui: 'number', group: 'Text', order: 11, label: 'Padding' }).optional(),
     minSize: z.number().positive().optional(),
     overflow: z.enum(['visible', 'clip']).optional(),
   }),
@@ -119,10 +119,20 @@ export const elementKindSchemas: {
   ),
   group: checkedSchema<GroupElement>()(z.looseObject({ ...boxed, kind: z.literal('group') })),
   frame: checkedSchema<FrameElement>()(
-    z.looseObject({ ...boxed, kind: z.literal('frame'), clip: z.boolean().optional(), padding: z.number().min(0).optional() }),
+    z.looseObject({
+      ...boxed,
+      kind: z.literal('frame'),
+      clip: z.boolean().meta({ ui: 'toggle', group: 'Frame', order: 1, label: 'Clip contents' }).optional(),
+      padding: z.number().min(0).meta({ ui: 'number', group: 'Frame', order: 2, label: 'Padding' }).optional(),
+    }),
   ),
   text: checkedSchema<TextElement>()(
-    z.looseObject({ ...boxed, kind: z.literal('text'), text: richTextSchema, autoSize: z.enum(['none', 'width', 'height']).optional() }),
+    z.looseObject({
+      ...boxed,
+      kind: z.literal('text'),
+      text: richTextSchema,
+      autoSize: z.enum(['none', 'width', 'height']).meta({ ui: 'select', group: 'Text', order: 12, label: 'Auto size' }).optional(),
+    }),
   ),
   image: checkedSchema<ImageElement>()(
     z.looseObject({
@@ -130,7 +140,7 @@ export const elementKindSchemas: {
       kind: z.literal('image'),
       assetId: recordIdSchema,
       crop: z.looseObject({ x: unit, y: unit, w: unit, h: unit }).optional(),
-      fit: z.enum(['cover', 'contain', 'fill']).optional(),
+      fit: z.enum(['cover', 'contain', 'fill']).meta({ ui: 'select', group: 'Image', order: 1, label: 'Fit' }).optional(),
       maskDefId: qualifiedNameSchema.optional(),
     }),
   ),

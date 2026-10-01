@@ -9,6 +9,7 @@ import { Box } from '@fluxion/geometry';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
+import { FieldDef } from '@fluxion/schema';
 import { MarkerDef } from '@fluxion/core';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
@@ -22,6 +23,9 @@ import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { Vec2 } from '@fluxion/geometry';
 import { WritableSignal } from '@fluxion/core';
+
+// @public
+export function applyField(view: ReadView, ids: readonly RecordId[], path: readonly string[], value: unknown): InspectorCommand | undefined;
 
 // @public
 export function applyOverrides(base: readonly KeyBinding[], overrides: KeyOverrides): readonly KeyBinding[];
@@ -268,6 +272,42 @@ export const imageMaker: (assetId: RecordId) => ElementMaker;
 
 // @public
 export const imageTool: () => Tool;
+
+// @public
+export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors): InspectorModel | undefined;
+
+// @public
+export type InspectorCommand = {
+    readonly id: string;
+    readonly args: unknown;
+};
+
+// @public
+export type InspectorField = {
+    readonly def: FieldDef;
+    readonly value: unknown;
+    readonly mixed: boolean;
+};
+
+// @public
+export type InspectorGroup = {
+    readonly name: string;
+    readonly fields: readonly InspectorField[];
+};
+
+// @public
+export type InspectorModel = {
+    readonly ids: readonly RecordId[];
+    readonly groups: readonly InspectorGroup[];
+};
+
+// @public
+export type InspectorOverride = (fields: readonly FieldDef[]) => readonly FieldDef[];
+
+// @public
+export type Inspectors = {
+    get(kind: string): InspectorOverride | undefined;
+};
 
 // @public
 export function isEditable(target: EventTarget | null): boolean;
