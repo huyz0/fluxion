@@ -24,6 +24,15 @@ import { Vec2 } from '@fluxion/geometry';
 import { WritableSignal } from '@fluxion/core';
 
 // @public
+export function applyOverrides(base: readonly KeyBinding[], overrides: KeyOverrides): readonly KeyBinding[];
+
+// @public
+export function assignKey(base: readonly KeyBinding[], overrides: KeyOverrides, id: string, chord: string): KeyOverrides;
+
+// @public
+export const bindingId: (b: Pick<KeyBinding, "command" | "args">) => string;
+
+// @public
 export type Camera = {
     readonly x: number;
     readonly y: number;
@@ -156,6 +165,7 @@ export type EditorCommandCtx = {
     readonly history?: CommandHistory;
     readonly canvas?: CommandCanvas;
     switchMode?(): void;
+    openHelp?(): void;
 };
 
 // @public
@@ -167,7 +177,9 @@ export type EditorKeysInput = {
     readonly viewport: CanvasSize;
     readonly area: Box | undefined;
     readonly switchMode?: (() => void) | undefined;
-    readonly bindings?: readonly KeyBinding[] | undefined;
+    readonly overrides?: KeyOverrides | undefined;
+    readonly openHelp?: (() => void) | undefined;
+    readonly paused?: boolean | undefined;
 };
 
 // @public
@@ -206,6 +218,9 @@ export type FitTargets = {
 };
 
 // @public
+export function formatChord(chord: string, mac?: boolean): string;
+
+// @public
 export const frameMaker: ElementMaker;
 
 // @public
@@ -216,6 +231,9 @@ export const FREEHAND_STEP_PX = 2;
 
 // @public
 export function freehandTool(): Tool;
+
+// @public
+export function groupTitle(g: Pick<KeyGroup, "command" | "args">, titleOf: (command: string) => string | undefined, toolTitle: (id: string) => string | undefined): string;
 
 // @public
 export function handTool(): Tool;
@@ -247,12 +265,28 @@ export const imageTool: () => Tool;
 export function isEditable(target: EventTarget | null): boolean;
 
 // @public
+export const isModifierKey: (key: string) => boolean;
+
+// @public
 export type KeyBinding = {
     readonly key: string;
     readonly command: string;
     readonly args?: unknown;
     readonly when?: string;
 };
+
+// @public
+export type KeyGroup = {
+    readonly id: string;
+    readonly command: string;
+    readonly args?: unknown;
+    readonly when?: string | undefined;
+    readonly keys: readonly string[];
+    readonly changed: boolean;
+};
+
+// @public
+export function keyGroups(base: readonly KeyBinding[], overrides: KeyOverrides): readonly KeyGroup[];
 
 // @public
 export type KeyInfo = {
@@ -263,7 +297,15 @@ export type KeyInfo = {
 };
 
 // @public
+export const KEYMAP_KEY = "editor.keymap";
+
+// @public
 export function keymapConflicts(bindings: readonly KeyBinding[], flags: ReadonlySet<string>): readonly string[];
+
+// @public
+export type KeyOverrides = {
+    readonly [id: string]: readonly string[];
+};
 
 // @public
 export type KeyPress = KeyInfo & {
@@ -375,7 +417,13 @@ export type PointerPhase = "down" | "move" | "up" | "cancel";
 export const PRESENT_FLAGS: ReadonlySet<string>;
 
 // @public
+export function readOverrides(value: unknown): KeyOverrides;
+
+// @public
 export function registerBuiltinTools(registry: Registry<string, Tool>): void;
+
+// @public
+export function resetKey(overrides: KeyOverrides, id: string): KeyOverrides;
 
 // @public
 export function resolveKey(bindings: readonly KeyBinding[], k: KeyPress, flags: ReadonlySet<string>): KeyBinding | undefined;

@@ -56,6 +56,11 @@ export class EditorPage {
     return this.panel('Inspector').locator('p[aria-live]');
   }
 
+  /** The keyboard shortcuts dialog (`?`). */
+  get keymapDialog(): Locator {
+    return this.page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+  }
+
   /** The drawn element with this record id. */
   element(id: string): Locator {
     return this.canvas.locator(`.fx-el[data-el-id="${id}"]`);

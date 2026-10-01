@@ -50,6 +50,8 @@ export type EditorCommandCtx = {
   readonly canvas?: CommandCanvas;
   /** Switch between editing and presenting in place. */
   switchMode?(): void;
+  /** Open the keyboard shortcuts dialog. */
+  openHelp?(): void;
 };
 
 /**
@@ -167,6 +169,15 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
     },
   },
   { id: 'selection.delete', title: 'Delete the selection', run: (ctx) => selectIdle(ctx) && deleteSelection(ctx.tools.ctx) },
+  {
+    id: 'help.keys',
+    title: 'Keyboard shortcuts',
+    run: (ctx) => {
+      if (ctx.openHelp === undefined) return false;
+      ctx.openHelp();
+      return true;
+    },
+  },
   {
     id: 'mode.toggle',
     title: 'Present / stop presenting',

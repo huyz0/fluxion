@@ -6,7 +6,8 @@ import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useEffect } from 'react';
 import { type CanvasSize, commandMap, dispatchKey, EDITOR_COMMANDS, type EditorCommandCtx } from './editor-commands.js';
-import { DEFAULT_KEYMAP, type KeyBinding, type KeyPress, toolBindings } from './keymap.js';
+import { DEFAULT_KEYMAP, type KeyPress, toolBindings } from './keymap.js';
+import { applyOverrides, type KeyOverrides } from './keymap-overrides.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
 import type { Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
@@ -40,18 +41,28 @@ export type EditorKeysInput = {
   readonly area: Box | undefined;
   /** Switch between editing and presenting, when the host can. */
   readonly switchMode?: (() => void) | undefined;
-  /** Bindings after the defaults and the tools' (later ones win). */
-  readonly bindings?: readonly KeyBinding[] | undefined;
+  /** The user's rebindings, applied over the defaults and the tools' bindings. */
+  readonly overrides?: KeyOverrides | undefined;
+  /** Open the keyboard shortcuts dialog (`?`). */
+  readonly openHelp?: (() => void) | undefined;
+  /** Keys are not the editor's while a dialog is open. */
+  readonly paused?: boolean | undefined;
 };
 
 const COMMANDS = commandMap(EDITOR_COMMANDS);
 
 /** The key press of the event `e`. */
-const pressOf = (e: KeyboardEvent): KeyPress => ({ key: e.key, code: e.code, mod: e.ctrlKey || e.metaKey, shift: e.shiftKey, alt: e.altKey });
+export const pressOf = (e: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'>): KeyPress => ({
+  key: e.key,
+  code: e.code,
+  mod: e.ctrlKey || e.metaKey,
+  shift: e.shiftKey,
+  alt: e.altKey,
+});
 
 /** What the editor's commands act on at a key press, in the session's mode. */
 function commandCtx(input: EditorKeysInput): EditorCommandCtx {
-  const { store, session, tools, present, viewport, area, switchMode } = input;
+  const { store, session, tools, present, viewport, area, switchMode, openHelp } = input;
   const presenting = session.mode.get() === 'present' && present !== undefined;
   return {
     mode: presenting ? 'present' : 'edit',
@@ -60,6 +71,7 @@ function commandCtx(input: EditorKeysInput): EditorCommandCtx {
     // read at the key press: the selection's bounds for shift + 2
     canvas: { viewport, targets: () => ({ screen: area, selection: selectionBounds(placements(store, session.selection.get())) }) },
     ...(switchMode === undefined ? {} : { switchMode }),
+    ...(openHelp === undefined ? {} : { openHelp }),
   };
 }
 
@@ -70,16 +82,17 @@ function commandCtx(input: EditorKeysInput): EditorCommandCtx {
  * @public
  */
 export function useEditorKeys(input: EditorKeysInput): void {
-  const { store, session, tools, present, viewport, area, switchMode, bindings } = input;
+  const { store, session, tools, present, viewport, area, switchMode, openHelp, overrides, paused } = input;
   useEffect(() => {
+    if (paused === true) return;
     const onKeyDown = (e: KeyboardEvent) => {
       // F5 is taken in a field too: it would reload the page, losing the document (M7.4 review F2)
       if (e.defaultPrevented || (isEditable(e.target) && e.key !== 'F5')) return;
-      const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode });
-      const keymap = [...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list()), ...(bindings ?? [])];
+      const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp });
+      const keymap = applyOverrides([...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list())], overrides ?? {});
       if (dispatchKey(pressOf(e), keymap, COMMANDS, ctx)) e.preventDefault();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [store, session, tools, present, viewport, area, switchMode, bindings]);
+  }, [store, session, tools, present, viewport, area, switchMode, openHelp, overrides, paused]);
 }

@@ -6,7 +6,7 @@ import type { Box } from '@fluxion/geometry';
 import { type RenderRegistries, screenArea, screensInOrder, useValue } from '@fluxion/render';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
-import { type ReactNode, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { registerBuiltinTools } from './builtin-tools.js';
 import { fitBox } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
@@ -14,6 +14,8 @@ import { CHROME_CSS } from './chrome-css.js';
 import { useEditorKeys } from './editor-keys.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
 import { ImagePicker } from './image-picker.js';
+import { KeymapDialog } from './keymap-dialog.js';
+import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
@@ -110,6 +112,19 @@ function useLayout(settings: SettingsStore): readonly [EditorLayout, (layout: Ed
   return [layout, setLayout];
 }
 
+/** The user's rebindings, read from `settings` once and written back on every change (FR-EDT-012). */
+function useKeyOverrides(settings: SettingsStore): readonly [KeyOverrides, (overrides: KeyOverrides) => void] {
+  const [overrides, setOverrides] = useState(() => readOverrides(settings.get(KEYMAP_KEY)));
+  const set = useCallback(
+    (next: KeyOverrides) => {
+      settings.set(KEYMAP_KEY, next);
+      setOverrides(next);
+    },
+    [settings],
+  );
+  return [overrides, set];
+}
+
 const SPLITTERS: { readonly [P in PanelId]: string } = {
   left: 'Resize the left panel',
   right: 'Resize the inspector',
@@ -146,7 +161,10 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
   const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
   const [box, setBox] = useState({ w: 0, h: 0 });
-  useEditorKeys({ store, session, tools, present, viewport: box, area, switchMode });
+  const [overrides, setOverrides] = useKeyOverrides(settings);
+  const [help, setHelp] = useState(false);
+  const openHelp = useCallback(() => setHelp(true), []);
+  useEditorKeys({ store, session, tools, present, viewport: box, area, switchMode, openHelp, overrides, paused: help });
   // a camera never moved (still the default) is fitted to the screen once the canvas has a size
   useEffect(() => {
     if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
@@ -183,6 +201,9 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={switchMode}>
           Present
         </button>
+        <button type="button" className="fx-chrome-button" aria-keyshortcuts="?" title="Keyboard shortcuts (?)" onClick={openHelp}>
+          Keyboard shortcuts
+        </button>
       </Toolbar>
       <div className="fx-chrome-body">
         {panel('left', <LeftTabs />)}
@@ -196,6 +217,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         {splitter('right')}
         {panel('right', <Inspector session={session} />)}
       </div>
+      {help ? <KeymapDialog tools={tools.list()} overrides={overrides} onOverrides={setOverrides} onClose={() => setHelp(false)} /> : null}
     </div>
   );
 }

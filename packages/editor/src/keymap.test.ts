@@ -4,6 +4,7 @@ import {
   chordOf,
   DEFAULT_KEYMAP,
   EDIT_FLAGS,
+  isModifierKey,
   type KeyBinding,
   type KeyPress,
   keymapConflicts,
@@ -121,11 +122,30 @@ describe('keymap (FR-EDT-012)', () => {
     expect(resolveKey(twice, press('q'), EDIT_FLAGS)).toBeUndefined();
   });
 
+  it('FR-EDT-012: a tool letter typed with shift (caps lock) still switches; no other binding falls back, and not with mod or alt', () => {
+    const keymap: KeyBinding[] = [
+      { key: 'h', command: 'tool.use', args: { id: 'hand' } },
+      { key: 'x', command: 'selection.all' },
+      { key: 'mod+h', command: 'history.undo' },
+    ];
+    const at = (k: KeyPress) => resolveKey(keymap, k, EDIT_FLAGS)?.command;
+    expect([
+      at(press('H', { shift: true })),
+      at(press('X', { shift: true })),
+      at(press('H', { shift: true, mod: true })),
+      at(press('H', { shift: true, alt: true })),
+      at(press('h', { mod: true })),
+      at(press('Q', { shift: true })),
+    ]).toEqual(['tool.use', undefined, undefined, undefined, 'history.undo', undefined]);
+  });
+
+  it('FR-EDT-012: a modifier pressed alone is no chord', () => {
+    expect(['Control', 'Shift', 'Alt', 'Meta', 'AltGraph'].map(isModifierKey)).toEqual([true, true, true, true, true]);
+    expect(['a', 'Escape', 'F5', 'Tab', 'Dead'].map(isModifierKey)).toEqual([false, false, false, false, false]);
+  });
+
   it('FR-EDT-012: a shortcut two tools claim is the first one`s; a tool without one binds nothing', () => {
     const tool = (id: string, shortcut?: string): Tool => ({ id, title: id, initial: 'a', states: {}, ...(shortcut === undefined ? {} : { shortcut }) });
-    expect(toolBindings([tool('one', 'K'), tool('two', 'k'), tool('three')])).toEqual([
-      { key: 'k', command: 'tool.use', args: { id: 'one' } },
-      { key: 'shift+k', command: 'tool.use', args: { id: 'one' } },
-    ]);
+    expect(toolBindings([tool('one', 'K'), tool('two', 'k'), tool('three')])).toEqual([{ key: 'k', command: 'tool.use', args: { id: 'one' } }]);
   });
 });

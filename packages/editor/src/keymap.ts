@@ -39,6 +39,19 @@ export type KeyPress = KeyInfo & {
 
 const MODIFIERS = ['mod', 'alt', 'shift'] as const;
 
+const MODIFIER_KEYS = new Set(['Control', 'Shift', 'Alt', 'Meta', 'AltGraph']);
+
+/**
+ * Whether `key` (`KeyboardEvent.key`) is a modifier pressed alone, which is no chord yet.
+ *
+ * @public
+ */
+export const isModifierKey = (key: string): boolean => MODIFIER_KEYS.has(key);
+
+/** Whether `key` is a single printable character that is no letter, digit or space. */
+// tzap disable next-line ConditionalExpression: a multi-character key name always has a letter, which the second test refuses
+const isSymbol = (key: string): boolean => key.length === 1 && !/[\p{L}\p{N}\s]/u.test(key);
+
 /** The key part of a chord: a digit key by its code, a space by name, else the key in lower case. */
 function base(k: KeyPress): string {
   // tzap disable next-line Regex,StringLiteral: KeyboardEvent.code names are fixed; none but Digit0-9 holds Digit<n>
@@ -53,7 +66,10 @@ function base(k: KeyPress): string {
  * @public
  */
 export function chordOf(k: KeyPress): string {
-  const held = MODIFIERS.filter((m) => k[m]);
+  // shift typed a symbol (`?`, `+`): the symbol is the key, whichever keyboard layout needs shift for it
+  // tzap disable next-line Regex,StringLiteral: KeyboardEvent.code names are fixed; none but Digit0-9 holds Digit<n>
+  const typed = isSymbol(k.key) && !/^Digit\d$/.test(k.code ?? '');
+  const held = MODIFIERS.filter((m) => k[m] && !(m === 'shift' && typed));
   return [...held, base(k)].join('+');
 }
 
@@ -99,15 +115,22 @@ export function whenHolds(when: string | undefined, flags: ReadonlySet<string>):
   });
 }
 
+/** The latest of `bindings` for `chord` that applies where `flags` hold. */
+const bindingFor = (bindings: readonly KeyBinding[], chord: string, flags: ReadonlySet<string>) =>
+  bindings.findLast((b) => normalizeChord(b.key) === chord && whenHolds(b.when, flags));
+
 /**
  * The binding the key press `k` resolves to among `bindings` where `flags` hold; a later binding wins
- * over an earlier one for the same chord (user overrides come last).
+ * over an earlier one for the same chord (user overrides come last). A tool's letter typed with shift
+ * (caps lock) still switches to it, as in M6, when no binding has that chord.
  *
  * @public
  */
 export function resolveKey(bindings: readonly KeyBinding[], k: KeyPress, flags: ReadonlySet<string>): KeyBinding | undefined {
-  const chord = chordOf(k);
-  return bindings.findLast((b) => normalizeChord(b.key) === chord && whenHolds(b.when, flags));
+  const exact = bindingFor(bindings, chordOf(k), flags);
+  if (exact !== undefined || !k.shift || k.mod || k.alt) return exact;
+  const plain = bindingFor(bindings, chordOf({ ...k, shift: false }), flags);
+  return plain?.command === 'tool.use' ? plain : undefined;
 }
 
 /** The nudge bindings: each arrow 1 px, with shift 10 px. */
@@ -135,7 +158,6 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   { key: 'mod+shift+y', command: 'history.redo', when: 'edit' },
   { key: 'mod+=', command: 'camera.zoomIn', when: 'edit' },
   { key: 'mod++', command: 'camera.zoomIn', when: 'edit' },
-  { key: 'mod+shift++', command: 'camera.zoomIn', when: 'edit' },
   { key: 'mod+-', command: 'camera.zoomOut', when: 'edit' },
   { key: 'mod+0', command: 'camera.zoom100', when: 'edit' },
   { key: 'mod+shift+0', command: 'camera.zoom100', when: 'edit' },
@@ -148,15 +170,16 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   { key: 'mod+shift+a', command: 'selection.all', when: 'edit' },
   { key: 'delete', command: 'selection.delete', when: 'edit' },
   { key: 'backspace', command: 'selection.delete', when: 'edit' },
+  { key: '?', command: 'help.keys', when: 'edit' },
   { key: 'f5', command: 'mode.toggle' },
   { key: 'shift+f5', command: 'mode.toggle' },
   { key: 'escape', command: 'mode.toggle', when: 'present' },
 ];
 
 /**
- * A `tool.use` binding for each tool's shortcut, with and without shift (caps and shift both switch,
- * as in M6); a shortcut two tools claim is the first's, in the order given. The command itself refuses
- * a tool of the other mode.
+ * A `tool.use` binding for each tool's shortcut (typed with shift it switches too, see
+ * {@link resolveKey}); a shortcut two tools claim is the first's, in the order given. The command
+ * itself refuses a tool of the other mode.
  *
  * @public
  */
@@ -166,10 +189,7 @@ export function toolBindings(tools: readonly Tool[]): readonly KeyBinding[] {
     const key = t.shortcut?.toLowerCase();
     if (key === undefined || claimed.has(key)) return [];
     claimed.add(key);
-    return [
-      { key, command: 'tool.use', args: { id: t.id } },
-      { key: `shift+${key}`, command: 'tool.use', args: { id: t.id } },
-    ];
+    return [{ key, command: 'tool.use', args: { id: t.id } }];
   });
 }
 

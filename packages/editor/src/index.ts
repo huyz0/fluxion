@@ -51,6 +51,7 @@ export {
   chordOf,
   DEFAULT_KEYMAP,
   EDIT_FLAGS,
+  isModifierKey,
   type KeyBinding,
   type KeyPress,
   keymapConflicts,
@@ -60,6 +61,19 @@ export {
   toolBindings,
   whenHolds,
 } from './keymap.js';
+export {
+  applyOverrides,
+  assignKey,
+  bindingId,
+  formatChord,
+  groupTitle,
+  KEYMAP_KEY,
+  type KeyGroup,
+  type KeyOverrides,
+  keyGroups,
+  readOverrides,
+  resetKey,
+} from './keymap-overrides.js';
 export { LASER_TRAIL, laserTool } from './laser-tool.js';
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';

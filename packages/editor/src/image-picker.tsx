@@ -5,8 +5,9 @@ import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef } from 'react';
 import { createElement, type ElementMaker, imageAssets, imageMaker, shapeMaker } from './create-tool.js';
+import { buttonsOf, dialogKey } from './dialog-keys.js';
 import type { Execute } from './pointer.js';
 import type { Session } from './session.js';
 
@@ -29,29 +30,6 @@ export function ImagePicker(props: ImagePickerProps): ReactNode {
   const box = useValue(props.session.imagePick.get);
   // mounted only while a pick is pending: closed, it reads nothing, so edits never re-render it
   return box === undefined ? null : <Picker {...props} box={box} />;
-}
-
-/** The buttons of `dialog`, in order. */
-const buttonsOf = (dialog: HTMLElement) => [...dialog.querySelectorAll('button')];
-
-/**
- * Keys in the dialog stay in it (the canvas's shortcuts and undo do not act behind it): Esc closes it,
- * and Tab cycles through its buttons.
- */
-function dialogKey(e: KeyboardEvent<HTMLElement>, close: () => void): void {
-  e.stopPropagation();
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    close();
-    return;
-  }
-  if (e.key !== 'Tab') return;
-  const buttons = buttonsOf(e.currentTarget);
-  const [first, last] = [buttons[0], buttons.at(-1)];
-  const edge = e.shiftKey ? first : last;
-  if (document.activeElement !== edge) return;
-  e.preventDefault();
-  (e.shiftKey ? last : first)?.focus();
 }
 
 /** The open picker for the pending `box`. */
