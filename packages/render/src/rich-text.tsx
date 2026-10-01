@@ -3,14 +3,9 @@
 // (FR-EDT-010). The rules for what a mark may draw are rich-marks.ts's, and for a block rich-blocks.ts's.
 import { MAX_RICH_TEXT_DEPTH, type RichTextDoc, type RichTextNode } from '@fluxion/schema';
 import { createElement, Fragment, type ReactNode } from 'react';
+import { fieldText, inlineNodes } from './label.js';
 import { planBlock } from './rich-blocks.js';
 import { type MarkPlan, planMarks } from './rich-marks.js';
-
-/** The inline nodes under `node` in reading order: text, line breaks and fields (any other node is flattened to those). */
-function inlines(node: RichTextNode): readonly RichTextNode[] {
-  if (node.type === 'text' || node.type === 'hardBreak' || node.type === 'field') return [node];
-  return (node.content ?? []).flatMap(inlines);
-}
 
 /** `children` wrapped in the element `p` draws. */
 function wrap(p: MarkPlan, children: ReactNode): ReactNode {
@@ -38,7 +33,7 @@ function wrap(p: MarkPlan, children: ReactNode): ReactNode {
 /** One inline node: its text inside its marks, a line break, or a field's `{{name}}`. */
 function inline(node: RichTextNode, key: number): ReactNode {
   if (node.type === 'hardBreak') return <br key={key} />;
-  const text = node.type === 'field' ? `{{${String((node.attrs ?? {})['name'])}}}` : (node.text ?? '');
+  const text = node.type === 'field' ? fieldText(node) : (node.text ?? '');
   const plans = planMarks(node.marks);
   // innermost first: the last plan wraps the text, each earlier one wraps that
   const drawn = plans.reduceRight<ReactNode>((inner, p) => wrap(p, inner), text);
@@ -46,7 +41,7 @@ function inline(node: RichTextNode, key: number): ReactNode {
 }
 
 /** The inline nodes of `node` drawn. */
-const runs = (node: RichTextNode) => inlines(node).map(inline);
+const runs = (node: RichTextNode) => inlineNodes(node).map(inline);
 
 /**
  * One block: its element, with the blocks of a list or list item inside it. Nesting deeper than the

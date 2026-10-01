@@ -166,7 +166,7 @@ for bindings (no `eval`).
 |---|---|---|---|---|
 | `Clock` | now(), frame scheduling | `performance.now`, rAF | `performance.now`, setImmediate | `VirtualClock` |
 | `Random` | IDs, seeded algorithms | `crypto.getRandomValues` / seeded PRNG | same | seeded PRNG |
-| `TextMeasurer` | text box metrics | canvas measureText + font loading | fontkit | fixed-metrics fake |
+| `TextMeasurer` | text box metrics | recorded metrics (ADR-0148); canvas measureText for other fonts | recorded metrics | fixed-metrics fake |
 | `FileIO` | read/write bytes | FS Access API / download / OPFS | `node:fs` | in-memory |
 | `Hasher` | sha256 | SubtleCrypto | `node:crypto` | same |
 | `Logger` | structured logs | console w/ namespaces | pino-like stdout | capture |

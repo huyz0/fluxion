@@ -86,6 +86,10 @@ describe('rich-text blocks in static HTML (FR-TXT-001)', () => {
     expect(html).toContain('<ol><li><p>first</p></li></ol>');
   });
 
+  it('FR-TXT-001: a text node with no text draws nothing, and the runs around it still draw', () => {
+    expect(drawn([{ type: 'paragraph', content: [run('a'), { type: 'text' }, run('b', [{ type: 'bold' }])] }])).toContain('<p>a<strong>b</strong></p>');
+  });
+
   it('NFR-SEC-001: an alignment, spacing or level that is not valid is left out; an unknown block or hostile depth is drawn as text', () => {
     let deep: RichTextNode = { type: 'paragraph', content: [run('bottom')] };
     for (let i = 0; i < 100; i++) deep = { type: 'bulletList', content: [{ type: 'listItem', content: [deep] }] };
@@ -105,6 +109,10 @@ describe('rich-text blocks in static HTML (FR-TXT-001)', () => {
     expect(html).toContain('<ol><li><p>zero</p></li></ol>');
     expect(html).toContain('<ol><li><p>frac</p></li></ol>');
     // past the depth limit (a list and its item are two levels, 64 in all) the rest is a paragraph of its text
+    // nesting far past the limit (a store holds what JSON can) is drawn as text too
+    let hostile: RichTextNode = { type: 'paragraph', content: [run('far down')] };
+    for (let i = 0; i < 500; i++) hostile = { type: 'bulletList', content: [{ type: 'listItem', content: [hostile] }] };
+    expect(drawn([hostile])).toContain('far down');
     const alone = drawn([deep]);
     expect([alone.match(/<ul>/g)?.length, alone.match(/<li>/g)?.length]).toEqual([32, 32]);
     expect(html).toContain('<p>bottom</p>');

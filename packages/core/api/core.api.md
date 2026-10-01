@@ -129,6 +129,9 @@ export function createCore(file: DocumentFile, options?: Omit<StoreOptions, "hoo
 export function createCoreRegistries(): CoreRegistries;
 
 // @public
+export function createMetricsMeasurer(faces: readonly FaceMetrics[], fallback: TextMeasurer): TextMeasurer;
+
+// @public
 export function createRegistry<K extends string, V>(name: string): Registry<K, V>;
 
 // @public
@@ -225,6 +228,24 @@ export type ExprWhere = {
 };
 
 // @public
+export type FaceMetrics = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly unitsPerEm: number;
+    readonly advances: {
+        readonly [character: string]: number;
+    };
+    readonly defaultAdvance: number;
+    readonly pairs: {
+        readonly [pair: string]: number;
+    };
+    readonly triples: {
+        readonly [triple: string]: number;
+    };
+};
+
+// @public
 export interface FileIO {
     read(path: string): Promise<Result<Uint8Array, CoreError>>;
     write(path: string, bytes: Uint8Array): Promise<Result<void, CoreError>>;
@@ -252,6 +273,11 @@ export type FittedText = WrappedText & {
 
 // @public
 export function fitText(input: FitInput, measurer: TextMeasurer): FittedText;
+
+// @public
+export type FontMetricsFile = {
+    readonly faces: readonly FaceMetrics[];
+};
 
 // @public
 export type FontSpec = {
@@ -394,6 +420,9 @@ export type PutChange = {
 };
 
 export { Random }
+
+// @public
+export function readFontMetrics(json: unknown): FontMetricsFile;
 
 // @public
 export type ReadSignal<T> = () => T;

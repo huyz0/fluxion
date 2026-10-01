@@ -152,7 +152,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-010 | S | R7 | M29 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-001 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/builtins.rich-text.test.ts` +5 |
-| FR-TXT-002 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
+| FR-TXT-002 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/core/src/text/metrics.test.ts` +3 |
 | FR-TXT-003 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-004 | S | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-005 | S | R4 | M23 | [14-theme-text-media.md](14-theme-text-media.md) | — |
@@ -323,7 +323,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PORT-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs`, `tests/harness/ci-workflow.test.mjs` |
 | NFR-PORT-006 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/parse-robust.test.ts` +2 |
+| NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/render/src/label.test.ts` +3 |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +10 |
