@@ -7,6 +7,8 @@ import type { RichTextNode } from '@fluxion/schema';
 
 /**
  * One element a block draws.
+ *
+ * @public
  */
 export type BlockPlan = {
   /** The tag. */
@@ -63,6 +65,8 @@ const styled = (plan: BlockPlan, style: BlockPlan['style']): BlockPlan => (style
 /**
  * What the block `node` draws as, or undefined for a node that is no block of this version (it draws
  * as a paragraph of its text).
+ *
+ * @public
  */
 export function planBlock(node: RichTextNode): BlockPlan | undefined {
   const attrs = node.attrs ?? {};

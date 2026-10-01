@@ -19,16 +19,29 @@ import { Rect } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { ResolvedPaint } from '@fluxion/theme';
 import { RichTextDoc } from '@fluxion/schema';
+import { RichTextMark } from '@fluxion/schema';
+import { RichTextNode } from '@fluxion/schema';
 import { Router } from '@fluxion/routing';
 import { ScreenRecord } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
+import { ShapeElement } from '@fluxion/schema';
 import { Store } from '@fluxion/core';
 import { StyledBlock } from '@fluxion/core';
+import { TextElement } from '@fluxion/schema';
 import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 
 // @public
 export type AssetUrls = (assetId: RecordId) => string | undefined;
+
+// @public
+export type BlockPlan = {
+    readonly tag: "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "ul" | "ol" | "li";
+    readonly start?: number;
+    readonly style?: {
+        readonly [property: string]: string;
+    };
+};
 
 // @public
 export const BUILTIN_MARKERS: readonly MarkerDef[];
@@ -129,7 +142,37 @@ export function FrameView(props: ElementViewProps): ReactNode;
 export function GroupView(props: ElementViewProps): ReactNode;
 
 // @public
+export function grownHeight(input: {
+    readonly element: ShapeElement;
+    readonly text: ShapeElement["text"];
+    readonly registries: {
+        readonly shapeDefs: {
+            get(id: string): ShapeDef | undefined;
+        };
+    };
+    readonly theme: Theme;
+    readonly measurer?: TextMeasurer | undefined;
+}): number | undefined;
+
+// @public
 export function ImageView(props: ElementViewProps): ReactNode;
+
+// @public
+export function labelBox(element: ShapeElement | TextElement, registries: {
+    readonly shapeDefs: {
+        get(id: string): ShapeDef | undefined;
+    };
+}, theme: Theme): CSSProperties | undefined;
+
+// @public
+export type MarkPlan = {
+    readonly tag: "a" | "strong" | "em" | "u" | "s" | "code" | "mark" | "span";
+    readonly href?: string;
+    readonly title?: string;
+    readonly style?: {
+        readonly [property: string]: string;
+    };
+};
 
 // @public
 export type ModePolicy = {
@@ -156,6 +199,12 @@ export function PlaceholderView(props: ElementViewProps): ReactNode;
 
 // @public
 export function plainParagraphs(doc: RichTextDoc | undefined): string[];
+
+// @public
+export function planBlock(node: RichTextNode): BlockPlan | undefined;
+
+// @public
+export function planMarks(marks: readonly RichTextMark[] | undefined): readonly MarkPlan[];
 
 // @public
 export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): void;

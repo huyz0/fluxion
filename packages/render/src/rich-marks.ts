@@ -8,6 +8,8 @@ import { cssVarName, tokenPath } from '@fluxion/theme';
 
 /**
  * One element a mark draws: its tag and, for a link, its target, and for the styled ones the CSS.
+ *
+ * @public
  */
 export type MarkPlan = {
   /** The tag. */
@@ -97,6 +99,8 @@ const plan = (mark: RichTextMark): MarkPlan | undefined => (Object.hasOwn(PLANS,
  * The elements to nest around a text node with `marks`, outermost first: each known mark once (the
  * first of its type), in the fixed order; an unknown mark, or one whose value is not safe, is left out
  * and its text stays plain (a `javascript:` link is plain text).
+ *
+ * @public
  */
 export function planMarks(marks: readonly RichTextMark[] | undefined): readonly MarkPlan[] {
   const first = new Map<string, RichTextMark>();

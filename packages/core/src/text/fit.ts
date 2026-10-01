@@ -38,6 +38,16 @@ export function shrinksText(fit: TextFit | undefined): boolean {
 }
 
 /**
+ * Whether `fit` grows the shape's height to its text (applied by the command that edits the text, see
+ * {@link fitShapeText}).
+ *
+ * @public
+ */
+export function growsText(fit: TextFit | undefined): boolean {
+  return fit?.mode === 'grow';
+}
+
+/**
  * Text laid out in a region.
  *
  * @public

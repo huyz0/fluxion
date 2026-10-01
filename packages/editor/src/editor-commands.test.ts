@@ -13,7 +13,7 @@ const press = (key: string, o: Partial<KeyPress> = {}): KeyPress => ({ key, shif
 const area = { x: 0, y: 0, w: 1600, h: 900 };
 
 /** The built-in tools over a context whose writes are logged, and a key dispatcher over them. */
-function setup(ctxOf: (tools: ReturnType<typeof createToolDispatcher>) => Partial<EditorCommandCtx> = () => ({})) {
+function setup(ctxOf: (tools: ReturnType<typeof createToolDispatcher>) => Partial<EditorCommandCtx> = () => ({}), doc = documentBuilder({ seed: 1 }).build()) {
   const session = createSession('doc');
   const writes: [string, unknown][] = [];
   const ctx: ToolCtx = {
@@ -22,7 +22,7 @@ function setup(ctxOf: (tools: ReturnType<typeof createToolDispatcher>) => Partia
     elementsIn: () => [],
     screen: undefined,
     allElements: () => ['one', 'two'] as RecordId[],
-    view: createCore(documentBuilder({ seed: 1 }).build()).store,
+    view: createCore(doc).store,
     newId: () => 'new' as RecordId,
     execute: (id, args) => {
       writes.push([id, args]);
@@ -176,5 +176,23 @@ describe('editor commands (FR-EDT-012, FR-EDT-011)', () => {
       commands.get('selection.nudge')?.run(ctx, undefined),
       commands.get('tool.use')?.run(ctx, { id: 'no-such-tool' }),
     ]).toEqual([false, false, false, false, false]);
+  });
+  it('FR-TXT-003: Enter and F2 open the one selected element with text, in the select tool`s idle state; Enter on nothing is not taken', () => {
+    const b = documentBuilder({ seed: 9 });
+    const screen = b.screen();
+    const text = b.text(screen, 'hi');
+    const { session, tools, key } = setup(() => ({}), b.build());
+    expect(key(press('enter'))).toBe(false);
+    session.selection.set([text]);
+    expect(key(press('enter'))).toBe(true);
+    expect(session.editing.get()).toBe(text);
+    session.editing.set(undefined);
+    expect(key(press('f2'))).toBe(true);
+    expect(session.editing.get()).toBe(text);
+    // a tool other than select: the key is not the selection's
+    session.editing.set(undefined);
+    tools.use('shape');
+    expect(key(press('enter'))).toBe(false);
+    expect(session.editing.get()).toBeUndefined();
   });
 });

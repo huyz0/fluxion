@@ -9,16 +9,18 @@ import type { Box } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
 import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
-import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
+import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
+import { type Camera, fitBox, panBy, screenToPage, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { wheelCamera, ZOOM_STEP } from './canvas-input.js';
 import { isEditable } from './editor-keys.js';
+import { InlineTextEditor } from './inline-text-editor.js';
 import { Overlay, useOverlayShown } from './overlay.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
-import type { PointerInfo } from './pointer.js';
+import type { Execute, PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
-import type { ToolDispatcher } from './tools.js';
+import { hasText } from './text-edit.js';
+import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
 import { CONTEXT_MENU_EVENT } from './touch.js';
 import { touchConsumer } from './touch-input.js';
 
@@ -121,6 +123,8 @@ export type CanvasProps = {
   readonly session: Session;
   /** The tools that take the pointer and keys (none: the canvas only pans and zooms). */
   readonly tools?: ToolDispatcher | undefined;
+  /** Runs a command (the inline text editor writes through it; without, text cannot be edited in place). */
+  readonly execute?: Execute | undefined;
   /** Told the canvas size whenever it changes. */
   readonly onBox: (box: Viewport) => void;
 };
@@ -156,9 +160,19 @@ function canvasConsumer(session: Session, space: RefObject<boolean>, drag: RefOb
   };
 }
 
+/** A double-click on an element with text opens it for editing in place (the select tool, between gestures). */
+function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatcher | undefined): void {
+  if (tools === undefined || tools.current !== `${SELECT_TOOL}.idle`) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  const hit = tools.ctx.hitTest(screenToPage(session.camera.get(), { x: e.clientX - r.left, y: e.clientY - r.top }));
+  if (hit === undefined || !hasText(tools.ctx.view, hit)) return;
+  session.selection.set([hit]);
+  session.editing.set(hit);
+}
+
 /** The canvas: the screen at the session camera, panned and zoomed. */
 export function Canvas(props: CanvasProps): ReactNode {
-  const { store, registries, screenId, area, session, tools, onBox } = props;
+  const { store, registries, screenId, area, session, tools, execute, onBox } = props;
   const ref = useRef<HTMLElement>(null);
   const box = useElementBox(ref);
   const camera = useValue(session.camera.get);
@@ -196,11 +210,13 @@ export function Canvas(props: CanvasProps): ReactNode {
       onPointerDown={(e) => e.currentTarget.focus({ preventScroll: true })}
       // nothing on the canvas is under a pointer that has left it (M6.11 review F1)
       onPointerLeave={() => session.hover.set(undefined)}
+      onDoubleClick={(e) => editAt(e, session, tools)}
     >
       {screenId === undefined || box.w === 0 ? null : (
         <>
           <ScreenView store={store} screenId={screenId} mode="edit" view={{ kind: 'camera', box, camera }} registries={registries} />
           {overlay ? <Overlay store={store} session={session} box={box} /> : null}
+          {execute === undefined ? null : <InlineTextEditor store={store} registries={registries} session={session} execute={execute} />}
         </>
       )}
     </main>

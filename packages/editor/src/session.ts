@@ -36,6 +36,8 @@ export type Session = {
   readonly laser: WritableSignal<readonly Vec2[]>;
   /** The box the image tool placed, waiting for an image to be picked, if any. */
   readonly imagePick: WritableSignal<Box | undefined>;
+  /** The element whose text is being edited in place, if any. */
+  readonly editing: WritableSignal<RecordId | undefined>;
 };
 
 /**
@@ -65,6 +67,7 @@ export function createSession(docId: string): Session {
     mode: writable<'edit' | 'present'>('edit'),
     laser: writable<readonly Vec2[]>([]),
     imagePick: writable<Box | undefined>(undefined),
+    editing: writable<RecordId | undefined>(undefined),
   };
 }
 

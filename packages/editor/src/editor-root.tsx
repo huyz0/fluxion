@@ -247,7 +247,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         {panel('left', <LeftTabs screens={{ store, session, shown: screenId }} />)}
         {splitter('left')}
         <div className="fx-chrome-center">
-          <Canvas store={store} registries={registries} screenId={screenId} area={area} session={session} tools={tools} onBox={setBox} />
+          <Canvas store={store} registries={registries} screenId={screenId} area={area} session={session} tools={tools} execute={execute} onBox={setBox} />
           {splitter('bottom')}
           {panel('bottom', <Timeline />)}
         </div>

@@ -168,6 +168,8 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   ...nudges,
   { key: 'mod+a', command: 'selection.all', when: 'edit' },
   { key: 'mod+shift+a', command: 'selection.all', when: 'edit' },
+  { key: 'enter', command: 'text.edit', when: 'edit' },
+  { key: 'f2', command: 'text.edit', when: 'edit' },
   { key: 'delete', command: 'selection.delete', when: 'edit' },
   { key: 'backspace', command: 'selection.delete', when: 'edit' },
   { key: '?', command: 'help.keys', when: 'edit' },

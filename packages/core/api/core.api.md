@@ -290,6 +290,9 @@ export type FontSpec = {
 };
 
 // @public
+export function growsText(fit: TextFit | undefined): boolean;
+
+// @public
 export type HandleDef = {
     readonly param: string;
     readonly x: string;

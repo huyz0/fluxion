@@ -477,6 +477,7 @@ export type Session = {
     readonly mode: WritableSignal<"edit" | "present">;
     readonly laser: WritableSignal<readonly Vec2[]>;
     readonly imagePick: WritableSignal<Box | undefined>;
+    readonly editing: WritableSignal<RecordId | undefined>;
 };
 
 // @public

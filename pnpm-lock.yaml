@@ -87,6 +87,24 @@ catalogs:
     playwright:
       specifier: 1.63.0
       version: 1.63.0
+    prosemirror-commands:
+      specifier: 1.7.2
+      version: 1.7.2
+    prosemirror-history:
+      specifier: 1.5.1
+      version: 1.5.1
+    prosemirror-keymap:
+      specifier: 1.2.3
+      version: 1.2.3
+    prosemirror-model:
+      specifier: 1.25.12
+      version: 1.25.12
+    prosemirror-state:
+      specifier: 1.4.4
+      version: 1.4.4
+    prosemirror-view:
+      specifier: 1.42.6
+      version: 1.42.6
     publint:
       specifier: 0.3.24
       version: 0.3.24
@@ -343,6 +361,24 @@ importers:
       '@fluxion/theme':
         specifier: workspace:*
         version: link:../theme
+      prosemirror-commands:
+        specifier: 'catalog:'
+        version: 1.7.2
+      prosemirror-history:
+        specifier: 'catalog:'
+        version: 1.5.1
+      prosemirror-keymap:
+        specifier: 'catalog:'
+        version: 1.2.3
+      prosemirror-model:
+        specifier: 'catalog:'
+        version: 1.25.12
+      prosemirror-state:
+        specifier: 'catalog:'
+        version: 1.4.4
+      prosemirror-view:
+        specifier: 'catalog:'
+        version: 1.42.6
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -4255,6 +4291,9 @@ packages:
     resolution: {integrity: sha512-YgBpdJHPyQ2UE5x+hlSXcnejzAvD0b22U2OuAP+8OnlJT+PjWPxtgmGqKKc+RgTM63U9gN0YzrYc71R2WT/hTA==}
     engines: {node: '>=18'}
 
+  orderedmap@2.1.1:
+    resolution: {integrity: sha512-TvAWxi0nDe1j/rtMcWcIj94+Ffe6n7zhow33h40SKxmsmozs6dz/e+EajymfoFcHd7sxNn8yHM8839uixMOV6g==}
+
   oxc-minify@0.151.0:
     resolution: {integrity: sha512-fYdJw3+WYswBWedCl3G0ReJPlHIR1msz3uf5cGAgpHOlQOxfrVu5nOp2gLnccA91Vs7Yw2nH00lj8pc0rjZvYg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -4392,6 +4431,27 @@ packages:
 
   property-information@7.2.0:
     resolution: {integrity: sha512-IAtzIB6sUiWaJYrX9smp3V46pBGbBeLFRGdh25kg1334VcBlD8HzhPeNIWQH9zhGmo2itIe25EHt9dQP7G5hmg==}
+
+  prosemirror-commands@1.7.2:
+    resolution: {integrity: sha512-q6Q6szxqdu9Xd6EcdKsqXghu5nQdZTpB4Q9yd04WRc7/jt763e/rT60Owh0L1GYY+T46o5rD+9lEN36dZS43tw==}
+
+  prosemirror-history@1.5.1:
+    resolution: {integrity: sha512-onlwnqKvgtFg6srZOmDOAhlAy1FIHQpOExORybX0S+DvJepE5tPALrB9iGet/2sqqqrelSnB10OoiOJqAvu2DA==}
+
+  prosemirror-keymap@1.2.3:
+    resolution: {integrity: sha512-4HucRlpiLd1IPQQXNqeo81BGtkY8Ai5smHhKW9jjPKRc2wQIxksg7Hl1tTI2IfT2B/LgX6bfYvXxEpJl7aKYKw==}
+
+  prosemirror-model@1.25.12:
+    resolution: {integrity: sha512-Ue2gTmXMa7EhpLNhC7J+h4+ykD8ha12K6rrZFFKKJHBForfIStw5gJ6Zrf1mqqAa9NmpmEB4wp9bKmA4eUVjWg==}
+
+  prosemirror-state@1.4.4:
+    resolution: {integrity: sha512-6jiYHH2CIGbCfnxdHbXZ12gySFY/fz/ulZE333G6bPqIZ4F+TXo9ifiR86nAHpWnfoNjOb3o5ESi7J8Uz1jXHw==}
+
+  prosemirror-transform@1.12.2:
+    resolution: {integrity: sha512-PE/aY0HEY4zczvmqrilgkUK/WautF0chvMqkmM/iN5/aPHvwrCWaQZjS6CIZp+K84YrvPFqrL+YArrfJX8xX7g==}
+
+  prosemirror-view@1.42.6:
+    resolution: {integrity: sha512-3g25f6hKV2bBxo3puH3EcYWmmVNSH0iWmNsMVT7sugDSpA025jgpOLarcDWr39SdzPjYMaiYtRdNtXialPSjEQ==}
 
   publint@0.3.24:
     resolution: {integrity: sha512-9zS56KrKBoqi5Qt8h92uMP8TTM9AYZSgnmCo4u2priMqkOZvQnTsziZ2p5LJ2ywbYkAjoCDp2jda9u4cgFefIw==}
@@ -4578,6 +4638,9 @@ packages:
     resolution: {integrity: sha512-qpSwIyz0jHQq5qXBTNxFmE6664rJ7O+4TvPFOiOaBSrz8IOHc1koKKSqTM2H6u1UG1+TveuC6vaDHKXFOvb1Kw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
+
+  rope-sequence@1.3.4:
+    resolution: {integrity: sha512-UT5EDe2cu2E/6O4igUr5PSFs23nvvukicWHx6GnOPlHAiiYbzNuCRQCuiUdHJQcqKalLKlrYJnjY0ySGsXNQXQ==}
 
   run-applescript@7.1.0:
     resolution: {integrity: sha512-DPe5pVFaAsinSaV6QjQ6gdiedWDcRCbUuiQfQa2wmWV7+xC9bGulGI8+TdRmoFkAPaBXk8CrAbnlY2ISniJ47Q==}
@@ -5181,6 +5244,9 @@ packages:
         optional: true
       jsdom:
         optional: true
+
+  w3c-keyname@2.2.8:
+    resolution: {integrity: sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==}
 
   walk-up-path@4.0.0:
     resolution: {integrity: sha512-3hu+tD8YzSLGuFYtPRb48vdhKMi0KQV5sn+uWr8+7dMEq/2G/dtLrdDinkLjqq5TIbIBjYJ4Ax/n3YiaW7QM8A==}
@@ -8970,6 +9036,8 @@ snapshots:
       is-inside-container: 1.0.0
       wsl-utils: 0.1.0
 
+  orderedmap@2.1.1: {}
+
   oxc-minify@0.151.0:
     optionalDependencies:
       '@oxc-minify/binding-android-arm-eabi': 0.151.0
@@ -9244,6 +9312,44 @@ snapshots:
       sisteransi: 1.0.5
 
   property-information@7.2.0: {}
+
+  prosemirror-commands@1.7.2:
+    dependencies:
+      prosemirror-model: 1.25.12
+      prosemirror-state: 1.4.4
+      prosemirror-transform: 1.12.2
+
+  prosemirror-history@1.5.1:
+    dependencies:
+      prosemirror-state: 1.4.4
+      prosemirror-transform: 1.12.2
+      prosemirror-view: 1.42.6
+      rope-sequence: 1.3.4
+
+  prosemirror-keymap@1.2.3:
+    dependencies:
+      prosemirror-state: 1.4.4
+      w3c-keyname: 2.2.8
+
+  prosemirror-model@1.25.12:
+    dependencies:
+      orderedmap: 2.1.1
+
+  prosemirror-state@1.4.4:
+    dependencies:
+      prosemirror-model: 1.25.12
+      prosemirror-transform: 1.12.2
+      prosemirror-view: 1.42.6
+
+  prosemirror-transform@1.12.2:
+    dependencies:
+      prosemirror-model: 1.25.12
+
+  prosemirror-view@1.42.6:
+    dependencies:
+      prosemirror-model: 1.25.12
+      prosemirror-state: 1.4.4
+      prosemirror-transform: 1.12.2
 
   publint@0.3.24:
     dependencies:
@@ -9526,6 +9632,8 @@ snapshots:
       '@rolldown/binding-openharmony-arm64': 1.2.11
       '@rolldown/binding-win32-arm64-msvc': 1.2.11
       '@rolldown/binding-win32-x64-msvc': 1.2.11
+
+  rope-sequence@1.3.4: {}
 
   run-applescript@7.1.0: {}
 
@@ -10081,6 +10189,8 @@ snapshots:
       '@vitest/ui': 5.0.2(vitest@5.0.2)
     transitivePeerDependencies:
       - msw
+
+  w3c-keyname@2.2.8: {}
 
   walk-up-path@4.0.0: {}
 

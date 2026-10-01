@@ -224,6 +224,20 @@ The lowest-distance candidate wins per axis, and Alt bypasses snapping.
   from packs and user overrides from local settings (FR-EDT-012). The `?` key opens the
   generated cheat sheet.
 
+### 3.4a Inline text editing (FR-TXT-003, ADR-0064)
+
+Double-click, Enter or F2 on the one selected element with text opens it in place (`session.editing`).
+Both kinds of element open in the same editor: a `shape`'s text (the text tool places a
+`basic:text-box`, which grows with its text) and a `kind: 'text'` element's, however it came (a paste,
+an import, a hand-written file — TextView draws it). The editor is a ProseMirror view (loaded in the
+editor bundle only; the player has none) laid over the element exactly where its label is drawn: the
+same box and style (`labelBox` in render), the content CSS and the camera and the element's turn, with
+the element's own label hidden. `pm-json.ts` maps ADR-0013's stored JSON to ProseMirror's and back so
+that load then save is the identity (a node or mark this version does not know travels whole). Esc, or
+focus leaving, commits: one `element.update` with the text and, for a `grow` shape, the height
+`grownHeight` says it needs — one transaction, so one undo step; an edit with no change writes
+nothing. Until then ProseMirror's own history undoes the typing; the document's history sees one step.
+
 ### 3.5 Clipboard (FR-EDT-007, ADR-0020)
 
 ```ts

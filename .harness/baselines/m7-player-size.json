@@ -1,0 +1,5 @@
+{
+  "note": "size-limit's 'player core' gzip bytes at the parent of the first M7.12 commit (after the rendering rows M7.8-M7.10 and M7.29); m7-complete's bundle leg allows +-1 kB across M7.12 (the rich-text library loads in the editor only, ADR-0064)",
+  "measuredAt": "b16a179",
+  "playerCoreGzip": 126685
+}

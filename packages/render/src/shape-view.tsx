@@ -3,9 +3,19 @@
 // path filling the wrapper's box, filled and stroked with the resolved style; its text is a centred
 // plain-text label. An unknown `defId`, or an outline that does not evaluate, renders the placeholder.
 
-import { evaluateOutline, fitShapeText, type ShapeDef, type StyledBlock, shrinksText, TEXT_FIT_DEFAULTS, type TextMeasurer, textRegion } from '@fluxion/core';
+import {
+  evaluateOutline,
+  fitShapeText,
+  growsText,
+  type ShapeDef,
+  type StyledBlock,
+  shrinksText,
+  TEXT_FIT_DEFAULTS,
+  type TextMeasurer,
+  textRegion,
+} from '@fluxion/core';
 import { roundCorners } from '@fluxion/geometry';
-import type { ShapeElement } from '@fluxion/schema';
+import type { ShapeElement, TextElement } from '@fluxion/schema';
 import { type ResolvedFont, type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
 import { type ImageSource, useImage } from './assets.js';
@@ -198,6 +208,77 @@ function Outline(props: {
   );
 }
 
+/** The style of a shape: the definition's defaults sit under the element's own (02 §2). */
+function shapeStyle(element: ShapeElement, def: ShapeDef | undefined, theme: Theme): ReturnType<typeof resolveStyle> {
+  const defaults = def?.defaultStyle;
+  const of = defaults === undefined ? 'shape' : { kind: 'shape', defaults, defaultsAt: ['shapeDefs', element.defId, 'defaultStyle'] };
+  return resolveStyle(element.style, of, theme, ['records', element.id, 'style']);
+}
+
+/**
+ * The height a `grow` shape needs for `text` (ADR-0018 item 4, FR-SHP-006), laid out as the view draws it;
+ * undefined when the shape does not grow, has no definition, no measurer is at hand (server rendering), or
+ * the text fits the height it has. The editor writes it in the transaction that changes the text.
+ *
+ * @public
+ */
+export function grownHeight(input: {
+  /** The shape. */
+  readonly element: ShapeElement;
+  /** The text to lay out in place of its own. */
+  readonly text: ShapeElement['text'];
+  /** Where its definition is looked up. */
+  readonly registries: { readonly shapeDefs: { get(id: string): ShapeDef | undefined } };
+  /** The theme its style resolves in. */
+  readonly theme: Theme;
+  /** The measurer (default: the page's). */
+  readonly measurer?: TextMeasurer | undefined;
+}): number | undefined {
+  const { element, text, theme } = input;
+  const def = input.registries.shapeDefs.get(element.defId);
+  const measurer = input.measurer ?? browserMeasurer();
+  if (!growsText(element.textFit) || def === undefined || measurer === undefined) return undefined;
+  const { style } = shapeStyle(element, def, theme);
+  const size = { w: element.transform.w, h: element.transform.h };
+  const font = concreteFont(style.font, theme);
+  const fitted = fitShapeText(
+    { def, size, params: element.params, paragraphs: plainParagraphs(text), blocks: styledBlocks(text, theme), font, fit: element.textFit },
+    measurer,
+  );
+  return fitted.ok && fitted.value.height > size.h ? fitted.value.height : undefined;
+}
+
+/**
+ * The CSS of the label an element's text is drawn in, at its styled size (a `shrink` shape is not shrunk): the
+ * region and padding of a shape's text, the whole box of a `text` element. The inline editor draws its text in
+ * a box of this style, so it is where the view puts it.
+ *
+ * @public
+ */
+export function labelBox(
+  element: ShapeElement | TextElement,
+  registries: { readonly shapeDefs: { get(id: string): ShapeDef | undefined } },
+  theme: Theme,
+): CSSProperties | undefined {
+  if (element.kind === 'text') {
+    const { style } = resolveStyle(element.style, 'text', theme, ['records', element.id, 'style']);
+    return labelStyle(style.font, style.opacity);
+  }
+  const def = registries.shapeDefs.get(element.defId);
+  if (def === undefined) return undefined;
+  const { style } = shapeStyle(element, def, theme);
+  const found = textRegion(def, { w: element.transform.w, h: element.transform.h }, element.params);
+  const region = found.ok ? found.value : { x: 0, y: 0, w: element.transform.w, h: element.transform.h };
+  return {
+    ...labelStyle(style.font, style.opacity),
+    left: region.x,
+    top: region.y,
+    width: region.w,
+    height: region.h,
+    padding: element.textFit?.padding ?? TEXT_FIT_DEFAULTS.padding,
+  };
+}
+
 /**
  * The view of `kind: 'shape'` elements.
  *
@@ -206,17 +287,11 @@ function Outline(props: {
 export function ShapeView(props: ElementViewProps): ReactNode {
   const { theme, registries, store } = props;
   const element = props.element as ShapeElement;
-  const { id } = element;
   // unique per mounted view: one record may be drawn twice on a page (a thumbnail beside the main view)
   const ids = useId().replace(/[^\w-]/g, '');
   const fillId = `fx-fill-${ids}`;
   const def = registries.shapeDefs.get(element.defId);
-  const { style } = useMemo(() => {
-    // the definition's defaults sit under the element's style (02 §2)
-    const defaults = def?.defaultStyle;
-    const of = defaults === undefined ? 'shape' : { kind: 'shape', defaults, defaultsAt: ['shapeDefs', element.defId, 'defaultStyle'] };
-    return resolveStyle(element.style, of, theme, ['records', id, 'style']);
-  }, [element.style, element.defId, def, theme, id]);
+  const { style } = useMemo(() => shapeStyle(element, def, theme), [element, def, theme]);
   const image = useImage(store, style.fill.type === 'image' ? style.fill.assetId : undefined);
   const measurer = useContext(MeasurerContext) ?? browserMeasurer();
   const fonts = useFontGeneration();

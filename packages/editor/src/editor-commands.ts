@@ -7,6 +7,7 @@ import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-tool.js';
+import { editSelectedText } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
 
 /**
@@ -187,6 +188,11 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
     },
   },
   { id: 'selection.delete', title: 'Delete the selection', run: (ctx) => selectIdle(ctx) && deleteSelection(ctx.tools.ctx) },
+  {
+    id: 'text.edit',
+    title: 'Edit the text',
+    run: (ctx) => selectIdle(ctx) && editSelectedText(ctx.tools.ctx.session, ctx.tools.ctx.view),
+  },
   {
     id: 'help.keys',
     title: 'Keyboard shortcuts',

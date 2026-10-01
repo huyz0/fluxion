@@ -1,11 +1,13 @@
 import { createCore } from '@fluxion/core';
-import type { DocumentFile, RecordId } from '@fluxion/schema';
+import type { DocumentFile, RecordId, ShapeElement, TextElement } from '@fluxion/schema';
 import { documentBuilder, type RectOptions } from '@fluxion/schema/testing';
+import { LIGHT_THEME } from '@fluxion/theme';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { ScreenView } from './screen-view.js';
+import { grownHeight, labelBox } from './shape-view.js';
 import { testRegistries } from './test-registries.js';
 
 /** The built-in views and the basic rectangle (render ships no shape definitions: ADR-0016). */
@@ -209,5 +211,55 @@ describe('shape view (FR-SHP-001)', () => {
       const worst = Math.max(...shape.flatMap((rgba, i) => rgba.slice(0, 3).map((c, k) => Math.abs(c - (background[i]?.[k] ?? -99)))));
       expect(worst).toBeLessThanOrEqual(2);
     }
+  });
+});
+
+describe('shape text editing support (FR-SHP-006, FR-TXT-003)', () => {
+  const lines = (n: number) => ({
+    type: 'doc',
+    content: Array.from({ length: n }, (_, i) => ({ type: 'paragraph', content: [{ type: 'text', text: `line ${i}` }] })),
+  });
+  const shape = (patch: Record<string, unknown>) =>
+    ({
+      type: 'element',
+      kind: 'shape',
+      id: 's',
+      screenId: 'x',
+      index: 'a0',
+      defId: 'basic:rect',
+      transform: { x: 0, y: 0, w: 200, h: 40 },
+      ...patch,
+    }) as unknown as ShapeElement;
+
+  it('FR-SHP-006: a grow shape needs the height its text lays out to, and only when that is more than it has', () => {
+    const grow = shape({ textFit: { mode: 'grow' } });
+    const tall = grownHeight({ element: grow, text: lines(10) as never, registries, theme: LIGHT_THEME });
+    expect(tall).toBeGreaterThan(150);
+    expect(grownHeight({ element: grow, text: lines(1) as never, registries, theme: LIGHT_THEME })).toBeUndefined();
+    // a shape that does not grow, or whose definition is unknown, is left as it is
+    expect(grownHeight({ element: shape({}), text: lines(10) as never, registries, theme: LIGHT_THEME })).toBeUndefined();
+    expect(grownHeight({ element: shape({ textFit: { mode: 'shrink' } }), text: lines(10) as never, registries, theme: LIGHT_THEME })).toBeUndefined();
+    expect(
+      grownHeight({ element: shape({ defId: 'nope:none', textFit: { mode: 'grow' } }), text: lines(10) as never, registries, theme: LIGHT_THEME }),
+    ).toBeUndefined();
+  });
+
+  it('FR-TXT-003: the label of a shape is its text region and padding, a text element`s the whole box', () => {
+    const box = labelBox(shape({ textFit: { padding: 12 } }), registries, LIGHT_THEME);
+    expect(box).toMatchObject({ left: 0, top: 0, width: 200, height: 40, padding: 12 });
+    expect(labelBox(shape({}), registries, LIGHT_THEME)?.padding).toBe(8);
+    expect(labelBox(shape({ defId: 'nope:none' }), registries, LIGHT_THEME)).toBeUndefined();
+    const text = {
+      type: 'element',
+      kind: 'text',
+      id: 't',
+      screenId: 'x',
+      index: 'a0',
+      transform: { x: 0, y: 0, w: 90, h: 30 },
+      text: lines(1),
+    } as unknown as TextElement;
+    const plain = labelBox(text, registries, LIGHT_THEME);
+    expect(plain).toBeDefined();
+    expect(plain).not.toHaveProperty('width');
   });
 });

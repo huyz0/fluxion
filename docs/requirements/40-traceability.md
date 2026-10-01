@@ -30,7 +30,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/ids.test.ts` |
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/migrate.test.ts`, `packages/schema/src/repair.test.ts` |
 | FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
-| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/render/src/elements.browser.test.tsx` +12 |
+| FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/pm-json.test.ts` +13 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -66,7 +66,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-003 | M | R1 | M5, M7 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/expr/expr.test.ts` +7 |
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/round.test.ts` +7 |
 | FR-SHP-005 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/hit.test.ts`, `packs/basic/src/hit.test.ts` |
-| FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/shape-text.test.ts` +6 |
+| FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/text.inline-edit.spec.ts` +8 |
 | FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-008 | M | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-009 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
@@ -153,7 +153,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-001 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/builtins.rich-text.test.ts` +5 |
 | FR-TXT-002 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/core/src/text/metrics.test.ts` +8 |
-| FR-TXT-003 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
+| FR-TXT-003 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/text.inline-edit.spec.ts` +6 |
 | FR-TXT-004 | S | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-005 | S | R4 | M23 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-006 | M | R8 | M32 | [14-theme-text-media.md](14-theme-text-media.md) | — |

@@ -64,6 +64,12 @@ catalog:
   "@vitejs/plugin-react": 6.1.1
   react: 19.3.0
   react-dom: 19.3.0
+  prosemirror-model: 1.25.12 # rich-text editing, editor only (ADR-0064), M7.12
+  prosemirror-state: 1.4.4 # rich-text editing, editor only (ADR-0064), M7.12
+  prosemirror-view: 1.42.6 # rich-text editing, editor only (ADR-0064), M7.12
+  prosemirror-commands: 1.7.2 # rich-text editing, editor only (ADR-0064), M7.12
+  prosemirror-keymap: 1.2.3 # rich-text editing, editor only (ADR-0064), M7.12
+  prosemirror-history: 1.5.1 # rich-text editing, editor only (ADR-0064), M7.12
   "@types/react": 19.3.0
   "@types/react-dom": 19.3.0
   zod: 4.6.5 # schema runtime (tech-stack.md "Schema"), MIT; bundled by the player through @fluxion/schema

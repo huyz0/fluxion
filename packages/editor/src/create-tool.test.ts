@@ -84,6 +84,7 @@ describe('creation tools (FR-EDT-003)', () => {
       ...common,
       kind: 'shape',
       defId: 'basic:text-box',
+      textFit: { mode: 'grow' },
       text: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Text' }] }] },
     });
     expect(frameMaker(place)).toEqual({ ...common, kind: 'frame' });

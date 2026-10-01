@@ -50,7 +50,8 @@ export const shapeMaker =
 
 /**
  * A text box reading "Text": the basic pack's `basic:text-box` shape (FR-SHP-002, text placed freely,
- * no fill or stroke), which shape text draws; `kind: 'text'` elements have no view yet.
+ * no fill or stroke), which shape text draws, and which grows as its text does (FR-SHP-006). `kind: 'text'`
+ * elements (pasted, imported, written by hand) are drawn by TextView and edited in the same inline editor.
  *
  * @public
  */
@@ -59,6 +60,7 @@ export const textMaker: ElementMaker = (at) =>
     ...placed(at),
     kind: 'shape',
     defId: 'basic:text-box',
+    textFit: { mode: 'grow' },
     text: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Text' }] }] },
   }) as AnyRecord;
 

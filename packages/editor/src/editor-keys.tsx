@@ -21,6 +21,9 @@ export function isEditable(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 }
 
+/** Enter on a focused button or link is its click, not an edit of the selection. */
+const clicks = (e: KeyboardEvent): boolean => e.key === 'Enter' && e.target instanceof HTMLElement && /^(BUTTON|A|SUMMARY)$/.test(e.target.tagName);
+
 /**
  * Input of {@link useEditorKeys}.
  *
@@ -96,6 +99,7 @@ export function useEditorKeys(input: EditorKeysInput): (command: string, args?: 
     const onKeyDown = (e: KeyboardEvent) => {
       // F5 is taken in a field too: it would reload the page, losing the document (M7.4 review F2)
       if (e.defaultPrevented || (isEditable(e.target) && e.key !== 'F5')) return;
+      if (clicks(e)) return;
       const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp, restoreView });
       const keymap = applyOverrides([...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list())], overrides ?? {});
       if (dispatchKey(pressOf(e), keymap, COMMANDS, ctx)) e.preventDefault();
