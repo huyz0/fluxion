@@ -4,14 +4,22 @@
 import type { RichTextDoc } from '@fluxion/schema';
 import { baseKeymap, toggleMark } from 'prosemirror-commands';
 import { history, redo, undo, undoDepth } from 'prosemirror-history';
+import { undoInputRule } from 'prosemirror-inputrules';
 import { keymap } from 'prosemirror-keymap';
 import { Node } from 'prosemirror-model';
+import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list';
 import { EditorState, Selection, TextSelection } from 'prosemirror-state';
 import { fromPmJson, type PmNode, toPmJson } from './pm-json.js';
+import { markdownRules } from './text-rules.js';
 import { TEXT_SCHEMA } from './text-schema.js';
 
-/** The editor's key bindings: the marks, the history, and a soft line break. */
+/** The editor's key bindings: the marks, the history, a soft line break, and the list items' keys. */
 const KEYS = keymap({
+  // the first Backspace after a shortcut turned into a heading, list or mark gives the typed characters back
+  Backspace: undoInputRule,
+  Enter: splitListItem(TEXT_SCHEMA.nodes['listItem'] as never),
+  Tab: sinkListItem(TEXT_SCHEMA.nodes['listItem'] as never),
+  'Shift-Tab': liftListItem(TEXT_SCHEMA.nodes['listItem'] as never),
   'Mod-b': toggleMark(TEXT_SCHEMA.marks['bold'] as never),
   'Mod-i': toggleMark(TEXT_SCHEMA.marks['italic'] as never),
   'Mod-u': toggleMark(TEXT_SCHEMA.marks['underline'] as never),
@@ -27,7 +35,7 @@ const KEYS = keymap({
 /** The editing state of `text` (an absent document is an empty paragraph), with all of it selected. */
 export function textState(text: RichTextDoc | undefined): EditorState {
   const doc = Node.fromJSON(TEXT_SCHEMA, toPmJson(text));
-  const state = EditorState.create({ doc, plugins: [history(), KEYS, keymap(baseKeymap)] });
+  const state = EditorState.create({ doc, plugins: [history(), markdownRules(), KEYS, keymap(baseKeymap)] });
   return state.apply(state.tr.setSelection(TextSelection.between(Selection.atStart(doc).$from, Selection.atEnd(doc).$to)));
 }
 

@@ -82,7 +82,7 @@ function Editing(props: InlineTextEditorProps & { readonly id: RecordId }): Reac
     };
     const view = new EditorView(parent, {
       state: textState(initial.text),
-      attributes: { class: 'fx-chrome-textroot' },
+      attributes: { class: 'fx-chrome-textroot', role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Text' },
       handleKeyDown: (v, e) => {
         if (e.key !== 'Escape') return false;
         close(v);

@@ -154,7 +154,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-TXT-001 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/builtins.rich-text.test.ts` +5 |
 | FR-TXT-002 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/core/src/text/metrics.test.ts` +8 |
 | FR-TXT-003 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/text.inline-edit.spec.ts` +6 |
-| FR-TXT-004 | S | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
+| FR-TXT-004 | S | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/text.markdown-shortcuts.spec.ts`, `packages/editor/src/text-rules.test.ts` |
 | FR-TXT-005 | S | R4 | M23 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-006 | M | R8 | M32 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-007 | S | R4 | M23 | [14-theme-text-media.md](14-theme-text-media.md) | — |
