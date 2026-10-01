@@ -1395,3 +1395,7 @@ The inspector's model (ADR-0149). schema: `describeFields(schema)` and `elementF
 ## 2026-10-02 M7.16 (claude)
 
 Inspector widgets (`inspector.tsx`, pure helpers in `inspector-values.ts`): number (typed, or scrubbed by dragging its label: 4 px a step, shift coarse, alt fine; a bad entry is given back), slider (one undo step per slide), toggle (indeterminate when mixed), enum (buttons up to four options, else a menu), paint (colour input, a text box taking any colour or a token reference with the theme's colour tokens listed, and a clear button), text. A field the elements differ on shows "Mixed"; every apply is one `element.updateMany`. A drag is a `beginGesture` whose step ends at release, or when the selection changes (the first version ended it on every edit: found by the slider test). `Inspector` takes `fields={{store, execute}}`; the "N elements selected" line is unchanged.
+
+## 2026-10-02 M7.16 review (carried minors)
+
+F1 a rejected paint or text entry is not given back (execute's result is ignored); F2 the selection-change cleanup should clear `gesture.current`; F3 enums are text buttons, not icons, and a gradient or image fill shows as "none"; F4 number fields have no arrow-key stepping. Carried to M7.27 (docs and stories pass) unless a row touches the inspector sooner (M7.17 does: the params section).
