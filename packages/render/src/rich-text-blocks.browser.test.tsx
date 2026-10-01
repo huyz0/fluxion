@@ -79,6 +79,15 @@ describe('rich-text blocks (FR-TXT-001)', () => {
     expect(inner.getBoundingClientRect().left).toBeGreaterThan((host.querySelector('ul') as HTMLElement).getBoundingClientRect().left + 30);
   });
 
+  it('NFR-SEC-001: lists nested far past the schema`s limit (a document never validated) are drawn as text, not a stack overflow', async () => {
+    let hostile: RichTextNode = p('far down');
+    for (let i = 0; i < 40_000; i++) hostile = { type: 'bulletList', content: [item(hostile)] };
+    await draw(doc(hostile));
+    expect(host.textContent).toContain('far down');
+    // 32 lists (64 levels of list and item) are drawn as lists; the rest is a paragraph
+    expect(host.querySelectorAll('ul')).toHaveLength(32);
+  });
+
   it('FR-TXT-001: the alignment block matches its golden', async () => {
     await draw(
       doc(p('left', { align: 'left' }), p('center', { align: 'center' }), p('right', { align: 'right' }), p('justify', { align: 'justify' }), {

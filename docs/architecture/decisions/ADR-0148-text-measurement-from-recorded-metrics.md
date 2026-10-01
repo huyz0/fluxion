@@ -56,6 +56,12 @@ Chosen option 2.
   to the `fallback` measurer. Heights, ascent and descent follow the canvas measurer's formulas, so
   the two agree in every number. `readFontMetrics` reads a file defensively; a face that is not well
   formed is left out.
+- **Layout the same everywhere.** Text containers of the content layer (`.fx-label`,
+  `.fx-connector-label`) set `text-rendering: geometricPrecision`, and the recorder measures with it.
+  Without it Chromium on Linux hints glyph advances to whole pixels (up to 9 px different from Windows
+  on a 120-character line); with it the recorded sizes of the Roboto samples are identical on Windows
+  and in the pinned Linux image (0.000 px), so one table serves every platform. The canvas measurer sets the same
+  `textRendering` on its context, so it agrees with the DOM on Linux too.
 - **Recording** is `scripts/fonts/record-metrics.mjs`, run by hand when a font changes; `--check`
   fails when the committed numbers differ from what this browser measures. It also writes the
   DOM-rendered size of a set of samples, the reference of the parity tests. Fixtures are under

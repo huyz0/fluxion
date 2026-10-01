@@ -4,7 +4,7 @@
 /** The widths, and heights, the DOM gives `texts` set in the CSS `font`, all in one layout. */
 function boxes(texts, font) {
   const box = document.createElement('div');
-  box.style.cssText = `position:absolute;left:0;top:0;white-space:pre;line-height:1.2;font:${font}`;
+  box.style.cssText = `position:absolute;left:0;top:0;white-space:pre;line-height:1.2;text-rendering:geometricPrecision;font:${font}`;
   const spans = texts.map((text) => {
     const span = document.createElement('span');
     span.style.cssText = 'display:block;width:max-content';

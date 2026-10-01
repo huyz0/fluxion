@@ -109,10 +109,6 @@ describe('rich-text blocks in static HTML (FR-TXT-001)', () => {
     expect(html).toContain('<ol><li><p>zero</p></li></ol>');
     expect(html).toContain('<ol><li><p>frac</p></li></ol>');
     // past the depth limit (a list and its item are two levels, 64 in all) the rest is a paragraph of its text
-    // nesting far past the limit (a store holds what JSON can) is drawn as text too
-    let hostile: RichTextNode = { type: 'paragraph', content: [run('far down')] };
-    for (let i = 0; i < 500; i++) hostile = { type: 'bulletList', content: [{ type: 'listItem', content: [hostile] }] };
-    expect(drawn([hostile])).toContain('far down');
     const alone = drawn([deep]);
     expect([alone.match(/<ul>/g)?.length, alone.match(/<li>/g)?.length]).toEqual([32, 32]);
     expect(html).toContain('<p>bottom</p>');

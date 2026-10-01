@@ -41,7 +41,7 @@ function rendered(sample: Sample, probe: HTMLElement): { readonly width: number;
 describe('measured text equals rendered text (FR-TXT-002, ADR-0148)', () => {
   it('FR-TXT-002: measured size equals rendered size ±1 px', async () => {
     const probe = document.createElement('span');
-    probe.style.cssText = 'position:absolute;left:0;top:0;white-space:pre;line-height:1.2';
+    probe.style.cssText = 'position:absolute;left:0;top:0;white-space:pre;line-height:1.2;text-rendering:geometricPrecision';
     document.body.append(probe);
     try {
       const canvas = createCanvasMeasurer();
@@ -76,7 +76,7 @@ describe('measured text equals rendered text (FR-TXT-002, ADR-0148)', () => {
 
   it('FR-TXT-002: the DOM kerns across a space and the canvas does not, which is why the metrics are recorded from the DOM', () => {
     const probe = document.createElement('span');
-    probe.style.cssText = 'position:absolute;left:0;top:0;white-space:pre;font:400 100px/1.2 Roboto';
+    probe.style.cssText = 'position:absolute;left:0;top:0;white-space:pre;text-rendering:geometricPrecision;font:400 100px/1.2 Roboto';
     document.body.append(probe);
     try {
       const dom = (text: string) => {

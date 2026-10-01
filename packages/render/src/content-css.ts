@@ -16,8 +16,8 @@ export const CONTENT_CSS: string = `@layer fx.content {
 .fx-el { position: absolute; left: 0; top: 0; box-sizing: border-box; transform-origin: 50% 50%; }
 .fx-members { position: absolute; left: 0; top: 0; width: 0; height: 0; }
 .fx-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #94a3b8; background: rgba(148, 163, 184, 0.12); color: #475569; font: 12px/1.2 system-ui, sans-serif; }
-.fx-label { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; overflow-wrap: break-word; }
-.fx-connector-label { position: absolute; transform: translate(-50%, -50%); width: max-content; max-width: 240px; padding: 1px 4px; box-sizing: border-box; background: var(--fx-screen-background, transparent); overflow-wrap: break-word; }
+.fx-label { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; overflow-wrap: break-word; text-rendering: geometricPrecision; }
+.fx-connector-label { position: absolute; transform: translate(-50%, -50%); width: max-content; max-width: 240px; padding: 1px 4px; box-sizing: border-box; background: var(--fx-screen-background, transparent); overflow-wrap: break-word; text-rendering: geometricPrecision; }
 .fx-label p, .fx-connector-label p { margin: 0; }
 .fx-label h1, .fx-connector-label h1, .fx-label h2, .fx-connector-label h2, .fx-label h3, .fx-connector-label h3, .fx-label h4, .fx-connector-label h4, .fx-label h5, .fx-connector-label h5, .fx-label h6, .fx-connector-label h6 { margin: 0; font-weight: 700; line-height: inherit; }
 .fx-label h1, .fx-connector-label h1 { font-size: 2em; }

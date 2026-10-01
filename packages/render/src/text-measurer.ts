@@ -29,6 +29,8 @@ const CACHE_LIMIT = 10_000;
  */
 export function createCanvasMeasurer(): CanvasTextMeasurer {
   const context = document.createElement('canvas').getContext('2d');
+  // measure as the content layer draws (text-rendering: geometricPrecision): glyph advances unhinted, so the same on every platform (ADR-0148)
+  if (context !== null && 'textRendering' in context) context.textRendering = 'geometricPrecision';
   const widths = new Map<string, number>();
   const width = (line: string, font: FontSpec): number => {
     const css = shorthand(font);
