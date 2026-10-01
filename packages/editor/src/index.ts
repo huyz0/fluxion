@@ -79,6 +79,7 @@ export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
 export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
+export { screenLabel, shownScreen } from './screen-switch.js';
 export { deleteSelection, nudgeSelection, selectAll, selectTool } from './select-tool.js';
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
 export { createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';

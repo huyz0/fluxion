@@ -18,6 +18,8 @@ export type Session = {
   readonly selection: WritableSignal<readonly RecordId[]>;
   /** Where the canvas looks. */
   readonly camera: WritableSignal<Camera>;
+  /** The screen the canvas shows; undefined (or one that is gone) is the document's first screen. */
+  readonly screen: WritableSignal<RecordId | undefined>;
   /** The active tool's id. */
   readonly tool: WritableSignal<string>;
   /** The element under the pointer, if any. */
@@ -54,6 +56,7 @@ export function createSession(docId: string): Session {
     docId,
     selection: writable<readonly RecordId[]>([]),
     camera: writable(DEFAULT_CAMERA),
+    screen: writable<RecordId | undefined>(undefined),
     tool: writable('select'),
     hover: writable<RecordId | undefined>(undefined),
     marquee: writable<Box | undefined>(undefined),

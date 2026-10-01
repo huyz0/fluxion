@@ -435,6 +435,9 @@ export function sameStyle(view: ReadView, selected: readonly RecordId[], pool: r
 export function sameType(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
 
 // @public
+export const screenLabel: (name: string | undefined, index: number) => string;
+
+// @public
 export function screenToPage(camera: Camera, p: Vec2): Vec2;
 
 // @public
@@ -451,6 +454,7 @@ export type Session = {
     readonly docId: string;
     readonly selection: WritableSignal<readonly RecordId[]>;
     readonly camera: WritableSignal<Camera>;
+    readonly screen: WritableSignal<RecordId | undefined>;
     readonly tool: WritableSignal<string>;
     readonly hover: WritableSignal<RecordId | undefined>;
     readonly marquee: WritableSignal<Box | undefined>;
@@ -478,6 +482,9 @@ export const shapeMaker: (defId?: string) => ElementMaker;
 
 // @public
 export const shapeTool: (defId?: string) => Tool;
+
+// @public
+export function shownScreen(view: ReadView, wanted: RecordId | undefined): RecordId | undefined;
 
 // @public
 export type StateNode = {

@@ -3,7 +3,7 @@
 // (FR-EDT-002), fitted on open, with the tools (FR-EDT-003) working on it.
 import type { ReadView, Registry, Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
-import { type RenderRegistries, screenArea, screensInOrder, useValue } from '@fluxion/render';
+import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
@@ -21,6 +21,7 @@ import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from
 import type { Execute } from './pointer.js';
 import { PresentInPlace, useModeSwitch, useRevision } from './present.js';
 import { readOnly } from './present-mode.js';
+import { shownScreen } from './screen-switch.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { Splitter } from './splitter.js';
@@ -125,6 +126,17 @@ function useKeyOverrides(settings: SettingsStore): readonly [KeyOverrides, (over
   return [overrides, set];
 }
 
+/** Another screen shown: what was selected on the last one is not on this one, and the camera starts afresh to be fitted. */
+function useScreenChange(session: Session, screenId: RecordId | undefined): void {
+  const last = useRef(screenId);
+  useEffect(() => {
+    if (last.current === screenId) return;
+    last.current = screenId;
+    session.selection.set([]);
+    session.camera.set(DEFAULT_CAMERA);
+  }, [session, screenId]);
+}
+
 const SPLITTERS: { readonly [P in PanelId]: string } = {
   left: 'Resize the left panel',
   right: 'Resize the inspector',
@@ -148,8 +160,10 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const settings = useMemo(() => props.settings ?? memorySettings(), [props.settings]);
   const [layout, setLayout] = useLayout(settings);
   const session = useMemo(() => props.session ?? createSession('local'), [props.session]);
-  // hidden screens are edited too
-  const screenId = useValue(useMemo(() => store.query((view) => screensInOrder(view, true)[0]), [store]));
+  // the screen the Screens tab chose, or the first (hidden ones are edited too)
+  const wanted = useValue(session.screen.get);
+  const screenId = useValue(useMemo(() => store.query((view) => shownScreen(view, wanted)), [store, wanted]));
+  useScreenChange(session, screenId);
   const { tools, present } = useTools(props, session, screenId);
   const switchMode = useModeSwitch(session, tools, present);
   const mode = useValue(session.mode.get);
@@ -206,7 +220,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         </button>
       </Toolbar>
       <div className="fx-chrome-body">
-        {panel('left', <LeftTabs />)}
+        {panel('left', <LeftTabs screens={{ store, session, shown: screenId }} />)}
         {splitter('left')}
         <div className="fx-chrome-center">
           <Canvas store={store} registries={registries} screenId={screenId} area={area} session={session} tools={tools} onBox={setBox} />

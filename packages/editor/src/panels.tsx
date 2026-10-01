@@ -3,6 +3,7 @@
 import { useValue } from '@fluxion/render';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
+import { ScreensTab, type ScreensTabProps } from './screens-tab.js';
 import type { Session } from './session.js';
 import type { Tool, ToolDispatcher } from './tools.js';
 
@@ -57,8 +58,14 @@ function nextTab(key: string, i: number): number | undefined {
   ]).get(key);
 }
 
+/** Props of {@link LeftTabs}. */
+export type LeftTabsProps = {
+  /** The document and session the Screens tab lists and switches; without them it is a placeholder. */
+  readonly screens?: ScreensTabProps | undefined;
+};
+
 /** The left panel's tabs (the WAI-ARIA tabs pattern, activated on focus). */
-export function LeftTabs(): ReactNode {
+export function LeftTabs(props: LeftTabsProps = {}): ReactNode {
   const id = useId();
   const [selected, setSelected] = useState(0);
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -89,7 +96,7 @@ export function LeftTabs(): ReactNode {
         ))}
       </div>
       <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${selected}`}>
-        <p className="fx-chrome-placeholder">{tab.text}</p>
+        {tab.name === 'Screens' && props.screens !== undefined ? <ScreensTab {...props.screens} /> : <p className="fx-chrome-placeholder">{tab.text}</p>}
       </div>
     </>
   );
