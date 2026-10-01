@@ -19,6 +19,7 @@ import { Registry } from '@fluxion/core';
 import { RenderRegistries } from '@fluxion/render';
 import { Result } from '@fluxion/schema';
 import { RouteContext } from '@fluxion/routing';
+import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { Vec2 } from '@fluxion/geometry';
@@ -274,7 +275,7 @@ export const imageMaker: (assetId: RecordId) => ElementMaker;
 export const imageTool: () => Tool;
 
 // @public
-export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors): InspectorModel | undefined;
+export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors, defs?: ShapeDefs): InspectorModel | undefined;
 
 // @public
 export type InspectorCommand = {
@@ -417,6 +418,24 @@ export function pageToScreen(camera: Camera, p: Vec2): Vec2;
 export function panBy(camera: Camera, d: Vec2): Camera;
 
 // @public
+export type ParamCommand = {
+    readonly id: string;
+    readonly args: unknown;
+};
+
+// @public
+export function paramEdit(view: ReadView, defs: ShapeDefs, target: {
+    readonly id: RecordId;
+    readonly index: number;
+}, p: Vec2): ParamCommand | undefined;
+
+// @public
+export function paramHandleAt(handles: readonly PlacedParamHandle[], p: Vec2, reach: number): PlacedParamHandle | undefined;
+
+// @public
+export function paramHandlesOf(view: ReadView, defs: ShapeDefs, id: RecordId): readonly PlacedParamHandle[];
+
+// @public
 export type PathBox = {
     readonly box: Box;
     readonly fractions: readonly (readonly [number, number])[];
@@ -433,6 +452,14 @@ export const PICK_PX = 4;
 
 // @public
 export function pinchCamera(start: Camera, from: readonly [Vec2, Vec2], to: readonly [Vec2, Vec2]): Camera;
+
+// @public
+export type PlacedParamHandle = {
+    readonly element: RecordId;
+    readonly index: number;
+    readonly param: string;
+    readonly page: Vec2;
+};
 
 // @public
 export type Placement = {
@@ -533,6 +560,11 @@ export type SettingsStore = {
 };
 
 // @public
+export type ShapeDefs = {
+    get(id: string): ShapeDef | undefined;
+};
+
+// @public
 export const shapeMaker: (defId?: string) => ElementMaker;
 
 // @public
@@ -588,6 +620,7 @@ export type ToolCtx = {
     allElements(): readonly RecordId[];
     readonly view: ReadView;
     readonly screen: RecordId | undefined;
+    readonly shapeDefs?: ShapeDefs | undefined;
     newId(): RecordId;
     readonly execute: Execute;
     seal(): void;

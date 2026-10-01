@@ -5,9 +5,11 @@
 import type { Store } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
+import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useMemo } from 'react';
 import { pageToScreen } from './camera.js';
 import { HANDLE_PX, placements, screenBox, selectionFrame } from './overlay-geometry.js';
+import { type PlacedParamHandle, paramHandlesOf, type ShapeDefs } from './param-handles.js';
 import type { Session } from './session.js';
 
 const points = (ps: readonly Vec2[]) => ps.map((p) => `${p.x},${p.y}`).join(' ');
@@ -20,6 +22,8 @@ export type OverlayProps = {
   readonly session: Session;
   /** The canvas size. */
   readonly box: { readonly w: number; readonly h: number };
+  /** Where shape definitions are looked up: the one selected shape shows its parametric handles. */
+  readonly shapeDefs?: ShapeDefs | undefined;
 };
 
 /**
@@ -38,7 +42,7 @@ export function useOverlayShown(session: Session): boolean {
 
 /** The overlay over the canvas. */
 export function Overlay(props: OverlayProps): ReactNode {
-  const { store, session, box } = props;
+  const { store, session, box, shapeDefs } = props;
   const camera = useValue(session.camera.get);
   const selection = useValue(session.selection.get);
   const hover = useValue(session.hover.get);
@@ -49,6 +53,15 @@ export function Overlay(props: OverlayProps): ReactNode {
   // a selected element is outlined by its frame already
   const hovered = useValue(
     useMemo(() => store.query((view) => (hover === undefined || selection.includes(hover) ? [] : placements(view, [hover]))), [store, hover, selection]),
+  );
+  const params = useValue(
+    useMemo(
+      () =>
+        store.query((view): readonly PlacedParamHandle[] =>
+          selection.length === 1 && shapeDefs !== undefined ? paramHandlesOf(view, shapeDefs, selection[0] as RecordId) : [],
+        ),
+      [store, selection, shapeDefs],
+    ),
   );
   const frame = selectionFrame(placed, camera);
   const outline = selectionFrame(hovered, camera);
@@ -78,6 +91,21 @@ export function Overlay(props: OverlayProps): ReactNode {
           ))}
         </g>
       )}
+      {params.map((h) => {
+        const at = pageToScreen(camera, h.page);
+        return (
+          <rect
+            key={h.index}
+            className="fx-chrome-param"
+            data-param-handle={h.param}
+            x={at.x - half}
+            y={at.y - half}
+            width={HANDLE_PX}
+            height={HANDLE_PX}
+            transform={`rotate(45 ${at.x} ${at.y})`}
+          />
+        );
+      })}
       {band === undefined ? null : <rect className="fx-chrome-marquee" x={band.x} y={band.y} width={band.w} height={band.h} />}
       {drafted === undefined ? null : <rect className="fx-chrome-draft" x={drafted.x} y={drafted.y} width={drafted.w} height={drafted.h} />}
       {line === undefined ? null : <polyline className="fx-chrome-sketch" points={points(line)} />}

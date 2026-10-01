@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-10-01T19:08:13.070Z",
-  "commit": "eb8b374ef929059546b2ad3d38a42dc1245fd7f8",
+  "recordedAt": "2026-10-01T19:49:56.188Z",
+  "commit": "e8496f636fc6f2f2e11d7550bae5c55cf320cef8",
   "lockfile": "35f83997f16c2cb0804293a78c4941c950a1f1b66974630bc72ae4786f3d9eca",
   "node": "26.7.0",
   "platform": "win32-x64",
-  "quickMs": 10450,
-  "stagedMs": 91376,
+  "quickMs": null,
+  "stagedMs": null,
   "coldSetupMs": 139309,
   "coldSetupSource": "pending-ci"
 }

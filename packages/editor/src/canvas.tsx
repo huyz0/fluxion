@@ -215,7 +215,7 @@ export function Canvas(props: CanvasProps): ReactNode {
       {screenId === undefined || box.w === 0 ? null : (
         <>
           <ScreenView store={store} screenId={screenId} mode="edit" view={{ kind: 'camera', box, camera }} registries={registries} />
-          {overlay ? <Overlay store={store} session={session} box={box} /> : null}
+          {overlay ? <Overlay store={store} session={session} box={box} shapeDefs={registries.shapeDefs} /> : null}
           {execute === undefined ? null : <InlineTextEditor store={store} registries={registries} session={session} execute={execute} />}
         </>
       )}

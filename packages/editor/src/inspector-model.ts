@@ -4,7 +4,8 @@
 // a value is one `element.updateMany`, so it is one undo step whatever the selection. A plugin replaces the
 // fields of its kind with an `inspectors` entry (the same path built-in kinds could take).
 import type { ReadView } from '@fluxion/core';
-import { type AnyRecord, elementFields, type FieldDef, type RecordId } from '@fluxion/schema';
+import { type AnyRecord, elementFields, type FieldDef, type RecordId, type ShapeElement } from '@fluxion/schema';
+import type { ShapeDefs } from './param-handles.js';
 
 /**
  * Replaces the fields the schema gives a kind: the plugin's own list, or the schema's with changes.
@@ -112,13 +113,47 @@ function elementsOf(view: ReadView, ids: readonly RecordId[]): readonly AnyRecor
   });
 }
 
+/** The name of the section holding a shape's params. */
+export const PARAMS_GROUP = 'Parameters';
+
+/**
+ * The params section for `elements`: when they are all shapes of one definition, a field for each number, int
+ * and enum param it declares (`params.<name>`), with the value they share (the definition's default where an
+ * element sets none) or `mixed`. Undefined for anything else.
+ */
+function paramsGroup(elements: readonly AnyRecord[], defs: ShapeDefs | undefined): InspectorGroup | undefined {
+  const shapes = elements as readonly ShapeElement[];
+  const defId = shapes[0]?.defId;
+  const def = shapes.every((e) => e.kind === 'shape' && e.defId === defId) ? defs?.get(defId as string) : undefined;
+  const fields = Object.entries(def?.params ?? {}).flatMap(([name, spec], order): InspectorField[] => {
+    if (spec.type === 'points') return [];
+    const fieldDef: FieldDef =
+      spec.type === 'enum'
+        ? { path: ['params', name], ui: 'select', group: PARAMS_GROUP, order, label: name, options: spec.values }
+        : {
+            path: ['params', name],
+            ui: 'number',
+            group: PARAMS_GROUP,
+            order,
+            label: name,
+            ...(spec.min === undefined ? {} : { min: spec.min }),
+            ...(spec.max === undefined ? {} : { max: spec.max }),
+          };
+    const values = shapes.map((e) => e.params?.[name] ?? spec.default);
+    const mixed = values.some((v) => !same(v, values[0]));
+    return [{ def: fieldDef, value: mixed ? undefined : values[0], mixed }];
+  });
+  return fields.length === 0 ? undefined : { name: PARAMS_GROUP, fields };
+}
+
 /**
  * The inspector's model for `ids`: the fields every selected element has (the same path and widget), by
- * section, each with the value they share or `mixed`. Undefined when no element is selected.
+ * section, each with the value they share or `mixed`; with `defs`, selected shapes of one definition add a
+ * section for its params. Undefined when no element is selected.
  *
  * @public
  */
-export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors): InspectorModel | undefined {
+export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors, defs?: ShapeDefs): InspectorModel | undefined {
   const elements = elementsOf(view, ids);
   const [first, ...others] = elements.map((e) => fieldsOf(String((e as Json)['kind']), overrides));
   if (first === undefined) return undefined;
@@ -129,9 +164,10 @@ export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: In
     return { def, value: mixed ? undefined : values[0], mixed };
   });
   const names = [...new Set(fields.map((f) => f.def.group))];
+  const params = paramsGroup(elements, defs);
   return {
     ids: elements.map((e) => e.id as RecordId),
-    groups: names.map((name) => ({ name, fields: fields.filter((f) => f.def.group === name) })),
+    groups: [...names.map((name) => ({ name, fields: fields.filter((f) => f.def.group === name) })), ...(params === undefined ? [] : [params])],
   };
 }
 

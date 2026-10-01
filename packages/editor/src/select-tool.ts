@@ -7,6 +7,7 @@ import type { Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { duplicates, moved, reframed, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
+import { paramEdit, paramHandleAt, paramHandlesOf } from './param-handles.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
 import { SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
@@ -132,6 +133,49 @@ function transforming(p: Press, id: string, after: (h: Handle, e: PointerInfo) =
   };
 }
 
+/** A press on a parametric handle of the selected shape: which, and the params it had. */
+type ParamGrab = { readonly id: RecordId; readonly index: number; readonly original: unknown };
+
+/** The parametric handle of the one selected shape under `e`, if any (a finger reaches further). */
+function paramHandleUnder(ctx: ToolCtx, e: PointerInfo): ParamGrab | undefined {
+  const [only, ...rest] = ctx.session.selection.get();
+  if (only === undefined || rest.length > 0 || ctx.shapeDefs === undefined) return undefined;
+  const reach = (e.pointerType === 'touch' ? TOUCH.handlePx : HANDLE_PX) / ctx.session.camera.get().z;
+  const hit = paramHandleAt(paramHandlesOf(ctx.view, ctx.shapeDefs, only), e.page, reach);
+  return hit === undefined ? undefined : { id: only, index: hit.index, original: (ctx.view.get(only) as { params?: unknown }).params };
+}
+
+/** The state that drags a parametric handle: each move sets the param that puts it nearest the pointer, one undo step; Esc puts the params back. */
+function adjusting(p: Press): StateNode {
+  let gesture: Gesture | undefined;
+  return {
+    id: 'adjusting',
+    onEnter: (ctx) => {
+      gesture = beginGesture(ctx.execute, ctx.seal);
+    },
+    onPointerMove: (ctx, e) => {
+      const grab = p.param as ParamGrab;
+      const edit = ctx.shapeDefs === undefined ? undefined : paramEdit(ctx.view, ctx.shapeDefs, grab, e.page);
+      if (edit !== undefined) {
+        gesture?.update(edit.id, edit.args);
+        gesture?.commit();
+      }
+      return undefined;
+    },
+    onPointerUp: () => ({ to: 'idle' }),
+    onCancel: () => {
+      const grab = p.param as ParamGrab;
+      gesture?.update('element.update', { id: grab.id, fields: { params: grab.original } });
+      gesture?.commit();
+      return { to: 'idle' };
+    },
+    onExit: () => {
+      gesture?.end();
+      gesture = undefined;
+    },
+  };
+}
+
 /** What a press left for the states after it. */
 type Press = {
   /** A press on empty canvas: where, with shift or not, and what was selected before. */
@@ -146,6 +190,8 @@ type Press = {
   drag?: Drag | undefined;
   /** A press on a handle of the selection frame. */
   handle?: Handle | undefined;
+  /** A press on a parametric handle of the selected shape. */
+  param?: ParamGrab | undefined;
 };
 
 /**
@@ -174,7 +220,9 @@ function idle(p: Press): StateNode {
     },
     onPointerDown: (ctx, e) => {
       if (e.button !== 0) return undefined;
-      // a handle of the selection's frame first: it lies over what it frames
+      // a parametric handle of the selected shape first, then a handle of the selection's frame: both lie over what they frame
+      p.param = paramHandleUnder(ctx, e);
+      if (p.param !== undefined) return { to: 'adjusting' };
       p.handle = handleUnder(ctx, e);
       if (p.handle !== undefined) return { to: p.handle.id === 'rotate' ? 'rotating' : 'resizing' };
       pressed(ctx, e, p);
@@ -283,6 +331,7 @@ export function selectTool(): Tool {
         const at = handlePoint(h.box, h.id as HandleId);
         return resize(h.box, h.id as HandleId, { x: at.x + e.page.x - h.page.x, y: at.y + e.page.y - h.page.y }, e);
       }),
+      adjusting: adjusting(p),
       rotating: transforming(p, 'rotating', (h, e) => ({ ...h.box, rot: rotation(h.box, h.page, e.page, e.shift) })),
     },
   };

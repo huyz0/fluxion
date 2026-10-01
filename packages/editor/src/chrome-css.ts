@@ -37,6 +37,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-overlay .fx-chrome-frame { fill: none; stroke: var(--ui-accent); stroke-width: 1; }
 .fx-chrome-overlay .fx-chrome-hover { fill: none; stroke: var(--ui-accent); stroke-width: 2; }
 .fx-chrome-overlay .fx-chrome-handle { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1; }
+.fx-chrome-overlay .fx-chrome-param { fill: var(--ui-accent); stroke: var(--ui-panel); stroke-width: 1; }
 .fx-chrome-overlay .fx-chrome-marquee { fill: var(--ui-marquee); stroke: var(--ui-accent); stroke-width: 1; }
 .fx-chrome-textedit { position: absolute; }
 .fx-chrome-textedit-box { position: absolute; left: 0; top: 0; transform-origin: 0 0; }

@@ -300,6 +300,18 @@ export type HandleDef = {
 };
 
 // @public
+export type HandleSubject = {
+    readonly def: ShapeDef;
+    readonly size: Size;
+    readonly params?: {
+        readonly [key: string]: unknown;
+    } | undefined;
+};
+
+// @public
+export function handleValue(subject: HandleSubject, index: number, target: Vec2): number | undefined;
+
+// @public
 export interface Hasher {
     sha256(bytes: Uint8Array): Promise<string>;
 }
@@ -389,6 +401,13 @@ export type OutlineSpec = {
     readonly points: string;
     readonly closed?: boolean;
     readonly smooth?: boolean;
+};
+
+// @public
+export type ParamHandle = {
+    readonly index: number;
+    readonly param: string;
+    readonly at: Vec2;
 };
 
 // @public
@@ -484,6 +503,9 @@ export type ShapeDef = {
 
 // @public
 export const shapeDefSchema: z.ZodType<ShapeDef>;
+
+// @public
+export function shapeHandles(subject: HandleSubject): readonly ParamHandle[];
 
 // @public
 export type ShapeText = FittedText & {

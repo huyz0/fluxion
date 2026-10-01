@@ -10,6 +10,7 @@ import { LIGHT_THEME } from '@fluxion/theme';
 import { type KeyboardEvent, type PointerEvent, type ReactNode, useEffect, useId, useMemo, useRef } from 'react';
 import { applyField, type InspectorField, type Inspectors, inspect } from './inspector-model.js';
 import { colorTokenRefs, isHex6, parseNumber, scrubbed } from './inspector-values.js';
+import type { ShapeDefs } from './param-handles.js';
 import { beginGesture, type Execute, type Gesture } from './pointer.js';
 import type { Session } from './session.js';
 
@@ -23,6 +24,8 @@ export type InspectorFieldsProps = {
   readonly execute: Execute;
   /** The plugins' field overrides. */
   readonly inspectors?: Inspectors | undefined;
+  /** Where shape definitions are looked up: selected shapes of one definition get a section for its params. */
+  readonly shapeDefs?: ShapeDefs | undefined;
 };
 
 /** What a widget does to the selection: a one-step change, or a drag's changes as one step. */
@@ -39,9 +42,9 @@ const COLOR_TOKENS = colorTokenRefs(LIGHT_THEME);
 
 /** The inspector's sections for the selection, or nothing when no element is selected. */
 export function InspectorFields(props: InspectorFieldsProps): ReactNode {
-  const { store, session, execute, inspectors } = props;
+  const { store, session, execute, inspectors, shapeDefs } = props;
   const ids = useValue(session.selection.get);
-  const model = useValue(useMemo(() => store.query((view) => inspect(view, ids, inspectors)), [store, ids, inspectors]));
+  const model = useValue(useMemo(() => store.query((view) => inspect(view, ids, inspectors, shapeDefs)), [store, ids, inspectors, shapeDefs]));
   const gesture = useRef<Gesture | undefined>(undefined);
   const selected = useRef<readonly RecordId[]>([]);
   selected.current = model?.ids ?? [];

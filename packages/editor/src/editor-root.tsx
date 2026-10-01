@@ -84,6 +84,7 @@ function useTools(
       },
       view: store,
       screen: screenId,
+      shapeDefs: registries.shapeDefs,
       newId: () => createId(random),
       elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
       allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),
@@ -92,7 +93,7 @@ function useTools(
     };
     // while presenting, the same tools' context with every write refused (FR-PRS-004)
     return { tools: createToolDispatcher(registry, ctx), present: createToolDispatcher(registry, { ...ctx, execute: readOnly }, 'present') };
-  }, [registry, session, screenId, execute, store, random]);
+  }, [registry, session, screenId, execute, store, random, registries]);
 }
 
 /** Chrome CSS injected once per document (ADR-0029, like the content CSS of ADR-0015). */
@@ -253,7 +254,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         </div>
         <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} />
         {splitter('right')}
-        {panel('right', <Inspector session={session} fields={{ store, execute }} />)}
+        {panel('right', <Inspector session={session} fields={{ store, execute, shapeDefs: registries.shapeDefs }} />)}
       </div>
       {help ? <KeymapDialog tools={tools.list()} overrides={overrides} onOverrides={setOverrides} onClose={() => setHelp(false)} /> : null}
     </div>

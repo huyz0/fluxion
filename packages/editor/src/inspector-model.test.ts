@@ -2,7 +2,8 @@ import { createCore } from '@fluxion/core';
 import type { FieldDef, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { applyField, inspect } from './inspector-model.js';
+import { applyField, inspect, PARAMS_GROUP } from './inspector-model.js';
+import type { ShapeDefs } from './param-handles.js';
 
 const red = '#ff0000';
 const blue = '#0000ff';
@@ -100,5 +101,58 @@ describe('inspector model (FR-EDT-008)', () => {
     // nothing selected, or no path: no command
     expect(applyField(core.store, [], ['name'], 'x')).toBeUndefined();
     expect(applyField(core.store, [a], [], 'x')).toBeUndefined();
+  });
+  it('FR-SHP-003: shapes of one definition add a Parameters section for its number, int and enum params', () => {
+    const b = documentBuilder({ seed: 17 });
+    const screen = b.screen();
+    const ids = [b.rect(screen, { defId: 'test:card' }), b.rect(screen, { defId: 'test:card' }), b.rect(screen, { defId: 'test:other' })];
+    const doc = b.build();
+    const records = { ...doc.records, [ids[1] as string]: { ...(doc.records[ids[1] as string] as object), params: { r: 30, kind: 'dashed' } } };
+    const core = createCore({ ...doc, records } as typeof doc);
+    const defs: ShapeDefs = {
+      get: (id) =>
+        id === 'test:card'
+          ? {
+              id: 'test:card',
+              outline: { path: 'M 0 0' },
+              defaultSize: { w: 1, h: 1 },
+              params: {
+                r: { type: 'number', min: 0, max: 50, default: 12 },
+                n: { type: 'int', default: 3 },
+                kind: { type: 'enum', values: ['solid', 'dashed'], default: 'solid' },
+                pts: {
+                  type: 'points',
+                  default: [
+                    [0, 0],
+                    [1, 1],
+                  ],
+                },
+              },
+            }
+          : id === 'test:other'
+            ? { id: 'test:other', outline: { path: 'M 0 0' }, defaultSize: { w: 1, h: 1 } }
+            : undefined,
+    };
+    const params = (selection: readonly RecordId[]) => inspect(core.store, selection, undefined, defs)?.groups.find((g) => g.name === PARAMS_GROUP);
+    // one shape: its own values, the definition's defaults where it sets none; points params are left to their own editor
+    expect(params([ids[0] as RecordId])?.fields.map((f) => [f.def.label, f.def.ui, f.value, f.mixed])).toEqual([
+      ['r', 'number', 12, false],
+      ['n', 'number', 3, false],
+      ['kind', 'select', 'solid', false],
+    ]);
+    expect(params([ids[0] as RecordId])?.fields[0]?.def).toMatchObject({ path: ['params', 'r'], group: PARAMS_GROUP, min: 0, max: 50 });
+    expect(params([ids[0] as RecordId])?.fields[2]?.def.options).toEqual(['solid', 'dashed']);
+    expect(params([ids[0] as RecordId])?.fields[1]?.def).not.toHaveProperty('min');
+    // two with different values: mixed where they differ, shared where they agree
+    expect(params([ids[0] as RecordId, ids[1] as RecordId])?.fields.map((f) => f.mixed)).toEqual([true, false, true]);
+    // another definition in the selection, or none known: no section
+    expect(params([ids[0] as RecordId, ids[2] as RecordId])).toBeUndefined();
+    expect(params([ids[2] as RecordId])).toBeUndefined();
+    expect(inspect(core.store, [ids[0] as RecordId])?.groups.find((g) => g.name === PARAMS_GROUP)).toBeUndefined();
+    // setting a param writes params.<name> on all, keeping the others
+    const command = applyField(core.store, [ids[0] as RecordId, ids[1] as RecordId], ['params', 'r'], 20);
+    core.execute(command?.id as string, command?.args);
+    expect((core.store.get(ids[1] as RecordId) as unknown as { params: object }).params).toEqual({ r: 20, kind: 'dashed' });
+    expect((core.store.get(ids[0] as RecordId) as unknown as { params: object }).params).toEqual({ r: 20 });
   });
 });

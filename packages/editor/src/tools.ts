@@ -7,6 +7,7 @@
 import { createRegistry, type ReadView, type Registry } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
+import type { ShapeDefs } from './param-handles.js';
 import type { Execute, PointerInfo } from './pointer.js';
 import type { MarqueeMode } from './selection.js';
 import type { Session } from './session.js';
@@ -48,6 +49,8 @@ export type ToolCtx = {
   readonly view: ReadView;
   /** The canvas's screen, where creation tools add elements; undefined without one. */
   readonly screen: RecordId | undefined;
+  /** Where shape definitions are looked up (parametric handles; absent: a shape shows none). */
+  readonly shapeDefs?: ShapeDefs | undefined;
   /** A fresh record id (a duplicate's, a new element's). */
   newId(): RecordId;
   /** Run a command (the only write path). */
