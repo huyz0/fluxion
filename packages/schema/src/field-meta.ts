@@ -70,6 +70,17 @@ function metaOf(schema: Zod): { readonly meta: Partial<FieldMeta> | undefined; r
   return { meta, inner };
 }
 
+/** The members of a union schema (none for any other). */
+const membersOf = (schema: Zod): readonly Zod[] => (defOf(schema) as Def & { readonly options?: readonly Zod[] }).options ?? [];
+
+/** The values of an enum schema, or of the enum member of a union (a built-in name or a plugin's). */
+function entriesOf(schema: Zod): { readonly [key: string]: unknown } | undefined {
+  const own = defOf(schema).entries;
+  if (own !== undefined) return own;
+  const member = membersOf(schema).find((m) => defOf(m).entries !== undefined);
+  return member === undefined ? undefined : defOf(member).entries;
+}
+
 /** A union's number member, for the bounds of a number that may also be a token reference. */
 function numeric(schema: Zod): (Zod & { readonly minValue?: number | null; readonly maxValue?: number | null }) | undefined {
   const d = defOf(schema) as Def & { readonly options?: readonly Zod[] };
@@ -79,7 +90,7 @@ function numeric(schema: Zod): (Zod & { readonly minValue?: number | null; reado
 
 /** The field a leaf schema with a `ui` makes. */
 function leaf(path: readonly string[], meta: Partial<FieldMeta>, inner: Zod): FieldDef {
-  const entries = defOf(inner).entries;
+  const entries = entriesOf(inner);
   const number = numeric(inner);
   const [min, max] = [number?.minValue, number?.maxValue];
   return {

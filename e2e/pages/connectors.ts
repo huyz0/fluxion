@@ -43,3 +43,20 @@ export async function handleCentre(editor: EditorPage, which: string): Promise<{
   if (box === null) throw new Error(`no handle ${which}`);
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
+
+/** Two shapes, the right one lower, joined by a connector (selected), so an elbow route has a middle segment. */
+export async function stepPair(page: Page, editor: EditorPage): Promise<void> {
+  await editor.open('new');
+  await shapeAt(page, editor, 0.1, 1);
+  await editor.toolButton('Shape').click();
+  await drag(page, await onScreen(editor, 0.6, 0.55), await onScreen(editor, 0.72, 0.75));
+  await expect(editor.elements).toHaveCount(2);
+  await editor.toolButton('Connector').click();
+  await drag(page, await onScreen(editor, 0.16, 0.4), await onScreen(editor, 0.66, 0.65));
+  await expect(editor.canvas.locator('.fx-el[data-kind="connector"]')).toHaveCount(1);
+}
+
+/** Set the selected connector's route type from the inspector's Route buttons. */
+export async function routeType(editor: EditorPage, type: string): Promise<void> {
+  await editor.panel('Inspector').getByRole('group', { name: 'Route' }).getByRole('button', { name: type, exact: true }).click();
+}

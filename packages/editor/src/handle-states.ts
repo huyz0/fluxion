@@ -3,7 +3,7 @@
 // one undo step; Esc puts it back. Split from select-tool.ts, whose states they join.
 import type { Vec2 } from '@fluxion/geometry';
 import type { ConnectorElement, RecordId } from '@fluxion/schema';
-import { type ConnectorHandle, connectorHandleAt, connectorHandlesOf, endDrop, waypointEdit } from './connector-handles.js';
+import { type ConnectorHandle, connectorHandleAt, connectorHandlesOf, endDrop, handleEdit } from './connector-handles.js';
 import { bindable } from './connector-tool.js';
 import { HANDLE_PX } from './overlay-geometry.js';
 import { paramEdit, paramHandleAt, paramHandlesOf } from './param-handles.js';
@@ -134,9 +134,11 @@ export function bending(p: HandlePress): StateNode {
     },
     onPointerMove: (_ctx, e) => {
       const grab = p.connector as ConnectorGrab;
-      const c = waypointEdit(grab.id, grab.route, grab.handle.at as number, e.page);
-      gesture?.update(c.id, c.args);
-      gesture?.commit();
+      const c = handleEdit(grab.id, grab.route, grab.handle, e.page);
+      if (c !== undefined) {
+        gesture?.update(c.id, c.args);
+        gesture?.commit();
+      }
       return undefined;
     },
     onPointerUp: () => ({ to: 'idle' }),

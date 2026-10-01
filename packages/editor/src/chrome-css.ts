@@ -42,6 +42,8 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-overlay .fx-chrome-route-selected { stroke-width: 2; opacity: 0.9; }
 .fx-chrome-overlay .fx-chrome-connector-end { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 2; }
 .fx-chrome-overlay .fx-chrome-connector-mid { fill: var(--ui-accent); stroke: var(--ui-panel); stroke-width: 1; opacity: 0.7; }
+.fx-chrome-overlay .fx-chrome-connector-way { fill: var(--ui-accent); stroke: var(--ui-panel); stroke-width: 2; }
+.fx-chrome-overlay .fx-chrome-connector-seg { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1; opacity: 0.8; }
 .fx-chrome-overlay .fx-chrome-marquee { fill: var(--ui-marquee); stroke: var(--ui-accent); stroke-width: 1; }
 .fx-chrome-textedit { position: absolute; }
 .fx-chrome-textedit-box { position: absolute; left: 0; top: 0; transform-origin: 0 0; }

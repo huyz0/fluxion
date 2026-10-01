@@ -13,15 +13,17 @@ describe('field metadata (FR-EDT-008)', () => {
       hidden: z.string(),
       deep: z.object({ c: z.enum(['x', 'y']).meta({ ui: 'select', group: 'One', order: 1 }).optional() }).optional(),
       tokenOrNumber: z.union([z.number().min(0), z.string()]).meta({ ui: 'number' }),
+      kind: z.union([z.enum(['a', 'b']), z.string()]).meta({ ui: 'select', group: 'One', order: 7 }),
       leaf: z.object({ inside: z.string().meta({ ui: 'text' }) }).meta({ ui: 'paint', group: 'One', order: 9 }),
     });
     const fields = describeFields(schema);
-    expect(fields.map((f) => f.path.join('.'))).toEqual(['b', 'deep.c', 'a', 'leaf', 'tokenOrNumber']);
+    expect(fields.map((f) => f.path.join('.'))).toEqual(['b', 'deep.c', 'a', 'kind', 'leaf', 'tokenOrNumber']);
     expect(fields[1]).toEqual({ path: ['deep', 'c'], ui: 'select', group: 'One', order: 1, label: 'c', options: ['x', 'y'] });
+    expect(fields[3]).toMatchObject({ path: ['kind'], options: ['a', 'b'] });
     expect(fields[0]).toEqual({ path: ['b'], ui: 'slider', group: 'Two', order: 2, label: 'Bee', min: 2, max: 9 });
     // no group: General, last order; the bounds of the number member of a union
-    expect(fields[4]).toMatchObject({ group: 'General', order: 1000, label: 'tokenOrNumber', min: 0 });
-    expect(fields[4]).not.toHaveProperty('max');
+    expect(fields[5]).toMatchObject({ group: 'General', order: 1000, label: 'tokenOrNumber', min: 0 });
+    expect(fields[5]).not.toHaveProperty('max');
     // a leaf is not walked into
     expect(paths('shape')).not.toContain('leaf.inside');
   });

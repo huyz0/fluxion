@@ -1,12 +1,12 @@
-import { createCore, type ShapeDef } from '@fluxion/core';
+import { createCore, createRegistry, type ShapeDef } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
-import { createRenderRegistries } from '@fluxion/render';
-import { routeConnector } from '@fluxion/routing';
+import { type Router, registerBuiltinRouters, routeConnector } from '@fluxion/routing';
 import type { ConnectorElement, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { registerBuiltinTools } from './builtin-tools.js';
-import { type ConnectorHandle, connectorHandleAt, connectorHandlesOf, endDrop, waypointEdit } from './connector-handles.js';
+import { type ConnectorHandle, connectorHandleAt, connectorHandlesOf, endDrop, handleEdit, waypointEdit } from './connector-handles.js';
+import type { ParamCommand } from './param-handles.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
 import { createSession } from './session.js';
 import { createToolDispatcher, createToolRegistry } from './tools.js';
@@ -17,6 +17,13 @@ const rect = {
   defaultSize: { w: 100, h: 100 },
   anchors: [{ name: 'tip', x: 1, y: 0 }],
 } as ShapeDef;
+/** The built-in routers, registered. */
+function builtinRouters() {
+  const routers = createRegistry<string, Router>('routers');
+  registerBuiltinRouters(routers);
+  return routers;
+}
+
 const defs = { get: (id: string) => (id === 'test:rect' ? rect : undefined) };
 
 function setup(route?: object) {
@@ -29,8 +36,7 @@ function setup(route?: object) {
   const doc = b.build();
   const rec = doc.records[line] as unknown as { route: object };
   const core = createCore({ ...doc, records: { ...doc.records, [line]: { ...rec, route: { ...rec.route, ...route } } } } as typeof doc);
-  const registries = createRenderRegistries();
-  const read = (id: RecordId) => routeConnector(core.store, { shapeDefs: { get: defs.get } as never, routers: registries.routers }, id);
+  const read = (id: RecordId) => routeConnector(core.store, { shapeDefs: { get: defs.get } as never, routers: builtinRouters() }, id);
   return { core, a, c, d, line, read, s };
 }
 
@@ -48,7 +54,13 @@ describe('connector handles (FR-CON-007)', () => {
     expect(mid?.page.y).toBeCloseTo(((source?.page.y ?? 0) + (target?.page.y ?? 0)) / 2, 6);
     // a waypoint splits the stretch in two
     const bent = setup({ type: 'polyline', waypoints: [{ x: 250, y: 200 }] });
-    expect(connectorHandlesOf(bent.core.store, bent.read, bent.line).map((h) => h.at)).toEqual(['source', 'target', 0, 1]);
+    expect(connectorHandlesOf(bent.core.store, bent.read, bent.line).map((h) => [h.role, h.at])).toEqual([
+      ['end', 'source'],
+      ['end', 'target'],
+      ['way', 0],
+      ['mid', 0],
+      ['mid', 1],
+    ]);
     // not a connector, not there, or not routable: none
     expect(connectorHandlesOf(core.store, read, a)).toEqual([]);
     expect(connectorHandlesOf(core.store, read, 'gone' as RecordId)).toEqual([]);
@@ -99,6 +111,90 @@ describe('connector handles (FR-CON-007)', () => {
     });
     // the original is not touched, so the next frame of a drag starts from it again
     expect(original.waypoints).toHaveLength(2);
+  });
+
+  it('FR-CON-007: waypoints have handles; an orthogonal route has handles on its inner segments instead of its stretches', () => {
+    const bent = setup({ type: 'polyline', waypoints: [{ x: 250, y: 200 }] });
+    expect(connectorHandlesOf(bent.core.store, bent.read, bent.line).map((h) => [h.role, h.at])).toEqual([
+      ['end', 'source'],
+      ['end', 'target'],
+      ['way', 0],
+      ['mid', 0],
+      ['mid', 1],
+    ]);
+    // an elbow between shapes at different heights: source stub, a vertical middle, target stub
+    const b = documentBuilder({ seed: 20 });
+    const s = b.screen();
+    const left = b.rect(s, { x: 0, y: 0, w: 100, h: 100 });
+    const right = b.rect(s, { x: 400, y: 200, w: 100, h: 100 });
+    const elbow = b.connect(left, right, { route: 'orthogonal' });
+    const doc = b.build();
+    const core = createCore(doc);
+    const read = (id: RecordId) => routeConnector(core.store, { shapeDefs: { get: () => undefined } as never, routers: builtinRouters() }, id);
+    const handles = connectorHandlesOf(core.store, read, elbow);
+    const segs = handles.filter((h) => h.role === 'seg');
+    expect(handles.filter((h) => h.role === 'mid')).toEqual([]);
+    expect(segs).toHaveLength(1);
+    expect(segs[0]?.axis).toBe('x');
+    const [source, target] = [handles[0] as ConnectorHandle, handles[1] as ConnectorHandle];
+    expect((segs[0] as ConnectorHandle).page.x).toBeGreaterThan(source.page.x);
+    expect((segs[0] as ConnectorHandle).page.x).toBeLessThan(target.page.x);
+    // a waypoint, then a segment: the order is ends, waypoints, the rest; at an equal distance a waypoint beats a middle
+    const way: ConnectorHandle = { role: 'way', at: 0, page: { x: 10, y: 0 } };
+    const mid: ConnectorHandle = { role: 'mid', at: 0, page: { x: 10, y: 0 } };
+    const seg: ConnectorHandle = { role: 'seg', at: 1, page: { x: 10, y: 0 }, axis: 'y' };
+    for (const order of [
+      [mid, way],
+      [way, mid],
+      [seg, way],
+      [way, seg],
+    ])
+      expect(connectorHandleAt(order, { x: 10, y: 0 }, 5)?.role).toBe('way');
+    const end: ConnectorHandle = { role: 'end', at: 'source', page: { x: 10, y: 0 } };
+    expect(connectorHandleAt([way, end], { x: 10, y: 0 }, 5)?.role).toBe('end');
+  });
+
+  it('FR-CON-007: dragging a handle edits the route as it began: a waypoint moves, a segment moves across, a middle makes one', () => {
+    const id = 'c' as RecordId;
+    const route = {
+      type: 'orthogonal',
+      waypoints: [
+        { x: 10, y: 10 },
+        { x: 90, y: 90 },
+      ],
+    } as ConnectorElement['route'];
+    const edit = (handle: ConnectorHandle, original = route) =>
+      ((handleEdit(id, original, handle, { x: 50, y: 60 }) as ParamCommand).args as { fields: { route: ConnectorElement['route'] } }).fields.route;
+    // a waypoint moves to the pointer
+    expect(edit({ role: 'way', at: 1, page: { x: 90, y: 90 } }).waypoints).toEqual([
+      { x: 10, y: 10 },
+      { x: 50, y: 60 },
+    ]);
+    // a vertical segment takes the pointer's x and the waypoint keeps its own y, so the segments on either side of it
+    // stay; the waypoint nearest the segment is the one that moves, the other is left alone
+    expect(edit({ role: 'seg', at: 2, page: { x: 85, y: 80 }, axis: 'x' }).waypoints).toEqual([
+      { x: 10, y: 10 },
+      { x: 50, y: 90 },
+    ]);
+    expect(edit({ role: 'seg', at: 2, page: { x: 12, y: 15 }, axis: 'y' }).waypoints).toEqual([
+      { x: 10, y: 60 },
+      { x: 90, y: 90 },
+    ]);
+    // with no waypoint yet, the segment makes one, and the route keeps its type
+    const none = { type: 'orthogonal' } as ConnectorElement['route'];
+    expect(edit({ role: 'seg', at: 2, page: { x: 85, y: 80 }, axis: 'x' }, none)).toEqual({ type: 'orthogonal', waypoints: [{ x: 50, y: 80 }] });
+    // a middle inserts at its index; an end is the end drop`s
+    expect(edit({ role: 'mid', at: 1, page: { x: 0, y: 0 } }).waypoints).toEqual([
+      { x: 10, y: 10 },
+      { x: 50, y: 60 },
+      { x: 90, y: 90 },
+    ]);
+    expect(handleEdit(id, route, { role: 'end', at: 'source', page: { x: 0, y: 0 } }, { x: 1, y: 1 })).toBeUndefined();
+    // the original is not touched
+    expect(route.waypoints).toEqual([
+      { x: 10, y: 10 },
+      { x: 90, y: 90 },
+    ]);
   });
 
   it('FR-CON-007: an end dropped on an element binds at the element anchor nearest the drop', () => {

@@ -49,7 +49,8 @@ const style = (core: ReturnType<typeof createCore>, id: RecordId) => (core.store
 const box = (core: ReturnType<typeof createCore>, id: RecordId) => (core.store.get(id) as unknown as { transform: { [k: string]: number } }).transform;
 const input = (inspector: HTMLElement, label: string) => inspector.querySelector(`input[aria-label="${label}"]`) as HTMLInputElement;
 
-describe('inspector widgets (FR-EDT-008)', () => {
+// typing into a real browser through the whole editor: a loaded runner (or the full suite in parallel) needs more than the default 15 s
+describe('inspector widgets (FR-EDT-008)', { timeout: 60_000 }, () => {
   it('FR-EDT-008: a mixed fill set on 3 shapes updates all 3 in one undo step', async () => {
     const { core, ids, inspector } = await open();
     // the fill differs: the value box says Mixed

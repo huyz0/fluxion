@@ -41,6 +41,14 @@ function outlines(
   });
 }
 
+/** The class each kind of connector handle is drawn with. */
+const HANDLE_CLASS = {
+  end: 'fx-chrome-connector-end',
+  way: 'fx-chrome-connector-way',
+  mid: 'fx-chrome-connector-mid',
+  seg: 'fx-chrome-connector-seg',
+} as const;
+
 /** The parametric handles of the one selected shape. */
 function ParamMarks(props: HandleMarksProps): ReactNode {
   const { store, session, shapeDefs } = props;
@@ -122,9 +130,9 @@ function ConnectorMarks(props: HandleMarksProps): ReactNode {
     const at = pageToScreen(camera, h.page);
     return (
       <circle
-        key={String(h.at)}
-        className={h.role === 'end' ? 'fx-chrome-connector-end' : 'fx-chrome-connector-mid'}
-        data-connector-handle={h.role === 'end' ? h.at : `mid-${h.at}`}
+        key={`${h.role}-${h.at}`}
+        className={HANDLE_CLASS[h.role]}
+        data-connector-handle={h.role === 'end' ? h.at : `${h.role}-${h.at}`}
         cx={at.x}
         cy={at.y}
         r={h.role === 'end' ? half + 1 : half - 1}

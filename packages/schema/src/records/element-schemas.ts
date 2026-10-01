@@ -107,7 +107,9 @@ export const elementKindSchemas: {
       ...base,
       kind: z.literal('connector'),
       route: z.looseObject({
-        type: z.union([z.enum(['straight', 'curved', 'orthogonal', 'polyline']), qualifiedNameSchema]),
+        type: z
+          .union([z.enum(['straight', 'curved', 'orthogonal', 'polyline']), qualifiedNameSchema])
+          .meta({ ui: 'select', group: 'Route', order: 1, label: 'Route' }),
         waypoints: z.array(pointSchema).optional(),
         cornerRadius: z.number().min(0).optional(),
       }),

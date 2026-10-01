@@ -12,6 +12,7 @@ import { ConnectorElement } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { FieldDef } from '@fluxion/schema';
 import { MarkerDef } from '@fluxion/core';
+import { PathCommand } from '@fluxion/geometry';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
 import { ReadView } from '@fluxion/core';
@@ -77,9 +78,10 @@ export const commandMap: (commands?: readonly EditorCommand[]) => ReadonlyMap<st
 
 // @public
 export type ConnectorHandle = {
-    readonly role: "end" | "mid";
+    readonly role: "end" | "way" | "mid" | "seg";
     readonly at: "source" | "target" | number;
     readonly page: Vec2;
+    readonly axis?: "x" | "y";
 };
 
 // @public
@@ -543,6 +545,7 @@ export type RoutedEnd = {
 export type RoutedEnds = {
     readonly source: RoutedEnd;
     readonly target: RoutedEnd;
+    readonly commands: readonly PathCommand[];
 };
 
 // @public
