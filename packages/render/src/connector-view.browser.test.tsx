@@ -151,6 +151,38 @@ describe('routers (FR-RTE-001)', () => {
 });
 
 describe('connector labels (FR-CON-006)', () => {
+  it('FR-CON-006: a connector label renders its marks and links', async () => {
+    const { core, connectorId } = await show((b, s) => {
+      const a = b.rect(s, { x: 50, y: 50, w: 100, h: 60 });
+      const c = b.rect(s, { x: 500, y: 300, w: 100, h: 60 });
+      return b.connect(a, c, { arrow: false });
+    });
+    const text = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'HTTP ', marks: [{ type: 'bold' }] },
+            { type: 'text', text: 'docs', marks: [{ type: 'link', attrs: { href: 'https://example.com/docs' } }] },
+            { type: 'text', text: ' fast', marks: [{ type: 'italic' }] },
+          ],
+        },
+        { type: 'bulletList', content: [{ type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'retry' }] }] }] },
+      ],
+    };
+    await act(async () => {
+      core.execute('element.update', { id: connectorId, fields: { labels: [{ text, position: 0.5 }] } });
+    });
+    const label = host.querySelector<HTMLElement>(`.fx-el[data-el-id="${connectorId}"] .fx-connector-label`) as HTMLElement;
+    expect(label.querySelector('strong')?.textContent).toBe('HTTP ');
+    expect(label.querySelector('a')?.getAttribute('href')).toBe('https://example.com/docs');
+    expect(label.querySelectorAll('a')).toHaveLength(1);
+    expect(label.querySelector('em')?.textContent).toBe(' fast');
+    expect(label.querySelector('ul > li > p')?.textContent).toBe('retry');
+    expect(getComputedStyle(label.querySelector('strong') as HTMLElement).fontWeight).toBe('700');
+  });
+
   it('FR-CON-006: a label at t 0.5 stays at the path midpoint when the endpoints move', async () => {
     let a = '' as RecordId;
     const { core, route, connectorId } = await show((b, s) => {

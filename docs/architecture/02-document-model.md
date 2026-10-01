@@ -96,8 +96,8 @@ element's outline + transform.
 ### Rich text
 
 A compact ProseMirror-compatible JSON (`{type:'doc', content:[…]}`) subset: paragraphs,
-headings, lists, marks (bold/italic/underline/strike/code/link/color/highlight/font/size),
-fields (`{{page}}`). Sanitized on load (NFR-SEC-001).
+headings, lists, alignment, per-block line height and spacing, marks
+(bold/italic/underline/strike/code/link/color/highlight/font/size), fields (`{{page}}`). Sanitized on load (NFR-SEC-001).
 
 ### Style
 

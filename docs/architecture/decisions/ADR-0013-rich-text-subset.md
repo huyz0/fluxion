@@ -38,8 +38,8 @@ stores natively and maps one-to-one onto Lexical's node tree, so M7 keeps either
 | `type` | Content | Attrs |
 |---|---|---|
 | `doc` | block+ | — |
-| `paragraph` | inline* | `align?`: `left`/`center`/`right`/`justify` |
-| `heading` | inline* | `level`: 1–6, `align?` |
+| `paragraph` | inline* | `align?`: `left`/`center`/`right`/`justify`; `lineHeight?`, `spaceBefore?`, `spaceAfter?` (amendment M7.9) |
+| `heading` | inline* | `level`: 1–6, `align?`, `lineHeight?`, `spaceBefore?`, `spaceAfter?` |
 | `bulletList` / `orderedList` | `listItem`+ | `orderedList.start?`: integer ≥ 1 |
 | `listItem` | `paragraph` block* | — |
 | `text` | — (`text`: non-empty string) | marks |
@@ -129,3 +129,10 @@ remains this subset.
 - 2026-09-27 (M2.7 review): nodes nested deeper than 64 levels (`MAX_RICH_TEXT_DEPTH`) are an
   `FLX_TEXT_INVALID` error at the first node past the limit and are not walked further, so hostile
   input cannot overflow the stack (NFR-REL-002).
+- 2026-10-02 (M7.9): `paragraph` and `heading` take three more optional attributes, for FR-TXT-001's
+  line and paragraph spacing: `lineHeight` (a multiple of the block's size, 0.5 to 4; it replaces the
+  style's for that block), `spaceBefore` and `spaceAfter` (px of space above and below, 0 to 400).
+  They are a schema minor change: older readers preserve them like any unknown attribute and ignore
+  them when drawing. `checkRichText` reports a value that is not a finite number in range as an
+  `FLX_TEXT_INVALID` error at its path; the renderer checks them again. No fixture changes: the
+  attributes are optional and absent from every existing document.

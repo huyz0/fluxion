@@ -117,6 +117,34 @@ describe('rich text (ADR-0013)', () => {
     ]);
   });
 
+  it('FR-TXT-001: a paragraph or heading may carry its own line height and the space around it; values out of range are errors at their paths', () => {
+    const good = doc(
+      { type: 'paragraph', attrs: { lineHeight: 1.5, spaceBefore: 0, spaceAfter: 12 }, content: [t('a')] },
+      { type: 'heading', attrs: { level: 1, lineHeight: 0.5, spaceBefore: 400, spaceAfter: 400 }, content: [t('b')] },
+    );
+    expect(checkRichText(good)).toEqual([]);
+    const bad = doc(
+      { type: 'paragraph', attrs: { lineHeight: 4.5 } },
+      { type: 'paragraph', attrs: { lineHeight: 0.4 } },
+      { type: 'paragraph', attrs: { spaceBefore: -1 } },
+      { type: 'heading', attrs: { level: 2, spaceAfter: 401 } },
+      { type: 'paragraph', attrs: { spaceAfter: '12' } },
+      { type: 'paragraph', attrs: { spaceBefore: Number.NaN } },
+      { type: 'paragraph', attrs: { lineHeight: Number.POSITIVE_INFINITY } },
+    );
+    expect(checkRichText(bad)[0]?.message).toBe('lineHeight must be a number from 0.5 to 4');
+    expect(checkRichText(bad)[2]?.message).toBe('spaceBefore must be a number from 0 to 400');
+    expect(checkRichText(bad).map((i) => [i.code, i.path.join('/')])).toEqual([
+      ['FLX_TEXT_INVALID', 'content/0/attrs/lineHeight'],
+      ['FLX_TEXT_INVALID', 'content/1/attrs/lineHeight'],
+      ['FLX_TEXT_INVALID', 'content/2/attrs/spaceBefore'],
+      ['FLX_TEXT_INVALID', 'content/3/attrs/spaceAfter'],
+      ['FLX_TEXT_INVALID', 'content/4/attrs/spaceAfter'],
+      ['FLX_TEXT_INVALID', 'content/5/attrs/spaceBefore'],
+      ['FLX_TEXT_INVALID', 'content/6/attrs/lineHeight'],
+    ]);
+  });
+
   it('NFR-REL-002: hostile nesting is an issue at the depth limit, not a stack overflow (M2.7 review F1)', () => {
     let node: unknown = p(t('deep'));
     for (let i = 0; i < 20_000; i++) node = { type: 'bulletList', content: [{ type: 'listItem', content: [p(t('x')), node] }] };

@@ -78,6 +78,13 @@ const INLINES = new Set(['text', 'hardBreak', 'field']);
 const KNOWN = new Set([...BLOCKS, ...INLINES, 'listItem', 'doc']);
 const ALIGN = new Set(['left', 'center', 'right', 'justify']);
 const FIELDS = new Set(['page', 'pageCount', 'screenName', 'date', 'title']);
+// ADR-0013 amendment (M7.9): a paragraph's or heading's own line height (a multiple of its size) and the space
+// above and below it (px), over the style's
+const SPACING: readonly (readonly [name: string, min: number, max: number])[] = [
+  ['lineHeight', 0.5, 4],
+  ['spaceBefore', 0, 400],
+  ['spaceAfter', 0, 400],
+];
 const SAFE_LINK = /^(?:https?:\/\/|mailto:|#screen:[A-Za-z0-9_-]{1,64}$)/i;
 
 type Obj = { readonly [key: string]: unknown };
@@ -157,6 +164,11 @@ class Walker {
   textBlock(attrs: Obj, type: string, path: Path): void {
     if (attrs['align'] !== undefined && !ALIGN.has(String(attrs['align'])))
       this.error([...path, 'attrs', 'align'], 'align must be left, center, right or justify');
+    for (const [name, min, max] of SPACING) {
+      const v = attrs[name];
+      if (v !== undefined && !(typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max))
+        this.error([...path, 'attrs', name], `${name} must be a number from ${min} to ${max}`);
+    }
     if (type === 'heading' && !(Number.isInteger(attrs['level']) && Number(attrs['level']) >= 1 && Number(attrs['level']) <= 6))
       this.error([...path, 'attrs', 'level'], 'heading level must be an integer from 1 to 6');
   }

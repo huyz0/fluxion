@@ -13,10 +13,11 @@ import { labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/r
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
-import { labelStyle, plainParagraphs } from './label.js';
+import { labelStyle } from './label.js';
 import { MarkerView, MidMarker } from './markers.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
+import { RichText } from './rich-text.js';
 import { concreteLength } from './text-measurer.js';
 import { useValue } from './use-value.js';
 
@@ -40,10 +41,7 @@ function Labels(props: { readonly element: ConnectorElement; readonly route: rea
     return (
       // biome-ignore lint/suspicious/noArrayIndexKey: a connector's labels have no identity but their order
       <div key={k} className="fx-connector-label" style={{ ...props.style, left: round(at.x), top: round(at.y) }}>
-        {plainParagraphs(label.text).map((text, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: paragraphs have no identity but their order
-          <p key={i}>{text}</p>
-        ))}
+        <RichText doc={label.text} />
       </div>
     );
   });

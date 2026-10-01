@@ -74,8 +74,8 @@ only on attributes, extra keys and unknown types, never on tree shape.
   known mark.
 
 **Save** (ProseMirror JSON → ADR-0013 JSON, after `toJSON`):
-- Declared **optional attributes still at their default** (`paragraph.align`, `heading.align`,
-  `orderedList.start`, `link.title`) are omitted. An absent `attrs` object stays absent. A
+- Declared **optional attributes still at their default** (`paragraph.align`, `heading.align`, their
+  `lineHeight`, `spaceBefore` and `spaceAfter`, `orderedList.start`, `link.title`) are omitted. An absent `attrs` object stays absent. A
   required attribute such as `heading.level` is always written.
 - `extra` is spread back: unknown attributes return into `attrs`, extra keys onto the node or
   mark.
