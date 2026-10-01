@@ -74,13 +74,15 @@ describe('inspector widgets (FR-EDT-008)', () => {
   it('FR-EDT-008: a typed number applies to all, an invalid one is given back, empty clears', async () => {
     const { core, ids, inspector } = await open();
     await userEvent.click(input(inspector, 'Width'));
-    await userEvent.keyboard('{Control>}a{/Control}250{Enter}');
+    input(inspector, 'Width').select();
+    await userEvent.keyboard('250{Enter}');
     await act(frame);
     expect(ids.map((id) => box(core, id)['w'])).toEqual([250, 250, 250]);
     // text that is no number: the box shows the stored value again, nothing is written
     const steps = core.store.history.canUndo();
     await userEvent.click(input(inspector, 'Width'));
-    await userEvent.keyboard('{Control>}a{/Control}abc{Enter}');
+    input(inspector, 'Width').select();
+    await userEvent.keyboard('abc{Enter}');
     await act(frame);
     expect(input(inspector, 'Width').value).toBe('250');
     expect(ids.map((id) => box(core, id)['w'])).toEqual([250, 250, 250]);

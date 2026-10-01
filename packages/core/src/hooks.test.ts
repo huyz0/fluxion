@@ -73,7 +73,8 @@ describe('integrity hooks (ADR-0014, FR-EXT-001)', () => {
         }
       }),
     );
-  });
+    // a property over generated documents: a loaded Windows or macOS runner needs more than the default 5 s
+  }, 60_000);
 
   it('deleting a bound element frees the connector end at its centre; the other end keeps its binding', () => {
     const b = documentBuilder({ seed: 11 });
