@@ -3,6 +3,7 @@
 import type { ReadView } from '@fluxion/core';
 import { screensInOrder } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { DEFAULT_CAMERA, type Session } from './session.js';
 
 /**
  * The screen to show: `wanted` if it is a screen of `view`, else the first one (hidden screens count,
@@ -21,3 +22,15 @@ export function shownScreen(view: ReadView, wanted: RecordId | undefined): Recor
  * @public
  */
 export const screenLabel = (name: string | undefined, index: number): string => (name === undefined || name.trim() === '' ? `Screen ${index + 1}` : name);
+
+/**
+ * Show the screen `id` as a user's choice: nothing of the last screen stays selected, and the camera
+ * starts afresh to be fitted to the new one.
+ *
+ * @public
+ */
+export function switchScreen(session: Session, id: RecordId): void {
+  session.screen.set(id);
+  session.selection.set([]);
+  session.camera.set(DEFAULT_CAMERA);
+}

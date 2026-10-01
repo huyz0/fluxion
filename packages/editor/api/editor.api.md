@@ -62,8 +62,8 @@ export type CommandCanvas = {
 
 // @public
 export type CommandHistory = {
-    undo(): void;
-    redo(): void;
+    undo(): HistoryResult;
+    redo(): HistoryResult;
 };
 
 // @public
@@ -166,6 +166,7 @@ export type EditorCommandCtx = {
     readonly canvas?: CommandCanvas;
     switchMode?(): void;
     openHelp?(): void;
+    restoreView?(meta: unknown): void;
 };
 
 // @public
@@ -179,6 +180,7 @@ export type EditorKeysInput = {
     readonly switchMode?: (() => void) | undefined;
     readonly overrides?: KeyOverrides | undefined;
     readonly openHelp?: (() => void) | undefined;
+    readonly restoreView?: ((meta: unknown) => void) | undefined;
     readonly paused?: boolean | undefined;
 };
 
@@ -237,6 +239,12 @@ export function groupTitle(g: Pick<KeyGroup, "command" | "args">, titleOf: (comm
 
 // @public
 export function handTool(): Tool;
+
+// @public
+export type HistoryResult = {
+    readonly ok: boolean;
+    readonly value?: unknown;
+};
 
 // @public
 export type HitContext = {
@@ -420,6 +428,9 @@ export const PRESENT_FLAGS: ReadonlySet<string>;
 export function readOverrides(value: unknown): KeyOverrides;
 
 // @public
+export function readViewMeta(value: unknown): ViewMeta | undefined;
+
+// @public
 export function registerBuiltinTools(registry: Registry<string, Tool>): void;
 
 // @public
@@ -427,6 +438,9 @@ export function resetKey(overrides: KeyOverrides, id: string): KeyOverrides;
 
 // @public
 export function resolveKey(bindings: readonly KeyBinding[], k: KeyPress, flags: ReadonlySet<string>): KeyBinding | undefined;
+
+// @public
+export function restoreView(session: Session, meta: ViewMeta, shown: RecordId | undefined, exists: (id: RecordId) => boolean): void;
 
 // @public
 export function sameStyle(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
@@ -487,6 +501,9 @@ export const shapeTool: (defId?: string) => Tool;
 export function shownScreen(view: ReadView, wanted: RecordId | undefined): RecordId | undefined;
 
 // @public
+export const snapshotView: (session: Session, shown: RecordId | undefined) => ViewMeta;
+
+// @public
 export type StateNode = {
     readonly id: string;
     onEnter?(ctx: ToolCtx, info?: unknown): void;
@@ -497,6 +514,9 @@ export type StateNode = {
     onKeyDown?(ctx: ToolCtx, e: KeyInfo): Transition | undefined;
     onCancel?(ctx: ToolCtx): Transition | undefined;
 };
+
+// @public
+export function switchScreen(session: Session, id: RecordId): void;
 
 // @public
 export const textMaker: ElementMaker;
@@ -564,13 +584,23 @@ export type Transition = {
 export function union(base: readonly RecordId[], picked: readonly RecordId[]): readonly RecordId[];
 
 // @public
-export function useEditorKeys(input: EditorKeysInput): void;
+export function useEditorKeys(input: EditorKeysInput): (command: string, args?: unknown) => boolean;
 
 // @public
 export const VERSION: string;
 
 // @public
+export type ViewMeta = {
+    readonly screen: RecordId | undefined;
+    readonly selection: readonly RecordId[];
+    readonly camera: Camera;
+};
+
+// @public
 export function whenHolds(when: string | undefined, flags: ReadonlySet<string>): boolean;
+
+// @public
+export function withViewMeta(execute: Execute, session: Session, shown: () => RecordId | undefined): Execute;
 
 // @public
 export const ZOOM_LIMITS: {

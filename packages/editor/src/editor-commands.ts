@@ -52,6 +52,8 @@ export type EditorCommandCtx = {
   switchMode?(): void;
   /** Open the keyboard shortcuts dialog. */
   openHelp?(): void;
+  /** Show the view an undone or redone entry's meta holds again. */
+  restoreView?(meta: unknown): void;
 };
 
 /**
@@ -60,10 +62,22 @@ export type EditorCommandCtx = {
  * @public
  */
 export type CommandHistory = {
-  /** Undo the last step. */
-  undo(): void;
-  /** Redo the last undone step. */
-  redo(): void;
+  /** Undo the last step; its result carries the entry's meta. */
+  undo(): HistoryResult;
+  /** Redo the last undone step; its result carries the entry's meta. */
+  redo(): HistoryResult;
+};
+
+/**
+ * What a history step answers: whether it ran, and the entry's meta (the view to show again).
+ *
+ * @public
+ */
+export type HistoryResult = {
+  /** Whether the step ran. */
+  readonly ok: boolean;
+  /** The entry's meta when it ran: the view to show again. */
+  readonly value?: unknown;
 };
 
 /**
@@ -79,6 +93,12 @@ export type EditorCommand = {
   /** Run it with `args`; true when it acted. */
   run(ctx: EditorCommandCtx, args?: unknown): boolean;
 };
+
+/** An undo or redo that ran shows the entry's view again; true, as the key was the history's either way. */
+function step(ctx: EditorCommandCtx, result: HistoryResult): boolean {
+  if (result.ok) ctx.restoreView?.(result.value);
+  return true;
+}
 
 /** The select tool's idle state: where the selection keys act (as in M6, not mid-gesture or in another tool). */
 const selectIdle = (ctx: EditorCommandCtx) => ctx.tools.current === `${SELECT_TOOL}.idle`;
@@ -123,8 +143,7 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
       if (ctx.history === undefined) return false;
       // a gesture under way is cancelled first, so it cannot write over what the undo put back (M6.15 review F3)
       ctx.tools.cancel();
-      ctx.history.undo();
-      return true;
+      return step(ctx, ctx.history.undo());
     },
   },
   {
@@ -133,8 +152,7 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
     run: (ctx) => {
       if (ctx.history === undefined) return false;
       ctx.tools.cancel();
-      ctx.history.redo();
-      return true;
+      return step(ctx, ctx.history.redo());
     },
   },
   cameraCommand('camera.zoomIn', 'Zoom in', 'zoomIn'),

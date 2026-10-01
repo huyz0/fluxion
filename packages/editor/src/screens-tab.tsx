@@ -4,7 +4,7 @@ import type { Store } from '@fluxion/core';
 import { screensInOrder, useValue } from '@fluxion/render';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
 import { type ReactNode, useMemo } from 'react';
-import { screenLabel } from './screen-switch.js';
+import { screenLabel, switchScreen } from './screen-switch.js';
 import type { Session } from './session.js';
 
 /** Props of {@link ScreensTab}. */
@@ -29,7 +29,7 @@ export function ScreensTab(props: ScreensTabProps): ReactNode {
     <ul className="fx-chrome-screens" aria-label="Screens">
       {rows.map((r) => (
         <li key={r.id}>
-          <button type="button" className="fx-chrome-button" aria-pressed={r.id === shown} onClick={() => session.screen.set(r.id)}>
+          <button type="button" className="fx-chrome-button" aria-pressed={r.id === shown} onClick={() => switchScreen(session, r.id)}>
             {r.label}
           </button>
         </li>

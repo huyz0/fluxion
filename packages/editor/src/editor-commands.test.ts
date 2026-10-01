@@ -99,8 +99,11 @@ describe('editor commands (FR-EDT-012, FR-EDT-011)', () => {
 
   it('FR-EDT-006: undo and redo cancel the gesture first; without a history or a mode switch they are not taken', () => {
     const log: string[] = [];
-    const history = { undo: () => log.push('undo'), redo: () => log.push('redo') };
-    const { tools, key } = setup(() => ({ history, switchMode: () => log.push('switch') }));
+    const history = {
+      undo: () => (log.push('undo'), { ok: true, value: 'before' }),
+      redo: () => (log.push('redo'), { ok: true, value: 'after' }),
+    };
+    const { tools, key } = setup(() => ({ history, switchMode: () => log.push('switch'), restoreView: (meta: unknown) => log.push(`view ${String(meta)}`) }));
     tools.use('hand');
     tools.pointer({
       phase: 'down',
@@ -134,9 +137,16 @@ describe('editor commands (FR-EDT-012, FR-EDT-011)', () => {
     });
     expect([key(press('y', { mod: true })), tools.current]).toEqual([true, 'hand.idle']);
     expect(key(press('F5'))).toBe(true);
-    expect(log).toEqual(['undo', 'redo', 'switch']);
+    expect(log).toEqual(['undo', 'view before', 'redo', 'view after', 'switch']);
     const none = setup();
     expect([none.key(press('z', { mod: true })), none.key(press('F5'))]).toEqual([false, false]);
+  });
+
+  it('FR-EDT-006: an undo with nothing to undo shows no view, and the key is still the history`s', () => {
+    const log: string[] = [];
+    const history = { undo: () => ({ ok: false }), redo: () => ({ ok: false, value: 'stale' }) };
+    const { key } = setup(() => ({ history, restoreView: (meta: unknown) => log.push(`view ${String(meta)}`) }));
+    expect([key(press('z', { mod: true })), key(press('y', { mod: true })), log]).toEqual([true, true, []]);
   });
 
   it('FR-EDT-012: a tool shortcut yields to the state`s own key; other bindings come first; bad args are declined', () => {
@@ -152,7 +162,7 @@ describe('editor commands (FR-EDT-012, FR-EDT-011)', () => {
     // any other binding comes before the state's own keys
     const log: string[] = [];
     const greedy = keysOnly(tools, () => true);
-    const history = { undo: () => log.push('undo'), redo: () => log.push('redo') };
+    const history = { undo: () => (log.push('undo'), { ok: true }), redo: () => (log.push('redo'), { ok: true }) };
     dispatchKey(press('z', { mod: true }), DEFAULT_KEYMAP, commandMap(), { mode: 'edit', tools: greedy, history });
     // presenting, Esc is the mode's, not the tools'
     dispatchKey(press('Escape'), DEFAULT_KEYMAP, commandMap(), { mode: 'present', tools, switchMode: () => log.push('switch') });

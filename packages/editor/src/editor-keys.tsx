@@ -4,7 +4,7 @@
 // mode (M6 cp1 F6). Space held for panning stays the canvas's: a hold, not a command.
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { type CanvasSize, commandMap, dispatchKey, EDITOR_COMMANDS, type EditorCommandCtx } from './editor-commands.js';
 import { DEFAULT_KEYMAP, type KeyPress, toolBindings } from './keymap.js';
 import { applyOverrides, type KeyOverrides } from './keymap-overrides.js';
@@ -45,6 +45,8 @@ export type EditorKeysInput = {
   readonly overrides?: KeyOverrides | undefined;
   /** Open the keyboard shortcuts dialog (`?`). */
   readonly openHelp?: (() => void) | undefined;
+  /** Show the view an undone or redone entry holds again. */
+  readonly restoreView?: ((meta: unknown) => void) | undefined;
   /** Keys are not the editor's while a dialog is open. */
   readonly paused?: boolean | undefined;
 };
@@ -62,7 +64,7 @@ export const pressOf = (e: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'met
 
 /** What the editor's commands act on at a key press, in the session's mode. */
 function commandCtx(input: EditorKeysInput): EditorCommandCtx {
-  const { store, session, tools, present, viewport, area, switchMode, openHelp } = input;
+  const { store, session, tools, present, viewport, area, switchMode, openHelp, restoreView } = input;
   const presenting = session.mode.get() === 'present' && present !== undefined;
   return {
     mode: presenting ? 'present' : 'edit',
@@ -72,27 +74,34 @@ function commandCtx(input: EditorKeysInput): EditorCommandCtx {
     canvas: { viewport, targets: () => ({ screen: area, selection: selectionBounds(placements(store, session.selection.get())) }) },
     ...(switchMode === undefined ? {} : { switchMode }),
     ...(openHelp === undefined ? {} : { openHelp }),
+    ...(restoreView === undefined ? {} : { restoreView }),
   };
 }
 
 /**
  * Dispatch the window's key presses through the keymap while mounted; a key typed into a field, or
- * taken already (a tab list's or splitter's arrows, space held by the canvas), is left alone.
+ * taken already (a tab list's or splitter's arrows, space held by the canvas), is left alone. Returns
+ * a function that runs an editor command by id as the keys would (the toolbar's buttons, and later
+ * the palette and menus); true when it acted.
  *
  * @public
  */
-export function useEditorKeys(input: EditorKeysInput): void {
-  const { store, session, tools, present, viewport, area, switchMode, openHelp, overrides, paused } = input;
+export function useEditorKeys(input: EditorKeysInput): (command: string, args?: unknown) => boolean {
+  const latest = useRef(input);
+  latest.current = input;
+  const run = useCallback((command: string, args?: unknown) => COMMANDS.get(command)?.run(commandCtx(latest.current), args) === true, []);
+  const { store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, overrides, paused } = input;
   useEffect(() => {
     if (paused === true) return;
     const onKeyDown = (e: KeyboardEvent) => {
       // F5 is taken in a field too: it would reload the page, losing the document (M7.4 review F2)
       if (e.defaultPrevented || (isEditable(e.target) && e.key !== 'F5')) return;
-      const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp });
+      const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp, restoreView });
       const keymap = applyOverrides([...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list())], overrides ?? {});
       if (dispatchKey(pressOf(e), keymap, COMMANDS, ctx)) e.preventDefault();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [store, session, tools, present, viewport, area, switchMode, openHelp, overrides, paused]);
+  }, [store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, overrides, paused]);
+  return run;
 }

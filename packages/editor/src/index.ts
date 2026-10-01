@@ -42,6 +42,7 @@ export {
   EDITOR_COMMANDS,
   type EditorCommand,
   type EditorCommandCtx,
+  type HistoryResult,
 } from './editor-commands.js';
 export { type EditorKeysInput, isEditable, useEditorKeys } from './editor-keys.js';
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
@@ -79,7 +80,7 @@ export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
 export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
-export { screenLabel, shownScreen } from './screen-switch.js';
+export { screenLabel, shownScreen, switchScreen } from './screen-switch.js';
 export { deleteSelection, nudgeSelection, selectAll, selectTool } from './select-tool.js';
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
 export { createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';
@@ -97,6 +98,7 @@ export {
   type Transition,
 } from './tools.js';
 export { CONTEXT_MENU_EVENT, moved, pinchCamera, TOUCH } from './touch.js';
+export { readViewMeta, restoreView, snapshotView, type ViewMeta, withViewMeta } from './view-meta.js';
 
 /**
  * Version of this package.

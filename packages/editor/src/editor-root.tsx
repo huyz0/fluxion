@@ -26,6 +26,7 @@ import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { Splitter } from './splitter.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
+import { readViewMeta, restoreView, withViewMeta } from './view-meta.js';
 
 /**
  * Props of {@link EditorRoot}.
@@ -126,12 +127,18 @@ function useKeyOverrides(settings: SettingsStore): readonly [KeyOverrides, (over
   return [overrides, set];
 }
 
-/** Another screen shown: what was selected on the last one is not on this one, and the camera starts afresh to be fitted. */
-function useScreenChange(session: Session, screenId: RecordId | undefined): void {
+/**
+ * The shown screen changed without anyone choosing it (the one shown was deleted): the first takes over,
+ * session.screen follows it, and as for a choice nothing stays selected and the camera starts afresh to be
+ * fitted. A choice (the Screens tab, an undo) has set session.screen and its own view already.
+ */
+function useScreenFallback(session: Session, screenId: RecordId | undefined): void {
   const last = useRef(screenId);
   useEffect(() => {
     if (last.current === screenId) return;
     last.current = screenId;
+    if (session.screen.get() === screenId) return;
+    session.screen.set(screenId);
     session.selection.set([]);
     session.camera.set(DEFAULT_CAMERA);
   }, [session, screenId]);
@@ -163,8 +170,12 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   // the screen the Screens tab chose, or the first (hidden ones are edited too)
   const wanted = useValue(session.screen.get);
   const screenId = useValue(useMemo(() => store.query((view) => shownScreen(view, wanted)), [store, wanted]));
-  useScreenChange(session, screenId);
-  const { tools, present } = useTools(props, session, screenId);
+  useScreenFallback(session, screenId);
+  // every write carries the view around it, which undo and redo bring back (M7.7)
+  const shown = useRef(screenId);
+  shown.current = screenId;
+  const execute = useMemo(() => withViewMeta(props.execute, session, () => shown.current), [props.execute, session]);
+  const { tools, present } = useTools({ ...props, execute }, session, screenId);
   const switchMode = useModeSwitch(session, tools, present);
   const mode = useValue(session.mode.get);
   const revision = useRevision(store);
@@ -178,7 +189,14 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const [overrides, setOverrides] = useKeyOverrides(settings);
   const [help, setHelp] = useState(false);
   const openHelp = useCallback(() => setHelp(true), []);
-  useEditorKeys({ store, session, tools, present, viewport: box, area, switchMode, openHelp, overrides, paused: help });
+  const restore = useCallback(
+    (meta: unknown) => {
+      const view = readViewMeta(meta);
+      if (view !== undefined) restoreView(session, view, shown.current, (id) => store.get(id) !== undefined);
+    },
+    [session, store],
+  );
+  const run = useEditorKeys({ store, session, tools, present, viewport: box, area, switchMode, openHelp, restoreView: restore, overrides, paused: help });
   // a camera never moved (still the default) is fitted to the screen once the canvas has a size
   useEffect(() => {
     if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
@@ -212,6 +230,12 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
       <Toolbar layout={layout} onLayout={setLayout}>
         <ToolButtons session={session} tools={tools} />
         <ZoomControls store={store} session={session} box={box} area={area} />
+        <button type="button" className="fx-chrome-button" title="Undo" disabled={!store.history.canUndo()} onClick={() => run('history.undo')}>
+          Undo
+        </button>
+        <button type="button" className="fx-chrome-button" title="Redo" disabled={!store.history.canRedo()} onClick={() => run('history.redo')}>
+          Redo
+        </button>
         <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={switchMode}>
           Present
         </button>
@@ -227,7 +251,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
           {splitter('bottom')}
           {panel('bottom', <Timeline />)}
         </div>
-        <ImagePicker store={store} session={session} execute={props.execute} screenId={screenId} newId={newId} />
+        <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} />
         {splitter('right')}
         {panel('right', <Inspector session={session} />)}
       </div>

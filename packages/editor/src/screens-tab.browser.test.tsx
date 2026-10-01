@@ -67,6 +67,7 @@ describe('Screens tab (FR-EDT-006)', () => {
     await act(frame);
     act(() => void core.store.transact('delete screen', (tx) => tx.delete(second as RecordId)));
     await act(frame);
-    expect([shown(), rows().length]).toEqual([first, 1]);
+    // session.screen follows the fallback, so a screen that comes back (an undo) does not pull the canvas away again
+    expect([shown(), rows().length, session.screen.get()]).toEqual([first, 1, first]);
   });
 });

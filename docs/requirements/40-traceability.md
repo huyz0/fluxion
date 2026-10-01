@@ -164,7 +164,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +23 |
 | FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/selection.marquee.spec.ts` +20 |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +5 |
-| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `packages/core/src/commands.test.ts` +6 |
+| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `e2e/undo.across-screens.spec.ts` +8 |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +2 |

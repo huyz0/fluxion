@@ -56,6 +56,11 @@ export class EditorPage {
     return this.panel('Inspector').locator('p[aria-live]');
   }
 
+  /** The Screens tab's button for the screen named `name`; pressed while that screen is shown. */
+  screenTab(name: string): Locator {
+    return this.root.getByRole('list', { name: 'Screens' }).getByRole('button', { name, exact: true });
+  }
+
   /** The keyboard shortcuts dialog (`?`). */
   get keymapDialog(): Locator {
     return this.page.getByRole('dialog', { name: 'Keyboard shortcuts' });
