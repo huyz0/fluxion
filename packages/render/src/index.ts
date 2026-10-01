@@ -16,11 +16,13 @@ export { BUILTIN_MARKERS, registerBuiltinMarkers } from './markers.js';
 export { type ModePolicy, modePolicy, type RenderMode } from './mode-policy.js';
 export { pathData } from './path-data.js';
 export { createRenderRegistries, type ElementView, type ElementViewProps, type RenderRegistries } from './registries.js';
+export { RichText } from './rich-text.js';
 export { elementsInOrder, screensInOrder } from './screen-order.js';
 export { ScreenView, type ScreenViewProps, type ScreenViewSpec, type ViewBox } from './screen-view.js';
 export { ShapeView } from './shape-view.js';
 export { type RenderedHtml, type RenderHtmlOptions, renderDocumentToHtml } from './ssr.js';
 export { type CanvasTextMeasurer, createCanvasMeasurer } from './text-measurer.js';
+export { TextView } from './text-view.js';
 export { useValue } from './use-value.js';
 
 /**

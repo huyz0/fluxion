@@ -14,6 +14,7 @@ import { PlaceholderView } from './elements.js';
 import { labelStyle, plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
+import { RichText } from './rich-text.js';
 import { browserMeasurer, concreteFont, concreteLength, MeasurerContext, useFontGeneration } from './text-measurer.js';
 
 const stops = (paint: { readonly stops: ReadonlyArray<{ readonly offset: number; readonly css: string }> }) =>
@@ -258,10 +259,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
       </svg>
       {paragraphs.length === 0 ? null : (
         <div className="fx-label" style={{ ...labelStyle(style.font, style.opacity), ...text }}>
-          {paragraphs.map((text, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: paragraphs have no identity; their position is their key
-            <p key={i}>{text}</p>
-          ))}
+          <RichText doc={element.text} />
         </div>
       )}
       {props.children}

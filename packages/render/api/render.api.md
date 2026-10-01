@@ -192,6 +192,11 @@ export type RenderRegistries = {
 };
 
 // @public
+export function RichText(props: {
+    readonly doc: RichTextDoc | undefined;
+}): ReactNode;
+
+// @public
 export function screenArea(screen: Pick<ScreenRecord, "kind" | "size" | "viewport">): Rect;
 
 // @public
@@ -230,6 +235,9 @@ export type ScreenViewSpec = {
 
 // @public
 export function ShapeView(props: ElementViewProps): ReactNode;
+
+// @public
+export function TextView(props: ElementViewProps): ReactNode;
 
 // @public
 export function useValue<T>(signal: ReadSignal<T>): T;

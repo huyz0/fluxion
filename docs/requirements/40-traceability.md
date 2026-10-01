@@ -151,7 +151,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-009 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-010 | S | R7 | M29 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
-| FR-TXT-001 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
+| FR-TXT-001 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/builtins.rich-text.test.ts` +2 |
 | FR-TXT-002 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-003 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-004 | S | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | — |
@@ -165,7 +165,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/selection.marquee.spec.ts` +20 |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +5 |
 | FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `e2e/undo.across-screens.spec.ts` +8 |
-| FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
+| FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/render/src/builtins.rich-text.test.ts`, `packages/render/src/rich-text-marks.browser.test.tsx` |
 | FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +2 |
 | FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/parity.edit-vs-present.spec.ts` +3 |
@@ -327,7 +327,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +10 |
-| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/schema/src/rich-text.test.ts` |
+| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/render/src/builtins.rich-text.test.ts` +3 |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
