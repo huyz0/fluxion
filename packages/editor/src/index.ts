@@ -15,6 +15,16 @@ export {
   zoomTo100,
 } from './camera.js';
 export type { FitTargets } from './canvas-input.js';
+export {
+  type ConnectorHandle,
+  connectorHandleAt,
+  connectorHandlesOf,
+  endDrop,
+  type RoutedEnd,
+  type RoutedEnds,
+  type RouteReader,
+  waypointEdit,
+} from './connector-handles.js';
 export { connectorTool, createConnector, type Link } from './connector-tool.js';
 export {
   type CreateDeps,

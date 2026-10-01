@@ -4,6 +4,7 @@
 import type { ReadView, Registry, Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
+import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
@@ -85,6 +86,7 @@ function useTools(
       view: store,
       screen: screenId,
       shapeDefs: registries.shapeDefs,
+      route: (id) => routeConnector(store, registries, id),
       newId: () => createId(random),
       elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
       allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),

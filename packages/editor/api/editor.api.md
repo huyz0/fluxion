@@ -8,6 +8,7 @@ import { AnyRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
+import { ConnectorElement } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { FieldDef } from '@fluxion/schema';
 import { MarkerDef } from '@fluxion/core';
@@ -73,6 +74,19 @@ export type CommandHistory = {
 
 // @public
 export const commandMap: (commands?: readonly EditorCommand[]) => ReadonlyMap<string, EditorCommand>;
+
+// @public
+export type ConnectorHandle = {
+    readonly role: "end" | "mid";
+    readonly at: "source" | "target" | number;
+    readonly page: Vec2;
+};
+
+// @public
+export function connectorHandleAt(handles: readonly ConnectorHandle[], p: Vec2, reach: number): ConnectorHandle | undefined;
+
+// @public
+export function connectorHandlesOf(view: ReadView, route: RouteReader, id: RecordId): readonly ConnectorHandle[];
 
 // @public
 export function connectorTool(): Tool;
@@ -205,6 +219,17 @@ export type EditorRootProps = {
 
 // @public
 export type ElementMaker = (at: Placement) => AnyRecord;
+
+// @public
+export function endDrop(view: ReadView, shapeDefs: {
+    get(id: string): ShapeDef | undefined;
+}, drop: {
+    readonly connector: RecordId;
+    readonly end: "source" | "target";
+    readonly onto: RecordId | undefined;
+    readonly at: Vec2;
+    readonly newId: () => RecordId;
+}): readonly ParamCommand[];
 
 // @public
 export type Execute = (id: string, args: unknown, options?: CommandTxOptions) => Result<unknown, CommandFailure>;
@@ -510,6 +535,20 @@ export function resolveKey(bindings: readonly KeyBinding[], k: KeyPress, flags: 
 export function restoreView(session: Session, meta: ViewMeta, shown: RecordId | undefined, exists: (id: RecordId) => boolean): void;
 
 // @public
+export type RoutedEnd = {
+    readonly point: Vec2;
+};
+
+// @public
+export type RoutedEnds = {
+    readonly source: RoutedEnd;
+    readonly target: RoutedEnd;
+};
+
+// @public
+export type RouteReader = (id: RecordId) => RoutedEnds | undefined;
+
+// @public
 export function sameStyle(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
 
 // @public
@@ -621,6 +660,7 @@ export type ToolCtx = {
     readonly view: ReadView;
     readonly screen: RecordId | undefined;
     readonly shapeDefs?: ShapeDefs | undefined;
+    readonly route?: RouteReader | undefined;
     newId(): RecordId;
     readonly execute: Execute;
     seal(): void;
@@ -669,6 +709,9 @@ export type ViewMeta = {
     readonly selection: readonly RecordId[];
     readonly camera: Camera;
 };
+
+// @public
+export function waypointEdit(id: RecordId, original: ConnectorElement["route"], index: number, p: Vec2): ParamCommand;
 
 // @public
 export function whenHolds(when: string | undefined, flags: ReadonlySet<string>): boolean;

@@ -28,8 +28,8 @@ export type Link = {
   readonly curved: boolean;
 };
 
-/** The element a connector end at `id` binds: any hit element but a connector. */
-function bindable(ctx: ToolCtx, id: RecordId | undefined): RecordId | undefined {
+/** The element a connector end at `id` binds: any hit element but a connector (also where a dragged end lands). */
+export function bindable(ctx: ToolCtx, id: RecordId | undefined): RecordId | undefined {
   const r = id === undefined ? undefined : (ctx.view.get(id) as { readonly kind?: unknown } | undefined);
   return r === undefined || r.kind === 'connector' ? undefined : id;
 }

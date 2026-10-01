@@ -102,7 +102,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-CON-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-005 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/geometry/src/round.test.ts`, `packages/render/src/connector-view.test.tsx` |
 | FR-CON-006 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/connector-view.browser.test.tsx` +3 |
-| FR-CON-007 | M | R1 | M7 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
+| FR-CON-007 | M | R1 | M7 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/connectors.endpoint.spec.ts` +2 |
 | FR-CON-008 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-009 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-010 | S | R3 | M18 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
