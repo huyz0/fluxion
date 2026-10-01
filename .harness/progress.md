@@ -1337,3 +1337,4 @@ Keymap overrides and the `?` dialog. keymap-overrides.ts (pure): the settings va
 ## 2026-10-01 M7.6 (claude)
 
 `session.screen` names the screen the canvas shows (undefined or a screen that is gone: the first, hidden ones counted; screen-switch.ts, pure). The Screens tab lists the screens by name or position, the shown one pressed; a click sets it; switching clears the selection and refits the camera. LeftTabs takes optional `screens` props, so its other uses keep the placeholder. Thumbnails, reorder and rename stay M8. Mutation: 0 survivors on the pure file (screens-tab.tsx is .tsx).
+Carried review minor to M7.7: M7.6 F1, session.screen keeps the id of a deleted shown screen, so an undo that brings it back jumps the canvas to it again (and resets selection and camera); M7.7 restores the screen on undo deliberately, so decide there whether the stale id should clear.
