@@ -71,12 +71,17 @@ Chosen option 2.
 ### Consequences
 
 - Good: one measurer and one table for every host; the player gains no dependency; `core` stays pure.
+- Neutral: M7.10 delivers the measurer, the format, the recorder and the fixtures. No host calls
+  `createMetricsMeasurer` yet and the theme's default font (a system stack) has no recorded face, so a
+  default document is still measured by the canvas. Wiring the hosts to the bundled fonts, a producer for
+  uploaded fonts and the Node fixed-metrics fallback are M9 rows 8 and 10 and M10 row 13.
 - Good: the numbers are the DOM's, so a ligature or a kern against a space is in them. Measured against
   48 rendered samples (five sizes and weights, one- and multi-line, kerning, ligatures, accents) the
   recorded metrics are within 0.5 px of the DOM and the heights within 0.1 px.
 - Bad: metrics are recorded per font file, in one browser. A different engine (Firefox, WebKit) lays
-  text out slightly differently; the numbers are Chromium's, and the player stays within 1 px of it
-  for Latin text. Right-to-left, complex scripts and font features beyond kerning and ligatures
+  text out slightly differently; the numbers are Chromium's, and the 1 px claim is measured on
+  Chromium only. M9 row 8 measures it on Firefox and WebKit, or this ADR is amended to say Chromium
+  only (M7 cp1 F1). Right-to-left, complex scripts and font features beyond kerning and ligatures
   (small caps, tabular figures, `font-feature-settings`) are not in the table; those fall back to the
   canvas measurer, whose error is up to 2 px.
 - Bad: the table does not model `letter-spacing`; the style's `letterSpacing` must be added by the

@@ -1,0 +1,116 @@
+{
+  "milestone": "M7",
+  "checkpoint": "cp1",
+  "range": "89fce3b..42f062c",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "spec fidelity / architecture (FR-TXT-002, ADR-0148 vs the plan fontkit Node measurer)",
+      "detail": "ADR-0148 is sound for the library (recorded DOM advances, one pure measurer, no dependency, canvas fallback, T0 and T1 titled tests, CI green at 42f062c on a recording made on Windows), but FR-TXT-002 (the same in every host) is met only at library level. No host calls createMetricsMeasurer (createCanvasMeasurer is also unused outside tests); the theme default font is a system stack with no recorded face, so every default-themed document still measures through the canvas (up to 2 px by the ADR own numbers); the Node hosts with a fixed-metrics fallback do not exist; user fonts (M9 row 10 upload, Google fonts) have no producer, so Node has nothing for them; and the ADR claim that the player stays within 1 px of the Chromium numbers for Latin text on Firefox and WebKit is measured nowhere (the vitest browser project is Chromium only). The ADR hands the wiring to M9/M10, but M9 row 8 (font registry, measurer cache) and M10 row 13 do not name it, and the roadmap Deferred table has no entry. The M7 plan row 4 still says fontkit; 05 (Node), 06 line 96, ADR-0015, ADR-0018, and the M13 and M31 risk rows still say fontkit metrics.",
+      "failure_scenario": "M7 closes with FR-TXT-002 ticked by a gate that passes on Roboto fixtures. M9 ships bundled fonts and a font upload without anyone wiring the metrics measurer or writing a producer; the CLI and MCP measure with a different engine than the editor, and the M13 overlap check (0 overlaps in T0) disagrees with the browser by 1-2 px, which is the failure the requirement exists to prevent."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "coherence / spec fidelity (FR-TXT-001, FR-TXT-002, FR-SHP-006, FR-CON-006: what is measured vs what is drawn)",
+      "detail": "M7.8 and M7.9 draw rich text through RichText with planMarks and planBlock (a size or bold mark, headings at 2em/1.5em and bold, per-block lineHeight, spaceBefore/After, list indent 1.5em), while the fit and connector hit boxes still measure plainParagraphs(): lines at the label own font. M7.10 made plainParagraphs follow lines, hard breaks and fields but not marks or blocks, so the three places that decide what is drawn (rich-marks, rich-blocks, and the LISTS/depth walker in label.ts) agree on structure but not on size. The carry (M7.8 F1) exists only in progress.md and names only marks; M7.9 blocks widen it (headings, spacing, indent) and connector-hit.ts (a second consumer) is not named. The M7.12 backlog row and acceptance say nothing of it, so m7-complete cannot fail on it.",
+      "failure_scenario": "A shape whose text has a heading or a size-30 run: textFit grow/shrink and wrapping use 16 px lines, so the text overflows the shape or the grown height is short; a connector label with a size mark has a hit box smaller than what is drawn. The M7.12 inline edit then writes a wrong grown height in the same undo step, and the gate stays green because its only grow test uses plain text."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "plan health / process (carried items recorded only in progress.md)",
+      "detail": "Carried items: M7.6 F1 is closed in M7.7 (verified: the fallback sets session.screen). M7.10 F1 (CI on Linux and macOS) is closed: last-ci reports gates green at 42f062c. But M7.7 F1 (toolbar key hints from the live keymap, one helper shared with the palette), M7.3 F5/F6 (menu Paste after a keyboard copy; webkit custom types per origin) and M7.8 F1 are not in the receiving rows Task or Acceptance (M7.24, M7.22 and M7.12 read as planned) nor in the roadmap Deferred table; the M6 cp2 pattern wrote them into rows and Deferred. A row acceptance is what the executor and reviewer read.",
+      "failure_scenario": "M7.24 builds the palette with hard-coded hints and the toolbar buttons stay hintless; M7.22 asserts a custom-type paste cross-origin on webkit and fails or is quietly skipped; the progress.md paragraph is not read when each row starts."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "coherence / spec fidelity (M6 cp2 F3: one decision for text)",
+      "detail": "M7.8 gave kind text a built-in TextView (so paste has something to draw), but the text tool still creates a basic:text-box shape, and create-tool.ts still says text elements have no view yet. The decision is not written anywhere (no ADR line, no architecture note, only a built-in view in the row), so there are two things called text: a shape with a text-fit box (fits, grows) and an element with a view that never fits and has no box semantics. M7.12 (inline edit) and M7.23 (paste) do not say which elements the editor edits or that a pasted kind text element can be edited.",
+      "failure_scenario": "Plain-text paste (M7.23) makes kind text elements that the inline editor (M7.12) does not open, or that do not grow like a text tool box; the user sees two behaviours for the same visible text."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "architecture (contract: ADR-0013 amendment, ADR-0064 normalisation)",
+      "detail": "The M7.9 amendment (optional lineHeight, spaceBefore, spaceAfter) is an ADR-0013 section, validated by checkRichText with unit tests and mutation-clean, and the ADR-0064 normalisation lists them. Non-negotiable 6 asks for fixtures with a contract change; No fixture changes was stated, no document in fixtures/ carries the attributes, and the claim that older readers keep them as unknown attributes has no test. The M7.12 round-trip property test is where a ProseMirror load and save of these attrs would show a loss.",
+      "failure_scenario": "The editor save drops spaceBefore on a heading because the ProseMirror mapping lacks the attribute, and nothing but the property test catches it."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "gate honesty (m7-complete legs and spot-checked mutants)",
+      "detail": "Mutants checked. (a) planMarks accepts javascript: links: killed by the javascript: link test and the mark-link golden. (b) A golden file deleted and its mark broken: toMatchFileSnapshot would rewrite it with CI unset (the shared verify helper clears CI), but check-drift refuses a deleted __golden__ without a trailer and ci.yml runs with CI=true, so it is caught outside the gate. (c) metrics.ts nearest-weight tie or pair adjustment altered: killed by core metrics.test (mutation 0 survivors) and, for pairs, by the kerning samples in text-parity. Remaining limits: record-metrics.mjs --check runs in no gate, though the T1 test asserts the live DOM equals the recorded sample sizes to 1 px on every CI OS, which is the same drift check; the bundle leg checks only package.json dependencies for the library beside the player size; the text.inline-edit leg requires one title, so Ctrl+B/I/U and Esc-one-undo rest on the spec file passing, whose content is unconstrained.",
+      "failure_scenario": "M7.12 lands an inline-edit spec that tests only the grow title; the gate passes with Esc committing two undo steps."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "architecture / public API (editor and core exports)",
+      "detail": "Layering and purity hold: metrics.ts (core) is pure with an injected fallback, the fonts scripts and fixtures are dev tooling outside any package (knip entry, biome ignore for generated JSON, OFL licence kept, no runtime dependency added), the rich-text planners are pure, view-meta takes the session as an argument, schema stays pure. The editor public API grows by about 200 lines of api.md (keymap, overrides, commands, ViewMeta and its helpers, screen-switch) and core by FaceMetrics, readFontMetrics and createMetricsMeasurer, each reviewed in api reports. withViewMeta mutates the object history keeps (metaAfter) from a queueMicrotask, which is correct for the select and create tools but assumes every selection change ends in the same task.",
+      "failure_scenario": "M7.12 or M7.21 sets the selection after an await (a ProseMirror commit, an async clipboard read): metaAfter holds the old selection and redo restores the wrong one."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "area": "plan health",
+      "detail": "28 rows against the plan 17 (1.65x), declared at planning (two ADR rows, keymap first, a screen switch before undo, rich text, handles and clipboard split, two checkpoints). The ten rows done are 3 ADR/gate rows and 7 task rows, with one CI fix (M7.7, a macOS-only test expectation) and no reopened rows; cp1 ran after 10 rows. Row sizes are uneven: M7.4 (1214 lines) and M7.10 (1077: an ADR, scripts, fixtures, a measurer and two tests) are the largest, and M7.12 bundles the ProseMirror mapping with round trip, shortcuts, Esc undo, the grow edit and the bundle baseline.",
+      "failure_scenario": "M7.12 splits mid-flight as the M6 tool row did (three times) and the growth shows only at the final review."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "hand-off",
+      "target": "M9 row 8 and row 10 + M10 row 13 + roadmap Deferred table",
+      "note": "M9 row 8 wires the metrics measurer into the browser editor and player (createMetricsMeasurer over the bundled fonts, canvas fallback; T1: a document in a bundled font measures within 1 px on the metrics path) and records metrics for each bundled font; M9 row 10 and M10 row 13 give uploaded and embedded fonts a producer that writes the ADR-0148 format (a build or host tool, never the player), and the Node hosts (CLI, MCP, layout workers) take the same table; a T1 on firefox and webkit measures the 1 px claim for Latin text, or the ADR is amended to say Chromium only. The ADR-0148 M9/M10 becomes those rows. The M7.27 docs sweep updates the fontkit mentions (05, 06, ADR-0015, ADR-0018, M13, M31, the M7 plan row 4)."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "new row M7.29 (fit measures what is drawn), M7.12 depends on it; m7-complete gains its title",
+      "note": "M7.29: the shape text fit and the connector-hit label box measure the rich text as drawn: runs at their size, weight and font marks, headings at their size and weight, block lineHeight, spaceBefore/After, and list indent, through one description shared with the RichText planners rather than a third walker. T0 titled FR-TXT-002: a fit measures marks and blocks as they are drawn (a size-30 run and an h1 give the height the DOM gives, within 1 px, over the Roboto fixtures), and a connector label with a size mark gets a hit box covering it. The M7.12 acceptance then only writes the grown height from that fit. m7-complete pins the title."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "rows M7.12, M7.22, M7.24 (Task/Acceptance text) + roadmap Deferred table",
+      "note": "Write the carries into the rows: M7.24 builds one helper (chords of a command under the effective keymap, formatChord applied) used by the palette hints and the toolbar Undo/Redo (aria-keyshortcuts and title), with a T1 title; M7.22 requests unsanitized text/html where supported, adds a keyboard-copy then menu-paste E2E, and does not assert the custom-type path cross-origin on webkit (ADR-0020 wording fixed); M7.12 cites M7.29. Each also gets a roadmap Deferred line."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M7.12 and M7.23 acceptance + create-tool.ts comment",
+      "note": "Write the decision in 04-rendering-and-editor (or the ADR-0064 text section): the text tool places a basic:text-box shape; kind text elements (paste, import, files) draw through TextView and are opened by the same inline editor (E2E: double-click a pasted text element edits it, Esc is one undo step). Correct the stale no-view comment in create-tool.ts in that commit."
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "The attrs are optional, additive, validated and mutation-tested; the M7.12 required round-trip property test over the ADR-0013 subset (including lineHeight, spaceBefore, spaceAfter) is the fixture-level check; the M7.12 review must see them in the arbitraries."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Golden deletion is blocked by check-drift and CI=true; --check drift is covered by the T1 live-versus-recorded assertion on every CI OS; the inline-edit spec content is judged by the M7.12 own review, and its Esc-one-undo and Ctrl+B/I/U assertions are in the row acceptance."
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "API growth is reviewed per commit in the api reports and is the editor, not the SDK (M26 shrinks it); the metaAfter refresh is documented, and the M7.12 and M7.21 reviews check that an async selection change goes through the same task or sets metaAfter itself."
+    },
+    {
+      "finding": "F8",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt + M7.md Learned",
+      "note": "Growth was planned (rows split at planning, not found mid-flight); lesson: a row that bundles an ADR, a script, fixtures and two measurers (M7.10) or a library mapping with editing and a bundle baseline (M7.12) is split at planning."
+    }
+  ],
+  "planDelta": "One new row, M7.29 (fit measures what is drawn; M7.12 depends on it; m7-complete pins its title), for F2. M7.12, M7.22, M7.23 and M7.24 gain text from F2 to F4 in their Task/Acceptance, with roadmap Deferred lines. F1 hands the metrics measurer host wiring, font producers and the cross-engine check to M9 rows 8 and 10 and M10 row 13; the fontkit mentions are swept in M7.27. 29 rows against the plan 17 (1.7x). M7.11 closes on this record."
+}

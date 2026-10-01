@@ -92,6 +92,9 @@ leg('rich text: a golden per mark and block, links safe, kind text drawn, connec
 );
 const MEASURE = 'FR-TXT-002: measured size equals rendered size ±1 px';
 leg('both measurers agree with the rendered size within ±1 px (T0 and T1)', () => titled([['M7.10', MEASURE, RENDER], browser('M7.10', MEASURE, RENDER)]));
+leg('a fit measures marks and blocks as they are drawn (M7 cp1 F2)', () =>
+  titled([['M7.29', 'FR-TXT-002: a fit measures marks and blocks as they are drawn', RENDER]]),
+);
 leg('inline editing; a grow shape grows in the same undo step (text.inline-edit)', () =>
   titledSpec('e2e/text.inline-edit.spec.ts', DESKTOP, ["FR-SHP-006: editing a grow shape's text grows it in the same undo step"]),
 );
@@ -167,7 +170,12 @@ leg('system paste: SVG is sanitised (the security subset), images and text land 
 });
 
 // ── commands, menus, validation (plan rows 13, 15, 16) ──────────────────────────────────────────────
-leg('the palette lists every registered command (T1)', () => titled([browser('M7.24', 'FR-EDT-011: every registered command appears')]));
+leg('the palette lists every registered command; the toolbar shows the keys of Undo and Redo (T1)', () =>
+  titled([
+    browser('M7.24', 'FR-EDT-011: every registered command appears'),
+    browser('M7.24', 'FR-EDT-012: the toolbar Undo and Redo show the keys their commands have now'),
+  ]),
+);
 leg('context menus with select same type and style, desktop and touch (context-menu.element)', () => {
   const desktop = e2e(['e2e/context-menu.element.spec.ts'], DESKTOP);
   return desktop === true ? e2e(['e2e/context-menu.element.spec.ts'], MOBILE) : desktop;
