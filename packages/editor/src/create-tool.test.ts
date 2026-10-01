@@ -2,6 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { press } from './__fixtures__/keys.js';
 import { registerBuiltinTools } from './builtin-tools.js';
 import { createElement, dragBox, frameMaker, frontIndex, imageAssets, imageMaker, shapeMaker, textMaker } from './create-tool.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
@@ -143,7 +144,7 @@ describe('creation tools (FR-EDT-003)', () => {
 
   it('FR-EDT-003: a click with the shape tool adds one rect, selected, in one undo step, and select is back', () => {
     const { core, session, tools, added, record } = setup();
-    tools.key(key('r'));
+    press(tools, key('r'));
     expect(tools.current).toBe('shape.idle');
     tools.pointer(at('down', 300, 200));
     expect(tools.current).toBe('shape.sizing');
@@ -164,7 +165,7 @@ describe('creation tools (FR-EDT-003)', () => {
       ['f', 'frame'],
       ['r', 'shape'],
     ] as const) {
-      tools.key(key(k));
+      press(tools, key(k));
       tools.pointer(at('down', 10, 20));
       tools.pointer(at('move', 60, 50));
       expect(session.draft.get()).toEqual({ x: 10, y: 20, w: 50, h: 30 });
@@ -177,12 +178,12 @@ describe('creation tools (FR-EDT-003)', () => {
     expect([text?.defId, rect?.defId, rect?.text]).toEqual(['basic:text-box', 'basic:rect', undefined]);
     expect(JSON.stringify(text?.text)).toContain('"text":"Text"');
     expect(added()).toHaveLength(3);
-    tools.key(key('r'));
+    press(tools, key('r'));
     tools.pointer(at('down', 10, 20, { button: 2 }));
     expect(tools.current).toBe('shape.idle');
     tools.pointer(at('down', 10, 20));
     tools.pointer(at('move', 60, 50));
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([tools.current, session.draft.get()]).toEqual(['shape.idle', undefined]);
     tools.pointer(at('up', 60, 50));
     expect(added()).toHaveLength(3);
@@ -190,7 +191,7 @@ describe('creation tools (FR-EDT-003)', () => {
 
   it('FR-EDT-003: the image tool leaves its box to the picker, adding nothing itself', () => {
     const { session, tools, added } = setup();
-    tools.key(key('i'));
+    press(tools, key('i'));
     tools.pointer(at('down', 100, 100));
     tools.pointer(at('up', 100, 100));
     expect(session.imagePick.get()).toEqual({ x: -20, y: 20, w: 240, h: 160 });

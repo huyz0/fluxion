@@ -160,17 +160,17 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-TXT-007 | S | R4 | M23 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-008 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-EDT-001 | M | R1 | M6 | [15-editor.md](15-editor.md) | `apps/studio/src/bootstrap.browser.test.ts` +15 |
-| FR-EDT-002 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/canvas.pan-zoom.spec.ts` +7 |
+| FR-EDT-002 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/canvas.pan-zoom.spec.ts` +8 |
 | FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +23 |
-| FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/selection.marquee.spec.ts` +19 |
-| FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +4 |
-| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `packages/core/src/commands.test.ts` +3 |
+| FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/selection.marquee.spec.ts` +20 |
+| FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +5 |
+| FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `packages/core/src/commands.test.ts` +4 |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +2 |
 | FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/parity.edit-vs-present.spec.ts` +3 |
-| FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
-| FR-EDT-012 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
+| FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/editor-commands.test.ts` |
+| FR-EDT-012 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/editor-commands.test.ts`, `packages/editor/src/keymap.test.ts` |
 | FR-EDT-013 | S | R1 | M7 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-014 | M | R2 | M15 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-015 | S | R3 | M19 | [15-editor.md](15-editor.md) | — |

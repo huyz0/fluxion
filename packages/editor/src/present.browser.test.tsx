@@ -65,6 +65,19 @@ describe('present in place (FR-EDT-009)', () => {
     expect(session.mode.get()).toBe('edit');
     expect(key('F5', { ctrlKey: true })).toBe(false);
     expect(session.mode.get()).toBe('edit');
+    // typed into a field, F5 still switches (it would reload the page); other keys stay the field's
+    const field = document.createElement('textarea');
+    document.body.append(field);
+    const fromField = (k: string) => {
+      const e = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true });
+      act(() => {
+        field.dispatchEvent(e);
+      });
+      return e.defaultPrevented;
+    };
+    expect([fromField('F5'), session.mode.get(), fromField('Escape'), session.mode.get()]).toEqual([true, 'present', false, 'present']);
+    key('F5');
+    field.remove();
     // the toolbar's Present button presents too
     const button = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Present') as HTMLButtonElement;
     expect([button.title, button.getAttribute('aria-keyshortcuts')]).toEqual(['Present (F5)', 'F5']);

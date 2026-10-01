@@ -1,9 +1,10 @@
 // What the canvas's wheel and keyboard input do to the camera (FR-EDT-002): pure, so the DOM glue in
 // use-canvas-input.ts stays thin. A plain wheel pans, ctrl/meta + wheel (and a trackpad pinch, which
 // browsers send as one) zooms about the pointer; shortcuts zoom about the canvas centre, fit the
-// screen and go to 100 %.
+// screen and go to 100 %, as the keymap binds them (keymap.ts).
 import type { Box, Vec2 } from '@fluxion/geometry';
 import { type Camera, fitBox, panBy, zoomBy, zoomTo100 } from './camera.js';
+import { DEFAULT_KEYMAP, EDIT_FLAGS, resolveKey } from './keymap.js';
 
 /**
  * A wheel event as the canvas sees it.
@@ -92,28 +93,54 @@ export type FitTargets = {
 };
 
 /**
- * `camera` after the shortcut `k`, or undefined when `k` is no camera shortcut: ctrl/meta + `=` or
- * `+` zooms in, ctrl/meta + `-` zooms out (about the centre), ctrl/meta + `0` and shift + `0` go to
- * 100 %, shift + `1` fits the screen and shift + `2` the selection (none when there is none to fit).
+ * The camera steps the keymap's `camera.*` commands take: zoom in or out about the centre, go to
+ * 100 %, fit the screen or the selection.
+ *
+ * @public
+ */
+export type CameraStep = 'zoomIn' | 'zoomOut' | 'zoom100' | 'fitScreen' | 'fitSelection';
+
+/**
+ * `camera` after the step `step` in a canvas of size `viewport`, or undefined when a fit has nothing
+ * to fit.
+ *
+ * @public
+ */
+export function cameraStep(camera: Camera, step: CameraStep, viewport: { readonly w: number; readonly h: number }, fit: FitTargets): Camera | undefined {
+  const centre = { x: viewport.w / 2, y: viewport.h / 2 };
+  if (step === 'zoomIn') return zoomBy(camera, centre, ZOOM_STEP);
+  if (step === 'zoomOut') return zoomBy(camera, centre, 1 / ZOOM_STEP);
+  if (step === 'zoom100') return zoomTo100(camera, viewport);
+  const target = step === 'fitScreen' ? fit.screen : fit.selection;
+  return target === undefined ? undefined : fitBox(target, viewport);
+}
+
+/** The camera step of each `camera.*` command. */
+const STEPS: Readonly<Record<string, CameraStep>> = {
+  'camera.zoomIn': 'zoomIn',
+  'camera.zoomOut': 'zoomOut',
+  'camera.zoom100': 'zoom100',
+  'camera.fitScreen': 'fitScreen',
+  'camera.fitSelection': 'fitSelection',
+};
+
+/**
+ * The camera step the command `command` takes, if it is a camera command.
+ *
+ * @public
+ */
+export const cameraStepOf = (command: string): CameraStep | undefined => STEPS[command];
+
+/**
+ * `camera` after the shortcut `k` as the default keymap binds it (M7.4), or undefined when `k` is no
+ * camera shortcut: ctrl/meta + `=` or `+` zooms in, ctrl/meta + `-` zooms out (about the centre),
+ * ctrl/meta + `0` and shift + `0` go to 100 %, shift + `1` fits the screen and shift + `2` the
+ * selection (none when there is none to fit).
  *
  * @public
  */
 export function shortcutCamera(camera: Camera, k: KeyInput, viewport: { readonly w: number; readonly h: number }, fit: FitTargets): Camera | undefined {
-  if (k.alt) return undefined;
-  const centre = { x: viewport.w / 2, y: viewport.h / 2 };
-  if (k.mod) {
-    if (k.key === '=' || k.key === '+') return zoomBy(camera, centre, ZOOM_STEP);
-    if (k.key === '-') return zoomBy(camera, centre, 1 / ZOOM_STEP);
-    return k.code === 'Digit0' ? zoomTo100(camera, viewport) : undefined;
-  }
-  if (!k.shift) return undefined;
-  if (k.code === 'Digit0') return zoomTo100(camera, viewport);
-  const target = FIT_KEYS[k.code]?.(fit);
-  return target === undefined ? undefined : fitBox(target, viewport);
+  // tzap disable next-line StringLiteral: no command has the fallback's id, whatever it is
+  const step = cameraStepOf(resolveKey(DEFAULT_KEYMAP, k, EDIT_FLAGS)?.command ?? '');
+  return step === undefined ? undefined : cameraStep(camera, step, viewport, fit);
 }
-
-/** What shift + each digit fits. */
-const FIT_KEYS: Readonly<Record<string, (fit: FitTargets) => Box | undefined>> = {
-  Digit1: (fit) => fit.screen,
-  Digit2: (fit) => fit.selection,
-};

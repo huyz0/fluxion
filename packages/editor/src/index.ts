@@ -14,6 +14,7 @@ export {
   zoomBy,
   zoomTo100,
 } from './camera.js';
+export type { FitTargets } from './canvas-input.js';
 export { connectorTool, createConnector, type Link } from './connector-tool.js';
 export {
   type CreateDeps,
@@ -32,15 +33,39 @@ export {
   textMaker,
   textTool,
 } from './create-tool.js';
+export {
+  type CanvasSize,
+  type CommandCanvas,
+  type CommandHistory,
+  commandMap,
+  dispatchKey,
+  EDITOR_COMMANDS,
+  type EditorCommand,
+  type EditorCommandCtx,
+} from './editor-commands.js';
+export { type EditorKeysInput, isEditable, useEditorKeys } from './editor-keys.js';
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
 export { createHitIndex, type HitIndex, PICK_PX } from './hit-test.js';
 export type { HitContext } from './hittable.js';
+export {
+  chordOf,
+  DEFAULT_KEYMAP,
+  EDIT_FLAGS,
+  type KeyBinding,
+  type KeyPress,
+  keymapConflicts,
+  normalizeChord,
+  PRESENT_FLAGS,
+  resolveKey,
+  toolBindings,
+  whenHolds,
+} from './keymap.js';
 export { LASER_TRAIL, laserTool } from './laser-tool.js';
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
 export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
-export { selectTool } from './select-tool.js';
+export { deleteSelection, nudgeSelection, selectAll, selectTool } from './select-tool.js';
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
 export { createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';
 export { memorySettings, type SettingsStore } from './settings.js';

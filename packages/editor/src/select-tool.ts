@@ -1,33 +1,50 @@
 // The select tool (FR-EDT-003, FR-EDT-004, FR-EDT-005): a click picks the topmost element (shift
 // toggles it, and a click inside a multi-selection narrows it); a drag from empty canvas is a marquee;
-// a drag from an element moves the selection, alt-drag moves copies of it; arrow keys nudge it 1 px,
-// or 10 px with shift; ctrl/cmd + A selects all. A drag is one gesture, so one undo step.
+// a drag from an element moves the selection, alt-drag moves copies of it. The keys (arrows nudge,
+// ctrl/cmd + A selects all, Delete deletes) are keymap bindings whose commands call the functions
+// here while the tool is idle (M7.4). A drag is one gesture, so one undo step.
 import type { Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { duplicates, moved, reframed, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
-import { type KeyInfo, SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
+import { SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
 import { TOUCH } from './touch.js';
 import { type Box2, handlePoint, resize, rotation } from './transform.js';
 
-/** The nudge of each arrow key, page units (shift: ten times as far). */
-const ARROWS: { readonly [key: string]: Vec2 } = {
-  ArrowLeft: { x: -1, y: 0 },
-  ArrowRight: { x: 1, y: 0 },
-  ArrowUp: { x: 0, y: -1 },
-  ArrowDown: { x: 0, y: 1 },
-};
-
-/** Nudge the selection by an arrow key (one undo step each); false for any other key or nothing selected. */
-function nudge(ctx: ToolCtx, e: KeyInfo): boolean {
-  const step = ARROWS[e.key];
+/**
+ * Nudge the selection by `d` page units, one undo step; false with nothing selected.
+ *
+ * @public
+ */
+export function nudgeSelection(ctx: ToolCtx, d: Vec2): boolean {
   const selected = ctx.session.selection.get();
-  if (step === undefined || e.mod || e.alt || selected.length === 0) return false;
-  const k = e.shift ? 10 : 1;
+  if (selected.length === 0) return false;
   // nothing of its own to move (a bound connector): the command refuses an empty list
-  ctx.execute('element.updateMany', { updates: moved(starts(ctx.view, selected), { x: step.x * k, y: step.y * k }) });
+  ctx.execute('element.updateMany', { updates: moved(starts(ctx.view, selected), d) });
+  return true;
+}
+
+/**
+ * Select every selectable element of the canvas's screen.
+ *
+ * @public
+ */
+export function selectAll(ctx: ToolCtx): void {
+  ctx.session.selection.set(ctx.allElements());
+}
+
+/**
+ * Delete the selection, one undo step, and select nothing; false with nothing selected.
+ *
+ * @public
+ */
+export function deleteSelection(ctx: ToolCtx): boolean {
+  const ids = ctx.session.selection.get();
+  if (ids.length === 0) return false;
+  ctx.execute('element.delete', { ids });
+  ctx.session.selection.set([]);
   return true;
 }
 
@@ -162,12 +179,6 @@ function idle(p: Press): StateNode {
       if (p.handle !== undefined) return { to: p.handle.id === 'rotate' ? 'rotating' : 'resizing' };
       pressed(ctx, e, p);
       return { to: 'pointing' };
-    },
-    onKeyDown: (ctx, e) => {
-      if (nudge(ctx, e)) return { to: 'idle' };
-      if (!(e.mod && e.key.toLowerCase() === 'a')) return undefined;
-      ctx.session.selection.set(ctx.allElements());
-      return { to: 'idle' };
     },
   };
 }

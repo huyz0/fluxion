@@ -2,6 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { press } from './__fixtures__/keys.js';
 import { registerBuiltinTools } from './builtin-tools.js';
 import { LASER_TRAIL } from './laser-tool.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
@@ -54,14 +55,14 @@ describe('the laser (FR-EDT-003)', () => {
     expect(edit.list().map((t) => t.id)).not.toContain('laser');
     expect(present.list().map((t) => t.id)).toEqual(['laser']);
     // in edit, L is no shortcut and the laser cannot be picked: select stands in
-    expect(edit.key(key('l'))).toBe(false);
+    expect(press(edit, key('l'))).toBe(false);
     session.tool.set('laser');
     expect(edit.current).toBe('select.idle');
     // in present mode the session's edit tool falls back to the laser, and L picks it
     session.tool.set('select');
     expect(present.current).toBe('laser.idle');
-    expect(present.key(key('l'))).toBe(true);
-    expect(present.key(key('v'))).toBe(false);
+    expect(press(present, key('l'))).toBe(true);
+    expect(press(present, key('v'))).toBe(false);
   });
 
   it('FR-EDT-003: the laser follows the pointer with a short trail and writes nothing', () => {
@@ -78,7 +79,7 @@ describe('the laser (FR-EDT-003)', () => {
     present.pointer(at('up', 60, 60));
     expect([session.selection.get(), core.store.toDocument(), core.store.history.undoDepth]).toEqual([[], before, 0]);
     // Esc or the window losing focus clears the trail
-    present.key(key('Escape'));
+    press(present, key('Escape'));
     expect(session.laser.get()).toEqual([]);
     present.pointer(at('move', 1, 1));
     present.cancel();

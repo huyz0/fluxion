@@ -1,14 +1,14 @@
 // Present in place (FR-EDT-009, 04 §3.8): F5 swaps the editor for the screen presented, fitted to the
 // window, with no edit chrome (no panels, overlay, selection or hover); Esc or F5 again returns. While
 // presenting the pointer goes to the present-mode tools (the laser) and every write is refused (the
-// read-only guard, FR-PRS-004); keys edit nothing, since the canvas and its shortcuts are gone. The
+// read-only guard, FR-PRS-004); keys edit nothing: the keymap's edit bindings do not apply there. The
 // laser's trail is drawn above the screen's elements (04 §2.1 overlays layer, player's LaserTrail).
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { LaserTrail, useElementBox } from '@fluxion/player';
 import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type ReactNode, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { usePointerInput } from './pointer-input.js';
 import { fitCamera } from './present-mode.js';
 import { DEFAULT_CAMERA, type Session } from './session.js';
@@ -33,38 +33,15 @@ export function useRevision(store: Store): number {
   return useSyncExternalStore(subscribe, () => count.current);
 }
 
-/** A key sent to the present-mode tools; true when one took it. */
-const presentKey = (present: ToolDispatcher, e: KeyboardEvent) => present.key({ key: e.key, shift: e.shiftKey, alt: e.altKey, mod: e.ctrlKey || e.metaKey });
-
-/** Whether `e` is F5, without a modifier but shift. */
-const isF5 = (e: KeyboardEvent) => e.key === 'F5' && !e.ctrlKey && !e.metaKey && !e.altKey;
-
 /**
- * F5 (shift+F5: from the current screen) presents in place, and F5 or Esc returns to editing; the
- * edit tool is put back. While presenting, other keys go to the present-mode tools. Returns the
- * switch, for a button.
+ * The switch between editing and presenting in place (F5, shift+F5 and Esc bind to it through the
+ * keymap's `mode.toggle`, M7.4): the edit tool is saved on the way in and put back on the way out.
  *
  * @public
  */
-export function useModeKeys(session: Session, edit: ToolDispatcher, present: ToolDispatcher): () => void {
+export function useModeSwitch(session: Session, edit: ToolDispatcher, present: ToolDispatcher): () => void {
   const saved = useRef(session.tool.get());
-  useEffect(() => {
-    const onKeyDown = modeKeys(session, { edit, present }, saved);
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [session, edit, present]);
-  return () => switchMode(session, session.mode.get() === 'present' ? present : edit, saved);
-}
-
-/** The window's key handler for the modes: F5 and Esc switch; while presenting, the present tools'. */
-function modeKeys(session: Session, tools: { readonly edit: ToolDispatcher; readonly present: ToolDispatcher }, saved: { current: string }) {
-  return (e: KeyboardEvent) => {
-    const presenting = session.mode.get() === 'present';
-    // F5 would reload the page: it is taken either way
-    const switching = isF5(e) || (presenting && e.key === 'Escape');
-    if (switching) switchMode(session, presenting ? tools.present : tools.edit, saved);
-    if (switching || (presenting && presentKey(tools.present, e))) e.preventDefault();
-  };
+  return useCallback(() => switchMode(session, session.mode.get() === 'present' ? present : edit, saved), [session, edit, present]);
 }
 
 /**

@@ -1,8 +1,9 @@
 // Tools (FR-EDT-003, ADR-0028, 04 §3.2): hand-rolled statecharts. A tool is a root state node whose
 // children are its states; handlers return a transition as plain data, so a tool is tested by feeding
-// it PointerInfo streams with no DOM. The dispatcher sends every input to the current state, switches
-// tools by their shortcuts, and on Esc cancels: a state returns to its tool's start, and a tool at its
-// start returns to `select`.
+// it PointerInfo streams with no DOM. The dispatcher sends every input to the current state; switching
+// tools and Esc are its `use` and `escape`, which the keymap's commands call (M7.4: a tool's shortcut
+// is a keymap binding). On Esc a state returns to its tool's start, and a tool at its start returns to
+// `select`.
 import { createRegistry, type ReadView, type Registry } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
@@ -85,7 +86,7 @@ export type StateNode = {
   onPointerMove?(ctx: ToolCtx, e: PointerInfo): Transition | undefined;
   /** A pointer went up. */
   onPointerUp?(ctx: ToolCtx, e: PointerInfo): Transition | undefined;
-  /** A key went down that no dispatcher rule took. */
+  /** A key went down (before a tool's shortcut, after the keymap's other bindings). */
   onKeyDown?(ctx: ToolCtx, e: KeyInfo): Transition | undefined;
   /** Esc, a cancelled pointer, the window losing focus. */
   onCancel?(ctx: ToolCtx): Transition | undefined;
@@ -145,8 +146,14 @@ export function createToolRegistry(): Registry<string, Tool> {
 export type ToolDispatcher = {
   /** A pointer event; true when a state took it. */
   pointer(e: PointerInfo): boolean;
-  /** A key press; true when it was taken (a shortcut, Esc, or a state's handler). */
+  /** A key press for the current state (before a tool shortcut, after other bindings); true when its handler took it. */
   key(e: KeyInfo): boolean;
+  /** Esc: the state's cancel, else back to the tool's start, else to `select`; always taken. */
+  escape(): boolean;
+  /** Switch to the tool `id`; false when there is none of that id in this mode. */
+  use(id: string): boolean;
+  /** What the tools work with (the keymap's commands act through it too). */
+  readonly ctx: ToolCtx;
   /** Cancel what is going on (the window lost focus). */
   cancel(): void;
   /** The current tool's id and state's id, e.g. `hand.panning`. */
@@ -218,12 +225,6 @@ class Dispatcher implements ToolDispatcher {
     else this.#switchTo(SELECT_TOOL);
   }
 
-  /** The tool whose shortcut `e` is, if any: an unmodified key. */
-  #shortcut(e: KeyInfo): string | undefined {
-    if (e.mod || e.alt) return undefined;
-    return this.list().find((t) => t.shortcut === e.key.toLowerCase())?.id;
-  }
-
   pointer(e: PointerInfo): boolean {
     this.#sync();
     if (e.phase === 'cancel') {
@@ -238,19 +239,27 @@ class Dispatcher implements ToolDispatcher {
 
   key(e: KeyInfo): boolean {
     this.#sync();
-    if (e.key === 'Escape') {
-      this.#escape();
-      return true;
-    }
     const own = this.#state?.onKeyDown?.(this.#ctx, e);
-    if (own !== undefined) {
-      this.#go(own);
-      return true;
-    }
-    const id = this.#shortcut(e);
-    if (id === undefined) return false;
+    if (own === undefined) return false;
+    this.#go(own);
+    return true;
+  }
+
+  escape(): boolean {
+    this.#sync();
+    this.#escape();
+    return true;
+  }
+
+  use(id: string): boolean {
+    this.#sync();
+    if (!inMode(this.#registry.get(id), this.#mode)) return false;
     this.#switchTo(id);
     return true;
+  }
+
+  get ctx(): ToolCtx {
+    return this.#ctx;
   }
 
   cancel(): void {

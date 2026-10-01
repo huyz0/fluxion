@@ -2,6 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { press } from './__fixtures__/keys.js';
 import { handTool, registerBuiltinTools } from './builtin-tools.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
 import { selectTool } from './select-tool.js';
@@ -94,26 +95,26 @@ describe('tool state machine (FR-EDT-003, ADR-0028)', () => {
     for (const tool of tools.list()) {
       session.tool.set(tool.id);
       expect(tools.current).toBe(`${tool.id}.${tool.initial}`);
-      expect(tools.key(key('Escape'))).toBe(true);
+      expect(press(tools, key('Escape'))).toBe(true);
       expect([session.tool.get(), tools.current]).toEqual([SELECT_TOOL, 'select.idle']);
     }
     // in the middle of a gesture, Esc first ends it; a second Esc leaves the tool
     session.tool.set('hand');
     tools.pointer(at('down', 10, 10));
     expect(tools.current).toBe('hand.panning');
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([session.tool.get(), tools.current]).toEqual(['hand', 'hand.idle']);
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect(tools.current).toBe('select.idle');
     // a state without an onCancel returns to its tool's start
     session.tool.set('rec');
     tools.pointer(at('down', 10, 10));
     expect(tools.current).toBe('rec.b');
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect(tools.current).toBe('rec.a');
     // a state's own cancel decides where Esc goes
-    tools.key(key('c'));
-    tools.key(key('Escape'));
+    press(tools, key('c'));
+    press(tools, key('Escape'));
     expect(tools.current).toBe('rec.b');
   });
 
@@ -122,7 +123,7 @@ describe('tool state machine (FR-EDT-003, ADR-0028)', () => {
     registry.register('rec', recorder(log), 'test');
     const keys = createToolDispatcher(registry, ctx);
     session.tool.set('rec');
-    expect(keys.key(key('x'))).toBe(true);
+    expect(press(keys, key('x'))).toBe(true);
     expect(log).toEqual(['enter a undefined', 'exit a', 'enter b x']);
     const pointers = createToolDispatcher(registry, ctx);
     session.tool.set('hand');
@@ -136,8 +137,25 @@ describe('tool state machine (FR-EDT-003, ADR-0028)', () => {
     const shortcuts = createToolDispatcher(registry, ctx);
     session.tool.set(SELECT_TOOL);
     log.length = 0;
-    shortcuts.key(key('r'));
+    press(shortcuts, key('r'));
     expect(log).toEqual(['enter a undefined']);
+  });
+
+  it('FR-EDT-003: use and escape first start the tool the session names; use refuses an unknown tool', () => {
+    const { session, ctx, registry, log } = setup();
+    registry.register('rec', recorder(log), 'test');
+    const tools = createToolDispatcher(registry, ctx);
+    session.tool.set('rec');
+    expect(tools.use('rec')).toBe(true);
+    // the recorder was started, then left and entered again by the switch
+    expect(log).toEqual(['enter a undefined', 'cancel a']);
+    log.length = 0;
+    const other = createToolDispatcher(registry, ctx);
+    session.tool.set('rec');
+    expect(other.escape()).toBe(true);
+    // at its start, Esc's cancel is asked and then the switch to select cancels again (M6 behaviour)
+    expect([log, other.current, session.tool.get()]).toEqual([['enter a undefined', 'cancel a', 'cancel a', 'exit a'], 'select.idle', SELECT_TOOL]);
+    expect([other.use('nothing'), other.current]).toEqual([false, 'select.idle']);
   });
 
   it('FR-EDT-003: without any tool registered, input goes nowhere', () => {
@@ -145,23 +163,23 @@ describe('tool state machine (FR-EDT-003, ADR-0028)', () => {
     const empty = createToolRegistry();
     expect(empty.name).toBe('tools');
     const tools = createToolDispatcher(empty, ctx);
-    expect([tools.pointer(at('down', 0, 0)), tools.key(key('h')), tools.current, tools.list()]).toEqual([false, false, '.', []]);
-    expect(tools.key(key('Escape'))).toBe(true);
+    expect([tools.pointer(at('down', 0, 0)), press(tools, key('h')), tools.current, tools.list()]).toEqual([false, false, '.', []]);
+    expect(press(tools, key('Escape'))).toBe(true);
   });
 
   it('FR-EDT-003: shortcuts switch tools, cancelling a gesture first; modified keys are no shortcuts', () => {
     const { session, ctx, registry, log } = setup();
     registry.register('rec', recorder(log), 'test');
     const tools = createToolDispatcher(registry, ctx);
-    expect(tools.key(key('h'))).toBe(true);
+    expect(press(tools, key('h'))).toBe(true);
     expect(session.tool.get()).toBe('hand');
-    expect(tools.key(key('V', { shift: true }))).toBe(true);
+    expect(press(tools, key('V', { shift: true }))).toBe(true);
     expect(session.tool.get()).toBe(SELECT_TOOL);
-    for (const k of [key('h', { mod: true }), key('h', { alt: true }), key('q')]) expect(tools.key(k)).toBe(false);
+    for (const k of [key('h', { mod: true }), key('h', { alt: true }), key('q')]) expect(press(tools, k)).toBe(false);
     expect(session.tool.get()).toBe(SELECT_TOOL);
     session.tool.set('hand');
     tools.pointer(at('down', 0, 0));
-    tools.key(key('v'));
+    press(tools, key('v'));
     expect(tools.current).toBe('select.idle');
     // an unknown tool falls back to select
     session.tool.set('nope');
@@ -177,8 +195,8 @@ describe('tool state machine (FR-EDT-003, ADR-0028)', () => {
     expect(tools.pointer(at('down', 0, 0))).toBe(true);
     expect(tools.pointer(at('move', 5, 0))).toBe(true);
     expect(tools.pointer(at('up', 5, 0))).toBe(true);
-    expect(tools.key(key('x'))).toBe(true);
-    expect(tools.key(key('y'))).toBe(false);
+    expect(press(tools, key('x'))).toBe(true);
+    expect(press(tools, key('y'))).toBe(false);
     // a cancelled pointer is a cancel
     expect(tools.pointer(at('cancel', 0, 0))).toBe(true);
     expect(tools.current).toBe('rec.b');
@@ -250,11 +268,11 @@ describe('built-in tools (FR-EDT-003)', () => {
     tools.pointer(at('up', 50, 50));
     expect(session.selection.get()).toEqual(['shape1']);
     expect(session.marquee.get()).toBeUndefined();
-    expect(tools.key(key('a', { mod: true }))).toBe(true);
+    expect(press(tools, key('a', { mod: true }))).toBe(true);
     expect(session.selection.get()).toEqual(['one', 'two']);
-    expect(tools.key(key('a'))).toBe(false);
-    expect(tools.key(key('b', { mod: true }))).toBe(false);
-    expect(tools.key(key('A', { mod: true, shift: true }))).toBe(true);
+    expect(press(tools, key('a'))).toBe(false);
+    expect(press(tools, key('b', { mod: true }))).toBe(false);
+    expect(press(tools, key('A', { mod: true, shift: true }))).toBe(true);
   });
 
   it('FR-EDT-004: a drag from empty canvas is a marquee: rightwards contains, leftwards touches; shift adds; Esc undoes it', () => {
@@ -285,7 +303,7 @@ describe('built-in tools (FR-EDT-003)', () => {
     session.selection.set(['old' as RecordId]);
     tools.pointer(at('down', 200, 200));
     tools.pointer(at('move', 260, 240));
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([tools.current, session.marquee.get(), session.selection.get()]).toEqual(['select.idle', undefined, ['old']]);
     // a press on an element does not start a marquee: its drag moves the selection
     tools.pointer(at('down', 50, 50));

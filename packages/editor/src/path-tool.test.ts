@@ -2,6 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { press } from './__fixtures__/keys.js';
 import { registerBuiltinTools } from './builtin-tools.js';
 import { FREEHAND_STEP_PX, MAX_PATH_POINTS, pathBox } from './path-tool.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
@@ -88,7 +89,7 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
 
   it('FR-EDT-003: pen clicks place vertices; Enter ends the path as one polyline, one undo step', () => {
     const { core, session, tools, made } = setup();
-    tools.key(key('p'));
+    press(tools, key('p'));
     expect(tools.current).toBe('pen.idle');
     tools.pointer(at('down', 100, 100));
     expect(session.sketch.get()).toEqual([{ x: 100, y: 100 }]);
@@ -104,9 +105,9 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
     expect(session.sketch.get()).toHaveLength(3);
     // another button places nothing; other keys end nothing
     tools.pointer(at('down', 250, 250, { button: 2 }));
-    expect(tools.key(key('x'))).toBe(false);
+    expect(press(tools, key('x'))).toBe(false);
     const depth = core.store.history.undoDepth;
-    tools.key(key('Enter'));
+    press(tools, key('Enter'));
     expect(made()).toEqual([
       expect.objectContaining({
         kind: 'shape',
@@ -127,7 +128,7 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
 
   it('FR-EDT-003: a click back on the last vertex ends the path; Esc drops it; one vertex adds nothing', () => {
     const { session, tools, made } = setup();
-    tools.key(key('p'));
+    press(tools, key('p'));
     tools.pointer(at('down', 0, 0));
     tools.pointer(at('down', 100, 50));
     // exactly DRAG_PX from the last vertex places another; nearer ends the path
@@ -137,10 +138,10 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
     expect(made()).toHaveLength(1);
     expect((made()[0]?.['params'] as { vertices: unknown[] } | undefined)?.vertices).toHaveLength(3);
     // Esc drops a path under way
-    tools.key(key('p'));
+    press(tools, key('p'));
     tools.pointer(at('down', 0, 0));
     tools.pointer(at('down', 100, 0));
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([made().length, session.sketch.get(), tools.current]).toEqual([1, undefined, 'pen.idle']);
     // one vertex, ended at once: nothing
     tools.pointer(at('down', 0, 0));
@@ -153,7 +154,7 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
     session.tool.set('shape');
     expect(tools.current).toBe('shape.idle');
     expect([session.sketch.get(), made().length]).toEqual([undefined, 1]);
-    tools.key(key('p'));
+    press(tools, key('p'));
     // the window losing focus mid-path drops it too
     tools.pointer(at('down', 0, 0));
     tools.pointer(at('down', 100, 0));
@@ -165,18 +166,18 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
     // at 400 %, a vertex 1.5 page units on is 6 canvas px: placed, not the end; one vertex is no path
     session.camera.set({ x: 0, y: 0, z: 4 });
     tools.pointer(at('down', 0, 0));
-    tools.key(key('Enter'));
+    press(tools, key('Enter'));
     expect(made()).toHaveLength(1);
     tools.pointer(at('down', 0, 0));
     tools.pointer(at('down', 1.5, 0));
-    tools.key(key('Enter'));
+    press(tools, key('Enter'));
     expect(made()).toHaveLength(2);
   });
 
   it('FR-EDT-003: freehand keeps the points a drag passed, FREEHAND_STEP_PX apart, as one freehand shape', () => {
     const { core, session, tools, made } = setup();
     expect([FREEHAND_STEP_PX, MAX_PATH_POINTS]).toEqual([2, 10_000]);
-    tools.key(key('d'));
+    press(tools, key('d'));
     tools.pointer(at('down', 0, 0, { button: 2 }));
     expect(tools.current).toBe('freehand.idle');
     tools.pointer(at('down', 0, 0));
@@ -210,18 +211,18 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
 
   it('FR-EDT-003: a freehand click or a scribble under DRAG_PX adds nothing; Esc drops a stroke; the step is in canvas px', () => {
     const { session, tools, made } = setup();
-    tools.key(key('d'));
+    press(tools, key('d'));
     tools.pointer(at('down', 0, 0));
     tools.pointer(at('up', 0, 0));
     expect(tools.current).toBe('freehand.idle');
-    tools.key(key('d'));
+    press(tools, key('d'));
     tools.pointer(at('down', 0, 0));
     tools.pointer(at('move', 2, 1));
     tools.pointer(at('up', 3, 0));
     expect(made()).toEqual([]);
     tools.pointer(at('down', 0, 0));
     tools.pointer(at('move', 50, 50));
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([session.sketch.get(), made()]).toEqual([undefined, []]);
     // at 400 %, 1 page unit is 4 canvas px: kept, and the path is wide enough
     session.camera.set({ x: 0, y: 0, z: 4 });
@@ -234,7 +235,7 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
 
   it('FR-EDT-003: a very long stroke keeps at most MAX_PATH_POINTS points, its last among them', () => {
     const { tools, made } = setup();
-    tools.key(key('d'));
+    press(tools, key('d'));
     tools.pointer(at('down', 0, 0));
     const coalesced = Array.from({ length: 12_000 }, (_, i) => at('move', (i + 1) * 3, (i % 2) * 3));
     tools.pointer(at('move', 0, 0, { coalesced }));
@@ -252,7 +253,7 @@ describe('pen and freehand tools (FR-EDT-003)', () => {
 
   it('FR-EDT-003: a stroke of twice MAX_PATH_POINTS is thinned to at most MAX_PATH_POINTS too', () => {
     const { tools, made } = setup();
-    tools.key(key('d'));
+    press(tools, key('d'));
     tools.pointer(at('down', 0, 0));
     const coalesced = Array.from({ length: 20_000 }, (_, i) => at('move', (i + 1) * 3, 0));
     tools.pointer(at('move', 0, 0, { coalesced }));

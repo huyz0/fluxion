@@ -2,6 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { press } from './__fixtures__/keys.js';
 import { registerBuiltinTools } from './builtin-tools.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
 import { createSession } from './session.js';
@@ -72,7 +73,7 @@ describe('resizing and rotating with the select tool (FR-EDT-004)', () => {
     tools.pointer(at('down', 160, 130));
     tools.pointer(at('move', 200, 200, { alt: true }));
     expect(box().w).toBe(240);
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect(tools.current).toBe('select.idle');
     expect(box()).toEqual({ x: 0, y: 0, w: 160, h: 130, rot: 0 });
     expect(core.store.history.undoDepth).toBe(1);
@@ -171,12 +172,12 @@ describe('moving with the select tool (FR-EDT-005)', () => {
     tools.pointer(at('down', 50, 50));
     tools.pointer(at('move', 90, 90));
     expect(xy(a)).toEqual([40, 40]);
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([tools.current, xy(a), core.store.history.undoDepth]).toEqual(['select.idle', [0, 0], 0]);
     tools.pointer(at('down', 50, 50, { alt: true }));
     tools.pointer(at('move', 50, 150, { alt: true }));
     expect(core.store.members('byScreen', screen).length).toBe(3);
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([core.store.members('byScreen', screen).length, session.selection.get(), xy(a), core.store.history.undoDepth]).toEqual([2, [a], [0, 0], 0]);
     tools.pointer(at('up', 50, 150));
     // a click on nothing changes nothing
@@ -206,23 +207,23 @@ describe('moving with the select tool (FR-EDT-005)', () => {
 
   it('FR-EDT-005: arrow keys nudge the selection 1 px, 10 px with shift, each one undo step', () => {
     const { core, session, tools, a, c, xy } = setup();
-    expect(tools.key(key('ArrowRight'))).toBe(false);
+    expect(press(tools, key('ArrowRight'))).toBe(false);
     session.selection.set([a, c]);
-    expect(tools.key(key('ArrowRight'))).toBe(true);
-    tools.key(key('ArrowDown', { shift: true }));
-    tools.key(key('ArrowLeft'));
-    tools.key(key('ArrowUp'));
+    expect(press(tools, key('ArrowRight'))).toBe(true);
+    press(tools, key('ArrowDown', { shift: true }));
+    press(tools, key('ArrowLeft'));
+    press(tools, key('ArrowUp'));
     expect([xy(a), xy(c)]).toEqual([
       [0, 9],
       [200, 9],
     ]);
     expect(core.store.history.undoDepth).toBe(4);
-    tools.key(key('ArrowLeft', { shift: true }));
-    tools.key(key('ArrowRight', { shift: true }));
-    tools.key(key('ArrowRight', { shift: true }));
+    press(tools, key('ArrowLeft', { shift: true }));
+    press(tools, key('ArrowRight', { shift: true }));
+    press(tools, key('ArrowRight', { shift: true }));
     expect(xy(c)).toEqual([210, 9]);
     // with ctrl/cmd or alt, arrows are not nudges
-    expect([tools.key(key('ArrowRight', { mod: true })), tools.key(key('ArrowRight', { alt: true }))]).toEqual([false, false]);
+    expect([press(tools, key('ArrowRight', { mod: true })), press(tools, key('ArrowRight', { alt: true }))]).toEqual([false, false]);
     expect(xy(a)).toEqual([10, 9]);
   });
 });

@@ -2,6 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { press } from './__fixtures__/keys.js';
 import { registerBuiltinTools } from './builtin-tools.js';
 import { createConnector } from './connector-tool.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
@@ -73,7 +74,7 @@ function setup(onScreen = true) {
 describe('the connector tool (FR-EDT-003)', () => {
   it('FR-EDT-003: a drag from one element to another joins them, bound at both ends, in one undo step', () => {
     const { core, a, c, session, tools, made, record, bindings, drag } = setup();
-    tools.key(key('c'));
+    press(tools, key('c'));
     expect(tools.current).toBe('connector.idle');
     const depth = core.store.history.undoDepth;
     drag([50, 50], [450, 50]);
@@ -94,12 +95,12 @@ describe('the connector tool (FR-EDT-003)', () => {
 
   it('FR-EDT-003: an end dropped on nothing, or on a connector, stays free; alt makes it curved', () => {
     const { a, tools, made, record, bindings, drag } = setup();
-    tools.key(key('c'));
+    press(tools, key('c'));
     drag([50, 50], [250, 200]);
     const [first] = made();
     expect(bindings(first)).toEqual([['source', a, { kind: 'auto' }]]);
     expect([record(first)?.['freeSource'], record(first)?.['freeTarget']]).toEqual([undefined, { x: 250, y: 200 }]);
-    tools.key(key('c'));
+    press(tools, key('c'));
     drag([200, 300], [250, 500], true);
     const second = made().find((id) => id !== first);
     expect(bindings(second)).toEqual([]);
@@ -108,7 +109,7 @@ describe('the connector tool (FR-EDT-003)', () => {
 
   it('FR-EDT-003: the drag draws its line and hovers the element it would bind; Esc, a click or a drag back add nothing', () => {
     const { c, session, tools, made, drag } = setup();
-    tools.key(key('c'));
+    press(tools, key('c'));
     tools.pointer(at('down', 50, 50));
     tools.pointer(at('move', 450, 50));
     expect([session.sketch.get(), session.hover.get()]).toEqual([
@@ -120,7 +121,7 @@ describe('the connector tool (FR-EDT-003)', () => {
     ]);
     tools.pointer(at('move', 250, 300));
     expect(session.hover.get()).toBeUndefined();
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([tools.current, session.sketch.get(), session.hover.get()]).toEqual(['connector.idle', undefined, undefined]);
     // a click (under DRAG_PX), a drag from an element back onto it, and another button: nothing
     drag([50, 50], [52, 51]);
@@ -144,7 +145,7 @@ describe('the connector tool (FR-EDT-003)', () => {
 describe('the connector tool, edges (FR-EDT-003)', () => {
   it('FR-EDT-003: a drag is at least DRAG_PX canvas px, at any zoom; the press starts linking', () => {
     const { session, tools, made, drag } = setup();
-    tools.key(key('c'));
+    press(tools, key('c'));
     tools.pointer(at('down', 200, 200));
     expect(tools.current).toBe('connector.linking');
     tools.pointer(at('up', 202, 201));
@@ -154,7 +155,7 @@ describe('the connector tool, edges (FR-EDT-003)', () => {
     drag([200, 200], [204, 200]);
     expect(made()).toHaveLength(1);
     // at 400 %, 1.5 page units are 6 canvas px
-    tools.key(key('c'));
+    press(tools, key('c'));
     session.camera.set({ x: 0, y: 0, z: 4 });
     drag([200, 200], [201.5, 200]);
     expect(made()).toHaveLength(2);
@@ -171,9 +172,9 @@ describe('the connector tool, edges (FR-EDT-003)', () => {
       }) as typeof deps.execute,
     };
     const depth = core.store.history.undoDepth;
-    tools.key(key('c'));
+    press(tools, key('c'));
     drag([50, 50], [450, 50]);
-    tools.key(key('c'));
+    press(tools, key('c'));
     drag([50, 50], [450, 50]);
     expect(core.store.history.undoDepth).toBe(depth + 2);
     createConnector(counted, { from: { x: 0, y: 0 }, to: { x: 9, y: 9 }, source: undefined, target: undefined, curved: false });
@@ -201,10 +202,10 @@ describe('the connector tool, edges (FR-EDT-003)', () => {
 
   it('FR-EDT-003: Esc while hovering a target clears the hover', () => {
     const { session, tools } = setup();
-    tools.key(key('c'));
+    press(tools, key('c'));
     tools.pointer(at('down', 50, 50));
     tools.pointer(at('move', 450, 50));
-    tools.key(key('Escape'));
+    press(tools, key('Escape'));
     expect([session.hover.get(), session.sketch.get()]).toEqual([undefined, undefined]);
   });
 });

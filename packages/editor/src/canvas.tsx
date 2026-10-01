@@ -1,6 +1,6 @@
 // The canvas (FR-EDT-002): the screen drawn by <ScreenView> through the session camera, panned by the
 // wheel, space-drag and middle-drag, zoomed by ctrl/meta + wheel (a trackpad pinch; Safari's pinch
-// sends gesture events instead) and shortcuts;
+// sends gesture events instead), and by the keymap's camera commands (editor-keys.tsx);
 // and the toolbar's zoom controls. What input does to the camera is pure (canvas-input.ts); this is
 // the DOM glue. Pointer input comes through the frame-batched pipeline (pointer-input.ts) to the
 // tools, but for the middle button and space-drag, which pan whatever the tool.
@@ -11,7 +11,8 @@ import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
-import { type FitTargets, shortcutCamera, wheelCamera, ZOOM_STEP } from './canvas-input.js';
+import { wheelCamera, ZOOM_STEP } from './canvas-input.js';
+import { isEditable } from './editor-keys.js';
 import { Overlay, useOverlayShown } from './overlay.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
 import type { PointerInfo } from './pointer.js';
@@ -20,11 +21,6 @@ import type { Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
 import { CONTEXT_MENU_EVENT } from './touch.js';
 import { touchConsumer } from './touch-input.js';
-
-/** Whether `target` takes text (keys typed there are not canvas shortcuts). */
-function isEditable(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
-}
 
 type Viewport = { readonly w: number; readonly h: number };
 
@@ -79,70 +75,21 @@ function useWheel(ref: RefObject<HTMLElement | null>, session: Session, box: Vie
   }, [ref, session, box]);
 }
 
-/** The page bounds of what `session` has selected in `store`, for zoom to selection. */
-const selectedBounds = (store: Store, session: Session): Box | undefined => selectionBounds(placements(store, session.selection.get()));
-
-/** The camera after the shortcut `e`, or undefined when it is none or the canvas has nothing to show. */
-function shortcut(e: KeyboardEvent, session: Session, box: Viewport, targetsOf: () => FitTargets) {
-  const targets = targetsOf();
-  if (targets.screen === undefined || box.w === 0) return undefined;
-  const k = { key: e.key, code: e.code, mod: e.ctrlKey || e.metaKey, shift: e.shiftKey, alt: e.altKey };
-  return shortcutCamera(session.camera.get(), k, box, targets);
-}
-
 /** Space pressed: held for space-drag; a focused button keeps its own space. */
 function holdSpace(e: KeyboardEvent, space: RefObject<boolean>): void {
   if (!(e.target instanceof HTMLButtonElement)) e.preventDefault();
   space.current = true;
 }
 
-/** A shortcut's camera, if it was one, taken instead of the browser's own meaning of the key. */
-function applyShortcut(e: KeyboardEvent, session: Session, next: Camera | undefined): boolean {
-  if (next === undefined) return false;
-  e.preventDefault();
-  session.camera.set(next);
-  return true;
-}
-
 /**
- * Ctrl/cmd + Z undoes, with shift (or ctrl/cmd + Y) redoes; true when it was one of them. A gesture
- * under way is cancelled first, so it cannot write over what the undo put back (M6.15 review F3).
+ * Space held for space-drag, on the window while the canvas is mounted, and the tools cancelled when
+ * the window loses focus. Every other key is the keymap's (editor-keys.tsx, M7.4).
  */
-function historyKey(e: KeyboardEvent, store: Store, tools: ToolDispatcher | undefined): boolean {
-  if (!(e.ctrlKey || e.metaKey) || e.altKey) return false;
-  const key = e.key.toLowerCase();
-  const redo = (key === 'z' && e.shiftKey) || key === 'y';
-  if (!redo && key !== 'z') return false;
-  e.preventDefault();
-  tools?.cancel();
-  if (redo) store.history.redo();
-  else store.history.undo();
-  return true;
-}
-
-/** A key for the tools (Esc, their shortcuts, their states), taken when they take it. */
-function toolKey(e: KeyboardEvent, tools: ToolDispatcher | undefined): void {
-  if (tools?.key({ key: e.key, shift: e.shiftKey, alt: e.altKey, mod: e.ctrlKey || e.metaKey }) === true) e.preventDefault();
-}
-
-/** Space held (for space-drag), the camera shortcuts, then the tools' keys, on the window while the canvas is mounted. */
-function useKeys(input: {
-  readonly store: Store;
-  readonly session: Session;
-  readonly box: Viewport;
-  readonly area: Box | undefined;
-  readonly space: RefObject<boolean>;
-  readonly tools: ToolDispatcher | undefined;
-}): void {
-  const { store, session, box, area, space, tools } = input;
+function useSpace(space: RefObject<boolean>, tools: ToolDispatcher | undefined): void {
   useEffect(() => {
-    // read at the key press: the selection's bounds for shift + 2
-    const targets = (): FitTargets => ({ screen: area, selection: selectedBounds(store, session) });
     const onKeyDown = (e: KeyboardEvent) => {
-      // a key typed into a field, or taken already (a tab list's or splitter's arrows), is not the canvas's
-      if (e.defaultPrevented || isEditable(e.target)) return;
-      if (e.key === ' ') holdSpace(e, space);
-      else if (!applyShortcut(e, session, shortcut(e, session, box, targets)) && !historyKey(e, store, tools)) toolKey(e, tools);
+      // a key typed into a field, or taken already, is not the canvas's
+      if (e.key === ' ' && !e.defaultPrevented && !isEditable(e.target)) holdSpace(e, space);
     };
     const release = (e: Event) => {
       if (e.type === 'blur' || (e as KeyboardEvent).key === ' ') space.current = false;
@@ -157,7 +104,7 @@ function useKeys(input: {
       window.removeEventListener('keyup', release);
       window.removeEventListener('blur', release);
     };
-  }, [store, session, box, area, space, tools]);
+  }, [space, tools]);
 }
 
 /** Props of {@link Canvas}. */
@@ -222,7 +169,7 @@ export function Canvas(props: CanvasProps): ReactNode {
   }, [box, onBox]);
   useWheel(ref, session, box);
   useGesture(ref, session);
-  useKeys({ store, session, box, area, space, tools });
+  useSpace(space, tools);
   // one consumer for the canvas's life: the fingers down are its state
   const consumer = useMemo(
     () =>

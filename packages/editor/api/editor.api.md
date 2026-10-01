@@ -31,10 +31,34 @@ export type Camera = {
 };
 
 // @public
+export type CanvasSize = {
+    readonly w: number;
+    readonly h: number;
+};
+
+// @public
+export function chordOf(k: KeyPress): string;
+
+// @public
 export function clampZoom(z: number): number;
 
 // @public
 export function clickSelection(current: readonly RecordId[], hit: RecordId | undefined, shift: boolean): readonly RecordId[];
+
+// @public
+export type CommandCanvas = {
+    readonly viewport: CanvasSize;
+    targets(): FitTargets;
+};
+
+// @public
+export type CommandHistory = {
+    undo(): void;
+    redo(): void;
+};
+
+// @public
+export const commandMap: (commands?: readonly EditorCommand[]) => ReadonlyMap<string, EditorCommand>;
 
 // @public
 export function connectorTool(): Tool;
@@ -92,6 +116,15 @@ export function creationTool(spec: CreationSpec): Tool;
 export const DEFAULT_CAMERA: Camera;
 
 // @public
+export const DEFAULT_KEYMAP: readonly KeyBinding[];
+
+// @public
+export function deleteSelection(ctx: ToolCtx): boolean;
+
+// @public
+export function dispatchKey(k: KeyPress, bindings: readonly KeyBinding[], commands: ReadonlyMap<string, EditorCommand>, ctx: EditorCommandCtx): boolean;
+
+// @public
 export const DRAG_PX = 4;
 
 // @public
@@ -102,6 +135,40 @@ export function dragBox(from: Vec2, to: Vec2, size: {
     readonly z: number;
     readonly shift: boolean;
 }): Box;
+
+// @public
+export const EDIT_FLAGS: ReadonlySet<string>;
+
+// @public
+export const EDITOR_COMMANDS: readonly EditorCommand[];
+
+// @public
+export type EditorCommand = {
+    readonly id: string;
+    readonly title: string;
+    run(ctx: EditorCommandCtx, args?: unknown): boolean;
+};
+
+// @public
+export type EditorCommandCtx = {
+    readonly mode: "edit" | "present";
+    readonly tools: ToolDispatcher;
+    readonly history?: CommandHistory;
+    readonly canvas?: CommandCanvas;
+    switchMode?(): void;
+};
+
+// @public
+export type EditorKeysInput = {
+    readonly store: Store;
+    readonly session: Session;
+    readonly tools: ToolDispatcher;
+    readonly present?: ToolDispatcher | undefined;
+    readonly viewport: CanvasSize;
+    readonly area: Box | undefined;
+    readonly switchMode?: (() => void) | undefined;
+    readonly bindings?: readonly KeyBinding[] | undefined;
+};
 
 // @public
 export function EditorRoot(props: EditorRootProps): ReactNode;
@@ -131,6 +198,12 @@ export function fitBox(box: Box, viewport: {
     readonly w: number;
     readonly h: number;
 }, padding?: number): Camera;
+
+// @public
+export type FitTargets = {
+    readonly screen?: Box | undefined;
+    readonly selection?: Box | undefined;
+};
 
 // @public
 export const frameMaker: ElementMaker;
@@ -171,11 +244,30 @@ export const imageMaker: (assetId: RecordId) => ElementMaker;
 export const imageTool: () => Tool;
 
 // @public
+export function isEditable(target: EventTarget | null): boolean;
+
+// @public
+export type KeyBinding = {
+    readonly key: string;
+    readonly command: string;
+    readonly args?: unknown;
+    readonly when?: string;
+};
+
+// @public
 export type KeyInfo = {
     readonly key: string;
     readonly shift: boolean;
     readonly alt: boolean;
     readonly mod: boolean;
+};
+
+// @public
+export function keymapConflicts(bindings: readonly KeyBinding[], flags: ReadonlySet<string>): readonly string[];
+
+// @public
+export type KeyPress = KeyInfo & {
+    readonly code?: string;
 };
 
 // @public
@@ -221,6 +313,12 @@ export const moved: (from: Vec2, to: Vec2) => boolean;
 
 // @public
 export function newDocument(random: Random): DocumentFile;
+
+// @public
+export function normalizeChord(chord: string): string;
+
+// @public
+export function nudgeSelection(ctx: ToolCtx, d: Vec2): boolean;
 
 // @public
 export function pageToScreen(camera: Camera, p: Vec2): Vec2;
@@ -274,7 +372,13 @@ export type PointerInfo = {
 export type PointerPhase = "down" | "move" | "up" | "cancel";
 
 // @public
+export const PRESENT_FLAGS: ReadonlySet<string>;
+
+// @public
 export function registerBuiltinTools(registry: Registry<string, Tool>): void;
+
+// @public
+export function resolveKey(bindings: readonly KeyBinding[], k: KeyPress, flags: ReadonlySet<string>): KeyBinding | undefined;
 
 // @public
 export function sameStyle(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
@@ -287,6 +391,9 @@ export function screenToPage(camera: Camera, p: Vec2): Vec2;
 
 // @public
 export const SELECT_TOOL = "select";
+
+// @public
+export function selectAll(ctx: ToolCtx): void;
 
 // @public
 export function selectTool(): Tool;
@@ -355,6 +462,9 @@ export type Tool = {
 };
 
 // @public
+export function toolBindings(tools: readonly Tool[]): readonly KeyBinding[];
+
+// @public
 export type ToolCtx = {
     readonly session: Session;
     hitTest(p: Vec2): RecordId | undefined;
@@ -371,6 +481,9 @@ export type ToolCtx = {
 export type ToolDispatcher = {
     pointer(e: PointerInfo): boolean;
     key(e: KeyInfo): boolean;
+    escape(): boolean;
+    use(id: string): boolean;
+    readonly ctx: ToolCtx;
     cancel(): void;
     readonly current: string;
     list(): readonly Tool[];
@@ -396,7 +509,13 @@ export type Transition = {
 export function union(base: readonly RecordId[], picked: readonly RecordId[]): readonly RecordId[];
 
 // @public
+export function useEditorKeys(input: EditorKeysInput): void;
+
+// @public
 export const VERSION: string;
+
+// @public
+export function whenHolds(when: string | undefined, flags: ReadonlySet<string>): boolean;
 
 // @public
 export const ZOOM_LIMITS: {

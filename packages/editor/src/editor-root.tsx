@@ -11,12 +11,13 @@ import { registerBuiltinTools } from './builtin-tools.js';
 import { fitBox } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
+import { useEditorKeys } from './editor-keys.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
 import { ImagePicker } from './image-picker.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
-import { PresentInPlace, useModeKeys, useRevision } from './present.js';
+import { PresentInPlace, useModeSwitch, useRevision } from './present.js';
 import { readOnly } from './present-mode.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
@@ -135,7 +136,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   // hidden screens are edited too
   const screenId = useValue(useMemo(() => store.query((view) => screensInOrder(view, true)[0]), [store]));
   const { tools, present } = useTools(props, session, screenId);
-  const switchMode = useModeKeys(session, tools, present);
+  const switchMode = useModeSwitch(session, tools, present);
   const mode = useValue(session.mode.get);
   const revision = useRevision(store);
   const newId = useMemo(() => {
@@ -145,6 +146,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
   const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
   const [box, setBox] = useState({ w: 0, h: 0 });
+  useEditorKeys({ store, session, tools, present, viewport: box, area, switchMode });
   // a camera never moved (still the default) is fitted to the screen once the canvas has a size
   useEffect(() => {
     if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));

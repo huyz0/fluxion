@@ -3,16 +3,17 @@ import { renderRegistriesFor } from '@fluxion/player';
 import type { RecordId } from '@fluxion/schema';
 import { seededRandom } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
-import { act } from 'react';
+import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import type { Camera } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
+import { useEditorKeys } from './editor-keys.js';
 import { newDocument } from './new-document.js';
 import { createSession, type Session } from './session.js';
-import type { ToolDispatcher } from './tools.js';
+import type { ToolCtx, ToolDispatcher } from './tools.js';
 
 let host: HTMLElement;
 let root: Root;
@@ -54,8 +55,11 @@ function recording(takes: (what: string) => boolean) {
       return takes(e.key);
     },
     cancel: () => seen.push('cancel'),
+    escape: () => true,
+    use: () => false,
     current: 'x.y',
     list: () => [],
+    ctx: { session } as ToolCtx,
   };
   return { seen, tools };
 }
@@ -64,23 +68,39 @@ function recording(takes: (what: string) => boolean) {
 const documents = new WeakMap<HTMLElement, { readonly store: ReturnType<typeof createCore>['store']; readonly screen: RecordId }>();
 const storeOf = (main: HTMLElement) => documents.get(main) as { readonly store: ReturnType<typeof createCore>['store']; readonly screen: RecordId };
 
+/** The canvas with the editor's key dispatcher, as the editor root mounts them (M7.4: keys are the keymap's). */
+function Keyed(props: {
+  readonly core: ReturnType<typeof createCore>;
+  readonly screenId: RecordId | undefined;
+  readonly shown: typeof area | undefined;
+  readonly tools?: ToolDispatcher | undefined;
+}) {
+  const { core, screenId, shown, tools } = props;
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  // without tools of its own, keys still reach a dispatcher that takes none
+  const keys = tools ?? recording(() => false).tools;
+  useEditorKeys({ store: core.store, session, tools: keys, viewport: box, area: shown });
+  return (
+    <Canvas
+      store={core.store}
+      registries={renderRegistriesFor(core.registries)}
+      screenId={screenId}
+      area={shown}
+      session={session}
+      tools={tools}
+      onBox={(b) => {
+        boxes.push(b);
+        setBox(b);
+      }}
+    />
+  );
+}
+
 async function mount(camera: Camera = { x: 0, y: 0, z: 0.5 }, tools?: ToolDispatcher) {
   session.camera.set(camera);
   const core = createCore(newDocument(seededRandom(9)));
   const screenId = core.store.ids().find((id) => core.store.get(id)?.type === 'screen');
-  await act(async () =>
-    root.render(
-      <Canvas
-        store={core.store}
-        registries={renderRegistriesFor(core.registries)}
-        screenId={screenId}
-        area={area}
-        session={session}
-        tools={tools}
-        onBox={(b) => boxes.push(b)}
-      />,
-    ),
-  );
+  await act(async () => root.render(<Keyed core={core} screenId={screenId} shown={area} tools={tools} />));
   await act(frame);
   const main = host.querySelector('main') as HTMLElement;
   documents.set(main, { store: core.store, screen: screenId as RecordId });
@@ -300,18 +320,7 @@ describe('canvas camera input (FR-EDT-002)', () => {
 
   it('FR-EDT-002: without a screen or a size, the canvas draws nothing and ignores the shortcuts', async () => {
     const core = createCore(newDocument(seededRandom(9)));
-    await act(async () =>
-      root.render(
-        <Canvas
-          store={core.store}
-          registries={renderRegistriesFor(core.registries)}
-          screenId={undefined}
-          area={undefined}
-          session={session}
-          onBox={() => {}}
-        />,
-      ),
-    );
+    await act(async () => root.render(<Keyed core={core} screenId={undefined} shown={undefined} />));
     await act(frame);
     expect(host.querySelector('.fx-screen')).toBeNull();
     expect(key('keydown', { key: '=', ctrlKey: true })).toBe(false);
