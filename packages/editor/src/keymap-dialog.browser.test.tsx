@@ -6,7 +6,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { EditorRoot } from './editor-root.js';
-import { KEYMAP_KEY } from './keymap-overrides.js';
+import { formatChord, KEYMAP_KEY } from './keymap-overrides.js';
 import { newDocument } from './new-document.js';
 import { memorySettings } from './settings.js';
 
@@ -23,6 +23,8 @@ afterEach(() => {
   host.remove();
 });
 
+/** A chord as the dialog shows it on this platform (Cmd on a Mac). */
+const shown = (chord: string) => formatChord(chord, /Mac|iPhone|iPad/.test(navigator.platform));
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 const key = (k: string, o: KeyboardEventInit = {}, target: EventTarget = window) => {
   const e = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...o });
@@ -90,11 +92,15 @@ describe('keyboard shortcuts dialog (FR-EDT-012)', () => {
     expect([button('Change Undo').textContent, dialog() === null, settings.get(KEYMAP_KEY)]).toEqual(['Change', false, undefined]);
     act(() => button('Change Undo').click());
     inDialog('u', { ctrlKey: true });
-    expect(row('Undo').querySelector('td')?.textContent).toBe('Ctrl+U');
+    expect(row('Undo').querySelector('td')?.textContent).toBe(shown('mod+u'));
     expect(settings.get(KEYMAP_KEY)).toEqual({ 'history.undo': ['mod+u'] });
     expect(button('Reset Undo')).toBeDefined();
     act(() => button('Reset Undo').click());
-    expect([row('Undo').querySelector('td')?.textContent, settings.get(KEYMAP_KEY), host.textContent?.includes('Reset Undo')]).toEqual(['Ctrl+Z', {}, false]);
+    expect([row('Undo').querySelector('td')?.textContent, settings.get(KEYMAP_KEY), host.textContent?.includes('Reset Undo')]).toEqual([
+      shown('mod+z'),
+      {},
+      false,
+    ]);
   });
 
   it('FR-EDT-012: stored rebindings apply from the start: the old chord does not undo and the new one does', async () => {
@@ -107,6 +113,6 @@ describe('keyboard shortcuts dialog (FR-EDT-012)', () => {
     expect(key('u', { ctrlKey: true }).defaultPrevented).toBe(true);
     expect(core.store.history.canUndo()).toBe(false);
     key('?', { shiftKey: true });
-    expect(row('Undo').querySelector('td')?.textContent).toBe('Ctrl+U');
+    expect(row('Undo').querySelector('td')?.textContent).toBe(shown('mod+u'));
   });
 });
