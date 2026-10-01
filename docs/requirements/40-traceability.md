@@ -166,7 +166,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +5 |
 | FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `e2e/undo.across-screens.spec.ts` +8 |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/render/src/builtins.rich-text.test.ts`, `packages/render/src/rich-text-marks.browser.test.tsx` |
-| FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/inspector-model.test.ts`, `packages/schema/src/field-meta.test.ts` |
+| FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/inspector.mixed-fill.spec.ts` +4 |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +2 |
 | FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/parity.edit-vs-present.spec.ts` +3 |
 | FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/editor-commands.test.ts` |

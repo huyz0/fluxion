@@ -42,6 +42,18 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-textedit-box { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .fx-chrome-textroot { outline: none; width: 100%; white-space: pre-wrap; word-wrap: break-word; }
 .fx-chrome-unknown { opacity: 0.6; }
+.fx-chrome-fields { display: flex; flex-direction: column; gap: 8px; padding: 0 12px 12px; }
+.fx-chrome-group { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fx-chrome-group .fx-chrome-heading { padding: 4px 0; }
+.fx-chrome-field { margin: 0; padding: 0; border: 0; min-width: 0; display: grid; grid-template-columns: 7em 1fr auto; align-items: center; gap: 6px; }
+.fx-chrome-field-label { color: var(--ui-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-chrome-field-label[data-scrub] { cursor: ew-resize; touch-action: none; user-select: none; }
+.fx-chrome-input { min-width: 0; padding: 3px 6px; border: 1px solid var(--ui-border); border-radius: 4px; background: var(--ui-panel); color: var(--ui-text); font: inherit; }
+.fx-chrome-slider { min-width: 0; }
+.fx-chrome-slider[data-mixed] { opacity: 0.5; }
+.fx-chrome-swatch { width: 28px; height: 24px; padding: 0; border: 1px solid var(--ui-border); border-radius: 4px; background: none; }
+.fx-chrome-swatch[data-mixed] { opacity: 0.5; }
+.fx-chrome-choices { display: flex; gap: 2px; flex-wrap: wrap; }
 .fx-chrome-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 4px; min-width: 240px; padding: 12px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2); }
 .fx-chrome-screens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .fx-chrome-keymap { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }

@@ -1,7 +1,9 @@
 // The chrome around the canvas (FR-EDT-001, ADR-0029): the toolbar, the left tabs (screens, library,
 // layers), the inspector and the timeline. The panels are placeholders their milestones fill (M7, M8).
+
 import { useValue } from '@fluxion/render';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
+import { InspectorFields, type InspectorFieldsProps } from './inspector.js';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
 import { ScreensTab, type ScreensTabProps } from './screens-tab.js';
 import type { Session } from './session.js';
@@ -102,8 +104,16 @@ export function LeftTabs(props: LeftTabsProps = {}): ReactNode {
   );
 }
 
-/** The inspector's placeholder: how much is selected (its properties arrive with M7). */
-export function Inspector(props: { readonly session: Session }): ReactNode {
+/** Props of {@link Inspector}. */
+export type InspectorProps = {
+  /** The session whose selection it shows. */
+  readonly session: Session;
+  /** The document store and the command runner: with them the selection's properties are editable here. */
+  readonly fields?: Omit<InspectorFieldsProps, 'session'> | undefined;
+};
+
+/** The inspector: how much is selected, and the properties the selection has in common. */
+export function Inspector(props: InspectorProps): ReactNode {
   const count = useValue(props.session.selection.get).length;
   return (
     <>
@@ -111,6 +121,7 @@ export function Inspector(props: { readonly session: Session }): ReactNode {
       <p className="fx-chrome-placeholder" aria-live="polite">
         {count === 0 ? 'Select an element to see its properties.' : `${count} ${count === 1 ? 'element' : 'elements'} selected`}
       </p>
+      {props.fields === undefined ? null : <InspectorFields {...props.fields} session={props.session} />}
     </>
   );
 }

@@ -253,7 +253,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         </div>
         <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} />
         {splitter('right')}
-        {panel('right', <Inspector session={session} />)}
+        {panel('right', <Inspector session={session} fields={{ store, execute }} />)}
       </div>
       {help ? <KeymapDialog tools={tools.list()} overrides={overrides} onOverrides={setOverrides} onClose={() => setHelp(false)} /> : null}
     </div>
