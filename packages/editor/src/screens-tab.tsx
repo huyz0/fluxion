@@ -3,11 +3,11 @@
 // and a right click opens the screen's menu (rename, hide, duplicate, delete). The screen the canvas shows is marked.
 import type { Store } from '@fluxion/core';
 import { type RenderRegistries, screensInOrder, useValue } from '@fluxion/render';
-import { type RecordId, type ScreenRecord, screenSize } from '@fluxion/schema';
+import type { RecordId, ScreenRecord } from '@fluxion/schema';
 import { type ReactNode, useMemo } from 'react';
 import { ContextMenu } from './context-menu.js';
 import type { MenuItem } from './context-menu-model.js';
-import { FORMAT_ITEMS, formatLabel } from './navigator/navigator-model.js';
+import { FORMAT_ITEMS, formatLabel, shownSize } from './navigator/navigator-model.js';
 import { type Row, ScreenRow } from './navigator/screen-row.js';
 import { useNavigator } from './navigator/use-navigator.js';
 import type { Execute } from './pointer.js';
@@ -35,7 +35,7 @@ const rowsOf = (store: Store) =>
   store.query((view) =>
     screensInOrder(view, true).map((id, i): Row => {
       const r = view.get(id) as ScreenRecord | undefined;
-      return { id, label: screenLabel(r?.name, i), hidden: r?.hidden === true, format: formatLabel(r ?? {}), size: screenSize(r ?? {}) };
+      return { id, label: screenLabel(r?.name, i), hidden: r?.hidden === true, format: formatLabel(r ?? {}), size: shownSize(r ?? {}) };
     }),
   );
 

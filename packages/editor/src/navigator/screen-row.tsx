@@ -93,7 +93,7 @@ export function ScreenRow(props: ScreenRowProps): ReactNode {
       data-hidden={r.hidden || undefined}
       data-format={r.format}
       data-dragging={state.dragging || undefined}
-      draggable={actions !== undefined && !state.renaming}
+      draggable={actions !== undefined && !state.renaming && !state.sizing}
       onDragStart={(e) => actions?.dragStart(r.id, e)}
       onDragEnd={() => actions?.dragEnd()}
       onDragOver={(e) => {

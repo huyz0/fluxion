@@ -34,7 +34,8 @@ function runMenuItem(
     if (execute(command, args).ok) switchScreen(session, args.newId);
   } else if (command === 'screen.delete' && rows.length > 1) execute(command, { id: target });
   else if (command.startsWith(FORMAT_PREFIX)) {
-    const args = formatArgs(command, target, rows.find((r) => r.id === target)?.size ?? { w: 1920, h: 1080 });
+    const row = rows.find((r) => r.id === target);
+    const args = formatArgs(command, target, { ...(row?.size ?? { w: 1920, h: 1080 }), infinite: row?.format === 'Infinite' });
     if (args !== undefined) execute('screen.setFormat', args);
   }
 }

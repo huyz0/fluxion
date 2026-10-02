@@ -47,10 +47,17 @@ export type SetFormatArgs = {
     | { readonly kind: 'infinite'; readonly viewport: { readonly x: number; readonly y: number; readonly w: number; readonly h: number } };
 };
 
+/** The size a screen shows: a fixed screen's, or an infinite screen's viewport. */
+export function shownSize(screen: Pick<ScreenRecord, 'kind' | 'size' | 'viewport'>): Size {
+  return screenKind(screen) === 'infinite' && screen.viewport !== undefined ? { w: screen.viewport.w, h: screen.viewport.h } : screenSize(screen);
+}
+
 /** The `screen.setFormat` arguments the format command `command` gives screen `id` (undefined for `custom`, which asks for a size, and for an unknown one). */
-export function formatArgs(command: string, id: RecordId, current: Size): SetFormatArgs | undefined {
+export function formatArgs(command: string, id: RecordId, current: Size & { readonly infinite?: boolean }): SetFormatArgs | undefined {
   const name = command.slice(FORMAT_PREFIX.length);
-  if (name === 'infinite') return { id, format: { kind: 'infinite' as const, viewport: { x: 0, y: 0, w: current.w, h: current.h } } };
+  // already infinite: its viewport stays as the user left it
+  if (name === 'infinite')
+    return current.infinite === true ? undefined : { id, format: { kind: 'infinite' as const, viewport: { x: 0, y: 0, w: current.w, h: current.h } } };
   const preset = SCREEN_PRESETS.find((p) => p.id === name);
   return preset === undefined ? undefined : { id, format: { kind: 'fixed' as const, size: preset.size } };
 }

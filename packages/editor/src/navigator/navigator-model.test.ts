@@ -2,7 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { dropAfter, duplicateArgs, formatArgs, formatLabel, newScreen, parseSize } from './navigator-model.js';
+import { dropAfter, duplicateArgs, formatArgs, formatLabel, newScreen, parseSize, shownSize } from './navigator-model.js';
 
 const [a, b, c, d] = ['A', 'B', 'C', 'D'] as [RecordId, RecordId, RecordId, RecordId];
 
@@ -64,5 +64,16 @@ describe('the navigator model (FR-SCR-002)', () => {
       format: { kind: 'infinite', viewport: { x: 0, y: 0, w: 1600, h: 900 } },
     });
     expect([formatArgs('screen.format:custom', id, { w: 1, h: 1 }), formatArgs('screen.format:nope', id, { w: 1, h: 1 })]).toEqual([undefined, undefined]);
+  });
+
+  it('FR-SCR-003: a format change on an infinite screen keeps its viewport', () => {
+    const id = 'S' as RecordId;
+    const viewport = { x: -300, y: 40, w: 1400, h: 700 };
+    // the size shown is the viewport's, not the default 1920 x 1080
+    expect(shownSize({ kind: 'infinite', viewport })).toEqual({ w: 1400, h: 700 });
+    expect(shownSize({})).toEqual({ w: 1920, h: 1080 });
+    // choosing Infinite again changes nothing; a preset or a custom size replaces it
+    expect(formatArgs('screen.format:infinite', id, { w: 1400, h: 700, infinite: true })).toBeUndefined();
+    expect(formatArgs('screen.format:4:3', id, { w: 1400, h: 700, infinite: true })?.format.kind).toBe('fixed');
   });
 });

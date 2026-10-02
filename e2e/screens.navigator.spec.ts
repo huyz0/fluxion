@@ -85,12 +85,34 @@ test.describe('screens navigator', { tag: '@desktop' }, () => {
     await editor.screenTab('Screen 1').click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Format: Custom size…' }).click();
     const field = editor.panel('Screens, library and layers').getByRole('textbox', { name: 'Size of Screen 1' });
+    // selecting text in the field must not drag the row
+    await expect(row).toHaveAttribute('draggable', 'false');
     await field.fill('1280x720');
     await field.press('Enter');
     await expect(row).toHaveAttribute('data-format', '1280×720');
     // one undo step per format
     await editor.toolbarButton('Undo').click();
     await expect(row).toHaveAttribute('data-format', 'Infinite');
+  });
+
+  test('FR-SCR-003: the screen menu stays reachable from a row near the bottom of a short window', async ({ page }) => {
+    const editor = new EditorPage(page);
+    await page.setViewportSize({ width: 1280, height: 480 });
+    await withScreens(editor, 3);
+    const rows = editor.panel('Screens, library and layers').locator('.fx-chrome-screen');
+    await editor.screenTab('Screen 3').click({ button: 'right' });
+    const menu = page.getByRole('menu', { name: 'Context menu' });
+    const box = await menu.boundingBox();
+    const row3 = await editor.screenTab('Screen 3').boundingBox();
+    const clicked = (row3?.y ?? 0) + (row3?.height ?? 0) / 2;
+    // opened upward from the click: the menu ends where the pointer was (Playwright clicks the row's centre), inside the window
+    expect((box?.y ?? -1) + (box?.height ?? 0)).toBeLessThanOrEqual(clicked + 1);
+    expect(box?.y).toBeGreaterThanOrEqual(0);
+    // its own height, not stretched between the window's middle and the pointer: every line shows
+    expect(box?.height).toBeGreaterThan(280);
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan(clicked - 40);
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await expect(rows).toHaveCount(2);
   });
 
   test('NFR-PERF-001: the navigator opens with 50 screens within NAVIGATOR_OPEN_50_MAX_MS', async ({ page }) => {

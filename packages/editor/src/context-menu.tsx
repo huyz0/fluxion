@@ -1,7 +1,7 @@
 // The context menu (FR-EDT-013, M7.25): a menu of editor commands at the point it was asked for (a right click, a
 // finger held still). Up and Down move, Enter or Space runs, Esc or a press outside closes, and focus goes back to
 // where it was.
-import { type KeyboardEvent, type ReactNode, useEffect, useRef } from 'react';
+import { type CSSProperties, type KeyboardEvent, type ReactNode, useEffect, useRef } from 'react';
 import type { MenuItem } from './context-menu-model.js';
 
 /** Props of {@link ContextMenu}. */
@@ -20,6 +20,12 @@ export type ContextMenuProps = {
 
 /** The index after `at` going `step` through `count` items, wrapping. */
 const around = (at: number, step: number, count: number): number => (at + step + count) % count;
+
+/** The vertical placement of a menu asked for at client y `y`: down from it, or up from it in the window's lower half. */
+const placed = (y: number): CSSProperties =>
+  y > window.innerHeight / 2
+    ? { top: 'auto', bottom: window.innerHeight - y, maxHeight: Math.max(y - 8, 80) }
+    : { top: y, maxHeight: Math.max(window.innerHeight - y - 8, 80) };
 
 /** The menu. */
 export function ContextMenu(props: ContextMenuProps): ReactNode {
@@ -61,8 +67,8 @@ export function ContextMenu(props: ContextMenuProps): ReactNode {
       role="menu"
       aria-label="Context menu"
       className="fx-chrome-picker fx-chrome-menu"
-      // a long menu scrolls inside the window rather than running off it
-      style={{ left: at.x, top: at.y, transform: 'none', maxHeight: `calc(100vh - ${at.y}px - 8px)`, overflowY: 'auto' }}
+      // a long menu scrolls inside the window rather than running off it; asked for in the lower half it opens upward
+      style={{ left: at.x, transform: 'none', overflowY: 'auto', ...placed(at.y) }}
       onKeyDown={key}
     >
       {items.map((item) => (
