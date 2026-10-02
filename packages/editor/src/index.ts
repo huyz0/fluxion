@@ -16,6 +16,17 @@ export {
 } from './camera.js';
 export type { FitTargets } from './canvas-input.js';
 export {
+  type Clipboard,
+  type ClipboardPayload,
+  copyPayload,
+  createClipboard,
+  PASTE_OFFSET,
+  type PasteDeps,
+  type PastePlan,
+  pasteInto,
+  planPaste,
+} from './clipboard.js';
+export {
   type ConnectorHandle,
   connectorHandleAt,
   connectorHandlesOf,

@@ -334,3 +334,4 @@ M7.17	983a13340b4586ee2fc1a557f2be2e01fb5fe37a28328bf9953cce02e0fe0b64	r3	pass	c
 M7.18	93ce90fee9f454f0a6c8afb0df8c1bfb3d77b3750cd7738481068e3b055f7c45	r1	pass	claude:reviewer	0 findings
 M7.19	f1fad70745877080533abf43b2bc57d623b6ae055b487a7ceac8fdd4210e93a8	r1	pass	claude:reviewer	0 findings
 M7.31	d7135b55b065a87cb2d22d92ebc8ca346c786c1c6393914aaa64ec032979b0d0	r1	pass	claude:reviewer-subagent	1 findings
+M7.20	312890400634d9218828f1835402c19b59dc5e717ab4fe2057ce01d280824050	r1	pass	claude:reviewer-subagent	0 findings

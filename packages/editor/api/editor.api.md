@@ -62,6 +62,26 @@ export function clampZoom(z: number): number;
 export function clickSelection(current: readonly RecordId[], hit: RecordId | undefined, shift: boolean): readonly RecordId[];
 
 // @public
+type Clipboard_2 = {
+    get(): ClipboardPayload | undefined;
+    set(payload: ClipboardPayload): void;
+    pastes(): number;
+    countPaste(): void;
+};
+export { Clipboard_2 as Clipboard }
+
+// @public
+export type ClipboardPayload = {
+    readonly fluxion: "clipboard";
+    readonly version: 1;
+    readonly schemaVersion: string;
+    readonly sourceDocId: string;
+    readonly sourceScreen: RecordId | undefined;
+    readonly records: readonly AnyRecord[];
+    readonly bounds: Box | undefined;
+};
+
+// @public
 export type CommandCanvas = {
     readonly viewport: CanvasSize;
     targets(): FitTargets;
@@ -95,6 +115,16 @@ export function connectorTool(): Tool;
 
 // @public
 export const CONTEXT_MENU_EVENT = "fx-contextmenu";
+
+// @public
+export function copyPayload(view: ReadView, ids: readonly RecordId[], source: {
+    readonly docId: string;
+    readonly screen: RecordId | undefined;
+    readonly endPoint?: (id: RecordId, end: "source" | "target") => Vec2 | undefined;
+}): ClipboardPayload | undefined;
+
+// @public
+export function createClipboard(): Clipboard_2;
 
 // @public
 export function createConnector(deps: CreateDeps, link: Link): RecordId | undefined;
@@ -188,6 +218,7 @@ export type EditorCommandCtx = {
     switchMode?(): void;
     openHelp?(): void;
     restoreView?(meta: unknown): void;
+    readonly clipboard?: Clipboard_2;
 };
 
 // @public
@@ -202,6 +233,7 @@ export type EditorKeysInput = {
     readonly overrides?: KeyOverrides | undefined;
     readonly openHelp?: (() => void) | undefined;
     readonly restoreView?: ((meta: unknown) => void) | undefined;
+    readonly clipboard?: Clipboard_2 | undefined;
     readonly paused?: boolean | undefined;
 };
 
@@ -463,6 +495,27 @@ export function paramHandleAt(handles: readonly PlacedParamHandle[], p: Vec2, re
 export function paramHandlesOf(view: ReadView, defs: ShapeDefs, id: RecordId): readonly PlacedParamHandle[];
 
 // @public
+export const PASTE_OFFSET = 16;
+
+// @public
+export type PasteDeps = {
+    readonly view: ReadView;
+    readonly execute: Execute;
+    seal(): void;
+    readonly screen: RecordId | undefined;
+    newId(): RecordId;
+};
+
+// @public
+export function pasteInto(deps: PasteDeps, payload: ClipboardPayload, by: Vec2): readonly RecordId[] | undefined;
+
+// @public
+export type PastePlan = {
+    readonly elements: readonly AnyRecord[];
+    readonly bindings: readonly AnyRecord[];
+};
+
+// @public
 export type PathBox = {
     readonly box: Box;
     readonly fractions: readonly (readonly [number, number])[];
@@ -495,6 +548,14 @@ export type Placement = {
     readonly index: string;
     readonly transform: Box;
 };
+
+// @public
+export function planPaste(payload: ClipboardPayload, target: {
+    readonly screen: RecordId;
+    readonly indexes: readonly string[];
+    readonly by: Vec2;
+    readonly newId: () => RecordId;
+}): PastePlan;
 
 // @public
 export type PointerInfo = {

@@ -5,6 +5,7 @@
 // a key it declines stays the tools' (or the browser's).
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
+import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-tool.js';
 import { editSelectedText } from './text-edit.js';
@@ -55,6 +56,8 @@ export type EditorCommandCtx = {
   openHelp?(): void;
   /** Show the view an undone or redone entry's meta holds again. */
   restoreView?(meta: unknown): void;
+  /** The clipboard copy, cut and paste use. */
+  readonly clipboard?: Clipboard;
 };
 
 /**
@@ -94,6 +97,32 @@ export type EditorCommand = {
   /** Run it with `args`; true when it acted. */
   run(ctx: EditorCommandCtx, args?: unknown): boolean;
 };
+
+/** Copy the selection onto the clipboard; false with nothing copyable selected, or no clipboard. */
+function copySelection(ctx: EditorCommandCtx): boolean {
+  const t = ctx.tools.ctx;
+  const payload =
+    ctx.clipboard === undefined
+      ? undefined
+      : copyPayload(t.view, t.session.selection.get(), { docId: t.session.docId, screen: t.screen, endPoint: (id, end) => t.route?.(id)?.[end].point });
+  if (payload === undefined) return false;
+  ctx.clipboard?.set(payload);
+  return true;
+}
+
+/** Paste `payload` onto the shown screen, offset by `n` pastes, and select what was pasted; false when nothing was. */
+function pasteOnce(ctx: EditorCommandCtx, payload: NonNullable<ReturnType<Clipboard['get']>>, n: number): boolean {
+  const t = ctx.tools.ctx;
+  // pasted onto the screen it came from, the first paste is offset already (it would lie on its originals); onto another, the first lies where it was
+  const steps = payload.sourceScreen === t.screen ? n : n - 1;
+  const ids = pasteInto({ view: t.view, execute: t.execute, seal: t.seal, screen: t.screen, newId: t.newId }, payload, {
+    x: steps * PASTE_OFFSET,
+    y: steps * PASTE_OFFSET,
+  });
+  if (ids === undefined) return false;
+  t.session.selection.set(ids);
+  return true;
+}
 
 /** An undo or redo that ran shows the entry's view again; true, as the key was the history's either way. */
 function step(ctx: EditorCommandCtx, result: HistoryResult): boolean {
@@ -188,6 +217,31 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
     },
   },
   { id: 'selection.delete', title: 'Delete the selection', run: (ctx) => selectIdle(ctx) && deleteSelection(ctx.tools.ctx) },
+  { id: 'clipboard.copy', title: 'Copy', run: (ctx) => selectIdle(ctx) && copySelection(ctx) },
+  { id: 'clipboard.cut', title: 'Cut', run: (ctx) => selectIdle(ctx) && copySelection(ctx) && deleteSelection(ctx.tools.ctx) },
+  {
+    id: 'clipboard.paste',
+    title: 'Paste',
+    run: (ctx) => {
+      const payload = ctx.clipboard?.get();
+      // a paste that wrote nothing is not counted: the next one is not offset the further for it
+      const pasted = selectIdle(ctx) && payload !== undefined && pasteOnce(ctx, payload, (ctx.clipboard?.pastes() ?? 0) + 1);
+      if (pasted) ctx.clipboard?.countPaste();
+      return pasted;
+    },
+  },
+  {
+    id: 'clipboard.duplicate',
+    title: 'Duplicate',
+    run: (ctx) => {
+      // a copy that is not kept: the clipboard and its paste count are as they were
+      const t = ctx.tools.ctx;
+      const payload = selectIdle(ctx)
+        ? copyPayload(t.view, t.session.selection.get(), { docId: t.session.docId, screen: t.screen, endPoint: (id, end) => t.route?.(id)?.[end].point })
+        : undefined;
+      return payload !== undefined && pasteOnce(ctx, { ...payload, sourceScreen: t.screen }, 1);
+    },
+  },
   {
     id: 'text.edit',
     title: 'Edit the text',

@@ -12,6 +12,7 @@ import { registerBuiltinTools } from './builtin-tools.js';
 import { fitBox } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
+import { createClipboard } from './clipboard.js';
 import { useEditorKeys } from './editor-keys.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
 import { ImagePicker } from './image-picker.js';
@@ -159,6 +160,49 @@ function areaOf(view: ReadView, id: RecordId | undefined): Box | undefined {
   return screen?.type === 'screen' ? screenArea(screen as ScreenRecord) : undefined;
 }
 
+/** What the root's key handling reads. */
+type RootKeys = {
+  readonly store: Store;
+  readonly session: Session;
+  readonly tools: ToolDispatcher;
+  readonly present: ToolDispatcher;
+  readonly box: { readonly w: number; readonly h: number };
+  readonly area: Box | undefined;
+  readonly switchMode: () => void;
+  /** The screen shown, as the keys' undo restores it. */
+  readonly shown: { readonly current: RecordId | undefined };
+  readonly overrides: KeyOverrides;
+  readonly help: boolean;
+  readonly openHelp: () => void;
+};
+
+/** The editor's keys over the root's tools, with its own clipboard (the system clipboard joins it in M7.22); the runner of a command by id. */
+function useRootKeys(i: RootKeys): (command: string, args?: unknown) => boolean {
+  const { store, session, shown } = i;
+  const restore = useCallback(
+    (meta: unknown) => {
+      const view = readViewMeta(meta);
+      if (view !== undefined) restoreView(session, view, shown.current, (id) => store.get(id) !== undefined);
+    },
+    [session, store, shown],
+  );
+  const clipboard = useMemo(() => createClipboard(), []);
+  return useEditorKeys({
+    store,
+    session,
+    tools: i.tools,
+    present: i.present,
+    viewport: i.box,
+    area: i.area,
+    switchMode: i.switchMode,
+    openHelp: i.openHelp,
+    restoreView: restore,
+    clipboard,
+    overrides: i.overrides,
+    paused: i.help,
+  });
+}
+
 /**
  * The editor for the document in `store`: toolbar, panels and the canvas.
  *
@@ -192,14 +236,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const [overrides, setOverrides] = useKeyOverrides(settings);
   const [help, setHelp] = useState(false);
   const openHelp = useCallback(() => setHelp(true), []);
-  const restore = useCallback(
-    (meta: unknown) => {
-      const view = readViewMeta(meta);
-      if (view !== undefined) restoreView(session, view, shown.current, (id) => store.get(id) !== undefined);
-    },
-    [session, store],
-  );
-  const run = useEditorKeys({ store, session, tools, present, viewport: box, area, switchMode, openHelp, restoreView: restore, overrides, paused: help });
+  const run = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, help, openHelp });
   // a camera never moved (still the default) is fitted to the screen once the canvas has a size
   useEffect(() => {
     if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
