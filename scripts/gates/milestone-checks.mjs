@@ -320,6 +320,8 @@ export const BENCH_COMMANDS = [
   'screen.reorder',
   'binding.set',
   'connector.freeEnd',
+  'element.group',
+  'element.ungroup',
   'document.update',
   'asset.create',
 ];

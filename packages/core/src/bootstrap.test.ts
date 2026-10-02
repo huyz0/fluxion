@@ -93,6 +93,8 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
       anchor: { kind: 'auto' },
     }),
     'connector.freeEnd': () => ({ connectorId: pick('element', 'connector'), end: op.value % 2 ? 'source' : 'target', at: { x: op.value, y: 0 } }),
+    'element.group': () => ({ ids: [element], groupId: newId(n + 500) }),
+    'element.ungroup': () => ({ ids: [element] }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
     'asset.create': () => ({ asset: { id: newId(n), type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'a.png' } }),
   };

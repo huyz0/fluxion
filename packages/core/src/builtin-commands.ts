@@ -15,67 +15,11 @@ import {
   type Result,
 } from '@fluxion/schema';
 import { z } from 'zod';
+import { GROUP_COMMANDS } from './arrange/group.js';
+import { checkIds, fields, id, recordOf, repeated, title, write } from './command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
 import type { Registry } from './registry.js';
-import type { Tx, TxFailure } from './transaction.js';
-
-const id = z.string().min(1);
-// tzap disable next-line StringLiteral: message text is not the contract (codes are)
-const identityMessage = (key: string) => `"${key}" is a record's identity, not a field it can change`;
-// fields of a patch; a record's identity is not a field (a patch that changed it would throw; M3 cp1 F4)
-const fields = z.record(z.string(), z.unknown()).superRefine((value, check) => {
-  for (const key of ['id', 'type']) if (Object.hasOwn(value, key)) check.addIssue({ code: 'custom', path: [key], message: identityMessage(key) });
-});
-/** A record body: validated in full by the transaction, so only its identity is checked here. */
-const recordOf = (type: string) => z.looseObject({ id, type: z.literal(type) });
-const title = (key: string, text: string) => ({ id: `command.${key}`, defaultMessage: text });
-
-type Want = 'new' | string;
-
-/**
- * The first id that is not what the command needs (`new`: unused; a type: an existing record of
- * it), as COMMAND_ARGS with an FLX_COMMAND_ARGS diagnostic at its argument path (a bad argument, not
- * an invalid document; M3 final F5); null when all fit.
- * Creating never replaces a record, and a command never touches another type (M3.17 review).
- */
-function checkIds(
-  ctx: CommandContext,
-  command: string,
-  want: Want,
-  ids: ReadonlyArray<readonly [ReadonlyArray<string | number>, string]>,
-): Result<never, TxFailure> | null {
-  for (const [path, x] of ids) {
-    const problem = idProblem(ctx.store.get(x as RecordId), x, want);
-    if (problem)
-      return err({
-        code: 'COMMAND_ARGS',
-        message: `${command}: ${problem}`,
-        diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', ...path]), message: problem }],
-      });
-  }
-  return null;
-}
-
-/** COMMAND_ARGS for the first id `ids` lists twice (two new records cannot share one), or null. */
-function repeated(command: string, ids: readonly string[], at: string): Result<never, TxFailure> | null {
-  const twice = ids.findIndex((x, i) => ids.indexOf(x) !== i);
-  // tzap disable next-line EqualityOperator: a repeat is never the first entry
-  if (twice < 0) return null;
-  // tzap disable next-line StringLiteral: message text is not the contract (codes are)
-  const problem = `"${ids[twice]}" is listed twice`;
-  return err({
-    code: 'COMMAND_ARGS',
-    message: `${command}: ${problem}`,
-    diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', at, twice, 'id']), message: problem }],
-  });
-}
-
-/** Why `record` (stored under `x`) is not what `want` asks for, or undefined. */
-function idProblem(record: AnyRecord | undefined, x: string, want: Want): string | undefined {
-  if (want === 'new') return record ? `"${x}" already exists (a ${record.type})` : undefined;
-  // tzap disable next-line StringLiteral: message text is not the contract (codes are)
-  return record?.type === want ? undefined : `"${x}" is ${record ? `a ${record.type}` : 'missing'}, not a ${want}`;
-}
+import type { TxFailure } from './transaction.js';
 
 /** The screens in order, without `except`. */
 function screensInOrder(ctx: CommandContext, except: string): Array<{ readonly id: RecordId; readonly index: string }> {
@@ -131,15 +75,13 @@ function bindingAt(ctx: CommandContext, connectorId: string, end: string): Recor
 
 const endSchema = z.enum(['source', 'target']);
 
-/** The command's one transaction, with the options its caller passed (origin, mergeKey, meta). */
-const write = <R>(ctx: CommandContext, label: string, fn: (tx: Tx) => R): Result<R, TxFailure> => ctx.store.transact(label, fn, ctx.options);
-
 /**
  * The built-in record commands (FR-EXT-001).
  *
  * @public
  */
 export const CORE_COMMANDS: readonly AnyCommand[] = [
+  ...GROUP_COMMANDS,
   defineCommand({
     id: 'element.create',
     title: title('element.create', 'Add element'),

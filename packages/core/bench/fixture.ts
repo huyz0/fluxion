@@ -1,7 +1,7 @@
 // Shared fixture of the core benches (NFR-PERF-006): a 5 000-record document from the schema
 // builders, a store with default options (validation on, as in dev and test; ADR-0014) and the core
 // hooks, and one succeeding argument set per built-in command.
-import { nKeysBetween, type RecordId } from '@fluxion/schema';
+import { type AnyRecord, keyBetween, nKeysBetween, type RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { registerCoreCommands } from '../src/builtin-commands.js';
 import { type AnyCommand, executeCommand } from '../src/commands.js';
@@ -40,7 +40,9 @@ export function benchStore(): Bench {
     for (let i = 0; i < 83; i++) lines.push(b.connect(rects[i] as RecordId, rects[i + 1] as RecordId));
     shapes.push(...rects);
   }
-  const file = b.build();
+  const built = b.build();
+  // a group of three shapes of screen 6, for element.ungroup to act on
+  const file = withGroup(built, screens[6] as RecordId, shapes.slice(1500, 1503));
   const count = Object.keys(file.records).length;
   if (count < RECORDS) throw new Error(`bench document has ${count} records, want ${RECORDS}`);
   const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
@@ -57,6 +59,33 @@ export function benchStore(): Bench {
     },
   };
 }
+
+/** `file` with a group (BENCH_GROUP) on `screen` holding `members`, which are patched to name it as their parent. */
+function withGroup(file: ReturnType<ReturnType<typeof documentBuilder>['build']>, screen: RecordId, members: readonly RecordId[]) {
+  const topLevel = Object.values(file.records).filter(
+    (r) => (r as { screenId?: unknown }).screenId === screen && (r as { parentId?: unknown }).parentId === undefined,
+  );
+  const last = topLevel
+    .map((r) => String((r as { index?: unknown }).index ?? ''))
+    .sort()
+    .at(-1) as string;
+  const index = keyBetween(last, null);
+  if (!index.ok) throw new Error(index.error.message);
+  const records: Record<string, unknown> = { ...file.records };
+  for (const m of members) records[m] = { ...(records[m] as object), parentId: BENCH_GROUP };
+  records[BENCH_GROUP] = {
+    id: BENCH_GROUP,
+    type: 'element',
+    kind: 'group',
+    screenId: screen,
+    index: index.value,
+    transform: { x: 0, y: 0, w: 200, h: 60, rot: 0 },
+  } as AnyRecord;
+  return { ...file, records } as typeof file;
+}
+
+/** The group the fixture holds. */
+const BENCH_GROUP = 'BenchGroup0000001' as RecordId;
 
 /** Fractional index keys for the 25 elements of element.createMany. */
 const MANY_KEYS = (() => {
@@ -104,6 +133,9 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
     'screen.delete': { id: screens[7] },
     'screen.reorder': { id: screens[2], after: screens[8] },
     'binding.set': { id: 'BenchNewBinding01', connectorId: lines[500], end: 'target', elementId: shapes[2400], anchor: { kind: 'auto' } },
+    // two siblings of screen 5 grouped, and the fixture's group dissolved
+    'element.group': { ids: [shapes[1300], shapes[1301]], groupId: 'BenchNewGroup0001' },
+    'element.ungroup': { ids: [BENCH_GROUP] },
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
     'asset.create': { asset: { id: 'BenchNewAsset0001', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'bench.png' } },
@@ -122,6 +154,8 @@ export const COMMANDS = [
   'screen.reorder',
   'binding.set',
   'connector.freeEnd',
+  'element.group',
+  'element.ungroup',
   'document.update',
   'asset.create',
 ] as const;

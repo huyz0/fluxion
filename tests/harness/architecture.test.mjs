@@ -19,7 +19,7 @@ const ALLOWED = new Set(['packages/core/src/history.ts', 'packages/core/src/fork
 /** The module that declares transact: only its method declarations may name it there. */
 const DECLARES = 'packages/core/src/store.ts';
 /** Helpers taking a `CommandContext` that commands call to write, listed by module (the only ones). */
-const HELPERS = { 'packages/core/src/builtin-commands.ts': ['write'] };
+const HELPERS = { 'packages/core/src/command-helpers.ts': ['write'] };
 
 /** Shipped source files under packages/*\/src, packs/*\/src and apps/*\/src of `root`. */
 function sources(root = REPO) {
@@ -167,11 +167,11 @@ describe('architecture (ADR-0014 §Commands)', () => {
     assert.ok(files.some((f) => f.startsWith('packages/render/src/')));
     assert.ok(files.some((f) => f.startsWith('apps/studio/src/')));
     assert.deepEqual(strays(), []);
-    // the built-ins do write, through their listed helper, and the check sees that code (M4.6 review
-    // F1): the same file with a stray appended reports exactly that stray
-    const builtins = readFileSync(join(REPO, 'packages/core/src/builtin-commands.ts'), 'utf8');
+    // the built-ins do write, through their listed helper (command-helpers.ts since M8.4), and the check sees that
+    // code (M4.6 review F1): the same file with a stray appended reports exactly that stray
+    const builtins = readFileSync(join(REPO, 'packages/core/src/command-helpers.ts'), 'utf8');
     assert.match(builtins, /\bctx\.store\.transact\s*\(/);
-    const helpers = HELPERS['packages/core/src/builtin-commands.ts'];
+    const helpers = HELPERS['packages/core/src/command-helpers.ts'];
     const appended = `${builtins.trimEnd()}\nexport const bad = (s) => s.transact('x', f);\n`;
     assert.deepEqual(strayCalls(appended, { helpers }), [[appended.split('\n').length - 1, "export const bad = (s) => s.transact('x', f);"]]);
     assert.equal(strayCalls(builtins, { helpers: [] }).length, 1, 'unlisted, the write helper is a stray');

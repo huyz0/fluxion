@@ -69,7 +69,7 @@ leg('ADR-0021 screen sections and the library search index is accepted', () => {
 leg('group then ungroup restores the children; connectors stay bound (T0 property)', () =>
   titled([
     ['M8.4', 'FR-ARR-001: group then ungroup restores every child world box within 1e-6', CORE],
-    ['M8.4', 'FR-CON-012: connectors stay attached to children of rotated nested groups', CORE],
+    ['M8.4', 'FR-CON-012: connectors stay attached to children of rotated nested groups', 'routing'],
   ]),
 );
 leg('a group moves, resizes and rotates as one; double-click enters it (arrange.group-edit)', () => e2e(['e2e/arrange.group-edit.spec.ts'], DESKTOP));

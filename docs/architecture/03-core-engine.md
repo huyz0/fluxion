@@ -83,6 +83,7 @@ type CommandDef<A> = {
   element.delete, element.createMany, element.updateMany (several elements in one transaction: a
   gesture's move or duplicate, M6.14), screen.create, screen.delete, screen.reorder, binding.set,
   connector.freeEnd (lets go of one end: its binding goes, the end is held at a point, M7.26),
+  element.group / element.ungroup (a container over sibling elements and its dissolving; members keep screen coordinates, M8.4),
   document.update, asset.create (an asset record, beside the element that uses it: a pasted image, M7.23).
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through
   commands: one audit path, one undo semantics, one AI surface. The architecture test allows

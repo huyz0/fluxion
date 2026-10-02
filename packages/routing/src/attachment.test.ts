@@ -123,4 +123,52 @@ describe('attachment invariant (FR-CON-012)', () => {
     expect(runs).toBe(1000);
     expect(edited).toBeGreaterThan(1000);
   });
+  // the group commands (M8.4): grouping changes parentId and adds a container, the children keep their screen coordinates,
+  // so what moves the children (the editor moves a group by moving its members) moves the ends with them
+  it('FR-CON-012: connectors stay attached to children of rotated nested groups', { timeout: 60_000 }, () => {
+    const ctx = context();
+    fc.assert(
+      fc.property(
+        fc.record({
+          ps: fc.tuple(placement, placement),
+          as: fc.tuple(anchor, anchor),
+          type: fc.constantFrom('straight', 'curved', 'orthogonal', 'polyline'),
+          edits: fc.array(fc.record({ which: fc.constantFrom(0, 1), to: placement }), { maxLength: 4 }),
+          depth: fc.constantFrom(0, 1, 2),
+        }),
+        ({ ps: [p0, p1], as: [a0, a1], type, edits, depth }) => {
+          const b = documentBuilder({ seed: 5231 });
+          const screenId = b.screen();
+          const ids = [b.rect(screenId, { ...p0, defId: 'test:ellipse' }), b.rect(screenId, { ...p1, defId: 'test:diamond' })] as const;
+          const line = b.connect(ids[0], ids[1], { route: type, sourceAnchor: a0, targetAnchor: a1 });
+          const { store, execute } = createCore(b.build());
+          const routed = store.query((view) => routeConnector(view, ctx, line));
+          // wrap both children in `depth` nested groups, each of the previous one (the groups' own rotation is not applied to members)
+          let members: RecordId[] = [...ids];
+          for (let d = 0; d < depth; d++) {
+            const groupId = `group-${d}` as RecordId;
+            expect(execute('element.group', { ids: members, groupId }).ok).toBe(true);
+            expect(execute('element.update', { id: groupId, fields: { transform: { x: 0, y: 0, w: 50, h: 50, rot: 37 * (d + 1) } } }).ok).toBe(true);
+            members = [groupId];
+          }
+          for (const e of edits) expect(execute('element.update', { id: ids[e.which], fields: { transform: e.to } }).ok).toBe(true);
+          const route = routed();
+          expect(route).toBeDefined();
+          const ends = [route?.source.point, route?.target.point] as Vec2[];
+          [0, 1].forEach((k) => {
+            const t = (store.get(ids[k] as RecordId) as { transform: Transform }).transform;
+            const fixed = fixedPoint(t, [a0, a1][k] as AnchorRef);
+            if (fixed === undefined) expect(offOutline(t, k === 0 ? ellipse : diamond, ends[k] as Vec2)).toBeLessThan(1e-6);
+            else {
+              expect(ends[k]?.x).toBeCloseTo(fixed.x, 6);
+              expect(ends[k]?.y).toBeCloseTo(fixed.y, 6);
+            }
+          });
+          // the bindings are the ones the builder made: grouping never touches them
+          expect(store.members('bindingsByElement', line)).toHaveLength(2);
+        },
+      ),
+      { numRuns: 300 },
+    );
+  });
 });

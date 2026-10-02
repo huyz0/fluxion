@@ -35,7 +35,7 @@ const order = (store: RecordStore) =>
     .map(([id]) => id);
 
 describe('built-in record commands (FR-EXT-001)', () => {
-  it('FR-EXT-001: the ten built-ins are registered through the registry as source core', () => {
+  it('FR-EXT-001: the fourteen built-ins are registered through the registry as source core', () => {
     const commands = createRegistry<string, AnyCommand>('commands');
     expect(registerCoreCommands(commands)).toEqual([]);
     expect(commands.list().map(([id]) => id)).toEqual([
@@ -46,6 +46,8 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'element.create',
       'element.createMany',
       'element.delete',
+      'element.group',
+      'element.ungroup',
       'element.update',
       'element.updateMany',
       'screen.create',
