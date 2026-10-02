@@ -1495,3 +1495,7 @@ Schema 1.1 (ADR-0021): section record, sectionId reference check, 1.0->1.1 migra
 ## 2026-10-02 M8.29 (claude)
 
 Section commands and screen.setSection in core (row split from M8.15); screen-order.ts has a generic indexAfter for screens and sections; determinism got a third guaranteed example (sections). Review pass r1.
+
+## 2026-10-02 M8.15 (claude)
+
+Navigator sections: navigatorItems (free screens first, then each section with its screens, folded ones header-only), SectionHeader with fold/rename/menu/drop target, useSections, screen menu lines to move between sections. Folding is an undo step (collapsed lives on the record). Review pass r1.
