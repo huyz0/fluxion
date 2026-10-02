@@ -42,7 +42,7 @@ export function benchStore(): Bench {
   }
   const built = b.build();
   // a group of three shapes of screen 6, for element.ungroup to act on
-  const file = withGroup(built, screens[6] as RecordId, shapes.slice(1500, 1503));
+  const file = withSections(withGroup(built, screens[6] as RecordId, shapes.slice(1500, 1503)), screens[0] as RecordId);
   const count = Object.keys(file.records).length;
   if (count < RECORDS) throw new Error(`bench document has ${count} records, want ${RECORDS}`);
   const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
@@ -81,6 +81,19 @@ function withGroup(file: ReturnType<ReturnType<typeof documentBuilder>['build']>
     index: index.value,
     transform: { x: 0, y: 0, w: 200, h: 60, rot: 0 },
   } as AnyRecord;
+  return { ...file, records } as typeof file;
+}
+
+/** The sections the fixture holds, the first naming the first screen. */
+const BENCH_SECTIONS = ['BenchSectionA0001', 'BenchSectionB0001'] as const;
+
+/** `file` with two sections (BENCH_SECTIONS) and `screen` in the first. */
+function withSections(file: ReturnType<ReturnType<typeof documentBuilder>['build']>, screen: RecordId) {
+  const records: Record<string, unknown> = { ...file.records };
+  BENCH_SECTIONS.forEach((id, i) => {
+    records[id] = { id, type: 'section', name: `section ${i}`, index: `a${i}` };
+  });
+  records[screen] = { ...(records[screen] as object), sectionId: BENCH_SECTIONS[0] };
   return { ...file, records } as typeof file;
 }
 
@@ -147,6 +160,13 @@ function benchArgs(
     'screen.reorder': { id: screens[2], after: screens[8] },
     'screen.rename': { id: screens[1], name: 'renamed' },
     'screen.setFormat': { id: screens[1], format: { kind: 'fixed', size: { w: 1280, h: 720 } } },
+    'section.create': { id: 'BenchNewSection01', name: 'new' },
+    'section.rename': { id: BENCH_SECTIONS[0], name: 'renamed' },
+    'section.setCollapsed': { id: BENCH_SECTIONS[0], collapsed: true },
+    'section.reorder': { id: BENCH_SECTIONS[0], after: BENCH_SECTIONS[1] },
+    // the first screen goes with it: it names the section
+    'section.delete': { id: BENCH_SECTIONS[0] },
+    'screen.setSection': { id: screens[3], sectionId: BENCH_SECTIONS[1] },
     'screen.setHidden': { id: screens[1], hidden: true },
     // a copy of screen 4: its 250 shapes and the bindings of its 83 connectors
     'screen.duplicate': { id: screens[4], newId: 'BenchNewScreen002', ids: copies },
@@ -179,6 +199,12 @@ export const COMMANDS = [
   'screen.rename',
   'screen.setFormat',
   'screen.setHidden',
+  'screen.setSection',
+  'section.create',
+  'section.rename',
+  'section.setCollapsed',
+  'section.reorder',
+  'section.delete',
   'screen.duplicate',
   'binding.set',
   'connector.freeEnd',

@@ -87,6 +87,12 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'screen.reorder': () => ({ id: screen }),
     'screen.rename': () => ({ id: screen, name: `s${op.value}` }),
     'screen.setFormat': () => ({ id: screen, format: { kind: 'fixed', size: { w: 800 + op.value, h: 600 } } }),
+    'section.create': () => ({ id: newId(n + 900), name: `sec${op.value}` }),
+    'section.rename': () => ({ id: pick('section'), name: `sec${op.value}` }),
+    'section.setCollapsed': () => ({ id: pick('section'), collapsed: op.value % 2 === 1 }),
+    'section.reorder': () => ({ id: pick('section') }),
+    'section.delete': () => ({ id: pick('section') }),
+    'screen.setSection': () => ({ id: screen, sectionId: pick('section') }),
     'screen.setHidden': () => ({ id: screen, hidden: op.value % 2 === 1 }),
     'screen.duplicate': () => ({ id: screen, newId: newId(n + 700), ids: Object.fromEntries(shapes().map((x, k) => [x, newId(n + 800 + k)])) }),
     'binding.set': () => ({
@@ -164,6 +170,21 @@ const MISC_EXAMPLE: DocumentFile = (() => {
   b.connect(left, right);
   return b.build();
 })();
+/** The same, with a section on the first screen, and one op for each section command. */
+const SECTION_EXAMPLE: DocumentFile = (() => {
+  const file = MISC_EXAMPLE;
+  const first = Object.values(file.records).find((r) => r.type === 'screen') as { id: string };
+  const records: Record<string, unknown> = { ...file.records, SectionAAAA00001: { id: 'SectionAAAA00001', type: 'section', name: 'A', index: 'a0' } };
+  records[first.id] = { ...(records[first.id] as object), sectionId: 'SectionAAAA00001' };
+  return { ...file, records } as unknown as DocumentFile;
+})();
+const SECTION_OPS: Op[] = ['section.create', 'section.rename', 'section.setCollapsed', 'section.reorder', 'screen.setSection', 'section.delete'].map(
+  (command) => ({
+    command,
+    pick: 0,
+    value: 1,
+  }),
+);
 const MISC_OPS: Op[] = [
   'element.create',
   'element.createMany',
@@ -183,6 +204,7 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
   it('NFR-REL-005: the same command sequence twice gives equal diffs, history and document', () => {
     // the guaranteed example really commits both of its ops
     expect(new Set(play(MISC_EXAMPLE, MISC_OPS).results)).toEqual(new Set(['ok']));
+    expect(new Set(play(SECTION_EXAMPLE, SECTION_OPS).results)).toEqual(new Set(['ok']));
     expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
     let committed = 0;
     const committedBy = new Set<string>();
@@ -202,6 +224,7 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
         examples: [
           [GROUPED_EXAMPLE, GROUP_THEN_UNGROUP],
           [MISC_EXAMPLE, MISC_OPS],
+          [SECTION_EXAMPLE, SECTION_OPS],
         ],
       },
     );

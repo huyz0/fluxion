@@ -6,10 +6,10 @@ import type { TxFailure } from '../transaction.js';
 
 type Entry = { readonly id: RecordId; readonly index: string; readonly hidden: boolean };
 
-/** The screens of `view` in order (index, then id), hidden ones included, without `except`. */
-function ordered(view: ReadView, except?: string): Entry[] {
+/** The records of `type` (`screen` or `section`) in order (index, then id), hidden screens included, without `except`. */
+function ordered(view: ReadView, except?: string, type = 'screen'): Entry[] {
   return view
-    .members('byType', 'screen')
+    .members('byType', type)
     .filter((s) => s !== except)
     .map((s) => {
       const r = view.get(s) as { index?: unknown; hidden?: unknown } | undefined;
@@ -38,11 +38,20 @@ export function nextVisibleScreen(view: ReadView, from: RecordId, step: 1 | -1 =
  * them (TX_INVALID naming the neighbour's index; M3 final F5).
  */
 export function screenIndexAfter(ctx: CommandContext, command: string, screen: string, after: string | undefined): Result<string, TxFailure> {
-  const others = ordered(ctx.store, screen);
+  return indexAfter(ctx, command, { type: 'screen', id: screen, after });
+}
+
+/** What {@link indexAfter} places: the record `id` of `type` right after `after` (first when absent). */
+export type Placing = { readonly type: 'screen' | 'section'; readonly id: string; readonly after: string | undefined };
+
+/** {@link screenIndexAfter} for screens and sections alike. */
+export function indexAfter(ctx: CommandContext, command: string, placing: Placing): Result<string, TxFailure> {
+  const { type, id: screen, after } = placing;
+  const others = ordered(ctx.store, screen, type);
   // no screen has an undefined id, so an absent `after` finds nothing: at 0, first
   const at = others.findIndex((s) => s.id === after) + 1;
   if (after !== undefined && at === 0) {
-    const message = 'a screen cannot follow itself';
+    const message = `a ${type} cannot follow itself`;
     return err({
       code: 'COMMAND_ARGS',
       message: `${command}: ${message}`,

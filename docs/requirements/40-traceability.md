@@ -39,7 +39,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-001 | M | R0 | M2, M4 | [10-document-and-file.md](10-document-and-file.md) | `e2e/render.static-html.spec.ts` +9 |
 | FR-SCR-002 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.navigator.spec.ts` +2 |
 | FR-SCR-003 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.navigator.spec.ts` +3 |
-| FR-SCR-004 | S | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/migrate.test.ts` |
+| FR-SCR-004 | S | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/screens/section-commands.test.ts`, `packages/schema/src/migrate.test.ts` |
 | FR-SCR-005 | S | R3 | M19 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-006 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
