@@ -89,6 +89,8 @@ receiving milestone's plan.
 | One keymap absorbs M6's hard-wired canvas keys (undo/redo, zoom, tool shortcuts, nudges) so each key has one binding and user overrides apply (M6 cp1 F6) | M6 | M7 row 14 | the keymap arrives there |
 | The shape tool places the library's current item, not a fixed `basic:rect` (FR-EDT-003; M6 cp2 F2) | M6 | M8 row 15 | the library's current item arrives there |
 | Kind 'text' elements are drawn (a view, or mapped onto the text-box shape), one decision shared by the text tool and paste (M6 cp2 F3); drawn by TextView since M7.8, the decision written and the inline editor opening them in M7.12/M7.23 (M7 cp1 F4) | M6 | M7 rows 12, 23 | plain-text paste makes text elements there |
+| The Problems tab lists `lintRules` findings (contrast, overlap, ...) beside `validate()`'s, with Fix where a rule offers one (FR-EDT-021; M7 final F2) | M7 | M14 row 10 | the lintRules registry arrives there |
+| The pre-commit budget record times a worst-case staged commit, not the one staged at the time (M7 final F4) | M7 | M8 row 15b | the scoped staged ladder (M7.32-M7.35) made the record's number a best case |
 | Frame defaults (clip on, radius-rounded clip, theme `defaults.frame`, M6.31) ratified or revised by ADR-0052; hit-testing honours the clip (M6 cp2 F4) | M6 | M19 row 3 | frames and containers are decided there |
 | A selected or hovered connector shows an outline along its route (FR-EDT-004; M6 cp2 F5) | M6 | M7 row 10 | connector handles arrive there |
 | The parity suite covers every screen edit can show, examples and fixture documents (FR-EDT-010; M6 final F2, with F6's anti-aliasing-mode note) | M6 | M8 row 10, M10 row 15 | other screens and files open in edit there |

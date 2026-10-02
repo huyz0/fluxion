@@ -1435,3 +1435,7 @@ Staged ladder scope: a doc, e2e spec, gate script or harness test runs the harne
 ## 2026-10-02 M7.30 M7.27 M7.34 M7.35 (claude)
 
 M7.30: inspector enum icons, gradient and image fills shown with a preview, a refused entry given back, arrow-key steps (one undo step each); the scrub-gesture reset is hygiene (the test guards the behaviour, it passes without the reset). M7.27: Editing text and Keyboard shortcuts guides (the latter generated from the keymap and tools by scripts/docs/keyboard-shortcuts.mjs --check; review r1 caught that the registry lists entries, so the first version had no Tools section), inspector stories, the editor AGENTS.md map and five changesets. The completion gate's M7.15 title had an apostrophe where the test has a backtick; corrected. M7.34, M7.35: staged-ladder scope for changesets, docs generators, completion gates, guides, AGENTS.md and knip.json (a commit that touched them ran ~190 s). Next: M7.28, the final review, which needs CI evidence on three engines (this container has chromium only).
+
+## 2026-10-02 M7.28 (claude)
+
+Final milestone review (fresh milestone-reviewer, 89fce3b~1..798b10f): changes-requested. Reopened F1 and F7 as M7.37 (the Problems gate leg pins the dangling-binding fix by title; literal names in the scope tests); handed off F2 (M14 row 10), F3 (M16 row 18b), F4 (M8 row 15b); argued F5, F6. M7.28 stays open for the approving re-review and the CI evidence on three OSes and three engines (the main ci runs were queued for 30+ minutes).

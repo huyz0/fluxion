@@ -1,0 +1,113 @@
+{
+  "milestone": "M7",
+  "checkpoint": "final",
+  "range": "89fce3b~1..798b10f",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate honesty / spec fidelity (FR-EDT-021, M7.26)",
+      "detail": "The plan and M7.26 acceptance say 'a dangling binding shows a problem and Fix frees the endpoint' as an E2E. e2e/validation.fix-broken-ref.spec.ts drives the stacked-elements warning (Select, Offset the top one) and never a dangling binding or a freed end. The m7-complete leg is labelled 'the validation panel lists a dangling binding and fixes it' and only runs that spec, so it can go green with the label false. The reachability argument (M7.26 F1: no UI path makes a dangling binding) is sound for the E2E, but then the leg label and the acceptance are wrong and the real proof (problems-tab.browser.test 'FR-EDT-021: a binding to a missing element is listed and Free the end ...', problems.test.ts) is not pinned by the gate.",
+      "failure_scenario": "problems-tab.tsx stops wiring the Free the end button; the E2E (stack) and the gate stay green."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "spec fidelity (FR-EDT-021)",
+      "detail": "FR-EDT-021 lists broken references, missing assets, overlap warnings and contrast warnings. The Problems tab has validate() diagnostics and one lint approximation: elements with an identical box. Contrast is absent; 'overlap' is exact stacking only; the plan names 'lintRules'. M7.26 F2 argues this to M14 (lintRules registry, FR-AI-005), but no row exists: M14.md row 10 builds the registry and has no item for the editor panel to read it, and the roadmap Deferred table has no line. An argued line is not a hand-off; the requirement is M7's by the traceability matrix and nothing receives the rest.",
+      "failure_scenario": "M14 closes with its lintRules and the Problems tab never reads them; FR-EDT-021 contrast warnings are shipped by nobody and the matrix shows it covered."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "hand-off hygiene (curve tangent handles)",
+      "detail": "The roadmap Deferred table has the curve tangent handles line to M16 (M7 cp2 F3), but docs/milestones/M16.md has no row naming it (grep for tangent finds nothing). The skill requires a row in the receiving milestone file as well as the Deferred line.",
+      "failure_scenario": "M16 is planned from its file and the schema change plus ADR is never scheduled."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "gate honesty (staged budget, M7.36)",
+      "detail": "check-budget --record times 'precommit.mjs --staged' on whatever is staged at that moment. With the scope reductions of M7.32-M7.35 (docs, e2e, gate scripts, sources run a fraction; coverage and packaging left to CI) an empty or small stage is a trivially fast run: stagedMs fell from 112399 to 30655 and quickMs from 19519 to 5878 without any code change in the ladder between the two numbers' commits (the record's commit field is 9e6bbc9, before M7.32). PRECOMMIT_BUDGET_MS (120 s) therefore no longer constrains the worst real staged commit, which is a manifest or script change that still runs everything. coldSetupMs rose 183000 to 297000 (limit 600000) and is a real CI number, which is fine.",
+      "failure_scenario": "A commit staging a shared helper or a tsconfig runs the full ladder at 200 s again and the green budget leg never notices."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "standards drift (ladder scope, M7.32-M7.35)",
+      "detail": "Checked for weakening: --all (CI's pnpm verify, ci.yml line 47) still runs every harness file, the coverage run, publint and attw, so nothing is dropped; unknown paths fall back to every file (null), and the tests pin that mixing one unknown path runs everything. Remaining risk is design, not a defect: a staged doc runs the files that name its literal path (naming() greps file text), so a harness test that reads docs by directory glob or by a built path is not found and misses a staged edit until CI. harnessFor also treats any docs/*.md as docs, e.g. docs/requirements edits, which docs-consistency and trace cover. No gate was loosened and no threshold changed. Argue.",
+      "failure_scenario": "A doc edit breaks a harness test that builds its path at run time; the commit is green and CI is red."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "area": "coherence (M7.30 inspector)",
+      "detail": "optionGlyph maps both 'center' and 'width' to the same arrow and falls back to the first letter, so icons are ambiguous in a field whose options collide; names stay in aria-label and title, so it is not an accessibility defect. The arrow-step, rejected-entry and gesture-ref changes are correct and each has a titled test; PaintField no longer shows gradient/image as 'none' and does not rewrite them on blur.",
+      "failure_scenario": "None functional; polish."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "area": "mutants (spot checks)",
+      "detail": "1) inspector.browser 'arrow keys step a number': a mutant making stepped() ignore shift (always 1) fails at 91; a mutant dropping seal() fails the one-undo-step assertion. Constrains. 2) problems.test 'dangling binding': a mutant that drops the elementId path check (fix for any FLX_REF_MISSING) still passes only if the fix args stay equal, so the test pins args exactly; a mutant that frees 'source' instead of 'target' fails. Constrains. 3) ladder-scope 'a doc, an e2e spec...': a mutant returning E2E_HARNESS for every e2e/ path is the intended behaviour; a mutant adding 'coverage' back to DOCS_HARNESS passes the equality check only if only() is rebuilt from the same constant (it is: the assertions compare against the exported arrays, so the test is partly circular for DOCS_HARNESS, E2E_HARNESS and GATE_SCRIPT_HARNESS). Weak: add literal expected names for at least the docs case.",
+      "failure_scenario": "Someone adds 'coverage' to DOCS_HARNESS; the test follows the constant and stays green."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "new row M7.37 (before M7.28)",
+      "note": "Either make the E2E reach a dangling binding through the UI path that exists (open a document file that carries one, if parse allows a repair path) or relabel the leg 'the Problems tab lists a problem and Fix mends it' and add titled(browser('M7.26', 'FR-EDT-021: a binding to a missing element is listed and Free the end ...')) and the problems.test titles to the m7-complete leg; correct the M7.26 acceptance text accordingly."
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand-off",
+      "target": "docs/milestones/M14.md row 10 task (the Problems tab reads the lintRules registry: overlap, contrast) plus a roadmap Deferred line M7 -> M14",
+      "note": "Contrast warnings and rule-based overlap of FR-EDT-021 land with the registry; the M14 acceptance gets a test that the Problems tab lists a registered rule's finding with its fix. Until then 40-traceability continues to show the part covered by the stack check."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "target": "docs/milestones/M16.md (add a row: curve tangent handles, schema control points + ADR)",
+      "note": "The roadmap Deferred line exists; the receiving file needs the row."
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand-off",
+      "target": "M8 harness row (check-budget staged measurement)",
+      "note": "Time the staged ladder against a fixed worst-case stage (a manifest or shared-helper change that runs everything) so PRECOMMIT_BUDGET_MS constrains the slowest real commit; re-record after."
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "M7 final F5: --all in CI runs everything and unknown paths fall back to every file; literal-path naming can miss a harness test that builds a doc path at run time, which CI catches; no gate loosened."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "M7 final F6: glyph collisions are cosmetic; every option keeps its name as accessible label and title."
+    },
+    {
+      "finding": "F7",
+      "disposition": "reopen",
+      "target": "M7.37",
+      "note": "Pin literal expected harness names for the docs case in ladder-scope.test (not derived from DOCS_HARNESS), so a widening or narrowing of the constant fails."
+    }
+  ],
+  "planDelta": "One new row M7.37 (F1 gate honesty of the validation leg, F7 literal expectations in ladder-scope.test); hand-offs: M14 row 10 (Problems tab reads lintRules, contrast), M16 row (curve tangent handles), M8 harness row (staged budget measures a fixed worst case). 37 rows against 17 planned, as cp1 and cp2 recorded; M7.31-M7.36 were user-requested fixes and ladder scoping, not scope growth. The firefox/webkit E2E legs and the CI-evidence leg were red in this container for environment reasons and were not judged. M7.28 stays todo until M7.37 closes. Learned: a gate leg's label must say what its spec drives; when an acceptance cannot be reached through the UI, change the acceptance in the row, not the proof underneath it.",
+  "resolutions": {
+    "F1": "M7.37 (b35eb9f): the Problems gate leg runs the E2E then pins problems.test and problems-tab.browser.test by title",
+    "F7": "M7.37 (b35eb9f): ladder-scope tests name the expected harness files literally",
+    "F2": "handed off: M14 row 10 and roadmap Deferred",
+    "F3": "handed off: M16 row 18b (roadmap Deferred line already existed)",
+    "F4": "handed off: M8 row 15b and roadmap Deferred",
+    "F5": "argued in review-argued.txt",
+    "F6": "argued in review-argued.txt"
+  },
+  "pending": "re-review of the resolutions and the CI evidence at the range end (M7.28)"
+}
