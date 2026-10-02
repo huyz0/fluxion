@@ -1523,3 +1523,7 @@ library/library-insert.ts (insertShape: centred, default size, selected, one und
 ## 2026-10-02 M8.26 (claude)
 
 arrange-edit.ts (alignSelection: several to their bounds, one to the screen; distributeSelection needs 3; orderSelection), 12 editor commands, Ctrl+]/[ (+ shifted/brace forms), Group/Ungroup + Arrange in the element menu. Round 1 caught the keyboard guide: its generator reads the built editor, so rebuild before regenerating.
+
+## 2026-10-02 M8.19 (claude)
+
+The guide Screens & arranging, examples/arrange-demo.flux.json, AGENTS notes, changesets (editor, routing). ladder-scope: docs, examples, changesets and AGENTS.md map to the harness files that read them and skip publint/attw, so such commits stay under the budget (a first try took 218 s). Review pass r1.
