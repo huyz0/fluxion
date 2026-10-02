@@ -1471,3 +1471,7 @@ Select-tool drags snap (selection bounds vs other elements and the screen; Alt a
 ## 2026-10-02 M8.11 (claude)
 
 screen.rename, screen.setHidden, screen.duplicate (elements + bindings between them under caller ids, slugs dropped; timelines/interactions left to the animation milestone) and core nextVisibleScreen; screen ordering moved to core/screens/screen-order.ts and shared by reorder and duplicate. Review pass in round 1.
+
+## 2026-10-02 M8.12 (claude)
+
+Screens navigator (screens-tab.tsx + navigator/): lazy thumbnails, HTML5 drag reorder via screen.reorder, inline rename, hide toggle, New screen, screen menu (rename/hide/duplicate/delete). The row was split: F5/shift+F5 and the parity suite are M8.27. Side effects fixed: snapping (M8.10) broke two move E2E specs (they switch Snapping off), and thumbnails repeat element ids (a browser test now scopes to main). The shapes-gallery visual E2E fails here without these changes too.
