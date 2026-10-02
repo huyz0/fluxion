@@ -4,6 +4,7 @@ import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import {
   dropAfter,
+  dropMove,
   duplicateArgs,
   formatArgs,
   formatLabel,
@@ -123,5 +124,22 @@ describe('the navigator model (FR-SCR-002)', () => {
       null,
       null,
     ]);
+  });
+});
+
+describe('dropping on a row (FR-SCR-004)', () => {
+  const rows = [
+    { id: 'a' as RecordId, sectionId: undefined },
+    { id: 'b' as RecordId, sectionId: undefined },
+    { id: 'c' as RecordId, sectionId: 'S' as RecordId },
+  ];
+  it('FR-SCR-004: a drop on a row of another section moves into it, and one on a row of none leaves its own', () => {
+    // a above c: it follows b and joins S
+    expect(dropMove(rows, 'a' as RecordId, 'c' as RecordId, false)).toEqual({ after: 'b', sectionId: 'S' });
+    // c above a: first place, no section
+    expect(dropMove(rows, 'c' as RecordId, 'a' as RecordId, false)).toEqual({});
+    // b below a keeps its place in the same section: nothing changes; b above c keeps its place but changes section
+    expect(dropMove(rows, 'b' as RecordId, 'a' as RecordId, true)).toBeNull();
+    expect(dropMove(rows, 'b' as RecordId, 'c' as RecordId, false)).toEqual({ after: 'a', sectionId: 'S' });
   });
 });

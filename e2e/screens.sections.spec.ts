@@ -60,6 +60,22 @@ test.describe('sections in the navigator', { tag: '@desktop' }, () => {
     await expect.poll(() => lines(editor)).toEqual(['Screen 1', 'Screen 2', '# Section 1', 'Screen 3']);
   });
 
+  test('FR-SCR-004: a screen dropped on a row of another section moves into it, in one undo step', async ({ page }) => {
+    const editor = await withSection(page);
+    const panel = editor.panel(PANEL);
+    await editor.screenTab('Screen 2').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Move to section: Section 1' }).click();
+    await expect.poll(() => lines(editor)).toEqual(['Screen 1', 'Screen 3', '# Section 1', 'Screen 2']);
+    // dropped on the row of Screen 2: it joins that section, above it
+    await panel.locator('.fx-chrome-screen', { hasText: 'Screen 1' }).dragTo(panel.locator('.fx-chrome-screen', { hasText: 'Screen 2' }));
+    await expect.poll(() => lines(editor)).toEqual(['Screen 3', '# Section 1', 'Screen 1', 'Screen 2']);
+    await editor.toolbarButton('Undo').click();
+    await expect.poll(() => lines(editor)).toEqual(['Screen 1', 'Screen 3', '# Section 1', 'Screen 2']);
+    // and on a row of no section it leaves its own
+    await panel.locator('.fx-chrome-screen', { hasText: 'Screen 2' }).dragTo(panel.locator('.fx-chrome-screen', { hasText: 'Screen 3' }));
+    await expect.poll(() => lines(editor)).toEqual(['Screen 1', 'Screen 2', 'Screen 3', '# Section 1']);
+  });
+
   test('FR-SCR-004: a section is renamed, moved and deleted, and its screens go on being listed', async ({ page }) => {
     const editor = await withSection(page);
     const panel = editor.panel(PANEL);

@@ -167,6 +167,7 @@ function benchArgs(
     // the first screen goes with it: it names the section
     'section.delete': { id: BENCH_SECTIONS[0] },
     'screen.setSection': { id: screens[3], sectionId: BENCH_SECTIONS[1] },
+    'screen.move': { id: screens[2], after: screens[8], sectionId: BENCH_SECTIONS[1] },
     'screen.setNotes': { id: screens[1], notes: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'notes' }] }] } },
     'screen.setHidden': { id: screens[1], hidden: true },
     // a copy of screen 4: its 250 shapes and the bindings of its 83 connectors
@@ -202,6 +203,7 @@ export const COMMANDS = [
   'screen.setHidden',
   'screen.setNotes',
   'screen.setSection',
+  'screen.move',
   'section.create',
   'section.rename',
   'section.setCollapsed',

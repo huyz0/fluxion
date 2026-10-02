@@ -94,4 +94,22 @@ describe('section commands (FR-SCR-004)', () => {
     expect(t.run('section.create', { id: 'SecA00000000001', name: 'again' }).ok).toBe(false);
     expect(t.run('section.reorder', { id: 'SecA00000000001', after: 'SecA00000000001' }).ok).toBe(false);
   });
+
+  it('FR-SCR-004: moving a screen changes its place and section in one undo step', () => {
+    const t = setup();
+    t.run('section.create', { id: 'SecA00000000001', name: 'A' });
+    const before = JSON.parse(JSON.stringify(t.store.toDocument()));
+    const depth = t.store.history.undoDepth;
+    expect(t.run('screen.move', { id: t.three, after: t.one, sectionId: 'SecA00000000001' }).ok).toBe(true);
+    expect(t.store.history.undoDepth).toBe(depth + 1);
+    expect(t.get(t.three)['sectionId']).toBe('SecA00000000001');
+    expect(t.run('screen.reorder', { id: t.three, after: t.one }).ok).toBe(true);
+    // out of the section: the move without one clears it, and a record other than a screen or section is refused
+    expect(t.run('screen.move', { id: t.three, after: t.two }).ok).toBe(true);
+    expect('sectionId' in t.get(t.three)).toBe(false);
+    expect(t.run('screen.move', { id: t.shape, sectionId: 'SecA00000000001' }).ok).toBe(false);
+    expect(t.run('screen.move', { id: t.three, sectionId: t.one }).ok).toBe(false);
+    while (t.store.history.undoDepth > depth) t.store.history.undo();
+    expect(t.store.toDocument()).toEqual(before);
+  });
 });

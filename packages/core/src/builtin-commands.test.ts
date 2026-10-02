@@ -56,6 +56,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'screen.create',
       'screen.delete',
       'screen.duplicate',
+      'screen.move',
       'screen.rename',
       'screen.reorder',
       'screen.setFormat',

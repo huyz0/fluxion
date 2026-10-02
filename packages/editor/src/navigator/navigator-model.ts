@@ -16,6 +16,27 @@ export function dropAfter(order: readonly RecordId[], dragged: RecordId, target:
   return order.indexOf(dragged) === at ? null : after;
 }
 
+/**
+ * What a screen dropped on the row `target` becomes: the screen it follows and the section of that row (a drop on a row
+ * of another section moves the screen into it). Null when nothing changes: the same place in the same section.
+ */
+export function dropMove(
+  rows: readonly Pick<Row, 'id' | 'sectionId'>[],
+  dragged: RecordId,
+  target: RecordId,
+  below: boolean,
+): { readonly after?: RecordId; readonly sectionId?: RecordId } | null {
+  const order = rows.map((r) => r.id);
+  const [from, to] = [rows.find((r) => r.id === dragged), rows.find((r) => r.id === target)];
+  if (from === undefined || to === undefined) return null;
+  const crosses = from.sectionId !== to.sectionId;
+  const dropped = dropAfter(order, dragged, target, below);
+  // a drop that keeps the place but changes the section still moves: it follows the screen it already follows
+  const after = dropped === null ? (crosses ? order[order.indexOf(dragged) - 1] : null) : dropped;
+  if (after === null) return null;
+  return { ...(after === undefined ? {} : { after }), ...(to.sectionId === undefined ? {} : { sectionId: to.sectionId }) };
+}
+
 /** The record of a new screen `id` after the last one. */
 export function newScreen(view: ReadView, id: RecordId): { id: RecordId; type: 'screen'; index: string } {
   const last = screensInOrder(view, true).at(-1);

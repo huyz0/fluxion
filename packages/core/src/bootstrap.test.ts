@@ -93,6 +93,7 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'section.reorder': () => ({ id: pick('section') }),
     'section.delete': () => ({ id: pick('section') }),
     'screen.setSection': () => ({ id: screen, sectionId: pick('section') }),
+    'screen.move': () => ({ id: screen, sectionId: pick('section') }),
     'screen.setNotes': () => ({ id: screen, notes: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: `n${op.value}` }] }] } }),
     'screen.setHidden': () => ({ id: screen, hidden: op.value % 2 === 1 }),
     'screen.duplicate': () => ({ id: screen, newId: newId(n + 700), ids: Object.fromEntries(shapes().map((x, k) => [x, newId(n + 800 + k)])) }),
@@ -180,13 +181,19 @@ const SECTION_EXAMPLE: DocumentFile = (() => {
   records[first.id] = { ...(records[first.id] as object), sectionId: 'SectionAAAA00001' };
   return { ...file, records } as unknown as DocumentFile;
 })();
-const SECTION_OPS: Op[] = ['section.create', 'section.rename', 'section.setCollapsed', 'section.reorder', 'screen.setSection', 'section.delete'].map(
-  (command) => ({
-    command,
-    pick: 0,
-    value: 1,
-  }),
-);
+const SECTION_OPS: Op[] = [
+  'section.create',
+  'section.rename',
+  'section.setCollapsed',
+  'section.reorder',
+  'screen.setSection',
+  'screen.move',
+  'section.delete',
+].map((command) => ({
+  command,
+  pick: 0,
+  value: 1,
+}));
 const MISC_OPS: Op[] = [
   'element.create',
   'element.createMany',

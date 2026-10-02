@@ -5,7 +5,7 @@ import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
-import { indexAfter } from './screen-order.js';
+import { indexAfter, screenIndexAfter } from './screen-order.js';
 
 /** The section commands (FR-SCR-004). */
 export const SECTION_COMMANDS: readonly AnyCommand[] = [
@@ -81,6 +81,21 @@ export const SECTION_COMMANDS: readonly AnyCommand[] = [
         (args.sectionId === undefined ? null : checkIds(ctx, 'screen.setSection', 'section', [[['sectionId'], args.sectionId]]));
       if (bad) return bad;
       return write(ctx, 'screen.setSection', (tx) => tx.patch(args.id as RecordId, { sectionId: args.sectionId }));
+    },
+  }),
+  defineCommand({
+    id: 'screen.move',
+    title: title('screen.move', 'Move screen into place'),
+    // a drop in the navigator: the place (`after`: the screen it follows, absent -> first) and the section (absent: none) together
+    args: z.object({ id, after: id.optional(), sectionId: id.optional() }),
+    run: (ctx, args) => {
+      const bad =
+        checkIds(ctx, 'screen.move', 'screen', [[['id'], args.id], ...(args.after === undefined ? [] : [[['after'], args.after] as const])]) ??
+        (args.sectionId === undefined ? null : checkIds(ctx, 'screen.move', 'section', [[['sectionId'], args.sectionId]]));
+      if (bad) return bad;
+      const index = screenIndexAfter(ctx, 'screen.move', args.id, args.after);
+      if (!index.ok) return index;
+      return write(ctx, 'screen.move', (tx) => tx.patch(args.id as RecordId, { index: index.value, sectionId: args.sectionId }));
     },
   }),
 ];

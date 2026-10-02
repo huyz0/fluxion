@@ -7,7 +7,7 @@ import type { MenuItem } from '../context-menu-model.js';
 import type { Execute } from '../pointer.js';
 import { switchScreen } from '../screen-switch.js';
 import type { Session } from '../session.js';
-import { dropAfter, duplicateArgs, FORMAT_PREFIX, formatArgs, newScreen, type Row, SECTION_PREFIX } from './navigator-model.js';
+import { dropMove, duplicateArgs, FORMAT_PREFIX, formatArgs, newScreen, type Row, SECTION_PREFIX } from './navigator-model.js';
 import type { RowActions } from './screen-row.js';
 
 /** What the hook needs. */
@@ -89,13 +89,9 @@ export function useNavigator(input: NavigatorInput): Navigator {
         setDragging(undefined);
         if (moved === undefined) return;
         const box = e.currentTarget.getBoundingClientRect();
-        const after = dropAfter(
-          rows.map((r) => r.id),
-          moved,
-          target,
-          e.clientY > box.top + box.height / 2,
-        );
-        if (after !== null) execute('screen.reorder', { id: moved, ...(after === undefined ? {} : { after }) });
+        const move = dropMove(rows, moved, target, e.clientY > box.top + box.height / 2);
+        // the place and the section go together: one command, one undo step
+        if (move !== null) execute('screen.move', { id: moved, ...move });
       },
       menu: (id, at) => setMenu({ id, ...at }),
     };

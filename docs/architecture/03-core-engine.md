@@ -88,7 +88,7 @@ type CommandDef<A> = {
   element.distribute (equal gaps or centre distances, or a fixed gap, along an axis; M8.7),
   element.zOrder (front, forward, backward, back among siblings by fractional index: only the moved elements are written; M8.8),
   screen.rename / screen.setHidden (the hidden mark is removed, not written false) / screen.duplicate (a copy just after the original: its elements and the bindings between them under caller-supplied ids, slugs dropped; timelines and interactions are copied by the animation milestone; M8.11),
-  section.create / rename / setCollapsed / reorder / delete and screen.setSection (sections are records ordered by index; deleting one lets its screens go in the same transaction; M8.15),
+  section.create / rename / setCollapsed / reorder / delete screen.setSection and screen.move (a drop's place and section in one step) (sections are records ordered by index; deleting one lets its screens go in the same transaction; M8.15),
   screen.setNotes (the speaker notes, a rich-text document; absent removes the field; M8.16),
   document.update, asset.create (an asset record, beside the element that uses it: a pasted image, M7.23).
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through

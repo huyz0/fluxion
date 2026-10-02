@@ -323,6 +323,7 @@ export const BENCH_COMMANDS = [
   'screen.setHidden',
   'screen.setNotes',
   'screen.setSection',
+  'screen.move',
   'section.create',
   'section.rename',
   'section.setCollapsed',

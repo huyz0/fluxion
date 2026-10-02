@@ -152,6 +152,7 @@ leg('section commands and speaker notes are commands, each one undo step (T0)', 
     ['M8.29', 'FR-SCR-004: sections are created in order, renamed, folded and moved, each one undo step', CORE],
     ['M8.29', 'FR-SCR-004: a screen moves between sections and out of them, one undo step each', CORE],
     ['M8.29', 'FR-SCR-004: deleting a section lets its screens go, in one undo step', CORE],
+    ['M8.36', 'FR-SCR-004: moving a screen changes its place and section in one undo step', CORE],
     ['M8.16', 'FR-SCR-006: speaker notes are set on a screen and removed again, and only a screen has them', CORE],
   ]),
 );
@@ -159,7 +160,12 @@ leg('a format change on an infinite screen keeps its viewport (T0)', () =>
   titled([['M8.28', 'FR-SCR-003: a format change on an infinite screen keeps its viewport', EDITOR]]),
 );
 leg('the sections migration fixture round-trips (T0)', () => titled([['M8.14', 'FR-SCR-004: a document without sections migrates and round-trips', 'schema']]));
-leg('screens group into sections in the navigator (screens.sections)', () => e2e(['e2e/screens.sections.spec.ts'], DESKTOP));
+leg('screens group into sections in the navigator, and a drop on another section`s row moves into it (screens.sections)', () =>
+  titledSpec('e2e/screens.sections.spec.ts', DESKTOP, [
+    'FR-SCR-004: screens group into a section, fold with it and move between sections, each change one undo step',
+    'FR-SCR-004: a screen dropped on a row of another section moves into it, in one undo step',
+  ]),
+);
 leg('speaker notes persist across screen switches and undo (screens.notes)', () => e2e(['e2e/screens.notes.spec.ts'], DESKTOP));
 
 // ── library (plan rows 14-15) ───────────────────────────────────────────────────────────────────────
