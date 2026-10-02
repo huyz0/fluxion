@@ -123,6 +123,7 @@ export {
 } from './keymap-overrides.js';
 export { LASER_TRAIL, laserTool } from './laser-tool.js';
 export { LAYOUT_KEY } from './layout.js';
+export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
 export { newDocument } from './new-document.js';
 export {

@@ -72,6 +72,13 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-screen[data-dragging] { opacity: 0.4; }
 .fx-chrome-screen[data-hidden] .fx-chrome-screen-button { font-style: italic; }
 .fx-chrome-screen-button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.fx-chrome-library { padding: 4px 8px; }
+.fx-chrome-library-search { width: 100%; box-sizing: border-box; font: inherit; padding: 4px 6px; color: var(--ui-text); background: var(--ui-panel); border: 1px solid var(--ui-border); border-radius: 4px; }
+.fx-chrome-library-count { margin: 4px 0; color: var(--ui-muted); }
+.fx-chrome-library-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 4px; }
+.fx-chrome-library-item { min-width: 0; }
+.fx-chrome-library-button, .fx-chrome-library-label { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; box-sizing: border-box; text-align: center; font-size: 12px; color: var(--ui-text); }
+.fx-chrome-library-thumb { color: var(--ui-text); }
 .fx-chrome-notes-host { padding: 4px; }
 .fx-chrome-notes { min-height: 8em; padding: 6px; border: 1px solid var(--ui-border); border-radius: 4px; font: 13px/1.4 system-ui, sans-serif; outline: none; }
 .fx-chrome-notes:focus { border-color: var(--ui-accent); }

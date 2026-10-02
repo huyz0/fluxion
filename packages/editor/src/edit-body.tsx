@@ -48,6 +48,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
           screens={{ store, session, shown: screenId, registries, execute, newId }}
           problems={{ store, session, execute }}
           notes={{ store, execute, screenId }}
+          library={{ shapeDefs: registries.shapeDefs }}
         />,
       )}
       {splitter('left')}

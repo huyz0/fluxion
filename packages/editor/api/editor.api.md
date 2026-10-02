@@ -499,6 +499,15 @@ export type LibraryIndex = {
 };
 
 // @public
+export function LibraryPanel(props: LibraryPanelProps): ReactNode;
+
+// @public
+export type LibraryPanelProps = {
+    readonly shapeDefs: Registry<string, ShapeDef>;
+    readonly onPick?: ((id: string) => void) | undefined;
+};
+
+// @public
 export type Link = {
     readonly from: Vec2;
     readonly to: Vec2;
