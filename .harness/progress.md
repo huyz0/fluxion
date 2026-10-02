@@ -1519,3 +1519,7 @@ M8.30 library panel (packs/categories, outline thumbnails from evaluateOutline, 
 ## 2026-10-02 M8.18 (claude)
 
 library/library-insert.ts (insertShape: centred, default size, selected, one undo step, sets session.library); canvas onDragOver/onDrop with the application/x-fluxion-shape type; EditBody insert callback (click: view middle); shapeTool reads session.library when placing. Review pass r1.
+
+## 2026-10-02 M8.26 (claude)
+
+arrange-edit.ts (alignSelection: several to their bounds, one to the screen; distributeSelection needs 3; orderSelection), 12 editor commands, Ctrl+]/[ (+ shifted/brace forms), Group/Ungroup + Arrange in the element menu. Round 1 caught the keyboard guide: its generator reads the built editor, so rebuild before regenerating.
