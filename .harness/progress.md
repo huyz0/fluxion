@@ -1487,3 +1487,7 @@ SCREEN_PRESETS/presetOf (schema), screen.setFormat (core, fixed size or infinite
 ## 2026-10-02 M8.28 (claude)
 
 Follow-ups of the M8.13 review: row not draggable while its size field is open, infinite screens keep their viewport on format changes (shownSize, formatArgs), context menu opens upward in the lower half (top:auto) at its own height. Round 1 (unrecorded, changes-requested) caught the missing top:auto and two weak tests; round 2 pass recorded as r1.
+
+## 2026-10-02 M8.14 (claude)
+
+Schema 1.1 (ADR-0021): section record, sectionId reference check, 1.0->1.1 migration (drops the dangling sectionId), 1.0/1.1/migration fixtures (the released v1.0 folder is frozen: the dangling input lives in __fixtures__/migration). Shared documents moved to 1.1; ladder-scope maps examples/fixtures JSON to the harness files that read them. Two migrate tests were replaced (Removes-test trailers). bootstrap determinism got a second guaranteed example (12 ops) after a coverage-run flake.
