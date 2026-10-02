@@ -132,14 +132,25 @@ async function pixels(page: Page, png: Buffer): Promise<Pixels> {
   return { w: r.w, h: r.h, data: new Uint8Array(Buffer.from(r.data, 'base64')) };
 }
 
-/** The example `name` in edit at scale 1 with nothing selected or hovered, then presented in place. */
-async function bothModes(page: Page, name: string) {
+/** How many screens the example `name` has (the navigator lists them). */
+async function screenCount(page: Page, name: string): Promise<number> {
+  const editor = new EditorPage(page);
+  await editor.open(`example-${name}`);
+  const focus = editor.toolbarButton('Focus mode');
+  if ((await focus.getAttribute('aria-pressed')) === 'true') await focus.click();
+  return editor.panel('Screens, library and layers').locator('.fx-chrome-screen').count();
+}
+
+/** The `index`th screen of example `name` in edit at scale 1 with nothing selected or hovered, then presented in place (shift+F5 for a later one). */
+async function bothModes(page: Page, name: string, index = 0) {
   await page.setViewportSize({ width: 2200, height: 1400 });
   const editor = new EditorPage(page);
   await editor.open(`example-${name}`);
-  // focus mode (it persists: set it only when off), then the canvas has the window below the toolbar
+  // focus mode persists: leave it to pick the screen in the navigator, then set it, so the canvas has the window below the toolbar
   const focus = editor.toolbarButton('Focus mode');
-  if ((await focus.getAttribute('aria-pressed')) !== 'true') await focus.click();
+  if ((await focus.getAttribute('aria-pressed')) === 'true') await focus.click();
+  if (index > 0) await editor.panel('Screens, library and layers').locator('.fx-chrome-screen-button').nth(index).click();
+  await focus.click();
   await expect.poll(async () => (await editor.canvas.boundingBox())?.width).toBe(2200);
   // fit the resized canvas, then 100 % about its centre
   await page.keyboard.press('Shift+Digit1');
@@ -153,7 +164,7 @@ async function bothModes(page: Page, name: string) {
   expect(await screen.boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
   const edit = { dom: await contentDom(page), png: await screen.screenshot({ animations: 'disabled' }) };
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.keyboard.press('F5');
+  await page.keyboard.press(index === 0 ? 'F5' : 'Shift+F5');
   await expect(page.getByTestId('editor-root')).toHaveAttribute('data-mode', 'present');
   const presented = page.getByTestId('present-in-place').locator('.fx-screen');
   await expect(presented).toHaveCount(1);
@@ -176,6 +187,22 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
       expect(diffPct(e, shifted(e, 1, 0)), `${name}, 1 px right`).toBeGreaterThan(PARITY_MAX_DIFF_PCT);
       expect(diffPct(e, shifted(e, 0, 1)), `${name}, 1 px down`).toBeGreaterThan(PARITY_MAX_DIFF_PCT);
     }
+  });
+
+  test('FR-EDT-010: every screen of every example draws the same pixels in edit and present', async ({ page }) => {
+    let screens = 0;
+    for (const name of [...EXAMPLES, 'rich-text']) {
+      const count = await screenCount(page, name);
+      for (let index = 0; index < count; index++) {
+        const { edit, present } = await bothModes(page, name, index);
+        const pct = diffPct(await pixels(page, edit.png), await pixels(page, present.png));
+        expect(pct, `${name} screen ${index + 1}: ${pct.toFixed(4)} % of the pixels differ`).toBeLessThanOrEqual(PARITY_MAX_DIFF_PCT);
+        expect(present.dom, `${name} screen ${index + 1}`).toBe(edit.dom);
+        screens += 1;
+      }
+    }
+    // the gallery's screen, both of r0-static's, and the rich-text one (perf-500 is the drag benchmark's)
+    expect(screens).toBe(4);
   });
 
   test('FR-EDT-010: the content layer DOM is equal in edit and present after the allowlist', async ({ page }) => {

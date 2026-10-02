@@ -180,7 +180,7 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   { key: 'backspace', command: 'selection.delete', when: 'edit' },
   { key: '?', command: 'help.keys', when: 'edit' },
   { key: 'mod+k', command: 'palette.open', when: 'edit' },
-  { key: 'f5', command: 'mode.toggle' },
+  { key: 'f5', command: 'mode.present' },
   { key: 'shift+f5', command: 'mode.toggle' },
   { key: 'escape', command: 'mode.toggle', when: 'present' },
 ];

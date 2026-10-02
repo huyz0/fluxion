@@ -1,4 +1,5 @@
 // The edit mode's toolbar (M7.24 split from the root): tools, zoom, undo and redo, the clipboard, presenting and help.
+
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
@@ -9,6 +10,7 @@ import type { KeyBinding } from './keymap.js';
 import type { KeyOverrides } from './keymap-overrides.js';
 import type { EditorLayout } from './layout.js';
 import { ToolButtons, Toolbar } from './panels.js';
+import type { ModeSwitch } from './present.js';
 import type { Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
 import type { SystemClipboardCommands } from './use-system-clipboard.js';
@@ -30,7 +32,7 @@ export type EditToolbarProps = {
   /** Run an editor command by id. */
   readonly run: (command: string) => boolean;
   readonly system: SystemClipboardCommands;
-  readonly switchMode: () => void;
+  readonly switchMode: ModeSwitch;
   readonly openHelp: () => void;
 };
 
@@ -58,7 +60,7 @@ export function EditToolbar(props: EditToolbarProps): ReactNode {
       <button type="button" className="fx-chrome-button" title="Paste" onClick={() => void system.paste()}>
         Paste
       </button>
-      <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={switchMode}>
+      <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={() => switchMode('start')}>
         Present
       </button>
       <button type="button" className="fx-chrome-button" aria-keyshortcuts="?" title="Keyboard shortcuts (?)" onClick={openHelp}>

@@ -59,4 +59,5 @@ where each shortcut can be changed; changes are kept in your settings.
 
 | Action | Keys |
 |---|---|
-| Present / stop presenting | `F5`, `Shift+F5`, `Esc` |
+| Present from the first visible screen / stop presenting | `F5` |
+| Present the shown screen / stop presenting | `Shift+F5`, `Esc` |

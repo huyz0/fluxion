@@ -54,7 +54,7 @@ describe('keymap (FR-EDT-012)', () => {
       [press('ArrowDown', { shift: true }), 'selection.nudge', { dx: 0, dy: 10 }],
       [press('a', { mod: true }), 'selection.all'],
       [press('A', { mod: true, shift: true }), 'selection.all'],
-      [press('F5'), 'mode.toggle'],
+      [press('F5'), 'mode.present'],
       [press('F5', { shift: true }), 'mode.toggle'],
     ];
     for (const [k, command, args] of m6) expect(at(k), chordOf(k)).toEqual([command, args]);
@@ -68,7 +68,7 @@ describe('keymap (FR-EDT-012)', () => {
     // presenting: Esc and F5 leave, the laser's key is the laser's, and no edit key applies
     expect([at(press('Escape'), PRESENT_FLAGS), at(press('F5'), PRESENT_FLAGS), at(press('l'), PRESENT_FLAGS)]).toEqual([
       ['mode.toggle', undefined],
-      ['mode.toggle', undefined],
+      ['mode.present', undefined],
       ['tool.use', { id: 'laser' }],
     ]);
     for (const k of [press('z', { mod: true }), press('ArrowLeft'), press('Delete'), press('a', { mod: true })]) expect(at(k, PRESENT_FLAGS)).toBeUndefined();

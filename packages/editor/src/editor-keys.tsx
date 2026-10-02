@@ -2,6 +2,7 @@
 // resolves it for the mode (edit or present) to an editor command, and a key no binding takes goes to
 // the current tool state. It replaces the hard-wired keys M6 kept in the canvas, the tools and present
 // mode (M6 cp1 F6). Space held for panning stays the canvas's: a hold, not a command.
+
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -11,6 +12,7 @@ import { type CanvasSize, commandMap, dispatchKey, EDITOR_COMMANDS, type EditorC
 import { DEFAULT_KEYMAP, type KeyPress, toolBindings } from './keymap.js';
 import { applyOverrides, type KeyOverrides } from './keymap-overrides.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
+import type { ModeSwitch } from './present.js';
 import type { Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
 
@@ -54,7 +56,7 @@ export type EditorKeysInput = {
   /** The shown screen's area on the page, if any. */
   readonly area: Box | undefined;
   /** Switch between editing and presenting, when the host can. */
-  readonly switchMode?: (() => void) | undefined;
+  readonly switchMode?: ModeSwitch | undefined;
   /** The user's rebindings, applied over the defaults and the tools' bindings. */
   readonly overrides?: KeyOverrides | undefined;
   /** Open the keyboard shortcuts dialog (`?`). */

@@ -55,7 +55,7 @@ export type EditorCommandCtx = {
   /** The canvas camera commands act in. */
   readonly canvas?: CommandCanvas;
   /** Switch between editing and presenting in place. */
-  switchMode?(): void;
+  switchMode?(from?: 'start' | 'current'): void;
   /** Open the keyboard shortcuts dialog. */
   openHelp?(): void;
   /** Open the command palette. */
@@ -292,11 +292,20 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
     },
   },
   {
-    id: 'mode.toggle',
-    title: 'Present / stop presenting',
+    id: 'mode.present',
+    title: 'Present from the first visible screen',
     run: (ctx) => {
       if (ctx.switchMode === undefined) return false;
-      ctx.switchMode();
+      ctx.switchMode('start');
+      return true;
+    },
+  },
+  {
+    id: 'mode.toggle',
+    title: 'Present the shown screen / stop presenting',
+    run: (ctx) => {
+      if (ctx.switchMode === undefined) return false;
+      ctx.switchMode('current');
       return true;
     },
   },

@@ -241,7 +241,7 @@ export type EditorCommandCtx = {
     readonly tools: ToolDispatcher;
     readonly history?: CommandHistory;
     readonly canvas?: CommandCanvas;
-    switchMode?(): void;
+    switchMode?(from?: "start" | "current"): void;
     openHelp?(): void;
     openPalette?(): void;
     restoreView?(meta: unknown): void;
@@ -257,7 +257,7 @@ export type EditorKeysInput = {
     readonly present?: ToolDispatcher | undefined;
     readonly viewport: CanvasSize;
     readonly area: Box | undefined;
-    readonly switchMode?: (() => void) | undefined;
+    readonly switchMode?: ModeSwitch | undefined;
     readonly overrides?: KeyOverrides | undefined;
     readonly openHelp?: (() => void) | undefined;
     readonly openPalette?: (() => void) | undefined;
@@ -523,6 +523,9 @@ export type MenuTarget = "canvas" | "element" | "screen";
 
 // @public
 export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | undefined): MenuTarget;
+
+// @public
+export type ModeSwitch = (from?: "start" | "current") => void;
 
 // @public
 export const moved: (from: Vec2, to: Vec2) => boolean;

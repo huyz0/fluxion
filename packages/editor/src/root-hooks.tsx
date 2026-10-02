@@ -1,4 +1,5 @@
 // The root's hooks that carry its keys, panels and dialogs (split from editor-root.tsx, M7.24).
+
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
@@ -15,6 +16,7 @@ import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import type { KeyOverrides } from './keymap-overrides.js';
 import { type EditorLayout, type PanelId, panelShown } from './layout.js';
 import { PANEL_NAMES } from './panels.js';
+import type { ModeSwitch } from './present.js';
 import { useRevision } from './present.js';
 import type { Session } from './session.js';
 import { Splitter } from './splitter.js';
@@ -51,7 +53,7 @@ export type RootKeys = {
   readonly present: ToolDispatcher;
   readonly box: { readonly w: number; readonly h: number };
   readonly area: Box | undefined;
-  readonly switchMode: () => void;
+  readonly switchMode: ModeSwitch;
   /** The screen shown, as the keys' undo restores it. */
   readonly shown: { readonly current: RecordId | undefined };
   readonly overrides: KeyOverrides;

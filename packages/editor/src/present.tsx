@@ -6,11 +6,12 @@
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { LaserTrail, useElementBox } from '@fluxion/player';
-import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
+import { type AssetUrls, type RenderRegistries, ScreenView, screensInOrder, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { usePointerInput } from './pointer-input.js';
 import { fitCamera } from './present-mode.js';
+import { switchScreen } from './screen-switch.js';
 import { DEFAULT_CAMERA, type Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
 
@@ -39,10 +40,25 @@ export function useRevision(store: Store): number {
  *
  * @public
  */
-export function useModeSwitch(session: Session, edit: ToolDispatcher, present: ToolDispatcher): () => void {
+export function useModeSwitch(store: Store, session: Session, edit: ToolDispatcher, present: ToolDispatcher): ModeSwitch {
   const saved = useRef(session.tool.get());
-  return useCallback(() => switchMode(session, session.mode.get() === 'present' ? present : edit, saved), [session, edit, present]);
+  return useCallback(
+    (from = 'current') => {
+      // F5 starts from the first visible screen; shift+F5, and the way out, leave the shown screen as it is (FR-EDT-009)
+      const first = from === 'start' && session.mode.get() === 'edit' ? screensInOrder(store, false)[0] : undefined;
+      if (first !== undefined && first !== session.screen.get()) switchScreen(session, first);
+      switchMode(session, session.mode.get() === 'present' ? present : edit, saved);
+    },
+    [store, session, edit, present],
+  );
 }
+
+/**
+ * Switch between editing and presenting; entering `from` the first visible screen (`start`, F5) or the shown one (`current`).
+ *
+ * @public
+ */
+export type ModeSwitch = (from?: 'start' | 'current') => void;
 
 /**
  * Switch between editing and presenting: what the leaving mode's tools were doing is cancelled, and

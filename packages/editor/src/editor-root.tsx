@@ -210,7 +210,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   useSnapSetting(settings, session);
   const { screenId, shown, execute } = useShownScreen(props, session);
   const { tools, present } = useTools({ ...props, execute }, session, screenId);
-  const switchMode = useModeSwitch(session, tools, present);
+  const switchMode = useModeSwitch(store, session, tools, present);
   const mode = useValue(session.mode.get);
   const revision = useRevision(store);
   const newId = useNewId(props.random);
