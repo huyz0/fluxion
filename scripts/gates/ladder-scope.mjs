@@ -88,6 +88,8 @@ export const NAMED_PATH_HARNESS = [
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
   [/^knip\.json$/, ['milestone-checks']],
+  // the harness files that read the limits; the whole-repo coverage run (also reading them) is CI's, as for sources
+  [/^scripts\/gates\/thresholds\.mjs$/, ['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']],
   [/(^|\/)AGENTS\.md$/, ['build-index', 'portability', 'size', 'workspace-shape']],
 ];
 
@@ -225,6 +227,7 @@ export function packagingNeeded(staged) {
   const inert = (p) =>
     p === 'scripts/gates/milestone-checks.mjs' ||
     p === 'knip.json' ||
+    p === 'scripts/gates/thresholds.mjs' ||
     SOURCE.test(p) ||
     API_REPORT.test(p) ||
     /^e2e\//.test(p) ||

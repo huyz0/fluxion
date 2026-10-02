@@ -1,6 +1,6 @@
 # Backlog — M8 Arrange, screens & library v1
 
-Planned: 23 rows (plan 16: the gate first, M7's closing run (M8.2), ADR-0021 as its own row, the sections schema split from the navigator UI, the navigator's shift+F5 and parity work with it, the budget record row handed off from the M7 final review as M8.20 (plan "15b"), two checkpoint reviews (M8.22, M8.23) and the final review).
+Planned: 24 rows (plan 16: the gate first, M7's closing run (M8.2), ADR-0021 as its own row, the sections schema split from the navigator UI, the navigator's shift+F5 and parity work with it, the budget record row handed off from the M7 final review as M8.20 (plan "15b"), M8.24 (thresholds.mjs scoping, found while committing this plan), two checkpoint reviews (M8.22, M8.23) and the final review).
 
 Only the current milestone lives here. Closed milestones move to `archive/M<n>.md`.
 States: `todo` · `doing` · `done` · `blocked (<reason>)` · `descoped (<reason>)` (human decision only; the reason must cite an ADR or a roadmap Deferred entry; reopened rows must be `done`). Commit: `git log --grep "^<ID>:"`.
@@ -31,4 +31,5 @@ Reviews: isolated reviewer subagent only (ADR-0137). Quoted test titles are the 
 | M8.20 | `check-budget --record` times the staged ladder on a worst-case commit, not whatever is staged at that moment (M7 final F4) | NFR-DX-002 | harness "NFR-DX-002: the recorded staged time is the worst-case commit's" | — | todo |  |
 | M8.22 | Checkpoint review cp1 (fresh milestone-reviewer) after the arranging commands, snapping and screen commands (M8.4-M8.11); dispositions recorded | HARNESS | `.harness/reviews/milestone-M8-cp1.json` records a verdict and its dispositions | M8.5, M8.7, M8.8, M8.10, M8.11 | todo | |
 | M8.23 | Checkpoint review cp2 (fresh milestone-reviewer) after the navigator, sections, notes and library (M8.12-M8.18); dispositions recorded | HARNESS | `.harness/reviews/milestone-M8-cp2.json` records a verdict and its dispositions | M8.13, M8.15, M8.16, M8.18 | todo | |
+| M8.24 | The staged ladder maps `scripts/gates/thresholds.mjs` to the harness files that read it (biome, budget, drift, ladder-scope, licenses, portability, size) and no packaging check, as a commit that adds a limit ran ~200 s on 4 cores | NFR-DX-002 | T0 "NFR-DX-002: a doc, an e2e spec or a gate script runs the files that read it, not every file" | M8.1 | done | |
 | M8.21 | Final milestone review over the whole M8 range; `.harness/reviews/milestone-M8-final.json`; CI evidence at the range end; roadmap to M9 | HARNESS | m8-complete exits 0 | M8.19, M8.20, M8.2, M8.22, M8.23 | todo |  |

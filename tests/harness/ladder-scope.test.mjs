@@ -85,6 +85,10 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     assert.deepEqual(harnessFiles(['scripts/gates/m7-complete.mjs'], ALL), only(['milestone-checks', 'portability']));
     assert.deepEqual(harnessFiles(['knip.json'], ALL), only(['milestone-checks']));
+    assert.deepEqual(
+      harnessFiles(['scripts/gates/thresholds.mjs'], ALL),
+      only(['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']),
+    );
     // one path of any other kind in the commit still runs every file
     assert.deepEqual(harnessFiles(['e2e/x.spec.ts', 'scripts/gates/lib.mjs'], ALL), ALL);
     // every named file exists
@@ -100,6 +104,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
         'e2e/a.spec.ts',
         'docs/a.md',
         'scripts/gates/milestone-checks.mjs',
+        'scripts/gates/thresholds.mjs',
+        'knip.json',
         '.harness/state.json',
       ]),
       false,
