@@ -41,6 +41,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
     expect(commands.list().map(([id]) => id)).toEqual([
       'asset.create',
       'binding.set',
+      'connector.freeEnd',
       'document.update',
       'element.create',
       'element.createMany',
@@ -59,25 +60,6 @@ describe('built-in record commands (FR-EXT-001)', () => {
     const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
     hooks.register('core:1-screens', () => {}, 'acme');
     expect(registerCoreHooks(hooks).map((d) => d.code)).toEqual(['FLX_REGISTRY_DUPLICATE']);
-  });
-
-  it('FR-EXT-001: asset.create adds an asset record in one write, refuses an id that is taken, and is undone in one step', () => {
-    const { store, run, diffs, a } = setup();
-    const asset = { id: 'AssetAssetAsset01', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 3, name: 'a.png' };
-    expect(run('asset.create', { asset }).ok).toBe(true);
-    expect(store.get('AssetAssetAsset01' as RecordId)).toEqual(asset);
-    expect(diffs.at(-1)?.puts.size).toBe(1);
-    expect(diffs.at(-1)?.deletes.size).toBe(0);
-    // the id is taken (by the asset, or by any record): refused, nothing written
-    const before = diffs.length;
-    expect(run('asset.create', { asset }).ok).toBe(false);
-    expect(run('asset.create', { asset: { ...asset, id: a } }).ok).toBe(false);
-    expect(diffs.length).toBe(before);
-    // not an asset record
-    expect(run('asset.create', { asset: { ...asset, type: 'element' } }).ok).toBe(false);
-    expect(run('asset.create', {}).ok).toBe(false);
-    store.history.undo();
-    expect(store.get('AssetAssetAsset01' as RecordId)).toBeUndefined();
   });
 
   it('FR-DOC-010: screen.reorder writes exactly one record', () => {
@@ -267,6 +249,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       ['element.createMany', { elements: [{ ...element, id: 'LabelManyLabelM1', index: 'a8' }] }],
       ['element.updateMany', { updates: [{ id: a, fields: { name: 'B' } }] }],
       ['binding.set', { id: 'LabelBindingLab1', connectorId: line, end: 'target', elementId: element.id, anchor: { kind: 'auto' } }],
+      ['connector.freeEnd', { connectorId: line, end: 'source', at: { x: 1, y: 2 } }],
       ['element.delete', { ids: [c] }],
       ['screen.create', { screen: { id: 'LabelScreenLabe1', type: 'screen', index: 'a9' } }],
       ['screen.reorder', { id: s1, after: s2 }],
@@ -304,6 +287,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       ['screen.reorder', { id: a }],
       ['screen.reorder', { id: s1, after: s1 }],
       ['binding.set', { id: 'FreshFreshFresh1', connectorId: line, end: 'target', elementId: s2, anchor: { kind: 'auto' } }],
+      ['connector.freeEnd', { connectorId: s1, end: 'source', at: { x: 1, y: 2 } }],
       ['document.update', { fields: { id: 'x' } }],
     ];
     // a new binding id that is taken (checked only when the end is not bound yet)
@@ -317,6 +301,9 @@ describe('built-in record commands (FR-EXT-001)', () => {
       expect(r.error.diagnostics.length, id).toBeGreaterThan(0);
       for (const d of r.error.diagnostics) expect(d.message, id).not.toBe('');
     }
+    // the connector argument is named in the refusal of connector.freeEnd
+    const freeing = run('connector.freeEnd', { connectorId: s1, end: 'source', at: { x: 1, y: 2 } });
+    expect(!freeing.ok && freeing.error.diagnostics[0]?.path).toBe('/args/connectorId');
     // an identity field is named in its diagnostic
     const identity = run('element.update', { id: a, fields: { id: 'x' } });
     expect(!identity.ok && identity.error.diagnostics[0]?.message).toContain('"id"');

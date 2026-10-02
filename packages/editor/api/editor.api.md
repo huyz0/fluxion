@@ -702,6 +702,25 @@ export type PointerPhase = "down" | "move" | "up" | "cancel";
 export const PRESENT_FLAGS: ReadonlySet<string>;
 
 // @public
+export type Problem = {
+    readonly id: string;
+    readonly severity: "error" | "warning" | "info";
+    readonly message: string;
+    readonly elements: readonly RecordId[];
+    readonly fix?: ProblemFix;
+};
+
+// @public
+export type ProblemFix = {
+    readonly title: string;
+    readonly command: string;
+    readonly args: unknown;
+};
+
+// @public
+export function problemsOf(doc: DocumentFile): readonly Problem[];
+
+// @public
 export function readOverrides(value: unknown): KeyOverrides;
 
 // @public

@@ -179,7 +179,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-018 | S | R5 | M25 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-019 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/touch.edit-basics.spec.ts` +3 |
 | FR-EDT-020 | S | R8 | M32 | [15-editor.md](15-editor.md) | — |
-| FR-EDT-021 | M | R1 | M7 | [15-editor.md](15-editor.md) | — |
+| FR-EDT-021 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/validation.fix-broken-ref.spec.ts` +2 |
 | FR-EDT-022 | S | R2 | M12 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-023 | C | R8 | M32 | [15-editor.md](15-editor.md) | — |
 | FR-PRS-001 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
@@ -237,7 +237,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-INT-009 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-010 | M | R5 | M24 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-011 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
-| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/cli/src/host.test.ts` +15 |
+| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/cli/src/host.test.ts` +16 |
 | FR-EXT-002 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-003 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-004 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |

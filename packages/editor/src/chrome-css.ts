@@ -72,6 +72,11 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-menu { min-width: 200px; gap: 0; padding: 4px; z-index: 10; }
 .fx-chrome-menuitem { display: flex; justify-content: space-between; gap: 24px; border-color: transparent; }
 .fx-chrome-menuitem:focus-visible, .fx-chrome-menuitem:hover { background: var(--ui-pressed); }
+.fx-chrome-problems { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fx-chrome-problem { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 4px 8px; border-left: 3px solid var(--ui-muted); }
+.fx-chrome-problem[data-severity="error"] { border-left-color: #dc2626; }
+.fx-chrome-problem[data-severity="warning"] { border-left-color: #d97706; }
+.fx-chrome-problem-text { flex: 1 1 100%; }
 .fx-chrome-kbd { font: inherit; opacity: 0.8; }
 .fx-chrome-keys { border-collapse: collapse; }
 .fx-chrome-keys .fx-chrome-cell { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--ui-border); font-weight: normal; }

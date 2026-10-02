@@ -137,6 +137,7 @@ export {
 export { type ParamCommand, type PlacedParamHandle, paramEdit, paramHandleAt, paramHandlesOf, type ShapeDefs } from './param-handles.js';
 export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
+export { type Problem, type ProblemFix, problemsOf } from './problems.js';
 export { screenLabel, shownScreen, switchScreen } from './screen-switch.js';
 export { selectSame } from './select-same.js';
 export { deleteSelection, nudgeSelection, selectAll, selectTool } from './select-tool.js';

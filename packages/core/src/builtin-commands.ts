@@ -273,6 +273,23 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     },
   }),
   defineCommand({
+    id: 'connector.freeEnd',
+    title: title('connector.freeEnd', 'Free connector end'),
+    // lets go of one end: its binding goes and the end is held at `at` instead (a bound end can otherwise only be re-pointed)
+    args: z.object({ connectorId: id, end: endSchema, at: z.object({ x: z.number().finite(), y: z.number().finite() }) }),
+    run: (ctx, args) => {
+      const bad = checkIds(ctx, 'connector.freeEnd', 'element', [[['connectorId'], args.connectorId]]);
+      if (bad) return bad;
+      const bound = bindingAt(ctx, args.connectorId, args.end);
+      const free = args.end === 'source' ? 'freeSource' : 'freeTarget';
+      return write(ctx, 'connector.freeEnd', (tx) => {
+        // the free point first, so the hook that frees a deleted binding's end finds it held
+        tx.patch(args.connectorId as RecordId, { [free]: args.at });
+        if (bound !== undefined) tx.delete(bound);
+      });
+    },
+  }),
+  defineCommand({
     id: 'document.update',
     title: title('document.update', 'Change document'),
     args: z.object({ fields }),
