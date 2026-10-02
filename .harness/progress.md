@@ -1459,3 +1459,7 @@ Groups in the editor: Ctrl+G / Ctrl+Shift+G, double-click enters a group (dashed
 ## 2026-10-02 M8.6 M8.7 M8.8 (claude)
 
 Core arrange commands: element.align (EDGES/centres to selection, screen or key, by drawn bounds, groups with members and free connectors), element.distribute (equal gaps/centres/fixed gap; repeated ids count once), element.zOrder (only moved elements get a key). Reviews caught: a missing test for a group's free connector and the two-screens refusal (align), a repeated id dodging the three-element rule (distribute; fixed in the shared outermost helper), weak cross-parent assertions (z-order). The plan had no UI row for these: M8.26 added with its gate leg and E2E titles. Shared helpers moved to command-helpers.ts (refuse) and arrange/siblings.ts.
+
+## 2026-10-02 M8.9 (claude)
+
+Pure snapping engine (editor/src/snap): edges/centres, midway and repeated-gap positions (neighbours that share a row/column), screen edges/centre, grid; nearest per axis with specific-target tie-break; reach 8px/zoom; Alt bypass; 15 degree rotation snap. Overlay guides and toggles are M8.10.
