@@ -51,6 +51,7 @@ export {
   waypointEdit,
 } from './connector-handles.js';
 export { connectorTool, createConnector, type Link } from './connector-tool.js';
+export { type MenuItem, type MenuTarget, menuItems, menuTarget } from './context-menu-model.js';
 export {
   type CreateDeps,
   type CreationSpec,
@@ -137,6 +138,7 @@ export { type ParamCommand, type PlacedParamHandle, paramEdit, paramHandleAt, pa
 export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
 export { screenLabel, shownScreen, switchScreen } from './screen-switch.js';
+export { selectSame } from './select-same.js';
 export { deleteSelection, nudgeSelection, selectAll, selectTool } from './select-tool.js';
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
 export { createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';

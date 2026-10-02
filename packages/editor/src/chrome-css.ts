@@ -69,6 +69,9 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-palette-item { display: flex; justify-content: space-between; gap: 16px; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
 .fx-chrome-palette-item[aria-selected="true"] { background: var(--ui-accent); color: var(--ui-panel); }
 .fx-chrome-palette-empty { padding: 6px 8px; opacity: 0.7; }
+.fx-chrome-menu { min-width: 200px; gap: 0; padding: 4px; z-index: 10; }
+.fx-chrome-menuitem { display: flex; justify-content: space-between; gap: 24px; border-color: transparent; }
+.fx-chrome-menuitem:focus-visible, .fx-chrome-menuitem:hover { background: var(--ui-pressed); }
 .fx-chrome-kbd { font: inherit; opacity: 0.8; }
 .fx-chrome-keys { border-collapse: collapse; }
 .fx-chrome-keys .fx-chrome-cell { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--ui-border); font-weight: normal; }

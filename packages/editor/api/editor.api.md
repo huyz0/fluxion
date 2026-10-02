@@ -510,6 +510,21 @@ export function memorySettings(initial?: {
 }): SettingsStore;
 
 // @public
+export type MenuItem = {
+    readonly command: string;
+    readonly title: string;
+};
+
+// @public
+export function menuItems(target: MenuTarget, commands: readonly EditorCommand[]): readonly MenuItem[];
+
+// @public
+export type MenuTarget = "canvas" | "element" | "screen";
+
+// @public
+export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | undefined): MenuTarget;
+
+// @public
 export const moved: (from: Vec2, to: Vec2) => boolean;
 
 // @public
@@ -736,6 +751,9 @@ export const SELECT_TOOL = "select";
 
 // @public
 export function selectAll(ctx: ToolCtx): void;
+
+// @public
+export function selectSame(ctx: ToolCtx, by: "type" | "style"): boolean;
 
 // @public
 export function selectTool(): Tool;

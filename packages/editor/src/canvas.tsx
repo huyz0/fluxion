@@ -5,7 +5,7 @@
 // the DOM glue. Pointer input comes through the frame-batched pipeline (pointer-input.ts) to the
 // tools, but for the middle button and space-drag, which pan whatever the tool.
 import type { Store } from '@fluxion/core';
-import type { Box } from '@fluxion/geometry';
+import type { Box, Vec2 } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
 import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
@@ -129,7 +129,46 @@ export type CanvasProps = {
   readonly execute?: Execute | undefined;
   /** Told the canvas size whenever it changes. */
   readonly onBox: (box: Viewport) => void;
+  /** Told where a context menu is asked for: a right click, or a finger held still. */
+  readonly onMenu?: ((asked: MenuAsked) => void) | undefined;
 };
+
+/**
+ * Where a context menu was asked for.
+ *
+ * @public
+ */
+export type MenuAsked = {
+  /** The canvas point, px. */
+  readonly screen: Vec2;
+  /** The page point. */
+  readonly page: Vec2;
+  /** The window point, client px. */
+  readonly client: Vec2;
+};
+
+/** Hand the menus asked for on the canvas `ref` (as {@link CONTEXT_MENU_EVENT}) to `onMenu`. */
+function useMenuEvents(ref: RefObject<HTMLElement | null>, onMenu: ((asked: MenuAsked) => void) | undefined): void {
+  useEffect(() => {
+    const el = ref.current;
+    if (el === null || onMenu === undefined) return;
+    const listener = (e: Event) => {
+      const { screen, page } = (e as CustomEvent<{ screen: Vec2; page: Vec2 }>).detail;
+      const r = el.getBoundingClientRect();
+      onMenu({ screen, page, client: { x: r.left + screen.x, y: r.top + screen.y } });
+    };
+    el.addEventListener(CONTEXT_MENU_EVENT, listener);
+    return () => el.removeEventListener(CONTEXT_MENU_EVENT, listener);
+  }, [ref, onMenu]);
+}
+
+/** A right click asks for the context menu where it is, as a finger held still does; the browser's own menu does not open. */
+function askMenu(e: MouseEvent<HTMLElement>, session: Session): void {
+  e.preventDefault();
+  const r = e.currentTarget.getBoundingClientRect();
+  const screen = { x: e.clientX - r.left, y: e.clientY - r.top };
+  e.currentTarget.dispatchEvent(new CustomEvent(CONTEXT_MENU_EVENT, { bubbles: true, detail: { screen, page: screenToPage(session.camera.get(), screen) } }));
+}
 
 type Drag = { readonly pointerId: number; x: number; y: number };
 
@@ -174,7 +213,7 @@ function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatc
 
 /** The canvas: the screen at the session camera, panned and zoomed. */
 export function Canvas(props: CanvasProps): ReactNode {
-  const { store, registries, screenId, area, session, tools, execute, assets, onBox } = props;
+  const { store, registries, screenId, area, session, tools, execute, assets, onBox, onMenu } = props;
   const ref = useRef<HTMLElement>(null);
   const box = useElementBox(ref);
   const camera = useValue(session.camera.get);
@@ -186,6 +225,7 @@ export function Canvas(props: CanvasProps): ReactNode {
   useWheel(ref, session, box);
   useGesture(ref, session);
   useSpace(space, tools);
+  useMenuEvents(ref, onMenu);
   // one consumer for the canvas's life: the fingers down are its state
   const consumer = useMemo(
     () =>
@@ -213,6 +253,7 @@ export function Canvas(props: CanvasProps): ReactNode {
       // nothing on the canvas is under a pointer that has left it (M6.11 review F1)
       onPointerLeave={() => session.hover.set(undefined)}
       onDoubleClick={(e) => editAt(e, session, tools)}
+      onContextMenu={(e) => askMenu(e, session)}
     >
       {screenId === undefined || box.w === 0 ? null : (
         <>

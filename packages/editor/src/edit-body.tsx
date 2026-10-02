@@ -5,6 +5,7 @@ import type { RenderRegistries } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import type { ReactNode } from 'react';
 import { Canvas } from './canvas.js';
+import { type CanvasMenuInput, useCanvasMenu } from './canvas-menu.js';
 import { ImagePicker } from './image-picker.js';
 import type { EditorLayout } from './layout.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
@@ -30,12 +31,15 @@ export type EditBodyProps = {
   readonly onBox: (box: { readonly w: number; readonly h: number }) => void;
   readonly layout: EditorLayout;
   readonly onLayout: (layout: EditorLayout) => void;
+  /** What the context menus need besides the tools and the area. */
+  readonly menus: Omit<CanvasMenuInput, 'tools' | 'area'>;
 };
 
 /** The panels around the canvas. */
 export function EditBody(props: EditBodyProps): ReactNode {
-  const { store, registries, session, tools, execute, assets, screenId, area, newId, onBox, layout, onLayout } = props;
+  const { store, registries, session, tools, execute, assets, screenId, area, newId, onBox, layout, onLayout, menus } = props;
   const { panel, splitter } = usePanels(layout, onLayout);
+  const { onMenu, menu } = useCanvasMenu({ ...menus, tools, area });
   return (
     <div className="fx-chrome-body">
       {panel('left', <LeftTabs screens={{ store, session, shown: screenId }} />)}
@@ -51,10 +55,12 @@ export function EditBody(props: EditBodyProps): ReactNode {
           execute={execute}
           assets={assets}
           onBox={onBox}
+          onMenu={onMenu}
         />
         {splitter('bottom')}
         {panel('bottom', <Timeline />)}
       </div>
+      {menu}
       <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} />
       {splitter('right')}
       {panel('right', <Inspector session={session} fields={{ store, execute, shapeDefs: registries.shapeDefs }} />)}

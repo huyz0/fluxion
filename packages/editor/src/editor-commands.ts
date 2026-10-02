@@ -9,6 +9,7 @@ import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
+import { selectSame } from './select-same.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-tool.js';
 import { editSelectedText } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
@@ -229,6 +230,8 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
       return true;
     },
   },
+  { id: 'selection.sameType', title: 'Select same type', run: (ctx) => selectIdle(ctx) && selectSame(ctx.tools.ctx, 'type') },
+  { id: 'selection.sameStyle', title: 'Select same style', run: (ctx) => selectIdle(ctx) && selectSame(ctx.tools.ctx, 'style') },
   { id: 'selection.delete', title: 'Delete the selection', run: (ctx) => selectIdle(ctx) && deleteSelection(ctx.tools.ctx) },
   { id: 'clipboard.copy', title: 'Copy', run: (ctx) => selectIdle(ctx) && copySelection(ctx) },
   { id: 'clipboard.cut', title: 'Cut', run: (ctx) => selectIdle(ctx) && copySelection(ctx) && deleteSelection(ctx.tools.ctx) },

@@ -162,7 +162,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-001 | M | R1 | M6 | [15-editor.md](15-editor.md) | `apps/studio/src/bootstrap.browser.test.ts` +15 |
 | FR-EDT-002 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/canvas.pan-zoom.spec.ts` +8 |
 | FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +23 |
-| FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/selection.marquee.spec.ts` +20 |
+| FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/context-menu.element.spec.ts` +22 |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +5 |
 | FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `e2e/undo.across-screens.spec.ts` +8 |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/clipboard.copy-paste.spec.ts` +9 |
@@ -171,7 +171,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/parity.edit-vs-present.spec.ts` +3 |
 | FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/command-palette.browser.test.tsx` +2 |
 | FR-EDT-012 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/keymap.rebind.spec.ts` +6 |
-| FR-EDT-013 | S | R1 | M7 | [15-editor.md](15-editor.md) | — |
+| FR-EDT-013 | S | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/context-menu.element.spec.ts` +2 |
 | FR-EDT-014 | M | R2 | M15 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-015 | S | R3 | M19 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-016 | S | R3 | M19 | [15-editor.md](15-editor.md) | — |

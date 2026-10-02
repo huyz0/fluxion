@@ -258,6 +258,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         onBox={setBox}
         layout={layout}
         onLayout={setLayout}
+        menus={{ run, base, overrides, commands: props.commands, mac: onMac() }}
       />
       <Dialogs dialogs={dialogs} commands={props.commands} overrides={overrides} onOverrides={setOverrides} tools={tools} run={run} />
     </div>
