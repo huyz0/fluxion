@@ -74,6 +74,9 @@ not in schema `1.0`; until added (minor version) they are preserved but not chec
 | `component` | `transform`, `text?`, `componentId` (`<plugin>:<name>`), `props`, `snapshotAssetId?` (fallback) | |
 | `<plugin>:<name>` | `props?` — validated by plugin schema if loaded | |
 
+Planned record type (not in schema `1.0`): `section` — `name`, `index`, `collapsed?`; a named group of screens for the
+navigator and, later, the site's nav; `screen.sectionId` names it (ADR-0021, schema `1.1` with M8.14).
+
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with
 only its envelope checked.
 
