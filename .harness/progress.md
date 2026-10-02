@@ -1479,3 +1479,7 @@ Screens navigator (screens-tab.tsx + navigator/): lazy thumbnails, HTML5 drag re
 ## 2026-10-02 M8.27 (claude)
 
 F5 -> mode.present (first visible screen), shift+F5/Esc -> mode.toggle (shown screen); useModeSwitch takes the store and a from argument. Parity compares every screen of the gallery, r0-static and rich-text. The reviewer noted the generated traceability row for FR-EDT-009 names present.mode-switch with +3 (check-trace output; not hand-edited).
+
+## 2026-10-02 M8.13 (claude)
+
+SCREEN_PRESETS/presetOf (schema), screen.setFormat (core, fixed size or infinite viewport; the other format fields are removed), navigator menu lines + row format label + custom size field, long menus scroll. Review pass r1 with four minors: three are to be fixed next as row M8.28, added with its fix (drag during size edit, infinite screen size/viewport prefill, menu near the window bottom); the keyboard guide regeneration was a stale-doc fix.
