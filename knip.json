@@ -7,6 +7,7 @@
         "scripts/fixtures/*.mjs",
         "scripts/fonts/*.mjs",
         "scripts/harness/**/*.mjs",
+        "scripts/docs/*.mjs",
         "tools/gen/*.mjs",
         "tests/harness/*.test.mjs"
       ],

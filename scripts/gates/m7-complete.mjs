@@ -142,7 +142,7 @@ leg('the rich-text library is in the editor bundle only: the player core is unch
 // ── inspector and handles (plan rows 8-10) ──────────────────────────────────────────────────────────
 leg('the inspector intersects a multi-selection; a mixed apply is one undo step (T0, T1)', () =>
   titled([
-    ['M7.15', "FR-EDT-008: a multi-selection's inspector shows the fields they share, mixed where they differ", EDITOR],
+    ['M7.15', 'FR-EDT-008: a multi-selection`s inspector shows the fields they share, mixed where they differ', EDITOR],
     browser('M7.16', 'FR-EDT-008: a mixed fill set on 3 shapes updates all 3 in one undo step'),
   ]),
 );

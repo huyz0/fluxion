@@ -20,6 +20,16 @@ Design: ADR-0028 (interaction architecture) and ADR-0029 (the chrome); 04 §3.
 - **overlay** (`overlay.tsx`, `overlay-geometry.ts`): one SVG in canvas px, mounted only when there is something to draw (selection frame, handles, hover, marquee, draft, sketch).
 - **chrome** (`editor-root.tsx`, `panels.tsx`, `canvas.tsx`, `splitter.tsx`, `layout.ts`, `chrome-css.ts`): toolbar, panels, canvas; `present.tsx` presents in place (F5) with every write refused.
 
+## Map (M7)
+
+- **commands and keymap** (`editor-commands.ts`, `keymap.ts`, `keymap-overrides.ts`, `keymap-dialog.tsx`, `editor-keys.tsx`, `settings.ts`): editor actions are a registry of `{id, title, run}`; `DEFAULT_KEYMAP` binds chords (`mod+z`, `when: edit`) to them, a tool's shortcut is a `tool.use` binding, and overrides persist in settings. One window dispatcher resolves a key; `docs` generates the Keyboard shortcuts guide from the default keymap (`scripts/docs/keyboard-shortcuts.mjs`).
+- **palette and menus** (`command-palette.tsx`, `palette-model.ts`, `context-menu.tsx`, `context-menu-model.ts`, `canvas-menu.tsx`, `select-same.ts`): every registered command whose `when` holds, fuzzy search, chords from the effective keymap; context menus for the canvas, an element and a screen (long press on touch).
+- **text** (`inline-text-editor.tsx`, `text-pm.ts`, `text-schema.ts`, `text-rules.ts`, `text-edit.ts`, `pm-json.ts`): ProseMirror (ADR-0064) laid over the element, mapped to the schema's rich-text JSON; Esc commits one `element.update` (and the height a `grow` shape needs); Markdown input rules are `text-rules.ts`.
+- **inspector** (`inspector-model.ts`, `inspector-values.ts`, `inspector.tsx`): fields come from the schema's `.meta` (`elementFields`); a multi-selection shows shared fields and "Mixed"; every apply is one `element.updateMany` (a scrub or slide one step for the drag); a refused entry is given back to its box.
+- **handles** (`param-handles.ts`, `connector-handles.ts`, `handle-states.ts`): shape parameter handles bound to `ShapeDef.handles`, connector end, middle, segment and curve handles; dropping an end on nothing frees it (`connector.freeEnd`).
+- **clipboard** (`clipboard.ts`, `clipboard-format.ts`, `clipboard-dom.ts`, `clipboard-assets.ts`, `system-paste.ts`, `use-system-clipboard.ts`): copy/paste/duplicate remap ids through `Random`; the cross-tab payload is ADR-0020's (custom type, `text/html` template fallback, assets inlined); system paste turns images and sanitised SVG into assets.
+- **screens, undo, problems** (`screens-tab.tsx`, `screen-switch.ts`, `history-buttons.tsx`, `problems.ts`, `problems-tab.tsx`): the canvas shows `session.screen`; undo restores screen, camera and selection; the Problems tab lists `validate()` diagnostics and layout problems with Fix buttons that run commands.
+
 ## Tests
 
 - Co-locate `*.test.ts` next to the code; name tests with requirement IDs.
