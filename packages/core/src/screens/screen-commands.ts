@@ -6,6 +6,7 @@ import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
+import type { ReadView } from '../store.js';
 import { screenIndexAfter } from './screen-order.js';
 
 type Rec = { readonly [field: string]: unknown };
@@ -17,6 +18,22 @@ function withoutSlug(r: Rec): Rec {
   const { slug: _, ...rest } = semantic;
   const { semantic: __, ...copy } = r;
   return Object.keys(rest).length === 0 ? copy : { ...copy, semantic: rest };
+}
+
+/**
+ * The records `screen.duplicate` copies for `screen`: its elements, and the bindings between two of them. A caller
+ * gives each a new id.
+ *
+ * @public
+ */
+export function screenRecordsToCopy(view: ReadView, screen: RecordId): RecordId[] {
+  const elements = view.members('byScreen', screen);
+  const onScreen = new Set<string>(elements);
+  const bindings = [...new Set(elements.flatMap((e) => view.members('bindingsByElement', e)))].filter((b) => {
+    const r = view.get(b) as Rec | undefined;
+    return onScreen.has(String(r?.['connectorId'])) && onScreen.has(String(r?.['elementId']));
+  });
+  return [...elements, ...bindings];
 }
 
 /** The screen commands (FR-SCR-002). */
@@ -45,13 +62,9 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
     run: (ctx, args) => {
       const bad = checkIds(ctx, 'screen.duplicate', 'screen', [[['id'], args.id]]) ?? checkIds(ctx, 'screen.duplicate', 'new', [[['newId'], args.newId]]);
       if (bad) return bad;
-      const elements = ctx.store.members('byScreen', args.id);
-      const onScreen = new Set<string>(elements);
-      const bindings = [...new Set(elements.flatMap((e) => ctx.store.members('bindingsByElement', e)))].filter((b) => {
-        const r = ctx.store.get(b) as Rec | undefined;
-        return onScreen.has(String(r?.['connectorId'])) && onScreen.has(String(r?.['elementId']));
-      });
-      const copied = [...elements, ...bindings];
+      const copied = screenRecordsToCopy(ctx.store, args.id as RecordId);
+      const elements = copied.filter((x) => ctx.store.get(x)?.type === 'element');
+      const bindings = copied.filter((x) => ctx.store.get(x)?.type === 'binding');
       const missing = copied.find((x) => args.ids[x] === undefined);
       if (missing !== undefined) return refuse('screen.duplicate', ['ids'], `no new id for "${missing}"`);
       const fresh = [args.newId, ...copied.map((x) => args.ids[x] as string)];

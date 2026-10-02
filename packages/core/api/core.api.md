@@ -482,6 +482,9 @@ export interface Registry<K extends string, V> {
 export function runExpr(src: string, scope: ExprScope, budget: ExprBudget, at?: ReadonlyArray<string | number>): Result<number, Diagnostic>;
 
 // @public
+export function screenRecordsToCopy(view: ReadView, screen: RecordId): RecordId[];
+
+// @public
 export type ShapeDef = {
     readonly id: QualifiedName;
     readonly params?: {

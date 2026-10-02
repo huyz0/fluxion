@@ -68,6 +68,12 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-choices { display: flex; gap: 2px; flex-wrap: wrap; }
 .fx-chrome-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 4px; min-width: 240px; padding: 12px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2); }
 .fx-chrome-screens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.fx-chrome-screen { display: flex; flex-direction: column; gap: 2px; padding: 2px; border-radius: 4px; }
+.fx-chrome-screen[data-dragging] { opacity: 0.4; }
+.fx-chrome-screen[data-hidden] .fx-chrome-screen-button { opacity: 0.55; }
+.fx-chrome-screen-button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.fx-chrome-thumbnail { position: relative; overflow: hidden; background: var(--ui-pressed); border: 1px solid var(--ui-border); border-radius: 2px; pointer-events: none; }
+.fx-chrome-rename { font: inherit; padding: 4px 6px; }
 .fx-chrome-keymap { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
 .fx-chrome-palette { min-width: 360px; max-width: 90vw; }
 .fx-chrome-palette-list { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow: auto; display: flex; flex-direction: column; }

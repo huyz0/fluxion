@@ -117,7 +117,7 @@ describe('inline text editing (FR-TXT-003)', () => {
       root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />),
     );
     await act(frame);
-    const label = host.querySelector(`.fx-el[data-el-id="${text}"]`) as HTMLElement;
+    const label = host.querySelector(`main .fx-el[data-el-id="${text}"]`) as HTMLElement;
     await act(async () => doubleClick(label));
     await act(frame);
     // outside the group the double-click enters it; the text is not opened

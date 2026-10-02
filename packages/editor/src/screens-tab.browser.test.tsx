@@ -36,7 +36,7 @@ async function mount() {
   );
   await act(frame);
   const shown = () => host.querySelector('main .fx-screen')?.getAttribute('data-screen-id');
-  const rows = () => [...host.querySelectorAll('ul[aria-label="Screens"] button')] as HTMLButtonElement[];
+  const rows = () => [...host.querySelectorAll('ul[aria-label="Screens"] .fx-chrome-screen-button')] as HTMLButtonElement[];
   return { core, session, first, second, rect, shown, rows };
 }
 
@@ -44,7 +44,7 @@ describe('Screens tab (FR-EDT-006)', () => {
   it('FR-EDT-006: the Screens tab lists the screens and a click shows one', async () => {
     const { core, session, first, second, rect, shown, rows } = await mount();
     // the screens in order, a nameless one by position; the shown one pressed
-    expect(rows().map((r) => [r.textContent, r.getAttribute('aria-pressed')])).toEqual([
+    expect(rows().map((r) => [r.querySelector(':scope > span')?.textContent, r.getAttribute('aria-pressed')])).toEqual([
       ['Screen 1', 'true'],
       ['Pricing', 'false'],
     ]);

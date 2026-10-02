@@ -22,6 +22,8 @@ test.describe('moving elements', { tag: '@desktop' }, () => {
   test('FR-EDT-005: a drag moves the shape with the pointer', async ({ page }) => {
     const editor = new EditorPage(page);
     await editor.open('example-shapes-gallery');
+    // the drag is the pointer's exactly: snapping (snapping.smart-guides.spec.ts) is off
+    await editor.toolbarButton('Snapping').click();
     const { scale, at } = await onScreen(editor);
     const before = await boxOf(editor, RECT);
     const from = at(170, 115);
@@ -54,6 +56,7 @@ test.describe('moving elements', { tag: '@desktop' }, () => {
     const editor = new EditorPage(page);
     await editor.open('example-shapes-gallery');
     await expect(editor.shapes).toHaveCount(25);
+    await editor.toolbarButton('Snapping').click();
     const { scale, at } = await onScreen(editor);
     const before = await boxOf(editor, RECT);
     const from = at(170, 115);
