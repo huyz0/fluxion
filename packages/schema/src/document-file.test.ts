@@ -76,6 +76,11 @@ describe('document file', () => {
 
   it('rejects a bad schema version and a record without id or type', () => {
     expect(documentFileSchema.safeParse({ ...example, schemaVersion: 'v1' }).success).toBe(false);
+    // a version has no leading zeros: "1.00" would name the current version in another spelling
+    for (const version of ['1.00', '01.0', '1.01', '1.', '.0', '1.0.0', ' 1.0'])
+      expect(documentFileSchema.safeParse({ ...example, schemaVersion: version }).success, version).toBe(false);
+    for (const version of ['1.0', '0.9', '1.10', '10.0'])
+      expect(documentFileSchema.safeParse({ ...example, schemaVersion: version }).success, version).toBe(true);
     expect(documentFileSchema.safeParse({ ...example, records: { z: { type: 'hologram' } } }).success).toBe(false);
     expect(documentFileSchema.safeParse({ ...example, records: { z: { id: 'z' } } }).success).toBe(false);
     expect(documentFileSchema.safeParse({ schemaVersion: '1.0' }).success).toBe(false);

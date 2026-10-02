@@ -83,6 +83,12 @@ describe('validate', () => {
   it('checks the document shell: not an object, version, records, and missing document record', () => {
     expect(summary(42)).toEqual([{ code: 'FLX_DOC_NOT_OBJECT', severity: 'error', path: '' }]);
     expect(summary({ records: {} }).map((x) => x.code)).toEqual(['FLX_VERSION_INVALID', 'FLX_DOCUMENT_MISSING']);
+    // a non-canonical spelling of a version is invalid, not the current version
+    for (const version of ['1.00', '01.0', '1.01'])
+      expect(
+        summary({ schemaVersion: version, records: minimal.records }).map((x) => x.code),
+        version,
+      ).toEqual(['FLX_VERSION_INVALID']);
     expect(summary({ schemaVersion: '0.9', records: minimal.records }).map((x) => x.code)).toEqual(['FLX_VERSION_UNSUPPORTED']);
     expect(summary({ schemaVersion: '1.3', records: minimal.records })).toEqual([{ code: 'FLX_VERSION_NEWER', severity: 'warning', path: '/schemaVersion' }]);
   });

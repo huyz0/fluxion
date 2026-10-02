@@ -144,7 +144,7 @@ export const anyRecordSchema: z.ZodType<AnyRecord> = z
 /** Schema of a whole document file. */
 export const documentFileSchema: z.ZodType<DocumentFile> = checkedSchema<DocumentFile>()(
   z.looseObject({
-    schemaVersion: z.string().regex(/^\d+\.\d+$/, 'expected a MAJOR.MINOR schema version such as "1.0"'),
+    schemaVersion: z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)$/, 'expected a MAJOR.MINOR schema version such as "1.0" (no leading zeros)'),
     records: z.record(z.string(), anyRecordSchema),
   }),
 );

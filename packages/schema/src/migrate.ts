@@ -54,7 +54,8 @@ export type Migrated = {
   readonly applied: readonly string[];
 };
 
-const VERSION = /^(\d+)\.(\d+)$/;
+// canonical MAJOR.MINOR, as in validate.ts: no leading zeros
+const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const parts = (v: string): [number, number] | null => {
   const m = VERSION.exec(v);
   return m ? [Number(m[1]), Number(m[2])] : null;

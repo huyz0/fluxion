@@ -69,6 +69,8 @@ describe('migrations (FR-DOC-003)', () => {
     expect(code(v09)).toBe('MIGRATION_UNSUPPORTED');
     expect(code({ ...v09, schemaVersion: '2.0' })).toBe('MIGRATION_UNSUPPORTED');
     expect(code({ ...v09, schemaVersion: 'one' })).toBe('MIGRATION_UNSUPPORTED');
+    // "1.00" is not the current version under another spelling: it is no version, and nothing is migrated or kept under it
+    for (const version of ['1.00', '01.0', '1.01']) expect(code({ ...v09, schemaVersion: version }), version).toBe('MIGRATION_UNSUPPORTED');
     expect(code(42)).toBe('MIGRATION_UNSUPPORTED');
     expect(code({ ...v09, schemaVersion: '1.3' })).toBe('ok');
     expect(code(v09, [{ from: '0.9', to: '1.0', up: (d) => ({ ...d, schemaVersion: '0.9' }) }])).toBe('MIGRATION_UNSUPPORTED');

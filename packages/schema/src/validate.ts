@@ -11,7 +11,8 @@ type Fields = { readonly [key: string]: unknown };
 type Path = readonly (string | number)[];
 
 const isObject = (v: unknown): v is Fields => typeof v === 'object' && v !== null && !Array.isArray(v);
-const VERSION = /^(\d+)\.(\d+)$/;
+// MAJOR.MINOR in canonical form: no leading zeros, so "1.00" and "01.0" are not versions (they would name the current one by another spelling)
+const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const RICH_TEXT_CODES = new Set<string>(['FLX_TEXT_INVALID', 'FLX_TEXT_UNSAFE_LINK']);
 
 function checkVersion(version: unknown, out: Diagnostic[]): void {

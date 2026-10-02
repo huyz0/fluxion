@@ -46,6 +46,13 @@ function expectSalvaged(before: Records, after: Records, id: string): void {
 }
 
 describe('robust parse (NFR-REL-002)', () => {
+  it('NFR-REL-002: a version spelled "1.00" (a corrupted "1.0") is refused, not read as the current one', () => {
+    for (const version of ['1.00', '01.0']) {
+      const r = parseDocument(`{"schemaVersion":"${version}","records":{}}`);
+      expect(r.ok, version).toBe(false);
+    }
+  });
+
   it('NFR-REL-002: parse never throws on corrupted input', () => {
     let runs = 0;
     fc.assert(

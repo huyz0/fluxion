@@ -125,7 +125,7 @@ set) is skipped and the next layer is used, so no resolved value carries other C
 
 ## 4. Versioning & migrations
 
-- The file's `schemaVersion` (on `DocumentFile`, not the `document` record) is `MAJOR.MINOR`. Minor = additive (optional fields/kinds);
+- The file's `schemaVersion` (on `DocumentFile`, not the `document` record) is `MAJOR.MINOR`. Both are whole numbers in canonical form (no leading zeros): `1.00` is no version, not the current one in another spelling (M7.31). Minor = additive (optional fields/kinds);
   major = breaking (requires converter + ADR).
 - Migrations are an ordered list `{ from, to, up(doc) }` per version step, pure functions over
   the record map. Every released version keeps a fixture in `packages/schema/__fixtures__/v*/`
