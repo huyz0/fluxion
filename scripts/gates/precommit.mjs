@@ -3,6 +3,7 @@
 // by `pnpm verify` / CI (--all), and by agents (--quick while iterating).
 //   --staged     check what is staged (default when run from the hook); the harness tests and the
 //                Vitest run are scoped to what the staged paths can affect (ladder-scope.mjs, M4.26)
+//   --staged-paths a,b,c   with --staged: scope as if these paths were staged (check-budget --record)
 //   --all        whole repo (CI)
 //   --quick      fast subset for iteration
 //   --summary    one line per step only
@@ -20,7 +21,11 @@ const argv = new Set(process.argv.slice(2));
 const mode = argv.has('--all') ? 'all' : argv.has('--quick') ? 'quick' : 'staged';
 const hasPkg = exists('package.json') && exists('turbo.json');
 const pnpm = (...a) => runAsync('pnpm', a);
-const stagedPaths = () => git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).filter(Boolean);
+// --staged-paths a,b,c: scope the staged ladder as if these were staged (check-budget --record times the worst-case commit)
+const pretended = process.argv.includes('--staged-paths')
+  ? (process.argv[process.argv.indexOf('--staged-paths') + 1] ?? '').split(',').filter(Boolean)
+  : undefined;
+const stagedPaths = () => pretended ?? git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).filter(Boolean);
 const lockfileStaged = () => stagedPaths().includes('pnpm-lock.yaml');
 
 // staged mode runs what the staged paths can affect (M4 cp1 F2; ladder-scope.mjs); --all runs everything

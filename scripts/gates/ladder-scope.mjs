@@ -74,6 +74,9 @@ export const GATE_SCRIPT_HARNESS = {
   'scripts/gates/milestone-checks.mjs': ['bench-leg', 'kits', 'ladder-scope', 'milestone-checks', 'verify-leg'],
   'scripts/gates/ladder-scope.mjs': LADDER_HARNESS,
   'scripts/gates/precommit.mjs': LADDER_HARNESS,
+  // the budget record and the worst-case commit it times (M8.20): the budget harness file reads both, the scope tests read the commit
+  'scripts/gates/check-budget.mjs': ['budget', 'ladder-scope'],
+  'scripts/gates/worst-case.mjs': ['budget', 'ladder-scope'],
 };
 
 /**

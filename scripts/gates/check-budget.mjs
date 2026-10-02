@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Gate latency budget (NFR-DX-001, NFR-DX-002).
 //   check-budget.mjs            the recorded timings in .harness/budget.json are within the thresholds
-//   check-budget.mjs --record   measure and record them: quick gate, staged pre-commit gate, and a cold
+//   check-budget.mjs --record   measure and record them: quick gate, staged pre-commit gate (on the worst-case
+//                               commit, worst-case.mjs), and a cold
 //                               setup (fresh local clone: pnpm i --frozen-lockfile, pnpm run setup,
 //                               pnpm verify); takes minutes
 //   check-budget.mjs --cold     measure only the cold setup, the same isolated way, and fail when it
@@ -27,6 +28,7 @@ import { join } from 'node:path';
 import { runSource } from './ci-runs.mjs';
 import { git, repoPath, run } from './lib.mjs';
 import { t } from './thresholds.mjs';
+import { WORST_CASE_STAGED } from './worst-case.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k) => {
@@ -168,10 +170,11 @@ function carriedColdSetup() {
 if (argv.includes('--record')) {
   // --no-budget: the timed ladder must not check the record being replaced (with the lockfile staged
   // it would run against the old record and fail; M3.5 review F1)
-  const args = (mode) => [repoPath('scripts/gates/precommit.mjs'), mode, '--no-review', '--no-budget'];
-  const ladder = (mode) => timed(() => spawnSync(process.execPath, args(mode), { encoding: 'utf8', cwd: repoPath() }));
+  const args = (mode, more) => [repoPath('scripts/gates/precommit.mjs'), mode, '--no-review', '--no-budget', ...more];
+  const ladder = (mode, more = []) => timed(() => spawnSync(process.execPath, args(mode, more), { encoding: 'utf8', cwd: repoPath() }));
   const quick = ladder('--quick');
-  const staged = ladder('--staged');
+  // the staged ladder is timed on the worst-case commit, not on what happens to be staged (NFR-DX-002, M8.20)
+  const staged = ladder('--staged', ['--staged-paths', WORST_CASE_STAGED.join(',')]);
   const fromCi = opt('cold-from-ci');
   const pending = argv.includes('--cold-pending');
   // the clone's budget step sees this run's quick/staged numbers; the cold setup being measured is

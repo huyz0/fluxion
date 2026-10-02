@@ -1,10 +1,12 @@
 // NFR-DX-001 / NFR-DX-002: recorded gate latencies (cold setup, quick, staged) stay within the thresholds.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { chmodSync, existsSync, readFileSync } from 'node:fs';
+import { chmodSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { delimiter, dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
+import { harnessFiles, packagingNeeded, testScope } from '../../scripts/gates/ladder-scope.mjs';
 import { t } from '../../scripts/gates/thresholds.mjs';
+import { WORST_CASE_STAGED } from '../../scripts/gates/worst-case.mjs';
 import { out, REPO, sandbox } from './helpers.mjs';
 
 let sb;
@@ -176,7 +178,10 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.equal(pending.coldSetupMs, 130_000, 'the previous number is carried');
     assert.equal(pending.coldSetupSource, 'pending-ci');
     assert.deepEqual(pnpmCalls(sb), [], 'no local cold clone');
-    assert.deepEqual(sb.read('ladder.log').trim().split('\n'), ['--quick --no-review --no-budget', '--staged --no-review --no-budget']);
+    assert.deepEqual(sb.read('ladder.log').trim().split('\n'), [
+      '--quick --no-review --no-budget',
+      `--staged --no-review --no-budget --staged-paths ${WORST_CASE_STAGED.join(',')}`,
+    ]);
     const check = (args, ci) => sb.node('scripts/gates/check-budget.mjs', ['--file', sb.path('budget.json'), ...args], { env: { ...process.env, CI: ci } });
     assert.equal(check(['--staged'], '').status, 0, 'the staged ladder accepts it');
     assert.equal(check([], 'true').status, 0, 'CI accepts it');
@@ -239,6 +244,24 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     const failed = sb.node('scripts/gates/check-budget.mjs', ['--cold'], { env: fakeEnv(sb, { FAKE_PNPM_FAIL: 'verify' }) });
     assert.equal(failed.status, 1, out(failed));
     assert.match(failed.stderr, /cold run failed[\s\S]*fake verify failed/);
+  });
+
+  it("NFR-DX-002: the recorded staged time is the worst-case commit's", () => {
+    const all = readdirSync(join(REPO, 'tests/harness'))
+      .filter((f) => f.endsWith('.test.mjs'))
+      .map((f) => `tests/harness/${f}`);
+    const workspaces = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8')).workspaces;
+    const browserTested = workspaces.filter(({ dir }) => /(editor|render|player)$/.test(dir)).map(({ dir }) => dir);
+    // what the worst-case commit stages makes the staged ladder run every harness file, the packaging checks and the whole Vitest run with the browser project
+    assert.deepEqual(harnessFiles(WORST_CASE_STAGED, all), all, 'every harness file');
+    assert.equal(packagingNeeded(WORST_CASE_STAGED), true, 'the packaging checks');
+    assert.deepEqual(testScope(WORST_CASE_STAGED, workspaces, browserTested), { run: true, browser: true }, 'the whole Vitest run, browser project included');
+    // no ordinary commit is the worst case: a sources-only one runs far less
+    assert.notDeepEqual(harnessFiles(['packages/core/src/x.ts'], all), all);
+    // the ladder honours --staged-paths (the record test above sees check-budget pass it)
+    const ladder = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
+    assert.match(ladder, /process\.argv\.includes\('--staged-paths'\)/);
+    assert.match(ladder, /const stagedPaths = \(\) => pretended \?\? /);
   });
 });
 
