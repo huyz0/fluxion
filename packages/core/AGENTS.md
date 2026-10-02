@@ -19,6 +19,11 @@ Design: docs/architecture/03-core-engine.md; semantics: ADR-0014.
 - Validation stays on in dev, test and benches (`validate: false` is for production builds only; the m3 gate scans `bench/`).
 - New error codes go in `errors.ts` (`CoreErrorCode`) with a documented `FLX_*` diagnostic in `@fluxion/schema`.
 
+## Arrange and screens (M8)
+
+- `src/arrange/`: `element.group`/`ungroup` (members keep screen coordinates; the `core:5-group-bounds` hook refits a group's box), `element.align`, `element.distribute`, `element.zOrder` (only moved elements get a new index).
+- `src/screens/`: `screen.rename`/`setHidden`/`setFormat`/`setNotes`/`setSection`/`duplicate` (new ids come from the caller), `section.*` (a section delete lets its screens go in the same transaction), `nextVisibleScreen`; `screen-order.ts` places screens and sections by fractional index.
+
 ## Tests
 
 - Co-locate `*.test.ts` next to the code; name tests with requirement IDs.

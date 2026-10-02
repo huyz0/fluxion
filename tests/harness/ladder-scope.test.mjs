@@ -85,7 +85,10 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     assert.deepEqual(harnessFiles(['scripts/gates/m7-complete.mjs'], ALL), only(['milestone-checks', 'portability']));
     assert.deepEqual(harnessFiles(['knip.json'], ALL), only(['milestone-checks']));
-    assert.deepEqual(harnessFiles(['fixtures/docs/minimal.flux.json', 'examples/r0-static.flux.json'], ALL), only(['milestone-checks', 'tests-kept']));
+    assert.deepEqual(
+      harnessFiles(['fixtures/docs/minimal.flux.json', 'examples/r0-static.flux.json', 'examples/README.md'], ALL),
+      only(['milestone-checks', 'tests-kept']),
+    );
     assert.deepEqual(
       harnessFiles(['scripts/gates/thresholds.mjs'], ALL),
       only(['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']),
@@ -108,6 +111,12 @@ describe('staged ladder scope (NFR-DX-002)', () => {
         'scripts/gates/thresholds.mjs',
         'knip.json',
         '.harness/state.json',
+        '.changeset/m8-editor.md',
+        'examples/arrange-demo.flux.json',
+        'examples/README.md',
+        'fixtures/docs/minimal.flux.json',
+        'packages/editor/AGENTS.md',
+        'apps/docs/src/content/docs/guides/screens-and-arranging.md',
       ]),
       false,
     );

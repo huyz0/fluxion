@@ -35,3 +35,11 @@ Design: ADR-0028 (interaction architecture) and ADR-0029 (the chrome); 04 §3.
 - Co-locate `*.test.ts` next to the code; name tests with requirement IDs.
 - T0 for logic (pure modules are `.ts`, mutation-tested), T1 (browser) for components.
 - E2E specs in `e2e/`: `canvas.pan-zoom`, `tools.*`, `selection.marquee`, `move.*`, `transform.*`, `touch.edit-basics` (@mobile), `present.mode-switch`, `parity.edit-vs-present`, `perf.drag-500` (@perf, `pnpm test:perf`), `a11y.editor-shell`.
+
+## Map (M8)
+
+- **arrange** (`group-edit.ts`, `arrange-edit.ts`): group, enter a group (`session.entered`), align, distribute and order the selection; each is one core command (`element.group`, `element.align`, `element.distribute`, `element.zOrder`) and one undo step.
+- **snap** (`snap/snap.ts` pure, `snap/targets.ts`, `snap/use-snap-setting.ts`): `snapBox` and `snapAngle` (8 px over the zoom, Alt/Ctrl bypass); the select tool snaps a drag and fills `session.guides`; the toolbar toggle is `session.snap`, persisted in settings.
+- **screens** (`screens-tab.tsx`, `navigator/`): the navigator (thumbnails drawn only once seen, drag reorder, rename, hide, formats, sections with folding), `notes-panel.tsx` (speaker notes); all through `screen.*` and `section.*` commands.
+- **library** (`library/`): `library-search.ts` (pure token index), `library-panel.tsx`, `library-insert.ts` (click or drop inserts; `session.library` is what the shape tool places).
+

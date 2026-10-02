@@ -1,0 +1,290 @@
+{
+  "records": {
+    "6-nmJYFJApsEKyeV": {
+      "id": "6-nmJYFJApsEKyeV",
+      "index": "a0",
+      "name": "Overview",
+      "notes": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Open with the big picture: the web app talks to the API; Auth sits beside it.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "sectionId": "SectionIntro0001",
+      "type": "screen"
+    },
+    "6_Zsnw4Y8NVQ89A-": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "mlTzr6VCga8me761",
+      "elementId": "EgQMAn9Rb66P-2SP",
+      "end": "target",
+      "id": "6_Zsnw4Y8NVQ89A-",
+      "type": "binding"
+    },
+    "DJcwkbQy6fegKcT3": {
+      "defId": "basic:rect",
+      "id": "DJcwkbQy6fegKcT3",
+      "index": "a1",
+      "kind": "shape",
+      "parentId": "GroupServices001",
+      "screenId": "6-nmJYFJApsEKyeV",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Auth",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 280,
+        "x": 120,
+        "y": 340
+      },
+      "type": "element"
+    },
+    "EgQMAn9Rb66P-2SP": {
+      "defId": "basic:rect",
+      "id": "EgQMAn9Rb66P-2SP",
+      "index": "a0",
+      "kind": "shape",
+      "parentId": "GroupServices001",
+      "screenId": "6-nmJYFJApsEKyeV",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "API",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 280,
+        "x": 120,
+        "y": 160
+      },
+      "type": "element"
+    },
+    "FQ5Sc6i-hdfLNGbJ": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "mlTzr6VCga8me761",
+      "elementId": "z47JSdkEo0Iq5v6a",
+      "end": "source",
+      "id": "FQ5Sc6i-hdfLNGbJ",
+      "type": "binding"
+    },
+    "GroupServices001": {
+      "id": "GroupServices001",
+      "index": "a9",
+      "kind": "group",
+      "name": "Services",
+      "screenId": "6-nmJYFJApsEKyeV",
+      "transform": {
+        "h": 300,
+        "rot": 0,
+        "w": 280,
+        "x": 120,
+        "y": 160
+      },
+      "type": "element"
+    },
+    "MmN5qfIzrBB9l3UQ": {
+      "defId": "basic:rect",
+      "id": "MmN5qfIzrBB9l3UQ",
+      "index": "a1",
+      "kind": "shape",
+      "screenId": "agwbhDVbeV842c12",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Refunds",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 140,
+        "w": 360,
+        "x": 700,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "PvGkXhU4RJP3Tbiy": {
+      "hidden": true,
+      "id": "PvGkXhU4RJP3Tbiy",
+      "index": "a2",
+      "name": "Appendix",
+      "sectionId": "SectionRefer0001",
+      "type": "screen"
+    },
+    "S4-ynZh06pdRsRhD": {
+      "defId": "basic:rect",
+      "id": "S4-ynZh06pdRsRhD",
+      "index": "a0",
+      "kind": "shape",
+      "screenId": "PvGkXhU4RJP3Tbiy",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Glossary",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 140,
+        "w": 360,
+        "x": 200,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "SectionIntro0001": {
+      "id": "SectionIntro0001",
+      "index": "a0",
+      "name": "Intro",
+      "type": "section"
+    },
+    "SectionRefer0001": {
+      "collapsed": false,
+      "id": "SectionRefer0001",
+      "index": "a1",
+      "name": "Reference",
+      "type": "section"
+    },
+    "agwbhDVbeV842c12": {
+      "id": "agwbhDVbeV842c12",
+      "index": "a1",
+      "name": "Details",
+      "notes": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Walk through checkout, then refunds.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "sectionId": "SectionRefer0001",
+      "type": "screen"
+    },
+    "bY2eg3TpBkcU_PBk": {
+      "defId": "basic:rect",
+      "id": "bY2eg3TpBkcU_PBk",
+      "index": "a0",
+      "kind": "shape",
+      "screenId": "agwbhDVbeV842c12",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Checkout flow",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 140,
+        "w": 360,
+        "x": 200,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "jfWsFZmWMLOCkfuw": {
+      "id": "jfWsFZmWMLOCkfuw",
+      "type": "document"
+    },
+    "mlTzr6VCga8me761": {
+      "id": "mlTzr6VCga8me761",
+      "index": "a3",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "6-nmJYFJApsEKyeV",
+      "type": "element"
+    },
+    "z47JSdkEo0Iq5v6a": {
+      "defId": "basic:rect",
+      "id": "z47JSdkEo0Iq5v6a",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "6-nmJYFJApsEKyeV",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Web app",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 280,
+        "x": 640,
+        "y": 250
+      },
+      "type": "element"
+    }
+  },
+  "schemaVersion": "1.1"
+}

@@ -85,7 +85,7 @@ export const GATE_SCRIPT_HARNESS = {
 export const NAMED_PATH_HARNESS = [
   [/^\.changeset\/.+\.md$/, ['ci-workflow', 'milestone-checks']],
   // the shared documents: the harness files that name them (the Vitest suites that read them run through VITEST_GLOBAL)
-  [/^(examples|fixtures)\/.+\.json$/, ['milestone-checks', 'tests-kept']],
+  [/^(examples|fixtures)\/.+\.(json|md)$/, ['milestone-checks', 'tests-kept']],
   [/^scripts\/docs\/[^/]+\.mjs$/, ['milestone-checks', 'portability', 'size']],
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
@@ -234,6 +234,11 @@ export function packagingNeeded(staged) {
     API_REPORT.test(p) ||
     /^e2e\//.test(p) ||
     /^docs\/.+\.md$/.test(p) ||
+    // notes and documents no manifest, export or build setting reads
+    /^\.changeset\/.+\.md$/.test(p) ||
+    /^(examples|fixtures)\//.test(p) ||
+    /(^|\/)AGENTS\.md$/.test(p) ||
+    /^apps\/docs\/src\/content\//.test(p) ||
     BOOKKEEPING_PATHS.some((re) => re.test(p));
   return !staged.every(inert);
 }
