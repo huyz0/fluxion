@@ -1503,3 +1503,7 @@ Navigator sections: navigatorItems (free screens first, then each section with i
 ## 2026-10-02 M8.16 (claude)
 
 screen.setNotes (core) and the Notes left tab (notes-panel.tsx): a ProseMirror field per shown screen, commit on blur/unmount/screen change as one undo step, empty = field removed, external changes (undo) shown when not typing. Review pass r1.
+
+## 2026-10-02 M8.17 (claude)
+
+library/library-search.ts (ADR-0021): token table (sorted unique tokens + postings), exact/prefix/inside-word ranking, every word must match, ties by name; 10k bench far under LIBRARY_SEARCH_10K_MAX_MS. The panel is the new row M8.30. Review pass r1.
