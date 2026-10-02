@@ -123,6 +123,16 @@ export {
 export { LASER_TRAIL, laserTool } from './laser-tool.js';
 export { LAYOUT_KEY } from './layout.js';
 export { newDocument } from './new-document.js';
+export {
+  ariaShortcuts,
+  filterEntries,
+  fuzzyScore,
+  type PaletteAction,
+  type PaletteEntry,
+  type PaletteSource,
+  paletteEntries,
+  shortcutsOf,
+} from './palette-model.js';
 export { type ParamCommand, type PlacedParamHandle, paramEdit, paramHandleAt, paramHandlesOf, type ShapeDefs } from './param-handles.js';
 export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox, penTool } from './path-tool.js';
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';

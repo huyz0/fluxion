@@ -24,7 +24,7 @@ export type KeymapDialogProps = {
 const TITLES = new Map(EDITOR_COMMANDS.map((c) => [c.id, c.title]));
 
 /** Whether the page runs on a Mac, where the modifier is Cmd. */
-const onMac = (): boolean => /Mac|iPhone|iPad/.test(navigator.platform);
+export const onMac = (): boolean => /Mac|iPhone|iPad/.test(navigator.platform);
 
 /** The default keymap and the tools' bindings, the base the rebindings are applied to. */
 export const baseKeymap = (tools: readonly Tool[]): readonly KeyBinding[] => [...DEFAULT_KEYMAP, ...toolBindings(tools)];

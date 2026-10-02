@@ -177,6 +177,7 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   { key: 'delete', command: 'selection.delete', when: 'edit' },
   { key: 'backspace', command: 'selection.delete', when: 'edit' },
   { key: '?', command: 'help.keys', when: 'edit' },
+  { key: 'mod+k', command: 'palette.open', when: 'edit' },
   { key: 'f5', command: 'mode.toggle' },
   { key: 'shift+f5', command: 'mode.toggle' },
   { key: 'escape', command: 'mode.toggle', when: 'present' },

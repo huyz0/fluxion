@@ -14,20 +14,24 @@ import { fitBox, screenToPage } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
 import { createClipboard } from './clipboard.js';
+import { PaletteHost } from './command-palette.js';
+import { EditBody } from './edit-body.js';
+import { EditToolbar } from './edit-toolbar.js';
+import type { EditorCommand } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
 import { ImagePicker } from './image-picker.js';
-import { KeymapDialog } from './keymap-dialog.js';
+import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
 import { PresentInPlace, useModeSwitch, useRevision } from './present.js';
 import { readOnly } from './present-mode.js';
+import { Dialogs, useDialogs, useRootKeys } from './root-hooks.js';
 import { shownScreen } from './screen-switch.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
-import { Splitter } from './splitter.js';
 import { pasteSystemItem, type SystemItem } from './system-paste.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
 import { type SystemClipboardCommands, useSystemClipboard } from './use-system-clipboard.js';
@@ -55,6 +59,8 @@ export type EditorRootProps = {
   readonly random?: Random;
   /** The bytes of the document's assets (default: an in-memory store for this root, which pasted images fill). */
   readonly assets?: AssetStore;
+  /** Editor commands besides the built-in ones, e.g. a plugin's: bindable in the keymap and listed by the command palette. */
+  readonly commands?: readonly EditorCommand[];
 };
 
 /** Randomness from the browser's crypto. */
@@ -153,12 +159,6 @@ function useScreenFallback(session: Session, screenId: RecordId | undefined): vo
   }, [session, screenId]);
 }
 
-const SPLITTERS: { readonly [P in PanelId]: string } = {
-  left: 'Resize the left panel',
-  right: 'Resize the inspector',
-  bottom: 'Resize the timeline',
-};
-
 /** The area of the screen `id`; undefined when there is none, or it was just deleted. */
 function areaOf(view: ReadView, id: RecordId | undefined): Box | undefined {
   const screen = id === undefined ? undefined : view.get(id);
@@ -190,63 +190,9 @@ function useFitOnOpen(session: Session, area: Box | undefined, box: { readonly w
   }, [area, box, session]);
 }
 
-/** What the root's key handling reads. */
-type RootKeys = {
-  readonly store: Store;
-  readonly session: Session;
-  readonly tools: ToolDispatcher;
-  readonly present: ToolDispatcher;
-  readonly box: { readonly w: number; readonly h: number };
-  readonly area: Box | undefined;
-  readonly switchMode: () => void;
-  /** The screen shown, as the keys' undo restores it. */
-  readonly shown: { readonly current: RecordId | undefined };
-  readonly overrides: KeyOverrides;
-  readonly help: boolean;
-  readonly openHelp: () => void;
-  /** The bytes of the document's assets. */
-  readonly assets: AssetStore;
-};
-
-/** The editor's keys over the root's tools, with its own clipboard (the system clipboard joins it in M7.22); the runner of a command by id. */
-function useRootKeys(i: RootKeys): { readonly run: (command: string, args?: unknown) => boolean; readonly system: SystemClipboardCommands } {
-  const { store, session, shown } = i;
-  const restore = useCallback(
-    (meta: unknown) => {
-      const view = readViewMeta(meta);
-      if (view !== undefined) restoreView(session, view, shown.current, (id) => store.get(id) !== undefined);
-    },
-    [session, store, shown],
-  );
-  const { assets } = i;
-  const clipboard = useMemo(() => createClipboard(assets.url), [assets]);
-  const run = useEditorKeys({
-    store,
-    session,
-    tools: i.tools,
-    present: i.present,
-    viewport: i.box,
-    area: i.area,
-    switchMode: i.switchMode,
-    openHelp: i.openHelp,
-    restoreView: restore,
-    clipboard,
-    assets,
-    overrides: i.overrides,
-    paused: i.help,
-  });
-  // what is pasted that is not Fluxion's lands at the centre of the view, selected
-  const place = useCallback(
-    (item: SystemItem) => {
-      const t = i.tools.ctx;
-      const centre = screenToPage(session.camera.get(), { x: i.box.w / 2, y: i.box.h / 2 });
-      const id = pasteSystemItem({ view: t.view, execute: t.execute, seal: t.seal, screen: t.screen, newId: t.newId, assets }, item, centre);
-      if (id !== undefined) session.selection.set([id]);
-    },
-    [i.tools, i.box.w, i.box.h, session, assets],
-  );
-  const system = useSystemClipboard({ clipboard, session, run, paused: i.help, place });
-  return { run, system };
+/** Fresh record ids from `random` (default: the browser's crypto). */
+function useNewId(random: Random | undefined): () => RecordId {
+  return useMemo(() => () => createId(random ?? cryptoRandom), [random]);
 }
 
 /**
@@ -265,37 +211,16 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const switchMode = useModeSwitch(session, tools, present);
   const mode = useValue(session.mode.get);
   const revision = useRevision(store);
-  const newId = useMemo(() => {
-    const random = props.random ?? cryptoRandom;
-    return () => createId(random);
-  }, [props.random]);
+  const newId = useNewId(props.random);
   // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
   const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
   const [box, setBox] = useState({ w: 0, h: 0 });
   const [overrides, setOverrides] = useKeyOverrides(settings);
-  const [help, setHelp] = useState(false);
-  const openHelp = useCallback(() => setHelp(true), []);
+  const dialogs = useDialogs();
+  const base = useMemo(() => baseKeymap(tools.list()), [tools]);
   const assets = useMemo(() => props.assets ?? createAssetStore(), [props.assets]);
-  const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, help, openHelp, assets });
+  const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands: props.commands });
   useFitOnOpen(session, area, box);
-  const id = useId();
-  const panel = (p: PanelId, content: ReactNode) => {
-    if (!panelShown(layout, p)) return null;
-    const size = layout.panels[p].size;
-    const Tag = p === 'bottom' ? 'section' : 'aside';
-    const style = p === 'bottom' ? { height: size } : { width: size };
-    return (
-      <Tag id={`${id}-${p}`} aria-label={PANEL_NAMES[p]} className={`fx-chrome-panel fx-chrome-${p}`} style={style} data-panel={p}>
-        {content}
-      </Tag>
-    );
-  };
-  // a splitter stays while its panel is collapsed (Enter restores it), controlling nothing then; focus
-  // mode hides them all
-  const splitter = (p: PanelId) =>
-    layout.focus ? null : (
-      <Splitter panel={p} label={SPLITTERS[p]} controls={layout.panels[p].collapsed ? undefined : `${id}-${p}`} layout={layout} onLayout={setLayout} />
-    );
   if (mode === 'present')
     return (
       <div data-testid="editor-root" data-mode="present" data-revision={revision}>
@@ -304,51 +229,37 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
     );
   return (
     <div className="fx-editor" data-testid="editor-root" data-mode="edit" data-revision={revision} data-focus={layout.focus || undefined}>
-      <Toolbar layout={layout} onLayout={setLayout}>
-        <ToolButtons session={session} tools={tools} />
-        <ZoomControls store={store} session={session} box={box} area={area} />
-        <button type="button" className="fx-chrome-button" title="Undo" disabled={!store.history.canUndo()} onClick={() => run('history.undo')}>
-          Undo
-        </button>
-        <button type="button" className="fx-chrome-button" title="Redo" disabled={!store.history.canRedo()} onClick={() => run('history.redo')}>
-          Redo
-        </button>
-        <button type="button" className="fx-chrome-button" title="Copy" onClick={() => void system.copy()}>
-          Copy
-        </button>
-        <button type="button" className="fx-chrome-button" title="Paste" onClick={() => void system.paste()}>
-          Paste
-        </button>
-        <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={switchMode}>
-          Present
-        </button>
-        <button type="button" className="fx-chrome-button" aria-keyshortcuts="?" title="Keyboard shortcuts (?)" onClick={openHelp}>
-          Keyboard shortcuts
-        </button>
-      </Toolbar>
-      <div className="fx-chrome-body">
-        {panel('left', <LeftTabs screens={{ store, session, shown: screenId }} />)}
-        {splitter('left')}
-        <div className="fx-chrome-center">
-          <Canvas
-            store={store}
-            registries={registries}
-            screenId={screenId}
-            area={area}
-            session={session}
-            tools={tools}
-            execute={execute}
-            assets={assets.url}
-            onBox={setBox}
-          />
-          {splitter('bottom')}
-          {panel('bottom', <Timeline />)}
-        </div>
-        <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} />
-        {splitter('right')}
-        {panel('right', <Inspector session={session} fields={{ store, execute, shapeDefs: registries.shapeDefs }} />)}
-      </div>
-      {help ? <KeymapDialog tools={tools.list()} overrides={overrides} onOverrides={setOverrides} onClose={() => setHelp(false)} /> : null}
+      <EditToolbar
+        layout={layout}
+        onLayout={setLayout}
+        store={store}
+        session={session}
+        tools={tools}
+        box={box}
+        area={area}
+        base={base}
+        overrides={overrides}
+        mac={onMac()}
+        run={run}
+        system={system}
+        switchMode={switchMode}
+        openHelp={dialogs.openHelp}
+      />
+      <EditBody
+        store={store}
+        registries={registries}
+        session={session}
+        tools={tools}
+        execute={execute}
+        assets={assets.url}
+        screenId={screenId}
+        area={area}
+        newId={newId}
+        onBox={setBox}
+        layout={layout}
+        onLayout={setLayout}
+      />
+      <Dialogs dialogs={dialogs} commands={props.commands} overrides={overrides} onOverrides={setOverrides} tools={tools} run={run} />
     </div>
   );
 }

@@ -56,6 +56,8 @@ export type EditorCommandCtx = {
   switchMode?(): void;
   /** Open the keyboard shortcuts dialog. */
   openHelp?(): void;
+  /** Open the command palette. */
+  openPalette?(): void;
   /** Show the view an undone or redone entry's meta holds again. */
   restoreView?(meta: unknown): void;
   /** The clipboard copy, cut and paste use. */
@@ -98,6 +100,8 @@ export type EditorCommand = {
   readonly id: string;
   /** Its title (the palette's, the cheat sheet's). */
   readonly title: string;
+  /** Where the palette offers it: context flags joined by `&&` (`edit`, `present`), see {@link KeyBinding.when}; always when absent. */
+  readonly when?: string;
   /** Run it with `args`; true when it acted. */
   run(ctx: EditorCommandCtx, args?: unknown): boolean;
 };
@@ -267,6 +271,16 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
     run: (ctx) => {
       if (ctx.openHelp === undefined) return false;
       ctx.openHelp();
+      return true;
+    },
+  },
+  {
+    id: 'palette.open',
+    title: 'Command palette',
+    when: 'edit',
+    run: (ctx) => {
+      if (ctx.openPalette === undefined) return false;
+      ctx.openPalette();
       return true;
     },
   },

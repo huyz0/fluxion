@@ -35,6 +35,9 @@ export function applyField(view: ReadView, ids: readonly RecordId[], path: reado
 export function applyOverrides(base: readonly KeyBinding[], overrides: KeyOverrides): readonly KeyBinding[];
 
 // @public
+export function ariaShortcuts(base: readonly KeyBinding[], overrides: KeyOverrides, action: PaletteAction, mac?: boolean): string | undefined;
+
+// @public
 export type AssetStore = {
     set(id: RecordId, dataUrl: string): void;
     url(id: RecordId): string | undefined;
@@ -228,6 +231,7 @@ export const EDITOR_COMMANDS: readonly EditorCommand[];
 export type EditorCommand = {
     readonly id: string;
     readonly title: string;
+    readonly when?: string;
     run(ctx: EditorCommandCtx, args?: unknown): boolean;
 };
 
@@ -239,6 +243,7 @@ export type EditorCommandCtx = {
     readonly canvas?: CommandCanvas;
     switchMode?(): void;
     openHelp?(): void;
+    openPalette?(): void;
     restoreView?(meta: unknown): void;
     readonly clipboard?: Clipboard_2;
     readonly assets?: AssetStore;
@@ -255,6 +260,8 @@ export type EditorKeysInput = {
     readonly switchMode?: (() => void) | undefined;
     readonly overrides?: KeyOverrides | undefined;
     readonly openHelp?: (() => void) | undefined;
+    readonly openPalette?: (() => void) | undefined;
+    readonly commands?: readonly EditorCommand[] | undefined;
     readonly restoreView?: ((meta: unknown) => void) | undefined;
     readonly clipboard?: Clipboard_2 | undefined;
     readonly assets?: AssetStore | undefined;
@@ -274,6 +281,7 @@ export type EditorRootProps = {
     readonly tools?: Registry<string, Tool>;
     readonly random?: Random;
     readonly assets?: AssetStore;
+    readonly commands?: readonly EditorCommand[];
 };
 
 // @public
@@ -292,6 +300,9 @@ export function endDrop(view: ReadView, shapeDefs: {
 
 // @public
 export type Execute = (id: string, args: unknown, options?: CommandTxOptions) => Result<unknown, CommandFailure>;
+
+// @public
+export function filterEntries(entries: readonly PaletteEntry[], query: string): readonly PaletteEntry[];
 
 // @public
 export const FIT_PADDING = 32;
@@ -325,6 +336,9 @@ export const FREEHAND_STEP_PX = 2;
 
 // @public
 export function freehandTool(): Tool;
+
+// @public
+export function fuzzyScore(query: string, text: string): number | undefined;
 
 // @public
 export function groupTitle(g: Pick<KeyGroup, "command" | "args">, titleOf: (command: string) => string | undefined, toolTitle: (id: string) => string | undefined): string;
@@ -509,6 +523,30 @@ export function nudgeSelection(ctx: ToolCtx, d: Vec2): boolean;
 
 // @public
 export function pageToScreen(camera: Camera, p: Vec2): Vec2;
+
+// @public
+export type PaletteAction = Pick<KeyBinding, "command" | "args">;
+
+// @public
+export function paletteEntries(source: PaletteSource): readonly PaletteEntry[];
+
+// @public
+export type PaletteEntry = {
+    readonly id: string;
+    readonly command: string;
+    readonly args?: unknown;
+    readonly title: string;
+    readonly keys: readonly string[];
+};
+
+// @public
+export type PaletteSource = {
+    readonly commands: readonly EditorCommand[];
+    readonly base: readonly KeyBinding[];
+    readonly overrides: KeyOverrides;
+    readonly flags: ReadonlySet<string>;
+    readonly toolTitle: (id: string) => string | undefined;
+};
 
 // @public
 export function panBy(camera: Camera, d: Vec2): Camera;
@@ -741,6 +779,9 @@ export const shapeMaker: (defId?: string) => ElementMaker;
 
 // @public
 export const shapeTool: (defId?: string) => Tool;
+
+// @public
+export function shortcutsOf(base: readonly KeyBinding[], overrides: KeyOverrides, action: PaletteAction, mac?: boolean): readonly string[];
 
 // @public
 export function shownScreen(view: ReadView, wanted: RecordId | undefined): RecordId | undefined;

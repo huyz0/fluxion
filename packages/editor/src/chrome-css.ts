@@ -64,6 +64,12 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 4px; min-width: 240px; padding: 12px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2); }
 .fx-chrome-screens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .fx-chrome-keymap { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
+.fx-chrome-palette { min-width: 360px; max-width: 90vw; }
+.fx-chrome-palette-list { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow: auto; display: flex; flex-direction: column; }
+.fx-chrome-palette-item { display: flex; justify-content: space-between; gap: 16px; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+.fx-chrome-palette-item[aria-selected="true"] { background: var(--ui-accent); color: var(--ui-panel); }
+.fx-chrome-palette-empty { padding: 6px 8px; opacity: 0.7; }
+.fx-chrome-kbd { font: inherit; opacity: 0.8; }
 .fx-chrome-keys { border-collapse: collapse; }
 .fx-chrome-keys .fx-chrome-cell { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--ui-border); font-weight: normal; }
 .fx-chrome-picker .fx-chrome-button { font: inherit; color: inherit; text-align: left; padding: 6px 8px; border: 1px solid var(--ui-border); border-radius: 4px; background: transparent; cursor: pointer; }
