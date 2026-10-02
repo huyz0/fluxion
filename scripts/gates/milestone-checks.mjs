@@ -322,6 +322,7 @@ export const BENCH_COMMANDS = [
   'connector.freeEnd',
   'element.group',
   'element.ungroup',
+  'element.align',
   'document.update',
   'asset.create',
 ];

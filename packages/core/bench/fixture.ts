@@ -136,6 +136,8 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
     // two siblings of screen 5 grouped, and the fixture's group dissolved
     'element.group': { ids: [shapes[1300], shapes[1301]], groupId: 'BenchNewGroup0001' },
     'element.ungroup': { ids: [BENCH_GROUP] },
+    // two shapes of screen 5 aligned by their left edges
+    'element.align': { ids: [shapes[1400], shapes[1401]], mode: 'left', to: 'selection' },
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
     'asset.create': { asset: { id: 'BenchNewAsset0001', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'bench.png' } },
@@ -156,6 +158,7 @@ export const COMMANDS = [
   'connector.freeEnd',
   'element.group',
   'element.ungroup',
+  'element.align',
   'document.update',
   'asset.create',
 ] as const;
