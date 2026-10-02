@@ -66,6 +66,17 @@ leg('ADR-0021 screen sections and the library search index is accepted', () => {
   return /^status:\s*accepted\s*$/m.test(text) || `${file} is not accepted`;
 });
 
+leg('ADR-0151 the group model is accepted and FR-ARR-001 says what is built', () => {
+  const dir = 'docs/architecture/decisions';
+  const file = run('git', ['ls-files', '--cached', '--others', '--exclude-standard', dir])
+    .stdout.split(/\r?\n/)
+    .find((f) => f.startsWith(`${dir}/ADR-0151-`));
+  if (!file) return `no ADR-0151 in ${dir}`;
+  if (!/^status:\s*accepted\s*$/m.test(readText(file))) return `${file} is not accepted`;
+  const req = readText('docs/requirements/13-layout-and-arrange.md');
+  return /FR-ARR-001[^\n]*bounds of its members/.test(req) || 'FR-ARR-001 does not say a group is the bounds of its members';
+});
+
 // ── arranging: groups, align, distribute, z-order (plan rows 2-6) ───────────────────────────────────
 leg('group then ungroup restores the children; connectors stay bound (T0 property)', () =>
   titled([

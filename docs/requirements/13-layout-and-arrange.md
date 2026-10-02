@@ -25,7 +25,7 @@ Areas: `LAY` (auto layout), `ARR` (arrange: group, align, distribute, snap, z-or
 
 | ID | Pri | Inc | Requirement | Acceptance criteria |
 |---|---|---|---|---|
-| FR-ARR-001 | M | R1 | Group/ungroup (nested groups); group transforms apply to children; enter group to edit child (double-click). | Group move/resize/rotate; child editing. |
+| FR-ARR-001 | M | R1 | Group/ungroup (nested groups); a group's box is the bounds of its members, and moving, resizing or rotating the group transforms its members (ADR-0151); enter group to edit child (double-click). | Group move/resize/rotate; child editing. |
 | FR-ARR-002 | M | R1 | Align selection: left, center, right, top, middle, bottom — relative to selection, key object, or screen. | Unit tests per mode. |
 | FR-ARR-003 | M | R1 | Distribute: horizontal/vertical by spacing or centers; tidy to equal gaps. | Unit tests. |
 | FR-ARR-004 | M | R1 | Z-order: bring to front/forward, send backward/to back; fractional index ordering. | Order persists; minimal record changes. |
