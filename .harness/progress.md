@@ -1451,3 +1451,7 @@ M8 planned: 24 rows, a 34-leg red gate (m8-complete.mjs; 6 legs green at start: 
 ## 2026-10-02 M8.3 M8.4 M8.25 (claude)
 
 M8.3: ADR-0021 (section records, schema 1.1 with a migration clearing dangling sectionId values; an own prefix/keyword library index). M8.4: element.group/ungroup in core (members keep screen coordinates, so only parentId, the container and the sibling order change); helpers moved to command-helpers.ts; property tests in core and routing; review found test gaps (non-root parents, z-order), closed with mutants checked. A flaky determinism generator found while committing became M8.25 (a guaranteed example). The review round cap made two follow-ups separate tasks (M8.24, M8.25) instead of a 4th round.
+
+## 2026-10-02 M8.5 (claude)
+
+Groups in the editor: Ctrl+G / Ctrl+Shift+G, double-click enters a group (dashed outline, a click picks within it, Esc leaves one level), and the move/resize/rotate machinery already carried members. The first review of a smaller version (hash 7b75063a, not recorded: restaged before recording) found the real gap: a member edited alone left the group's box stale. The fix is a core integrity hook, core:5-group-bounds, refitting the groups above any changed member in the same transaction; a second review round (recorded as r1 pass, r2 pass with two minors fixed) then passed. The E2E passes on chromium only here (firefox and webkit run in CI/desktop).
