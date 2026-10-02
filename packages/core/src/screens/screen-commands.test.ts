@@ -10,6 +10,8 @@ import { nextVisibleScreen } from './screen-order.js';
 
 type Rec = Record<string, unknown>;
 
+const NOTES = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Say hello' }] }] };
+
 /** Three screens; the first holds two shapes joined by a connector (a binding at each end) and a slugged shape. */
 function setup() {
   const b = documentBuilder({ seed: 211 });
@@ -42,6 +44,7 @@ describe('screen commands (FR-SCR-002)', () => {
     const steps: ReadonlyArray<readonly [string, unknown]> = [
       ['screen.create', { screen: { id: 'NewScreenAAAA0001', type: 'screen', index: 'a0' } }],
       ['screen.rename', { id: t.second, name: 'renamed' }],
+      ['screen.setNotes', { id: t.second, notes: NOTES }],
       ['screen.setFormat', { id: t.second, format: { kind: 'fixed', size: { w: 1600, h: 1200 } } }],
       ['screen.setHidden', { id: t.second, hidden: true }],
       ['screen.reorder', { id: t.third, after: t.first }],
@@ -168,5 +171,20 @@ describe('screen commands (FR-SCR-002)', () => {
     // a size must be positive, and only a screen has a format
     expect(t.run('screen.setFormat', { id: t.first, format: { kind: 'fixed', size: { w: 0, h: 10 } } }).ok).toBe(false);
     expect(t.run('screen.setFormat', { id: t.left, format: { kind: 'fixed', size: { w: 10, h: 10 } } }).ok).toBe(false);
+  });
+
+  it('FR-SCR-006: speaker notes are set on a screen and removed again, and only a screen has them', () => {
+    const t = setup();
+    expect(t.run('screen.setNotes', { id: t.first, notes: NOTES }).ok).toBe(true);
+    expect(t.get(t.first)['notes']).toEqual(NOTES);
+    expect(t.run('screen.setNotes', { id: t.first }).ok).toBe(true);
+    expect('notes' in t.get(t.first)).toBe(false);
+    t.store.history.undo();
+    expect(t.get(t.first)['notes']).toEqual(NOTES);
+    expect(t.run('screen.setNotes', { id: t.left, notes: NOTES }).ok).toBe(false);
+    // something that is not a rich-text document is refused whole
+    expect(t.run('screen.setNotes', { id: t.first, notes: { type: 'paragraph', content: [] } }).ok).toBe(false);
+    expect(t.run('screen.setNotes', { id: t.first, notes: 'text' }).ok).toBe(false);
+    expect(t.get(t.first)['notes']).toEqual(NOTES);
   });
 });

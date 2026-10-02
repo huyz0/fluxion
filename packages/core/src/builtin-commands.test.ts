@@ -60,6 +60,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'screen.reorder',
       'screen.setFormat',
       'screen.setHidden',
+      'screen.setNotes',
       'screen.setSection',
       'section.create',
       'section.delete',

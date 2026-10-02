@@ -41,7 +41,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-003 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.navigator.spec.ts` +3 |
 | FR-SCR-004 | S | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.sections.spec.ts` +3 |
 | FR-SCR-005 | S | R3 | M19 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-SCR-006 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-SCR-006 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.notes.spec.ts` +2 |
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |

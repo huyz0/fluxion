@@ -5,6 +5,7 @@ import { useValue } from '@fluxion/render';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { InspectorFields, type InspectorFieldsProps } from './inspector.js';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
+import { NotesPanel, type NotesPanelProps } from './notes-panel.js';
 import { ProblemsTab, type ProblemsTabProps } from './problems-tab.js';
 import { ScreensTab, type ScreensTabProps } from './screens-tab.js';
 import type { Session } from './session.js';
@@ -49,6 +50,7 @@ const TABS = [
   { name: 'Library', text: 'Shapes and components will be listed here.' },
   { name: 'Layers', text: 'The layers of this screen will be listed here.' },
   { name: 'Problems', text: 'The problems of this document will be listed here.' },
+  { name: 'Notes', text: 'The speaker notes of this screen will be written here.' },
 ] as const;
 
 /** The next tab index after `key` from `i` (arrows wrap; Home and End), or undefined. */
@@ -68,6 +70,8 @@ export type LeftTabsProps = {
   readonly screens?: ScreensTabProps | undefined;
   /** The document, session and command runner the Problems tab lists problems of; without them it is a placeholder. */
   readonly problems?: ProblemsTabProps | undefined;
+  /** The document, command runner and shown screen the Notes tab edits the notes of; without them it is a placeholder. */
+  readonly notes?: NotesPanelProps | undefined;
 };
 
 /** The left panel's tabs (the WAI-ARIA tabs pattern, activated on focus). */
@@ -104,7 +108,10 @@ export function LeftTabs(props: LeftTabsProps = {}): ReactNode {
       <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${selected}`}>
         {tab.name === 'Screens' && props.screens !== undefined ? <ScreensTab {...props.screens} /> : null}
         {tab.name === 'Problems' && props.problems !== undefined ? <ProblemsTab {...props.problems} /> : null}
-        {(tab.name === 'Screens' && props.screens !== undefined) || (tab.name === 'Problems' && props.problems !== undefined) ? null : (
+        {tab.name === 'Notes' && props.notes !== undefined ? <NotesPanel {...props.notes} /> : null}
+        {(tab.name === 'Screens' && props.screens !== undefined) ||
+        (tab.name === 'Problems' && props.problems !== undefined) ||
+        (tab.name === 'Notes' && props.notes !== undefined) ? null : (
           <p className="fx-chrome-placeholder">{tab.text}</p>
         )}
       </div>

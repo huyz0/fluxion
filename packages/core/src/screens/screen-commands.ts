@@ -55,6 +55,15 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
       write(ctx, 'screen.setHidden', (tx) => tx.patch(args.id as RecordId, { hidden: args.hidden ? true : undefined })),
   }),
   defineCommand({
+    id: 'screen.setNotes',
+    title: title('screen.setNotes', 'Set speaker notes'),
+    // `notes` absent: the screen has none (the field is removed, not written empty)
+    args: z.object({ id, notes: z.looseObject({ type: z.literal('doc'), content: z.array(z.unknown()) }).optional() }),
+    run: (ctx, args) =>
+      checkIds(ctx, 'screen.setNotes', 'screen', [[['id'], args.id]]) ??
+      write(ctx, 'screen.setNotes', (tx) => tx.patch(args.id as RecordId, { notes: args.notes })),
+  }),
+  defineCommand({
     id: 'screen.setFormat',
     title: title('screen.setFormat', 'Set screen format'),
     // a fixed screen of a size (a preset or custom), or an infinite one shown through a viewport; elements stay where they are

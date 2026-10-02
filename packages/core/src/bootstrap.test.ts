@@ -93,6 +93,7 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'section.reorder': () => ({ id: pick('section') }),
     'section.delete': () => ({ id: pick('section') }),
     'screen.setSection': () => ({ id: screen, sectionId: pick('section') }),
+    'screen.setNotes': () => ({ id: screen, notes: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: `n${op.value}` }] }] } }),
     'screen.setHidden': () => ({ id: screen, hidden: op.value % 2 === 1 }),
     'screen.duplicate': () => ({ id: screen, newId: newId(n + 700), ids: Object.fromEntries(shapes().map((x, k) => [x, newId(n + 800 + k)])) }),
     'binding.set': () => ({
@@ -156,6 +157,7 @@ const GROUP_THEN_UNGROUP: Op[] = [
   { command: 'element.zOrder', pick: 0, value: 1 },
   { command: 'screen.rename', pick: 0, value: 1 },
   { command: 'screen.setFormat', pick: 0, value: 1 },
+  { command: 'screen.setNotes', pick: 0, value: 1 },
   { command: 'screen.setHidden', pick: 0, value: 1 },
   { command: 'screen.duplicate', pick: 0, value: 1 },
 ];
@@ -205,7 +207,7 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
     // the guaranteed example really commits both of its ops
     expect(new Set(play(MISC_EXAMPLE, MISC_OPS).results)).toEqual(new Set(['ok']));
     expect(new Set(play(SECTION_EXAMPLE, SECTION_OPS).results)).toEqual(new Set(['ok']));
-    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
+    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
     let committed = 0;
     const committedBy = new Set<string>();
     fc.assert(

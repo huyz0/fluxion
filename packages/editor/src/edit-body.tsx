@@ -42,7 +42,14 @@ export function EditBody(props: EditBodyProps): ReactNode {
   const { onMenu, menu } = useCanvasMenu({ ...menus, tools, area });
   return (
     <div className="fx-chrome-body">
-      {panel('left', <LeftTabs screens={{ store, session, shown: screenId, registries, execute, newId }} problems={{ store, session, execute }} />)}
+      {panel(
+        'left',
+        <LeftTabs
+          screens={{ store, session, shown: screenId, registries, execute, newId }}
+          problems={{ store, session, execute }}
+          notes={{ store, execute, screenId }}
+        />,
+      )}
       {splitter('left')}
       <div className="fx-chrome-center">
         <Canvas
