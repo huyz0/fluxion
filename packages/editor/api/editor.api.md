@@ -50,6 +50,9 @@ export function assignKey(base: readonly KeyBinding[], overrides: KeyOverrides, 
 export const bindingId: (b: Pick<KeyBinding, "command" | "args">) => string;
 
 // @public
+export function buildLibraryIndex(entries: readonly LibraryEntry[]): LibraryIndex;
+
+// @public
 export type Camera = {
     readonly x: number;
     readonly y: number;
@@ -299,6 +302,9 @@ export function endDrop(view: ReadView, shapeDefs: {
 }): readonly ParamCommand[];
 
 // @public
+export function entryOf(def: ShapeDef): LibraryEntry;
+
+// @public
 export type Execute = (id: string, args: unknown, options?: CommandTxOptions) => Result<unknown, CommandFailure>;
 
 // @public
@@ -476,6 +482,21 @@ export function laserTool(): Tool;
 
 // @public
 export const LAYOUT_KEY = "fluxion.editor.layout.v1";
+
+// @public
+export type LibraryEntry = {
+    readonly id: string;
+    readonly name: string;
+    readonly pack: string;
+    readonly category: string;
+    readonly keywords: readonly string[];
+};
+
+// @public
+export type LibraryIndex = {
+    search(query: string): readonly LibraryEntry[];
+    readonly size: number;
+};
 
 // @public
 export type Link = {
@@ -921,6 +942,9 @@ export const textMaker: ElementMaker;
 
 // @public
 export const textTool: () => Tool;
+
+// @public
+export function tokensOf(text: string): string[];
 
 // @public
 export type Tool = {
