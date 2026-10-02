@@ -54,6 +54,10 @@ describe('keymap (FR-EDT-012)', () => {
       [press('ArrowDown', { shift: true }), 'selection.nudge', { dx: 0, dy: 10 }],
       [press('a', { mod: true }), 'selection.all'],
       [press('A', { mod: true, shift: true }), 'selection.all'],
+      [press(']', { mod: true }), 'selection.order.forward'],
+      [press('[', { mod: true }), 'selection.order.backward'],
+      [press('}', { mod: true, shift: true }), 'selection.order.front'],
+      [press('{', { mod: true, shift: true }), 'selection.order.back'],
       [press('F5'), 'mode.present'],
       [press('F5', { shift: true }), 'mode.toggle'],
     ];

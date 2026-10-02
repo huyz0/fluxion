@@ -174,6 +174,13 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   { key: 'mod+d', command: 'clipboard.duplicate', when: 'edit' },
   { key: 'mod+g', command: 'selection.group', when: 'edit' },
   { key: 'mod+shift+g', command: 'selection.ungroup', when: 'edit' },
+  { key: 'mod+]', command: 'selection.order.forward', when: 'edit' },
+  { key: 'mod+[', command: 'selection.order.backward', when: 'edit' },
+  // shift types the brace on a US layout: the symbol is the key (see resolveKey), so both spellings
+  { key: 'mod+shift+]', command: 'selection.order.front', when: 'edit' },
+  { key: 'mod+}', command: 'selection.order.front', when: 'edit' },
+  { key: 'mod+shift+[', command: 'selection.order.back', when: 'edit' },
+  { key: 'mod+{', command: 'selection.order.back', when: 'edit' },
   { key: 'enter', command: 'text.edit', when: 'edit' },
   { key: 'f2', command: 'text.edit', when: 'edit' },
   { key: 'delete', command: 'selection.delete', when: 'edit' },

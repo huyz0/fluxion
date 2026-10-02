@@ -35,6 +35,10 @@ where each shortcut can be changed; changes are kept in your settings.
 | Duplicate | `Ctrl+D` |
 | Group | `Ctrl+G` |
 | Ungroup | `Ctrl+Shift+G` |
+| Bring forward | `Ctrl+]` |
+| Send backward | `Ctrl+[` |
+| Bring to front | `Ctrl+Shift+]`, `Ctrl+}` |
+| Send to back | `Ctrl+Shift+[`, `Ctrl+{` |
 | Edit the text | `Enter`, `F2` |
 | Delete the selection | `Delete`, `Backspace` |
 | Keyboard shortcuts | `?` |

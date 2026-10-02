@@ -2,6 +2,7 @@
 // list of editor commands. Pure: the menu component (context-menu.tsx) shows it.
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
+import { ALIGN_MODES, DISTRIBUTE_AXES, ORDER_MOVES } from './arrange-edit.js';
 import type { EditorCommand } from './editor-commands.js';
 
 /**
@@ -23,9 +24,27 @@ export type MenuItem = {
   readonly title: string;
 };
 
+/** The Arrange lines of the element menu: align, distribute and order. */
+const ARRANGE = [
+  ...ALIGN_MODES.map(([m]) => `selection.align.${m}`),
+  ...DISTRIBUTE_AXES.map(([a]) => `selection.distribute.${a}`),
+  ...ORDER_MOVES.map(([t]) => `selection.order.${t}`),
+];
+
 /** The commands of each menu, in order. */
 const MENUS: { readonly [T in MenuTarget]: readonly string[] } = {
-  element: ['clipboard.cut', 'clipboard.copy', 'clipboard.duplicate', 'selection.delete', 'selection.sameType', 'selection.sameStyle'],
+  element: [
+    'clipboard.cut',
+    'clipboard.copy',
+    'clipboard.duplicate',
+    'selection.delete',
+    'selection.sameType',
+    'selection.sameStyle',
+    'selection.group',
+    'selection.ungroup',
+    // the Arrange lines (M8.26)
+    ...ARRANGE,
+  ],
   screen: ['clipboard.paste', 'selection.all', 'camera.fitScreen'],
   canvas: ['clipboard.paste', 'camera.fitScreen', 'camera.zoom100'],
 };

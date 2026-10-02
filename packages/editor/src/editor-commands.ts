@@ -4,6 +4,7 @@
 // `execute`, or act on the session (camera, tool, selection, mode). Each returns whether it acted, so
 // a key it declines stays the tools' (or the browser's).
 
+import { ALIGN_MODES, alignSelection, DISTRIBUTE_AXES, distributeSelection, ORDER_MOVES, orderSelection } from './arrange-edit.js';
 import type { AssetStore } from './asset-store.js';
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
@@ -209,6 +210,19 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   { id: 'tool.escape', title: 'Cancel', run: (ctx) => (selectIdle(ctx) && exitGroup(ctx.tools.ctx)) || ctx.tools.escape() },
   { id: 'selection.group', title: 'Group', run: (ctx) => selectIdle(ctx) && groupSelection(ctx.tools.ctx) },
   { id: 'selection.ungroup', title: 'Ungroup', run: (ctx) => selectIdle(ctx) && ungroupSelection(ctx.tools.ctx) },
+  ...ALIGN_MODES.map(
+    ([mode, title]): EditorCommand => ({ id: `selection.align.${mode}`, title, run: (ctx) => selectIdle(ctx) && alignSelection(ctx.tools.ctx, mode) }),
+  ),
+  ...DISTRIBUTE_AXES.map(
+    ([axis, title]): EditorCommand => ({
+      id: `selection.distribute.${axis}`,
+      title,
+      run: (ctx) => selectIdle(ctx) && distributeSelection(ctx.tools.ctx, axis),
+    }),
+  ),
+  ...ORDER_MOVES.map(
+    ([to, title]): EditorCommand => ({ id: `selection.order.${to}`, title, run: (ctx) => selectIdle(ctx) && orderSelection(ctx.tools.ctx, to) }),
+  ),
   {
     id: 'tool.use',
     title: 'Use a tool',

@@ -21,14 +21,38 @@ describe('context menu model (FR-EDT-013)', () => {
   it('FR-EDT-013: each menu lists editor commands by their titles, and leaves out what is not registered', () => {
     const titles = (target: 'element' | 'screen' | 'canvas', commands: readonly EditorCommand[] = EDITOR_COMMANDS) =>
       menuItems(target, commands).map((i) => i.title);
-    expect(titles('element')).toEqual(['Cut', 'Copy', 'Duplicate', 'Delete the selection', 'Select same type', 'Select same style']);
+    expect(titles('element')).toEqual([
+      'Cut',
+      'Copy',
+      'Duplicate',
+      'Delete the selection',
+      'Select same type',
+      'Select same style',
+      'Group',
+      'Ungroup',
+      // the Arrange lines (M8.26)
+      'Align left',
+      'Align centre',
+      'Align right',
+      'Align top',
+      'Align middle',
+      'Align bottom',
+      'Distribute horizontally',
+      'Distribute vertically',
+      'Bring to front',
+      'Bring forward',
+      'Send backward',
+      'Send to back',
+    ]);
     expect(titles('screen')).toEqual(['Paste', 'Select all', 'Zoom to fit the screen']);
     expect(titles('canvas')).toEqual(['Paste', 'Zoom to fit the screen', 'Zoom to 100 %']);
     expect(menuItems('screen', EDITOR_COMMANDS).map((i) => i.command)).toEqual(['clipboard.paste', 'selection.all', 'camera.fitScreen']);
     expect(
       titles(
         'element',
-        EDITOR_COMMANDS.filter((c) => c.id !== 'clipboard.cut' && c.id !== 'selection.sameType'),
+        EDITOR_COMMANDS.filter(
+          (c) => c.id === 'clipboard.copy' || c.id === 'clipboard.duplicate' || c.id === 'selection.delete' || c.id === 'selection.sameStyle',
+        ),
       ),
     ).toEqual(['Copy', 'Duplicate', 'Delete the selection', 'Select same style']);
     expect(titles('canvas', [])).toEqual([]);
