@@ -233,7 +233,7 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
     // the property exercised real commits of every built-in, not only refusals (M4 cp1 F7)
     expect(committed).toBeGreaterThan(0);
     expect([...committedBy].sort()).toEqual([...COMMANDS].sort());
-  });
+  }, 60_000); // a property over generated documents: a slow runner (macOS CI took over the 5 s default) needs room
 
   // toEqual on Maps ignores insertion order; the serialized form the property compares does not
   it('the determinism comparison sees diff entry order', () => {
