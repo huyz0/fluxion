@@ -40,7 +40,8 @@ export const test = base.extend<Fixtures>({
     await use(async () => {
       const { violations } = await new AxeBuilder({ page }).analyze();
       const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-      expect(serious.map((v) => v.id)).toEqual([]);
+      // each violation with the elements it names, so a failure on one engine says where to look
+      expect(serious.map((v) => `${v.id}: ${v.nodes.map((n) => `${n.target.join(' ')} ${n.any[0]?.message ?? ''}`).join(' | ')}`)).toEqual([]);
     });
   },
 });

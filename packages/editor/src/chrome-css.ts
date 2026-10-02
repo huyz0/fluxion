@@ -70,15 +70,17 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-screens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .fx-chrome-screen { display: flex; flex-direction: column; gap: 2px; padding: 2px; border-radius: 4px; }
 .fx-chrome-screen[data-dragging] { opacity: 0.4; }
-.fx-chrome-screen[data-hidden] .fx-chrome-screen-button { opacity: 0.55; }
+.fx-chrome-screen[data-hidden] .fx-chrome-screen-button { font-style: italic; }
 .fx-chrome-screen-button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
 .fx-chrome-notes-host { padding: 4px; }
 .fx-chrome-notes { min-height: 8em; padding: 6px; border: 1px solid var(--ui-border); border-radius: 4px; font: 13px/1.4 system-ui, sans-serif; outline: none; }
 .fx-chrome-notes:focus { border-color: var(--ui-accent); }
+.fx-chrome-panel .fx-chrome-button { font: inherit; color: var(--ui-text); padding: 4px 8px; border: 1px solid var(--ui-border); border-radius: 4px; background: var(--ui-panel); cursor: pointer; }
+.fx-chrome-panel .fx-chrome-button[aria-pressed="true"] { background: var(--ui-pressed); border-color: var(--ui-accent); }
 .fx-chrome-navigator-actions { display: flex; gap: 4px; margin-bottom: 4px; }
 .fx-chrome-section { padding: 2px; }
 .fx-chrome-section-button { width: 100%; text-align: left; font-weight: 600; }
-.fx-chrome-screen-format { font-size: 11px; opacity: 0.7; }
+.fx-chrome-screen-format { font-size: 11px; }
 .fx-chrome-thumbnail { position: relative; overflow: hidden; background: var(--ui-pressed); border: 1px solid var(--ui-border); border-radius: 2px; pointer-events: none; }
 .fx-chrome-rename { font: inherit; padding: 4px 6px; }
 .fx-chrome-keymap { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
