@@ -1,7 +1,7 @@
 {
   "milestone": "M7",
   "checkpoint": "final",
-  "range": "89fce3b~1..798b10f",
+  "range": "dcfa1914cc..c3a9ee3",
   "reviewer": "claude-subagent:milestone-reviewer",
   "verdict": "approve",
   "findings": [
@@ -111,7 +111,7 @@
   },
   "passes": [
     {
-      "range": "89fce3b~1..798b10f",
+      "range": "dcfa1914cc..c3a9ee3",
       "verdict": "changes-requested",
       "findings": [
         "F1",
@@ -124,7 +124,7 @@
       ]
     },
     {
-      "range": "89fce3b~1..337618c",
+      "range": "dcfa1914cc..c3a9ee3",
       "verdict": "approved",
       "findings": [],
       "note": "F1-F7 verified resolved (M7.37 b35eb9f; hand-offs 337618c; F5, F6 argued); no gate weakened, thresholds.mjs unchanged. The firefox, webkit and CI-evidence legs were not run in the review container."
