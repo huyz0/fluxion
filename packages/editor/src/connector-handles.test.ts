@@ -219,11 +219,15 @@ describe('connector handles (FR-CON-007)', () => {
     expect(plain?.args).toMatchObject({ anchor: { kind: 'named', name: 'n' } });
   });
 
-  it('FR-CON-007: dropped on nothing, a free end moves to the drop and a bound one stays', () => {
+  it('FR-CON-007: dropped on nothing, a free end moves to the drop and a bound one is freed there', () => {
     const { core, line } = setup();
     const newId = () => 'x' as RecordId;
-    expect(endDrop(core.store, defs, { connector: line, end: 'target', onto: undefined, at: { x: 1, y: 2 }, newId })).toEqual([]);
-    expect(endDrop(core.store, defs, { connector: line, end: 'source', onto: 'gone' as RecordId, at: { x: 1, y: 2 }, newId })).toEqual([]);
+    expect(endDrop(core.store, defs, { connector: line, end: 'target', onto: undefined, at: { x: 1, y: 2 }, newId })).toEqual([
+      { id: 'connector.freeEnd', args: { connectorId: line, end: 'target', at: { x: 1, y: 2 } } },
+    ]);
+    expect(endDrop(core.store, defs, { connector: line, end: 'source', onto: 'gone' as RecordId, at: { x: 1, y: 2 }, newId })).toEqual([
+      { id: 'connector.freeEnd', args: { connectorId: line, end: 'source', at: { x: 1, y: 2 } } },
+    ]);
     // a connector with a free end
     const b = documentBuilder({ seed: 19 });
     const s = b.screen();
@@ -232,7 +236,10 @@ describe('connector handles (FR-CON-007)', () => {
     const freeCore = createCore(b.build());
     const [move] = endDrop(freeCore.store, defs, { connector: free, end: 'target', onto: undefined, at: { x: 7, y: 8 }, newId });
     expect(move).toEqual({ id: 'element.update', args: { id: free, fields: { freeTarget: { x: 7, y: 8 } } } });
-    expect(endDrop(freeCore.store, defs, { connector: free, end: 'source', onto: undefined, at: { x: 7, y: 8 }, newId })).toEqual([]);
+    // its source is bound to the rectangle: dropped on nothing it is freed there
+    expect(endDrop(freeCore.store, defs, { connector: free, end: 'source', onto: undefined, at: { x: 7, y: 8 }, newId })).toEqual([
+      { id: 'connector.freeEnd', args: { connectorId: free, end: 'source', at: { x: 7, y: 8 } } },
+    ]);
   });
 });
 

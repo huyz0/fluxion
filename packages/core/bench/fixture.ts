@@ -104,6 +104,7 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
     'screen.delete': { id: screens[7] },
     'screen.reorder': { id: screens[2], after: screens[8] },
     'binding.set': { id: 'BenchNewBinding01', connectorId: lines[500], end: 'target', elementId: shapes[2400], anchor: { kind: 'auto' } },
+    'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
     'asset.create': { asset: { id: 'BenchNewAsset0001', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'bench.png' } },
   };
@@ -120,6 +121,7 @@ export const COMMANDS = [
   'screen.delete',
   'screen.reorder',
   'binding.set',
+  'connector.freeEnd',
   'document.update',
   'asset.create',
 ] as const;

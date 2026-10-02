@@ -194,7 +194,7 @@ function anchorNames(element: ShapeElement | undefined, def: ShapeDef | undefine
 /**
  * The commands that drop the `end` of the connector `id` at page point `p` on the element `onto` (if any), in the
  * order to run them as one undo step: bind to `onto` at its anchor nearest `p`; with no element, move a free end to
- * `p`, and leave a bound one where it is (none).
+ * `p`, and let a bound one go there (`connector.freeEnd`: dragged away from its shape).
  *
  * @public
  */
@@ -216,7 +216,9 @@ export function endDrop(
     return r?.type === 'binding' && r.connectorId === connector && r.end === end;
   });
   if (target?.transform === undefined || onto === undefined) {
-    return bound ? [] : [{ id: 'element.update', args: { id: connector, fields: { [end === 'source' ? 'freeSource' : 'freeTarget']: at } } }];
+    return bound
+      ? [{ id: 'connector.freeEnd', args: { connectorId: connector, end, at } }]
+      : [{ id: 'element.update', args: { id: connector, fields: { [end === 'source' ? 'freeSource' : 'freeTarget']: at } } }];
   }
   // only a shape has a definition with anchors of its own
   const shape = typeof (target as { defId?: unknown }).defId === 'string' ? target : undefined;

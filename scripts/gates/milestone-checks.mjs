@@ -319,6 +319,7 @@ export const BENCH_COMMANDS = [
   'screen.delete',
   'screen.reorder',
   'binding.set',
+  'connector.freeEnd',
   'document.update',
   'asset.create',
 ];
