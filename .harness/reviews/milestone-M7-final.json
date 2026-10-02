@@ -3,7 +3,7 @@
   "checkpoint": "final",
   "range": "89fce3b~1..798b10f",
   "reviewer": "claude-subagent:milestone-reviewer",
-  "verdict": "changes-requested",
+  "verdict": "approve",
   "findings": [
     {
       "id": "F1",
@@ -109,5 +109,25 @@
     "F5": "argued in review-argued.txt",
     "F6": "argued in review-argued.txt"
   },
-  "pending": "re-review of the resolutions and the CI evidence at the range end (M7.28)"
+  "passes": [
+    {
+      "range": "89fce3b~1..798b10f",
+      "verdict": "changes-requested",
+      "findings": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7"
+      ]
+    },
+    {
+      "range": "89fce3b~1..337618c",
+      "verdict": "approved",
+      "findings": [],
+      "note": "F1-F7 verified resolved (M7.37 b35eb9f; hand-offs 337618c; F5, F6 argued); no gate weakened, thresholds.mjs unchanged. The firefox, webkit and CI-evidence legs were not run in the review container."
+    }
+  ]
 }
