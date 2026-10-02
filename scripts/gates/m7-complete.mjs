@@ -189,7 +189,17 @@ leg('context menus with select same type and style, desktop and touch (context-m
   const desktop = e2e(['e2e/context-menu.element.spec.ts'], DESKTOP);
   return desktop === true ? e2e(['e2e/context-menu.element.spec.ts'], MOBILE) : desktop;
 });
-leg('the validation panel lists a dangling binding and fixes it (validation.fix-broken-ref)', () => e2e(['e2e/validation.fix-broken-ref.spec.ts'], DESKTOP));
+// the E2E drives the reachable problem (two stacked shapes); a dangling binding cannot be made through the UI, so its
+// fix is pinned by the T0 and T1 tests by title (M7 final F1)
+leg('the Problems tab lists a problem and Fix mends it in one undo step; a dangling binding is freed (validation.fix-broken-ref, T0, T1)', () => {
+  const ui = e2e(['e2e/validation.fix-broken-ref.spec.ts'], DESKTOP);
+  return ui === true
+    ? titled([
+        ['M7.26', 'FR-EDT-021: a binding to an element that is gone is a problem, and its fix frees the end it held', EDITOR],
+        browser('M7.26', 'FR-EDT-021: a binding to a missing element is listed and Free the end runs the command and clears the problem'),
+      ])
+    : ui;
+});
 
 // ── performance, shared with every editor gate (M6 final F4) ────────────────────────────────────────
 editorPerfLegs(leg, { thresholdSpec });

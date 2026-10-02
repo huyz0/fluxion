@@ -65,11 +65,16 @@ describe('staged ladder scope (NFR-DX-002)', () => {
 
   it('NFR-DX-002: a doc, an e2e spec or a gate script runs the files that read it, not every file', () => {
     const only = (names) => ALL.filter((f) => names.some((n) => f.endsWith(`/${n}.test.mjs`)));
-    assert.deepEqual(harnessFiles(['docs/standards/ci-cd.md'], ALL), only(DOCS_HARNESS));
+    // literal names, not the exported constants: widening a constant must fail here (M7 final F7)
+    assert.deepEqual(harnessFiles(['docs/standards/ci-cd.md'], ALL), only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace']));
     // a doc some harness file reads by name also runs that file (F1, F2 of the M7.32 review)
-    assert.deepEqual(harnessFiles(['docs/harness/dry-runs.md'], ALL), only([...DOCS_HARNESS, 'kits']));
-    assert.deepEqual(harnessFiles(['docs/architecture/01-overview.md'], ALL), only([...DOCS_HARNESS, 'layering']));
-    assert.deepEqual(harnessFiles(['e2e/x.spec.ts'], ALL), only(E2E_HARNESS));
+    assert.deepEqual(harnessFiles(['docs/harness/dry-runs.md'], ALL), only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace', 'kits']));
+    assert.deepEqual(
+      harnessFiles(['docs/architecture/01-overview.md'], ALL),
+      only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace', 'layering']),
+    );
+    assert.deepEqual(harnessFiles(['e2e/x.spec.ts'], ALL), only(['trace', 'workspace-shape']));
+    assert.deepEqual(harnessFiles(['scripts/gates/milestone-checks.mjs'], ALL), only(['bench-leg', 'kits', 'ladder-scope', 'milestone-checks', 'verify-leg']));
     for (const [path, names] of Object.entries(GATE_SCRIPT_HARNESS)) assert.deepEqual(harnessFiles([path], ALL), only(names), path);
     assert.deepEqual(harnessFiles(['tests/harness/drift.test.mjs'], ALL), only(['drift']));
     assert.deepEqual(harnessFiles(['tests/harness/helpers.mjs'], ALL), ALL);
