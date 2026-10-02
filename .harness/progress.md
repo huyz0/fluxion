@@ -1467,3 +1467,7 @@ Pure snapping engine (editor/src/snap): edges/centres, midway and repeated-gap p
 ## 2026-10-02 M8.10 (claude)
 
 Select-tool drags snap (selection bounds vs other elements and the screen; Alt after the press or Ctrl/Cmd bypass; Alt at the press stays duplicate), session.guides/session.snap signals, overlay guides with gap labels, Snapping toolbar toggle persisted under fluxion.editor.snap.v1. Round 1 (unrecorded, changes-requested): duplicate React keys for alike guides (now merged in snapBox, keyed with distance) and no label test (overlay browser test). Round 2 pass recorded as r1.
+
+## 2026-10-02 M8.11 (claude)
+
+screen.rename, screen.setHidden, screen.duplicate (elements + bindings between them under caller ids, slugs dropped; timelines/interactions left to the animation milestone) and core nextVisibleScreen; screen ordering moved to core/screens/screen-order.ts and shared by reorder and duplicate. Review pass in round 1.
