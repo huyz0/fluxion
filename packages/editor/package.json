@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@fluxion/core": "workspace:*",
+    "@fluxion/format": "workspace:*",
     "@fluxion/geometry": "workspace:*",
     "@fluxion/player": "workspace:*",
     "@fluxion/render": "workspace:*",

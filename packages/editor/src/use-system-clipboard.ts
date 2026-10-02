@@ -8,6 +8,8 @@ import type { Clipboard } from './clipboard.js';
 import { readAsync, readFromEvent, writeAsync, writeToEvent } from './clipboard-dom.js';
 import { isEditable } from './editor-keys.js';
 import type { Session } from './session.js';
+import type { SystemItem } from './system-paste.js';
+import { pastedKind, readSystemItem } from './system-paste-dom.js';
 
 /** What the hook reads. */
 export type SystemClipboardInput = {
@@ -19,6 +21,8 @@ export type SystemClipboardInput = {
   readonly run: (command: string) => boolean;
   /** A dialog is open: the events are not the editor's. */
   readonly paused: boolean;
+  /** Place something pasted that is not Fluxion's (an image, an SVG, text) in the document. */
+  readonly place: (item: SystemItem) => void;
 };
 
 /** The menu commands: copy, cut and paste through the async Clipboard API. */
@@ -33,7 +37,7 @@ export type SystemClipboardCommands = {
 
 /** Listen for the clipboard events while mounted; the menu commands over the async API. */
 export function useSystemClipboard(input: SystemClipboardInput): SystemClipboardCommands {
-  const { clipboard, session, run, paused } = input;
+  const { clipboard, session, run, paused, place } = input;
   useEffect(() => {
     // not the editor's: a field's own copy and paste, a dialog, presenting
     const own = (e: ClipboardEvent) => !paused && e.clipboardData !== null && session.mode.get() === 'edit' && !isEditable(e.target);
@@ -46,12 +50,23 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
     const onCopy = out('clipboard.copy');
     const onCut = out('clipboard.cut');
     const onPaste = (e: ClipboardEvent) => {
-      const read = own(e) && e.clipboardData !== null ? readFromEvent(e.clipboardData) : undefined;
-      // a payload that fails validation is not used: the next representation is tried (images, SVG and text: M7.23)
-      if (read === undefined || !read.parsed.ok) return;
+      if (!own(e) || e.clipboardData === null) return;
+      const data = e.clipboardData;
+      const read = readFromEvent(data);
+      // a payload that fails validation is not used: the next representation is tried (ADR-0020), an image, an SVG, text
+      if (read?.parsed.ok === true) {
+        e.preventDefault();
+        clipboard.adopt(read.parsed.payload, read.json);
+        run('clipboard.paste');
+        return;
+      }
+      const kind = pastedKind(data);
+      if (kind === undefined) return;
+      // taken now, read after: a paste event ends with this handler, and the bytes of a file arrive later
       e.preventDefault();
-      clipboard.adopt(read.parsed.payload, read.json);
-      run('clipboard.paste');
+      void readSystemItem(data, kind).then((item) => {
+        if (item !== undefined) place(item);
+      });
     };
     window.addEventListener('copy', onCopy);
     window.addEventListener('cut', onCut);
@@ -61,7 +76,7 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
       window.removeEventListener('cut', onCut);
       window.removeEventListener('paste', onPaste);
     };
-  }, [clipboard, session, run, paused]);
+  }, [clipboard, session, run, paused, place]);
   // the last write was refused: the system clipboard holds something older, which a paste must not mistake for this copy
   const refused = useRef(false);
   const send = useCallback(

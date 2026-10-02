@@ -15,6 +15,8 @@ const SHARED = [
   'package.json',
   'tsconfig.base.json',
   'fixtures',
+  // the security corpus the sanitiser tests read (M7.23)
+  'specs/security',
   // the studio bundles the examples (M6.4)
   'examples',
 ];

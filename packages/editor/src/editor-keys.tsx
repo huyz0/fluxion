@@ -5,6 +5,7 @@
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useCallback, useEffect, useRef } from 'react';
+import type { AssetStore } from './asset-store.js';
 import type { Clipboard } from './clipboard.js';
 import { type CanvasSize, commandMap, dispatchKey, EDITOR_COMMANDS, type EditorCommandCtx } from './editor-commands.js';
 import { DEFAULT_KEYMAP, type KeyPress, toolBindings } from './keymap.js';
@@ -62,6 +63,8 @@ export type EditorKeysInput = {
   readonly restoreView?: ((meta: unknown) => void) | undefined;
   /** The clipboard copy, cut, paste and duplicate use. */
   readonly clipboard?: Clipboard | undefined;
+  /** The bytes of the assets the editor holds. */
+  readonly assets?: AssetStore | undefined;
   /** Keys are not the editor's while a dialog is open. */
   readonly paused?: boolean | undefined;
 };
@@ -79,7 +82,7 @@ export const pressOf = (e: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'met
 
 /** What the editor's commands act on at a key press, in the session's mode. */
 function commandCtx(input: EditorKeysInput): EditorCommandCtx {
-  const { store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard } = input;
+  const { store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard, assets } = input;
   const presenting = session.mode.get() === 'present' && present !== undefined;
   return {
     mode: presenting ? 'present' : 'edit',
@@ -91,6 +94,7 @@ function commandCtx(input: EditorKeysInput): EditorCommandCtx {
     ...(openHelp === undefined ? {} : { openHelp }),
     ...(restoreView === undefined ? {} : { restoreView }),
     ...(clipboard === undefined ? {} : { clipboard }),
+    ...(assets === undefined ? {} : { assets }),
   };
 }
 
@@ -106,17 +110,17 @@ export function useEditorKeys(input: EditorKeysInput): (command: string, args?: 
   const latest = useRef(input);
   latest.current = input;
   const run = useCallback((command: string, args?: unknown) => COMMANDS.get(command)?.run(commandCtx(latest.current), args) === true, []);
-  const { store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard, overrides, paused } = input;
+  const { store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard, assets, overrides, paused } = input;
   useEffect(() => {
     if (paused === true) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (notTheKeymaps(e)) return;
-      const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard });
+      const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard, assets });
       const keymap = applyOverrides([...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list())], overrides ?? {});
       if (dispatchKey(pressOf(e), keymap, COMMANDS, ctx)) e.preventDefault();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard, overrides, paused]);
+  }, [store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard, assets, overrides, paused]);
   return run;
 }

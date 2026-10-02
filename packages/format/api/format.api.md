@@ -5,6 +5,14 @@
 ```ts
 
 // @public
+export const MAX_SVG_CHARS: number;
+
+// @public
+export function sanitizeSvg(input: string): string | undefined;
+
+// @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```

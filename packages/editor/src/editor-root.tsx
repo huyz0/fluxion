@@ -8,8 +8,9 @@ import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import { type AssetStore, createAssetStore } from './asset-store.js';
 import { registerBuiltinTools } from './builtin-tools.js';
-import { fitBox } from './camera.js';
+import { fitBox, screenToPage } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
 import { createClipboard } from './clipboard.js';
@@ -27,6 +28,7 @@ import { shownScreen } from './screen-switch.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { Splitter } from './splitter.js';
+import { pasteSystemItem, type SystemItem } from './system-paste.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
 import { type SystemClipboardCommands, useSystemClipboard } from './use-system-clipboard.js';
 import { readViewMeta, restoreView, withViewMeta } from './view-meta.js';
@@ -51,6 +53,8 @@ export type EditorRootProps = {
   readonly tools?: Registry<string, Tool>;
   /** Where fresh record ids come from (default: the browser's crypto). */
   readonly random?: Random;
+  /** The bytes of the document's assets (default: an in-memory store for this root, which pasted images fill). */
+  readonly assets?: AssetStore;
 };
 
 /** Randomness from the browser's crypto. */
@@ -161,6 +165,31 @@ function areaOf(view: ReadView, id: RecordId | undefined): Box | undefined {
   return screen?.type === 'screen' ? screenArea(screen as ScreenRecord) : undefined;
 }
 
+/**
+ * The screen the root shows (the one the Screens tab chose, or the first: hidden ones are edited too), the ref the keys read
+ * it from, and `execute` with every write carrying the view around it, which undo and redo bring back (M7.7).
+ */
+function useShownScreen(
+  props: EditorRootProps,
+  session: Session,
+): { readonly screenId: RecordId | undefined; readonly shown: { current: RecordId | undefined }; readonly execute: Execute } {
+  const { store } = props;
+  const wanted = useValue(session.screen.get);
+  const screenId = useValue(useMemo(() => store.query((view) => shownScreen(view, wanted)), [store, wanted]));
+  useScreenFallback(session, screenId);
+  const shown = useRef(screenId);
+  shown.current = screenId;
+  const execute = useMemo(() => withViewMeta(props.execute, session, () => shown.current), [props.execute, session]);
+  return { screenId, shown, execute };
+}
+
+/** A camera never moved (still the default) is fitted to the screen once the canvas has a size. */
+function useFitOnOpen(session: Session, area: Box | undefined, box: { readonly w: number; readonly h: number }): void {
+  useEffect(() => {
+    if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
+  }, [area, box, session]);
+}
+
 /** What the root's key handling reads. */
 type RootKeys = {
   readonly store: Store;
@@ -175,6 +204,8 @@ type RootKeys = {
   readonly overrides: KeyOverrides;
   readonly help: boolean;
   readonly openHelp: () => void;
+  /** The bytes of the document's assets. */
+  readonly assets: AssetStore;
 };
 
 /** The editor's keys over the root's tools, with its own clipboard (the system clipboard joins it in M7.22); the runner of a command by id. */
@@ -187,7 +218,8 @@ function useRootKeys(i: RootKeys): { readonly run: (command: string, args?: unkn
     },
     [session, store, shown],
   );
-  const clipboard = useMemo(() => createClipboard(), []);
+  const { assets } = i;
+  const clipboard = useMemo(() => createClipboard(assets.url), [assets]);
   const run = useEditorKeys({
     store,
     session,
@@ -199,10 +231,21 @@ function useRootKeys(i: RootKeys): { readonly run: (command: string, args?: unkn
     openHelp: i.openHelp,
     restoreView: restore,
     clipboard,
+    assets,
     overrides: i.overrides,
     paused: i.help,
   });
-  const system = useSystemClipboard({ clipboard, session, run, paused: i.help });
+  // what is pasted that is not Fluxion's lands at the centre of the view, selected
+  const place = useCallback(
+    (item: SystemItem) => {
+      const t = i.tools.ctx;
+      const centre = screenToPage(session.camera.get(), { x: i.box.w / 2, y: i.box.h / 2 });
+      const id = pasteSystemItem({ view: t.view, execute: t.execute, seal: t.seal, screen: t.screen, newId: t.newId, assets }, item, centre);
+      if (id !== undefined) session.selection.set([id]);
+    },
+    [i.tools, i.box.w, i.box.h, session, assets],
+  );
+  const system = useSystemClipboard({ clipboard, session, run, paused: i.help, place });
   return { run, system };
 }
 
@@ -217,14 +260,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const settings = useMemo(() => props.settings ?? memorySettings(), [props.settings]);
   const [layout, setLayout] = useLayout(settings);
   const session = useMemo(() => props.session ?? createSession('local'), [props.session]);
-  // the screen the Screens tab chose, or the first (hidden ones are edited too)
-  const wanted = useValue(session.screen.get);
-  const screenId = useValue(useMemo(() => store.query((view) => shownScreen(view, wanted)), [store, wanted]));
-  useScreenFallback(session, screenId);
-  // every write carries the view around it, which undo and redo bring back (M7.7)
-  const shown = useRef(screenId);
-  shown.current = screenId;
-  const execute = useMemo(() => withViewMeta(props.execute, session, () => shown.current), [props.execute, session]);
+  const { screenId, shown, execute } = useShownScreen(props, session);
   const { tools, present } = useTools({ ...props, execute }, session, screenId);
   const switchMode = useModeSwitch(session, tools, present);
   const mode = useValue(session.mode.get);
@@ -239,11 +275,9 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const [overrides, setOverrides] = useKeyOverrides(settings);
   const [help, setHelp] = useState(false);
   const openHelp = useCallback(() => setHelp(true), []);
-  const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, help, openHelp });
-  // a camera never moved (still the default) is fitted to the screen once the canvas has a size
-  useEffect(() => {
-    if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
-  }, [area, box, session]);
+  const assets = useMemo(() => props.assets ?? createAssetStore(), [props.assets]);
+  const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, help, openHelp, assets });
+  useFitOnOpen(session, area, box);
   const id = useId();
   const panel = (p: PanelId, content: ReactNode) => {
     if (!panelShown(layout, p)) return null;
@@ -265,7 +299,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   if (mode === 'present')
     return (
       <div data-testid="editor-root" data-mode="present" data-revision={revision}>
-        <PresentInPlace store={store} registries={registries} screenId={screenId} area={area} session={session} tools={present} />
+        <PresentInPlace store={store} registries={registries} screenId={screenId} area={area} session={session} tools={present} assets={assets.url} />
       </div>
     );
   return (
@@ -296,7 +330,17 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         {panel('left', <LeftTabs screens={{ store, session, shown: screenId }} />)}
         {splitter('left')}
         <div className="fx-chrome-center">
-          <Canvas store={store} registries={registries} screenId={screenId} area={area} session={session} tools={tools} execute={execute} onBox={setBox} />
+          <Canvas
+            store={store}
+            registries={registries}
+            screenId={screenId}
+            area={area}
+            session={session}
+            tools={tools}
+            execute={execute}
+            assets={assets.url}
+            onBox={setBox}
+          />
           {splitter('bottom')}
           {panel('bottom', <Timeline />)}
         </div>

@@ -105,6 +105,7 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
     'screen.reorder': { id: screens[2], after: screens[8] },
     'binding.set': { id: 'BenchNewBinding01', connectorId: lines[500], end: 'target', elementId: shapes[2400], anchor: { kind: 'auto' } },
     'document.update': { fields: { title: 'bench' } },
+    'asset.create': { asset: { id: 'BenchNewAsset0001', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'bench.png' } },
   };
 }
 
@@ -120,4 +121,5 @@ export const COMMANDS = [
   'screen.reorder',
   'binding.set',
   'document.update',
+  'asset.create',
 ] as const;

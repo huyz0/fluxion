@@ -223,7 +223,9 @@ wipe the first (M7.3 review F1).
   falls back to it. The E2E asserts the custom path within one origin only.
 - **Menu Paste** asks for `navigator.clipboard.read({ unsanitized: ['text/html'] })`, so a browser that sanitises the
   clipboard's HTML does not strip the template; a browser that does not know the option is asked again without it.
-- **Assets** travel as records, with their bytes inlined as an image `data:` URL when the editor holds them and they are 1 MB
-  or less. No host holds asset bytes before the asset store (M10), so until then a pasted image element keeps its source
-  asset id and names a missing asset unless the target already holds one with the same hash; validation reports it
-  (FR-EDT-021). The hash of inlined bytes is checked when the store arrives.
+- **Assets** travel as records, with their bytes inlined as an image `data:` URL when the editor holds them and they are
+  1 MB or less. The editor holds the bytes of the assets it pasted or made (an in-memory store, until the file's asset store
+  arrives in M10). A paste uses the target's asset with the same hash; else it makes a new asset record (`asset.create`)
+  with a fresh id and holds the bytes under it. An image whose asset has no bytes in the payload and is not held is left out
+  of the paste, with what hangs from it, because the document refuses a reference to no asset. The hash of inlined bytes is
+  checked when the store arrives.

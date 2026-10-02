@@ -320,6 +320,7 @@ export const BENCH_COMMANDS = [
   'screen.reorder',
   'binding.set',
   'document.update',
+  'asset.create',
 ];
 /** undo/redo and the forward transactions on 5 000 records, stores with default options (validation on). */
 export const BENCH_FILES = ['packages/core/bench/undo-5000.bench.ts', 'packages/core/bench/transact-5000.bench.ts'];

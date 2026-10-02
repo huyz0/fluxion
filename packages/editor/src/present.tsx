@@ -6,7 +6,7 @@
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { LaserTrail, useElementBox } from '@fluxion/player';
-import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
+import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { usePointerInput } from './pointer-input.js';
@@ -65,6 +65,8 @@ function switchMode(session: Session, leaving: ToolDispatcher, saved: { current:
  * @public
  */
 export type PresentInPlaceProps = {
+  /** The URLs of the assets the views draw. */
+  readonly assets?: AssetUrls | undefined;
   /** The document store. */
   readonly store: Store;
   /** Where element views, shapes and markers are looked up. */
@@ -85,7 +87,7 @@ export type PresentInPlaceProps = {
  * @public
  */
 export function PresentInPlace(props: PresentInPlaceProps): ReactNode {
-  const { store, registries, screenId, area, session, tools } = props;
+  const { store, registries, screenId, area, session, tools, assets } = props;
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
   const laser = useValue(session.laser.get);
@@ -107,7 +109,14 @@ export function PresentInPlace(props: PresentInPlaceProps): ReactNode {
   return (
     <div ref={ref} className="fx-present" data-testid="present-in-place" style={{ position: 'fixed', inset: 0, background: '#000', touchAction: 'none' }}>
       {screenId === undefined || box.w === 0 ? null : (
-        <ScreenView store={store} screenId={screenId} mode="present" view={{ kind: 'fit', box }} registries={registries}>
+        <ScreenView
+          store={store}
+          screenId={screenId}
+          mode="present"
+          view={{ kind: 'fit', box }}
+          registries={registries}
+          {...(assets === undefined ? {} : { assets })}
+        >
           <LaserTrail points={laser} scale={camera.z} />
         </ScreenView>
       )}

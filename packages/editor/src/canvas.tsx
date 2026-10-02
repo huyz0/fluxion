@@ -7,7 +7,7 @@
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
-import { type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
+import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, screenToPage, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
@@ -111,6 +111,8 @@ function useSpace(space: RefObject<boolean>, tools: ToolDispatcher | undefined):
 
 /** Props of {@link Canvas}. */
 export type CanvasProps = {
+  /** The URLs of the assets the views draw. */
+  readonly assets?: AssetUrls | undefined;
   /** The document store. */
   readonly store: Store;
   /** Where element views, shapes and markers are looked up. */
@@ -172,7 +174,7 @@ function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatc
 
 /** The canvas: the screen at the session camera, panned and zoomed. */
 export function Canvas(props: CanvasProps): ReactNode {
-  const { store, registries, screenId, area, session, tools, execute, onBox } = props;
+  const { store, registries, screenId, area, session, tools, execute, assets, onBox } = props;
   const ref = useRef<HTMLElement>(null);
   const box = useElementBox(ref);
   const camera = useValue(session.camera.get);
@@ -214,7 +216,14 @@ export function Canvas(props: CanvasProps): ReactNode {
     >
       {screenId === undefined || box.w === 0 ? null : (
         <>
-          <ScreenView store={store} screenId={screenId} mode="edit" view={{ kind: 'camera', box, camera }} registries={registries} />
+          <ScreenView
+            store={store}
+            screenId={screenId}
+            mode="edit"
+            view={{ kind: 'camera', box, camera }}
+            registries={registries}
+            {...(assets === undefined ? {} : { assets })}
+          />
           {overlay ? <Overlay store={store} session={session} box={box} shapeDefs={registries.shapeDefs} routes={registries} /> : null}
           {execute === undefined ? null : <InlineTextEditor store={store} registries={registries} session={session} execute={execute} />}
         </>

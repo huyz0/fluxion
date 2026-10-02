@@ -154,6 +154,14 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     run: (ctx, args) =>
       checkIds(ctx, 'element.update', 'element', [[['id'], args.id]]) ?? write(ctx, 'element.update', (tx) => tx.patch(args.id as RecordId, args.fields)),
   }),
+  // an asset's record (its bytes are the host's): what a paste of an image makes beside the image element (M7.23)
+  defineCommand({
+    id: 'asset.create',
+    title: title('asset.create', 'Add asset'),
+    args: z.object({ asset: recordOf('asset') }),
+    run: (ctx, args) =>
+      checkIds(ctx, 'asset.create', 'new', [[['asset', 'id'], args.asset.id]]) ?? write(ctx, 'asset.create', (tx) => tx.put(args.asset as AnyRecord)),
+  }),
   defineCommand({
     id: 'element.delete',
     title: title('element.delete', 'Delete elements'),

@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" style="mask:image-set('//evil.example/x.png' 1x)" mask="image('//e.example/a')" fill="src(//e.example/x)"/></svg>

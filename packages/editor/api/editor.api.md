@@ -35,6 +35,12 @@ export function applyField(view: ReadView, ids: readonly RecordId[], path: reado
 export function applyOverrides(base: readonly KeyBinding[], overrides: KeyOverrides): readonly KeyBinding[];
 
 // @public
+export type AssetStore = {
+    set(id: RecordId, dataUrl: string): void;
+    url(id: RecordId): string | undefined;
+};
+
+// @public
 export function assignKey(base: readonly KeyBinding[], overrides: KeyOverrides, id: string, chord: string): KeyOverrides;
 
 // @public
@@ -67,6 +73,7 @@ type Clipboard_2 = {
     get(): ClipboardPayload | undefined;
     set(payload: ClipboardPayload): void;
     adopt(payload: ClipboardPayload, json: string): void;
+    readonly assetData?: ((id: RecordId) => string | undefined) | undefined;
     pastes(): number;
     countPaste(): void;
 };
@@ -132,11 +139,14 @@ export function copyPayload(view: ReadView, ids: readonly RecordId[], source: {
     readonly docId: string;
     readonly screen: RecordId | undefined;
     readonly endPoint?: (id: RecordId, end: "source" | "target") => Vec2 | undefined;
-    readonly assetData?: (id: RecordId) => string | undefined;
+    readonly assetData?: ((id: RecordId) => string | undefined) | undefined;
 }): ClipboardPayload | undefined;
 
 // @public
-export function createClipboard(): Clipboard_2;
+export function createAssetStore(): AssetStore;
+
+// @public
+export function createClipboard(assetData?: (id: RecordId) => string | undefined): Clipboard_2;
 
 // @public
 export function createConnector(deps: CreateDeps, link: Link): RecordId | undefined;
@@ -231,6 +241,7 @@ export type EditorCommandCtx = {
     openHelp?(): void;
     restoreView?(meta: unknown): void;
     readonly clipboard?: Clipboard_2;
+    readonly assets?: AssetStore;
 };
 
 // @public
@@ -246,6 +257,7 @@ export type EditorKeysInput = {
     readonly openHelp?: (() => void) | undefined;
     readonly restoreView?: ((meta: unknown) => void) | undefined;
     readonly clipboard?: Clipboard_2 | undefined;
+    readonly assets?: AssetStore | undefined;
     readonly paused?: boolean | undefined;
 };
 
@@ -261,6 +273,7 @@ export type EditorRootProps = {
     readonly execute: Execute;
     readonly tools?: Registry<string, Tool>;
     readonly random?: Random;
+    readonly assets?: AssetStore;
 };
 
 // @public
@@ -288,6 +301,9 @@ export function fitBox(box: Box, viewport: {
     readonly w: number;
     readonly h: number;
 }, padding?: number): Camera;
+
+// @public
+export function fitImage(w: number | undefined, h: number | undefined): ImageSize;
 
 // @public
 export type FitTargets = {
@@ -341,6 +357,12 @@ export type HitIndex = {
 
 // @public
 export const imageMaker: (assetId: RecordId) => ElementMaker;
+
+// @public
+export type ImageSize = {
+    readonly w: number;
+    readonly h: number;
+};
 
 // @public
 export const imageTool: () => Tool;
@@ -537,6 +559,7 @@ export type PasteDeps = {
     seal(): void;
     readonly screen: RecordId | undefined;
     newId(): RecordId;
+    readonly assets?: AssetStore | undefined;
 };
 
 // @public
@@ -547,6 +570,9 @@ export type PastePlan = {
     readonly elements: readonly AnyRecord[];
     readonly bindings: readonly AnyRecord[];
 };
+
+// @public
+export function pasteSystemItem(deps: SystemPasteDeps, item: SystemItem, centre: Vec2): RecordId | undefined;
 
 // @public
 export type PathBox = {
@@ -736,6 +762,26 @@ export type StateNode = {
 
 // @public
 export function switchScreen(session: Session, id: RecordId): void;
+
+// @public
+export type SystemItem = {
+    readonly type: "image";
+    readonly mime: string;
+    readonly name: string;
+    readonly dataUrl: string;
+    readonly hash: string;
+    readonly size: number;
+    readonly w: number | undefined;
+    readonly h: number | undefined;
+} | {
+    readonly type: "text";
+    readonly text: string;
+};
+
+// @public
+export type SystemPasteDeps = PasteDeps & {
+    readonly assets: AssetStore;
+};
 
 // @public
 export const textMaker: ElementMaker;

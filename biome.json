@@ -19,7 +19,8 @@
       "!packages/cli/__golden__",
       "!fixtures/docs",
       "!fixtures/fonts/*.json",
-      "!examples/**/*.flux.json"
+      "!examples/**/*.flux.json",
+      "!specs/security/corpus"
     ]
   },
   "formatter": {

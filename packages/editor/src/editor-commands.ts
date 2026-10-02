@@ -3,6 +3,8 @@
 // (`core`), which change the document: an editor command may run one of those through the tools'
 // `execute`, or act on the session (camera, tool, selection, mode). Each returns whether it acted, so
 // a key it declines stays the tools' (or the browser's).
+
+import type { AssetStore } from './asset-store.js';
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
@@ -58,6 +60,8 @@ export type EditorCommandCtx = {
   restoreView?(meta: unknown): void;
   /** The clipboard copy, cut and paste use. */
   readonly clipboard?: Clipboard;
+  /** The bytes of the assets the editor holds (a paste of an asset with bytes holds them under its new id). */
+  readonly assets?: AssetStore;
 };
 
 /**
@@ -104,7 +108,12 @@ function copySelection(ctx: EditorCommandCtx): boolean {
   const payload =
     ctx.clipboard === undefined
       ? undefined
-      : copyPayload(t.view, t.session.selection.get(), { docId: t.session.docId, screen: t.screen, endPoint: (id, end) => t.route?.(id)?.[end].point });
+      : copyPayload(t.view, t.session.selection.get(), {
+          docId: t.session.docId,
+          screen: t.screen,
+          endPoint: (id, end) => t.route?.(id)?.[end].point,
+          assetData: ctx.clipboard?.assetData,
+        });
   if (payload === undefined) return false;
   ctx.clipboard?.set(payload);
   return true;
@@ -115,7 +124,7 @@ function pasteOnce(ctx: EditorCommandCtx, payload: NonNullable<ReturnType<Clipbo
   const t = ctx.tools.ctx;
   // pasted onto the screen it came from, the first paste is offset already (it would lie on its originals); onto another, the first lies where it was
   const steps = payload.sourceScreen === t.screen ? n : n - 1;
-  const ids = pasteInto({ view: t.view, execute: t.execute, seal: t.seal, screen: t.screen, newId: t.newId }, payload, {
+  const ids = pasteInto({ view: t.view, execute: t.execute, seal: t.seal, screen: t.screen, newId: t.newId, assets: ctx.assets }, payload, {
     x: steps * PASTE_OFFSET,
     y: steps * PASTE_OFFSET,
   });
@@ -237,7 +246,12 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
       // a copy that is not kept: the clipboard and its paste count are as they were
       const t = ctx.tools.ctx;
       const payload = selectIdle(ctx)
-        ? copyPayload(t.view, t.session.selection.get(), { docId: t.session.docId, screen: t.screen, endPoint: (id, end) => t.route?.(id)?.[end].point })
+        ? copyPayload(t.view, t.session.selection.get(), {
+            docId: t.session.docId,
+            screen: t.screen,
+            endPoint: (id, end) => t.route?.(id)?.[end].point,
+            assetData: ctx.clipboard?.assetData,
+          })
         : undefined;
       return payload !== undefined && pasteOnce(ctx, { ...payload, sourceScreen: t.screen }, 1);
     },

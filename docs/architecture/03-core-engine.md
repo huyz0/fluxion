@@ -82,7 +82,7 @@ type CommandDef<A> = {
 - `CORE_COMMANDS` (registered by `registerCoreCommands`): element.create, element.update,
   element.delete, element.createMany, element.updateMany (several elements in one transaction: a
   gesture's move or duplicate, M6.14), screen.create, screen.delete, screen.reorder, binding.set,
-  document.update.
+  document.update, asset.create (an asset record, beside the element that uses it: a pasted image, M7.23).
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through
   commands: one audit path, one undo semantics, one AI surface. The architecture test allows
   `transact` only in a command's `run`, the history module and the fork module.

@@ -4,6 +4,8 @@
  * @packageDocumentation
  */
 
+export { MAX_SVG_CHARS, sanitizeSvg } from './sanitize-svg.js';
+
 /**
  * Version of this package.
  *

@@ -39,6 +39,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
     const commands = createRegistry<string, AnyCommand>('commands');
     expect(registerCoreCommands(commands)).toEqual([]);
     expect(commands.list().map(([id]) => id)).toEqual([
+      'asset.create',
       'binding.set',
       'document.update',
       'element.create',
@@ -58,6 +59,25 @@ describe('built-in record commands (FR-EXT-001)', () => {
     const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
     hooks.register('core:1-screens', () => {}, 'acme');
     expect(registerCoreHooks(hooks).map((d) => d.code)).toEqual(['FLX_REGISTRY_DUPLICATE']);
+  });
+
+  it('FR-EXT-001: asset.create adds an asset record in one write, refuses an id that is taken, and is undone in one step', () => {
+    const { store, run, diffs, a } = setup();
+    const asset = { id: 'AssetAssetAsset01', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 3, name: 'a.png' };
+    expect(run('asset.create', { asset }).ok).toBe(true);
+    expect(store.get('AssetAssetAsset01' as RecordId)).toEqual(asset);
+    expect(diffs.at(-1)?.puts.size).toBe(1);
+    expect(diffs.at(-1)?.deletes.size).toBe(0);
+    // the id is taken (by the asset, or by any record): refused, nothing written
+    const before = diffs.length;
+    expect(run('asset.create', { asset }).ok).toBe(false);
+    expect(run('asset.create', { asset: { ...asset, id: a } }).ok).toBe(false);
+    expect(diffs.length).toBe(before);
+    // not an asset record
+    expect(run('asset.create', { asset: { ...asset, type: 'element' } }).ok).toBe(false);
+    expect(run('asset.create', {}).ok).toBe(false);
+    store.history.undo();
+    expect(store.get('AssetAssetAsset01' as RecordId)).toBeUndefined();
   });
 
   it('FR-DOC-010: screen.reorder writes exactly one record', () => {

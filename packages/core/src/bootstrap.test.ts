@@ -93,6 +93,7 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
       anchor: { kind: 'auto' },
     }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
+    'asset.create': () => ({ asset: { id: newId(n), type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'a.png' } }),
   };
   return build[op.command]?.();
 }

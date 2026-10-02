@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#a" xlink:href="javascript:alert(1)"/><use xlink:href="#b" href="https://evil.example/x.svg#a"/><rect id="a" width="1" height="1"/></svg>
