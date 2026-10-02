@@ -27,6 +27,7 @@ export type { IndexName } from './indexes.js';
 export { MARKER_SIZE, type MarkerDef, markerDefSchema, markerTrim, parseMarkerDef } from './marker.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, TextMeasurer, TextMetrics } from './ports/ports.js';
 export { createRegistry, type Disposable, type PluginId, type Registry } from './registry.js';
+export { nextVisibleScreen } from './screens/screen-order.js';
 export { type HandleSubject, handleValue, type ParamHandle, shapeHandles } from './shape/handles.js';
 export { hitTestShape, outlineDistance, projectToOutline } from './shape/hit.js';
 export { DEFAULT_OUTLINE_BUDGET, type EvaluatedOutline, evaluateOutline } from './shape/outline.js';

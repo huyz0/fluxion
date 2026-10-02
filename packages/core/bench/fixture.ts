@@ -50,7 +50,7 @@ export function benchStore(): Bench {
   const store = createStore(file, { hooks });
   const commands = createRegistry<string, AnyCommand>('commands');
   registerCoreCommands(commands);
-  const args = benchArgs(screens, shapes, lines);
+  const args = benchArgs(screens, shapes, lines, copyIds(file, screens[4] as RecordId));
   return {
     store,
     run(command) {
@@ -84,6 +84,14 @@ function withGroup(file: ReturnType<ReturnType<typeof documentBuilder>['build']>
   return { ...file, records } as typeof file;
 }
 
+/** A new id for every element and binding of `screen`, by old id (what screen.duplicate asks for). */
+function copyIds(file: ReturnType<ReturnType<typeof documentBuilder>['build']>, screen: RecordId): Record<string, string> {
+  const records = Object.values(file.records) as ReadonlyArray<{ id: string; type: string; screenId?: unknown; connectorId?: unknown }>;
+  const elements = new Set(records.filter((r) => r.type === 'element' && r.screenId === screen).map((r) => r.id));
+  const owned = records.filter((r) => elements.has(r.id) || (r.type === 'binding' && elements.has(String(r.connectorId))));
+  return Object.fromEntries(owned.map((r, i) => [r.id, `BenchCopy${String(i).padStart(8, '0')}`]));
+}
+
 /** The group the fixture holds. */
 const BENCH_GROUP = 'BenchGroup0000001' as RecordId;
 
@@ -95,7 +103,12 @@ const MANY_KEYS = (() => {
 })();
 
 /** Arguments that succeed against the fixture document (and again after the command is undone). */
-function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], lines: readonly RecordId[]): Record<string, unknown> {
+function benchArgs(
+  screens: readonly RecordId[],
+  shapes: readonly RecordId[],
+  lines: readonly RecordId[],
+  copies: Record<string, string>,
+): Record<string, unknown> {
   const screen = screens[3] as RecordId;
   return {
     'element.create': {
@@ -132,6 +145,10 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
     // an empty screen would be cheaper; this one holds 499 records (the cascade is part of the cost)
     'screen.delete': { id: screens[7] },
     'screen.reorder': { id: screens[2], after: screens[8] },
+    'screen.rename': { id: screens[1], name: 'renamed' },
+    'screen.setHidden': { id: screens[1], hidden: true },
+    // a copy of screen 4: its 250 shapes and the bindings of its 83 connectors
+    'screen.duplicate': { id: screens[4], newId: 'BenchNewScreen002', ids: copies },
     'binding.set': { id: 'BenchNewBinding01', connectorId: lines[500], end: 'target', elementId: shapes[2400], anchor: { kind: 'auto' } },
     // two siblings of screen 5 grouped, and the fixture's group dissolved
     'element.group': { ids: [shapes[1300], shapes[1301]], groupId: 'BenchNewGroup0001' },
@@ -158,6 +175,9 @@ export const COMMANDS = [
   'screen.create',
   'screen.delete',
   'screen.reorder',
+  'screen.rename',
+  'screen.setHidden',
+  'screen.duplicate',
   'binding.set',
   'connector.freeEnd',
   'element.group',

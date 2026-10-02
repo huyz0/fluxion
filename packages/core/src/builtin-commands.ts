@@ -22,51 +22,9 @@ import { Z_ORDER_COMMANDS } from './arrange/z-order.js';
 import { checkIds, fields, id, recordOf, repeated, title, write } from './command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
 import type { Registry } from './registry.js';
+import { SCREEN_COMMANDS } from './screens/screen-commands.js';
+import { screenIndexAfter } from './screens/screen-order.js';
 import type { TxFailure } from './transaction.js';
-
-/** The screens in order, without `except`. */
-function screensInOrder(ctx: CommandContext, except: string): Array<{ readonly id: RecordId; readonly index: string }> {
-  return ctx.store
-    .members('byType', 'screen')
-    .filter((s) => s !== except)
-    .map((s) => ({ id: s, index: String((ctx.store.get(s) as { index?: unknown } | undefined)?.index ?? '') }))
-    .sort((a, b) => compareKeys(a.index, b.index));
-}
-
-/**
- * The index that puts a screen right after `after` (first when absent), or why none exists: a screen
- * cannot follow itself (COMMAND_ARGS), and neighbours with equal or malformed keys have no key between
- * them (TX_INVALID naming the neighbour's index; M3 final F5).
- */
-function indexAfter(ctx: CommandContext, screen: string, after: string | undefined): Result<string, TxFailure> {
-  const others = screensInOrder(ctx, screen);
-  // no screen has an undefined id, so an absent `after` finds nothing: at 0, first
-  const at = others.findIndex((s) => s.id === after) + 1;
-  if (after !== undefined && at === 0) {
-    const message = 'a screen cannot follow itself';
-    return err({
-      code: 'COMMAND_ARGS',
-      message: `screen.reorder: ${message}`,
-      diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', 'after']), message }],
-    });
-  }
-  const [before, next] = [others[at - 1], others[at]];
-  const key = keyBetween(before?.index ?? null, next?.index ?? null);
-  if (key.ok) return ok(key.value);
-  // an equal pair names the later key; a malformed key names the neighbour holding it (M4.4 review F1);
-  // the severity is the code's registered one (review F2)
-  const malformed = [before, next].find((s) => s !== undefined && !isIndexKey(s.index));
-  // (an out-of-order pair has two valid keys, so no malformed one: it names `next` too)
-  const neighbour = malformed ?? next ?? before;
-  const code = key.error.code === 'INDEX_ORDER' ? 'FLX_INDEX_DUPLICATE' : 'FLX_SCHEMA_INVALID';
-  const found: Diagnostic = {
-    code,
-    severity: DIAGNOSTIC_CODES[code],
-    path: jsonPointer(['records', neighbour?.id ?? screen, 'index']),
-    message: key.error.message,
-  };
-  return err({ code: 'TX_INVALID', message: `screen.reorder: ${key.error.message}`, diagnostics: [found] });
-}
 
 /** The binding holding `end` of `connectorId`, if any. */
 function bindingAt(ctx: CommandContext, connectorId: string, end: string): RecordId | undefined {
@@ -88,6 +46,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...ALIGN_COMMANDS,
   ...DISTRIBUTE_COMMANDS,
   ...Z_ORDER_COMMANDS,
+  ...SCREEN_COMMANDS,
   defineCommand({
     id: 'element.create',
     title: title('element.create', 'Add element'),
@@ -185,7 +144,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
       if (args.after !== undefined) refs.push([['after'], args.after]);
       const bad = checkIds(ctx, 'screen.reorder', 'screen', refs);
       if (bad) return bad;
-      const index = indexAfter(ctx, args.id, args.after);
+      const index = screenIndexAfter(ctx, 'screen.reorder', args.id, args.after);
       if (!index.ok) return index;
       return write(ctx, 'screen.reorder', (tx) => tx.patch(args.id as RecordId, { index: index.value }));
     },

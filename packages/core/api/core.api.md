@@ -378,6 +378,9 @@ export type MessageDescriptor = {
 };
 
 // @public
+export function nextVisibleScreen(view: ReadView, from: RecordId, step?: 1 | -1): RecordId | undefined;
+
+// @public
 export type NumberParam = {
     readonly type: "number" | "int";
     readonly min?: number;
