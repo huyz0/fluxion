@@ -93,8 +93,8 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
       anchor: { kind: 'auto' },
     }),
     'connector.freeEnd': () => ({ connectorId: pick('element', 'connector'), end: op.value % 2 ? 'source' : 'target', at: { x: op.value, y: 0 } }),
-    'element.group': () => ({ ids: [element], groupId: newId(n + 500) }),
-    'element.ungroup': () => ({ ids: [element] }),
+    'element.group': () => ({ ids: [pick('element', 'shape')], groupId: newId(n + 500) }),
+    'element.ungroup': () => ({ ids: [pick('element', 'group')] }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
     'asset.create': () => ({ asset: { id: newId(n), type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'a.png' } }),
   };
@@ -122,8 +122,21 @@ function play(file: DocumentFile, ops: readonly Op[]) {
   return { diffs, results, depth: core.store.history.undoDepth, doc: core.store.toDocument() };
 }
 
+/** A document with a screen and a shape, and the ops that group the shape and dissolve the group. */
+const GROUPED_EXAMPLE: DocumentFile = (() => {
+  const b = documentBuilder({ seed: 93 });
+  b.rect(b.screen());
+  return b.build();
+})();
+const GROUP_THEN_UNGROUP: Op[] = [
+  { command: 'element.group', pick: 0, value: 1 },
+  { command: 'element.ungroup', pick: 0, value: 1 },
+];
+
 describe('core determinism (NFR-REL-005, M3 final F4)', () => {
   it('NFR-REL-005: the same command sequence twice gives equal diffs, history and document', () => {
+    // the guaranteed example really commits both of its ops
+    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok']);
     let committed = 0;
     const committedBy = new Set<string>();
     fc.assert(
@@ -136,6 +149,9 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
           if (first.results[i] === 'ok') committedBy.add(op.command);
         });
       }),
+      // generated documents hold no group, so element.ungroup commits only after an element.group in the same list, by
+      // chance: this example guarantees both commit (M8.25), whatever the generators draw
+      { examples: [[GROUPED_EXAMPLE, GROUP_THEN_UNGROUP]] },
     );
     // the property exercised real commits of every built-in, not only refusals (M4 cp1 F7)
     expect(committed).toBeGreaterThan(0);
