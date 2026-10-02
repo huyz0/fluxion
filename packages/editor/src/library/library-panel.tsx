@@ -4,6 +4,7 @@
 import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
 import { pathData, useValue } from '@fluxion/render';
 import { type ReactNode, useMemo, useState } from 'react';
+import { LIBRARY_DRAG_TYPE } from './library-insert.js';
 import { buildLibraryIndex, entryOf, type LibraryEntry } from './library-search.js';
 
 /**
@@ -51,7 +52,16 @@ function Item(props: { readonly entry: LibraryEntry; readonly def: ShapeDef; rea
       {onPick === undefined ? (
         <div className="fx-chrome-library-label">{body}</div>
       ) : (
-        <button type="button" className="fx-chrome-button fx-chrome-library-button" onClick={() => onPick(entry.id)}>
+        <button
+          type="button"
+          className="fx-chrome-button fx-chrome-library-button"
+          draggable
+          onClick={() => onPick(entry.id)}
+          onDragStart={(e) => {
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData(LIBRARY_DRAG_TYPE, entry.id);
+          }}
+        >
           {body}
         </button>
       )}

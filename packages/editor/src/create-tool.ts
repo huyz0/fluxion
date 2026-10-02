@@ -38,8 +38,7 @@ export type ElementMaker = (at: Placement) => AnyRecord;
 const placed = (at: Placement) => ({ id: at.id, type: 'element', screenId: at.screenId, index: at.index, transform: at.transform });
 
 /**
- * A shape of the definition `defId` (the library's current item; `basic:rect` until the library panel
- * arrives).
+ * A shape of the definition `defId` (`basic:rect` by default).
  *
  * @public
  */
@@ -228,11 +227,19 @@ export function creationTool(spec: CreationSpec): Tool {
 const adding = (spec: Omit<CreationSpec, 'place'>, make: ElementMaker): Tool => creationTool({ ...spec, place: (ctx, box) => createElement(ctx, box, make) });
 
 /**
- * The shape tool (R): a `basic:rect` by default.
+ * The shape tool (R): places the library's current item (`session.library`, a `basic:rect` until another is picked),
+ * read when the element is placed; given a `defId`, always that definition.
  *
  * @public
  */
-export const shapeTool = (defId = 'basic:rect'): Tool => adding({ id: 'shape', title: 'Shape', shortcut: 'r', size: { w: 160, h: 100 } }, shapeMaker(defId));
+export const shapeTool = (defId?: string): Tool =>
+  creationTool({
+    id: 'shape',
+    title: 'Shape',
+    shortcut: 'r',
+    size: { w: 160, h: 100 },
+    place: (ctx, box) => createElement(ctx, box, shapeMaker(defId ?? ctx.session.library.get())),
+  });
 
 /**
  * The text tool (T).

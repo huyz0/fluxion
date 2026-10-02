@@ -43,6 +43,8 @@ export type Session = {
   readonly entered: WritableSignal<RecordId | undefined>;
   /** The smart guides of a drag under way, page units (empty outside one). */
   readonly guides: WritableSignal<readonly SnapGuide[]>;
+  /** The library's current item, a shape definition id: what the shape tool places (starts as `basic:rect`). */
+  readonly library: WritableSignal<string>;
   /** Whether a drag snaps (the toolbar toggle, FR-ARR-005). */
   readonly snap: WritableSignal<boolean>;
 };
@@ -77,6 +79,7 @@ export function createSession(docId: string): Session {
     editing: writable<RecordId | undefined>(undefined),
     entered: writable<RecordId | undefined>(undefined),
     guides: writable<readonly SnapGuide[]>([]),
+    library: writable('basic:rect'),
     snap: writable(true),
   };
 }

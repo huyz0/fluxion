@@ -15,6 +15,7 @@ import { wheelCamera, ZOOM_STEP } from './canvas-input.js';
 import { isEditable } from './editor-keys.js';
 import { enterGroup } from './group-edit.js';
 import { InlineTextEditor } from './inline-text-editor.js';
+import { LIBRARY_DRAG_TYPE } from './library/library-insert.js';
 import { Overlay, useOverlayShown } from './overlay.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
 import type { Execute, PointerInfo } from './pointer.js';
@@ -132,6 +133,8 @@ export type CanvasProps = {
   readonly onBox: (box: Viewport) => void;
   /** Told where a context menu is asked for: a right click, or a finger held still. */
   readonly onMenu?: ((asked: MenuAsked) => void) | undefined;
+  /** Told when a library item is dropped: its definition id and the page point it was dropped on. */
+  readonly onDropShape?: ((defId: string, page: Vec2) => void) | undefined;
 };
 
 /**
@@ -219,7 +222,7 @@ function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatc
 
 /** The canvas: the screen at the session camera, panned and zoomed. */
 export function Canvas(props: CanvasProps): ReactNode {
-  const { store, registries, screenId, area, session, tools, execute, assets, onBox, onMenu } = props;
+  const { store, registries, screenId, area, session, tools, execute, assets, onBox, onMenu, onDropShape } = props;
   const ref = useRef<HTMLElement>(null);
   const box = useElementBox(ref);
   const camera = useValue(session.camera.get);
@@ -260,6 +263,16 @@ export function Canvas(props: CanvasProps): ReactNode {
       onPointerLeave={() => session.hover.set(undefined)}
       onDoubleClick={(e) => editAt(e, session, tools)}
       onContextMenu={(e) => askMenu(e, session)}
+      onDragOver={(e) => {
+        if (onDropShape !== undefined && e.dataTransfer.types.includes(LIBRARY_DRAG_TYPE)) e.preventDefault();
+      }}
+      onDrop={(e) => {
+        const defId = e.dataTransfer.getData(LIBRARY_DRAG_TYPE);
+        if (onDropShape === undefined || defId === '') return;
+        e.preventDefault();
+        const at = e.currentTarget.getBoundingClientRect();
+        onDropShape(defId, screenToPage(session.camera.get(), { x: e.clientX - at.left, y: e.clientY - at.top }));
+      }}
     >
       {screenId === undefined || box.w === 0 ? null : (
         <>

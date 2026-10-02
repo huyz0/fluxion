@@ -259,6 +259,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         area={area}
         newId={newId}
         onBox={setBox}
+        box={box}
         layout={layout}
         onLayout={setLayout}
         menus={{ run, base, overrides, commands: props.commands, mac: onMac() }}

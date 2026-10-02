@@ -78,7 +78,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-015 | S | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-016 | C | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.panel.spec.ts` +3 |
-| FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.drag-insert.spec.ts`, `packages/editor/src/library/library-insert.test.ts` |
 | FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
@@ -161,7 +161,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-TXT-008 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-EDT-001 | M | R1 | M6 | [15-editor.md](15-editor.md) | `apps/studio/src/bootstrap.browser.test.ts` +15 |
 | FR-EDT-002 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/canvas.pan-zoom.spec.ts` +8 |
-| FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +23 |
+| FR-EDT-003 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/library.shape-tool.spec.ts` +25 |
 | FR-EDT-004 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/context-menu.element.spec.ts` +22 |
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +5 |
 | FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `e2e/undo.across-screens.spec.ts` +8 |
