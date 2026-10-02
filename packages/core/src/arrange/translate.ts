@@ -31,7 +31,7 @@ export function withMembers(ctx: CommandContext, id: RecordId): RecordId[] {
   return [id, ...ctx.store.members('byParent', id).flatMap((m) => withMembers(ctx, m))];
 }
 
-/** Of `ids`, those with none of the others above them (an element whose group is also listed moves with the group). */
+/** Of `ids`, each once, those with none of the others above them (an element whose group is also listed moves with the group). */
 export function outermost(ctx: CommandContext, ids: readonly RecordId[]): RecordId[] {
   const listed = new Set(ids);
   const above = (id: RecordId) => {
@@ -39,7 +39,7 @@ export function outermost(ctx: CommandContext, ids: readonly RecordId[]): Record
       if (listed.has(p)) return true;
     return false;
   };
-  return ids.filter((id) => !above(id));
+  return [...new Set(ids)].filter((id) => !above(id));
 }
 
 /** The moves that put each of `deltas` (element → vector) and its members away: one patch per record that has something to move. */

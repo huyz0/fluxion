@@ -53,7 +53,7 @@ const arbOps = fc.array(fc.record({ command: fc.constantFrom(...COMMANDS), pick:
 const newId = (n: number) => `Det${String(n).padStart(13, '0')}`;
 
 /** The arguments of one generated op against the current state (refusals are part of the model). */
-function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string): unknown {
+function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string, shapes: () => string[]): unknown {
   const screen = pick('screen');
   const element = pick('element');
   const build: { readonly [id: string]: () => unknown } = {
@@ -96,6 +96,7 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'element.group': () => ({ ids: [pick('element', 'shape')], groupId: newId(n + 500) }),
     'element.ungroup': () => ({ ids: [pick('element', 'group')] }),
     'element.align': () => ({ ids: [pick('element', 'shape')], mode: 'left', to: 'screen' }),
+    'element.distribute': () => ({ ids: shapes(), axis: 'horizontal', by: 'gaps', gap: 10 }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
     'asset.create': () => ({ asset: { id: newId(n), type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'a.png' } }),
   };
@@ -117,28 +118,36 @@ function play(file: DocumentFile, ops: readonly Op[]) {
         .sort();
       return ids[op.pick % Math.max(1, ids.length)] ?? 'none';
     };
-    const r = core.execute(op.command, argsOf(op, n, pick));
+    const shapes = () =>
+      core.store
+        .members('byType', 'element')
+        .filter((id) => (core.store.get(id) as { kind?: string } | undefined)?.kind === 'shape')
+        .sort();
+    const r = core.execute(op.command, argsOf(op, n, pick, shapes));
     return r.ok ? 'ok' : r.error.code;
   });
   return { diffs, results, depth: core.store.history.undoDepth, doc: core.store.toDocument() };
 }
 
-/** A document with a screen and a shape, and the ops that group the shape and dissolve the group. */
+/** A document with a screen and two shapes, and the ops that group one, dissolve the group, align and distribute (each commits). */
 const GROUPED_EXAMPLE: DocumentFile = (() => {
   const b = documentBuilder({ seed: 93 });
-  b.rect(b.screen());
+  const screen = b.screen();
+  b.rect(screen);
+  b.rect(screen, { x: 300 });
   return b.build();
 })();
 const GROUP_THEN_UNGROUP: Op[] = [
   { command: 'element.group', pick: 0, value: 1 },
   { command: 'element.ungroup', pick: 0, value: 1 },
   { command: 'element.align', pick: 0, value: 1 },
+  { command: 'element.distribute', pick: 0, value: 1 },
 ];
 
 describe('core determinism (NFR-REL-005, M3 final F4)', () => {
   it('NFR-REL-005: the same command sequence twice gives equal diffs, history and document', () => {
     // the guaranteed example really commits both of its ops
-    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok']);
+    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok']);
     let committed = 0;
     const committedBy = new Set<string>();
     fc.assert(

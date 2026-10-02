@@ -45,7 +45,7 @@ export function alignDelta(box: Box, mode: AlignMode, reference: Box): { readonl
 type El = { readonly screenId: RecordId; readonly transform?: Box & { readonly rot?: number; readonly flipX?: boolean; readonly flipY?: boolean } };
 
 /** COMMAND_ARGS for `command`, naming the argument `at`. */
-function refuse(command: string, at: ReadonlyArray<string | number>, problem: string): Result<never, TxFailure> {
+export function refuse(command: string, at: ReadonlyArray<string | number>, problem: string): Result<never, TxFailure> {
   return err({
     code: 'COMMAND_ARGS',
     message: `${command}: ${problem}`,

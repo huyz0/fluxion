@@ -85,6 +85,7 @@ type CommandDef<A> = {
   connector.freeEnd (lets go of one end: its binding goes, the end is held at a point, M7.26),
   element.group / element.ungroup (a container over sibling elements and its dissolving; members keep screen coordinates, M8.4),
   element.align (edges or centres to the selection, the screen or a key element, by drawn bounds; M8.6),
+  element.distribute (equal gaps or centre distances, or a fixed gap, along an axis; M8.7),
   document.update, asset.create (an asset record, beside the element that uses it: a pasted image, M7.23).
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through
   commands: one audit path, one undo semantics, one AI surface. The architecture test allows

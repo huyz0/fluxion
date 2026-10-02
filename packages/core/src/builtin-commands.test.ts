@@ -47,6 +47,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'element.create',
       'element.createMany',
       'element.delete',
+      'element.distribute',
       'element.group',
       'element.ungroup',
       'element.update',

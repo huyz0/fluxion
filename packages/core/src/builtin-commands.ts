@@ -16,6 +16,7 @@ import {
 } from '@fluxion/schema';
 import { z } from 'zod';
 import { ALIGN_COMMANDS } from './arrange/align.js';
+import { DISTRIBUTE_COMMANDS } from './arrange/distribute.js';
 import { GROUP_COMMANDS } from './arrange/group.js';
 import { checkIds, fields, id, recordOf, repeated, title, write } from './command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
@@ -84,6 +85,7 @@ const endSchema = z.enum(['source', 'target']);
 export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...GROUP_COMMANDS,
   ...ALIGN_COMMANDS,
+  ...DISTRIBUTE_COMMANDS,
   defineCommand({
     id: 'element.create',
     title: title('element.create', 'Add element'),

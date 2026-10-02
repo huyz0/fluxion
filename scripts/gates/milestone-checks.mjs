@@ -323,6 +323,7 @@ export const BENCH_COMMANDS = [
   'element.group',
   'element.ungroup',
   'element.align',
+  'element.distribute',
   'document.update',
   'asset.create',
 ];
