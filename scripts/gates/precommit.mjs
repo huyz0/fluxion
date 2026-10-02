@@ -12,7 +12,7 @@
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
-import { harnessFiles, lockfileWorkspaceOnly, testScope } from './ladder-scope.mjs';
+import { harnessFiles, lockfileWorkspaceOnly, packagingNeeded, testScope } from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
@@ -37,6 +37,7 @@ const browserTested = () =>
   workspaces()
     .map((w) => w.dir)
     .filter((dir) => listFiles(`${dir}/src`).some((p) => /\.browser\.test\.[cm]?[jt]sx?$/.test(p)));
+const packagingOrSkip = () => mode !== 'staged' || packagingNeeded(stagedPaths()) || 'no staged manifest, export or build setting (CI runs it)';
 const testPlan = () => (mode === 'staged' ? testScope(stagedPaths(), workspaces(), browserTested(), scopeOptions()) : { run: true, browser: true });
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */
@@ -95,8 +96,19 @@ const STEPS = [
   ],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
   ['knip', (m) => m !== 'quick', () => (hasPkg && exists('knip.json')) || 'knip not configured', () => pnpm('exec', 'knip', '--no-progress')],
-  ['publint', (m) => m !== 'quick', () => hasPkg || 'no workspace yet (M1)', () => node('scripts/gates/check-packages.mjs', ['--tool', 'publint'])],
-  ['attw', (m) => m !== 'quick', () => hasPkg || 'no workspace yet (M1)', () => node('scripts/gates/check-packages.mjs', ['--tool', 'attw'])],
+  // a staged commit of sources, reports, specs and docs changes no manifest, export or build setting: CI's --all runs both
+  [
+    'publint',
+    (m) => m !== 'quick',
+    () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'),
+    () => node('scripts/gates/check-packages.mjs', ['--tool', 'publint']),
+  ],
+  [
+    'attw',
+    (m) => m !== 'quick',
+    () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'),
+    () => node('scripts/gates/check-packages.mjs', ['--tool', 'attw']),
+  ],
   ['size-limit', (m) => m !== 'quick', () => (hasPkg && exists('.size-limit.js')) || 'size-limit not configured', () => pnpm('exec', 'size-limit')],
   [
     'layering',

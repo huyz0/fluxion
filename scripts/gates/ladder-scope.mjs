@@ -2,6 +2,8 @@
 // the Vitest run. A staged commit runs what its staged paths can affect; `pnpm verify` (--all), CI and
 // every completion gate still run everything, so nothing goes unchecked before a milestone closes.
 // Pure functions over repo-relative paths, so tests/harness/ladder-scope.test.mjs can pin them.
+import { readFileSync } from 'node:fs';
+import { repoPath } from './lib.mjs';
 import { BOOKKEEPING_PATHS } from './milestone-checks.mjs';
 
 /** Package, pack and app sources, tests and benches: what a code row changes. */
@@ -57,6 +59,21 @@ export const MANIFEST_HARNESS = [
   'verify-leg',
 ];
 
+/**
+ * Harness files for a staged doc, e2e spec or gate script that is not a source: the files that read exactly that
+ * (docs: the docs-to-API and diagnostics checks and the matrix; e2e: the matrix and the workspace shape, whose
+ * sandboxes copy e2e/; a gate script: the tests of that script and of the ladder that runs it). Anything else
+ * still runs every file; `--all` (CI) always does (NFR-DX-002, ci-cd.md §5).
+ */
+export const DOCS_HARNESS = ['architecture', 'diagnostics-doc', 'docs-consistency', 'trace'];
+export const E2E_HARNESS = ['trace', 'workspace-shape'];
+const LADDER_HARNESS = ['adapters', 'budget', 'ci-workflow', 'docs-consistency', 'ladder', 'ladder-scope', 'review', 'workspace-shape'];
+export const GATE_SCRIPT_HARNESS = {
+  'scripts/gates/milestone-checks.mjs': ['bench-leg', 'kits', 'ladder-scope', 'milestone-checks', 'verify-leg'],
+  'scripts/gates/ladder-scope.mjs': LADDER_HARNESS,
+  'scripts/gates/precommit.mjs': LADDER_HARNESS,
+};
+
 /** A workspace's manifest. */
 const MANIFEST = /^(packages|packs|apps)\/[^/]+\/package\.json$/;
 /** A workspace's API report: written by check-api --update and checked by the ladder's api step. */
@@ -106,19 +123,38 @@ export function lockfileWorkspaceOnly(before, after) {
  * traceability matrix, nothing for bookkeeping, and every file for any other path.
  */
 export function harnessFiles(staged, all, { lockfileWorkspaceOnly: workspaceLock = false } = {}) {
-  const needs = staged.map((p) => harnessFor(p, workspaceLock && staged.some((q) => MANIFEST.test(q))));
+  const needs = staged.map((p) => harnessFor(p, workspaceLock && staged.some((q) => MANIFEST.test(q)), all));
   if (needs.includes(null)) return all;
   const names = new Set(needs.flat());
   return all.filter((f) => [...names].some((name) => f.endsWith(`/${name}.test.mjs`)));
 }
 
+/** The names of the harness files in `all` whose text contains `path`. */
+function naming(path, all) {
+  return all
+    .filter((f) => {
+      try {
+        return readFileSync(repoPath(f), 'utf8').includes(path);
+      } catch {
+        return false;
+      }
+    })
+    .map((f) => f.replace(/^.*\/(.+)\.test\.mjs$/, '$1'));
+}
+
 /** The harness files one staged path needs, or null for every file. */
-function harnessFor(p, workspaceLock) {
+function harnessFor(p, workspaceLock, all = []) {
   if (BOOKKEEPING_PATHS.some((re) => re.test(p))) return [];
   if (SOURCE.test(p) || API_REPORT.test(p)) return SOURCE_HARNESS;
   if (MANIFEST.test(p) || (p === 'pnpm-lock.yaml' && workspaceLock)) return MANIFEST_HARNESS;
   if (p === TRACE_MATRIX) return ['trace'];
-  return null;
+  if (/^e2e\//.test(p)) return E2E_HARNESS;
+  // a doc: the docs files, and every harness file that names this very path (its real copy is read)
+  if (/^docs\/.+\.md$/.test(p)) return [...DOCS_HARNESS, ...naming(p, all)];
+  // a harness test file reruns itself; a shared helper (anything else under tests/harness) runs every file
+  const own = /^tests\/harness\/([^/]+)\.test\.mjs$/.exec(p);
+  if (own) return [own[1]];
+  return GATE_SCRIPT_HARNESS[p] ?? null;
 }
 
 /** Paths the Vitest run reads beyond the workspaces: its config, setup, fixtures, floors, toolchain. */
@@ -160,4 +196,14 @@ export function testScope(stagedPaths, workspaces, browserTested, { lockfileWork
   // the same file pattern as vitest.config.ts's coverage include, narrowed to these workspaces (review F2)
   const include = workspaces.filter((w) => !browserTested.includes(w.dir)).map((w) => `${w.dir}/src/**/*.{ts,tsx}`);
   return { run: true, browser: false, include };
+}
+
+/**
+ * Whether the packaging checks (publint, attw: a package's manifest, exports and built types) can be affected:
+ * false when every staged path is a source, an API report, an e2e spec, a doc or bookkeeping, none of which
+ * changes a manifest or a build setting. CI's `--all` ladder always runs them (NFR-DX-002, ci-cd.md §5).
+ */
+export function packagingNeeded(staged) {
+  const inert = (p) => SOURCE.test(p) || API_REPORT.test(p) || /^e2e\//.test(p) || /^docs\/.+\.md$/.test(p) || BOOKKEEPING_PATHS.some((re) => re.test(p));
+  return !staged.every(inert);
 }

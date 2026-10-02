@@ -4,7 +4,18 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { harnessFiles, lockfileWorkspaceOnly, MANIFEST_HARNESS, SAMPLE_HARNESS, SOURCE_HARNESS, testScope } from '../../scripts/gates/ladder-scope.mjs';
+import {
+  DOCS_HARNESS,
+  E2E_HARNESS,
+  GATE_SCRIPT_HARNESS,
+  harnessFiles,
+  lockfileWorkspaceOnly,
+  MANIFEST_HARNESS,
+  packagingNeeded,
+  SAMPLE_HARNESS,
+  SOURCE_HARNESS,
+  testScope,
+} from '../../scripts/gates/ladder-scope.mjs';
 import { checkDemoHtml, titled } from '../../scripts/gates/milestone-checks.mjs';
 import { REPO } from './helpers.mjs';
 
@@ -44,11 +55,34 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       SOURCE_HARNESS.map((n) => `tests/harness/${n}.test.mjs`),
     );
     assert.deepEqual(harnessFiles(['packages/core/src/x.ts', 'scripts/gates/lib.mjs'], ALL), ALL);
-    assert.deepEqual(harnessFiles(['docs/architecture/03-core-engine.md'], ALL), ALL);
+    assert.deepEqual(harnessFiles(['scripts/gates/lib.mjs'], ALL), ALL);
     // an API report is checked against dist by the ladder's api step: the source harness (M4.29)
     assert.deepEqual(harnessFiles(['packages/core/api/core.api.md'], ALL), SOURCE_HARNESS.map(file));
     // bookkeeping only: nothing the harness reads changed
     assert.deepEqual(harnessFiles(['.harness/state.json', 'docs/backlog/current.md', 'docs/milestones/M4.md'], ALL), []);
+  });
+
+  it('NFR-DX-002: a doc, an e2e spec or a gate script runs the files that read it, not every file', () => {
+    const only = (names) => ALL.filter((f) => names.some((n) => f.endsWith(`/${n}.test.mjs`)));
+    assert.deepEqual(harnessFiles(['docs/standards/ci-cd.md'], ALL), only(DOCS_HARNESS));
+    // a doc some harness file reads by name also runs that file (F1, F2 of the M7.32 review)
+    assert.deepEqual(harnessFiles(['docs/harness/dry-runs.md'], ALL), only([...DOCS_HARNESS, 'kits']));
+    assert.deepEqual(harnessFiles(['docs/architecture/01-overview.md'], ALL), only([...DOCS_HARNESS, 'layering']));
+    assert.deepEqual(harnessFiles(['e2e/x.spec.ts'], ALL), only(E2E_HARNESS));
+    for (const [path, names] of Object.entries(GATE_SCRIPT_HARNESS)) assert.deepEqual(harnessFiles([path], ALL), only(names), path);
+    assert.deepEqual(harnessFiles(['tests/harness/drift.test.mjs'], ALL), only(['drift']));
+    assert.deepEqual(harnessFiles(['tests/harness/helpers.mjs'], ALL), ALL);
+    // one path of any other kind in the commit still runs every file
+    assert.deepEqual(harnessFiles(['e2e/x.spec.ts', 'scripts/gates/lib.mjs'], ALL), ALL);
+    // every named file exists
+    for (const n of [...DOCS_HARNESS, ...E2E_HARNESS, ...Object.values(GATE_SCRIPT_HARNESS).flat()])
+      assert.ok(readdirSync(join(REPO, 'tests/harness')).includes(`${n}.test.mjs`), n);
+  });
+
+  it('NFR-DX-002: the packaging checks run for a manifest, a lockfile or a build setting, not for sources, reports, specs and docs', () => {
+    assert.equal(packagingNeeded(['packages/core/src/x.ts', 'packages/core/api/core.api.md', 'e2e/a.spec.ts', 'docs/a.md', '.harness/state.json']), false);
+    for (const p of ['packages/core/package.json', 'pnpm-lock.yaml', 'tsconfig.base.json', 'packages/core/tsup.config.ts', 'scripts/gates/check-packages.mjs'])
+      assert.equal(packagingNeeded(['packages/core/src/x.ts', p]), true, p);
   });
 
   it('a workspace manifest or a workspace-only lockfile runs the manifest harness; an external lockfile change runs them all (M4.29)', () => {
