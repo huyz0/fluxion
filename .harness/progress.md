@@ -1483,3 +1483,7 @@ F5 -> mode.present (first visible screen), shift+F5/Esc -> mode.toggle (shown sc
 ## 2026-10-02 M8.13 (claude)
 
 SCREEN_PRESETS/presetOf (schema), screen.setFormat (core, fixed size or infinite viewport; the other format fields are removed), navigator menu lines + row format label + custom size field, long menus scroll. Review pass r1 with four minors: three are to be fixed next as row M8.28, added with its fix (drag during size edit, infinite screen size/viewport prefill, menu near the window bottom); the keyboard guide regeneration was a stale-doc fix.
+
+## 2026-10-02 M8.28 (claude)
+
+Follow-ups of the M8.13 review: row not draggable while its size field is open, infinite screens keep their viewport on format changes (shownSize, formatArgs), context menu opens upward in the lower half (top:auto) at its own height. Round 1 (unrecorded, changes-requested) caught the missing top:auto and two weak tests; round 2 pass recorded as r1.
