@@ -6,7 +6,7 @@ import { validate } from './validate.js';
 
 const box = { x: 0, y: 0, w: 10, h: 10 };
 const broken: RawDocument = {
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   records: {
     doc: { id: 'doc', type: 'document' },
     s1: { id: 's1', type: 'screen', index: 'a0', size: { w: 800, h: 600 } },
@@ -53,13 +53,13 @@ describe('lenient repair (FR-DOC-003)', () => {
     const before = JSON.stringify(broken);
     repair(broken);
     expect(JSON.stringify(broken)).toBe(before);
-    const sound: RawDocument = { schemaVersion: '1.0', records: { doc: { id: 'doc', type: 'document' }, s1: { id: 's1', type: 'screen', index: 'a0' } } };
+    const sound: RawDocument = { schemaVersion: '1.1', records: { doc: { id: 'doc', type: 'document' }, s1: { id: 's1', type: 'screen', index: 'a0' } } };
     expect(repair(sound)).toEqual({ document: sound, diagnostics: [] });
   });
 
   it('FR-DOC-003: parseDocument repairs on load and reports each repair as a warning', () => {
     const doc = {
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       records: {
         doc: { id: 'doc', type: 'document' },
         s1: { id: 's1', type: 'screen', index: 'a0' },
@@ -79,14 +79,14 @@ describe('lenient repair (FR-DOC-003)', () => {
 
   it('NFR-REL-002: records that are null or an array are reported, never repaired or thrown on (M2.12 review)', () => {
     for (const records of [null, [{ id: 'doc', type: 'document' }], 'x']) {
-      const r = parseDocument(JSON.stringify({ schemaVersion: '1.0', records }));
+      const r = parseDocument(JSON.stringify({ schemaVersion: '1.1', records }));
       expect(r.ok ? [] : r.error.diagnostics.map((d) => d.code), JSON.stringify(records)).toEqual(['FLX_RECORDS_INVALID']);
     }
   });
 
   it('frees an end at the viewport centre of an infinite screen, and not when another binding still holds it (M2.12 review r2)', () => {
     const doc: RawDocument = {
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       records: {
         doc: { id: 'doc', type: 'document' },
         s1: { id: 's1', type: 'screen', index: 'a0', kind: 'infinite', viewport: { x: 10000, y: 5000, w: 1000, h: 800 } },
@@ -104,7 +104,7 @@ describe('lenient repair (FR-DOC-003)', () => {
 
   it('a removed binding with a corrupted end frees neither end (M2.14 review r3)', () => {
     const r = repair({
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       records: {
         s1: { id: 's1', type: 'screen', index: 'a0' },
         c: { id: 'c', type: 'element', screenId: 's1', index: 'a0', kind: 'connector', route: { type: 'straight' }, freeTarget: { x: 1, y: 1 } },

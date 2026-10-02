@@ -34,7 +34,7 @@ interface BaseRecord {
 }
 
 type RecordType =
-  | 'document' | 'screen' | 'element' | 'binding' | 'asset' | 'theme'
+  | 'document' | 'screen' | 'section' | 'element' | 'binding' | 'asset' | 'theme'
   | 'timeline' | 'step' | 'interaction' | 'variable' | 'plugin-ref' | 'comment';
 ```
 
@@ -43,13 +43,14 @@ The schema version is not a record field: `schemaVersion` (`MAJOR.MINOR`) sits o
 
 Key fields list what the schemas check (`?` = optional); every record also has `id`, `type`
 and `meta?`, and keeps unknown fields verbatim (FR-DOC-005). Fields named under "Planned" are
-not in schema `1.0`; until added (minor version) they are preserved but not checked.
+not in the current schema; until added (minor version) they are preserved but not checked.
 `tests/harness/docs-consistency.test.mjs` compares these tables with the built schema.
 
 | Record | Key fields | Notes |
 |---|---|---|
 | `document` (singleton) | `title?`, `lang?`, `themeId?`, `settings?` (`responsive`, `reducedMotion`, `lineJumps`), `authors?`, `created?`, `modified?` | One per file |
 | `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints`, `layout` (screen-level layout intent, e.g. layered LR — FR-LAY-005) |
+| `section` | `name`, `index`, `collapsed?` | A named group of screens (ADR-0021, schema `1.1`); `screen.sectionId` names it |
 | `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `style?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`; fields common to every core kind. Boxed kinds (all but connector) add transform {x,y,w,h,rot?,flipX?,flipY?} and text? (element kinds table). Planned: `layout` (container layout spec), `overrides` (per state/breakpoint) |
 | `binding` | `connectorId`, `end: 'source'\|'target'`, `elementId`, `anchor: AnchorRef` | Separate record → moving/deleting shapes updates bindings cleanly (tldraw pattern) |
 | `asset` | `hash` (sha256), `mime`, `size`, `name`, `w?`, `h?`, `source?` (URL if external) | Bytes live in the container, not in the record |
@@ -77,8 +78,9 @@ not in schema `1.0`; until added (minor version) they are preserved but not chec
 A group's `transform` is the bounds of its members (unturned), which they keep in screen coordinates; the core hook
 `core:5-group-bounds` refits it, and the groups around it, whenever a member is edited, added, removed or taken out.
 
-Planned record type (not in schema `1.0`): `section` — `name`, `index`, `collapsed?`; a named group of screens for the
-navigator and, later, the site's nav; `screen.sectionId` names it (ADR-0021, schema `1.1` with M8.14).
+Record type `section` (schema `1.1`, M8.14): `name`, `index`, `collapsed?`; a named group of screens for the
+navigator and, later, the site's nav. `screen.sectionId` names one (FLX_REF_MISSING otherwise), and sections are ordered
+among themselves by `index` (ADR-0021). The `1.0 → 1.1` migration drops the `sectionId` a 1.0 screen could not have meant.
 
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with
 only its envelope checked.
@@ -169,7 +171,7 @@ Layers: (1) structural (Zod), (2) referential (IDs, anchors, assets, tokens, plu
 
 ```json
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "records": {
     "doc": { "id": "doc", "type": "document", "title": "Checkout", "themeId": "th1" },
     "s1":  { "id": "s1", "type": "screen", "index": "a0", "name": "Architecture", "size": { "w": 1920, "h": 1080 } },

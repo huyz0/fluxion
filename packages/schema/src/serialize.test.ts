@@ -5,7 +5,7 @@ import { canonicalNumber, parseDocument, serializeDocument } from './serialize.j
 
 const text = (s: string) => ({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: s }] }] });
 const base = {
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   records: {
     doc: { id: 'doc', type: 'document', title: 'Checkout' },
     s1: { id: 's1', type: 'screen', index: 'a0', name: 'Main' },
@@ -90,9 +90,9 @@ describe('canonical serialization', () => {
   });
 
   it('writes sorted keys, 2-space indent, LF and a trailing newline', () => {
-    const out = serializeDocument(asDoc({ schemaVersion: '1.0', records: { b: { id: 'b', type: 'document' }, a: { type: 'hologram', id: 'a' } } }));
+    const out = serializeDocument(asDoc({ schemaVersion: '1.1', records: { b: { id: 'b', type: 'document' }, a: { type: 'hologram', id: 'a' } } }));
     expect(out).toBe(
-      '{\n  "records": {\n    "a": {\n      "id": "a",\n      "type": "hologram"\n    },\n    "b": {\n      "id": "b",\n      "type": "document"\n    }\n  },\n  "schemaVersion": "1.0"\n}\n',
+      '{\n  "records": {\n    "a": {\n      "id": "a",\n      "type": "hologram"\n    },\n    "b": {\n      "id": "b",\n      "type": "document"\n    }\n  },\n  "schemaVersion": "1.1"\n}\n',
     );
     expect(out.includes('\r')).toBe(false);
   });
@@ -118,7 +118,7 @@ describe('canonical serialization', () => {
 
   it('FR-DOC-005: rounds only geometry fields; every other number is written exactly (M2.9 review r2)', () => {
     const doc = asDoc({
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       records: {
         doc: { id: 'doc', type: 'document', ratio: 0.12345 },
         s1: {
@@ -184,7 +184,7 @@ describe('canonical serialization', () => {
   });
 
   it('FR-DOC-001: a "__proto__" key in unknown data survives serialize and parse (M2.11 review F1)', () => {
-    const text = '{"schemaVersion":"1.0","records":{"doc":{"id":"doc","type":"document","x-meta":{"__proto__":{"a":1},"b":2,"c":{"__proto__":"x"}}}}}';
+    const text = '{"schemaVersion":"1.1","records":{"doc":{"id":"doc","type":"document","x-meta":{"__proto__":{"a":1},"b":2,"c":{"__proto__":"x"}}}}}';
     const once = serializeDocument(parsed(text));
     expect(once).toContain('"__proto__": {');
     expect(once).toContain('"__proto__": "x"');

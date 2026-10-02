@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "records": {
     "doc": { "id": "doc", "type": "document" },
     "doc2": { "id": "doc2", "type": "document" },

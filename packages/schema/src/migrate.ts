@@ -3,44 +3,19 @@
 // SCHEMA_VERSION. Every released version keeps a fixture that must migrate and validate.
 import { SCHEMA_VERSION } from './document-file.js';
 import type { FluxError } from './errors.js';
+import type { Migration, RawDocument } from './migration-types.js';
+import { migrate10to11 } from './migrations/1.0-to-1.1.js';
 import { err, ok, type Result } from './result.js';
 
-/**
- * A document before validation: a schema version, a record map, anything else kept.
- *
- * @public
- */
-export type RawDocument = {
-  /** `MAJOR.MINOR` schema version. */
-  readonly schemaVersion: string;
-  /** Records keyed by id, unvalidated. */
-  readonly records: { readonly [id: string]: unknown };
-  /** Other top-level data, kept. */
-  readonly [key: string]: unknown;
-};
+export type { Migration, RawDocument } from './migration-types.js';
 
 /**
- * One migration step from schema version `from` to `to`. `up` is pure: it returns a new
- * document and never mutates its input.
+ * The released migration chain: 1.0 → 1.1 (sections, ADR-0021). The next schema change appends a step
+ * here with a fixture of the version it leaves (contracts.md rule 8).
  *
  * @public
  */
-export type Migration = {
-  /** Version it applies to. */
-  readonly from: string;
-  /** Version it produces. */
-  readonly to: string;
-  /** The conversion. */
-  readonly up: (doc: RawDocument) => RawDocument;
-};
-
-/**
- * The released migration chain. Empty while 1.0 is the only released version; the next schema
- * change appends a step here with a fixture of the version it leaves (contracts.md rule 8).
- *
- * @public
- */
-export const MIGRATIONS: readonly Migration[] = [];
+export const MIGRATIONS: readonly Migration[] = [migrate10to11];
 
 /**
  * Result of {@link migrate}: the document at the current version and the steps applied.

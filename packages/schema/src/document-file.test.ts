@@ -5,7 +5,7 @@ const text = (s: string) => ({ type: 'doc', content: [{ type: 'paragraph', conte
 
 // the canonical example of 02-document-model §7 (its elided text filled in)
 const example = {
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   records: {
     doc: { id: 'doc', type: 'document', title: 'Checkout', themeId: 'th1' },
     th1: { id: 'th1', type: 'theme', name: 'Default', tokens: {} },
@@ -83,6 +83,6 @@ describe('document file', () => {
       expect(documentFileSchema.safeParse({ ...example, schemaVersion: version }).success, version).toBe(true);
     expect(documentFileSchema.safeParse({ ...example, records: { z: { type: 'hologram' } } }).success).toBe(false);
     expect(documentFileSchema.safeParse({ ...example, records: { z: { id: 'z' } } }).success).toBe(false);
-    expect(documentFileSchema.safeParse({ schemaVersion: '1.0' }).success).toBe(false);
+    expect(documentFileSchema.safeParse({ schemaVersion: '1.1' }).success).toBe(false);
   });
 });

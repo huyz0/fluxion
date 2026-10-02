@@ -23,7 +23,7 @@ export const anchorDefSchema: z.ZodType<AnchorDef>;
 export type AnchorRef = AutoAnchor | FloatingAnchor | NamedAnchor | SideAnchor | PointAnchor;
 
 // @public
-export type AnyRecord = DocumentRecord | ScreenRecord | ElementRecord | UnknownElement | BindingRecord | ResourceRecord | BehaviourRecord | UnknownRecord;
+export type AnyRecord = DocumentRecord | ScreenRecord | SectionRecord | ElementRecord | UnknownElement | BindingRecord | ResourceRecord | BehaviourRecord | UnknownRecord;
 
 // @public
 export type AssetRecord = Extensible<{
@@ -640,6 +640,16 @@ export type ScreenRecord = Extensible<{
 
 // @public
 export function screenSize(screen: Pick<ScreenRecord, "size">): Size;
+
+// @public
+export type SectionRecord = Extensible<{
+    readonly id: RecordId;
+    readonly type: "section";
+    readonly meta?: Meta;
+    readonly name: string;
+    readonly index: IndexKey;
+    readonly collapsed?: boolean;
+}>;
 
 // @public
 export function seededRandom(seed: number): Random;

@@ -20,6 +20,7 @@ import { qualifiedNameSchema } from './records/element-base.js';
 import { elementKindSchemas } from './records/element-schemas.js';
 import { assetRecordSchema, pluginRefRecordSchema, type ResourceRecord, themeRecordSchema } from './records/resources.js';
 import { type ScreenRecord, screenRecordSchema } from './records/screen.js';
+import { type SectionRecord, sectionRecordSchema } from './records/section.js';
 
 /**
  * A record of a type this version does not know (from a newer minor version); kept verbatim
@@ -39,7 +40,16 @@ export type UnknownRecord = Extensible<{
  *
  * @public
  */
-export type AnyRecord = DocumentRecord | ScreenRecord | ElementRecord | UnknownElement | BindingRecord | ResourceRecord | BehaviourRecord | UnknownRecord;
+export type AnyRecord =
+  | DocumentRecord
+  | ScreenRecord
+  | SectionRecord
+  | ElementRecord
+  | UnknownElement
+  | BindingRecord
+  | ResourceRecord
+  | BehaviourRecord
+  | UnknownRecord;
 
 /**
  * The record types this version knows.
@@ -49,6 +59,7 @@ export type AnyRecord = DocumentRecord | ScreenRecord | ElementRecord | UnknownE
 export const RECORD_TYPES: readonly string[] = [
   'document',
   'screen',
+  'section',
   'element',
   'binding',
   'asset',
@@ -66,7 +77,7 @@ export const RECORD_TYPES: readonly string[] = [
  *
  * @public
  */
-export const SCHEMA_VERSION: string = '1.0';
+export const SCHEMA_VERSION: string = '1.1';
 
 /**
  * A document file: schema version plus records keyed by ID.
@@ -83,6 +94,7 @@ export type DocumentFile = Extensible<{
 const BY_TYPE: { readonly [type: string]: z.ZodType<AnyRecord> } = {
   document: documentRecordSchema,
   screen: screenRecordSchema,
+  section: sectionRecordSchema,
   binding: bindingRecordSchema,
   asset: assetRecordSchema,
   theme: themeRecordSchema,

@@ -84,6 +84,8 @@ export const GATE_SCRIPT_HARNESS = {
  */
 export const NAMED_PATH_HARNESS = [
   [/^\.changeset\/.+\.md$/, ['ci-workflow', 'milestone-checks']],
+  // the shared documents: the harness files that name them (the Vitest suites that read them run through VITEST_GLOBAL)
+  [/^(examples|fixtures)\/.+\.json$/, ['milestone-checks', 'tests-kept']],
   [/^scripts\/docs\/[^/]+\.mjs$/, ['milestone-checks', 'portability', 'size']],
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],

@@ -154,9 +154,35 @@ const GROUP_THEN_UNGROUP: Op[] = [
   { command: 'screen.duplicate', pick: 0, value: 1 },
 ];
 
+/** A document with two screens, two shapes and a connector between them, and one op for each of the other commands. */
+const MISC_EXAMPLE: DocumentFile = (() => {
+  const b = documentBuilder({ seed: 94 });
+  const first = b.screen();
+  b.screen();
+  const left = b.rect(first, { x: 0 });
+  const right = b.rect(first, { x: 300 });
+  b.connect(left, right);
+  return b.build();
+})();
+const MISC_OPS: Op[] = [
+  'element.create',
+  'element.createMany',
+  'element.update',
+  'element.updateMany',
+  'binding.set',
+  'connector.freeEnd',
+  'element.delete',
+  'screen.create',
+  'screen.reorder',
+  'screen.delete',
+  'document.update',
+  'asset.create',
+].map((command) => ({ command, pick: 0, value: 1 }));
+
 describe('core determinism (NFR-REL-005, M3 final F4)', () => {
   it('NFR-REL-005: the same command sequence twice gives equal diffs, history and document', () => {
     // the guaranteed example really commits both of its ops
+    expect(new Set(play(MISC_EXAMPLE, MISC_OPS).results)).toEqual(new Set(['ok']));
     expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
     let committed = 0;
     const committedBy = new Set<string>();
@@ -172,7 +198,12 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
       }),
       // generated documents hold no group, so element.ungroup commits only after an element.group in the same list, by
       // chance: this example guarantees both commit (M8.25), whatever the generators draw
-      { examples: [[GROUPED_EXAMPLE, GROUP_THEN_UNGROUP]] },
+      {
+        examples: [
+          [GROUPED_EXAMPLE, GROUP_THEN_UNGROUP],
+          [MISC_EXAMPLE, MISC_OPS],
+        ],
+      },
     );
     // the property exercised real commits of every built-in, not only refusals (M4 cp1 F7)
     expect(committed).toBeGreaterThan(0);

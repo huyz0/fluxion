@@ -76,6 +76,7 @@ function checkScreens(c: References): void {
   for (const s of c.of('screen')) {
     c.ref(s, ['masterId'], ['screen']);
     c.ref(s, ['parentElementId'], ['element']);
+    c.ref(s, ['sectionId'], ['section']);
     c.ref(s, ['background', 'assetId'], ['asset']);
   }
 }
@@ -188,7 +189,7 @@ function checkUniqueness(c: References): void {
             : '';
     return `${String(r['type'])}\u0000${group}\u0000${String(r['index'])}`;
   };
-  const ordered = [...c.records.values()].filter((r) => ['screen', 'element', 'timeline', 'step'].includes(String(r['type'])));
+  const ordered = [...c.records.values()].filter((r) => ['screen', 'section', 'element', 'timeline', 'step'].includes(String(r['type'])));
   duplicates(c, ordered, sibling, (r) =>
     c.push(
       'FLX_INDEX_DUPLICATE',

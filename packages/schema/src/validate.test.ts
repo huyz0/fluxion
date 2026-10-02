@@ -17,7 +17,7 @@ import { isValid, validate, validateRecord, validateReferences } from './validat
 const summary = (doc: unknown) => validate(doc).map(({ code, severity, path }) => ({ code, severity, path }));
 
 const minimal = {
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   records: {
     doc: { id: 'doc', type: 'document', title: 'Two rects' },
     s1: { id: 's1', type: 'screen', index: 'a0' },
@@ -132,7 +132,7 @@ describe('validateRecord and validateReferences', () => {
     expect(validateReferences(records)).toEqual([]);
     const { s1: _s, ...noScreen } = minimal.records;
     const without = new Map(Object.entries(noScreen)) as unknown as Parameters<typeof validateReferences>[0];
-    expect(validateReferences(without)).toEqual(validate({ schemaVersion: '1.0', records: noScreen }));
+    expect(validateReferences(without)).toEqual(validate({ schemaVersion: '1.1', records: noScreen }));
     expect(validateReferences(without).map((d) => d.code)).toContain('FLX_REF_MISSING');
   });
 });

@@ -78,6 +78,7 @@ export {
   screenKind,
   screenSize,
 } from './records/screen.js';
+export type { SectionRecord } from './records/section.js';
 export { type Repaired, repair } from './repair.js';
 export { type Err, err, type Ok, ok, type Result } from './result.js';
 export { checkRichText, MAX_RICH_TEXT_DEPTH, type RichTextDoc, type RichTextIssue, type RichTextMark, type RichTextNode } from './rich-text.js';

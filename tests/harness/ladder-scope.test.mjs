@@ -85,6 +85,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     assert.deepEqual(harnessFiles(['scripts/gates/m7-complete.mjs'], ALL), only(['milestone-checks', 'portability']));
     assert.deepEqual(harnessFiles(['knip.json'], ALL), only(['milestone-checks']));
+    assert.deepEqual(harnessFiles(['fixtures/docs/minimal.flux.json', 'examples/r0-static.flux.json'], ALL), only(['milestone-checks', 'tests-kept']));
     assert.deepEqual(
       harnessFiles(['scripts/gates/thresholds.mjs'], ALL),
       only(['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']),
