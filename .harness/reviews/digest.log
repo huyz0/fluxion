@@ -387,3 +387,4 @@ M8.9	e06593b6a5555775ce7792d433dc022c8895bf52a3936ce90bb4b80eb78edc69	r1	pass	cl
 M8.10	2dcd2bcf32402705d4455f25c9ef059e5be411fa94a4fc5f18380768086e7ee2	r1	pass	claude:sonnet-5.5	0 findings
 M8.11	92ae888fc23fdb7ef16ad442d48b838800abbbfc166b80cc592cfad96e59cbdd	r1	pass	claude:sonnet-5-5	0 findings
 M8.12	2146550c5a9af46c62903071f40b374c8ff55da76df1671e89e648f86ee48ed1	r1	pass	claude:sonnet-5-5	0 findings
+M8.27	20514d1a8bdd64385adb54cb1479e01ed0ac84b70216ea0b6d6b6505eade4da4	r1	pass	claude:sonnet-5.5	0 findings

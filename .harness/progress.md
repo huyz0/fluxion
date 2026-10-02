@@ -1475,3 +1475,7 @@ screen.rename, screen.setHidden, screen.duplicate (elements + bindings between t
 ## 2026-10-02 M8.12 (claude)
 
 Screens navigator (screens-tab.tsx + navigator/): lazy thumbnails, HTML5 drag reorder via screen.reorder, inline rename, hide toggle, New screen, screen menu (rename/hide/duplicate/delete). The row was split: F5/shift+F5 and the parity suite are M8.27. Side effects fixed: snapping (M8.10) broke two move E2E specs (they switch Snapping off), and thumbnails repeat element ids (a browser test now scopes to main). The shapes-gallery visual E2E fails here without these changes too.
+
+## 2026-10-02 M8.27 (claude)
+
+F5 -> mode.present (first visible screen), shift+F5/Esc -> mode.toggle (shown screen); useModeSwitch takes the store and a from argument. Parity compares every screen of the gallery, r0-static and rich-text. The reviewer noted the generated traceability row for FR-EDT-009 names present.mode-switch with +3 (check-trace output; not hand-edited).
