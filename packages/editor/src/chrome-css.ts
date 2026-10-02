@@ -60,6 +60,8 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-slider[data-mixed] { opacity: 0.5; }
 .fx-chrome-swatch { width: 28px; height: 24px; padding: 0; border: 1px solid var(--ui-border); border-radius: 4px; background: none; }
 .fx-chrome-swatch[data-mixed] { opacity: 0.5; }
+.fx-chrome-paint-preview { width: 28px; height: 24px; border: 1px solid var(--ui-border); border-radius: 4px; background: repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 0 0 / 8px 8px; }
+.fx-chrome-icon { display: inline-block; min-width: 1.2em; text-align: center; line-height: 1; }
 .fx-chrome-choices { display: flex; gap: 2px; flex-wrap: wrap; }
 .fx-chrome-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 4px; min-width: 240px; padding: 12px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2); }
 .fx-chrome-screens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }

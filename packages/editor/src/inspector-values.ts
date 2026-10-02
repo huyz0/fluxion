@@ -59,3 +59,58 @@ export const colorTokenRefs = (theme: Theme): readonly string[] => colorRefs((th
 
 /** Whether a stored paint is a plain colour value the colour input can show (`#rrggbb`). */
 export const isHex6 = (value: unknown): value is string => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
+
+/** The glyph an enum option wears on its button (the option's name stays its accessible name); a first letter for an option without one. */
+const GLYPHS: Readonly<Record<string, string>> = {
+  none: '∅',
+  shrink: '⇲',
+  grow: '⇱',
+  width: '↔',
+  height: '↕',
+  cover: '▣',
+  contain: '▢',
+  fill: '■',
+  left: '⇤',
+  center: '↔',
+  right: '⇥',
+  justify: '☰',
+  straight: '╱',
+  curved: '⌒',
+  orthogonal: '┐',
+  polyline: '⌇',
+};
+
+/** The icon of enum option `option`. */
+export const optionGlyph = (option: string): string => GLYPHS[option] ?? (option.slice(0, 1).toUpperCase() || '·');
+
+/** What a stored paint is when it is no plain colour: `'gradient'`, `'image'`, else undefined. */
+export function paintKind(value: unknown): 'gradient' | 'image' | undefined {
+  const type = typeof value === 'object' && value !== null ? (value as { readonly type?: unknown }).type : undefined;
+  if (type === 'linear-gradient' || type === 'radial-gradient') return 'gradient';
+  return type === 'image' ? 'image' : undefined;
+}
+
+/** How a gradient or image paint reads in the colour box (it is shown, not edited as text). */
+export function paintLabel(value: unknown): string | undefined {
+  const type = (value as { readonly type?: string } | null | undefined)?.type;
+  return paintKind(value) === undefined ? undefined : type === 'image' ? 'image' : type === 'radial-gradient' ? 'radial gradient' : 'linear gradient';
+}
+
+/** The CSS background a gradient paint previews as: its stops in offset order, a stop that is no plain hex colour grey. */
+export function gradientCss(value: unknown): string | undefined {
+  if (paintKind(value) !== 'gradient') return undefined;
+  const g = value as { readonly type: string; readonly angle?: number; readonly stops?: readonly { readonly offset: number; readonly color: unknown }[] };
+  const stops = [...(g.stops ?? [])]
+    .sort((a, b) => a.offset - b.offset)
+    .map((st) => `${typeof st.color === 'string' && /^#[0-9a-f]{3,8}$/i.test(st.color) ? st.color : '#888888'} ${Math.round(st.offset * 100)}%`);
+  if (stops.length < 2) return undefined;
+  return g.type === 'radial-gradient' ? `radial-gradient(${stops.join(', ')})` : `linear-gradient(${(g.angle ?? 0) + 90}deg, ${stops.join(', ')})`;
+}
+
+/** A number one step up (`direction` 1) or down (-1) from `current`, ten steps with `coarse`, a tenth with `fine`, within the field's bounds. */
+export const stepped = (
+  def: Pick<FieldDef, 'min' | 'max'>,
+  current: number,
+  direction: 1 | -1,
+  mode: { readonly coarse?: boolean; readonly fine?: boolean } = {},
+): number => scrubbed(def, current, direction * SCRUB_PX_PER_STEP, mode);

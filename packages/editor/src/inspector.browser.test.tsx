@@ -146,10 +146,106 @@ describe('inspector widgets (FR-EDT-008)', { timeout: 60_000 }, () => {
     await act(frame);
     expect(Object.hasOwn(style(core, ids[0] as RecordId), 'fill')).toBe(false);
     // the text fit is an enum of three: buttons, one pressed once set
-    const grow = [...inspector.querySelectorAll('button')].find((b) => b.textContent === 'grow') as HTMLElement;
+    const grow = inspector.querySelector('button[aria-label="grow"]') as HTMLElement;
     await userEvent.click(grow);
     await act(frame);
     expect((core.store.get(ids[0] as RecordId) as unknown as { textFit: { mode: string } }).textFit.mode).toBe('grow');
-    expect([...inspector.querySelectorAll('button[aria-pressed="true"]')].map((b) => b.textContent)).toContain('grow');
+    expect([...inspector.querySelectorAll('button[aria-pressed="true"]')].map((b) => b.getAttribute('aria-label'))).toContain('grow');
+  });
+
+  it('FR-EDT-008: an enum field shows an icon per option', async () => {
+    const { session, ids, inspector } = await open();
+    await act(async () => session.selection.set([ids[0] as RecordId]));
+    await act(frame);
+    const fit = inspector.querySelector('fieldset[aria-label="Fit"]') as HTMLElement;
+    const buttons = [...fit.querySelectorAll('button')];
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['none', 'shrink', 'grow']);
+    // an icon, not the option's name: the name is the accessible name and the tooltip
+    for (const b of buttons) {
+      expect(b.textContent).not.toBe(b.getAttribute('aria-label'));
+      expect(b.textContent?.length).toBeGreaterThan(0);
+      expect(b.getAttribute('title')).toBe(b.getAttribute('aria-label'));
+    }
+  });
+
+  it('FR-EDT-008: a rejected entry is given back', async () => {
+    const { core, session, ids, inspector } = await open();
+    await act(async () => session.selection.set([ids[0] as RecordId]));
+    await act(frame);
+    const steps = core.store.history.canUndo();
+    const field = input(inspector, 'Fill value');
+    await userEvent.click(field);
+    field.select();
+    await userEvent.keyboard('this is not a colour (((){Enter}');
+    await act(frame);
+    // the document refused it: nothing was written and the box shows what is stored again
+    expect(style(core, ids[0] as RecordId)['fill']).toBe('#ff0000');
+    expect(input(inspector, 'Fill value').value).toBe('#ff0000');
+    expect(core.store.history.canUndo()).toBe(steps);
+  });
+
+  it('FR-EDT-008: arrow keys step a number', async () => {
+    const { core, ids, inspector } = await open();
+    await userEvent.click(input(inspector, 'Width'));
+    await userEvent.keyboard('{ArrowUp}');
+    await act(frame);
+    expect(ids.map((id) => box(core, id)['w'])).toEqual([101, 101, 101]);
+    await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}');
+    await act(frame);
+    expect(ids.map((id) => box(core, id)['w'])).toEqual([91, 91, 91]);
+    // each key is one undo step
+    core.store.history.undo();
+    await act(frame);
+    expect(ids.map((id) => box(core, id)['w'])).toEqual([101, 101, 101]);
+  });
+
+  it('FR-EDT-008: a gradient fill is shown as a gradient', async () => {
+    const { core, session, ids, inspector } = await open();
+    const gradient = {
+      type: 'linear-gradient',
+      angle: 0,
+      stops: [
+        { offset: 0, color: '#ff0000' },
+        { offset: 1, color: '#0000ff' },
+      ],
+    };
+    await act(async () => core.execute('element.update', { id: ids[0], fields: { style: { fill: gradient } } }));
+    await act(async () => session.selection.set([ids[0] as RecordId]));
+    await act(frame);
+    expect(input(inspector, 'Fill value').value).toBe('linear gradient');
+    const preview = inspector.querySelector('.fx-chrome-paint-preview') as HTMLElement;
+    expect(preview.getAttribute('data-paint')).toBe('gradient');
+    expect(preview.style.background).toContain('linear-gradient');
+    // leaving the box unchanged does not turn the gradient into the text shown
+    const steps = core.store.history.canUndo();
+    await userEvent.click(input(inspector, 'Fill value'));
+    await userEvent.keyboard('{Tab}');
+    await act(frame);
+    expect(style(core, ids[0] as RecordId)['fill']).toEqual(gradient);
+    expect(core.store.history.canUndo()).toBe(steps);
+  });
+
+  it('FR-EDT-008: a scrub started before a selection change does not carry into the new selection', async () => {
+    const { core, session, ids, inspector } = await open();
+    const label = () => [...inspector.querySelectorAll('.fx-chrome-field-label')].find((l) => l.textContent === 'Width') as HTMLElement;
+    const fire = (type: string, x: number) => label().dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 1, clientX: x, clientY: 5 }));
+    await act(async () => {
+      fire('pointerdown', 100);
+      fire('pointermove', 140);
+    });
+    await act(async () => session.selection.set([ids[1] as RecordId]));
+    await act(frame);
+    // a new drag on the new selection is one step of its own that changes only that element
+    await act(async () => {
+      fire('pointerdown', 100);
+      fire('pointermove', 180);
+      fire('pointerup', 180);
+    });
+    await act(frame);
+    // the first scrub took the three shapes to 110; this one is 20 steps more on the second, and its own undo step
+    expect(box(core, ids[1] as RecordId)['w']).toBe(130);
+    core.store.history.undo();
+    await act(frame);
+    expect(box(core, ids[1] as RecordId)['w']).toBe(110);
   });
 });

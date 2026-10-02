@@ -1,6 +1,19 @@
 import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
-import { clampTo, colorTokenRefs, isHex6, parseNumber, SCRUB_PX_PER_STEP, scrubbed, stepOf } from './inspector-values.js';
+import {
+  clampTo,
+  colorTokenRefs,
+  gradientCss,
+  isHex6,
+  optionGlyph,
+  paintKind,
+  paintLabel,
+  parseNumber,
+  SCRUB_PX_PER_STEP,
+  scrubbed,
+  stepOf,
+  stepped,
+} from './inspector-values.js';
 
 const unit = { min: 0, max: 1 };
 
@@ -63,6 +76,56 @@ describe('inspector values (FR-EDT-008)', () => {
       false,
       false,
       false,
+    ]);
+  });
+
+  it('FR-EDT-008: arrow keys step a number by one, ten with shift, a tenth with alt, within the bounds', () => {
+    expect([stepped({}, 5, 1), stepped({}, 5, -1), stepped({}, 5, 1, { coarse: true }), stepped({}, 5, 1, { fine: true })]).toEqual([6, 4, 15, 5.1]);
+    expect([stepped(unit, 0.5, 1), stepped(unit, 1, 1), stepped(unit, 0, -1)]).toEqual([0.51, 1, 0]);
+  });
+
+  it('FR-EDT-008: an enum option has an icon, a first letter when it has none', () => {
+    expect([optionGlyph('left'), optionGlyph('grow'), optionGlyph('zigzag'), optionGlyph('')]).toEqual(['⇤', '⇱', 'Z', '·']);
+  });
+
+  it('FR-EDT-008: a gradient or image paint is told from a plain colour, and a gradient previews with its stops in order', () => {
+    const g = {
+      type: 'linear-gradient',
+      angle: 0,
+      stops: [
+        { offset: 1, color: '#0000ff' },
+        { offset: 0, color: '#ff0000' },
+        { offset: 0.5, color: '{color.primary}' },
+      ],
+    };
+    expect([
+      paintKind(g),
+      paintKind({ type: 'radial-gradient', stops: [] }),
+      paintKind({ type: 'image' }),
+      paintKind('#fff'),
+      paintKind(undefined),
+      paintKind(null),
+    ]).toEqual(['gradient', 'gradient', 'image', undefined, undefined, undefined]);
+    expect([paintLabel(g), paintLabel({ type: 'radial-gradient', stops: [] }), paintLabel({ type: 'image' }), paintLabel('#fff')]).toEqual([
+      'linear gradient',
+      'radial gradient',
+      'image',
+      undefined,
+    ]);
+    expect(gradientCss(g)).toBe('linear-gradient(90deg, #ff0000 0%, #888888 50%, #0000ff 100%)');
+    expect(
+      gradientCss({
+        type: 'radial-gradient',
+        stops: [
+          { offset: 0, color: '#fff' },
+          { offset: 1, color: '#000' },
+        ],
+      }),
+    ).toBe('radial-gradient(#fff 0%, #000 100%)');
+    expect([gradientCss({ type: 'linear-gradient', stops: [{ offset: 0, color: '#fff' }] }), gradientCss({ type: 'image' }), gradientCss('#fff')]).toEqual([
+      undefined,
+      undefined,
+      undefined,
     ]);
   });
 });

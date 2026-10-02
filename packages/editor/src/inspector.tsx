@@ -9,7 +9,7 @@ import type { FieldDef, RecordId } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { type KeyboardEvent, type PointerEvent, type ReactNode, useEffect, useId, useMemo, useRef } from 'react';
 import { applyField, type InspectorField, type Inspectors, inspect } from './inspector-model.js';
-import { colorTokenRefs, isHex6, parseNumber, scrubbed } from './inspector-values.js';
+import { colorTokenRefs, gradientCss, isHex6, optionGlyph, paintKind, paintLabel, parseNumber, scrubbed, stepped } from './inspector-values.js';
 import type { ShapeDefs } from './param-handles.js';
 import { beginGesture, type Execute, type Gesture } from './pointer.js';
 import type { Session } from './session.js';
@@ -30,8 +30,8 @@ export type InspectorFieldsProps = {
 
 /** What a widget does to the selection: a one-step change, or a drag's changes as one step. */
 type Apply = {
-  /** Set the field now, as one undo step. */
-  set(value: unknown): void;
+  /** Set the field now, as one undo step; false when the document refused the value (the widget gives the entry back). */
+  set(value: unknown): boolean;
   /** Set the field as part of a drag; `end` closes the drag's one step. */
   drag(value: unknown): void;
   /** End the drag. */
@@ -50,16 +50,23 @@ export function InspectorFields(props: InspectorFieldsProps): ReactNode {
   selected.current = model?.ids ?? [];
   // the selection changed under a drag: its step ends where it was
   const selectedKey = model?.ids.join(',');
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the drag ends when the selection's ids change, not on every edit
-  useEffect(() => () => void gesture.current?.end(), [selectedKey]);
+  useEffect(
+    () => () => {
+      gesture.current?.end();
+      // a scrub after the change is a drag of its own, not a continuation of the old selection's
+      gesture.current = undefined;
+    },
+    [selectedKey],
+  );
   if (model === undefined) return null;
   const applier = (def: FieldDef): Apply => {
     const command = (value: unknown) => applyField(store, selected.current, def.path, value);
     return {
       set: (value) => {
         const c = command(value);
-        if (c !== undefined) execute(c.id, c.args);
+        const ok = c === undefined || execute(c.id, c.args).ok;
         store.history.seal();
+        return ok;
       },
       drag: (value) => {
         const c = command(value);
@@ -122,11 +129,26 @@ function commitKeys(e: KeyboardEvent<HTMLInputElement>, original: string): void 
   }
 }
 
+/**
+ * The arrow keys step a number field (shift by ten, alt by a tenth); a box still showing a typed value steps from it.
+ * True when the key was one, and was taken.
+ */
+function arrowStep(e: KeyboardEvent<HTMLInputElement>, field: InspectorField, apply: Apply): boolean {
+  if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || field.mixed || typeof field.value !== 'number') return false;
+  e.preventDefault();
+  const typed = parseNumber(field.def, e.currentTarget.value);
+  const next = stepped(field.def, typeof typed === 'number' ? typed : field.value, e.key === 'ArrowUp' ? 1 : -1, { coarse: e.shiftKey, fine: e.altKey });
+  e.currentTarget.value = String(apply.set(next) ? next : field.value);
+  return true;
+}
+
 /** A number: typed (Enter or leaving commits) or scrubbed by dragging its label. */
 function NumberField(props: { readonly field: InspectorField; readonly apply: Apply }): ReactNode {
   const { field, apply } = props;
   const { def } = field;
   const start = useRef<{ readonly x: number; readonly value: number } | undefined>(undefined);
+  // a step remounts the box (its value is its key); the key presses go on, so the new box takes the focus
+  const refocus = useRef(false);
   const canScrub = !field.mixed && typeof field.value === 'number';
   const down = (e: PointerEvent<HTMLElement>) => {
     if (!canScrub) return;
@@ -155,17 +177,26 @@ function NumberField(props: { readonly field: InspectorField; readonly apply: Ap
       </span>
       <input
         key={`${field.mixed}:${shown(field)}`}
+        ref={(el) => {
+          if (el !== null && refocus.current) {
+            refocus.current = false;
+            el.focus();
+          }
+        }}
         className="fx-chrome-input"
         type="text"
         inputMode="decimal"
         aria-label={def.label}
         defaultValue={shown(field)}
         placeholder={field.mixed ? 'Mixed' : ''}
-        onKeyDown={(e) => commitKeys(e, shown(field))}
+        onKeyDown={(e) => {
+          if (!arrowStep(e, field, apply)) commitKeys(e, shown(field));
+          else refocus.current = true;
+        }}
         onBlur={(e) => {
           const n = parseNumber(def, e.currentTarget.value);
           if (n === 'invalid') e.currentTarget.value = shown(field);
-          else if (e.currentTarget.value !== shown(field)) apply.set(n);
+          else if (e.currentTarget.value !== shown(field) && !apply.set(n)) e.currentTarget.value = shown(field);
         }}
       />
     </label>
@@ -249,8 +280,18 @@ function SelectField(props: { readonly field: InspectorField; readonly apply: Ap
       <span className="fx-chrome-field-label">{def.label}</span>
       <span className="fx-chrome-choices">
         {options.map((o) => (
-          <button key={o} type="button" className="fx-chrome-button" aria-pressed={!field.mixed && field.value === o} onClick={() => apply.set(o)}>
-            {o}
+          <button
+            key={o}
+            type="button"
+            className="fx-chrome-button"
+            aria-label={o}
+            title={o}
+            aria-pressed={!field.mixed && field.value === o}
+            onClick={() => apply.set(o)}
+          >
+            <span aria-hidden="true" className="fx-chrome-icon">
+              {optionGlyph(o)}
+            </span>
           </button>
         ))}
       </span>
@@ -263,9 +304,16 @@ function PaintField(props: { readonly field: InspectorField; readonly apply: App
   const { field, apply } = props;
   const { def } = field;
   const list = useId();
+  // a gradient or image is shown as one, never as "none": its box reads what it is and a plain colour typed over it replaces it
+  const kind = paintKind(field.value);
+  const text = kind === undefined ? (typeof field.value === 'string' ? field.value : '') : (paintLabel(field.value) ?? '');
+  const preview = gradientCss(field.value);
   return (
     <fieldset className="fx-chrome-field" aria-label={def.label}>
       <span className="fx-chrome-field-label">{def.label}</span>
+      {kind === undefined ? null : (
+        <span className="fx-chrome-paint-preview" data-paint={kind} style={preview === undefined ? undefined : { background: preview }} />
+      )}
       <input
         type="color"
         className="fx-chrome-swatch"
@@ -277,17 +325,17 @@ function PaintField(props: { readonly field: InspectorField; readonly apply: App
         onPointerUp={apply.end}
       />
       <input
-        key={`${field.mixed}:${shown(field)}`}
+        key={`${field.mixed}:${text}`}
         className="fx-chrome-input"
         type="text"
         list={list}
         aria-label={`${def.label} value`}
-        defaultValue={typeof field.value === 'string' ? field.value : ''}
+        defaultValue={text}
         placeholder={field.mixed ? 'Mixed' : 'none'}
-        onKeyDown={(e) => commitKeys(e, typeof field.value === 'string' ? field.value : '')}
+        onKeyDown={(e) => commitKeys(e, text)}
         onBlur={(e) => {
-          const text = e.currentTarget.value.trim();
-          if (text !== (typeof field.value === 'string' ? field.value : '')) apply.set(text === '' ? undefined : text);
+          const typed = e.currentTarget.value.trim();
+          if (typed !== text && !apply.set(typed === '' ? undefined : typed)) e.currentTarget.value = text;
         }}
       />
       <datalist id={list}>
@@ -323,7 +371,8 @@ function TextField(props: { readonly field: InspectorField; readonly apply: Appl
         placeholder={field.mixed ? 'Mixed' : ''}
         onKeyDown={(e) => commitKeys(e, shown(field))}
         onBlur={(e) => {
-          if (e.currentTarget.value !== shown(field)) apply.set(e.currentTarget.value === '' ? undefined : e.currentTarget.value);
+          if (e.currentTarget.value !== shown(field) && !apply.set(e.currentTarget.value === '' ? undefined : e.currentTarget.value))
+            e.currentTarget.value = shown(field);
         }}
       />
     </label>
