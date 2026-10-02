@@ -337,3 +337,5 @@ M7.31	d7135b55b065a87cb2d22d92ebc8ca346c786c1c6393914aaa64ec032979b0d0	r1	pass	c
 M7.20	312890400634d9218828f1835402c19b59dc5e717ab4fe2057ce01d280824050	r1	pass	claude:reviewer-subagent	0 findings
 M7.21	e00e10463e5552a69070e9f0ac1049ba458c9296aeeb82a08eb8cbefab80d1fc	r1	pass	claude:reviewer-subagent	0 findings
 M7.22	16a7395cd25f7c5ee593354121cf32c6892e258adcb4d841fb52554955384636	r1	pass	claude:reviewer	1 findings
+M7.23	c078cc690bdc14cfe1175240efe927c007d401a8059707a91b9094733b264e26	r1	pass	claude:sonnet-5.5-reviewer	0 findings
+M7.23	0828f5b1103bce1d4baf7c3f77f708d956b93f46047569dd39a0c6a59c08d9b3	r2	pass	claude:sonnet-5.5-reviewer	0 findings
