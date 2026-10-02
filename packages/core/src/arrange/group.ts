@@ -2,67 +2,12 @@
 // members; members keep their screen coordinates (the render side undoes the container's placement, 04 §2),
 // so grouping and ungrouping change only `parentId`, the container record and the sibling order: no
 // member's box moves and no binding is touched, connectors stay attached.
-import { type AnyRecord, compareKeys, err, jsonPointer, keyBetween, ok, type RecordId, type Result } from '@fluxion/schema';
+import { type AnyRecord, compareKeys, type RecordId } from '@fluxion/schema';
 import { z } from 'zod';
-import { checkIds, id, title, write } from '../command-helpers.js';
-import { type AnyCommand, type CommandContext, defineCommand } from '../commands.js';
-import type { TxFailure } from '../transaction.js';
+import { checkIds, id, refuse, title, write } from '../command-helpers.js';
+import { type AnyCommand, defineCommand } from '../commands.js';
 import { boundsOfPlacements } from './group-bounds.js';
-
-type Box = {
-  readonly x: number;
-  readonly y: number;
-  readonly w: number;
-  readonly h: number;
-  readonly rot?: number;
-  readonly flipX?: boolean;
-  readonly flipY?: boolean;
-};
-type El = {
-  readonly id: RecordId;
-  readonly kind: string;
-  readonly screenId: RecordId;
-  readonly parentId?: RecordId;
-  readonly index: string;
-  readonly transform?: Box;
-};
-
-const element = (ctx: CommandContext, x: string): El => ctx.store.get(x as RecordId) as unknown as El;
-
-/** COMMAND_ARGS for `command`, with the argument `at` named in the diagnostic. */
-function refuse(command: string, at: ReadonlyArray<string | number>, problem: string): Result<never, TxFailure> {
-  return err({
-    code: 'COMMAND_ARGS',
-    message: `${command}: ${problem}`,
-    diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', ...at]), message: problem }],
-  });
-}
-
-/** The elements under `parentId` of `screenId` (the screen's top level when absent), in z-order. */
-function siblings(ctx: CommandContext, screenId: RecordId, parentId: RecordId | undefined): El[] {
-  const ids =
-    parentId === undefined
-      ? ctx.store.members('byScreen', screenId).filter((x) => element(ctx, x).parentId === undefined)
-      : ctx.store.members('byParent', parentId);
-  return ids
-    .map((x) => element(ctx, x))
-    .filter((e) => e.index !== undefined)
-    .sort((a, b) => compareKeys(a.index, b.index));
-}
-
-/** `count` index keys in order between `low` and the next key above it in `taken` (open above when none), or why not. */
-function keysAfter(low: string, taken: readonly string[], count: number): Result<string[], string> {
-  const above = taken.find((k) => compareKeys(k, low) > 0) ?? null;
-  const keys: string[] = [];
-  let from: string = low;
-  for (let i = 0; i < count; i += 1) {
-    const key = keyBetween(from, above);
-    if (!key.ok) return err(key.error.message);
-    keys.push(key.value);
-    from = key.value;
-  }
-  return ok(keys);
-}
+import { type El, element, keysAfter, siblings } from './siblings.js';
 
 /** The group commands (FR-ARR-001). */
 export const GROUP_COMMANDS: readonly AnyCommand[] = [

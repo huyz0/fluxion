@@ -3,11 +3,10 @@
 // group moves as one with its members, and the whole is one transaction. The vectors are pure (`alignDelta`);
 // `element.align` reads the document and writes them.
 import { elementBounds } from '@fluxion/geometry';
-import { DEFAULT_SCREEN_SIZE, err, jsonPointer, type RecordId, type Result } from '@fluxion/schema';
+import { DEFAULT_SCREEN_SIZE, type RecordId } from '@fluxion/schema';
 import { z } from 'zod';
-import { checkIds, id, title, write } from '../command-helpers.js';
+import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from '../commands.js';
-import type { TxFailure } from '../transaction.js';
 import { movesFor, outermost } from './translate.js';
 
 /**
@@ -43,15 +42,6 @@ export function alignDelta(box: Box, mode: AlignMode, reference: Box): { readonl
 }
 
 type El = { readonly screenId: RecordId; readonly transform?: Box & { readonly rot?: number; readonly flipX?: boolean; readonly flipY?: boolean } };
-
-/** COMMAND_ARGS for `command`, naming the argument `at`. */
-export function refuse(command: string, at: ReadonlyArray<string | number>, problem: string): Result<never, TxFailure> {
-  return err({
-    code: 'COMMAND_ARGS',
-    message: `${command}: ${problem}`,
-    diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', ...at]), message: problem }],
-  });
-}
 
 /** The drawn bounds of element `x`, or undefined when it has no box (a connector). */
 export function drawnBounds(ctx: CommandContext, x: RecordId): Box | undefined {

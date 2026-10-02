@@ -97,6 +97,7 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'element.ungroup': () => ({ ids: [pick('element', 'group')] }),
     'element.align': () => ({ ids: [pick('element', 'shape')], mode: 'left', to: 'screen' }),
     'element.distribute': () => ({ ids: shapes(), axis: 'horizontal', by: 'gaps', gap: 10 }),
+    'element.zOrder': () => ({ ids: [pick('element', 'shape')], to: op.value % 2 ? 'front' : 'back' }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
     'asset.create': () => ({ asset: { id: newId(n), type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'a.png' } }),
   };
@@ -142,12 +143,13 @@ const GROUP_THEN_UNGROUP: Op[] = [
   { command: 'element.ungroup', pick: 0, value: 1 },
   { command: 'element.align', pick: 0, value: 1 },
   { command: 'element.distribute', pick: 0, value: 1 },
+  { command: 'element.zOrder', pick: 0, value: 1 },
 ];
 
 describe('core determinism (NFR-REL-005, M3 final F4)', () => {
   it('NFR-REL-005: the same command sequence twice gives equal diffs, history and document', () => {
     // the guaranteed example really commits both of its ops
-    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok']);
+    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok']);
     let committed = 0;
     const committedBy = new Set<string>();
     fc.assert(

@@ -3,9 +3,9 @@
 // a fixed gap. Groups move as one with their members (translate.ts); the whole is one undo step.
 import type { RecordId } from '@fluxion/schema';
 import { z } from 'zod';
-import { checkIds, id, title, write } from '../command-helpers.js';
+import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
-import { drawnBounds, refuse } from './align.js';
+import { drawnBounds } from './align.js';
 import { movesFor, outermost } from './translate.js';
 
 type Box = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };

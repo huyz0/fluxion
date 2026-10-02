@@ -140,6 +140,8 @@ function benchArgs(screens: readonly RecordId[], shapes: readonly RecordId[], li
     'element.align': { ids: [shapes[1400], shapes[1401]], mode: 'left', to: 'selection' },
     // five shapes of screen 5 spaced evenly
     'element.distribute': { ids: shapes.slice(1410, 1415), axis: 'horizontal', by: 'gaps' },
+    // a shape of screen 5 to the front
+    'element.zOrder': { ids: [shapes[1420]], to: 'front' },
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
     'asset.create': { asset: { id: 'BenchNewAsset0001', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'bench.png' } },
@@ -162,6 +164,7 @@ export const COMMANDS = [
   'element.ungroup',
   'element.align',
   'element.distribute',
+  'element.zOrder',
   'document.update',
   'asset.create',
 ] as const;

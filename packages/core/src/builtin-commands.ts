@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { ALIGN_COMMANDS } from './arrange/align.js';
 import { DISTRIBUTE_COMMANDS } from './arrange/distribute.js';
 import { GROUP_COMMANDS } from './arrange/group.js';
+import { Z_ORDER_COMMANDS } from './arrange/z-order.js';
 import { checkIds, fields, id, recordOf, repeated, title, write } from './command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
 import type { Registry } from './registry.js';
@@ -86,6 +87,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...GROUP_COMMANDS,
   ...ALIGN_COMMANDS,
   ...DISTRIBUTE_COMMANDS,
+  ...Z_ORDER_COMMANDS,
   defineCommand({
     id: 'element.create',
     title: title('element.create', 'Add element'),

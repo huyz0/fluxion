@@ -324,6 +324,7 @@ export const BENCH_COMMANDS = [
   'element.ungroup',
   'element.align',
   'element.distribute',
+  'element.zOrder',
   'document.update',
   'asset.create',
 ];

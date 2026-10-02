@@ -65,3 +65,12 @@ function idProblem(record: AnyRecord | undefined, x: string, want: Want): string
 
 /** The command's one transaction, with the options its caller passed (origin, mergeKey, meta). */
 export const write = <R>(ctx: CommandContext, label: string, fn: (tx: Tx) => R): Result<R, TxFailure> => ctx.store.transact(label, fn, ctx.options);
+
+/** COMMAND_ARGS for `command`, naming the argument `at` in the diagnostic. */
+export function refuse(command: string, at: ReadonlyArray<string | number>, problem: string): Result<never, TxFailure> {
+  return err({
+    code: 'COMMAND_ARGS',
+    message: `${command}: ${problem}`,
+    diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path: jsonPointer(['args', ...at]), message: problem }],
+  });
+}

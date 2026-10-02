@@ -52,6 +52,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'element.ungroup',
       'element.update',
       'element.updateMany',
+      'element.zOrder',
       'screen.create',
       'screen.delete',
       'screen.reorder',
