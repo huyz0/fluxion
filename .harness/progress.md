@@ -1499,3 +1499,7 @@ Section commands and screen.setSection in core (row split from M8.15); screen-or
 ## 2026-10-02 M8.15 (claude)
 
 Navigator sections: navigatorItems (free screens first, then each section with its screens, folded ones header-only), SectionHeader with fold/rename/menu/drop target, useSections, screen menu lines to move between sections. Folding is an undo step (collapsed lives on the record). Review pass r1.
+
+## 2026-10-02 M8.16 (claude)
+
+screen.setNotes (core) and the Notes left tab (notes-panel.tsx): a ProseMirror field per shown screen, commit on blur/unmount/screen change as one undo step, empty = field removed, external changes (undo) shown when not typing. Review pass r1.
