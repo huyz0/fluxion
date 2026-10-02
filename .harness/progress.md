@@ -1507,3 +1507,7 @@ screen.setNotes (core) and the Notes left tab (notes-panel.tsx): a ProseMirror f
 ## 2026-10-02 M8.17 (claude)
 
 library/library-search.ts (ADR-0021): token table (sorted unique tokens + postings), exact/prefix/inside-word ranking, every word must match, ties by name; 10k bench far under LIBRARY_SEARCH_10K_MAX_MS. The panel is the new row M8.30. Review pass r1.
+
+## 2026-10-02 M8.31 (claude)
+
+Main ci was red on webkit a11y color-contrast (the only failure at 7fdb4f1 in the e2e matrix; chromium passes, no webkit here). Likely cause: panel buttons without colours of their own plus opacity text. Fixed blind (explicit colours, no opacity) and the a11y helper now names violating elements. Row stays doing until the next ci run is green on webkit.
