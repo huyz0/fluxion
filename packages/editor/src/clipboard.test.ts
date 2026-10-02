@@ -217,7 +217,7 @@ describe('clipboard order and counting (FR-EDT-007)', () => {
     clip.countPaste();
     clip.countPaste();
     expect(clip.pastes()).toBe(2);
-    clip.set({ fluxion: 'clipboard', version: 1, schemaVersion: '1.0', sourceDocId: 'd', sourceScreen: undefined, records: [], bounds: undefined });
+    clip.set({ fluxion: 'clipboard', version: 1, schemaVersion: '1.0', sourceDocId: 'd', sourceScreen: undefined, records: [], assets: [], bounds: undefined });
     expect(clip.pastes()).toBe(0);
   });
 });

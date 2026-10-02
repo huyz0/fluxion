@@ -213,3 +213,17 @@ wipe the first (M7.3 review F1).
 - 04-rendering-and-editor §3.5 (payload sketch), 08-file-format (validation layers, `.flux.json`)
 - ADR-0013 (rich text), ADR-0012 (ids)
 - docs/milestones/M7.md "Decide before coding", rows M7.21–M7.23
+
+### Amendment (M7.22): browsers and the custom type
+
+- **Chromium** keeps `application/x-fluxion+json` on the clipboard for any page of the browser, and the async path adds
+  `web application/x-fluxion+json` (read back only through `navigator.clipboard.read()`, never in a paste event).
+- **WebKit** keeps a custom `DataTransfer` type per origin: a paste from another origin does not see it. The
+  `text/html` template is what survives there, so every write puts the payload in the template as well, and the reader
+  falls back to it. The E2E asserts the custom path within one origin only.
+- **Menu Paste** asks for `navigator.clipboard.read({ unsanitized: ['text/html'] })`, so a browser that sanitises the
+  clipboard's HTML does not strip the template; a browser that does not know the option is asked again without it.
+- **Assets** travel as records, with their bytes inlined as an image `data:` URL when the editor holds them and they are 1 MB
+  or less. No host holds asset bytes before the asset store (M10), so until then a pasted image element keeps its source
+  asset id and names a missing asset unless the target already holds one with the same hash; validation reports it
+  (FR-EDT-021). The hash of inlined bytes is checked when the store arrives.

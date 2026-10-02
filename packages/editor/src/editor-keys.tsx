@@ -23,7 +23,16 @@ export function isEditable(target: EventTarget | null): boolean {
 }
 
 /** Enter on a focused button or link is its click, not an edit of the selection. */
+/** Ctrl/Cmd+C, X or V: the browser's copy, cut and paste events carry them (use-system-clipboard.ts), not the keys. */
+const clipboardChord = (e: KeyboardEvent): boolean => (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && ['c', 'x', 'v'].includes(e.key.toLowerCase());
+
 const clicks = (e: KeyboardEvent): boolean => e.key === 'Enter' && e.target instanceof HTMLElement && /^(BUTTON|A|SUMMARY)$/.test(e.target.tagName);
+
+/**
+ * Key presses the keymap leaves alone: one taken already, one typed into a field (but F5, which would reload the page and
+ * lose the document: M7.4 review F2), a button's Enter, and the clipboard chords.
+ */
+const notTheKeymaps = (e: KeyboardEvent): boolean => e.defaultPrevented || (isEditable(e.target) && e.key !== 'F5') || clicks(e) || clipboardChord(e);
 
 /**
  * Input of {@link useEditorKeys}.
@@ -101,9 +110,7 @@ export function useEditorKeys(input: EditorKeysInput): (command: string, args?: 
   useEffect(() => {
     if (paused === true) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      // F5 is taken in a field too: it would reload the page, losing the document (M7.4 review F2)
-      if (e.defaultPrevented || (isEditable(e.target) && e.key !== 'F5')) return;
-      if (clicks(e)) return;
+      if (notTheKeymaps(e)) return;
       const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp, restoreView, clipboard });
       const keymap = applyOverrides([...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list())], overrides ?? {});
       if (dispatchKey(pressOf(e), keymap, COMMANDS, ctx)) e.preventDefault();

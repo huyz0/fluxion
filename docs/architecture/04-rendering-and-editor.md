@@ -250,7 +250,7 @@ interface ClipboardPayload {
 }
 ```
 
-On copy the editor writes every representation in one operation (ADR-0020). The keyboard copy
+In code: `clipboard.ts` (the payload, remapping, the in-editor clipboard), `clipboard-format.ts` (JSON, HTML, text, and the validation of a payload read back), `clipboard-dom.ts` (events, the async API, the inert template parse) and `use-system-clipboard.ts` (the window's copy, cut and paste events, and the menu commands). On copy the editor writes every representation in one operation (ADR-0020). The keyboard copy
 event writes a custom `application/x-fluxion+json` `DataTransfer` type. A menu copy makes one async
 `ClipboardItem`, with `web application/x-fluxion+json` where supported. Both also write `text/html`
 (rendered SVG plus the payload in `<template data-fluxion>`, parsed inertly with `DOMParser` on

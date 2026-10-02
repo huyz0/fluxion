@@ -28,6 +28,7 @@ import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { Splitter } from './splitter.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
+import { type SystemClipboardCommands, useSystemClipboard } from './use-system-clipboard.js';
 import { readViewMeta, restoreView, withViewMeta } from './view-meta.js';
 
 /**
@@ -177,7 +178,7 @@ type RootKeys = {
 };
 
 /** The editor's keys over the root's tools, with its own clipboard (the system clipboard joins it in M7.22); the runner of a command by id. */
-function useRootKeys(i: RootKeys): (command: string, args?: unknown) => boolean {
+function useRootKeys(i: RootKeys): { readonly run: (command: string, args?: unknown) => boolean; readonly system: SystemClipboardCommands } {
   const { store, session, shown } = i;
   const restore = useCallback(
     (meta: unknown) => {
@@ -187,7 +188,7 @@ function useRootKeys(i: RootKeys): (command: string, args?: unknown) => boolean 
     [session, store, shown],
   );
   const clipboard = useMemo(() => createClipboard(), []);
-  return useEditorKeys({
+  const run = useEditorKeys({
     store,
     session,
     tools: i.tools,
@@ -201,6 +202,8 @@ function useRootKeys(i: RootKeys): (command: string, args?: unknown) => boolean 
     overrides: i.overrides,
     paused: i.help,
   });
+  const system = useSystemClipboard({ clipboard, session, run, paused: i.help });
+  return { run, system };
 }
 
 /**
@@ -236,7 +239,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const [overrides, setOverrides] = useKeyOverrides(settings);
   const [help, setHelp] = useState(false);
   const openHelp = useCallback(() => setHelp(true), []);
-  const run = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, help, openHelp });
+  const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, help, openHelp });
   // a camera never moved (still the default) is fitted to the screen once the canvas has a size
   useEffect(() => {
     if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
@@ -275,6 +278,12 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         </button>
         <button type="button" className="fx-chrome-button" title="Redo" disabled={!store.history.canRedo()} onClick={() => run('history.redo')}>
           Redo
+        </button>
+        <button type="button" className="fx-chrome-button" title="Copy" onClick={() => void system.copy()}>
+          Copy
+        </button>
+        <button type="button" className="fx-chrome-button" title="Paste" onClick={() => void system.paste()}>
+          Paste
         </button>
         <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={switchMode}>
           Present

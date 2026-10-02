@@ -6,9 +6,20 @@
 // payload, and writes it all as one undo step. Pure but for the commands `pasteInto` runs.
 import type { ReadView } from '@fluxion/core';
 import { type Box, boxUnion, type Vec2 } from '@fluxion/geometry';
-import { type AnyRecord, compareKeys, nKeysBetween, type RecordId, SCHEMA_VERSION } from '@fluxion/schema';
+import { type AnyRecord, type AssetRecord, compareKeys, nKeysBetween, type RecordId, SCHEMA_VERSION } from '@fluxion/schema';
 import { frontIndex } from './create-tool.js';
 import type { Execute } from './pointer.js';
+
+/**
+ * An asset a copied element uses: its record, and its bytes as a `data:` URL when the host holds them and they are 1 MB
+ * or less (a larger one travels by hash only, ADR-0020).
+ *
+ * @public
+ */
+export type ClipboardAsset = AssetRecord & {
+  /** The bytes as a `data:` URL. */
+  readonly dataUrl?: string;
+};
 
 /**
  * What is on the clipboard: records copied from a document (ADR-0020 §payload).
@@ -28,9 +39,14 @@ export type ClipboardPayload = {
   readonly sourceScreen: RecordId | undefined;
   /** The copied elements (members included) and the bindings between them. */
   readonly records: readonly AnyRecord[];
+  /** The assets the copied elements use. */
+  readonly assets: readonly ClipboardAsset[];
   /** The box the copied roots cover, page units. */
   readonly bounds: Box | undefined;
 };
+
+/** The most a `data:` URL may weigh to travel inside a payload (1 MB of bytes as base64, ADR-0020). */
+const MAX_INLINE_ASSET = Math.ceil((1024 * 1024 * 4) / 3) + 64;
 
 /**
  * The distance each paste of one payload is offset by, page px (ADR-0020).
@@ -57,6 +73,26 @@ type Rec = AnyRecord & {
 /** `id` and its members, all the way down. */
 const withMembers = (view: ReadView, id: RecordId): RecordId[] => [id, ...view.members('byParent', id).flatMap((m) => withMembers(view, m))];
 
+/** The asset ids the records refer to, anywhere in them (an image element's, an image fill's). */
+function assetIdsIn(value: unknown, found: Set<string> = new Set()): ReadonlySet<string> {
+  if (Array.isArray(value)) for (const v of value) assetIdsIn(v, found);
+  else if (typeof value === 'object' && value !== null)
+    for (const [k, v] of Object.entries(value)) {
+      if (k === 'assetId' && typeof v === 'string') found.add(v);
+      else assetIdsIn(v, found);
+    }
+  return found;
+}
+
+/** `value` with every asset id replaced through `map` (the others are left). */
+function withAssetIds<T>(value: T, map: ReadonlyMap<string, RecordId>): T {
+  if (Array.isArray(value)) return value.map((v) => withAssetIds(v, map)) as T;
+  if (typeof value !== 'object' || value === null) return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([k, v]) => [k, k === 'assetId' && typeof v === 'string' ? (map.get(v) ?? v) : withAssetIds(v, map)]),
+  ) as T;
+}
+
 /** The bindings that join two copied elements, from the bindings of each copied element. */
 function innerBindings(view: ReadView, ids: ReadonlySet<RecordId>): readonly Rec[] {
   const found = new Map<string, Rec>();
@@ -78,7 +114,13 @@ function innerBindings(view: ReadView, ids: ReadonlySet<RecordId>): readonly Rec
 export function copyPayload(
   view: ReadView,
   ids: readonly RecordId[],
-  source: { readonly docId: string; readonly screen: RecordId | undefined; readonly endPoint?: (id: RecordId, end: 'source' | 'target') => Vec2 | undefined },
+  source: {
+    readonly docId: string;
+    readonly screen: RecordId | undefined;
+    readonly endPoint?: (id: RecordId, end: 'source' | 'target') => Vec2 | undefined;
+    /** An asset's bytes as a `data:` URL, if the host holds them. */
+    readonly assetData?: (id: RecordId) => string | undefined;
+  },
 ): ClipboardPayload | undefined {
   const all = [...new Set(ids.flatMap((id) => withMembers(view, id)))].filter((id) => view.get(id)?.type === 'element');
   if (all.length === 0) return undefined;
@@ -99,6 +141,12 @@ export function copyPayload(
   const bounds = roots
     .flatMap((e) => (e.transform ? [{ x: e.transform.x, y: e.transform.y, w: e.transform.w, h: e.transform.h }] : []))
     .reduce<Box | undefined>((u, b) => (u === undefined ? b : boxUnion(u, b)), undefined);
+  const assets = [...assetIdsIn(elements)].flatMap((id): ClipboardAsset[] => {
+    const r = view.get(id as RecordId);
+    if (r?.type !== 'asset') return [];
+    const dataUrl = source.assetData?.(id as RecordId);
+    return [{ ...(r as AssetRecord), ...(dataUrl !== undefined && dataUrl.length <= MAX_INLINE_ASSET && { dataUrl }) }];
+  });
   return {
     fluxion: 'clipboard',
     version: 1,
@@ -106,6 +154,7 @@ export function copyPayload(
     sourceDocId: source.docId,
     sourceScreen: source.screen,
     records: [...elements, ...bindings],
+    assets,
     bounds,
   };
 }
@@ -152,16 +201,24 @@ export type PastePlan = {
  */
 export function planPaste(
   payload: ClipboardPayload,
-  target: { readonly screen: RecordId; readonly indexes: readonly string[]; readonly by: Vec2; readonly newId: () => RecordId },
+  target: {
+    readonly screen: RecordId;
+    readonly indexes: readonly string[];
+    readonly by: Vec2;
+    readonly newId: () => RecordId;
+    /** For a source asset id, the target document's asset with the same bytes, where it holds one. */
+    readonly assets?: ReadonlyMap<string, RecordId>;
+  },
 ): PastePlan {
   const { screen, indexes, by, newId } = target;
+  const sameAssets = target.assets ?? new Map<string, RecordId>();
   const elements = payload.records.filter((r) => r.type === 'element') as Rec[];
   const renamed = new Map(elements.map((e) => [e.id as RecordId, newId()] as const));
   const roots = elements.filter((e) => e.parentId === undefined || !renamed.has(e.parentId)).sort((a, b) => compareKeys(String(a.index), String(b.index)));
   const rootIndex = new Map(roots.map((e, k) => [e.id as RecordId, indexes[k]] as const));
   const pasted = elements.map((e) => {
     const root = rootIndex.has(e.id as RecordId);
-    const { parentId: _parent, ...rest } = withoutSlug(offsetBy(e, by));
+    const { parentId: _parent, ...rest } = withAssetIds(withoutSlug(offsetBy(e, by)), sameAssets);
     return {
       ...rest,
       id: renamed.get(e.id as RecordId),
@@ -209,7 +266,11 @@ export function pasteInto(deps: PasteDeps, payload: ClipboardPayload, by: Vec2):
   const front = frontIndex(view, screen);
   const more = front === undefined ? undefined : nKeysBetween(front, null, rootCount - 1);
   if (front === undefined || more === undefined || !more.ok) return undefined;
-  const plan = planPaste(payload, { screen, indexes: [front, ...more.value], by, newId: deps.newId });
+  // an asset the document already holds (the same bytes) is used where the copy named its own; one it lacks stays named, and
+  // validation reports it missing (ADR-0020) until the asset store brings the bytes (M10)
+  const held = new Map(view.members('byType', 'asset').map((id) => [(view.get(id) as AssetRecord).hash, id] as const));
+  const assets = new Map(payload.assets.flatMap((a) => (held.has(a.hash) ? [[a.id as string, held.get(a.hash) as RecordId] as const] : [])));
+  const plan = planPaste(payload, { screen, indexes: [front, ...more.value], by, newId: deps.newId, assets });
   const mergeKey = `paste:${plan.elements[0]?.id}`;
   const made = execute('element.createMany', { elements: plan.elements }, { mergeKey });
   if (made.ok)
@@ -236,6 +297,8 @@ export type Clipboard = {
   get(): ClipboardPayload | undefined;
   /** Put a payload on the clipboard (the paste count starts again). */
   set(payload: ClipboardPayload): void;
+  /** Take `payload` (read off the system clipboard as `json`, or just written as it): a payload that is not the one held starts a new count. */
+  adopt(payload: ClipboardPayload, json: string): void;
   /** How many times the payload has been pasted. */
   pastes(): number;
   /** Count one more paste of the payload (after one was made). */
@@ -250,11 +313,19 @@ export type Clipboard = {
 export function createClipboard(): Clipboard {
   let payload: ClipboardPayload | undefined;
   let pastes = 0;
+  let held: string | undefined;
   return {
     get: () => payload,
     set: (p) => {
       payload = p;
       pastes = 0;
+      held = undefined;
+    },
+    adopt: (p, json) => {
+      if (json === held) return;
+      payload = p;
+      pastes = 0;
+      held = json;
     },
     pastes: () => pastes,
     countPaste: () => {

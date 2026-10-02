@@ -5,6 +5,7 @@
 ```ts
 
 import { AnyRecord } from '@fluxion/schema';
+import { AssetRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
@@ -65,10 +66,19 @@ export function clickSelection(current: readonly RecordId[], hit: RecordId | und
 type Clipboard_2 = {
     get(): ClipboardPayload | undefined;
     set(payload: ClipboardPayload): void;
+    adopt(payload: ClipboardPayload, json: string): void;
     pastes(): number;
     countPaste(): void;
 };
 export { Clipboard_2 as Clipboard }
+
+// @public
+export const CLIPBOARD_TYPE: string;
+
+// @public
+export type ClipboardAsset = AssetRecord & {
+    readonly dataUrl?: string;
+};
 
 // @public
 export type ClipboardPayload = {
@@ -78,6 +88,7 @@ export type ClipboardPayload = {
     readonly sourceDocId: string;
     readonly sourceScreen: RecordId | undefined;
     readonly records: readonly AnyRecord[];
+    readonly assets: readonly ClipboardAsset[];
     readonly bounds: Box | undefined;
 };
 
@@ -121,6 +132,7 @@ export function copyPayload(view: ReadView, ids: readonly RecordId[], source: {
     readonly docId: string;
     readonly screen: RecordId | undefined;
     readonly endPoint?: (id: RecordId, end: "source" | "target") => Vec2 | undefined;
+    readonly assetData?: (id: RecordId) => string | undefined;
 }): ClipboardPayload | undefined;
 
 // @public
@@ -454,6 +466,9 @@ export type MarqueeMode = "contain" | "intersect";
 export const MAX_PATH_POINTS = 1e4;
 
 // @public
+export const MAX_PAYLOAD_CHARS: number;
+
+// @public
 export function memorySettings(initial?: {
     readonly [key: string]: unknown;
 }): SettingsStore;
@@ -495,6 +510,24 @@ export function paramHandleAt(handles: readonly PlacedParamHandle[], p: Vec2, re
 export function paramHandlesOf(view: ReadView, defs: ShapeDefs, id: RecordId): readonly PlacedParamHandle[];
 
 // @public
+export type ParsedOk = {
+    readonly ok: true;
+    readonly payload: ClipboardPayload;
+};
+
+// @public
+export type ParsedPayload = ParsedOk | ParsedRefused;
+
+// @public
+export type ParsedRefused = {
+    readonly ok: false;
+    readonly reason: string;
+};
+
+// @public
+export function parsePayload(raw: string): ParsedPayload;
+
+// @public
 export const PASTE_OFFSET = 16;
 
 // @public
@@ -523,6 +556,15 @@ export type PathBox = {
 
 // @public
 export function pathBox(points: readonly Vec2[]): PathBox | undefined;
+
+// @public
+export function payloadHtml(payload: ClipboardPayload, json?: string): string;
+
+// @public
+export function payloadJson(payload: ClipboardPayload): string;
+
+// @public
+export function payloadText(payload: ClipboardPayload): string;
 
 // @public
 export function penTool(): Tool;
@@ -555,6 +597,7 @@ export function planPaste(payload: ClipboardPayload, target: {
     readonly indexes: readonly string[];
     readonly by: Vec2;
     readonly newId: () => RecordId;
+    readonly assets?: ReadonlyMap<string, RecordId>;
 }): PastePlan;
 
 // @public
@@ -776,6 +819,9 @@ export type ViewMeta = {
 
 // @public
 export function waypointEdit(id: RecordId, original: ConnectorElement["route"], index: number, p: Vec2): ParamCommand;
+
+// @public
+export const WEB_CLIPBOARD_TYPE: string;
 
 // @public
 export function whenHolds(when: string | undefined, flags: ReadonlySet<string>): boolean;

@@ -17,6 +17,7 @@ export {
 export type { FitTargets } from './canvas-input.js';
 export {
   type Clipboard,
+  type ClipboardAsset,
   type ClipboardPayload,
   copyPayload,
   createClipboard,
@@ -26,6 +27,18 @@ export {
   pasteInto,
   planPaste,
 } from './clipboard.js';
+export {
+  CLIPBOARD_TYPE,
+  MAX_PAYLOAD_CHARS,
+  type ParsedOk,
+  type ParsedPayload,
+  type ParsedRefused,
+  parsePayload,
+  payloadHtml,
+  payloadJson,
+  payloadText,
+  WEB_CLIPBOARD_TYPE,
+} from './clipboard-format.js';
 export {
   type ConnectorHandle,
   connectorHandleAt,
