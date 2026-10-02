@@ -1447,3 +1447,7 @@ M7 is NOT formally closed: M7.28 is `blocked` (archive/M7.md): the firefox and w
 ## 2026-10-02 M8.1 M8.24 (claude)
 
 M8 planned: 24 rows, a 34-leg red gate (m8-complete.mjs; 6 legs green at start: the carry-over perf, coverage, verify and quarantine legs), M7 archived with M7.28 blocked (user decision) and M8.2 carrying the closing run. Review: the plan took 3 rounds (pinned titles and the navigator timing, checkpoint rows, deps, acceptance for the infinite screen, toggles and hide); a 4th round for the thresholds.mjs scoping hit the round cap, so it became its own task M8.24 (2 rounds). The staged ladder for a thresholds.mjs commit: ~200 s -> ~56 s. Next: M8.3, ADR-0021.
+
+## 2026-10-02 M8.3 M8.4 M8.25 (claude)
+
+M8.3: ADR-0021 (section records, schema 1.1 with a migration clearing dangling sectionId values; an own prefix/keyword library index). M8.4: element.group/ungroup in core (members keep screen coordinates, so only parentId, the container and the sibling order change); helpers moved to command-helpers.ts; property tests in core and routing; review found test gaps (non-root parents, z-order), closed with mutants checked. A flaky determinism generator found while committing became M8.25 (a guaranteed example). The review round cap made two follow-ups separate tasks (M8.24, M8.25) instead of a 4th round.
