@@ -1515,3 +1515,7 @@ Main ci was red on webkit a11y color-contrast (the only failure at 7fdb4f1 in th
 ## 2026-10-02 M8.30 M8.31 M8.32 (claude)
 
 M8.30 library panel (packs/categories, outline thumbnails from evaluateOutline, search over the M8.17 index; onPick left for M8.18). M8.31: the webkit axe color-contrast fix worked (explicit colours for panel buttons, no opacity text). M8.32: the macOS runner timed the determinism property out at 5 s; it has 60 s now.
+
+## 2026-10-02 M8.18 (claude)
+
+library/library-insert.ts (insertShape: centred, default size, selected, one undo step, sets session.library); canvas onDragOver/onDrop with the application/x-fluxion-shape type; EditBody insert callback (click: view middle); shapeTool reads session.library when placing. Review pass r1.
