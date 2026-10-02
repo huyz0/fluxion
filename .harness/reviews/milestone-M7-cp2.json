@@ -1,0 +1,77 @@
+{
+  "milestone": "M7",
+  "checkpoint": "cp2",
+  "range": "42f062c..34e8715",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "area": "spec fidelity (FR-EDT-008, plan row 8 enum icons)",
+      "detail": "Enum icons were planned and are text buttons or a menu; the M7.16 minors (rejected paint/text entries not given back, gesture ref not cleared, gradient/image fill shown as none, no arrow-key stepping) were carried to M7.27, a docs row.",
+      "failure_scenario": "The inspector ships with a gradient shown as none and silently ignored entries; the gate is green."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "area": "gate honesty (M7.12 acceptance moved to M7.23)",
+      "detail": "The pasted-text-element edit acceptance moved to clipboard.system-paste.spec.ts, whose gate leg uses plain e2e() with no titled test; the markdown spec is covered by one test for all six rules and by text-rules.test.",
+      "failure_scenario": "M7.23 ships a spec without the double-click edit and the gate stays green."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "spec fidelity (FR-CON-007)",
+      "detail": "Curve control handles are waypoints (the route schema has no control points); a bound end dropped on nothing stays bound and no command frees an end, while M7.26 acceptance needs one.",
+      "failure_scenario": "M7.26 finds no free-end command to call."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "coherence (inspector.tsx gesture ref)",
+      "detail": "The selection-change cleanup ends the gesture but does not clear gesture.current, so a later drag reuses an ended gesture when no end fires.",
+      "failure_scenario": "A scrub after a selection change applies through a stale gesture."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "plan health",
+      "detail": "29 rows against 17 planned (1.7x). M7.12 to M7.19 were single task commits with a record commit; one CI-fix commit in M7.17, one budget re-record.",
+      "failure_scenario": "None; the growth was planned at cp1."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "new row M7.30 (before M7.27)",
+      "note": "Enum icons, gradient/image fill display, rejected entries given back, arrow-key stepping; T1 titles; M7.27 depends on it and m7-complete gains the legs."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M7.23 acceptance and gate leg",
+      "note": "Add the titled test FR-TXT-003: a pasted text element opens in the inline editor, and use titledSpec in the clipboard.system-paste leg."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "target": "M7.26 task + roadmap Deferred (curve tangent handles, M16)",
+      "note": "M7.26 builds the command that frees an end and connector drag-away uses it. Curve tangent handles need a schema change and an ADR; argued for M7, Deferred to M16."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M7.30",
+      "note": "Clear gesture.current in the selection cleanup."
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Growth is the planned split; M7.12 to M7.19 did not grow mid-flight."
+    }
+  ],
+  "planDelta": "One new row M7.30 (inspector completion, F1/F4), M7.27 depends on it; text added to M7.23 (F2) and M7.26 (F3); a roadmap Deferred line for curve tangent handles (M16). 31 rows against the plan 17 (M7.31 is a user-requested schemaVersion fix). M7.20 closes on this record."
+}

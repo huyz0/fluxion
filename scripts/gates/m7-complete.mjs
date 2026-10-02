@@ -146,6 +146,14 @@ leg('the inspector intersects a multi-selection; a mixed apply is one undo step 
     browser('M7.16', 'FR-EDT-008: a mixed fill set on 3 shapes updates all 3 in one undo step'),
   ]),
 );
+leg('inspector completion: icons per enum option, gradient fills shown, rejected entries given back, arrow-key steps (T1)', () =>
+  titled([
+    browser('M7.30', 'FR-EDT-008: an enum field shows an icon per option'),
+    browser('M7.30', 'FR-EDT-008: a rejected entry is given back'),
+    browser('M7.30', 'FR-EDT-008: arrow keys step a number'),
+    browser('M7.30', 'FR-EDT-008: a gradient fill is shown as a gradient'),
+  ]),
+);
 leg('a mixed fill on 3 shapes (inspector.mixed-fill)', () => e2e(['e2e/inspector.mixed-fill.spec.ts'], DESKTOP));
 leg('a parametric handle changes its param in one undo step (shapes.param-handle)', () => e2e(['e2e/shapes.param-handle.spec.ts'], DESKTOP));
 leg('connector handles: ends, middle, segments, curves; selection chrome along the route (connectors.<handle>)', () => {
@@ -166,7 +174,8 @@ leg('paste keeps bindings among copied elements with fresh ids (T0; clipboard.co
 leg('a copy pastes into another document, bindings kept (clipboard.cross-document)', () => e2e(['e2e/clipboard.cross-document.spec.ts'], DESKTOP));
 leg('system paste: SVG is sanitised (the security subset), images and text land (T0; clipboard.system-paste)', () => {
   const unit = titled([['M7.23', 'NFR-SEC-001: pasted SVG loses its scripts and event handlers', 'format']]);
-  return unit === true ? e2e(['e2e/clipboard.system-paste.spec.ts'], DESKTOP) : unit;
+  // the spec double-clicks the pasted text element and edits it (M7 cp2 F2), under its own title
+  return unit === true ? titledSpec('e2e/clipboard.system-paste.spec.ts', DESKTOP, ['FR-TXT-003: a pasted text element opens in the inline editor']) : unit;
 });
 
 // ── commands, menus, validation (plan rows 13, 15, 16) ──────────────────────────────────────────────

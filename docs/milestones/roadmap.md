@@ -82,6 +82,7 @@ receiving milestone's plan.
 
 | Item | From | To | Reason |
 |---|---|---|---|
+| Curve tangent handles for curved routes: a route needs control points in the schema (ADR), then a handle per tangent (M7 cp2 F3; M7 draws the waypoint the curve passes through) | M7 | M16 | smart routing owns the route model |
 | Grow on text edit: the text-edit command applies `fitShapeText`'s grow height (ADR-0018 item 4) (M5 final F3) | M5 | M7 | the edit command arrives there |
 | Renumber the ADRs planned in M6-M9 from ADR-0020 (M5 used 0017-0019); ADR legs match titles (M5 final F4); done in M6.1: the three collisions moved to ADR-0028, 0029 and 0064 | M5 | M6 (planning, first) | plan text only |
 | Select same type and select same style get a trigger: the element context menu offers the editor's `sameType`/`sameStyle` (FR-EDT-004; M6.13 review, M6 cp1 F5) | M6 | M7 row 15 | the context menu arrives there |
