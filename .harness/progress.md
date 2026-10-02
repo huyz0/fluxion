@@ -1443,3 +1443,7 @@ Final milestone review (fresh milestone-reviewer, 89fce3b~1..798b10f): changes-r
 ## 2026-10-02 M7 -> M8 (claude)
 
 M7 is NOT formally closed: M7.28 is `blocked` (archive/M7.md): the firefox and webkit e2e legs of m7-complete could not run in the cloud container (no download host), so the gate has never exited 0 on three engines. Approved final review, CI green at c3a9ee3 on ubuntu/windows/macos, and every leg that can run here passes. By the user's decision (2026-10-02) work continues into M8; the roadmap Deferred table and M8 row 2 carry the closing run.
+
+## 2026-10-02 M8.1 M8.24 (claude)
+
+M8 planned: 24 rows, a 34-leg red gate (m8-complete.mjs; 6 legs green at start: the carry-over perf, coverage, verify and quarantine legs), M7 archived with M7.28 blocked (user decision) and M8.2 carrying the closing run. Review: the plan took 3 rounds (pinned titles and the navigator timing, checkpoint rows, deps, acceptance for the infinite screen, toggles and hide); a 4th round for the thresholds.mjs scoping hit the round cap, so it became its own task M8.24 (2 rounds). The staged ladder for a thresholds.mjs commit: ~200 s -> ~56 s. Next: M8.3, ADR-0021.
