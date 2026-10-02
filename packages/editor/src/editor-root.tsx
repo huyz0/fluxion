@@ -32,6 +32,7 @@ import { Dialogs, useDialogs, useEnteredLapse, useRootKeys } from './root-hooks.
 import { shownScreen } from './screen-switch.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
+import { useSnapSetting } from './snap/use-snap-setting.js';
 import { pasteSystemItem, type SystemItem } from './system-paste.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
 import { type SystemClipboardCommands, useSystemClipboard } from './use-system-clipboard.js';
@@ -206,6 +207,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const settings = useMemo(() => props.settings ?? memorySettings(), [props.settings]);
   const [layout, setLayout] = useLayout(settings);
   const session = useMemo(() => props.session ?? createSession('local'), [props.session]);
+  useSnapSetting(settings, session);
   const { screenId, shown, execute } = useShownScreen(props, session);
   const { tools, present } = useTools({ ...props, execute }, session, screenId);
   const switchMode = useModeSwitch(session, tools, present);

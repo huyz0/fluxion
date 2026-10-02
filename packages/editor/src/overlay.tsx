@@ -7,11 +7,12 @@ import type { Vec2 } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
 import type { RouteContext } from '@fluxion/routing';
 import { type ReactNode, useMemo } from 'react';
-import { pageToScreen } from './camera.js';
+import { type Camera, pageToScreen } from './camera.js';
 import { HANDLE_PX, placements, screenBox, selectionFrame } from './overlay-geometry.js';
 import { HandleMarks } from './overlay-marks.js';
 import type { ShapeDefs } from './param-handles.js';
 import type { Session } from './session.js';
+import type { SnapGuide } from './snap/snap.js';
 
 const points = (ps: readonly Vec2[]) => ps.map((p) => `${p.x},${p.y}`).join(' ');
 
@@ -40,7 +41,34 @@ export function useOverlayShown(session: Session): boolean {
   const marquee = useValue(session.marquee.get);
   const draft = useValue(session.draft.get);
   const sketch = useValue(session.sketch.get);
-  return selection.length > 0 || hover !== undefined || marquee !== undefined || draft !== undefined || sketch !== undefined;
+  const guides = useValue(session.guides.get);
+  return guides.length > 0 || selection.length > 0 || hover !== undefined || marquee !== undefined || draft !== undefined || sketch !== undefined;
+}
+
+/** A smart guide: its line across the canvas, and for a gap its distance in a label at the middle. */
+function GuideMark(props: { readonly guide: SnapGuide; readonly camera: Camera }): ReactNode {
+  const { guide: g, camera } = props;
+  const [a, b] =
+    g.axis === 'x'
+      ? [
+          { x: g.at, y: g.from },
+          { x: g.at, y: g.to },
+        ]
+      : [
+          { x: g.from, y: g.at },
+          { x: g.to, y: g.at },
+        ];
+  const [p, q] = [pageToScreen(camera, a), pageToScreen(camera, b)];
+  return (
+    <g className="fx-chrome-guide" data-guide={g.axis} data-kind={g.kind}>
+      <line className="fx-chrome-guide-line" x1={p.x} y1={p.y} x2={q.x} y2={q.y} />
+      {g.distance === undefined ? null : (
+        <text className="fx-chrome-guide-label" x={(p.x + q.x) / 2 + 4} y={(p.y + q.y) / 2 - 4}>
+          {Math.round(g.distance)}
+        </text>
+      )}
+    </g>
+  );
 }
 
 /** The overlay over the canvas. */
@@ -53,6 +81,7 @@ export function Overlay(props: OverlayProps): ReactNode {
   const draft = useValue(session.draft.get);
   const sketch = useValue(session.sketch.get);
   const entered = useValue(session.entered.get);
+  const guides = useValue(session.guides.get);
   // the group entered to edit its members is outlined dashed (M8.5)
   const enteredPlaced = useValue(useMemo(() => store.query((view) => (entered === undefined ? [] : placements(view, [entered]))), [store, entered]));
   const placed = useValue(useMemo(() => store.query((view) => placements(view, selection)), [store, selection]));
@@ -91,6 +120,9 @@ export function Overlay(props: OverlayProps): ReactNode {
         </g>
       )}
       <HandleMarks store={store} session={session} shapeDefs={shapeDefs} routes={routes} />
+      {guides.map((g) => (
+        <GuideMark key={`${g.axis}:${g.kind}:${g.at}:${g.distance}`} guide={g} camera={camera} />
+      ))}
       {band === undefined ? null : <rect className="fx-chrome-marquee" x={band.x} y={band.y} width={band.w} height={band.h} />}
       {drafted === undefined ? null : <rect className="fx-chrome-draft" x={drafted.x} y={drafted.y} width={drafted.w} height={drafted.h} />}
       {line === undefined ? null : <polyline className="fx-chrome-sketch" points={points(line)} />}

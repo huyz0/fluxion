@@ -73,13 +73,14 @@ describe('snapping (FR-ARR-005)', () => {
     // A at x 0..100 and B at x 400..500: the moving box (100 wide) with equal gaps of 100 has its left edge at 200
     const mid = snapBox(box(196, 0, 100), [box(0, 0), box(400, 0)], { zoom: 1 });
     expect(mid.dx).toBe(4);
-    expect(mid.guides.some((g) => g.kind === 'gap')).toBe(true);
+    // the guide carries the equal gap, for its label
+    expect(mid.guides.find((g) => g.kind === 'gap')?.distance).toBe(100);
     // C at 0..50 and D at 80..130 keep a gap of 30: a box placed right of D snaps to 160 (a 30 gap)
     // (neighbours count only where the boxes share a row: at another height they are not beside it)
     expect(snapBox(box(246, 0, 100), [box(0, 300), box(400, 300)], { zoom: 1 }).guides.some((g) => g.kind === 'gap')).toBe(false);
     const same = snapBox(box(165, 0, 50), [box(0, 0, 50), box(80, 0, 50)], { zoom: 1 });
     expect(same.dx).toBe(-5);
-    expect(same.guides.some((g) => g.kind === 'gap')).toBe(true);
+    expect(same.guides.find((g) => g.kind === 'gap')?.distance).toBe(30);
   });
 
   it('FR-ARR-005: Alt bypasses every target, and the zoom scales the reach', () => {
@@ -89,6 +90,11 @@ describe('snapping (FR-ARR-005)', () => {
     // (its left edge, 130, is 20 from the other's centre, 150: nearer than the 30 to its left edge)
     expect(snapBox(box(130, 0), [box(100, 400)], { zoom: 0.25 }).dx).toBe(20);
     expect(snapBox(box(130, 0), [box(100, 400)], { zoom: 1 }).dx).toBe(0);
+  });
+
+  it('FR-ARR-005: boxes sharing an edge give one guide, spanning them and the moving box', () => {
+    const shared = snapBox(box(103, 0), [box(100, 200), box(100, 400)], { zoom: 1 });
+    expect(shared.guides.filter((g) => g.axis === 'x' && g.at === 100)).toEqual([{ axis: 'x', at: 100, from: 0, to: 450, kind: 'edge' }]);
   });
 
   it('FR-ARR-005: rotation snaps to the increment within a few degrees, and not beyond', () => {

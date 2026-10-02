@@ -136,7 +136,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ARR-002 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/arrange/align.test.ts` |
 | FR-ARR-003 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/arrange/distribute.test.ts` |
 | FR-ARR-004 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/arrange/z-order.test.ts` |
-| FR-ARR-005 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/editor/src/snap/snap.test.ts` |
+| FR-ARR-005 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/snapping.smart-guides.spec.ts` +3 |
 | FR-ARR-006 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-ARR-008 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |

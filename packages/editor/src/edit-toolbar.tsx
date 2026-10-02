@@ -1,6 +1,7 @@
 // The edit mode's toolbar (M7.24 split from the root): tools, zoom, undo and redo, the clipboard, presenting and help.
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
+import { useValue } from '@fluxion/render';
 import type { ReactNode } from 'react';
 import { ZoomControls } from './canvas.js';
 import { HistoryButtons } from './history-buttons.js';
@@ -36,11 +37,21 @@ export type EditToolbarProps = {
 /** The toolbar of the edit mode. */
 export function EditToolbar(props: EditToolbarProps): ReactNode {
   const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, switchMode, openHelp } = props;
+  const snapping = useValue(session.snap.get);
   return (
     <Toolbar layout={layout} onLayout={onLayout}>
       <ToolButtons session={session} tools={tools} />
       <ZoomControls store={store} session={session} box={box} area={area} />
       <HistoryButtons store={store} base={base} overrides={overrides} mac={mac} run={run} />
+      <button
+        type="button"
+        className="fx-chrome-button"
+        aria-pressed={snapping}
+        title="Snap to guides (hold Alt or Ctrl while dragging to skip)"
+        onClick={() => session.snap.set(!snapping)}
+      >
+        Snapping
+      </button>
       <button type="button" className="fx-chrome-button" title="Copy" onClick={() => void system.copy()}>
         Copy
       </button>

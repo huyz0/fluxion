@@ -796,6 +796,8 @@ export type Session = {
     readonly imagePick: WritableSignal<Box | undefined>;
     readonly editing: WritableSignal<RecordId | undefined>;
     readonly entered: WritableSignal<RecordId | undefined>;
+    readonly guides: WritableSignal<readonly SnapGuide[]>;
+    readonly snap: WritableSignal<boolean>;
 };
 
 // @public
@@ -846,6 +848,7 @@ export type SnapGuide = {
     readonly from: number;
     readonly to: number;
     readonly kind: SnapKind;
+    readonly distance?: number;
 };
 
 // @public

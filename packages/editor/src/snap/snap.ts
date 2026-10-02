@@ -51,6 +51,8 @@ export type SnapGuide = {
   readonly to: number;
   /** What it lines up with. */
   readonly kind: SnapKind;
+  /** For a `gap` guide: the equal gap the snapped box keeps, page units (its label). */
+  readonly distance?: number;
 };
 
 /**
@@ -91,7 +93,14 @@ export type SnapOptions = {
 type Axis = 'x' | 'y';
 type Anchor = 'min' | 'mid' | 'max';
 /** A line a moving anchor can snap to: its value, what it is, its tie rank (lower first), and the stretch of the other axis it spans. */
-type Line = { readonly value: number; readonly kind: SnapKind; readonly rank: number; readonly anchor?: Anchor; readonly span: readonly [number, number] };
+type Line = {
+  readonly value: number;
+  readonly kind: SnapKind;
+  readonly rank: number;
+  readonly anchor?: Anchor;
+  readonly gap?: number;
+  readonly span: readonly [number, number];
+};
 
 const POS = { x: 'x', y: 'y' } as const;
 const SIZE = { x: 'w', y: 'h' } as const;
@@ -144,19 +153,19 @@ function gapLines(box: Box, others: readonly Box[], axis: Axis): Line[] {
   const near = neighbours(box, others, axis);
   const size = box[SIZE[axis]];
   const out: Line[] = [];
-  const draw = (value: number, anchor: Anchor, from: Box, to: Box) => {
+  const draw = (value: number, anchor: Anchor, [from, to]: readonly [Box, Box], gap: number) => {
     const [a, b] = [Math.min(span(from, axis)[0], span(to, axis)[0]), Math.max(span(from, axis)[1], span(to, axis)[1])];
-    out.push({ value, kind: 'gap', rank: RANK.gap, anchor, span: [a, b] });
+    out.push({ value, kind: 'gap', rank: RANK.gap, anchor, gap, span: [a, b] });
   };
   for (const [i, c] of near.entries()) {
     for (const d of near.slice(i + 1)) {
       const free = lo(d, axis) - hi(c, axis);
       if (free < 0) continue;
       // midway: equal gaps either side of the box
-      if (free >= size) draw(hi(c, axis) + (free - size) / 2, 'min', c, d);
+      if (free >= size) draw(hi(c, axis) + (free - size) / 2, 'min', [c, d], (free - size) / 2);
       // the gap they keep, repeated after d and before c
-      draw(hi(d, axis) + free, 'min', c, d);
-      draw(lo(c, axis) - free, 'max', c, d);
+      draw(hi(d, axis) + free, 'min', [c, d], free);
+      draw(lo(c, axis) - free, 'max', [c, d], free);
     }
   }
   return out;
@@ -182,12 +191,23 @@ function nearest(box: Box, axis: Axis, lines: readonly Line[], reach: number): C
 /** Every line the snapped `box` lies on, as a guide spanning the box and the thing it lines up with. */
 function guidesFor(box: Box, axis: Axis, lines: readonly Line[]): SnapGuide[] {
   const own = span(box, axis);
-  const out: SnapGuide[] = [];
+  // lines alike (same place, kind and gap, as when two boxes share an edge) are one guide, spanning them all
+  const out = new Map<string, SnapGuide>();
   for (const line of lines) {
     const on = (line.anchor === undefined ? ANCHORS : [line.anchor]).some((a) => Math.abs(at(box, axis, a) - line.value) < 1e-6);
-    if (on) out.push({ axis, at: line.value, from: Math.min(own[0], line.span[0]), to: Math.max(own[1], line.span[1]), kind: line.kind });
+    if (!on) continue;
+    const key = `${line.kind}:${line.value}:${line.gap}`;
+    const known = out.get(key);
+    out.set(key, {
+      axis,
+      at: line.value,
+      from: Math.min(known?.from ?? own[0], own[0], line.span[0]),
+      to: Math.max(known?.to ?? own[1], own[1], line.span[1]),
+      kind: line.kind,
+      ...(line.gap === undefined ? {} : { distance: line.gap }),
+    });
   }
-  return out;
+  return [...out.values()];
 }
 
 /**

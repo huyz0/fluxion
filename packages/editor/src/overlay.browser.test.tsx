@@ -116,4 +116,25 @@ describe('edit overlay (FR-EDT-004)', () => {
     act(() => session.entered.set(undefined));
     expect(host.querySelector('.fx-chrome-entered')).toBeNull();
   });
+
+  it('FR-ARR-005: a guide is drawn through the camera, an equal-gap guide with its distance, and two alike are told apart', async () => {
+    const { core } = setup();
+    act(() => session.camera.set({ x: 10, y: 20, z: 2 }));
+    act(() =>
+      session.guides.set([
+        { axis: 'x', at: 100, from: 0, to: 50, kind: 'edge' },
+        { axis: 'y', at: 200, from: 0, to: 80, kind: 'gap', distance: 40 },
+        { axis: 'y', at: 200, from: 10, to: 90, kind: 'gap', distance: 60 },
+      ]),
+    );
+    await mount(core);
+    const lines = [...host.querySelectorAll('[data-guide]')];
+    expect(lines.length).toBe(3);
+    // x guide: page x 100 -> (100 - 10) * 2 = 180 canvas px, vertical
+    const vertical = host.querySelector('[data-guide="x"] line') as SVGLineElement;
+    expect([vertical.getAttribute('x1'), vertical.getAttribute('x2')]).toEqual(['180', '180']);
+    // labels carry the gaps, rounded
+    expect([...host.querySelectorAll('.fx-chrome-guide-label')].map((t) => t.textContent)).toEqual(['40', '60']);
+    expect(host.querySelector('[data-guide="x"] text')).toBeNull();
+  });
 });

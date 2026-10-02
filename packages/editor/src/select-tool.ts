@@ -3,13 +3,15 @@
 // a drag from an element moves the selection, alt-drag moves copies of it. The keys (arrows nudge,
 // ctrl/cmd + A selects all, Delete deletes) are keymap bindings whose commands call the functions
 // here while the tool is idle (M7.4). A drag is one gesture, so one undo step.
-import type { Vec2 } from '@fluxion/geometry';
+import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { adjusting, bending, type ConnectorGrab, connectorHandleUnder, ending, type ParamGrab, paramHandleUnder } from './handle-states.js';
 import { duplicates, moved, reframed, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
+import { snapBox } from './snap/snap.js';
+import { boundsOf, snapScreen, snapTargets } from './snap/targets.js';
 import { SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
 import { TOUCH } from './touch.js';
 import { type Box2, handlePoint, resize, rotation } from './transform.js';
@@ -57,6 +59,8 @@ type Drag = {
   readonly page: Vec2;
   readonly from: readonly Start[];
   readonly gesture: Gesture;
+  /** The selection's drawn bounds as the drag started, and what it may snap to (absent: the drag does not snap). */
+  readonly snap?: { readonly box: Box; readonly others: readonly Box[]; readonly screen: { readonly w: number; readonly h: number } | undefined };
   readonly copies?: { readonly ids: readonly RecordId[]; readonly before: readonly RecordId[] };
 };
 
@@ -73,18 +77,45 @@ function startDrag(ctx: ToolCtx, page: Vec2, alt: boolean): Drag {
     // copies the document refuses (or none: createMany wants one at least) leave the originals to drag
     if (gesture.commit()?.ok === true) {
       ctx.session.selection.set(copies.ids);
-      return { page, from: starts(ctx.view, copies.ids), gesture, copies: { ids: copies.records.map((r) => r.id), before } };
+      const ids = copies.ids;
+      return { page, from: starts(ctx.view, ids), gesture, ...snapping(ctx, ids), copies: { ids: copies.records.map((r) => r.id), before } };
     }
   }
-  return { page, from: starts(ctx.view, before), gesture };
+  return { page, from: starts(ctx.view, before), gesture, ...snapping(ctx, before) };
 }
 
-/** Move the dragged records to follow the pointer at `page`: one command, once per frame. */
-function follow(drag: Drag, page: Vec2): void {
+/** What a drag of `ids` snaps to, or nothing when snapping is off or they have no box. */
+function snapping(ctx: ToolCtx, ids: readonly RecordId[]): Pick<Drag, 'snap'> {
+  const box = ctx.session.snap.get() ? boundsOf(ctx.view, ids) : undefined;
+  if (box === undefined || ctx.screen === undefined) return {};
+  const moving = new Set(starts(ctx.view, ids).map((s) => s.id));
+  return { snap: { box, others: snapTargets(ctx.view, ctx.screen, moving), screen: snapScreen(ctx.view, ctx.screen) } };
+}
+
+/**
+ * Move the dragged records to follow the pointer at `page`: one command, once per frame. The selection's bounds
+ * snap to the other elements and the screen unless `bypass` (Alt held after the press, or Ctrl/Cmd), and the guides
+ * of what it lines up with are shown.
+ */
+function follow(ctx: ToolCtx, drag: Drag, page: Vec2, bypass = false): void {
+  let d = { x: page.x - drag.page.x, y: page.y - drag.page.y };
+  if (drag.snap !== undefined) {
+    const { box, others, screen } = drag.snap;
+    const hit = snapBox({ ...box, x: box.x + d.x, y: box.y + d.y }, others, {
+      zoom: ctx.session.camera.get().z,
+      bypass,
+      ...(screen === undefined ? {} : { screen }),
+    });
+    d = { x: d.x + hit.dx, y: d.y + hit.dy };
+    ctx.session.guides.set(hit.guides);
+  }
   // nothing of its own to move: the command refuses the empty list, and nothing changes
-  drag.gesture.update('element.updateMany', { updates: moved(drag.from, { x: page.x - drag.page.x, y: page.y - drag.page.y }) });
+  drag.gesture.update('element.updateMany', { updates: moved(drag.from, d) });
   drag.gesture.commit();
 }
+
+/** Whether the pointer `e` skips snapping: Alt after the press (one that made copies is a duplicate, not a bypass) or Ctrl/Cmd. */
+const skipsSnap = (e: PointerInfo, drag: Drag): boolean => e.mod || (e.alt && drag.copies === undefined);
 
 /** A press on a handle of the selection frame: which, the frame and what is in it as they started. */
 type Handle = { readonly id: HandleId | 'rotate'; readonly box: Box2; readonly page: Vec2; readonly from: readonly Start[] };
@@ -223,10 +254,12 @@ function translating(p: Press): StateNode {
     onEnter: (ctx, info) => {
       const grab = p.grab as NonNullable<Press['grab']>;
       p.drag = startDrag(ctx, grab.page, grab.alt);
-      follow(p.drag, (info as { page: Vec2 }).page);
+      const first = info as PointerInfo;
+      follow(ctx, p.drag, first.page, skipsSnap(first, p.drag));
     },
-    onPointerMove: (_ctx, e) => {
-      follow(p.drag as Drag, e.page);
+    onPointerMove: (ctx, e) => {
+      const drag = p.drag as Drag;
+      follow(ctx, drag, e.page, skipsSnap(e, drag));
       return undefined;
     },
     onPointerUp: () => ({ to: 'idle' }),
@@ -234,7 +267,7 @@ function translating(p: Press): StateNode {
     // history then drops the step, which changed nothing)
     onCancel: (ctx) => {
       const drag = p.drag as Drag;
-      if (drag.copies === undefined) follow(drag, drag.page);
+      if (drag.copies === undefined) follow(ctx, drag, drag.page, true);
       else {
         // committed as the gesture ends, on leaving this state
         drag.gesture.update('element.delete', { ids: drag.copies.ids });
@@ -243,9 +276,10 @@ function translating(p: Press): StateNode {
       return { to: 'idle' };
     },
     // tzap disable next-line BlockStatement: each frame commits at once, and the next gesture's own merge key starts a new undo step anyway
-    onExit: () => {
+    onExit: (ctx) => {
       p.drag?.gesture.end();
       p.drag = undefined;
+      ctx.session.guides.set([]);
     },
   };
 }

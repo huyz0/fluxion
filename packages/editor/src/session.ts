@@ -5,6 +5,7 @@ import { type WritableSignal, writable } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import type { Camera } from './camera.js';
+import type { SnapGuide } from './snap/snap.js';
 
 /**
  * The session state of one open document.
@@ -40,6 +41,10 @@ export type Session = {
   readonly editing: WritableSignal<RecordId | undefined>;
   /** The group entered to edit its members (double-click; Esc leaves it), if any: a click picks within it. */
   readonly entered: WritableSignal<RecordId | undefined>;
+  /** The smart guides of a drag under way, page units (empty outside one). */
+  readonly guides: WritableSignal<readonly SnapGuide[]>;
+  /** Whether a drag snaps (the toolbar toggle, FR-ARR-005). */
+  readonly snap: WritableSignal<boolean>;
 };
 
 /**
@@ -71,6 +76,8 @@ export function createSession(docId: string): Session {
     imagePick: writable<Box | undefined>(undefined),
     editing: writable<RecordId | undefined>(undefined),
     entered: writable<RecordId | undefined>(undefined),
+    guides: writable<readonly SnapGuide[]>([]),
+    snap: writable(true),
   };
 }
 
