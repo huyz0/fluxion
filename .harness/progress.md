@@ -1463,3 +1463,7 @@ Core arrange commands: element.align (EDGES/centres to selection, screen or key,
 ## 2026-10-02 M8.9 (claude)
 
 Pure snapping engine (editor/src/snap): edges/centres, midway and repeated-gap positions (neighbours that share a row/column), screen edges/centre, grid; nearest per axis with specific-target tie-break; reach 8px/zoom; Alt bypass; 15 degree rotation snap. Overlay guides and toggles are M8.10.
+
+## 2026-10-02 M8.10 (claude)
+
+Select-tool drags snap (selection bounds vs other elements and the screen; Alt after the press or Ctrl/Cmd bypass; Alt at the press stays duplicate), session.guides/session.snap signals, overlay guides with gap labels, Snapping toolbar toggle persisted under fluxion.editor.snap.v1. Round 1 (unrecorded, changes-requested): duplicate React keys for alike guides (now merged in snapBox, keyed with distance) and no label test (overlay browser test). Round 2 pass recorded as r1.
