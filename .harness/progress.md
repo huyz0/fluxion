@@ -1511,3 +1511,7 @@ library/library-search.ts (ADR-0021): token table (sorted unique tokens + postin
 ## 2026-10-02 M8.31 (claude)
 
 Main ci was red on webkit a11y color-contrast (the only failure at 7fdb4f1 in the e2e matrix; chromium passes, no webkit here). Likely cause: panel buttons without colours of their own plus opacity text. Fixed blind (explicit colours, no opacity) and the a11y helper now names violating elements. Row stays doing until the next ci run is green on webkit.
+
+## 2026-10-02 M8.30 M8.31 M8.32 (claude)
+
+M8.30 library panel (packs/categories, outline thumbnails from evaluateOutline, search over the M8.17 index; onPick left for M8.18). M8.31: the webkit axe color-contrast fix worked (explicit colours for panel buttons, no opacity text). M8.32: the macOS runner timed the determinism property out at 5 s; it has 60 s now.
