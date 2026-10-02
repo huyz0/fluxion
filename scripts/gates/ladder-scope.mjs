@@ -12,15 +12,16 @@ const SOURCE = /^(packages|packs|apps)\/[^/]+\/(src|bench)\//;
 /**
  * Harness test files that read the repo's own package sources or reports (the write-path and
  * kind-switch scans, the docs-to-API and diagnostics-to-docs checks, the open-object scan of the schema,
- * the bench folder, the mode-policy scan of render, the workspace shape, and the coverage floors over every workspace's real sources,
- * which no other staged step judges on node tests alone): run for a sources-only commit.
+ * the bench folder, the mode-policy scan of render, the workspace shape): run for a sources-only commit.
+ * The coverage floors over every workspace's real sources (tests/harness/coverage, a full test:coverage run in
+ * a sandbox, ~100 s on 4 cores) are in SAMPLE_HARNESS: the staged Vitest step judges the touched workspaces' floors,
+ * and CI's --all ladder runs the whole-repo run (NFR-DX-002, ci-cd.md §5).
  * tests/harness/ladder-scope.test pins that every harness file reading package paths is here or in
  * SAMPLE_HARNESS (M4.26 review F1, round 2 F1-F2).
  */
 export const SOURCE_HARNESS = [
   'architecture',
   'bench-leg',
-  'coverage',
   'diagnostics-doc',
   'docs-consistency',
   'kind-switch',
@@ -37,7 +38,7 @@ export const SOURCE_HARNESS = [
  * configs, licences): a manifest change runs them through MANIFEST_HARNESS, any other non-source
  * path runs the whole harness (adapters, licenses, turbo). --all runs them all.
  */
-export const SAMPLE_HARNESS = ['adapters', 'api', 'ladder', 'layering', 'licenses', 'mutate', 'packages', 'turbo'];
+export const SAMPLE_HARNESS = ['adapters', 'api', 'coverage', 'ladder', 'layering', 'licenses', 'mutate', 'packages', 'turbo'];
 
 /**
  * Harness files that read a workspace manifest or the lockfile of the real repo (every harness file
@@ -50,6 +51,7 @@ export const MANIFEST_HARNESS = [
   'adapters',
   'budget',
   'ci-workflow',
+  'coverage',
   'layering',
   'licenses',
   'milestone-checks',
@@ -200,10 +202,17 @@ export function testScope(stagedPaths, workspaces, browserTested, { lockfileWork
 
 /**
  * Whether the packaging checks (publint, attw: a package's manifest, exports and built types) can be affected:
- * false when every staged path is a source, an API report, an e2e spec, a doc or bookkeeping, none of which
+ * false when every staged path is a source, an API report, an e2e spec, a doc, milestone-checks.mjs or bookkeeping, none of which
  * changes a manifest or a build setting. CI's `--all` ladder always runs them (NFR-DX-002, ci-cd.md §5).
  */
 export function packagingNeeded(staged) {
-  const inert = (p) => SOURCE.test(p) || API_REPORT.test(p) || /^e2e\//.test(p) || /^docs\/.+\.md$/.test(p) || BOOKKEEPING_PATHS.some((re) => re.test(p));
+  // milestone-checks.mjs judges milestone legs and rows; it reads no manifest, export or build setting
+  const inert = (p) =>
+    p === 'scripts/gates/milestone-checks.mjs' ||
+    SOURCE.test(p) ||
+    API_REPORT.test(p) ||
+    /^e2e\//.test(p) ||
+    /^docs\/.+\.md$/.test(p) ||
+    BOOKKEEPING_PATHS.some((re) => re.test(p));
   return !staged.every(inert);
 }

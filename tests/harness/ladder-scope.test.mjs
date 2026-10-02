@@ -80,7 +80,19 @@ describe('staged ladder scope (NFR-DX-002)', () => {
   });
 
   it('NFR-DX-002: the packaging checks run for a manifest, a lockfile or a build setting, not for sources, reports, specs and docs', () => {
-    assert.equal(packagingNeeded(['packages/core/src/x.ts', 'packages/core/api/core.api.md', 'e2e/a.spec.ts', 'docs/a.md', '.harness/state.json']), false);
+    assert.equal(
+      packagingNeeded([
+        'packages/core/src/x.ts',
+        'packages/core/api/core.api.md',
+        'e2e/a.spec.ts',
+        'docs/a.md',
+        'scripts/gates/milestone-checks.mjs',
+        '.harness/state.json',
+      ]),
+      false,
+    );
+    // a whole-repo coverage run in a sandbox is CI's: a sources-only commit does not rerun it, the Vitest step judges the floors
+    assert.ok(!SOURCE_HARNESS.includes('coverage') && SAMPLE_HARNESS.includes('coverage'));
     for (const p of ['packages/core/package.json', 'pnpm-lock.yaml', 'tsconfig.base.json', 'packages/core/tsup.config.ts', 'scripts/gates/check-packages.mjs'])
       assert.equal(packagingNeeded(['packages/core/src/x.ts', p]), true, p);
   });
