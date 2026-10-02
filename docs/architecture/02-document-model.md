@@ -74,6 +74,9 @@ not in schema `1.0`; until added (minor version) they are preserved but not chec
 | `component` | `transform`, `text?`, `componentId` (`<plugin>:<name>`), `props`, `snapshotAssetId?` (fallback) | |
 | `<plugin>:<name>` | `props?` — validated by plugin schema if loaded | |
 
+A group's `transform` is the bounds of its members (unturned), which they keep in screen coordinates; the core hook
+`core:5-group-bounds` refits it, and the groups around it, whenever a member is edited, added, removed or taken out.
+
 Planned record type (not in schema `1.0`): `section` — `name`, `index`, `collapsed?`; a named group of screens for the
 navigator and, later, the site's nav; `screen.sectionId` names it (ADR-0021, schema `1.1` with M8.14).
 

@@ -127,7 +127,8 @@ packs register the built-ins through the same API (FR-EXT-001). The check-kind-s
 forbids switching on a kind outside registries.
 Integrity hooks (`IntegrityHook`, ADR-0014) run inside each transaction, sorted by key, until a
 pass changes nothing. The built-ins (`CORE_HOOKS`, registered by `registerCoreHooks`) cascade
-screen and subtree deletes and keep connector ends either bound or free.
+screen and subtree deletes, keep connector ends either bound or free, and refit a group's box to the bounds of
+its members when one of them changes (`core:5-group-bounds`, M8.5; members keep screen coordinates).
 
 ## 5. Shape definitions
 

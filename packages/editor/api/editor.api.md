@@ -365,7 +365,7 @@ export type HitIndex = {
     hitTest(screenId: RecordId, p: Vec2, zoom: number): RecordId | undefined;
     within(screenId: RecordId, box: Box, mode: "contain" | "intersect"): RecordId[];
     all(screenId: RecordId): RecordId[];
-    selectableOf(id: RecordId): RecordId;
+    selectableOf(id: RecordId, within?: RecordId): RecordId;
     dispose(): void;
 };
 
@@ -792,6 +792,7 @@ export type Session = {
     readonly laser: WritableSignal<readonly Vec2[]>;
     readonly imagePick: WritableSignal<Box | undefined>;
     readonly editing: WritableSignal<RecordId | undefined>;
+    readonly entered: WritableSignal<RecordId | undefined>;
 };
 
 // @public

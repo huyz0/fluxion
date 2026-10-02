@@ -172,6 +172,8 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   { key: 'mod+x', command: 'clipboard.cut', when: 'edit' },
   { key: 'mod+v', command: 'clipboard.paste', when: 'edit' },
   { key: 'mod+d', command: 'clipboard.duplicate', when: 'edit' },
+  { key: 'mod+g', command: 'selection.group', when: 'edit' },
+  { key: 'mod+shift+g', command: 'selection.ungroup', when: 'edit' },
   { key: 'enter', command: 'text.edit', when: 'edit' },
   { key: 'f2', command: 'text.edit', when: 'edit' },
   { key: 'delete', command: 'selection.delete', when: 'edit' },

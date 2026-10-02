@@ -52,6 +52,9 @@ export function Overlay(props: OverlayProps): ReactNode {
   const marquee = useValue(session.marquee.get);
   const draft = useValue(session.draft.get);
   const sketch = useValue(session.sketch.get);
+  const entered = useValue(session.entered.get);
+  // the group entered to edit its members is outlined dashed (M8.5)
+  const enteredPlaced = useValue(useMemo(() => store.query((view) => (entered === undefined ? [] : placements(view, [entered]))), [store, entered]));
   const placed = useValue(useMemo(() => store.query((view) => placements(view, selection)), [store, selection]));
   // a selected element is outlined by its frame already
   const hovered = useValue(
@@ -59,12 +62,14 @@ export function Overlay(props: OverlayProps): ReactNode {
   );
   const frame = selectionFrame(placed, camera);
   const outline = selectionFrame(hovered, camera);
+  const inside = selectionFrame(enteredPlaced, camera);
   const band = marquee === undefined ? undefined : screenBox(marquee, camera);
   const drafted = draft === undefined ? undefined : screenBox(draft, camera);
   const line = sketch?.map((p) => pageToScreen(camera, p));
   const half = HANDLE_PX / 2;
   return (
     <svg className="fx-chrome-overlay" width={box.w} height={box.h} aria-hidden="true" data-testid="overlay">
+      {inside === undefined ? null : <polygon className="fx-chrome-entered" data-entered="true" points={points(inside.corners)} />}
       {outline === undefined ? null : <polygon className="fx-chrome-hover" points={points(outline.corners)} />}
       {frame === undefined ? null : (
         <g className="fx-chrome-selection">

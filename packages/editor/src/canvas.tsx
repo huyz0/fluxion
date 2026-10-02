@@ -13,6 +13,7 @@ import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, us
 import { type Camera, fitBox, panBy, screenToPage, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { wheelCamera, ZOOM_STEP } from './canvas-input.js';
 import { isEditable } from './editor-keys.js';
+import { enterGroup } from './group-edit.js';
 import { InlineTextEditor } from './inline-text-editor.js';
 import { Overlay, useOverlayShown } from './overlay.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
@@ -201,11 +202,16 @@ function canvasConsumer(session: Session, space: RefObject<boolean>, drag: RefOb
   };
 }
 
-/** A double-click on an element with text opens it for editing in place (the select tool, between gestures). */
+/**
+ * A double-click on a group enters it, to edit its members (Esc leaves it); on an element with text it opens the
+ * text for editing in place (the select tool, between gestures).
+ */
 function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatcher | undefined): void {
   if (tools === undefined || tools.current !== `${SELECT_TOOL}.idle`) return;
   const r = e.currentTarget.getBoundingClientRect();
-  const hit = tools.ctx.hitTest(screenToPage(session.camera.get(), { x: e.clientX - r.left, y: e.clientY - r.top }));
+  const at = screenToPage(session.camera.get(), { x: e.clientX - r.left, y: e.clientY - r.top });
+  const hit = tools.ctx.hitTest(at);
+  if (hit !== undefined && enterGroup(tools.ctx, hit, at)) return;
   if (hit === undefined || !hasText(tools.ctx.view, hit)) return;
   session.selection.set([hit]);
   session.editing.set(hit);

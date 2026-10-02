@@ -20,7 +20,7 @@ describe('integrity hooks: cascade details (ADR-0014, FR-EXT-001)', () => {
   it('FR-EXT-001: the built-in hooks are registered under their ordered core keys as source core', () => {
     const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
     expect(registerCoreHooks(hooks)).toEqual([]);
-    const keys = ['core:1-screens', 'core:2-subtrees', 'core:3-owned', 'core:4-bindings'];
+    const keys = ['core:1-screens', 'core:2-subtrees', 'core:3-owned', 'core:4-bindings', 'core:5-group-bounds'];
     expect(hooks.list().map(([key]) => key)).toEqual(keys);
     expect(keys.map((key) => hooks.source(key))).toEqual(keys.map(() => 'core'));
   });

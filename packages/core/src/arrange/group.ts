@@ -2,12 +2,12 @@
 // members; members keep their screen coordinates (the render side undoes the container's placement, 04 §2),
 // so grouping and ungrouping change only `parentId`, the container record and the sibling order: no
 // member's box moves and no binding is touched, connectors stay attached.
-import { elementBounds } from '@fluxion/geometry';
 import { type AnyRecord, compareKeys, err, jsonPointer, keyBetween, ok, type RecordId, type Result } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, title, write } from '../command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from '../commands.js';
 import type { TxFailure } from '../transaction.js';
+import { boundsOfPlacements } from './group-bounds.js';
 
 type Box = {
   readonly x: number;
@@ -64,15 +64,6 @@ function keysAfter(low: string, taken: readonly string[], count: number): Result
   return ok(keys);
 }
 
-/** The bounds of the boxed members, or undefined when none has a box (connectors have no box of their own). */
-function boundsOf(members: readonly El[]): { x: number; y: number; w: number; h: number } | undefined {
-  const boxes = members.flatMap((m) => (m.transform === undefined ? [] : [elementBounds({ ...m.transform, rot: m.transform.rot ?? 0 })]));
-  if (boxes.length === 0) return undefined;
-  const [x1, y1] = [Math.min(...boxes.map((b) => b.x)), Math.min(...boxes.map((b) => b.y))];
-  const [x2, y2] = [Math.max(...boxes.map((b) => b.x + b.w)), Math.max(...boxes.map((b) => b.y + b.h))];
-  return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
-}
-
 /** The group commands (FR-ARR-001). */
 export const GROUP_COMMANDS: readonly AnyCommand[] = [
   defineCommand({
@@ -94,7 +85,7 @@ export const GROUP_COMMANDS: readonly AnyCommand[] = [
       if (new Set(args.ids).size !== args.ids.length) return refuse('element.group', ['ids'], 'an element is listed twice');
       if (members.some((m) => m.screenId !== first.screenId || m.parentId !== first.parentId))
         return refuse('element.group', ['ids'], 'the elements are not siblings (one screen, one parent)');
-      const box = boundsOf(members);
+      const box = boundsOfPlacements(members.flatMap((m) => m.transform ?? []));
       if (box === undefined) return refuse('element.group', ['ids'], 'no element has a box to bound the group');
       const taken = siblings(ctx, first.screenId, first.parentId).map((e) => e.index);
       const top = members

@@ -45,6 +45,12 @@ const plain = (doc: RichTextDoc): string =>
     ?.map((m) => m.slice(8, -1))
     .join('') ?? '';
 
+/** A double-click at the middle of `el`, as the canvas reads it (client coordinates). */
+function doubleClick(el: HTMLElement): void {
+  const r = el.getBoundingClientRect();
+  el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, clientX: r.x + r.width / 2, clientY: r.y + r.height / 2 }));
+}
+
 describe('inline text editing (FR-TXT-003)', () => {
   it('FR-TXT-003: Enter opens a text element, typing and Esc write its text in one undo step', async () => {
     const { core, session, id } = await open();
@@ -97,5 +103,31 @@ describe('inline text editing (FR-TXT-003)', () => {
     await act(frame);
     expect(session.editing.get()).toBeUndefined();
     expect(core.store.get(id)).toBeUndefined();
+  });
+
+  it('FR-ARR-001: a double-click on the text of a group enters the group first, and edits the text once inside it', async () => {
+    const b = documentBuilder({ seed: 72 });
+    const screen = b.screen({ size: { w: 800, h: 600 } });
+    const text = b.text(screen, 'Hello', { x: 100, y: 100, w: 300, h: 80 });
+    const shape = b.rect(screen, { x: 100, y: 300, w: 100, h: 100 });
+    const core = createCore(b.build());
+    expect(core.execute('element.group', { ids: [text, shape], groupId: 'TextGroup0000001' }).ok).toBe(true);
+    const session = createSession('t');
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />),
+    );
+    await act(frame);
+    const label = host.querySelector(`.fx-el[data-el-id="${text}"]`) as HTMLElement;
+    await act(async () => doubleClick(label));
+    await act(frame);
+    // outside the group the double-click enters it; the text is not opened
+    expect(session.entered.get()).toBe('TextGroup0000001');
+    expect(session.editing.get()).toBeUndefined();
+    expect(session.selection.get()).toEqual([text]);
+    // inside it, the same gesture opens the text
+    await act(async () => doubleClick(label));
+    await act(frame);
+    expect(session.editing.get()).toBe(text);
+    expect(session.entered.get()).toBe('TextGroup0000001');
   });
 });

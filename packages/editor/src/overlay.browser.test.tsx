@@ -98,4 +98,22 @@ describe('edit overlay (FR-EDT-004)', () => {
     });
     expect(host.querySelector('polygon.fx-chrome-frame')?.getAttribute('points')).toBe('0,0 200,0 200,200 0,200');
   });
+
+  it('FR-ARR-001: the group entered to edit its members is outlined dashed through the camera, and the outline goes when it is left', async () => {
+    const { core, square, turned } = setup();
+    const grouped = core.execute('element.group', { ids: [square, turned], groupId: 'EnteredGroup0001' });
+    expect(grouped.ok).toBe(true);
+    act(() => session.camera.set({ x: 0, y: 0, z: 2 }));
+    act(() => session.selection.set([square]));
+    await mount(core);
+    expect(host.querySelector('.fx-chrome-entered')).toBeNull();
+    act(() => session.entered.set('EnteredGroup0001' as RecordId));
+    const outline = host.querySelector('polygon.fx-chrome-entered') as SVGPolygonElement;
+    expect(outline).not.toBeNull();
+    // the group's box is the bounds of its members, at 200 %
+    const group = core.store.get('EnteredGroup0001' as RecordId) as unknown as { transform: { w: number } };
+    expect(outline.getBoundingClientRect().width).toBeCloseTo(group.transform.w * 2, 3);
+    act(() => session.entered.set(undefined));
+    expect(host.querySelector('.fx-chrome-entered')).toBeNull();
+  });
 });

@@ -24,7 +24,8 @@ function setup() {
       screenId: screen,
       parentId: group,
       index: 'a0',
-      transform: { x: 5, y: 305, w: 10, h: 10 },
+      // the member fills its group: a group is the bounds of its members (M8.5)
+      transform: { x: 0, y: 300, w: 100, h: 100 },
     } as never);
     tx.patch(free, { route: { type: 'straight', waypoints: [{ x: 25, y: 5 }] } });
   });
@@ -38,7 +39,7 @@ describe('moving and duplicating (FR-EDT-005)', () => {
     expect(from.map((s) => s.id)).toEqual([group, member, a]);
     expect(moved(from, { x: 5, y: -10 })).toEqual([
       { id: group, fields: { transform: { x: 5, y: 290, w: 100, h: 100 } } },
-      { id: member, fields: { transform: { x: 10, y: 295, w: 10, h: 10 } } },
+      { id: member, fields: { transform: { x: 5, y: 290, w: 100, h: 100 } } },
       // the whole transform is kept: size and turn included
       { id: a, fields: { transform: { x: 15, y: 10, w: 30, h: 40, rot: 15 } } },
     ]);
@@ -53,10 +54,10 @@ describe('moving and duplicating (FR-EDT-005)', () => {
   it('FR-EDT-004: a resized or turned frame carries each record: centres carried, sizes scaled, turns turned', () => {
     const { core, a, group, member, free } = setup();
     const before = { x: 0, y: 300, w: 100, h: 100, rot: 0 };
-    // the group doubled rightwards: its member too, its place in the group kept
+    // the group doubled rightwards: its member too
     expect(reframed(starts(core.store, [group]), before, { ...before, w: 200 })).toEqual([
       { id: group, fields: { transform: { x: 0, y: 300, w: 200, h: 100, rot: 0 } } },
-      { id: member, fields: { transform: { x: 10, y: 305, w: 20, h: 10, rot: 0 } } },
+      { id: member, fields: { transform: { x: 0, y: 300, w: 200, h: 100, rot: 0 } } },
     ]);
     // turned a quarter: a's own turn of 15° becomes 105°; free ends are carried too
     const frame = { x: 0, y: 0, w: 100, h: 100, rot: 0 };

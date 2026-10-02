@@ -195,4 +195,37 @@ describe('editor commands (FR-EDT-012, FR-EDT-011)', () => {
     expect(key(press('enter'))).toBe(false);
     expect(session.editing.get()).toBeUndefined();
   });
+
+  it('FR-ARR-001: Ctrl+G groups and Ctrl+Shift+G ungroups the selection in the select tool`s idle state; Esc leaves an entered group before it cancels anything', () => {
+    const b = documentBuilder({ seed: 10 });
+    const screen = b.screen();
+    const [one, two] = [b.rect(screen), b.rect(screen, { x: 300 })];
+    const { session, tools, writes, key } = setup(() => ({}), b.build());
+    // nothing selected: not taken
+    expect(key(press('g', { mod: true }))).toBe(false);
+    session.selection.set([one, two]);
+    expect(key(press('g', { mod: true }))).toBe(true);
+    expect(writes).toEqual([['element.group', { ids: [one, two], groupId: 'new' }]]);
+    expect(session.selection.get()).toEqual(['new']);
+    // the stubbed context never makes the group, so there is none to ungroup: refused, nothing written
+    expect(key(press('g', { mod: true, shift: true }))).toBe(false);
+    expect(writes).toHaveLength(1);
+    // Esc with a group entered leaves it; the group is selected; the next Esc is the tool's (always taken)
+    session.entered.set('new' as RecordId);
+    expect(key(press('escape'))).toBe(true);
+    expect(session.entered.get()).toBeUndefined();
+    expect(session.selection.get()).toEqual([]);
+    // with no group entered Esc is the tool's, and always taken
+    expect(key(press('escape'))).toBe(true);
+    expect(session.entered.get()).toBeUndefined();
+    // another tool: the keys are not the selection's, and Esc does not leave an entered group (it cancels the tool)
+    tools.use('shape');
+    session.entered.set('new' as RecordId);
+    session.selection.set([one, two]);
+    expect(key(press('g', { mod: true }))).toBe(false);
+    expect(writes).toHaveLength(1);
+    expect(key(press('escape'))).toBe(true);
+    expect(session.entered.get()).toBe('new');
+    expect(session.selection.get()).toEqual([one, two]);
+  });
 });

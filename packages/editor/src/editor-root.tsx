@@ -28,7 +28,7 @@ import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from
 import type { Execute } from './pointer.js';
 import { PresentInPlace, useModeSwitch, useRevision } from './present.js';
 import { readOnly } from './present-mode.js';
-import { Dialogs, useDialogs, useRootKeys } from './root-hooks.js';
+import { Dialogs, useDialogs, useEnteredLapse, useRootKeys } from './root-hooks.js';
 import { shownScreen } from './screen-switch.js';
 import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
@@ -92,8 +92,8 @@ function useTools(
       session,
       hitTest: (p) => {
         const hit = screenId === undefined ? undefined : hits.current?.hitTest(screenId, p, session.camera.get().z);
-        // a click on a group's member selects the group
-        return hit === undefined ? undefined : hits.current?.selectableOf(hit);
+        // a click on a group's member selects the group (inside an entered group, the member's own outermost group)
+        return hit === undefined ? undefined : hits.current?.selectableOf(hit, session.entered.get());
       },
       view: store,
       screen: screenId,
@@ -221,6 +221,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const assets = useMemo(() => props.assets ?? createAssetStore(), [props.assets]);
   const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands: props.commands });
   useFitOnOpen(session, area, box);
+  useEnteredLapse(store, session);
   if (mode === 'present')
     return (
       <div data-testid="editor-root" data-mode="present" data-revision={revision}>

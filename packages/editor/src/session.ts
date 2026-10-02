@@ -38,6 +38,8 @@ export type Session = {
   readonly imagePick: WritableSignal<Box | undefined>;
   /** The element whose text is being edited in place, if any. */
   readonly editing: WritableSignal<RecordId | undefined>;
+  /** The group entered to edit its members (double-click; Esc leaves it), if any: a click picks within it. */
+  readonly entered: WritableSignal<RecordId | undefined>;
 };
 
 /**
@@ -68,6 +70,7 @@ export function createSession(docId: string): Session {
     laser: writable<readonly Vec2[]>([]),
     imagePick: writable<Box | undefined>(undefined),
     editing: writable<RecordId | undefined>(undefined),
+    entered: writable<RecordId | undefined>(undefined),
   };
 }
 

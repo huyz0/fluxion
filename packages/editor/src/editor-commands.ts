@@ -8,6 +8,7 @@ import type { AssetStore } from './asset-store.js';
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
+import { exitGroup, groupSelection, ungroupSelection } from './group-edit.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
 import { selectSame } from './select-same.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-tool.js';
@@ -204,7 +205,10 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   cameraCommand('camera.zoom100', 'Zoom to 100 %', 'zoom100'),
   cameraCommand('camera.fitScreen', 'Zoom to fit the screen', 'fitScreen'),
   cameraCommand('camera.fitSelection', 'Zoom to the selection', 'fitSelection'),
-  { id: 'tool.escape', title: 'Cancel', run: (ctx) => ctx.tools.escape() },
+  // between gestures Esc first leaves the group entered with a double-click (M8.5); else it cancels what is under way (always taken)
+  { id: 'tool.escape', title: 'Cancel', run: (ctx) => (selectIdle(ctx) && exitGroup(ctx.tools.ctx)) || ctx.tools.escape() },
+  { id: 'selection.group', title: 'Group', run: (ctx) => selectIdle(ctx) && groupSelection(ctx.tools.ctx) },
+  { id: 'selection.ungroup', title: 'Ungroup', run: (ctx) => selectIdle(ctx) && ungroupSelection(ctx.tools.ctx) },
   {
     id: 'tool.use',
     title: 'Use a tool',

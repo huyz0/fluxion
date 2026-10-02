@@ -160,8 +160,9 @@ export type HitIndex = {
   /**
    * What a click on `id` selects: the outermost group it sits in, or itself. A group has no drawing
    * of its own, so its members stand for it; a frame's or component's children are selected alone.
+   * Inside the group `within` that has been entered, the outermost group below it (M8.5).
    */
-  selectableOf(id: RecordId): RecordId;
+  selectableOf(id: RecordId, within?: RecordId): RecordId;
   /** Stop following the store. */
   dispose(): void;
 };
@@ -233,9 +234,9 @@ class Index implements HitIndex {
     return ids.filter(on).sort((a, b) => (rank.get(a) as number) - (rank.get(b) as number));
   }
 
-  selectableOf(id: RecordId): RecordId {
+  selectableOf(id: RecordId, within?: RecordId): RecordId {
     let top = id;
-    for (let parent = this.#groupAbove(top); parent !== undefined; parent = this.#groupAbove(top)) top = parent;
+    for (let parent = this.#groupAbove(top); parent !== undefined && parent !== within; parent = this.#groupAbove(top)) top = parent;
     return top;
   }
 

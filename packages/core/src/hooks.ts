@@ -4,6 +4,7 @@
 // references are cleared. A deleted asset or theme that is still used is not cascaded (no hook can
 // guess the replacement): validation refuses that transaction.
 import type { AnyRecord, Diagnostic, Point, RecordId } from '@fluxion/schema';
+import { groupBoundsHook } from './arrange/group-bounds.js';
 import type { HookContext, IntegrityHook } from './hook-types.js';
 import type { IndexName } from './indexes.js';
 import { keysOf } from './indexes.js';
@@ -138,6 +139,8 @@ export const CORE_HOOKS: ReadonlyArray<readonly [string, IntegrityHook]> = [
   ['core:2-subtrees', subtreeHook],
   ['core:3-owned', ownedHook],
   ['core:4-bindings', bindingsHook],
+  // after the cascades: a group is the bounds of the members that remain (M8.5)
+  ['core:5-group-bounds', groupBoundsHook],
 ];
 
 /**

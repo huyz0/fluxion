@@ -1,18 +1,21 @@
 // The root's hooks that carry its keys, panels and dialogs (split from editor-root.tsx, M7.24).
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
+import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type ReactNode, useCallback, useId, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { AssetStore } from './asset-store.js';
 import { screenToPage } from './camera.js';
 import { createClipboard } from './clipboard.js';
 import { PaletteHost } from './command-palette.js';
 import type { EditorCommand } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
+import { enteredHolds } from './group-edit.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import type { KeyOverrides } from './keymap-overrides.js';
 import { type EditorLayout, type PanelId, panelShown } from './layout.js';
 import { PANEL_NAMES } from './panels.js';
+import { useRevision } from './present.js';
 import type { Session } from './session.js';
 import { Splitter } from './splitter.js';
 import { pasteSystemItem, type SystemItem } from './system-paste.js';
@@ -25,6 +28,20 @@ const SPLITTERS: { readonly [P in PanelId]: string } = {
   right: 'Resize the inspector',
   bottom: 'Resize the timeline',
 };
+
+/**
+ * A group entered with a double-click lapses when the selection leaves it (a click elsewhere, a deselect) or the group
+ * is gone (M8.5).
+ */
+export function useEnteredLapse(store: Store, session: Session): void {
+  const entered = useValue(session.entered.get);
+  const selection = useValue(session.selection.get);
+  const revision = useRevision(store);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the store's revision says the groups may have changed
+  useEffect(() => {
+    if (entered !== undefined && !enteredHolds(store, entered, selection)) session.entered.set(undefined);
+  }, [store, session, entered, selection, revision]);
+}
 
 /** What the root's key handling reads. */
 export type RootKeys = {
