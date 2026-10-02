@@ -11,6 +11,7 @@ import {
   harnessFiles,
   lockfileWorkspaceOnly,
   MANIFEST_HARNESS,
+  NAMED_PATH_HARNESS,
   packagingNeeded,
   SAMPLE_HARNESS,
   SOURCE_HARNESS,
@@ -72,6 +73,12 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     for (const [path, names] of Object.entries(GATE_SCRIPT_HARNESS)) assert.deepEqual(harnessFiles([path], ALL), only(names), path);
     assert.deepEqual(harnessFiles(['tests/harness/drift.test.mjs'], ALL), only(['drift']));
     assert.deepEqual(harnessFiles(['tests/harness/helpers.mjs'], ALL), ALL);
+    for (const [, names] of NAMED_PATH_HARNESS) for (const n of names) assert.ok(readdirSync(join(REPO, 'tests/harness')).includes(`${n}.test.mjs`), n);
+    assert.deepEqual(
+      harnessFiles(['.changeset/m7-core.md', 'scripts/docs/keyboard-shortcuts.mjs', 'packages/editor/AGENTS.md'], ALL),
+      only(['ci-workflow', 'milestone-checks', 'portability', 'size', 'build-index', 'workspace-shape']),
+    );
+    assert.deepEqual(harnessFiles(['scripts/gates/m7-complete.mjs'], ALL), only(['milestone-checks', 'portability']));
     // one path of any other kind in the commit still runs every file
     assert.deepEqual(harnessFiles(['e2e/x.spec.ts', 'scripts/gates/lib.mjs'], ALL), ALL);
     // every named file exists

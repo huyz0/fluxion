@@ -76,6 +76,20 @@ export const GATE_SCRIPT_HARNESS = {
   'scripts/gates/precommit.mjs': LADDER_HARNESS,
 };
 
+/**
+ * Other paths, each with the harness files that name it: changesets (the CI workflow and milestone checks read
+ * `.changeset`), the docs generators and milestone completion gates (run by their own legs, scanned for portability),
+ * the guides of apps/docs (the architecture and workspace-shape tests read that app) and the AGENTS.md notes
+ * (the index, portability and size checks read them).
+ */
+export const NAMED_PATH_HARNESS = [
+  [/^\.changeset\/.+\.md$/, ['ci-workflow', 'milestone-checks']],
+  [/^scripts\/docs\/[^/]+\.mjs$/, ['milestone-checks', 'portability', 'size']],
+  [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
+  [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
+  [/(^|\/)AGENTS\.md$/, ['build-index', 'portability', 'size', 'workspace-shape']],
+];
+
 /** A workspace's manifest. */
 const MANIFEST = /^(packages|packs|apps)\/[^/]+\/package\.json$/;
 /** A workspace's API report: written by check-api --update and checked by the ladder's api step. */
@@ -156,7 +170,7 @@ function harnessFor(p, workspaceLock, all = []) {
   // a harness test file reruns itself; a shared helper (anything else under tests/harness) runs every file
   const own = /^tests\/harness\/([^/]+)\.test\.mjs$/.exec(p);
   if (own) return [own[1]];
-  return GATE_SCRIPT_HARNESS[p] ?? null;
+  return GATE_SCRIPT_HARNESS[p] ?? NAMED_PATH_HARNESS.find(([re]) => re.test(p))?.[1] ?? null;
 }
 
 /** Paths the Vitest run reads beyond the workspaces: its config, setup, fixtures, floors, toolchain. */
