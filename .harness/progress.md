@@ -1439,3 +1439,7 @@ M7.30: inspector enum icons, gradient and image fills shown with a preview, a re
 ## 2026-10-02 M7.28 (claude)
 
 Final milestone review (fresh milestone-reviewer, 89fce3b~1..798b10f): changes-requested. Reopened F1 and F7 as M7.37 (the Problems gate leg pins the dangling-binding fix by title; literal names in the scope tests); handed off F2 (M14 row 10), F3 (M16 row 18b), F4 (M8 row 15b); argued F5, F6. M7.28 stays open for the approving re-review and the CI evidence on three OSes and three engines (the main ci runs were queued for 30+ minutes).
+
+## 2026-10-02 M7 -> M8 (claude)
+
+M7 is NOT formally closed: M7.28 is `blocked` (archive/M7.md): the firefox and webkit e2e legs of m7-complete could not run in the cloud container (no download host), so the gate has never exited 0 on three engines. Approved final review, CI green at c3a9ee3 on ubuntu/windows/macos, and every leg that can run here passes. By the user's decision (2026-10-02) work continues into M8; the roadmap Deferred table and M8 row 2 carry the closing run.

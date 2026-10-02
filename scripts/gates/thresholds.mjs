@@ -45,6 +45,8 @@ export const THRESHOLDS = {
   // performance (NFR-PERF)
   EDITOR_DRAG_MIN_FPS: { value: 55, weakens: 'down' },
   HIT_TEST_2000_MAX_MS: { value: 1, weakens: 'up' }, // M6: point hit-test among 2000 elements (FR-EDT-004)
+  NAVIGATOR_OPEN_50_MAX_MS: { value: 200, weakens: 'up' }, // M8: the screens navigator opens with 50 screens (FR-SCR-002)
+  LIBRARY_SEARCH_10K_MAX_MS: { value: 100, weakens: 'up' }, // M8: keyword search over 10k library entries (FR-LIB-001)
   PRESENT_ANIM_MIN_FPS_DESKTOP: { value: 58, weakens: 'down' },
   PRESENT_ANIM_MIN_FPS_MOBILE: { value: 55, weakens: 'down' },
   LAYOUT_100_NODES_MS: { value: 200, weakens: 'up' },
