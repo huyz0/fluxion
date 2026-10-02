@@ -6,11 +6,19 @@ import type { RecordId } from '@fluxion/schema';
 import type { DragEvent, ReactNode } from 'react';
 import { switchScreen } from '../screen-switch.js';
 import type { Session } from '../session.js';
+import { parseSize } from './navigator-model.js';
 import { RenameField } from './rename-field.js';
 import { Thumbnail } from './thumbnail.js';
 
 /** A screen as the navigator lists it. */
-export type Row = { readonly id: RecordId; readonly label: string; readonly hidden: boolean };
+export type Row = {
+  readonly id: RecordId;
+  readonly label: string;
+  readonly hidden: boolean;
+  /** Its format as the row shows it, and the size an infinite or custom format starts from. */
+  readonly format: string;
+  readonly size: { readonly w: number; readonly h: number };
+};
 
 /** What a row does; present when the navigator can edit. */
 export type RowActions = {
@@ -18,6 +26,7 @@ export type RowActions = {
   readonly setHidden: (id: RecordId, hidden: boolean) => void;
   readonly startRename: (id: RecordId) => void;
   readonly stopRename: () => void;
+  readonly setSize: (id: RecordId, size: { readonly w: number; readonly h: number }) => void;
   readonly dragStart: (id: RecordId, e: DragEvent<HTMLLIElement>) => void;
   readonly dragEnd: () => void;
   readonly drop: (id: RecordId, e: DragEvent<HTMLLIElement>) => void;
@@ -32,10 +41,47 @@ export type ScreenRowProps = {
   /** Whether the canvas shows this screen. */
   readonly current: boolean;
   /** Whether the row is being renamed, or dragged. */
-  readonly state: { readonly renaming: boolean; readonly dragging: boolean; readonly dropping: boolean };
+  readonly state: { readonly renaming: boolean; readonly sizing: boolean; readonly dragging: boolean; readonly dropping: boolean };
   readonly registries: RenderRegistries | undefined;
   readonly actions: RowActions | undefined;
 };
+
+/** What the row shows in the screen's place: its size field, its rename field, or its button. */
+function RowBody(props: ScreenRowProps): ReactNode {
+  const { row: r, store, session, current, state, registries, actions } = props;
+  return (
+    <>
+      {state.sizing && actions !== undefined ? (
+        <RenameField
+          label={`${r.size.w}x${r.size.h}`}
+          name={`Size of ${r.label}`}
+          accepts={(text) => parseSize(text) !== undefined}
+          onCommit={(text) => {
+            const size = parseSize(text);
+            if (size !== undefined) actions.setSize(r.id, size);
+          }}
+          onDone={actions.stopRename}
+        />
+      ) : state.renaming && actions !== undefined ? (
+        <RenameField label={r.label} onCommit={(name) => actions.rename(r.id, name)} onDone={actions.stopRename} />
+      ) : (
+        <button
+          type="button"
+          className="fx-chrome-button fx-chrome-screen-button"
+          aria-pressed={current}
+          onClick={() => switchScreen(session, r.id)}
+          onDoubleClick={() => actions?.startRename(r.id)}
+        >
+          {registries === undefined ? null : <Thumbnail store={store} registries={registries} screenId={r.id} />}
+          <span>{r.label}</span>
+          <span className="fx-chrome-screen-format" aria-hidden="true">
+            {r.format}
+          </span>
+        </button>
+      )}
+    </>
+  );
+}
 
 /** The row. */
 export function ScreenRow(props: ScreenRowProps): ReactNode {
@@ -45,6 +91,7 @@ export function ScreenRow(props: ScreenRowProps): ReactNode {
       className="fx-chrome-screen"
       data-screen-id={r.id}
       data-hidden={r.hidden || undefined}
+      data-format={r.format}
       data-dragging={state.dragging || undefined}
       draggable={actions !== undefined && !state.renaming}
       onDragStart={(e) => actions?.dragStart(r.id, e)}
@@ -59,20 +106,7 @@ export function ScreenRow(props: ScreenRowProps): ReactNode {
         actions.menu(r.id, { x: e.clientX, y: e.clientY });
       }}
     >
-      {state.renaming && actions !== undefined ? (
-        <RenameField label={r.label} onCommit={(name) => actions.rename(r.id, name)} onDone={actions.stopRename} />
-      ) : (
-        <button
-          type="button"
-          className="fx-chrome-button fx-chrome-screen-button"
-          aria-pressed={current}
-          onClick={() => switchScreen(session, r.id)}
-          onDoubleClick={() => actions?.startRename(r.id)}
-        >
-          {registries === undefined ? null : <Thumbnail store={store} registries={registries} screenId={r.id} />}
-          <span>{r.label}</span>
-        </button>
-      )}
+      <RowBody {...props} />
       {actions === undefined ? null : (
         <button
           type="button"

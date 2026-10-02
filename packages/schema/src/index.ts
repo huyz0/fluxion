@@ -67,7 +67,17 @@ export type { AnchorDef, BoxedBase, ElementBase, Locks, Point, QualifiedName, Se
 export { qualifiedNameSchema } from './records/element-base.js';
 export { anchorDefSchema } from './records/element-schemas.js';
 export type { AssetRecord, PluginRefRecord, ResourceRecord, ThemeRecord } from './records/resources.js';
-export { DEFAULT_SCREEN_SIZE, type Rect, type ScreenRecord, type Size, screenKind, screenSize } from './records/screen.js';
+export {
+  DEFAULT_SCREEN_SIZE,
+  presetOf,
+  type Rect,
+  SCREEN_PRESETS,
+  type ScreenPreset,
+  type ScreenRecord,
+  type Size,
+  screenKind,
+  screenSize,
+} from './records/screen.js';
 export { type Repaired, repair } from './repair.js';
 export { type Err, err, type Ok, ok, type Result } from './result.js';
 export { checkRichText, MAX_RICH_TEXT_DEPTH, type RichTextDoc, type RichTextIssue, type RichTextMark, type RichTextNode } from './rich-text.js';

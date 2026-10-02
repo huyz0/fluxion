@@ -86,6 +86,7 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'screen.delete': () => ({ id: screen }),
     'screen.reorder': () => ({ id: screen }),
     'screen.rename': () => ({ id: screen, name: `s${op.value}` }),
+    'screen.setFormat': () => ({ id: screen, format: { kind: 'fixed', size: { w: 800 + op.value, h: 600 } } }),
     'screen.setHidden': () => ({ id: screen, hidden: op.value % 2 === 1 }),
     'screen.duplicate': () => ({ id: screen, newId: newId(n + 700), ids: Object.fromEntries(shapes().map((x, k) => [x, newId(n + 800 + k)])) }),
     'binding.set': () => ({
@@ -148,6 +149,7 @@ const GROUP_THEN_UNGROUP: Op[] = [
   { command: 'element.distribute', pick: 0, value: 1 },
   { command: 'element.zOrder', pick: 0, value: 1 },
   { command: 'screen.rename', pick: 0, value: 1 },
+  { command: 'screen.setFormat', pick: 0, value: 1 },
   { command: 'screen.setHidden', pick: 0, value: 1 },
   { command: 'screen.duplicate', pick: 0, value: 1 },
 ];
@@ -155,7 +157,7 @@ const GROUP_THEN_UNGROUP: Op[] = [
 describe('core determinism (NFR-REL-005, M3 final F4)', () => {
   it('NFR-REL-005: the same command sequence twice gives equal diffs, history and document', () => {
     // the guaranteed example really commits both of its ops
-    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
+    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
     let committed = 0;
     const committedBy = new Set<string>();
     fc.assert(

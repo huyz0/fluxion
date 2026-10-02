@@ -2,7 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { dropAfter, duplicateArgs, newScreen } from './navigator-model.js';
+import { dropAfter, duplicateArgs, formatArgs, formatLabel, newScreen, parseSize } from './navigator-model.js';
 
 const [a, b, c, d] = ['A', 'B', 'C', 'D'] as [RecordId, RecordId, RecordId, RecordId];
 
@@ -42,5 +42,27 @@ describe('the navigator model (FR-SCR-002)', () => {
     // two shapes, the connector, and its two bindings
     expect(Object.keys(args.ids)).toHaveLength(5);
     expect(new Set([args.newId, ...Object.values(args.ids)]).size).toBe(6);
+  });
+
+  it('FR-SCR-003: formats are named, parsed and turned into screen.setFormat arguments', () => {
+    expect([formatLabel({}), formatLabel({ size: { w: 1600, h: 1200 } }), formatLabel({ size: { w: 1280, h: 720 } })]).toEqual(['16:9', '4:3', '1280×720']);
+    expect(formatLabel({ kind: 'infinite' })).toBe('Infinite');
+    expect(['1280x720', ' 800 × 600 ', '640,480', '12x720', '1280x', 'abc', '99999x600', '800x20000'].map(parseSize)).toEqual([
+      { w: 1280, h: 720 },
+      { w: 800, h: 600 },
+      { w: 640, h: 480 },
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { w: 800, h: 20000 },
+    ]);
+    const id = 'S' as RecordId;
+    expect(formatArgs('screen.format:9:16', id, { w: 1, h: 1 })).toEqual({ id, format: { kind: 'fixed', size: { w: 1080, h: 1920 } } });
+    expect(formatArgs('screen.format:infinite', id, { w: 1600, h: 900 })).toEqual({
+      id,
+      format: { kind: 'infinite', viewport: { x: 0, y: 0, w: 1600, h: 900 } },
+    });
+    expect([formatArgs('screen.format:custom', id, { w: 1, h: 1 }), formatArgs('screen.format:nope', id, { w: 1, h: 1 })]).toEqual([undefined, undefined]);
   });
 });

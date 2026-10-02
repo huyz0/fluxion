@@ -122,3 +122,39 @@ export function screenSize(screen: Pick<ScreenRecord, 'size'>): Size {
 export function screenKind(screen: Pick<ScreenRecord, 'kind'>): 'fixed' | 'infinite' {
   return screen.kind ?? 'fixed';
 }
+
+/**
+ * A screen shape people pick by name (FR-SCR-003): its id and label, and the logical size it gives a fixed screen.
+ *
+ * @public
+ */
+export type ScreenPreset = {
+  /** The stable id. */
+  readonly id: string;
+  /** What menus show. */
+  readonly label: string;
+  /** The logical size, px. */
+  readonly size: Size;
+};
+
+/**
+ * The screen presets, widest first: 16:9, 4:3 and 16:10 slides, a 9:16 phone, and A4 portrait (at 150 dpi).
+ *
+ * @public
+ */
+export const SCREEN_PRESETS: readonly ScreenPreset[] = [
+  { id: '16:9', label: '16:9', size: { w: 1920, h: 1080 } },
+  { id: '4:3', label: '4:3', size: { w: 1600, h: 1200 } },
+  { id: '16:10', label: '16:10', size: { w: 1920, h: 1200 } },
+  { id: '9:16', label: '9:16 (phone)', size: { w: 1080, h: 1920 } },
+  { id: 'a4', label: 'A4 (portrait)', size: { w: 1240, h: 1754 } },
+];
+
+/**
+ * The preset whose size `size` is, or undefined for a custom size.
+ *
+ * @public
+ */
+export function presetOf(size: Size): ScreenPreset | undefined {
+  return SCREEN_PRESETS.find((p) => p.size.w === size.w && p.size.h === size.h);
+}

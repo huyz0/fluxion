@@ -2,7 +2,7 @@
 // duplicate commands are given. Pure; the panel (screens-tab.tsx) shows it.
 import { type ReadView, screenRecordsToCopy } from '@fluxion/core';
 import { screensInOrder } from '@fluxion/render';
-import { keyBetween, type RecordId } from '@fluxion/schema';
+import { keyBetween, presetOf, type RecordId, SCREEN_PRESETS, type ScreenRecord, type Size, screenKind, screenSize } from '@fluxion/schema';
 
 /**
  * The screen a dragged screen should follow when dropped on `target` (above it, or below with `below`): undefined
@@ -27,4 +27,45 @@ export function newScreen(view: ReadView, id: RecordId): { id: RecordId; type: '
 /** The arguments that duplicate `screen`: a new screen id, and a new id for each record it copies. */
 export function duplicateArgs(view: ReadView, screen: RecordId, newId: () => RecordId): { id: RecordId; newId: RecordId; ids: Record<string, RecordId> } {
   return { id: screen, newId: newId(), ids: Object.fromEntries(screenRecordsToCopy(view, screen).map((r) => [r, newId()])) };
+}
+
+/** The menu command that sets a preset's format, or the infinite or custom one. */
+export const FORMAT_PREFIX = 'screen.format:';
+
+/** The format lines of the screen menu: a preset each, the infinite screen, and a size typed in. */
+export const FORMAT_ITEMS: readonly { readonly command: string; readonly title: string }[] = [
+  ...SCREEN_PRESETS.map((p) => ({ command: `${FORMAT_PREFIX}${p.id}`, title: `Format: ${p.label}` })),
+  { command: `${FORMAT_PREFIX}infinite`, title: 'Format: Infinite canvas' },
+  { command: `${FORMAT_PREFIX}custom`, title: 'Format: Custom size…' },
+];
+
+/** The arguments of `screen.setFormat`. */
+export type SetFormatArgs = {
+  readonly id: RecordId;
+  readonly format:
+    | { readonly kind: 'fixed'; readonly size: Size }
+    | { readonly kind: 'infinite'; readonly viewport: { readonly x: number; readonly y: number; readonly w: number; readonly h: number } };
+};
+
+/** The `screen.setFormat` arguments the format command `command` gives screen `id` (undefined for `custom`, which asks for a size, and for an unknown one). */
+export function formatArgs(command: string, id: RecordId, current: Size): SetFormatArgs | undefined {
+  const name = command.slice(FORMAT_PREFIX.length);
+  if (name === 'infinite') return { id, format: { kind: 'infinite' as const, viewport: { x: 0, y: 0, w: current.w, h: current.h } } };
+  const preset = SCREEN_PRESETS.find((p) => p.id === name);
+  return preset === undefined ? undefined : { id, format: { kind: 'fixed' as const, size: preset.size } };
+}
+
+/** A size typed as `1280x720` (or `1280 × 720`, or with a comma), whole pixels from 16 to 20000; undefined for anything else. */
+export function parseSize(text: string): Size | undefined {
+  const m = /^\s*(\d+)\s*[x×,]\s*(\d+)\s*$/i.exec(text);
+  const [w, h] = [Number(m?.[1]), Number(m?.[2])];
+  const ok = (n: number) => n >= 16 && n <= 20000;
+  return m !== null && ok(w) && ok(h) ? { w, h } : undefined;
+}
+
+/** What the navigator shows of a screen's format: its preset, `1280×720`, or `Infinite`. */
+export function formatLabel(screen: Pick<ScreenRecord, 'kind' | 'size'>): string {
+  if (screenKind(screen) === 'infinite') return 'Infinite';
+  const size = screenSize(screen);
+  return presetOf(size)?.label ?? `${size.w}×${size.h}`;
 }

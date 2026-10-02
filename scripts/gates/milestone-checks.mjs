@@ -319,6 +319,7 @@ export const BENCH_COMMANDS = [
   'screen.delete',
   'screen.reorder',
   'screen.rename',
+  'screen.setFormat',
   'screen.setHidden',
   'screen.duplicate',
   'binding.set',

@@ -56,13 +56,29 @@ export type ConnectOptions = {
 };
 
 /**
+ * What a test screen may be given.
+ *
+ * @public
+ */
+export type ScreenOptions = {
+  /** Its name. */
+  readonly name?: string;
+  /** A fixed screen's size. */
+  readonly size?: { readonly w: number; readonly h: number };
+  /** `infinite` needs a `viewport`. */
+  readonly kind?: 'fixed' | 'infinite';
+  /** An infinite screen's viewport. */
+  readonly viewport?: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
+};
+
+/**
  * Builds one document; every method returns the id of what it added.
  *
  * @public
  */
 export type DocumentBuilder = {
   /** Add a screen (appended after the existing ones). */
-  screen(options?: { readonly name?: string; readonly size?: { readonly w: number; readonly h: number } }): RecordId;
+  screen(options?: ScreenOptions): RecordId;
   /** Add a shape to a screen. */
   rect(screenId: RecordId, options?: RectOptions): RecordId;
   /** Add a text element to a screen. */
@@ -139,13 +155,15 @@ class Builder implements DocumentBuilder {
     return undefined;
   }
 
-  screen(o: { readonly name?: string; readonly size?: { readonly w: number; readonly h: number } } = {}): RecordId {
+  screen(o: ScreenOptions = {}): RecordId {
     const s: ScreenRecord = {
       id: this.#id(),
       type: 'screen',
       index: this.#index('screens'),
       ...(o.name === undefined ? {} : { name: o.name }),
       ...(o.size === undefined ? {} : { size: o.size }),
+      ...(o.kind === undefined ? {} : { kind: o.kind }),
+      ...(o.viewport === undefined ? {} : { viewport: o.viewport }),
     };
     return this.#add(s);
   }

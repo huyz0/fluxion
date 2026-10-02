@@ -3,10 +3,11 @@
 // and a right click opens the screen's menu (rename, hide, duplicate, delete). The screen the canvas shows is marked.
 import type { Store } from '@fluxion/core';
 import { type RenderRegistries, screensInOrder, useValue } from '@fluxion/render';
-import type { RecordId, ScreenRecord } from '@fluxion/schema';
+import { type RecordId, type ScreenRecord, screenSize } from '@fluxion/schema';
 import { type ReactNode, useMemo } from 'react';
 import { ContextMenu } from './context-menu.js';
 import type { MenuItem } from './context-menu-model.js';
+import { FORMAT_ITEMS, formatLabel } from './navigator/navigator-model.js';
 import { type Row, ScreenRow } from './navigator/screen-row.js';
 import { useNavigator } from './navigator/use-navigator.js';
 import type { Execute } from './pointer.js';
@@ -34,7 +35,7 @@ const rowsOf = (store: Store) =>
   store.query((view) =>
     screensInOrder(view, true).map((id, i): Row => {
       const r = view.get(id) as ScreenRecord | undefined;
-      return { id, label: screenLabel(r?.name, i), hidden: r?.hidden === true };
+      return { id, label: screenLabel(r?.name, i), hidden: r?.hidden === true, format: formatLabel(r ?? {}), size: screenSize(r ?? {}) };
     }),
   );
 
@@ -43,6 +44,7 @@ const NO_KEYS = (): readonly string[] => [];
 /** The menu of a screen's row. */
 const itemsOf = (row: Row | undefined): readonly MenuItem[] => [
   { command: 'screen.rename', title: 'Rename' },
+  ...FORMAT_ITEMS,
   { command: 'screen.setHidden', title: row?.hidden ? 'Show in presentation' : 'Hide from presentation' },
   { command: 'screen.duplicate', title: 'Duplicate' },
   { command: 'screen.delete', title: 'Delete' },
@@ -69,7 +71,7 @@ export function ScreensTab(props: ScreensTabProps): ReactNode {
             store={store}
             session={session}
             current={r.id === shown}
-            state={{ renaming: nav.renaming === r.id, dragging: nav.dragging === r.id, dropping: nav.dragging !== undefined }}
+            state={{ renaming: nav.renaming === r.id, sizing: nav.sizing === r.id, dragging: nav.dragging === r.id, dropping: nav.dragging !== undefined }}
             registries={registries}
             actions={nav.actions}
           />

@@ -55,6 +55,32 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
       write(ctx, 'screen.setHidden', (tx) => tx.patch(args.id as RecordId, { hidden: args.hidden ? true : undefined })),
   }),
   defineCommand({
+    id: 'screen.setFormat',
+    title: title('screen.setFormat', 'Set screen format'),
+    // a fixed screen of a size (a preset or custom), or an infinite one shown through a viewport; elements stay where they are
+    args: z.object({
+      id,
+      format: z.discriminatedUnion('kind', [
+        z.object({ kind: z.literal('fixed'), size: z.object({ w: z.number().positive().finite(), h: z.number().positive().finite() }) }),
+        z.object({
+          kind: z.literal('infinite'),
+          viewport: z.object({ x: z.number().finite(), y: z.number().finite(), w: z.number().positive().finite(), h: z.number().positive().finite() }),
+        }),
+      ]),
+    }),
+    run: (ctx, args) =>
+      checkIds(ctx, 'screen.setFormat', 'screen', [[['id'], args.id]]) ??
+      write(ctx, 'screen.setFormat', (tx) =>
+        // the fields of the other format go, so a record is never both
+        tx.patch(
+          args.id as RecordId,
+          args.format.kind === 'fixed'
+            ? { kind: undefined, size: args.format.size, viewport: undefined }
+            : { kind: 'infinite', viewport: args.format.viewport, size: undefined },
+        ),
+      ),
+  }),
+  defineCommand({
     id: 'screen.duplicate',
     title: title('screen.duplicate', 'Duplicate screen'),
     // `ids`: a new id for every element and binding of the screen, by old id

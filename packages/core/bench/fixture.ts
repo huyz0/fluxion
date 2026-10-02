@@ -146,6 +146,7 @@ function benchArgs(
     'screen.delete': { id: screens[7] },
     'screen.reorder': { id: screens[2], after: screens[8] },
     'screen.rename': { id: screens[1], name: 'renamed' },
+    'screen.setFormat': { id: screens[1], format: { kind: 'fixed', size: { w: 1280, h: 720 } } },
     'screen.setHidden': { id: screens[1], hidden: true },
     // a copy of screen 4: its 250 shapes and the bindings of its 83 connectors
     'screen.duplicate': { id: screens[4], newId: 'BenchNewScreen002', ids: copies },
@@ -176,6 +177,7 @@ export const COMMANDS = [
   'screen.delete',
   'screen.reorder',
   'screen.rename',
+  'screen.setFormat',
   'screen.setHidden',
   'screen.duplicate',
   'binding.set',

@@ -8,17 +8,21 @@ export type RenameFieldProps = {
   readonly label: string;
   /** Commit a new name. */
   readonly onCommit: (name: string) => void;
+  /** The field's accessible name (default: `Rename <label>`). */
+  readonly name?: string;
+  /** Whether a typed text may be committed (default: any non-blank text). */
+  readonly accepts?: (text: string) => boolean;
   /** Leave the field. */
   readonly onDone: () => void;
 };
 
 /** The field. */
 export function RenameField(props: RenameFieldProps): ReactNode {
-  const { label, onCommit, onDone } = props;
+  const { label, onCommit, onDone, name: given, accepts = (text: string) => text !== '' } = props;
   return (
     <input
       className="fx-chrome-rename"
-      aria-label={`Rename ${label}`}
+      aria-label={given ?? `Rename ${label}`}
       defaultValue={label}
       // biome-ignore lint/a11y/noAutofocus: the field exists because the user asked to rename; focus belongs in it
       autoFocus
@@ -26,9 +30,9 @@ export function RenameField(props: RenameFieldProps): ReactNode {
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === 'Enter') {
-          const name = e.currentTarget.value.trim();
+          const text = e.currentTarget.value.trim();
           onDone();
-          if (name !== '' && name !== label) onCommit(name);
+          if (accepts(text) && text !== label) onCommit(text);
         } else if (e.key === 'Escape') onDone();
       }}
       onBlur={onDone}

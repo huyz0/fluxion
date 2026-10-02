@@ -58,6 +58,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'screen.duplicate',
       'screen.rename',
       'screen.reorder',
+      'screen.setFormat',
       'screen.setHidden',
     ]);
     expect(CORE_COMMANDS.every((c) => commands.source(c.id) === 'core')).toBe(true);

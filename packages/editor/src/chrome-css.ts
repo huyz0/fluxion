@@ -72,6 +72,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-screen[data-dragging] { opacity: 0.4; }
 .fx-chrome-screen[data-hidden] .fx-chrome-screen-button { opacity: 0.55; }
 .fx-chrome-screen-button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.fx-chrome-screen-format { font-size: 11px; opacity: 0.7; }
 .fx-chrome-thumbnail { position: relative; overflow: hidden; background: var(--ui-pressed); border: 1px solid var(--ui-border); border-radius: 2px; pointer-events: none; }
 .fx-chrome-rename { font: inherit; padding: 4px 6px; }
 .fx-chrome-keymap { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }

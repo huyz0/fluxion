@@ -71,6 +71,28 @@ test.describe('screens navigator', { tag: '@desktop' }, () => {
     await expect(rows).toHaveCount(2);
   });
 
+  test('FR-SCR-003: the screen menu sets a preset, an infinite canvas and a custom size', async ({ page }) => {
+    const editor = new EditorPage(page);
+    await withScreens(editor, 1);
+    const row = editor.panel('Screens, library and layers').locator('.fx-chrome-screen').first();
+    await expect(row).toHaveAttribute('data-format', '16:9');
+    await editor.screenTab('Screen 1').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Format: 4:3' }).click();
+    await expect(row).toHaveAttribute('data-format', '4:3');
+    await editor.screenTab('Screen 1').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Format: Infinite canvas' }).click();
+    await expect(row).toHaveAttribute('data-format', 'Infinite');
+    await editor.screenTab('Screen 1').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Format: Custom size…' }).click();
+    const field = editor.panel('Screens, library and layers').getByRole('textbox', { name: 'Size of Screen 1' });
+    await field.fill('1280x720');
+    await field.press('Enter');
+    await expect(row).toHaveAttribute('data-format', '1280×720');
+    // one undo step per format
+    await editor.toolbarButton('Undo').click();
+    await expect(row).toHaveAttribute('data-format', 'Infinite');
+  });
+
   test('NFR-PERF-001: the navigator opens with 50 screens within NAVIGATOR_OPEN_50_MAX_MS', async ({ page }) => {
     const editor = new EditorPage(page);
     await withScreens(editor, 50);

@@ -42,6 +42,7 @@ describe('screen commands (FR-SCR-002)', () => {
     const steps: ReadonlyArray<readonly [string, unknown]> = [
       ['screen.create', { screen: { id: 'NewScreenAAAA0001', type: 'screen', index: 'a0' } }],
       ['screen.rename', { id: t.second, name: 'renamed' }],
+      ['screen.setFormat', { id: t.second, format: { kind: 'fixed', size: { w: 1600, h: 1200 } } }],
       ['screen.setHidden', { id: t.second, hidden: true }],
       ['screen.reorder', { id: t.third, after: t.first }],
       ['screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: copies }],
@@ -151,5 +152,21 @@ describe('screen commands (FR-SCR-002)', () => {
     expect(t.get(t.first)['name']).toBe('Intro');
     expect(t.run('screen.rename', { id: t.left, name: 'x' }).ok).toBe(false);
     expect(t.run('screen.setHidden', { id: t.left, hidden: true }).ok).toBe(false);
+  });
+
+  it('FR-SCR-003: a screen takes a fixed size or an infinite viewport, and loses the fields of the format it leaves', () => {
+    const t = setup();
+    expect(t.run('screen.setFormat', { id: t.first, format: { kind: 'fixed', size: { w: 1080, h: 1920 } } }).ok).toBe(true);
+    expect([t.get(t.first)['size'], 'kind' in t.get(t.first)]).toEqual([{ w: 1080, h: 1920 }, false]);
+    const view = { x: -100, y: -50, w: 800, h: 600 };
+    expect(t.run('screen.setFormat', { id: t.first, format: { kind: 'infinite', viewport: view } }).ok).toBe(true);
+    expect([t.get(t.first)['kind'], t.get(t.first)['viewport'], 'size' in t.get(t.first)]).toEqual(['infinite', view, false]);
+    expect(t.run('screen.setFormat', { id: t.first, format: { kind: 'fixed', size: { w: 1920, h: 1080 } } }).ok).toBe(true);
+    expect(['viewport' in t.get(t.first), 'kind' in t.get(t.first)]).toEqual([false, false]);
+    // elements stay where they are
+    expect((t.get(t.right)['transform'] as { x: number }).x).toBe(300);
+    // a size must be positive, and only a screen has a format
+    expect(t.run('screen.setFormat', { id: t.first, format: { kind: 'fixed', size: { w: 0, h: 10 } } }).ok).toBe(false);
+    expect(t.run('screen.setFormat', { id: t.left, format: { kind: 'fixed', size: { w: 10, h: 10 } } }).ok).toBe(false);
   });
 });

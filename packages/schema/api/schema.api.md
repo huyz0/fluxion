@@ -500,6 +500,9 @@ export type PointAnchor = Extensible<{
 }>;
 
 // @public
+export function presetOf(size: Size): ScreenPreset | undefined;
+
+// @public
 export type QualifiedName = `${string}:${string}`;
 
 // @public
@@ -605,7 +608,17 @@ export const SCHEMA_VERSION: string;
 export function schemaForRecord(record: unknown): RecordSchemaChoice;
 
 // @public
+export const SCREEN_PRESETS: readonly ScreenPreset[];
+
+// @public
 export function screenKind(screen: Pick<ScreenRecord, "kind">): "fixed" | "infinite";
+
+// @public
+export type ScreenPreset = {
+    readonly id: string;
+    readonly label: string;
+    readonly size: Size;
+};
 
 // @public
 export type ScreenRecord = Extensible<{

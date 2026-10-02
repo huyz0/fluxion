@@ -7,7 +7,7 @@ import type { MenuItem } from '../context-menu-model.js';
 import type { Execute } from '../pointer.js';
 import { switchScreen } from '../screen-switch.js';
 import type { Session } from '../session.js';
-import { dropAfter, duplicateArgs, newScreen } from './navigator-model.js';
+import { dropAfter, duplicateArgs, FORMAT_PREFIX, formatArgs, newScreen } from './navigator-model.js';
 import type { Row, RowActions } from './screen-row.js';
 
 /** What the hook needs. */
@@ -33,11 +33,16 @@ function runMenuItem(
     const args = duplicateArgs(store, target, newId);
     if (execute(command, args).ok) switchScreen(session, args.newId);
   } else if (command === 'screen.delete' && rows.length > 1) execute(command, { id: target });
+  else if (command.startsWith(FORMAT_PREFIX)) {
+    const args = formatArgs(command, target, rows.find((r) => r.id === target)?.size ?? { w: 1920, h: 1080 });
+    if (args !== undefined) execute('screen.setFormat', args);
+  }
 }
 
 /** What the hook gives the panel. */
 export type Navigator = {
   readonly renaming: RecordId | undefined;
+  readonly sizing: RecordId | undefined;
   readonly dragging: RecordId | undefined;
   readonly menu: (Point & { readonly id: RecordId }) | undefined;
   readonly closeMenu: () => void;
@@ -50,6 +55,7 @@ export type Navigator = {
 export function useNavigator(input: NavigatorInput): Navigator {
   const { store, session, rows, execute, newId } = input;
   const [renaming, setRenaming] = useState<RecordId | undefined>(undefined);
+  const [sizing, setSizing] = useState<RecordId | undefined>(undefined);
   const [dragging, setDragging] = useState<RecordId | undefined>(undefined);
   const [menu, setMenu] = useState<(Point & { readonly id: RecordId }) | undefined>(undefined);
   const actions = useMemo((): RowActions | undefined => {
@@ -58,7 +64,11 @@ export function useNavigator(input: NavigatorInput): Navigator {
       rename: (id, name) => void execute('screen.rename', { id, name }),
       setHidden: (id, hidden) => void execute('screen.setHidden', { id, hidden }),
       startRename: setRenaming,
-      stopRename: () => setRenaming(undefined),
+      stopRename: () => {
+        setRenaming(undefined);
+        setSizing(undefined);
+      },
+      setSize: (id, size) => void execute('screen.setFormat', { id, format: { kind: 'fixed', size } }),
       dragStart: (id, e: DragEvent<HTMLLIElement>) => {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', id);
@@ -92,7 +102,8 @@ export function useNavigator(input: NavigatorInput): Navigator {
     setMenu(undefined);
     if (target === undefined || execute === undefined || newId === undefined) return;
     if (item.command === 'screen.rename') setRenaming(target);
+    else if (item.command === `${FORMAT_PREFIX}custom`) setSizing(target);
     else runMenuItem(item.command, target, { ...input, execute, newId });
   };
-  return { renaming, dragging, menu, closeMenu: () => setMenu(undefined), actions, add, pick };
+  return { renaming, sizing, dragging, menu, closeMenu: () => setMenu(undefined), actions, add, pick };
 }
