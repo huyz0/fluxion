@@ -50,7 +50,8 @@ function setup() {
     tools.pointer(at('down', 50, 50));
     tools.pointer(at('move', to.x, to.y, o));
   };
-  return { core, session, tools, a, drag, xy: () => [place(a).x, place(a).y] };
+  const size = () => (core.store.get(a) as { transform: { w: number; h: number; rot?: number } }).transform;
+  return { core, session, tools, a, size, drag, xy: () => [place(a).x, place(a).y] };
 }
 
 describe('snapping while dragging with the select tool (FR-ARR-005)', () => {
@@ -90,5 +91,64 @@ describe('snapping while dragging with the select tool (FR-ARR-005)', () => {
     press(tools, { key: 'Escape', shift: false, alt: false, mod: false });
     expect(xy()).toEqual([0, 0]);
     expect(session.guides.get()).toEqual([]);
+  });
+});
+
+describe('snapping while resizing and rotating (FR-ARR-005)', () => {
+  const resized = (o: Partial<PointerInfo> = {}) => {
+    const t = setup();
+    t.session.selection.set([t.a]);
+    // the se handle sits at the box's corner (100, 100); c's left edge is 300 and its top 200
+    t.tools.pointer(at('down', 100, 100));
+    t.tools.pointer(at('move', 297, 197, o));
+    return t;
+  };
+
+  it('FR-ARR-005: a resized edge snaps to another element`s edge and the screen, with its guide', () => {
+    const { size, session, tools } = resized();
+    expect(size()).toMatchObject({ w: 300, h: 200 });
+    expect(session.guides.get().map((g) => `${g.axis}:${g.at}`)).toEqual(expect.arrayContaining(['x:300', 'y:200']));
+    tools.pointer(at('up', 297, 197));
+    expect(session.guides.get()).toEqual([]);
+    // the screen's right edge (1920 wide) snaps a wide resize too
+    const wide = setup();
+    wide.session.selection.set([wide.a]);
+    wide.tools.pointer(at('down', 100, 100));
+    wide.tools.pointer(at('move', 1915, 100));
+    expect(wide.size().w).toBe(1920);
+  });
+
+  it('FR-ARR-005: Alt, Ctrl and the toggle leave a resize as dragged', () => {
+    expect(resized({ mod: true }).size()).toMatchObject({ w: 297, h: 197 });
+    const off = setup();
+    off.session.snap.set(false);
+    off.session.selection.set([off.a]);
+    off.tools.pointer(at('down', 100, 100));
+    off.tools.pointer(at('move', 297, 197));
+    expect(off.size()).toMatchObject({ w: 297, h: 197 });
+  });
+
+  it('FR-ARR-005: a rotation within 3 degrees of a step snaps to it, Alt bypasses', () => {
+    const turn = (o: Partial<PointerInfo> = {}) => {
+      const t = setup();
+      t.session.selection.set([t.a]);
+      // the rotate handle is 24 px above the top edge's middle; the pointer to 88 degrees about the centre (50, 50)
+      t.tools.pointer(at('down', 50, -24));
+      t.tools.pointer(at('move', 50 + 100 * Math.cos((-2 * Math.PI) / 180), 50 + 100 * Math.sin((-2 * Math.PI) / 180), o));
+      return t.size().rot;
+    };
+    expect(turn()).toBe(90);
+    expect(turn({ alt: true })).toBeCloseTo(88, 5);
+  });
+
+  it('FR-ARR-005: the grid toggle snaps a drag to the grid', () => {
+    const t = setup();
+    t.session.grid.set(true);
+    // the left edge at 47 is 1 from the 48 line, the top at 31 is 7 from the 24 line
+    t.drag({ x: 97, y: 81 });
+    expect(t.xy()).toEqual([48, 24]);
+    const off = setup();
+    off.drag({ x: 97, y: 81 });
+    expect(off.xy()).toEqual([47, 31]);
   });
 });

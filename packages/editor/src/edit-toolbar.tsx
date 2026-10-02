@@ -40,6 +40,7 @@ export type EditToolbarProps = {
 export function EditToolbar(props: EditToolbarProps): ReactNode {
   const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, switchMode, openHelp } = props;
   const snapping = useValue(session.snap.get);
+  const grid = useValue(session.grid.get);
   return (
     <Toolbar layout={layout} onLayout={onLayout}>
       <ToolButtons session={session} tools={tools} />
@@ -53,6 +54,15 @@ export function EditToolbar(props: EditToolbarProps): ReactNode {
         onClick={() => session.snap.set(!snapping)}
       >
         Snapping
+      </button>
+      <button
+        type="button"
+        className="fx-chrome-button"
+        aria-pressed={grid}
+        title="Snap to a 24-unit grid (needs Snapping on)"
+        onClick={() => session.grid.set(!grid)}
+      >
+        Grid
       </button>
       <button type="button" className="fx-chrome-button" title="Copy" onClick={() => void system.copy()}>
         Copy

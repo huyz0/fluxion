@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { SNAP_PX, snapAngle, snapBox, snapThreshold } from './snap.js';
+import { SNAP_PX, snapAngle, snapBox, snapResize, snapThreshold } from './snap.js';
 
 const box = (x: number, y: number, w = 100, h = 50) => ({ x, y, w, h });
 
@@ -105,5 +105,23 @@ describe('snapping (FR-ARR-005)', () => {
     expect(snapAngle(-2)).toBe(0);
     expect(snapAngle(44, { step: 45 })).toBe(45);
     expect(snapAngle(88, { bypass: true })).toBe(88);
+  });
+});
+
+describe('snapping a resize (FR-ARR-005)', () => {
+  it('FR-ARR-005: only the edges a handle moves are brought to a target', () => {
+    // the se corner of a 100x50 box at (0,0) dragged to (297, 198): c's left edge is 300, its top 200
+    const c = { x: 300, y: 200, w: 100, h: 100 };
+    const corner = snapResize({ x: 0, y: 0, w: 297, h: 198 }, [1, 1], [c], { zoom: 1 });
+    expect(corner.box).toEqual({ x: 0, y: 0, w: 300, h: 200 });
+    // a side handle moves one edge: the other axis is left alone though a target is in reach
+    const side = snapResize({ x: 0, y: 0, w: 297, h: 198 }, [1, 0], [c], { zoom: 1 });
+    expect(side.box).toEqual({ x: 0, y: 0, w: 300, h: 198 });
+    expect(side.guides.every((g) => g.axis === 'x')).toBe(true);
+    // a low edge moves the origin and keeps the far edge
+    const low = snapResize({ x: 97, y: 0, w: 203, h: 50 }, [-1, 0], [c], { zoom: 1, grid: 24 });
+    expect(low.box).toEqual({ x: 96, y: 0, w: 204, h: 50 });
+    // bypass: as given
+    expect(snapResize({ x: 0, y: 0, w: 297, h: 198 }, [1, 1], [c], { zoom: 1, bypass: true }).box).toEqual({ x: 0, y: 0, w: 297, h: 198 });
   });
 });

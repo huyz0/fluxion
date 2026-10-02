@@ -347,6 +347,9 @@ export function freehandTool(): Tool;
 export function fuzzyScore(query: string, text: string): number | undefined;
 
 // @public
+export const GRID_CELL = 24;
+
+// @public
 export function groupTitle(g: Pick<KeyGroup, "command" | "args">, titleOf: (command: string) => string | undefined, toolTitle: (id: string) => string | undefined): string;
 
 // @public
@@ -832,6 +835,7 @@ export type Session = {
     readonly guides: WritableSignal<readonly SnapGuide[]>;
     readonly library: WritableSignal<string>;
     readonly snap: WritableSignal<boolean>;
+    readonly grid: WritableSignal<boolean>;
 };
 
 // @public
@@ -897,6 +901,15 @@ export type SnapOptions = {
         readonly h: number;
     };
     readonly bypass?: boolean;
+};
+
+// @public
+export function snapResize(box: Box, edges: readonly [-1 | 0 | 1, -1 | 0 | 1], others: readonly Box[], options: SnapOptions): SnapResizeResult;
+
+// @public
+export type SnapResizeResult = {
+    readonly box: Box;
+    readonly guides: readonly SnapGuide[];
 };
 
 // @public

@@ -22,7 +22,7 @@ export const MIN_SIZE = 1;
 export const ROTATE_STEP = 15;
 
 /** Which edges of the box each handle moves: -1 the low edge, 1 the high edge, 0 neither, per axis. */
-const EDGES: { readonly [H in HandleId]: readonly [-1 | 0 | 1, -1 | 0 | 1] } = {
+export const EDGES: { readonly [H in HandleId]: readonly [-1 | 0 | 1, -1 | 0 | 1] } = {
   nw: [-1, -1],
   n: [0, -1],
   ne: [1, -1],

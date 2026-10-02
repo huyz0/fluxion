@@ -10,11 +10,11 @@ import { duplicates, moved, reframed, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
-import { snapBox } from './snap/snap.js';
+import { GRID_CELL, snapAngle, snapBox, snapResize } from './snap/snap.js';
 import { boundsOf, snapScreen, snapTargets } from './snap/targets.js';
 import { SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
 import { TOUCH } from './touch.js';
-import { type Box2, handlePoint, resize, rotation } from './transform.js';
+import { type Box2, EDGES, handlePoint, resize, rotation } from './transform.js';
 
 /**
  * Nudge the selection by `d` page units, one undo step; false with nothing selected.
@@ -105,6 +105,7 @@ function follow(ctx: ToolCtx, drag: Drag, page: Vec2, bypass = false): void {
       zoom: ctx.session.camera.get().z,
       bypass,
       ...(screen === undefined ? {} : { screen }),
+      ...(ctx.session.grid.get() ? { grid: GRID_CELL } : {}),
     });
     d = { x: d.x + hit.dx, y: d.y + hit.dy };
     ctx.session.guides.set(hit.guides);
@@ -117,8 +118,33 @@ function follow(ctx: ToolCtx, drag: Drag, page: Vec2, bypass = false): void {
 /** Whether the pointer `e` skips snapping: Alt after the press (one that made copies is a duplicate, not a bypass) or Ctrl/Cmd. */
 const skipsSnap = (e: PointerInfo, drag: Drag): boolean => e.mod || (e.alt && drag.copies === undefined);
 
+/**
+ * A resized frame with the edges its handle moves brought to the other elements, the screen and the grid, and the guides
+ * shown. Only an unturned frame snaps (a turned one has no edge on an axis); Alt (which resizes from the centre), Ctrl/Cmd
+ * and shift (which keeps the aspect) leave the size as dragged.
+ */
+function snapped(ctx: ToolCtx, h: Handle, sized: Box2, e: PointerInfo): Box2 {
+  ctx.session.guides.set([]);
+  if (h.snap === undefined || h.box.rot !== 0 || e.alt || e.mod || e.shift) return sized;
+  const edges = EDGES[h.id as HandleId];
+  const hit = snapResize(sized, edges, h.snap.others, {
+    zoom: ctx.session.camera.get().z,
+    ...(h.snap.screen === undefined ? {} : { screen: h.snap.screen }),
+    ...(ctx.session.grid.get() ? { grid: GRID_CELL } : {}),
+  });
+  ctx.session.guides.set(hit.guides);
+  return { ...hit.box, rot: sized.rot };
+}
+
 /** A press on a handle of the selection frame: which, the frame and what is in it as they started. */
-type Handle = { readonly id: HandleId | 'rotate'; readonly box: Box2; readonly page: Vec2; readonly from: readonly Start[] };
+type Handle = {
+  readonly id: HandleId | 'rotate';
+  readonly box: Box2;
+  readonly page: Vec2;
+  readonly from: readonly Start[];
+  /** What a resize snaps to, as for a drag (absent: snapping is off). */
+  readonly snap?: Drag['snap'];
+};
 
 /** The handle of the selection's frame under canvas point `e.screen`, if any. */
 function handleUnder(ctx: ToolCtx, e: PointerInfo): Handle | undefined {
@@ -127,14 +153,14 @@ function handleUnder(ctx: ToolCtx, e: PointerInfo): Handle | undefined {
   // a finger reaches a handle further than a mouse (FR-EDT-019)
   const id = handleAt(selectionFrame(placed, ctx.session.camera.get()), e.screen, e.pointerType === 'touch' ? TOUCH.handlePx : HANDLE_PX);
   const box = frameBox(placed);
-  return id === undefined || box === undefined ? undefined : { id, box, page: e.page, from: starts(ctx.view, selected) };
+  return id === undefined || box === undefined ? undefined : { id, box, page: e.page, from: starts(ctx.view, selected), ...snapping(ctx, selected) };
 }
 
 /**
  * The state that drags a handle: each move sets the frame `after(handle, e)` and carries what is in it
  * along, one command a frame; the whole drag is one undo step; Esc puts it all back.
  */
-function transforming(p: Press, id: string, after: (h: Handle, e: PointerInfo) => Box2): StateNode {
+function transforming(p: Press, id: string, after: (h: Handle, e: PointerInfo, ctx: ToolCtx) => Box2): StateNode {
   let gesture: Gesture | undefined;
   const set = (h: Handle, box: Box2) => {
     gesture?.update('element.updateMany', { updates: reframed(h.from, h.box, box) });
@@ -145,9 +171,9 @@ function transforming(p: Press, id: string, after: (h: Handle, e: PointerInfo) =
     onEnter: (ctx) => {
       gesture = beginGesture(ctx.execute, ctx.seal);
     },
-    onPointerMove: (_ctx, e) => {
+    onPointerMove: (ctx, e) => {
       const h = p.handle as Handle;
-      set(h, after(h, e));
+      set(h, after(h, e, ctx));
       return undefined;
     },
     onPointerUp: () => ({ to: 'idle' }),
@@ -157,9 +183,10 @@ function transforming(p: Press, id: string, after: (h: Handle, e: PointerInfo) =
       return { to: 'idle' };
     },
     // tzap disable next-line BlockStatement: each frame commits at once, and the next gesture's own merge key starts a new undo step anyway
-    onExit: () => {
+    onExit: (ctx) => {
       gesture?.end();
       gesture = undefined;
+      ctx.session.guides.set([]);
     },
   };
 }
@@ -328,14 +355,19 @@ export function selectTool(): Tool {
       translating: translating(p),
       brushing: brushing(p),
       // the handle follows the pointer from where it was pressed (a finger presses beside it)
-      resizing: transforming(p, 'resizing', (h, e) => {
+      resizing: transforming(p, 'resizing', (h, e, ctx) => {
         const at = handlePoint(h.box, h.id as HandleId);
-        return resize(h.box, h.id as HandleId, { x: at.x + e.page.x - h.page.x, y: at.y + e.page.y - h.page.y }, e);
+        const sized = resize(h.box, h.id as HandleId, { x: at.x + e.page.x - h.page.x, y: at.y + e.page.y - h.page.y }, e);
+        return snapped(ctx, h, sized, e);
       }),
       adjusting: adjusting(p),
       ending: ending(p),
       bending: bending(p),
-      rotating: transforming(p, 'rotating', (h, e) => ({ ...h.box, rot: rotation(h.box, h.page, e.page, e.shift) })),
+      // a free turn snaps to the 15 degree steps when near one (shift always does); Alt and Ctrl/Cmd skip it
+      rotating: transforming(p, 'rotating', (h, e, ctx) => {
+        const turned = rotation(h.box, h.page, e.page, e.shift);
+        return { ...h.box, rot: ctx.session.snap.get() && !e.shift ? snapAngle(turned, { bypass: e.alt || e.mod }) : turned };
+      }),
     },
   };
 }

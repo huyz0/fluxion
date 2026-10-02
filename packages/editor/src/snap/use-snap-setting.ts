@@ -8,9 +8,15 @@ import type { SettingsStore } from '../settings.js';
 /** Where the snapping choice is kept. */
 export const SNAP_KEY = 'fluxion.editor.snap.v1';
 
-/** Keep `session.snap` and the `settings` entry in step. */
+/** Where the grid choice is kept. */
+export const GRID_KEY = 'fluxion.editor.grid.v1';
+
+/** Keep `session.snap`, `session.grid` and their `settings` entries in step. */
 export function useSnapSetting(settings: SettingsStore, session: Session): void {
   useState(() => session.snap.set(settings.get(SNAP_KEY) !== false));
   const on = useValue(session.snap.get);
   useEffect(() => settings.set(SNAP_KEY, on), [settings, on]);
+  useState(() => session.grid.set(settings.get(GRID_KEY) === true));
+  const grid = useValue(session.grid.get);
+  useEffect(() => settings.set(GRID_KEY, grid), [settings, grid]);
 }

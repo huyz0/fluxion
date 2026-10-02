@@ -234,6 +234,48 @@ export function snapBox(box: Box, others: readonly Box[], options: SnapOptions):
 }
 
 /**
+ * The grid cell the Grid toggle snaps to, page units.
+ *
+ * @public
+ */
+export const GRID_CELL = 24;
+
+/**
+ * A resize with its moved edges snapped.
+ *
+ * @public
+ */
+export type SnapResizeResult = {
+  /** The box with the moved edges on their targets. */
+  readonly box: Box;
+  /** The guides of what they line up with. */
+  readonly guides: readonly SnapGuide[];
+};
+
+/**
+ * `box` with the edges a resize moves brought to the nearest targets: `edges` is which edge each axis moves (-1 the low
+ * edge, 1 the high edge, 0 none, as the resize handles), and the other edges stay where they are. Returns the box and
+ * the guides of what the moved edges line up with. With `bypass`, as given.
+ *
+ * @public
+ */
+export function snapResize(box: Box, edges: readonly [-1 | 0 | 1, -1 | 0 | 1], others: readonly Box[], options: SnapOptions): SnapResizeResult {
+  const [ex, ey] = edges;
+  // the moved edges (or corner) as a point: a box without size has one position to bring to a target
+  const edge = { x: ex < 0 ? box.x : box.x + box.w, y: ey < 0 ? box.y : box.y + box.h, w: 0, h: 0 };
+  const hit = snapBox(edge, others, options);
+  const dx = ex === 0 ? 0 : hit.dx;
+  const dy = ey === 0 ? 0 : hit.dy;
+  const out = {
+    x: ex < 0 ? box.x + dx : box.x,
+    y: ey < 0 ? box.y + dy : box.y,
+    w: box.w + (ex < 0 ? -dx : ex > 0 ? dx : 0),
+    h: box.h + (ey < 0 ? -dy : ey > 0 ? dy : 0),
+  };
+  return { box: out, guides: hit.guides.filter((g) => (g.axis === 'x' ? ex !== 0 : ey !== 0)) };
+}
+
+/**
  * `degrees` brought to the nearest multiple of `step` (15° by default) when within 3° of it, within [0, 360); else as
  * given. With `bypass`, as given.
  *

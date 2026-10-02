@@ -47,6 +47,8 @@ export type Session = {
   readonly library: WritableSignal<string>;
   /** Whether a drag snaps (the toolbar toggle, FR-ARR-005). */
   readonly snap: WritableSignal<boolean>;
+  /** Whether snapping includes a grid (the toolbar's Grid toggle, FR-ARR-005; off to start). */
+  readonly grid: WritableSignal<boolean>;
 };
 
 /**
@@ -81,6 +83,7 @@ export function createSession(docId: string): Session {
     guides: writable<readonly SnapGuide[]>([]),
     library: writable('basic:rect'),
     snap: writable(true),
+    grid: writable(false),
   };
 }
 
