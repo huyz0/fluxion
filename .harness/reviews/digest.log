@@ -351,3 +351,8 @@ M7.32	7e71c858a163916871c8699a8f05c406063e75038f63ab49923c7de3183e50a3	r2	pass	c
 M7.32	6e64a0ce6db79addeed8fd49c1283a952ac002c623e0ba67093744fbab676aef	r3	pass	claude:reviewer	0 findings
 M7.26	8b6516dfd56fc30f10a1a5d244a43204f0c2751922717d3255f0d734d6b09198	r4	pass	claude:reviewer	0 findings
 M7.33	67ea7650cc0811c26160bef17c5b82d657434d737e7a637957bbbc1aeb9eacb9	r1	pass	claude:reviewer	0 findings
+M7.30	c5904e9d0a44a0026098067fb24fd2587ac03a68d1e693a9b0b17a42ad755a22	r1	pass	claude:reviewer	0 findings
+M7.34	40584dddad9c52719d961f0073b7a5f1863ec262bedb6c78bb58187d176d59d3	r1	pass	claude:reviewer	0 findings
+M7.27	0973fb7b6562c7c359b07b9cbc1599564870e96a2a2e6319552aa16d6e109d1a	r1	changes-requested	claude:reviewer	1 findings
+M7.27	f5a8c83a9cbf37056cfa25d766318506129ca264f1390a81e3b0c80cab1b8550	r2	pass	claude:reviewer	0 findings
+M7.35	efa6b56728426e1dd78d57bac370645555d805a8671d291f8c3132a8e1416286	r1	pass	claude:reviewer	0 findings

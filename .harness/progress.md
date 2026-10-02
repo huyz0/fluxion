@@ -1431,3 +1431,7 @@ Problems tab (`problems.ts` pure, `problems-tab.tsx`): validate()'s diagnostics 
 ## 2026-10-02 M7.32 M7.33 (claude)
 
 Staged ladder scope: a doc, e2e spec, gate script or harness test runs the harness files that read it (a doc also those naming its path); publint and attw only for manifest, lockfile or build setting; the whole-repo coverage run left to CI (`--all`). ci-cd.md §5 remedy; budget not raised. Staged ladder 198 s -> 55-71 s on 4 cores.
+
+## 2026-10-02 M7.30 M7.27 M7.34 M7.35 (claude)
+
+M7.30: inspector enum icons, gradient and image fills shown with a preview, a refused entry given back, arrow-key steps (one undo step each); the scrub-gesture reset is hygiene (the test guards the behaviour, it passes without the reset). M7.27: Editing text and Keyboard shortcuts guides (the latter generated from the keymap and tools by scripts/docs/keyboard-shortcuts.mjs --check; review r1 caught that the registry lists entries, so the first version had no Tools section), inspector stories, the editor AGENTS.md map and five changesets. The completion gate's M7.15 title had an apostrophe where the test has a backtick; corrected. M7.34, M7.35: staged-ladder scope for changesets, docs generators, completion gates, guides, AGENTS.md and knip.json (a commit that touched them ran ~190 s). Next: M7.28, the final review, which needs CI evidence on three engines (this container has chromium only).
