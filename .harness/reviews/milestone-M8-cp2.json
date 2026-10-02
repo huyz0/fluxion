@@ -1,0 +1,76 @@
+{
+  "milestone": "M8",
+  "checkpoint": "cp2",
+  "range": "70f2324..18b5abc",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "gate honesty",
+      "detail": "scripts/gates/m8-complete.mjs has no leg for e2e/library.panel.spec.ts (M8.30, the only E2E of FR-LIB-001 panel behaviour: packs by category, search narrows to the cylinder). It also names no T0/T1 title for the section commands (M8.29: create/rename/fold/reorder/delete, screen.setSection), for 'a format change on an infinite screen keeps its viewport' (M8.28), or for the notes command. The FR-LIB-001 leg is only the pure 10k bench.",
+      "failure_scenario": "The library panel is deleted or its search box unwired: the bench on library-search.ts and every other leg still pass, so m8-complete exits 0 with no library panel. Likewise section.delete could stop releasing its screens (dangling sectionId, a validation error) and no named gate case would fail."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "area": "spec fidelity / coherence",
+      "detail": "The navigator shows unsectioned screens first and then each section's screens (navigator-model.ts navigatorItems). Drag reorder (use-navigator.ts drop, via dropAfter over the flat `rows` order) issues only screen.reorder and never screen.setSection. Present order, F5 'first visible screen' and shift+F5 follow the global screen index, not the grouped display.",
+      "failure_scenario": "A user drags a screen onto a row inside section B. Only its global index changes: it stays in its old section and appears not to move, or jumps. With a sectioned screen at a lower index than an unsectioned one, the navigator lists the unsectioned screen first but F5 presents the sectioned one, so the slide order the user sees differs from the order presented. FR-SCR-004 'move screens between sections' is met only through the context menu, and no test covers a drag across sections or the display/present order mismatch."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "gate honesty",
+      "detail": "Parity test 'every screen of every example' asserts screens === 4 and skips perf-500. It does not cover examples/arrange-demo.flux.json (a hidden screen, groups, sections), the very document that exercises M8's new features. The title and the backlog row overstate coverage.",
+      "failure_scenario": "A group or section-related render difference between edit and present on the arrange demo passes the parity leg."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "architecture",
+      "detail": "The 1.0 to 1.1 migration drops every screen.sectionId (accepted in ADR-0021 because the field named nothing in 1.0). Section collapsed state lives on the document record and is an undo step. Both are ADR-documented. The ADR does not make collapse or unsectioned-first ordering a rule for the site consumer.",
+      "failure_scenario": "A 1.0 document hand-authored or AI-written with real sectionId values and no section records loses them silently on open. A user pressing undo unfolds a section instead of undoing content. Low impact today; it matters when site mode (R7) reads sections."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "area": "standards drift / plan health",
+      "detail": "The plan has 16 tasks and the backlog now has 32 rows (2x). The causes were rows the plan lacked (UI for arrange, section commands, library panel, CI fixes M8.31/M8.32). M8.19 also changed scripts/gates/ladder-scope.mjs and tests/harness/ladder-scope.test.mjs inside a docs commit, which is scope drift. M8.31 (webkit contrast) is marked done although it could not be reproduced and awaits a green CI webkit run. Closing M8.2 and M8.20 is still outstanding, so the final gate cannot pass yet.",
+      "failure_scenario": "A webkit a11y failure persists in CI while the row shows done. Later milestones that plan only 'core + E2E' will again omit the UI and panel rows and overrun."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "row": "M8.35",
+      "note": "gate legs for the library panel, section commands and the viewport fix"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "row": "M8.36",
+      "note": "drag across sections in one step; presentation order following sections is handed to M11"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "row": "M8.35",
+      "note": "parity also compares the arrange demo"
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand off",
+      "to": "M31",
+      "note": "site navigation reads sections, their collapsed state and the migration's dropped sectionId"
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "note": "plan growth is the cp1 F4 point; the M8.31 webkit fix is confirmed by CI (aa81b02 green); the M8.19 gate-script change was the ladder-scope mapping that keeps docs commits within budget (review-argued.txt)"
+    }
+  ],
+  "planDelta": "Add a gate leg for e2e/library.panel.spec.ts and for the M8.28/M8.29 T0/T1 titles (F1). Add a drag-across-sections behaviour plus an E2E, or make navigator order equal present order (F2). Extend parity to arrange-demo (F3). Plan UI/panel rows alongside every core command row in M9+, and verify the M8.31 fix on a green CI webkit run before the final review (F5)."
+}

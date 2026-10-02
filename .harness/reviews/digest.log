@@ -402,3 +402,4 @@ M8.32	0f94938d28edc33e55ee78ffd0b11618ba5630fc38efe9e4522f4ec2e4a0ebdc	r1	pass	c
 M8.18	17549aef0431d7e80dbc783311f5f0fbca69fef506c63643cf219133e1c61134	r1	pass	claude:sonnet-5.5	0 findings
 M8.26	1391e22e051558d5dad93362d29c01782bbcaa09d203001f893843efaa1e4205	r2	pass	claude:reviewer	0 findings
 M8.19	fc4ba86dae9477cef3c605569bddd78a6e20e12c00eafbd1ddf8658a2b138152	r1	pass	claude:reviewer	0 findings
+M8.20	6ec6ed888fb2cb2368b1af5138a6b0efa02d424d662192f125f3184b62956975	r1	pass	claude:sonnet-5.5	0 findings

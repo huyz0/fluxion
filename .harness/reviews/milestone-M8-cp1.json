@@ -1,0 +1,62 @@
+{
+  "milestone": "M8",
+  "checkpoint": "cp1",
+  "range": "6c88295~1..70f2324",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "area": "spec fidelity (FR-ARR-005, rows M8.9/M8.10)",
+      "detail": "FR-ARR-005 lists grid and rotation increments as snap targets. The engine has a grid provider and snapAngle, but nothing calls them: select-tool follow() passes no grid option, snapAngle is only exported (the rotate handle keeps its own shift 15-degree step in transform.ts, a second helper for the same job), and resize never snaps although the snap.ts header says a box 'moved or resized' snaps. The plan also asks for toggles 'in toolbar and settings'; only the toolbar toggle exists and there is no grid size or grid on/off setting. The row acceptance (guides appear, toggle persists) is met, so the gate is green while two of the four FR-ARR-005 target kinds are not reachable by a user.",
+      "failure_scenario": "A user turns the grid on or rotates a shape with snapping on and nothing snaps; m8-complete passes because its legs only test move-snapping and the pure engine."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "area": "spec fidelity (FR-ARR-002, FR-ARR-003, row M8.26)",
+      "detail": "The core commands support align to a key object and distribute by centers or a fixed gap, but the UI (arrange-edit.ts) only aligns to 'selection' (or 'screen' for one element) and only distributes by 'gaps'. FR-ARR-002 says 'relative to selection, key object, or screen' and FR-ARR-003 'by spacing or centers'. A single selected element cannot be aligned to the selection, and several elements cannot be aligned to the screen.",
+      "failure_scenario": "FR-ARR-002/003 are marked covered by e2e/arrange.align-distribute-order.spec.ts yet key-object alignment and centre distribution are unreachable from the editor."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "area": "spec fidelity (FR-ARR-001, no ADR)",
+      "detail": "FR-ARR-001 says 'group transforms apply to children'. M8.4 chose the opposite model: members keep screen coordinates, the group box is the bounds of its members (a hook refits it) and a group moves by moving its members. This is documented in 02-document-model.md and the row text, but there is no ADR or spec change, although it is a document-model decision (a group's own transform is ignored by render, so a group record's rot is always 0).",
+      "failure_scenario": "An imported or agent-authored document with a group carrying a non-zero transform, or a plugin that writes the group's transform, is drawn differently from what the requirement describes; M13/M17 layout code will assume one model or the other."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "area": "plan health / backlog bookkeeping",
+      "detail": "docs/backlog/current.md still shows M8.3 and M8.4 as 'todo' with no commit, although 159c2b2 and b7b2636 landed and 5e96730 says it closed them. M8.1 and M8.2 have blank commit columns. M8.22 lists M8.5..M8.26 as deps but not M8.4/M8.6/M8.9. The plan grew from 16 to 32 rows (about 2x, above the 1.5x threshold), mostly splits (M8.29, M8.30), CI fixes (M8.31, M8.32) and the UI row the plan lacked (M8.26); the plan again described core work without its UI, as in M6/M7.",
+      "failure_scenario": "checkBacklogDone at the final gate reads M8.3 and M8.4 as not done, or someone trusts the table and redoes them; later milestones (M13, M17, M19) repeat the omission of UI rows for core commands."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "row": "M8.33",
+      "note": "rotation, resizing and the grid get snapping"
+    },
+    {
+      "finding": "F2",
+      "disposition": "argue",
+      "note": "v1 UI scope: align to a key object, distribute by centres and a fixed gap are command arguments for AI and MCP; the editor offers the common cases (review-argued.txt)"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "row": "M8.34",
+      "note": "ADR-0022 and the requirement wording"
+    },
+    {
+      "finding": "F4",
+      "disposition": "fixed",
+      "note": "M8.1, M8.3 and M8.4 closed with their commits in the backlog; the plan grew 2x from rows the plan lacked (UI, section commands, library panel, CI fixes): later plans list a UI row for every core command"
+    }
+  ],
+  "planDelta": "Add a row for F1 (wire grid and rotation-increment snapping, resize snapping, and a settings entry; remove the duplicate shift-rotate step or have it call snapAngle). F2: add key-object and centres/spacing options to the UI, or hand off to M19/M17 with a Deferred entry. F3: write a short ADR or amend 02-document-model.md and FR-ARR-001 wording. F4: set M8.3 and M8.4 done with their commits. Plans should list a UI row for every core command."
+}
