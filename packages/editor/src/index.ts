@@ -144,6 +144,7 @@ export { deleteSelection, nudgeSelection, selectAll, selectTool } from './select
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
 export { createSession, createSessions, DEFAULT_CAMERA, type Session, type Sessions } from './session.js';
 export { memorySettings, type SettingsStore } from './settings.js';
+export { ROTATE_SNAP_STEP, SNAP_PX, type SnapGuide, type SnapKind, type SnapOptions, type SnapResult, snapAngle, snapBox, snapThreshold } from './snap/snap.js';
 export { fitImage, type ImageSize, pasteSystemItem, type SystemItem, type SystemPasteDeps } from './system-paste.js';
 export {
   createToolDispatcher,

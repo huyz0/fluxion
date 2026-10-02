@@ -739,6 +739,9 @@ export function resolveKey(bindings: readonly KeyBinding[], k: KeyPress, flags: 
 export function restoreView(session: Session, meta: ViewMeta, shown: RecordId | undefined, exists: (id: RecordId) => boolean): void;
 
 // @public
+export const ROTATE_SNAP_STEP = 15;
+
+// @public
 export type RoutedEnd = {
     readonly point: Vec2;
 };
@@ -825,7 +828,52 @@ export function shortcutsOf(base: readonly KeyBinding[], overrides: KeyOverrides
 export function shownScreen(view: ReadView, wanted: RecordId | undefined): RecordId | undefined;
 
 // @public
+export const SNAP_PX = 8;
+
+// @public
+export function snapAngle(degrees: number, options?: {
+    readonly step?: number;
+    readonly bypass?: boolean;
+}): number;
+
+// @public
+export function snapBox(box: Box, others: readonly Box[], options: SnapOptions): SnapResult;
+
+// @public
+export type SnapGuide = {
+    readonly axis: "x" | "y";
+    readonly at: number;
+    readonly from: number;
+    readonly to: number;
+    readonly kind: SnapKind;
+};
+
+// @public
+export type SnapKind = "edge" | "center" | "gap" | "screen" | "grid";
+
+// @public
+export type SnapOptions = {
+    readonly zoom: number;
+    readonly grid?: number;
+    readonly screen?: {
+        readonly w: number;
+        readonly h: number;
+    };
+    readonly bypass?: boolean;
+};
+
+// @public
+export type SnapResult = {
+    readonly dx: number;
+    readonly dy: number;
+    readonly guides: readonly SnapGuide[];
+};
+
+// @public
 export const snapshotView: (session: Session, shown: RecordId | undefined) => ViewMeta;
+
+// @public
+export const snapThreshold: (zoom: number) => number;
 
 // @public
 export type StateNode = {
