@@ -23,7 +23,28 @@ test.describe('context menus: mouse', { tag: '@desktop' }, () => {
     await page.mouse.click(at.x, at.y, { button: 'right' });
     await expect(menu(editor)).toBeVisible();
     await expect(editor.inspectorText).toHaveText('1 element selected');
-    await expect(menu(editor).getByRole('menuitem')).toHaveText([/Cut/, /Copy/, /Duplicate/, /Delete the selection/, /Select same type/, /Select same style/]);
+    await expect(menu(editor).getByRole('menuitem')).toHaveText([
+      /Cut/,
+      /Copy/,
+      /Duplicate/,
+      /Delete the selection/,
+      /Select same type/,
+      /Select same style/,
+      /Group/,
+      /Ungroup/,
+      /Align left/,
+      /Align centre/,
+      /Align right/,
+      /Align top/,
+      /Align middle/,
+      /Align bottom/,
+      /Distribute horizontally/,
+      /Distribute vertically/,
+      /Bring to front/,
+      /Bring forward/,
+      /Send backward/,
+      /Send to back/,
+    ]);
     await item(editor, /Select same type/).click();
     await expect(menu(editor)).toBeHidden();
     await expect(editor.inspectorText).toHaveText('2 elements selected');
