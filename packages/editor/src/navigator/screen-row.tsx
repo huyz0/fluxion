@@ -6,19 +6,11 @@ import type { RecordId } from '@fluxion/schema';
 import type { DragEvent, ReactNode } from 'react';
 import { switchScreen } from '../screen-switch.js';
 import type { Session } from '../session.js';
-import { parseSize } from './navigator-model.js';
+import { parseSize, type Row } from './navigator-model.js';
 import { RenameField } from './rename-field.js';
 import { Thumbnail } from './thumbnail.js';
 
-/** A screen as the navigator lists it. */
-export type Row = {
-  readonly id: RecordId;
-  readonly label: string;
-  readonly hidden: boolean;
-  /** Its format as the row shows it, and the size an infinite or custom format starts from. */
-  readonly format: string;
-  readonly size: { readonly w: number; readonly h: number };
-};
+export type { Row } from './navigator-model.js';
 
 /** What a row does; present when the navigator can edit. */
 export type RowActions = {

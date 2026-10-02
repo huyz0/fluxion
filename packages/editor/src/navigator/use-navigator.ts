@@ -7,8 +7,8 @@ import type { MenuItem } from '../context-menu-model.js';
 import type { Execute } from '../pointer.js';
 import { switchScreen } from '../screen-switch.js';
 import type { Session } from '../session.js';
-import { dropAfter, duplicateArgs, FORMAT_PREFIX, formatArgs, newScreen } from './navigator-model.js';
-import type { Row, RowActions } from './screen-row.js';
+import { dropAfter, duplicateArgs, FORMAT_PREFIX, formatArgs, newScreen, type Row, SECTION_PREFIX } from './navigator-model.js';
+import type { RowActions } from './screen-row.js';
 
 /** What the hook needs. */
 export type NavigatorInput = {
@@ -21,23 +21,30 @@ export type NavigatorInput = {
 
 type Point = { readonly x: number; readonly y: number };
 
+type MenuCtx = Omit<NavigatorInput, 'execute' | 'newId'> & { readonly execute: Execute; readonly newId: () => RecordId };
+
+/** The section and format lines of a screen's menu, run on `target`. */
+function runPlacement(command: string, target: RecordId, ctx: MenuCtx): void {
+  const { rows, execute } = ctx;
+  if (command.startsWith(SECTION_PREFIX)) {
+    const to = command.slice(SECTION_PREFIX.length);
+    execute('screen.setSection', { id: target, ...(to === 'none' ? {} : { sectionId: to }) });
+    return;
+  }
+  const row = rows.find((r) => r.id === target);
+  const args = formatArgs(command, target, { ...(row?.size ?? { w: 1920, h: 1080 }), infinite: row?.format === 'Infinite' });
+  if (args !== undefined) execute('screen.setFormat', args);
+}
+
 /** A screen menu item other than rename, run on `target`. */
-function runMenuItem(
-  command: string,
-  target: RecordId,
-  ctx: Omit<NavigatorInput, 'execute' | 'newId'> & { readonly execute: Execute; readonly newId: () => RecordId },
-): void {
+function runMenuItem(command: string, target: RecordId, ctx: MenuCtx): void {
   const { store, session, rows, execute, newId } = ctx;
   if (command === 'screen.setHidden') execute(command, { id: target, hidden: !(rows.find((r) => r.id === target)?.hidden ?? false) });
   else if (command === 'screen.duplicate') {
     const args = duplicateArgs(store, target, newId);
     if (execute(command, args).ok) switchScreen(session, args.newId);
   } else if (command === 'screen.delete' && rows.length > 1) execute(command, { id: target });
-  else if (command.startsWith(FORMAT_PREFIX)) {
-    const row = rows.find((r) => r.id === target);
-    const args = formatArgs(command, target, { ...(row?.size ?? { w: 1920, h: 1080 }), infinite: row?.format === 'Infinite' });
-    if (args !== undefined) execute('screen.setFormat', args);
-  }
+  else if (command.startsWith(SECTION_PREFIX) || command.startsWith(FORMAT_PREFIX)) runPlacement(command, target, ctx);
 }
 
 /** What the hook gives the panel. */

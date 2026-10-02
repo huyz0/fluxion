@@ -76,3 +76,45 @@ export function formatLabel(screen: Pick<ScreenRecord, 'kind' | 'size'>): string
   const size = screenSize(screen);
   return presetOf(size)?.label ?? `${size.w}×${size.h}`;
 }
+
+/** A screen as the navigator lists it. */
+export type Row = {
+  readonly id: RecordId;
+  readonly label: string;
+  readonly hidden: boolean;
+  /** Its format as the row shows it, and the size an infinite or custom format starts from. */
+  readonly format: string;
+  readonly size: { readonly w: number; readonly h: number };
+  /** The section it is in, if one that exists. */
+  readonly sectionId?: RecordId | undefined;
+};
+
+/** A section as the navigator lists it. */
+export type SectionRow = { readonly id: RecordId; readonly name: string; readonly collapsed: boolean };
+
+/** One line of the navigator: a section's header, or a screen. */
+export type Item = { readonly kind: 'section'; readonly section: SectionRow; readonly count: number } | { readonly kind: 'screen'; readonly row: Row };
+
+/**
+ * The navigator's lines: the screens in no section first, then each section's header with its screens, sections in order
+ * and screens in their own order; a folded section shows its header alone.
+ */
+export function navigatorItems(rows: readonly Row[], sections: readonly SectionRow[]): Item[] {
+  const known = new Set(sections.map((s) => s.id));
+  const inSection = (id: RecordId | undefined) => rows.filter((r) => (r.sectionId !== undefined && known.has(r.sectionId) ? r.sectionId : undefined) === id);
+  const free = inSection(undefined).map((row): Item => ({ kind: 'screen', row }));
+  const grouped = sections.flatMap((section): Item[] => {
+    const own = inSection(section.id);
+    return [{ kind: 'section', section, count: own.length }, ...(section.collapsed ? [] : own.map((row): Item => ({ kind: 'screen', row })))];
+  });
+  return [...free, ...grouped];
+}
+
+/** The menu command that moves a screen to a section (or out of all, with `none`). */
+export const SECTION_PREFIX = 'screen.section:';
+
+/** The screen menu's lines for moving a screen to a section other than its own, or out of its section. */
+export function sectionMoves(sections: readonly SectionRow[], current: RecordId | undefined): readonly { readonly command: string; readonly title: string }[] {
+  const to = sections.filter((s) => s.id !== current).map((s) => ({ command: `${SECTION_PREFIX}${s.id}`, title: `Move to section: ${s.name}` }));
+  return current === undefined ? to : [...to, { command: `${SECTION_PREFIX}none`, title: 'Remove from section' }];
+}
