@@ -367,3 +367,5 @@ M8.1	3ea0dfef1ca5875764561787fae00dd71bcdf8627c2b6c941d69c3b7732a8725	r3	pass	cl
 M8.1	1ddbc734f6dacbe21ffb54c69476016a3dc5785c2988c0c27059f018d3051b22	r4	changes-requested	claude:reviewer	1 findings
 M8.24	a8d467313a8a83498fe217ec38b496ffb3cdc4153d16bf577882d5effccd206b	r1	pass	claude:reviewer	1 findings
 M8.24	c4e6edc50b222b3c44485f4768208e55edd960f84eff3a24a8b475c25d539d7a	r2	pass	claude:reviewer	0 findings
+M8.3	b5de7cf1135676516c15683faf3fa80e7f8f7326917078f62fe321c5e35ebb25	r1	changes-requested	claude:reviewer	3 findings
+M8.3	154dfdef0061ecda94b6ed7793eaffaff85d47f7b45e045f1cea13b447ccaf67	r2	pass	claude:reviewer	0 findings
