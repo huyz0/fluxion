@@ -87,6 +87,7 @@ export const NAMED_PATH_HARNESS = [
   [/^scripts\/docs\/[^/]+\.mjs$/, ['milestone-checks', 'portability', 'size']],
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
+  [/^knip\.json$/, ['milestone-checks']],
   [/(^|\/)AGENTS\.md$/, ['build-index', 'portability', 'size', 'workspace-shape']],
 ];
 
@@ -223,6 +224,7 @@ export function packagingNeeded(staged) {
   // milestone-checks.mjs judges milestone legs and rows; it reads no manifest, export or build setting
   const inert = (p) =>
     p === 'scripts/gates/milestone-checks.mjs' ||
+    p === 'knip.json' ||
     SOURCE.test(p) ||
     API_REPORT.test(p) ||
     /^e2e\//.test(p) ||

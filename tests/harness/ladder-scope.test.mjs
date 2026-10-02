@@ -79,6 +79,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       only(['ci-workflow', 'milestone-checks', 'portability', 'size', 'build-index', 'workspace-shape']),
     );
     assert.deepEqual(harnessFiles(['scripts/gates/m7-complete.mjs'], ALL), only(['milestone-checks', 'portability']));
+    assert.deepEqual(harnessFiles(['knip.json'], ALL), only(['milestone-checks']));
     // one path of any other kind in the commit still runs every file
     assert.deepEqual(harnessFiles(['e2e/x.spec.ts', 'scripts/gates/lib.mjs'], ALL), ALL);
     // every named file exists
