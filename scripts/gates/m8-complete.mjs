@@ -36,6 +36,7 @@ const { e2e, titledSpec, thresholdSpec } = createE2e({
     projects: DESKTOP,
     specs: [
       'e2e/arrange.group-edit.spec.ts',
+      'e2e/arrange.align-distribute-order.spec.ts',
       'e2e/snapping.smart-guides.spec.ts',
       'e2e/screens.navigator.spec.ts',
       'e2e/screens.sections.spec.ts',
@@ -73,6 +74,15 @@ leg('group then ungroup restores the children; connectors stay bound (T0 propert
   ]),
 );
 leg('a group moves, resizes and rotates as one; double-click enters it (arrange.group-edit)', () => e2e(['e2e/arrange.group-edit.spec.ts'], DESKTOP));
+leg(
+  'the arrange commands work from the UI: align from the context menu, distribute, and order by key, each undone in one step (arrange.align-distribute-order)',
+  () =>
+    titledSpec('e2e/arrange.align-distribute-order.spec.ts', DESKTOP, [
+      'FR-ARR-002: align left from the context menu lines up three shapes',
+      'FR-ARR-003: distribute horizontally spaces them evenly',
+      'FR-ARR-004: Ctrl+] brings a shape forward and one undo takes it back',
+    ]),
+);
 leg('align: every mode against selection, key object and screen (T0)', () =>
   titled([['M8.6', 'FR-ARR-002: align places every mode against every reference, rotated shapes by world bounds', CORE]]),
 );

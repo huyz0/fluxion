@@ -1455,3 +1455,7 @@ M8.3: ADR-0021 (section records, schema 1.1 with a migration clearing dangling s
 ## 2026-10-02 M8.5 (claude)
 
 Groups in the editor: Ctrl+G / Ctrl+Shift+G, double-click enters a group (dashed outline, a click picks within it, Esc leaves one level), and the move/resize/rotate machinery already carried members. The first review of a smaller version (hash 7b75063a, not recorded: restaged before recording) found the real gap: a member edited alone left the group's box stale. The fix is a core integrity hook, core:5-group-bounds, refitting the groups above any changed member in the same transaction; a second review round (recorded as r1 pass, r2 pass with two minors fixed) then passed. The E2E passes on chromium only here (firefox and webkit run in CI/desktop).
+
+## 2026-10-02 M8.6 M8.7 M8.8 (claude)
+
+Core arrange commands: element.align (EDGES/centres to selection, screen or key, by drawn bounds, groups with members and free connectors), element.distribute (equal gaps/centres/fixed gap; repeated ids count once), element.zOrder (only moved elements get a key). Reviews caught: a missing test for a group's free connector and the two-screens refusal (align), a repeated id dodging the three-element rule (distribute; fixed in the shared outermost helper), weak cross-parent assertions (z-order). The plan had no UI row for these: M8.26 added with its gate leg and E2E titles. Shared helpers moved to command-helpers.ts (refuse) and arrange/siblings.ts.
