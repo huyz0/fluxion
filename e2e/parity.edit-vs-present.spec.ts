@@ -191,7 +191,7 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
 
   test('FR-EDT-010: every screen of every example draws the same pixels in edit and present', async ({ page }) => {
     let screens = 0;
-    for (const name of [...EXAMPLES, 'rich-text']) {
+    for (const name of [...EXAMPLES, 'rich-text', 'arrange-demo']) {
       const count = await screenCount(page, name);
       for (let index = 0; index < count; index++) {
         const { edit, present } = await bothModes(page, name, index);
@@ -201,8 +201,8 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
         screens += 1;
       }
     }
-    // the gallery's screen, both of r0-static's, and the rich-text one (perf-500 is the drag benchmark's)
-    expect(screens).toBe(4);
+    // the gallery's screen, both of r0-static's, the rich-text one and the arrange demo's three (perf-500 is the drag benchmark's)
+    expect(screens).toBe(7);
   });
 
   test('FR-EDT-010: the content layer DOM is equal in edit and present after the allowlist', async ({ page }) => {

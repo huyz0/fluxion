@@ -41,6 +41,7 @@ const { e2e, titledSpec, thresholdSpec } = createE2e({
       'e2e/screens.navigator.spec.ts',
       'e2e/screens.sections.spec.ts',
       'e2e/screens.notes.spec.ts',
+      'e2e/library.panel.spec.ts',
       'e2e/library.drag-insert.spec.ts',
       'e2e/library.shape-tool.spec.ts',
       'e2e/present.shift-f5.spec.ts',
@@ -146,6 +147,17 @@ leg('screen presets draw at the right aspect ratio; an infinite screen presents 
     browser('M8.13', 'FR-SCR-003: an infinite screen presents through its viewport'),
   ]),
 );
+leg('section commands and speaker notes are commands, each one undo step (T0)', () =>
+  titled([
+    ['M8.29', 'FR-SCR-004: sections are created in order, renamed, folded and moved, each one undo step', CORE],
+    ['M8.29', 'FR-SCR-004: a screen moves between sections and out of them, one undo step each', CORE],
+    ['M8.29', 'FR-SCR-004: deleting a section lets its screens go, in one undo step', CORE],
+    ['M8.16', 'FR-SCR-006: speaker notes are set on a screen and removed again, and only a screen has them', CORE],
+  ]),
+);
+leg('a format change on an infinite screen keeps its viewport (T0)', () =>
+  titled([['M8.28', 'FR-SCR-003: a format change on an infinite screen keeps its viewport', EDITOR]]),
+);
 leg('the sections migration fixture round-trips (T0)', () => titled([['M8.14', 'FR-SCR-004: a document without sections migrates and round-trips', 'schema']]));
 leg('screens group into sections in the navigator (screens.sections)', () => e2e(['e2e/screens.sections.spec.ts'], DESKTOP));
 leg('speaker notes persist across screen switches and undo (screens.notes)', () => e2e(['e2e/screens.notes.spec.ts'], DESKTOP));
@@ -154,6 +166,7 @@ leg('speaker notes persist across screen switches and undo (screens.notes)', () 
 leg('library search over 10k entries is under LIBRARY_SEARCH_10K_MAX_MS and finds the cylinder', () =>
   benchUnder('packages/editor/bench/library-search-10k.bench.ts', 'library-search-10k', t('LIBRARY_SEARCH_10K_MAX_MS')),
 );
+leg('the library panel lists the basic pack by category and searches it (library.panel)', () => e2e(['e2e/library.panel.spec.ts'], DESKTOP));
 leg('a dragged library item lands within 1 px of the drop (library.drag-insert)', () => e2e(['e2e/library.drag-insert.spec.ts'], DESKTOP));
 leg("the shape tool places the library's current item (library.shape-tool, M6 cp2 F2)", () => e2e(['e2e/library.shape-tool.spec.ts'], DESKTOP));
 leg('the worst-case staged ladder is what the budget record times (M7 final F4)', () =>
