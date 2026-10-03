@@ -5,7 +5,7 @@
 > *and* a milestone review (fresh agent) has recorded a verdict. The command is written first,
 > red (see `docs/standards/sdd.md`, skill `plan-milestone`).
 
-**Current milestone: `M8`** (the `drive` skill reads this line).
+**Current milestone: `M9`** (the `drive` skill reads this line).
 
 Plans (`M<n>.md`) are hypotheses with ≤ ~20 tasks; the backlog (`docs/backlog/current.md`) is
 authoritative for the current milestone only.
