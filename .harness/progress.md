@@ -1539,3 +1539,7 @@ Blocked: the themes-core pack (new workspace package) takes ~220 s through the s
 ## 2026-10-03 M9.9 (claude)
 
 Core commands document.setTheme, screen.setThemeOverride, document.updateMeta (one undo step each; modified is the host Clock reading passed as an argument; per-screen CSS variable emission moved to M9.10). ADR-0152 slug limit corrected to 58. M9.8 still blocked on the 120 s ladder (WIP 77f73fd on main-wtf0sh).
+
+## 2026-10-03 M9.13 (claude)
+
+Font-licence allowlist (FONT_LICENSES) in check-licenses: fonts.json and catalog.json checked for licence, hash, path confinement; drift treats widening as weakening; ladder-scope maps check-licenses/check-drift to their own tests (staged ladder 105 s). Out of order: M9.8 still blocked.
