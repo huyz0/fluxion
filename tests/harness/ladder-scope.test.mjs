@@ -86,6 +86,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(harnessFiles(['scripts/gates/m7-complete.mjs'], ALL), only(['milestone-checks', 'portability']));
     assert.deepEqual(harnessFiles(['knip.json'], ALL), only(['milestone-checks']));
     assert.deepEqual(harnessFiles(['osv-scanner.toml'], ALL), []);
+    assert.deepEqual(harnessFiles(['.github/workflows/milestone-gate.yml'], ALL), only(['ci-workflow']));
     assert.deepEqual(
       harnessFiles(['fixtures/docs/minimal.flux.json', 'examples/r0-static.flux.json', 'examples/README.md'], ALL),
       only(['milestone-checks', 'tests-kept']),
@@ -112,6 +113,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
         'scripts/gates/thresholds.mjs',
         'knip.json',
         'osv-scanner.toml',
+        '.github/workflows/milestone-gate.yml',
         '.harness/state.json',
         '.changeset/m8-editor.md',
         'examples/arrange-demo.flux.json',

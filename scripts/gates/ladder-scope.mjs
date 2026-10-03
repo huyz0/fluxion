@@ -95,6 +95,8 @@ export const NAMED_PATH_HARNESS = [
   [/^knip\.json$/, ['milestone-checks']],
   // the scanner's list of accepted advisories: read by the security workflow alone
   [/^osv-scanner\.toml$/, []],
+  // a workflow: the tests that read the workflows (pins, permissions, triggers)
+  [/^\.github\/workflows\/[^/]+\.ya?ml$/, ['ci-workflow']],
   // the harness files that read the limits; the whole-repo coverage run (also reading them) is CI's, as for sources
   [/^scripts\/gates\/thresholds\.mjs$/, ['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']],
   [/(^|\/)AGENTS\.md$/, ['build-index', 'portability', 'size', 'workspace-shape']],
@@ -235,6 +237,7 @@ export function packagingNeeded(staged) {
     p === 'scripts/gates/milestone-checks.mjs' ||
     p === 'knip.json' ||
     p === 'osv-scanner.toml' ||
+    /^\.github\/workflows\/[^/]+\.ya?ml$/.test(p) ||
     p === 'scripts/gates/thresholds.mjs' ||
     SOURCE.test(p) ||
     API_REPORT.test(p) ||

@@ -1,0 +1,56 @@
+# Run a milestone's completion gate on all three engines (manual). The cloud container the agents work in has chromium only
+# and cannot download firefox or webkit, so the three-engine legs of a gate (M7.28, M8.2) run here, in the pinned Playwright
+# image, against any ref. The log is the evidence: its leg list is read, not the job's colour (a gate stays red on the one leg
+# that waits for this very run).
+name: milestone-gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      milestone:
+        description: The milestone whose gate runs, e.g. 7 (scripts/gates/m7-complete.mjs)
+        required: true
+        type: string
+      ref:
+        description: The commit to run it on
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: m${{ inputs.milestone }}-complete at ${{ inputs.ref }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+    env:
+      HOME: /root # Firefox refuses a HOME owned by another user inside the container
+      MILESTONE: ${{ inputs.milestone }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: git identity for sandbox tests
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global user.name "ci"
+          git config --global user.email "ci@example.invalid"
+      - name: the gate
+        shell: bash # pipefail: a crash of the script shows in the job's colour; a gate that ran and is red on a waiting leg does too
+        run: node "scripts/gates/m${MILESTONE}-complete.mjs" 2>&1 | tee gate.log
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: gate-log
+          path: gate.log
