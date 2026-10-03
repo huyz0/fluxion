@@ -39,7 +39,7 @@ it, and use **Hide** to leave a screen out of presentation. Right-click a screen
 move it to a section, and its **format**: 16:9, 4:3, 16:10, a 9:16 phone, A4, an infinite canvas, or a custom size such
 as `1280x720`.
 
-`F5` presents from the first visible screen; `Shift+F5` presents the screen you are on.
+`F5` presents from the first visible screen; `Shift+F5` presents the screen you are on. Both follow the order of the screens in the document; until the player reads sections (planned for M11), that is not always the order the navigator lists them in when screens are sectioned.
 
 ## Sections
 

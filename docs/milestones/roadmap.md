@@ -83,6 +83,7 @@ receiving milestone's plan.
 | Item | From | To | Reason |
 |---|---|---|---|
 | Presentation order follows sections: screens in no section first, then each section's screens, as the navigator lists them; F5 and the player use it (M8 cp2 F2) | M8 | M11 row 2a | the player owns the order |
+| The arrange UI for what only commands and AI reach today: align to a key object, distribute by centres, tidy to equal gaps (M8 cp1 F2, FR-ARR-002/003) | M8 | M19 | arrange polish; asked for, not yet needed |
 | Site navigation reads sections, their collapsed state and the migration's dropped `sectionId` (M8 cp2 F4) | M8 | M31 row 1a | the site owns the nav |
 | Curve tangent handles for curved routes: a route needs control points in the schema (ADR), then a handle per tangent (M7 cp2 F3; M7 draws the waypoint the curve passes through) | M7 | M16 | smart routing owns the route model |
 | Grow on text edit: the text-edit command applies `fitShapeText`'s grow height (ADR-0018 item 4) (M5 final F3) | M5 | M7 | the edit command arrives there |
