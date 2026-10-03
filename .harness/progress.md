@@ -1535,3 +1535,7 @@ M8 closed: final review approved (milestone-M8-final.json, range extended to 941
 ## 2026-10-03 M9.8 (claude)
 
 Blocked: the themes-core pack (new workspace package) takes ~220 s through the staged ladder on the 4-core cloud container, over the 120 s limit. WIP is commit 77f73fd on main-wtf0sh; see state.json blockedReason.
+
+## 2026-10-03 M9.9 (claude)
+
+Core commands document.setTheme, screen.setThemeOverride, document.updateMeta (one undo step each; modified is the host Clock reading passed as an argument; per-screen CSS variable emission moved to M9.10). ADR-0152 slug limit corrected to 58. M9.8 still blocked on the 120 s ladder (WIP 77f73fd on main-wtf0sh).
