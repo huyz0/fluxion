@@ -67,7 +67,8 @@ export const MANIFEST_HARNESS = [
  * layering and licenses: the `layering` and `licenses` steps run the gate scripts on the real repo). A commit that adds a workspace
  * went over the 120 s budget on a 4-core machine with them (about 220 s, M9.8); --all and CI run every file (NFR-DX-002).
  */
-export const STAGED_MANIFEST_HARNESS = MANIFEST_HARNESS.filter((n) => !['coverage', 'layering', 'licenses'].includes(n));
+const STAGED_SKIPPED = ['coverage', 'layering', 'licenses'];
+export const STAGED_MANIFEST_HARNESS = MANIFEST_HARNESS.filter((n) => !STAGED_SKIPPED.includes(n));
 
 /**
  * Harness files for a staged doc, e2e spec or gate script that is not a source: the files that read exactly that
@@ -196,7 +197,8 @@ function harnessFor(p, workspaceLock, all = []) {
   if (p === TRACE_MATRIX) return ['trace'];
   if (/^e2e\//.test(p)) return E2E_HARNESS;
   // a doc: the docs files, and every harness file that names this very path (its real copy is read)
-  if (/^docs\/.+\.md$/.test(p)) return [...DOCS_HARNESS, ...naming(p, all)];
+  // (not the files whose real-repo run is a ladder step or CI's: coverage, layering, licenses; M9.26)
+  if (/^docs\/.+\.md$/.test(p)) return [...DOCS_HARNESS, ...naming(p, all).filter((n) => !STAGED_SKIPPED.includes(n))];
   // a harness test file reruns itself; a shared helper (anything else under tests/harness) runs every file
   const own = /^tests\/harness\/([^/]+)\.test\.mjs$/.exec(p);
   if (own) return [own[1]];

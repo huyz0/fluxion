@@ -71,7 +71,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(harnessFiles(['docs/harness/dry-runs.md'], ALL), only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace', 'kits']));
     assert.deepEqual(
       harnessFiles(['docs/architecture/01-overview.md'], ALL),
-      only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace', 'layering']),
+      // the layering run over the real repo is the ladder's `layering` step, not this list's
+      only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace']),
     );
     assert.deepEqual(harnessFiles(['e2e/x.spec.ts'], ALL), only(['trace', 'workspace-shape']));
     assert.deepEqual(harnessFiles(['scripts/gates/milestone-checks.mjs'], ALL), only(['bench-leg', 'kits', 'ladder-scope', 'milestone-checks', 'verify-leg']));
