@@ -1547,3 +1547,7 @@ Font-licence allowlist (FONT_LICENSES) in check-licenses: fonts.json and catalog
 ## 2026-10-03 M9 blocked (claude)
 
 See state.json blockedReason: M9.8 over the staged-ladder time limit here; M9.18 e2e assumes reload persistence the editor lacks. M9.12 and M9.14-M9.17 (fonts) are untouched and could proceed next.
+
+## 2026-10-03 M9.8 (claude)
+
+Themes-core pack landed (81e06af). To fit the 120 s staged budget without raising it: M9.24 (manifest/scaffold commits skip whole-repo coverage, layering, licenses harness runs; api report count derived) and M9.25 (budget record stays current across a workspace-only lockfile change). M9.18 still needs a persistence decision.
