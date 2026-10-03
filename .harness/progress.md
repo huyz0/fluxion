@@ -1575,3 +1575,7 @@ Google Fonts catalog (1745 families from the pinned google-font-metadata; ADR-00
 ## 2026-10-03 M9.17 (claude)
 
 Font picker (Fonts button, dialog: document/bundled/Google/upload, apply to selection), studio font sources, the two e2e specs on Chromium. Remaining in M9: M9.11 (snapshots in the pinned image), M9.18 (persistence decision), M9.19-M9.23. Roving-tabindex tabs left to M9.21.
+
+## 2026-10-03 M9.21 (claude)
+
+Axe over the editor states (a11y.editor.spec.ts, Chromium here; Firefox/WebKit run in the milestone-gate workflow), three real fixes, docs/a11y/editor-checklist.md. M9.21 ran before M9.20 (which needs external dependencies the container cannot land); the dialog and string parts are row M9.28, which M9.23 now waits for.
