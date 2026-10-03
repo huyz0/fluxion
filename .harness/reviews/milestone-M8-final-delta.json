@@ -1,0 +1,37 @@
+{
+  "milestone": "M8",
+  "checkpoint": "final-delta",
+  "range": "80aab08..9410dfa",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "approve",
+  "findings": [
+    {
+      "id": "D1",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "summary": "M8.41 is closed without citing a post-fix three-engine run, and the CI evidence is pinned to f783a04, before the e2e and workflow change.",
+      "suggestion": "Cite the post-fix milestone-gate run and re-record the CI evidence at the range end."
+    },
+    {
+      "id": "D2",
+      "severity": "minor",
+      "file": "e2e/perf.drag-500.spec.ts",
+      "summary": "The spec's 8 px snap reach is a literal separate from the editor's SNAP_PX; the check cannot see a snap pulling slightly more than 8 px.",
+      "suggestion": "Import the constant or tie the spec's value to it."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "D1",
+      "disposition": "reopen",
+      "target": "M8.41",
+      "note": "the M8.41 row cites the milestone-gate run of m8-complete on 9410dfa (37090275837: 37 of 39 legs green on three engines, the two red being the reviewed range and the roadmap) and the CI evidence is re-recorded at the range end"
+    },
+    {
+      "finding": "D2",
+      "disposition": "argue",
+      "note": "the spec reads thresholds.mjs as text and does not import editor code; the 8 px is FR-ARR-005's stated reach and the snapping unit test pins SNAP_PX (review-argued.txt)"
+    }
+  ],
+  "planDelta": "Re-record CI evidence at the range end and cite the post-fix gate run, then archive M8 and plan M9."
+}

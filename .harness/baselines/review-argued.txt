@@ -87,3 +87,4 @@ M8 cp2 F5: the plan grew from 16 to 36 rows by splits and rows the plan lacked (
 M8 final F3: this record uses the gate's disposition spellings (hand-off, argue); making the skill text agree with the gate is a harness wording change, for a harness milestone.
 M8 final F4: the 'M7 is closed' leg reads a text flag; M7.28 and M8.2 cite the milestone-gate run and the commit they were closed from, and a check that the closing row names a run is a harness change for a later harness milestone.
 M8 final F5: gate-script changes inside feature commits were small and are argued at cp2 F5; plans that add a file kind list a ladder-scope row.
+M8 final-delta D2: perf.drag-500 reads thresholds as text and imports no editor code; its 8 px is FR-ARR-005's stated snap reach and snap.test.ts pins SNAP_PX; the place check still fails if the element does not follow the pointer.

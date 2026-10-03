@@ -1,7 +1,7 @@
 {
   "milestone": "M8",
   "checkpoint": "final",
-  "range": "81ed342cdb66..80aab08",
+  "range": "81ed342cdb66..9410dfa",
   "reviewer": "claude-subagent:milestone-reviewer",
   "verdict": "approve",
   "findings": [
@@ -70,5 +70,5 @@
       "note": "small and already argued at cp2 F5; M9+ plans list a ladder-scope row when they add a file kind (review-argued.txt)"
     }
   ],
-  "planDelta": "Close M8.39 after the milestone-gate log shows the engine legs, and M8.2 and M7.28 from that run. For M9 and later, plan a UI row for every core command and a CI-matrix check (webkit axe, macOS timing) before the final review."
+  "planDelta": "Close M8.39 after the milestone-gate log shows the engine legs, and M8.2 and M7.28 from that run. For M9 and later, plan a UI row for every core command and a CI-matrix check (webkit axe, macOS timing) before the final review. The range was extended to 9410dfa after a delta review (milestone-M8-final-delta.json) of the commits since 80aab08: the M8.2 closure, the CI evidence and M8.41."
 }
