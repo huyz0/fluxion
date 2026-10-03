@@ -62,6 +62,14 @@ export const MANIFEST_HARNESS = [
 ];
 
 /**
+ * The manifest harness a staged commit runs: MANIFEST_HARNESS without the files whose real-repo run is a step of the same staged
+ * ladder or CI's (coverage: the staged Vitest step judges the touched workspaces' floors and --all runs the whole-repo run;
+ * layering and licenses: the `layering` and `licenses` steps run the gate scripts on the real repo). A commit that adds a workspace
+ * went over the 120 s budget on a 4-core machine with them (about 220 s, M9.8); --all and CI run every file (NFR-DX-002).
+ */
+export const STAGED_MANIFEST_HARNESS = MANIFEST_HARNESS.filter((n) => !['coverage', 'layering', 'licenses'].includes(n));
+
+/**
  * Harness files for a staged doc, e2e spec or gate script that is not a source: the files that read exactly that
  * (docs: the docs-to-API and diagnostics checks and the matrix; e2e: the matrix and the workspace shape, whose
  * sandboxes copy e2e/; a gate script: the tests of that script and of the ladder that runs it). Anything else
@@ -177,7 +185,7 @@ function naming(path, all) {
 function harnessFor(p, workspaceLock, all = []) {
   if (BOOKKEEPING_PATHS.some((re) => re.test(p))) return [];
   if (SOURCE.test(p) || API_REPORT.test(p)) return SOURCE_HARNESS;
-  if (MANIFEST.test(p) || (p === 'pnpm-lock.yaml' && workspaceLock)) return MANIFEST_HARNESS;
+  if (MANIFEST.test(p) || (p === 'pnpm-lock.yaml' && workspaceLock)) return STAGED_MANIFEST_HARNESS;
   if (p === TRACE_MATRIX) return ['trace'];
   if (/^e2e\//.test(p)) return E2E_HARNESS;
   // a doc: the docs files, and every harness file that names this very path (its real copy is read)

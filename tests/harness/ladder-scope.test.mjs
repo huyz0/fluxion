@@ -134,7 +134,9 @@ describe('staged ladder scope (NFR-DX-002)', () => {
   });
 
   it('a workspace manifest or a workspace-only lockfile runs the manifest harness; an external lockfile change runs them all (M4.29)', () => {
-    const manifest = MANIFEST_HARNESS.map(file);
+    // literal names: the whole-repo coverage, layering and licenses runs are the staged ladder's steps and CI's, not this list's
+    const manifest = MANIFEST_HARNESS.filter((n) => !['coverage', 'layering', 'licenses'].includes(n)).map(file);
+    assert.ok(!manifest.some((f) => /\/(coverage|layering|licenses)\.test\.mjs$/.test(f)));
     assert.deepEqual(
       harnessFiles(['packages/render/package.json', 'packages/render/src/x.tsx'], ALL),
       ALL.filter((f) => manifest.includes(f)),
