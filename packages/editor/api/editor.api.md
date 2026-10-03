@@ -30,8 +30,12 @@ import { RouteContext } from '@fluxion/routing';
 import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+import { ThemeError } from '@fluxion/theme';
 import { Vec2 } from '@fluxion/geometry';
 import { WritableSignal } from '@fluxion/core';
+
+// @public
+export function addFont(deps: FontLibraryDeps, input: FontInput): Promise<Result<RecordId, ThemeError>>;
 
 // @public
 export function applyField(view: ReadView, ids: readonly RecordId[], path: readonly string[], value: unknown): InspectorCommand | undefined;
@@ -336,6 +340,26 @@ export function fitImage(w: number | undefined, h: number | undefined): ImageSiz
 export type FitTargets = {
     readonly screen?: Box | undefined;
     readonly selection?: Box | undefined;
+};
+
+// @public
+export type FontInput = {
+    readonly bytes: Uint8Array;
+    readonly name: string;
+    readonly source: "upload" | "google";
+    readonly license?: string;
+    readonly copyright?: string;
+    readonly family?: string;
+    readonly weight?: number;
+    readonly style?: "normal" | "italic";
+    readonly unicodeRange?: string;
+};
+
+// @public
+export type FontLibraryDeps = {
+    readonly execute: Execute;
+    readonly assets: AssetStore;
+    readonly newId: () => RecordId;
 };
 
 // @public

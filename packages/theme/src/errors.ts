@@ -14,7 +14,10 @@ export type ThemeErrorCode =
   | 'TOKEN_CYCLE'
   | 'TOKEN_TRANSFORM'
   | 'FONT_INVALID'
-  | 'FONT_DUPLICATE';
+  | 'FONT_DUPLICATE'
+  | 'FONT_FORMAT'
+  | 'FONT_TOO_LARGE'
+  | 'FONT_CORRUPT';
 
 /**
  * An expected failure of token resolution or theme validation.

@@ -106,6 +106,20 @@ Catalog:
   metrics record" (M9.16), and "FR-THM-008: a fetched Google font gets a metrics record" (M9.15).
 - The attribution hand-off is recorded in the M10 plan (row 13).
 
+### Amendment (M9.16): uploads, and what a font asset carries
+
+- **Reading a file** is `readFontFile` (`@fluxion/theme`, pure): the format from the first bytes, a collection, WOFF 1, a file over 5 MB and a file whose tables
+  do not lie inside it refused with `FONT_FORMAT`, `FONT_TOO_LARGE` or `FONT_CORRUPT`. For TrueType and OpenType the family, weight and style come from
+  `name` and `OS/2`. **A WOFF2 file keeps its tables as one Brotli stream, which a pure package without a dependency cannot open**: it is accepted by
+  its signature and gives no names, and the family, weight and style come from the caller (the picker asks; the file name is the default).
+- **A font asset** is an `asset` record (loose object, no schema change) with `mime` `font/woff2`, `font/ttf` or `font/otf` and a `font` field:
+  `family`, `weight`, `style`, `source` (`upload` or `google`), `license`, `copyright` and `unicodeRange` when there are any, and **`metrics`**, the
+  `FaceMetrics` of ADR-0148 recorded for these bytes. Its bytes are the host's (the asset store), as for an image.
+- **The metrics producer** is `recordFaceMetrics` (`@fluxion/render`, DOM): the recording of `scripts/fonts/record-metrics.mjs` run in the page that will
+  draw the text (the face loaded under a name of its own, measured in the DOM at 1000 px, removed again). The script and the producer are two copies of one
+  algorithm; a browser test pins that the producer's numbers for the Roboto fixture equal the committed ones. `addFont` (`@fluxion/editor`) is the host
+  tool: read, record, load the face, register its metrics, `asset.create` (one undo step). The player never records.
+
 ## More Information
 
 FR-THM-008 (14-theme-text-media), ADR-0148 (text measurement from recorded metrics: fonts under `fixtures/fonts`,

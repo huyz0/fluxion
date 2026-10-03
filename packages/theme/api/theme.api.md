@@ -61,6 +61,9 @@ export type Duration = {
 export function followColor(theme: Theme, path: string): Result<string, ThemeError>;
 
 // @public
+export const FONT_MAX_BYTES: number;
+
+// @public
 export type FontFaceDef = {
     readonly family: string;
     readonly weight: number;
@@ -78,6 +81,17 @@ export type FontFamilyInfo = {
     readonly source: FontSource;
     readonly faces: readonly FontFaceDef[];
 };
+
+// @public
+export type FontFileInfo = {
+    readonly format: FontFormat;
+    readonly family?: string;
+    readonly weight?: number;
+    readonly style?: "normal" | "italic";
+};
+
+// @public
+export type FontFormat = "woff2" | "ttf" | "otf";
 
 // @public
 export type FontRegistry = {
@@ -122,6 +136,9 @@ export type PaintResolution = {
 
 // @public
 export function parseColor(text: string): Oklch | undefined;
+
+// @public
+export function readFontFile(bytes: Uint8Array): Result<FontFileInfo, ThemeError>;
 
 // @public
 export function relativeLuminance(color: Oklch): number;
@@ -266,7 +283,7 @@ export type ThemeError = {
 };
 
 // @public
-export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE";
+export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE" | "FONT_FORMAT" | "FONT_TOO_LARGE" | "FONT_CORRUPT";
 
 // @public
 export type ThemeProblem = {

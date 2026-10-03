@@ -222,6 +222,16 @@ export function planBlock(node: RichTextNode): BlockPlan | undefined;
 export function planMarks(marks: readonly RichTextMark[] | undefined): readonly MarkPlan[];
 
 // @public
+export type RecordedFace = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+};
+
+// @public
+export function recordFaceMetrics(bytes: Uint8Array, face: RecordedFace): Promise<FaceMetrics>;
+
+// @public
 export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): void;
 
 // @public

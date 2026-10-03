@@ -187,3 +187,4 @@ export const VERSION: string = '0.0.0';
 
 /** Loading fonts into the page (re-exported from the renderer so a host needs only the editor). */
 export { browserMeasurer, createCanvasMeasurer, type LoadableFace, loadFontFaces, registerFontMetrics } from '@fluxion/render';
+export { addFont, type FontInput, type FontLibraryDeps } from './font-library.js';
