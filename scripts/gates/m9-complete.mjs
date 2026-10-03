@@ -75,6 +75,7 @@ leg('a 1.1 document migrates to 1.2 and a document with metadata round-trips (T0
   titled([
     ['M9.5', 'FR-DOC-006: a 1.1 document migrates to 1.2 and round-trips', SCHEMA],
     ['M9.5', 'FR-DOC-006: a document with description, tags and custom key-values round-trips', SCHEMA],
+    ['M9.5', 'FR-DOC-006: a 1.1 document with non-conforming new fields migrates to a valid 1.2 one', SCHEMA],
     ['M9.5', "FR-THM-004: a screen's theme reference round-trips and must name a theme record", SCHEMA],
   ]),
 );
@@ -90,6 +91,7 @@ leg('derived tokens match the reference OKLCH values and follow their source (T0
   titled([
     ['M9.7', 'FR-THM-002: a derived token lightened by 20 percent in OKLCH matches the reference values within 1e-3', THEME],
     ['M9.7', 'FR-THM-002: a derived token follows its source token when the theme changes', THEME],
+    ['M9.7', 'FR-THM-002: a theme with a cycle is reported as FLX_TOKEN_CYCLE and does not loop', THEME],
   ]),
 );
 leg('the pack lists eight themes, each valid, and every pair meets WCAG AA (T0)', () =>

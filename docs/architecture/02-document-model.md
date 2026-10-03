@@ -54,7 +54,7 @@ not in the current schema; until added (minor version) they are preserved but no
 | `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `style?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`; fields common to every core kind. Boxed kinds (all but connector) add transform {x,y,w,h,rot?,flipX?,flipY?} and text? (element kinds table). Planned: `layout` (container layout spec), `overrides` (per state/breakpoint) |
 | `binding` | `connectorId`, `end: 'source'\|'target'`, `elementId`, `anchor: AnchorRef` | Separate record → moving/deleting shapes updates bindings cleanly (tldraw pattern) |
 | `asset` | `hash` (sha256), `mime`, `size`, `name`, `w?`, `h?`, `source?` (URL if external) | Bytes live in the container, not in the record |
-| `theme` | `name`, `tokens` (DTCG token tree), `defaults?` (per kind/variant styles) | Themes may also come from packs |
+| `theme` | `name`, `tokens` (DTCG token tree; a colour token may be an alias with a `dev.fluxion` transform, ADR-0152), `defaults?` (per kind/variant styles) | Themes may also come from packs; choosing one copies it into the document |
 | `timeline` | `screenId`, `name` (`main` = build sequence), `index`, `loop?` | FR-TML |
 | `step` | `timelineId`, `index`, `trigger`, `animations: Animation[]`, `label?` | Animation shapes in `07-animation-and-interaction.md` |
 | `interaction` | `ownerId` (element/screen/document), `trigger`, `condition?`, `actions[]` | FR-INT |
@@ -122,6 +122,11 @@ Resolution order, per field: element literal → element token ref → theme
 built-in fallbacks (`@fluxion/theme` `resolveStyle`, ADR-0015). An unknown token reference
 (FLX_TOKEN_UNKNOWN) or a value that is not valid for its field (a non-colour, a keyword outside its
 set) is skipped and the next layer is used, so no resolved value carries other CSS.
+
+Derived tokens (ADR-0152): a colour token whose `$value` is an alias (`"{color.primary}"`) may carry
+`$extensions["dev.fluxion"].transform`, a list of `lighten`, `darken`, `alpha` and `mix` steps applied in OKLCH after the
+alias is followed. They are computed to literal colours when CSS variables are emitted, so a changed source recolours every
+dependant. Required colour roles are checked by `validateTheme`, not by the `theme` record schema.
 
 ## 3. IDs & human slugs
 
