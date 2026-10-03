@@ -15,6 +15,7 @@
       "!tests/harness/fixtures/biome",
       "!.harness/reviews",
       "!packages/cli/schemas",
+      "!packs/fonts-core/catalog.json",
       "!packages/render/__golden__",
       "!packages/cli/__golden__",
       "!fixtures/docs",

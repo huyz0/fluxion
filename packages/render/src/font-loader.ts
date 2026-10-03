@@ -16,6 +16,8 @@ export type LoadableFace = {
   readonly style: 'normal' | 'italic';
   /** Where the bytes are. */
   readonly url: string;
+  /** The `unicode-range` of a slice of a font (a Google font is several): the browser draws a character from the slice that has it. */
+  readonly unicodeRange?: string;
 };
 
 /**
@@ -26,7 +28,11 @@ export type LoadableFace = {
  */
 export async function loadFontFaces(faces: readonly LoadableFace[], fonts: FontFaceSet = document.fonts): Promise<void> {
   const loading = faces.map((face) => {
-    const loaded = new FontFace(face.family, `url(${JSON.stringify(face.url)})`, { weight: String(face.weight), style: face.style });
+    const loaded = new FontFace(face.family, `url(${JSON.stringify(face.url)})`, {
+      weight: String(face.weight),
+      style: face.style,
+      ...(face.unicodeRange !== undefined && { unicodeRange: face.unicodeRange }),
+    });
     fonts.add(loaded);
     // a face whose bytes fail is taken out again: no dead entry stays in the set, and a retry adds one fresh
     return loaded.load().catch((error: unknown) => {

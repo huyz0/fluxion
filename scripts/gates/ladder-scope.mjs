@@ -24,6 +24,7 @@ export const SOURCE_HARNESS = [
   'bench-leg',
   'diagnostics-doc',
   'docs-consistency',
+  'google-fonts',
   'kind-switch',
   'mode-policy',
   'schema-open-objects',
@@ -100,10 +101,12 @@ export const NAMED_PATH_HARNESS = [
   [/^(examples|fixtures)\/.+\.(json|md)$/, ['milestone-checks', 'tests-kept']],
   [/^scripts\/(docs|fonts)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
   // a pack's vendored font files, manifest and licence text: data that only the ladder's `licenses` step reads (hashes, licences, paths)
-  [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|OFL\.txt)$/, []],
+  [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
   [/^knip\.json$/, ['milestone-checks']],
+  // the formatter's config: the formatter's own tests and the workspace shape (which reads it)
+  [/^biome\.json$/, ['biome', 'workspace-shape']],
   // the scanner's list of accepted advisories: read by the security workflow alone
   [/^osv-scanner\.toml$/, []],
   // a workflow: the tests that read the workflows (pins, permissions, triggers)

@@ -353,6 +353,7 @@ export type FontInput = {
     readonly weight?: number;
     readonly style?: "normal" | "italic";
     readonly unicodeRange?: string;
+    readonly measure?: boolean;
 };
 
 // @public

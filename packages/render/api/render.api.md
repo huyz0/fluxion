@@ -174,6 +174,7 @@ export type LoadableFace = {
     readonly weight: number;
     readonly style: "normal" | "italic";
     readonly url: string;
+    readonly unicodeRange?: string;
 };
 
 // @public

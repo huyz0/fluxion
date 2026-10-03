@@ -86,6 +86,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     assert.deepEqual(harnessFiles(['scripts/gates/m7-complete.mjs'], ALL), only(['milestone-checks', 'portability']));
     assert.deepEqual(harnessFiles(['knip.json'], ALL), only(['milestone-checks']));
+    assert.deepEqual(harnessFiles(['biome.json'], ALL), only(['biome', 'workspace-shape']));
     assert.deepEqual(harnessFiles(['scripts/gates/check-licenses.mjs'], ALL), only(['licenses']));
     assert.deepEqual(harnessFiles(['scripts/gates/check-drift.mjs'], ALL), only(['drift']));
     // what a new workspace adds beside its manifest runs the manifest harness and the formatter and tsconfig tests, not every file
@@ -98,6 +99,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'architecture',
       'bench-leg',
       'diagnostics-doc',
+      'google-fonts',
       'kind-switch',
       'milestone-checks',
       'mode-policy',
@@ -113,7 +115,16 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       assert.deepEqual(harnessFiles([p], ALL), workspaceFiles, p);
     // vendored fonts and their manifest are read by the licenses step alone; the vendor script is scanned like the docs scripts
     assert.deepEqual(
-      harnessFiles(['packs/fonts-core/fonts/x.woff2', 'packs/fonts-core/fonts.json', 'packs/fonts-core/metrics.json', 'packs/fonts-core/OFL.txt'], ALL),
+      harnessFiles(
+        [
+          'packs/fonts-core/fonts/x.woff2',
+          'packs/fonts-core/fonts.json',
+          'packs/fonts-core/metrics.json',
+          'packs/fonts-core/catalog.json',
+          'packs/fonts-core/OFL.txt',
+        ],
+        ALL,
+      ),
       [],
     );
     assert.deepEqual(harnessFiles(['scripts/fonts/page-recorder.js'], ALL), only(['milestone-checks', 'portability', 'size']));

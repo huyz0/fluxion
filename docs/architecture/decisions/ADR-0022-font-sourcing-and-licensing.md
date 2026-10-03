@@ -120,6 +120,21 @@ Catalog:
   algorithm; a browser test pins that the producer's numbers for the Roboto fixture equal the committed ones. `addFont` (`@fluxion/editor`) is the host
   tool: read, record, load the face, register its metrics, `asset.create` (one undo step). The player never records.
 
+### Amendment (M9.15): the catalog source, and what the studio fetches
+
+- **The catalog is built from the npm package `google-font-metadata`** (MIT, pinned at 6.0.8 and checked against the registry's integrity by
+  `scripts/fonts/build-catalog.mjs`), the Fontsource project's mirror of the Google Fonts API and of the google/fonts repository's licence
+  files: family, category, weights, styles, subsets, the licence and the copyright line. The google/fonts repository itself (the `METADATA.pb`
+  files this ADR first named) is a tree of thousands of files that a build must walk through the GitHub API (rate-limited, and not reachable
+  from every environment); the package carries the same facts in four files. A family whose licence the package does not name, or names
+  as the Ubuntu Font Licence, is left out; the catalog lists 1 745 OFL-1.1 and Apache-2.0 families. `catalog.json` is 0.7 MB and the studio loads it when the picker opens.
+- **Fetching** (`apps/studio/src/google-fonts.ts`): the CSS API v2 URL names the family and `ital,wght` pairs; the studio asks with a Chrome
+  user agent (the API answers WOFF2 slices by agent), takes the slices of the subsets asked (Latin by default), refuses any file not under
+  `https://fonts.gstatic.com/…woff2`, and adds each slice with `addFont` (source `google`, the family's licence and copyright, the slice's
+  `unicodeRange`, which the face loads with so the browser draws each character from the slice that has it). **Only the Latin slice is measured
+  with recorded metrics** (the table covers Latin, and a second slice of the same face would replace the first in the registry); other slices are
+  stored and drawn, and measured by the canvas.
+
 ## More Information
 
 FR-THM-008 (14-theme-text-media), ADR-0148 (text measurement from recorded metrics: fonts under `fixtures/fonts`,

@@ -34,6 +34,11 @@ export type FontInput = {
   readonly style?: 'normal' | 'italic';
   /** The unicode-range of a slice of a Google font. */
   readonly unicodeRange?: string;
+  /**
+   * Whether the page measures with this face's recorded metrics (default true). A slice that is not the family's Latin one is drawn
+   * from its range but not registered: the table covers Latin, and a second slice would replace the first.
+   */
+  readonly measure?: boolean;
 };
 
 /**
@@ -135,10 +140,10 @@ export async function addFont(deps: FontLibraryDeps, input: FontInput): Promise<
   if (!created.ok) return fail('FONT_CORRUPT', `${input.name}: the document refused the asset: ${created.error.message}`);
   deps.assets.set(asset.id, url);
   // the page then draws with the face and measures with its metrics; a face that does not load (the recording just did) is drawn as its fallback
-  const loaded = await loadFontFaces([{ ...face, url }]).then(
+  const loaded = await loadFontFaces([{ ...face, url, ...(input.unicodeRange !== undefined && { unicodeRange: input.unicodeRange }) }]).then(
     () => true,
     () => false,
   );
-  if (loaded) registerFontMetrics([metrics]);
+  if (loaded && input.measure !== false) registerFontMetrics([metrics]);
   return ok(asset.id);
 }

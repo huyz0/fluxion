@@ -8,10 +8,9 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { gunzipSync } from 'node:zlib';
+import { fetchNpmPackage } from './npm-package.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'packs', 'fonts-core');
-const REGISTRY = 'https://registry.npmjs.org';
 
 /** The pinned families: the @fontsource package and version, the faces taken, and the copyright line of the OFL notice. */
 export const FAMILIES = [
@@ -56,35 +55,6 @@ export const FAMILIES = [
   },
 ];
 
-/** The files of a gzipped tar (ustar): `{ name, data }` for each regular file. */
-export function untar(gz) {
-  const tar = gunzipSync(gz);
-  const files = [];
-  let at = 0;
-  while (at + 512 <= tar.length) {
-    const header = tar.subarray(at, at + 512);
-    if (header.every((b) => b === 0)) break;
-    const name = header.subarray(0, 100).toString('utf8').replace(/\0.*$/s, '');
-    const size = Number.parseInt(header.subarray(124, 136).toString('utf8').replace(/\0.*$/s, '').trim() || '0', 8);
-    const type = String.fromCharCode(header[156] || 48);
-    if (type === '0') files.push({ name, data: tar.subarray(at + 512, at + 512 + size) });
-    at += 512 + Math.ceil(size / 512) * 512;
-  }
-  return files;
-}
-
-/** The package tarball of `family`, checked against the integrity the registry publishes for that version. */
-async function fetchPackage(family) {
-  const meta = await (await fetch(`${REGISTRY}/@fontsource/${family.package}/${family.version}`)).json();
-  const response = await fetch(meta.dist.tarball);
-  const bytes = Buffer.from(await response.arrayBuffer());
-  const [algorithm, expected] = String(meta.dist.integrity).split('-');
-  const actual = createHash(algorithm).update(bytes).digest('base64');
-  if (algorithm !== 'sha512' || actual !== expected)
-    throw new Error(`${family.package}@${family.version}: the tarball does not match the registry's integrity`);
-  return { files: untar(bytes), license: meta.license };
-}
-
 const fileName = (family, weight, style) => `${family.package}-latin-${weight}-${style}.woff2`;
 const sha256 = (data) => createHash('sha256').update(data).digest('hex');
 
@@ -94,7 +64,7 @@ async function collect() {
   const blobs = new Map();
   const notices = [];
   for (const family of FAMILIES) {
-    const pkg = await fetchPackage(family);
+    const pkg = await fetchNpmPackage(`@fontsource/${family.package}`, family.version);
     if (pkg.license !== 'OFL-1.1') throw new Error(`${family.package}: licence ${pkg.license} is not OFL-1.1`);
     for (const [weight, style] of family.faces) {
       const source = pkg.files.find((f) => f.name === `package/files/${fileName(family, weight, style)}`);

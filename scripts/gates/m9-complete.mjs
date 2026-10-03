@@ -129,16 +129,16 @@ leg('a document in a bundled font measures within 1 px on the metrics path (T1)'
   titled([browser('M9.14', 'FR-THM-008: a document in a bundled font measures within 1 px on the metrics path')]),
 );
 leg('a Google font renders offline from the mocked route and the player names no Google Fonts URL', () => {
-  const unit = titled([
-    ['M9.15', 'FR-THM-008: the player bundle names no Google Fonts URL', EDITOR],
-    ['M9.15', 'FR-THM-008: a fetched Google font gets a metrics record', EDITOR],
-  ]);
-  return unit === true ? titledSpec('e2e/fonts.google.spec.ts', DESKTOP, ['FR-THM-008: the picked Google font renders']) : unit;
+  const unit = titled([['M9.15', 'FR-THM-008: a fetched Google font gets a metrics record', 'apps/studio', {}, 'browser']]);
+  if (unit !== true) return unit;
+  const grep = namedCases('tests/harness/google-fonts.test.mjs', ['FR-THM-008: the player bundle names no Google Fonts URL']);
+  // the mocked-route spec drives the picker (M9.17), where the picked font is applied to text
+  return grep === true ? titledSpec('e2e/fonts.google.spec.ts', DESKTOP, ['FR-THM-008: the picked Google font renders']) : grep;
 });
 leg('a non-font is rejected and an uploaded font gets a metrics record (T0)', () =>
   titled([
-    ['M9.16', 'FR-THM-008: bytes that are not a font are rejected with a diagnostic', EDITOR],
-    ['M9.16', 'FR-THM-008: an uploaded font gets a metrics record', EDITOR],
+    ['M9.16', 'FR-THM-008: bytes that are not a font are rejected with a diagnostic', 'theme'],
+    browser('M9.16', 'FR-THM-008: an uploaded font gets a metrics record'),
   ]),
 );
 leg('the font picker applies a font from each source (fonts.picker)', () =>
