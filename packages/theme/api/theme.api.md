@@ -23,6 +23,15 @@ export type Dimension = {
 };
 
 // @public
+export type Duration = {
+    readonly value: number;
+    readonly unit: "ms";
+};
+
+// @public
+export function followColor(theme: Theme, path: string): Result<string, ThemeError>;
+
+// @public
 export const isToken: (node: Token | TokenGroup | undefined) => node is Token;
 
 // @public
@@ -41,6 +50,9 @@ export type PaintResolution = {
     readonly paint: ResolvedPaint;
     readonly diagnostics: readonly Diagnostic[];
 };
+
+// @public
+export const REQUIRED_COLOR_ROLES: readonly string[];
 
 // @public
 export function resolveBackground(background: Style["fill"] | undefined, theme: Theme, at?: ReadonlyArray<string | number>): PaintResolution;
@@ -131,6 +143,15 @@ export function resolveStyle(style: Style | undefined, of: StyleKind, theme: The
 export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeError>;
 
 // @public
+export type ShadowValue = {
+    readonly color: string;
+    readonly offsetX: number;
+    readonly offsetY: number;
+    readonly blur: number;
+    readonly spread: number;
+};
+
+// @public
 export function styleKey(theme: Theme): string;
 
 // @public
@@ -164,7 +185,14 @@ export type ThemeError = {
 };
 
 // @public
-export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID";
+export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE";
+
+// @public
+export type ThemeProblem = {
+    readonly code: ThemeErrorCode;
+    readonly path: string;
+    readonly message: string;
+};
 
 // @public
 export const themeSchema: z.ZodType<Theme>;
@@ -173,7 +201,7 @@ export const themeSchema: z.ZodType<Theme>;
 export function toCssVars(theme: Theme): Record<string, string>;
 
 // @public
-export type Token = TypedToken<"color", string> | TypedToken<"dimension", Dimension> | TypedToken<"fontFamily", string | readonly string[]> | TypedToken<"fontWeight", number> | TypedToken<"number", number>;
+export type Token = TypedToken<"color", string> | TypedToken<"dimension", Dimension> | TypedToken<"fontFamily", string | readonly string[]> | TypedToken<"fontWeight", number> | TypedToken<"number", number> | TypedToken<"shadow", ShadowValue> | TypedToken<"duration", Duration> | TypedToken<"cubicBezier", readonly [number, number, number, number]>;
 
 // @public
 export type TokenGroup = {
@@ -189,6 +217,9 @@ export type TypedToken<T extends string, V> = {
     readonly $value: V;
     readonly $description?: string;
 };
+
+// @public
+export function validateTheme(theme: unknown): readonly ThemeProblem[];
 
 // @public
 export const VERSION: string;

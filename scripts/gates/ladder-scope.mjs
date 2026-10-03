@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs';
 import { repoPath } from './lib.mjs';
 import { BOOKKEEPING_PATHS } from './milestone-checks.mjs';
 
-/** Package, pack and app sources, tests and benches: what a code row changes. */
-const SOURCE = /^(packages|packs|apps)\/[^/]+\/(src|bench)\//;
+/** Package, pack and app sources, tests and benches, and the generated `--json` schemas a test snapshots: what a code row changes. */
+const SOURCE = /^(packages|packs|apps)\/[^/]+\/(src|bench|schemas)\//;
 
 /**
  * Harness test files that read the repo's own package sources or reports (the write-path and

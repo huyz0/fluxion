@@ -4,6 +4,12 @@ import type { Theme, Token } from './tokens.js';
 const color = ($value: string): Token => ({ $type: 'color', $value });
 const px = (value: number): Token => ({ $type: 'dimension', $value: { value, unit: 'px' } });
 const family = (...$value: string[]): Token => ({ $type: 'fontFamily', $value });
+const shadow = (offsetY: number, blur: number, spread: number, alpha: string): Token => ({
+  $type: 'shadow',
+  $value: { color: `#0f172a${alpha}`, offsetX: 0, offsetY, blur, spread },
+});
+const ms = (value: number): Token => ({ $type: 'duration', $value: { value, unit: 'ms' } });
+const bezier = (a: number, b: number, c: number, d: number): Token => ({ $type: 'cubicBezier', $value: [a, b, c, d] });
 
 /**
  * The light theme: the default of every document without a theme.
@@ -43,6 +49,11 @@ export const LIGHT_THEME: Theme = {
     space: { xs: px(4), sm: px(8), md: px(16), lg: px(24), xl: px(40) },
     radius: { none: px(0), sm: px(4), md: px(8), lg: px(16) },
     stroke: { thin: px(1), regular: px(2), thick: px(4) },
+    shadow: { sm: shadow(1, 2, 0, '1f'), md: shadow(4, 12, 0, '29'), lg: shadow(12, 32, -4, '33') },
+    motion: {
+      duration: { fast: ms(120), normal: ms(240), slow: ms(480) },
+      easing: { standard: bezier(0.2, 0, 0, 1), in: bezier(0.4, 0, 1, 1), out: bezier(0, 0, 0.2, 1) },
+    },
   },
   defaults: {
     shape: { fill: '{color.surface}', stroke: { color: '{color.text}', width: '{stroke.regular}' }, radius: '{radius.none}' },

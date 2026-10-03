@@ -36,7 +36,7 @@ describe('theme tokens (FR-THM-001)', () => {
     const names = Object.keys(vars);
     expect(names.every((n) => n.startsWith('--fx-'))).toBe(true);
     expect(names[0]).toBe('--fx-color-background');
-    expect(names).toHaveLength(17 + 3 + 4 + 2 + 1 + 5 + 4 + 3);
+    expect(names).toHaveLength(17 + 3 + 4 + 2 + 1 + 5 + 4 + 3 + 3 + 3 + 3);
   });
 
   it('FR-THM-001: the light theme has every colour role of the requirement', () => {

@@ -2,6 +2,7 @@
 // a field wins, the fallbacks last; token refs become `var(--fx-…)`, unknown ones are reported. Shared by
 // resolve-style.ts and effects.ts.
 import { colorSchema, DIAGNOSTIC_CODES, type Diagnostic, jsonPointer, type TokenRef } from '@fluxion/schema';
+import { followColor } from './alias.js';
 import { familyCss, resolveToken, tokenPath } from './resolve.js';
 import { cssVarName, FAMILY, isValidToken, type Theme, TOKEN_REF } from './tokens.js';
 
@@ -34,12 +35,14 @@ export class Resolver {
    */
   ref(ref: TokenRef, where: ReadonlyArray<string | number>): string | undefined {
     const token = resolveToken(this.theme, ref);
-    if (token.ok && isValidToken(token.value)) return `var(${cssVarName(tokenPath(ref))})`;
+    // an alias is a colour only when its chain ends in a literal (unknown and cyclic ones are reported, not referenced)
+    const alias = token.ok && token.value.$type === 'color' && TOKEN_REF.test(token.value.$value) ? followColor(this.theme, tokenPath(ref)) : undefined;
+    if (token.ok && isValidToken(token.value) && alias?.ok !== false) return `var(${cssVarName(tokenPath(ref))})`;
     this.diagnostics.push({
       code: 'FLX_TOKEN_UNKNOWN',
       severity: DIAGNOSTIC_CODES.FLX_TOKEN_UNKNOWN,
       path: jsonPointer([...where]),
-      message: token.ok ? `token ${ref} of theme ${this.theme.name} is not a valid token` : token.error.message,
+      message: !token.ok ? token.error.message : alias?.ok === false ? alias.error.message : `token ${ref} of theme ${this.theme.name} is not a valid token`,
     });
     return undefined;
   }

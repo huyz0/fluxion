@@ -5,7 +5,7 @@
  *
  * @public
  */
-export type ThemeErrorCode = 'TOKEN_UNKNOWN' | 'TOKEN_NOT_A_VALUE' | 'THEME_INVALID';
+export type ThemeErrorCode = 'TOKEN_UNKNOWN' | 'TOKEN_NOT_A_VALUE' | 'THEME_INVALID' | 'ROLE_MISSING' | 'TOKEN_TYPE' | 'TOKEN_CYCLE';
 
 /**
  * An expected failure of token resolution or theme validation.

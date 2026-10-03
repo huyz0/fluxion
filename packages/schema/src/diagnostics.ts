@@ -52,6 +52,7 @@ export type DiagnosticCode =
   | 'FLX_FORK_UNRELATED'
   | 'FLX_ORIGIN_RESERVED'
   | 'FLX_TOKEN_UNKNOWN'
+  | 'FLX_TOKEN_CYCLE'
   | 'FLX_CLI_USAGE'
   | 'FLX_CLI_IO'
   | 'FLX_CLI_INTERNAL'
@@ -108,6 +109,7 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_FORK_UNRELATED: 'error',
   FLX_ORIGIN_RESERVED: 'error',
   FLX_TOKEN_UNKNOWN: 'warning',
+  FLX_TOKEN_CYCLE: 'error',
   FLX_CLI_USAGE: 'error',
   FLX_CLI_IO: 'error',
   FLX_CLI_INTERNAL: 'error',

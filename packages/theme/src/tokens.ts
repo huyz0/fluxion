@@ -32,7 +32,37 @@ export type TypedToken<T extends string, V> = {
 };
 
 /**
- * One design token (DTCG): a typed value.
+ * A duration in milliseconds (DTCG `duration`).
+ *
+ * @public
+ */
+export type Duration = {
+  /** The length of time. */
+  readonly value: number;
+  /** The unit (ms only). */
+  readonly unit: 'ms';
+};
+
+/**
+ * A drop shadow (DTCG `shadow`): a colour and lengths in px.
+ *
+ * @public
+ */
+export type ShadowValue = {
+  /** The shadow colour (a literal CSS colour). */
+  readonly color: string;
+  /** Horizontal offset, px. */
+  readonly offsetX: number;
+  /** Vertical offset, px. */
+  readonly offsetY: number;
+  /** Blur radius, px (not negative). */
+  readonly blur: number;
+  /** Spread, px. */
+  readonly spread: number;
+};
+
+/**
+ * One design token (DTCG): a typed value. A `color` token's value may also be an alias to another token (`{color.primary}`).
  *
  * @public
  */
@@ -41,7 +71,10 @@ export type Token =
   | TypedToken<'dimension', Dimension>
   | TypedToken<'fontFamily', string | readonly string[]>
   | TypedToken<'fontWeight', number>
-  | TypedToken<'number', number>;
+  | TypedToken<'number', number>
+  | TypedToken<'shadow', ShadowValue>
+  | TypedToken<'duration', Duration>
+  | TypedToken<'cubicBezier', readonly [number, number, number, number]>;
 
 /**
  * A group of tokens and nested groups, keyed by name (DTCG).
@@ -70,13 +103,28 @@ const NAME = /^[A-Za-z0-9_-]+$/;
 export const FAMILY: RegExp = /^[^\p{Cc}<>]+$/u;
 const family = z.string().regex(FAMILY, 'a font family name has no control characters, "<" or ">"');
 const described = { $description: z.string().optional() };
+const px = z.number().finite();
+// an alias to another token: names only, so it can never carry other CSS (it is resolved, never emitted as written)
+const aliasSchema = z.string().regex(/^\{[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*\}$/);
 const tokenSchema = z.discriminatedUnion('$type', [
-  // a literal CSS colour only: no value that could carry other CSS into a style (review F2)
-  z.object({ $type: z.literal('color'), $value: colorSchema, ...described }),
+  // a literal CSS colour or an alias to another colour token: no value that could carry other CSS into a style (review F2)
+  z.object({ $type: z.literal('color'), $value: z.union([colorSchema, aliasSchema]), ...described }),
   z.object({ $type: z.literal('dimension'), $value: z.object({ value: z.number().finite(), unit: z.literal('px') }), ...described }),
   z.object({ $type: z.literal('fontFamily'), $value: z.union([family, z.array(family).min(1)]), ...described }),
   z.object({ $type: z.literal('fontWeight'), $value: z.number().int().min(1).max(1000), ...described }),
   z.object({ $type: z.literal('number'), $value: z.number().finite(), ...described }),
+  z.object({
+    $type: z.literal('shadow'),
+    $value: z.object({ color: colorSchema, offsetX: px, offsetY: px, blur: px.min(0), spread: px }),
+    ...described,
+  }),
+  z.object({ $type: z.literal('duration'), $value: z.object({ value: px.min(0), unit: z.literal('ms') }), ...described }),
+  // x of each control point is in [0, 1] (CSS cubic-bezier)
+  z.object({
+    $type: z.literal('cubicBezier'),
+    $value: z.tuple([px.min(0).max(1), px, px.min(0).max(1), px]),
+    ...described,
+  }),
 ]);
 
 /** A token is any object with `$value`; a group has none (DTCG). */
@@ -148,3 +196,13 @@ export const themeSchema: z.ZodType<Theme> = z
  * @public
  */
 export const isToken = (node: Token | TokenGroup | undefined): node is Token => isTokenLike(node);
+
+/** The node at `path` in `tokens` (a token, a group, or undefined; package-internal). */
+export function nodeAt(tokens: TokenGroup, path: string): Token | TokenGroup | undefined {
+  let node: Token | TokenGroup | undefined = tokens;
+  for (const name of path.split('.')) {
+    if (node === undefined || isToken(node) || !Object.hasOwn(node, name)) return undefined;
+    node = node[name];
+  }
+  return node;
+}

@@ -22,4 +22,14 @@ describe('styleKey (04 §2.3, ADR-0015 amendment of M5.13)', () => {
     expect(styleKey(withToken('color', 'primary', { $type: 'dimension', $value: { value: 1, unit: 'px' } }))).not.toBe(key);
     expect(styleKey(withToken('color', 'primary', { $type: 'color', $value: 'red; x: y' }))).not.toBe(key);
   });
+
+  it('FR-SHP-004: an alias that resolves keeps the key when its target changes; one that stops resolving changes it', () => {
+    const aliased = withToken('color', 'brand', { $type: 'color', $value: '{color.primary}' });
+    const key = styleKey(aliased);
+    // another colour behind the alias: the variable is still emitted, so views need not re-render
+    expect(styleKey(withToken('color', 'brand', { $type: 'color', $value: '{color.secondary}' }))).toBe(key);
+    // an alias to nothing, or in a circle: its variable goes, and styles using it fall back
+    expect(styleKey(withToken('color', 'brand', { $type: 'color', $value: '{color.nope}' }))).not.toBe(key);
+    expect(styleKey(withToken('color', 'brand', { $type: 'color', $value: '{color.brand}' }))).not.toBe(key);
+  });
 });

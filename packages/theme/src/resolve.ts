@@ -2,8 +2,9 @@
 // names a path in the tree; `toCssVars` emits every token as `--fx-<path>`, so rendered content refers
 // to `var(--fx-color-primary)` and a theme switch restyles without re-rendering.
 import { err, ok, type Result, type TokenRef } from '@fluxion/schema';
+import { followColor } from './alias.js';
 import type { ThemeError } from './errors.js';
-import { cssVarName, isToken, isValidToken, type Theme, type Token, type TokenGroup, tokenEntries } from './tokens.js';
+import { cssVarName, isToken, isValidToken, nodeAt, type Theme, TOKEN_REF, type Token, tokenEntries } from './tokens.js';
 
 /**
  * The dot path of a token reference: `{color.primary}` → `color.primary`.
@@ -11,16 +12,6 @@ import { cssVarName, isToken, isValidToken, type Theme, type Token, type TokenGr
  * @public
  */
 export const tokenPath = (ref: TokenRef): string => ref.slice(1, -1);
-
-/** The node at `path` in `tokens` (a token, a group, or undefined). */
-function nodeAt(tokens: TokenGroup, path: string): Token | TokenGroup | undefined {
-  let node: Token | TokenGroup | undefined = tokens;
-  for (const name of path.split('.')) {
-    if (node === undefined || isToken(node) || !Object.hasOwn(node, name)) return undefined;
-    node = node[name];
-  }
-  return node;
-}
 
 /** CSS generic family keywords: written bare; every other family name is a quoted string. */
 const GENERIC_FAMILIES = new Set([
@@ -57,6 +48,14 @@ export function cssValue(token: Token): string {
       return (typeof token.$value === 'string' ? [token.$value] : token.$value).map(familyCss).join(', ');
     case 'color':
       return token.$value;
+    case 'shadow': {
+      const s = token.$value;
+      return `${s.offsetX}px ${s.offsetY}px ${s.blur}px ${s.spread}px ${s.color}`;
+    }
+    case 'duration':
+      return `${token.$value.value}${token.$value.unit}`;
+    case 'cubicBezier':
+      return `cubic-bezier(${token.$value.join(', ')})`;
     default:
       return String(token.$value);
   }
@@ -85,5 +84,12 @@ export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeEr
 export function toCssVars(theme: Theme): Record<string, string> {
   // only valid tokens with name-only paths: an unparsed theme object cannot emit other CSS (M4.10 review)
   const safe = tokenEntries(theme.tokens).filter(([path, token]) => /^[A-Za-z0-9_.-]+$/.test(path) && isValidToken(token));
-  return Object.fromEntries(safe.map(([path, token]) => [cssVarName(path), cssValue(token)]));
+  return Object.fromEntries(
+    safe.flatMap(([path, token]): Array<readonly [string, string]> => {
+      if (token.$type !== 'color' || !TOKEN_REF.test(token.$value)) return [[cssVarName(path), cssValue(token)]];
+      // an alias is emitted as the literal colour it resolves to; one that resolves to none (unknown, cyclic) is left out
+      const literal = followColor(theme, path);
+      return literal.ok ? [[cssVarName(path), literal.value]] : [];
+    }),
+  );
 }

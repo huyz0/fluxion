@@ -106,6 +106,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.equal(
       packagingNeeded([
         'packages/core/src/x.ts',
+        'packages/cli/schemas/validate.output.json',
         'packages/core/api/core.api.md',
         'e2e/a.spec.ts',
         'docs/a.md',
