@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": null,
+  "blockedReason": "M9.8 (packs/themes-core, new workspace package + lockfile) cannot pass the staged ladder's 120 s limit on the 4-core cloud container (~220 s: harness manifest tests coverage 58 s + layering 46 s, publint/attw/api ~90-130 s each). Work is saved as commit 77f73fd on branch main-wtf0sh (unreviewed WIP). Land it from a desktop (git checkout 77f73fd -- . then commit) and re-record .harness/budget.json there (check-budget --record).",
   "updated": "2026-10-03"
 }

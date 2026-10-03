@@ -1531,3 +1531,7 @@ The guide Screens & arranging, examples/arrange-demo.flux.json, AGENTS notes, ch
 ## 2026-10-03 M8.41 (claude)
 
 M8 closed: final review approved (milestone-M8-final.json, range extended to 9410dfa after a delta review), M7.28 and M8.2 closed on the three-engine milestone-gate runs (m7 37083809508; m8 37090275837: 37 of 39 legs, the two red being the review range and the roadmap this commit advances), CI evidence at 9410dfa (ci 37090266958, gates 37090266690). The perf spec had asserted an exact drag position that snapping moves by up to 8 px; the workflow lacked a build step. Backlog archived to archive/M8.md; M9 planned (23 rows).
+
+## 2026-10-03 M9.8 (claude)
+
+Blocked: the themes-core pack (new workspace package) takes ~220 s through the staged ladder on the 4-core cloud container, over the 120 s limit. WIP is commit 77f73fd on main-wtf0sh; see state.json blockedReason.
