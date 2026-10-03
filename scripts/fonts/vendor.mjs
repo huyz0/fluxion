@@ -1,0 +1,158 @@
+#!/usr/bin/env node
+import { spawnSync } from 'node:child_process';
+// Vendors the bundled fonts of packs/fonts-core (ADR-0022, FR-THM-008): the Latin woff2 files of three @fontsource packages, pinned
+// by version and checked against the registry's integrity, copied with their OFL text, and listed with hashes in fonts.json.
+//   node scripts/fonts/vendor.mjs            fetch, copy, write the manifest
+//   node scripts/fonts/vendor.mjs --check    re-fetch and fail when a vendored file differs from the pinned package
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { gunzipSync } from 'node:zlib';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'packs', 'fonts-core');
+const REGISTRY = 'https://registry.npmjs.org';
+
+/** The pinned families: the @fontsource package and version, the faces taken, and the copyright line of the OFL notice. */
+export const FAMILIES = [
+  {
+    family: 'Inter',
+    category: 'sans-serif',
+    package: 'inter',
+    version: '5.3.0',
+    copyright: 'Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)',
+    faces: [
+      [400, 'normal'],
+      [700, 'normal'],
+      [400, 'italic'],
+      [700, 'italic'],
+    ],
+  },
+  {
+    family: 'Source Serif 4',
+    category: 'serif',
+    package: 'source-serif-4',
+    version: '5.3.0',
+    copyright: 'Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name Source',
+    faces: [
+      [400, 'normal'],
+      [700, 'normal'],
+      [400, 'italic'],
+      [700, 'italic'],
+    ],
+  },
+  {
+    family: 'JetBrains Mono',
+    category: 'monospace',
+    package: 'jetbrains-mono',
+    version: '5.3.0',
+    copyright: 'Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)',
+    faces: [
+      [400, 'normal'],
+      [700, 'normal'],
+      [400, 'italic'],
+      [700, 'italic'],
+    ],
+  },
+];
+
+/** The files of a gzipped tar (ustar): `{ name, data }` for each regular file. */
+export function untar(gz) {
+  const tar = gunzipSync(gz);
+  const files = [];
+  let at = 0;
+  while (at + 512 <= tar.length) {
+    const header = tar.subarray(at, at + 512);
+    if (header.every((b) => b === 0)) break;
+    const name = header.subarray(0, 100).toString('utf8').replace(/\0.*$/s, '');
+    const size = Number.parseInt(header.subarray(124, 136).toString('utf8').replace(/\0.*$/s, '').trim() || '0', 8);
+    const type = String.fromCharCode(header[156] || 48);
+    if (type === '0') files.push({ name, data: tar.subarray(at + 512, at + 512 + size) });
+    at += 512 + Math.ceil(size / 512) * 512;
+  }
+  return files;
+}
+
+/** The package tarball of `family`, checked against the integrity the registry publishes for that version. */
+async function fetchPackage(family) {
+  const meta = await (await fetch(`${REGISTRY}/@fontsource/${family.package}/${family.version}`)).json();
+  const response = await fetch(meta.dist.tarball);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const [algorithm, expected] = String(meta.dist.integrity).split('-');
+  const actual = createHash(algorithm).update(bytes).digest('base64');
+  if (algorithm !== 'sha512' || actual !== expected)
+    throw new Error(`${family.package}@${family.version}: the tarball does not match the registry's integrity`);
+  return { files: untar(bytes), license: meta.license };
+}
+
+const fileName = (family, weight, style) => `${family.package}-latin-${weight}-${style}.woff2`;
+const sha256 = (data) => createHash('sha256').update(data).digest('hex');
+
+/** The manifest and the files for every family. */
+async function collect() {
+  const fonts = [];
+  const blobs = new Map();
+  const notices = [];
+  for (const family of FAMILIES) {
+    const pkg = await fetchPackage(family);
+    if (pkg.license !== 'OFL-1.1') throw new Error(`${family.package}: licence ${pkg.license} is not OFL-1.1`);
+    for (const [weight, style] of family.faces) {
+      const source = pkg.files.find((f) => f.name === `package/files/${fileName(family, weight, style)}`);
+      if (!source) throw new Error(`${family.package}@${family.version} has no ${fileName(family, weight, style)}`);
+      const file = `fonts/${fileName(family, weight, style)}`;
+      blobs.set(file, source.data);
+      fonts.push({
+        family: family.family,
+        category: family.category,
+        weight,
+        style,
+        subset: 'latin',
+        file,
+        license: 'OFL-1.1',
+        copyright: family.copyright,
+        sha256: sha256(source.data),
+        source: `@fontsource/${family.package}@${family.version}`,
+      });
+    }
+    const ofl = pkg.files.find((f) => f.name === 'package/LICENSE');
+    notices.push(
+      `${family.family}\n${family.copyright}\n\n${ofl ? ofl.data.toString('utf8').trim() : 'SIL Open Font License, Version 1.1 (https://openfontlicense.org)'}\n`,
+    );
+  }
+  return { fonts, blobs, notice: notices.join('\n\n----------------------------------------\n\n') };
+}
+
+const check = process.argv.includes('--check');
+const { fonts, blobs, notice } = await collect();
+if (check) {
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'fonts.json'), 'utf8'));
+  const module = readFileSync(join(ROOT, 'src', 'manifest.ts'), 'utf8');
+  const onDisk = (file) => {
+    try {
+      return sha256(readFileSync(join(ROOT, file)));
+    } catch {
+      return undefined;
+    }
+  };
+  const bad = fonts
+    .filter((f) => manifest.fonts.find((m) => m.file === f.file)?.sha256 !== f.sha256 || !module.includes(f.sha256) || onDisk(f.file) !== f.sha256)
+    .map((f) => f.file);
+  if (readFileSync(join(ROOT, 'OFL.txt'), 'utf8') !== notice) bad.push('OFL.txt');
+  if (bad.length) {
+    console.error(`fonts: ${bad.join(', ')} differ from the pinned packages`);
+    process.exit(1);
+  }
+  console.log(`fonts: ${fonts.length} files match the pinned @fontsource packages`);
+} else {
+  mkdirSync(join(ROOT, 'fonts'), { recursive: true });
+  for (const [file, data] of blobs) writeFileSync(join(ROOT, file), data);
+  writeFileSync(join(ROOT, 'fonts.json'), `${JSON.stringify({ fonts }, null, 2)}\n`);
+  // the same list as a module the pack imports (a bundler and the layering check follow a .ts import, not a JSON one)
+  const module = join(ROOT, 'src', 'manifest.ts');
+  const text = `// Generated by scripts/fonts/vendor.mjs from fonts.json: do not edit.\nexport const MANIFEST = ${JSON.stringify(fonts, null, 2)} as const;\n`;
+  writeFileSync(module, text);
+  // through the repo formatter, so the file passes \`biome ci\` as written
+  spawnSync(process.execPath, [join(ROOT, '..', '..', 'node_modules', '@biomejs', 'biome', 'bin', 'biome'), 'format', '--write', module], { stdio: 'inherit' });
+  writeFileSync(join(ROOT, 'OFL.txt'), notice);
+  console.log(`fonts: ${fonts.length} files vendored into packs/fonts-core`);
+}

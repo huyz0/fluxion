@@ -30,5 +30,15 @@ export {
   type ShapeDef,
   type TextRegionDef,
 } from '@fluxion/core';
-export { contrastRatio, LIGHT_THEME, REQUIRED_COLOR_ROLES, type Theme, type ThemeProblem, validateTheme } from '@fluxion/theme';
+export {
+  contrastRatio,
+  createFontRegistry,
+  type FontFaceDef,
+  type FontRegistry,
+  LIGHT_THEME,
+  REQUIRED_COLOR_ROLES,
+  type Theme,
+  type ThemeProblem,
+  validateTheme,
+} from '@fluxion/theme';
 export { definePack, type Pack, type PackRegistries, type PackSpec, registerShapeDef, type ThemeDef } from './pack.js';

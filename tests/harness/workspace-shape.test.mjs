@@ -47,14 +47,15 @@ const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.
 const read = (p) => readFileSync(join(REPO, p), 'utf8');
 
 describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
-  it('declares the 16 architecture packages plus studio, docs, the basic pack and the built-in themes pack', () => {
+  it('declares the 16 architecture packages plus studio, docs and the first-party packs', () => {
     const libs = workspaces.filter((w) => w.dir.startsWith('packages/')).map((w) => w.name);
     assert.equal(libs.length, 16);
     assert.ok(libs.every((n) => n.startsWith('@fluxion/')));
-    assert.deepEqual(
-      workspaces.filter((w) => !w.dir.startsWith('packages/')).map((w) => w.dir),
-      ['apps/studio', 'apps/docs', 'packs/basic', 'packs/themes-core'],
-    );
+    const others = workspaces.filter((w) => !w.dir.startsWith('packages/')).map((w) => w.dir);
+    assert.deepEqual(others.slice(0, 2), ['apps/studio', 'apps/docs']);
+    // a new first-party pack is listed in workspaces.json and the architecture overview, not in this test
+    assert.ok(others.slice(2).every((d) => d.startsWith('packs/')));
+    for (const pack of ['packs/basic', 'packs/themes-core', 'packs/fonts-core']) assert.ok(others.includes(pack), pack);
   });
 
   for (const w of workspaces) {

@@ -35,7 +35,7 @@ import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { useSnapSetting } from './snap/use-snap-setting.js';
 import { pasteSystemItem, type SystemItem } from './system-paste.js';
-import type { ThemeChoice } from './theme-switcher.js';
+import { type ThemeChoice, ThemeSwitcher } from './theme-switcher.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
 import { type SystemClipboardCommands, useSystemClipboard } from './use-system-clipboard.js';
 import { readViewMeta, restoreView, withViewMeta } from './view-meta.js';
@@ -266,9 +266,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         system={system}
         switchMode={switchMode}
         openHelp={dialogs.openHelp}
-        execute={execute}
-        screenId={screenId}
-        themes={props.themes}
+        themeSwitcher={props.themes === undefined ? undefined : <ThemeSwitcher store={store} execute={execute} themes={props.themes} screenId={screenId} />}
       />
       <EditBody
         store={store}

@@ -2,9 +2,10 @@
 // document id opens through documents.ts and bootstrap.ts; the roots come from editor and player.
 import { createSession, EditorRoot } from '@fluxion/editor';
 import { PlayerRoot } from '@fluxion/player';
-import { type JSX, type MouseEvent, type ReactNode, useMemo, useSyncExternalStore } from 'react';
+import { type JSX, type MouseEvent, type ReactNode, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { cryptoRandom, openDocument } from './bootstrap.js';
 import { exampleNames, loadDocument } from './documents.js';
+import { loadBundledFonts } from './fonts.js';
 import { localSettings } from './local-settings.js';
 import { routeOf } from './routes.js';
 
@@ -74,6 +75,10 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
     return file.ok ? openDocument(file.value) : file;
   }, [docId]);
   const settings = useMemo(() => localSettings(), []);
+  // the bundled fonts, once per page: text in Inter, Source Serif 4 or JetBrains Mono is drawn and measured with the real face
+  useEffect(() => {
+    void loadBundledFonts();
+  }, []);
   // the session (selection, camera, tool) lives as long as the document is open here
   const session = useMemo(() => createSession(docId), [docId]);
   if (!opened.ok) return <Problem message={opened.error} />;

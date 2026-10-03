@@ -9,6 +9,7 @@ export { CONTENT_CSS } from './content-css.js';
 export { DocumentView, type DocumentViewProps } from './document-view.js';
 export { ElementList, type ElementListProps, PlaceholderView } from './elements.js';
 export { cameraTransform, type FitTransform, fitTransform, screenArea } from './fit.js';
+export { type LoadableFace, loadFontFaces } from './font-loader.js';
 export { normalizeSvg } from './golden.js';
 export { ImageView } from './image-view.js';
 export { plainParagraphs } from './label.js';

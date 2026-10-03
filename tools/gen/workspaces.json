@@ -135,7 +135,7 @@
       "layer": "App",
       "runtime": "dom",
       "private": true,
-      "dependsOn": ["editor", "player", "core", "schema", "basic", "themes-core"],
+      "dependsOn": ["editor", "player", "core", "schema", "basic", "themes-core", "fonts-core"],
       "desc": "Vite PWA: editor + player shell, file handling, provider adapters."
     },
     {
@@ -162,6 +162,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party themes pack: eight built-in themes (FR-THM-003); imports only `@fluxion/sdk`."
+    },
+    {
+      "dir": "packs/fonts-core",
+      "name": "@fluxion/pack-fonts-core",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party bundled fonts: Inter, Source Serif 4 and JetBrains Mono under OFL-1.1 (FR-THM-008); imports only `@fluxion/sdk`."
     }
   ]
 }

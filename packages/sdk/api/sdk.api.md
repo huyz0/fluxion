@@ -7,11 +7,14 @@
 import { contrastRatio } from '@fluxion/theme';
 import { CoreRegistries } from '@fluxion/core';
 import { createCoreRegistries } from '@fluxion/core';
+import { createFontRegistry } from '@fluxion/theme';
 import { Diagnostic } from '@fluxion/schema';
 import { Disposable } from '@fluxion/core';
 import { EnumParam } from '@fluxion/core';
 import { EvaluatedOutline } from '@fluxion/core';
 import { evaluateOutline } from '@fluxion/core';
+import { FontFaceDef } from '@fluxion/theme';
+import { FontRegistry } from '@fluxion/theme';
 import { HandleDef } from '@fluxion/core';
 import { hitTestShape } from '@fluxion/core';
 import { LIGHT_THEME } from '@fluxion/theme';
@@ -40,6 +43,8 @@ export { CoreRegistries }
 
 export { createCoreRegistries }
 
+export { createFontRegistry }
+
 // @public
 export function definePack(spec: PackSpec): Pack;
 
@@ -50,6 +55,10 @@ export { EnumParam }
 export { EvaluatedOutline }
 
 export { evaluateOutline }
+
+export { FontFaceDef }
+
+export { FontRegistry }
 
 export { HandleDef }
 

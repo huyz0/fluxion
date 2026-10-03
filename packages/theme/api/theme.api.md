@@ -34,6 +34,9 @@ export type ColorStep = {
 export function contrastRatio(a: string, b: string): number | undefined;
 
 // @public
+export function createFontRegistry(): FontRegistry;
+
+// @public
 export function cssValue(token: Token): string;
 
 // @public
@@ -56,6 +59,35 @@ export type Duration = {
 
 // @public
 export function followColor(theme: Theme, path: string): Result<string, ThemeError>;
+
+// @public
+export type FontFaceDef = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly source: FontSource;
+    readonly file?: string;
+    readonly assetId?: string;
+    readonly license: string;
+    readonly copyright?: string;
+};
+
+// @public
+export type FontFamilyInfo = {
+    readonly family: string;
+    readonly source: FontSource;
+    readonly faces: readonly FontFaceDef[];
+};
+
+// @public
+export type FontRegistry = {
+    register(faces: readonly FontFaceDef[]): Result<void, ThemeError>;
+    families(): readonly FontFamilyInfo[];
+    faces(family: string): readonly FontFaceDef[];
+};
+
+// @public
+export type FontSource = "bundled" | "google" | "upload";
 
 // @public
 export const isToken: (node: Token | TokenGroup | undefined) => node is Token;
@@ -234,7 +266,7 @@ export type ThemeError = {
 };
 
 // @public
-export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM";
+export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE";
 
 // @public
 export type ThemeProblem = {

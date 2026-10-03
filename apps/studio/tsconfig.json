@@ -28,6 +28,9 @@
     },
     {
       "path": "../../packs/themes-core"
+    },
+    {
+      "path": "../../packs/fonts-core"
     }
   ]
 }

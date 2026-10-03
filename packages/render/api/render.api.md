@@ -165,6 +165,17 @@ export function labelBox(element: ShapeElement | TextElement, registries: {
 }, theme: Theme): CSSProperties | undefined;
 
 // @public
+export type LoadableFace = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly url: string;
+};
+
+// @public
+export function loadFontFaces(faces: readonly LoadableFace[], fonts?: FontFaceSet): Promise<void>;
+
+// @public
 export type MarkPlan = {
     readonly tag: "a" | "strong" | "em" | "u" | "s" | "code" | "mark" | "span";
     readonly href?: string;

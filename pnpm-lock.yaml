@@ -275,6 +275,9 @@ importers:
       '@fluxion/pack-basic':
         specifier: workspace:*
         version: link:../../packs/basic
+      '@fluxion/pack-fonts-core':
+        specifier: workspace:*
+        version: link:../../packs/fonts-core
       '@fluxion/pack-themes-core':
         specifier: workspace:*
         version: link:../../packs/themes-core
@@ -553,6 +556,12 @@ importers:
         version: 4.6.5
 
   packs/basic:
+    dependencies:
+      '@fluxion/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+
+  packs/fonts-core:
     dependencies:
       '@fluxion/sdk':
         specifier: workspace:*

@@ -184,3 +184,6 @@ export { readViewMeta, restoreView, snapshotView, type ViewMeta, withViewMeta } 
  * @public
  */
 export const VERSION: string = '0.0.0';
+
+/** Loading fonts into the page (re-exported from the renderer so a host needs only the editor). */
+export { type LoadableFace, loadFontFaces } from '@fluxion/render';

@@ -3,7 +3,6 @@
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
-import type { RecordId } from '@fluxion/schema';
 import type { ReactNode } from 'react';
 import { ZoomControls } from './canvas.js';
 import { HistoryButtons } from './history-buttons.js';
@@ -11,10 +10,8 @@ import type { KeyBinding } from './keymap.js';
 import type { KeyOverrides } from './keymap-overrides.js';
 import type { EditorLayout } from './layout.js';
 import { ToolButtons, Toolbar } from './panels.js';
-import type { Execute } from './pointer.js';
 import type { ModeSwitch } from './present.js';
 import type { Session } from './session.js';
-import { type ThemeChoice, ThemeSwitcher } from './theme-switcher.js';
 import type { ToolDispatcher } from './tools.js';
 import type { SystemClipboardCommands } from './use-system-clipboard.js';
 
@@ -37,15 +34,13 @@ export type EditToolbarProps = {
   readonly system: SystemClipboardCommands;
   readonly switchMode: ModeSwitch;
   readonly openHelp: () => void;
-  /** The themes on offer, and what runs a command: the theme switcher (absent without themes). */
-  readonly themes?: readonly ThemeChoice[] | undefined;
-  readonly execute?: Execute;
-  readonly screenId?: RecordId | undefined;
+  /** The theme switcher, when the host offers themes (a node: the toolbar knows no theme). */
+  readonly themeSwitcher?: ReactNode;
 };
 
 /** The toolbar of the edit mode. */
 export function EditToolbar(props: EditToolbarProps): ReactNode {
-  const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, switchMode, openHelp, themes, execute, screenId } = props;
+  const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, switchMode, openHelp, themeSwitcher } = props;
   const snapping = useValue(session.snap.get);
   const grid = useValue(session.grid.get);
   return (
@@ -77,7 +72,7 @@ export function EditToolbar(props: EditToolbarProps): ReactNode {
       <button type="button" className="fx-chrome-button" title="Paste" onClick={() => void system.paste()}>
         Paste
       </button>
-      {themes === undefined || execute === undefined ? null : <ThemeSwitcher store={store} execute={execute} themes={themes} screenId={screenId} />}
+      {themeSwitcher}
       <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={() => switchMode('start')}>
         Present
       </button>

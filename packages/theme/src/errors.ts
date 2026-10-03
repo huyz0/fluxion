@@ -5,7 +5,16 @@
  *
  * @public
  */
-export type ThemeErrorCode = 'TOKEN_UNKNOWN' | 'TOKEN_NOT_A_VALUE' | 'THEME_INVALID' | 'ROLE_MISSING' | 'TOKEN_TYPE' | 'TOKEN_CYCLE' | 'TOKEN_TRANSFORM';
+export type ThemeErrorCode =
+  | 'TOKEN_UNKNOWN'
+  | 'TOKEN_NOT_A_VALUE'
+  | 'THEME_INVALID'
+  | 'ROLE_MISSING'
+  | 'TOKEN_TYPE'
+  | 'TOKEN_CYCLE'
+  | 'TOKEN_TRANSFORM'
+  | 'FONT_INVALID'
+  | 'FONT_DUPLICATE';
 
 /**
  * An expected failure of token resolution or theme validation.

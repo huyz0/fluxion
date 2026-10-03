@@ -12,6 +12,8 @@ import { CommandTxOptions } from '@fluxion/core';
 import { ConnectorElement } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { FieldDef } from '@fluxion/schema';
+import { LoadableFace } from '@fluxion/render';
+import { loadFontFaces } from '@fluxion/render';
 import { MarkerDef } from '@fluxion/core';
 import { PathCommand } from '@fluxion/geometry';
 import { Random } from '@fluxion/schema';
@@ -519,6 +521,10 @@ export type Link = {
     readonly target: RecordId | undefined;
     readonly curved: boolean;
 };
+
+export { LoadableFace }
+
+export { loadFontFaces }
 
 // @public
 export type Marquee = {

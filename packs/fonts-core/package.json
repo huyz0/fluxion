@@ -1,0 +1,32 @@
+{
+  "name": "@fluxion/pack-fonts-core",
+  "version": "0.0.0",
+  "description": "First-party bundled fonts: Inter, Source Serif 4 and JetBrains Mono under OFL-1.1 (FR-THM-008); imports only @fluxion/sdk.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "fonts",
+    "fonts.json",
+    "OFL.txt"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@fluxion/sdk": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
