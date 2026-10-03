@@ -61,6 +61,9 @@
       "path": "./packs/basic"
     },
     {
+      "path": "./packs/themes-core"
+    },
+    {
       "path": "./e2e"
     }
   ]

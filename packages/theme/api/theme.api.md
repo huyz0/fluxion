@@ -31,6 +31,9 @@ export type ColorStep = {
 };
 
 // @public
+export function contrastRatio(a: string, b: string): number | undefined;
+
+// @public
 export function cssValue(token: Token): string;
 
 // @public
@@ -87,6 +90,9 @@ export type PaintResolution = {
 
 // @public
 export function parseColor(text: string): Oklch | undefined;
+
+// @public
+export function relativeLuminance(color: Oklch): number;
 
 // @public
 export const REQUIRED_COLOR_ROLES: readonly string[];

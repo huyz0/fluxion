@@ -536,6 +536,9 @@ importers:
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      '@fluxion/theme':
+        specifier: workspace:*
+        version: link:../theme
 
   packages/theme:
     dependencies:
@@ -547,6 +550,12 @@ importers:
         version: 4.6.5
 
   packs/basic:
+    dependencies:
+      '@fluxion/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+
+  packs/themes-core:
     dependencies:
       '@fluxion/sdk':
         specifier: workspace:*

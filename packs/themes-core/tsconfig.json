@@ -11,16 +11,7 @@
   "include": ["src"],
   "references": [
     {
-      "path": "../../packages/core"
-    },
-    {
-      "path": "../../packages/render"
-    },
-    {
-      "path": "../../packages/schema"
-    },
-    {
-      "path": "../../packages/theme"
+      "path": "../../packages/sdk"
     }
   ]
 }

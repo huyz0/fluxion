@@ -12,6 +12,17 @@ import {
   type ShapeDef,
 } from '@fluxion/core';
 import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
+import { type Theme, validateTheme } from '@fluxion/theme';
+
+/**
+ * A theme of a pack: a `Theme` with its registry id, `<pack id>:<name>` (ADR-0152).
+ *
+ * @public
+ */
+export type ThemeDef = Theme & {
+  /** The registry id, in the pack's namespace: `<pack id>:<slug>`. */
+  readonly id: string;
+};
 
 /**
  * What a pack is made of.
@@ -25,14 +36,17 @@ export type PackSpec = {
   readonly shapes?: readonly ShapeDef[];
   /** Connector end markers (validated when the pack is registered). */
   readonly markers?: readonly MarkerDef[];
+  /** Themes (validated with `validateTheme` when the pack is registered). */
+  readonly themes?: readonly ThemeDef[];
 };
 
 /**
- * The registries a pack registers into (a host's core registries).
+ * The registries a pack registers into (a host's core registries). A host without a `themes` registry refuses a pack that has
+ * themes.
  *
  * @public
  */
-export type PackRegistries = Pick<CoreRegistries, 'shapeDefs' | 'markers'>;
+export type PackRegistries = Pick<CoreRegistries, 'shapeDefs' | 'markers'> & Partial<Pick<CoreRegistries, 'themes'>>;
 
 /**
  * A defined pack.
@@ -46,6 +60,8 @@ export type Pack = {
   readonly shapes: readonly ShapeDef[];
   /** Its connector end markers. */
   readonly markers: readonly MarkerDef[];
+  /** Its themes. */
+  readonly themes: readonly ThemeDef[];
   /**
    * Validate and register everything under the pack's id as source: all of it, or nothing and the
    * diagnostics (`FLX_PACK_INVALID`, `FLX_SHAPE_DEF_INVALID`, `FLX_REGISTRY_DUPLICATE`).
@@ -84,7 +100,7 @@ export function registerShapeDef(
 
 /** One kind of entry a pack holds: its field, what an entry is called, its parser and its registry. */
 type Part<T extends { readonly id: string }> = {
-  readonly field: 'shapes' | 'markers';
+  readonly field: 'shapes' | 'markers' | 'themes';
   readonly noun: string;
   readonly parse: (input: unknown, at: ReadonlyArray<string | number>) => Result<T, readonly Diagnostic[]>;
   readonly registry: Registry<string, T>;
@@ -134,6 +150,16 @@ function registerPart<T extends { readonly id: string }>(pack: Pack, registry: R
 }
 
 /**
+ * A pack theme read: an object with a string id whose theme passes `validateTheme`; each problem is a diagnostic under `at`.
+ */
+function parseThemeDef(input: unknown, at: ReadonlyArray<string | number>): Result<ThemeDef, readonly Diagnostic[]> {
+  const id = typeof input === 'object' && input !== null ? (input as { id?: unknown }).id : undefined;
+  if (typeof id !== 'string') return err([packProblem([...at, 'id'], 'a theme needs a string id')]);
+  const problems = validateTheme(input).map((p) => ({ ...packProblem([], p.message), path: `${jsonPointer(at)}${p.path}` }));
+  return problems.length > 0 ? err(problems) : ok(input as ThemeDef);
+}
+
+/**
  * Define a pack. Nothing is registered until the host calls `register` with its registries.
  *
  * @example
@@ -149,14 +175,28 @@ export function definePack(spec: PackSpec): Pack {
     id: spec.id,
     shapes: spec.shapes ?? [],
     markers: spec.markers ?? [],
+    themes: spec.themes ?? [],
     register: (registries) => {
       if (!PACK_ID.test(pack.id)) return err([packProblem(['id'], `pack id "${pack.id}" must be lower-case letters, digits and "-"`)]);
       const shapes: Part<ShapeDef> = { field: 'shapes', noun: 'shape', parse: parseShapeDef, registry: registries.shapeDefs };
       const markers: Part<MarkerDef> = { field: 'markers', noun: 'marker', parse: parseMarkerDef, registry: registries.markers };
+      // a registry of themes is the host's to have; the registry holds opaque values in core, so it is read as ThemeDefs here
+      const themeRegistry = registries.themes as Registry<string, ThemeDef> | undefined;
+      if (pack.themes.length > 0 && themeRegistry === undefined)
+        return err([packProblem(['themes'], `pack ${pack.id} has themes and the host has no themes registry`)]);
+      const themes: Part<ThemeDef> | undefined = themeRegistry && { field: 'themes', noun: 'theme', parse: parseThemeDef, registry: themeRegistry };
       // everything is checked first, so a broken pack reports all its problems and registers nothing
-      const problems = [...partProblems(pack, shapes, pack.shapes), ...partProblems(pack, markers, pack.markers)];
+      const problems = [
+        ...partProblems(pack, shapes, pack.shapes),
+        ...partProblems(pack, markers, pack.markers),
+        ...(themes ? partProblems(pack, themes, pack.themes) : []),
+      ];
       if (problems.length > 0) return err(problems);
-      const done = [...registerPart(pack, registries.shapeDefs, pack.shapes), ...registerPart(pack, registries.markers, pack.markers)];
+      const done = [
+        ...registerPart(pack, registries.shapeDefs, pack.shapes),
+        ...registerPart(pack, registries.markers, pack.markers),
+        ...(themeRegistry ? registerPart(pack, themeRegistry, pack.themes) : []),
+      ];
       return ok({
         dispose: () => {
           for (const d of done) d.dispose();

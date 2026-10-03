@@ -47,13 +47,13 @@ const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.
 const read = (p) => readFileSync(join(REPO, p), 'utf8');
 
 describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
-  it('declares the 16 architecture packages plus studio, docs and the basic pack', () => {
+  it('declares the 16 architecture packages plus studio, docs, the basic pack and the built-in themes pack', () => {
     const libs = workspaces.filter((w) => w.dir.startsWith('packages/')).map((w) => w.name);
     assert.equal(libs.length, 16);
     assert.ok(libs.every((n) => n.startsWith('@fluxion/')));
     assert.deepEqual(
       workspaces.filter((w) => !w.dir.startsWith('packages/')).map((w) => w.dir),
-      ['apps/studio', 'apps/docs', 'packs/basic'],
+      ['apps/studio', 'apps/docs', 'packs/basic', 'packs/themes-core'],
     );
   });
 

@@ -30,4 +30,5 @@ export {
   type ShapeDef,
   type TextRegionDef,
 } from '@fluxion/core';
-export { definePack, type Pack, type PackRegistries, type PackSpec, registerShapeDef } from './pack.js';
+export { contrastRatio, LIGHT_THEME, REQUIRED_COLOR_ROLES, type Theme, type ThemeProblem, validateTheme } from '@fluxion/theme';
+export { definePack, type Pack, type PackRegistries, type PackSpec, registerShapeDef, type ThemeDef } from './pack.js';
