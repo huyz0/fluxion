@@ -97,8 +97,13 @@ export function CommandPalette(props: CommandPaletteProps): ReactNode {
             <kbd className="fx-chrome-kbd">{entry.keys.map((k) => formatChord(k, mac)).join(', ')}</kbd>
           </div>
         ))}
-        {shown.length === 0 ? <div className="fx-chrome-palette-empty">No command matches</div> : null}
       </div>
+      {/* outside the listbox, whose children are options only (a status line for what the listbox lacks) */}
+      {shown.length === 0 ? (
+        <div role="status" className="fx-chrome-palette-empty">
+          No command matches
+        </div>
+      ) : null}
     </div>
   );
 }

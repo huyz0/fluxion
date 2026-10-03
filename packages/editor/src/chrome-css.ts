@@ -93,6 +93,12 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-thumbnail { position: relative; overflow: hidden; background: var(--ui-pressed); border: 1px solid var(--ui-border); border-radius: 2px; pointer-events: none; }
 .fx-chrome-rename { font: inherit; padding: 4px 6px; }
 .fx-chrome-keymap { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
+.fx-chrome-fonts { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
+.fx-chrome-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.fx-chrome-tabs .fx-chrome-button[aria-selected="true"] { background: var(--ui-pressed); border-color: var(--ui-border); }
+.fx-chrome-fontlist { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.fx-chrome-fontrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fx-chrome-fontpreview { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fx-chrome-palette { min-width: 360px; max-width: 90vw; }
 .fx-chrome-palette-list { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow: auto; display: flex; flex-direction: column; }
 .fx-chrome-palette-item { display: flex; justify-content: space-between; gap: 16px; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
@@ -106,7 +112,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-problem[data-severity="error"] { border-left-color: #dc2626; }
 .fx-chrome-problem[data-severity="warning"] { border-left-color: #d97706; }
 .fx-chrome-problem-text { flex: 1 1 100%; }
-.fx-chrome-kbd { font: inherit; opacity: 0.8; }
+.fx-chrome-kbd { font: inherit; }
 .fx-chrome-keys { border-collapse: collapse; }
 .fx-chrome-keys .fx-chrome-cell { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--ui-border); font-weight: normal; }
 .fx-chrome-picker .fx-chrome-button { font: inherit; color: inherit; text-align: left; padding: 6px 8px; border: 1px solid var(--ui-border); border-radius: 4px; background: transparent; cursor: pointer; }

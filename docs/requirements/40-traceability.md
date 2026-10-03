@@ -334,7 +334,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +3 |
 | NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-007 | S | R6 | M28 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.editor.spec.ts` |
 | NFR-A11Y-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-003 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-004 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
