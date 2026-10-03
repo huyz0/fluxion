@@ -1579,3 +1579,7 @@ Font picker (Fonts button, dialog: document/bundled/Google/upload, apply to sele
 ## 2026-10-03 M9.21 (claude)
 
 Axe over the editor states (a11y.editor.spec.ts, Chromium here; Firefox/WebKit run in the milestone-gate workflow), three real fixes, docs/a11y/editor-checklist.md. M9.21 ran before M9.20 (which needs external dependencies the container cannot land); the dialog and string parts are row M9.28, which M9.23 now waits for.
+
+## 2026-10-03 M9.22 (claude)
+
+The Themes & fonts guide (apps/docs); changesets already cover the range. M9 state: done M9.1-M9.10, M9.12-M9.17, M9.21, M9.22, M9.24-M9.27; open: M9.11 (snapshots need the pinned image), M9.18 (editor has no persistence), M9.19/M9.20/M9.28 (Lingui needs external dependencies: the budget record cannot be re-measured in this container), M9.23 (final).
