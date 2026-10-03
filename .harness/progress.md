@@ -1571,3 +1571,7 @@ readFontFile (pure), recordFaceMetrics (page producer, parity with the script), 
 ## 2026-10-03 M9.15 (claude)
 
 Google Fonts catalog (1745 families from the pinned google-font-metadata; ADR-0022 amended: google/fonts tree not reachable here) and the studio fetch/add of slices. The mocked-route e2e moves to M9.17 with the picker. Next M9.17 (picker UI), then M9.18 (needs a persistence decision), M9.19+.
+
+## 2026-10-03 M9.17 (claude)
+
+Font picker (Fonts button, dialog: document/bundled/Google/upload, apply to selection), studio font sources, the two e2e specs on Chromium. Remaining in M9: M9.11 (snapshots in the pinned image), M9.18 (persistence decision), M9.19-M9.23. Roving-tabindex tabs left to M9.21.
