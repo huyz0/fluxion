@@ -20,6 +20,7 @@ import { EditBody } from './edit-body.js';
 import { EditToolbar } from './edit-toolbar.js';
 import type { EditorCommand } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
+import type { FontSources } from './font-picker.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
 import { ImagePicker } from './image-picker.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
@@ -35,7 +36,8 @@ import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { useSnapSetting } from './snap/use-snap-setting.js';
 import { pasteSystemItem, type SystemItem } from './system-paste.js';
-import { type ThemeChoice, ThemeSwitcher } from './theme-switcher.js';
+import type { ThemeChoice } from './theme-switcher.js';
+import { ToolbarExtras } from './toolbar-extras.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
 import { type SystemClipboardCommands, useSystemClipboard } from './use-system-clipboard.js';
 import { readViewMeta, restoreView, withViewMeta } from './view-meta.js';
@@ -66,6 +68,8 @@ export type EditorRootProps = {
   readonly commands?: readonly EditorCommand[];
   /** The themes the theme switcher offers (the host's packs' themes); no switcher when empty or absent. */
   readonly themes?: readonly ThemeChoice[];
+  /** Where the font picker gets fonts from (the host's bundled, Google and uploaded fonts); no Fonts button without it. */
+  readonly fonts?: FontSources;
 };
 
 /** Randomness from the browser's crypto. */
@@ -266,7 +270,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         system={system}
         switchMode={switchMode}
         openHelp={dialogs.openHelp}
-        themeSwitcher={props.themes === undefined ? undefined : <ThemeSwitcher store={store} execute={execute} themes={props.themes} screenId={screenId} />}
+        extras={<ToolbarExtras store={store} execute={execute} session={session} screenId={screenId} themes={props.themes} fonts={props.fonts} />}
       />
       <EditBody
         store={store}

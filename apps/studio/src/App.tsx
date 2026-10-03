@@ -1,10 +1,12 @@
 // The studio shell (04 §4): History API routes to the home page, the editor and present mode. A
 // document id opens through documents.ts and bootstrap.ts; the roots come from editor and player.
-import { createSession, EditorRoot } from '@fluxion/editor';
+import { createAssetStore, createSession, EditorRoot } from '@fluxion/editor';
 import { PlayerRoot } from '@fluxion/player';
+import { ok } from '@fluxion/schema';
 import { type JSX, type MouseEvent, type ReactNode, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { cryptoRandom, openDocument } from './bootstrap.js';
 import { exampleNames, loadDocument } from './documents.js';
+import { fontSources } from './font-sources.js';
 import { loadBundledFonts } from './fonts.js';
 import { localSettings } from './local-settings.js';
 import { routeOf } from './routes.js';
@@ -72,7 +74,11 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
   const { docId, mode } = props;
   const opened = useMemo(() => {
     const file = loadDocument(docId, cryptoRandom);
-    return file.ok ? openDocument(file.value) : file;
+    const doc = file.ok ? openDocument(file.value) : file;
+    if (!doc.ok) return doc;
+    // the bytes of the document's assets (images, fonts) and the font picker's sources live as long as the document is open here
+    const assets = createAssetStore();
+    return ok({ ...doc.value, assets, fonts: fontSources(doc.value.core, assets, cryptoRandom) });
   }, [docId]);
   const settings = useMemo(() => localSettings(), []);
   // the bundled fonts, once per page: text in Inter, Source Serif 4 or JetBrains Mono is drawn and measured with the real face
@@ -82,9 +88,18 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
   // the session (selection, camera, tool) lives as long as the document is open here
   const session = useMemo(() => createSession(docId), [docId]);
   if (!opened.ok) return <Problem message={opened.error} />;
-  const { core, registries, themes } = opened.value;
+  const { core, registries, themes, assets, fonts } = opened.value;
   return mode === 'edit' ? (
-    <EditorRoot store={core.store} execute={core.execute} registries={registries} settings={settings} session={session} themes={themes} />
+    <EditorRoot
+      store={core.store}
+      execute={core.execute}
+      registries={registries}
+      settings={settings}
+      session={session}
+      themes={themes}
+      assets={assets}
+      fonts={fonts}
+    />
   ) : (
     <PlayerRoot store={core.store} registries={registries} />
   );

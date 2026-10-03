@@ -41,6 +41,9 @@ export function addFont(deps: FontLibraryDeps, input: FontInput): Promise<Result
 export function applyField(view: ReadView, ids: readonly RecordId[], path: readonly string[], value: unknown): InspectorCommand | undefined;
 
 // @public
+export function applyFontFamily(view: ReadView, execute: Execute, ids: readonly RecordId[], family: string): boolean;
+
+// @public
 export function applyOverrides(base: readonly KeyBinding[], overrides: KeyOverrides): readonly KeyBinding[];
 
 // @public
@@ -74,6 +77,12 @@ export type Camera = {
 export type CanvasSize = {
     readonly w: number;
     readonly h: number;
+};
+
+// @public
+export type CatalogEntry = {
+    readonly family: string;
+    readonly category: string;
 };
 
 // @public
@@ -226,6 +235,9 @@ export function deleteSelection(ctx: ToolCtx): boolean;
 export function dispatchKey(k: KeyPress, bindings: readonly KeyBinding[], commands: ReadonlyMap<string, EditorCommand>, ctx: EditorCommandCtx): boolean;
 
 // @public
+export function documentFontFamilies(view: ReadView): readonly string[];
+
+// @public
 export const DRAG_PX = 4;
 
 // @public
@@ -299,6 +311,7 @@ export type EditorRootProps = {
     readonly assets?: AssetStore;
     readonly commands?: readonly EditorCommand[];
     readonly themes?: readonly ThemeChoice[];
+    readonly fonts?: FontSources;
 };
 
 // @public
@@ -361,6 +374,38 @@ export type FontLibraryDeps = {
     readonly execute: Execute;
     readonly assets: AssetStore;
     readonly newId: () => RecordId;
+};
+
+// @public
+export type FontOutcome = {
+    readonly ok: true;
+    readonly family: string;
+} | {
+    readonly ok: false;
+    readonly message: string;
+};
+
+// @public
+export function FontPicker(props: FontPickerProps): ReactNode;
+
+// @public
+export type FontPickerProps = {
+    readonly store: Store;
+    readonly execute: Execute;
+    readonly selection: readonly RecordId[];
+    readonly sources: FontSources;
+    readonly onClose: () => void;
+};
+
+// @public
+export type FontSources = {
+    readonly bundled: readonly string[];
+    readonly catalog?: () => Promise<readonly CatalogEntry[]>;
+    readonly addGoogle?: (family: string) => Promise<FontOutcome>;
+    readonly upload: (file: {
+        readonly name: string;
+        readonly bytes: Uint8Array;
+    }) => Promise<FontOutcome>;
 };
 
 // @public

@@ -34,13 +34,13 @@ export type EditToolbarProps = {
   readonly system: SystemClipboardCommands;
   readonly switchMode: ModeSwitch;
   readonly openHelp: () => void;
-  /** The theme switcher, when the host offers themes (a node: the toolbar knows no theme). */
-  readonly themeSwitcher?: ReactNode;
+  /** The host-supplied controls: the theme switcher and the Fonts button (a node: the toolbar knows neither). */
+  readonly extras?: ReactNode;
 };
 
 /** The toolbar of the edit mode. */
 export function EditToolbar(props: EditToolbarProps): ReactNode {
-  const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, switchMode, openHelp, themeSwitcher } = props;
+  const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, switchMode, openHelp, extras } = props;
   const snapping = useValue(session.snap.get);
   const grid = useValue(session.grid.get);
   return (
@@ -72,7 +72,7 @@ export function EditToolbar(props: EditToolbarProps): ReactNode {
       <button type="button" className="fx-chrome-button" title="Paste" onClick={() => void system.paste()}>
         Paste
       </button>
-      {themeSwitcher}
+      {extras}
       <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={() => switchMode('start')}>
         Present
       </button>
