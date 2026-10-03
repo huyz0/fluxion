@@ -1,6 +1,7 @@
 // NFR-LIC-001 / NFR-LIC-002: shipped dependencies are permissive, copyleft only in its named packs,
 // never GPL-family or watermark libraries, and every workspace is MIT.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
@@ -101,6 +102,41 @@ describe('check-licenses (NFR-LIC-001, NFR-LIC-002)', () => {
     });
     const r = licenses({ 'pack-layouts-elk': [['elkjs', 'EPL-2.0']] });
     assert.equal(r.status, 0, out(r));
+  });
+
+  it('FR-THM-008: a font under OFL-1.1 passes the font allowlist and one under another licence fails', () => {
+    const bytes = 'font bytes';
+    const sha = createHash('sha256').update(bytes).digest('hex');
+    const manifest = (fonts) => sb.write('packs/basic/fonts.json', JSON.stringify({ fonts }));
+    sb.write('packs/basic/fonts/a.woff2', bytes);
+    const ok = { file: 'fonts/a.woff2', license: 'OFL-1.1', sha256: sha };
+    manifest([ok]);
+    sb.write(
+      'packs/basic/catalog.json',
+      JSON.stringify({
+        families: [
+          { name: 'Inter', license: 'OFL-1.1' },
+          { name: 'Roboto', license: 'Apache-2.0' },
+        ],
+      }),
+    );
+    assert.equal(licenses().status, 0, out(licenses()));
+    const failing = (fonts, why) => {
+      manifest(fonts);
+      const r = licenses();
+      assert.equal(r.status, 1, why);
+      return out(r);
+    };
+    assert.match(failing([{ ...ok, license: 'UFL-1.0' }], 'other licence'), /UFL-1\.0 is not on the font allowlist/);
+    assert.match(failing([{ ...ok, license: undefined }], 'no licence'), /a font has no licence/);
+    assert.match(failing([{ ...ok, sha256: undefined }], 'no hash'), /a font has no hash/);
+    assert.match(failing([{ ...ok, sha256: 'ab' }], 'wrong hash'), /hash differs/);
+    assert.match(failing([{ ...ok, file: 'fonts/gone.woff2' }], 'missing file'), /the file is missing/);
+    assert.match(failing([{ ...ok, file: '../fonts/a.woff2' }], 'leaves the pack'), /outside the pack/);
+    assert.match(failing([{ ...ok, file: '/etc/hostname' }], 'absolute'), /outside the pack/);
+    manifest([ok]);
+    sb.write('packs/basic/catalog.json', JSON.stringify({ families: [{ name: 'Ubuntu', license: 'LicenseRef-UFL' }] }));
+    assert.match(out(licenses()), /Ubuntu: font licence LicenseRef-UFL is not on the font allowlist/);
   });
 
   it('fails when a package LICENSE is missing, a package is not MIT, or NOTICE is missing (NFR-LIC-001)', () => {

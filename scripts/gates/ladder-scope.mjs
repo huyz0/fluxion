@@ -99,6 +99,9 @@ export const NAMED_PATH_HARNESS = [
   [/^\.github\/workflows\/[^/]+\.ya?ml$/, ['ci-workflow']],
   // the harness files that read the limits; the whole-repo coverage run (also reading them) is CI's, as for sources
   [/^scripts\/gates\/thresholds\.mjs$/, ['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']],
+  // the licence and drift gates: their own tests (a sandbox copy of scripts/ serves the rest)
+  [/^scripts\/gates\/check-licenses\.mjs$/, ['licenses']],
+  [/^scripts\/gates\/check-drift\.mjs$/, ['drift']],
   [/(^|\/)AGENTS\.md$/, ['build-index', 'portability', 'size', 'workspace-shape']],
 ];
 

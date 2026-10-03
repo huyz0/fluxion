@@ -84,6 +84,12 @@ export const LICENSES = {
   denyPackages: ['tldraw', '@tldraw/tldraw', 'bpmn-js', 'gojs', '@joint/plus', 'yfiles'],
 };
 
+// Font-file licence policy (FR-THM-008, ADR-0022), read by check-licenses.mjs beside the code one above: a font is data, and the content-asset
+// licences of tech-stack.md §3 rule 1 apply. check-drift treats a new allowed licence as weakening.
+export const FONT_LICENSES = {
+  allow: ['OFL-1.1', 'Apache-2.0'],
+};
+
 export const t = (key) => {
   const entry = THRESHOLDS[key];
   if (!entry) throw new Error(`Unknown threshold ${key}`);

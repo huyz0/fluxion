@@ -6,11 +6,12 @@
 // Shipped (production) dependencies must use an allowed licence; EPL/LGPL only in the named packs.
 // Every dependency, dev tools of every workspace included, is checked against the deny list.
 // Every workspace ships the MIT LICENSE and declares "license": "MIT"; the root has NOTICE.
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { REPO_ROOT, run } from './lib.mjs';
 import { parseSpdx, satisfiable } from './spdx.mjs';
-import { LICENSES } from './thresholds.mjs';
+import { FONT_LICENSES, LICENSES } from './thresholds.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k) => {
@@ -97,6 +98,45 @@ for (const w of packs) {
 for (const p of everything) {
   if (denied(p.license)) errors.push(`${at(p)}: licence is never allowed (GPL/AGPL/SSPL/BUSL)`);
   if (LICENSES.denyPackages.includes(p.name)) errors.push(`${at(p)}: watermark or licence-key library (tech-stack.md §3 rule 3)`);
+}
+
+// font files and the catalog (FR-THM-008, ADR-0022): every font of a pack's fonts.json and every family of its catalog.json is under
+// the font allowlist; a manifest entry has a licence and a hash, and the file's bytes match it
+function readJson(file) {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch (e) {
+    errors.push(`${file.slice(root.length + 1)} is not readable JSON: ${e.message}`);
+    return null;
+  }
+}
+const fontOk = (where, license) => {
+  if (typeof license !== 'string' || license === '') errors.push(`${where}: a font has no licence`);
+  else if (!allowedBy(license, FONT_LICENSES.allow))
+    errors.push(`${where}: font licence ${license} is not on the font allowlist (${FONT_LICENSES.allow.join(', ')})`);
+};
+// a manifest vouches only for files under its own pack
+const inside = (dir, file) => {
+  const rel = relative(dir, resolve(dir, file));
+  return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel);
+};
+for (const w of packs) {
+  const manifest = join(root, w.dir, 'fonts.json');
+  const catalog = join(root, w.dir, 'catalog.json');
+  for (const f of existsSync(manifest) ? (readJson(manifest)?.fonts ?? []) : []) {
+    const where = `${w.dir}/fonts.json ${f.file ?? '(no file)'}`;
+    fontOk(where, f.license);
+    if (typeof f.sha256 !== 'string' || f.sha256 === '') errors.push(`${where}: a font has no hash`);
+    else if (!inside(join(root, w.dir), String(f.file))) errors.push(`${where}: the file is outside the pack`);
+    else if (!existsSync(join(root, w.dir, String(f.file)))) errors.push(`${where}: the file is missing`);
+    else if (
+      createHash('sha256')
+        .update(readFileSync(join(root, w.dir, String(f.file))))
+        .digest('hex') !== f.sha256
+    )
+      errors.push(`${where}: the hash differs from the file`);
+  }
+  for (const f of existsSync(catalog) ? (readJson(catalog)?.families ?? []) : []) fontOk(`${w.dir}/catalog.json ${f.name ?? '(no name)'}`, f.license);
 }
 
 // our own licence files (NFR-LIC-001)
