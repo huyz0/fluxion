@@ -642,6 +642,56 @@ export type MenuTarget = "canvas" | "element" | "screen";
 export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | undefined): MenuTarget;
 
 // @public
+export function MetadataDialog(props: MetadataDialogProps): ReactNode;
+
+// @public
+export type MetadataDialogProps = {
+    readonly store: Store;
+    readonly execute: Execute;
+    readonly now?: () => string;
+    readonly onClose: () => void;
+};
+
+// @public
+export type MetadataFields = {
+    readonly title: string | undefined;
+    readonly description: string | undefined;
+    readonly lang: string | undefined;
+    readonly authors: readonly string[] | undefined;
+    readonly tags: readonly string[] | undefined;
+    readonly custom: {
+        readonly [key: string]: string;
+    } | undefined;
+};
+
+// @public
+export function metadataFields(form: MetadataForm): MetadataFields;
+
+// @public
+export type MetadataForm = {
+    readonly title: string;
+    readonly description: string;
+    readonly lang: string;
+    readonly authors: string;
+    readonly tags: string;
+    readonly custom: readonly {
+        readonly key: string;
+        readonly value: string;
+    }[];
+};
+
+// @public
+export function metadataForm(record: {
+    readonly [field: string]: unknown;
+} | undefined): MetadataForm;
+
+// @public
+export function metadataProblems(form: MetadataForm): {
+    readonly lang?: string;
+    readonly custom?: string;
+};
+
+// @public
 export type ModeSwitch = (from?: "start" | "current") => void;
 
 // @public

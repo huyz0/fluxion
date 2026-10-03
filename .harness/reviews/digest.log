@@ -406,3 +406,14 @@ M8.20	6ec6ed888fb2cb2368b1af5138a6b0efa02d424d662192f125f3184b62956975	r1	pass	c
 M9.9	81a6fd7bbf9470496793bd447f01c01aa5e5436ee1b74968bb291337fffa5438	r1	pass	claude:sonnet-5.5	0 findings
 M9.13	a8ff5c1ac12b5482aca557bb72341d8cd0ffc5e100299611962c2024af61956c	r1	pass	claude:sonnet-5.5	0 findings
 M9.10	c74dfc7d3954c5f3061d7dfcb56b564adb743c3a35b5cc88e348bd902100f23a	r1	pass	claude:sonnet-5.5	0 findings
+M9.27	30c749a0f9a3d28d1ed7c2efe0d615fdb763baaaa5dea16bc3565c3e558e6ee3	r1	pass	claude:sonnet-5.5	0 findings
+M9.12	0cd53ae8c47ad56a744a4a3a8fd1706203b67e698198fed71d37dc6264d4dbbd	r1	pass	claude:sonnet-5.5	0 findings
+M9.14	03f6335baa16d918d01c19f8c6b22fe7783c7d51b7dfddc78776a216dff7e57c	r1	pass	claude:sonnet-5.5	0 findings
+M9.14	de8fbf775f3c39866522c564bac836cd5b4843e0ec90eb9a0e9f040a9fbf6dad	r2	pass	claude:sonnet-5.5	0 findings
+M9.16	4ccb21843c390f78df0b1655abfdf6da86e121589fce376fc58608280b260b81	r1	pass	claude:sonnet-5.5	0 findings
+M9.15	db247a92071c0d94c1fd191bff53dc5c30cb98e8c7cf45577f9736293c635a19	r1	pass	claude:sonnet-5.5	0 findings
+M9.15	91366826457b877bb3664dcafd010ef576f0066a57c047ee59405d2bd3fa75cf	r2	pass	claude:sonnet-5.5	0 findings
+M9.17	423872186605ce4aa5f8eb39dbddaf42252c2348ebc9194dc2982fae99cf996b	r1	pass	claude:sonnet-5.5	0 findings
+M9.21	4d33c02c2dba11c4075c6f8cf41378366865111e89ff52ff800f1af05c713db7	r1	pass	claude:sonnet-5.5	0 findings
+M9.21	ae7b319d84f49a50afe8e034e21185bf89197a6cd70438f7a21b8e852f9e5cc7	r2	pass	claude:sonnet-5.5	0 findings
+M9.22	95df8a357edf1e5140698542fb9d978521b9f09811f0615179a061df1c47cbcc	r1	pass	claude:sonnet-5.5	0 findings

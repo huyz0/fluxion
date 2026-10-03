@@ -93,6 +93,13 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-thumbnail { position: relative; overflow: hidden; background: var(--ui-pressed); border: 1px solid var(--ui-border); border-radius: 2px; pointer-events: none; }
 .fx-chrome-rename { font: inherit; padding: 4px 6px; }
 .fx-chrome-keymap { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
+.fx-chrome-metadata { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; gap: 8px; }
+.fx-chrome-formrow { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.fx-chrome-textbox { font: inherit; padding: 4px 6px; border: 1px solid var(--ui-border); border-radius: 4px; background: transparent; color: inherit; }
+.fx-chrome-hint { color: var(--ui-muted); }
+.fx-chrome-customrow { display: flex; gap: 4px; margin-bottom: 4px; }
+.fx-chrome-customrow .fx-chrome-textbox { flex: 1; min-width: 0; }
+.fx-chrome-actions { display: flex; gap: 8px; }
 .fx-chrome-fonts { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
 .fx-chrome-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .fx-chrome-tabs .fx-chrome-button[aria-selected="true"] { background: var(--ui-pressed); border-color: var(--ui-border); }

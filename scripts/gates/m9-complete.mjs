@@ -146,8 +146,8 @@ leg('the font picker applies a font from each source (fonts.picker)', () =>
 );
 
 // ── metadata (FR-DOC-006) ───────────────────────────────────────────────────────────────────────────
-leg('edited metadata survives a reload (document.metadata)', () =>
-  titledSpec('e2e/document.metadata.spec.ts', DESKTOP, ['FR-DOC-006: edited metadata survives a reload']),
+leg('edited metadata is kept and one undo takes it back (document.metadata)', () =>
+  titledSpec('e2e/document.metadata.spec.ts', DESKTOP, ['FR-DOC-006: edited metadata is kept: reopening the dialog shows it, and one undo takes it all back']),
 );
 
 // ── i18n and accessibility (NFR-I18N-001, NFR-A11Y-001) ─────────────────────────────────────────────

@@ -69,8 +69,9 @@ fonts), so the size layout works out for a piece of text is the size the editor 
 ## Metadata
 
 A document carries a title, a description, authors, a language, tags and custom key-value pairs, and the times it was created and
-last modified. They are stored with the document and travel with it. The command `document.updateMeta` changes them in one
-undo step and sets the modification time from the host's clock; a dialog for editing them in the studio is planned.
+last modified. They are stored with the document and travel with it. Choose **Details** in the toolbar to edit them: title, description, language (a tag such as `en` or `pt-BR`), authors and tags
+(separated by commas) and any number of custom fields. Saving is one undo step and sets the modification time from the
+browser's clock; Esc or **Cancel** changes nothing. The same change is the command `document.updateMeta`.
 
 ## Where this lives in the files
 

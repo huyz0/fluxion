@@ -47,7 +47,7 @@ const documentId = (ctx: CommandContext): string => ctx.store.members('byType', 
 const metaFields = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
-  language: z.string().optional(),
+  lang: z.string().optional(),
   authors: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   custom: z.record(z.string(), z.string()).optional(),

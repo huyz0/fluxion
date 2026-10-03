@@ -72,12 +72,13 @@ describe('document.updateMeta (FR-DOC-006)', () => {
     const { core, doc, field } = setup();
     const before = core.store.toDocument();
     const r = core.execute('document.updateMeta', {
-      fields: { description: 'A deck', tags: ['a', 'b'], authors: ['Ada'], custom: { team: 'x' }, language: 'en' },
+      fields: { description: 'A deck', tags: ['a', 'b'], authors: ['Ada'], custom: { team: 'x' }, lang: 'en' },
       modified: '2026-03-04T05:06:07Z',
     });
     expect(r.ok).toBe(true);
     expect(field(doc, 'description')).toBe('A deck');
     expect(field(doc, 'custom')).toEqual({ team: 'x' });
+    expect(field(doc, 'lang')).toBe('en');
     expect(field(doc, 'modified')).toBe('2026-03-04T05:06:07Z');
     expect(core.store.history.undoDepth).toBe(1);
     core.store.history.undo();

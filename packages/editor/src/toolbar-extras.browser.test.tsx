@@ -32,7 +32,8 @@ describe('<ToolbarExtras> (FR-THM-004, FR-THM-008)', () => {
         root.render(<ToolbarExtras store={core.store} execute={core.execute} session={session} screenId={undefined} themes={themes} fonts={fonts} />),
       );
     await show(undefined, undefined);
-    expect(host.querySelector('button')).toBeNull();
+    // always there: the document's details; nothing else without themes or fonts
+    expect([...host.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Details']);
     await show(undefined, FONTS);
     const button = host.querySelector('button[title="Fonts"]') as HTMLButtonElement;
     expect(button).not.toBeNull();
@@ -47,5 +48,21 @@ describe('<ToolbarExtras> (FR-THM-004, FR-THM-008)', () => {
     await show([{ name: 'light', tokens: {} }], undefined);
     expect(host.querySelector('select[aria-label="Theme"]')).not.toBeNull();
     expect(host.querySelector('button[title="Fonts"]')).toBeNull();
+  });
+
+  it('FR-DOC-006: the Details button opens the document details in the editor box and Cancel returns focus to it', async () => {
+    const core = createCore(newDocument(seededRandom(9)));
+    const session = createSession('details');
+    await act(async () =>
+      root.render(<ToolbarExtras store={core.store} execute={core.execute} session={session} screenId={undefined} themes={undefined} fonts={undefined} />),
+    );
+    const button = host.querySelector('button[title="Document details"]') as HTMLButtonElement;
+    await act(async () => button.click());
+    expect(host.querySelector('[role="dialog"][aria-label="Document details"]')).not.toBeNull();
+    await act(async () => {
+      [...host.querySelectorAll('button')].find((b) => b.textContent === 'Cancel')?.click();
+    });
+    expect(host.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).toBe(button);
   });
 });

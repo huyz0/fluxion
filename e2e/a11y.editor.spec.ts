@@ -45,6 +45,18 @@ test.describe('editor accessibility', { tag: '@desktop' }, () => {
     await expect(fonts).toHaveCount(0);
     await expect(editor.root.getByRole('button', { name: 'Fonts', exact: true })).toBeFocused();
 
+    // the document details dialog, empty and with a field error shown
+    await editor.root.getByRole('button', { name: 'Document details', exact: true }).click();
+    const details = page.getByRole('dialog', { name: 'Document details' });
+    await expect(details).toBeVisible();
+    await expectAccessible();
+    await details.getByLabel('Language').fill('not a tag');
+    await details.getByRole('button', { name: 'Add a custom field' }).click();
+    await expect(details.getByRole('alert').first()).toBeVisible();
+    await expectAccessible();
+    await page.keyboard.press('Escape');
+    await expect(details).toHaveCount(0);
+
     // the keyboard shortcuts dialog and the command palette
     await page.keyboard.press('?');
     await expect(editor.keymapDialog).toBeVisible();

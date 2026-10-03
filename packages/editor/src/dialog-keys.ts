@@ -5,8 +5,13 @@ import type { KeyboardEvent } from 'react';
 /** The buttons of `dialog`, in order. */
 export const buttonsOf = (dialog: HTMLElement): HTMLButtonElement[] => [...dialog.querySelectorAll('button')];
 
+/** The controls of `dialog` that take focus (enabled buttons, inputs, text areas, selects), in order. */
+export const focusablesOf = (dialog: HTMLElement): HTMLElement[] => [
+  ...dialog.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled)'),
+];
+
 /**
- * Keys in the dialog stay in it: Esc closes it, and Tab cycles through its buttons. F5 is taken
+ * Keys in the dialog stay in it: Esc closes it, and Tab cycles through its controls. F5 is taken
  * without acting, since it would reload the page and drop the document (M7.5 review F1).
  */
 export function dialogKey(e: KeyboardEvent<HTMLElement>, close: () => void): void {
@@ -18,8 +23,8 @@ export function dialogKey(e: KeyboardEvent<HTMLElement>, close: () => void): voi
     return;
   }
   if (e.key !== 'Tab') return;
-  const buttons = buttonsOf(e.currentTarget);
-  const [first, last] = [buttons[0], buttons.at(-1)];
+  const controls = focusablesOf(e.currentTarget);
+  const [first, last] = [controls[0], controls.at(-1)];
   const edge = e.shiftKey ? first : last;
   if (document.activeElement !== edge) return;
   e.preventDefault();

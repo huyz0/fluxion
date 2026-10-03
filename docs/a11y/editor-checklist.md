@@ -6,7 +6,7 @@ manual step for the person reviewing the change.
 ## Automated
 
 - **No serious or critical axe finding** in any state: the document as it opens, a selection, the element context menu, the font
-  picker on each of its tabs, the keyboard shortcuts dialog and the command palette. `e2e/a11y.editor.spec.ts`, on Chromium, Firefox
+  picker on each of its tabs, the document details dialog (empty and with a field error shown), the keyboard shortcuts dialog and the command palette. `e2e/a11y.editor.spec.ts`, on Chromium, Firefox
   and WebKit; the shell's own states (timeline, image picker, presenting) are in `e2e/a11y.editor-shell.spec.ts`.
 - **Every story passes axe**: each `*.stories.tsx` is rendered and checked by its `*.stories.browser.test.tsx` (portable stories,
   ADR-0139). A new story is tested without a new test.

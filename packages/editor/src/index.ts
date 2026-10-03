@@ -190,3 +190,5 @@ export { browserMeasurer, createCanvasMeasurer, type LoadableFace, loadFontFaces
 export { applyFontFamily, documentFontFamilies } from './font-apply.js';
 export { addFont, type FontInput, type FontLibraryDeps } from './font-library.js';
 export { type CatalogEntry, type FontOutcome, FontPicker, type FontPickerProps, type FontSources } from './font-picker.js';
+export { MetadataDialog, type MetadataDialogProps } from './metadata-dialog.js';
+export { type MetadataFields, type MetadataForm, metadataFields, metadataForm, metadataProblems } from './metadata-form.js';

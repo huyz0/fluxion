@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M9.18's e2e 'edited metadata survives a reload' assumes the editor persists documents across a reload; it has no save/open or autosave yet, so the leg cannot pass as written: needs a persistence mechanism or a re-spec (human decision).",
+  "blockedReason": "M9.19/M9.20/M9.28 (Lingui) need external dependencies: the staged ladder's budget record for an external lockfile change needs the worst-case ladder measured in under 120 s, which this 4-core cloud container cannot do (about 230 s); M9.11 needs baselines recorded in the pinned Playwright image (not available here); M9.23 needs a three-engine milestone-gate run. Land M9.19/M9.20 and re-record .harness/budget.json from a desktop, or decide otherwise.",
   "updated": "2026-10-03"
 }
