@@ -2,7 +2,7 @@
 // updated report fails check-api.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { after, afterEach, before, beforeEach, describe, it } from 'node:test';
 import { linkInstalls, out, REPO, sandbox } from './helpers.mjs';
@@ -39,7 +39,10 @@ describe('check-api on a copy of the repo (NFR-MNT-007)', () => {
     // a copy of the repo: API Extractor writes temp reports and must not race the ladder's api step (M1.36)
     const r = check();
     assert.equal(r.status, 0, out(r));
-    assert.match(r.stdout, /17 API report\(s\) match/);
+    // one report per library that has one: the count follows the committed reports, so a new library does not edit this test
+    const reports = ['packages', 'packs'].flatMap((d) => readdirSync(join(REPO, d)).filter((n) => existsSync(join(REPO, d, n, 'api'))));
+    assert.ok(reports.length >= 17);
+    assert.match(r.stdout, new RegExp(`${reports.length} API report\\(s\\) match`));
   });
 
   it('fails when a public export has no TSDoc (TypeDoc notDocumented, M1 cp3 F3)', () => {
