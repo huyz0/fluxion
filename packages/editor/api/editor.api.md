@@ -7,9 +7,11 @@
 import { AnyRecord } from '@fluxion/schema';
 import { AssetRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
+import { browserMeasurer } from '@fluxion/render';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
 import { ConnectorElement } from '@fluxion/schema';
+import { createCanvasMeasurer } from '@fluxion/render';
 import { DocumentFile } from '@fluxion/schema';
 import { FieldDef } from '@fluxion/schema';
 import { LoadableFace } from '@fluxion/render';
@@ -20,6 +22,7 @@ import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
+import { registerFontMetrics } from '@fluxion/render';
 import { Registry } from '@fluxion/core';
 import { RenderRegistries } from '@fluxion/render';
 import { Result } from '@fluxion/schema';
@@ -50,6 +53,8 @@ export function assignKey(base: readonly KeyBinding[], overrides: KeyOverrides, 
 
 // @public
 export const bindingId: (b: Pick<KeyBinding, "command" | "args">) => string;
+
+export { browserMeasurer }
 
 // @public
 export function buildLibraryIndex(entries: readonly LibraryEntry[]): LibraryIndex;
@@ -152,6 +157,8 @@ export function copyPayload(view: ReadView, ids: readonly RecordId[], source: {
 
 // @public
 export function createAssetStore(): AssetStore;
+
+export { createCanvasMeasurer }
 
 // @public
 export function createClipboard(assetData?: (id: RecordId) => string | undefined): Clipboard_2;
@@ -771,6 +778,8 @@ export function readViewMeta(value: unknown): ViewMeta | undefined;
 
 // @public
 export function registerBuiltinTools(registry: Registry<string, Tool>): void;
+
+export { registerFontMetrics }
 
 // @public
 export function resetKey(overrides: KeyOverrides, id: string): KeyOverrides;

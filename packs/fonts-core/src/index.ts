@@ -1,6 +1,7 @@
 // Public entry of @fluxion/pack-fonts-core; the package comment is the dts banner in tsdown.config.ts.
-import type { FontFaceDef } from '@fluxion/sdk';
+import { type FaceMetrics, type FontFaceDef, readFontMetrics } from '@fluxion/sdk';
 import { MANIFEST } from './manifest.js';
+import { METRICS_JSON } from './metrics.js';
 
 /**
  * Version of this package.
@@ -35,3 +36,11 @@ export function fontUrl(face: FontFaceDef, base: string | URL): string {
   // a bundled face always has a file (the registry refuses one with neither a file nor an asset)
   return new URL(face.file as string, base).href;
 }
+
+/**
+ * The recorded metrics of the bundled faces (ADR-0148): what a measurer adds up to measure text in them as the DOM draws it, so a
+ * host that has loaded the faces measures to within a pixel without a canvas. Recorded by `scripts/fonts/record-metrics.mjs --bundled`.
+ *
+ * @public
+ */
+export const FONT_METRICS: readonly FaceMetrics[] = readFontMetrics(JSON.parse(METRICS_JSON)).faces;

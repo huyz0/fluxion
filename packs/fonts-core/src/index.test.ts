@@ -1,6 +1,6 @@
 import { createCoreRegistries, createFontRegistry } from '@fluxion/sdk';
 import { describe, expect, it } from 'vitest';
-import { FONTS_CORE, fontUrl } from './index.js';
+import { FONT_METRICS, FONTS_CORE, fontUrl } from './index.js';
 import { MANIFEST } from './manifest.js';
 
 describe('the fonts-core pack (FR-THM-008)', () => {
@@ -29,5 +29,18 @@ describe('the fonts-core pack (FR-THM-008)', () => {
     expect(face).toBeDefined();
     if (!face) return;
     expect(fontUrl(face, 'https://example.test/assets/')).toBe('https://example.test/assets/fonts/inter-latin-400-normal.woff2');
+  });
+
+  it('FR-THM-008: every bundled face has recorded metrics at 1000 units, with advances for the letters and kerning pairs', () => {
+    expect(FONT_METRICS.map((m) => [m.family, m.weight, m.style])).toEqual(FONTS_CORE.map((f) => [f.family, f.weight, f.style]));
+    for (const m of FONT_METRICS) {
+      expect(m.unitsPerEm).toBe(1000);
+      expect(m.advances['H'], m.family).toBeGreaterThan(300);
+      // a proportional face kerns; a monospace one adds nothing between letters
+      if (m.family !== 'JetBrains Mono') expect(Object.keys(m.pairs).length, m.family).toBeGreaterThan(0);
+    }
+    // a monospace face advances every letter alike
+    const mono = FONT_METRICS.find((m) => m.family === 'JetBrains Mono');
+    expect(mono?.advances['i']).toBe(mono?.advances['W']);
   });
 });

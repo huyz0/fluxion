@@ -147,7 +147,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-005 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-006 | M | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-007 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
-| FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/fonts.browser.test.ts` +4 |
+| FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/fonts.browser.test.ts` +5 |
 | FR-THM-009 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-010 | S | R7 | M29 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |

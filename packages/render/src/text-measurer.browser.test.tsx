@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ScreenView } from './screen-view.js';
 import { testRegistries } from './test-registries.js';
 import { TEST_RECT } from './test-shapes.js';
-import { concreteFont, createCanvasMeasurer } from './text-measurer.js';
+import { browserMeasurer, concreteFont, createCanvasMeasurer, registerFontMetrics } from './text-measurer.js';
 
 const registries = testRegistries();
 let host: HTMLElement;
@@ -145,5 +145,28 @@ describe('the page measurer (M5.14 review)', () => {
       lineHeight: 1.2,
       style: 'normal',
     });
+  });
+
+  it('FR-THM-008: the shared measurer uses recorded metrics for a font that has them, replaces a face registered again, and leaves other fonts to the canvas', () => {
+    const face = (a: number) => ({
+      family: 'FxMetricsTest',
+      weight: 400,
+      style: 'normal' as const,
+      unitsPerEm: 1000,
+      advances: { a },
+      defaultAdvance: a,
+      pairs: {},
+      triples: {},
+    });
+    const measurer = browserMeasurer();
+    const font = { family: '"FxMetricsTest", serif', size: 10 };
+    registerFontMetrics([face(500)]);
+    expect(measurer?.measure('aaaa', font).width).toBeCloseTo(20, 5);
+    // the same face again: its record is replaced, not added to
+    registerFontMetrics([face(600)]);
+    expect(measurer?.measure('aaaa', font).width).toBeCloseTo(24, 5);
+    // a font without recorded metrics is measured as the canvas does
+    const other = { family: 'serif', size: 16 };
+    expect(measurer?.measure('Hello', other).width).toBe(createCanvasMeasurer().measure('Hello', other).width);
   });
 });

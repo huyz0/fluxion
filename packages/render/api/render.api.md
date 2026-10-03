@@ -8,6 +8,7 @@ import { ComponentType } from 'react';
 import { CSSProperties } from 'react';
 import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';
+import { FaceMetrics } from '@fluxion/core';
 import { MarkerDef } from '@fluxion/core';
 import { NamedExoticComponent } from 'react';
 import { PathCommand } from '@fluxion/geometry';
@@ -42,6 +43,9 @@ export type BlockPlan = {
         readonly [property: string]: string;
     };
 };
+
+// @public
+export function browserMeasurer(): CanvasTextMeasurer | undefined;
 
 // @public
 export const BUILTIN_MARKERS: readonly MarkerDef[];
@@ -222,6 +226,9 @@ export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): vo
 
 // @public
 export function registerBuiltinViews(registries: RenderRegistries): void;
+
+// @public
+export function registerFontMetrics(faces: readonly FaceMetrics[]): void;
 
 // @public
 export function renderDocumentToHtml(file: DocumentFile, options?: RenderHtmlOptions): RenderedHtml;

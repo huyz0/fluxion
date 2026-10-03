@@ -1,3 +1,6 @@
+import { createMetricsMeasurer } from '@fluxion/core';
+import { browserMeasurer, createCanvasMeasurer } from '@fluxion/editor';
+import { FONT_METRICS } from '@fluxion/pack-fonts-core';
 import { describe, expect, it } from 'vitest';
 import { bundledFaces, bundledFontUrl, loadBundledFonts } from './fonts.js';
 
@@ -21,5 +24,48 @@ describe('the studio loads the bundled fonts (FR-THM-008, ADR-0022)', () => {
     expect([...document.fonts].filter((f) => bundledFaces().some((b) => b.family === f.family.replaceAll('"', '')))).toHaveLength(12);
     const loaded = [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replaceAll('"', ''));
     expect(new Set(loaded)).toEqual(new Set(['Inter', 'Source Serif 4', 'JetBrains Mono']));
+  });
+
+  it('FR-THM-008: a document in a bundled font measures within 1 px on the metrics path', async () => {
+    await loadBundledFonts();
+    const measurer = browserMeasurer();
+    expect(measurer).toBeDefined();
+    const texts = [
+      'Fluxion',
+      'The quick brown fox jumps over the lazy dog',
+      'AVATAR Tavern WAVE Yo-yo To We Ty',
+      'ffi fl fi office affluent',
+      '0123456789 +-*/=<> (a[b]{c})',
+      'He said “hello” – then left…',
+    ];
+    const rendered = (text: string, face: { family: string; weight: number; style: string; size: number }): number => {
+      const span = document.createElement('span');
+      span.textContent = text;
+      span.style.cssText = `position:absolute;white-space:pre;text-rendering:geometricPrecision;font:${face.style} ${face.weight} ${face.size}px "${face.family}"`;
+      document.body.append(span);
+      const width = span.getBoundingClientRect().width;
+      span.remove();
+      return width;
+    };
+    // the metrics path was taken: the shared measurer gives exactly what the recorded metrics add up to, which the canvas does not for kerned text
+    const reference = createMetricsMeasurer(FONT_METRICS, createCanvasMeasurer());
+    const kerned = { family: '"Inter", sans-serif', size: 32, weight: 400, style: 'normal' } as const;
+    expect(measurer?.measure(texts[2] as string, kerned).width).toBe(reference.measure(texts[2] as string, kerned).width);
+    expect(measurer?.measure(texts[2] as string, kerned).width).not.toBe(createCanvasMeasurer().measure(texts[2] as string, kerned).width);
+    let worst = 0;
+    for (const family of ['Inter', 'Source Serif 4', 'JetBrains Mono']) {
+      for (const [weight, style, size] of [
+        [400, 'normal', 16],
+        [700, 'normal', 24],
+        [400, 'italic', 14],
+        [700, 'italic', 12],
+      ] as const) {
+        for (const text of texts) {
+          const measured = measurer?.measure(text, { family: `"${family}", sans-serif`, size, weight, style }).width ?? Number.NaN;
+          worst = Math.max(worst, Math.abs(measured - rendered(text, { family, weight, style, size })));
+        }
+      }
+    }
+    expect(worst).toBeLessThan(1);
   });
 });

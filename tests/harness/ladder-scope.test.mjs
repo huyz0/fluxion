@@ -112,7 +112,11 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     for (const p of ['packs/x/tsconfig.json', 'packs/x/tsdown.config.ts', 'packs/x/LICENSE', 'packs/x/README.md', 'tools/gen/workspaces.json', 'tsconfig.json'])
       assert.deepEqual(harnessFiles([p], ALL), workspaceFiles, p);
     // vendored fonts and their manifest are read by the licenses step alone; the vendor script is scanned like the docs scripts
-    assert.deepEqual(harnessFiles(['packs/fonts-core/fonts/x.woff2', 'packs/fonts-core/fonts.json', 'packs/fonts-core/OFL.txt'], ALL), []);
+    assert.deepEqual(
+      harnessFiles(['packs/fonts-core/fonts/x.woff2', 'packs/fonts-core/fonts.json', 'packs/fonts-core/metrics.json', 'packs/fonts-core/OFL.txt'], ALL),
+      [],
+    );
+    assert.deepEqual(harnessFiles(['scripts/fonts/page-recorder.js'], ALL), only(['milestone-checks', 'portability', 'size']));
     assert.deepEqual(harnessFiles(['scripts/fonts/vendor.mjs'], ALL), only(['milestone-checks', 'portability', 'size']));
     assert.deepEqual(harnessFiles(['osv-scanner.toml'], ALL), []);
     assert.deepEqual(harnessFiles(['.github/workflows/milestone-gate.yml'], ALL), only(['ci-workflow']));

@@ -14,6 +14,7 @@ export {
   type EnumParam,
   type EvaluatedOutline,
   evaluateOutline,
+  type FaceMetrics,
   type HandleDef,
   hitTestShape,
   MARKER_SIZE,
@@ -27,6 +28,7 @@ export {
   type PointsParam,
   parseMarkerDef,
   projectToOutline,
+  readFontMetrics,
   type ShapeDef,
   type TextRegionDef,
 } from '@fluxion/core';

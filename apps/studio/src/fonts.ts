@@ -2,8 +2,8 @@
 // studio's build (Vite emits each woff2 and gives its URL), and loaded into the page so text drawn in Inter, Source Serif 4 or
 // JetBrains Mono is drawn with the real face and measured with it.
 
-import { type LoadableFace, loadFontFaces } from '@fluxion/editor';
-import { FONTS_CORE } from '@fluxion/pack-fonts-core';
+import { type LoadableFace, loadFontFaces, registerFontMetrics } from '@fluxion/editor';
+import { FONT_METRICS, FONTS_CORE } from '@fluxion/pack-fonts-core';
 
 // the files of the pack, by path under it (`fonts/<file>.woff2`): a glob, because a bundler only follows URLs it can see
 declare global {
@@ -33,8 +33,19 @@ export function bundledFaces(): readonly LoadableFace[] {
 
 let loading: Promise<void> | undefined;
 
+/**
+ * Load every face, then measure text in each family whose faces all loaded with its recorded metrics. A family with a face that failed
+ * stays with the canvas measurer: its recorded numbers would measure that face's weight or style with another's advances.
+ */
+async function loadAll(): Promise<void> {
+  const faces = bundledFaces();
+  const results = await Promise.allSettled(faces.map((face) => loadFontFaces([face])));
+  const failed = new Set(faces.filter((_, i) => results[i]?.status !== 'fulfilled').map((f) => f.family));
+  registerFontMetrics(FONT_METRICS.filter((m) => !failed.has(m.family)));
+}
+
 /** Load the bundled faces into the page, once per page (a document opened later reuses them); a face that fails to load is left out, not fatal. */
 export function loadBundledFonts(): Promise<void> {
-  loading ??= Promise.allSettled(bundledFaces().map((face) => loadFontFaces([face]))).then(() => undefined);
+  loading ??= loadAll();
   return loading;
 }

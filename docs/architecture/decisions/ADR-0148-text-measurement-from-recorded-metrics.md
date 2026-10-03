@@ -105,6 +105,22 @@ Chosen option 2.
   DOM-versus-canvas kerning difference that motivates recording from the DOM.
 - `node scripts/fonts/record-metrics.mjs --check` after a browser upgrade.
 
+### Amendment (M9.14): bundled fonts, Chromium only
+
+The bundled fonts (`packs/fonts-core`) are recorded with `record-metrics.mjs --bundled` into `packs/fonts-core/metrics.json` (and the
+module the pack exports as `FONT_METRICS`); the studio registers them (`registerFontMetrics`) once the faces have loaded, and the
+page's shared measurer then measures a bundled font from them and any other from the canvas. Measured in Chromium against the DOM, the
+three families in four weight/style/size combinations over six samples are within 1 px. **The 1 px claim holds on Chromium only**: the
+numbers are recorded from, and checked against, Chromium; Firefox and WebKit lay text out slightly differently and are not measured
+here (the browser project of the unit tests is Chromium; the e2e projects do not assert text widths). A host on another engine has the
+canvas measurer's error (up to 2 px) at worst where the metrics differ. This closes the M7 cp1 F1 question the Consequences left open.
+
+Scope of the wiring: the studio registers the metrics for a family once all of its faces have loaded (a family with a failed face stays on
+the canvas), and every view of the page measures through that shared measurer, the present route included. A standalone player loads no
+bundled faces, so it keeps the canvas measurer until a document carries its fonts and their metrics (M10 row 13). Text outside the
+recorded alphabet in a recorded family is measured at that face's default advance, as `createMetricsMeasurer` documents; the table
+covers Latin, Latin-1 and common punctuation.
+
 ## Pros and Cons of the Options
 
 ### Fontkit in Node

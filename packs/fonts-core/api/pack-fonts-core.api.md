@@ -4,7 +4,11 @@
 
 ```ts
 
+import { FaceMetrics } from '@fluxion/sdk';
 import { FontFaceDef } from '@fluxion/sdk';
+
+// @public
+export const FONT_METRICS: readonly FaceMetrics[];
 
 // @public
 export const FONTS_CORE: readonly FontFaceDef[];

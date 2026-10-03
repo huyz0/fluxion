@@ -13,6 +13,7 @@ import { Disposable } from '@fluxion/core';
 import { EnumParam } from '@fluxion/core';
 import { EvaluatedOutline } from '@fluxion/core';
 import { evaluateOutline } from '@fluxion/core';
+import { FaceMetrics } from '@fluxion/core';
 import { FontFaceDef } from '@fluxion/theme';
 import { FontRegistry } from '@fluxion/theme';
 import { HandleDef } from '@fluxion/core';
@@ -29,6 +30,7 @@ import { parseMarkerDef } from '@fluxion/core';
 import { PluginId } from '@fluxion/core';
 import { PointsParam } from '@fluxion/core';
 import { projectToOutline } from '@fluxion/core';
+import { readFontMetrics } from '@fluxion/core';
 import { REQUIRED_COLOR_ROLES } from '@fluxion/theme';
 import { Result } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
@@ -55,6 +57,8 @@ export { EnumParam }
 export { EvaluatedOutline }
 
 export { evaluateOutline }
+
+export { FaceMetrics }
 
 export { FontFaceDef }
 
@@ -107,6 +111,8 @@ export { PluginId }
 export { PointsParam }
 
 export { projectToOutline }
+
+export { readFontMetrics }
 
 // @public
 export function registerShapeDef(registries: Pick<PackRegistries, "shapeDefs">, def: unknown, source: PluginId, at?: ReadonlyArray<string | number>): Result<Disposable, readonly Diagnostic[]>;

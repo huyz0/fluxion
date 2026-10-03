@@ -73,7 +73,7 @@ async function load(f) {
 
 /** The metrics of one font. */
 function recordFace(f, args) {
-  const font = `${f.style} ${f.weight} ${args.units}px/1.2 ${f.family}`;
+  const font = `${f.style} ${f.weight} ${args.units}px/1.2 "${f.family}"`;
   const advances = recordAdvances(args.alphabet, font);
   const pairs = recordPairs(args.paired, advances, font);
   const triples = recordTriples(args.letters, advances, pairs, font);

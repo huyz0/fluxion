@@ -1,7 +1,7 @@
 // The browser TextMeasurer (FR-SHP-006, FR-TXT-002): a 2D canvas measures lines in the same font the
 // DOM draws them with, cached per font and text; hosts await `ready()` (document.fonts) before relying
 // on a measurement. Server rendering has no measurer (ADR-0018 item 4).
-import type { FontSpec, TextMeasurer, TextMetrics } from '@fluxion/core';
+import { createMetricsMeasurer, type FaceMetrics, type FontSpec, type TextMeasurer, type TextMetrics } from '@fluxion/core';
 import type { Theme } from '@fluxion/theme';
 import { type Context, createContext, useSyncExternalStore } from 'react';
 import { substitute } from './css-values.js';
@@ -64,23 +64,55 @@ export function createCanvasMeasurer(): CanvasTextMeasurer {
 }
 
 let shared: CanvasTextMeasurer | undefined;
-/** How many times the page's fonts finished loading: views measuring with the shared measurer re-render on it. */
+/** The faces whose recorded metrics measure text as the DOM draws it (ADR-0148); any other font goes to the canvas. */
+let recorded: readonly FaceMetrics[] = [];
+/** How many times the page's fonts finished loading or metrics were registered: views measuring with the shared measurer re-render on it. */
 let generation = 0;
 const listeners = new Set<() => void>();
+const notify = () => {
+  generation++;
+  for (const listener of listeners) listener();
+};
 
-/** The page's shared canvas measurer, or none outside a browser. Its cache is emptied whenever fonts finish loading. */
+/**
+ * Measure with the recorded metrics of `faces` from now on, for the fonts they cover (the page's shared measurer; ADR-0148, M9.14):
+ * call it once the faces are loaded, since the metrics describe the real font and the page draws a fallback until it has loaded.
+ * Views measuring with the shared measurer re-render.
+ *
+ * @public
+ */
+export function registerFontMetrics(faces: readonly FaceMetrics[]): void {
+  // a face registered again replaces its earlier record (same family, weight and style)
+  const same = (a: FaceMetrics, b: FaceMetrics) => a.family.toLowerCase() === b.family.toLowerCase() && a.weight === b.weight && a.style === b.style;
+  recorded = [...recorded.filter((r) => !faces.some((f) => same(r, f))), ...faces];
+  notify();
+}
+
+/**
+ * The page's shared measurer, or none outside a browser: recorded metrics where there are some (`registerFontMetrics`), the canvas
+ * otherwise. Its canvas cache is emptied whenever fonts finish loading.
+ *
+ * @public
+ */
 export function browserMeasurer(): CanvasTextMeasurer | undefined {
   if (typeof document === 'undefined') return undefined;
   if (shared === undefined) {
-    const measurer = createCanvasMeasurer();
-    shared = measurer;
+    const canvas = createCanvasMeasurer();
+    let metrics: TextMeasurer | undefined;
+    let built: readonly FaceMetrics[] | undefined;
+    shared = {
+      measure: (text, font) => {
+        // rebuilt when faces were registered since
+        if (metrics === undefined || built !== recorded) {
+          metrics = createMetricsMeasurer(recorded, canvas);
+          built = recorded;
+        }
+        return metrics.measure(text, font);
+      },
+      ready: canvas.ready,
+    };
     // widths taken before a web font loaded are wrong once it has: measure again (M5.14 review F1)
-    document.fonts.addEventListener('loadingdone', () => {
-      void measurer.ready().then(() => {
-        generation++;
-        for (const notify of listeners) notify();
-      });
-    });
+    document.fonts.addEventListener('loadingdone', () => void canvas.ready().then(notify));
   }
   return shared;
 }
