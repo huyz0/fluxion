@@ -1559,3 +1559,7 @@ Theme switcher and per-screen override in the toolbar (the inspector has no scre
 ## 2026-10-03 M9.12 (claude)
 
 packs/fonts-core (vendored Inter, Source Serif 4, JetBrains Mono; vendor script with registry integrity), FontRegistry in theme, loadFontFaces in render, studio loads bundled fonts. Fixed a break latent since M9.10 (coverage sandbox drops browser-covered modules). M9.27 scopes vendored font files. Next M9.14 (metrics path).
+
+## 2026-10-03 M9.14 (claude)
+
+Recorded metrics for the 12 bundled faces; page measurer uses them for those fonts (registerFontMetrics), canvas otherwise; studio registers a family once all faces loaded; ADR-0148 amended (Chromium only; standalone player waits for M10 row 13, now stated there). Next M9.15 (Google Fonts).
