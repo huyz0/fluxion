@@ -25,6 +25,8 @@ test.describe('resizing and rotating', { tag: '@desktop' }, () => {
   test('FR-EDT-004: resize and rotate from the handles, and undo restores the box exactly', async ({ page }) => {
     const editor = new EditorPage(page);
     await editor.open('example-shapes-gallery');
+    // exact sizes and turns: snapping is its own spec (snapping.smart-guides)
+    await editor.toolbarButton('Snapping').click();
     const { scale, at } = await onScreen(editor);
     const shape = editor.element(RECT);
     const inside = at(170, 115);

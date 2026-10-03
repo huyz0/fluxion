@@ -1,0 +1,13 @@
+# Known vulnerabilities with no fixed version, accepted until the date given and then checked again (M8.38).
+# Both packages arrive only through the docs site's build tooling (apps/docs: astro, starlight-llms-txt); neither is in the
+# player, the editor, the CLI or any published package.
+
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+ignoreUntil = 2026-11-02
+reason = "braces 3.0.3 via micromatch via starlight-llms-txt (docs build only); no fixed version published"
+
+[[IgnoredVulns]]
+id = "GHSA-ch52-4w7c-c8xp"
+ignoreUntil = 2026-11-02
+reason = "http-cache-semantics 4.2.0 via astro (docs build only); no fixed version published"
