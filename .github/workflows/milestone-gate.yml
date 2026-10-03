@@ -41,6 +41,8 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # the gates run the built CLI and read built packages (examples validate through packages/cli/dist)
+      - run: pnpm build
       - name: git identity for sandbox tests
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"

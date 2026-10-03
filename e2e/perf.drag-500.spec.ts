@@ -12,6 +12,9 @@ const EDITOR_DRAG_MIN_FPS = Number(
   /EDITOR_DRAG_MIN_FPS: \{ value: ([\d.]+)/.exec(readFileSync(new URL('../scripts/gates/thresholds.mjs', import.meta.url), 'utf8'))?.[1],
 );
 
+/** How far, on screen, a snap pulls (FR-ARR-005: 8 px). */
+const SNAP_REACH_PX = 8;
+
 /** The fixture's element slugged `drag-me`, in the middle of the grid. */
 const FIXTURE = JSON.parse(readFileSync(new URL('../fixtures/docs/perf-500.flux.json', import.meta.url), 'utf8')) as {
   records: Record<string, { type: string; semantic?: { slug?: string } }>;
@@ -65,11 +68,12 @@ test.describe('drag performance', { tag: '@perf' }, () => {
     const start = await target.boundingBox();
     if (start === null) throw new Error('the element to drag is not drawn');
     const frames = await measured(page, { x: start.x + start.width / 2, y: start.y + start.height / 2 });
-    // the element followed the pointer: 180 by 90 canvas px
-    const end = await target.boundingBox();
-    expect((end?.x ?? 0) - start.x).toBeCloseTo(180, 0);
-    expect((end?.y ?? 0) - start.y).toBeCloseTo(90, 0);
+    // snapping stays on, as users have it: the rate is that of a drag that snaps among 500 elements
     expectRate(frames);
+    // the element followed the pointer, 180 by 90 screen px, to within a snap's reach
+    const end = await target.boundingBox();
+    expect(Math.abs((end?.x ?? 0) - start.x - 180)).toBeLessThanOrEqual(SNAP_REACH_PX);
+    expect(Math.abs((end?.y ?? 0) - start.y - 90)).toBeLessThanOrEqual(SNAP_REACH_PX);
   });
 
   test('NFR-PERF-001: resizing one element among 500 keeps at least EDITOR_DRAG_MIN_FPS over the measured frames', async ({ page }) => {
@@ -83,10 +87,10 @@ test.describe('drag performance', { tag: '@perf' }, () => {
     await page.mouse.click(start.x + start.width / 2, start.y + start.height / 2);
     await expect(page.locator('svg.fx-chrome-overlay rect[data-handle="se"]')).toHaveCount(1);
     const frames = await measured(page, { x: start.x + start.width, y: start.y + start.height });
-    // it grew with the pointer: 180 by 90 canvas px
-    const end = await target.boundingBox();
-    expect((end?.width ?? 0) - start.width).toBeCloseTo(180, 0);
-    expect((end?.height ?? 0) - start.height).toBeCloseTo(90, 0);
     expectRate(frames);
+    // it grew with the pointer, 180 by 90 screen px, to within a snap's reach
+    const end = await target.boundingBox();
+    expect(Math.abs((end?.width ?? 0) - start.width - 180)).toBeLessThanOrEqual(SNAP_REACH_PX);
+    expect(Math.abs((end?.height ?? 0) - start.height - 90)).toBeLessThanOrEqual(SNAP_REACH_PX);
   });
 });
