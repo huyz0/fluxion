@@ -1563,3 +1563,7 @@ packs/fonts-core (vendored Inter, Source Serif 4, JetBrains Mono; vendor script 
 ## 2026-10-03 M9.14 (claude)
 
 Recorded metrics for the 12 bundled faces; page measurer uses them for those fonts (registerFontMetrics), canvas otherwise; studio registers a family once all faces loaded; ADR-0148 amended (Chromium only; standalone player waits for M10 row 13, now stated there). Next M9.15 (Google Fonts).
+
+## 2026-10-03 M9.16 (claude)
+
+readFontFile (pure), recordFaceMetrics (page producer, parity with the script), addFont (asset with font.metrics). M9.15 now depends on it. ADR-0022 amended (WOFF2 names from the caller). Next M9.15 (catalog + Google fetch).
