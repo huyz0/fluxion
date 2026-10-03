@@ -1,10 +1,10 @@
 // Theme validation (FR-THM-001, ADR-0152): the schema's refusals plus the checks a schema cannot make: the required colour
 // roles, the type of each token group, and aliases that name nothing or run in a circle. Every problem carries a JSON pointer
 // into the theme. Pure.
-import { jsonPointer } from '@fluxion/schema';
-import { followColor } from './alias.js';
+import { DIAGNOSTIC_CODES, type Diagnostic, type DiagnosticCode, jsonPointer } from '@fluxion/schema';
+import { colorResolver, needsResolving } from './alias.js';
 import type { ThemeErrorCode } from './errors.js';
-import { isToken, nodeAt, type Theme, TOKEN_REF, themeSchema, tokenEntries } from './tokens.js';
+import { isToken, nodeAt, type Theme, themeSchema, tokenEntries } from './tokens.js';
 
 /**
  * The colour roles every theme defines (FR-THM-001).
@@ -80,12 +80,13 @@ const expectedType = (path: string): string | undefined =>
 /** The wrong-typed tokens and the broken aliases of `t`. */
 function tokenProblems(t: Theme): ThemeProblem[] {
   const out: ThemeProblem[] = [];
+  const follow = colorResolver(t);
   for (const [path, token] of tokenEntries(t.tokens)) {
     const expected = expectedType(path);
     if (expected !== undefined && token.$type !== expected) {
       out.push({ code: 'TOKEN_TYPE', path: pointer(path, '$type'), message: `${path} is ${token.$type}; this group holds ${expected} tokens` });
-    } else if (token.$type === 'color' && TOKEN_REF.test(token.$value)) {
-      const followed = followColor(t, path);
+    } else if (needsResolving(token)) {
+      const followed = follow(path);
       if (!followed.ok) out.push({ code: followed.error.code, path: pointer(path, '$value'), message: followed.error.message });
     }
   }
@@ -104,4 +105,25 @@ export function validateTheme(theme: unknown): readonly ThemeProblem[] {
     return parsed.error.issues.map((i) => ({ code: 'THEME_INVALID' as const, path: jsonPointer(i.path.map(String)), message: i.message }));
   }
   return [...roleProblems(parsed.data), ...tokenProblems(parsed.data)];
+}
+
+/** The diagnostic code of a theme problem: the catalogued code a problem of that kind has, else FLX_SCHEMA_INVALID. */
+const DIAGNOSTIC_OF: { readonly [C in ThemeErrorCode]?: DiagnosticCode } = {
+  TOKEN_UNKNOWN: 'FLX_TOKEN_UNKNOWN',
+  TOKEN_CYCLE: 'FLX_TOKEN_CYCLE',
+  TOKEN_TRANSFORM: 'FLX_TOKEN_TRANSFORM',
+};
+
+/**
+ * The problems of `theme` as diagnostics of the catalogue (a host that validates a document's themes reports these): a cycle is
+ * FLX_TOKEN_CYCLE, a malformed step FLX_TOKEN_TRANSFORM, an alias to nothing FLX_TOKEN_UNKNOWN, any other problem
+ * FLX_SCHEMA_INVALID; each with the path into the theme.
+ *
+ * @public
+ */
+export function themeDiagnostics(theme: unknown): readonly Diagnostic[] {
+  return validateTheme(theme).map((p) => {
+    const code = DIAGNOSTIC_OF[p.code] ?? 'FLX_SCHEMA_INVALID';
+    return { code, severity: DIAGNOSTIC_CODES[code], path: p.path, message: p.message };
+  });
 }

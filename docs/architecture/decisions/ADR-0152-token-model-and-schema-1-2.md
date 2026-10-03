@@ -74,19 +74,26 @@ Screen override:
   theme that fails `themeSchema` is refused as before, so the strictness lives in `themeSchema` and `validateTheme` adds
   the role and alias diagnostics on top of it.
 - **Derived tokens: option 2.** A derived token is `{ "$type": "color", "$value": "{color.primary}", "$extensions":
-  { "dev.fluxion": { "transform": [ { "lighten": 0.2 } ] } } }`. The transforms, applied in order in OKLCH:
-  `lighten n` (L' = L + (1 - L) n), `darken n` (L' = L (1 - n)), `alpha n` (alpha := n, 0 to 1) and `mix` (`{ "with":
-  "{color.accent-1}", "amount": 0.5 }`, a linear mix of the two in OKLab). Chroma and hue are kept by `lighten` and `darken`;
-  a result outside sRGB is brought in by reducing chroma. **Order and ranges:** the alias chain is followed first (aliases of
-  aliases and derived tokens of derived tokens are allowed, resolved recursively), then the transform steps run in array
-  order. `lighten`, `darken` and `alpha` take n in [0, 1] and `mix.amount` is the weight of `with` in [0, 1] (0 gives the base,
-  1 gives `with`); a value outside the range is a diagnostic, not a clamp. `alpha` replaces the colour's alpha, a literal
-  colour with alpha keeps it through the other steps. A cycle (a token reaching itself through aliases or `mix.with`) is the
-  new diagnostic `FLX_TOKEN_CYCLE` (error); a transform on a token that does not resolve to a colour, an unknown step or an
-  out-of-range number is `FLX_TOKEN_TRANSFORM` (error). Both codes are added to the diagnostics catalogue and its docs page
-  in M9.6, and resolution keeps a visited set, so a cyclic theme is reported, never looped over. The resolver computes a derived token to a literal colour when it
-  emits CSS variables (`toCssVars`), so a theme or primary change re-derives every dependant, and the emitted variable is a
-  plain `#rrggbb` or `rgb(... / a)`.
+  { "dev.fluxion": { "transform": [ { "lighten": 0.2 } ] } } }` (the value may also be a literal colour). The steps are
+  applied in order in OKLCH and **mean what CSS `color-mix(in oklch, ...)` means**, because the element-level colour transform
+  of M4 emits exactly that, so a derived theme token and a transformed style agree: `lighten n` mixes with white by n
+  (L' = L + (1 - L) n, C' = C (1 - n), the hue kept), `darken n` mixes with black (L' = L (1 - n), C' = C (1 - n)), `alpha n`
+  multiplies the opacity by n, and `mix` (`{ "with": "{color.accent-1}", "amount": 0.5 }`) mixes with another colour by
+  `amount`, the weight of that colour, premultiplied by alpha, along the shorter hue arc, a grey's hue being powerless (its
+  chroma below 4e-4: the other colour's hue is used). A result outside sRGB is brought in by reducing chroma at the same
+  lightness and hue (not CSS's gamut-mapping algorithm; themes of the pack stay in gamut). **Order and ranges:** the alias
+  chain is followed first (aliases of aliases and derived tokens of derived tokens are allowed, resolved recursively), then the
+  steps run in array order. `lighten`, `darken` and `alpha` take n in [0, 1] and `mix.amount` is the weight of `with` in [0, 1]
+  (0 gives the base, 1 gives `with`); a value outside the range is a diagnostic, not a clamp. The colours that can be derived
+  from are hex, `rgb()`, `hsl()`, `oklch()` and `oklab()`; a named colour, `lab()`, `lch()`, `hwb()` or `color()` is a
+  diagnostic when a step needs it (a token without steps may still be any colour). A cycle (a token reaching itself through
+  aliases or `mix.with`) is the diagnostic `FLX_TOKEN_CYCLE` (error, M9.6); a transform that is not a non-empty list of steps,
+  an unknown or doubled operation, an out-of-range number, a `mix` without an alias, or a colour that cannot be derived from is
+  `FLX_TOKEN_TRANSFORM` (error, M9.7). Resolution keeps the chain of links followed (aliases and `mix.with`), so a cyclic
+  theme is reported, never looped over, and the chain is bounded (64). The resolver computes a derived token to a literal
+  colour when it emits CSS variables (`toCssVars`), so a theme or primary change re-derives every dependant; the emitted
+  variable is a plain `#rrggbb` or `rgb(r g b / a)`, so a derived token of a derived token is quantised to 8 bits between
+  links (the exact OKLCH of one derivation is `deriveOklch`).
 - **OKLCH: option 2.** The implementation is in `@fluxion/theme` (pure, no dependency). culori of the plan is not added: the
   player resolves styles through this package, so it would become a player dependency for a few conversions. Reference
   values are computed independently of the implementation (the OKLab definition, evaluated with a separate script) and

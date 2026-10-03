@@ -11,10 +11,33 @@ import { TokenRef } from '@fluxion/schema';
 import { z } from 'zod';
 
 // @public
+export type ColorResolver = (path: string) => Result<string, ThemeError>;
+
+// @public
+export function colorResolver(theme: Theme): ColorResolver;
+
+// @public
+export type ColorStep = {
+    readonly lighten: number;
+} | {
+    readonly darken: number;
+} | {
+    readonly alpha: number;
+} | {
+    readonly mix: {
+        readonly with: Oklch;
+        readonly amount: number;
+    };
+};
+
+// @public
 export function cssValue(token: Token): string;
 
 // @public
 export const cssVarName: (path: string) => string;
+
+// @public
+export function deriveOklch(base: Oklch, steps: readonly ColorStep[]): Oklch;
 
 // @public
 export type Dimension = {
@@ -46,10 +69,24 @@ export type NoPaint = {
 };
 
 // @public
+export type Oklch = {
+    readonly l: number;
+    readonly c: number;
+    readonly h: number;
+    readonly alpha: number;
+};
+
+// @public
+export function oklchToCss(color: Oklch): string;
+
+// @public
 export type PaintResolution = {
     readonly paint: ResolvedPaint;
     readonly diagnostics: readonly Diagnostic[];
 };
+
+// @public
+export function parseColor(text: string): Oklch | undefined;
 
 // @public
 export const REQUIRED_COLOR_ROLES: readonly string[];
@@ -143,6 +180,9 @@ export function resolveStyle(style: Style | undefined, of: StyleKind, theme: The
 export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeError>;
 
 // @public
+export function rgbToOklch(r: number, g: number, b: number, alpha?: number): Oklch;
+
+// @public
 export type ShadowValue = {
     readonly color: string;
     readonly offsetX: number;
@@ -179,13 +219,16 @@ export type Theme = {
 };
 
 // @public
+export function themeDiagnostics(theme: unknown): readonly Diagnostic[];
+
+// @public
 export type ThemeError = {
     readonly code: ThemeErrorCode;
     readonly message: string;
 };
 
 // @public
-export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE";
+export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM";
 
 // @public
 export type ThemeProblem = {
@@ -216,6 +259,9 @@ export type TypedToken<T extends string, V> = {
     readonly $type: T;
     readonly $value: V;
     readonly $description?: string;
+    readonly $extensions?: {
+        readonly [key: string]: unknown;
+    };
 };
 
 // @public

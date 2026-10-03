@@ -29,6 +29,8 @@ export type TypedToken<T extends string, V> = {
   readonly $value: V;
   /** What the token is for. */
   readonly $description?: string;
+  /** Data of other tools, kept and never emitted; `dev.fluxion.transform` holds the steps of a derived colour (ADR-0152). */
+  readonly $extensions?: { readonly [key: string]: unknown };
 };
 
 /**
@@ -102,7 +104,7 @@ const NAME = /^[A-Za-z0-9_-]+$/;
 // end a <style> element or an attribute, so they are refused (M4.9 review F2)
 export const FAMILY: RegExp = /^[^\p{Cc}<>]+$/u;
 const family = z.string().regex(FAMILY, 'a font family name has no control characters, "<" or ">"');
-const described = { $description: z.string().optional() };
+const described = { $description: z.string().optional(), $extensions: z.record(z.string(), z.unknown()).optional() };
 const px = z.number().finite();
 // an alias to another token: names only, so it can never carry other CSS (it is resolved, never emitted as written)
 const aliasSchema = z.string().regex(/^\{[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*\}$/);

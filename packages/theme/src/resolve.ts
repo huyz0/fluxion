@@ -2,7 +2,7 @@
 // names a path in the tree; `toCssVars` emits every token as `--fx-<path>`, so rendered content refers
 // to `var(--fx-color-primary)` and a theme switch restyles without re-rendering.
 import { err, ok, type Result, type TokenRef } from '@fluxion/schema';
-import { followColor } from './alias.js';
+import { colorResolver, needsResolving } from './alias.js';
 import type { ThemeError } from './errors.js';
 import { cssVarName, isToken, isValidToken, nodeAt, type Theme, TOKEN_REF, type Token, tokenEntries } from './tokens.js';
 
@@ -83,12 +83,13 @@ export function resolveToken(theme: Theme, ref: TokenRef): Result<Token, ThemeEr
  */
 export function toCssVars(theme: Theme): Record<string, string> {
   // only valid tokens with name-only paths: an unparsed theme object cannot emit other CSS (M4.10 review)
+  const follow = colorResolver(theme);
   const safe = tokenEntries(theme.tokens).filter(([path, token]) => /^[A-Za-z0-9_.-]+$/.test(path) && isValidToken(token));
   return Object.fromEntries(
     safe.flatMap(([path, token]): Array<readonly [string, string]> => {
-      if (token.$type !== 'color' || !TOKEN_REF.test(token.$value)) return [[cssVarName(path), cssValue(token)]];
-      // an alias is emitted as the literal colour it resolves to; one that resolves to none (unknown, cyclic) is left out
-      const literal = followColor(theme, path);
+      if (!needsResolving(token)) return [[cssVarName(path), cssValue(token)]];
+      // an alias or a derived colour is emitted as the literal colour it resolves to; one that resolves to none (unknown, cyclic, a bad step) is left out
+      const literal = follow(path);
       return literal.ok ? [[cssVarName(path), literal.value]] : [];
     }),
   );

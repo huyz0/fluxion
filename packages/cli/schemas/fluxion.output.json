@@ -135,6 +135,7 @@
                   "FLX_ORIGIN_RESERVED",
                   "FLX_TOKEN_UNKNOWN",
                   "FLX_TOKEN_CYCLE",
+                  "FLX_TOKEN_TRANSFORM",
                   "FLX_CLI_USAGE",
                   "FLX_CLI_IO",
                   "FLX_CLI_INTERNAL",

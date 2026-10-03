@@ -1,9 +1,17 @@
 // Public entry of @fluxion/theme; the package comment is the dts banner in tsdown.config.ts.
 
-export { followColor } from './alias.js';
+export { type ColorResolver, colorResolver, followColor } from './alias.js';
 export type { ResolvedEffect, ResolvedShadow } from './effects.js';
 export type { ThemeError, ThemeErrorCode } from './errors.js';
 export { LIGHT_THEME } from './light.js';
+export {
+  type ColorStep,
+  deriveOklch,
+  type Oklch,
+  oklchToCss,
+  parseColor,
+  rgbToOklch,
+} from './oklch.js';
 export { cssValue, resolveToken, toCssVars, tokenPath } from './resolve.js';
 export {
   type NoPaint,
@@ -35,7 +43,7 @@ export {
   type TypedToken,
   themeSchema,
 } from './tokens.js';
-export { REQUIRED_COLOR_ROLES, type ThemeProblem, validateTheme } from './validate-theme.js';
+export { REQUIRED_COLOR_ROLES, type ThemeProblem, themeDiagnostics, validateTheme } from './validate-theme.js';
 
 /**
  * Version of this package.

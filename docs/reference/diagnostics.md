@@ -77,7 +77,8 @@ Reported by `@fluxion/theme` `resolveStyle` when a style is resolved for renderi
 
 | Code | Severity | Meaning | Typical fix |
 |---|---|---|---|
-| `FLX_TOKEN_CYCLE` | error | The aliases of a theme's colour tokens return to a token they passed through (`color.a` is `{color.b}` and `color.b` is `{color.a}`), or the chain is longer than 64. `validateTheme` of `@fluxion/theme` reports the same problem as a `TOKEN_CYCLE` theme problem with the path of the alias (a host that surfaces theme problems as diagnostics uses this code); the tokens in the cycle are not emitted. | Make one token in the cycle a literal colour. |
+| `FLX_TOKEN_CYCLE` | error | The links of a theme's colour tokens (aliases and `mix.with`) return to a token they passed through (`color.a` is `{color.b}` and `color.b` is `{color.a}`), or the chain is longer than 64. `themeDiagnostics` of `@fluxion/theme` reports it with the path of the link; the tokens in the cycle are not emitted. | Make one token in the cycle a literal colour. |
+| `FLX_TOKEN_TRANSFORM` | error | A derived colour token's `dev.fluxion` transform is malformed: not a non-empty list of steps, a step with other than one operation, an unknown operation, a number outside 0 to 1, a `mix` without an alias `with`, or a colour that cannot be derived from (a named colour, `lab()`, `lch()`, `hwb()`, `color()`). The token is not emitted. | Use `lighten`, `darken`, `alpha` or `mix` with numbers from 0 to 1, over a hex, `rgb()`, `hsl()`, `oklch()` or `oklab()` colour. |
 | `FLX_TOKEN_UNKNOWN` | warning | A style or a theme default names a token the theme does not have (`{color.nope}`); the field falls back through the next layers: the variant defaults, the kind defaults, the theme globals, then the built-in fallback. | Use a token of the theme, or a literal value. |
 
 ## Engine
