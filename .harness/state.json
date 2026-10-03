@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "",
+  "blockedReason": "M9 cannot proceed in order. (1) M9.8 (packs/themes-core) cannot pass the 120 s staged ladder on the 4-core cloud container; WIP is 77f73fd (reachable from main). M9.10, M9.11 need its eight themes. (2) M9.18's e2e 'edited metadata survives a reload' assumes the editor persists documents across a reload; it has no save/open or autosave yet (a reload drops the document, see dialog-keys.ts F5 note), so the leg cannot pass as written: the spec needs a persistence mechanism or a different check. Decisions for the human: land M9.8 from a fast machine (or relax staged scoping), and re-spec M9.18 / add persistence.",
   "updated": "2026-10-03"
 }

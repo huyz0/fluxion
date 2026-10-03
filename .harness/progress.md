@@ -1543,3 +1543,7 @@ Core commands document.setTheme, screen.setThemeOverride, document.updateMeta (o
 ## 2026-10-03 M9.13 (claude)
 
 Font-licence allowlist (FONT_LICENSES) in check-licenses: fonts.json and catalog.json checked for licence, hash, path confinement; drift treats widening as weakening; ladder-scope maps check-licenses/check-drift to their own tests (staged ladder 105 s). Out of order: M9.8 still blocked.
+
+## 2026-10-03 M9 blocked (claude)
+
+See state.json blockedReason: M9.8 over the staged-ladder time limit here; M9.18 e2e assumes reload persistence the editor lacks. M9.12 and M9.14-M9.17 (fonts) are untouched and could proceed next.
