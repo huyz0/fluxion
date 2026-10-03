@@ -127,7 +127,10 @@ leg('a document in a bundled font measures within 1 px on the metrics path (T1)'
   titled([browser('M9.14', 'FR-THM-008: a document in a bundled font measures within 1 px on the metrics path')]),
 );
 leg('a Google font renders offline from the mocked route and the player names no Google Fonts URL', () => {
-  const unit = titled([['M9.15', 'FR-THM-008: the player bundle names no Google Fonts URL', EDITOR]]);
+  const unit = titled([
+    ['M9.15', 'FR-THM-008: the player bundle names no Google Fonts URL', EDITOR],
+    ['M9.15', 'FR-THM-008: a fetched Google font gets a metrics record', EDITOR],
+  ]);
   return unit === true ? titledSpec('e2e/fonts.google.spec.ts', DESKTOP, ['FR-THM-008: the picked Google font renders']) : unit;
 });
 leg('a non-font is rejected and an uploaded font gets a metrics record (T0)', () =>
