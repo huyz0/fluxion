@@ -45,20 +45,20 @@
     {
       "finding": "F1",
       "disposition": "reopen",
-      "row": "M8.35",
-      "note": "gate legs for the library panel, section commands and the viewport fix"
+      "note": "gate legs for the library panel, section commands and the viewport fix",
+      "target": "M8.35"
     },
     {
       "finding": "F2",
       "disposition": "reopen",
-      "row": "M8.36",
-      "note": "drag across sections in one step; presentation order following sections is handed to M11"
+      "note": "drag across sections in one step; presentation order following sections is handed to M11",
+      "target": "M8.36"
     },
     {
       "finding": "F3",
       "disposition": "reopen",
-      "row": "M8.35",
-      "note": "parity also compares the arrange demo"
+      "note": "parity also compares the arrange demo",
+      "target": "M8.35"
     },
     {
       "finding": "F4",

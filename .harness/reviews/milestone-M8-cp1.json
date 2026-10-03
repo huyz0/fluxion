@@ -38,8 +38,8 @@
     {
       "finding": "F1",
       "disposition": "reopen",
-      "row": "M8.33",
-      "note": "rotation, resizing and the grid get snapping"
+      "note": "rotation, resizing and the grid get snapping",
+      "target": "M8.33"
     },
     {
       "finding": "F2",
@@ -49,8 +49,8 @@
     {
       "finding": "F3",
       "disposition": "reopen",
-      "row": "M8.34",
-      "note": "ADR-0022 and the requirement wording"
+      "note": "ADR-0022 and the requirement wording",
+      "target": "M8.34"
     },
     {
       "finding": "F4",

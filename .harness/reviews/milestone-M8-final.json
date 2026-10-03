@@ -45,8 +45,8 @@
     {
       "finding": "F1",
       "disposition": "reopen",
-      "row": "M8.40",
-      "note": "row counts, states and M8.40's dependency fixed; M8.39 closes with the workflow log"
+      "note": "row counts, states and M8.40's dependency fixed; M8.39 closes with the workflow log",
+      "target": "M8.40"
     },
     {
       "finding": "F2",
