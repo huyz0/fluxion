@@ -231,3 +231,26 @@ export function deriveOklch(base: Oklch, steps: readonly ColorStep[]): Oklch {
     return mix(color, step.mix.with, step.mix.amount);
   }, base);
 }
+
+/**
+ * The WCAG relative luminance of a colour (0 black to 1 white), its alpha ignored.
+ *
+ * @public
+ */
+export function relativeLuminance(color: Oklch): number {
+  const [r, g, b] = oklchToLinear(intoGamut({ ...color, alpha: 1 })).map(clamp01) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * The WCAG contrast ratio of two colours (1 to 21), or undefined when either cannot be read (see {@link parseColor}); their alpha
+ * is ignored, so the colours are the ones drawn over each other.
+ *
+ * @public
+ */
+export function contrastRatio(a: string, b: string): number | undefined {
+  const [ca, cb] = [parseColor(a), parseColor(b)];
+  if (ca === undefined || cb === undefined) return undefined;
+  const [la, lb] = [relativeLuminance(ca), relativeLuminance(cb)];
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}

@@ -1,7 +1,7 @@
 {
-  "name": "@fluxion/sdk",
+  "name": "@fluxion/pack-themes-core",
   "version": "0.0.0",
-  "description": "Public plugin API: stable contracts, manifest schema, component contract, test harness.",
+  "description": "First-party themes pack: eight built-in themes (FR-THM-003); imports only `@fluxion/sdk`.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -20,9 +20,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@fluxion/core": "workspace:*",
-    "@fluxion/schema": "workspace:*",
-    "@fluxion/theme": "workspace:*"
+    "@fluxion/sdk": "workspace:*"
   },
   "publishConfig": {
     "access": "public",

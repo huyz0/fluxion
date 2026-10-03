@@ -6,6 +6,7 @@ Public plugin API: stable contracts, manifest schema, component contract, test h
 
 - Layer L4: import only from lower layers, or same-layer packages the map lists as dependencies (docs/architecture/01-overview.md, "May depend on"); enforced by `check-layering`.
 - Follow the layer rules in docs/architecture/01-overview.md.
+- Packs may contribute themes (`PackSpec.themes`, validated with `validateTheme`, namespaced `<pack>:`); hosts without a themes registry refuse such a pack.
 - Public API lives in `src/index.ts` (`@fluxion/source` condition; ADR-0011); every export needs TSDoc and a release tag.
 
 ## Tests
