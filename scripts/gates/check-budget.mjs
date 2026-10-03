@@ -26,6 +26,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runSource } from './ci-runs.mjs';
+import { lockfileWorkspaceOnly } from './ladder-scope.mjs';
 import { git, repoPath, run } from './lib.mjs';
 import { t } from './thresholds.mjs';
 import { WORST_CASE_STAGED } from './worst-case.mjs';
@@ -214,7 +215,17 @@ const problems = limitProblems(record);
 // the staged ladder only runs from a local hook: an inherited CI=true there must not accept a stale
 // record (M3.5 review r3 F2), or a lockfile commit could skip ADR-0145's pending record
 const inCi = /^(1|true)$/i.test(process.env.CI ?? '') && !argv.includes('--staged');
-if (record.lockfile !== lockfileHash()) {
+/**
+ * Whether the lockfile differs from the record's only in workspace links: the install of external packages, which the cold-setup
+ * time measures, is the same (a new workspace adds an importer and links, nothing to download). Read from the record's commit.
+ */
+function sameDependencies() {
+  const then = git(['show', `${record.commit}:pnpm-lock.yaml`]);
+  // the blob must be the lockfile the record measured, or the record's number belongs to another dependency set
+  const sameBlob = then.status === 0 && createHash('sha256').update(then.stdout).digest('hex') === record.lockfile;
+  return sameBlob && existsSync(repoPath('pnpm-lock.yaml')) && lockfileWorkspaceOnly(then.stdout, readFileSync(repoPath('pnpm-lock.yaml'), 'utf8'));
+}
+if (record.lockfile !== lockfileHash() && !sameDependencies()) {
   if (inCi) console.log('budget: the record predates pnpm-lock.yaml; in CI the cold-setup job measures this lockfile (ADR-0143)');
   else problems.push('the record predates the current pnpm-lock.yaml: run check-budget.mjs --record (or, without Chromium, --record --cold-pending; ADR-0145)');
 }

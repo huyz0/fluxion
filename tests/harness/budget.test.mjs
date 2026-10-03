@@ -79,6 +79,37 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.match(local.stderr, /predates the current pnpm-lock\.yaml/);
   });
 
+  it('NFR-DX-001: a lockfile that differs from the record only in workspace links keeps the record current; an external change does not', () => {
+    sb.cleanup();
+    sb = sandbox(['scripts'], { git: true });
+    const lock = (importers, packages = '') =>
+      `lockfileVersion: '9.0'\n\nimporters:\n\n  .:\n    dependencies:\n      react:\n        specifier: 19.2.0\n        version: 19.2.0\n${importers}\npackages:\n\n  react@19.2.0:\n    resolution: {integrity: sha512-a}\n${packages}`;
+    sb.write('pnpm-lock.yaml', lock(''));
+    sb.git('add', 'pnpm-lock.yaml');
+    sb.git('commit', '-q', '--no-verify', '-m', 'fixture lockfile');
+    const commit = sb.git('rev-parse', 'HEAD').stdout.trim();
+    const hash = createHash('sha256')
+      .update(readFileSync(sb.path('pnpm-lock.yaml')))
+      .digest('hex');
+    const record = { ...OK, commit, lockfile: hash };
+    assert.equal(budget(record).status, 0);
+    // a new workspace: an importer with a link
+    sb.write(
+      'pnpm-lock.yaml',
+      lock("\n  packs/x:\n    dependencies:\n      '@fluxion/sdk':\n        specifier: workspace:*\n        version: link:../../packages/sdk\n"),
+    );
+    const linked = budget(record);
+    assert.equal(linked.status, 0, out(linked));
+    // a record whose commit holds another lockfile than the one it measured is not trusted
+    const other = budget({ ...record, lockfile: 'f'.repeat(64) });
+    assert.equal(other.status, 1, out(other));
+    // an external package: the cold setup must be measured again
+    sb.write('pnpm-lock.yaml', lock('', '\n  left-pad@1.0.0:\n    resolution: {integrity: sha512-c}\n'));
+    const external = budget(record);
+    assert.equal(external.status, 1, out(external));
+    assert.match(external.stderr, /predates the current pnpm-lock\.yaml/);
+  });
+
   it('the committed record is within the thresholds (cold setup < 10 min, NFR-DX-001)', () => {
     const record = JSON.parse(readFileSync(join(REPO, '.harness/budget.json'), 'utf8'));
     assert.ok(record.coldSetupMs > 0 && record.coldSetupMs <= t('COLD_SETUP_MAX_MS'), JSON.stringify(record));
