@@ -1551,3 +1551,7 @@ See state.json blockedReason: M9.8 over the staged-ladder time limit here; M9.18
 ## 2026-10-03 M9.8 (claude)
 
 Themes-core pack landed (81e06af). To fit the 120 s staged budget without raising it: M9.24 (manifest/scaffold commits skip whole-repo coverage, layering, licenses harness runs; api report count derived) and M9.25 (budget record stays current across a workspace-only lockfile change). M9.18 still needs a persistence decision.
+
+## 2026-10-03 M9.10 (claude)
+
+Theme switcher and per-screen override in the toolbar (the inspector has no screen section), ScreenView draws each screen with its own theme, studio bundles themes-core. M9.26 scoped staged docs. Next M9.11 (theme snapshots; baselines need the pinned image).
