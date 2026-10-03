@@ -87,6 +87,29 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(harnessFiles(['knip.json'], ALL), only(['milestone-checks']));
     assert.deepEqual(harnessFiles(['scripts/gates/check-licenses.mjs'], ALL), only(['licenses']));
     assert.deepEqual(harnessFiles(['scripts/gates/check-drift.mjs'], ALL), only(['drift']));
+    // what a new workspace adds beside its manifest runs the manifest harness and the formatter and tsconfig tests, not every file
+    const workspaceFiles = only([
+      'adapters',
+      'biome',
+      'budget',
+      'ci-workflow',
+      'docs-consistency',
+      'architecture',
+      'bench-leg',
+      'diagnostics-doc',
+      'kind-switch',
+      'milestone-checks',
+      'mode-policy',
+      'packages',
+      'schema-open-objects',
+      'test-titles',
+      'tsconfig-strict',
+      'turbo',
+      'verify-leg',
+      'workspace-shape',
+    ]);
+    for (const p of ['packs/x/tsconfig.json', 'packs/x/tsdown.config.ts', 'packs/x/LICENSE', 'packs/x/README.md', 'tools/gen/workspaces.json', 'tsconfig.json'])
+      assert.deepEqual(harnessFiles([p], ALL), workspaceFiles, p);
     assert.deepEqual(harnessFiles(['osv-scanner.toml'], ALL), []);
     assert.deepEqual(harnessFiles(['.github/workflows/milestone-gate.yml'], ALL), only(['ci-workflow']));
     assert.deepEqual(

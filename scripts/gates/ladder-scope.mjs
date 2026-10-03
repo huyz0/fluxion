@@ -115,6 +115,12 @@ export const NAMED_PATH_HARNESS = [
 
 /** A workspace's manifest. */
 const MANIFEST = /^(packages|packs|apps)\/[^/]+\/package\.json$/;
+/**
+ * What `tools/gen/package.mjs` writes beside a manifest, and the files that list the workspaces: a workspace's build settings,
+ * licence and readme, the workspace list, the root tsconfig. They are read by the manifest harness and by the tests of the
+ * formatter and the strict tsconfig.
+ */
+const WORKSPACE_FILES = /^((packages|packs|apps)\/[^/]+\/(tsconfig\.json|tsdown\.config\.ts|LICENSE|README\.md)|tools\/gen\/workspaces\.json|tsconfig\.json)$/;
 /** A workspace's API report: written by check-api --update and checked by the ladder's api step. */
 const API_REPORT = /^(packages|packs|apps)\/[^/]+\/api\/[^/]+\.api\.md$/;
 /** The traceability matrix, generated from the tests by check-trace --write. */
@@ -186,6 +192,7 @@ function harnessFor(p, workspaceLock, all = []) {
   if (BOOKKEEPING_PATHS.some((re) => re.test(p))) return [];
   if (SOURCE.test(p) || API_REPORT.test(p)) return SOURCE_HARNESS;
   if (MANIFEST.test(p) || (p === 'pnpm-lock.yaml' && workspaceLock)) return STAGED_MANIFEST_HARNESS;
+  if (WORKSPACE_FILES.test(p)) return [...STAGED_MANIFEST_HARNESS, 'biome', 'tsconfig-strict'];
   if (p === TRACE_MATRIX) return ['trace'];
   if (/^e2e\//.test(p)) return E2E_HARNESS;
   // a doc: the docs files, and every harness file that names this very path (its real copy is read)
