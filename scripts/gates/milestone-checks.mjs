@@ -338,6 +338,9 @@ export const BENCH_COMMANDS = [
   'element.distribute',
   'element.zOrder',
   'document.update',
+  'document.setTheme',
+  'screen.setThemeOverride',
+  'document.updateMeta',
   'asset.create',
 ];
 /** undo/redo and the forward transactions on 5 000 records, stores with default options (validation on). */

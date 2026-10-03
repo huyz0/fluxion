@@ -624,6 +624,9 @@ export type TextRegionDef = {
 };
 
 // @public
+export function themeRecordId(name: string): string;
+
+// @public
 export interface Tx {
     delete(id: RecordId): void;
     get(id: RecordId): AnyRecord | undefined;

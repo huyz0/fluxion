@@ -115,6 +115,16 @@ const MANY_KEYS = (() => {
   return keys.value;
 })();
 
+/** Arguments of the theme and metadata commands (M9.9); the theme is adopted once and reused after. */
+const themeArgs = (screen: RecordId) => {
+  const theme = { name: 'Bench', tokens: { color: { text: { $type: 'color', $value: '#000000' } } } };
+  return {
+    'document.setTheme': { theme },
+    'screen.setThemeOverride': { id: screen, theme },
+    'document.updateMeta': { fields: { description: 'bench' }, modified: '2026-01-01T00:00:00Z' },
+  };
+};
+
 /** Arguments that succeed against the fixture document (and again after the command is undone). */
 function benchArgs(
   screens: readonly RecordId[],
@@ -184,6 +194,7 @@ function benchArgs(
     'element.zOrder': { ids: [shapes[1420]], to: 'front' },
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
+    ...themeArgs(screens[5] as RecordId),
     'asset.create': { asset: { id: 'BenchNewAsset0001', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'bench.png' } },
   };
 }
@@ -218,5 +229,8 @@ export const COMMANDS = [
   'element.distribute',
   'element.zOrder',
   'document.update',
+  'document.setTheme',
+  'screen.setThemeOverride',
+  'document.updateMeta',
   'asset.create',
 ] as const;

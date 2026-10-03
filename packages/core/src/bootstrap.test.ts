@@ -111,6 +111,9 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'element.distribute': () => ({ ids: shapes(), axis: 'horizontal', by: 'gaps', gap: 10 }),
     'element.zOrder': () => ({ ids: [pick('element', 'shape')], to: op.value % 2 ? 'front' : 'back' }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
+    'document.setTheme': () => ({ theme: { name: `T${op.value}`, tokens: { color: { text: { $type: 'color', $value: '#000000' } } } } }),
+    'screen.setThemeOverride': () => ({ id: screen, theme: { name: `T${op.value}`, tokens: { color: { text: { $type: 'color', $value: '#000000' } } } } }),
+    'document.updateMeta': () => ({ fields: { description: `d${op.value}` }, modified: `2026-01-0${(op.value % 9) + 1}T00:00:00Z` }),
     'asset.create': () => ({ asset: { id: newId(n), type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'a.png' } }),
   };
   return build[op.command]?.();
@@ -206,6 +209,9 @@ const MISC_OPS: Op[] = [
   'screen.reorder',
   'screen.delete',
   'document.update',
+  'document.setTheme',
+  'screen.setThemeOverride',
+  'document.updateMeta',
   'asset.create',
 ].map((command) => ({ command, pick: 0, value: 1 }));
 

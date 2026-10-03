@@ -25,6 +25,7 @@ import type { Registry } from './registry.js';
 import { SCREEN_COMMANDS } from './screens/screen-commands.js';
 import { screenIndexAfter } from './screens/screen-order.js';
 import { SECTION_COMMANDS } from './screens/section-commands.js';
+import { THEME_COMMANDS } from './theme-commands.js';
 import type { TxFailure } from './transaction.js';
 
 /** The binding holding `end` of `connectorId`, if any. */
@@ -49,6 +50,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...Z_ORDER_COMMANDS,
   ...SCREEN_COMMANDS,
   ...SECTION_COMMANDS,
+  ...THEME_COMMANDS,
   defineCommand({
     id: 'element.create',
     title: title('element.create', 'Add element'),

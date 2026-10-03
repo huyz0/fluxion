@@ -104,7 +104,7 @@ Screen override:
   `theme` record (FLX_REF_MISSING with a suggestion, as `sectionId`). A screen without it uses the document's theme.
   `document.setTheme` and `screen.setThemeOverride` write the chosen theme into the document as a `theme` record when it is
   not there yet, so the file stays self-contained and portable. **The id** is `theme-<slug>`, the slug being the pack
-  theme's name lower-cased with every run of characters outside `a-z0-9` turned into `-` (at most 59 characters, so the
+  theme's name lower-cased with every run of characters outside `a-z0-9` turned into `-` (at most 58 characters, so the
   id fits the 64 of `recordIdSchema`); a document's own themes are never given that prefix by the commands. **Collision:**
   if a record with that id exists the command uses it as it is and never overwrites it, so a theme the user edited keeps
   its edits and switching back and forth never duplicates a record; taking a pack's newer version is an explicit action of

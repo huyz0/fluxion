@@ -51,6 +51,7 @@ export { type FitInput, type FittedText, fitText, growsText, shrinksText, TEXT_F
 export { createMetricsMeasurer, type FaceMetrics, type FontMetricsFile, readFontMetrics } from './text/metrics.js';
 export { type StyledBlock, type StyledOptions, type StyledRun, wrapStyled } from './text/styled.js';
 export { type WrappedText, wrapText } from './text/wrap.js';
+export { themeRecordId } from './theme-commands.js';
 export type { Diff, PutChange, Tx, TxFailure, TxMeta, TxOptions, TxOrigin } from './transaction.js';
 
 /**
