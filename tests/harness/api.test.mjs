@@ -39,7 +39,7 @@ describe('check-api on a copy of the repo (NFR-MNT-007)', () => {
     // a copy of the repo: API Extractor writes temp reports and must not race the ladder's api step (M1.36)
     const r = check();
     assert.equal(r.status, 0, out(r));
-    assert.match(r.stdout, /17 API report\(s\) match/);
+    assert.match(r.stdout, /18 API report\(s\) match/);
   });
 
   it('fails when a public export has no TSDoc (TypeDoc notDocumented, M1 cp3 F3)', () => {

@@ -2,7 +2,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { colorResolver, followColor } from './alias.js';
 import { LIGHT_THEME } from './light.js';
-import { deriveOklch, type Oklch, oklchToCss, parseColor, rgbToOklch } from './oklch.js';
+import { contrastRatio, deriveOklch, type Oklch, oklchToCss, parseColor, rgbToOklch } from './oklch.js';
 import { toCssVars } from './resolve.js';
 import { resolveStyle } from './resolve-style.js';
 import { styleKey } from './style-key.js';
@@ -272,5 +272,22 @@ describe('derived colours (FR-THM-002, ADR-0152)', () => {
     const bad = followColor(evil, 'color.x');
     expect(!bad.ok && bad.error.code).toBe('TOKEN_TYPE');
     expect(toCssVars(evil)['--fx-color-x']).toBeUndefined();
+  });
+});
+
+describe('contrast (WCAG, FR-THM-003)', () => {
+  it('FR-THM-003: contrastRatio matches the WCAG definition on known pairs', () => {
+    // black on white is 21, a colour on itself 1, and #767676 on white is the classic 4.54 (just over AA)
+    expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 4);
+    expect(contrastRatio('#336699', '#336699')).toBeCloseTo(1, 4);
+    expect(contrastRatio('#767676', '#ffffff')).toBeCloseTo(4.54, 2);
+    expect(contrastRatio('#ffffff', '#767676')).toBeCloseTo(4.54, 2);
+    // reference values from the sRGB definition: #2563eb on white 5.17, on black 4.06
+    expect(contrastRatio('#2563eb', '#ffffff')).toBeCloseTo(5.17, 2);
+    expect(contrastRatio('#2563eb', '#000000')).toBeCloseTo(4.06, 2);
+    // alpha is ignored, other forms are read, and one that cannot be read is undefined
+    expect(contrastRatio('rgb(0 0 0 / 0.1)', 'white')).toBeUndefined();
+    expect(contrastRatio('rgb(0 0 0 / 0.1)', '#ffffff')).toBeCloseTo(21, 4);
+    expect(contrastRatio('hsl(0 0% 100%)', '#000')).toBeCloseTo(21, 4);
   });
 });

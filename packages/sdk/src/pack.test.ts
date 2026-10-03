@@ -1,6 +1,7 @@
 import { createCoreRegistries, type MarkerDef, type ShapeDef } from '@fluxion/core';
+import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
-import { definePack, registerShapeDef } from './pack.js';
+import { definePack, registerShapeDef, type ThemeDef } from './pack.js';
 
 const shape = (id: string, extra: Partial<ShapeDef> = {}): ShapeDef =>
   ({ id, outline: { path: 'M 0 0 L {w} {h}' }, defaultSize: { w: 10, h: 10 }, ...extra }) as ShapeDef;
@@ -118,5 +119,40 @@ describe('packs (ADR-0017)', () => {
     const ok = registerShapeDef(registries, shape('x:a'), 'x');
     expect(ok.ok).toBe(true);
     expect(registries.shapeDefs.source('x:a')).toBe('x');
+  });
+
+  it('FR-THM-003: a pack registers its themes under its namespace, validated, all or none (ADR-0152)', () => {
+    const theme = (name: string): ThemeDef => ({ ...LIGHT_THEME, id: `tp:${name}`, name });
+    const registries = createCoreRegistries();
+    const pack = definePack({ id: 'tp', themes: [theme('a'), theme('b')] });
+    expect(pack.themes.map((t) => t.id)).toEqual(['tp:a', 'tp:b']);
+    const done = pack.register(registries);
+    expect(done.ok).toBe(true);
+    expect(registries.themes.source('tp:a')).toBe('tp');
+    if (done.ok) done.value.dispose();
+    expect(registries.themes.get('tp:a')).toBeUndefined();
+    // a theme that fails validateTheme is refused with the path of the problem under its place in the pack
+    const roles = LIGHT_THEME.tokens['color'] as { [k: string]: unknown };
+    const { connector: _removed, ...without } = roles;
+    const broken: ThemeDef = { ...theme('bad'), tokens: { ...LIGHT_THEME.tokens, color: without as never } };
+    const refused = definePack({ id: 'tp', themes: [theme('a'), broken] }).register(registries);
+    expect(!refused.ok && refused.error.map((d) => [d.code, d.path])).toEqual([['FLX_PACK_INVALID', '/themes/1/tokens/color/connector']]);
+    expect(registries.themes.get('tp:a')).toBeUndefined();
+    // an id outside the namespace, an id given twice, a theme without an id
+    const outside = definePack({ id: 'tp', themes: [{ ...theme('a'), id: 'other:a' }] }).register(registries);
+    expect(!outside.ok && outside.error[0]?.path).toBe('/themes/0/id');
+    const twice = definePack({ id: 'tp', themes: [theme('a'), theme('a')] }).register(registries);
+    expect(!twice.ok && twice.error[0]?.message).toContain('defined twice');
+    const noId = definePack({ id: 'tp', themes: [{ ...LIGHT_THEME } as never] }).register(registries);
+    expect(!noId.ok && noId.error[0]?.message).toContain('string id');
+    // another source's key is refused, and a host without a themes registry refuses a pack that has themes
+    expect(definePack({ id: 'tp', themes: [theme('a')] }).register(registries).ok).toBe(true);
+    const clash = definePack({ id: 'tq', themes: [{ ...theme('a'), id: 'tq:a' }] });
+    expect(clash.register(registries).ok).toBe(true);
+    const { themes: _themes, ...hostWithout } = createCoreRegistries();
+    const noRegistry = pack.register(hostWithout);
+    expect(!noRegistry.ok && noRegistry.error[0]?.message).toContain('no themes registry');
+    // a pack without themes needs none
+    expect(definePack({ id: 'plain' }).register(hostWithout).ok).toBe(true);
   });
 });

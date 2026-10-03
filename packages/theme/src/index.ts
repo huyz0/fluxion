@@ -6,10 +6,12 @@ export type { ThemeError, ThemeErrorCode } from './errors.js';
 export { LIGHT_THEME } from './light.js';
 export {
   type ColorStep,
+  contrastRatio,
   deriveOklch,
   type Oklch,
   oklchToCss,
   parseColor,
+  relativeLuminance,
   rgbToOklch,
 } from './oklch.js';
 export { cssValue, resolveToken, toCssVars, tokenPath } from './resolve.js';

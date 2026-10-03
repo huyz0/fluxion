@@ -102,7 +102,7 @@
       "name": "@fluxion/sdk",
       "layer": "L4",
       "runtime": "dom",
-      "dependsOn": ["core", "render", "schema"],
+      "dependsOn": ["core", "render", "schema", "theme"],
       "desc": "Public plugin API: stable contracts, manifest schema, component contract, test harness."
     },
     {
@@ -154,6 +154,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party basic shape pack; imports only `@fluxion/sdk`."
+    },
+    {
+      "dir": "packs/themes-core",
+      "name": "@fluxion/pack-themes-core",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party themes pack: eight built-in themes (FR-THM-003); imports only `@fluxion/sdk`."
     }
   ]
 }

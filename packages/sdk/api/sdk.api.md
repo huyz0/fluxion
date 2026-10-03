@@ -4,6 +4,7 @@
 
 ```ts
 
+import { contrastRatio } from '@fluxion/theme';
 import { CoreRegistries } from '@fluxion/core';
 import { createCoreRegistries } from '@fluxion/core';
 import { Diagnostic } from '@fluxion/schema';
@@ -13,6 +14,7 @@ import { EvaluatedOutline } from '@fluxion/core';
 import { evaluateOutline } from '@fluxion/core';
 import { HandleDef } from '@fluxion/core';
 import { hitTestShape } from '@fluxion/core';
+import { LIGHT_THEME } from '@fluxion/theme';
 import { MARKER_SIZE } from '@fluxion/core';
 import { MarkerDef } from '@fluxion/core';
 import { markerTrim } from '@fluxion/core';
@@ -24,9 +26,15 @@ import { parseMarkerDef } from '@fluxion/core';
 import { PluginId } from '@fluxion/core';
 import { PointsParam } from '@fluxion/core';
 import { projectToOutline } from '@fluxion/core';
+import { REQUIRED_COLOR_ROLES } from '@fluxion/theme';
 import { Result } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { TextRegionDef } from '@fluxion/core';
+import { Theme } from '@fluxion/theme';
+import { ThemeProblem } from '@fluxion/theme';
+import { validateTheme } from '@fluxion/theme';
+
+export { contrastRatio }
 
 export { CoreRegistries }
 
@@ -47,6 +55,8 @@ export { HandleDef }
 
 export { hitTestShape }
 
+export { LIGHT_THEME }
+
 export { MARKER_SIZE }
 
 export { MarkerDef }
@@ -64,17 +74,19 @@ export type Pack = {
     readonly id: string;
     readonly shapes: readonly ShapeDef[];
     readonly markers: readonly MarkerDef[];
+    readonly themes: readonly ThemeDef[];
     register(registries: PackRegistries): Result<Disposable, readonly Diagnostic[]>;
 };
 
 // @public
-export type PackRegistries = Pick<CoreRegistries, "shapeDefs" | "markers">;
+export type PackRegistries = Pick<CoreRegistries, "shapeDefs" | "markers"> & Partial<Pick<CoreRegistries, "themes">>;
 
 // @public
 export type PackSpec = {
     readonly id: string;
     readonly shapes?: readonly ShapeDef[];
     readonly markers?: readonly MarkerDef[];
+    readonly themes?: readonly ThemeDef[];
 };
 
 export { ParamSpec }
@@ -90,9 +102,22 @@ export { projectToOutline }
 // @public
 export function registerShapeDef(registries: Pick<PackRegistries, "shapeDefs">, def: unknown, source: PluginId, at?: ReadonlyArray<string | number>): Result<Disposable, readonly Diagnostic[]>;
 
+export { REQUIRED_COLOR_ROLES }
+
 export { ShapeDef }
 
 export { TextRegionDef }
+
+export { Theme }
+
+// @public
+export type ThemeDef = Theme & {
+    readonly id: string;
+};
+
+export { ThemeProblem }
+
+export { validateTheme }
 
 // @public
 export const VERSION: string;

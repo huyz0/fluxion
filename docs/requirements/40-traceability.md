@@ -140,9 +140,9 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ARR-006 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-ARR-008 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
-| FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +3 |
+| FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +4 |
 | FR-THM-002 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/derive.test.ts` |
-| FR-THM-003 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | — |
+| FR-THM-003 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/sdk/src/pack.test.ts` +2 |
 | FR-THM-004 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/schema/src/migrate.test.ts` |
 | FR-THM-005 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-006 | M | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
