@@ -1555,3 +1555,7 @@ Themes-core pack landed (81e06af). To fit the 120 s staged budget without raisin
 ## 2026-10-03 M9.10 (claude)
 
 Theme switcher and per-screen override in the toolbar (the inspector has no screen section), ScreenView draws each screen with its own theme, studio bundles themes-core. M9.26 scoped staged docs. Next M9.11 (theme snapshots; baselines need the pinned image).
+
+## 2026-10-03 M9.12 (claude)
+
+packs/fonts-core (vendored Inter, Source Serif 4, JetBrains Mono; vendor script with registry integrity), FontRegistry in theme, loadFontFaces in render, studio loads bundled fonts. Fixed a break latent since M9.10 (coverage sandbox drops browser-covered modules). M9.27 scopes vendored font files. Next M9.14 (metrics path).
