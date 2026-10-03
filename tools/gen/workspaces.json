@@ -102,7 +102,7 @@
       "name": "@fluxion/sdk",
       "layer": "L4",
       "runtime": "dom",
-      "dependsOn": ["core", "render", "schema"],
+      "dependsOn": ["core", "render", "schema", "theme"],
       "desc": "Public plugin API: stable contracts, manifest schema, component contract, test harness."
     },
     {
