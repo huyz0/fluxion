@@ -46,7 +46,7 @@ All packages live in a pnpm + Turborepo monorepo. `@fluxion/*` names; folders un
 | L5 | `cli` | `fluxion` command: validate, compile, render, lint, layout, convert, catalog, pack, site build | schema, format, dsl, layout, routing, anim, render (SSR), sdk, basic (bundled pack, ADR-0017) | Node |
 | L5 | `mcp` | MCP server over the same operations as the CLI | cli internals (`ops`), format, dsl | Node |
 | L5 | `exporters` (R7) | PDF/PNG/SVG/PPTX/video/site | render, player, format | mixed |
-| App | `apps/studio` | Vite PWA: editor + player shell, file handling, provider adapters | editor, player, core, schema, basic (bundled pack, ADR-0017) | DOM |
+| App | `apps/studio` | Vite PWA: editor + player shell, file handling, provider adapters | editor, player, core, schema, basic and themes-core (bundled packs, ADR-0017) | DOM |
 | App | `apps/docs` | Astro Starlight docs site, llms.txt | — | — |
 | Packs | `packs/*` | First-party plugins: `basic`, `flowchart`, `arrows`, `uml`, `bpmn-lite`, `network`, `icons-lucide`, `themes-core`, `effects-core`, `layouts-elk` (optional), `routing-libavoid` (optional) | sdk | — |
 

@@ -4,7 +4,7 @@
 // overlay slot (edit only).
 import type { Store, TextMeasurer } from '@fluxion/core';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
-import { LIGHT_THEME, resolveBackground, styleKey, type Theme, toCssVars } from '@fluxion/theme';
+import { resolveBackground, styleKey, type Theme, toCssVars } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useInsertionEffect, useMemo } from 'react';
 import { AssetsContext, type AssetUrls } from './assets.js';
 import { paintCss } from './background.js';
@@ -14,6 +14,7 @@ import { ElementList } from './elements.js';
 import { cameraTransform, fitTransform, screenArea } from './fit.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
 import type { RenderRegistries } from './registries.js';
+import { useScreenTheme } from './screen-theme.js';
 import { MeasurerContext } from './text-measurer.js';
 import { useValue } from './use-value.js';
 
@@ -72,7 +73,7 @@ export type ScreenViewProps = {
   readonly mode: RenderMode;
   /** How the screen is shown. */
   readonly view: ScreenViewSpec;
-  /** The theme whose tokens become the screen's CSS variables (default: the light theme). */
+  /** The theme whose tokens become the screen's CSS variables (default: the screen's own or the document's, else the light theme). */
   readonly theme?: Theme;
   /** Editor chrome in screen coordinates, mounted in edit mode only. */
   readonly editOverlay?: ReactNode;
@@ -103,7 +104,9 @@ function useContentCss(): void {
  * @public
  */
 export function ScreenView(props: ScreenViewProps): ReactNode {
-  const { store, screenId, view, theme = LIGHT_THEME, editOverlay, children } = props;
+  const { store, screenId, view, editOverlay, children } = props;
+  const own = useScreenTheme(store, screenId);
+  const theme = props.theme ?? own;
   const registries = useMemo(() => props.registries ?? builtinRegistries(), [props.registries]);
   const policy = modePolicy(props.mode);
   useContentCss();

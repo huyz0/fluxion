@@ -275,6 +275,9 @@ importers:
       '@fluxion/pack-basic':
         specifier: workspace:*
         version: link:../../packs/basic
+      '@fluxion/pack-themes-core':
+        specifier: workspace:*
+        version: link:../../packs/themes-core
       '@fluxion/player':
         specifier: workspace:*
         version: link:../../packages/player

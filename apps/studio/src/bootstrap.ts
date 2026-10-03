@@ -3,6 +3,7 @@
 // render registries that draw from them.
 import { type Core, createCore } from '@fluxion/core';
 import { basicPack } from '@fluxion/pack-basic';
+import { themesCorePack } from '@fluxion/pack-themes-core';
 import { renderRegistriesFor } from '@fluxion/player';
 import { type DocumentFile, err, ok, type Random, type Result } from '@fluxion/schema';
 
@@ -16,6 +17,12 @@ export type OpenDocument = {
   readonly core: Core;
   /** Element views, shapes and markers, the bundled packs included. */
   readonly registries: ReturnType<typeof renderRegistriesFor>;
+  /** The themes the bundled packs offer (the theme switcher's choices). */
+  readonly themes: readonly {
+    readonly name: string;
+    readonly tokens: { readonly [key: string]: unknown };
+    readonly defaults?: { readonly [key: string]: unknown };
+  }[];
 };
 
 /**
@@ -27,7 +34,9 @@ export function openDocument(file: DocumentFile): Result<OpenDocument, string> {
   const core = createCore(file);
   const registered = basicPack.register(core.registries);
   if (!registered.ok) return err(`The basic pack failed to register: ${registered.error.map((d) => d.message).join('; ')}`);
-  return ok({ core, registries: renderRegistriesFor(core.registries) });
+  const themed = themesCorePack.register(core.registries);
+  if (!themed.ok) return err(`The themes pack failed to register: ${themed.error.map((d) => d.message).join('; ')}`);
+  return ok({ core, registries: renderRegistriesFor(core.registries), themes: themesCorePack.themes });
 }
 
 /**

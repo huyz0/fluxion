@@ -293,6 +293,9 @@ export function styledBlocks(doc: RichTextDoc | undefined, theme: Theme): Styled
 export function TextView(props: ElementViewProps): ReactNode;
 
 // @public
+export function useScreenTheme(store: Store, screenId: RecordId): Theme;
+
+// @public
 export function useValue<T>(signal: ReadSignal<T>): T;
 
 // @public

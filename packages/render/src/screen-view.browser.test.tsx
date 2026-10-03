@@ -1,6 +1,7 @@
 import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
+import { LIGHT_THEME } from '@fluxion/theme';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -117,5 +118,60 @@ describe('<ScreenView> (FR-SCR-001, 04 §2)', () => {
     expect(getComputedStyle(host.querySelector('.fx-screen') as HTMLElement).transform).toBe('matrix(1, 0, 0, 1, 0, 0)');
     await show({ store: core.store, screenId: 'MissingMissing01' as RecordId, box: { w: 10, h: 10 } });
     expect(host.querySelector('.fx-screen')).toBeNull();
+  });
+
+  it("FR-THM-004: a screen is drawn with its own theme, else the document's, else the light theme", async () => {
+    const b = documentBuilder({ seed: 401 });
+    const first = b.screen();
+    const second = b.screen();
+    const core = createCore(b.build());
+    const paint = (name: string, color: string) => ({
+      id: `theme-${name}`,
+      type: 'theme' as const,
+      name,
+      tokens: { color: { primary: { $type: 'color', $value: color } } },
+    });
+    const primary = async (screenId: RecordId) => {
+      await show({ store: core.store, screenId, box: { w: 960, h: 540 } });
+      return getComputedStyle(host.querySelector('.fx-screen') as HTMLElement)
+        .getPropertyValue('--fx-color-primary')
+        .trim();
+    };
+    const light = await primary(first);
+    // no theme record anywhere: the built-in light theme
+    expect(light).toBe((LIGHT_THEME.tokens['color'] as unknown as { primary: { $value: string } }).primary.$value);
+    await act(async () => {
+      core.execute('document.setTheme', { theme: { name: 'doc', tokens: paint('doc', '#ff0000').tokens } });
+      core.execute('screen.setThemeOverride', { id: second, theme: { name: 'own', tokens: paint('own', '#00ff00').tokens } });
+    });
+    expect(await primary(first)).toBe('#ff0000');
+    expect(await primary(second)).toBe('#00ff00');
+    await act(async () => {
+      core.execute('screen.setThemeOverride', { id: second });
+    });
+    expect(await primary(second)).toBe('#ff0000');
+  });
+
+  it('FR-THM-004: a theme record that is not a theme is drawn as the light theme, not half styled', async () => {
+    const b = documentBuilder({ seed: 402 });
+    const screenId = b.screen();
+    // an unchecked store holds the broken record a hand-edited file could carry
+    const core = createCore(b.build(), { validate: false });
+    const light = getComputedStyle(
+      await (async () => (await show({ store: core.store, screenId, box: { w: 960, h: 540 } }), host.querySelector('.fx-screen') as HTMLElement))(),
+    )
+      .getPropertyValue('--fx-color-primary')
+      .trim();
+    await act(async () => {
+      core.store.transact('break', (tx) => {
+        tx.put({ id: 'theme-bad', type: 'theme', name: 'bad', tokens: 'nope' } as never);
+        tx.patch(screenId, { themeId: 'theme-bad' });
+      });
+    });
+    expect(
+      getComputedStyle(host.querySelector('.fx-screen') as HTMLElement)
+        .getPropertyValue('--fx-color-primary')
+        .trim(),
+    ).toBe(light);
   });
 });

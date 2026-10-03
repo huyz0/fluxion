@@ -21,6 +21,8 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-toolbar .fx-chrome-button { flex: none; white-space: nowrap; font: inherit; color: inherit; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; cursor: pointer; }
 .fx-chrome-toolbar .fx-chrome-button:hover { border-color: var(--ui-border); }
 .fx-chrome-toolbar .fx-chrome-button:disabled { opacity: 0.4; cursor: default; }
+.fx-chrome-toolbar .fx-chrome-pick { flex: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.fx-chrome-toolbar .fx-chrome-pick-select { font: inherit; color: inherit; background: transparent; border: 1px solid var(--ui-border); border-radius: 4px; padding: 3px 4px; max-width: 12em; }
 .fx-chrome-toolbar .fx-chrome-zoom { flex: none; display: flex; align-items: center; gap: 2px; margin: 0; padding: 0; border: 0; min-width: 0; }
 .fx-chrome-toolbar .fx-chrome-zoom-value { min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
 .fx-chrome-toolbar .fx-chrome-button[aria-pressed="true"] { background: var(--ui-pressed); border-color: var(--ui-accent); }

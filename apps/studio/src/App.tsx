@@ -77,9 +77,9 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
   // the session (selection, camera, tool) lives as long as the document is open here
   const session = useMemo(() => createSession(docId), [docId]);
   if (!opened.ok) return <Problem message={opened.error} />;
-  const { core, registries } = opened.value;
+  const { core, registries, themes } = opened.value;
   return mode === 'edit' ? (
-    <EditorRoot store={core.store} execute={core.execute} registries={registries} settings={settings} session={session} />
+    <EditorRoot store={core.store} execute={core.execute} registries={registries} settings={settings} session={session} themes={themes} />
   ) : (
     <PlayerRoot store={core.store} registries={registries} />
   );

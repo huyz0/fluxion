@@ -3,6 +3,7 @@
 // (FR-EDT-002), fitted on open, with the tools (FR-EDT-003) working on it.
 import type { ReadView, Registry, Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
+import type { AssetUrls } from '@fluxion/render';
 import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
 import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
@@ -34,6 +35,7 @@ import { createSession, DEFAULT_CAMERA, type Session } from './session.js';
 import { memorySettings, type SettingsStore } from './settings.js';
 import { useSnapSetting } from './snap/use-snap-setting.js';
 import { pasteSystemItem, type SystemItem } from './system-paste.js';
+import type { ThemeChoice } from './theme-switcher.js';
 import { createToolDispatcher, createToolRegistry, type Tool, type ToolCtx, type ToolDispatcher } from './tools.js';
 import { type SystemClipboardCommands, useSystemClipboard } from './use-system-clipboard.js';
 import { readViewMeta, restoreView, withViewMeta } from './view-meta.js';
@@ -62,6 +64,8 @@ export type EditorRootProps = {
   readonly assets?: AssetStore;
   /** Editor commands besides the built-in ones, e.g. a plugin's: bindable in the keymap and listed by the command palette. */
   readonly commands?: readonly EditorCommand[];
+  /** The themes the theme switcher offers (the host's packs' themes); no switcher when empty or absent. */
+  readonly themes?: readonly ThemeChoice[];
 };
 
 /** Randomness from the browser's crypto. */
@@ -196,6 +200,25 @@ function useNewId(random: Random | undefined): () => RecordId {
   return useMemo(() => () => createId(random ?? cryptoRandom), [random]);
 }
 
+/** The present mode of the root: the screen presented in place of the editor. */
+function PresentShell(props: {
+  readonly store: Store;
+  readonly registries: RenderRegistries;
+  readonly screenId: RecordId | undefined;
+  readonly area: Box | undefined;
+  readonly session: Session;
+  readonly tools: ToolDispatcher;
+  readonly assets: AssetUrls;
+  readonly revision: number;
+}): ReactNode {
+  const { revision, ...rest } = props;
+  return (
+    <div data-testid="editor-root" data-mode="present" data-revision={revision}>
+      <PresentInPlace {...rest} />
+    </div>
+  );
+}
+
 /**
  * The editor for the document in `store`: toolbar, panels and the canvas.
  *
@@ -224,12 +247,8 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands: props.commands });
   useFitOnOpen(session, area, box);
   useEnteredLapse(store, session);
-  if (mode === 'present')
-    return (
-      <div data-testid="editor-root" data-mode="present" data-revision={revision}>
-        <PresentInPlace store={store} registries={registries} screenId={screenId} area={area} session={session} tools={present} assets={assets.url} />
-      </div>
-    );
+  const shell = { store, registries, screenId, area, session, tools: present, assets: assets.url, revision };
+  if (mode === 'present') return <PresentShell {...shell} />;
   return (
     <div className="fx-editor" data-testid="editor-root" data-mode="edit" data-revision={revision} data-focus={layout.focus || undefined}>
       <EditToolbar
@@ -247,6 +266,9 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         system={system}
         switchMode={switchMode}
         openHelp={dialogs.openHelp}
+        execute={execute}
+        screenId={screenId}
+        themes={props.themes}
       />
       <EditBody
         store={store}

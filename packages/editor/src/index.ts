@@ -162,6 +162,7 @@ export {
   snapThreshold,
 } from './snap/snap.js';
 export { fitImage, type ImageSize, pasteSystemItem, type SystemItem, type SystemPasteDeps } from './system-paste.js';
+export { type ThemeChoice, ThemeSwitcher, type ThemeSwitcherProps } from './theme-switcher.js';
 export {
   createToolDispatcher,
   createToolRegistry,

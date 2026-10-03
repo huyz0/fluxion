@@ -285,6 +285,7 @@ export type EditorRootProps = {
     readonly random?: Random;
     readonly assets?: AssetStore;
     readonly commands?: readonly EditorCommand[];
+    readonly themes?: readonly ThemeChoice[];
 };
 
 // @public
@@ -965,6 +966,28 @@ export const textMaker: ElementMaker;
 
 // @public
 export const textTool: () => Tool;
+
+// @public
+export type ThemeChoice = {
+    readonly name: string;
+    readonly tokens: {
+        readonly [key: string]: unknown;
+    };
+    readonly defaults?: {
+        readonly [key: string]: unknown;
+    };
+};
+
+// @public
+export function ThemeSwitcher(props: ThemeSwitcherProps): ReactNode;
+
+// @public
+export type ThemeSwitcherProps = {
+    readonly store: Store;
+    readonly execute: Execute;
+    readonly themes: readonly ThemeChoice[];
+    readonly screenId: RecordId | undefined;
+};
 
 // @public
 export function tokensOf(text: string): string[];
