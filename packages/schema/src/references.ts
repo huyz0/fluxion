@@ -77,6 +77,7 @@ function checkScreens(c: References): void {
     c.ref(s, ['masterId'], ['screen']);
     c.ref(s, ['parentElementId'], ['element']);
     c.ref(s, ['sectionId'], ['section']);
+    c.ref(s, ['themeId'], ['theme']);
     c.ref(s, ['background', 'assetId'], ['asset']);
   }
 }

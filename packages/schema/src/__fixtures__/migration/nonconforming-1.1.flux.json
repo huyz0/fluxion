@@ -1,0 +1,341 @@
+{
+  "records": {
+    "a1": {
+      "h": 64,
+      "hash": "5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+      "id": "a1",
+      "mime": "image/png",
+      "name": "logo.png",
+      "size": 2048,
+      "type": "asset",
+      "w": 64
+    },
+    "b1": {
+      "anchor": {
+        "kind": "auto"
+      },
+      "connectorId": "c1",
+      "elementId": "e1",
+      "end": "source",
+      "id": "b1",
+      "type": "binding"
+    },
+    "b2": {
+      "anchor": {
+        "kind": "side",
+        "side": "w",
+        "t": 0.5
+      },
+      "connectorId": "c1",
+      "elementId": "e2",
+      "end": "target",
+      "id": "b2",
+      "type": "binding"
+    },
+    "c1": {
+      "id": "c1",
+      "index": "a3",
+      "kind": "connector",
+      "labels": [
+        {
+          "position": 0.5,
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "calls",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        }
+      ],
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "cornerRadius": 8,
+        "type": "orthogonal"
+      },
+      "screenId": "s1",
+      "type": "element"
+    },
+    "cm1": {
+      "author": "Ada",
+      "body": "Check the latency",
+      "id": "cm1",
+      "resolved": false,
+      "targetId": "e2",
+      "type": "comment"
+    },
+    "doc": {
+      "authors": ["Ada"],
+      "created": "2026-09-27T10:00:00Z",
+      "custom": {
+        "count": 3,
+        "owner": "platform"
+      },
+      "description": 5,
+      "id": "doc",
+      "lang": "en",
+      "settings": {
+        "lineJumps": true,
+        "reducedMotion": "respect",
+        "responsive": "scale"
+      },
+      "tags": "x",
+      "themeId": "th1",
+      "title": "Checkout architecture",
+      "type": "document"
+    },
+    "e1": {
+      "defId": "basic:rounded-rect",
+      "id": "e1",
+      "index": "a0",
+      "kind": "shape",
+      "params": {
+        "radius": 8
+      },
+      "screenId": "s1",
+      "semantic": {
+        "label": "API gateway",
+        "slug": "api"
+      },
+      "style": {
+        "fill": "{color.primary}",
+        "variant": "emphasis"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ],
+                "text": "API",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "rot": 0,
+        "w": 240,
+        "x": 200,
+        "y": 400
+      },
+      "type": "element"
+    },
+    "e2": {
+      "defId": "basic:cylinder",
+      "id": "e2",
+      "index": "a1",
+      "kind": "shape",
+      "screenId": "s1",
+      "semantic": {
+        "slug": "db"
+      },
+      "transform": {
+        "h": 140,
+        "w": 160,
+        "x": 900,
+        "y": 390
+      },
+      "type": "element"
+    },
+    "g1": {
+      "id": "g1",
+      "index": "a2",
+      "kind": "group",
+      "screenId": "s1",
+      "transform": {
+        "h": 200,
+        "w": 600,
+        "x": 1300,
+        "y": 300
+      },
+      "type": "element"
+    },
+    "i1": {
+      "assetId": "a1",
+      "fit": "contain",
+      "id": "i1",
+      "index": "a0",
+      "kind": "image",
+      "parentId": "g1",
+      "screenId": "s1",
+      "transform": {
+        "h": 64,
+        "w": 64,
+        "x": 1320,
+        "y": 320
+      },
+      "type": "element"
+    },
+    "in1": {
+      "actions": [
+        {
+          "kind": "goToScreen",
+          "screenId": "s2"
+        }
+      ],
+      "id": "in1",
+      "ownerId": "e1",
+      "trigger": {
+        "kind": "onClick"
+      },
+      "type": "interaction"
+    },
+    "p1": {
+      "id": "p1",
+      "pluginId": "acme",
+      "trust": "sandboxed",
+      "type": "plugin-ref",
+      "version": "1.2.3"
+    },
+    "s1": {
+      "background": "{color.surface}",
+      "id": "s1",
+      "index": "a0",
+      "name": "Architecture",
+      "notes": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Start with the gateway.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "sectionId": "sec1",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "themeId": "th-gone",
+      "type": "screen"
+    },
+    "s2": {
+      "id": "s2",
+      "index": "a1",
+      "kind": "infinite",
+      "name": "Detail",
+      "themeId": "th1",
+      "type": "screen",
+      "viewport": {
+        "h": 1080,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "sec1": {
+      "id": "sec1",
+      "index": "a0",
+      "name": "Overview",
+      "type": "section"
+    },
+    "sec2": {
+      "collapsed": true,
+      "id": "sec2",
+      "index": "a1",
+      "name": "Details",
+      "type": "section"
+    },
+    "st1": {
+      "animations": [
+        {
+          "effect": "fade-in",
+          "id": "an1",
+          "targets": ["e2"]
+        }
+      ],
+      "id": "st1",
+      "index": "a0",
+      "timelineId": "t1",
+      "trigger": {
+        "kind": "onClick"
+      },
+      "type": "step"
+    },
+    "t1": {
+      "id": "t1",
+      "index": "a0",
+      "name": "main",
+      "screenId": "s1",
+      "type": "timeline"
+    },
+    "th1": {
+      "id": "th1",
+      "name": "Default",
+      "tokens": {
+        "color": {
+          "primary": {
+            "$type": "color",
+            "$value": "#3355ff"
+          },
+          "surface": {
+            "$type": "color",
+            "$value": "#0b1020"
+          }
+        }
+      },
+      "type": "theme"
+    },
+    "tx1": {
+      "id": "tx1",
+      "index": "a4",
+      "kind": "text",
+      "screenId": "s1",
+      "text": {
+        "content": [
+          {
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "text": "Checkout",
+                "type": "text"
+              }
+            ],
+            "type": "heading"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 60,
+        "w": 400,
+        "x": 80,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "v1": {
+      "default": 0,
+      "id": "v1",
+      "name": "clicks",
+      "type": "variable",
+      "valueType": "number"
+    }
+  },
+  "schemaVersion": "1.1"
+}

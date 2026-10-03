@@ -5,17 +5,18 @@ import { SCHEMA_VERSION } from './document-file.js';
 import type { FluxError } from './errors.js';
 import type { Migration, RawDocument } from './migration-types.js';
 import { migrate10to11 } from './migrations/1.0-to-1.1.js';
+import { migrate11to12 } from './migrations/1.1-to-1.2.js';
 import { err, ok, type Result } from './result.js';
 
 export type { Migration, RawDocument } from './migration-types.js';
 
 /**
- * The released migration chain: 1.0 → 1.1 (sections, ADR-0021). The next schema change appends a step
+ * The released migration chain: 1.0 → 1.1 (sections, ADR-0021), 1.1 → 1.2 (metadata fields and a screen's theme, ADR-0152). The next schema change appends a step
  * here with a fixture of the version it leaves (contracts.md rule 8).
  *
  * @public
  */
-export const MIGRATIONS: readonly Migration[] = [migrate10to11];
+export const MIGRATIONS: readonly Migration[] = [migrate10to11, migrate11to12];
 
 /**
  * Result of {@link migrate}: the document at the current version and the steps applied.

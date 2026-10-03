@@ -72,6 +72,8 @@ export type ScreenRecord = Extensible<{
   readonly parentElementId?: RecordId;
   /** Section (group of screens) this screen belongs to. */
   readonly sectionId?: RecordId;
+  /** The `theme` record this screen uses instead of the document's: its theme override (schema 1.2, FR-THM-004). */
+  readonly themeId?: RecordId;
   /** Hidden screens are skipped in presentation. */
   readonly hidden?: boolean;
   /** Speaker notes. */
@@ -98,6 +100,7 @@ export const screenRecordSchema: z.ZodType<ScreenRecord> = checkedSchema<ScreenR
       masterId: recordIdSchema.optional(),
       parentElementId: recordIdSchema.optional(),
       sectionId: recordIdSchema.optional(),
+      themeId: recordIdSchema.optional(),
       hidden: z.boolean().optional(),
       notes: richTextSchema.optional(),
     })

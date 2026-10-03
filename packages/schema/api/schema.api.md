@@ -194,6 +194,11 @@ export type DocumentRecord = Extensible<{
     readonly themeId?: RecordId;
     readonly settings?: DocumentSettings;
     readonly authors?: readonly string[];
+    readonly description?: string;
+    readonly tags?: readonly string[];
+    readonly custom?: {
+        readonly [key: string]: string;
+    };
     readonly created?: string;
     readonly modified?: string;
 }>;
@@ -634,6 +639,7 @@ export type ScreenRecord = Extensible<{
     readonly masterId?: RecordId;
     readonly parentElementId?: RecordId;
     readonly sectionId?: RecordId;
+    readonly themeId?: RecordId;
     readonly hidden?: boolean;
     readonly notes?: RichTextDoc;
 }>;

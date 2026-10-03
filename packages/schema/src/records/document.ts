@@ -40,6 +40,12 @@ export type DocumentRecord = Extensible<{
   readonly settings?: DocumentSettings;
   /** Author names. */
   readonly authors?: readonly string[];
+  /** A short description of the document (schema 1.2, FR-DOC-006). */
+  readonly description?: string;
+  /** Free tags (schema 1.2). */
+  readonly tags?: readonly string[];
+  /** Custom key-value metadata, string values (schema 1.2). */
+  readonly custom?: { readonly [key: string]: string };
   /** Creation time, ISO 8601. */
   readonly created?: string;
   /** Last modification time, ISO 8601. */
@@ -68,6 +74,9 @@ export const documentRecordSchema: z.ZodType<DocumentRecord> = checkedSchema<Doc
     themeId: recordIdSchema.optional(),
     settings: settingsSchema.optional(),
     authors: z.array(z.string()).optional(),
+    description: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    custom: z.record(z.string(), z.string()).optional(),
     created: z.iso.datetime({ offset: true }).optional(),
     modified: z.iso.datetime({ offset: true }).optional(),
   }),

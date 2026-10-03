@@ -48,8 +48,8 @@ not in the current schema; until added (minor version) they are preserved but no
 
 | Record | Key fields | Notes |
 |---|---|---|
-| `document` (singleton) | `title?`, `lang?`, `themeId?`, `settings?` (`responsive`, `reducedMotion`, `lineJumps`), `authors?`, `created?`, `modified?` | One per file |
-| `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints`, `layout` (screen-level layout intent, e.g. layered LR — FR-LAY-005) |
+| `document` (singleton) | `title?`, `description?`, `lang?`, `themeId?`, `settings?` (`responsive`, `reducedMotion`, `lineJumps`), `authors?`, `tags?` (strings), `custom?` (string key-values), `created?`, `modified?` | One per file; `description`, `tags` and `custom` arrive with schema `1.2` (ADR-0152) |
+| `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `themeId?` (a `theme` record: the screen's theme override, schema `1.2`, ADR-0152), `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints`, `layout` (screen-level layout intent, e.g. layered LR — FR-LAY-005) |
 | `section` | `name`, `index`, `collapsed?` | A named group of screens (ADR-0021, schema `1.1`); `screen.sectionId` names it |
 | `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `style?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`; fields common to every core kind. Boxed kinds (all but connector) add transform {x,y,w,h,rot?,flipX?,flipY?} and text? (element kinds table). Planned: `layout` (container layout spec), `overrides` (per state/breakpoint) |
 | `binding` | `connectorId`, `end: 'source'\|'target'`, `elementId`, `anchor: AnchorRef` | Separate record → moving/deleting shapes updates bindings cleanly (tldraw pattern) |
@@ -81,6 +81,11 @@ A group's `transform` is the bounds of its members (unturned), which they keep i
 Record type `section` (schema `1.1`, M8.14): `name`, `index`, `collapsed?`; a named group of screens for the
 navigator and, later, the site's nav. `screen.sectionId` names one (FLX_REF_MISSING otherwise), and sections are ordered
 among themselves by `index` (ADR-0021). The `1.0 → 1.1` migration drops the `sectionId` a 1.0 screen could not have meant.
+
+Schema `1.2` (M9.5, ADR-0152) adds `document.description`, `tags` and `custom` and `screen.themeId`, a reference to a `theme`
+record that a screen uses instead of the document's (FR-THM-004; `FLX_REF_MISSING` when it names nothing, `FLX_REF_WRONG_TYPE`
+when it names another type). The `1.1 → 1.2` migration removes what a 1.1 file may already carry in those places that does not
+conform: a non-string `description`, `tags` that are not strings, non-string `custom` values, a `themeId` that names no theme.
 
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with
 only its envelope checked.
@@ -176,7 +181,7 @@ Layers: (1) structural (Zod), (2) referential (IDs, anchors, assets, tokens, plu
 
 ```json
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "records": {
     "doc": { "id": "doc", "type": "document", "title": "Checkout", "themeId": "th1" },
     "s1":  { "id": "s1", "type": "screen", "index": "a0", "name": "Architecture", "size": { "w": 1920, "h": 1080 } },

@@ -31,7 +31,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/migrate.test.ts`, `packages/schema/src/repair.test.ts` |
 | FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
 | FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/pm-json.test.ts` +13 |
-| FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/migrate.test.ts` |
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-009 | C | R6 | M28 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -143,7 +143,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +2 |
 | FR-THM-002 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-003 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | — |
-| FR-THM-004 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | — |
+| FR-THM-004 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/schema/src/migrate.test.ts` |
 | FR-THM-005 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-006 | M | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-007 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
