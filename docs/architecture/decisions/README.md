@@ -35,6 +35,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0020](ADR-0020-clipboard-format.md) | The clipboard format: one versioned Fluxion payload in every representation each path allows | accepted | 2026-10-01 |
 | [0021](ADR-0021-screen-sections-and-library-search.md) | Screen sections are `section` records, and the library is searched by an own prefix and keyword index | accepted | 2026-10-02 |
 | [0022](ADR-0022-font-sourcing-and-licensing.md) | Fonts are vendored OFL assets, the Google Fonts catalog is a snapshot fetched by the studio only, uploads are sniffed by magic bytes, subsetting waits for M10 | accepted | 2026-10-03 |
+| [0023](ADR-0023-i18n-pipeline.md) | The i18n pipeline: Lingui, with macros transformed and messages extracted by the native tools, never by Babel | accepted | 2026-10-03 |
 | [0028](ADR-0028-editor-interaction-architecture.md) | Editor interaction: statechart tools, a signal session store, a screen-space SVG overlay, a frame-batched pointer pipeline | accepted | 2026-09-30 |
 | [0029](ADR-0029-editor-chrome-primitives.md) | Editor chrome: own splitters, a scoped `@layer fx.chrome` stylesheet, the panel layout in a settings port (amends 0010's timing) | accepted | 2026-09-30 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
