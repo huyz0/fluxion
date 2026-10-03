@@ -84,3 +84,6 @@ M7 final F5: the staged ladder's doc-to-harness mapping uses a literal-path text
 M7 final F6: `center` and `width` share the glyph in the enum icons; every option keeps its name as aria-label and title, and the glyph table is a cosmetic choice.
 M8 cp1 F2: the editor UI offers align to the selection or the screen and distribute by gaps; align to a key object, distribute by centres and a fixed gap are command arguments used by AI and MCP, and a UI for them waits for a request (the inspector or a menu in a later milestone).
 M8 cp2 F5: the plan grew from 16 to 36 rows by splits and rows the plan lacked (arrange UI, section commands, library panel, CI fixes); M8.31 is confirmed by CI at aa81b02, and M8.19's gate-script change is the ladder-scope mapping that keeps docs commits within the staged budget.
+M8 final F3: this record uses the gate's disposition spellings (hand-off, argue); making the skill text agree with the gate is a harness wording change, for a harness milestone.
+M8 final F4: the 'M7 is closed' leg reads a text flag; M7.28 and M8.2 cite the milestone-gate run and the commit they were closed from, and a check that the closing row names a run is a harness change for a later harness milestone.
+M8 final F5: gate-script changes inside feature commits were small and are argued at cp2 F5; plans that add a file kind list a ladder-scope row.

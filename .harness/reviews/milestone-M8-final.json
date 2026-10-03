@@ -1,0 +1,74 @@
+{
+  "milestone": "M8",
+  "checkpoint": "final",
+  "range": "81ed342cdb66..80aab08",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "approve",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "summary": "Backlog bookkeeping stale or off-vocabulary: row counts, M8.39's state, M8.39 acceptance not yet met.",
+      "suggestion": "Correct counts (now 40), use 'doing', close M8.39 only after the workflow log is read."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "docs/milestones/roadmap.md",
+      "summary": "The key-object align and centres-distribute UI deferral has no owner in the Deferred table; F5 follows the global screen index while the navigator lists sections first until M11.",
+      "suggestion": "Add a Deferred row (M19) and a guide note."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "scripts/gates/milestone-checks.mjs",
+      "summary": "Disposition vocabulary differs between the skill and the gate (hand off vs hand-off; fixed).",
+      "suggestion": "Use the gate's spellings in the final review."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "scripts/gates/m8-complete.mjs",
+      "summary": "'M7 is closed' is satisfied by a text flag, not proof of a three-engine run.",
+      "suggestion": "Cite the workflow run URL and SHA in the M7.28 and M8.2 rows."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "scripts/gates/ladder-scope.mjs",
+      "summary": "Gate-script changes folded into feature commits again (cp2 F5).",
+      "suggestion": "Plans that add a file kind include a ladder-scope row."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "row": "M8.40",
+      "note": "row counts, states and M8.40's dependency fixed; M8.39 closes with the workflow log"
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand-off",
+      "to": "M19",
+      "note": "Deferred row and an M19 hand-in for the key-object align and centres-distribute UI; the F5-versus-navigator-order limitation is in the guide (M8.40) and the player order is M11 row 2a"
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "note": "this record uses the gate's spellings; making the skill text and the gate agree is a harness wording change for a harness milestone (review-argued.txt)"
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "accepted for now; M7.28 and M8.2 cite the workflow run and commit they were closed from (review-argued.txt)"
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "note": "small and already argued at cp2 F5; M9+ plans list a ladder-scope row when they add a file kind (review-argued.txt)"
+    }
+  ],
+  "planDelta": "Close M8.39 after the milestone-gate log shows the engine legs, and M8.2 and M7.28 from that run. For M9 and later, plan a UI row for every core command and a CI-matrix check (webkit axe, macOS timing) before the final review."
+}
