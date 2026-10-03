@@ -1567,3 +1567,7 @@ Recorded metrics for the 12 bundled faces; page measurer uses them for those fon
 ## 2026-10-03 M9.16 (claude)
 
 readFontFile (pure), recordFaceMetrics (page producer, parity with the script), addFont (asset with font.metrics). M9.15 now depends on it. ADR-0022 amended (WOFF2 names from the caller). Next M9.15 (catalog + Google fetch).
+
+## 2026-10-03 M9.15 (claude)
+
+Google Fonts catalog (1745 families from the pinned google-font-metadata; ADR-0022 amended: google/fonts tree not reachable here) and the studio fetch/add of slices. The mocked-route e2e moves to M9.17 with the picker. Next M9.17 (picker UI), then M9.18 (needs a persistence decision), M9.19+.
