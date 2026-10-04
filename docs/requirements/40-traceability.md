@@ -50,9 +50,9 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/asset-store.test.ts`, `packages/format/src/flux-writer.test.ts` |
 | FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts`, `e2e/file.open-save.spec.ts` |
-| FR-FIL-007 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-FIL-007 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/journal.test.ts` |
 | FR-FIL-008 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-FIL-009 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +5 |
+| FR-FIL-009 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +6 |
 | FR-FIL-010 | S | R6 | M27 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-011 | C | R8 | M32 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/asset-dialog.browser.test.tsx` +3 |
@@ -323,11 +323,11 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PORT-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs`, `tests/harness/ci-workflow.test.mjs` |
 | NFR-PORT-006 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/file-session.test.ts`, `e2e/file.open-save.spec.ts` |
-| NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/flux-html-reader.test.ts` +9 |
+| NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/flux-html-reader.test.ts` +10 |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +10 |
-| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +14 |
+| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +15 |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts`, `packages/format/src/flux-html.test.ts` |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |

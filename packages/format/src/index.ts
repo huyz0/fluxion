@@ -32,6 +32,24 @@ export {
   scaleToFit,
 } from './image-import.js';
 export { type ImageInfo, type ImageMime, sniffImage } from './image-sniff.js';
+export {
+  type DiffLike,
+  type DiffPut,
+  type EntryRead,
+  type EntryRefused,
+  encodeDiff,
+  JOURNAL_MAX_BYTES,
+  JOURNAL_MAX_ENTRIES,
+  type JournalEntry,
+  type JournalPut,
+  needsCompaction,
+  type Replayed,
+  type ReplayPoint,
+  type ReplayStop,
+  readEntry,
+  replay,
+  serializeEntry,
+} from './journal.js';
 export { type LoadedFlux, type LoadedManifest, type LoadOptions, loadFlux } from './loader.js';
 export { minifySvg } from './minify-svg.js';
 export { safeLinkUrl } from './safe-url.js';

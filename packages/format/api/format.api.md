@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AnyRecord } from '@fluxion/schema';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
@@ -32,11 +33,41 @@ export type ContentHasher = {
 export function createMemoryAssetStore(hasher: ContentHasher): AssetStore;
 
 // @public
+export type DiffLike = {
+    readonly puts: ReadonlyMap<string, DiffPut>;
+    readonly deletes: ReadonlyMap<string, unknown>;
+};
+
+// @public
+export type DiffPut = {
+    readonly after: AnyRecord;
+};
+
+// @public
+export function encodeDiff(diff: DiffLike, stamp: {
+    readonly seq: number;
+    readonly rev: number;
+    readonly at: string;
+}): JournalEntry;
+
+// @public
 export type EncodedImage = {
     readonly bytes: Uint8Array;
     readonly width: number;
     readonly height: number;
     readonly scaled: boolean;
+};
+
+// @public
+export type EntryRead = {
+    readonly ok: true;
+    readonly value: JournalEntry;
+};
+
+// @public
+export type EntryRefused = {
+    readonly ok: false;
+    readonly reason: string;
 };
 
 // @public
@@ -120,6 +151,27 @@ export function importImage(bytes: Uint8Array, codec: ImageCodec, maxSide?: numb
 export function inspectSvg(input: string): SvgInspection | undefined;
 
 // @public
+export const JOURNAL_MAX_BYTES: number;
+
+// @public
+export const JOURNAL_MAX_ENTRIES = 200;
+
+// @public
+export type JournalEntry = {
+    readonly seq: number;
+    readonly rev: number;
+    readonly at: string;
+    readonly puts: readonly JournalPut[];
+    readonly deletes: readonly string[];
+};
+
+// @public
+export type JournalPut = {
+    readonly id: string;
+    readonly after: AnyRecord;
+};
+
+// @public
 export type LoadedFlux = {
     readonly document: DocumentFile;
     readonly diagnostics: readonly Diagnostic[];
@@ -178,6 +230,12 @@ export const MAX_SVG_CHARS: number;
 export function minifySvg(svg: string): string;
 
 // @public
+export const needsCompaction: (journal: {
+    readonly entries: number;
+    readonly bytes: number;
+}) => boolean;
+
+// @public
 export function openDocumentText(text: string, versionHint?: string): Result<OpenedDocument, FormatError>;
 
 // @public
@@ -195,6 +253,9 @@ export type PixelSize = {
 };
 
 // @public
+export function readEntry(text: string): EntryRead | EntryRefused;
+
+// @public
 export function readFluxHtml(html: string, hasher: ContentHasher): Promise<Result<Uint8Array, FormatError>>;
 
 // @public
@@ -202,6 +263,39 @@ export function readZip(bytes: Uint8Array, limits?: ZipLimits): Result<ZipEntry[
 
 // @public
 export function referencedAssetHashes(doc: DocumentFile): string[];
+
+// @public
+export function replay(base: {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly seq: number;
+    readonly rev: number;
+}, entries: readonly JournalEntry[]): Replayed;
+
+// @public
+export type Replayed = {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly applied: number;
+    readonly skipped: number;
+    readonly last: ReplayPoint;
+    readonly stopped?: ReplayStop;
+};
+
+// @public
+export type ReplayPoint = {
+    readonly seq: number;
+    readonly rev: number;
+};
+
+// @public
+export type ReplayStop = {
+    readonly seq: number;
+    readonly reason: string;
+    readonly dropped: number;
+};
 
 // @public
 export function safeLinkUrl(href: string): string | undefined;
@@ -231,6 +325,9 @@ export type SelectedAssets = {
     readonly assets: ReadonlyMap<string, FluxAsset>;
     readonly missing: readonly string[];
 };
+
+// @public
+export const serializeEntry: (entry: JournalEntry) => string;
 
 // @public
 export function sha256Hex(data: Uint8Array): string;
