@@ -135,6 +135,14 @@ Catalog:
   with recorded metrics** (the table covers Latin, and a second slice of the same face would replace the first in the registry); other slices are
   stored and drawn, and measured by the canvas.
 
+### Amendment (M10.3): subsetting is deferred past M10
+
+ADR-0025 settles M10 without new packages, and a font subsetter is a wasm dependency (hb-subset). **Subsetting a font is
+therefore not done in M10.** Embedding on save is: each used font goes whole into the `.flux` and the `.flux.html`, with
+its copyright line and licence, and the document's recorded metrics. The size cost this ADR accepted "until M10 subsets"
+is accepted until the later row that adds the subsetter (with its own licence check and size decision). The 5 MB cap per
+font and every other rule above stand.
+
 ## More Information
 
 FR-THM-008 (14-theme-text-media), ADR-0148 (text measurement from recorded metrics: fonts under `fixtures/fonts`,

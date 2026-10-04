@@ -148,22 +148,22 @@ engines are never embedded unless a live-layout container needs one (NFR-SIZE-00
 import (drop/paste/picker/URL/FluxScript ref)
   → sniff MIME by magic bytes (never by extension)
   → normalize:  raster → decode, cap longest side 2560 px (FR-AST-002), re-encode WebP q≈0.82
-                          (keep original if smaller or animated; AVIF opt-in, wasm, lazy)
-                SVG    → parse → allowlist sanitizer → SVGO preset-default (keep viewBox)
-                font   → keep full file in session; subset on save
+                          (keep the original if smaller or animated, detected from the bytes; AVIF is kept, not encoded, in M10, ADR-0025)
+                SVG    → allowlist sanitizer (ADR-0150) → `minifySvg` (keep viewBox; no SVGO, ADR-0025)
+                font   → keep full file in session; embedded whole on save (subsetting is later, ADR-0022 amendment M10.3)
                 video/Lottie → as-is, size warning > 5 MB (FR-AST-004)
   → sha256 (Hasher port) → asset record { hash, mime, size, w, h, name, source? }
   → bytes in session AssetStore (OPFS in studio, memory in CLI), deduped by hash (FR-FIL-004)
 save
   → collect referenced asset hashes (records, theme, component props, snapshots)
-  → font subsetting: glyphs used in text + a safety range for the document's scripts,
-    hb-subset wasm (lazy chunk in studio, npm module in CLI), WOFF2, pin unused variable axes
+  → font subsetting (later, not in M10: ADR-0025): glyphs used in text + a safety range for the document's
+    scripts, hb-subset wasm (lazy chunk in studio, npm module in CLI), WOFF2, pin unused variable axes
   → write only referenced assets (unreferenced ones stay in the session store so undo still works)
 ```
 
-- The raster encoder is `OffscreenCanvas.convertToBlob` in the browser and a wasm encoder in the CLI
-  (no native dependencies, NFR-PORT-004).
-- The SVG sanitizer operates on a parsed XML tree with an allowlist. It removes scripts, event
+- The raster encoder is `OffscreenCanvas.convertToBlob` in the browser; the CLI keeps images as they are in M10 and a
+  wasm encoder follows later (no native dependencies, NFR-PORT-004; ADR-0025).
+- The SVG sanitizer rebuilds the file from a tokenizer with an allowlist (ADR-0150). It removes scripts, event
   handlers, `foreignObject`, external `href` and CSS `url()` to non-data targets. The same code
   runs in Node and the browser, so CLI output equals studio output.
 - External assets (FR-AST-006): the record keeps `source` URL + `integrity`. "Embed on save" fetches
