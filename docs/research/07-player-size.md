@@ -7,7 +7,8 @@
 
 `packages/player-inline/dist/player.inline.js`, the classic script a `.flux.html` embeds (ADR-0154): **729.6 kB, 224 kB gzip** (size-limit; zlib level 9: 224.0 kB)
 against `PLAYER_CORE_GZIP` = 150 kB. `pnpm exec size-limit` reports the other two entries: `packages/player/dist/index.js` bundled with its dependencies
-is 136.9 kB gzip, the editor's initial bundle 272.3 kB gzip.
+is 136.9 kB gzip, the editor's initial bundle 272.3 kB gzip. The 136.9 kB entry holds both server renderers and not the `react-dom` client (only the element's
+mount imports that), so it is not a React-included figure and is not what NFR-SIZE-001 is held to; the one-file player is.
 
 Method: the same build with a source map (`tsdown` with the iife config of `packages/player-inline/tsdown.config.ts`, `sourcemap: true`, written to a scratch
 directory), the map's mappings decoded to the generated span of every source, spans grouped by package, and each group's text compressed on its own with zlib
@@ -35,8 +36,8 @@ sums to 224 kB.
 1. **Two copies of the server renderer are in a player that only draws on the client.** `react-dom/server.browser` and its legacy twin come in through
    `packages/render/src/ssr.ts` (the static render path, ADR-0015), which the render package's entry exports and the bundle cannot drop. They weigh about
    59 kB gzip alone and 195 kB raw. Moving `ssr.ts` behind its own entry (a subpath export the CLI and exporters import, not the player) is the largest single cut.
-2. **Zod is 27 kB gzip for validation the player repeats.** The loader already validates and repairs; the player can trust its output (the question ADR-0026
-   settles). `@fluxion/schema` (12 kB) goes with part of it where only the validators use it.
+2. **Zod is 27 kB gzip for validation the player repeats.** The studio and the CLI validate and repair; the player reads with a lean reader that refuses what it cannot read
+   instead (ADR-0026). `@fluxion/schema` (12 kB) goes with part of it where only the validators use it.
 3. **React's client is the floor**, about 63 kB gzip alone, plus `react` and `scheduler` (about 5 kB). A React-compatible replacement would save about 60 kB
    more but is a new runtime dependency and a departure from NFR-SIZE-001's "(React included)"; it is not on the cut list, and is recorded here only as the
    fallback if the cuts below fall short.
@@ -48,7 +49,7 @@ sums to 224 kB.
 | Cut | Expected gzip (alone) | Row |
 |---|---:|---|
 | `ssr.ts` out of the player's graph (react-dom/server twice) | about 59 kB | M11.5 |
-| Zod and the validators out of the player (trust the loader) | about 27 kB, schema's validators part of 12 kB | M11.5 |
+| Zod and the validators out of the player (a lean reader, ADR-0026) | about 27 kB, schema's validators part of 12 kB | M11.5 |
 | Lazy chunks for what the first screen does not need (the overview grid, the debug overlay, interaction code as M24 arrives) | by row | M11.5, M11.18 |
 
 Alone-gzip savings overstate the whole-file saving (shared dictionary), so the first two cuts are expected to bring 224 kB to roughly 145 to 160 kB, **not
