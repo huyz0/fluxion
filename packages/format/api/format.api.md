@@ -124,6 +124,9 @@ export type LoadOptions = {
 export const MAX_SVG_CHARS: number;
 
 // @public
+export function readFluxHtml(html: string, hasher: ContentHasher): Promise<Result<Uint8Array, FormatError>>;
+
+// @public
 export function readZip(bytes: Uint8Array, limits?: ZipLimits): Result<ZipEntry[], ZipFailure>;
 
 // @public
