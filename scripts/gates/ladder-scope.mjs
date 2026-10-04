@@ -99,7 +99,7 @@ export const NAMED_PATH_HARNESS = [
   [/^\.changeset\/.+\.md$/, ['ci-workflow', 'milestone-checks']],
   // the shared documents: the harness files that name them (the Vitest suites that read them run through VITEST_GLOBAL)
   [/^(examples|fixtures)\/.+\.(json|md)$/, ['milestone-checks', 'tests-kept']],
-  [/^scripts\/(docs|fonts)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
+  [/^scripts\/(docs|fonts|format)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
   // a pack's vendored font files, manifest and licence text: data that only the ladder's `licenses` step reads (hashes, licences, paths)
   [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
   // a package's own test fixtures: read only by that package's tests, which the staged Vitest step runs (the package is staged)

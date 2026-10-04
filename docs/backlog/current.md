@@ -41,7 +41,7 @@ Reviews: isolated reviewer subagent only (ADR-0137). Quoted test titles are the 
 
 ## M10 — File format & persistence (started 2026-10-04 at the human's request; M9's blocked rows stay above)
 
-Planned: 24 rows (plan 20: ADR rows M10.2 and M10.3 added from the plan's "Decide before coding", the gate is M10.1, and M10.23 is the zip codec the cloud container's frozen lockfile made necessary, ADR-0153). Row order is dependency order; the plan is `docs/milestones/M10.md`.
+Planned: 25 rows (plan 20: ADR rows M10.2 and M10.3 added from the plan's "Decide before coding", the gate is M10.1, and M10.23 is the zip codec the cloud container's frozen lockfile made necessary, ADR-0153). Row order is dependency order; the plan is `docs/milestones/M10.md`.
 
 | ID | Task | Req | Acceptance (EARS) | Deps | State | Commit |
 |---|---|---|---|---|---|---|
@@ -69,3 +69,4 @@ Planned: 24 rows (plan 20: ADR rows M10.2 and M10.3 added from the plan's "Decid
 | M10.22 | Milestone review (fresh agent) and docs: `specs/format/flux-1.0.md`, the user guide "Saving & opening", the format README, the changeset | FR-FIL-001, NFR-SIZE-003, NFR-SEC-001, NFR-SEC-002, NFR-REL-001 | `.harness/reviews/milestone-M10-final.json` records a verdict; `m10-complete` is green | M10.21 | todo |  |
 | M10.23 | The zip codec in `@fluxion/format`: DEFLATE encoder and decoder, CRC-32, UTF-8, `writeZip` and `readZip` with output caps, no new dependency (ADR-0153; done before M10.4) | FR-FIL-003, FR-FIL-009, NFR-REL-002 | `FR-FIL-003: deflate then inflate returns the bytes` and the other codec titles pass; zlib-written fixtures decode; the container's bytes are pinned | M10.3 | done | 4f54f0a |
 | M10.24 | Staged ladder: a package's own `__fixtures__` files run no harness file (the staged Vitest step reads them), so a commit of binary or text fixtures beside sources keeps within the staged budget | NFR-DX-002 | `ladder-scope.test.mjs`: a staged `packages/*/__fixtures__/` path selects no harness file | M10.1 | done | 40cc798 |
+| M10.25 | Staged ladder: `scripts/format/*.mjs` (the golden generator of M10.8) is scanned like the docs and fonts scripts and runs no other harness file | NFR-DX-002 | `ladder-scope.test.mjs`: a staged `scripts/format/goldens.mjs` selects the milestone-checks, portability and size harness files | M10.24 | doing |  |
