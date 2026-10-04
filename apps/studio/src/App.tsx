@@ -13,6 +13,8 @@ import { FileBar, OpenControl, openPicked, pickedFromDrop } from './file-bar.js'
 import { browserFileHost } from './file-host.js';
 import { fontSources } from './font-sources.js';
 import { loadBundledFonts } from './fonts.js';
+import { rememberSaved } from './library/library-service.js';
+import { RecentFiles } from './library/recent-files.js';
 import { localSettings } from './local-settings.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { RecoveryHost } from './recovery-host.js';
@@ -48,10 +50,15 @@ function Link(props: { readonly to: string; readonly children: ReactNode }): JSX
 
 function Home(): JSX.Element {
   const host = useMemo(() => browserFileHost(), []);
+  const [problem, setProblem] = useState('');
   return (
     <main data-testid="studio-root">
       <h1>Fluxion Studio</h1>
       <OpenControl host={host} onOpened={(docId) => navigate(`/edit/${docId}`)} />
+      <RecentFiles onOpen={(file) => void openPicked(file, (docId) => navigate(`/edit/${docId}`)).then(setProblem)} />
+      <p role="status" aria-live="polite">
+        {problem}
+      </p>
       <nav aria-label="Documents">
         <ul>
           <li>
@@ -118,7 +125,10 @@ function ProtectedEditor(props: {
             assets={assets}
             entry={entry}
             onOpened={(id) => navigate(`/edit/${id}`)}
-            onSaved={() => void autosave?.saved()}
+            onSaved={(saved) => {
+              void autosave?.saved();
+              void rememberSaved(saved, core.store.toDocument().records);
+            }}
           />
           <AutosaveBar state={state} readOnly={guard.phase === 'read-only'} />
         </>

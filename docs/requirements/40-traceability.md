@@ -51,7 +51,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts`, `e2e/file.open-save.spec.ts` |
 | FR-FIL-007 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/autosave-bar.test.tsx` +12 |
-| FR-FIL-008 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/library/library.browser.test.ts` +2 |
+| FR-FIL-008 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/library/library-service.browser.test.ts` +4 |
 | FR-FIL-009 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/autosave.test.ts` +8 |
 | FR-FIL-010 | S | R6 | M27 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-011 | C | R8 | M32 | [10-document-and-file.md](10-document-and-file.md) | — |

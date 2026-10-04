@@ -25,8 +25,8 @@ export type FileBarProps = {
   readonly entry: OpenedEntry | undefined;
   /** Go to the editor of the document `docId`. */
   readonly onOpened: (docId: string) => void;
-  /** Called after the file was written (autosave marks the journal saved and keeps a version). */
-  readonly onSaved?: () => void;
+  /** Called after the file was written, with its name and bytes (autosave marks the journal saved; the library keeps a copy). */
+  readonly onSaved?: (saved: { readonly name: string; readonly bytes: Uint8Array }) => void;
 };
 
 /** The name a save suggests: the file's own name (or the document's title) as a `.flux`. */
@@ -112,7 +112,7 @@ export function FileBar(props: FileBarProps): JSX.Element {
       const saved = await host.saveAs(suggestedName(entry, store), bytes);
       if (saved === undefined) return '';
       if (saved.handle !== undefined) target.current = saved.handle;
-      onSaved?.();
+      onSaved?.({ name: saved.name, bytes });
       return `Saved ${saved.name}.`;
     },
     [host, entry, store, onSaved],
@@ -120,10 +120,10 @@ export function FileBar(props: FileBarProps): JSX.Element {
   const overwrite = useCallback(
     async (handle: unknown, bytes: Uint8Array) => {
       await host.writeOver(handle, bytes);
-      onSaved?.();
+      onSaved?.({ name: entry?.file.name ?? suggestedName(entry, store), bytes });
       return 'Saved.';
     },
-    [host, onSaved],
+    [host, onSaved, entry, store],
   );
   const save = useCallback(
     async (copy: boolean) => {
