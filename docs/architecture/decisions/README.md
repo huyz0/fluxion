@@ -57,6 +57,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0150](ADR-0150-sanitize-svg-allowlist.md) | `sanitizeSvg` rebuilds an SVG from an allowlist over a small tokenizer | accepted | 2026-10-02 |
 | [0151](ADR-0151-group-model.md) | A group's members keep their screen coordinates and its box follows them | accepted | 2026-10-02 |
 | [0152](ADR-0152-token-model-and-schema-1-2.md) | The token model: required roles checked at validation, derived tokens as DTCG aliases with a transform, an own OKLCH, schema 1.2 (metadata fields, a screen's theme reference) | accepted | 2026-10-03 |
+| [0153](ADR-0153-own-zip-codec.md) | The zip container is read and written by our own codec in `@fluxion/format`, not by fflate | accepted | 2026-10-04 |
 
 ## ADR required when
 

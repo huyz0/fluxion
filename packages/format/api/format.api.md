@@ -4,14 +4,51 @@
 
 ```ts
 
+import { Result } from '@fluxion/schema';
+
 // @public
 export const MAX_SVG_CHARS: number;
+
+// @public
+export function readZip(bytes: Uint8Array, limits?: ZipLimits): Result<ZipEntry[], ZipFailure>;
 
 // @public
 export function sanitizeSvg(input: string): string | undefined;
 
 // @public
 export const VERSION: string;
+
+// @public
+export function writeZip(entries: readonly ZipInput[]): Result<Uint8Array, ZipFailure>;
+
+// @public
+export type ZipEntry = {
+    readonly name: string;
+    readonly bytes: Uint8Array;
+    readonly method: ZipMethod;
+};
+
+// @public
+export type ZipFailure = {
+    readonly reason: string;
+};
+
+// @public
+export type ZipInput = {
+    readonly name: string;
+    readonly bytes: Uint8Array;
+    readonly method?: ZipMethod;
+};
+
+// @public
+export type ZipLimits = {
+    readonly maxEntries?: number;
+    readonly maxEntryBytes?: number;
+    readonly maxTotalBytes?: number;
+};
+
+// @public
+export type ZipMethod = "deflate" | "store";
 
 // (No @packageDocumentation comment for this package)
 

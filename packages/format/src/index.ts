@@ -5,6 +5,7 @@
  */
 
 export { MAX_SVG_CHARS, sanitizeSvg } from './sanitize-svg.js';
+export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
 
 /**
  * Version of this package.

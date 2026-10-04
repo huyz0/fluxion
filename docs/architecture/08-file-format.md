@@ -51,7 +51,7 @@ interface PluginLock { id: string; version: string; sdk: string;
   integrity: `sha256-${string}`; entry: string; trust: 'first-party' | 'trusted' | 'untrusted' }
 ```
 
-Zip rules (implemented with fflate):
+Zip rules (implemented by our own codec in `format`, ADR-0153; the player inflates with the same code):
 - **Deterministic bytes**: fixed entry order (mimetype, manifest, document, theme, source, assets
   sorted, plugins sorted, snapshots sorted, preview), fixed timestamp (`1980-01-01`), no extra
   fields. The same document produces the same bytes, so hashes and git work.

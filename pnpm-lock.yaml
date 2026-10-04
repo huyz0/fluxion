@@ -434,7 +434,11 @@ importers:
 
   packages/exporters: {}
 
-  packages/format: {}
+  packages/format:
+    dependencies:
+      '@fluxion/schema':
+        specifier: workspace:*
+        version: link:../schema
 
   packages/geometry:
     dependencies:

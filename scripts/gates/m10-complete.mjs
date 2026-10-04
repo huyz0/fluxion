@@ -74,6 +74,16 @@ leg('ADR-0024 autosave storage is accepted', adrLeg('0024', ['autosave'], ['Inde
 leg('ADR-0025 the sanitizer and image encoding is accepted', adrLeg('0025', ['sanitizer'], ['allowlist', 'WebP', 'AVIF', 'XML parser']));
 
 // ── the container (FR-FIL-003, FR-FIL-004) ──────────────────────────────────────────────────────────
+leg('the zip codec round-trips, reads what zlib wrote, pins its container bytes and refuses broken input (T0)', () =>
+  titled([
+    ['M10.23', 'FR-FIL-003: deflate then inflate returns the bytes, for empty, tiny, repetitive, long and random inputs', FORMAT],
+    ['M10.23', 'FR-FIL-003: inflate reads fixed, stored and dynamic blocks written by zlib', FORMAT],
+    ['M10.23', 'FR-FIL-003: a one-entry zip has exactly these bytes (the container is pinned, and Python zipfile accepted it)', FORMAT],
+    ['M10.23', 'NFR-REL-002: inflate refuses broken streams with a reason and never throws', FORMAT],
+    ['M10.23', 'NFR-REL-002: readZip never throws on truncated, corrupted or hostile bytes', FORMAT],
+    ['M10.23', 'FR-FIL-009: readZip refuses what exceeds its limits and says which', FORMAT],
+  ]),
+);
 leg('the same document written twice gives byte-identical .flux files (T0)', () =>
   titled([['M10.4', 'FR-FIL-003: the same document written twice gives byte-identical .flux files', FORMAT]]),
 );
