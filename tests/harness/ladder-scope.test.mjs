@@ -195,6 +195,12 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml']), true);
     assert.equal(packagingNeeded(['tools/gen/workspaces.json'], { librariesUnchanged: true }), false);
     assert.equal(packagingNeeded(['tools/gen/workspaces.json']), true);
+    // the fixture generator, the scope module and the harness tests read documents and test titles, not a manifest or a build setting
+    assert.equal(
+      packagingNeeded(['scripts/fixtures/gen.mjs', 'fixtures/docs/doc20.flux.json', 'scripts/gates/ladder-scope.mjs', 'tests/harness/ladder-scope.test.mjs']),
+      false,
+    );
+    assert.equal(harnessFiles(['scripts/fixtures/gen.mjs'], ALL).includes(file('milestone-checks')), true);
     // a library's manifest still runs them, whatever the lockfile did
     assert.equal(packagingNeeded(['packages/core/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true, librariesUnchanged: true }), true);
     for (const p of ['packages/core/package.json', 'pnpm-lock.yaml', 'tsconfig.base.json', 'packages/core/tsup.config.ts', 'scripts/gates/check-packages.mjs'])

@@ -99,7 +99,7 @@ export const NAMED_PATH_HARNESS = [
   [/^\.changeset\/.+\.md$/, ['ci-workflow', 'milestone-checks']],
   // the shared documents: the harness files that name them (the Vitest suites that read them run through VITEST_GLOBAL)
   [/^(examples|fixtures)\/.+\.(json|md)$/, ['milestone-checks', 'tests-kept']],
-  [/^scripts\/(docs|fonts|format)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
+  [/^scripts\/(docs|fonts|format|fixtures)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
   // a pack's vendored font files, manifest and licence text: data that only the ladder's `licenses` step reads (hashes, licences, paths)
   [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
   // a package's own test fixtures: read only by that package's tests, which the staged Vitest step runs (the package is staged)
@@ -270,6 +270,11 @@ export function packagingNeeded(staged, { lockfileWorkspaceOnly: workspaceLock =
   // milestone-checks.mjs judges milestone legs and rows; it reads no manifest, export or build setting
   const inert = (p) =>
     p === 'scripts/gates/milestone-checks.mjs' ||
+    // the fixture generator reads documents, not a manifest, an export or a build setting
+    p === 'scripts/fixtures/gen.mjs' ||
+    // the scope module itself and the harness tests decide and test which checks run, and pack nothing (CI's `--all` ladder is the backstop for a scope change that hides a packaging check)
+    p === 'scripts/gates/ladder-scope.mjs' ||
+    /^tests\/harness\/[^/]+\.test\.mjs$/.test(p) ||
     p === 'knip.json' ||
     p === 'osv-scanner.toml' ||
     /^\.github\/workflows\/[^/]+\.ya?ml$/.test(p) ||
