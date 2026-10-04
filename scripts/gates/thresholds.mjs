@@ -47,6 +47,9 @@ export const THRESHOLDS = {
   HIT_TEST_2000_MAX_MS: { value: 1, weakens: 'up' }, // M6: point hit-test among 2000 elements (FR-EDT-004)
   NAVIGATOR_OPEN_50_MAX_MS: { value: 200, weakens: 'up' }, // M8: the screens navigator opens with 50 screens (FR-SCR-002)
   LIBRARY_SEARCH_10K_MAX_MS: { value: 100, weakens: 'up' }, // M8: keyword search over 10k library entries (FR-LIB-001)
+  OPEN_50_SCREENS_MS_DESKTOP: { value: 1500, weakens: 'up' }, // M11: open a 50-screen document and show the first screen (NFR-PERF-003)
+  OPEN_50_SCREENS_MS_MOBILE: { value: 3000, weakens: 'up' }, // M11: the same on the reference mobile, 4x CPU throttle (NFR-PERF-003)
+  EDITOR_TTI_MS: { value: 2500, weakens: 'up' }, // M11: editor time to interactive on the reference desktop (NFR-SIZE-002)
   PRESENT_ANIM_MIN_FPS_DESKTOP: { value: 58, weakens: 'down' },
   PRESENT_ANIM_MIN_FPS_MOBILE: { value: 55, weakens: 'down' },
   LAYOUT_100_NODES_MS: { value: 200, weakens: 'up' },

@@ -9,6 +9,8 @@
 
 **Also active: `M10`** (started 2026-10-04 on the human's instruction, "Let start m10", while M9's rows M9.11, M9.19, M9.20, M9.23 and M9.28 are blocked on things the cloud container lacks: the pinned Docker image, a desktop budget re-record, a three-engine CI run). M10's rows are in `docs/backlog/current.md` under M9's. M9 stays current until `m9-complete` passes; M10 does not advance the roadmap.
 
+**Also active: `M11`** (planned 2026-10-04 while M10's rows M10.27, M10.45 and M10.57 wait for the human; the gate `scripts/gates/m11-complete.mjs` is written red, the rows are M11.1 to M11.26 in `docs/backlog/current.md`). M11 closes increment R1; it cannot close before M10.45 (the `.flux.html` size basis) is decided, because the R1 demo row depends on it.
+
 Plans (`M<n>.md`) are hypotheses with ≤ ~20 tasks; the backlog (`docs/backlog/current.md`) is
 authoritative for the current milestone only.
 
