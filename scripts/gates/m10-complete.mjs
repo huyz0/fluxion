@@ -233,9 +233,10 @@ leg('open by picker, drop, ?src= and paste; save atomically on chromium and by d
   ]);
   return saved === true ? urls : urls === true ? saved : `${saved}; ${urls}`;
 });
-leg('an edit killed 5 s before the crash is recovered, with the details-dialog metadata (file.crash-recovery)', () =>
+leg('an edit kept within 5 s of a lost tab is recovered, with the details-dialog metadata and modified time (file.crash-recovery)', () =>
   titledSpec('e2e/file.crash-recovery.spec.ts', DESKTOP, [
     'FR-FIL-007: a tab closed after an edit leaves the work, and the next start offers it, recovers it with its title, and keeps it as unsaved',
+    'FR-FIL-007: the description, tags, custom fields and modified time edited in the details dialog come back after a tab is lost',
     'FR-FIL-007: Discard forgets the work for good, and Not now keeps it for the next start',
   ]),
 );

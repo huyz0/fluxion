@@ -13,7 +13,23 @@ type FormatApi = {
     options: { hasher: Hasher },
   ) => Promise<
     Result<{
-      document: { records: { [id: string]: { type: string; title?: string; w?: number; h?: number; mime?: string; hash?: string } } };
+      document: {
+        records: {
+          [id: string]: {
+            type: string;
+            title?: string;
+            description?: string;
+            tags?: string[];
+            custom?: { [key: string]: string };
+            created?: string;
+            modified?: string;
+            w?: number;
+            h?: number;
+            mime?: string;
+            hash?: string;
+          };
+        };
+      };
       assets: ReadonlyMap<string, { bytes: Uint8Array }>;
     }>
   >;
@@ -59,4 +75,18 @@ export async function imageAssetsOf(
   return Object.values(loaded.document.records)
     .filter((r) => r.type === 'asset' && r.mime?.startsWith('image/'))
     .map((r) => ({ w: r.w, h: r.h, mime: r.mime, embedded: r.hash !== undefined && loaded.assets.has(r.hash) }));
+}
+
+/** The document record inside saved `.flux` bytes: its metadata and times. */
+export async function documentRecordOf(bytes: Uint8Array): Promise<{
+  title?: string;
+  description?: string;
+  tags?: string[];
+  custom?: { [key: string]: string };
+  created?: string;
+  modified?: string;
+}> {
+  const api = await format();
+  const loaded = value(await api.loadFlux(bytes, { hasher: hasherOf(api) }), 'loadFlux');
+  return Object.values(loaded.document.records).find((r) => r.type === 'document') ?? {};
 }
