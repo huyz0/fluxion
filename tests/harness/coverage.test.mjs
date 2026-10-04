@@ -64,10 +64,11 @@ function withUncovered(dirs) {
 // The sandbox runs the node project only (a browser launch per case would double this suite).
 // Modules covered only by a sibling *.browser.test (stories, components) are not part of the floor
 // mechanics tested here; the ladder's test step checks the real coverage with both projects.
-/** A workspace's sources and configs, and the generated snapshots its tests compare against (CLI reply schemas, ADR-0147; SVG goldens, M4.19). */
+/** A workspace's sources and configs, and the generated snapshots and fixtures its tests compare against (CLI reply schemas, ADR-0147; SVG goldens, M4.19; the format goldens, M10.8). */
 function copyWorkspace(dir) {
   for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
-  for (const f of ['schemas', '__golden__']) if (existsSync(join(REPO, dir, f))) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
+  for (const f of ['schemas', '__golden__', '__fixtures__'])
+    if (existsSync(join(REPO, dir, f))) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
 }
 
 function dropBrowserCovered(src) {
