@@ -1,0 +1,84 @@
+{
+  "milestone": "M10",
+  "checkpoint": "cp1",
+  "range": "c1de320..1633114",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "scripts/gates/m10-complete.mjs",
+      "summary": "The ADR-0003 leg can never go green: it requires 'file format' in a title that does not say it, and ADR-0003 was never reconciled with what was built (M10.3 promised it).",
+      "suggestion": "Amend ADR-0003 against the implementation and spec; make the leg check status and content words."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "file": "e2e/file.offline-file-protocol.spec.ts",
+      "summary": "NFR-PORT-002 (Must) is named by no test title, so check-trace --milestone M10 is red for a real gap; the 'any static host' half is untested.",
+      "suggestion": "Name it in the offline test title and add a static-host assertion."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "file": "specs/format/flux-1.0.md",
+      "summary": "The spec's limits, schema version and stored-extension set disagree with loader.ts, document-file.ts and flux-writer.ts.",
+      "suggestion": "Correct from the code and tie them with a test."
+    },
+    {
+      "id": "F4",
+      "severity": "major",
+      "file": "scripts/gates/m10-complete.mjs",
+      "summary": "The crash-recovery leg claims a killed context and metadata/modified recovery; the spec closes the tab and checks only the title. The .flux.html size half is red until M10.45.",
+      "suggestion": "Extend the spec or retitle the leg; keep M10.20 visibly partial."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "scripts/gates/m10-complete.mjs",
+      "summary": "Firefox/WebKit legs cannot run here; the gate does not say which engines it ran and several legs are floors.",
+      "suggestion": "Close M10.22 only from a three-engine gate run, citing its URL."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "summary": "60 rows against 20 planned (3x): ladder-scope and staged-budget rows, CI-red fixes, three blocked rows; 'Learned' empty.",
+      "suggestion": "Fill Learned; plan the player-size decision first in M11."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "note": "M10.63"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "note": "M10.62"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "note": "M10.61"
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "note": "M10.64"
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "note": "M10.22 closes from a three-engine run"
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "note": "splits and CI fixes, no new scope; lessons go in M10.md Learned"
+    }
+  ],
+  "planDelta": "Four rows before closing M10 (M10.61-M10.64); M10.45, M10.27, M10.57 stay blocked for a human decision; M10.22 closes only from a three-engine gate run at the final SHA; M11 plans the player-size decision first (the 728 kB inline player cannot meet the raw 450 kB budget)."
+}

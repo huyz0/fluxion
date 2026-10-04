@@ -1,7 +1,7 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { fluxHtmlOf } from './pages/flux-html.js';
 import { expect, test } from './test.js';
 
@@ -18,7 +18,7 @@ test.describe('a .flux.html from file://', () => {
   });
   test.afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
-  test('FR-FIL-001: the file opens with no network and draws its first screen, with 0 external requests', async ({ page, blocked }) => {
+  test('FR-FIL-001, NFR-PORT-002: the file opens with no network and draws its first screen, with 0 external requests', async ({ page, blocked }) => {
     const requests: string[] = [];
     page.on('request', (r) => requests.push(r.url()));
     const problems: string[] = [];
@@ -31,6 +31,24 @@ test.describe('a .flux.html from file://', () => {
     expect(blocked).toEqual([]);
     // nothing but the file itself and in-page blob/data URLs
     expect(requests.filter((u) => !u.startsWith('file:') && !u.startsWith('blob:') && !u.startsWith('data:'))).toEqual([]);
+  });
+
+  test('NFR-PORT-002: the same file opens from a static host over http, asking for nothing but itself', async ({ page }) => {
+    const html = readFileSync(fileURLToPath(url), 'utf8');
+    const asked: string[] = [];
+    await page.route('**/*', (route) => {
+      asked.push(route.request().url());
+      return route.request().url() === 'http://static.example/deck.flux.html'
+        ? route.fulfill({ status: 200, contentType: 'text/html', body: html })
+        : route.abort();
+    });
+    await page.goto('http://static.example/deck.flux.html');
+    await expect(page.locator('.fx-screen').first()).toBeVisible();
+    expect(await page.title()).toBe('Offline deck');
+    // a browser may ask for the site's icon on its own; that is not the page's request
+    expect(asked.filter((u) => !u.startsWith('blob:') && !u.startsWith('data:') && !u.endsWith('/favicon.ico'))).toEqual([
+      'http://static.example/deck.flux.html',
+    ]);
   });
 
   test('NFR-SEC-002: the CSP stops a planted fetch, a planted script and a planted frame, and says so', async ({ page, blocked }) => {

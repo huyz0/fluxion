@@ -188,7 +188,8 @@ leg('.flux and .flux.html convert into each other losslessly, and the reader nev
 leg('a .flux.html opens from file:// offline on three engines with no external request and a planted fetch blocked', () =>
   titledSpec('e2e/file.offline-file-protocol.spec.ts', DESKTOP, [
     'NFR-SEC-002: the CSP stops a planted fetch, a planted script and a planted frame, and says so',
-    'FR-FIL-001: the file opens with no network and draws its first screen, with 0 external requests',
+    'FR-FIL-001, NFR-PORT-002: the file opens with no network and draws its first screen, with 0 external requests',
+    'NFR-PORT-002: the same file opens from a static host over http, asking for nothing but itself',
   ]),
 );
 
