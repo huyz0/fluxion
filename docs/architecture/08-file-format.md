@@ -218,8 +218,8 @@ function load(bytes: Uint8Array, ctx: LoadContext): Promise<LoadResult>; // neve
 ```
 
 Pipeline: **sniff → unpack → verify → parse → migrate → validate → repair → salvage**.
-- *Unpack*: if the central directory is damaged, scan local headers. Limits: ≤ 10 000 entries,
-  ≤ 512 MB uncompressed, compression ratio ≤ 200:1 (zip-bomb guard). Reject `..`, absolute and
+- *Unpack*: if the central directory is damaged, scan local headers. Limits (the loader's defaults, a host may pass others): ≤ 4096 entries,
+  ≤ 128 MB inflated per entry and ≤ 256 MB in all, enforced while inflating (the zip-bomb guard). Reject `..`, absolute and
   duplicate paths.
 - *Verify*: entry sha256 vs manifest. A mismatch on data → warning. A mismatch on a plugin → that
   plugin is blocked and its snapshots are used.

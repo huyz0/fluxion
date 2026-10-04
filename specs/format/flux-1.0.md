@@ -23,17 +23,17 @@ A package is a zip archive. A writer must produce the entries below in this orde
 |---|---|---|
 | `mimetype` | stored | the text `application/vnd.fluxion+zip`, no extra field; always first |
 | `manifest.json` | deflate | the manifest (§3) |
-| `document.json` | deflate | `{ "schemaVersion": "1.0", "records": { <id>: <record> } }` |
+| `document.json` | deflate | `{ "schemaVersion": <the document schema version, now 1.2>, "records": { <id>: <record> } }` |
 | `theme/tokens.json` | deflate | the active theme's design tokens |
 | `source/document.flux.yaml` | deflate | optional: the FluxScript the document came from |
-| `assets/<sha256>.<ext>` | stored for WebP, AVIF, PNG, WOFF2 and video, otherwise deflate | one entry per distinct asset, named by the SHA-256 of its bytes |
+| `assets/<sha256>.<ext>` | stored for `webp`, `avif`, `png`, `jpg`, `gif`, `woff2` and `mp4`, otherwise deflate | one entry per distinct asset, named by the SHA-256 of its bytes |
 | `preview.webp` | stored | optional: a cover thumbnail, at most 640 px |
 
 - The zip codec is the package's own (ADR-0153): fixed entry order, entry timestamps `1980-01-01`, no extra fields, deflate level 6.
 - Entries a writer does not know (a newer writer's, plugin bundles, snapshots) must be copied through unchanged when a file is saved again, and
   listed in the manifest.
 - Entry names must not be absolute, contain `..`, repeat, or collide with the reserved names. A reader refuses such a file.
-- Limits a reader enforces: at most 10 000 entries, 512 MB uncompressed, a compression ratio of at most 200:1.
+- Limits the loader enforces by default: at most 4096 entries, 128 MB inflated per entry and 256 MB inflated in all. An entry that inflates past its limit is refused as it is inflated, so a small file cannot expand without bound.
 
 ## 3. The manifest
 
