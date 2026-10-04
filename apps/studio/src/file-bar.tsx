@@ -187,7 +187,7 @@ export function OpenControl(props: { readonly host: FileHost; readonly onOpened:
 }
 
 /** The first file of a drop, as a picked file. */
-export async function pickedFromDrop(files: FileList | null | undefined): Promise<PickedFile | undefined> {
+export async function pickedFromDrop(files: ArrayLike<File> | null | undefined): Promise<PickedFile | undefined> {
   const file = files?.[0];
   return file === undefined ? undefined : { name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) };
 }

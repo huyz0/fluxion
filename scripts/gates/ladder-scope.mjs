@@ -108,6 +108,8 @@ export const NAMED_PATH_HARNESS = [
   [/^(packages|packs|apps)\/[^/]+\/__fixtures__\/.+/, []],
   // the bundle budgets: read by the ladder's own `size-limit` step, which the staged ladder runs; no harness file reads them
   [/^\.size-limit\.js$/, []],
+  // an app's page and static files (its web manifest, icons): read by the Vite build, which the ladder's `build` step runs, and by its e2e specs; no harness file reads them
+  [/^apps\/[^/]+\/(index\.html|public\/.+)$/, []],
   // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test names it
   [/^vitest\.config\.ts$/, ['ladder-scope']],
   // the security corpus: hostile inputs read only by Vitest tests (the sanitizer's, in format and editor), which the staged Vitest step runs
@@ -314,6 +316,8 @@ function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = fals
     SOURCE.test(p) ||
     API_REPORT.test(p) ||
     /^e2e\//.test(p) ||
+    // an app's page and static files are built into the app, not packed
+    /^apps\/[^/]+\/(index\.html|public\/.+)$/.test(p) ||
     /^docs\/.+\.md$/.test(p) ||
     // notes and documents no manifest, export or build setting reads
     /^\.changeset\/.+\.md$/.test(p) ||

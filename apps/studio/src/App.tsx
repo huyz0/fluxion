@@ -16,6 +16,7 @@ import { loadBundledFonts } from './fonts.js';
 import { rememberSaved } from './library/library-service.js';
 import { RecentFiles } from './library/recent-files.js';
 import { localSettings } from './local-settings.js';
+import { fluxionFileOf, type LaunchHandle, MAX_OPEN_BYTES, pickedFromLaunch, pickedFromUrl, srcOf } from './open-sources.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { registerOpenedFonts } from './opened-fonts.js';
 import { journalId } from './protection-logic.js';
@@ -191,6 +192,9 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
   return <OpenedDocument docId={docId} mode={mode} guard={guard} instance={instance} />;
 }
 
+/** The `?src=` URLs already fetched by this page. */
+const fetchedSources = new Set<string>();
+
 /** A file dropped on the page opens (anywhere in the studio); a drag over the page is accepted so the browser does not navigate to the file. */
 function useDropToOpen(): string {
   const [message, setMessage] = useState('');
@@ -208,15 +212,48 @@ function useDropToOpen(): string {
         .catch((error: unknown) => `The file could not be read: ${error instanceof Error ? error.message : String(error)}`)
         .then(setMessage);
     };
+    // a Fluxion file pasted outside a text field opens (an image pasted into the editor is the editor's: it has taken the event)
+    const paste = (e: ClipboardEvent) => {
+      const file = e.defaultPrevented ? undefined : fluxionFileOf(e.clipboardData);
+      if (file === undefined || (e.target instanceof HTMLElement && e.target.closest('input, textarea, [contenteditable=""], [contenteditable="true"]')))
+        return;
+      e.preventDefault();
+      setMessage('');
+      if (file.size > MAX_OPEN_BYTES) return setMessage(`${file.name} is larger than ${MAX_OPEN_BYTES} bytes and cannot be opened.`);
+      void pickedFromDrop([file])
+        .then((pick) => (pick === undefined ? '' : openPicked(pick, (id) => navigate(`/edit/${id}`))))
+        .catch((error: unknown) => `The file could not be read: ${error instanceof Error ? error.message : String(error)}`)
+        .then(setMessage);
+    };
     window.addEventListener('dragover', over);
     window.addEventListener('drop', drop);
+    window.addEventListener('paste', paste);
+    // the page was opened with ?src=<url>: fetch that file and open it
+    const src = srcOf(window.location.search, window.location.href);
+    if (src !== undefined && !fetchedSources.has(src.href)) {
+      fetchedSources.add(src.href); // once per page load, though a development StrictMode runs the effect twice
+      void pickedFromUrl(src, (...args) => fetch(...args))
+        .then((got) => (got.ok ? openPicked(got.value, (id) => navigate(`/edit/${id}`)) : got.error))
+        .then(setMessage);
+    }
+    // the installed app launched with a file (a double click in the file manager)
+    (window as LaunchWindow).launchQueue?.setConsumer((params) => {
+      void pickedFromLaunch(params.files)
+        .then((pick) => (pick === undefined ? '' : openPicked(pick, (id) => navigate(`/edit/${id}`))))
+        .catch((error: unknown) => `The file could not be read: ${error instanceof Error ? error.message : String(error)}`)
+        .then(setMessage);
+    });
     return () => {
       window.removeEventListener('dragover', over);
       window.removeEventListener('drop', drop);
+      window.removeEventListener('paste', paste);
     };
   }, []);
   return message;
 }
+
+/** The launch queue of an installed app (Chromium), where the window has one. */
+type LaunchWindow = Window & { launchQueue?: { setConsumer(consumer: (params: { readonly files: readonly LaunchHandle[] }) => void): void } };
 
 /**
  * The studio shell.
