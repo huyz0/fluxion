@@ -1,9 +1,9 @@
 {
   "milestone": "M9",
-  "currentTask": "M9.19",
+  "currentTask": "M10.1",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M9.19/M9.20/M9.28 (Lingui) need external dependencies: the staged ladder's budget record for an external lockfile change needs the worst-case ladder measured in under 120 s, which this 4-core cloud container cannot do (about 230 s); M9.11 needs baselines recorded in the pinned Playwright image (not available here); M9.23 needs a three-engine milestone-gate run. Land M9.19/M9.20 and re-record .harness/budget.json from a desktop, or decide otherwise.",
-  "updated": "2026-10-03"
+  "blockedReason": "M9 rows M9.11/M9.19/M9.20/M9.23/M9.28 stay blocked (Docker image, budget re-record from a desktop, three-engine CI run); M10 started at the human's request in the meantime.",
+  "updated": "2026-10-04"
 }
