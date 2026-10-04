@@ -6,6 +6,9 @@ import { expect, test } from './test.js';
 // document as it opens (the toolbar with the theme controls and Fonts), a selection, the font picker on each of its tabs, the keyboard
 // shortcuts dialog, the command palette and the element context menu. The same specs run on all three engines.
 test.describe('editor accessibility', { tag: '@desktop' }, () => {
+  // many states, each scanned by axe: Firefox on a shared runner needs more than the default 30 s (CI flake at ed63156)
+  test.setTimeout(120_000);
+
   test('NFR-A11Y-001: the editor has no serious or critical axe finding in any state', async ({ page, expectAccessible }) => {
     const editor = new EditorPage(page);
     // the empty document: no element, the inspector with nothing selected
