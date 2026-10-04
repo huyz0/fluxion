@@ -43,6 +43,9 @@ const { titledSpec } = createE2e({
     specs: [
       'e2e/file.offline-file-protocol.spec.ts',
       'e2e/file.open-save.spec.ts',
+      'e2e/file.open-url.spec.ts',
+      'e2e/file.autosave-status.spec.ts',
+      'e2e/file.embedded-font.spec.ts',
       'e2e/file.crash-recovery.spec.ts',
       'e2e/file.library.spec.ts',
       'e2e/assets.remove-unused.spec.ts',
@@ -184,49 +187,62 @@ leg('.flux and .flux.html convert into each other losslessly, and the reader nev
 );
 leg('a .flux.html opens from file:// offline on three engines with no external request and a planted fetch blocked', () =>
   titledSpec('e2e/file.offline-file-protocol.spec.ts', DESKTOP, [
-    'NFR-SEC-002: a planted fetch is blocked by the CSP',
-    'NFR-PORT-002: a .flux.html opens from file:// with the network blocked and makes no external request',
+    'NFR-SEC-002: the CSP stops a planted fetch, a planted script and a planted frame, and says so',
+    'FR-FIL-001: the file opens with no network and draws its first screen, with 0 external requests',
   ]),
 );
 
 // ── assets (FR-AST-001, FR-AST-002, FR-AST-005, NFR-SIZE-004) ───────────────────────────────────────
 leg('images are sniffed by magic bytes and a 4000 px JPEG imports as a WebP of at most 2560 px (T1)', () =>
   titled([
-    ['M10.14', 'FR-AST-001: an image is recognised by its magic bytes whatever its name says', EDITOR, {}, 'browser'],
-    ['M10.14', 'FR-AST-002: a 4000px JPEG imports as a WebP of at most 2560px', EDITOR, {}, 'browser'],
+    ['M10.14', 'FR-AST-001: a PNG is known by its signature, with its size, whatever it is named', FORMAT],
+    ['M10.14', 'FR-AST-001: a JPEG is known by its start of image, with the size from its first frame marker', FORMAT],
+    ['M10.14', 'FR-AST-001: WebP in its three forms: lossy, lossless and extended (animated by its flag)', FORMAT],
+    ['M10.14', 'FR-AST-001: SVG is text that starts as SVG, after a BOM, a prolog, a doctype or a comment; other text is not an image', FORMAT],
+    ['M10.14', 'FR-AST-002: a 4000 px JPEG imports as a WebP of at most 2560 px', EDITOR, {}, 'browser'],
   ]),
 );
-leg('embedded fonts and shape defs equal the referenced ones, with their licence lines (T0)', () =>
+// the embedded shape-defs list is M10.57 (blocked: a manifest contract with no consumer yet); the fonts are checked here
+leg('embedded fonts equal the referenced ones, with their licence lines (T0)', () =>
   titled([
-    ['M10.15', 'NFR-SIZE-004: the fonts and shape defs embedded on save are exactly the referenced ones', FORMAT],
-    ['M10.15', 'FR-THM-008: an embedded font carries its copyright line and licence', FORMAT],
+    ['M10.15', 'NFR-SIZE-004: a family the text names is embedded as well, and one nothing names is not', STUDIO],
+    ['M10.15', 'NFR-LIC-003: a saved font carries its copyright line and licence in the file, and an unused font is not in it', FORMAT],
   ]),
 );
 leg('the asset manager removes only unreferenced assets (assets.remove-unused)', () =>
-  titledSpec('e2e/assets.remove-unused.spec.ts', DESKTOP, ['FR-AST-005: removing unused assets deletes only the unreferenced ones']),
+  titledSpec('e2e/assets.remove-unused.spec.ts', DESKTOP, [
+    'FR-AST-005: Remove unused deletes only the assets nothing references, and one undo brings them back',
+  ]),
 );
 
 // ── the studio: open, save, autosave, library (FR-FIL-006..008, NFR-REL-001) ────────────────────────
-leg('open by picker, drop, ?src= and paste; save atomically on chromium and by download elsewhere (file.open-save)', () =>
-  titledSpec('e2e/file.open-save.spec.ts', DESKTOP, [
-    'FR-FIL-006: a document opens by picker, drop, src and paste',
-    'FR-FIL-006: a saved document is written atomically where the File System Access API exists and downloaded elsewhere',
-  ]),
-);
+leg('open by picker, drop, ?src= and paste; save atomically on chromium and by download elsewhere (file.open-save, file.open-url)', () => {
+  const saved = titledSpec('e2e/file.open-save.spec.ts', DESKTOP, [
+    'FR-FIL-006: a .flux opens from the picker, an edit is saved over the same file through its handle, and the saved file has the edit',
+    'FR-FIL-006: a file dropped on the page opens',
+    'FR-FIL-006: without the File System Access API a file is picked with an input and a save is a download',
+  ]);
+  const urls = titledSpec('e2e/file.open-url.spec.ts', DESKTOP, [
+    'FR-FIL-006: ?src= fetches a .flux and opens it in the editor under the file’s name',
+    'FR-FIL-006: a .flux pasted on the home page opens',
+  ]);
+  return saved === true ? urls : urls === true ? saved : `${saved}; ${urls}`;
+});
 leg('an edit killed 5 s before the crash is recovered, with the details-dialog metadata (file.crash-recovery)', () =>
   titledSpec('e2e/file.crash-recovery.spec.ts', DESKTOP, [
-    'FR-FIL-007: an edit made 5 s before the context is killed comes back on reopening',
-    'FR-FIL-007: metadata edited in the details dialog and its modified time come back after a crash',
+    'FR-FIL-007: a tab closed after an edit leaves the work, and the next start offers it, recovers it with its title, and keeps it as unsaved',
+    'FR-FIL-007: Discard forgets the work for good, and Not now keeps it for the next start',
   ]),
 );
-leg('autosave journals within its budget and keeps the last 20 versions (T1)', () =>
-  titled([
-    ['M10.18', 'FR-FIL-007: the journal is written within the autosave budget', STUDIO, {}, 'browser'],
-    ['M10.18', 'FR-FIL-007: only the last 20 version snapshots are kept', STUDIO, {}, 'browser'],
-  ]),
-);
+leg('autosave journals within its budget and keeps the last 20 versions', () => {
+  const kept = titled([['M10.18', 'FR-FIL-007: after 25 writes exactly the newest 20 versions remain', STUDIO]]);
+  const budget = titledSpec('e2e/file.autosave-status.spec.ts', DESKTOP, [
+    'FR-FIL-007: an edit is written within the autosave budget and the status line says the changes are kept',
+  ]);
+  return kept === true ? budget : budget === true ? kept : `${kept}; ${budget}`;
+});
 leg('recent files and the local library list documents with thumbnails (file.library)', () =>
-  titledSpec('e2e/file.library.spec.ts', DESKTOP, ['FR-FIL-008: the library lists documents with their thumbnails']),
+  titledSpec('e2e/file.library.spec.ts', DESKTOP, ['FR-FIL-008: a saved file is listed on the home page with its preview, and opens from the list']),
 );
 
 // ── size and fidelity (NFR-SIZE-003, FR-FIL-001) ────────────────────────────────────────────────────

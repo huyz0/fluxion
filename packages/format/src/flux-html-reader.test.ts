@@ -63,6 +63,18 @@ describe('readFluxHtml', () => {
     expect(first.ok && same(first.value, flux)).toBe(true);
   });
 
+  it('FR-FIL-002: reading a .flux.html does not run its scripts', async () => {
+    // the reader is a scan of the text, not a parser or an evaluator (no eval in the sources is its own gate leg): a page whose scripts throw or whose attributes carry handlers
+    // is read like any other, and the reader, being a pure function of the text, returns the archive instead of throwing
+    const flux = bytesOf(300);
+    const hostile = (await html(flux, { generator: '<script>globalThis.__fluxionRan = 1</script>' })).replace(
+      '</body>',
+      '<script>globalThis.__fluxionRan = 2; throw new Error("ran")</script><img src=x onerror="globalThis.__fluxionRan = 3"></body>',
+    );
+    const r = await readFluxHtml(hostile, hasher);
+    expect(r.ok && same(r.value, flux)).toBe(true);
+  });
+
   it('FR-FIL-002: a file without both markers in its first 4 kB, a data block, or valid base64 is not a .flux.html', async () => {
     const page = await html(bytesOf(100));
     expect(await code('')).toBe('FILE_NOT_FLUX');

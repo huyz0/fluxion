@@ -143,6 +143,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     // the bundle budgets are read by the ladder's size-limit step alone
     assert.deepEqual(harnessFiles(['.size-limit.js'], ALL), []);
+    // the format specification is read by the docs checks alone
+    assert.deepEqual(harnessFiles(['specs/format/flux-1.0.md'], ALL), only(['docs-consistency']));
     // an app's page and static files are built by the Vite build step, which the ladder runs
     assert.deepEqual(harnessFiles(['apps/studio/index.html', 'apps/studio/public/manifest.webmanifest'], ALL), []);
     // the Vitest config is judged by the Vitest step itself, which runs everything for it; only the scope test names it
@@ -201,6 +203,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.ok(!SOURCE_HARNESS.includes('coverage') && SAMPLE_HARNESS.includes('coverage'));
     // a private app's manifest and tsconfig, a workspace-only lockfile and an unchanged library list are not packed
     assert.equal(packagingNeeded(['apps/studio/package.json', 'apps/studio/tsconfig.json']), false);
+    assert.equal(packagingNeeded(['specs/format/flux-1.0.md', 'scripts/gates/m10-complete.mjs']), false);
     assert.equal(packagingNeeded(['apps/studio/index.html', 'apps/studio/public/manifest.webmanifest']), false);
     assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true }), false);
     assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml']), true);

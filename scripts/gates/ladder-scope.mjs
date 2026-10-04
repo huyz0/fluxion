@@ -108,6 +108,8 @@ export const NAMED_PATH_HARNESS = [
   [/^(packages|packs|apps)\/[^/]+\/__fixtures__\/.+/, []],
   // the bundle budgets: read by the ladder's own `size-limit` step, which the staged ladder runs; no harness file reads them
   [/^\.size-limit\.js$/, []],
+  // the format specification: prose no gate parses but the docs checks (links and terms)
+  [/^specs\/format\/[^/]+\.md$/, ['docs-consistency']],
   // an app's page and static files (its web manifest, icons): read by the Vite build, which the ladder's `build` step runs, and by its e2e specs; no harness file reads them
   [/^apps\/[^/]+\/(index\.html|public\/.+)$/, []],
   // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test names it
@@ -302,6 +304,8 @@ export function packagingDirs(staged, options = {}) {
 function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = false, librariesUnchanged = false } = {}) {
   const inert = (p) =>
     p === 'scripts/gates/milestone-checks.mjs' ||
+    // a milestone's completion gate runs its own legs, not a packaging check
+    /^scripts\/gates\/m\d+-complete\.mjs$/.test(p) ||
     // the fixture generator reads documents, not a manifest, an export or a build setting
     p === 'scripts/fixtures/gen.mjs' ||
     // the API gate reads built declarations and a manifest's exports map; it changes none of them
@@ -319,6 +323,7 @@ function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = fals
     // an app's page and static files are built into the app, not packed
     /^apps\/[^/]+\/(index\.html|public\/.+)$/.test(p) ||
     /^docs\/.+\.md$/.test(p) ||
+    /^specs\/format\/[^/]+\.md$/.test(p) ||
     // notes and documents no manifest, export or build setting reads
     /^\.changeset\/.+\.md$/.test(p) ||
     /^(examples|fixtures)\//.test(p) ||
