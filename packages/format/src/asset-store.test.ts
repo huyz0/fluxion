@@ -113,7 +113,7 @@ describe('referenced assets', () => {
     expect(referencedAssetHashes({ ...doc, records })).toEqual([hashOf('b'), hashOf('c'), hashOf('e')]);
   });
 
-  it('FR-FIL-004: font assets are kept until the embedding row narrows them to the fonts in use', async () => {
+  it('FR-FIL-004: with no theme record to read the defaults from, every font asset is kept', async () => {
     const doc = await documentWith(noise(50), 0);
     const withFont: DocumentFile = {
       ...doc,

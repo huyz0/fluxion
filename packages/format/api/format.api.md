@@ -234,6 +234,9 @@ export type SvgInspection = {
 };
 
 // @public
+export function usedFontFamilies(doc: DocumentFile): ReadonlySet<string> | undefined;
+
+// @public
 export const VERSION: string;
 
 // @public

@@ -4,6 +4,7 @@
 // written (`selectAssets`).
 import type { AnyRecord, DocumentFile } from '@fluxion/schema';
 import type { ContentHasher, FluxAsset } from './flux-writer.js';
+import { normalise, usedFontFamilies } from './used-fonts.js';
 
 /**
  * Holds asset bytes by the hash of the bytes.
@@ -51,10 +52,17 @@ function at(value: unknown, path: readonly string[]): unknown {
   return path.reduce<unknown>((v, key) => (typeof v === 'object' && v !== null ? (v as { readonly [k: string]: unknown })[key] : undefined), value);
 }
 
+/** Whether the font record `font` is one the text uses: its family is among `used`, or `used` is unknown (keep every font). */
+function isUsedFont(font: unknown, used: ReadonlySet<string> | undefined): boolean {
+  if (used === undefined) return true;
+  const family = (font as { readonly family?: unknown }).family;
+  return typeof family === 'string' && used.has(normalise(family));
+}
+
 /**
  * The hashes of the assets a document refers to: an asset record counts when an element or a screen names its id in one of the fields
  * the schema's referential check knows (`assetId`, `snapshotAssetId`, a fill's `assetId`, a screen background's `assetId`), and so does
- * every font asset record (a font is in the document because someone added it; M10.15 narrows this to the fonts text uses). An asset
+ * every font asset record of a family the text uses (`usedFontFamilies`; when that cannot be told, every font asset). An asset
  * record nothing names is not in the result, and a string that merely equals an asset's id (an index, a name) is not a reference.
  *
  * @public
@@ -62,12 +70,12 @@ function at(value: unknown, path: readonly string[]): unknown {
 export function referencedAssetHashes(doc: DocumentFile): string[] {
   const records = Object.values(doc.records) as readonly (AnyRecord & { readonly hash?: string; readonly font?: unknown })[];
   const byId = new Map(records.filter((r) => r.type === 'asset' && r.hash !== undefined).map((r) => [r.id as string, r]));
-  const hashes = new Set<string>();
-  for (const asset of byId.values()) if (asset.font !== undefined) hashes.add(asset.hash as string);
+  const used = usedFontFamilies(doc);
+  const hashes = new Set<string>(
+    [...byId.values()].filter((asset) => asset.font !== undefined && isUsedFont(asset.font, used)).map((asset) => asset.hash as string),
+  );
   for (const record of records.filter((r) => r.type === 'element' || r.type === 'screen')) {
-    for (const path of ASSET_FIELDS) {
-      const target = at(record, path);
-      const hash = typeof target === 'string' ? byId.get(target)?.hash : undefined;
+    for (const hash of ASSET_FIELDS.map((path) => at(record, path)).map((target) => (typeof target === 'string' ? byId.get(target)?.hash : undefined))) {
       if (hash !== undefined) hashes.add(hash);
     }
   }
