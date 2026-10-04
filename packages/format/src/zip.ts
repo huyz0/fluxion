@@ -50,6 +50,8 @@ export type ZipEntry = {
 export type ZipFailure = {
   /** What is wrong, for a diagnostic. */
   readonly reason: string;
+  /** `limit` when a limit stopped the read (entry count, sizes, memory), `invalid` when the archive is damaged or unsupported. */
+  readonly kind: 'invalid' | 'limit';
 };
 
 /**
@@ -78,7 +80,7 @@ const VERSION = 20;
 const U16 = 0xffff;
 const U32 = 0xffffffff;
 
-const failure = (reason: string): Result<never, ZipFailure> => err({ reason });
+const failure = (reason: string, kind: ZipFailure['kind'] = 'invalid'): Result<never, ZipFailure> => err({ reason, kind });
 
 /** The local file header of an entry (30 bytes and its name). */
 function localHeader(name: Uint8Array, e: { readonly method: number; readonly crc: number; readonly packed: number; readonly size: number }): Uint8Array {
@@ -237,7 +239,7 @@ function entryOf(bytes: Uint8Array, view: DataView, item: Listing): Result<ZipEn
   if (!body.ok) return body;
   if (method === 0 && packed !== size) return failure(`${name}: a stored entry whose sizes differ`);
   const inflated = method === 0 ? ok(body.value) : inflateRaw(body.value, size);
-  if (!inflated.ok) return failure(`${name}: ${inflated.error.reason}`);
+  if (!inflated.ok) return failure(`${name}: ${inflated.error.reason}`, inflated.error.kind);
   if (inflated.value.length !== size) return failure(`${name}: ${inflated.value.length} bytes where ${size} were declared`);
   if (crc32(inflated.value) !== item.crc) return failure(`${name}: its checksum does not match`);
   return ok({ name, bytes: inflated.value.slice(), method: method === 0 ? 'store' : 'deflate' });
@@ -248,7 +250,7 @@ function entryOrFailure(bytes: Uint8Array, view: DataView, item: Listing): Resul
   try {
     return entryOf(bytes, view, item);
   } catch (e) {
-    if (e instanceof RangeError) return failure(`${item.name}: the host cannot hold ${item.size} bytes`);
+    if (e instanceof RangeError) return failure(`${item.name}: the host cannot hold ${item.size} bytes`, 'limit');
     throw e;
   }
 }
@@ -264,16 +266,16 @@ export function readZip(bytes: Uint8Array, limits: ZipLimits = {}): Result<ZipEn
   const end = bytes.length < 22 ? -1 : findEnd(view);
   if (end < 0) return failure('no zip end record');
   const count = view.getUint16(end + 10, true);
-  if (count > maxEntries) return failure(`${count} entries (more than ${maxEntries})`);
+  if (count > maxEntries) return failure(`${count} entries (more than ${maxEntries})`, 'limit');
   const entries: ZipEntry[] = [];
   let at = view.getUint32(end + 16, true);
   let total = 0;
   for (let i = 0; i < count; i++) {
     const item = listingAt(bytes, view, at);
     if (!item.ok) return item;
-    if (item.value.size > maxEntryBytes) return failure(`${item.value.name}: ${item.value.size} bytes inflated (more than ${maxEntryBytes})`);
+    if (item.value.size > maxEntryBytes) return failure(`${item.value.name}: ${item.value.size} bytes inflated (more than ${maxEntryBytes})`, 'limit');
     total += item.value.size;
-    if (total > maxTotalBytes) return failure(`the entries inflate to more than ${maxTotalBytes} bytes`);
+    if (total > maxTotalBytes) return failure(`the entries inflate to more than ${maxTotalBytes} bytes`, 'limit');
     const entry = entryOrFailure(bytes, view, item.value);
     if (!entry.ok) return entry;
     entries.push(entry.value);

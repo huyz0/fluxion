@@ -4,6 +4,7 @@
 
 ```ts
 
+import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 
@@ -38,6 +39,42 @@ export type FluxAsset = {
 
 // @public
 export type FluxWriteFailure = ZipFailure;
+
+// @public
+export type FormatError = {
+    readonly code: FormatErrorCode;
+    readonly message: string;
+};
+
+// @public
+export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_INTERNAL";
+
+// @public
+export type LoadedFlux = {
+    readonly document: DocumentFile;
+    readonly diagnostics: readonly Diagnostic[];
+    readonly notes: readonly LoadNote[];
+    readonly assets: ReadonlyMap<string, FluxAsset>;
+};
+
+// @public
+export function loadFlux(bytes: Uint8Array, options: LoadOptions): Promise<Result<LoadedFlux, FormatError>>;
+
+// @public
+export type LoadNote = {
+    readonly code: LoadNoteCode;
+    readonly entry: string;
+    readonly message: string;
+};
+
+// @public
+export type LoadNoteCode = "MANIFEST_MISSING" | "MANIFEST_INVALID" | "MIMETYPE_NOT_FIRST" | "ENTRY_HASH_MISMATCH" | "ENTRY_UNLISTED" | "ENTRY_MISSING" | "ASSET_HASH_MISMATCH" | "ASSET_NAME_INVALID";
+
+// @public
+export type LoadOptions = {
+    readonly hasher: ContentHasher;
+    readonly limits?: ZipLimits;
+};
 
 // @public
 export const MAX_SVG_CHARS: number;
@@ -90,6 +127,7 @@ export type ZipEntry = {
 // @public
 export type ZipFailure = {
     readonly reason: string;
+    readonly kind: "invalid" | "limit";
 };
 
 // @public

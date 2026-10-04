@@ -8,6 +8,8 @@ import { DISTANCE_BASE, DISTANCE_EXTRA, LENGTH_BASE, LENGTH_EXTRA } from './defl
 export type InflateFailure = {
   /** What is wrong, for a diagnostic. */
   readonly reason: string;
+  /** `limit` when the stream was stopped for its size (the output cap, or memory), `invalid` when it is malformed. */
+  readonly kind: 'invalid' | 'limit';
 };
 
 const MAX_BITS = 15;
@@ -45,15 +47,17 @@ const FIXED_DISTANCE = buildHuffman(Array(30).fill(5)) as Huffman;
 /** Thrown by the decoder's helpers to stop at the first fault; caught in `inflateRaw`, never seen by callers. */
 class Stop extends Error {
   readonly reason: string;
+  readonly kind: 'invalid' | 'limit';
 
-  constructor(reason: string) {
+  constructor(reason: string, kind: 'invalid' | 'limit') {
     super(reason);
     this.reason = reason;
+    this.kind = kind;
   }
 }
 
-const fail = (reason: string): never => {
-  throw new Stop(reason);
+const fail = (reason: string, kind: 'invalid' | 'limit' = 'invalid'): never => {
+  throw new Stop(reason, kind);
 };
 
 /** The decoder's state: the input and its bit position, the output so far and its cap. */
@@ -104,7 +108,7 @@ class Inflater {
   }
 
   private put(byte: number): void {
-    if (this.outPos >= this.maxOut) fail('the output is larger than allowed');
+    if (this.outPos >= this.maxOut) fail('the output is larger than allowed', 'limit');
     if (this.outPos === this.out.length) {
       const grown = new Uint8Array(Math.min(this.out.length * 2, this.maxOut + 1));
       grown.set(this.out);
@@ -203,9 +207,9 @@ export function inflateRaw(src: Uint8Array, maxOut: number): Result<Uint8Array, 
   try {
     inflater.run();
   } catch (e) {
-    if (e instanceof Stop) return err({ reason: e.reason });
+    if (e instanceof Stop) return err({ reason: e.reason, kind: e.kind });
     // the host refused a large buffer: a hostile stream asking for more than it can give
-    if (e instanceof RangeError) return err({ reason: 'the output does not fit in memory' });
+    if (e instanceof RangeError) return err({ reason: 'the output does not fit in memory', kind: 'limit' });
     throw e;
   }
   return ok(inflater.result());

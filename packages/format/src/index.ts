@@ -5,6 +5,7 @@
  */
 
 export { type AssetStore, createMemoryAssetStore, referencedAssetHashes, type SelectedAssets, selectAssets } from './asset-store.js';
+export type { FormatError, FormatErrorCode, LoadNote, LoadNoteCode } from './errors.js';
 export {
   type ContentHasher,
   FLUX_FORMAT_VERSION,
@@ -14,6 +15,7 @@ export {
   type WriteFluxInput,
   writeFlux,
 } from './flux-writer.js';
+export { type LoadedFlux, type LoadOptions, loadFlux } from './loader.js';
 export { MAX_SVG_CHARS, sanitizeSvg } from './sanitize-svg.js';
 export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
 

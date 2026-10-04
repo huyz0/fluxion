@@ -128,7 +128,7 @@ async function assetEntries(input: WriteFluxInput): Promise<Result<ZipInput[], F
   for (const key of [...(input.assets?.keys() ?? [])].sort()) {
     const asset = input.assets?.get(key) as FluxAsset;
     const actual = await input.hasher.sha256(asset.bytes);
-    if (actual !== key) return err({ reason: `the asset ${key} has the hash ${actual}` });
+    if (actual !== key) return err({ reason: `the asset ${key} has the hash ${actual}`, kind: 'invalid' });
     const ext = extensionOf(asset.mime);
     out.push({ name: `assets/${key}.${ext}`, bytes: asset.bytes, method: STORED.has(ext) ? 'store' : 'deflate' });
   }
