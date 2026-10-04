@@ -13,7 +13,7 @@
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
-import { harnessFiles, lockfileWorkspaceOnly, packagingNeeded, testScope } from './ladder-scope.mjs';
+import { harnessFiles, lockfileWorkspaceOnly, packagingDirs, packagingNeeded, testScope } from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
@@ -60,10 +60,14 @@ const librariesUnchanged = () => {
   // a list that cannot be read (either side) is a change: both unreadable must not look the same
   return before !== undefined && after !== undefined && before === after;
 };
+const packagingOptions = () => ({ lockfileWorkspaceOnly: workspaceLock(), librariesUnchanged: librariesUnchanged() });
 const packagingOrSkip = () =>
-  mode !== 'staged' ||
-  packagingNeeded(stagedPaths(), { lockfileWorkspaceOnly: workspaceLock(), librariesUnchanged: librariesUnchanged() }) ||
-  'no staged manifest, export or build setting (CI runs it)';
+  mode !== 'staged' || packagingNeeded(stagedPaths(), packagingOptions()) || 'no staged manifest, export or build setting (CI runs it)';
+// a staged commit that changes the packing of some libraries only packs those (CI's --all packs them all)
+const packagingArgs = () => {
+  const dirs = mode === 'staged' ? packagingDirs(stagedPaths(), packagingOptions()) : undefined;
+  return dirs === undefined ? [] : ['--dirs', dirs.join(',')];
+};
 const testPlan = () => (mode === 'staged' ? testScope(stagedPaths(), workspaces(), browserTested(), scopeOptions()) : { run: true, browser: true });
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */
@@ -127,13 +131,13 @@ const STEPS = [
     'publint',
     (m) => m !== 'quick',
     () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'),
-    () => node('scripts/gates/check-packages.mjs', ['--tool', 'publint']),
+    () => node('scripts/gates/check-packages.mjs', ['--tool', 'publint', ...packagingArgs()]),
   ],
   [
     'attw',
     (m) => m !== 'quick',
     () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'),
-    () => node('scripts/gates/check-packages.mjs', ['--tool', 'attw']),
+    () => node('scripts/gates/check-packages.mjs', ['--tool', 'attw', ...packagingArgs()]),
   ],
   ['size-limit', (m) => m !== 'quick', () => (hasPkg && exists('.size-limit.js')) || 'size-limit not configured', () => pnpm('exec', 'size-limit')],
   [

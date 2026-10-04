@@ -12,6 +12,7 @@ import {
   lockfileWorkspaceOnly,
   MANIFEST_HARNESS,
   NAMED_PATH_HARNESS,
+  packagingDirs,
   packagingNeeded,
   SAMPLE_HARNESS,
   SOURCE_HARNESS,
@@ -84,6 +85,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace', 'workspace-shape']),
     );
     assert.deepEqual(harnessFiles(['e2e/x.spec.ts'], ALL), only(['trace', 'workspace-shape']));
+    // the package hygiene gate's own tests, not the whole harness (M10.54)
+    assert.deepEqual(harnessFiles(['scripts/gates/check-packages.mjs'], ALL), only(['packages']));
     // the API gate's own tests, not the whole harness (M10.29)
     assert.deepEqual(harnessFiles(['scripts/gates/check-api.mjs'], ALL), only(['api']));
     assert.deepEqual(harnessFiles(['scripts/gates/milestone-checks.mjs'], ALL), only(['bench-leg', 'kits', 'ladder-scope', 'milestone-checks', 'verify-leg']));
@@ -206,6 +209,12 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       false,
     );
     assert.equal(harnessFiles(['scripts/fixtures/gen.mjs'], ALL).includes(file('milestone-checks')), true);
+    // publint and attw pack only the libraries whose packing the commit can change; a root setting or a manifest outside a library packs all
+    assert.deepEqual(packagingDirs(['packages/cli/package.json', 'pnpm-lock.yaml', 'docs/a.md'], { lockfileWorkspaceOnly: true }), ['packages/cli']);
+    assert.deepEqual(packagingDirs(['packages/cli/package.json', 'packs/basic/tsdown.config.ts', 'packages/cli/src/x.ts']), ['packages/cli', 'packs/basic']);
+    assert.equal(packagingDirs(['packages/cli/package.json', 'tsconfig.base.json']), undefined);
+    assert.equal(packagingDirs(['packages/cli/package.json', 'pnpm-lock.yaml']), undefined);
+    assert.deepEqual(packagingDirs(['docs/a.md', 'packages/cli/src/x.ts']), []);
     // the API gate's script changes no manifest, export or build setting
     assert.equal(packagingNeeded(['scripts/gates/check-api.mjs', 'packages/core/api/core.testing.api.md']), false);
     // a library's manifest still runs them, whatever the lockfile did
@@ -215,9 +224,9 @@ describe('staged ladder scope (NFR-DX-002)', () => {
   });
 
   it('a workspace manifest or a workspace-only lockfile runs the manifest harness; an external lockfile change runs them all (M4.29)', () => {
-    // literal names: the whole-repo coverage, layering and licenses runs are the staged ladder's steps and CI's, not this list's
-    const manifest = MANIFEST_HARNESS.filter((n) => !['coverage', 'layering', 'licenses'].includes(n)).map(file);
-    assert.ok(!manifest.some((f) => /\/(coverage|layering|licenses)\.test\.mjs$/.test(f)));
+    // literal names: the whole-repo api, coverage, layering and licenses runs are the staged ladder's steps and CI's, not this list's
+    const manifest = MANIFEST_HARNESS.filter((n) => !['api', 'coverage', 'layering', 'licenses'].includes(n)).map(file);
+    assert.ok(!manifest.some((f) => /\/(api|coverage|layering|licenses)\.test\.mjs$/.test(f)));
     assert.deepEqual(
       harnessFiles(['packages/render/package.json', 'packages/render/src/x.tsx'], ALL),
       ALL.filter((f) => manifest.includes(f)),

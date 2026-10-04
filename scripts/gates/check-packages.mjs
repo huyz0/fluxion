@@ -3,6 +3,7 @@
 //   check-packages.mjs --tool publint   exports/files/metadata lint on the packed package
 //   check-packages.mjs --tool attw      "are the types wrong" (ESM-only profile)
 //   check-packages.mjs --tool … --dir <workspace>   one workspace (tests)
+//   check-packages.mjs --tool … --dirs a,b          the named libraries only (the staged ladder: those whose packing the commit can change)
 // Libraries come from tools/gen/workspaces.json (packages/* and packs/*); run after a build.
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -23,7 +24,9 @@ if (!['publint', 'attw'].includes(tool)) {
 const { workspaces } = JSON.parse(readFileSync(join(REPO_ROOT, 'tools/gen/workspaces.json'), 'utf8'));
 const dirs = opt('dir')
   ? [opt('dir')]
-  : workspaces.filter((w) => !w.private && (w.dir.startsWith('packages/') || w.dir.startsWith('packs/'))).map((w) => w.dir);
+  : opt('dirs')
+    ? opt('dirs').split(',')
+    : workspaces.filter((w) => !w.private && (w.dir.startsWith('packages/') || w.dir.startsWith('packs/'))).map((w) => w.dir);
 // FLUXION_TOOLS_ROOT lets tests lint a sandbox checkout with this repo's installed tools
 const toolsRoot = process.env.FLUXION_TOOLS_ROOT ?? REPO_ROOT;
 const bin = join(toolsRoot, 'node_modules', '.bin', process.platform === 'win32' ? `${tool}.cmd` : tool);

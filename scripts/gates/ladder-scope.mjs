@@ -50,6 +50,7 @@ export const SAMPLE_HARNESS = ['adapters', 'api', 'coverage', 'ladder', 'layerin
 export const MANIFEST_HARNESS = [
   ...SOURCE_HARNESS,
   'adapters',
+  'api',
   'budget',
   'ci-workflow',
   'coverage',
@@ -65,10 +66,11 @@ export const MANIFEST_HARNESS = [
 /**
  * The manifest harness a staged commit runs: MANIFEST_HARNESS without the files whose real-repo run is a step of the same staged
  * ladder or CI's (coverage: the staged Vitest step judges the touched workspaces' floors and --all runs the whole-repo run;
- * layering and licenses: the `layering` and `licenses` steps run the gate scripts on the real repo). A commit that adds a workspace
+ * api, layering and licenses: the `api`, `layering` and `licenses` steps run the gate scripts on the real repo; the api harness reads a manifest's
+ * exports map only to report each subpath, M10.29). A commit that adds a workspace
  * went over the 120 s budget on a 4-core machine with them (about 220 s, M9.8); --all and CI run every file (NFR-DX-002).
  */
-const STAGED_SKIPPED = ['coverage', 'layering', 'licenses'];
+const STAGED_SKIPPED = ['api', 'coverage', 'layering', 'licenses'];
 export const STAGED_MANIFEST_HARNESS = MANIFEST_HARNESS.filter((n) => !STAGED_SKIPPED.includes(n));
 
 /**
@@ -124,6 +126,8 @@ export const NAMED_PATH_HARNESS = [
   [/^scripts\/gates\/thresholds\.mjs$/, ['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']],
   // the licence and drift gates: their own tests (a sandbox copy of scripts/ serves the rest)
   [/^scripts\/gates\/check-licenses\.mjs$/, ['licenses']],
+  // the package hygiene gate: its own tests (a sandbox copy of scripts/ serves the rest)
+  [/^scripts\/gates\/check-packages\.mjs$/, ['packages']],
   // the API gate: its own tests (a sandbox copy of scripts/ serves the rest)
   [/^scripts\/gates\/check-api\.mjs$/, ['api']],
   [/^scripts\/gates\/check-drift\.mjs$/, ['drift']],
@@ -272,8 +276,28 @@ export function testScope(stagedPaths, workspaces, browserTested, { lockfileWork
  * changes a manifest or a build setting. A private app's manifest and tsconfig, a workspace-only lockfile change (`lockfileWorkspaceOnly`) and a
  * workspace list whose publishable libraries are unchanged (`librariesUnchanged`) are inert too. CI's `--all` ladder always runs them (NFR-DX-002, ci-cd.md §5).
  */
-export function packagingNeeded(staged, { lockfileWorkspaceOnly: workspaceLock = false, librariesUnchanged = false } = {}) {
-  // milestone-checks.mjs judges milestone legs and rows; it reads no manifest, export or build setting
+export function packagingNeeded(staged, options = {}) {
+  return packagingRelevant(staged, options).length > 0;
+}
+
+/**
+ * The libraries whose packed form the staged paths can change: the directories (`packages/x`, `packs/y`) when every path that matters is inside
+ * one library, or undefined for all of them (a root build setting, a manifest outside a library). publint and attw pack one library at a time, so
+ * a manifest change in one library need not pack the other twenty (NFR-DX-002). CI's `--all` ladder still packs them all.
+ */
+export function packagingDirs(staged, options = {}) {
+  const relevant = packagingRelevant(staged, options);
+  const dirs = new Set();
+  for (const p of relevant) {
+    const dir = /^((?:packages|packs)\/[^/]+)\//.exec(p)?.[1];
+    if (dir === undefined) return undefined;
+    dirs.add(dir);
+  }
+  return [...dirs].sort();
+}
+
+/** The staged paths that can change what is packed (those that are not inert). */
+function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = false, librariesUnchanged = false } = {}) {
   const inert = (p) =>
     p === 'scripts/gates/milestone-checks.mjs' ||
     // the fixture generator reads documents, not a manifest, an export or a build setting
@@ -302,5 +326,5 @@ export function packagingNeeded(staged, { lockfileWorkspaceOnly: workspaceLock =
     /^apps\/[^/]+\/(package|tsconfig)\.json$/.test(p) ||
     (p === 'pnpm-lock.yaml' && workspaceLock) ||
     (p === 'tools/gen/workspaces.json' && librariesUnchanged);
-  return !staged.every(inert);
+  return staged.filter((p) => !inert(p));
 }
