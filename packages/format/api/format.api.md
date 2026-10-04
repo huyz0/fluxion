@@ -8,9 +8,21 @@ import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 
 // @public
+export interface AssetStore {
+    delete(hash: string): Promise<void>;
+    get(hash: string): Promise<FluxAsset | undefined>;
+    has(hash: string): Promise<boolean>;
+    hashes(): Promise<string[]>;
+    put(bytes: Uint8Array, mime: string): Promise<string>;
+}
+
+// @public
 export type ContentHasher = {
     sha256(bytes: Uint8Array): Promise<string>;
 };
+
+// @public
+export function createMemoryAssetStore(hasher: ContentHasher): AssetStore;
 
 // @public
 export const FLUX_FORMAT_VERSION = "1.0";
@@ -34,7 +46,19 @@ export const MAX_SVG_CHARS: number;
 export function readZip(bytes: Uint8Array, limits?: ZipLimits): Result<ZipEntry[], ZipFailure>;
 
 // @public
+export function referencedAssetHashes(doc: DocumentFile): string[];
+
+// @public
 export function sanitizeSvg(input: string): string | undefined;
+
+// @public
+export function selectAssets(doc: DocumentFile, store: AssetStore): Promise<SelectedAssets>;
+
+// @public
+export type SelectedAssets = {
+    readonly assets: ReadonlyMap<string, FluxAsset>;
+    readonly missing: readonly string[];
+};
 
 // @public
 export const VERSION: string;

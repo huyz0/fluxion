@@ -4,6 +4,7 @@
  * @packageDocumentation
  */
 
+export { type AssetStore, createMemoryAssetStore, referencedAssetHashes, type SelectedAssets, selectAssets } from './asset-store.js';
 export {
   type ContentHasher,
   FLUX_FORMAT_VERSION,
