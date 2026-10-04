@@ -88,3 +88,4 @@ M8 final F3: this record uses the gate's disposition spellings (hand-off, argue)
 M8 final F4: the 'M7 is closed' leg reads a text flag; M7.28 and M8.2 cite the milestone-gate run and the commit they were closed from, and a check that the closing row names a run is a harness change for a later harness milestone.
 M8 final F5: gate-script changes inside feature commits were small and are argued at cp2 F5; plans that add a file kind list a ladder-scope row.
 M8 final-delta D2: perf.drag-500 reads thresholds as text and imports no editor code; its 8 px is FR-ARR-005's stated snap reach and snap.test.ts pins SNAP_PX; the place check still fails if the element does not follow the pointer.
+M10 cp1 F6: the plan grew from 20 to 60+ rows by splits (a feature commit that tripped the 120 s staged budget became a feature row and a ladder-scope row; ten rows) and by CI-red fixes on other engines, with no new scope; the lessons are in docs/milestones/M10.md Learned.
