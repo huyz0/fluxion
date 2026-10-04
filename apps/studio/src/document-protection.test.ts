@@ -3,8 +3,8 @@ import type { AssetStore } from '@fluxion/editor';
 import type { RecordId } from '@fluxion/schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentAutosave } from './autosave/document-autosave.js';
-import { journalId, keepAssets } from './document-protection.js';
 import type { OpenedEntry } from './opened-files.js';
+import { journalId, keepAssets } from './protection-logic.js';
 
 const entry = (identity: string) => ({ identity }) as unknown as OpenedEntry;
 

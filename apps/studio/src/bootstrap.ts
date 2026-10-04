@@ -39,11 +39,4 @@ export function openDocument(file: DocumentFile, options: { readonly readOnly?: 
   return ok({ core, registries: renderRegistriesFor(core.registries), themes: themesCorePack.themes });
 }
 
-/**
- * Randomness for new ids from the platform's cryptographic source.
- *
- * @public
- */
-export const cryptoRandom: Random = {
-  next: () => (crypto.getRandomValues(new Uint32Array(1))[0] as number) / 2 ** 32,
-};
+export { cryptoRandom } from './random.js';

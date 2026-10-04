@@ -6,12 +6,13 @@ import type { AssetStore } from '@fluxion/editor';
 import type { FluxAsset } from '@fluxion/format';
 import { createId, type RecordId, type Result } from '@fluxion/schema';
 import { type JSX, useCallback, useEffect, useRef, useState } from 'react';
-import { cryptoRandom } from './bootstrap.js';
 import type { FileHost, PickedFile } from './file-host.js';
 import { describeFile, fileBytes, mayOverwrite, openFileBytes, type SavedBytes, webHasher } from './file-session.js';
 import { bundledFontsFor } from './font-embed.js';
 import { embeddableFaces } from './fonts.js';
+import { heldBytes } from './held-bytes.js';
 import { assetUrls, type OpenedEntry, registerOpened } from './opened-files.js';
+import { cryptoRandom } from './random.js';
 
 /** The version the manifest of a saved file names. */
 const STUDIO_VERSION = '0.0.0';
@@ -37,18 +38,6 @@ function suggestedName(entry: OpenedEntry | undefined, store: Store): string {
   const title = (store.toDocument().records[store.members('byType', 'document')[0] as RecordId] as { title?: unknown } | undefined)?.title;
   const base = entry?.file.name.replace(/\.(flux\.html|flux\.json|flux|html|json)$/i, '') ?? (typeof title === 'string' && title !== '' ? title : 'document');
   return `${base.replace(/[\\/:*?"<>|]+/g, '-')}.flux`;
-}
-
-/**
- * The bytes the editor holds for an asset record, as a file the writer can take.
- *
- * @public
- */
-export async function heldBytes(assets: AssetStore, assetId: string): Promise<FluxAsset | undefined> {
-  const url = assets.url(assetId as RecordId);
-  if (url === undefined) return undefined;
-  const blob = await (await fetch(url)).blob();
-  return { bytes: new Uint8Array(await blob.arrayBuffer()), mime: blob.type };
 }
 
 /**

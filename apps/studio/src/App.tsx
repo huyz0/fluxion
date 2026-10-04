@@ -7,7 +7,7 @@ import { ok, type RecordId } from '@fluxion/schema';
 import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { AutosaveBar } from './autosave/autosave-bar.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
-import { type Guard, journalId, useGuard, useProtection } from './document-protection.js';
+import { type Guard, useGuard, useProtection } from './document-protection.js';
 import { exampleNames, loadDocument } from './documents.js';
 import { FileBar, OpenControl, openPicked, pickedFromDrop } from './file-bar.js';
 import { browserFileHost } from './file-host.js';
@@ -17,6 +17,7 @@ import { rememberSaved } from './library/library-service.js';
 import { RecentFiles } from './library/recent-files.js';
 import { localSettings } from './local-settings.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
+import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
 import { routeOf } from './routes.js';
 
