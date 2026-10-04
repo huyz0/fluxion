@@ -61,6 +61,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0154](ADR-0154-player-inline-host.md) | `@fluxion/player-inline`: the host that builds the one-file player | accepted | 2026-10-04 |
 | [0155](ADR-0155-cli-convert.md) | `fluxion convert`: a `.flux` and a `.flux.html` are the same document | accepted | 2026-10-04 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
+| [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 
 ## ADR required when
 
