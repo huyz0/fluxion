@@ -11,6 +11,8 @@ import type { OpenedFile } from './file-session.js';
 export type OpenedEntry = {
   /** Tells this file from another of the same name: the name and the start of the hash of the bytes read (autosave files the document under it). */
   readonly identity: string;
+  /** Present for a recovered document: the journal id it carries on, so a second crash before the first save loses nothing. */
+  readonly resume?: string;
   /** What the file is and what must come back on a save. */
   readonly file: OpenedFile;
   /** The bytes of each asset record as a `data:` URL, by record id. */

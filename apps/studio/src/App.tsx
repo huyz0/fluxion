@@ -15,6 +15,7 @@ import { fontSources } from './font-sources.js';
 import { loadBundledFonts } from './fonts.js';
 import { localSettings } from './local-settings.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
+import { RecoveryHost } from './recovery-host.js';
 import { routeOf } from './routes.js';
 
 const subscribe = (onChange: () => void) => {
@@ -199,6 +200,7 @@ export function App(): JSX.Element {
   return (
     <>
       <Routed route={route} />
+      <RecoveryHost onOpened={(id) => navigate(`/edit/${id}`)} />
       {dropped === '' ? null : (
         <div role="alert" style={{ position: 'fixed', bottom: 8, left: 8, right: 8, zIndex: 10_000, padding: 8, background: '#fef2f2', color: '#7f1d1d' }}>
           {dropped}

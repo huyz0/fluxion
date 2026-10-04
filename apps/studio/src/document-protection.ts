@@ -5,7 +5,7 @@ import type { AssetStore } from '@fluxion/editor';
 import type { RecordId } from '@fluxion/schema';
 import { useEffect, useState } from 'react';
 import { type BrowserAutosave, browserAutosave } from './autosave/browser.js';
-import { type AutosaveState, type DocumentAutosave, startDocumentAutosave } from './autosave/document-autosave.js';
+import { type AutosaveState, type DocumentAutosave, type Started, startDocumentAutosave } from './autosave/document-autosave.js';
 import { currentFile, heldBytes } from './file-bar.js';
 import type { OpenedEntry } from './opened-files.js';
 
@@ -31,14 +31,14 @@ export type Guard =
     };
 
 /**
- * The id the journal files a document under. A file is filed under its name and a hash of the bytes read, so two files called alike stay apart (the studio's `file-N` ids do not survive a reload, and a second tab
+ * The id the journal files a document under. A file is filed under its name and a hash of the bytes read, so two files called alike stay apart, and a recovered document carries on the journal it was rebuilt from (the studio's `file-N` ids do not survive a reload, and a second tab
  * on the same file must meet the first tab's lock); a new or bundled document is a different document in each tab, so it is filed under the route's
  * id and this page's `instance`. Recovery lists what the journal holds, so the id need not be guessed again after a crash.
  *
  * @public
  */
 export const journalId = (docId: string, entry: OpenedEntry | undefined, instance: string): string =>
-  entry === undefined ? `${docId}~${instance}` : `file:${entry.identity}`;
+  entry === undefined ? `${docId}~${instance}` : (entry.resume ?? `file:${entry.identity}`);
 
 /**
  * Take the lock for `id` while the page is open. With `enabled` false (present mode) nothing is taken and the phase is `editing` with no storage use.
@@ -137,6 +137,32 @@ export type ProtectionInput = {
   readonly guard: Guard;
 };
 
+/** Start the autosave of a document whose lock this tab already holds. A recovered document carries on the journal it came from. */
+async function begin(input: ProtectionInput, env: BrowserAutosave): Promise<Started> {
+  const { id, store, assets, entry, title } = input;
+  const stored = entry?.resume === undefined ? undefined : await env.journal.load(entry.resume).catch(() => undefined);
+  return startDocumentAutosave({
+    docId: id,
+    store,
+    title,
+    journal: env.journal,
+    durable: env.durable,
+    ...(env.blobs === undefined ? {} : { blobs: env.blobs }),
+    snapshots: env.snapshots,
+    // the guard already holds the lock: this port hands out nothing more to release
+    lock: { acquire: () => Promise.resolve(() => undefined) },
+    persist: env.persist,
+    timers: env.timers,
+    iso: env.iso,
+    flux: async () => {
+      const made = await currentFile(entry, store, assets);
+      if (!made.ok) throw new Error(made.error);
+      return made.value.bytes;
+    },
+    ...(stored === undefined ? {} : { stored }),
+  });
+}
+
 /**
  * Journal the document while the guard says this tab is editing it. Returns the autosave (for Save to tell) and its state (for the status line).
  *
@@ -151,26 +177,7 @@ export function useProtection(input: ProtectionInput): { autosave: DocumentAutos
     let stopped = false;
     let current: DocumentAutosave | undefined;
     const stopAssets = keepAssets(store, assets, () => current);
-    // the guard already holds the lock: this port hands out nothing more to release
-    const held = { acquire: () => Promise.resolve(() => undefined) };
-    void startDocumentAutosave({
-      docId: id,
-      store,
-      title,
-      journal: env.journal,
-      durable: env.durable,
-      ...(env.blobs === undefined ? {} : { blobs: env.blobs }),
-      snapshots: env.snapshots,
-      lock: held,
-      persist: env.persist,
-      timers: env.timers,
-      iso: env.iso,
-      flux: async () => {
-        const made = await currentFile(entry, store, assets);
-        if (!made.ok) throw new Error(made.error);
-        return made.value.bytes;
-      },
-    }).then((result) => {
+    void begin({ id, store, assets, entry, title, guard }, env).then((result) => {
       if (result.kind !== 'editing') return;
       if (stopped) return result.autosave.stop();
       current = result.autosave;
