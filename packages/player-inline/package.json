@@ -1,0 +1,26 @@
+{
+  "name": "@fluxion/player-inline",
+  "version": "0.0.0",
+  "description": "The host that builds the one-file player (player.inline.js): the player, format and the bundled packs as one classic script.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

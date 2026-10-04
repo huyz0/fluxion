@@ -108,5 +108,5 @@ destructive or outward-facing. Record the reason in `.harness/state.json` → `b
 ## Package map (details: docs/architecture/01-overview.md)
 
 `packages/`: schema · geometry · core · theme · layout · routing · anim · format · dsl ·
-render · player · editor · sdk · cli · mcp · exporters — `apps/`: studio · docs —
+render · player · editor · sdk · cli · player-inline · mcp · exporters — `apps/`: studio · docs —
 `packs/`: first-party plugins. Each package has its own `AGENTS.md` with local context.

@@ -46,6 +46,9 @@
       "path": "./packages/cli"
     },
     {
+      "path": "./packages/player-inline"
+    },
+    {
       "path": "./packages/mcp"
     },
     {

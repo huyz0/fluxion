@@ -137,7 +137,7 @@ leg('the sources use no eval or new Function', () => {
 
 // ── the single file (FR-FIL-002, FR-EXP-001, FR-FIL-003) ────────────────────────────────────────────
 leg('the inline player bundle is built and size-limit runs its player-inline entry', () => {
-  if (!exists('packages/player/dist/player.inline.js')) return 'missing packages/player/dist/player.inline.js (run the player build)';
+  if (!exists('packages/player-inline/dist/player.inline.js')) return 'missing packages/player-inline/dist/player.inline.js (run the player build)';
   const r = pnpm('exec', 'size-limit', '--json');
   const entries = r.status === 0 ? JSON.parse(r.stdout) : [];
   const entry = entries.find((e) => String(e.name).includes('player-inline'));

@@ -41,7 +41,7 @@ Reviews: isolated reviewer subagent only (ADR-0137). Quoted test titles are the 
 
 ## M10 — File format & persistence (started 2026-10-04 at the human's request; M9's blocked rows stay above)
 
-Planned: 27 rows (plan 20: ADR rows M10.2 and M10.3 added from the plan's "Decide before coding", the gate is M10.1, and M10.23 is the zip codec the cloud container's frozen lockfile made necessary, ADR-0153). Row order is dependency order; the plan is `docs/milestones/M10.md`.
+Planned: 28 rows (plan 20: ADR rows M10.2 and M10.3 added from the plan's "Decide before coding", the gate is M10.1, and M10.23 is the zip codec the cloud container's frozen lockfile made necessary, ADR-0153). Row order is dependency order; the plan is `docs/milestones/M10.md`.
 
 | ID | Task | Req | Acceptance (EARS) | Deps | State | Commit |
 |---|---|---|---|---|---|---|
@@ -72,3 +72,4 @@ Planned: 27 rows (plan 20: ADR rows M10.2 and M10.3 added from the plan's "Decid
 | M10.25 | Staged ladder: `scripts/format/*.mjs` (the golden generator of M10.8) is scanned like the docs and fonts scripts and runs no other harness file | NFR-DX-002 | `ladder-scope.test.mjs`: a staged `scripts/format/goldens.mjs` selects the milestone-checks, portability and size harness files | M10.24 | done | 558fc65 |
 | M10.26 | Staged ladder: `specs/security/corpus/` files (hostile inputs read by the sanitizer's Vitest tests) run no harness file | NFR-DX-002 | `ladder-scope.test.mjs`: a staged corpus path selects no harness file | M10.25 | done | fefb17b |
 | M10.27 | `sanitizeHtml` for pasted HTML: deferred out of M10.9 (the editor's paste reads text, SVG and images only, so nothing would call it; a hand-written HTML sanitizer with no consumer is risk without value). Build it when HTML paste lands, with its corpus | NFR-SEC-001 | `sanitizeHtml` keeps `b i u s a br p ul ol li span`, rebuilds from tokens and sends every `href` through `safeLinkUrl`; the corpus has HTML cases | M10.9 | blocked (no consumer: HTML paste is not planned before M10 closes) |  |
+| M10.28 | Workspace `packages/player-inline` (L5 host, ADR-0154): manifest, docs row, layering edges, no external package; the bundle itself is M10.10 | FR-FIL-002, FR-EXP-001 | `workspace-shape`, `check-layering` and the architecture tests pass with the new workspace; the package exports its version | M10.3 | doing |  |

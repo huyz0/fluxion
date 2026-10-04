@@ -114,6 +114,14 @@
       "desc": "The fluxion command: validate, compile, render, lint, layout, convert, catalog, pack, site build."
     },
     {
+      "dir": "packages/player-inline",
+      "name": "@fluxion/player-inline",
+      "layer": "L5",
+      "runtime": "dom",
+      "dependsOn": ["player", "render", "core", "schema", "format", "sdk", "basic"],
+      "desc": "The host that builds the one-file player (player.inline.js): the player, format and the bundled packs as one classic script."
+    },
+    {
       "dir": "packages/mcp",
       "name": "@fluxion/mcp",
       "layer": "L5",

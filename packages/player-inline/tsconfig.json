@@ -1,0 +1,35 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": ".tsbuild",
+    "emitDeclarationOnly": true,
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../packages/player"
+    },
+    {
+      "path": "../../packages/render"
+    },
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/schema"
+    },
+    {
+      "path": "../../packages/format"
+    },
+    {
+      "path": "../../packages/sdk"
+    },
+    {
+      "path": "../../packs/basic"
+    }
+  ]
+}

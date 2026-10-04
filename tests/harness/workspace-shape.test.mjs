@@ -47,9 +47,13 @@ const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.
 const read = (p) => readFileSync(join(REPO, p), 'utf8');
 
 describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
-  it('declares the 16 architecture packages plus studio, docs and the first-party packs', () => {
+  it('declares the architecture packages plus studio, docs and the first-party packs', () => {
     const libs = workspaces.filter((w) => w.dir.startsWith('packages/')).map((w) => w.name);
-    assert.equal(libs.length, 16);
+    // every library is a row of the overview's package map (a table row `| L<n> | `name` | ...`), and the map has no library the manifest lacks
+    const mapped = [...read('docs/architecture/01-overview.md').matchAll(/^\| L\d \| `([a-z-]+)`/gm)].map((m) => m[1]);
+    const names = libs.map((n) => n.replace('@fluxion/', ''));
+    assert.ok(names.length >= 16);
+    assert.deepEqual([...names].sort(), [...mapped].filter((n) => !n.includes('exporters (R7)')).sort());
     assert.ok(libs.every((n) => n.startsWith('@fluxion/')));
     const others = workspaces.filter((w) => !w.dir.startsWith('packages/')).map((w) => w.dir);
     assert.deepEqual(others.slice(0, 2), ['apps/studio', 'apps/docs']);
