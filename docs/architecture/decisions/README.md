@@ -59,6 +59,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0152](ADR-0152-token-model-and-schema-1-2.md) | The token model: required roles checked at validation, derived tokens as DTCG aliases with a transform, an own OKLCH, schema 1.2 (metadata fields, a screen's theme reference) | accepted | 2026-10-03 |
 | [0153](ADR-0153-own-zip-codec.md) | The zip container is read and written by our own codec in `@fluxion/format`, not by fflate | accepted | 2026-10-04 |
 | [0154](ADR-0154-player-inline-host.md) | `@fluxion/player-inline`: the host that builds the one-file player | accepted | 2026-10-04 |
+| [0155](ADR-0155-cli-convert.md) | `fluxion convert`: a `.flux` and a `.flux.html` are the same document | accepted | 2026-10-04 |
 
 ## ADR required when
 

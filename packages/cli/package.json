@@ -23,7 +23,9 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@fluxion/format": "workspace:*",
     "@fluxion/pack-basic": "workspace:*",
+    "@fluxion/player-inline": "workspace:*",
     "@fluxion/render": "workspace:*",
     "@fluxion/schema": "workspace:*",
     "@fluxion/sdk": "workspace:*",

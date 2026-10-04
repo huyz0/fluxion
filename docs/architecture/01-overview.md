@@ -43,7 +43,7 @@ All packages live in a pnpm + Turborepo monorepo. `@fluxion/*` names; folders un
 | L4 | `player` | Present runtime: navigation, clock & scheduler, transition manager, trigger bus, interaction engine, overlays, responsive, speaker sync, `<fluxion-player>` web component | render, anim, format, core, schema | DOM |
 | L4 | `editor` | Edit overlay (selection, handles, guides), tools state machine, panels, inspector, library, timeline & interaction editors, AI panel | render, player, core, layout, routing, format, dsl, theme, geometry, schema | DOM |
 | L4 | `sdk` | Public plugin API (re-exports stable contracts), manifest schema, component contract, test harness | core, render (types), schema, theme | — |
-| L5 | `cli` | `fluxion` command: validate, compile, render, lint, layout, convert, catalog, pack, site build | schema, format, dsl, layout, routing, anim, render (SSR), sdk, basic (bundled pack, ADR-0017) | Node |
+| L5 | `cli` | `fluxion` command: validate, compile, render, lint, layout, convert, catalog, pack, site build | schema, format, dsl, layout, routing, anim, render (SSR), sdk, basic (bundled pack, ADR-0017), player-inline (the one-file bundle `convert` embeds, ADR-0154) | Node |
 | L5 | `player-inline` | The host that builds the one-file player (`player.inline.js`): the player, `format` and the bundled packs as one classic script for `.flux.html` (ADR-0154) | player, render, core, schema, format, sdk, basic (bundled pack, ADR-0017) | DOM |
 | L5 | `mcp` | MCP server over the same operations as the CLI | cli internals (`ops`), format, dsl | Node |
 | L5 | `exporters` (R7) | PDF/PNG/SVG/PPTX/video/site | render, player, format | mixed |

@@ -46,7 +46,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/file.fidelity.spec.ts`, `e2e/file.offline-file-protocol.spec.ts` |
 | FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-html-reader.test.ts` +4 |
-| FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-html-reader.test.ts` +3 |
+| FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/cli/src/e2e/cli.convert.test.ts` +4 |
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/blobs.browser.test.ts` +6 |
 | FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts`, `e2e/file.open-save.spec.ts` |
@@ -277,7 +277,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-011 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.render.test.ts` +5 |
+| FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.convert.test.ts` +6 |
 | FR-CLI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-003 | M | R6 | M26 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-004 | S | R7 | M31 | [20-ai-authoring.md](20-ai-authoring.md) | — |

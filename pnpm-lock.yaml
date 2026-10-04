@@ -314,9 +314,15 @@ importers:
 
   packages/cli:
     dependencies:
+      '@fluxion/format':
+        specifier: workspace:*
+        version: link:../format
       '@fluxion/pack-basic':
         specifier: workspace:*
         version: link:../../packs/basic
+      '@fluxion/player-inline':
+        specifier: workspace:*
+        version: link:../player-inline
       '@fluxion/render':
         specifier: workspace:*
         version: link:../render

@@ -48,6 +48,14 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
   fluxion: reply(z.null(), z.union([helpResult, versionResult])),
   validate: reply(z.literal('validate'), z.union([z.object({ diagnostics: z.array(diagnosticSchema) }).strict(), helpResult, versionResult])),
   render: reply(z.literal('render'), z.union([z.object({ out: z.string(), screens: z.number().int().min(0) }).strict(), helpResult, versionResult])),
+  convert: reply(
+    z.literal('convert'),
+    z.union([
+      z.object({ from: z.string(), to: z.string(), direction: z.enum(['to-html', 'to-flux']), bytes: z.number().int().min(0) }).strict(),
+      helpResult,
+      versionResult,
+    ]),
+  ),
 };
 
 /**
