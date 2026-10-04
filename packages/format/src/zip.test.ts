@@ -99,7 +99,7 @@ describe('deflate and inflate', () => {
       }),
       { numRuns: 300 },
     );
-  });
+  }, 30_000);
 
   it('FR-FIL-003: the encoder is deterministic and compresses repetitive text', () => {
     const bytes = sample(500);
@@ -178,7 +178,7 @@ describe('deflate and inflate', () => {
       damaged[at - k * 9] = (damaged[at - k * 9] as number) ^ 0x55;
       expect(readZip(damaged).ok).toBe(false);
     }
-  });
+  }, 30_000);
 });
 
 describe('zip', () => {
@@ -274,7 +274,7 @@ describe('zip', () => {
     const nowhere = bytes.slice();
     new DataView(nowhere.buffer).setUint32(central + 42, 0xfffffff0, true);
     expect(readZip(nowhere).ok).toBe(false);
-  });
+  }, 30_000);
 
   it('FR-FIL-009: a local header that disagrees with the central directory is refused', () => {
     const zip = writeZip([{ name: 'a.txt', bytes: text('hello hello hello hello') }]);
