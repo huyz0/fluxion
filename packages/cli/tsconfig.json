@@ -38,6 +38,9 @@
       "path": "../../packs/basic"
     },
     {
+      "path": "../../packs/fonts-core"
+    },
+    {
       "path": "../../packages/player-inline"
     }
   ]

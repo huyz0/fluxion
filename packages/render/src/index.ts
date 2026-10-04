@@ -25,6 +25,7 @@ export { RichText } from './rich-text.js';
 export { elementsInOrder, screensInOrder } from './screen-order.js';
 export { useScreenTheme } from './screen-theme.js';
 export { ScreenView, type ScreenViewProps, type ScreenViewSpec, type ViewBox } from './screen-view.js';
+export { createFixedMeasurer, FIXED_ADVANCE_EM, serverMeasurer } from './server-measurer.js';
 export { grownHeight, labelBox, ShapeView } from './shape-view.js';
 export { type RenderedHtml, type RenderHtmlOptions, renderDocumentToHtml } from './ssr.js';
 export { browserMeasurer, type CanvasTextMeasurer, createCanvasMeasurer, registerFontMetrics } from './text-measurer.js';

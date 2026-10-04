@@ -75,6 +75,9 @@ export const CONTENT_CSS: string;
 export function createCanvasMeasurer(): CanvasTextMeasurer;
 
 // @public
+export function createFixedMeasurer(advance?: number): TextMeasurer;
+
+// @public
 export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>): RenderRegistries;
 
 // @public
@@ -138,6 +141,9 @@ export function fitTransform(area: {
     readonly w: number;
     readonly h: number;
 }): FitTransform;
+
+// @public
+export const FIXED_ADVANCE_EM: number;
 
 // @public
 export function FrameView(props: ElementViewProps): ReactNode;
@@ -311,6 +317,9 @@ export type ScreenViewSpec = {
         readonly z: number;
     };
 };
+
+// @public
+export function serverMeasurer(faces: readonly FaceMetrics[]): TextMeasurer;
 
 // @public
 export function ShapeView(props: ElementViewProps): ReactNode;

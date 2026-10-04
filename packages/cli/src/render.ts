@@ -6,6 +6,7 @@ import { builtinRegistries, renderDocumentToHtml } from '@fluxion/render';
 import { type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
 import { type Command, internal, io, type Outcome, usage } from './command.js';
 import { hostRegistries } from './host.js';
+import { measurerFor } from './measurer.js';
 import { readInput } from './validate.js';
 
 /**
@@ -33,10 +34,11 @@ async function render(file: string, out: string, screens: readonly string[] | un
   if (problem !== undefined) return usage(problem);
   // shapes and markers come from the bundled packs, registered in the host's core registries (ADR-0017)
   const registries = builtinRegistries(host.registries.shapeDefs, undefined, host.registries.markers);
-  const { html, screens: drawn } = renderDocumentToHtml(
-    parsed.value.document,
-    screens === undefined ? { registries } : { registries, screens: screens as readonly RecordId[] },
-  );
+  const { html, screens: drawn } = renderDocumentToHtml(parsed.value.document, {
+    registries,
+    measurer: measurerFor(parsed.value.document),
+    ...(screens === undefined ? {} : { screens: screens as readonly RecordId[] }),
+  });
   try {
     await writeFile(out, html, 'utf8');
   } catch (e) {

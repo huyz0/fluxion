@@ -320,6 +320,9 @@ importers:
       '@fluxion/pack-basic':
         specifier: workspace:*
         version: link:../../packs/basic
+      '@fluxion/pack-fonts-core':
+        specifier: workspace:*
+        version: link:../../packs/fonts-core
       '@fluxion/player-inline':
         specifier: workspace:*
         version: link:../player-inline

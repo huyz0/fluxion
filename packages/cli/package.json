@@ -25,6 +25,7 @@
   "dependencies": {
     "@fluxion/format": "workspace:*",
     "@fluxion/pack-basic": "workspace:*",
+    "@fluxion/pack-fonts-core": "workspace:*",
     "@fluxion/player-inline": "workspace:*",
     "@fluxion/render": "workspace:*",
     "@fluxion/schema": "workspace:*",

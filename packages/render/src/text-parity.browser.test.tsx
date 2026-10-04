@@ -1,5 +1,6 @@
 import { createMetricsMeasurer, readFontMetrics, type TextMeasurer } from '@fluxion/core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { serverMeasurer } from './server-measurer.js';
 import { createCanvasMeasurer } from './text-measurer.js';
 
 declare global {
@@ -69,6 +70,23 @@ describe('measured text equals rendered text (FR-TXT-002, ADR-0148)', () => {
         }
       }
       expect(worst.recorded).toBeLessThanOrEqual(1);
+    } finally {
+      probe.remove();
+    }
+  });
+
+  it("FR-TXT-002: the browser and a host without a canvas agree on a line's width: the server measurer is within 1 px of what the DOM renders", () => {
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;left:0;top:0;white-space:pre;line-height:1.2;text-rendering:geometricPrecision';
+    document.body.append(probe);
+    try {
+      const server = serverMeasurer(readFontMetrics(json('roboto.metrics.json')).faces);
+      for (const s of samples) {
+        const dom = rendered(s, probe);
+        const m = server.measure(s.text, { family: 'Roboto', size: s.size, weight: s.weight, lineHeight: 1.2 });
+        expect(Math.abs(m.width - dom.width), `width of ${s.size}px/${s.weight} ${s.text.slice(0, 24)}`).toBeLessThanOrEqual(1);
+        expect(Math.abs(m.height - dom.height), `height of ${s.size}px/${s.weight} ${s.text.slice(0, 24)}`).toBeLessThanOrEqual(1);
+      }
     } finally {
       probe.remove();
     }

@@ -152,7 +152,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-010 | S | R7 | M29 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-001 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/parity.edit-vs-present.spec.ts` +6 |
-| FR-TXT-002 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/core/src/text/metrics.test.ts` +8 |
+| FR-TXT-002 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/cli/src/measurer.test.ts` +10 |
 | FR-TXT-003 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/clipboard.system-paste.spec.ts` +7 |
 | FR-TXT-004 | S | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/text.markdown-shortcuts.spec.ts`, `packages/editor/src/text-rules.test.ts` |
 | FR-TXT-005 | S | R4 | M23 | [14-theme-text-media.md](14-theme-text-media.md) | — |
