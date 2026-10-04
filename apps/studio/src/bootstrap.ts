@@ -26,12 +26,12 @@ export type OpenDocument = {
 };
 
 /**
- * `file` opened with the bundled packs, or why a pack failed to register (the studio's own fault).
+ * `file` opened with the bundled packs (read-only when `options.readOnly`), or why a pack failed to register (the studio's own fault).
  *
  * @public
  */
-export function openDocument(file: DocumentFile): Result<OpenDocument, string> {
-  const core = createCore(file);
+export function openDocument(file: DocumentFile, options: { readonly readOnly?: boolean } = {}): Result<OpenDocument, string> {
+  const core = createCore(file, options.readOnly === true ? { policy: 'read-only' } : {});
   const registered = basicPack.register(core.registries);
   if (!registered.ok) return err(`The basic pack failed to register: ${registered.error.map((d) => d.message).join('; ')}`);
   const themed = themesCorePack.register(core.registries);

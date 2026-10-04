@@ -1,17 +1,20 @@
 // The studio shell (04 §4): History API routes to the home page, the editor and present mode. A
 // document id opens through documents.ts and bootstrap.ts; the roots come from editor and player.
-import { createAssetStore, createSession, EditorRoot } from '@fluxion/editor';
+import type { Core } from '@fluxion/core';
+import { type AssetStore, createAssetStore, createSession, EditorRoot } from '@fluxion/editor';
 import { PlayerRoot } from '@fluxion/player';
-import { ok } from '@fluxion/schema';
-import { type JSX, type MouseEvent, type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import { cryptoRandom, openDocument } from './bootstrap.js';
+import { ok, type RecordId } from '@fluxion/schema';
+import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { AutosaveBar } from './autosave/autosave-bar.js';
+import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
+import { type Guard, journalId, useGuard, useProtection } from './document-protection.js';
 import { exampleNames, loadDocument } from './documents.js';
 import { FileBar, OpenControl, openPicked, pickedFromDrop } from './file-bar.js';
 import { browserFileHost } from './file-host.js';
 import { fontSources } from './font-sources.js';
 import { loadBundledFonts } from './fonts.js';
 import { localSettings } from './local-settings.js';
-import { openedEntry } from './opened-files.js';
+import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { routeOf } from './routes.js';
 
 const subscribe = (onChange: () => void) => {
@@ -74,30 +77,29 @@ function Problem(props: { readonly message: string }): JSX.Element {
   );
 }
 
-/** The document `docId`, opened once per id, in the editor or presented. */
-function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | 'present' }): JSX.Element {
-  const { docId, mode } = props;
+/** The title in the document record, for the recovery list. */
+function titleOf(store: Core['store']): string {
+  const record = store.get(store.members('byType', 'document')[0] as RecordId);
+  const title = (record as { title?: unknown } | undefined)?.title;
+  return typeof title === 'string' && title !== '' ? title : 'Untitled';
+}
+
+/** The editor over an open document, with its autosave and the status line in the toolbar. */
+function ProtectedEditor(props: {
+  readonly opened: OpenDocument & { readonly assets: AssetStore; readonly fonts: ReturnType<typeof fontSources> };
+  readonly docId: string;
+  readonly entry: OpenedEntry | undefined;
+  readonly guard: Guard;
+  readonly instance: string;
+}): JSX.Element {
+  const { opened, docId, entry, guard, instance } = props;
+  const { core, registries, themes, assets, fonts } = opened;
   const host = useMemo(() => browserFileHost(), []);
-  const entry = openedEntry(docId);
-  const opened = useMemo(() => {
-    const file = entry === undefined ? loadDocument(docId, cryptoRandom) : ok(entry.file.document);
-    const doc = file.ok ? openDocument(file.value) : file;
-    if (!doc.ok) return doc;
-    // the bytes of the document's assets (images, fonts) and the font picker's sources live as long as the document is open here
-    const assets = createAssetStore();
-    for (const [id, url] of entry?.urls ?? []) assets.set(id, url);
-    return ok({ ...doc.value, assets, fonts: fontSources(doc.value.core, assets, cryptoRandom) });
-  }, [docId, entry]);
   const settings = useMemo(() => localSettings(), []);
-  // the bundled fonts, once per page: text in Inter, Source Serif 4 or JetBrains Mono is drawn and measured with the real face
-  useEffect(() => {
-    void loadBundledFonts();
-  }, []);
-  // the session (selection, camera, tool) lives as long as the document is open here
   const session = useMemo(() => createSession(docId), [docId]);
-  if (!opened.ok) return <Problem message={opened.error} />;
-  const { core, registries, themes, assets, fonts } = opened.value;
-  return mode === 'edit' ? (
+  const title = useCallback(() => titleOf(core.store), [core]);
+  const { autosave, state } = useProtection({ id: journalId(docId, entry, instance), store: core.store, assets, entry, title, guard });
+  return (
     <EditorRoot
       store={core.store}
       execute={core.execute}
@@ -107,11 +109,57 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
       themes={themes}
       assets={assets}
       fonts={fonts}
-      toolbar={<FileBar host={host} store={core.store} assets={assets} entry={entry} onOpened={(id) => navigate(`/edit/${id}`)} />}
+      toolbar={
+        <>
+          <FileBar
+            host={host}
+            store={core.store}
+            assets={assets}
+            entry={entry}
+            onOpened={(id) => navigate(`/edit/${id}`)}
+            onSaved={() => void autosave?.saved()}
+          />
+          <AutosaveBar state={state} readOnly={guard.phase === 'read-only'} />
+        </>
+      }
     />
-  ) : (
-    <PlayerRoot store={core.store} registries={registries} />
   );
+}
+
+/** The document `docId`, opened once per id, in the editor or presented. */
+function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' | 'present'; readonly guard: Guard; readonly instance: string }): JSX.Element {
+  const { docId, mode, guard, instance } = props;
+  const entry = openedEntry(docId);
+  const readOnly = guard.phase === 'read-only';
+  const opened = useMemo(() => {
+    const file = entry === undefined ? loadDocument(docId, cryptoRandom) : ok(entry.file.document);
+    const doc = file.ok ? openDocument(file.value, { readOnly }) : file;
+    if (!doc.ok) return doc;
+    // the bytes of the document's assets (images, fonts) and the font picker's sources live as long as the document is open here
+    const assets = createAssetStore();
+    for (const [id, url] of entry?.urls ?? []) assets.set(id, url);
+    return ok({ ...doc.value, assets, fonts: fontSources(doc.value.core, assets, cryptoRandom) });
+  }, [docId, entry, readOnly]);
+  // the bundled fonts, once per page: text in Inter, Source Serif 4 or JetBrains Mono is drawn and measured with the real face
+  useEffect(() => {
+    void loadBundledFonts();
+  }, []);
+  if (!opened.ok) return <Problem message={opened.error} />;
+  return mode === 'edit' ? (
+    <ProtectedEditor opened={opened.value} docId={docId} entry={entry} guard={guard} instance={instance} />
+  ) : (
+    <PlayerRoot store={opened.value.core.store} registries={opened.value.registries} />
+  );
+}
+
+/** The page of a document: in the editor this tab first takes the document's lock, so a second tab opens it read-only. */
+function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | 'present' }): JSX.Element {
+  const { docId, mode } = props;
+  // one id per page load: a new or bundled document is its own document in each tab
+  const instance = useMemo(() => crypto.randomUUID(), []);
+  const guard = useGuard(journalId(docId, openedEntry(docId), instance), mode === 'edit');
+  if (mode === 'edit' && guard.phase === 'starting') return <main data-testid="studio-root" aria-busy="true" />;
+  return <OpenedDocument docId={docId} mode={mode} guard={guard} instance={instance} />;
 }
 
 /** A file dropped on the page opens (anywhere in the studio); a drag over the page is accepted so the browser does not navigate to the file. */

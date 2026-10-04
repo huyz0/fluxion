@@ -4,10 +4,10 @@
 import type { Store } from '@fluxion/core';
 import type { AssetStore } from '@fluxion/editor';
 import type { FluxAsset } from '@fluxion/format';
-import type { RecordId } from '@fluxion/schema';
+import type { RecordId, Result } from '@fluxion/schema';
 import { type JSX, useCallback, useEffect, useRef, useState } from 'react';
 import type { FileHost, PickedFile } from './file-host.js';
-import { describeFile, fileBytes, mayOverwrite, openFileBytes, webHasher } from './file-session.js';
+import { describeFile, fileBytes, mayOverwrite, openFileBytes, type SavedBytes, webHasher } from './file-session.js';
 import { assetUrls, type OpenedEntry, registerOpened } from './opened-files.js';
 
 /** The version the manifest of a saved file names. */
@@ -25,6 +25,8 @@ export type FileBarProps = {
   readonly entry: OpenedEntry | undefined;
   /** Go to the editor of the document `docId`. */
   readonly onOpened: (docId: string) => void;
+  /** Called after the file was written (autosave marks the journal saved and keeps a version). */
+  readonly onSaved?: () => void;
 };
 
 /** The name a save suggests: the file's own name (or the document's title) as a `.flux`. */
@@ -34,12 +36,31 @@ function suggestedName(entry: OpenedEntry | undefined, store: Store): string {
   return `${base.replace(/[\\/:*?"<>|]+/g, '-')}.flux`;
 }
 
-/** The bytes the editor holds for an asset record, as a file the writer can take. */
-async function heldBytes(assets: AssetStore, assetId: string): Promise<FluxAsset | undefined> {
+/**
+ * The bytes the editor holds for an asset record, as a file the writer can take.
+ *
+ * @public
+ */
+export async function heldBytes(assets: AssetStore, assetId: string): Promise<FluxAsset | undefined> {
   const url = assets.url(assetId as RecordId);
   if (url === undefined) return undefined;
   const blob = await (await fetch(url)).blob();
   return { bytes: new Uint8Array(await blob.arrayBuffer()), mime: blob.type };
+}
+
+/**
+ * The whole document as `.flux` bytes: what Save writes and what a version snapshot keeps.
+ *
+ * @public
+ */
+export function currentFile(entry: OpenedEntry | undefined, store: Store, assets: AssetStore): Promise<Result<SavedBytes, string>> {
+  return fileBytes({
+    file: entry?.file,
+    document: store.toDocument(),
+    bytesOf: (id) => heldBytes(assets, id),
+    hasher: webHasher,
+    appVersion: STUDIO_VERSION,
+  });
 }
 
 /** A failure as one line for the person. */
@@ -50,7 +71,13 @@ export async function openPicked(pick: PickedFile, onOpened: (docId: string) => 
   try {
     const opened = await openFileBytes(pick.name, pick.bytes, webHasher);
     if (!opened.ok) return opened.error;
-    const entry: OpenedEntry = { file: opened.value, urls: await assetUrls(opened.value), ...(pick.handle === undefined ? {} : { handle: pick.handle }) };
+    const identity = `${pick.name}:${(await webHasher.sha256(pick.bytes)).slice(0, 16)}`;
+    const entry: OpenedEntry = {
+      identity,
+      file: opened.value,
+      urls: await assetUrls(opened.value),
+      ...(pick.handle === undefined ? {} : { handle: pick.handle }),
+    };
     onOpened(registerOpened(entry));
     return '';
   } catch (e) {
@@ -74,7 +101,7 @@ export async function openWithHost(host: FileHost, onOpened: (docId: string) => 
  * @public
  */
 export function FileBar(props: FileBarProps): JSX.Element {
-  const { host, store, assets, entry, onOpened } = props;
+  const { host, store, assets, entry, onOpened, onSaved } = props;
   const [message, setMessage] = useState('');
   // the handle the next Save writes through: the file's own when it may be written over, else the copy that was saved last
   const target = useRef<unknown>(entry !== undefined && mayOverwrite(entry.file) ? entry.handle : undefined);
@@ -85,36 +112,36 @@ export function FileBar(props: FileBarProps): JSX.Element {
       const saved = await host.saveAs(suggestedName(entry, store), bytes);
       if (saved === undefined) return '';
       if (saved.handle !== undefined) target.current = saved.handle;
+      onSaved?.();
       return `Saved ${saved.name}.`;
     },
-    [host, entry, store],
+    [host, entry, store, onSaved],
+  );
+  const overwrite = useCallback(
+    async (handle: unknown, bytes: Uint8Array) => {
+      await host.writeOver(handle, bytes);
+      onSaved?.();
+      return 'Saved.';
+    },
+    [host, onSaved],
   );
   const save = useCallback(
     async (copy: boolean) => {
       if (saving.current) return;
       saving.current = true;
       try {
-        const made = await fileBytes({
-          file: entry?.file,
-          document: store.toDocument(),
-          bytesOf: (id) => heldBytes(assets, id),
-          hasher: webHasher,
-          appVersion: STUDIO_VERSION,
-        });
+        const made = await currentFile(entry, store, assets);
         if (!made.ok) return setMessage(made.error);
         const warning = made.value.missing > 0 ? ` ${made.value.missing} assets had no bytes to write.` : '';
-        if (!copy && target.current !== undefined) {
-          await host.writeOver(target.current, made.value.bytes);
-          return setMessage(`Saved.${warning}`);
-        }
-        setMessage(`${await saveAs(made.value.bytes)}${warning}`);
+        const said = !copy && target.current !== undefined ? await overwrite(target.current, made.value.bytes) : await saveAs(made.value.bytes);
+        setMessage(`${said}${warning}`);
       } catch (e) {
         setMessage(`The file was not saved: ${lineOf(e)}`);
       } finally {
         saving.current = false;
       }
     },
-    [entry, store, assets, host, saveAs],
+    [entry, store, assets, saveAs, overwrite],
   );
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
