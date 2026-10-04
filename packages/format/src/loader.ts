@@ -1,8 +1,9 @@
 // The `.flux` loader (FR-FIL-009, NFR-REL-002; architecture/08 §2): sniff, unpack under limits, check paths, verify against the manifest,
 // parse, migrate, repair and validate the document, collect the assets. It never throws: a file that cannot open is a `FormatError`,
-// a file that opens with damage carries `notes` and the schema's `diagnostics`. A truncated `document.json` (salvage) and a newer major
-// version (read-only) are M10.7; entries the loader does not know are M10.8's.
-import { type Diagnostic, type DocumentFile, err, ok, parseDocument, type Result } from '@fluxion/schema';
+// a file that opens with damage carries `notes` and the schema's `diagnostics`. A cut-off or partly invalid `document.json` is salvaged and a
+// newer major version opens read-only (`document-open.ts`, M10.7); entries the loader does not know are M10.8's.
+import { type Diagnostic, type DocumentFile, err, ok, type Result } from '@fluxion/schema';
+import { openDocumentText, type Salvage } from './document-open.js';
 import type { FormatError, LoadNote } from './errors.js';
 import { type ContentHasher, FLUX_MIMETYPE, type FluxAsset } from './flux-writer.js';
 import { decodeUtf8 } from './utf8.js';
@@ -35,6 +36,14 @@ export type LoadedFlux = {
    * what the writer wrote even when the archive's own checksums pass: callers must show these notes, never ignore them.
    */
   readonly notes: readonly LoadNote[];
+  /**
+   * True when the file may be shown but must not be saved over: it was written by a newer major version (NFR-PORT-003), or a cut-off
+   * file whose schema version is unknown. The format package cannot stop a caller from writing; hosts must honour this flag (and offer
+   * "save as a copy" for a `salvage`d document, which is not the original).
+   */
+  readonly readOnly: boolean;
+  /** Present when the document was opened in part: why, and the records left out (FR-FIL-009). */
+  readonly salvage?: Salvage;
   /** The assets, by the hash their file name carries (verified against their bytes). */
   readonly assets: ReadonlyMap<string, FluxAsset>;
 };
@@ -86,17 +95,23 @@ function pathProblem(entries: readonly ZipEntry[]): string | undefined {
 
 type Listed = { readonly [name: string]: { readonly sha256?: unknown } | undefined };
 
-/** The manifest's `entries` table, or notes that it is missing or unreadable. */
-function manifestEntries(entries: readonly ZipEntry[], notes: LoadNote[]): Listed | undefined {
+/** What the loader reads of the manifest: the entries table, and the schema version it names. */
+type ManifestInfo = { readonly entries: Listed; readonly schemaVersion?: string };
+
+/** The manifest's entries table and schema version, or notes that it is missing or unreadable. */
+function manifestOf(entries: readonly ZipEntry[], notes: LoadNote[]): ManifestInfo | undefined {
   const raw = entries.find((e) => e.name === 'manifest.json');
   if (raw === undefined) {
     notes.push({ code: 'MANIFEST_MISSING', entry: 'manifest.json', message: 'the file has no manifest.json, so its entries cannot be checked' });
     return undefined;
   }
   try {
-    const parsed: unknown = JSON.parse(decodeUtf8(raw.bytes));
-    const table = typeof parsed === 'object' && parsed !== null ? (parsed as { readonly entries?: unknown }).entries : undefined;
-    if (typeof table === 'object' && table !== null && !Array.isArray(table)) return table as Listed;
+    const parsed = JSON.parse(decodeUtf8(raw.bytes)) as { readonly entries?: unknown; readonly schemaVersion?: unknown } | null;
+    const table = typeof parsed === 'object' && parsed !== null ? parsed.entries : undefined;
+    if (typeof table === 'object' && table !== null && !Array.isArray(table)) {
+      const version = typeof parsed?.schemaVersion === 'string' ? parsed.schemaVersion : undefined;
+      return { entries: table as Listed, ...(version === undefined ? {} : { schemaVersion: version }) };
+    }
   } catch {
     // reported below
   }
@@ -157,12 +172,14 @@ async function openEntries(entries: readonly ZipEntry[], hasher: ContentHasher):
   if (document === undefined) return fail('FILE_DOCUMENT_MISSING', 'the archive has no document.json');
   const notes: LoadNote[] =
     entries[0]?.name === 'mimetype' ? [] : [{ code: 'MIMETYPE_NOT_FIRST', entry: 'mimetype', message: 'mimetype is not the first entry' }];
-  const listed = manifestEntries(entries, notes);
+  const manifest = manifestOf(entries, notes);
+  const listed = manifest?.entries;
   const hashOf = cachedHash(hasher);
   if (listed !== undefined) notes.push(...(await verifyEntries(entries, listed, hashOf)));
-  const parsed = parseDocument(decodeUtf8(document.bytes));
-  if (!parsed.ok) return fail('FILE_DOCUMENT_INVALID', parsed.error.message);
-  return ok({ document: parsed.value.document, diagnostics: parsed.value.diagnostics, notes, assets: await collectAssets(entries, hashOf, notes) });
+  const opened = openDocumentText(decodeUtf8(document.bytes), manifest?.schemaVersion);
+  if (!opened.ok) return opened;
+  const { document: doc, diagnostics, readOnly, salvage } = opened.value;
+  return ok({ document: doc, diagnostics, notes, readOnly, ...(salvage ? { salvage } : {}), assets: await collectAssets(entries, hashOf, notes) });
 }
 
 /**

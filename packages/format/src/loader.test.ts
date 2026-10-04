@@ -81,6 +81,26 @@ describe('loadFlux', () => {
     expect(await code(new Uint8Array([0x50, 0x4b, 0x03, 0x04, 1, 2, 3]))).toBe('FILE_ZIP_INVALID');
   });
 
+  it("FR-FIL-009: through loadFlux, a cut document.json opens in part with the manifest's version, and a newer major opens read-only", async () => {
+    const gallery = fixtureDocument('two-rects-line.flux.json');
+    const records = Object.values(gallery.records);
+    const whole = JSON.stringify({ records: Object.fromEntries(records.map((r) => [r.id, r])), schemaVersion: gallery.schemaVersion });
+    const cut = whole.slice(0, whole.length - 60);
+    const manifest = (schemaVersion: string): ZipInput => ({ name: 'manifest.json', bytes: text(JSON.stringify({ schemaVersion, entries: {} })) });
+    const open = (docText: string, version: string) => loadFlux(zipOf([MIME, manifest(version), { name: 'document.json', bytes: text(docText) }]), { hasher });
+    const partial = await open(cut, gallery.schemaVersion);
+    expect(partial.ok && partial.value).toMatchObject({ readOnly: false, salvage: { reason: 'truncated' } });
+    expect(partial.ok && Object.keys(partial.value.document.records).length).toBeGreaterThan(0);
+    // no manifest version: the cut text names none either, so the records are read as the current version and the file is read-only
+    const unversioned = await loadFlux(zipOf([MIME, { name: 'document.json', bytes: text(cut) }]), { hasher });
+    expect(unversioned.ok && unversioned.value).toMatchObject({ readOnly: true, salvage: { reason: 'truncated', versionGuessed: true } });
+    const newer = await open(whole.replace(`"schemaVersion":"${gallery.schemaVersion}"`, '"schemaVersion":"2.0"'), '2.0');
+    expect(newer.ok && newer.value).toMatchObject({ readOnly: true, salvage: { reason: 'newer-major' } });
+    const normal = await loadFlux(await validFile(), { hasher });
+    expect(normal.ok && normal.value.readOnly).toBe(false);
+    expect(normal.ok && normal.value.salvage).toBeUndefined();
+  });
+
   it('FR-FIL-009: an archive over the expansion limit is refused, not unpacked', async () => {
     const file = await validFile();
     expect(await code(file, { maxEntryBytes: 100 })).toBe('FILE_TOO_LARGE');

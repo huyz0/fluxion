@@ -54,6 +54,8 @@ export type LoadedFlux = {
     readonly document: DocumentFile;
     readonly diagnostics: readonly Diagnostic[];
     readonly notes: readonly LoadNote[];
+    readonly readOnly: boolean;
+    readonly salvage?: Salvage;
     readonly assets: ReadonlyMap<string, FluxAsset>;
 };
 
@@ -84,6 +86,14 @@ export function readZip(bytes: Uint8Array, limits?: ZipLimits): Result<ZipEntry[
 
 // @public
 export function referencedAssetHashes(doc: DocumentFile): string[];
+
+// @public
+export type Salvage = {
+    readonly reason: "truncated" | "invalid" | "newer-major";
+    readonly dropped: readonly string[];
+    readonly recovered?: number;
+    readonly versionGuessed?: true;
+};
 
 // @public
 export function sanitizeSvg(input: string): string | undefined;

@@ -52,7 +52,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-007 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-008 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-FIL-009 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/loader.test.ts`, `packages/format/src/zip.test.ts` |
+| FR-FIL-009 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/document-open.test.ts` +3 |
 | FR-FIL-010 | S | R6 | M27 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-011 | C | R8 | M32 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -318,7 +318,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SIZE-005 | S | R2 | M13 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PORT-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PORT-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-PORT-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-PORT-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/document-open.test.ts` |
 | NFR-PORT-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PORT-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs`, `tests/harness/ci-workflow.test.mjs` |
 | NFR-PORT-006 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |

@@ -5,6 +5,7 @@
  */
 
 export { type AssetStore, createMemoryAssetStore, referencedAssetHashes, type SelectedAssets, selectAssets } from './asset-store.js';
+export type { Salvage } from './document-open.js';
 export type { FormatError, FormatErrorCode, LoadNote, LoadNoteCode } from './errors.js';
 export {
   type ContentHasher,
