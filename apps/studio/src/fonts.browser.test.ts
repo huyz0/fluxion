@@ -2,7 +2,7 @@ import { createMetricsMeasurer } from '@fluxion/core';
 import { browserMeasurer, createCanvasMeasurer } from '@fluxion/editor';
 import { FONT_METRICS } from '@fluxion/pack-fonts-core';
 import { describe, expect, it } from 'vitest';
-import { bundledFaces, bundledFontUrl, loadBundledFonts } from './fonts.js';
+import { bundledFaces, bundledFontUrl, embeddableFaces, loadBundledFonts } from './fonts.js';
 
 describe('the studio loads the bundled fonts (FR-THM-008, ADR-0022)', () => {
   it('FR-THM-008: every bundled face has a served URL, and after loading the page draws with the three families', async () => {
@@ -67,5 +67,17 @@ describe('the studio loads the bundled fonts (FR-THM-008, ADR-0022)', () => {
       }
     }
     expect(worst).toBeLessThan(1);
+  });
+
+  it('NFR-LIC-003: every bundled face can be read for embedding as a WOFF2 file with its recorded metrics, copyright line and licence', async () => {
+    const faces = embeddableFaces();
+    expect(faces).toHaveLength(12);
+    for (const face of faces) {
+      const bytes = await face.bytes();
+      expect(new TextDecoder().decode(bytes?.subarray(0, 4)), `${face.family} ${face.weight} ${face.style}`).toBe('wOF2');
+      expect(face.metrics, face.name).toMatchObject({ family: face.family, weight: face.weight, style: face.style });
+      expect(face.license).toBe('OFL-1.1');
+      expect(face.copyright, face.name).not.toBe('');
+    }
   });
 });

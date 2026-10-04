@@ -15,7 +15,7 @@ import {
   sha256Hex,
   writeFlux,
 } from '@fluxion/format';
-import { type DocumentFile, err, ok, type Result } from '@fluxion/schema';
+import { type AnyRecord, type DocumentFile, err, ok, type Result } from '@fluxion/schema';
 
 /**
  * The kinds of file the studio opens.
@@ -192,6 +192,8 @@ export type SaveInput = {
   readonly hasher: ContentHasher;
   /** The version of the studio, for the manifest. */
   readonly appVersion: string;
+  /** The font asset records and bytes to add to the saved document (the bundled fonts its text uses); the live document is not changed. */
+  readonly fonts?: (document: DocumentFile) => Promise<{ readonly records: readonly AnyRecord[]; readonly assets: ReadonlyMap<string, FluxAsset> }>;
 };
 
 /** The assets of `input.document` that have bytes, by hash: those the file held, else those the editor holds. */
@@ -214,13 +216,16 @@ async function heldAssets(input: SaveInput): Promise<Map<string, FluxAsset>> {
  */
 export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, string>> {
   const store = createMemoryAssetStore(input.hasher);
-  for (const [hash, asset] of await heldAssets(input)) {
+  const extra = (await input.fonts?.(input.document)) ?? { records: [], assets: new Map<string, FluxAsset>() };
+  // the fonts the studio brings are part of what is written, not of the open document
+  const document: DocumentFile = { ...input.document, records: { ...input.document.records, ...Object.fromEntries(extra.records.map((r) => [r.id, r])) } };
+  for (const [hash, asset] of [...(await heldAssets(input)), ...extra.assets]) {
     if ((await input.hasher.sha256(asset.bytes)) === hash) await store.put(asset.bytes, asset.mime);
   }
-  const picked = await selectAssets(input.document, store);
+  const picked = await selectAssets(document, store);
   const { file } = input;
   const written = await writeFlux({
-    document: input.document,
+    document,
     assets: picked.assets,
     appVersion: input.appVersion,
     generator: 'fluxion studio',

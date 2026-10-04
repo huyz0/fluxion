@@ -147,7 +147,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-005 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-006 | M | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-007 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
-| FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/font-sources.browser.test.ts` +19 |
+| FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/font-embed.test.ts` +20 |
 | FR-THM-009 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-010 | S | R7 | M29 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
@@ -314,7 +314,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SIZE-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SIZE-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/size-budget.test.ts` |
-| NFR-SIZE-004 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-SIZE-004 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` |
 | NFR-SIZE-005 | S | R2 | M13 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PORT-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PORT-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
@@ -363,4 +363,4 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-DX-004 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` +3 |
 | NFR-LIC-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/licenses.test.mjs`, `tests/harness/workspace-shape.test.mjs` |
 | NFR-LIC-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/drift.test.mjs` +2 |
-| NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/used-fonts.test.ts` |
+| NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` +2 |

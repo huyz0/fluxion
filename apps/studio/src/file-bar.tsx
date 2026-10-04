@@ -4,10 +4,13 @@
 import type { Store } from '@fluxion/core';
 import type { AssetStore } from '@fluxion/editor';
 import type { FluxAsset } from '@fluxion/format';
-import type { RecordId, Result } from '@fluxion/schema';
+import { createId, type RecordId, type Result } from '@fluxion/schema';
 import { type JSX, useCallback, useEffect, useRef, useState } from 'react';
+import { cryptoRandom } from './bootstrap.js';
 import type { FileHost, PickedFile } from './file-host.js';
 import { describeFile, fileBytes, mayOverwrite, openFileBytes, type SavedBytes, webHasher } from './file-session.js';
+import { bundledFontsFor } from './font-embed.js';
+import { embeddableFaces } from './fonts.js';
 import { assetUrls, type OpenedEntry, registerOpened } from './opened-files.js';
 
 /** The version the manifest of a saved file names. */
@@ -60,6 +63,8 @@ export function currentFile(entry: OpenedEntry | undefined, store: Store, assets
     bytesOf: (id) => heldBytes(assets, id),
     hasher: webHasher,
     appVersion: STUDIO_VERSION,
+    fonts: (document) =>
+      bundledFontsFor(document, { faces: embeddableFaces(), newId: () => createId(cryptoRandom), sha256: (bytes) => webHasher.sha256(bytes) }),
   });
 }
 

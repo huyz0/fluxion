@@ -4,6 +4,7 @@
 
 import { type LoadableFace, loadFontFaces, registerFontMetrics } from '@fluxion/editor';
 import { FONT_METRICS, FONTS_CORE } from '@fluxion/pack-fonts-core';
+import type { BundledFace } from './font-embed.js';
 
 // the files of the pack, by path under it (`fonts/<file>.woff2`): a glob, because a bundler only follows URLs it can see
 declare global {
@@ -48,4 +49,29 @@ async function loadAll(): Promise<void> {
 export function loadBundledFonts(): Promise<void> {
   loading ??= loadAll();
   return loading;
+}
+
+/** The last segment of a path. */
+const baseName = (path: string): string => path.slice(path.lastIndexOf('/') + 1);
+
+/**
+ * The bundled faces as save embeds them: the pack's copyright and licence lines, the recorded metrics (ADR-0148) and a way to read the file the
+ * studio serves.
+ */
+export function embeddableFaces(): readonly BundledFace[] {
+  return FONTS_CORE.map((face) => ({
+    family: face.family,
+    weight: face.weight,
+    style: face.style,
+    license: face.license ?? 'OFL-1.1',
+    copyright: face.copyright ?? '',
+    name: baseName(face.file ?? `${face.family}-${face.weight}.woff2`),
+    metrics: FONT_METRICS.find((m) => m.family === face.family && m.weight === face.weight && m.style === face.style),
+    bytes: async () => {
+      const url = bundledFontUrl(face.file ?? '');
+      if (url === undefined) return undefined;
+      const response = await fetch(url);
+      return response.ok ? new Uint8Array(await response.arrayBuffer()) : undefined;
+    },
+  }));
 }
