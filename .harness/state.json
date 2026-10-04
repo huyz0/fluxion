@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M9 rows M9.11/M9.19/M9.20/M9.23/M9.28 stay blocked (Docker image, budget re-record from a desktop, three-engine CI run); M10 started at the human's request in the meantime.",
+  "blockedReason": "M10 is complete except for three decisions only the human can make: M10.45 (is the .flux.html budget of NFR-SIZE-003 raw or gzip? the 20-screen fixture is ~750 kB raw, ~241 kB gzip against 450 kB), M10.57 (a manifest list of used shape defs: a contract change with no consumer yet) and M10.27 (sanitizeHtml has no consumer before HTML paste is planned). M10.22 then closes from a three-engine m10-complete run at the final SHA. M9 rows M9.11, M9.19, M9.20, M9.23 and M9.28 stay blocked on Docker baselines, a desktop budget re-record and three-engine CI.",
   "updated": "2026-10-04"
 }
