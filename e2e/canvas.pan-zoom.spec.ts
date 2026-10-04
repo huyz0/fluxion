@@ -79,6 +79,8 @@ test.describe('canvas pan and zoom', { tag: '@desktop' }, () => {
   test('FR-EDT-002: shortcuts and buttons go to 100 %, fit and step the zoom', async ({ page }) => {
     const editor = new EditorPage(page);
     await editor.open('new');
+    // the first frame shows the unfitted 100 %; the fit lands a frame later, and what is read is the fit
+    await expect(editor.zoomValue).not.toHaveText('100 %');
     const fitted = await editor.zoomValue.textContent();
     await editor.canvas.click({ button: 'middle' });
     await page.keyboard.press('Shift+Digit0');
