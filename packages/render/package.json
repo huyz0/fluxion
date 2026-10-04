@@ -10,6 +10,11 @@
       "@fluxion/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./ssr": {
+      "@fluxion/source": "./src/ssr.ts",
+      "types": "./dist/ssr.d.ts",
+      "default": "./dist/ssr.js"
     }
   },
   "files": [
