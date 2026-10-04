@@ -12,11 +12,12 @@ export {
   FLUX_FORMAT_VERSION,
   FLUX_MIMETYPE,
   type FluxAsset,
+  type FluxBakes,
   type FluxWriteFailure,
   type WriteFluxInput,
   writeFlux,
 } from './flux-writer.js';
-export { type LoadedFlux, type LoadOptions, loadFlux } from './loader.js';
+export { type LoadedFlux, type LoadedManifest, type LoadOptions, loadFlux } from './loader.js';
 export { MAX_SVG_CHARS, sanitizeSvg } from './sanitize-svg.js';
 export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
 

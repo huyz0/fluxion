@@ -5,6 +5,7 @@
 // ones); the plugin and snapshot entries arrive with the plugins (M27, M19).
 import { type DocumentFile, err, ok, type RecordId, type Result, serializeDocument } from '@fluxion/schema';
 import { canonicalJson } from './canonical-json.js';
+import { KNOWN_MANIFEST_KEYS, namesProblem } from './paths.js';
 import { encodeUtf8 } from './utf8.js';
 import { writeZip, type ZipFailure, type ZipInput } from './zip.js';
 
@@ -26,8 +27,22 @@ export type ContentHasher = {
 export type FluxAsset = {
   /** The asset's bytes. */
   readonly bytes: Uint8Array;
-  /** The media type (`image/webp`, `font/woff2`, ...): an unknown one is written as `.bin`. */
+  /** The media type (`image/webp`, `font/woff2`, ...): an unknown one is written as `.bin` unless `ext` is given. */
   readonly mime: string;
+  /** The file extension to write it under, when it is not the one `mime` implies (a loaded file's own name is kept). */
+  readonly ext?: string;
+};
+
+/**
+ * What derived data a file bakes in (architecture/08 §8).
+ *
+ * @public
+ */
+export type FluxBakes = {
+  /** Connector routes are cached in the document. */
+  readonly routes: boolean;
+  /** Static snapshots of plugin and component elements are included. */
+  readonly snapshots: boolean;
 };
 
 /**
@@ -48,6 +63,17 @@ export type WriteFluxInput = {
   readonly source?: string;
   /** The cover thumbnail, WebP, at most 640 px. */
   readonly preview?: Uint8Array;
+  /**
+   * Entries this writer does not know (a newer writer's, plugin bundles, snapshots), copied through unchanged and listed in the manifest;
+   * the names must not be one this writer writes itself.
+   */
+  readonly extraEntries?: ReadonlyMap<string, Uint8Array>;
+  /** Manifest fields this writer does not know, kept; a field it knows is ignored here (it writes those itself). */
+  readonly manifestExtras?: { readonly [key: string]: unknown };
+  /** The plugin lock of the manifest (default none); written as given. */
+  readonly plugins?: readonly unknown[];
+  /** What derived data the file bakes in (default none); written as given. */
+  readonly bakes?: FluxBakes;
   /** Hashes entries for the manifest. */
   readonly hasher: ContentHasher;
 };
@@ -112,6 +138,20 @@ const textOf = (record: Fields | undefined, key: string, fallback: string): stri
   return typeof v === 'string' ? v : fallback;
 };
 
+/** The names the writer writes itself: an extra entry may not take one, nor an `assets/` path. */
+const OWN_ENTRIES = new Set(['mimetype', 'manifest.json', 'document.json', 'theme/tokens.json', 'source/document.flux.yaml', 'preview.webp']);
+
+/** The extra entries, sorted by name, or why one cannot be written. */
+function extraEntries(input: WriteFluxInput): Result<ZipInput[], FluxWriteFailure> {
+  const out: ZipInput[] = [];
+  for (const name of [...(input.extraEntries?.keys() ?? [])].sort()) {
+    if (OWN_ENTRIES.has(name) || name.startsWith('assets/')) return err({ reason: `${name} is an entry the writer writes itself`, kind: 'invalid' });
+    if (name.endsWith('/')) return err({ reason: `${name} is a directory entry: extra entries are files`, kind: 'invalid' });
+    out.push({ name, bytes: input.extraEntries?.get(name) as Uint8Array });
+  }
+  return ok(out);
+}
+
 /** The entries to hash and write, in order, after `mimetype` and `manifest.json`. */
 function bodyEntries(input: WriteFluxInput): ZipInput[] {
   const { document: doc } = input;
@@ -129,7 +169,7 @@ async function assetEntries(input: WriteFluxInput): Promise<Result<ZipInput[], F
     const asset = input.assets?.get(key) as FluxAsset;
     const actual = await input.hasher.sha256(asset.bytes);
     if (actual !== key) return err({ reason: `the asset ${key} has the hash ${actual}`, kind: 'invalid' });
-    const ext = extensionOf(asset.mime);
+    const ext = asset.ext ?? extensionOf(asset.mime);
     out.push({ name: `assets/${key}.${ext}`, bytes: asset.bytes, method: STORED.has(ext) ? 'store' : 'deflate' });
   }
   return ok(out);
@@ -144,13 +184,19 @@ async function assetEntries(input: WriteFluxInput): Promise<Result<ZipInput[], F
 export async function writeFlux(input: WriteFluxInput): Promise<Result<Uint8Array, FluxWriteFailure>> {
   const assets = await assetEntries(input);
   if (!assets.ok) return assets;
-  const body = [...bodyEntries(input), ...assets.value];
+  const extras = extraEntries(input);
+  if (!extras.ok) return extras;
+  const body = [...bodyEntries(input), ...assets.value, ...extras.value];
   if (input.preview !== undefined) body.push({ name: 'preview.webp', bytes: input.preview, method: 'store' });
+  // the loader refuses these names, so the writer must not emit them
+  const problem = namesProblem(['mimetype', 'manifest.json', ...body.map((e) => e.name)]);
+  if (problem !== undefined) return err({ reason: problem, kind: 'invalid' });
   const entries: { [name: string]: { sha256: string; size: number } } = {};
   for (const e of body) entries[e.name] = { sha256: await input.hasher.sha256(e.bytes), size: e.bytes.length };
   const docRecord = documentRecordOf(input.document);
   const modified = textOf(docRecord, 'modified', textOf(docRecord, 'created', NO_TIME));
   const manifest = {
+    ...Object.fromEntries(Object.entries(input.manifestExtras ?? {}).filter(([key]) => !KNOWN_MANIFEST_KEYS.has(key))),
     format: 'fluxion',
     formatVersion: FLUX_FORMAT_VERSION,
     schemaVersion: input.document.schemaVersion,
@@ -160,8 +206,8 @@ export async function writeFlux(input: WriteFluxInput): Promise<Result<Uint8Arra
     created: textOf(docRecord, 'created', modified),
     modified,
     entries,
-    plugins: [],
-    bakes: { routes: false, snapshots: false },
+    plugins: input.plugins ?? [],
+    bakes: input.bakes ?? { routes: false, snapshots: false },
     ...(input.source === undefined ? {} : { source: 'source/document.flux.yaml' }),
     ...(input.preview === undefined ? {} : { preview: 'preview.webp' }),
   };

@@ -6,6 +6,7 @@
         "scripts/gates/*.mjs",
         "scripts/fixtures/*.mjs",
         "scripts/fonts/*.mjs",
+        "scripts/format/*.mjs",
         "scripts/harness/**/*.mjs",
         "scripts/docs/*.mjs",
         "tools/gen/*.mjs",

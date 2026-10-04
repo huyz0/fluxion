@@ -5,7 +5,8 @@
 import { type Diagnostic, type DocumentFile, err, ok, type Result } from '@fluxion/schema';
 import { openDocumentText, type Salvage } from './document-open.js';
 import type { FormatError, LoadNote } from './errors.js';
-import { type ContentHasher, FLUX_MIMETYPE, type FluxAsset } from './flux-writer.js';
+import { type ContentHasher, FLUX_MIMETYPE, type FluxAsset, type FluxBakes } from './flux-writer.js';
+import { KNOWN_MANIFEST_KEYS, namesProblem } from './paths.js';
 import { decodeUtf8 } from './utf8.js';
 import { readZip, type ZipEntry, type ZipLimits } from './zip.js';
 
@@ -44,9 +45,42 @@ export type LoadedFlux = {
   readonly readOnly: boolean;
   /** Present when the document was opened in part: why, and the records left out (FR-FIL-009). */
   readonly salvage?: Salvage;
+  /** The FluxScript the document was compiled from, if the file keeps it. */
+  readonly source?: string;
+  /** The cover thumbnail, if the file has one. */
+  readonly preview?: Uint8Array;
+  /** Entries the loader does not interpret (a newer writer's, plugin bundles, snapshots): hand them back to `writeFlux` and they survive a re-save. */
+  readonly extraEntries: ReadonlyMap<string, Uint8Array>;
+  /** The manifest: what the file says about itself (`undefined` when it has none or it is unreadable). */
+  readonly manifest?: LoadedManifest;
+  /** Manifest fields the loader does not know, to hand back to `writeFlux` so a re-save keeps them. */
+  readonly manifestExtras: { readonly [key: string]: unknown };
   /** The assets, by the hash their file name carries (verified against their bytes). */
   readonly assets: ReadonlyMap<string, FluxAsset>;
 };
+
+/**
+ * What the manifest says about the file that a re-save needs.
+ *
+ * @public
+ */
+export type LoadedManifest = {
+  /** The version of the program that wrote the file. */
+  readonly appVersion?: string;
+  /** Who made the file. */
+  readonly generator?: string;
+  /** The container version. */
+  readonly formatVersion?: string;
+  /** The document schema version. */
+  readonly schemaVersion?: string;
+  /** The plugin lock the manifest lists (written back unchanged). */
+  readonly plugins?: readonly unknown[];
+  /** What derived data the file bakes in (written back unchanged). */
+  readonly bakes?: FluxBakes;
+};
+
+/** The entries the loader reads itself: they are not extras. */
+const KNOWN_ENTRIES = new Set(['mimetype', 'manifest.json', 'document.json', 'theme/tokens.json', 'source/document.flux.yaml', 'preview.webp']);
 
 const DEFAULT_LIMITS: Required<ZipLimits> = { maxEntries: 4096, maxEntryBytes: 128 * 1024 * 1024, maxTotalBytes: 256 * 1024 * 1024 };
 const ZIP_MAGIC = [0x50, 0x4b, 0x03, 0x04];
@@ -67,36 +101,24 @@ const MIME_OF: { readonly [ext: string]: string } = {
 
 const fail = (code: FormatError['code'], message: string): Result<never, FormatError> => err({ code, message });
 
-/** Why the entry name `name` must not be unpacked, if it must not. */
-function unsafe(name: string): string | undefined {
-  if (name === '' || name.startsWith('/') || name.includes('\\') || /^[A-Za-z]:/.test(name)) return 'it is empty, absolute or uses a backslash or drive letter';
-  if ([...name].some((ch) => (ch.codePointAt(0) as number) < 0x20 || ch === '\u007f')) return 'it has a control character';
-  // a directory entry ends in one `/`; any other empty segment, `.` or `..` is refused
-  const segments = name.endsWith('/') ? name.slice(0, -1).split('/') : name.split('/');
-  if (segments.some((segment) => segment === '' || segment === '..' || segment === '.')) return 'it has an empty, `.` or `..` segment';
-  return undefined;
-}
-
-/** What two names must differ in to be two files on a case-insensitive, normalising file system: case-folded, NFC, no directory slash. */
-const collisionKey = (name: string): string => (name.endsWith('/') ? name.slice(0, -1) : name).normalize('NFC').toLowerCase();
-
-/** The first problem with the names of `entries` (unsafe, or colliding once case and Unicode form are ignored), as a failure. */
-function pathProblem(entries: readonly ZipEntry[]): string | undefined {
-  const seen = new Map<string, string>();
-  for (const { name } of entries) {
-    const why = unsafe(name);
-    if (why !== undefined) return `${JSON.stringify(name)}: ${why}`;
-    const twin = seen.get(collisionKey(name));
-    if (twin !== undefined) return `${JSON.stringify(name)} and ${JSON.stringify(twin)} are one path on a case-insensitive or normalising file system`;
-    seen.set(collisionKey(name), name);
-  }
-  return undefined;
-}
+/** The first problem with the names of `entries` (unsafe, or colliding once case and Unicode form are ignored), as a failure message. */
+const pathProblem = (entries: readonly ZipEntry[]): string | undefined => namesProblem(entries.map((e) => e.name));
 
 type Listed = { readonly [name: string]: { readonly sha256?: unknown } | undefined };
 
+/** The manifest as parsed: the fields the loader reads, and any others. */
+type RawManifest = {
+  readonly [key: string]: unknown;
+  readonly app?: unknown;
+  readonly generator?: unknown;
+  readonly formatVersion?: unknown;
+  readonly schemaVersion?: unknown;
+  readonly plugins?: unknown;
+  readonly bakes?: unknown;
+};
+
 /** What the loader reads of the manifest: the entries table, and the schema version it names. */
-type ManifestInfo = { readonly entries: Listed; readonly schemaVersion?: string };
+type ManifestInfo = { readonly entries: Listed; readonly schemaVersion?: string; readonly raw: RawManifest };
 
 /** The manifest's entries table and schema version, or notes that it is missing or unreadable. */
 function manifestOf(entries: readonly ZipEntry[], notes: LoadNote[]): ManifestInfo | undefined {
@@ -110,7 +132,7 @@ function manifestOf(entries: readonly ZipEntry[], notes: LoadNote[]): ManifestIn
     const table = typeof parsed === 'object' && parsed !== null ? parsed.entries : undefined;
     if (typeof table === 'object' && table !== null && !Array.isArray(table)) {
       const version = typeof parsed?.schemaVersion === 'string' ? parsed.schemaVersion : undefined;
-      return { entries: table as Listed, ...(version === undefined ? {} : { schemaVersion: version }) };
+      return { entries: table as Listed, raw: parsed as RawManifest, ...(version === undefined ? {} : { schemaVersion: version }) };
     }
   } catch {
     // reported below
@@ -154,11 +176,59 @@ async function collectAssets(entries: readonly ZipEntry[], hashOf: HashOf, notes
   const assets = new Map<string, FluxAsset>();
   for (const e of entries.filter((x) => x.name.startsWith('assets/') && !x.name.endsWith('/'))) {
     const m = ASSET_PATH.exec(e.name);
-    if (m === null) notes.push({ code: 'ASSET_NAME_INVALID', entry: e.name, message: `${e.name} is not assets/<sha256>.<ext>` });
+    if (m === null)
+      notes.push({
+        code: 'ASSET_NAME_INVALID',
+        entry: e.name,
+        message: `${e.name} is not assets/<sha256>.<ext>, so it is not kept when the file is saved again`,
+      });
     else if ((await hashOf(e)) !== m[1]) notes.push({ code: 'ASSET_HASH_MISMATCH', entry: e.name, message: `${e.name} is not the bytes its name says` });
-    else assets.set(m[1] as string, { bytes: e.bytes, mime: MIME_OF[m[2] as string] ?? 'application/octet-stream' });
+    else assets.set(m[1] as string, { bytes: e.bytes, mime: MIME_OF[m[2] as string] ?? 'application/octet-stream', ext: m[2] as string });
   }
   return assets;
+}
+
+/** The text of the entry `name`, if present. */
+const textOfEntry = (entries: readonly ZipEntry[], name: string): string | undefined => {
+  const e = entries.find((x) => x.name === name);
+  return e === undefined ? undefined : decodeUtf8(e.bytes);
+};
+
+/** The fields of the manifest a re-save carries back, when they have the expected type. */
+function manifestInfo(raw: RawManifest): LoadedManifest {
+  const app = raw.app as { readonly version?: unknown } | undefined;
+  const bakes = raw.bakes as { readonly routes?: unknown; readonly snapshots?: unknown } | undefined;
+  const text = (v: unknown): string | undefined => (typeof v === 'string' ? v : undefined);
+  const fields: { [K in keyof LoadedManifest]: LoadedManifest[K] | undefined } = {
+    appVersion: text(app?.version),
+    generator: text(raw.generator),
+    formatVersion: text(raw.formatVersion),
+    schemaVersion: text(raw.schemaVersion),
+    plugins: Array.isArray(raw.plugins) ? (raw.plugins as readonly unknown[]) : undefined,
+    bakes: typeof bakes?.routes === 'boolean' && typeof bakes.snapshots === 'boolean' ? { routes: bakes.routes, snapshots: bakes.snapshots } : undefined,
+  };
+  return Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)) as LoadedManifest;
+}
+
+/** What a re-save needs besides the document and the assets: the source, the preview, the entries and manifest fields the loader does not know. */
+function restOf(
+  entries: readonly ZipEntry[],
+  manifest: ManifestInfo | undefined,
+): Pick<LoadedFlux, 'extraEntries' | 'manifestExtras' | 'manifest'> & { source?: string; preview?: Uint8Array } {
+  const source = textOfEntry(entries, 'source/document.flux.yaml');
+  const preview = entries.find((e) => e.name === 'preview.webp')?.bytes;
+  const extraEntries = new Map(
+    entries.filter((e) => !KNOWN_ENTRIES.has(e.name) && !e.name.startsWith('assets/') && !e.name.endsWith('/')).map((e) => [e.name, e.bytes]),
+  );
+  const raw: RawManifest = manifest?.raw ?? {};
+  const manifestExtras = Object.fromEntries(Object.entries(raw).filter(([key]) => !KNOWN_MANIFEST_KEYS.has(key)));
+  return {
+    extraEntries,
+    manifestExtras,
+    ...(manifest ? { manifest: manifestInfo(raw) } : {}),
+    ...(source === undefined ? {} : { source }),
+    ...(preview === undefined ? {} : { preview }),
+  };
 }
 
 /** The unpacked `entries`, opened as a document. */
@@ -179,7 +249,8 @@ async function openEntries(entries: readonly ZipEntry[], hasher: ContentHasher):
   const opened = openDocumentText(decodeUtf8(document.bytes), manifest?.schemaVersion);
   if (!opened.ok) return opened;
   const { document: doc, diagnostics, readOnly, salvage } = opened.value;
-  return ok({ document: doc, diagnostics, notes, readOnly, ...(salvage ? { salvage } : {}), assets: await collectAssets(entries, hashOf, notes) });
+  const assets = await collectAssets(entries, hashOf, notes);
+  return ok({ document: doc, diagnostics, notes, readOnly, ...(salvage ? { salvage } : {}), assets, ...restOf(entries, manifest) });
 }
 
 /**

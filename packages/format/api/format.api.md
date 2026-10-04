@@ -35,6 +35,13 @@ export const FLUX_MIMETYPE = "application/vnd.fluxion+zip";
 export type FluxAsset = {
     readonly bytes: Uint8Array;
     readonly mime: string;
+    readonly ext?: string;
+};
+
+// @public
+export type FluxBakes = {
+    readonly routes: boolean;
+    readonly snapshots: boolean;
 };
 
 // @public
@@ -56,7 +63,24 @@ export type LoadedFlux = {
     readonly notes: readonly LoadNote[];
     readonly readOnly: boolean;
     readonly salvage?: Salvage;
+    readonly source?: string;
+    readonly preview?: Uint8Array;
+    readonly extraEntries: ReadonlyMap<string, Uint8Array>;
+    readonly manifest?: LoadedManifest;
+    readonly manifestExtras: {
+        readonly [key: string]: unknown;
+    };
     readonly assets: ReadonlyMap<string, FluxAsset>;
+};
+
+// @public
+export type LoadedManifest = {
+    readonly appVersion?: string;
+    readonly generator?: string;
+    readonly formatVersion?: string;
+    readonly schemaVersion?: string;
+    readonly plugins?: readonly unknown[];
+    readonly bakes?: FluxBakes;
 };
 
 // @public
@@ -121,6 +145,12 @@ export type WriteFluxInput = {
     readonly generator?: string;
     readonly source?: string;
     readonly preview?: Uint8Array;
+    readonly extraEntries?: ReadonlyMap<string, Uint8Array>;
+    readonly manifestExtras?: {
+        readonly [key: string]: unknown;
+    };
+    readonly plugins?: readonly unknown[];
+    readonly bakes?: FluxBakes;
     readonly hasher: ContentHasher;
 };
 
