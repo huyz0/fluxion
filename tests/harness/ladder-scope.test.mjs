@@ -81,6 +81,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       only(['architecture', 'diagnostics-doc', 'docs-consistency', 'trace', 'workspace-shape']),
     );
     assert.deepEqual(harnessFiles(['e2e/x.spec.ts'], ALL), only(['trace', 'workspace-shape']));
+    // the API gate's own tests, not the whole harness (M10.29)
+    assert.deepEqual(harnessFiles(['scripts/gates/check-api.mjs'], ALL), only(['api']));
     assert.deepEqual(harnessFiles(['scripts/gates/milestone-checks.mjs'], ALL), only(['bench-leg', 'kits', 'ladder-scope', 'milestone-checks', 'verify-leg']));
     for (const [path, names] of Object.entries(GATE_SCRIPT_HARNESS)) assert.deepEqual(harnessFiles([path], ALL), only(names), path);
     assert.deepEqual(harnessFiles(['tests/harness/drift.test.mjs'], ALL), only(['drift']));

@@ -124,6 +124,8 @@ export const NAMED_PATH_HARNESS = [
   [/^scripts\/gates\/thresholds\.mjs$/, ['biome', 'budget', 'drift', 'ladder-scope', 'licenses', 'portability', 'size']],
   // the licence and drift gates: their own tests (a sandbox copy of scripts/ serves the rest)
   [/^scripts\/gates\/check-licenses\.mjs$/, ['licenses']],
+  // the API gate: its own tests (a sandbox copy of scripts/ serves the rest)
+  [/^scripts\/gates\/check-api\.mjs$/, ['api']],
   [/^scripts\/gates\/check-drift\.mjs$/, ['drift']],
   [/(^|\/)AGENTS\.md$/, ['build-index', 'portability', 'size', 'workspace-shape']],
 ];
