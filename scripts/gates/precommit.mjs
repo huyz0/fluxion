@@ -42,7 +42,28 @@ const browserTested = () =>
   workspaces()
     .map((w) => w.dir)
     .filter((dir) => listFiles(`${dir}/src`).some((p) => /\.browser\.test\.[cm]?[jt]sx?$/.test(p)));
-const packagingOrSkip = () => mode !== 'staged' || packagingNeeded(stagedPaths()) || 'no staged manifest, export or build setting (CI runs it)';
+// the publishable libraries (what publint and attw pack) named by a workspace list: the same in HEAD's and the staged list
+const libraries = (text) => {
+  try {
+    return JSON.stringify(
+      JSON.parse(text)
+        .workspaces.filter((w) => !w.private && (w.dir.startsWith('packages/') || w.dir.startsWith('packs/')))
+        .map((w) => [w.dir, w.name, w.layer, w.runtime]),
+    );
+  } catch {
+    return undefined;
+  }
+};
+const librariesUnchanged = () => {
+  if (!stagedPaths().includes('tools/gen/workspaces.json')) return false;
+  const [before, after] = [libraries(git(['show', 'HEAD:tools/gen/workspaces.json']).stdout), libraries(git(['show', ':tools/gen/workspaces.json']).stdout)];
+  // a list that cannot be read (either side) is a change: both unreadable must not look the same
+  return before !== undefined && after !== undefined && before === after;
+};
+const packagingOrSkip = () =>
+  mode !== 'staged' ||
+  packagingNeeded(stagedPaths(), { lockfileWorkspaceOnly: workspaceLock(), librariesUnchanged: librariesUnchanged() }) ||
+  'no staged manifest, export or build setting (CI runs it)';
 const testPlan = () => (mode === 'staged' ? testScope(stagedPaths(), workspaces(), browserTested(), scopeOptions()) : { run: true, browser: true });
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */

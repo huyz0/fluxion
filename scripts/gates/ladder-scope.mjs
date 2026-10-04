@@ -263,9 +263,10 @@ export function testScope(stagedPaths, workspaces, browserTested, { lockfileWork
 /**
  * Whether the packaging checks (publint, attw: a package's manifest, exports and built types) can be affected:
  * false when every staged path is a source, an API report, an e2e spec, a doc, milestone-checks.mjs or bookkeeping, none of which
- * changes a manifest or a build setting. CI's `--all` ladder always runs them (NFR-DX-002, ci-cd.md §5).
+ * changes a manifest or a build setting. A private app's manifest and tsconfig, a workspace-only lockfile change (`lockfileWorkspaceOnly`) and a
+ * workspace list whose publishable libraries are unchanged (`librariesUnchanged`) are inert too. CI's `--all` ladder always runs them (NFR-DX-002, ci-cd.md §5).
  */
-export function packagingNeeded(staged) {
+export function packagingNeeded(staged, { lockfileWorkspaceOnly: workspaceLock = false, librariesUnchanged = false } = {}) {
   // milestone-checks.mjs judges milestone legs and rows; it reads no manifest, export or build setting
   const inert = (p) =>
     p === 'scripts/gates/milestone-checks.mjs' ||
@@ -282,6 +283,11 @@ export function packagingNeeded(staged) {
     /^(examples|fixtures)\//.test(p) ||
     /(^|\/)AGENTS\.md$/.test(p) ||
     /^apps\/docs\/src\/content\//.test(p) ||
-    BOOKKEEPING_PATHS.some((re) => re.test(p));
+    BOOKKEEPING_PATHS.some((re) => re.test(p)) ||
+    // the checks pack the publishable libraries (packages/* and packs/*) only: a private app's manifest and tsconfig are not packed; a lockfile that
+    // changes workspace links alone adds no package to any library; a workspace list with the same libraries checks the same ones
+    /^apps\/[^/]+\/(package|tsconfig)\.json$/.test(p) ||
+    (p === 'pnpm-lock.yaml' && workspaceLock) ||
+    (p === 'tools/gen/workspaces.json' && librariesUnchanged);
   return !staged.every(inert);
 }

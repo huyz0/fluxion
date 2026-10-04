@@ -189,6 +189,14 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     // a whole-repo coverage run in a sandbox is CI's: a sources-only commit does not rerun it, the Vitest step judges the floors
     assert.ok(!SOURCE_HARNESS.includes('coverage') && SAMPLE_HARNESS.includes('coverage'));
+    // a private app's manifest and tsconfig, a workspace-only lockfile and an unchanged library list are not packed
+    assert.equal(packagingNeeded(['apps/studio/package.json', 'apps/studio/tsconfig.json']), false);
+    assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true }), false);
+    assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml']), true);
+    assert.equal(packagingNeeded(['tools/gen/workspaces.json'], { librariesUnchanged: true }), false);
+    assert.equal(packagingNeeded(['tools/gen/workspaces.json']), true);
+    // a library's manifest still runs them, whatever the lockfile did
+    assert.equal(packagingNeeded(['packages/core/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true, librariesUnchanged: true }), true);
     for (const p of ['packages/core/package.json', 'pnpm-lock.yaml', 'tsconfig.base.json', 'packages/core/tsup.config.ts', 'scripts/gates/check-packages.mjs'])
       assert.equal(packagingNeeded(['packages/core/src/x.ts', p]), true, p);
   });
