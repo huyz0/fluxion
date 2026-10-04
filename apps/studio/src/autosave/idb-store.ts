@@ -1,6 +1,7 @@
 // The IndexedDB autosave store (ADR-0024): database `fluxion-autosave`, version 1, four object stores. `docs` (key docId) holds each document's
 // record; `journal` (key [docId, seq]) the entries as text; `checkpoints` (key docId) the full records at a sequence number; `assets` (key hash)
 // the bytes of assets where the browser has no OPFS. A schema change is a new version with an upgrade step; nothing is dropped on upgrade.
+import { type BlobStore, segments } from './blobs.js';
 import type { AutosaveStore, Checkpoint, Commit, DocMeta, StoredEntry, StoredJournal } from './store.js';
 
 /**
@@ -81,15 +82,47 @@ function open(factory: IDBFactory, name: string): Promise<IDBDatabase> {
   });
 }
 
+/** Bytes in the `assets` object store, for a browser with no OPFS: each row is `{ hash: <path>, bytes }`. */
+function idbBlobs(db: IDBDatabase): BlobStore {
+  return {
+    put: (path, bytes) =>
+      inTransaction(db, ['assets'], 'readwrite', async (tx) => {
+        segments(path);
+        await result(tx.objectStore('assets').put({ hash: path, bytes }));
+      }),
+    get: (path) =>
+      inTransaction(db, ['assets'], 'readonly', async (tx) => {
+        segments(path);
+        const row = (await result(tx.objectStore('assets').get(path))) as { bytes: Uint8Array } | undefined;
+        return row?.bytes;
+      }),
+    list: (dir) =>
+      inTransaction(db, ['assets'], 'readonly', async (tx) => {
+        segments(dir);
+        const keys = (await result(tx.objectStore('assets').getAllKeys(IDBKeyRange.bound(`${dir}/`, `${dir}0`, false, true)))) as string[];
+        return [...new Set(keys.map((k) => k.slice(dir.length + 1).split('/')[0] ?? ''))];
+      }),
+    remove: (path) =>
+      inTransaction(db, ['assets'], 'readwrite', async (tx) => {
+        segments(path);
+        await result(tx.objectStore('assets').delete(path));
+      }),
+  };
+}
+
 /**
  * The autosave store on IndexedDB. `name` is the database name (tests use their own); a browser with no IndexedDB, or a private window that refuses
  * it, rejects here and the caller falls back to a memory store and says so.
  *
  * @public
  */
-export async function idbAutosaveStore(factory: IDBFactory = indexedDB, name: string = AUTOSAVE_DB): Promise<AutosaveStore & { close(): void }> {
+export async function idbAutosaveStore(
+  factory: IDBFactory = indexedDB,
+  name: string = AUTOSAVE_DB,
+): Promise<AutosaveStore & { readonly blobs: BlobStore; close(): void }> {
   const db = await open(factory, name);
   return {
+    blobs: idbBlobs(db),
     close: () => db.close(),
     commit: (docId, commit: Commit) =>
       inTransaction(db, ['docs', 'journal', 'checkpoints'], 'readwrite', async (tx) => {
