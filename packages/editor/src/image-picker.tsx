@@ -56,6 +56,9 @@ function Picker(props: ImagePickerProps & { readonly box: Box }): ReactNode {
           {a.name}
         </button>
       ))}
+      <button type="button" className="fx-chrome-button" onClick={() => choose(shapeMaker('basic:image-frame'))}>
+        Image placeholder
+      </button>
       {onImport === undefined ? null : (
         <>
           <button type="button" className="fx-chrome-button" onClick={(e) => (e.currentTarget.nextElementSibling as HTMLInputElement | null)?.click()}>
@@ -78,9 +81,6 @@ function Picker(props: ImagePickerProps & { readonly box: Box }): ReactNode {
           />
         </>
       )}
-      <button type="button" className="fx-chrome-button" onClick={() => choose(shapeMaker('basic:image-frame'))}>
-        Image placeholder
-      </button>
       <button type="button" className="fx-chrome-button" onClick={close}>
         Cancel
       </button>
