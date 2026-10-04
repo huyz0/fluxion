@@ -226,13 +226,25 @@ function PresentShell(props: {
   );
 }
 
+/** What the editor has to tell the person (an image that was refused), until it is dismissed. */
+function Notice(props: { readonly text: string; readonly onDismiss: () => void }): ReactNode {
+  return props.text === '' ? null : (
+    <p role="status" className="fx-chrome-notice">
+      {props.text}{' '}
+      <button type="button" className="fx-chrome-button" onClick={props.onDismiss}>
+        Dismiss
+      </button>
+    </p>
+  );
+}
+
 /**
  * The editor for the document in `store`: toolbar, panels and the canvas.
  *
  * @public
  */
 export function EditorRoot(props: EditorRootProps): ReactNode {
-  const { store, registries } = props;
+  const { store, registries, commands } = props;
   useChromeCss();
   const settings = useMemo(() => props.settings ?? memorySettings(), [props.settings]);
   const [layout, setLayout] = useLayout(settings);
@@ -251,7 +263,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const dialogs = useDialogs();
   const base = useMemo(() => baseKeymap(tools.list()), [tools]);
   const { assets, url: assetUrl } = useEditorAssets(store, props.assets);
-  const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands: props.commands });
+  const { run, system, notice, notify } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands });
   useFitOnOpen(session, area, box);
   useEnteredLapse(store, session);
   const shell = { store, registries, screenId, area, session, tools: present, assets: assetUrl, revision };
@@ -286,7 +298,8 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         session={session}
         tools={tools}
         execute={execute}
-        assets={assets.url}
+        assetStore={assets}
+        notify={notify}
         screenId={screenId}
         area={area}
         newId={newId}
@@ -296,6 +309,7 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         onLayout={setLayout}
         menus={{ run, base, overrides, commands: props.commands, mac: onMac() }}
       />
+      <Notice text={notice} onDismiss={() => notify('')} />
       <Dialogs dialogs={dialogs} commands={props.commands} overrides={overrides} onOverrides={setOverrides} tools={tools} run={run} />
     </div>
   );

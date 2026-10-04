@@ -182,7 +182,8 @@ function useDropToOpen(): string {
       if (e.dataTransfer?.types.includes('Files')) e.preventDefault();
     };
     const drop = (e: DragEvent) => {
-      if (!e.dataTransfer?.types.includes('Files')) return;
+      // a drop the editor took (an image on its canvas) is not a file to open
+      if (!e.dataTransfer?.types.includes('Files') || e.defaultPrevented) return;
       e.preventDefault();
       setMessage('');
       void pickedFromDrop(e.dataTransfer.files)

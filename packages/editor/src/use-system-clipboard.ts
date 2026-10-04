@@ -7,6 +7,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { Clipboard } from './clipboard.js';
 import { readAsync, readFromEvent, writeAsync, writeToEvent } from './clipboard-dom.js';
 import { isEditable } from './editor-keys.js';
+import { readImageFile } from './image-file.js';
+import { isImageFile } from './place-images.js';
 import type { Session } from './session.js';
 import type { SystemItem } from './system-paste.js';
 import { pastedKind, readSystemItem } from './system-paste-dom.js';
@@ -23,7 +25,24 @@ export type SystemClipboardInput = {
   readonly paused: boolean;
   /** Place something pasted that is not Fluxion's (an image, an SVG, text) in the document. */
   readonly place: (item: SystemItem) => void;
+  /** Tell the person something (a pasted image that was refused). */
+  readonly notify: (message: string) => void;
 };
+
+/**
+ * Read what a paste carries that is not Fluxion's, after the event ends. An image file goes through the import pipeline (scaled, re-encoded, sniffed)
+ * and a refusal is said; an SVG or text is read as before. Called synchronously by the paste handler: the files are taken before it returns.
+ */
+function pasteForeign(data: DataTransfer, kind: 'image' | 'svg' | 'text', place: (item: SystemItem) => void, notify: (message: string) => void): void {
+  if (kind === 'image') {
+    const file = [...data.files].find(isImageFile);
+    if (file !== undefined) void readImageFile(file).then((read) => (read.ok ? place(read.item) : notify(read.message)));
+    return;
+  }
+  void readSystemItem(data, kind).then((item) => {
+    if (item !== undefined) place(item);
+  });
+}
 
 /** The menu commands: copy, cut and paste through the async Clipboard API. */
 export type SystemClipboardCommands = {
@@ -37,7 +56,7 @@ export type SystemClipboardCommands = {
 
 /** Listen for the clipboard events while mounted; the menu commands over the async API. */
 export function useSystemClipboard(input: SystemClipboardInput): SystemClipboardCommands {
-  const { clipboard, session, run, paused, place } = input;
+  const { clipboard, session, run, paused, place, notify } = input;
   useEffect(() => {
     // not the editor's: a field's own copy and paste, a dialog, presenting
     const own = (e: ClipboardEvent) => !paused && e.clipboardData !== null && session.mode.get() === 'edit' && !isEditable(e.target);
@@ -64,9 +83,7 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
       if (kind === undefined) return;
       // taken now, read after: a paste event ends with this handler, and the bytes of a file arrive later
       e.preventDefault();
-      void readSystemItem(data, kind).then((item) => {
-        if (item !== undefined) place(item);
-      });
+      pasteForeign(data, kind, place, notify);
     };
     window.addEventListener('copy', onCopy);
     window.addEventListener('cut', onCut);

@@ -45,7 +45,7 @@ test.describe('the asset manager', { tag: '@desktop' }, () => {
     await expect(dialog.getByText('Used', { exact: true })).toHaveCount(1);
     // the picture the element shows cannot be removed one by one, and every row says what it costs
     await expect(dialog.getByRole('button', { name: /^Remove pasted\.png$/ }).first()).toBeVisible();
-    await expect(dialog.getByText(/image\/png, .* \(\d+%\)/)).toHaveCount(2);
+    await expect(dialog.getByText(/image\/(png|webp), .* \(\d+%\)/)).toHaveCount(2);
 
     await dialog.getByRole('button', { name: 'Remove unused (1)' }).click();
     await expect(dialog.getByRole('listitem')).toHaveCount(1);
@@ -71,7 +71,8 @@ test.describe('the asset manager', { tag: '@desktop' }, () => {
     const image = editor.canvas.locator('.fx-el[data-kind="image"] image.fx-image');
     await expect(image).toHaveCount(1);
     const before = (await image.getAttribute('href')) ?? '';
-    expect(before.startsWith('data:image/png;base64,')).toBe(true);
+    // a pasted picture went through the import pipeline, which keeps a PNG or re-encodes it as WebP where that is smaller (M10.31)
+    expect(/^data:image\/(png|webp);base64,/.test(before)).toBe(true);
 
     await editor.root.getByRole('button', { name: 'Assets', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Assets' });

@@ -9,7 +9,7 @@ import type { Box, Vec2 } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
 import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
+import { type DOMAttributes, type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, screenToPage, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { wheelCamera, ZOOM_STEP } from './canvas-input.js';
 import { isEditable } from './editor-keys.js';
@@ -18,6 +18,7 @@ import { InlineTextEditor } from './inline-text-editor.js';
 import { LIBRARY_DRAG_TYPE } from './library/library-insert.js';
 import { Overlay, useOverlayShown } from './overlay.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
+import { isImageFile } from './place-images.js';
 import type { Execute, PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
@@ -135,6 +136,8 @@ export type CanvasProps = {
   readonly onMenu?: ((asked: MenuAsked) => void) | undefined;
   /** Told when a library item is dropped: its definition id and the page point it was dropped on. */
   readonly onDropShape?: ((defId: string, page: Vec2) => void) | undefined;
+  /** Image files dropped on the canvas, with the page point they were dropped at. */
+  readonly onDropFiles?: ((files: readonly File[], page: Vec2) => void) | undefined;
 };
 
 /**
@@ -220,9 +223,39 @@ function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatc
   session.editing.set(hit);
 }
 
+/** The drag-over and drop handlers of the canvas: a library shape or image files dropped on it. */
+function dropHandlers(
+  session: Session,
+  onDropShape: ((defId: string, page: Vec2) => void) | undefined,
+  onDropFiles: ((files: readonly File[], page: Vec2) => void) | undefined,
+): Pick<DOMAttributes<HTMLElement>, 'onDragOver' | 'onDrop'> {
+  return {
+    onDragOver: (e) => {
+      const shape = onDropShape !== undefined && e.dataTransfer.types.includes(LIBRARY_DRAG_TYPE);
+      if (shape || (onDropFiles !== undefined && e.dataTransfer.types.includes('Files'))) e.preventDefault();
+    },
+    onDrop: (e) => {
+      const at = e.currentTarget.getBoundingClientRect();
+      const page = () => screenToPage(session.camera.get(), { x: e.clientX - at.left, y: e.clientY - at.top });
+      const images = onDropFiles === undefined ? [] : [...e.dataTransfer.files].filter(isImageFile);
+      if (images.length > 0) {
+        // taken here: the page around the editor (the studio opens a dropped file as a document) must not also act on it
+        e.preventDefault();
+        e.stopPropagation();
+        onDropFiles?.(images, page());
+        return;
+      }
+      const defId = e.dataTransfer.getData(LIBRARY_DRAG_TYPE);
+      if (onDropShape === undefined || defId === '') return;
+      e.preventDefault();
+      onDropShape(defId, page());
+    },
+  };
+}
+
 /** The canvas: the screen at the session camera, panned and zoomed. */
 export function Canvas(props: CanvasProps): ReactNode {
-  const { store, registries, screenId, area, session, tools, execute, assets, onBox, onMenu, onDropShape } = props;
+  const { store, registries, screenId, area, session, tools, execute, assets, onBox, onMenu, onDropShape, onDropFiles } = props;
   const ref = useRef<HTMLElement>(null);
   const box = useElementBox(ref);
   const camera = useValue(session.camera.get);
@@ -263,16 +296,7 @@ export function Canvas(props: CanvasProps): ReactNode {
       onPointerLeave={() => session.hover.set(undefined)}
       onDoubleClick={(e) => editAt(e, session, tools)}
       onContextMenu={(e) => askMenu(e, session)}
-      onDragOver={(e) => {
-        if (onDropShape !== undefined && e.dataTransfer.types.includes(LIBRARY_DRAG_TYPE)) e.preventDefault();
-      }}
-      onDrop={(e) => {
-        const defId = e.dataTransfer.getData(LIBRARY_DRAG_TYPE);
-        if (onDropShape === undefined || defId === '') return;
-        e.preventDefault();
-        const at = e.currentTarget.getBoundingClientRect();
-        onDropShape(defId, screenToPage(session.camera.get(), { x: e.clientX - at.left, y: e.clientY - at.top }));
-      }}
+      {...dropHandlers(session, onDropShape, onDropFiles)}
     >
       {screenId === undefined || box.w === 0 ? null : (
         <>

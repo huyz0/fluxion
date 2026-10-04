@@ -62,7 +62,8 @@ test.describe('pasting what is not Fluxion`s', { tag: '@desktop' }, () => {
     await expect(image).toHaveCount(1);
     // drawn from the bytes the editor holds: the picture decoded
     const href = (await image.locator('image.fx-image').getAttribute('href')) ?? '';
-    expect(href.startsWith('data:image/png;base64,')).toBe(true);
+    // through the import pipeline: a PNG stays one or becomes WebP where that is smaller (M10.31)
+    expect(/^data:image\/(png|webp);base64,/.test(href)).toBe(true);
     expect(
       await page.evaluate(
         (src) =>

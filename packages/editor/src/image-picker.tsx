@@ -1,8 +1,8 @@
 // The image tool's picker (FR-EDT-003): the box the tool placed waits in the session while the picker
-// offers the document's image assets, and an image frame placeholder shape. Importing images from
-// files arrives with the file work (FR-AST-001); until then only what the document holds is offered.
+// offers the document's image assets, an image frame placeholder shape, and a button that imports an image from a file
+// (FR-AST-001, M10.31) and places it at the box.
 import type { Store } from '@fluxion/core';
-import type { Box } from '@fluxion/geometry';
+import type { Box, Vec2 } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useEffect, useMemo, useRef } from 'react';
@@ -23,6 +23,8 @@ export type ImagePickerProps = {
   readonly screenId: RecordId | undefined;
   /** A fresh record id. */
   newId(): RecordId;
+  /** Import image files and place them at the page point (the middle of the pending box): the picker's file button. */
+  readonly onImport?: ((files: readonly File[], at: Vec2) => void) | undefined;
 };
 
 /** The picker, shown while the image tool's box waits for an image; Esc or Cancel adds nothing. */
@@ -34,7 +36,7 @@ export function ImagePicker(props: ImagePickerProps): ReactNode {
 
 /** The open picker for the pending `box`. */
 function Picker(props: ImagePickerProps & { readonly box: Box }): ReactNode {
-  const { store, session, execute, screenId, newId, box } = props;
+  const { store, session, execute, screenId, newId, box, onImport } = props;
   const assets = useValue(useMemo(() => store.query(imageAssets), [store]));
   const dialog = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -54,6 +56,28 @@ function Picker(props: ImagePickerProps & { readonly box: Box }): ReactNode {
           {a.name}
         </button>
       ))}
+      {onImport === undefined ? null : (
+        <>
+          <button type="button" className="fx-chrome-button" onClick={(e) => (e.currentTarget.nextElementSibling as HTMLInputElement | null)?.click()}>
+            Import an image…
+          </button>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            aria-hidden="true"
+            tabIndex={-1}
+            hidden
+            onChange={(e) => {
+              const files = [...(e.target.files ?? [])];
+              e.target.value = '';
+              if (files.length === 0) return;
+              close();
+              onImport(files, { x: box.x + box.w / 2, y: box.y + box.h / 2 });
+            }}
+          />
+        </>
+      )}
       <button type="button" className="fx-chrome-button" onClick={() => choose(shapeMaker('basic:image-frame'))}>
         Image placeholder
       </button>

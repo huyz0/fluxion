@@ -65,7 +65,14 @@ export type RootKeys = {
 };
 
 /** The editor's keys over the root's tools, with its own clipboard (the system clipboard joins it in M7.22); the runner of a command by id. */
-export function useRootKeys(i: RootKeys): { readonly run: (command: string, args?: unknown) => boolean; readonly system: SystemClipboardCommands } {
+export function useRootKeys(i: RootKeys): {
+  readonly run: (command: string, args?: unknown) => boolean;
+  readonly system: SystemClipboardCommands;
+  /** What the editor has to tell the person (an image that was refused), and the way to set or clear it. */
+  readonly notice: string;
+  readonly notify: (message: string) => void;
+} {
+  const [notice, notify] = useState('');
   const { store, session, shown } = i;
   const restore = useCallback(
     (meta: unknown) => {
@@ -103,8 +110,8 @@ export function useRootKeys(i: RootKeys): { readonly run: (command: string, args
     },
     [i.tools, i.box.w, i.box.h, session, assets],
   );
-  const system = useSystemClipboard({ clipboard, session, run, paused: i.dialogs.help || i.dialogs.palette, place });
-  return { run, system };
+  const system = useSystemClipboard({ clipboard, session, run, paused: i.dialogs.help || i.dialogs.palette, place, notify });
+  return { run, system, notice, notify };
 }
 
 /** The panels and splitters of `layout`: a splitter stays while its panel is collapsed (Enter restores it), controlling nothing then; focus mode hides them all. */

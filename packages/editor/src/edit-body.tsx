@@ -4,6 +4,7 @@ import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RenderRegistries } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useCallback } from 'react';
+import type { AssetStore } from './asset-store.js';
 import { screenToPage } from './camera.js';
 import { Canvas } from './canvas.js';
 import { type CanvasMenuInput, useCanvasMenu } from './canvas-menu.js';
@@ -11,6 +12,7 @@ import { ImagePicker } from './image-picker.js';
 import type { EditorLayout } from './layout.js';
 import { insertShape } from './library/library-insert.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
+import { placeImageFiles } from './place-images.js';
 import type { Execute } from './pointer.js';
 import { usePanels } from './root-hooks.js';
 import type { Session } from './session.js';
@@ -23,8 +25,6 @@ export type EditBodyProps = {
   readonly session: Session;
   readonly tools: ToolDispatcher;
   readonly execute: Execute;
-  /** The bytes of the document's assets, by asset id. */
-  readonly assets: (id: RecordId) => string | undefined;
   readonly screenId: RecordId | undefined;
   readonly area: Box | undefined;
   /** Where fresh record ids come from. */
@@ -37,11 +37,15 @@ export type EditBodyProps = {
   readonly onLayout: (layout: EditorLayout) => void;
   /** What the context menus need besides the tools and the area. */
   readonly menus: Omit<CanvasMenuInput, 'tools' | 'area'>;
+  /** The bytes of the document's assets, to put an imported image's bytes in. */
+  readonly assetStore: AssetStore;
+  /** Tell the person something (an image that was refused). */
+  readonly notify: (message: string) => void;
 };
 
 /** The panels around the canvas. */
 export function EditBody(props: EditBodyProps): ReactNode {
-  const { store, registries, session, tools, execute, assets, screenId, area, newId, onBox, box, layout, onLayout, menus } = props;
+  const { store, registries, session, tools, execute, screenId, area, newId, onBox, box, layout, onLayout, menus, assetStore, notify } = props;
   const { panel, splitter } = usePanels(layout, onLayout);
   const { onMenu, menu } = useCanvasMenu({ ...menus, tools, area });
   // a library item put on the canvas: at the drop point, or at the middle of the view for a click
@@ -53,6 +57,19 @@ export function EditBody(props: EditBodyProps): ReactNode {
         at ?? screenToPage(session.camera.get(), { x: box.w / 2, y: box.h / 2 }),
       ),
     [store, screenId, newId, execute, session, registries, box],
+  );
+  // image files dropped on the canvas, or picked in the image picker: imported, then placed like a pasted image
+  const importFiles = useCallback(
+    (files: readonly File[], at?: Vec2) =>
+      void placeImageFiles(
+        { view: store, execute, seal: () => store.history.seal(), screen: screenId, newId, assets: assetStore },
+        files,
+        at ?? screenToPage(session.camera.get(), { x: box.w / 2, y: box.h / 2 }),
+        notify,
+      ).then((id) => {
+        if (id !== undefined) session.selection.set([id]);
+      }),
+    [store, execute, screenId, newId, assetStore, session, box, notify],
   );
   return (
     <div className="fx-chrome-body">
@@ -75,16 +92,17 @@ export function EditBody(props: EditBodyProps): ReactNode {
           session={session}
           tools={tools}
           execute={execute}
-          assets={assets}
+          assets={assetStore.url}
           onBox={onBox}
           onMenu={onMenu}
           onDropShape={insert}
+          onDropFiles={importFiles}
         />
         {splitter('bottom')}
         {panel('bottom', <Timeline />)}
       </div>
       {menu}
-      <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} />
+      <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} onImport={importFiles} />
       {splitter('right')}
       {panel('right', <Inspector session={session} fields={{ store, execute, shapeDefs: registries.shapeDefs }} />)}
     </div>

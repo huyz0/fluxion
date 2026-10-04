@@ -11,7 +11,12 @@ type FormatApi = {
   readonly loadFlux: (
     bytes: Uint8Array,
     options: { hasher: Hasher },
-  ) => Promise<Result<{ document: { records: { [id: string]: { type: string; title?: string } } } }>>;
+  ) => Promise<
+    Result<{
+      document: { records: { [id: string]: { type: string; title?: string; w?: number; h?: number; mime?: string; hash?: string } } };
+      assets: ReadonlyMap<string, { bytes: Uint8Array }>;
+    }>
+  >;
   readonly sha256Hex: (bytes: Uint8Array) => string;
 };
 type SchemaApi = { readonly parseDocument: (text: string) => Result<{ document: unknown }> };
@@ -43,4 +48,15 @@ export async function titleOf(bytes: Uint8Array): Promise<string> {
   const loaded = value(await api.loadFlux(bytes, { hasher: hasherOf(api) }), 'loadFlux');
   const doc = Object.values(loaded.document.records).find((r) => r.type === 'document');
   return doc?.title ?? '';
+}
+
+/** The image assets of saved `.flux` bytes: their pixel size and type, and whether the file holds their bytes. */
+export async function imageAssetsOf(
+  bytes: Uint8Array,
+): Promise<{ w: number | undefined; h: number | undefined; mime: string | undefined; embedded: boolean }[]> {
+  const api = await format();
+  const loaded = value(await api.loadFlux(bytes, { hasher: hasherOf(api) }), 'loadFlux');
+  return Object.values(loaded.document.records)
+    .filter((r) => r.type === 'asset' && r.mime?.startsWith('image/'))
+    .map((r) => ({ w: r.w, h: r.h, mime: r.mime, embedded: r.hash !== undefined && loaded.assets.has(r.hash) }));
 }
