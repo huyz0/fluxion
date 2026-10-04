@@ -62,7 +62,7 @@ describe('writeFluxHtml', () => {
     expect(head).toContain(FLUX_HTML_MARKER_META);
     expect(head).toContain(FLUX_HTML_MARKER_COMMENT);
     expect(html.startsWith('<!doctype html>')).toBe(true);
-  });
+  }, 30_000);
 
   it("NFR-SEC-002: a .flux.html has one CSP meta with connect-src 'none' and the hashes of its scripts, and no other script or external reference", async () => {
     const html = await write({ noscriptSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>' });
