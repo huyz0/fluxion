@@ -58,6 +58,17 @@ Golden fixtures per `formatVersion` load, migrate and round-trip in CI. Size fix
 (NFR-SIZE-003). E2E opens `.flux.html` from `file://` with the network blocked. A loader fuzz test
 runs 10 000 corrupted inputs (NFR-REL-002).
 
+### Amendments
+
+- 2026-10-04 (M10, reconciled with the implementation and `specs/format/flux-1.0.md`):
+  - The player inside `.flux.html` is a **classic inline script** that defines `Fluxion`, not a module, so the page runs from every `file://` origin (ADR-0154). Compact mode stayed a spike and is not built.
+  - The zip codec is the package's own: deterministic, deflate or store per entry, no extra fields (ADR-0153).
+  - The studio saves `.flux` (through the File System Access API where it exists, else a download). A `.flux.html` is made by `fluxion convert` (ADR-0155) and converts back byte-identically; the studio opens both.
+  - The manifest also records `bakes` (which derived data the file holds) and the plugin lock; plugin bundles and component snapshots are copied through unchanged in M10, not yet produced.
+  - The loader enforces its own limits (4096 entries, 128 MB per entry, 256 MB in all, checked against the declared size and inflation capped at it) and refuses unsafe entry names; it never throws and repairs or salvages what it can (FR-FIL-009).
+  - Fonts a document references are embedded whole as WOFF2 with their licence lines; subsetting is later (ADR-0022 amendment).
+  - The measurement basis of the `.flux.html` size budget (raw or gzip, NFR-SIZE-003) is an open decision (M10.45).
+
 ## Pros and Cons of the Options
 
 | Option | Pros | Cons |

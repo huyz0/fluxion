@@ -72,7 +72,11 @@ function adrLeg(num, words, also) {
     return /^status:\s*accepted\s*$/m.test(text) || `${file} is not accepted`;
   };
 }
-leg('ADR-0003 the file format is accepted', adrLeg('0003', ['file format'], ['mimetype', 'manifest', 'CSP']));
+// the ADR's title names the three containers, not the words 'file format': the leg checks it is accepted, amended for M10 and names the parts
+leg(
+  'ADR-0003 the file format is accepted and reconciled with M10',
+  adrLeg('0003', [], ['mimetype', 'manifest', 'CSP', 'Amendments', 'classic inline script', 'fluxion convert']),
+);
 leg('ADR-0024 autosave storage is accepted', adrLeg('0024', ['autosave'], ['IndexedDB', 'OPFS', 'Web Locks', 'quota']));
 leg('ADR-0025 the sanitizer and image encoding is accepted', adrLeg('0025', ['sanitizer'], ['allowlist', 'WebP', 'AVIF', 'XML parser']));
 

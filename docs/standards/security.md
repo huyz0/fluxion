@@ -39,8 +39,8 @@ const r = evaluateExpression(parse(src), scope, { maxSteps: 10_000, maxMs: 5 });
 // ❌ new Function("scope", `return ${src}`)(scope)
 ```
 
-7. **Zip hygiene**: reject path traversal (`../`, absolute paths), cap entry count, total
-   uncompressed size and compression ratio (zip bombs), verify SHA-256 of content-addressed
+7. **Zip hygiene**: reject path traversal (`../`, absolute paths), cap entry count, per-entry and total
+   uncompressed size (zip bombs: each entry is checked against its declared size and inflation is capped at it), verify SHA-256 of content-addressed
    assets. → `format` unit tests with malicious fixtures
 8. **`dangerouslySetInnerHTML` / `innerHTML` only with sanitised input**, via one wrapper
    component (`<SafeHtml>`). → Biome `noDangerouslySetInnerHtml` (wrapper allowlisted)

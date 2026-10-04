@@ -33,7 +33,7 @@ A package is a zip archive. A writer must produce the entries below in this orde
 - Entries a writer does not know (a newer writer's, plugin bundles, snapshots) must be copied through unchanged when a file is saved again, and
   listed in the manifest.
 - Entry names must not be absolute, contain `..`, repeat, or collide with the reserved names. A reader refuses such a file.
-- Limits the loader enforces by default: at most 4096 entries, 128 MB inflated per entry and 256 MB inflated in all. An entry that inflates past its limit is refused as it is inflated, so a small file cannot expand without bound.
+- Limits the loader enforces by default: at most 4096 entries, 128 MB inflated per entry and 256 MB inflated in all. Each entry is checked against the size its header declares, and inflation is capped at that size, so a small file cannot expand without bound.
 
 ## 3. The manifest
 
