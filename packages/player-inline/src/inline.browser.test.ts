@@ -1,7 +1,7 @@
 import { type ContentHasher, writeFlux } from '@fluxion/format';
 import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 declare global {
   interface ImportMeta {
@@ -82,14 +82,14 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
     expect(typeof window.Fluxion?.start).toBe('function');
     const result = await window.Fluxion?.start(bytes, root);
     expect(result?.ok).toBe(true);
-    await frame();
-    expect(shown()).toBe(ids[0]);
+    // a slow runner draws later than two frames: wait for the screen rather than for a count of frames
+    await vi.waitFor(() => expect(shown()).toBe(ids[0]));
     // the rectangle is the basic pack's shape: drawn by the bundled registries
     expect(root.querySelector('.fx-screen svg, .fx-screen [data-element-id]')).not.toBeNull();
     await press('ArrowRight');
-    expect(shown()).toBe(ids[1]);
+    await vi.waitFor(() => expect(shown()).toBe(ids[1]));
     await press('ArrowLeft');
-    expect(shown()).toBe(ids[0]);
+    await vi.waitFor(() => expect(shown()).toBe(ids[0]));
     result?.unmount?.();
     expect(root.querySelector('.fx-screen')).toBeNull();
   });
@@ -97,10 +97,10 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
   it('FR-FIL-002: an image of the file is drawn from a blob URL made from its own verified bytes, and is released on unmount', async () => {
     const { bytes } = await deckFile();
     const result = await window.Fluxion?.start(bytes, root);
-    await frame();
+    await vi.waitFor(() => expect(shown()).not.toBeUndefined());
     await press('ArrowRight');
+    await vi.waitFor(() => expect(root.querySelector('image, img')).not.toBeNull());
     const image = root.querySelector('image, img');
-    expect(image).not.toBeNull();
     const href = image?.getAttribute('href') ?? image?.getAttribute('src') ?? '';
     expect(href.startsWith('blob:')).toBe(true);
     // the URL works while the player is up, and is revoked on unmount
