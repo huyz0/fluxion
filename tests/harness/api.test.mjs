@@ -39,9 +39,15 @@ describe('check-api on a copy of the repo (NFR-MNT-007)', () => {
     // a copy of the repo: API Extractor writes temp reports and must not race the ladder's api step (M1.36)
     const r = check();
     assert.equal(r.status, 0, out(r));
-    // one report per library that has one: the count follows the committed reports, so a new library does not edit this test
-    const reports = ['packages', 'packs'].flatMap((d) => readdirSync(join(REPO, d)).filter((n) => existsSync(join(REPO, d, n, 'api'))));
-    assert.ok(reports.length >= 17);
+    // one report per entry point (a library's main entry and each subpath its exports list, M10.29): the count follows the committed reports,
+    // so a new library or subpath does not edit this test
+    const reports = ['packages', 'packs'].flatMap((d) =>
+      readdirSync(join(REPO, d)).flatMap((n) =>
+        existsSync(join(REPO, d, n, 'api')) ? readdirSync(join(REPO, d, n, 'api')).filter((f) => f.endsWith('.api.md')) : [],
+      ),
+    );
+    assert.ok(reports.length >= 20);
+    assert.ok(reports.includes('player.mount.api.md') && reports.includes('schema.testing.api.md') && reports.includes('core.testing.api.md'));
     assert.match(r.stdout, new RegExp(`${reports.length} API report\\(s\\) match`));
   });
 
@@ -85,5 +91,44 @@ describe('check-api (NFR-MNT-007)', () => {
     assert.match(sb.read('packages/core/api/core.api.md'), /export const EXTRA: number;/);
     const r = api();
     assert.equal(r.status, 0, out(r));
+  });
+});
+
+// a subpath entry of a package's exports is a contract too (M10.29): `@fluxion/player/mount` and the `testing` entries have their own reports
+describe('check-api on a subpath entry (NFR-MNT-008)', () => {
+  const TESTING_DTS = 'packages/schema/dist/testing/index.d.ts';
+  const schemaApi = (...args) =>
+    sb.node('scripts/gates/check-api.mjs', ['--dir', sb.dir, '--package', 'packages/schema', ...args], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
+  beforeEach(() => {
+    sb = sandbox(['scripts', 'tools', 'packages/schema']);
+  });
+  afterEach(() => sb.cleanup());
+
+  it('NFR-MNT-008: the subpath entries are checked against their own committed reports', () => {
+    const r = schemaApi();
+    assert.equal(r.status, 0, out(r));
+    assert.match(r.stdout, /2 API report\(s\) match/);
+  });
+
+  it('NFR-MNT-008: an exported signature of a subpath entry changing without an updated report fails, naming the subpath', () => {
+    sb.edit(TESTING_DTS, (t) => `${t}\n/**\n * Added.\n *\n * @public\n */\nexport declare const EXTRA_TESTING: number;\n`);
+    const r = schemaApi();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /packages\/schema \(testing\)/);
+    assert.match(r.stderr, /public API changed: update the report/);
+  });
+
+  it('NFR-MNT-008: --update writes the subpath report', () => {
+    sb.edit(TESTING_DTS, (t) => `${t}\n/**\n * Added.\n *\n * @public\n */\nexport declare const EXTRA_TESTING: number;\n`);
+    assert.equal(schemaApi('--update').status, 0);
+    assert.match(sb.read('packages/schema/api/schema.testing.api.md'), /export const EXTRA_TESTING: number;/);
+    assert.equal(schemaApi().status, 0);
+  });
+
+  it('NFR-MNT-008: a subpath export with no types file fails instead of dropping out of the gate', () => {
+    sb.edit('packages/schema/package.json', (t) => t.replace('"exports": {', '"exports": {\n    "./bare": "./dist/bare.js",'));
+    const r = schemaApi();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /the export "\.\/bare" has no "types" file/);
   });
 });
