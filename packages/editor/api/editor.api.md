@@ -343,6 +343,7 @@ export type EditorRootProps = {
     readonly tools?: Registry<string, Tool>;
     readonly random?: Random;
     readonly assets?: AssetStore;
+    readonly toolbar?: ReactNode;
     readonly commands?: readonly EditorCommand[];
     readonly themes?: readonly ThemeChoice[];
     readonly fonts?: FontSources;

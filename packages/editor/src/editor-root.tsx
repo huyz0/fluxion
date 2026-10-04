@@ -65,6 +65,8 @@ export type EditorRootProps = {
   readonly random?: Random;
   /** The bytes of the document's assets (default: an in-memory store for this root, which pasted images fill). */
   readonly assets?: AssetStore;
+  /** Controls the host adds to the end of the toolbar (the studio's Open, Save and Save a copy). */
+  readonly toolbar?: ReactNode;
   /** Editor commands besides the built-in ones, e.g. a plugin's: bindable in the keymap and listed by the command palette. */
   readonly commands?: readonly EditorCommand[];
   /** The themes the theme switcher offers (the host's packs' themes); no switcher when empty or absent. */
@@ -272,7 +274,10 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         switchMode={switchMode}
         openHelp={dialogs.openHelp}
         extras={
-          <ToolbarExtras store={store} execute={execute} session={session} screenId={screenId} themes={props.themes} fonts={props.fonts} assets={assets} />
+          <>
+            <ToolbarExtras store={store} execute={execute} session={session} screenId={screenId} themes={props.themes} fonts={props.fonts} assets={assets} />
+            {props.toolbar}
+          </>
         }
       />
       <EditBody
