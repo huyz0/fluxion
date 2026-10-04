@@ -9,6 +9,9 @@ import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 
 // @public
+export type AssetCheck = "clean" | "changed" | "refused";
+
+// @public
 export interface AssetStore {
     delete(hash: string): Promise<void>;
     get(hash: string): Promise<FluxAsset | undefined>;
@@ -16,6 +19,9 @@ export interface AssetStore {
     hashes(): Promise<string[]>;
     put(bytes: Uint8Array, mime: string): Promise<string>;
 }
+
+// @public
+export function checkAsset(asset: FluxAsset): AssetCheck;
 
 // @public
 export type ContentHasher = {
@@ -57,6 +63,9 @@ export type FormatError = {
 export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_INTERNAL";
 
 // @public
+export function inspectSvg(input: string): SvgInspection | undefined;
+
+// @public
 export type LoadedFlux = {
     readonly document: DocumentFile;
     readonly diagnostics: readonly Diagnostic[];
@@ -94,7 +103,7 @@ export type LoadNote = {
 };
 
 // @public
-export type LoadNoteCode = "MANIFEST_MISSING" | "MANIFEST_INVALID" | "MIMETYPE_NOT_FIRST" | "ENTRY_HASH_MISMATCH" | "ENTRY_UNLISTED" | "ENTRY_MISSING" | "ASSET_HASH_MISMATCH" | "ASSET_NAME_INVALID";
+export type LoadNoteCode = "MANIFEST_MISSING" | "MANIFEST_INVALID" | "MIMETYPE_NOT_FIRST" | "ENTRY_HASH_MISMATCH" | "ENTRY_UNLISTED" | "ENTRY_MISSING" | "ASSET_HASH_MISMATCH" | "ASSET_NAME_INVALID" | "ASSET_UNSAFE";
 
 // @public
 export type LoadOptions = {
@@ -112,12 +121,18 @@ export function readZip(bytes: Uint8Array, limits?: ZipLimits): Result<ZipEntry[
 export function referencedAssetHashes(doc: DocumentFile): string[];
 
 // @public
+export function safeLinkUrl(href: string): string | undefined;
+
+// @public
 export type Salvage = {
     readonly reason: "truncated" | "invalid" | "newer-major";
     readonly dropped: readonly string[];
     readonly recovered?: number;
     readonly versionGuessed?: true;
 };
+
+// @public
+export function sanitizeAsset(asset: FluxAsset): FluxAsset | undefined;
 
 // @public
 export function sanitizeSvg(input: string): string | undefined;
@@ -129,6 +144,12 @@ export function selectAssets(doc: DocumentFile, store: AssetStore): Promise<Sele
 export type SelectedAssets = {
     readonly assets: ReadonlyMap<string, FluxAsset>;
     readonly missing: readonly string[];
+};
+
+// @public
+export type SvgInspection = {
+    readonly svg: string;
+    readonly removed: number;
 };
 
 // @public

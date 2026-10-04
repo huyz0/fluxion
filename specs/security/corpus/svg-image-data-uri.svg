@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <!-- an image whose data URI is itself an SVG with a handler: nothing may be loaded -->
+  <image href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIG9ubG9hZD0iYWxlcnQoMSkiLz4=" width="100" height="100"/>
+  <text x="10" y="20">label</text>
+</svg>

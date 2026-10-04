@@ -194,8 +194,8 @@ const skipTo = (text: string, close: string, at: number): number => {
   return end < 0 ? text.length : end + close.length;
 };
 
-/** The state of the reader: the open elements, how many opened beyond the depth cap (read and dropped), and the elements counted. */
-type Reading = { readonly stack: Node[]; overflow: number; nodes: number };
+/** The state of the reader: the open elements, how many opened beyond the depth cap (read and dropped), the elements counted, the doctypes, too-deep elements and unread tail dropped. */
+type Reading = { readonly stack: Node[]; overflow: number; nodes: number; lost: number };
 
 /** Add `child` to the open element. */
 const add = (reading: Reading, child: Node | string): void => {
@@ -210,6 +210,7 @@ function openTag(reading: Reading, tag: string): void {
   reading.nodes++;
   if (reading.stack.length >= MAX_DEPTH) {
     // too deep to keep: read and dropped, so its end tag is not taken for an ancestor's
+    reading.lost++;
     if (!selfClosing) reading.overflow++;
     return;
   }
@@ -230,15 +231,24 @@ function skipDeclaration(text: string, lt: number): number {
   return text.startsWith('<!DOCTYPE', lt) && bracket >= 0 && bracket < text.indexOf('>', lt) ? skipTo(text, ']>', lt) : skipTo(text, '>', lt);
 }
 
-/** The markup that starts at `lt` (a `<`) read into `reading`; the index after it. */
-function readMarkup(text: string, lt: number, reading: Reading): number {
+/** A comment, CDATA section, doctype or instruction at `lt` read into `reading`: the index after it; undefined when `lt` starts a tag. */
+function readSpecial(text: string, lt: number, reading: Reading): number | undefined {
   if (text.startsWith('<!--', lt)) return skipTo(text, '-->', lt + 4);
   if (text.startsWith('<![CDATA[', lt)) {
     const end = text.indexOf(']]>', lt + 9);
     add(reading, text.slice(lt + 9, end < 0 ? text.length : end));
     return end < 0 ? text.length : end + 3;
   }
-  if (text.startsWith('<!', lt) || text.startsWith('<?', lt)) return skipDeclaration(text, lt);
+  if (!text.startsWith('<!', lt) && !text.startsWith('<?', lt)) return undefined;
+  // a doctype or entity declaration is a thing the allowlist removes; an `<?xml ?>` line is not
+  if (text.startsWith('<!', lt)) reading.lost++;
+  return skipDeclaration(text, lt);
+}
+
+/** The markup that starts at `lt` (a `<`) read into `reading`; the index after it. */
+function readMarkup(text: string, lt: number, reading: Reading): number {
+  const special = readSpecial(text, lt, reading);
+  if (special !== undefined) return special;
   const end = skipTo(text, '>', lt);
   if (text[lt + 1] === '/') closeTag(reading);
   else openTag(reading, text.slice(lt + 1, text.endsWith('>', end) ? end - 1 : end));
@@ -246,9 +256,9 @@ function readMarkup(text: string, lt: number, reading: Reading): number {
 }
 
 /** Read `text` into a tree under a virtual root: elements and text only; comments, instructions, doctypes and entities are dropped. */
-function read(text: string): Node {
+function read(text: string): { readonly node: Node; readonly lost: number } {
   const root: Node = { name: '#root', attributes: new Map(), children: [] };
-  const reading: Reading = { stack: [root], overflow: 0, nodes: 0 };
+  const reading: Reading = { stack: [root], overflow: 0, nodes: 0, lost: 0 };
   let at = 0;
   while (at < text.length && reading.nodes <= MAX_NODES) {
     const lt = text.indexOf('<', at);
@@ -257,22 +267,46 @@ function read(text: string): Node {
     if (lt < 0) break;
     at = readMarkup(text, lt, reading);
   }
-  return root;
+  // the node cap stopped the read with text left: whatever follows is dropped unread
+  if (reading.nodes > MAX_NODES && at < text.length) reading.lost++;
+  return { node: root, lost: reading.lost };
 }
 
-/** The kept markup of `node` (an element on the allowlist; its text only where text is kept), or nothing. */
-function write(node: Node | string, textual: boolean): string {
-  if (typeof node === 'string') return textual ? escapeText(node) : '';
-  if (!Object.hasOwn(ELEMENTS, node.name)) return '';
-  // `href` and `xlink:href` are both written `href`: the first one that is kept stays
+/** What the sanitizer took out: elements off the allowlist, attributes and style declarations dropped, a doctype. */
+type Removed = { count: number };
+
+/** A namespace declaration: the file's own `xmlns` is replaced by ours, so dropping it takes nothing out. */
+const isNamespaceDeclaration = (name: string): boolean => name === 'xmlns' || name.startsWith('xmlns:');
+
+/** How many declarations a `style` value holds. */
+const declarations = (style: string): number => style.split(';').filter((d) => d.trim() !== '').length;
+
+/** Whether the attribute `name` of an element was lost: not kept at all, or a repeat of one already kept (a namespace declaration is replaced by ours, so it never counts). */
+const lostAttribute = (name: string, written: string | undefined, keptText: string | undefined): boolean =>
+  !isNamespaceDeclaration(name) && (written === undefined || keptText !== written);
+
+/** The attributes of `node` that stay, as written text: `href` and `xlink:href` are both written `href` (the first kept stays); `removed` counts the rest. */
+function keptAttributes(node: Node, removed: Removed): string[] {
   const kept = new Map<string, string>();
   for (const [name, value] of node.attributes) {
     const written = keepAttribute(node.name, name, value);
     const as = name === 'xlink:href' ? 'href' : name;
     if (written !== undefined && !kept.has(as)) kept.set(as, written);
+    if (lostAttribute(name, written, kept.get(as))) removed.count++;
+    if (written !== undefined && name === 'style' && declarations(decode(value)) > declarations(written)) removed.count++;
   }
-  const attributes = [...kept.values()];
-  const inside = node.children.map((c) => write(c, TEXTUAL.has(node.name))).join('');
+  return [...kept.values()];
+}
+
+/** The kept markup of `node` (an element on the allowlist; its text only where text is kept), or nothing; `removed` counts what was dropped. */
+function write(node: Node | string, textual: boolean, removed: Removed): string {
+  if (typeof node === 'string') return textual ? escapeText(node) : '';
+  if (!Object.hasOwn(ELEMENTS, node.name)) {
+    removed.count++;
+    return '';
+  }
+  const attributes = keptAttributes(node, removed);
+  const inside = node.children.map((c) => write(c, TEXTUAL.has(node.name), removed)).join('');
   return `<${node.name}${attributes.length > 0 ? ` ${attributes.join(' ')}` : ''}>${inside}</${node.name}>`;
 }
 
@@ -285,9 +319,36 @@ function write(node: Node | string, textual: boolean): string {
  * @public
  */
 export function sanitizeSvg(input: string): string | undefined {
+  return inspectSvg(input)?.svg;
+}
+
+/**
+ * What `inspectSvg` found: the sanitized SVG and how much was taken out to make it.
+ *
+ * @public
+ */
+export type SvgInspection = {
+  /** The sanitized SVG, as `sanitizeSvg` gives it. */
+  readonly svg: string;
+  /** How many elements, attributes, style declarations and doctypes the allowlist removed (a file's own `xmlns` declarations, comments and instructions do not count). */
+  readonly removed: number;
+};
+
+/**
+ * `sanitizeSvg`, with a count of what it removed: zero means the file held nothing outside the allowlist, so drawing it changes only its
+ * spelling (self-closed tags, indentation). Undefined when the text is too large or holds no `svg` root.
+ *
+ * @public
+ */
+export function inspectSvg(input: string): SvgInspection | undefined {
   if (input.length > MAX_SVG_CHARS) return undefined;
-  const root = read(input).children.find((c): c is Node => typeof c !== 'string' && c.name === 'svg');
+  const reading = read(input);
+  const roots = reading.node.children.filter((c): c is Node => typeof c !== 'string');
+  const root = roots.find((c) => c.name === 'svg');
   if (root === undefined) return undefined;
+  // elements outside the one `svg` root (before it, after it, a second root) are dropped with everything in them
+  const removed: Removed = { count: reading.lost + roots.length - 1 };
   // the namespace is ours: the file's own xmlns declarations are not on the allowlist, and the root gets the SVG one
-  return write(root, false).replace('<svg', `<svg xmlns="${SVG_NS}"`);
+  const svg = write(root, false, removed).replace('<svg', `<svg xmlns="${SVG_NS}"`);
+  return { svg, removed: removed.count };
 }

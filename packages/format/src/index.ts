@@ -18,7 +18,9 @@ export {
   writeFlux,
 } from './flux-writer.js';
 export { type LoadedFlux, type LoadedManifest, type LoadOptions, loadFlux } from './loader.js';
-export { MAX_SVG_CHARS, sanitizeSvg } from './sanitize-svg.js';
+export { safeLinkUrl } from './safe-url.js';
+export { type AssetCheck, checkAsset, sanitizeAsset } from './sanitize-asset.js';
+export { inspectSvg, MAX_SVG_CHARS, type SvgInspection, sanitizeSvg } from './sanitize-svg.js';
 export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
 
 /**

@@ -7,6 +7,7 @@ import { openDocumentText, type Salvage } from './document-open.js';
 import type { FormatError, LoadNote } from './errors.js';
 import { type ContentHasher, FLUX_MIMETYPE, type FluxAsset, type FluxBakes } from './flux-writer.js';
 import { KNOWN_MANIFEST_KEYS, namesProblem } from './paths.js';
+import { checkAsset } from './sanitize-asset.js';
 import { decodeUtf8 } from './utf8.js';
 import { readZip, type ZipEntry, type ZipLimits } from './zip.js';
 
@@ -183,10 +184,19 @@ async function collectAssets(entries: readonly ZipEntry[], hashOf: HashOf, notes
         message: `${e.name} is not assets/<sha256>.<ext>, so it is not kept when the file is saved again`,
       });
     else if ((await hashOf(e)) !== m[1]) notes.push({ code: 'ASSET_HASH_MISMATCH', entry: e.name, message: `${e.name} is not the bytes its name says` });
-    else assets.set(m[1] as string, { bytes: e.bytes, mime: MIME_OF[m[2] as string] ?? 'application/octet-stream', ext: m[2] as string });
+    else {
+      const asset: FluxAsset = { bytes: e.bytes, mime: MIME_OF[m[2] as string] ?? 'application/octet-stream', ext: m[2] as string };
+      assets.set(m[1] as string, asset);
+      const check = checkAsset(asset);
+      if (check !== 'clean') notes.push({ code: 'ASSET_UNSAFE', entry: e.name, message: unsafeMessage(e.name, check) });
+    }
   }
   return assets;
 }
+
+/** The note's text for an SVG asset that is not clean. */
+const unsafeMessage = (name: string, check: 'changed' | 'refused'): string =>
+  check === 'changed' ? `${name} holds markup that is removed before it is drawn` : `${name} cannot be drawn: it is too large or not an SVG`;
 
 /** The text of the entry `name`, if present. */
 const textOfEntry = (entries: readonly ZipEntry[], name: string): string | undefined => {

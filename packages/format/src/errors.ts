@@ -39,7 +39,8 @@ export type LoadNoteCode =
   | 'ENTRY_UNLISTED'
   | 'ENTRY_MISSING'
   | 'ASSET_HASH_MISMATCH'
-  | 'ASSET_NAME_INVALID';
+  | 'ASSET_NAME_INVALID'
+  | 'ASSET_UNSAFE';
 
 /**
  * A warning about a file that opened: damage or oddness the person may want to know about.
