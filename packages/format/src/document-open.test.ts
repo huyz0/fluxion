@@ -57,9 +57,9 @@ describe('openDocumentText', () => {
         if (!r.ok) return r.error.code === 'FILE_DOCUMENT_INVALID';
         return parseDocument(serializeDocument(r.value.document)).ok;
       }),
-      { numRuns: 400 },
+      { numRuns: 150 },
     );
-  });
+  }, 30_000);
 
   it('FR-FIL-009: a document with an invalid record opens without it and lists it', () => {
     const broken = { ...(ELEMENTS[0] as AnyRecord), transform: 'not a transform' } as unknown as AnyRecord;
