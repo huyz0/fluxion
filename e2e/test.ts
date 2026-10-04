@@ -2,7 +2,8 @@ import { AxeBuilder } from '@axe-core/playwright';
 import { test as base, expect } from '@playwright/test';
 
 const LOCAL = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
-const isLocal = (url: URL): boolean => LOCAL.has(url.hostname);
+// a `file:` URL is the machine's own disk, not the network (the .flux.html specs open files); everything remote stays blocked
+const isLocal = (url: URL): boolean => url.protocol === 'file:' || LOCAL.has(url.hostname);
 
 interface Fixtures {
   /** URLs the network block stopped in this test (requests and WebSockets, every page). */

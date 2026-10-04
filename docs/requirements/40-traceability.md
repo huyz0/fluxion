@@ -44,7 +44,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-006 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.notes.spec.ts` +2 |
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/file.offline-file-protocol.spec.ts` |
 | FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-html-reader.test.ts` +4 |
 | FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-html-reader.test.ts` +3 |
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/asset-store.test.ts`, `packages/format/src/flux-writer.test.ts` |
@@ -328,7 +328,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +10 |
 | NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +13 |
-| NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/flux-html.test.ts` |
+| NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts`, `packages/format/src/flux-html.test.ts` |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +3 |
