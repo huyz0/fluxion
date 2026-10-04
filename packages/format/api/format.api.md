@@ -35,6 +35,15 @@ export function createMemoryAssetStore(hasher: ContentHasher): AssetStore;
 export const FLUX_FORMAT_VERSION = "1.0";
 
 // @public
+export const FLUX_HTML_BOOT = "(function(){var r=document.getElementById('fluxion-root');function say(m){r.textContent=m}try{var t=document.getElementById('fluxion-package').textContent.trim();var b=Uint8Array.fromBase64?Uint8Array.fromBase64(t):Uint8Array.from(atob(t),function(c){return c.charCodeAt(0)});Fluxion.start(b,r).then(function(x){if(!x.ok)say(x.message)},function(e){say('This file cannot be shown: '+e)})}catch(e){say('This file cannot be shown: '+e)}})();";
+
+// @public
+export const FLUX_HTML_MARKER_COMMENT = "<!-- fluxion:package v1 -->";
+
+// @public
+export const FLUX_HTML_MARKER_META = "<meta name=\"fluxion:format\" content=\"1.0\">";
+
+// @public
 export const FLUX_MIMETYPE = "application/vnd.fluxion+zip";
 
 // @public
@@ -160,6 +169,20 @@ export const VERSION: string;
 
 // @public
 export function writeFlux(input: WriteFluxInput): Promise<Result<Uint8Array, FluxWriteFailure>>;
+
+// @public
+export function writeFluxHtml(input: WriteFluxHtmlInput): Promise<Result<string, FluxWriteFailure>>;
+
+// @public
+export type WriteFluxHtmlInput = {
+    readonly flux: Uint8Array;
+    readonly playerScript: string;
+    readonly title: string;
+    readonly lang?: string;
+    readonly generator?: string;
+    readonly noscriptSvg?: string;
+    readonly hasher: ContentHasher;
+};
 
 // @public
 export type WriteFluxInput = {

@@ -78,17 +78,19 @@ Zip rules (implemented by our own codec in `format`, ADR-0153; the player inflat
 </head>
 <body>
   <!-- fluxion:package v1 -->                          <!-- re-import marker #2 (in first 4 kB) -->
-  <fluxion-player></fluxion-player>
+  <div id="fluxion-root"></div>
   <noscript><!-- pre-rendered SVG of screen 1 + "enable JavaScript to present" --></noscript>
   <script type="application/octet-stream" id="fluxion-package"
           data-encoding="base64" data-sha256="…">UEsDBAoAAAAAAA…</script>
-  <script type="module" id="fluxion-player">/* player bundle, inline */</script>
-  <script type="module" id="fluxion-boot">/* ≈ 1–2 kB bootstrap */</script>
+  <script id="fluxion-player">/* player bundle (a classic script that defines the global Fluxion, ADR-0154), inline */</script>
+  <script id="fluxion-boot">/* ≈ 1 kB bootstrap: Fluxion.start(bytes, #fluxion-root) */</script>
 </body>
 </html>
 ```
 
-Bootstrap: read `#fluxion-package` → `Uint8Array.fromBase64` (fallback `atob`) → hand the bytes to
+The player and the boot script are classic scripts (ADR-0154: they run from every `file://` origin, with no module loading); the
+text written is hashed after a CR/CRLF → LF and NUL → U+FFFD normalisation, as the HTML parser reads it, and `</script` and `<!--` are
+written `<\/script` and `<\!--`. Bootstrap: read `#fluxion-package` → `Uint8Array.fromBase64` (fallback `atob`) → hand the bytes to
 the player. The player reads the zip with fflate and inflates entries with native
 `DecompressionStream('deflate-raw')` where available. Plugin bundles are imported from Blob URLs
 (`blob:` in `script-src`), so they need no hash in the CSP. Their integrity is checked before import (§7).
@@ -97,7 +99,7 @@ the player. The player reads the zip with fflate and inflates entries with nativ
   compressed bytes, not to raw JSON.
 - **Compact mode** (opt-in after the research 04 §D.9 spike): the player bundle is also stored
   deflated in a second octet-stream block and imported from a Blob URL, saving ~60 % of player
-  bytes. The inline-module path stays the fallback because it works from every `file://` origin.
+  bytes. The inline classic-script path stays the default because it works from every `file://` origin.
 - **Re-import**: the studio detects `.flux.html` by the markers and extracts `#fluxion-package` by
   **text scanning only**. It never executes the file's scripts. The player's "Open in Fluxion"
   button hands the bytes to the studio via `postMessage` (new tab) or a download.

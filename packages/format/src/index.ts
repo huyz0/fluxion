@@ -7,6 +7,7 @@
 export { type AssetStore, createMemoryAssetStore, referencedAssetHashes, type SelectedAssets, selectAssets } from './asset-store.js';
 export type { Salvage } from './document-open.js';
 export type { FormatError, FormatErrorCode, LoadNote, LoadNoteCode } from './errors.js';
+export { FLUX_HTML_BOOT, FLUX_HTML_MARKER_COMMENT, FLUX_HTML_MARKER_META, type WriteFluxHtmlInput, writeFluxHtml } from './flux-html.js';
 export {
   type ContentHasher,
   FLUX_FORMAT_VERSION,
