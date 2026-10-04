@@ -433,3 +433,5 @@ M10.8	ee97df7270e9bd07174c47697d3a638a7097cbd88806ef2b6666a9072599e504	r1	pass	c
 M10.26	6b22334cd12ed225abafa7a51ac3eeccabd95b2e3d9383f1270361274c6fc6a3	r1	pass	claude:reviewer	0 findings
 M10.9	a3d7afbadf69a73e817227dddd85761da4686e269fffd33fa7b20ea9bad6e250	r1	pass	claude:sonnet-5.5	0 findings
 M10.28	007059381b2e8a2e896e223e34d4315be83c87eba7c1adc64192e3b2ec5dd3ea	r1	pass	claude:sonnet-5.5	1 findings
+M10.8	e87e560c1c1aa93cef921a111ed8b9b93b15a88c1677cd1b8768cbc5631c94a3	r2	pass	claude:haiku-4.5	0 findings
+M10.10	bcae5d2fb8bf1fa8f81776f9a8aa991521ecba582c6503af2df6611a2775a7af	r1	pass	claude:sonnet-5.5	1 findings
