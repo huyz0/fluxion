@@ -14,6 +14,7 @@ import { ConnectorElement } from '@fluxion/schema';
 import { createCanvasMeasurer } from '@fluxion/render';
 import { DocumentFile } from '@fluxion/schema';
 import { FieldDef } from '@fluxion/schema';
+import { ImageCodec } from '@fluxion/format';
 import { LoadableFace } from '@fluxion/render';
 import { loadFontFaces } from '@fluxion/render';
 import { MarkerDef } from '@fluxion/core';
@@ -60,6 +61,9 @@ export function assignKey(base: readonly KeyBinding[], overrides: KeyOverrides, 
 
 // @public
 export const bindingId: (b: Pick<KeyBinding, "command" | "args">) => string;
+
+// @public
+export const browserImageCodec: ImageCodec;
 
 export { browserMeasurer }
 

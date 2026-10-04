@@ -19,7 +19,21 @@ export {
   type WriteFluxInput,
   writeFlux,
 } from './flux-writer.js';
+export {
+  type EncodedImage,
+  type ImageCodec,
+  type ImageImportCode,
+  type ImageImportFailure,
+  type ImportedImage,
+  importImage,
+  MAX_IMAGE_SIDE,
+  MAX_IMPORT_BYTES,
+  type PixelSize,
+  scaleToFit,
+} from './image-import.js';
+export { type ImageInfo, type ImageMime, sniffImage } from './image-sniff.js';
 export { type LoadedFlux, type LoadedManifest, type LoadOptions, loadFlux } from './loader.js';
+export { minifySvg } from './minify-svg.js';
 export { safeLinkUrl } from './safe-url.js';
 export { type AssetCheck, checkAsset, sanitizeAsset } from './sanitize-asset.js';
 export { inspectSvg, MAX_SVG_CHARS, type SvgInspection, sanitizeSvg } from './sanitize-svg.js';

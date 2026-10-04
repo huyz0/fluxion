@@ -32,6 +32,14 @@ export type ContentHasher = {
 export function createMemoryAssetStore(hasher: ContentHasher): AssetStore;
 
 // @public
+export type EncodedImage = {
+    readonly bytes: Uint8Array;
+    readonly width: number;
+    readonly height: number;
+    readonly scaled: boolean;
+};
+
+// @public
 export const FLUX_FORMAT_VERSION = "1.0";
 
 // @public
@@ -70,6 +78,43 @@ export type FormatError = {
 
 // @public
 export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_INTERNAL";
+
+// @public
+export interface ImageCodec {
+    toWebp(bytes: Uint8Array, mime: ImageMime, maxSide: number): Promise<EncodedImage | undefined>;
+}
+
+// @public
+export type ImageImportCode = "IMAGE_NOT_AN_IMAGE" | "IMAGE_TOO_LARGE" | "IMAGE_SVG_REFUSED" | "IMAGE_DECODE_FAILED";
+
+// @public
+export type ImageImportFailure = {
+    readonly code: ImageImportCode;
+    readonly message: string;
+};
+
+// @public
+export type ImageInfo = {
+    readonly mime: ImageMime;
+    readonly width?: number;
+    readonly height?: number;
+    readonly animated: boolean;
+};
+
+// @public
+export type ImageMime = "image/png" | "image/jpeg" | "image/webp" | "image/avif" | "image/gif" | "image/svg+xml";
+
+// @public
+export type ImportedImage = {
+    readonly bytes: Uint8Array;
+    readonly mime: ImageMime;
+    readonly width?: number;
+    readonly height?: number;
+    readonly change: "none" | "downscaled" | "webp" | "svg";
+};
+
+// @public
+export function importImage(bytes: Uint8Array, codec: ImageCodec, maxSide?: number): Promise<Result<ImportedImage, ImageImportFailure>>;
 
 // @public
 export function inspectSvg(input: string): SvgInspection | undefined;
@@ -121,7 +166,22 @@ export type LoadOptions = {
 };
 
 // @public
+export const MAX_IMAGE_SIDE: number;
+
+// @public
+export const MAX_IMPORT_BYTES: number;
+
+// @public
 export const MAX_SVG_CHARS: number;
+
+// @public
+export function minifySvg(svg: string): string;
+
+// @public
+export type PixelSize = {
+    readonly width: number;
+    readonly height: number;
+};
 
 // @public
 export function readFluxHtml(html: string, hasher: ContentHasher): Promise<Result<Uint8Array, FormatError>>;
@@ -150,6 +210,9 @@ export function sanitizeAsset(asset: FluxAsset): FluxAsset | undefined;
 export function sanitizeSvg(input: string): string | undefined;
 
 // @public
+export function scaleToFit(width: number, height: number, max: number): PixelSize | undefined;
+
+// @public
 export function selectAssets(doc: DocumentFile, store: AssetStore): Promise<SelectedAssets>;
 
 // @public
@@ -160,6 +223,9 @@ export type SelectedAssets = {
 
 // @public
 export function sha256Hex(data: Uint8Array): string;
+
+// @public
+export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
 
 // @public
 export type SvgInspection = {
