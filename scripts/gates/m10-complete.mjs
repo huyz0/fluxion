@@ -137,12 +137,39 @@ leg('the sources use no eval or new Function', () => {
 
 // ── the single file (FR-FIL-002, FR-EXP-001, FR-FIL-003) ────────────────────────────────────────────
 leg('the inline player bundle is built and size-limit runs its player-inline entry', () => {
-  if (!exists('packages/player-inline/dist/player.inline.js')) return 'missing packages/player-inline/dist/player.inline.js (run the player build)';
+  if (!exists('packages/player-inline/dist/player.inline.js')) return 'missing packages/player-inline/dist/player.inline.js (run the build)';
   const r = pnpm('exec', 'size-limit', '--json');
   const entries = r.status === 0 ? JSON.parse(r.stdout) : [];
   const entry = entries.find((e) => String(e.name).includes('player-inline'));
   return entry === undefined ? `size-limit lists no player-inline entry: ${ok(r)}` : entry.size > 0 || 'the player-inline entry measures 0 bytes';
 });
+leg('the one-file player script opens a .flux, draws it with the bundled shapes, moves with the arrow keys, and holds no eval or network (T1)', () =>
+  titled([
+    [
+      'M10.10',
+      'FR-FIL-002: the script defines Fluxion.start, which opens a .flux, draws its first screen with the bundled shapes, and the arrow keys move through the screens',
+      'player-inline',
+      {},
+      'browser',
+    ],
+    [
+      'M10.10',
+      'FR-FIL-002: an image of the file is drawn from a blob URL made from its own verified bytes, and is released on unmount',
+      'player-inline',
+      {},
+      'browser',
+    ],
+    ['M10.10', 'FR-FIL-002: a file that cannot be opened is a message in the page, not an exception', 'player-inline', {}, 'browser'],
+    ['M10.10', 'FR-EXP-001: the script holds nothing that evaluates text, loads code or reaches the network', 'player-inline', {}, 'browser'],
+    [
+      'M10.10',
+      'FR-FIL-002: the deck shows the first visible screen, and the arrow keys move through the visible screens, stopping at the ends',
+      'player',
+      {},
+      'browser',
+    ],
+  ]),
+);
 leg('a .flux.html names both re-import markers in its first 4 kB and one CSP meta with connect-src none (T0)', () =>
   titled([
     ['M10.11', 'FR-FIL-002: both re-import markers are in the first 4 kB of a .flux.html', FORMAT],

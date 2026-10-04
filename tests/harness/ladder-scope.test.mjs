@@ -133,6 +133,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       ),
       [],
     );
+    // the bundle budgets are read by the ladder's size-limit step alone
+    assert.deepEqual(harnessFiles(['.size-limit.js'], ALL), []);
     // the security corpus is read by the sanitizer's tests alone, which the Vitest step runs
     assert.deepEqual(
       harnessFiles(['specs/security/corpus/svg-x.svg', 'specs/security/corpus/links.json', 'specs/security/corpus/expected/svg-x.svg'], ALL),

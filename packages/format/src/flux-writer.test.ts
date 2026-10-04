@@ -1,7 +1,7 @@
 import { type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
 import { FLUX_MIMETYPE, writeFlux } from './flux-writer.js';
-import { sha256 } from './testing/sha256.js';
+import { sha256Hex as sha256 } from './sha256.js';
 import { decodeUtf8, encodeUtf8 } from './utf8.js';
 import { readZip, type ZipEntry } from './zip.js';
 

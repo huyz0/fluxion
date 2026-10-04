@@ -45,7 +45,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/player-inline/src/inline.browser.test.ts` +2 |
 | FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-writer.test.ts`, `packages/format/src/zip.test.ts` |
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/asset-store.test.ts`, `packages/format/src/flux-writer.test.ts` |
 | FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -290,7 +290,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-IMP-003 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-IMP-004 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-IMP-005 | C | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
-| FR-EXP-001 | M | R1 | M10 | [21-import-export-publish.md](21-import-export-publish.md) | — |
+| FR-EXP-001 | M | R1 | M10 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/player-inline/src/inline.browser.test.ts` |
 | FR-EXP-002 | M | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-003 | M | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-004 | M | R3 | M20 | [21-import-export-publish.md](21-import-export-publish.md) | — |

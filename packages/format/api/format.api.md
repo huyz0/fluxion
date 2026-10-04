@@ -147,6 +147,9 @@ export type SelectedAssets = {
 };
 
 // @public
+export function sha256Hex(data: Uint8Array): string;
+
+// @public
 export type SvgInspection = {
     readonly svg: string;
     readonly removed: number;

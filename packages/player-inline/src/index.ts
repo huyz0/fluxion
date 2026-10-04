@@ -4,6 +4,8 @@
  * @packageDocumentation
  */
 
+export { type StartResult, start } from './inline.js';
+
 /**
  * Version of this package.
  *

@@ -5,6 +5,20 @@
 ```ts
 
 // @public
+export function start(bytes: Uint8Array, root: HTMLElement): Promise<StartResult>;
+
+// @public
+export type StartResult = {
+    readonly ok: true;
+    readonly unmount: () => void;
+} | {
+    readonly ok: false;
+    readonly message: string;
+};
+
+// @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```

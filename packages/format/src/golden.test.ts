@@ -2,7 +2,7 @@ import { type AnyRecord, type DocumentFile, parseDocument, type RecordId } from 
 import { describe, expect, it } from 'vitest';
 import { writeFlux } from './flux-writer.js';
 import { type LoadedFlux, loadFlux } from './loader.js';
-import { sha256 } from './testing/sha256.js';
+import { sha256Hex as sha256 } from './sha256.js';
 import { decodeUtf8 } from './utf8.js';
 import { readZip } from './zip.js';
 

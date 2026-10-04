@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AssetUrls } from '@fluxion/render';
 import { CoreRegistries } from '@fluxion/core';
 import { ReactNode } from 'react';
 import { RefObject } from 'react';
@@ -32,6 +33,16 @@ export function LaserTrail(props: LaserTrailProps): ReactNode;
 export type LaserTrailProps = {
     readonly points: readonly LaserPoint[];
     readonly scale: number;
+};
+
+// @public
+export function PlayerDeck(props: PlayerDeckProps): ReactNode;
+
+// @public
+export type PlayerDeckProps = {
+    readonly store: Store;
+    readonly registries: RenderRegistries;
+    readonly assets?: AssetUrls;
 };
 
 // @public

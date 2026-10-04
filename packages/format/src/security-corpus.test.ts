@@ -5,7 +5,7 @@ import { loadFlux } from './loader.js';
 import { safeLinkUrl } from './safe-url.js';
 import { checkAsset, sanitizeAsset } from './sanitize-asset.js';
 import { sanitizeSvg } from './sanitize-svg.js';
-import { sha256 } from './testing/sha256.js';
+import { sha256Hex as sha256 } from './sha256.js';
 import { decodeUtf8, encodeUtf8 } from './utf8.js';
 
 declare global {

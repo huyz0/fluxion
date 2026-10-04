@@ -2,7 +2,7 @@ import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
 import { createMemoryAssetStore, referencedAssetHashes, selectAssets } from './asset-store.js';
 import { writeFlux } from './flux-writer.js';
-import { sha256 } from './testing/sha256.js';
+import { sha256Hex as sha256 } from './sha256.js';
 import { encodeUtf8 } from './utf8.js';
 
 const hasher = { sha256: (bytes: Uint8Array) => Promise.resolve(sha256(bytes)) };

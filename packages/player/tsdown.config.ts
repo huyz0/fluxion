@@ -9,7 +9,8 @@ const PACKAGE_DOC = `/**
  */`;
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  // the mount (React DOM's `createRoot`) is its own entry, `@fluxion/player/mount`: the package's main entry stays free of React DOM and within PLAYER_CORE_GZIP
+  entry: ['src/index.ts', 'src/mount.tsx'],
   format: 'esm',
   dts: true,
   clean: true,

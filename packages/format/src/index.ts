@@ -21,6 +21,7 @@ export { type LoadedFlux, type LoadedManifest, type LoadOptions, loadFlux } from
 export { safeLinkUrl } from './safe-url.js';
 export { type AssetCheck, checkAsset, sanitizeAsset } from './sanitize-asset.js';
 export { inspectSvg, MAX_SVG_CHARS, type SvgInspection, sanitizeSvg } from './sanitize-svg.js';
+export { sha256Hex } from './sha256.js';
 export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
 
 /**

@@ -10,6 +10,11 @@
       "@fluxion/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./mount": {
+      "@fluxion/source": "./src/mount.tsx",
+      "types": "./dist/mount.d.ts",
+      "default": "./dist/mount.js"
     }
   },
   "files": [

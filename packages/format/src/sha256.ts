@@ -1,4 +1,5 @@
-// A pure SHA-256 (FIPS 180-4) for tests: `format` has no `node:crypto`, and hosts pass SubtleCrypto or the like. Not exported by the package.
+// A pure SHA-256 (FIPS 180-4): `format` has no `node:crypto`, and hosts hash with SubtleCrypto where they have it. A page opened from
+// `file://` in an engine without SubtleCrypto (the one-file player, ADR-0154) and the tests use this one.
 const K = Uint32Array.from([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74,
   0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d,
@@ -7,7 +8,12 @@ const K = Uint32Array.from([
   0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ]);
 const rotr = (x: number, n: number) => (x >>> n) | (x << (32 - n));
-export function sha256(data: Uint8Array): string {
+/**
+ * The lower-case hex SHA-256 of `data`, computed in plain JavaScript (slow on large inputs: prefer SubtleCrypto where it exists).
+ *
+ * @public
+ */
+export function sha256Hex(data: Uint8Array): string {
   const padded = new Uint8Array(((data.length + 9 + 63) >> 6) << 6);
   padded.set(data);
   padded[data.length] = 0x80;

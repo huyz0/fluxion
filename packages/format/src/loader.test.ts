@@ -3,7 +3,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { FLUX_MIMETYPE, writeFlux } from './flux-writer.js';
 import { loadFlux } from './loader.js';
-import { sha256 } from './testing/sha256.js';
+import { sha256Hex as sha256 } from './sha256.js';
 import { encodeUtf8 } from './utf8.js';
 import { writeZip, type ZipInput } from './zip.js';
 
