@@ -144,4 +144,41 @@ describe('the IndexedDB autosave store (FR-FIL-007, ADR-0024)', () => {
     expect(got).toMatchObject({ unsaved: true, rev: JOURNAL_MAX_ENTRIES + 5 });
     autosave.dispose();
   });
+
+  it('FR-FIL-007: when another tab upgrades the database this one lets go, and its next write opens the database again with nothing lost', async () => {
+    const { store, name } = await fresh();
+    await store.commit('d1', { entries: [entry(1)], meta: meta('d1', 1), fold: { seq: 0, rev: 0, records: { a: record('a') } } });
+    // another tab ships a newer version of the schema: it can only open once this connection has let go
+    const upgraded = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open(name, 2);
+      request.onupgradeneeded = () => request.result.createObjectStore('later', { keyPath: 'id' });
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    upgraded.close();
+    await store.commit('d1', { entries: [entry(2)], meta: meta('d1', 2) });
+    const stored = await store.load('d1');
+    expect(stored?.entries.map((e) => e.seq)).toEqual([1, 2]);
+    expect(stored?.meta.headRev).toBe(2);
+    expect((await store.unsaved()).map((m) => m.docId)).toEqual(['d1']);
+  });
+
+  it('FR-FIL-007: a store that was closed refuses further work instead of opening the database again', async () => {
+    const { store } = await fresh();
+    store.close();
+    await expect(store.load('d1')).rejects.toMatchObject({ name: 'InvalidStateError' });
+  });
+
+  it('FR-FIL-007: an open that is blocked rejects, and the connection that arrives after it is closed', async () => {
+    let closed = 0;
+    const request: { onblocked?: () => void; onsuccess?: () => void; onerror?: () => void; onupgradeneeded?: () => void; result?: unknown; error?: unknown } =
+      {};
+    const factory = { open: () => request } as unknown as IDBFactory;
+    const pending = idbAutosaveStore(factory, 'blocked');
+    request.onblocked?.();
+    await expect(pending).rejects.toMatchObject({ name: 'InvalidStateError' });
+    request.result = { close: () => (closed += 1) };
+    request.onsuccess?.();
+    expect(closed).toBe(1);
+  });
 });

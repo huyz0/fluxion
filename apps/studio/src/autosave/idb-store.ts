@@ -34,7 +34,8 @@ function together(requests: readonly Promise<unknown>[]): Promise<unknown[]> {
 }
 
 /** Run `work` in one transaction over `stores`; resolves when the transaction has committed, rejects when it aborts. */
-function inTransaction<T>(db: IDBDatabase, stores: readonly string[], mode: IDBTransactionMode, work: (tx: IDBTransaction) => Promise<T>): Promise<T> {
+async function inTransaction<T>(conn: Connection, stores: readonly string[], mode: IDBTransactionMode, work: (tx: IDBTransaction) => Promise<T>): Promise<T> {
+  const db = await conn.db();
   return new Promise((resolve, reject) => {
     const tx = db.transaction([...stores], mode);
     let value: T;
@@ -57,12 +58,14 @@ function inTransaction<T>(db: IDBDatabase, stores: readonly string[], mode: IDBT
  * Open (and create or upgrade) the database. A connection that arrives after the open was given up on (blocked by another tab) is closed, and an
  * open connection lets go when another tab wants to upgrade, so a new version is never blocked by a tab that is just sitting there.
  */
-function open(factory: IDBFactory, name: string): Promise<IDBDatabase> {
+function open(factory: IDBFactory, name: string, onLost: () => void): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = factory.open(name, 1);
+    // no version asked for: an existing database opens as it is (whatever version another tab upgraded it to), a missing one is created at version 1
+    const request = factory.open(name);
     let givenUp = false;
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const db = request.result;
+      if (event.oldVersion >= 1) return;
       db.createObjectStore('docs', { keyPath: 'docId' });
       db.createObjectStore('journal', { keyPath: ['docId', 'seq'] });
       db.createObjectStore('checkpoints', { keyPath: 'docId' });
@@ -70,7 +73,11 @@ function open(factory: IDBFactory, name: string): Promise<IDBDatabase> {
     };
     request.onsuccess = () => {
       const db = request.result;
-      db.onversionchange = () => db.close();
+      db.onversionchange = () => {
+        db.close();
+        onLost();
+      };
+      db.onclose = onLost;
       if (givenUp) db.close();
       else resolve(db);
     };
@@ -82,28 +89,56 @@ function open(factory: IDBFactory, name: string): Promise<IDBDatabase> {
   });
 }
 
+/** The connection to the database: opened on first use, and opened again after it was lost (another tab upgraded the database, or the browser closed it). */
+type Connection = { db(): Promise<IDBDatabase>; close(): void };
+
+function connect(factory: IDBFactory, name: string): Connection {
+  let current: Promise<IDBDatabase> | undefined;
+  let closed = false;
+  return {
+    db() {
+      if (closed) return Promise.reject(new DOMException('the autosave store is closed', 'InvalidStateError'));
+      current ??= open(factory, name, () => {
+        current = undefined;
+      }).catch((e: unknown) => {
+        current = undefined;
+        throw e;
+      });
+      return current;
+    },
+    close() {
+      closed = true;
+      void current?.then(
+        (db) => db.close(),
+        () => undefined,
+      );
+      current = undefined;
+    },
+  };
+}
+
 /** Bytes in the `assets` object store, for a browser with no OPFS: each row is `{ hash: <path>, bytes }`. */
-function idbBlobs(db: IDBDatabase): BlobStore {
+function idbBlobs(conn: Connection): BlobStore {
   return {
     put: (path, bytes) =>
-      inTransaction(db, ['assets'], 'readwrite', async (tx) => {
+      inTransaction(conn, ['assets'], 'readwrite', async (tx) => {
         segments(path);
         await result(tx.objectStore('assets').put({ hash: path, bytes }));
       }),
     get: (path) =>
-      inTransaction(db, ['assets'], 'readonly', async (tx) => {
+      inTransaction(conn, ['assets'], 'readonly', async (tx) => {
         segments(path);
         const row = (await result(tx.objectStore('assets').get(path))) as { bytes: Uint8Array } | undefined;
         return row?.bytes;
       }),
     list: (dir) =>
-      inTransaction(db, ['assets'], 'readonly', async (tx) => {
+      inTransaction(conn, ['assets'], 'readonly', async (tx) => {
         segments(dir);
         const keys = (await result(tx.objectStore('assets').getAllKeys(IDBKeyRange.bound(`${dir}/`, `${dir}0`, false, true)))) as string[];
         return [...new Set(keys.map((k) => k.slice(dir.length + 1).split('/')[0] ?? ''))];
       }),
     remove: (path) =>
-      inTransaction(db, ['assets'], 'readwrite', async (tx) => {
+      inTransaction(conn, ['assets'], 'readwrite', async (tx) => {
         segments(path);
         await result(tx.objectStore('assets').delete(path));
       }),
@@ -120,12 +155,14 @@ export async function idbAutosaveStore(
   factory: IDBFactory = indexedDB,
   name: string = AUTOSAVE_DB,
 ): Promise<AutosaveStore & { readonly blobs: BlobStore; close(): void }> {
-  const db = await open(factory, name);
+  const conn = connect(factory, name);
+  // the first open is made here, so a browser that refuses IndexedDB rejects now and the caller falls back
+  await conn.db();
   return {
-    blobs: idbBlobs(db),
-    close: () => db.close(),
+    blobs: idbBlobs(conn),
+    close: () => conn.close(),
     commit: (docId, commit: Commit) =>
-      inTransaction(db, ['docs', 'journal', 'checkpoints'], 'readwrite', async (tx) => {
+      inTransaction(conn, ['docs', 'journal', 'checkpoints'], 'readwrite', async (tx) => {
         const journal = tx.objectStore('journal');
         // a torn tail goes first, in this transaction: the entries after it follow on from the last good one
         const puts: Promise<unknown>[] = [];
@@ -140,7 +177,7 @@ export async function idbAutosaveStore(
         await together(puts);
       }),
     load: (docId) =>
-      inTransaction(db, ['docs', 'journal', 'checkpoints'], 'readonly', async (tx) => {
+      inTransaction(conn, ['docs', 'journal', 'checkpoints'], 'readonly', async (tx) => {
         const meta = (await result(tx.objectStore('docs').get(docId))) as DocMeta | undefined;
         if (meta === undefined) return undefined;
         const row = (await result(tx.objectStore('checkpoints').get(docId))) as CheckpointRow | undefined;
@@ -150,13 +187,13 @@ export async function idbAutosaveStore(
         return { meta, ...checkpoint, entries } satisfies StoredJournal;
       }),
     setSaved: (docId, rev) =>
-      inTransaction(db, ['docs'], 'readwrite', async (tx) => {
+      inTransaction(conn, ['docs'], 'readwrite', async (tx) => {
         const docs = tx.objectStore('docs');
         const meta = (await result(docs.get(docId))) as DocMeta | undefined;
         if (meta !== undefined) await result(docs.put({ ...meta, savedRev: rev }));
       }),
     discard: (docId) =>
-      inTransaction(db, ['docs', 'journal', 'checkpoints'], 'readwrite', async (tx) => {
+      inTransaction(conn, ['docs', 'journal', 'checkpoints'], 'readwrite', async (tx) => {
         await together([
           result(tx.objectStore('docs').delete(docId)),
           result(tx.objectStore('checkpoints').delete(docId)),
@@ -164,7 +201,7 @@ export async function idbAutosaveStore(
         ]);
       }),
     unsaved: () =>
-      inTransaction(db, ['docs'], 'readonly', async (tx) => {
+      inTransaction(conn, ['docs'], 'readonly', async (tx) => {
         const all = (await result(tx.objectStore('docs').getAll())) as DocMeta[];
         return all.filter((m) => m.headRev > m.savedRev).sort((a, b) => (a.updated < b.updated ? 1 : -1));
       }),
