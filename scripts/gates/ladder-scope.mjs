@@ -251,7 +251,11 @@ export function testScope(stagedPaths, workspaces, browserTested, { lockfileWork
   const staged = workspaceLock && stagedPaths.some((p) => MANIFEST.test(p)) ? stagedPaths.filter((p) => p !== 'pnpm-lock.yaml') : stagedPaths;
   const workspaceOf = (p) => WORKSPACE.exec(p)?.[1];
   const run = staged.some(
-    (p) => VITEST_GLOBAL.test(p) || /^examples\//.test(p) || (workspaceOf(p) !== undefined && workspaces.some((w) => w.dir === workspaceOf(p))),
+    // an API report is written by check-api from the declarations and read by no Vitest test
+    (p) =>
+      VITEST_GLOBAL.test(p) ||
+      /^examples\//.test(p) ||
+      (!API_REPORT.test(p) && workspaceOf(p) !== undefined && workspaces.some((w) => w.dir === workspaceOf(p))),
   );
   if (!run) return { run: false, browser: false };
   const affectsBrowser = withDependencies(browserTested, workspaces);
