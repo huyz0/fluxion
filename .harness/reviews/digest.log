@@ -483,3 +483,5 @@ M10.47	804f170bd4664e49a45f8a6a9aa2de76d00dc6dbcbeb517f050932f899f198d3	r1	pass	
 M10.59	8ef7203b54c52edb9a7e2bad50e14056cddd6b0eeaac4b42850de7b5c1c228c6	r1	pass	claude:reviewer	0 findings
 M10.59	8ef7203b54c52edb9a7e2bad50e14056cddd6b0eeaac4b42850de7b5c1c228c6	r2	pass	claude:reviewer	0 findings
 M10.59	8ef7203b54c52edb9a7e2bad50e14056cddd6b0eeaac4b42850de7b5c1c228c6	r3	pass	claude:reviewer	0 findings
+M10.58	eda3397bde0d995825de3db5d6dc7bf77f3ca66b88968117207009e8ac0736aa	r1	pass	claude:reviewer	0 findings
+M10.58	eda3397bde0d995825de3db5d6dc7bf77f3ca66b88968117207009e8ac0736aa	r2	pass	claude:reviewer	0 findings
