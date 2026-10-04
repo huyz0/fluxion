@@ -201,4 +201,33 @@ describe('the page measurer (M5.14 review)', () => {
     early();
     expect(measurer?.measure('aaaa', one).width).toBeCloseTo(24, 5);
   });
+
+  it("FR-THM-008: releasing a registration gives back the record it replaced, and two documents with the same face do not take each other's out", () => {
+    const face = (a: number) => ({
+      family: 'FxLayerProbe',
+      weight: 400,
+      style: 'normal' as const,
+      unitsPerEm: 1000,
+      advances: {},
+      defaultAdvance: a,
+      pairs: {},
+      triples: {},
+    });
+    const measurer = browserMeasurer();
+    const font = { family: '"FxLayerProbe", serif', size: 10 };
+    const bundled = registerFontMetrics([face(500)]);
+    const first = registerFontMetrics([face(600)]);
+    const second = registerFontMetrics([face(700)]);
+    expect(measurer?.measure('aaaa', font).width).toBeCloseTo(28, 5);
+    // the first document closes first: the second's record still stands
+    first();
+    expect(measurer?.measure('aaaa', font).width).toBeCloseTo(28, 5);
+    // the second closes: the bundled record is back
+    second();
+    expect(measurer?.measure('aaaa', font).width).toBeCloseTo(20, 5);
+    bundled();
+    // a release twice does nothing more
+    bundled();
+    expect(measurer?.measure('aaaa', font).width).not.toBeCloseTo(20, 1);
+  });
 });

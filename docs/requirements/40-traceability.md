@@ -49,7 +49,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/cli/src/e2e/cli.convert.test.ts` +4 |
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/blobs.browser.test.ts` +6 |
 | FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts`, `e2e/file.open-save.spec.ts` |
+| FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +2 |
 | FR-FIL-007 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/autosave-bar.test.tsx` +12 |
 | FR-FIL-008 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/library/library-service.browser.test.ts` +4 |
 | FR-FIL-009 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/autosave.test.ts` +8 |
@@ -147,7 +147,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-005 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-006 | M | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-007 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
-| FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/font-embed.test.ts` +20 |
+| FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/font-embed.test.ts` +21 |
 | FR-THM-009 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-010 | S | R7 | M29 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |

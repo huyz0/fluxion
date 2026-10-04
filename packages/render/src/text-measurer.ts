@@ -74,21 +74,38 @@ const notify = () => {
   for (const listener of listeners) listener();
 };
 
+/** Every registration still in force, oldest first: `recorded` is these, a later record of a face replacing an earlier one. */
+const registrations: (readonly FaceMetrics[])[] = [];
+
+/** The key of a face: its family (without regard to case), weight and style. */
+const keyOf = (f: FaceMetrics): string => `${f.family.toLowerCase()}|${f.weight}|${f.style}`;
+
+/** `recorded` from the registrations in force: a face registered again replaces its earlier record, and gives it back when it is released. */
+function rebuild(): void {
+  const byFace = new Map<string, FaceMetrics>();
+  for (const faces of registrations) for (const face of faces) byFace.set(keyOf(face), face);
+  recorded = [...byFace.values()];
+}
+
 /**
  * Measure with the recorded metrics of `faces` from now on, for the fonts they cover (the page's shared measurer; ADR-0148, M9.14):
  * call it once the faces are loaded, since the metrics describe the real font and the page draws a fallback until it has loaded.
- * Views measuring with the shared measurer re-render. Returns the way to take exactly these records out again (a host that loaded a
- * document's fonts lets go of them when it closes the document).
+ * Views measuring with the shared measurer re-render. A face registered again (the same family, weight and style) replaces the earlier record while
+ * it is in force. Returns the way to take exactly this registration out again (a host that loaded a document's fonts lets go of them when it closes
+ * the document): the records it replaced come back, and a registration made since stays.
  *
  * @public
  */
 export function registerFontMetrics(faces: readonly FaceMetrics[]): () => void {
-  // a face registered again replaces its earlier record (same family, weight and style)
-  const same = (a: FaceMetrics, b: FaceMetrics) => a.family.toLowerCase() === b.family.toLowerCase() && a.weight === b.weight && a.style === b.style;
-  recorded = [...recorded.filter((r) => !faces.some((f) => same(r, f))), ...faces];
+  const registration = [...faces];
+  registrations.push(registration);
+  rebuild();
   notify();
   return () => {
-    recorded = recorded.filter((r) => !faces.includes(r));
+    const at = registrations.indexOf(registration);
+    if (at < 0) return;
+    registrations.splice(at, 1);
+    rebuild();
     notify();
   };
 }
