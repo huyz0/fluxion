@@ -44,7 +44,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-006 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.notes.spec.ts` +2 |
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/file.offline-file-protocol.spec.ts` |
+| FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/file.fidelity.spec.ts`, `e2e/file.offline-file-protocol.spec.ts` |
 | FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-html-reader.test.ts` +4 |
 | FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-html-reader.test.ts` +3 |
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/blobs.browser.test.ts` +6 |

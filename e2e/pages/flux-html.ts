@@ -39,3 +39,11 @@ export async function fluxHtmlOf(name: string, extra: { title?: string; noscript
     'writeFluxHtml',
   );
 }
+
+/** The text of a `.flux.html` that embeds `flux` (the bytes of a `.flux`, for example one the studio saved) with the built one-file player. */
+export async function fluxHtmlOfFlux(flux: Uint8Array, title: string): Promise<string> {
+  const format = await load<FormatApi>('packages/format/dist/index.js');
+  const hasher: Hasher = { sha256: (bytes) => Promise.resolve(format.sha256Hex(bytes)) };
+  const playerScript = readFileSync(resolve('packages/player-inline/dist/player.inline.js'), 'utf8');
+  return value(await format.writeFluxHtml({ flux, playerScript, title, hasher }), 'writeFluxHtml');
+}
