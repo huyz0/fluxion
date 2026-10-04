@@ -143,7 +143,7 @@
       "layer": "App",
       "runtime": "dom",
       "private": true,
-      "dependsOn": ["editor", "player", "core", "schema", "basic", "themes-core", "fonts-core"],
+      "dependsOn": ["editor", "player", "format", "core", "schema", "basic", "themes-core", "fonts-core"],
       "desc": "Vite PWA: editor + player shell, file handling, provider adapters."
     },
     {

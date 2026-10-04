@@ -24,11 +24,19 @@ export type Salvage = {
   readonly versionGuessed?: true;
 };
 
-/** A document opened, perhaps in part. */
+/**
+ * A document opened, perhaps in part.
+ *
+ * @public
+ */
 export type OpenedDocument = {
+  /** The document, migrated, repaired and validated (only what could be read, when it was salvaged). */
   readonly document: DocumentFile;
+  /** What validation and repair found. */
   readonly diagnostics: readonly Diagnostic[];
+  /** True when it may be shown but must not be saved over (a newer major version, or a cut-off text of unknown version). */
   readonly readOnly: boolean;
+  /** Present when it was opened in part: why, and what was left out. */
   readonly salvage?: Salvage;
 };
 
@@ -80,6 +88,8 @@ function asCurrentVersion(text: string): string | undefined {
 /**
  * Open the text of a `document.json`: in full, salvaged, or read-only. A failure only when nothing of it can be read. `versionHint` is the
  * schema version the manifest names, used when a cut-off text lost its own.
+ *
+ * @public
  */
 export function openDocumentText(text: string, versionHint?: string): Result<OpenedDocument, FormatError> {
   const newer = asCurrentVersion(text);

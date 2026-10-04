@@ -24,6 +24,7 @@
   "dependencies": {
     "@fluxion/core": "workspace:*",
     "@fluxion/editor": "workspace:*",
+    "@fluxion/format": "workspace:*",
     "@fluxion/pack-basic": "workspace:*",
     "@fluxion/pack-fonts-core": "workspace:*",
     "@fluxion/pack-themes-core": "workspace:*",

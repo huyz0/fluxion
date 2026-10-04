@@ -18,6 +18,9 @@
       "path": "../../packages/player"
     },
     {
+      "path": "../../packages/format"
+    },
+    {
       "path": "../../packages/core"
     },
     {

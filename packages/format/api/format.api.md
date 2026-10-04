@@ -178,6 +178,17 @@ export const MAX_SVG_CHARS: number;
 export function minifySvg(svg: string): string;
 
 // @public
+export function openDocumentText(text: string, versionHint?: string): Result<OpenedDocument, FormatError>;
+
+// @public
+export type OpenedDocument = {
+    readonly document: DocumentFile;
+    readonly diagnostics: readonly Diagnostic[];
+    readonly readOnly: boolean;
+    readonly salvage?: Salvage;
+};
+
+// @public
 export type PixelSize = {
     readonly width: number;
     readonly height: number;
