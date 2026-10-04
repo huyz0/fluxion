@@ -59,27 +59,47 @@ function isUsedFont(font: unknown, used: ReadonlySet<string> | undefined): boole
   return typeof family === 'string' && used.has(normalise(family));
 }
 
+/** The ids of the asset records an element or a screen names in one of the fields the schema's referential check knows. */
+function namedAssetIds(records: readonly AnyRecord[]): Set<string> {
+  const named = new Set<string>();
+  for (const record of records.filter((r) => r.type === 'element' || r.type === 'screen')) {
+    for (const path of ASSET_FIELDS) {
+      const target = at(record, path);
+      if (typeof target === 'string') named.add(target);
+    }
+  }
+  return named;
+}
+
 /**
- * The hashes of the assets a document refers to: an asset record counts when an element or a screen names its id in one of the fields
- * the schema's referential check knows (`assetId`, `snapshotAssetId`, a fill's `assetId`, a screen background's `assetId`), and so does
- * every font asset record of a family the text uses (`usedFontFamilies`; when that cannot be told, every font asset). An asset
- * record nothing names is not in the result, and a string that merely equals an asset's id (an index, a name) is not a reference.
+ * The ids of the asset records a document uses: those an element or a screen names in one of the fields the schema's referential check
+ * knows (`assetId`, `snapshotAssetId`, a fill's `assetId`, a screen background's `assetId`), and every font asset record of a family the text
+ * uses (`usedFontFamilies`; when that cannot be told, every font asset). A string that merely equals an asset's id (an index, a name) is not a
+ * reference. What this leaves out is what the asset manager offers to remove, and what a save does not write.
+ *
+ * @public
+ */
+export function usedAssetIds(doc: DocumentFile): ReadonlySet<string> {
+  const records = Object.values(doc.records) as readonly (AnyRecord & { readonly font?: unknown })[];
+  const assets = records.filter((r) => r.type === 'asset');
+  const used = usedFontFamilies(doc);
+  const ids = new Set(assets.filter((a) => a.font !== undefined && isUsedFont(a.font, used)).map((a) => a.id as string));
+  for (const named of namedAssetIds(records)) if (assets.some((a) => a.id === named)) ids.add(named);
+  return ids;
+}
+
+/**
+ * The hashes of the assets a document refers to: those of the asset records `usedAssetIds` names, sorted. An asset record nothing names is
+ * not in the result.
  *
  * @public
  */
 export function referencedAssetHashes(doc: DocumentFile): string[] {
-  const records = Object.values(doc.records) as readonly (AnyRecord & { readonly hash?: string; readonly font?: unknown })[];
-  const byId = new Map(records.filter((r) => r.type === 'asset' && r.hash !== undefined).map((r) => [r.id as string, r]));
-  const used = usedFontFamilies(doc);
-  const hashes = new Set<string>(
-    [...byId.values()].filter((asset) => asset.font !== undefined && isUsedFont(asset.font, used)).map((asset) => asset.hash as string),
-  );
-  for (const record of records.filter((r) => r.type === 'element' || r.type === 'screen')) {
-    for (const hash of ASSET_FIELDS.map((path) => at(record, path)).map((target) => (typeof target === 'string' ? byId.get(target)?.hash : undefined))) {
-      if (hash !== undefined) hashes.add(hash);
-    }
-  }
-  return [...hashes].sort();
+  const used = usedAssetIds(doc);
+  const hashes = (Object.values(doc.records) as readonly (AnyRecord & { readonly hash?: string })[])
+    .filter((r) => r.type === 'asset' && r.hash !== undefined && used.has(r.id as string))
+    .map((r) => r.hash as string);
+  return [...new Set(hashes)].sort();
 }
 
 /**

@@ -3,6 +3,7 @@ import { seededRandom } from '@fluxion/schema';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { createAssetStore } from './asset-store.js';
 import type { FontSources } from './font-picker.js';
 import { newDocument } from './new-document.js';
 import { createSession } from './session.js';
@@ -29,11 +30,21 @@ describe('<ToolbarExtras> (FR-THM-004, FR-THM-008)', () => {
     const session = createSession('extras');
     const show = (themes: undefined | readonly { name: string; tokens: { [key: string]: unknown } }[], fonts: FontSources | undefined) =>
       act(async () =>
-        root.render(<ToolbarExtras store={core.store} execute={core.execute} session={session} screenId={undefined} themes={themes} fonts={fonts} />),
+        root.render(
+          <ToolbarExtras
+            store={core.store}
+            execute={core.execute}
+            session={session}
+            screenId={undefined}
+            themes={themes}
+            fonts={fonts}
+            assets={createAssetStore()}
+          />,
+        ),
       );
     await show(undefined, undefined);
     // always there: the document's details; nothing else without themes or fonts
-    expect([...host.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Details']);
+    expect([...host.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Details', 'Assets']);
     await show(undefined, FONTS);
     const button = host.querySelector('button[title="Fonts"]') as HTMLButtonElement;
     expect(button).not.toBeNull();
@@ -54,7 +65,17 @@ describe('<ToolbarExtras> (FR-THM-004, FR-THM-008)', () => {
     const core = createCore(newDocument(seededRandom(9)));
     const session = createSession('details');
     await act(async () =>
-      root.render(<ToolbarExtras store={core.store} execute={core.execute} session={session} screenId={undefined} themes={undefined} fonts={undefined} />),
+      root.render(
+        <ToolbarExtras
+          store={core.store}
+          execute={core.execute}
+          session={session}
+          screenId={undefined}
+          themes={undefined}
+          fonts={undefined}
+          assets={createAssetStore()}
+        />,
+      ),
     );
     const button = host.querySelector('button[title="Document details"]') as HTMLButtonElement;
     await act(async () => button.click());

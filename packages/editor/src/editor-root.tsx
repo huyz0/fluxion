@@ -9,7 +9,8 @@ import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
-import { type AssetStore, createAssetStore } from './asset-store.js';
+import { useEditorAssets } from './asset-revision.js';
+import type { AssetStore } from './asset-store.js';
 import { registerBuiltinTools } from './builtin-tools.js';
 import { fitBox, screenToPage } from './camera.js';
 import { Canvas, ZoomControls } from './canvas.js';
@@ -247,11 +248,11 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   const [overrides, setOverrides] = useKeyOverrides(settings);
   const dialogs = useDialogs();
   const base = useMemo(() => baseKeymap(tools.list()), [tools]);
-  const assets = useMemo(() => props.assets ?? createAssetStore(), [props.assets]);
+  const { assets, url: assetUrl } = useEditorAssets(store, props.assets);
   const { run, system } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands: props.commands });
   useFitOnOpen(session, area, box);
   useEnteredLapse(store, session);
-  const shell = { store, registries, screenId, area, session, tools: present, assets: assets.url, revision };
+  const shell = { store, registries, screenId, area, session, tools: present, assets: assetUrl, revision };
   if (mode === 'present') return <PresentShell {...shell} />;
   return (
     <div className="fx-editor" data-testid="editor-root" data-mode="edit" data-revision={revision} data-focus={layout.focus || undefined}>
@@ -270,7 +271,9 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
         system={system}
         switchMode={switchMode}
         openHelp={dialogs.openHelp}
-        extras={<ToolbarExtras store={store} execute={execute} session={session} screenId={screenId} themes={props.themes} fonts={props.fonts} />}
+        extras={
+          <ToolbarExtras store={store} execute={execute} session={session} screenId={screenId} themes={props.themes} fonts={props.fonts} assets={assets} />
+        }
       />
       <EditBody
         store={store}

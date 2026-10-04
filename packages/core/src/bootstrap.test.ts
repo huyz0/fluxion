@@ -114,6 +114,8 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'document.setTheme': () => ({ theme: { name: `T${op.value}`, tokens: { color: { text: { $type: 'color', $value: '#000000' } } } } }),
     'screen.setThemeOverride': () => ({ id: screen, theme: { name: `T${op.value}`, tokens: { color: { text: { $type: 'color', $value: '#000000' } } } } }),
     'document.updateMeta': () => ({ fields: { description: `d${op.value}` }, modified: `2026-01-0${(op.value % 9) + 1}T00:00:00Z` }),
+    'asset.update': () => ({ id: pick('asset'), fields: { name: `n${op.value}.png` } }),
+    'asset.delete': () => ({ ids: [pick('asset')] }),
     'asset.create': () => ({ asset: { id: newId(n), type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'a.png' } }),
   };
   return build[op.command]?.();
@@ -213,6 +215,8 @@ const MISC_OPS: Op[] = [
   'screen.setThemeOverride',
   'document.updateMeta',
   'asset.create',
+  'asset.update',
+  'asset.delete',
 ].map((command) => ({ command, pick: 0, value: 1 }));
 
 describe('core determinism (NFR-REL-005, M3 final F4)', () => {

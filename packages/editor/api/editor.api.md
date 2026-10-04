@@ -51,8 +51,38 @@ export function applyOverrides(base: readonly KeyBinding[], overrides: KeyOverri
 export function ariaShortcuts(base: readonly KeyBinding[], overrides: KeyOverrides, action: PaletteAction, mac?: boolean): string | undefined;
 
 // @public
+export function AssetDialog(props: AssetDialogProps): ReactNode;
+
+// @public
+export type AssetDialogProps = {
+    readonly store: Store;
+    readonly execute: Execute;
+    readonly assets: AssetStore;
+    readonly codec?: ImageCodec;
+    readonly onClose: () => void;
+};
+
+// @public
+export type AssetRow = {
+    readonly id: string;
+    readonly name: string;
+    readonly mime: string;
+    readonly size: number;
+    readonly width?: number;
+    readonly height?: number;
+    readonly font: boolean;
+    readonly used: boolean;
+    readonly share: number;
+};
+
+// @public
+export function assetRows(doc: DocumentFile): AssetRow[];
+
+// @public
 export type AssetStore = {
     set(id: RecordId, dataUrl: string): void;
+    put(id: RecordId, hash: string, dataUrl: string): void;
+    bind(hashOf: (id: RecordId) => string | undefined): void;
     url(id: RecordId): string | undefined;
 };
 
@@ -173,7 +203,7 @@ export function copyPayload(view: ReadView, ids: readonly RecordId[], source: {
 }): ClipboardPayload | undefined;
 
 // @public
-export function createAssetStore(): AssetStore;
+export function createAssetStore(initial?: (id: RecordId) => string | undefined): AssetStore;
 
 export { createCanvasMeasurer }
 
@@ -411,6 +441,9 @@ export type FontSources = {
         readonly bytes: Uint8Array;
     }) => Promise<FontOutcome>;
 };
+
+// @public
+export function formatBytes(bytes: number): string;
 
 // @public
 export function formatChord(chord: string, mac?: boolean): string;
@@ -1191,6 +1224,9 @@ export type Transition = {
 
 // @public
 export function union(base: readonly RecordId[], picked: readonly RecordId[]): readonly RecordId[];
+
+// @public
+export const unusedAssetIds: (rows: readonly AssetRow[]) => string[];
 
 // @public
 export function useEditorKeys(input: EditorKeysInput): (command: string, args?: unknown) => boolean;

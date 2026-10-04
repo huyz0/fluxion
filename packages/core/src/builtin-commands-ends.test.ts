@@ -47,6 +47,51 @@ describe('built-in record commands: assets and connector ends (FR-EXT-001)', () 
     expect(store.get('AssetAssetAsset01' as RecordId)).toBeUndefined();
   });
 
+  it('FR-AST-005: asset.update replaces what an asset record says, asset.delete removes it, in one undo step each, and neither touches another type', () => {
+    const { store, run, diffs, a } = setup();
+    const asset = { id: 'AssetAssetAsset01', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 3, name: 'a.png' };
+    expect(run('asset.create', { asset }).ok).toBe(true);
+    const replaced = run('asset.update', { id: asset.id, fields: { hash: 'b'.repeat(64), mime: 'image/webp', size: 9 } });
+    expect(replaced.ok).toBe(true);
+    expect(store.get(asset.id as RecordId)).toMatchObject({ hash: 'b'.repeat(64), mime: 'image/webp', size: 9, name: 'a.png' });
+    store.history.undo();
+    expect(store.get(asset.id as RecordId)).toMatchObject({ hash: 'a'.repeat(64), mime: 'image/png' });
+    // an element id, a missing id and an identity field are refused with nothing written
+    const before = diffs.length;
+    expect(run('asset.update', { id: a, fields: { name: 'x' } }).ok).toBe(false);
+    expect(run('asset.update', { id: 'missing', fields: {} }).ok).toBe(false);
+    expect(run('asset.update', { id: asset.id, fields: { type: 'element' } }).ok).toBe(false);
+    expect(run('asset.delete', { ids: [a] }).ok).toBe(false);
+    expect(run('asset.delete', { ids: [asset.id, asset.id] }).ok).toBe(false);
+    expect(run('asset.delete', { ids: [] }).ok).toBe(false);
+    expect(diffs.length).toBe(before);
+    expect(run('asset.delete', { ids: [asset.id] }).ok).toBe(true);
+    expect(store.get(asset.id as RecordId)).toBeUndefined();
+    store.history.undo();
+    expect(store.get(asset.id as RecordId)).toBeDefined();
+  });
+
+  it('FR-AST-005: asset.delete of an asset an element still names is refused by the document check, and nothing changes', () => {
+    const { store, run, s1 } = setup();
+    const asset = { id: 'AssetAssetAsset02', type: 'asset', hash: 'c'.repeat(64), mime: 'image/png', size: 3, name: 'c.png' };
+    expect(run('asset.create', { asset }).ok).toBe(true);
+    const image = {
+      id: 'ImageImageImage01',
+      type: 'element',
+      kind: 'image',
+      screenId: s1,
+      index: 'a5',
+      assetId: asset.id,
+      transform: { x: 0, y: 0, w: 10, h: 10 },
+    };
+    expect(run('element.create', { element: image }).ok).toBe(true);
+    const refused = run('asset.delete', { ids: [asset.id] });
+    expect(refused.ok).toBe(false);
+    expect(store.get(asset.id as RecordId)).toBeDefined();
+    expect(run('element.delete', { ids: [image.id] }).ok).toBe(true);
+    expect(run('asset.delete', { ids: [asset.id] }).ok).toBe(true);
+  });
+
   it('FR-EXT-001: connector.freeEnd lets go of a bound end, holding it at the point, in one undo step', () => {
     const { store, run, line } = setup();
     const connector = () => store.get(line) as { freeSource?: unknown; freeTarget?: unknown };

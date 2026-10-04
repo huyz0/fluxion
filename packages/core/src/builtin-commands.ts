@@ -73,6 +73,31 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
     run: (ctx, args) =>
       checkIds(ctx, 'asset.create', 'new', [[['asset', 'id'], args.asset.id]]) ?? write(ctx, 'asset.create', (tx) => tx.put(args.asset as AnyRecord)),
   }),
+  // the asset manager (FR-AST-005, M10.16): a replaced file changes the record's hash, type and size, the element keeps pointing at the record
+  defineCommand({
+    id: 'asset.update',
+    title: title('asset.update', 'Change asset'),
+    args: z.object({ id, fields }),
+    run: (ctx, args) =>
+      checkIds(ctx, 'asset.update', 'asset', [[['id'], args.id]]) ?? write(ctx, 'asset.update', (tx) => tx.patch(args.id as RecordId, args.fields)),
+  }),
+  // an asset still named by an element or screen cannot go: the document would hold a reference to nothing (the transaction refuses it)
+  defineCommand({
+    id: 'asset.delete',
+    title: title('asset.delete', 'Remove assets'),
+    args: z.object({ ids: z.array(id).min(1) }),
+    run: (ctx, args) =>
+      repeated('asset.delete', args.ids, 'ids') ??
+      checkIds(
+        ctx,
+        'asset.delete',
+        'asset',
+        args.ids.map((x, i) => [['ids', i], x] as const),
+      ) ??
+      write(ctx, 'asset.delete', (tx) => {
+        for (const x of args.ids) tx.delete(x as RecordId);
+      }),
+  }),
   defineCommand({
     id: 'element.delete',
     title: title('element.delete', 'Delete elements'),

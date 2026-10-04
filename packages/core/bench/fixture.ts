@@ -40,7 +40,7 @@ export function benchStore(): Bench {
     for (let i = 0; i < 83; i++) lines.push(b.connect(rects[i] as RecordId, rects[i + 1] as RecordId));
     shapes.push(...rects);
   }
-  const built = b.build();
+  const built = withAssets(b.build());
   // a group of three shapes of screen 6, for element.ungroup to act on
   const file = withSections(withGroup(built, screens[6] as RecordId, shapes.slice(1500, 1503)), screens[0] as RecordId);
   const count = Object.keys(file.records).length;
@@ -195,8 +195,23 @@ function benchArgs(
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
     ...themeArgs(screens[5] as RecordId),
+    ...assetArgs(),
+  };
+}
+
+/** The arguments of the asset commands: one asset renamed, one removed, one made. */
+function assetArgs(): { readonly [command: string]: unknown } {
+  return {
+    'asset.update': { id: 'BenchOldAsset0001', fields: { name: 'renamed.png', size: 2 } },
+    'asset.delete': { ids: ['BenchOldAsset0002'] },
     'asset.create': { asset: { id: 'BenchNewAsset0001', type: 'asset', hash: 'a'.repeat(64), mime: 'image/png', size: 1, name: 'bench.png' } },
   };
+}
+
+/** `file` with two unused asset records, for asset.update and asset.delete to act on. */
+function withAssets<T extends { readonly records: object }>(file: T): T {
+  const asset = (id: string) => ({ id, type: 'asset', hash: 'b'.repeat(64), mime: 'image/png', size: 1, name: 'old.png' });
+  return { ...file, records: { ...file.records, BenchOldAsset0001: asset('BenchOldAsset0001'), BenchOldAsset0002: asset('BenchOldAsset0002') } };
 }
 
 /** The built-in record commands (M3.17), in the order the benches report them. */
@@ -233,4 +248,6 @@ export const COMMANDS = [
   'screen.setThemeOverride',
   'document.updateMeta',
   'asset.create',
+  'asset.update',
+  'asset.delete',
 ] as const;

@@ -55,11 +55,11 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-009 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/document-open.test.ts` +4 |
 | FR-FIL-010 | S | R6 | M27 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-011 | C | R8 | M32 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-AST-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/image-codec.browser.test.ts` +2 |
+| FR-AST-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/asset-dialog.browser.test.tsx` +3 |
 | FR-AST-002 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/image-codec.browser.test.ts` +2 |
 | FR-AST-003 | S | R3 | M18 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-004 | S | R4 | M23 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-AST-005 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-AST-005 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.remove-unused.spec.ts` +3 |
 | FR-AST-006 | S | R2 | M15 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SHP-001 | M | R0 | M2 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/box.test.ts` +6 |
 | FR-SHP-002 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/render.shapes-gallery.spec.ts` +3 |

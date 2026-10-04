@@ -5,6 +5,8 @@ import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { AssetDialog } from './asset-dialog.js';
+import type { AssetStore } from './asset-store.js';
 import { FontPicker, type FontSources } from './font-picker.js';
 import { MetadataDialog } from './metadata-dialog.js';
 import type { Execute } from './pointer.js';
@@ -22,6 +24,8 @@ export type ToolbarExtrasProps = {
   readonly themes: readonly ThemeChoice[] | undefined;
   /** The font sources (none: no Fonts button). */
   readonly fonts: FontSources | undefined;
+  /** The bytes of the assets the editor holds (the asset manager's Replace puts the new bytes here). */
+  readonly assets: AssetStore;
 };
 
 /** `node` drawn in the editor's own box, outside the toolbar (whose box clips and stacks a dialog under the panels). */
@@ -30,9 +34,44 @@ const dialog = (from: HTMLElement | null, node: ReactNode): ReactNode => {
   return createPortal(node, host);
 };
 
+/** The Assets button with the asset manager's dialog. */
+function AssetsControl(props: { readonly store: Store; readonly execute: Execute; readonly assets: AssetStore }): ReactNode {
+  const [managing, setManaging] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
+  return (
+    <>
+      <button
+        ref={button}
+        type="button"
+        className="fx-chrome-button"
+        aria-haspopup="dialog"
+        aria-label="Assets"
+        title="Assets"
+        onClick={() => setManaging(true)}
+      >
+        Assets
+      </button>
+      {managing
+        ? dialog(
+            button.current,
+            <AssetDialog
+              store={props.store}
+              execute={props.execute}
+              assets={props.assets}
+              onClose={() => {
+                setManaging(false);
+                button.current?.focus();
+              }}
+            />,
+          )
+        : null}
+    </>
+  );
+}
+
 /** The theme switcher, the Fonts button with its dialog and the Details button with its dialog. */
 export function ToolbarExtras(props: ToolbarExtrasProps): ReactNode {
-  const { store, execute, session, screenId, themes, fonts } = props;
+  const { store, execute, session, screenId, themes, fonts, assets } = props;
   const [open, setOpen] = useState(false);
   const [details, setDetails] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
@@ -57,6 +96,7 @@ export function ToolbarExtras(props: ToolbarExtrasProps): ReactNode {
       >
         Details
       </button>
+      <AssetsControl store={store} execute={execute} assets={assets} />
       {details
         ? dialog(
             detailsButton.current,

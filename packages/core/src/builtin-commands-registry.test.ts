@@ -10,6 +10,8 @@ describe('built-in record commands (FR-EXT-001)', () => {
     expect(registerCoreCommands(commands)).toEqual([]);
     expect(commands.list().map(([id]) => id)).toEqual([
       'asset.create',
+      'asset.delete',
+      'asset.update',
       'binding.set',
       'connector.freeEnd',
       'document.setTheme',
