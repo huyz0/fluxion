@@ -8,6 +8,7 @@ import { AssetUrls } from '@fluxion/render';
 import { CoreRegistries } from '@fluxion/core';
 import { ReactNode } from 'react';
 import { RefObject } from 'react';
+import { registerFontMetrics } from '@fluxion/render';
 import { RenderRegistries } from '@fluxion/render';
 import { Store } from '@fluxion/core';
 
@@ -53,6 +54,8 @@ export type PlayerRootProps = {
     readonly store: Store;
     readonly registries: RenderRegistries;
 };
+
+export { registerFontMetrics }
 
 // @public
 export function renderRegistriesFor(host: CoreRegistries): RenderRegistries;

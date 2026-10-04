@@ -169,4 +169,36 @@ describe('the page measurer (M5.14 review)', () => {
     const other = { family: 'serif', size: 16 };
     expect(measurer?.measure('Hello', other).width).toBe(createCanvasMeasurer().measure('Hello', other).width);
   });
+
+  it('FR-THM-008: the release a registration returns takes out those records and no others, leaving the canvas to measure that font again', () => {
+    const face = (family: string, a: number) => ({
+      family,
+      weight: 400,
+      style: 'normal' as const,
+      unitsPerEm: 1000,
+      advances: { a },
+      defaultAdvance: a,
+      pairs: {},
+      triples: {},
+    });
+    const measurer = browserMeasurer();
+    const [one, two] = [
+      { family: '"FxReleaseOne", serif', size: 10 },
+      { family: '"FxReleaseTwo", serif', size: 10 },
+    ];
+    const releaseOne = registerFontMetrics([face('FxReleaseOne', 500)]);
+    const releaseTwo = registerFontMetrics([face('FxReleaseTwo', 700)]);
+    expect(measurer?.measure('aaaa', one).width).toBeCloseTo(20, 5);
+    expect(measurer?.measure('aaaa', two).width).toBeCloseTo(28, 5);
+    releaseOne();
+    // the first file's record is gone (measured by the canvas again), the second's stays
+    expect(measurer?.measure('aaaa', one).width).toBe(createCanvasMeasurer().measure('aaaa', one).width);
+    expect(measurer?.measure('aaaa', two).width).toBeCloseTo(28, 5);
+    releaseTwo();
+    // a release of a record that a later registration replaced does not take the newer one out
+    const early = registerFontMetrics([face('FxReleaseOne', 500)]);
+    registerFontMetrics([face('FxReleaseOne', 600)]);
+    early();
+    expect(measurer?.measure('aaaa', one).width).toBeCloseTo(24, 5);
+  });
 });

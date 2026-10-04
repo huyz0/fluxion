@@ -6,7 +6,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 declare global {
   interface ImportMeta {
     /** Vite's build-time glob import. */
-    glob(pattern: string, options: { readonly query: '?raw'; readonly import: 'default'; readonly eager: true }): Record<string, string>;
+    glob(pattern: string, options: { readonly query: '?raw' | '?url'; readonly import: 'default'; readonly eager: true }): Record<string, string>;
   }
   interface Window {
     /** The global the built script defines. */
@@ -23,6 +23,8 @@ const hasher: ContentHasher = {
     return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('');
   },
 };
+const ROBOTO = Object.values(import.meta.glob('../../../fixtures/fonts/roboto-400.woff2', { query: '?url', import: 'default', eager: true }))[0];
+const ROBOTO_METRICS = Object.values(import.meta.glob('../../../fixtures/fonts/roboto.metrics.json', { query: '?raw', import: 'default', eager: true }))[0];
 // a 1 x 1 PNG
 const PNG = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0));
 
@@ -141,5 +143,43 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
     // a classic script: no module syntax at the top level
     expect(text.startsWith('var Fluxion=')).toBe(true);
     expect(text).not.toMatch(/^\s*(import|export)\s/m);
+  });
+
+  /** A one-screen deck with a font asset named `family`: `bytes` as the file's font, Roboto's recorded metrics under that name. */
+  async function fontDeck(family: string, bytes: Uint8Array): Promise<Uint8Array> {
+    const b = documentBuilder({ seed: 67, title: 'Font' });
+    const screen = b.screen({ name: 'one', size: { w: 1600, h: 900 } });
+    b.rect(screen, { x: 20, y: 20, w: 400, h: 100, label: 'Embedded' });
+    const doc = b.build();
+    const hash = await hasher.sha256(bytes);
+    const face = (JSON.parse(ROBOTO_METRICS ?? '{}') as { faces: { weight: number; style: string }[] }).faces.find(
+      (f) => f.weight === 400 && f.style === 'normal',
+    );
+    const font = { family, weight: 400, style: 'normal', source: 'upload', license: 'OFL-1.1', metrics: { ...face, family } };
+    const asset = { id: 'font1' as RecordId, type: 'asset', hash, mime: 'font/woff2', size: bytes.length, name: 'probe.woff2', font } as unknown as AnyRecord;
+    const document = { ...doc, records: { ...doc.records, font1: asset } } as DocumentFile;
+    const zip = await writeFlux({ document, appVersion: '0', hasher, assets: new Map([[hash, { bytes, mime: 'font/woff2' }]]) });
+    if (!zip.ok) throw new Error(zip.error.reason);
+    return zip.value;
+  }
+  const loadedFamilies = () => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/"/g, ''));
+
+  it('FR-THM-008: a font asset of the file is loaded from its own bytes before the deck is drawn, and is taken out again on unmount', async () => {
+    const roboto = new Uint8Array(await (await fetch(ROBOTO ?? '')).arrayBuffer());
+    const result = await window.Fluxion?.start(await fontDeck('EmbeddedProbe', roboto), root);
+    expect(result?.ok).toBe(true);
+    expect(loadedFamilies()).toContain('EmbeddedProbe');
+    expect(document.fonts.check('16px EmbeddedProbe')).toBe(true);
+    result?.unmount?.();
+    expect([...document.fonts].map((f) => f.family.replace(/"/g, ''))).not.toContain('EmbeddedProbe');
+  });
+
+  it('FR-THM-008: a font asset whose bytes are not a font is skipped: the deck still opens', async () => {
+    const result = await window.Fluxion?.start(await fontDeck('BrokenProbe', new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])), root);
+    expect(result?.ok).toBe(true);
+    await frame();
+    expect(shown()).not.toBeNull();
+    expect(loadedFamilies()).not.toContain('BrokenProbe');
+    result?.unmount?.();
   });
 });

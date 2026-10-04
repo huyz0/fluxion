@@ -1,5 +1,7 @@
 // Public entry of @fluxion/player; the package comment is the dts banner in tsdown.config.ts.
 
+// the recorded metrics of a font the page has loaded (ADR-0148): a host that loads a document's own fonts registers them so text is measured as the editor did
+export { registerFontMetrics } from '@fluxion/render';
 export { LASER_FADE, type LaserPoint, type TrailDot, trailKeys } from './laser-keys.js';
 export { LaserTrail, type LaserTrailProps } from './laser-trail.js';
 export { PlayerDeck, type PlayerDeckProps } from './player-deck.js';

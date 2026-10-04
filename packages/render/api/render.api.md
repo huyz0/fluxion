@@ -239,7 +239,7 @@ export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): vo
 export function registerBuiltinViews(registries: RenderRegistries): void;
 
 // @public
-export function registerFontMetrics(faces: readonly FaceMetrics[]): void;
+export function registerFontMetrics(faces: readonly FaceMetrics[]): () => void;
 
 // @public
 export function renderDocumentToHtml(file: DocumentFile, options?: RenderHtmlOptions): RenderedHtml;

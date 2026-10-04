@@ -7,6 +7,7 @@ import { basicPack } from '@fluxion/pack-basic';
 import { renderRegistriesFor } from '@fluxion/player';
 import { mountPlayer } from '@fluxion/player/mount';
 import type { AssetRecord, RecordId } from '@fluxion/schema';
+import { loadEmbeddedFonts } from './fonts.js';
 
 /**
  * What `start` came to.
@@ -70,12 +71,16 @@ async function open(bytes: Uint8Array, root: HTMLElement, urls: { release: () =>
   if (!registered.ok) return show(root, `The built-in shapes could not be registered: ${registered.error.map((d) => d.message).join('; ')}`);
   const images = imageUrls(loaded.value);
   urls.push(images);
+  // the file's own fonts first: the first paint is in them, measured with their recorded metrics
+  const fonts = await loadEmbeddedFonts(loaded.value);
+  urls.push(fonts);
   const mounted = mountPlayer(root, core.store, renderRegistriesFor(core.registries), (id: RecordId) => images.urls.get(id));
   return {
     ok: true,
     unmount: () => {
       mounted.unmount();
       images.release();
+      fonts.release();
     },
   };
 }

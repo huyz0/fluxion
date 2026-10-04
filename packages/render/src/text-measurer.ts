@@ -77,15 +77,20 @@ const notify = () => {
 /**
  * Measure with the recorded metrics of `faces` from now on, for the fonts they cover (the page's shared measurer; ADR-0148, M9.14):
  * call it once the faces are loaded, since the metrics describe the real font and the page draws a fallback until it has loaded.
- * Views measuring with the shared measurer re-render.
+ * Views measuring with the shared measurer re-render. Returns the way to take exactly these records out again (a host that loaded a
+ * document's fonts lets go of them when it closes the document).
  *
  * @public
  */
-export function registerFontMetrics(faces: readonly FaceMetrics[]): void {
+export function registerFontMetrics(faces: readonly FaceMetrics[]): () => void {
   // a face registered again replaces its earlier record (same family, weight and style)
   const same = (a: FaceMetrics, b: FaceMetrics) => a.family.toLowerCase() === b.family.toLowerCase() && a.weight === b.weight && a.style === b.style;
   recorded = [...recorded.filter((r) => !faces.some((f) => same(r, f))), ...faces];
   notify();
+  return () => {
+    recorded = recorded.filter((r) => !faces.includes(r));
+    notify();
+  };
 }
 
 /**
