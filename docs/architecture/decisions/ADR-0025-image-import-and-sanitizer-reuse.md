@@ -73,6 +73,16 @@ Option 1 for sanitizing, with our own minifier instead of SVGO, and the browser'
   (50 MB per image, 5 MB per font, ADR-0022); decode; downscale; encode (browser only); sanitize (SVG only); hash;
   asset record. An asset the pipeline refuses is a diagnostic with a code, never a crash.
 
+### Amendment (M10.26): what M10 builds of the sanitizer set
+
+The rich-text link allowlist is `safeLinkUrl`, and it matches what `@fluxion/schema` already accepts as a link target (`http:`, `https:`,
+`mailto:` and `#screen:<id>`), not the wider list above: `tel:` and a bare `#anchor` are not link targets in this schema version, so a link
+that the sanitizer allowed and the schema refused would only break the document. `sanitizeAsset` applies `sanitizeSvg` to an SVG asset
+before it is drawn, saved as a new asset or previewed; `loadFlux` keeps the verified bytes as they are and reports an `ASSET_UNSAFE` note
+for an SVG that would change. **`sanitizeHtml` is not built in M10**: the editor's paste reads text, SVG and images only, so nothing would
+call it, and a hand-written HTML sanitizer without a consumer is risk without value; backlog M10.27 holds it for the commit that adds
+HTML paste, with its own corpus.
+
 ### Consequences
 
 - Good: no new package in the repository for the sanitizer, the minifier or the images; the lockfile and the budget record

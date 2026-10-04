@@ -104,6 +104,9 @@ export const NAMED_PATH_HARNESS = [
   [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
   // a package's own test fixtures: read only by that package's tests, which the staged Vitest step runs (the package is staged)
   [/^(packages|packs|apps)\/[^/]+\/__fixtures__\/.+/, []],
+  // the security corpus: hostile inputs read only by Vitest tests (the sanitizer's, in format and editor), which the staged Vitest step runs
+  // for any change under specs/security/ (VITEST_GLOBAL), so no harness file needs to
+  [/^specs\/security\/corpus\/.+/, []],
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
   [/^knip\.json$/, ['milestone-checks']],
@@ -214,7 +217,7 @@ function harnessFor(p, workspaceLock, all = []) {
 
 /** Paths the Vitest run reads beyond the workspaces: its config, setup, fixtures, floors, toolchain. */
 const VITEST_GLOBAL =
-  /^(vitest\.config\.ts|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig[^/]*\.json|scripts\/gates\/thresholds\.mjs|tools\/vitest\/|fixtures\/)/;
+  /^(vitest\.config\.ts|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig[^/]*\.json|scripts\/gates\/thresholds\.mjs|tools\/vitest\/|fixtures\/|specs\/security\/)/;
 const WORKSPACE = /^((?:packages|packs|apps)\/[^/]+)\//;
 
 /** `dirs` plus every workspace they depend on, transitively (dependsOn names are workspace basenames). */

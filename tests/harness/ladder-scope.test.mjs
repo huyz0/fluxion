@@ -38,7 +38,13 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(testScope(['packages/core/src/store.ts'], workspaces, BROWSER), { run: true, browser: true });
     assert.deepEqual(testScope(['packages/render/src/x.tsx'], workspaces, BROWSER), { run: true, browser: true });
     // global Vitest inputs run everything
-    for (const p of ['vitest.config.ts', 'pnpm-lock.yaml', 'fixtures/docs/minimal.flux.json', 'scripts/gates/thresholds.mjs'])
+    for (const p of [
+      'vitest.config.ts',
+      'pnpm-lock.yaml',
+      'fixtures/docs/minimal.flux.json',
+      'scripts/gates/thresholds.mjs',
+      'specs/security/corpus/svg-x.svg',
+    ])
       assert.deepEqual(testScope([p], workspaces, BROWSER), { run: true, browser: true }, p);
     // nothing Vitest reads: no run
     assert.deepEqual(testScope(['docs/architecture/04-rendering-and-editor.md', 'scripts/gates/m4-complete.mjs'], workspaces, BROWSER), {
@@ -125,6 +131,11 @@ describe('staged ladder scope (NFR-DX-002)', () => {
         ],
         ALL,
       ),
+      [],
+    );
+    // the security corpus is read by the sanitizer's tests alone, which the Vitest step runs
+    assert.deepEqual(
+      harnessFiles(['specs/security/corpus/svg-x.svg', 'specs/security/corpus/links.json', 'specs/security/corpus/expected/svg-x.svg'], ALL),
       [],
     );
     // a package's own fixtures are read by its tests alone, which the Vitest step runs
