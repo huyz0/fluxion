@@ -33,6 +33,9 @@ const u32be = (b: Uint8Array, i: number): number => (((b[i] ?? 0) << 24) | ((b[i
 const ascii = (b: Uint8Array, i: number, n: number): string => String.fromCharCode(...b.subarray(i, i + n));
 const startsWith = (b: Uint8Array, magic: readonly number[]): boolean => magic.every((v, i) => b[i] === v);
 
+/** The most compatible brands read from an `ftyp` box. */
+const MAX_BRANDS = 64;
+
 /** The most bytes of a header any reader looks at. */
 const HEADER = 64 * 1024;
 
@@ -136,7 +139,8 @@ function brandsOf(b: Uint8Array): readonly string[] {
   const box = findBox(b, 'ftyp', 0, 4096);
   if (box === undefined) return [];
   const brands = [ascii(b, box.start, 4)];
-  for (let at = box.start + 8; at + 4 <= box.end; at += 4) brands.push(ascii(b, at, 4));
+  // a real ftyp lists a handful of brands: a box that claims the whole file is read for the first 64 only
+  for (let at = box.start + 8, n = 0; at + 4 <= box.end && n < MAX_BRANDS; at += 4, n++) brands.push(ascii(b, at, 4));
   return brands;
 }
 

@@ -96,6 +96,19 @@ describe('sniffImage', () => {
     expect(sniffImage(avifFile(['heic', 'mif1'], 10, 10))).toBeUndefined();
   });
 
+  it('NFR-REL-002: an ftyp box that claims the whole file is read for a few brands, not millions', () => {
+    // 16 MB of 'avif' brands under a box size of 0xFFFFFFFF (to the end of the file): the first 64 are read and the answer is the same
+    const header = [0xff, 0xff, 0xff, 0xff, ...text('ftyp'), ...text('avif'), 0, 0, 0, 0];
+    const body = new Uint8Array(16 * 1024 * 1024);
+    body.set(header);
+    for (let i = header.length; i + 4 <= body.length; i += 4) body.set(text('avif'), i);
+    expect(sniffImage(body)).toMatchObject({ mime: 'image/avif', animated: false });
+    // an avis brand after the first 64 is not looked for
+    const late = body.slice();
+    late.set(text('avis'), header.length + 4 * 70);
+    expect(sniffImage(late)?.animated).toBe(false);
+  });
+
   it('FR-AST-001: SVG is text that starts as SVG, after a BOM, a prolog, a doctype or a comment; other text is not an image', () => {
     const svg = { mime: 'image/svg+xml', animated: false };
     expect(sniffImage(encodeUtf8('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toEqual(svg);
