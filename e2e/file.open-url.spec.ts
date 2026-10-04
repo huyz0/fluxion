@@ -39,7 +39,10 @@ test.describe('opening from a URL and the clipboard', { tag: '@desktop' }, () =>
     await page.evaluate((data) => {
       const transfer = new DataTransfer();
       transfer.items.add(new File([new Uint8Array(data)], 'pasted.flux'));
-      window.dispatchEvent(new ClipboardEvent('paste', { clipboardData: transfer, bubbles: true, cancelable: true }));
+      // Firefox drops `clipboardData` from a constructed ClipboardEvent: a plain event carrying it reaches the studio's listener the same way
+      const paste = new Event('paste', { bubbles: true, cancelable: true });
+      Object.defineProperty(paste, 'clipboardData', { value: transfer });
+      window.dispatchEvent(paste);
     }, Array.from(bytes));
     await expect(page).toHaveURL(/\/edit\/file-\d+$/);
     await new EditorPage(page).screens.first().waitFor();
