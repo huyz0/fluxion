@@ -59,10 +59,15 @@ describe('laser trail (FR-EDT-003)', () => {
     await wait(1100);
     expect(opacity(0)).toBeLessThan(0.05);
     await act(async () => root.render(<LaserTrail points={[a, b]} scale={1} />));
-    await wait(100);
-    // the new dot is drawn: it began fading when it appeared, not when the trail did
+    // the new dot has its own animation, started when it appeared (not 1100 ms ago, when the trail did). It is paused and set to a time,
+    // so the check does not depend on how long a slow runner takes between two timers.
+    const fade = (host.querySelectorAll('circle')[1] as Element).getAnimations()[0];
+    expect(fade).toBeDefined();
+    fade?.pause();
+    expect(Number(fade?.currentTime)).toBeLessThan(500);
+    if (fade) fade.currentTime = 100;
     expect(opacity(1)).toBeGreaterThan(0.5);
-    await wait(1000);
+    if (fade) fade.currentTime = 1100;
     expect(opacity(1)).toBeLessThan(0.05);
   });
 });
