@@ -106,6 +106,8 @@ export const NAMED_PATH_HARNESS = [
   [/^(packages|packs|apps)\/[^/]+\/__fixtures__\/.+/, []],
   // the bundle budgets: read by the ladder's own `size-limit` step, which the staged ladder runs; no harness file reads them
   [/^\.size-limit\.js$/, []],
+  // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test names it
+  [/^vitest\.config\.ts$/, ['ladder-scope']],
   // the security corpus: hostile inputs read only by Vitest tests (the sanitizer's, in format and editor), which the staged Vitest step runs
   // for any change under specs/security/ (VITEST_GLOBAL), so no harness file needs to
   [/^specs\/security\/corpus\/.+/, []],

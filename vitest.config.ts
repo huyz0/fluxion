@@ -44,6 +44,10 @@ export default defineConfig({
   resolve: { conditions: [...conditions, 'browser'] },
   ssr: { resolve: { conditions: [...conditions, 'node'] } },
   test: {
+    // the 5 s default is a laptop's: a macOS or Windows runner under coverage takes several times a laptop's time, and a test over the
+    // limit there is a red main without a bug (M10.11: four CI runs lost to it). A genuine hang still fails, at 20 s.
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
     setupFiles: ['./tools/vitest/fast-check.setup.ts'],
     env: { FC_SEED: process.env.FC_SEED ?? (process.env.CI ? String(CI_SEED) : ''), FC_RUNS: process.env.FC_RUNS ?? '' },
     projects: [
