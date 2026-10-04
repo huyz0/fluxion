@@ -274,6 +274,8 @@ export function packagingNeeded(staged, { lockfileWorkspaceOnly: workspaceLock =
     p === 'scripts/gates/milestone-checks.mjs' ||
     // the fixture generator reads documents, not a manifest, an export or a build setting
     p === 'scripts/fixtures/gen.mjs' ||
+    // the API gate reads built declarations and a manifest's exports map; it changes none of them
+    p === 'scripts/gates/check-api.mjs' ||
     // the scope module itself and the harness tests decide and test which checks run, and pack nothing (CI's `--all` ladder is the backstop for a scope change that hides a packaging check)
     p === 'scripts/gates/ladder-scope.mjs' ||
     /^tests\/harness\/[^/]+\.test\.mjs$/.test(p) ||

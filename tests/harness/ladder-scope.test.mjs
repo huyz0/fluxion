@@ -203,6 +203,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       false,
     );
     assert.equal(harnessFiles(['scripts/fixtures/gen.mjs'], ALL).includes(file('milestone-checks')), true);
+    // the API gate's script changes no manifest, export or build setting
+    assert.equal(packagingNeeded(['scripts/gates/check-api.mjs', 'packages/core/api/core.testing.api.md']), false);
     // a library's manifest still runs them, whatever the lockfile did
     assert.equal(packagingNeeded(['packages/core/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true, librariesUnchanged: true }), true);
     for (const p of ['packages/core/package.json', 'pnpm-lock.yaml', 'tsconfig.base.json', 'packages/core/tsup.config.ts', 'scripts/gates/check-packages.mjs'])
