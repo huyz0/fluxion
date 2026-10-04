@@ -17,7 +17,8 @@ const FIXTURES = Object.entries(import.meta.glob('../../../fixtures/docs/*.flux.
   // the shapes gallery needs the basic pack: its golden is the CLI's, which bundles the pack (M5.24);
   // so does the drag benchmark, which has no golden (a benchmark, not a rendering reference), and the
   // rich-text fixture (shape labels; its goldens are one per mark and block, M7.9, and its parity is E2E)
-  .filter(([path]) => !path.includes('/shapes-gallery.') && !path.includes('/perf-') && !path.includes('/rich-text.'))
+  // and the 20-screen document, a size fixture (NFR-SIZE-003) that is measured, not drawn
+  .filter(([path]) => !path.includes('/shapes-gallery.') && !path.includes('/perf-') && !path.includes('/rich-text.') && !path.includes('/doc20.'))
   .map(([path, text]) => [(path.split('/').at(-1) ?? path).replace('.flux.json', ''), JSON.parse(text) as DocumentFile] as const);
 
 // the fixture goldens render through ssr.ts: this file carries ssr's stem, so the coverage sandbox

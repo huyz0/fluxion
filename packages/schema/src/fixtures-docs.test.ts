@@ -27,9 +27,13 @@ function expectInvalid(name: string, text: string, code: string): void {
   expect(codes, name).toContain(`FLX_${code.toUpperCase().replaceAll('-', '_')}`);
 }
 
+/** The most a fixture may weigh: a benchmark (perf-*) is as large as what it measures (500 elements take ~210 KB), the 20-screen size fixture takes ~125 KB. */
+const maxKiB = (name: string): number => (name.startsWith('perf-') ? 256 : name === 'doc20.flux.json' ? 160 : 50);
+
 describe('shared document fixtures (FR-DOC-001)', () => {
   it('FR-DOC-001: fixtures/docs behave as named', () => {
     expect(entries.map(([name]) => name).sort()).toEqual([
+      'doc20.flux.json',
       'invalid-ref-missing.flux.json',
       'invalid-schema-invalid.flux.json',
       'minimal.flux.json',
@@ -40,8 +44,7 @@ describe('shared document fixtures (FR-DOC-001)', () => {
       'unknown-kind.flux.json',
     ]);
     for (const [name, text] of entries) {
-      // a benchmark fixture (perf-*) is as large as what it measures: 500 elements take ~210 KB
-      expect(text.length, name).toBeLessThanOrEqual((name.startsWith('perf-') ? 256 : 50) * 1024);
+      expect(text.length, name).toBeLessThanOrEqual(maxKiB(name) * 1024);
       const code = /^invalid-(.+)\.flux\.json$/.exec(name)?.[1];
       if (code === undefined) expectValid(name, text);
       else expectInvalid(name, text, code);

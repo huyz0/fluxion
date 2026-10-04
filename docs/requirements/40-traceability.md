@@ -313,7 +313,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PERF-008 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SIZE-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-SIZE-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-SIZE-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/size-budget.test.ts` |
 | NFR-SIZE-004 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SIZE-005 | S | R2 | M13 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PORT-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |

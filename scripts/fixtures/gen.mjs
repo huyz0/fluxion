@@ -247,6 +247,31 @@ function richText() {
   return { ...doc, records: Object.fromEntries(Object.entries(doc.records).map(([id, r]) => [id, docs[id] ? { ...r, text: docs[id] } : r])) };
 }
 
+/**
+ * The size fixture (NFR-SIZE-003, M10.20): a typical 20-screen document without photos. Each screen has a title, a paragraph of text, four labelled
+ * boxes and three connectors, so the file holds what a real deck holds. The `.flux` and the `.flux.html` made from it are measured against the budgets.
+ */
+function doc20() {
+  const b = documentBuilder({ title: 'Twenty screens', seed: 2020 });
+  const TOPICS = ['Context', 'Goals', 'Users', 'Constraints', 'Architecture', 'Data flow', 'Services', 'Storage', 'Security', 'Rollout'];
+  for (let n = 1; n <= 20; n++) {
+    const topic = TOPICS[(n - 1) % TOPICS.length];
+    const s = b.screen({ name: `${n}. ${topic}`, size: { w: 1920, h: 1080 } });
+    b.text(s, `${n}. ${topic}`, { x: 120, y: 60, w: 1200, h: 120 });
+    b.text(s, `What ${topic.toLowerCase()} means for the next release: the plan, who owns it and what is left to decide before the review on the ${n}th.`, {
+      x: 120,
+      y: 200,
+      w: 1100,
+      h: 160,
+    });
+    const boxes = ['Client', 'Gateway', 'Service', 'Store'].map((label, i) =>
+      b.rect(s, { x: 120 + i * 440, y: 520, w: 320, h: 200, label, slug: `${label.toLowerCase()}-${n}` }),
+    );
+    for (let i = 0; i < 3; i++) b.connect(boxes[i], boxes[i + 1]);
+  }
+  return b.build();
+}
+
 const FIXTURES = {
   minimal: () => {
     const b = documentBuilder({ title: 'Minimal', seed: 1 });
@@ -282,6 +307,7 @@ const FIXTURES = {
   'shapes-gallery': shapesGallery,
   'perf-500': perf500,
   'rich-text': richText,
+  doc20,
   // an element on a screen that does not exist
   'invalid-ref-missing': () => {
     const { doc, rect } = twoRectsLine('Missing screen');

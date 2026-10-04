@@ -1,0 +1,5750 @@
+{
+  "records": {
+    "-0GwbEN9MUB6IQeF": {
+      "defId": "basic:rect",
+      "id": "-0GwbEN9MUB6IQeF",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "semantic": {
+        "slug": "client-12"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "-Pq9WP1k3O_QYLhl": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "PpM7prLK6UnJeij5",
+      "elementId": "8u4yUyLTl5801RKH",
+      "end": "target",
+      "id": "-Pq9WP1k3O_QYLhl",
+      "type": "binding"
+    },
+    "-SQfKLvNLykUfrh0": {
+      "defId": "basic:rect",
+      "id": "-SQfKLvNLykUfrh0",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "7oDPgFGzqgib2dOR",
+      "semantic": {
+        "slug": "store-19"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "-Z4bjyRCwy2Uxp5R": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "hosyFt1aqBui7Me3",
+      "elementId": "2LbbQEnvnEAJ48J9",
+      "end": "source",
+      "id": "-Z4bjyRCwy2Uxp5R",
+      "type": "binding"
+    },
+    "-cltUcxChjQmFeD8": {
+      "defId": "basic:rect",
+      "id": "-cltUcxChjQmFeD8",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "EzNBI8UrFRslQeZr",
+      "semantic": {
+        "slug": "service-14"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "-zN7VTY_G1gPxO22": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LOtv0gbXleJPYWRJ",
+      "elementId": "qevKHN_35CRLPNTL",
+      "end": "target",
+      "id": "-zN7VTY_G1gPxO22",
+      "type": "binding"
+    },
+    "06dvm5BE5DfBnqBs": {
+      "defId": "basic:rect",
+      "id": "06dvm5BE5DfBnqBs",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "nOWd_xi0PPay2KF_",
+      "semantic": {
+        "slug": "service-15"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "0JfrFWPyLIWyf2ht": {
+      "defId": "basic:rect",
+      "id": "0JfrFWPyLIWyf2ht",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "Yun8aOkd5RzutxfM",
+      "semantic": {
+        "slug": "client-4"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "0e30B9O8RzsZyhEc": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "1cO9ubWiZbSdPU8T",
+      "elementId": "ULSSluQV6Axq8i1w",
+      "end": "source",
+      "id": "0e30B9O8RzsZyhEc",
+      "type": "binding"
+    },
+    "0hZHiRw6ri_mIT2F": {
+      "defId": "basic:rect",
+      "id": "0hZHiRw6ri_mIT2F",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "semantic": {
+        "slug": "store-10"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "0lKl9Eu3hJtpdBe5": {
+      "defId": "basic:rect",
+      "id": "0lKl9Eu3hJtpdBe5",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "LSGcUrB9DyyHroXh",
+      "semantic": {
+        "slug": "client-1"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "0uuROGJjX0pEkXfz": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LhYh0LsndmFKvhrT",
+      "elementId": "Scwp6DIxV_kReX5u",
+      "end": "target",
+      "id": "0uuROGJjX0pEkXfz",
+      "type": "binding"
+    },
+    "1KTQ44Qw9tLLrTGd": {
+      "id": "1KTQ44Qw9tLLrTGd",
+      "index": "a9",
+      "name": "10. Rollout",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "1cO9ubWiZbSdPU8T": {
+      "id": "1cO9ubWiZbSdPU8T",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "f-gozYW1WkHyN61L",
+      "type": "element"
+    },
+    "1o8ZZbQPtAAD2_Ut": {
+      "id": "1o8ZZbQPtAAD2_Ut",
+      "title": "Twenty screens",
+      "type": "document"
+    },
+    "1oNJFrEtyoZYmssV": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "HSZbl6Ab4RUE9OgK",
+      "elementId": "ZndG1mgWE717JL8N",
+      "end": "target",
+      "id": "1oNJFrEtyoZYmssV",
+      "type": "binding"
+    },
+    "1ruIsAD72K3sPXGG": {
+      "defId": "basic:rect",
+      "id": "1ruIsAD72K3sPXGG",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "Yun8aOkd5RzutxfM",
+      "semantic": {
+        "slug": "gateway-4"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "2-j1ATkYpHfzL8CS": {
+      "id": "2-j1ATkYpHfzL8CS",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "type": "element"
+    },
+    "2CPwpj6xzLFoHmUr": {
+      "id": "2CPwpj6xzLFoHmUr",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "f-gozYW1WkHyN61L",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What data flow means for the next release: the plan, who owns it and what is left to decide before the review on the 6th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "2GJ9yIDGju69JS3d": {
+      "defId": "basic:rect",
+      "id": "2GJ9yIDGju69JS3d",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "semantic": {
+        "slug": "client-10"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "2LbbQEnvnEAJ48J9": {
+      "defId": "basic:rect",
+      "id": "2LbbQEnvnEAJ48J9",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "nOWd_xi0PPay2KF_",
+      "semantic": {
+        "slug": "gateway-15"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "2LkDHwNiX88Dl6WZ": {
+      "id": "2LkDHwNiX88Dl6WZ",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "type": "element"
+    },
+    "2NrdoCX7W548_gE1": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "HSZbl6Ab4RUE9OgK",
+      "elementId": "Db_jwjxfcc0Qf5AW",
+      "end": "source",
+      "id": "2NrdoCX7W548_gE1",
+      "type": "binding"
+    },
+    "2Ns69-u2SGAPSsf4": {
+      "defId": "basic:rect",
+      "id": "2Ns69-u2SGAPSsf4",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "semantic": {
+        "slug": "service-17"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "2m5Tx4Y4bOB1YioI": {
+      "defId": "basic:rect",
+      "id": "2m5Tx4Y4bOB1YioI",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "5S35CMApWe805seD",
+      "semantic": {
+        "slug": "client-16"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "3-IQCPRUC3aOXaf-": {
+      "defId": "basic:rect",
+      "id": "3-IQCPRUC3aOXaf-",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "semantic": {
+        "slug": "store-7"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "30RfEAHDn2Jl6bDf": {
+      "defId": "basic:rect",
+      "id": "30RfEAHDn2Jl6bDf",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "semantic": {
+        "slug": "client-13"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "3CTw8ofl6C0SQ8zS": {
+      "id": "3CTw8ofl6C0SQ8zS",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "E-VbUBiMs_5HTliv",
+      "type": "element"
+    },
+    "3Vrg8aV7F2b0nrdn": {
+      "defId": "basic:rect",
+      "id": "3Vrg8aV7F2b0nrdn",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "semantic": {
+        "slug": "gateway-2"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "3p-cQDMxHU-W9HqM": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "8RTbqwJDQVkgiPSM",
+      "elementId": "8OP178i67TZZA876",
+      "end": "source",
+      "id": "3p-cQDMxHU-W9HqM",
+      "type": "binding"
+    },
+    "3pMyYkZFkHYlTdF5": {
+      "id": "3pMyYkZFkHYlTdF5",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "type": "element"
+    },
+    "45rVZ9WsvM4Tx24M": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "h00ZQllVHXa9m8xc",
+      "elementId": "fsb68q0JtvNk2nVO",
+      "end": "target",
+      "id": "45rVZ9WsvM4Tx24M",
+      "type": "binding"
+    },
+    "48fcNef74J0tY52q": {
+      "id": "48fcNef74J0tY52q",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "type": "element"
+    },
+    "4HzfXXfBFYAK5Qng": {
+      "id": "4HzfXXfBFYAK5Qng",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "type": "element"
+    },
+    "4lGmTtM0VS88By2I": {
+      "id": "4lGmTtM0VS88By2I",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "nOWd_xi0PPay2KF_",
+      "type": "element"
+    },
+    "52sJdDae83-X0M2q": {
+      "id": "52sJdDae83-X0M2q",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "type": "element"
+    },
+    "58OQMtZ68ElrRHTX": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "7k5-b4_YtcXlrnHS",
+      "elementId": "_gkIoHq5uPm7Icv9",
+      "end": "target",
+      "id": "58OQMtZ68ElrRHTX",
+      "type": "binding"
+    },
+    "5PPrMmioNjnBs654": {
+      "id": "5PPrMmioNjnBs654",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "11. Context",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "5S35CMApWe805seD": {
+      "id": "5S35CMApWe805seD",
+      "index": "aF",
+      "name": "16. Data flow",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "5SXToj6WMihX5TmM": {
+      "id": "5SXToj6WMihX5TmM",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "type": "element"
+    },
+    "5wi4v4ykXXZCIbdN": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "2LkDHwNiX88Dl6WZ",
+      "elementId": "RYA8ZzlWZHhU7pNp",
+      "end": "source",
+      "id": "5wi4v4ykXXZCIbdN",
+      "type": "binding"
+    },
+    "5zJwNFS8DADAUbgf": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "4lGmTtM0VS88By2I",
+      "elementId": "Q82HYh9k_o_WvquU",
+      "end": "source",
+      "id": "5zJwNFS8DADAUbgf",
+      "type": "binding"
+    },
+    "60BGUwoo6lChEsMh": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "OVaNaOEOEij0HaxS",
+      "elementId": "Gzd5pwa6gPKVINr9",
+      "end": "source",
+      "id": "60BGUwoo6lChEsMh",
+      "type": "binding"
+    },
+    "67aYT6hTR8WSe7FN": {
+      "id": "67aYT6hTR8WSe7FN",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "EzNBI8UrFRslQeZr",
+      "type": "element"
+    },
+    "6F9voVNQwhJ5eByy": {
+      "defId": "basic:rect",
+      "id": "6F9voVNQwhJ5eByy",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "semantic": {
+        "slug": "store-3"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "6TJTE3Ml8CzGaTa6": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "IgYg8kBewY05gbP2",
+      "elementId": "8JyayGQGlj0gQkIL",
+      "end": "source",
+      "id": "6TJTE3Ml8CzGaTa6",
+      "type": "binding"
+    },
+    "6eyxwLDIxFFc6CBn": {
+      "id": "6eyxwLDIxFFc6CBn",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "type": "element"
+    },
+    "7DFwVjLP5jeiC3Al": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LOtv0gbXleJPYWRJ",
+      "elementId": "gE8wKdkXHo0IlCNb",
+      "end": "source",
+      "id": "7DFwVjLP5jeiC3Al",
+      "type": "binding"
+    },
+    "7Rgfl4meFIxjfjqn": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "NVnXB3IQIfl3rmoD",
+      "elementId": "WXCm5XjyU0iih8zX",
+      "end": "source",
+      "id": "7Rgfl4meFIxjfjqn",
+      "type": "binding"
+    },
+    "7hPL_KNGQEHwx4zo": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "XJek6kdJuWkkN49A",
+      "elementId": "fJYpUrV5kxnTUMa0",
+      "end": "source",
+      "id": "7hPL_KNGQEHwx4zo",
+      "type": "binding"
+    },
+    "7k5-b4_YtcXlrnHS": {
+      "id": "7k5-b4_YtcXlrnHS",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "type": "element"
+    },
+    "7oDPgFGzqgib2dOR": {
+      "id": "7oDPgFGzqgib2dOR",
+      "index": "aI",
+      "name": "19. Security",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "81XPKpi6nytf43lT": {
+      "id": "81XPKpi6nytf43lT",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "Yun8aOkd5RzutxfM",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "4. Constraints",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "84tALEDuiy8Cux6o": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "CoGqR5WBVThS_R_p",
+      "elementId": "BIdMcNE08-w6GA4y",
+      "end": "target",
+      "id": "84tALEDuiy8Cux6o",
+      "type": "binding"
+    },
+    "8JyayGQGlj0gQkIL": {
+      "defId": "basic:rect",
+      "id": "8JyayGQGlj0gQkIL",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "semantic": {
+        "slug": "gateway-9"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "8OP178i67TZZA876": {
+      "defId": "basic:rect",
+      "id": "8OP178i67TZZA876",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "EzNBI8UrFRslQeZr",
+      "semantic": {
+        "slug": "gateway-14"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "8QubE9iHQDKiLZc0": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "CoGqR5WBVThS_R_p",
+      "elementId": "zYVVOnnNrQiMUpb0",
+      "end": "source",
+      "id": "8QubE9iHQDKiLZc0",
+      "type": "binding"
+    },
+    "8RTbqwJDQVkgiPSM": {
+      "id": "8RTbqwJDQVkgiPSM",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "EzNBI8UrFRslQeZr",
+      "type": "element"
+    },
+    "8RjK_dxBabRlc7aM": {
+      "defId": "basic:rect",
+      "id": "8RjK_dxBabRlc7aM",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "semantic": {
+        "slug": "gateway-17"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "8aJudzbWwob5jUMU": {
+      "defId": "basic:rect",
+      "id": "8aJudzbWwob5jUMU",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "semantic": {
+        "slug": "client-9"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "8bM6C2sK-mOdlj25": {
+      "id": "8bM6C2sK-mOdlj25",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "type": "element"
+    },
+    "8u4yUyLTl5801RKH": {
+      "defId": "basic:rect",
+      "id": "8u4yUyLTl5801RKH",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "semantic": {
+        "slug": "store-18"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "8vIhGgoFgcm2bBu5": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "rPpTwYECRAAt0cbA",
+      "elementId": "3-IQCPRUC3aOXaf-",
+      "end": "target",
+      "id": "8vIhGgoFgcm2bBu5",
+      "type": "binding"
+    },
+    "9-o1uaQnMfQxYLVj": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "RYAQnkKDj-2PwyYl",
+      "elementId": "srMM1Ke3kN3Dqr2I",
+      "end": "target",
+      "id": "9-o1uaQnMfQxYLVj",
+      "type": "binding"
+    },
+    "93Us576YzYKXyIW6": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "A0_Vx52qi9ORUbAf",
+      "elementId": "Gzd5pwa6gPKVINr9",
+      "end": "target",
+      "id": "93Us576YzYKXyIW6",
+      "type": "binding"
+    },
+    "996pgLhyvEgu66lx": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "z5BvyYwiac_p0ACj",
+      "elementId": "-0GwbEN9MUB6IQeF",
+      "end": "source",
+      "id": "996pgLhyvEgu66lx",
+      "type": "binding"
+    },
+    "9YMCwrErj4ruCn6E": {
+      "defId": "basic:rect",
+      "id": "9YMCwrErj4ruCn6E",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "E-VbUBiMs_5HTliv",
+      "semantic": {
+        "slug": "store-5"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "9aYZsLwMKxNm9wow": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "VXDty7YDzYfkSulv",
+      "elementId": "-SQfKLvNLykUfrh0",
+      "end": "target",
+      "id": "9aYZsLwMKxNm9wow",
+      "type": "binding"
+    },
+    "9iLZYmgArOQjAO7L": {
+      "defId": "basic:rect",
+      "id": "9iLZYmgArOQjAO7L",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "PUOSmjcr02rR2mWV",
+      "semantic": {
+        "slug": "service-8"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "9yvHNVu2GGOC6cnP": {
+      "id": "9yvHNVu2GGOC6cnP",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "nOWd_xi0PPay2KF_",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "15. Architecture",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "A0_Vx52qi9ORUbAf": {
+      "id": "A0_Vx52qi9ORUbAf",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "Yun8aOkd5RzutxfM",
+      "type": "element"
+    },
+    "AMIZ3P0h-DGYdt8m": {
+      "id": "AMIZ3P0h-DGYdt8m",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "PUOSmjcr02rR2mWV",
+      "type": "element"
+    },
+    "AhSf-9mon56ot2jw": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "PXkDRp1xwj0qSEA6",
+      "elementId": "_VUhUJf6RNFiWcju",
+      "end": "target",
+      "id": "AhSf-9mon56ot2jw",
+      "type": "binding"
+    },
+    "AvCRuHGjZDYV30Bg": {
+      "id": "AvCRuHGjZDYV30Bg",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "PUOSmjcr02rR2mWV",
+      "type": "element"
+    },
+    "BAbtwVENcD8_6C92": {
+      "id": "BAbtwVENcD8_6C92",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "E-VbUBiMs_5HTliv",
+      "type": "element"
+    },
+    "BIdMcNE08-w6GA4y": {
+      "defId": "basic:rect",
+      "id": "BIdMcNE08-w6GA4y",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "semantic": {
+        "slug": "service-7"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "BL8njM_4ic9KPD92": {
+      "defId": "basic:rect",
+      "id": "BL8njM_4ic9KPD92",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "Yun8aOkd5RzutxfM",
+      "semantic": {
+        "slug": "store-4"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "BQ_EUHfd77Bbc2DE": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "RYAQnkKDj-2PwyYl",
+      "elementId": "ZndG1mgWE717JL8N",
+      "end": "source",
+      "id": "BQ_EUHfd77Bbc2DE",
+      "type": "binding"
+    },
+    "BVUTaiAsDn4H2u7o": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "VXDty7YDzYfkSulv",
+      "elementId": "fsb68q0JtvNk2nVO",
+      "end": "source",
+      "id": "BVUTaiAsDn4H2u7o",
+      "type": "binding"
+    },
+    "B_YlWZUKcjJ8cCnL": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "rdplZyl4cMRmJy26",
+      "elementId": "Weibh11sXGIvqTdS",
+      "end": "source",
+      "id": "B_YlWZUKcjJ8cCnL",
+      "type": "binding"
+    },
+    "BiA92cwnYXRMKRqx": {
+      "id": "BiA92cwnYXRMKRqx",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "LSGcUrB9DyyHroXh",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What context means for the next release: the plan, who owns it and what is left to decide before the review on the 1th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "Bjr4myyiEmVbG8xo": {
+      "id": "Bjr4myyiEmVbG8xo",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "type": "element"
+    },
+    "BzIWU5rBIWODfVmH": {
+      "id": "BzIWU5rBIWODfVmH",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "9. Security",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "CDCEarGOI3tNuL-p": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "XJek6kdJuWkkN49A",
+      "elementId": "oZTv9zqP7m_9h-Dn",
+      "end": "target",
+      "id": "CDCEarGOI3tNuL-p",
+      "type": "binding"
+    },
+    "CZAuF-e61kRb8gtl": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "BAbtwVENcD8_6C92",
+      "elementId": "owdQ89waXuI-KfT2",
+      "end": "source",
+      "id": "CZAuF-e61kRb8gtl",
+      "type": "binding"
+    },
+    "Cd7onC45JISxS9bQ": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "48fcNef74J0tY52q",
+      "elementId": "2Ns69-u2SGAPSsf4",
+      "end": "source",
+      "id": "Cd7onC45JISxS9bQ",
+      "type": "binding"
+    },
+    "CoGqR5WBVThS_R_p": {
+      "id": "CoGqR5WBVThS_R_p",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "type": "element"
+    },
+    "DTEm2wAWuUcg9Oh0": {
+      "id": "DTEm2wAWuUcg9Oh0",
+      "index": "aB",
+      "name": "12. Goals",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "DUuZnRsK_a3Ve3YV": {
+      "id": "DUuZnRsK_a3Ve3YV",
+      "index": "a2",
+      "name": "3. Users",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "DZ8E1aDYUS5DsRt4": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "aSF_lgeKA7gaMncn",
+      "elementId": "XygrCgRbqu9t_N1o",
+      "end": "source",
+      "id": "DZ8E1aDYUS5DsRt4",
+      "type": "binding"
+    },
+    "Db_jwjxfcc0Qf5AW": {
+      "defId": "basic:rect",
+      "id": "Db_jwjxfcc0Qf5AW",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "LSGcUrB9DyyHroXh",
+      "semantic": {
+        "slug": "gateway-1"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "DlJyJRRTzyPKULXj": {
+      "defId": "basic:rect",
+      "id": "DlJyJRRTzyPKULXj",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "nOWd_xi0PPay2KF_",
+      "semantic": {
+        "slug": "store-15"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "E-VbUBiMs_5HTliv": {
+      "id": "E-VbUBiMs_5HTliv",
+      "index": "a4",
+      "name": "5. Architecture",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "ERIlt7WUM_NYVvID": {
+      "id": "ERIlt7WUM_NYVvID",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What users means for the next release: the plan, who owns it and what is left to decide before the review on the 13th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "EwrqZ2IKjll36ZR6": {
+      "id": "EwrqZ2IKjll36ZR6",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "LSGcUrB9DyyHroXh",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "1. Context",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "ExlD1TohwV31miog": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "awDLK2qO7twLC5uk",
+      "elementId": "2m5Tx4Y4bOB1YioI",
+      "end": "source",
+      "id": "ExlD1TohwV31miog",
+      "type": "binding"
+    },
+    "EzNBI8UrFRslQeZr": {
+      "id": "EzNBI8UrFRslQeZr",
+      "index": "aD",
+      "name": "14. Constraints",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "FJiCl3RSijcg7Lyr": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "qqq6L7TkSX4Xkoan",
+      "elementId": "Db_jwjxfcc0Qf5AW",
+      "end": "target",
+      "id": "FJiCl3RSijcg7Lyr",
+      "type": "binding"
+    },
+    "FmRLmsaztdgiRZX-": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "pw6od_NVSr8DS99v",
+      "elementId": "2GJ9yIDGju69JS3d",
+      "end": "source",
+      "id": "FmRLmsaztdgiRZX-",
+      "type": "binding"
+    },
+    "Fs3L22sYoqZI0RcT": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "52sJdDae83-X0M2q",
+      "elementId": "vRTHHO_t54rzEPj4",
+      "end": "source",
+      "id": "Fs3L22sYoqZI0RcT",
+      "type": "binding"
+    },
+    "FsGHEIH7IZYKnz6f": {
+      "id": "FsGHEIH7IZYKnz6f",
+      "index": "aG",
+      "name": "17. Services",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "FwvaPBuWW-bOoJq5": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "BAbtwVENcD8_6C92",
+      "elementId": "9YMCwrErj4ruCn6E",
+      "end": "target",
+      "id": "FwvaPBuWW-bOoJq5",
+      "type": "binding"
+    },
+    "GDZuGlhebrHU8o6U": {
+      "id": "GDZuGlhebrHU8o6U",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What goals means for the next release: the plan, who owns it and what is left to decide before the review on the 2th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "GZ95fPBipKVTEV77": {
+      "defId": "basic:rect",
+      "id": "GZ95fPBipKVTEV77",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "semantic": {
+        "slug": "service-18"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "Gzd5pwa6gPKVINr9": {
+      "defId": "basic:rect",
+      "id": "Gzd5pwa6gPKVINr9",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "Yun8aOkd5RzutxfM",
+      "semantic": {
+        "slug": "service-4"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "H7cJntQRPJO158V2": {
+      "defId": "basic:rect",
+      "id": "H7cJntQRPJO158V2",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "semantic": {
+        "slug": "service-3"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "H7m0sDe-G0-JQ7g1": {
+      "id": "H7m0sDe-G0-JQ7g1",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "type": "element"
+    },
+    "HAvJZH7Zk_1qtMLg": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "xNVzeg94s-gWqizG",
+      "elementId": "0JfrFWPyLIWyf2ht",
+      "end": "source",
+      "id": "HAvJZH7Zk_1qtMLg",
+      "type": "binding"
+    },
+    "HEGyGtJoCLSuY5Dn": {
+      "defId": "basic:rect",
+      "id": "HEGyGtJoCLSuY5Dn",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "EzNBI8UrFRslQeZr",
+      "semantic": {
+        "slug": "store-14"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "HLwGC7yi9m-jn9Nc": {
+      "id": "HLwGC7yi9m-jn9Nc",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What security means for the next release: the plan, who owns it and what is left to decide before the review on the 9th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "HSZbl6Ab4RUE9OgK": {
+      "id": "HSZbl6Ab4RUE9OgK",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "LSGcUrB9DyyHroXh",
+      "type": "element"
+    },
+    "H_XJWzNZJ8d-eWjN": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "48fcNef74J0tY52q",
+      "elementId": "ZIHqCD9FTjCL4lbL",
+      "end": "target",
+      "id": "H_XJWzNZJ8d-eWjN",
+      "type": "binding"
+    },
+    "Ha5rY6Cshnuv1D4b": {
+      "defId": "basic:rect",
+      "id": "Ha5rY6Cshnuv1D4b",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "PUOSmjcr02rR2mWV",
+      "semantic": {
+        "slug": "gateway-8"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "IAMPf0Zo0DCyNGw4": {
+      "defId": "basic:rect",
+      "id": "IAMPf0Zo0DCyNGw4",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "semantic": {
+        "slug": "gateway-13"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "IJakC9PGScnp1n8i": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "4HzfXXfBFYAK5Qng",
+      "elementId": "vRTHHO_t54rzEPj4",
+      "end": "target",
+      "id": "IJakC9PGScnp1n8i",
+      "type": "binding"
+    },
+    "IgYg8kBewY05gbP2": {
+      "id": "IgYg8kBewY05gbP2",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "type": "element"
+    },
+    "JDmI07rQ6FYKC52S": {
+      "defId": "basic:rect",
+      "id": "JDmI07rQ6FYKC52S",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "semantic": {
+        "slug": "client-7"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "JLOqxG56O3JHPzAw": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "3pMyYkZFkHYlTdF5",
+      "elementId": "8RjK_dxBabRlc7aM",
+      "end": "source",
+      "id": "JLOqxG56O3JHPzAw",
+      "type": "binding"
+    },
+    "J_jYsKdiWE3NK7Ay": {
+      "defId": "basic:rect",
+      "id": "J_jYsKdiWE3NK7Ay",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "semantic": {
+        "slug": "gateway-11"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "Jak-baqoQt7m126J": {
+      "id": "Jak-baqoQt7m126J",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "E-VbUBiMs_5HTliv",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "5. Architecture",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "JfT9-srb3uyiYa1R": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "RkczavTJL5hKYpV5",
+      "elementId": "owdQ89waXuI-KfT2",
+      "end": "target",
+      "id": "JfT9-srb3uyiYa1R",
+      "type": "binding"
+    },
+    "K493BZH9W9LBErnV": {
+      "id": "K493BZH9W9LBErnV",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "nOWd_xi0PPay2KF_",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What architecture means for the next release: the plan, who owns it and what is left to decide before the review on the 15th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "Kp9rB43kT3-HcEmY": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "1cO9ubWiZbSdPU8T",
+      "elementId": "WXCm5XjyU0iih8zX",
+      "end": "target",
+      "id": "Kp9rB43kT3-HcEmY",
+      "type": "binding"
+    },
+    "LOmdxBSJz1Gfx14s": {
+      "id": "LOmdxBSJz1Gfx14s",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "7oDPgFGzqgib2dOR",
+      "type": "element"
+    },
+    "LOtv0gbXleJPYWRJ": {
+      "id": "LOtv0gbXleJPYWRJ",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "type": "element"
+    },
+    "LSGcUrB9DyyHroXh": {
+      "id": "LSGcUrB9DyyHroXh",
+      "index": "a0",
+      "name": "1. Context",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "LZYQOaM6bsobFV6r": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "bifw1Lf4wDkMQ2J_",
+      "elementId": "io6GJrvfcI1LwHoF",
+      "end": "source",
+      "id": "LZYQOaM6bsobFV6r",
+      "type": "binding"
+    },
+    "Lb9yqyVWB12lTijn": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "7k5-b4_YtcXlrnHS",
+      "elementId": "IAMPf0Zo0DCyNGw4",
+      "end": "source",
+      "id": "Lb9yqyVWB12lTijn",
+      "type": "binding"
+    },
+    "LhYh0LsndmFKvhrT": {
+      "id": "LhYh0LsndmFKvhrT",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "5S35CMApWe805seD",
+      "type": "element"
+    },
+    "LnkXeRZOIkHsJ2xp": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "qqq6L7TkSX4Xkoan",
+      "elementId": "0lKl9Eu3hJtpdBe5",
+      "end": "source",
+      "id": "LnkXeRZOIkHsJ2xp",
+      "type": "binding"
+    },
+    "LzFBWG3bkUHSaCSd": {
+      "id": "LzFBWG3bkUHSaCSd",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "type": "element"
+    },
+    "MLw4Cmho_WwxAO8a": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "OVaNaOEOEij0HaxS",
+      "elementId": "BL8njM_4ic9KPD92",
+      "end": "target",
+      "id": "MLw4Cmho_WwxAO8a",
+      "type": "binding"
+    },
+    "N0ELZJjyFZidTpeu": {
+      "id": "N0ELZJjyFZidTpeu",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "mNhzDSMt2mWC2gar",
+      "type": "element"
+    },
+    "NGExboz6uLkWmAX_": {
+      "defId": "basic:rect",
+      "id": "NGExboz6uLkWmAX_",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "5S35CMApWe805seD",
+      "semantic": {
+        "slug": "gateway-16"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "NPmPbpXHC_9t9SEn": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "seMHP1oSjjRTIM6e",
+      "elementId": "zYVVOnnNrQiMUpb0",
+      "end": "target",
+      "id": "NPmPbpXHC_9t9SEn",
+      "type": "binding"
+    },
+    "NVnXB3IQIfl3rmoD": {
+      "id": "NVnXB3IQIfl3rmoD",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "f-gozYW1WkHyN61L",
+      "type": "element"
+    },
+    "NubXT5wbnI5vlgQI": {
+      "defId": "basic:rect",
+      "id": "NubXT5wbnI5vlgQI",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "E-VbUBiMs_5HTliv",
+      "semantic": {
+        "slug": "gateway-5"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "OHZd9wGdjTVFuCzd": {
+      "id": "OHZd9wGdjTVFuCzd",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "type": "element"
+    },
+    "OVaNaOEOEij0HaxS": {
+      "id": "OVaNaOEOEij0HaxS",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "Yun8aOkd5RzutxfM",
+      "type": "element"
+    },
+    "OWnpHd6LTS0HoK5N": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "pw6od_NVSr8DS99v",
+      "elementId": "gE8wKdkXHo0IlCNb",
+      "end": "target",
+      "id": "OWnpHd6LTS0HoK5N",
+      "type": "binding"
+    },
+    "OgdvbnVjRI8NMyok": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "kPW7dZimG_48lBYa",
+      "elementId": "_VUhUJf6RNFiWcju",
+      "end": "source",
+      "id": "OgdvbnVjRI8NMyok",
+      "type": "binding"
+    },
+    "PE2MJIrxgV4Fm7XO": {
+      "id": "PE2MJIrxgV4Fm7XO",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What rollout means for the next release: the plan, who owns it and what is left to decide before the review on the 10th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "PFwlaDjompEfDwpv": {
+      "id": "PFwlaDjompEfDwpv",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "5S35CMApWe805seD",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What data flow means for the next release: the plan, who owns it and what is left to decide before the review on the 16th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "PPVaqdl3UzpJvcj8": {
+      "id": "PPVaqdl3UzpJvcj8",
+      "index": "a8",
+      "name": "9. Security",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "PUOSmjcr02rR2mWV": {
+      "id": "PUOSmjcr02rR2mWV",
+      "index": "a7",
+      "name": "8. Storage",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "PXkDRp1xwj0qSEA6": {
+      "id": "PXkDRp1xwj0qSEA6",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "type": "element"
+    },
+    "PXtYvrokbbbdu2Gj": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "W7tj14A2XExLjVRF",
+      "elementId": "U2wj3ldHV6_bzkSS",
+      "end": "source",
+      "id": "PXtYvrokbbbdu2Gj",
+      "type": "binding"
+    },
+    "PaP5ArT-zAHpe4Qz": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "6eyxwLDIxFFc6CBn",
+      "elementId": "zP6Bc6a2lBi0lRml",
+      "end": "source",
+      "id": "PaP5ArT-zAHpe4Qz",
+      "type": "binding"
+    },
+    "PkzCwJlwg9gmUBRZ": {
+      "id": "PkzCwJlwg9gmUBRZ",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "type": "element"
+    },
+    "PpM7prLK6UnJeij5": {
+      "id": "PpM7prLK6UnJeij5",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "type": "element"
+    },
+    "PvgQBkaUVU_WA6Zb": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "3pMyYkZFkHYlTdF5",
+      "elementId": "2Ns69-u2SGAPSsf4",
+      "end": "target",
+      "id": "PvgQBkaUVU_WA6Zb",
+      "type": "binding"
+    },
+    "Q82HYh9k_o_WvquU": {
+      "defId": "basic:rect",
+      "id": "Q82HYh9k_o_WvquU",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "nOWd_xi0PPay2KF_",
+      "semantic": {
+        "slug": "client-15"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "QvEIhO0fwfJ2beiE": {
+      "id": "QvEIhO0fwfJ2beiE",
+      "index": "aH",
+      "name": "18. Storage",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "R0yuXj7EfH4gWAz6": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "OHZd9wGdjTVFuCzd",
+      "elementId": "6F9voVNQwhJ5eByy",
+      "end": "target",
+      "id": "R0yuXj7EfH4gWAz6",
+      "type": "binding"
+    },
+    "R3kVy3pzs3x0lzhe": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "aSF_lgeKA7gaMncn",
+      "elementId": "TppVrcn66Nl7ULvt",
+      "end": "target",
+      "id": "R3kVy3pzs3x0lzhe",
+      "type": "binding"
+    },
+    "RVugUxvOm_TRN71Z": {
+      "defId": "basic:rect",
+      "id": "RVugUxvOm_TRN71Z",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "E-VbUBiMs_5HTliv",
+      "semantic": {
+        "slug": "client-5"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "RYA8ZzlWZHhU7pNp": {
+      "defId": "basic:rect",
+      "id": "RYA8ZzlWZHhU7pNp",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "semantic": {
+        "slug": "client-11"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "RYAQnkKDj-2PwyYl": {
+      "id": "RYAQnkKDj-2PwyYl",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "LSGcUrB9DyyHroXh",
+      "type": "element"
+    },
+    "RgTFAUrUcxScB3QR": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "AMIZ3P0h-DGYdt8m",
+      "elementId": "xAELMCAY3xDtRxF1",
+      "end": "source",
+      "id": "RgTFAUrUcxScB3QR",
+      "type": "binding"
+    },
+    "RkczavTJL5hKYpV5": {
+      "id": "RkczavTJL5hKYpV5",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "E-VbUBiMs_5HTliv",
+      "type": "element"
+    },
+    "Scwp6DIxV_kReX5u": {
+      "defId": "basic:rect",
+      "id": "Scwp6DIxV_kReX5u",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "5S35CMApWe805seD",
+      "semantic": {
+        "slug": "service-16"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "SdM53XeOBKD0mA2p": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "bifw1Lf4wDkMQ2J_",
+      "elementId": "8RjK_dxBabRlc7aM",
+      "end": "target",
+      "id": "SdM53XeOBKD0mA2p",
+      "type": "binding"
+    },
+    "TGwU01EnAsurgGZz": {
+      "id": "TGwU01EnAsurgGZz",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "EzNBI8UrFRslQeZr",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "14. Constraints",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "TQeG-TF3fiLIxxe8": {
+      "id": "TQeG-TF3fiLIxxe8",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "f-gozYW1WkHyN61L",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "6. Data flow",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "TppVrcn66Nl7ULvt": {
+      "defId": "basic:rect",
+      "id": "TppVrcn66Nl7ULvt",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "semantic": {
+        "slug": "store-2"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "TzkotXTYcDjEDGgD": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "6eyxwLDIxFFc6CBn",
+      "elementId": "dR8guSEDCPItJsxK",
+      "end": "target",
+      "id": "TzkotXTYcDjEDGgD",
+      "type": "binding"
+    },
+    "U2wj3ldHV6_bzkSS": {
+      "defId": "basic:rect",
+      "id": "U2wj3ldHV6_bzkSS",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "mNhzDSMt2mWC2gar",
+      "semantic": {
+        "slug": "client-20"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "U6DJSusNg8U1tf9E": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "3CTw8ofl6C0SQ8zS",
+      "elementId": "NubXT5wbnI5vlgQI",
+      "end": "target",
+      "id": "U6DJSusNg8U1tf9E",
+      "type": "binding"
+    },
+    "ULSSluQV6Axq8i1w": {
+      "defId": "basic:rect",
+      "id": "ULSSluQV6Axq8i1w",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "f-gozYW1WkHyN61L",
+      "semantic": {
+        "slug": "gateway-6"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "UfXqEypgoyRZNF70": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "Bjr4myyiEmVbG8xo",
+      "elementId": "hJj_hqMT8iyqxe4j",
+      "end": "target",
+      "id": "UfXqEypgoyRZNF70",
+      "type": "binding"
+    },
+    "Un-DrERd1e0Z6b2-": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "2LkDHwNiX88Dl6WZ",
+      "elementId": "J_jYsKdiWE3NK7Ay",
+      "end": "target",
+      "id": "Un-DrERd1e0Z6b2-",
+      "type": "binding"
+    },
+    "V6UYfGdHckyEm5YK": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "PXkDRp1xwj0qSEA6",
+      "elementId": "qJJMdaxih1KD9f6w",
+      "end": "source",
+      "id": "V6UYfGdHckyEm5YK",
+      "type": "binding"
+    },
+    "VApSV_I5KanCYBlc": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "4HzfXXfBFYAK5Qng",
+      "elementId": "ZXZeJLJKRJVNrkEt",
+      "end": "source",
+      "id": "VApSV_I5KanCYBlc",
+      "type": "binding"
+    },
+    "VNkqK9JT4RnMhaXD": {
+      "id": "VNkqK9JT4RnMhaXD",
+      "index": "a1",
+      "name": "2. Goals",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "VR2Z-8NsZvZCk9kD": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "bKc-Wo7r-sUSGBnx",
+      "elementId": "jag6Bt_9mWY1uiGk",
+      "end": "source",
+      "id": "VR2Z-8NsZvZCk9kD",
+      "type": "binding"
+    },
+    "VTZxRX7hZYHvkkdI": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "67aYT6hTR8WSe7FN",
+      "elementId": "-cltUcxChjQmFeD8",
+      "end": "source",
+      "id": "VTZxRX7hZYHvkkdI",
+      "type": "binding"
+    },
+    "VVYTVkYJvLftoWDt": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "8bM6C2sK-mOdlj25",
+      "elementId": "8aJudzbWwob5jUMU",
+      "end": "source",
+      "id": "VVYTVkYJvLftoWDt",
+      "type": "binding"
+    },
+    "VXDty7YDzYfkSulv": {
+      "id": "VXDty7YDzYfkSulv",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "7oDPgFGzqgib2dOR",
+      "type": "element"
+    },
+    "Vhe15_Lh2leXmDU2": {
+      "id": "Vhe15_Lh2leXmDU2",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "10. Rollout",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "W7tj14A2XExLjVRF": {
+      "id": "W7tj14A2XExLjVRF",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "mNhzDSMt2mWC2gar",
+      "type": "element"
+    },
+    "W9ZxC9m25scEdcso": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "PkzCwJlwg9gmUBRZ",
+      "elementId": "3Vrg8aV7F2b0nrdn",
+      "end": "target",
+      "id": "W9ZxC9m25scEdcso",
+      "type": "binding"
+    },
+    "WBlRpIxtrefrcFPP": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "52sJdDae83-X0M2q",
+      "elementId": "GZ95fPBipKVTEV77",
+      "end": "target",
+      "id": "WBlRpIxtrefrcFPP",
+      "type": "binding"
+    },
+    "WUMsv3dWXtgu8ve-": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "ytxRP6XxPxnFILmh",
+      "elementId": "30RfEAHDn2Jl6bDf",
+      "end": "source",
+      "id": "WUMsv3dWXtgu8ve-",
+      "type": "binding"
+    },
+    "WXCm5XjyU0iih8zX": {
+      "defId": "basic:rect",
+      "id": "WXCm5XjyU0iih8zX",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "f-gozYW1WkHyN61L",
+      "semantic": {
+        "slug": "service-6"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "Weibh11sXGIvqTdS": {
+      "defId": "basic:rect",
+      "id": "Weibh11sXGIvqTdS",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "EzNBI8UrFRslQeZr",
+      "semantic": {
+        "slug": "client-14"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "XJek6kdJuWkkN49A": {
+      "id": "XJek6kdJuWkkN49A",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "mNhzDSMt2mWC2gar",
+      "type": "element"
+    },
+    "XygrCgRbqu9t_N1o": {
+      "defId": "basic:rect",
+      "id": "XygrCgRbqu9t_N1o",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "semantic": {
+        "slug": "service-2"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "Yun8aOkd5RzutxfM": {
+      "id": "Yun8aOkd5RzutxfM",
+      "index": "a3",
+      "name": "4. Constraints",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "ZIHqCD9FTjCL4lbL": {
+      "defId": "basic:rect",
+      "id": "ZIHqCD9FTjCL4lbL",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "semantic": {
+        "slug": "store-17"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "ZXZeJLJKRJVNrkEt": {
+      "defId": "basic:rect",
+      "id": "ZXZeJLJKRJVNrkEt",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "semantic": {
+        "slug": "client-18"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "Z_Hdqlqg9Z6Mf9qy": {
+      "defId": "basic:rect",
+      "id": "Z_Hdqlqg9Z6Mf9qy",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "semantic": {
+        "slug": "client-2"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "ZfpeqdfouMXq9Vzb": {
+      "defId": "basic:rect",
+      "id": "ZfpeqdfouMXq9Vzb",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "5S35CMApWe805seD",
+      "semantic": {
+        "slug": "store-16"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "ZndG1mgWE717JL8N": {
+      "defId": "basic:rect",
+      "id": "ZndG1mgWE717JL8N",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "LSGcUrB9DyyHroXh",
+      "semantic": {
+        "slug": "service-1"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "ZqIzAX15hVJfnWiV": {
+      "defId": "basic:rect",
+      "id": "ZqIzAX15hVJfnWiV",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "7oDPgFGzqgib2dOR",
+      "semantic": {
+        "slug": "gateway-19"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "_GDpTHQE3riMCDfL": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "W7tj14A2XExLjVRF",
+      "elementId": "x3NU6lho1xMEGXaS",
+      "end": "target",
+      "id": "_GDpTHQE3riMCDfL",
+      "type": "binding"
+    },
+    "_MQC-1AxFbsDTpqe": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "ytxRP6XxPxnFILmh",
+      "elementId": "IAMPf0Zo0DCyNGw4",
+      "end": "target",
+      "id": "_MQC-1AxFbsDTpqe",
+      "type": "binding"
+    },
+    "_VUhUJf6RNFiWcju": {
+      "defId": "basic:rect",
+      "id": "_VUhUJf6RNFiWcju",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "semantic": {
+        "slug": "gateway-3"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "_eLL0zv35csBrFT4": {
+      "id": "_eLL0zv35csBrFT4",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "mNhzDSMt2mWC2gar",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What rollout means for the next release: the plan, who owns it and what is left to decide before the review on the 20th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "_gkIoHq5uPm7Icv9": {
+      "defId": "basic:rect",
+      "id": "_gkIoHq5uPm7Icv9",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "semantic": {
+        "slug": "service-13"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "aBB3mdau2qa0Om7d": {
+      "id": "aBB3mdau2qa0Om7d",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "type": "element"
+    },
+    "aL6P3ERUOsvZEEjs": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "5SXToj6WMihX5TmM",
+      "elementId": "0hZHiRw6ri_mIT2F",
+      "end": "target",
+      "id": "aL6P3ERUOsvZEEjs",
+      "type": "binding"
+    },
+    "aSF_lgeKA7gaMncn": {
+      "id": "aSF_lgeKA7gaMncn",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "type": "element"
+    },
+    "aXSpw3kH68aD5mDA": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "aBB3mdau2qa0Om7d",
+      "elementId": "3Vrg8aV7F2b0nrdn",
+      "end": "source",
+      "id": "aXSpw3kH68aD5mDA",
+      "type": "binding"
+    },
+    "arV6pYxLcaeddrtL": {
+      "id": "arV6pYxLcaeddrtL",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What services means for the next release: the plan, who owns it and what is left to decide before the review on the 17th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "awDLK2qO7twLC5uk": {
+      "id": "awDLK2qO7twLC5uk",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "5S35CMApWe805seD",
+      "type": "element"
+    },
+    "bCtZk9wiMdFPh8D9": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "g277eeTxQS8M-hZn",
+      "elementId": "9iLZYmgArOQjAO7L",
+      "end": "target",
+      "id": "bCtZk9wiMdFPh8D9",
+      "type": "binding"
+    },
+    "bEfAT6dQSMkliToS": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LhYh0LsndmFKvhrT",
+      "elementId": "NGExboz6uLkWmAX_",
+      "end": "source",
+      "id": "bEfAT6dQSMkliToS",
+      "type": "binding"
+    },
+    "bKc-Wo7r-sUSGBnx": {
+      "id": "bKc-Wo7r-sUSGBnx",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "f-gozYW1WkHyN61L",
+      "type": "element"
+    },
+    "beHiqqDiHtOyqS0I": {
+      "id": "beHiqqDiHtOyqS0I",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "nOWd_xi0PPay2KF_",
+      "type": "element"
+    },
+    "bifw1Lf4wDkMQ2J_": {
+      "id": "bifw1Lf4wDkMQ2J_",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "type": "element"
+    },
+    "bmK_Yack2AJ2bS6P": {
+      "id": "bmK_Yack2AJ2bS6P",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "E-VbUBiMs_5HTliv",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What architecture means for the next release: the plan, who owns it and what is left to decide before the review on the 5th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "cAjEsmpt4jYXLlPm": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "h00ZQllVHXa9m8xc",
+      "elementId": "ZqIzAX15hVJfnWiV",
+      "end": "source",
+      "id": "cAjEsmpt4jYXLlPm",
+      "type": "binding"
+    },
+    "cwaxKG4GwO99GGa8": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "AvCRuHGjZDYV30Bg",
+      "elementId": "iQQqliBSrt5otGqw",
+      "end": "target",
+      "id": "cwaxKG4GwO99GGa8",
+      "type": "binding"
+    },
+    "cytP2S0Sa5NeEa-B": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "N0ELZJjyFZidTpeu",
+      "elementId": "fJYpUrV5kxnTUMa0",
+      "end": "target",
+      "id": "cytP2S0Sa5NeEa-B",
+      "type": "binding"
+    },
+    "dFGxzmCWfHa1XfL0": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "AvCRuHGjZDYV30Bg",
+      "elementId": "9iLZYmgArOQjAO7L",
+      "end": "source",
+      "id": "dFGxzmCWfHa1XfL0",
+      "type": "binding"
+    },
+    "dR8guSEDCPItJsxK": {
+      "defId": "basic:rect",
+      "id": "dR8guSEDCPItJsxK",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "semantic": {
+        "slug": "store-12"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "dejVxg0HXcBYPBua": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "A0_Vx52qi9ORUbAf",
+      "elementId": "1ruIsAD72K3sPXGG",
+      "end": "source",
+      "id": "dejVxg0HXcBYPBua",
+      "type": "binding"
+    },
+    "dibpBRyVFHDTkV1e": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "H7m0sDe-G0-JQ7g1",
+      "elementId": "zP6Bc6a2lBi0lRml",
+      "end": "target",
+      "id": "dibpBRyVFHDTkV1e",
+      "type": "binding"
+    },
+    "eNc0K0f9nqQ36XnC": {
+      "id": "eNc0K0f9nqQ36XnC",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "12. Goals",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "ejsL3dpIsZPBEtLN": {
+      "id": "ejsL3dpIsZPBEtLN",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "PUOSmjcr02rR2mWV",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What storage means for the next release: the plan, who owns it and what is left to decide before the review on the 8th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "f-gozYW1WkHyN61L": {
+      "id": "f-gozYW1WkHyN61L",
+      "index": "a5",
+      "name": "6. Data flow",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "f5LqCNHwM7Q3gRfc": {
+      "id": "f5LqCNHwM7Q3gRfc",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What goals means for the next release: the plan, who owns it and what is left to decide before the review on the 12th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "fA-mW-edSDIsNMHP": {
+      "id": "fA-mW-edSDIsNMHP",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What context means for the next release: the plan, who owns it and what is left to decide before the review on the 11th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "fJYpUrV5kxnTUMa0": {
+      "defId": "basic:rect",
+      "id": "fJYpUrV5kxnTUMa0",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "mNhzDSMt2mWC2gar",
+      "semantic": {
+        "slug": "service-20"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "fQ1zZJrvwSEOuOVi": {
+      "id": "fQ1zZJrvwSEOuOVi",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "mNhzDSMt2mWC2gar",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "20. Rollout",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "fQ9TbRLeyvRdUQFQ": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "g277eeTxQS8M-hZn",
+      "elementId": "Ha5rY6Cshnuv1D4b",
+      "end": "source",
+      "id": "fQ9TbRLeyvRdUQFQ",
+      "type": "binding"
+    },
+    "fdyqAJHXVSsamHPB": {
+      "defId": "basic:rect",
+      "id": "fdyqAJHXVSsamHPB",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "semantic": {
+        "slug": "store-11"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "ffYLRzd23ym5lFXs": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "rPpTwYECRAAt0cbA",
+      "elementId": "BIdMcNE08-w6GA4y",
+      "end": "source",
+      "id": "ffYLRzd23ym5lFXs",
+      "type": "binding"
+    },
+    "fsb68q0JtvNk2nVO": {
+      "defId": "basic:rect",
+      "id": "fsb68q0JtvNk2nVO",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "7oDPgFGzqgib2dOR",
+      "semantic": {
+        "slug": "service-19"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "fwkH40gOa6ArfsWw": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "AMIZ3P0h-DGYdt8m",
+      "elementId": "Ha5rY6Cshnuv1D4b",
+      "end": "target",
+      "id": "fwkH40gOa6ArfsWw",
+      "type": "binding"
+    },
+    "g277eeTxQS8M-hZn": {
+      "id": "g277eeTxQS8M-hZn",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "PUOSmjcr02rR2mWV",
+      "type": "element"
+    },
+    "gE8wKdkXHo0IlCNb": {
+      "defId": "basic:rect",
+      "id": "gE8wKdkXHo0IlCNb",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "semantic": {
+        "slug": "gateway-10"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "gn0HcONmByyfOaMF": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "awDLK2qO7twLC5uk",
+      "elementId": "NGExboz6uLkWmAX_",
+      "end": "target",
+      "id": "gn0HcONmByyfOaMF",
+      "type": "binding"
+    },
+    "gx7kNYraGuYdqtD0": {
+      "defId": "basic:rect",
+      "id": "gx7kNYraGuYdqtD0",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "semantic": {
+        "slug": "store-13"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "h00ZQllVHXa9m8xc": {
+      "id": "h00ZQllVHXa9m8xc",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "7oDPgFGzqgib2dOR",
+      "type": "element"
+    },
+    "hF_mR1Q_npdAFWRT": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "beHiqqDiHtOyqS0I",
+      "elementId": "06dvm5BE5DfBnqBs",
+      "end": "source",
+      "id": "hF_mR1Q_npdAFWRT",
+      "type": "binding"
+    },
+    "hJj_hqMT8iyqxe4j": {
+      "defId": "basic:rect",
+      "id": "hJj_hqMT8iyqxe4j",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "qVAWtk5mEpBbVDEL",
+      "semantic": {
+        "slug": "service-11"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "hNS9m-H7VeEJHbc0": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "z5BvyYwiac_p0ACj",
+      "elementId": "p8oSpe1cLguEpx8j",
+      "end": "target",
+      "id": "hNS9m-H7VeEJHbc0",
+      "type": "binding"
+    },
+    "haNzkQ7p38JBvpvg": {
+      "defId": "basic:rect",
+      "id": "haNzkQ7p38JBvpvg",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "semantic": {
+        "slug": "store-9"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "hnF7_CLqqMUM7hAc": {
+      "id": "hnF7_CLqqMUM7hAc",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "3. Users",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "hosyFt1aqBui7Me3": {
+      "id": "hosyFt1aqBui7Me3",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "nOWd_xi0PPay2KF_",
+      "type": "element"
+    },
+    "hsxEGHO7fjvjAiCg": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "kPW7dZimG_48lBYa",
+      "elementId": "H7cJntQRPJO158V2",
+      "end": "target",
+      "id": "hsxEGHO7fjvjAiCg",
+      "type": "binding"
+    },
+    "hx8vCxZhQpA0xjgC": {
+      "id": "hx8vCxZhQpA0xjgC",
+      "index": "aC",
+      "name": "13. Users",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "i1khzm8bbMzWH7-n": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "8RTbqwJDQVkgiPSM",
+      "elementId": "-cltUcxChjQmFeD8",
+      "end": "target",
+      "id": "i1khzm8bbMzWH7-n",
+      "type": "binding"
+    },
+    "iQQqliBSrt5otGqw": {
+      "defId": "basic:rect",
+      "id": "iQQqliBSrt5otGqw",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "PUOSmjcr02rR2mWV",
+      "semantic": {
+        "slug": "store-8"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "iZH9XqdjsFcGsQ1z": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "yt8-b06vVp8vsQco",
+      "elementId": "gx7kNYraGuYdqtD0",
+      "end": "target",
+      "id": "iZH9XqdjsFcGsQ1z",
+      "type": "binding"
+    },
+    "io6GJrvfcI1LwHoF": {
+      "defId": "basic:rect",
+      "id": "io6GJrvfcI1LwHoF",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "semantic": {
+        "slug": "client-17"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "jIK4p2e5_alcRrki": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "2-j1ATkYpHfzL8CS",
+      "elementId": "fdyqAJHXVSsamHPB",
+      "end": "target",
+      "id": "jIK4p2e5_alcRrki",
+      "type": "binding"
+    },
+    "jKndoUpSbSDgf8j-": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "RkczavTJL5hKYpV5",
+      "elementId": "NubXT5wbnI5vlgQI",
+      "end": "source",
+      "id": "jKndoUpSbSDgf8j-",
+      "type": "binding"
+    },
+    "jag6Bt_9mWY1uiGk": {
+      "defId": "basic:rect",
+      "id": "jag6Bt_9mWY1uiGk",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "f-gozYW1WkHyN61L",
+      "semantic": {
+        "slug": "client-6"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "kMjrhWgiAo9w9-r9": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LOmdxBSJz1Gfx14s",
+      "elementId": "ZqIzAX15hVJfnWiV",
+      "end": "target",
+      "id": "kMjrhWgiAo9w9-r9",
+      "type": "binding"
+    },
+    "kPW7dZimG_48lBYa": {
+      "id": "kPW7dZimG_48lBYa",
+      "index": "a7",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "type": "element"
+    },
+    "kf0XK35zsyNxpJG3": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "8bM6C2sK-mOdlj25",
+      "elementId": "8JyayGQGlj0gQkIL",
+      "end": "target",
+      "id": "kf0XK35zsyNxpJG3",
+      "type": "binding"
+    },
+    "kvqKb2KZ-h8rbgMc": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "2-j1ATkYpHfzL8CS",
+      "elementId": "hJj_hqMT8iyqxe4j",
+      "end": "source",
+      "id": "kvqKb2KZ-h8rbgMc",
+      "type": "binding"
+    },
+    "lDf1nSb1KFUghOIQ": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "bKc-Wo7r-sUSGBnx",
+      "elementId": "ULSSluQV6Axq8i1w",
+      "end": "target",
+      "id": "lDf1nSb1KFUghOIQ",
+      "type": "binding"
+    },
+    "l_mYTimx651ds29i": {
+      "id": "l_mYTimx651ds29i",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "PUOSmjcr02rR2mWV",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "8. Storage",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "lmDABYaRtOkabbB_": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "xNVzeg94s-gWqizG",
+      "elementId": "1ruIsAD72K3sPXGG",
+      "end": "target",
+      "id": "lmDABYaRtOkabbB_",
+      "type": "binding"
+    },
+    "mDMVOaf_U7LznDXS": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "3CTw8ofl6C0SQ8zS",
+      "elementId": "RVugUxvOm_TRN71Z",
+      "end": "source",
+      "id": "mDMVOaf_U7LznDXS",
+      "type": "binding"
+    },
+    "mNhzDSMt2mWC2gar": {
+      "id": "mNhzDSMt2mWC2gar",
+      "index": "aJ",
+      "name": "20. Rollout",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "mOcEbykSjGc48L2u": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "Bjr4myyiEmVbG8xo",
+      "elementId": "J_jYsKdiWE3NK7Ay",
+      "end": "source",
+      "id": "mOcEbykSjGc48L2u",
+      "type": "binding"
+    },
+    "mTrjOW0qRbWMDedz": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "beHiqqDiHtOyqS0I",
+      "elementId": "DlJyJRRTzyPKULXj",
+      "end": "target",
+      "id": "mTrjOW0qRbWMDedz",
+      "type": "binding"
+    },
+    "mwCyiCfKwyBY8dnG": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "67aYT6hTR8WSe7FN",
+      "elementId": "HEGyGtJoCLSuY5Dn",
+      "end": "target",
+      "id": "mwCyiCfKwyBY8dnG",
+      "type": "binding"
+    },
+    "n62mBcz_ob6LcIax": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "PkzCwJlwg9gmUBRZ",
+      "elementId": "Z_Hdqlqg9Z6Mf9qy",
+      "end": "source",
+      "id": "n62mBcz_ob6LcIax",
+      "type": "binding"
+    },
+    "n8Ulv6pcTSNISCv6": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "IgYg8kBewY05gbP2",
+      "elementId": "uHmYgXS4hMr0MzzS",
+      "end": "target",
+      "id": "n8Ulv6pcTSNISCv6",
+      "type": "binding"
+    },
+    "nOWd_xi0PPay2KF_": {
+      "id": "nOWd_xi0PPay2KF_",
+      "index": "aE",
+      "name": "15. Architecture",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "nhf4RUxFbIbG55z0": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "H7m0sDe-G0-JQ7g1",
+      "elementId": "p8oSpe1cLguEpx8j",
+      "end": "source",
+      "id": "nhf4RUxFbIbG55z0",
+      "type": "binding"
+    },
+    "oEoTBj177HiDnXIe": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LzFBWG3bkUHSaCSd",
+      "elementId": "haNzkQ7p38JBvpvg",
+      "end": "target",
+      "id": "oEoTBj177HiDnXIe",
+      "type": "binding"
+    },
+    "oZTv9zqP7m_9h-Dn": {
+      "defId": "basic:rect",
+      "id": "oZTv9zqP7m_9h-Dn",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "mNhzDSMt2mWC2gar",
+      "semantic": {
+        "slug": "store-20"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "oiu_4XvWz2erYrnT": {
+      "id": "oiu_4XvWz2erYrnT",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "18. Storage",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "owdQ89waXuI-KfT2": {
+      "defId": "basic:rect",
+      "id": "owdQ89waXuI-KfT2",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "E-VbUBiMs_5HTliv",
+      "semantic": {
+        "slug": "service-5"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "p0VMx34hu9NigEES": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LzFBWG3bkUHSaCSd",
+      "elementId": "uHmYgXS4hMr0MzzS",
+      "end": "source",
+      "id": "p0VMx34hu9NigEES",
+      "type": "binding"
+    },
+    "p8oSpe1cLguEpx8j": {
+      "defId": "basic:rect",
+      "id": "p8oSpe1cLguEpx8j",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "semantic": {
+        "slug": "gateway-12"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "pTn4NIQJRzqAKWAl": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "uDaqteG7HIeX9oAR",
+      "elementId": "Scwp6DIxV_kReX5u",
+      "end": "source",
+      "id": "pTn4NIQJRzqAKWAl",
+      "type": "binding"
+    },
+    "pw6od_NVSr8DS99v": {
+      "id": "pw6od_NVSr8DS99v",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "type": "element"
+    },
+    "pz717TbrPvkhrVH2": {
+      "id": "pz717TbrPvkhrVH2",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "EzNBI8UrFRslQeZr",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What constraints means for the next release: the plan, who owns it and what is left to decide before the review on the 14th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "qJJMdaxih1KD9f6w": {
+      "defId": "basic:rect",
+      "id": "qJJMdaxih1KD9f6w",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "semantic": {
+        "slug": "client-3"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "qVAWtk5mEpBbVDEL": {
+      "id": "qVAWtk5mEpBbVDEL",
+      "index": "aA",
+      "name": "11. Context",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "qevKHN_35CRLPNTL": {
+      "defId": "basic:rect",
+      "id": "qevKHN_35CRLPNTL",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "1KTQ44Qw9tLLrTGd",
+      "semantic": {
+        "slug": "service-10"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "qqq6L7TkSX4Xkoan": {
+      "id": "qqq6L7TkSX4Xkoan",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "LSGcUrB9DyyHroXh",
+      "type": "element"
+    },
+    "qy1ByD2DRVlVL1SD": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "uDaqteG7HIeX9oAR",
+      "elementId": "ZfpeqdfouMXq9Vzb",
+      "end": "target",
+      "id": "qy1ByD2DRVlVL1SD",
+      "type": "binding"
+    },
+    "rPpTwYECRAAt0cbA": {
+      "id": "rPpTwYECRAAt0cbA",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "type": "element"
+    },
+    "rdplZyl4cMRmJy26": {
+      "id": "rdplZyl4cMRmJy26",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "EzNBI8UrFRslQeZr",
+      "type": "element"
+    },
+    "sOhWqqIKK8EmsvSQ": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "yt8-b06vVp8vsQco",
+      "elementId": "_gkIoHq5uPm7Icv9",
+      "end": "source",
+      "id": "sOhWqqIKK8EmsvSQ",
+      "type": "binding"
+    },
+    "sPMqU3kKgdkXgfIC": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "hosyFt1aqBui7Me3",
+      "elementId": "06dvm5BE5DfBnqBs",
+      "end": "target",
+      "id": "sPMqU3kKgdkXgfIC",
+      "type": "binding"
+    },
+    "sYqrfwYO3ghipfV3": {
+      "defId": "basic:rect",
+      "id": "sYqrfwYO3ghipfV3",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "f-gozYW1WkHyN61L",
+      "semantic": {
+        "slug": "store-6"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "sbJ7lXEaOtAdTJqt": {
+      "id": "sbJ7lXEaOtAdTJqt",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "7. Services",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "seMHP1oSjjRTIM6e": {
+      "id": "seMHP1oSjjRTIM6e",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "type": "element"
+    },
+    "sg7cI-_Toy7i0v02": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "5SXToj6WMihX5TmM",
+      "elementId": "qevKHN_35CRLPNTL",
+      "end": "source",
+      "id": "sg7cI-_Toy7i0v02",
+      "type": "binding"
+    },
+    "srMM1Ke3kN3Dqr2I": {
+      "defId": "basic:rect",
+      "id": "srMM1Ke3kN3Dqr2I",
+      "index": "a5",
+      "kind": "shape",
+      "screenId": "LSGcUrB9DyyHroXh",
+      "semantic": {
+        "slug": "store-1"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Store",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1440,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "t1vESnhUU0yIDscO": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "LOmdxBSJz1Gfx14s",
+      "elementId": "zBZJlW5ceKojKTFg",
+      "end": "source",
+      "id": "t1vESnhUU0yIDscO",
+      "type": "binding"
+    },
+    "t7I8ZktoIzEOKH9c": {
+      "id": "t7I8ZktoIzEOKH9c",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "7oDPgFGzqgib2dOR",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "19. Security",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "tqqYwyedHLivl_zk": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "seMHP1oSjjRTIM6e",
+      "elementId": "JDmI07rQ6FYKC52S",
+      "end": "source",
+      "id": "tqqYwyedHLivl_zk",
+      "type": "binding"
+    },
+    "ts_UwqBWkC3FByTl": {
+      "id": "ts_UwqBWkC3FByTl",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "Yun8aOkd5RzutxfM",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What constraints means for the next release: the plan, who owns it and what is left to decide before the review on the 4th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "uDaqteG7HIeX9oAR": {
+      "id": "uDaqteG7HIeX9oAR",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "5S35CMApWe805seD",
+      "type": "element"
+    },
+    "uHmYgXS4hMr0MzzS": {
+      "defId": "basic:rect",
+      "id": "uHmYgXS4hMr0MzzS",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "PPVaqdl3UzpJvcj8",
+      "semantic": {
+        "slug": "service-9"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "uoOvSVCiHxJjBMTn": {
+      "id": "uoOvSVCiHxJjBMTn",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "13. Users",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "uwS7mhTdoKHnkc3G": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "OHZd9wGdjTVFuCzd",
+      "elementId": "H7cJntQRPJO158V2",
+      "end": "source",
+      "id": "uwS7mhTdoKHnkc3G",
+      "type": "binding"
+    },
+    "v11DxUAQjq6Wjoj-": {
+      "id": "v11DxUAQjq6Wjoj-",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "VNkqK9JT4RnMhaXD",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "2. Goals",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "vK-0ZMA6pJ-VIz5b": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "rdplZyl4cMRmJy26",
+      "elementId": "8OP178i67TZZA876",
+      "end": "target",
+      "id": "vK-0ZMA6pJ-VIz5b",
+      "type": "binding"
+    },
+    "vRTHHO_t54rzEPj4": {
+      "defId": "basic:rect",
+      "id": "vRTHHO_t54rzEPj4",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "semantic": {
+        "slug": "gateway-18"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "wCekXBuHhLdg-qbz": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "NVnXB3IQIfl3rmoD",
+      "elementId": "sYqrfwYO3ghipfV3",
+      "end": "target",
+      "id": "wCekXBuHhLdg-qbz",
+      "type": "binding"
+    },
+    "x-_q9gfrG7xI8RkQ": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "aBB3mdau2qa0Om7d",
+      "elementId": "XygrCgRbqu9t_N1o",
+      "end": "target",
+      "id": "x-_q9gfrG7xI8RkQ",
+      "type": "binding"
+    },
+    "x3NU6lho1xMEGXaS": {
+      "defId": "basic:rect",
+      "id": "x3NU6lho1xMEGXaS",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "mNhzDSMt2mWC2gar",
+      "semantic": {
+        "slug": "gateway-20"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "x8X-FWI1WV7BcfyY": {
+      "id": "x8X-FWI1WV7BcfyY",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "5S35CMApWe805seD",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "16. Data flow",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "xAELMCAY3xDtRxF1": {
+      "defId": "basic:rect",
+      "id": "xAELMCAY3xDtRxF1",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "PUOSmjcr02rR2mWV",
+      "semantic": {
+        "slug": "client-8"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "xNVzeg94s-gWqizG": {
+      "id": "xNVzeg94s-gWqizG",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "Yun8aOkd5RzutxfM",
+      "type": "element"
+    },
+    "xdtrVyauQTqW8ZyS": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "4lGmTtM0VS88By2I",
+      "elementId": "2LbbQEnvnEAJ48J9",
+      "end": "target",
+      "id": "xdtrVyauQTqW8ZyS",
+      "type": "binding"
+    },
+    "yERB2xXCFK8tA82W": {
+      "id": "yERB2xXCFK8tA82W",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "FsGHEIH7IZYKnz6f",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "17. Services",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1200,
+        "x": 120,
+        "y": 60
+      },
+      "type": "element"
+    },
+    "yGk-j5ySFYU-IR8z": {
+      "id": "yGk-j5ySFYU-IR8z",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What services means for the next release: the plan, who owns it and what is left to decide before the review on the 7th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "yQgNNisZigQuJ9_A": {
+      "id": "yQgNNisZigQuJ9_A",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "7oDPgFGzqgib2dOR",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What security means for the next release: the plan, who owns it and what is left to decide before the review on the 19th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "ymtTB-oJ37FjC1j_": {
+      "id": "ymtTB-oJ37FjC1j_",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "QvEIhO0fwfJ2beiE",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What storage means for the next release: the plan, who owns it and what is left to decide before the review on the 18th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "yt8-b06vVp8vsQco": {
+      "id": "yt8-b06vVp8vsQco",
+      "index": "a8",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "type": "element"
+    },
+    "ytxRP6XxPxnFILmh": {
+      "id": "ytxRP6XxPxnFILmh",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "hx8vCxZhQpA0xjgC",
+      "type": "element"
+    },
+    "ywfyWaVnWq6otrnf": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "N0ELZJjyFZidTpeu",
+      "elementId": "x3NU6lho1xMEGXaS",
+      "end": "source",
+      "id": "ywfyWaVnWq6otrnf",
+      "type": "binding"
+    },
+    "z5BvyYwiac_p0ACj": {
+      "id": "z5BvyYwiac_p0ACj",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "type": "element"
+    },
+    "zBZJlW5ceKojKTFg": {
+      "defId": "basic:rect",
+      "id": "zBZJlW5ceKojKTFg",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "7oDPgFGzqgib2dOR",
+      "semantic": {
+        "slug": "client-19"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Client",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 120,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "zE9bdAWA6S9jiSg9": {
+      "id": "zE9bdAWA6S9jiSg9",
+      "index": "a6",
+      "name": "7. Services",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "zP6Bc6a2lBi0lRml": {
+      "defId": "basic:rect",
+      "id": "zP6Bc6a2lBi0lRml",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "DTEm2wAWuUcg9Oh0",
+      "semantic": {
+        "slug": "service-12"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Service",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 1000,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "zYVVOnnNrQiMUpb0": {
+      "defId": "basic:rect",
+      "id": "zYVVOnnNrQiMUpb0",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "zE9bdAWA6S9jiSg9",
+      "semantic": {
+        "slug": "gateway-7"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Gateway",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 200,
+        "w": 320,
+        "x": 560,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "zibXD1M58x8B7dxG": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "PpM7prLK6UnJeij5",
+      "elementId": "GZ95fPBipKVTEV77",
+      "end": "source",
+      "id": "zibXD1M58x8B7dxG",
+      "type": "binding"
+    },
+    "zjcsk2LDmp7BaRGk": {
+      "id": "zjcsk2LDmp7BaRGk",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "DUuZnRsK_a3Ve3YV",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "What users means for the next release: the plan, who owns it and what is left to decide before the review on the 3th.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 160,
+        "w": 1100,
+        "x": 120,
+        "y": 200
+      },
+      "type": "element"
+    }
+  },
+  "schemaVersion": "1.2"
+}
