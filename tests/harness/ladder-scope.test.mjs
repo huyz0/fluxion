@@ -127,6 +127,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       ),
       [],
     );
+    // a package's own fixtures are read by its tests alone, which the Vitest step runs
+    assert.deepEqual(harnessFiles(['packages/format/__fixtures__/zip/x.b64', 'packs/x/__fixtures__/y.json'], ALL), []);
     assert.deepEqual(harnessFiles(['scripts/fonts/page-recorder.js'], ALL), only(['milestone-checks', 'portability', 'size']));
     assert.deepEqual(harnessFiles(['scripts/fonts/vendor.mjs'], ALL), only(['milestone-checks', 'portability', 'size']));
     assert.deepEqual(harnessFiles(['osv-scanner.toml'], ALL), []);

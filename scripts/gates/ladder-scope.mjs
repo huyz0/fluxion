@@ -102,6 +102,8 @@ export const NAMED_PATH_HARNESS = [
   [/^scripts\/(docs|fonts)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
   // a pack's vendored font files, manifest and licence text: data that only the ladder's `licenses` step reads (hashes, licences, paths)
   [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
+  // a package's own test fixtures: read only by that package's tests, which the staged Vitest step runs (the package is staged)
+  [/^(packages|packs|apps)\/[^/]+\/__fixtures__\/.+/, []],
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
   [/^knip\.json$/, ['milestone-checks']],
