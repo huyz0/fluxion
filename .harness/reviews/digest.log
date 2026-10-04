@@ -431,3 +431,4 @@ M10.7	070ea6b336858c8799c8a633caee47dad86bebd78f9dbe53aca9b718699c0025	r1	pass	c
 M10.25	6adda25006888398ab405e7ac4d8b66af14552ecf88e82ff59fb7092a9d7ac98	r1	pass	Claude Haiku 4.5	0 findings
 M10.8	ee97df7270e9bd07174c47697d3a638a7097cbd88806ef2b6666a9072599e504	r1	pass	claude:reviewer	0 findings
 M10.26	6b22334cd12ed225abafa7a51ac3eeccabd95b2e3d9383f1270361274c6fc6a3	r1	pass	claude:reviewer	0 findings
+M10.9	a3d7afbadf69a73e817227dddd85761da4686e269fffd33fa7b20ea9bad6e250	r1	pass	claude:sonnet-5.5	0 findings
