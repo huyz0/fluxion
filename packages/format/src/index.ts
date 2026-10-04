@@ -4,6 +4,15 @@
  * @packageDocumentation
  */
 
+export {
+  type ContentHasher,
+  FLUX_FORMAT_VERSION,
+  FLUX_MIMETYPE,
+  type FluxAsset,
+  type FluxWriteFailure,
+  type WriteFluxInput,
+  writeFlux,
+} from './flux-writer.js';
 export { MAX_SVG_CHARS, sanitizeSvg } from './sanitize-svg.js';
 export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
 

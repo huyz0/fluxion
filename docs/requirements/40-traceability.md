@@ -46,8 +46,8 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
-| FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/zip.test.ts` |
-| FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-writer.test.ts`, `packages/format/src/zip.test.ts` |
+| FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-writer.test.ts` |
 | FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-007 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | — |

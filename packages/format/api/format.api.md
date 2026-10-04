@@ -4,7 +4,28 @@
 
 ```ts
 
+import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
+
+// @public
+export type ContentHasher = {
+    sha256(bytes: Uint8Array): Promise<string>;
+};
+
+// @public
+export const FLUX_FORMAT_VERSION = "1.0";
+
+// @public
+export const FLUX_MIMETYPE = "application/vnd.fluxion+zip";
+
+// @public
+export type FluxAsset = {
+    readonly bytes: Uint8Array;
+    readonly mime: string;
+};
+
+// @public
+export type FluxWriteFailure = ZipFailure;
 
 // @public
 export const MAX_SVG_CHARS: number;
@@ -17,6 +38,20 @@ export function sanitizeSvg(input: string): string | undefined;
 
 // @public
 export const VERSION: string;
+
+// @public
+export function writeFlux(input: WriteFluxInput): Promise<Result<Uint8Array, FluxWriteFailure>>;
+
+// @public
+export type WriteFluxInput = {
+    readonly document: DocumentFile;
+    readonly assets?: ReadonlyMap<string, FluxAsset>;
+    readonly appVersion: string;
+    readonly generator?: string;
+    readonly source?: string;
+    readonly preview?: Uint8Array;
+    readonly hasher: ContentHasher;
+};
 
 // @public
 export function writeZip(entries: readonly ZipInput[]): Result<Uint8Array, ZipFailure>;
