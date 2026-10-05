@@ -18,6 +18,15 @@ describe('opening from a URL, the clipboard and a launch (FR-FIL-006)', () => {
     expect(nameOfUrl(new URL('https://a.example/'))).toBe('shared.flux');
   });
 
+  it('NFR-SEC-006: a file is fetched without cookies and without a referrer', async () => {
+    let seen: RequestInit | undefined;
+    await pickedFromUrl(new URL('https://a.example/x.flux'), (_url, init) => {
+      seen = init;
+      return Promise.resolve(bodyOf(1));
+    });
+    expect(seen).toMatchObject({ credentials: 'omit', referrerPolicy: 'no-referrer' });
+  });
+
   it('FR-FIL-006: a fetched file is its bytes under its name; a failed or oversized one is a line, never a throw', async () => {
     const ok = await pickedFromUrl(new URL('https://a.example/x.flux'), () => Promise.resolve(bodyOf(3)));
     expect(ok).toEqual({ ok: true, value: { name: 'x.flux', bytes: new Uint8Array([1, 1, 1]) } });

@@ -59,7 +59,7 @@ async function boundedBody(response: Response): Promise<Uint8Array> {
 export async function pickedFromUrl(url: URL, fetchIt: typeof fetch): Promise<{ ok: true; value: PickedFile } | { ok: false; error: string }> {
   const name = nameOfUrl(url);
   try {
-    const response = await fetchIt(url.href, { credentials: 'omit', redirect: 'follow' });
+    const response = await fetchIt(url.href, { credentials: 'omit', redirect: 'follow', referrerPolicy: 'no-referrer' });
     if (!response.ok) return { ok: false, error: `${name} could not be fetched: the server answered ${response.status}` };
     return { ok: true, value: { name, bytes: await boundedBody(response) } };
   } catch (e) {

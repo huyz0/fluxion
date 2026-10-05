@@ -332,7 +332,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +3 |
-| NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/open-sources.test.ts`, `e2e/privacy.no-telemetry.spec.ts` |
 | NFR-SEC-007 | S | R6 | M28 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.editor.spec.ts` |
 | NFR-A11Y-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.player.spec.ts`, `packages/render/src/a11y.browser.test.ts` |
@@ -356,7 +356,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-AI-003 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-AI-004 | S | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-OBS-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/dev-logger.test.ts` +3 |
-| NFR-OBS-002 | S | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-OBS-002 | S | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/diagnostic-button.browser.test.tsx`, `apps/studio/src/diagnostic-report.test.ts` |
 | NFR-DX-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/budget.test.mjs` +2 |
 | NFR-DX-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/budget.test.mjs` +6 |
 | NFR-DX-003 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/adapters.test.mjs` +8 |

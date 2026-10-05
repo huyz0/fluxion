@@ -8,6 +8,7 @@ import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useM
 import { AutosaveBar } from './autosave/autosave-bar.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
 import { studioLogger } from './dev-logger.js';
+import { DiagnosticButton } from './diagnostic-button.js';
 import { type Guard, useGuard, useProtection } from './document-protection.js';
 import { exampleNames, loadDocument } from './documents.js';
 import { FileBar, OpenControl, openPicked, pickedFromDrop } from './file-bar.js';
@@ -135,6 +136,7 @@ function ProtectedEditor(props: {
             }}
           />
           <AutosaveBar state={state} readOnly={guard.phase === 'read-only'} />
+          <DiagnosticButton store={core.store} />
         </>
       }
     />
