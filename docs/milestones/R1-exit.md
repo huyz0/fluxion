@@ -13,8 +13,7 @@ today. `m11-complete` fails while a box is open.
 - [ ] **2. CI green on main, and the visual baselines reviewed.** The `ci` run of the last code commit must be green; the visual job compares against the baselines made in the pinned image, and
   no baseline was changed in M11 (no `Threshold-change:` trailer). Open until the last `ci` run on main is green: `node scripts/harness/last-ci.mjs`.
 - [x] **3a. Changesets.** Every package M11 touched has a changeset (`.changeset/m11-*.md`; `m11-complete` checks the range).
-- [ ] **3b. The user guide and the API reference.** The API reports of every touched library are current (`check-api`). Open: the user guide's "Presenting" page (`apps/docs/src/content/docs/guides/presenting.md`) does
-  not exist yet (M11.26 writes it).
+- [x] **3b. The user guide and the API reference.** The API reports of every touched library are current (`check-api`), and the guide "Presenting" (`apps/docs/src/content/docs/guides/presenting.md`, M11.61) says how to present, move, share a link and embed.
 - [x] **4. A demo document, committed and run in CI.** `examples/r1-mvp-deck.flux.html` (M11.24), opened from `file://` offline by `e2e/examples.r1-offline.spec.ts`, checked with axe and walked with the
   keyboard; `e2e/mvp.create-save-reopen-present.spec.ts` is R1's own demo, by hand. The file holds the player of the day it was made: regenerate it with `node scripts/examples/make-r1-demo.mjs`, and
   run `make-r1-demo.mjs --check` before a release to see whether it is stale.
