@@ -109,6 +109,39 @@ describe('element views (FR-EXT-001, FR-DOC-005)', () => {
     expect(wrappers().map((w) => w.dataset['elId'])).not.toContain(b);
   });
 
+  it('FR-PRS-003: the elements a build hides are not drawn, with their members, and the others are', async () => {
+    const { file, screenId, rects } = setup((records, { rects: [a, , c] }) => {
+      const at = (id: RecordId | undefined) => records[id as string] as { type: string; screenId: string };
+      const { type, screenId: on } = at(a);
+      records[GROUP] = { id: GROUP, type, screenId: on, kind: 'group', index: 'a3', transform: { x: 0, y: 0, w: 400, h: 300 } };
+      records[c as string] = { ...at(c), parentId: GROUP, index: 'a0' };
+    });
+    const [a, b, c] = rects as [RecordId, RecordId, RecordId];
+    const core = createCore(file);
+    const drawn = async (hidden?: ReadonlySet<RecordId>) => {
+      await act(async () =>
+        root.render(
+          <ScreenView store={core.store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 400, h: 300 } }} {...(hidden ? { hidden } : {})} />,
+        ),
+      );
+      return wrappers().map((w) => w.dataset['elId']);
+    };
+    expect(await drawn()).toEqual(expect.arrayContaining([a, b, c, GROUP]));
+    // one element hidden, the rest stay
+    const some = await drawn(new Set([b]));
+    expect(some).not.toContain(b);
+    expect(some).toEqual(expect.arrayContaining([a, c, GROUP]));
+    // a member hidden inside a visible group
+    const member = await drawn(new Set([c]));
+    expect(member).not.toContain(c);
+    expect(member).toContain(GROUP);
+    // a group hidden takes its members with it
+    const group = await drawn(new Set<RecordId>([GROUP as RecordId]));
+    expect(group).not.toContain(GROUP);
+    expect(group).not.toContain(c);
+    expect(group).toEqual(expect.arrayContaining([a, b]));
+  });
+
   it('NFR-PERF-001: a move redraws the wrapper and members container only; any other change redraws the view', async () => {
     const { file, screenId, rects } = setup((records, { rects: [a, b] }) => {
       const { type, screenId: on } = records[a as string] as Record<string, unknown>;

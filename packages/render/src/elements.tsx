@@ -53,7 +53,14 @@ export function PlaceholderView(props: ElementViewProps): ReactNode {
 }
 
 /** The props an element's own subtree is drawn from. */
-type NodeProps = { readonly store: Store; readonly id: RecordId; readonly registries: RenderRegistries; readonly theme: Theme };
+type NodeProps = {
+  readonly store: Store;
+  readonly id: RecordId;
+  readonly registries: RenderRegistries;
+  readonly theme: Theme;
+  /** Elements a build hides: not drawn, with their members. */
+  readonly hidden?: ReadonlySet<RecordId> | undefined;
+};
 
 /** Element `id`'s record as it changes (undefined once it is gone or when it is no element). */
 function useElement(store: Store, id: RecordId): ElementRecord | undefined {
@@ -67,11 +74,11 @@ function useElement(store: Store, id: RecordId): ElementRecord | undefined {
  * itself, so a move re-renders it without drawing the element's view again.
  */
 const Members = memo(function Members(props: NodeProps & { readonly screenId: RecordId }): ReactNode {
-  const { store, id, screenId, registries, theme } = props;
+  const { store, id, screenId, registries, theme, hidden } = props;
   const element = useElement(store, id);
   return (
     <div className="fx-members" style={element === undefined ? undefined : unplacement(element)}>
-      <ElementList store={store} screenId={screenId} parentId={id} registries={registries} theme={theme} />
+      <ElementList store={store} screenId={screenId} parentId={id} registries={registries} theme={theme} hidden={hidden} />
     </div>
   );
 });
@@ -113,14 +120,14 @@ const Body = memo(
  * change. A move re-renders its wrapper and members container only (ADR-0028 §4).
  */
 const ElementNode = memo(function ElementNode(props: NodeProps): ReactNode {
-  const { store, id, registries, theme } = props;
+  const { store, id, registries, theme, hidden } = props;
   const element = useElement(store, id);
   const versions = [useValue(registries.elementViews.changes$), useValue(registries.shapeDefs.changes$)];
   const screenId = element?.screenId;
   const members = useMemo(
-    () => (screenId === undefined ? null : <Members store={store} id={id} screenId={screenId} registries={registries} theme={theme} />),
+    () => (screenId === undefined ? null : <Members store={store} id={id} screenId={screenId} registries={registries} theme={theme} hidden={hidden} />),
     // tzap disable next-line ArrayDeclaration: only a re-render reads the list, which the node tests never do (browser-tested)
-    [store, id, screenId, registries, theme],
+    [store, id, screenId, registries, theme, hidden],
   );
   if (element === undefined) return null;
   const View = registries.elementViews.get(element.kind)?.Component ?? PlaceholderView;
@@ -149,6 +156,8 @@ export type ElementListProps = {
   readonly registries: RenderRegistries;
   /** The theme styles resolve against. */
   readonly theme: Theme;
+  /** Elements a build hides (default none): they and their members are left out. */
+  readonly hidden?: ReadonlySet<RecordId> | undefined;
 };
 
 /**
@@ -160,7 +169,9 @@ export type ElementListProps = {
  * @public
  */
 export const ElementList: NamedExoticComponent<ElementListProps> = memo(function ElementList(props: ElementListProps): ReactNode {
-  const { store, screenId, parentId, registries, theme } = props;
+  const { store, screenId, parentId, registries, theme, hidden } = props;
   const ids = useValue(useMemo(() => store.query((view) => elementsInOrder(view, screenId, parentId)), [store, screenId, parentId]));
-  return ids.map((id) => <ElementNode key={id} store={store} id={id} registries={registries} theme={theme} />);
+  return ids
+    .filter((id) => hidden?.has(id) !== true)
+    .map((id) => <ElementNode key={id} store={store} id={id} registries={registries} theme={theme} hidden={hidden} />);
 });

@@ -83,6 +83,8 @@ export type ScreenViewProps = {
   readonly assets?: AssetUrls;
   /** Measures text for `shrink` (default in a browser: the page's canvas measurer; none on a server). */
   readonly measurer?: TextMeasurer;
+  /** The elements a build hides (default none): they and their members are not drawn; the player passes it to show a screen at a build group. */
+  readonly hidden?: ReadonlySet<RecordId>;
   /** Extra content drawn above the elements. */
   readonly children?: ReactNode;
 };
@@ -139,7 +141,7 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
           <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
             <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
             <div className="fx-layer fx-content" style={origin}>
-              <ElementList store={store} screenId={screenId} registries={registries} theme={styling} />
+              <ElementList store={store} screenId={screenId} registries={registries} theme={styling} hidden={props.hidden} />
               {children}
             </div>
             {policy.editOverlay && editOverlay !== undefined ? <div className="fx-layer fx-overlay">{editOverlay}</div> : null}

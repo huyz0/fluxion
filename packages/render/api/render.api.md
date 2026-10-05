@@ -106,6 +106,7 @@ export type ElementListProps = {
     readonly parentId?: RecordId;
     readonly registries: RenderRegistries;
     readonly theme: Theme;
+    readonly hidden?: ReadonlySet<RecordId> | undefined;
 };
 
 // @public
@@ -285,6 +286,7 @@ export type ScreenViewProps = {
     readonly registries?: RenderRegistries;
     readonly assets?: AssetUrls;
     readonly measurer?: TextMeasurer;
+    readonly hidden?: ReadonlySet<RecordId>;
     readonly children?: ReactNode;
 };
 
