@@ -21,11 +21,16 @@ const value = <T>(r: Result<T>, what: string): T => {
 };
 
 /** The text of a `.flux.html` of the document fixture `name` (fixtures/docs/<name>.flux.json). */
-export async function fluxHtmlOf(name: string, extra: { title?: string; noscriptSvg?: string } = {}): Promise<string> {
+export async function fluxHtmlOf(
+  name: string,
+  extra: { title?: string; noscriptSvg?: string; edit?: (document: { records: Record<string, Record<string, unknown>> }) => void } = {},
+): Promise<string> {
   const format = await load<FormatApi>('packages/format/dist/index.js');
   const schema = await load<SchemaApi>('packages/schema/dist/index.js');
   const hasher: Hasher = { sha256: (bytes) => Promise.resolve(format.sha256Hex(bytes)) };
-  const parsed = value(schema.parseDocument(readFileSync(resolve(`fixtures/docs/${name}.flux.json`), 'utf8')), 'parseDocument');
+  const json = JSON.parse(readFileSync(resolve(`fixtures/docs/${name}.flux.json`), 'utf8')) as { records: Record<string, Record<string, unknown>> };
+  extra.edit?.(json);
+  const parsed = value(schema.parseDocument(JSON.stringify(json)), 'parseDocument');
   const flux = value(await format.writeFlux({ document: parsed.document, appVersion: '1.0.0', generator: 'e2e', hasher }), 'writeFlux');
   const playerScript = readFileSync(resolve('packages/player-inline/dist/player.inline.js'), 'utf8');
   return value(
