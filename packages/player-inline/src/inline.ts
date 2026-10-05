@@ -66,7 +66,8 @@ function show(root: HTMLElement, message: string): StartResult {
 async function open(bytes: Uint8Array, root: HTMLElement, urls: { release: () => void }[]): Promise<StartResult> {
   const loaded = await loadFlux(bytes, { hasher });
   if (!loaded.ok) return show(root, `This file cannot be opened: ${loaded.error.message}`);
-  const core = createCore(loaded.value.document);
+  // a player never writes: its store refuses every transaction (FR-PRS-004)
+  const core = createCore(loaded.value.document, { policy: 'read-only' });
   const registered = basicPack.register(core.registries);
   if (!registered.ok) return show(root, `The built-in shapes could not be registered: ${registered.error.map((d) => d.message).join('; ')}`);
   const images = imageUrls(loaded.value);

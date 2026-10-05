@@ -270,4 +270,24 @@ describe('the deck of the one-file player (FR-FIL-002)', () => {
     await act(frame);
     expect(drawn()).toEqual([a, c]);
   });
+
+  it('FR-PRS-004: over a read-only store the deck draws, moves and opens the grid, and no key or click writes a transaction', async () => {
+    const b = documentBuilder({ seed: 65 });
+    const a = b.screen({ size: { w: 1600, h: 900 } });
+    const c = b.screen({ size: { w: 1600, h: 900 } });
+    b.rect(a, { x: 10, y: 10, w: 100, h: 50 });
+    const core = createCore(b.build(), { policy: 'read-only' });
+    let writes = 0;
+    core.store.subscribe(() => {
+      writes += 1;
+    });
+    await act(async () => root.render(<PlayerDeck store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(frame);
+    for (const k of ['ArrowRight', 'ArrowLeft', 'End', 'Home', '2', 'Enter', 'o', 'Escape', 'Delete', 'Backspace', 'x', 'z']) await press(k);
+    await act(async () => void (host.querySelector('[data-testid="player-deck"]') as HTMLElement).click());
+    await act(frame);
+    expect(shown()).toBe(c);
+    expect(writes).toBe(0);
+    expect(core.store.readOnly).toBe(true);
+  });
 });
