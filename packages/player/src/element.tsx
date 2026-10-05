@@ -92,6 +92,8 @@ class PlayerCore {
   #fetching = 0;
   #abort: AbortController | undefined;
   #inFlight = false;
+  /** The last file failed to open: putting the element back in the page does not try (and report) again; a new `src` or `load` does. */
+  #failed = false;
   /** The bytes last given to `load`, to draw again when the element is put back in a page after it was taken out. */
   #bytes: Uint8Array | undefined;
 
@@ -109,6 +111,7 @@ class PlayerCore {
   async fetch(src: string): Promise<void> {
     const id = ++this.#fetching;
     this.#inFlight = true;
+    this.#failed = false;
     this.#abort?.abort();
     const abort = new AbortController();
     this.#abort = abort;
@@ -127,7 +130,7 @@ class PlayerCore {
 
   /** The element is in a page: draw what it holds, or fetch `src`, if nothing is drawn or on its way (it was let go of after being taken out). */
   resume(src: string | null): void {
-    if (this.loaded || this.#inFlight) return;
+    if (this.loaded || this.#inFlight || this.#failed) return;
     if (src !== null) void this.fetch(src);
     else if (this.#bytes !== undefined) void this.load(this.#bytes);
   }
@@ -135,10 +138,12 @@ class PlayerCore {
   /** Open `bytes`; resolves when the deck is drawn or has failed (a `fluxion-error` event says why). */
   async load(bytes: Uint8Array, remember = true): Promise<void> {
     const token = ++this.#token;
+    this.#failed = false;
+    // a load on its way is not doubled by `resume`
+    this.#inFlight = true;
     // bytes given directly win over a fetch still on its way
     if (remember) {
       this.#fetching += 1;
-      this.#inFlight = false;
       this.#abort?.abort();
       this.#bytes = bytes;
     }
@@ -154,6 +159,8 @@ class PlayerCore {
       this.draw();
     } catch (e) {
       if (token === this.#token) this.#fail(messageOf(e));
+    } finally {
+      if (token === this.#token) this.#inFlight = false;
     }
   }
 
@@ -206,6 +213,7 @@ class PlayerCore {
     this.#token += 1;
     this.#fetching += 1;
     this.#inFlight = false;
+    this.#failed = false;
     this.#abort?.abort();
     this.#teardown();
   }
@@ -224,6 +232,10 @@ class PlayerCore {
   };
 
   #fail(message: string): void {
+    // a load still opening is stale now: its deck must not be drawn over the message
+    this.#token += 1;
+    this.#failed = true;
+    this.#inFlight = false;
     this.#teardown();
     const p = document.createElement('p');
     p.className = 'fx-message';

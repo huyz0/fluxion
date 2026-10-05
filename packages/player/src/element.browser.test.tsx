@@ -250,4 +250,78 @@ describe('the <fluxion-player> element (FR-PRS-009)', () => {
     expect(shownId(el)).toBe(ids[2]);
     expect(el.position?.index).toBe(2);
   });
+
+  /** An opener whose answers are held until the test lets them go, counting how often it was asked. */
+  function gated(): { open: FluxOpener; ids: string[]; asked: () => number; letGo: () => void } {
+    const inner = opener();
+    const waiting: (() => void)[] = [];
+    let asked = 0;
+    const open: FluxOpener = (bytes) => {
+      asked += 1;
+      return new Promise((resolve) => waiting.push(() => resolve(inner.open(bytes))));
+    };
+    return {
+      open,
+      ids: inner.ids,
+      asked: () => asked,
+      letGo: () => {
+        for (const go of waiting.splice(0)) go();
+      },
+    };
+  }
+
+  it('FR-PRS-009: a failed element moved in the page does not fetch again or report twice', async () => {
+    const { open } = opener();
+    defineFluxionPlayer(open, tag);
+    const calls = vi.fn(async () => new Response('', { status: 500 }));
+    vi.stubGlobal('fetch', calls);
+    const el = make({ src: 'broken.flux' });
+    const errors = events(el, 'fluxion-error');
+    await vi.waitFor(() => expect(errors).toHaveLength(1));
+    const other = document.createElement('div');
+    host.append(other);
+    other.append(el);
+    await frame();
+    await frame();
+    expect(calls).toHaveBeenCalledTimes(1);
+    expect(errors).toHaveLength(1);
+    // a new src tries again
+    el.setAttribute('src', 'again.flux');
+    await vi.waitFor(() => expect(errors).toHaveLength(2));
+    // taken out of the page for good and put back, it tries its src again
+    el.remove();
+    await frame();
+    host.append(el);
+    await vi.waitFor(() => expect(errors).toHaveLength(3));
+    expect(calls).toHaveBeenCalledTimes(3);
+  });
+
+  it("FR-PRS-009: a pending load is not overtaken by an older one's deck, and one pending on a moved element is not doubled", async () => {
+    const { open, ids, asked, letGo } = gated();
+    defineFluxionPlayer(open, tag);
+    vi.stubGlobal('fetch', async () => new Response('', { status: 404 }));
+    const el = make();
+    const errors = events(el, 'fluxion-error');
+    // a load is still opening when a newer src fails: the deck it opens must not be drawn over the error
+    const pending = el.load(ok);
+    el.setAttribute('src', 'missing.flux');
+    await vi.waitFor(() => expect(errors).toHaveLength(1));
+    letGo();
+    await pending;
+    await frame();
+    expect(shownId(el)).toBeUndefined();
+    expect(el.shadowRoot?.querySelector('.fx-message')?.textContent).toContain('404');
+    // a load pending while the element is moved is not asked for again
+    const fresh = make();
+    const before = asked();
+    const again = fresh.load(ok);
+    const other = document.createElement('div');
+    host.append(other);
+    other.append(fresh);
+    await frame();
+    expect(asked() - before).toBe(1);
+    letGo();
+    await again;
+    await vi.waitFor(() => expect(shownId(fresh)).toBe(ids[0]));
+  });
 });
