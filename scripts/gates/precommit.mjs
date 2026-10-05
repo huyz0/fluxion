@@ -13,7 +13,7 @@
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
-import { harnessFiles, lockfileWorkspaceOnly, packagingDirs, packagingNeeded, testScope } from './ladder-scope.mjs';
+import { harnessFiles, lockfileWorkspaceOnly, packagingDirs, packagingNeeded, apiScope as stagedApiScope, testScope } from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
@@ -68,6 +68,23 @@ const packagingArgs = () => {
   const dirs = mode === 'staged' ? packagingDirs(stagedPaths(), packagingOptions()) : undefined;
   return dirs === undefined ? [] : ['--dirs', dirs.join(',')];
 };
+// a staged commit checks the API reports of the libraries it touches, and TypeDoc when a library source changed (CI's --all checks everything)
+const apiScope = () => (mode === 'staged' ? stagedApiScope(stagedPaths()) : undefined);
+const apiOrSkip = () => {
+  const scope = apiScope();
+  return scope === undefined || scope.dirs.length > 0 || scope.typedoc || 'no staged library (CI checks every API report)';
+};
+async function api() {
+  const scope = apiScope();
+  if (scope === undefined) return node('scripts/gates/check-api.mjs');
+  let result;
+  for (const [i, dir] of scope.dirs.entries()) {
+    const withTypedoc = scope.typedoc && i === scope.dirs.length - 1;
+    result = await node('scripts/gates/check-api.mjs', ['--package', dir, ...(withTypedoc ? ['--typedoc'] : [])]);
+    if (result.status !== 0) return result;
+  }
+  return result;
+}
 const testPlan = () => (mode === 'staged' ? testScope(stagedPaths(), workspaces(), browserTested(), scopeOptions()) : { run: true, browser: true });
 
 /** name, applies(mode), available() → true | skip-reason, exec() → {status, stdout, stderr} */
@@ -166,8 +183,8 @@ const STEPS = [
   [
     'api',
     (m) => m !== 'quick',
-    () => (exists('scripts/gates/check-api.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
-    () => node('scripts/gates/check-api.mjs'),
+    () => (exists('scripts/gates/check-api.mjs') ? (hasPkg ? apiOrSkip() : 'no workspace yet (M1)') : 'not written yet (M1)'),
+    () => api(),
   ],
   // recorded cold-setup / quick / staged timings within the thresholds (NFR-DX-001, NFR-DX-002); a
   // commit that stages pnpm-lock.yaml must carry a record for it (ADR-0145)

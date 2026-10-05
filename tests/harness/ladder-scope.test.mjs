@@ -5,6 +5,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import {
+  apiScope,
   DOCS_HARNESS,
   E2E_HARNESS,
   GATE_SCRIPT_HARNESS,
@@ -227,8 +228,22 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.equal(packagingDirs(['packages/cli/package.json', 'tsconfig.base.json']), undefined);
     assert.equal(packagingDirs(['packages/cli/package.json', 'pnpm-lock.yaml']), undefined);
     assert.deepEqual(packagingDirs(['docs/a.md', 'packages/cli/src/x.ts']), []);
+    // the API step checks the reports of the libraries a commit touches, TypeDoc when a library source changed; a root setting, the workspace list or the gate's helpers checks all; the gate's own script is run over the whole repo by its harness test
+    assert.deepEqual(apiScope(['packages/player/src/a.ts', 'packs/basic/src/b.ts', 'e2e/x.ts', 'docs/a.md']), {
+      dirs: ['packages/player', 'packs/basic'],
+      typedoc: true,
+    });
+    assert.deepEqual(apiScope(['packages/player/src/a.test.ts', 'packages/player/src/b.stories.tsx', 'packages/player/api/player.api.md']), {
+      dirs: ['packages/player'],
+      typedoc: false,
+    });
+    assert.deepEqual(apiScope(['docs/a.md', 'e2e/x.ts', 'scripts/gates/check-api.mjs']), { dirs: [], typedoc: false });
+    for (const p of ['tools/gen/workspaces.json', 'scripts/gates/lib.mjs', 'typedoc.json', 'package.json', 'pnpm-lock.yaml', 'tsconfig.base.json'])
+      assert.equal(apiScope(['packages/player/src/a.ts', p]), undefined, p);
     // the API gate's script changes no manifest, export or build setting
     assert.equal(packagingNeeded(['scripts/gates/check-api.mjs', 'packages/core/api/core.testing.api.md']), false);
+    // the ladder's own script decides which checks run and packs nothing
+    assert.equal(packagingNeeded(['scripts/gates/precommit.mjs', 'docs/a.md']), false);
     // a library's manifest still runs them, whatever the lockfile did
     assert.equal(packagingNeeded(['packages/core/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true, librariesUnchanged: true }), true);
     for (const p of ['packages/core/package.json', 'pnpm-lock.yaml', 'tsconfig.base.json', 'packages/core/tsup.config.ts', 'scripts/gates/check-packages.mjs'])

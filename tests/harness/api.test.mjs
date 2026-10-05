@@ -85,6 +85,13 @@ describe('check-api (NFR-MNT-007)', () => {
     assert.match(r.stderr, /ae-missing-release-tag/);
   });
 
+  it('M11.39: one library alone leaves TypeDoc to --typedoc, which runs it (here with no typedoc.json to read)', () => {
+    assert.equal(api().status, 0);
+    const r = api('--typedoc');
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /typedoc \(typedoc\.json\)/);
+  });
+
   it('--update rewrites the report, after which the check passes', () => {
     sb.edit(DTS, (t) => `${t}\n/**\n * Added.\n *\n * @public\n */\nexport declare const EXTRA: number;\n`);
     assert.equal(api('--update').status, 0);

@@ -302,6 +302,25 @@ export function packagingDirs(staged, options = {}) {
   return [...dirs].sort();
 }
 
+/**
+ * What the staged API step checks: the libraries whose API report the staged paths can change (`dirs`: `packages/x`, `packs/y`), and whether TypeDoc's
+ * completeness check over every export runs (`typedoc`: a library source that is not a test or a story, since a new export or a comment is what it reads).
+ * `undefined` is all of it: the gate's shared helpers, the workspace list, a root manifest, lockfile, compiler or TypeDoc setting. A library's report is written
+ * from its own declarations (the types of its dependencies are named, not copied), so a change in one library cannot move another's report. API Extractor
+ * over the twenty-odd libraries and TypeDoc took a minute and a half of CPU beside the test step, most of the staged ladder's budget (NFR-DX-002); CI's
+ * `--all` ladder checks every report. The gate's own script is not in that list: the harness test of it (tests/harness/api.test.mjs) runs it over a copy of the whole repo. A change in a dependency that moves a dependent's release-tag or forgotten-export result is caught there.
+ */
+export function apiScope(staged) {
+  const global = (p) =>
+    /^(tools\/gen\/workspaces\.json|scripts\/gates\/lib\.mjs|typedoc\.json|apps\/docs\/package\.json|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|tsconfig[^/]*\.json)$/.test(
+      p,
+    );
+  if (staged.some(global)) return undefined;
+  const dirs = new Set(staged.flatMap((p) => /^((?:packages|packs)\/[^/]+)\//.exec(p)?.[1] ?? []));
+  const typedoc = staged.some((p) => /^(?:packages|packs)\/[^/]+\/src\/.+\.tsx?$/.test(p) && !/\.(?:test|browser\.test|stories)\.tsx?$/.test(p));
+  return { dirs: [...dirs].sort(), typedoc };
+}
+
 /** The staged paths that can change what is packed (those that are not inert). */
 function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = false, librariesUnchanged = false } = {}) {
   const inert = (p) =>
@@ -314,6 +333,7 @@ function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = fals
     p === 'scripts/gates/check-api.mjs' ||
     // the scope module itself and the harness tests decide and test which checks run, and pack nothing (CI's `--all` ladder is the backstop for a scope change that hides a packaging check)
     p === 'scripts/gates/ladder-scope.mjs' ||
+    p === 'scripts/gates/precommit.mjs' ||
     /^tests\/harness\/[^/]+\.test\.mjs$/.test(p) ||
     p === 'knip.json' ||
     // the bundle budgets are read by the ladder's own size-limit step, not by publint or attw
