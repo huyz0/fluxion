@@ -89,7 +89,7 @@ jobs:
       # the specs render through the built packages (the CLI), so the build comes first
       - run: pnpm run build
       # NFR-PORT-006: the visual suite on every OS, Chromium only
-      - run: pnpm exec playwright test --grep @visual --project=chromium
+      - run: pnpm exec playwright test --grep "@visual" --project=chromium
 
   # NFR-PORT-001: the whole e2e suite on the Playwright release before the pinned one (scripts/ci/previous-playwright.mjs sets the catalog's pins for this run only)
   previous-playwright:

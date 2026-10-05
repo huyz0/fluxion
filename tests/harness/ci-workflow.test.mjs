@@ -246,7 +246,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.doesNotMatch(previous, /git (commit|push)/);
     // the visual baselines belong to the pinned image, and the cross-OS visual job builds before it renders (M11.58)
     assert.match(previous, /--grep-invert "@perf\|@visual"/);
-    assert.match(/^ {2}visual-xos:[\s\S]*?(?=^ {2}\S)/m.exec(nightly)[0], /pnpm run build[\s\S]*playwright test --grep @visual/);
+    assert.match(/^ {2}visual-xos:[\s\S]*?(?=^ {2}\S)/m.exec(nightly)[0], /pnpm run build[\s\S]*playwright test --grep "@visual"/);
     assert.match(report, /if: failure\(\)/);
     assert.equal([...nightly.matchAll(/issues: write/g)].length, 1, 'only the report job writes issues');
     assert.match(report, /issues: write/);
