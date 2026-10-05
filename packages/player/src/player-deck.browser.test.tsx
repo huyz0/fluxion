@@ -183,4 +183,91 @@ describe('the deck of the one-file player (FR-FIL-002)', () => {
       else Object.defineProperty(Element.prototype, 'requestFullscreen', original);
     }
   });
+
+  it('FR-PRS-002: a click on the stage steps forward, and one on a link or a button does not', async () => {
+    const { core, ids } = deck();
+    await act(async () => root.render(<PlayerDeck store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(frame);
+    const stage = host.querySelector<HTMLElement>('[data-testid="player-deck"]') as HTMLElement;
+    await act(async () => void stage.click());
+    await act(frame);
+    expect(shown()).toBe(ids[1]);
+    const button = Object.assign(document.createElement('button'), { textContent: 'x' });
+    stage.append(button);
+    await act(async () => void button.click());
+    await act(frame);
+    expect(shown()).toBe(ids[1]);
+  });
+
+  it('FR-PRS-002: a screen number plus Enter goes to that screen, a number past the last is ignored, Backspace erases a digit, and Enter alone steps', async () => {
+    const { core, ids } = deck();
+    await act(async () => root.render(<PlayerDeck store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(frame);
+    // three visible screens (the hidden one has no number)
+    await press('3');
+    await press('Enter');
+    await act(frame);
+    expect(shown()).toBe(ids[2]);
+    await press('9');
+    await press('Enter');
+    await act(frame);
+    expect(shown()).toBe(ids[2]);
+    await press('2');
+    await press('5');
+    await press('Backspace');
+    await press('Enter');
+    await act(frame);
+    expect(shown()).toBe(ids[1]);
+    await press('Enter');
+    await act(frame);
+    expect(shown()).toBe(ids[2]);
+  });
+
+  it('FR-PRS-003: a screen with build groups takes a press for each before the next screen, and the elements a group hides are not drawn', async () => {
+    const b = documentBuilder({ seed: 66 });
+    const [first, second] = [b.screen({ size: { w: 1600, h: 900 } }), b.screen({ size: { w: 1600, h: 900 } })];
+    const [a, c] = [b.rect(first, { x: 10, y: 10, w: 100, h: 50 }), b.rect(first, { x: 200, y: 10, w: 100, h: 50 })];
+    b.rect(second, { x: 10, y: 10, w: 100, h: 50 });
+    const doc = b.build();
+    const step = (id: string, index: string, effect: string, target: string) => ({
+      id,
+      type: 'step',
+      timelineId: 'tl',
+      index,
+      trigger: { kind: 'onClick' },
+      animations: [{ id: `${id}a`, effect, targets: [target] }],
+    });
+    const records = {
+      ...doc.records,
+      tl: { id: 'tl', type: 'timeline', screenId: first, name: 'main', index: 'a0' },
+      s1: step('s1', 'a1', 'appear', c),
+      s2: step('s2', 'a2', 'disappear', a),
+    };
+    const core = createCore({ ...doc, records } as unknown as typeof doc, { validate: false });
+    await act(async () => root.render(<PlayerDeck store={core.store} registries={renderRegistriesFor(core.registries)} />));
+    await act(frame);
+    const drawn = () => [...host.querySelectorAll<HTMLElement>('.fx-el')].map((e) => e.dataset['elId']);
+    // before any click: the element that appears is absent
+    expect(shown()).toBe(first);
+    expect(drawn()).toEqual([a]);
+    await press('ArrowRight');
+    await act(frame);
+    expect(shown()).toBe(first);
+    expect(drawn()).toEqual([a, c]);
+    await press('ArrowRight');
+    await act(frame);
+    expect(shown()).toBe(first);
+    expect(drawn()).toEqual([c]);
+    await press('ArrowRight');
+    await act(frame);
+    expect(shown()).toBe(second);
+    // back takes the groups back, the previous screen first shown complete
+    await press('ArrowLeft');
+    await act(frame);
+    expect(shown()).toBe(first);
+    expect(drawn()).toEqual([c]);
+    await press('ArrowLeft');
+    await act(frame);
+    expect(drawn()).toEqual([a, c]);
+  });
 });

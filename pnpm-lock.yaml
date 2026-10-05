@@ -471,6 +471,9 @@ importers:
 
   packages/player:
     dependencies:
+      '@fluxion/anim':
+        specifier: workspace:*
+        version: link:../anim
       '@fluxion/core':
         specifier: workspace:*
         version: link:../core

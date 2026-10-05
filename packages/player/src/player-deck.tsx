@@ -1,10 +1,17 @@
-// The one-file player's deck (FR-FIL-002, FR-EXP-001; the full player is M11): the document's visible screens, one at a time, fitted into
-// the window and drawn by the same <ScreenView> as the editor (FR-EDT-010), with the arrow, page, space and home/end keys to move.
-// The deck draws no text of its own (ADR-0023). Keys are left to a focused link, button or field, to a key another handler took, and to key repeat.
+// The one-file player's deck (FR-FIL-002, FR-EXP-001, FR-PRS-002): the document's visible screens, one at a time, fitted into the window and drawn by the
+// same <ScreenView> as the editor (FR-EDT-010). It is driven by a PresentationController over the presentation order and each screen's build groups: the arrow,
+// page, space, enter and backspace keys, Home and End, a click, and a typed screen number plus Enter move it; F is full screen. The deck draws no text of its own
+// (ADR-0023). Keys are left to a focused link, button or field, to a key another handler took, and to key repeat.
+import { reduceBuild } from '@fluxion/anim';
 import type { Store } from '@fluxion/core';
 import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import type { RecordId } from '@fluxion/schema';
+import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useReducer, useRef } from 'react';
+import { realtimeClock } from './clock.js';
+import { buildsOfScreen } from './deck-builds.js';
+import { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
 import { toggleFullscreen } from './fullscreen.js';
+import { PresentationController } from './presentation-controller.js';
 import { useElementBox } from './use-box.js';
 
 /**
@@ -23,21 +30,6 @@ export type PlayerDeckProps = {
   readonly background?: string;
 };
 
-/** The key that moves the deck, as a step: `1` forward, `-1` back, `'first'` and `'last'` for the ends, or nothing. */
-const MOVES: { readonly [key: string]: 1 | -1 | 'first' | 'last' } = {
-  ArrowRight: 1,
-  ArrowDown: 1,
-  PageDown: 1,
-  ' ': 1,
-  Enter: 1,
-  ArrowLeft: -1,
-  ArrowUp: -1,
-  PageUp: -1,
-  Backspace: -1,
-  Home: 'first',
-  End: 'last',
-};
-
 /** Whether `target` is something that takes the keys itself: a link, a button, a field. */
 const interactive = (target: EventTarget | null): boolean =>
   target instanceof Element && target.closest('a, button, input, textarea, select, summary, [contenteditable], [tabindex]:not([tabindex="-1"])') !== null;
@@ -45,29 +37,85 @@ const interactive = (target: EventTarget | null): boolean =>
 /** Whether a key is not the deck's: one with a modifier, a repeat, one another handler took, or one aimed at a link, button or field. */
 const leftAlone = (e: KeyboardEvent): boolean => e.ctrlKey || e.metaKey || e.altKey || e.repeat || e.defaultPrevented || interactive(e.target);
 
-/** What a key asks of the deck: F is full screen (the browser's own F11 is left alone), a navigation key is its move, anything else is nothing. */
-const keyAction = (key: string): 'fullscreen' | string | undefined => (key === 'f' || key === 'F' ? 'fullscreen' : MOVES[key] === undefined ? undefined : key);
+/** What the keys act on. */
+type DeckParts = {
+  readonly controller: PresentationController;
+  readonly entry: NumberEntry;
+  readonly stage: HTMLElement | null;
+  /** The screens in presentation order now. */
+  readonly screens: () => readonly RecordId[];
+};
 
-/** Act on a key aimed at the window: the move or the full screen it asks for, or nothing; a handled key is not left to the page. */
-function handleKey(e: KeyboardEvent, stage: HTMLElement | null, move: (key: string) => void): void {
-  const action = leftAlone(e) ? undefined : keyAction(e.key);
-  if (action === undefined) return;
-  e.preventDefault();
-  if (action !== 'fullscreen') move(action);
-  else if (stage !== null) void toggleFullscreen(stage, document);
+/** Go to the screen whose number was typed, when there is one. */
+function goToTyped({ controller, entry, screens }: DeckParts): void {
+  const number = entry.take();
+  const screen = number === undefined ? undefined : screens()[number - 1];
+  if (screen !== undefined) controller.goTo(screen);
 }
 
-/** The index after `key` from `current` among `count` screens, kept inside the deck; `current` when the key moves nothing. */
-function moved(key: string, current: number, count: number): number {
-  const move = MOVES[key];
-  if (move === undefined) return current;
-  if (move === 'first') return 0;
-  if (move === 'last') return Math.max(0, count - 1);
-  return Math.min(Math.max(0, count - 1), Math.max(0, current + move));
+/** What each action does; a digit, a commit and an erase are the number being typed. */
+const RUN: { readonly [kind in DeckAction['kind']]: (parts: DeckParts, action: DeckAction) => void } = {
+  next: ({ controller }) => void controller.next(),
+  prev: ({ controller }) => void controller.prev(),
+  first: ({ controller }) => void controller.first(),
+  last: ({ controller }) => void controller.last(),
+  fullscreen: ({ stage }) => void (stage !== null && toggleFullscreen(stage, document)),
+  digit: ({ entry }, action) => entry.push((action as { digit: string }).digit),
+  erase: ({ entry }) => entry.erase(),
+  cancel: ({ entry }) => entry.clear(),
+  commit: goToTyped,
+};
+
+/** Act on a key aimed at the window: the move, the full screen or the typing it asks for, or nothing; a handled key is not left to the page. */
+function handleKey(e: KeyboardEvent, parts: DeckParts): void {
+  const action = leftAlone(e) ? undefined : deckAction(e.key, parts.entry.typing);
+  if (action === undefined) return;
+  e.preventDefault();
+  RUN[action.kind](parts, action);
+}
+
+/** How long a typed screen number waits for Enter before it is dropped. */
+const TYPING_MS = 2000;
+
+/** The controller over `store`'s presentation order and builds, the screen number being typed, and the keys that drive them; the component re-renders on every move. */
+function useDeck(store: Store, stage: RefObject<HTMLElement | null>): { controller: PresentationController; screens: readonly RecordId[] } {
+  // a document that changes under the deck re-renders it; the controller reads the screens afresh on every move
+  const screens = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)), [store]));
+  const controller = useMemo(
+    () =>
+      new PresentationController(
+        {
+          screens: () => store.query((view) => presentationOrder(view, false))(),
+          groups: (screen) => store.query((view) => buildsOfScreen(view, screen).clicks)(),
+        },
+        realtimeClock,
+      ),
+    [store],
+  );
+  const [, moved] = useReducer((n: number) => n + 1, 0);
+  const entry = useMemo(() => new NumberEntry(), []);
+  useEffect(() => controller.subscribe(moved), [controller]);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const parts = (): DeckParts => ({ controller, entry, stage: stage.current, screens: () => store.query((view) => presentationOrder(view, false))() });
+    const onKey = (e: KeyboardEvent) => {
+      handleKey(e, parts());
+      // a number waits for Enter for a while and is then dropped
+      clearTimeout(timer);
+      if (entry.typing) timer = setTimeout(() => entry.clear(), TYPING_MS);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [controller, entry, store, stage]);
+  return { controller, screens };
 }
 
 /**
- * The document presented screen by screen: the visible screens in order, the first one first, moved with the keyboard.
+ * The document presented screen by screen: the visible screens in presentation order, the first one first, moved with the keyboard or a click, a screen's
+ * build groups played before the next screen.
  *
  * @public
  */
@@ -75,21 +123,30 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
   const { store, registries, assets, background = '#000' } = props;
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
-  const screens = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)), [store]));
-  const [index, setIndex] = useState(0);
-  const count = screens.length;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => handleKey(e, ref.current, (key) => setIndex((current) => moved(key, current, count)));
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [count]);
-  const shown = screens[Math.min(index, Math.max(0, count - 1))];
+  const { controller, screens } = useDeck(store, ref);
+  const position = controller.position();
+  const shown = position?.screen;
+  const group = position?.group ?? 0;
+  const hidden = useMemo(
+    () => (shown === undefined ? undefined : reduceBuild(store.query((view) => buildsOfScreen(view, shown))(), group).hidden),
+    [store, shown, group],
+  );
+  // a click on the stage (not on a link or a button) is a step forward
+  const onClick = (e: MouseEvent) => {
+    if (e.button === 0 && !e.defaultPrevented && !interactive(e.target)) controller.next();
+  };
+  const index = shown === undefined ? 0 : Math.max(0, screens.indexOf(shown));
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: the keys are handled on the window, where a presenter's clicker sends them
     <div
       ref={ref}
       className="fx-player"
       data-testid="player-deck"
-      data-screen-index={Math.min(index, Math.max(0, count - 1))}
+      role="application"
+      aria-label="Presentation"
+      data-screen-index={index}
+      data-group={group}
+      onClick={onClick}
       style={{ position: 'fixed', inset: 0, background }}
     >
       {shown === undefined || box.w === 0 ? null : (
@@ -100,6 +157,7 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
           view={{ kind: 'fit', box }}
           registries={registries}
           {...(assets === undefined ? {} : { assets })}
+          {...(hidden === undefined ? {} : { hidden })}
         />
       )}
     </div>

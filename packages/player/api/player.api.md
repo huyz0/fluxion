@@ -5,9 +5,11 @@
 ```ts
 
 import { AssetUrls } from '@fluxion/render';
+import { Builds } from '@fluxion/anim';
 import { Clock } from '@fluxion/core';
 import { CoreRegistries } from '@fluxion/core';
 import { ReactNode } from 'react';
+import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { RefObject } from 'react';
 import { registerFontMetrics } from '@fluxion/render';
@@ -19,6 +21,20 @@ export type Box = {
     readonly w: number;
     readonly h: number;
 };
+
+// @public
+export function buildsOfScreen(view: ReadView, screenId: RecordId): Builds<RecordId>;
+
+// @public
+export type DeckAction = {
+    readonly kind: "next" | "prev" | "first" | "last" | "fullscreen" | "commit" | "erase" | "cancel";
+} | {
+    readonly kind: "digit";
+    readonly digit: string;
+};
+
+// @public
+export function deckAction(key: string, typing: boolean): DeckAction | undefined;
 
 // @public
 export interface DeckSource {
@@ -64,6 +80,16 @@ export type LaserTrailProps = {
 };
 
 // @public
+export class NumberEntry {
+    clear(): void;
+    erase(): void;
+    push(digit: string): void;
+    take(): number | undefined;
+    get text(): string;
+    get typing(): boolean;
+}
+
+// @public
 export function PlayerDeck(props: PlayerDeckProps): ReactNode;
 
 // @public
@@ -103,6 +129,9 @@ export class PresentationController {
     prev(): boolean;
     subscribe(listener: (position: Position | undefined) => void): () => void;
 }
+
+// @public
+export const realtimeClock: Clock;
 
 export { registerFontMetrics }
 
