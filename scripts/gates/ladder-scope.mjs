@@ -112,6 +112,8 @@ export const NAMED_PATH_HARNESS = [
   [/^\.size-limit\.js$/, []],
   // the format specification: prose no gate parses but the docs checks (links and terms)
   [/^specs\/format\/[^/]+\.md$/, ['docs-consistency', 'format-spec']],
+  // the embed example page: read by its e2e spec alone (the spec serves it as the repository holds it)
+  [/^examples\/embed\//, []],
   // an app's page and static files (its web manifest, icons): read by the Vite build, which the ladder's `build` step runs, and by its e2e specs; no harness file reads them
   [/^apps\/[^/]+\/(index\.html|public\/.+)$/, []],
   // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test names it

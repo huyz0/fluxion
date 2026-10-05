@@ -250,6 +250,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'specs/format/flux-1.0.md',
     ])
       assert.ok(harnessFiles([p], ALL).includes(file('format-spec')), p);
+    // the embed example is read by its e2e spec alone
+    assert.deepEqual(harnessFiles(['examples/embed/index.html'], ALL), []);
     // the licence check reads manifests, the lockfile, licence texts and a pack's font data: a source or a test changes none of them
     assert.equal(
       licensesNeeded(['packages/player/src/element.tsx', 'packages/player/api/player.api.md', 'docs/a.md', 'e2e/x.ts', 'packs/basic/src/a.ts']),
