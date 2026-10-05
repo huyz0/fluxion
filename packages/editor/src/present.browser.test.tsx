@@ -136,4 +136,100 @@ describe('present in place (FR-EDT-009)', () => {
     // and a command the present tools send is refused
     expect(readOnly('element.delete', { id: rect }).ok).toBe(false);
   });
+
+  /** A document of three visible screens and a hidden one between the first and the second; the third has a rect that appears on a click. */
+  async function mountDeck() {
+    const b = documentBuilder({ seed: 191 });
+    const a = b.screen({ size: { w: 1000, h: 500 } });
+    const hidden = b.screen({ size: { w: 1000, h: 500 } });
+    const c = b.screen({ size: { w: 1000, h: 500 } });
+    const d = b.screen({ size: { w: 1000, h: 500 } });
+    const late = b.rect(d, { x: 100, y: 100, w: 200, h: 100 });
+    b.rect(d, { x: 400, y: 100, w: 200, h: 100 });
+    const doc = b.build();
+    const records = {
+      ...doc.records,
+      [hidden]: { ...(doc.records[hidden] as object), hidden: true },
+      tl: { id: 'tl', type: 'timeline', screenId: d, name: 'main', index: 'a0' },
+      s1: {
+        id: 's1',
+        type: 'step',
+        timelineId: 'tl',
+        index: 'a1',
+        trigger: { kind: 'onClick' },
+        animations: [{ id: 's1a', effect: 'appear', targets: [late] }],
+      },
+    };
+    const core = createCore({ ...doc, records } as unknown as typeof doc, { validate: false });
+    const session = createSession('doc');
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />),
+    );
+    await act(frame);
+    return { core, session, ids: [a, c, d], late };
+  }
+  const presented = () => host.querySelector('[data-testid="present-in-place"] .fx-screen')?.getAttribute('data-screen-id');
+
+  it('FR-PRS-002: while presenting, the deck keys move through the visible screens, hidden ones are skipped, and Esc returns to the screen last shown', async () => {
+    const { session, ids } = await mountDeck();
+    key('F5');
+    await act(frame);
+    expect(presented()).toBe(ids[0]);
+    key('ArrowRight');
+    await act(frame);
+    expect(presented()).toBe(ids[1]);
+    key(' ');
+    await act(frame);
+    expect(presented()).toBe(ids[2]);
+    key('Home');
+    await act(frame);
+    expect(presented()).toBe(ids[0]);
+    key('End');
+    await act(frame);
+    expect(presented()).toBe(ids[2]);
+    // the last screen has a build group: the first Left takes it back, the second leaves the screen
+    key('ArrowLeft');
+    await act(frame);
+    expect(presented()).toBe(ids[2]);
+    key('ArrowLeft');
+    await act(frame);
+    expect(presented()).toBe(ids[1]);
+    key('1');
+    key('Enter');
+    await act(frame);
+    expect(presented()).toBe(ids[0]);
+    key('ArrowRight');
+    await act(frame);
+    key('Escape');
+    await act(frame);
+    expect(session.mode.get()).toBe('edit');
+    expect(session.screen.get()).toBe(ids[1]);
+  });
+
+  it('FR-PRS-003: while presenting, a screen with build groups takes a press for each, and the keys do nothing once the editor is back', async () => {
+    const { core, session, ids, late } = await mountDeck();
+    session.screen.set(ids[2]);
+    await act(frame);
+    key('F5', { shiftKey: true });
+    await act(frame);
+    expect(presented()).toBe(ids[2]);
+    const drawn = () => [...host.querySelectorAll<HTMLElement>('[data-testid="present-in-place"] .fx-el')].map((e) => e.dataset['elId']);
+    expect(drawn()).not.toContain(late);
+    key('ArrowRight');
+    await act(frame);
+    expect(presented()).toBe(ids[2]);
+    expect(drawn()).toContain(late);
+    // a step changed under the presentation redraws it: with the appear step's effect gone, nothing hides the element
+    key('ArrowLeft');
+    await act(frame);
+    expect(drawn()).not.toContain(late);
+    await act(async () => void core.store.transact('edit', (tx) => tx.patch('s1' as never, { animations: [] } as never)));
+    await act(frame);
+    expect(drawn()).toContain(late);
+    key('Escape');
+    await act(frame);
+    key('ArrowRight');
+    await act(frame);
+    expect(session.screen.get()).toBe(ids[2]);
+  });
 });

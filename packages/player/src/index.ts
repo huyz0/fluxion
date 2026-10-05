@@ -3,7 +3,7 @@
 // the recorded metrics of a font the page has loaded (ADR-0148): a host that loads a document's own fonts registers them so text is measured as the editor did
 export { registerFontMetrics } from '@fluxion/render';
 export { realtimeClock } from './clock.js';
-export { buildsOfScreen } from './deck-builds.js';
+export { buildsOfScreen, hiddenAt } from './deck-builds.js';
 export { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
 export { type FullscreenDocument, type FullscreenResult, type FullscreenTarget, toggleFullscreen } from './fullscreen.js';
 export { LASER_FADE, type LaserPoint, type TrailDot, trailKeys } from './laser-keys.js';

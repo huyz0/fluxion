@@ -183,8 +183,8 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-022 | S | R2 | M12 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-023 | C | R8 | M32 | [15-editor.md](15-editor.md) | — |
 | FR-PRS-001 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.letterbox.spec.ts` +2 |
-| FR-PRS-002 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.keyboard-nav.spec.ts` +4 |
-| FR-PRS-003 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `packages/anim/src/builds.test.ts` +3 |
+| FR-PRS-002 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.keyboard-nav.spec.ts` +5 |
+| FR-PRS-003 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `packages/anim/src/builds.test.ts` +4 |
 | FR-PRS-004 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-PRS-005 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-PRS-006 | S | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |

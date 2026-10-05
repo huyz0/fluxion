@@ -2,13 +2,12 @@
 // same <ScreenView> as the editor (FR-EDT-010). It is driven by a PresentationController over the presentation order and each screen's build groups: the arrow,
 // page, space, enter and backspace keys, Home and End, a click, and a typed screen number plus Enter move it; F is full screen and O opens the overview grid of screens (deck-overview.tsx). The deck draws no text of its own
 // (ADR-0023). Keys are left to a focused link, button or field, to a key another handler took, and to key repeat.
-import { reduceBuild } from '@fluxion/anim';
 import type { Store } from '@fluxion/core';
 import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { realtimeClock } from './clock.js';
-import { buildsOfScreen } from './deck-builds.js';
+import { buildsOfScreen, hiddenAt } from './deck-builds.js';
 import { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
 import { DeckOverview } from './deck-overview.js';
 import { toggleFullscreen } from './fullscreen.js';
@@ -163,10 +162,8 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
   const position = controller.position();
   const shown = position?.screen;
   const group = position?.group ?? 0;
-  const hidden = useMemo(
-    () => (shown === undefined ? undefined : reduceBuild(store.query((view) => buildsOfScreen(view, shown))(), group).hidden),
-    [store, shown, group],
-  );
+  // read through the store's signal, so a step changed under the presentation redraws it
+  const hidden = useValue(useMemo(() => store.query((view) => (shown === undefined ? undefined : hiddenAt(view, shown, group))), [store, shown, group]));
   // a click on the stage (not on a link or a button) is a step forward
   const onClick = (e: MouseEvent) => {
     if (e.button === 0 && !e.defaultPrevented && !interactive(e.target)) controller.next();

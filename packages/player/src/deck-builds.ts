@@ -1,7 +1,7 @@
 // The build groups of a screen, read from the document (FR-PRS-003): the steps of the screen's `main` timeline in order, folded by `@fluxion/anim`. Timelines
 // other than `main` are named timelines played by actions and are not part of the build position (07 §2).
 
-import { type BuildStep, type Builds, compileBuilds } from '@fluxion/anim';
+import { type BuildStep, type Builds, compileBuilds, reduceBuild } from '@fluxion/anim';
 import type { ReadView } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 
@@ -47,4 +47,13 @@ function mainSteps(view: ReadView, screenId: RecordId): BuildStep<RecordId>[] {
  */
 export function buildsOfScreen(view: ReadView, screenId: RecordId): Builds<RecordId> {
   return compileBuilds(mainSteps(view, screenId));
+}
+
+/**
+ * The elements screen `screenId` leaves out once `group` of its build groups have played (0: before any, its click count: complete).
+ *
+ * @public
+ */
+export function hiddenAt(view: ReadView, screenId: RecordId, group: number): ReadonlySet<RecordId> {
+  return reduceBuild(buildsOfScreen(view, screenId), group).hidden;
 }

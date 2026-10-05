@@ -62,6 +62,9 @@ export type FullscreenTarget = {
 };
 
 // @public
+export function hiddenAt(view: ReadView, screenId: RecordId, group: number): ReadonlySet<RecordId>;
+
+// @public
 export const LASER_FADE = "0.8s";
 
 // @public

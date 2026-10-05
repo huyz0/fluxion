@@ -11,6 +11,7 @@ import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { usePointerInput } from './pointer-input.js';
 import { fitCamera } from './present-mode.js';
+import { usePresentNav } from './present-nav.js';
 import { switchScreen } from './screen-switch.js';
 import { DEFAULT_CAMERA, type Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
@@ -107,6 +108,7 @@ export function PresentInPlace(props: PresentInPlaceProps): ReactNode {
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
   const laser = useValue(session.laser.get);
+  const hidden = usePresentNav(store, session);
   const camera = area !== undefined && box.w > 0 ? fitCamera(area, box) : DEFAULT_CAMERA;
   const latest = useRef(camera);
   latest.current = camera;
@@ -132,6 +134,7 @@ export function PresentInPlace(props: PresentInPlaceProps): ReactNode {
           view={{ kind: 'fit', box }}
           registries={registries}
           {...(assets === undefined ? {} : { assets })}
+          {...(hidden === undefined ? {} : { hidden })}
         >
           <LaserTrail points={laser} scale={camera.z} />
         </ScreenView>
