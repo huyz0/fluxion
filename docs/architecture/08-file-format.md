@@ -139,7 +139,7 @@ Reference: 20 screens × ~15 elements, 2 subset fonts, no photos (NFR-SIZE-003).
 | 2 subset WOFF2 fonts (Latin) | — | 60–120 kB | 80–160 kB |
 | preview.webp | — | 10–20 kB | 13–27 kB |
 | player (React + render + anim + player) | ~400 kB min | — | ≤ 150 kB gzip budget (NFR-SIZE-001); inline ≈ 300–400 kB, compact ≈ 150–200 kB |
-| **Total** | | **≈ 90–150 kB** (budget 150 kB) | **≈ 300–450 kB** (budget 450 kB) |
+| **Total** | | **≈ 90–150 kB** (budget 150 kB) | **≈ 300–450 kB** (budget 450 kB gzip, ADR-0157; the raw page of the 20-screen fixture is about 750 kB) |
 
 Every 8 photos (WebP ≤ 2560 px) add roughly 0.6–1.2 MB. A fixture test enforces the budgets. Layout
 engines are never embedded unless a live-layout container needs one (NFR-SIZE-005).

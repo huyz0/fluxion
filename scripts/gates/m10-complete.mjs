@@ -256,10 +256,10 @@ leg(`a 20-screen document stays within DOC20_FLUX_BYTES (${t('DOC20_FLUX_BYTES')
   const doc = json('fixtures/docs/doc20.flux.json');
   const screens = Object.values(doc?.records ?? {}).filter((r) => r.type === 'screen').length;
   if (screens < 20) return `fixtures/docs/doc20.flux.json has ${screens} screens (< 20)`;
-  return titled([
-    ['M10.20', 'NFR-SIZE-003: the 20-screen document in .flux is within DOC20_FLUX_BYTES', FORMAT],
-    ['M10.20', 'NFR-SIZE-003: the 20-screen document in .flux.html is within DOC20_FLUX_HTML_BYTES', FORMAT],
-  ]);
+  const flux = titled([['M10.20', 'NFR-SIZE-003: the 20-screen document in .flux is within DOC20_FLUX_BYTES', FORMAT]]);
+  // the `.flux.html` leg is measured gzip (ADR-0157, M10.45)
+  const html = titledSpec('e2e/file.size.spec.ts', DESKTOP, ['NFR-SIZE-003: the 20-screen document in .flux.html is within DOC20_FLUX_HTML_BYTES (gzip)']);
+  return flux === true ? html : flux;
 });
 leg('the studio and the .flux.html from file:// draw the same screens within 0.1 % (file.fidelity)', () =>
   titledSpec('e2e/file.fidelity.spec.ts', DESKTOP, ['FR-FIL-001: every screen of the 20-screen document is within 0.1 percent of the studio render']),

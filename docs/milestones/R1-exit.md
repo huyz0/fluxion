@@ -26,5 +26,4 @@ today. `m11-complete` fails while a box is open.
 - [x] **Create a 5-screen deck by hand, save, reopen, present.** `e2e/mvp.create-save-reopen-present.spec.ts` (M11.24).
 - [x] **The one-file player is within budget.** `pnpm exec size-limit` holds the player core, the one-file player and the element script to `PLAYER_CORE_GZIP` (M11.18); the editor to `EDITOR_INITIAL_GZIP` and its
   time to interactive to `EDITOR_TTI_MS` through the Lighthouse job (M11.19; its green run is in `ci`).
-- [ ] **NFR-SIZE-003: the 20-screen document in `.flux.html` is within its budget, or the budget is decided.** Open: the human decision of M10.45 (is the budget measured raw or gzip) is still to be made;
-  until it is, `titled([['M10.45', …]])` of `m11-complete` cannot pass.
+- [x] **NFR-SIZE-003: the 20-screen document in `.flux.html` is within its budget.** Decided by the human on 2026-10-05: the budget is 450 kB gzip (ADR-0157); `e2e/file.size.spec.ts` measures the page made from `fixtures/docs/doc20.flux.json` (about 241 kB gzip).

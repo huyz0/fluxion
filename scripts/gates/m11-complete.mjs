@@ -140,9 +140,7 @@ leg('the browser matrix: all five projects in CI and a nightly run on the previo
   if (!exists('.github/workflows/nightly.yml')) return 'missing .github/workflows/nightly.yml (the previous-major run)';
   return /previous/i.test(readText('.github/workflows/nightly.yml')) || 'nightly.yml does not run a previous major';
 });
-leg('NFR-SIZE-003: the 20-screen .flux.html size is decided (M10.45) and its test passes', () =>
-  titled([['M10.45', 'NFR-SIZE-003: the 20-screen document in .flux.html is within DOC20_FLUX_HTML_BYTES', 'format']]),
-);
+leg('NFR-SIZE-003: the 20-screen .flux.html size is decided (M10.45, ADR-0157: gzip) and its test passes', () => e2e(['e2e/file.size.spec.ts'], DESKTOP));
 
 // ── the demo, the exit, the docs ────────────────────────────────────────────────────────────────────
 // the five screens are asserted by the journey spec, which builds the deck by hand; the offline spec opens the committed file
