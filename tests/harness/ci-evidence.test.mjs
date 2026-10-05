@@ -10,10 +10,15 @@ const run = (id, workflowName, headSha, job) => ({
   workflowName,
   headSha,
   conclusion: 'success',
-  // ci also runs the visual job (M5.3)
+  // ci also runs the visual job (M5.3) and the Lighthouse job (M11.19)
   jobs: [
     ...OSES.map((os) => ({ name: `${job} (${os})`, conclusion: 'success' })),
-    ...(workflowName === 'ci' ? [{ name: 'visual', conclusion: 'success' }] : []),
+    ...(workflowName === 'ci'
+      ? [
+          { name: 'visual', conclusion: 'success' },
+          { name: 'lighthouse', conclusion: 'success' },
+        ]
+      : []),
   ],
 });
 /** `r` with the job for `os` concluded `conclusion`. */
@@ -104,6 +109,15 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
       const r = check(record(sha.new), [run(1, 'gates', sha.new, 'gates'), { ...ci, jobs }]);
       assert.equal(r.status, 1, out(r));
       assert.match(r.stderr, /ci: job visual (failure|missing)/);
+    }
+  });
+
+  it('evidence without a green Lighthouse job fails (M11.19)', () => {
+    const ci = run(2, 'ci', sha.new, 'verify');
+    for (const jobs of [ci.jobs.map((j) => (j.name === 'lighthouse' ? { ...j, conclusion: 'failure' } : j)), ci.jobs.filter((j) => j.name !== 'lighthouse')]) {
+      const r = check(record(sha.new), [run(1, 'gates', sha.new, 'gates'), { ...ci, jobs }]);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /ci: job lighthouse (failure|missing)/);
     }
   });
 

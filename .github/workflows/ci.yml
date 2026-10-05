@@ -247,6 +247,32 @@ jobs:
           name: dist
       - run: pnpm test:a11y
 
+  lighthouse:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+    env:
+      HOME: /root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @fluxion/studio run build
+      # the editor's time to interactive on Lighthouse's desktop preset against EDITOR_TTI_MS (NFR-SIZE-002); the browser is the one the Playwright image carries
+      - run: pnpm exec node -e "process.stdout.write(require('@playwright/test').chromium.executablePath())" > "$RUNNER_TEMP/chrome-path"
+      # lhci reads a JSON config: lighthouserc.mjs (which reads EDITOR_TTI_MS) is written out as one
+      - run: node --input-type=module -e "import c from './lighthouserc.mjs'; import { writeFileSync } from 'node:fs'; writeFileSync(process.env.RUNNER_TEMP + '/lhci.json', JSON.stringify(c));"
+      # the top-level package is pinned and the job holds a read-only token and no secrets; its transitive tree is not locked until M11.54 (ADR-0156)
+      - run: CHROME_PATH="$(cat "$RUNNER_TEMP/chrome-path")" npx --yes @lhci/cli@0.14.0 autorun --config="$RUNNER_TEMP/lhci.json"
+
   size:
     needs: build
     runs-on: ubuntu-latest
@@ -325,7 +351,7 @@ jobs:
 
   ci-ok:
     if: always()
-    needs: [verify, cold-setup, build, e2e, e2e-report, visual, a11y, size, api, license, security, eval-recorded]
+    needs: [verify, cold-setup, build, e2e, e2e-report, visual, a11y, lighthouse, size, api, license, security, eval-recorded]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

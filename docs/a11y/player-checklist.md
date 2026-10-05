@@ -10,7 +10,7 @@ a manual step for the person reviewing the change.
 - **Screen changes are announced**: a `role="status"` live region reads "Screen N of M: name" after every move, and the screen's name is a heading. `e2e/a11y.player.spec.ts`
   (the live-region text on navigation).
 - **What a screen draws without words has words**: an image with a label has that label as alt text, and a connector reads "A connects to B: label" from the elements it
-  joins (a free end says so). A view supplies them through `ElementView.a11y` (ADR-0015, amendment M11.16); `packages/render/src/a11y.test.ts`.
+  joins (a free end says so). A view supplies them through `ElementView.a11y` (ADR-0015, amendment M11.16); `packages/render/src/a11y.browser.test.ts`.
 - **Text keeps its structure**: headings, paragraphs and (nested) lists are `h1`–`h6`, `p`, `ul`/`ol` and `li` in the DOM, not drawn lines (`packages/render/src/rich-text.test.tsx`).
 - **Keyboard only**: every screen is reached with the keys, the controls with Tab and Enter or Space, and the overview grid traps focus while open and gives it back when it closes; the spec never touches the mouse (`e2e/player.keyboard-only.spec.ts`, NFR-A11Y-004; the moves themselves are in `e2e/player.keyboard-nav.spec.ts`).
 

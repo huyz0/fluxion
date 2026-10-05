@@ -33,7 +33,8 @@ const OSES = ['ubuntu-latest', 'windows-latest', 'macos-latest'];
 const REQUIRED = {
   gates: [['gates', 'gates (ubuntu-latest)']],
   // the visual job compares screenshots with their baselines: pixel matches are evidence too (M5.3)
-  ci: [...OSES.map((os) => [`verify (${os})`]), ['visual']],
+  // the Lighthouse job is the editor's time to interactive against EDITOR_TTI_MS (NFR-SIZE-002, M11.19)
+  ci: [...OSES.map((os) => [`verify (${os})`]), ['visual'], ['lighthouse']],
 };
 
 const fail = (msg) => {
