@@ -7,7 +7,8 @@ const read = (p) => readFileSync(new URL(`../../${p}`, import.meta.url), 'utf8')
 
 test('specs/format/flux-1.0.md states the loader limits, the schema version and the stored extensions the code uses', () => {
   const spec = read('specs/format/flux-1.0.md');
-  const loader = read('packages/format/src/loader.ts');
+  // the container half of the loader holds the limits (loader.ts adds the validating reader, lean.ts the player's)
+  const loader = read('packages/format/src/loader-core.ts');
   const limits =
     /DEFAULT_LIMITS[^=]*=\s*\{\s*maxEntries:\s*(\d+),\s*maxEntryBytes:\s*(\d+)\s*\*\s*1024\s*\*\s*1024,\s*maxTotalBytes:\s*(\d+)\s*\*\s*1024\s*\*\s*1024/.exec(
       loader,

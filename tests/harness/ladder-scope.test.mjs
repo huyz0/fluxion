@@ -121,6 +121,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'architecture',
       'bench-leg',
       'diagnostics-doc',
+      'format-spec',
       'google-fonts',
       'kind-switch',
       'milestone-checks',
@@ -152,7 +153,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     // the bundle budgets are read by the ladder's size-limit step alone
     assert.deepEqual(harnessFiles(['.size-limit.js'], ALL), []);
     // the format specification is read by the docs checks alone
-    assert.deepEqual(harnessFiles(['specs/format/flux-1.0.md'], ALL), only(['docs-consistency']));
+    assert.deepEqual(harnessFiles(['specs/format/flux-1.0.md'], ALL), only(['docs-consistency', 'format-spec']));
     // an app's page and static files are built by the Vite build step, which the ladder runs
     assert.deepEqual(harnessFiles(['apps/studio/index.html', 'apps/studio/public/manifest.webmanifest'], ALL), []);
     // the Vitest config is judged by the Vitest step itself, which runs everything for it; only the scope test names it
@@ -241,6 +242,14 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(apiScope(['docs/a.md', 'e2e/x.ts', 'scripts/gates/check-api.mjs']), { dirs: [], typedoc: false });
     for (const p of ['tools/gen/workspaces.json', 'scripts/gates/lib.mjs', 'typedoc.json', 'package.json', 'pnpm-lock.yaml', 'tsconfig.base.json'])
       assert.equal(apiScope(['packages/player/src/a.ts', p]), undefined, p);
+    // the format specification states numbers the loader and the writer hold: their sources run the test that keeps them together
+    for (const p of [
+      'packages/format/src/loader-core.ts',
+      'packages/format/src/flux-writer.ts',
+      'packages/schema/src/document-file.ts',
+      'specs/format/flux-1.0.md',
+    ])
+      assert.ok(harnessFiles([p], ALL).includes(file('format-spec')), p);
     // the licence check reads manifests, the lockfile, licence texts and a pack's font data: a source or a test changes none of them
     assert.equal(
       licensesNeeded(['packages/player/src/element.tsx', 'packages/player/api/player.api.md', 'docs/a.md', 'e2e/x.ts', 'packs/basic/src/a.ts']),

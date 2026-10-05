@@ -23,6 +23,8 @@ export const SOURCE_HARNESS = [
   'architecture',
   'bench-leg',
   'diagnostics-doc',
+  // the format specification states numbers the loader and the writer hold (limits, stored extensions) and the schema version
+  'format-spec',
   'docs-consistency',
   'google-fonts',
   'kind-switch',
@@ -109,7 +111,7 @@ export const NAMED_PATH_HARNESS = [
   // the bundle budgets: read by the ladder's own `size-limit` step, which the staged ladder runs; no harness file reads them
   [/^\.size-limit\.js$/, []],
   // the format specification: prose no gate parses but the docs checks (links and terms)
-  [/^specs\/format\/[^/]+\.md$/, ['docs-consistency']],
+  [/^specs\/format\/[^/]+\.md$/, ['docs-consistency', 'format-spec']],
   // an app's page and static files (its web manifest, icons): read by the Vite build, which the ladder's `build` step runs, and by its e2e specs; no harness file reads them
   [/^apps\/[^/]+\/(index\.html|public\/.+)$/, []],
   // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test names it
