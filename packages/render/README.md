@@ -9,7 +9,8 @@ React 19 DOM+SVG renderer of a screen, identical in edit and present mode.
 ```tsx
 import { createCore } from '@fluxion/core';
 import { basicPack } from '@fluxion/pack-basic';
-import { builtinRegistries, renderDocumentToHtml, ScreenView } from '@fluxion/render';
+import { builtinRegistries, ScreenView } from '@fluxion/render';
+import { renderDocumentToHtml } from '@fluxion/render/ssr'; // the static page: its own entry, so the browser bundle never holds react-dom/server
 import { createCoreRegistries } from '@fluxion/sdk';
 
 // shapes come from the host's core registries, where its packs register (ADR-0016, ADR-0017)
