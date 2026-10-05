@@ -16,6 +16,7 @@ import { toggleFullscreen } from './fullscreen.js';
 import { PresentationController } from './presentation-controller.js';
 import { ScreenBoundary } from './screen-boundary.js';
 import { useElementBox } from './use-box.js';
+import { useTouch } from './use-touch.js';
 
 /**
  * Props of {@link PlayerDeck}.
@@ -271,9 +272,10 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
   const group = position?.group ?? 0;
   // read through the store's signal, so a step changed under the presentation redraws it
   const hidden = useValue(useMemo(() => store.query((view) => (shown === undefined ? undefined : hiddenAt(view, shown, group))), [store, shown, group]));
-  // a click on the stage (not on a link or a button) is a step forward
+  const touch = useTouch(ref, { controller, screen: shown, box, ignore: interactive, blocked: overview.open });
+  // a click or tap on the stage (not on a link or a button) is a step forward, unless the screen is zoomed into: then a tap is for looking
   const onClick = (e: MouseEvent) => {
-    if (e.button === 0 && !e.defaultPrevented && !interactive(e.target)) controller.next();
+    if (e.button === 0 && !e.defaultPrevented && !interactive(e.target) && touch.zoom === 1 && touch.clickable()) controller.next();
   };
   const index = shown === undefined ? 0 : Math.max(0, screens.indexOf(shown));
   return (
@@ -287,11 +289,23 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
       aria-label="Presentation"
       data-screen-index={index}
       data-group={group}
+      data-zoom={touch.zoom}
       onClick={onClick}
       tabIndex={scope === 'stage' ? 0 : undefined}
-      style={{ position: layout === 'container' ? 'absolute' : 'fixed', inset: 0, background }}
+      // vertical swipes stay the page's (an embedded deck must not trap a scroll); a zoomed screen takes every touch
+      style={{ position: layout === 'container' ? 'absolute' : 'fixed', inset: 0, background, touchAction: touch.zoom > 1 ? 'none' : 'pan-y' }}
     >
-      <ShownScreen store={store} registries={registries} assets={assets} screen={shown} box={box} hidden={hidden} />
+      <div
+        data-testid="deck-view"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          transformOrigin: '0 0',
+          ...(touch.zoom > 1 ? { transform: `translate(${touch.x}px, ${touch.y}px) scale(${touch.zoom})` } : {}),
+        }}
+      >
+        <ShownScreen store={store} registries={registries} assets={assets} screen={shown} box={box} hidden={hidden} />
+      </div>
       {chrome ? <ChromeOf deck={{ controller, overview, stage: ref, index, count: screens.length }} labels={labels} /> : null}
       {overview.open ? (
         <DeckOverview

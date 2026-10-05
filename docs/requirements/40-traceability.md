@@ -194,13 +194,13 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SPK-001 | M | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-SPK-002 | S | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-SPK-003 | S | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
-| FR-RSP-001 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
+| FR-RSP-001 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.touch.spec.ts` +2 |
 | FR-RSP-002 | M | R7 | M29 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-RSP-003 | M | R7 | M29 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-RSP-004 | S | R7 | M29 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-RSP-005 | M | R7 | M29 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-RSP-006 | S | R7 | M29 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
-| FR-RSP-007 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
+| FR-RSP-007 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.orientation.spec.ts` |
 | FR-ANI-001 | M | R4 | M21 | [17-animation-and-transition.md](17-animation-and-transition.md) | — |
 | FR-ANI-002 | M | R4 | M21 | [17-animation-and-transition.md](17-animation-and-transition.md) | — |
 | FR-ANI-003 | M | R4 | M21 | [17-animation-and-transition.md](17-animation-and-transition.md) | — |
