@@ -108,7 +108,8 @@ describe('the deck chrome (FR-PRS-006)', () => {
     const next = host.querySelector<HTMLElement>('[part="next"]') as HTMLElement;
     expect(next.getAttribute('aria-label')).toBe('Suivant');
     next.focus();
-    await act(async () => next.click());
+    // a pointer click carries a click count; a key press (or a script's click()) does not
+    await act(async () => void next.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 })));
     await act(frame);
     // the button let go of focus, and a key aimed at a chrome button that is not Enter or Space is the deck's
     expect(document.activeElement).not.toBe(next);

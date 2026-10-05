@@ -1,8 +1,9 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Page } from '@playwright/test';
+import { fluxFileOf } from './pages/flux-files.js';
 import { fluxHtmlOf } from './pages/flux-html.js';
 import { expect, test } from './test.js';
 
@@ -78,5 +79,42 @@ test.describe('the chrome of the player', { tag: '@desktop' }, () => {
     await expect(controls(page)).toBeVisible();
     await page.clock.fastForward(1000);
     await expect(controls(page)).toBeHidden();
+  });
+
+  test('FR-PRS-006: a button keeps the focus after a key press, so the Tab order survives (a pointer click lets go)', async ({ page }) => {
+    await open(page);
+    await page.getByRole('button', { name: 'Next screen' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(counter(page)).toHaveText('2 / 20');
+    await expect(page.getByRole('button', { name: 'Next screen' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Overview of the screens' })).toBeFocused();
+    await page.getByRole('button', { name: 'Next screen' }).click();
+    await expect(counter(page)).toHaveText('3 / 20');
+    await expect(page.getByRole('button', { name: 'Next screen' })).not.toBeFocused();
+  });
+
+  test("FR-PRS-006: a page's ::part(controls) and ::part(progress-fill) rules win over the chrome's own styles in the element", async ({ page }) => {
+    const deck = await fluxFileOf('doc20');
+    const script = readFileSync(resolve('packages/player-inline/dist/fluxion-player.js'));
+    const html = `<!doctype html><meta charset="utf-8"><style>
+      fluxion-player{width:640px;height:360px}
+      fluxion-player::part(controls){background:rgb(255,0,0)}
+      fluxion-player::part(progress-fill){background:rgb(0,0,255)}
+    </style><script src="player.js"></script><fluxion-player src="deck.flux" controls></fluxion-player>`;
+    await page.route('**/part-example/**', (route) => {
+      const url = route.request().url();
+      if (url.endsWith('/index.html')) return route.fulfill({ contentType: 'text/html', body: html });
+      if (url.endsWith('/player.js')) return route.fulfill({ contentType: 'text/javascript', body: script });
+      if (url.endsWith('/deck.flux')) return route.fulfill({ contentType: 'application/octet-stream', body: Buffer.from(deck) });
+      return route.fulfill({ status: 404, body: '' });
+    });
+    await page.goto('/part-example/index.html');
+    const color = (part: string) =>
+      page
+        .locator('fluxion-player')
+        .evaluate((el, name) => getComputedStyle(el.shadowRoot?.querySelector(`[part~="${name}"]`) as Element).backgroundColor, part);
+    await expect.poll(() => color('controls')).toBe('rgb(255, 0, 0)');
+    expect(await color('progress-fill')).toBe('rgb(0, 0, 255)');
   });
 });

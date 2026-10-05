@@ -6,6 +6,7 @@ import type { Store } from '@fluxion/core';
 import { type AssetUrls, CONTENT_CSS, ContentCssContext, presentationOrder, type RenderRegistries } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { createRoot, type Root } from 'react-dom/client';
+import { CHROME_CSS } from './chrome-css.js';
 import { PlayerDeck } from './player-deck.js';
 import type { PresentationController } from './presentation-controller.js';
 
@@ -54,7 +55,7 @@ const HOST_CSS =
 
 /** The sheet the shadow root adopts: the content CSS and the element's. */
 function sheet(): CSSStyleSheet | HTMLStyleElement {
-  const css = `${CONTENT_CSS}\n${HOST_CSS}`;
+  const css = `${CONTENT_CSS}\n${CHROME_CSS}\n${HOST_CSS}`;
   if (typeof CSSStyleSheet === 'function' && 'replaceSync' in CSSStyleSheet.prototype) {
     const adopted = new CSSStyleSheet();
     adopted.replaceSync(css);
