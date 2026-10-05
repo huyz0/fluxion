@@ -20,6 +20,11 @@
       "@fluxion/source": "./src/element.tsx",
       "types": "./dist/element.d.ts",
       "default": "./dist/element.js"
+    },
+    "./react": {
+      "@fluxion/source": "./src/react.tsx",
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
     }
   },
   "files": [
@@ -44,5 +49,9 @@
   "devDependencies": {
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }

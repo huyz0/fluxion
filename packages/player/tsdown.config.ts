@@ -11,7 +11,7 @@ const PACKAGE_DOC = `/**
 export default defineConfig({
   // the element (`@fluxion/player/element`) is its own entry as well: it defines a custom element only when a host asks (ADR-0026)
   // the mount (React DOM's `createRoot`) is its own entry, `@fluxion/player/mount`: the package's main entry stays free of React DOM and within PLAYER_CORE_GZIP
-  entry: ['src/index.ts', 'src/mount.tsx', 'src/element.tsx'],
+  entry: ['src/index.ts', 'src/mount.tsx', 'src/element.tsx', 'src/react.tsx'],
   format: 'esm',
   dts: true,
   clean: true,
