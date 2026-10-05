@@ -40,7 +40,13 @@ test.describe('orientation and resize of the player', () => {
     const before = await fitted();
     const size = page.viewportSize() ?? { width: 400, height: 800 };
     await page.setViewportSize({ width: size.height, height: size.width });
-    await expect.poll(async () => (await fitted()).vw).toBe(size.height);
+    // wait for the deck to re-fit, not only for the window: the rect follows the viewport a frame later
+    await expect
+      .poll(async () => {
+        const now = await fitted();
+        return now.vw === size.height && (now.w !== before.w || now.h !== before.h);
+      })
+      .toBe(true);
     const after = await fitted();
     // the screen is the same one at another size, within the new window
     await expect(page.getByTestId('deck-counter')).toHaveText('4 / 20');
