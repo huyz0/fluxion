@@ -248,13 +248,13 @@ function richText() {
 }
 
 /**
- * The size fixture (NFR-SIZE-003, M10.20): a typical 20-screen document without photos. Each screen has a title, a paragraph of text, four labelled
- * boxes and three connectors, so the file holds what a real deck holds. The `.flux` and the `.flux.html` made from it are measured against the budgets.
+ * A typical deck without photos (NFR-SIZE-003, M10.20): `count` screens, each with a title, a paragraph of text, four labelled boxes and three connectors, so the file
+ * holds what a real deck holds. The size fixture is 20 screens; the open-time fixture (NFR-PERF-003, M11.20) is 50.
  */
-function doc20() {
-  const b = documentBuilder({ title: 'Twenty screens', seed: 2020 });
+function deck(count, title, seed) {
+  const b = documentBuilder({ title, seed });
   const TOPICS = ['Context', 'Goals', 'Users', 'Constraints', 'Architecture', 'Data flow', 'Services', 'Storage', 'Security', 'Rollout'];
-  for (let n = 1; n <= 20; n++) {
+  for (let n = 1; n <= count; n++) {
     const topic = TOPICS[(n - 1) % TOPICS.length];
     const s = b.screen({ name: `${n}. ${topic}`, size: { w: 1920, h: 1080 } });
     b.text(s, `${n}. ${topic}`, { x: 120, y: 60, w: 1200, h: 120 });
@@ -271,6 +271,9 @@ function doc20() {
   }
   return b.build();
 }
+
+const doc20 = () => deck(20, 'Twenty screens', 2020);
+const doc50 = () => deck(50, 'Fifty screens', 2050);
 
 const FIXTURES = {
   minimal: () => {
@@ -308,6 +311,7 @@ const FIXTURES = {
   'perf-500': perf500,
   'rich-text': richText,
   doc20,
+  doc50,
   // an element on a screen that does not exist
   'invalid-ref-missing': () => {
     const { doc, rect } = twoRectsLine('Missing screen');
