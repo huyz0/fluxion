@@ -21,6 +21,7 @@
       "!fixtures/docs",
       "!fixtures/fonts/*.json",
       "!examples/**/*.flux.json",
+      "!examples/**/*.flux.html",
       "!specs/security/corpus"
     ]
   },

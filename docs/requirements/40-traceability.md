@@ -45,7 +45,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-FIL-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/file.fidelity.spec.ts`, `e2e/file.offline-file-protocol.spec.ts` |
-| FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-html-reader.test.ts` +4 |
+| FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/examples.r1-offline.spec.ts` +6 |
 | FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/cli/src/e2e/cli.convert.test.ts` +4 |
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/blobs.browser.test.ts` +6 |
 | FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -335,9 +335,9 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/open-sources.test.ts`, `e2e/privacy.no-telemetry.spec.ts` |
 | NFR-SEC-007 | S | R6 | M28 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.editor.spec.ts` |
-| NFR-A11Y-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.player.spec.ts`, `packages/render/src/a11y.browser.test.ts` |
+| NFR-A11Y-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.player.spec.ts` +2 |
 | NFR-A11Y-003 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-A11Y-004 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/player.keyboard-only.spec.ts` |
+| NFR-A11Y-004 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/examples.r1-offline.spec.ts`, `e2e/player.keyboard-only.spec.ts` |
 | NFR-A11Y-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-006 | S | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-I18N-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | — |

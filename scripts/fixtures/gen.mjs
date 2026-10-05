@@ -275,6 +275,31 @@ function deck(count, title, seed) {
 const doc20 = () => deck(20, 'Twenty screens', 2020);
 const doc50 = () => deck(50, 'Fifty screens', 2050);
 
+/**
+ * The R1 demo deck (M11.24): five screens that say what Fluxion does, with the shapes, connectors and text the journey spec makes by hand. The committed
+ * `examples/r1-mvp-deck.flux.html` embeds it with the one-file player (`scripts/examples/make-r1-demo.mjs`).
+ */
+function r1MvpDeck() {
+  const b = documentBuilder({ title: 'Fluxion in five screens', seed: 1105 });
+  const screen = (name, title, line) => {
+    const s = b.screen({ name, size: { w: 1920, h: 1080 } });
+    b.text(s, title, { x: 120, y: 80, w: 1400, h: 120 });
+    b.text(s, line, { x: 120, y: 220, w: 1300, h: 120 });
+    return s;
+  };
+  screen('Welcome', 'Welcome to Fluxion', 'Diagrams that move, in one file you can open anywhere.');
+  const draw = screen('Draw', 'Draw shapes and connect them', 'Boxes, arrows and labels that stay joined when you move them.');
+  const [a, c, d] = ['Idea', 'Sketch', 'Share'].map((label, i) => b.rect(draw, { x: 160 + i * 560, y: 520, w: 360, h: 220, label, slug: label.toLowerCase() }));
+  b.connect(a, c);
+  b.connect(c, d);
+  screen('Write', 'Write text in place', 'Double-click a box, type, and press Escape.');
+  const save = screen('Save', 'Save one portable file', 'A .flux file, or a .flux.html that opens in any browser, offline.');
+  const [f, h] = ['deck.flux', 'deck.flux.html'].map((label, i) => b.rect(save, { x: 360 + i * 700, y: 520, w: 460, h: 220, label, slug: `file-${i}` }));
+  b.connect(f, h);
+  screen('Present', 'Present it anywhere', 'Arrow keys, a tap or a swipe: the next screen is one move away.');
+  return b.build();
+}
+
 const FIXTURES = {
   minimal: () => {
     const b = documentBuilder({ title: 'Minimal', seed: 1 });
@@ -312,6 +337,7 @@ const FIXTURES = {
   'rich-text': richText,
   doc20,
   doc50,
+  'r1-mvp-deck': r1MvpDeck,
   // an element on a screen that does not exist
   'invalid-ref-missing': () => {
     const { doc, rect } = twoRectsLine('Missing screen');

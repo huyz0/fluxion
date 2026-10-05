@@ -17,10 +17,15 @@ const FIXTURES = Object.entries(import.meta.glob('../../../fixtures/docs/*.flux.
   // the shapes gallery needs the basic pack: its golden is the CLI's, which bundles the pack (M5.24);
   // so does the drag benchmark, which has no golden (a benchmark, not a rendering reference), and the
   // rich-text fixture (shape labels; its goldens are one per mark and block, M7.9, and its parity is E2E)
-  // and the 20-screen document, a size fixture (NFR-SIZE-003) that is measured, not drawn
+  // and the 20-screen document, a size fixture (NFR-SIZE-003) that is measured, not drawn, the 50-screen one, an open-time fixture (NFR-PERF-003), and the demo deck (shapes of the basic pack; M11.24)
   .filter(
     ([path]) =>
-      !path.includes('/shapes-gallery.') && !path.includes('/perf-') && !path.includes('/rich-text.') && !path.includes('/doc20.') && !path.includes('/doc50.'),
+      !path.includes('/shapes-gallery.') &&
+      !path.includes('/perf-') &&
+      !path.includes('/rich-text.') &&
+      !path.includes('/doc20.') &&
+      !path.includes('/doc50.') &&
+      !path.includes('/r1-mvp-deck.'),
   )
   .map(([path, text]) => [(path.split('/').at(-1) ?? path).replace('.flux.json', ''), JSON.parse(text) as DocumentFile] as const);
 

@@ -163,6 +163,9 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       withScript.filter((f) => ['previous-playwright', 'ci-workflow'].some((n) => f.endsWith(`/${n}.test.mjs`))),
     );
     assert.ok(harnessFiles(['scripts/ci/previous-playwright.mjs'], withScript).includes(file('previous-playwright')));
+    // the R1 demo file is read by its e2e spec, its generator by the milestone checks and the portability scan
+    assert.deepEqual(harnessFiles(['examples/r1-mvp-deck.flux.html'], ALL), []);
+    assert.deepEqual(harnessFiles(['scripts/examples/make-r1-demo.mjs'], ALL), only(['milestone-checks', 'portability', 'size']));
     // the format specification is read by the docs checks alone
     assert.deepEqual(harnessFiles(['specs/format/flux-1.0.md'], ALL), only(['docs-consistency', 'format-spec']));
     // an app's page and static files are built by the Vite build step, which the ladder runs
@@ -223,7 +226,10 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.ok(!SOURCE_HARNESS.includes('coverage') && SAMPLE_HARNESS.includes('coverage'));
     // a private app's manifest and tsconfig, a workspace-only lockfile and an unchanged library list are not packed
     assert.equal(packagingNeeded(['apps/studio/package.json', 'apps/studio/tsconfig.json']), false);
-    assert.equal(packagingNeeded(['specs/format/flux-1.0.md', 'scripts/gates/m10-complete.mjs', '.size-limit.js']), false);
+    assert.equal(
+      packagingNeeded(['specs/format/flux-1.0.md', 'scripts/gates/m10-complete.mjs', '.size-limit.js', 'scripts/examples/make-r1-demo.mjs', 'biome.json']),
+      false,
+    );
     assert.equal(packagingNeeded(['apps/studio/index.html', 'apps/studio/public/manifest.webmanifest']), false);
     assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true }), false);
     assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml']), true);

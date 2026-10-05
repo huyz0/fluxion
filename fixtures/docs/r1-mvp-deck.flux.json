@@ -1,0 +1,584 @@
+{
+  "records": {
+    "-VTY28VPqD1IFWoq": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "1f3MAI6WcgiwIGBP",
+      "elementId": "_vODwF04WPaHVTbo",
+      "end": "target",
+      "id": "-VTY28VPqD1IFWoq",
+      "type": "binding"
+    },
+    "1f3MAI6WcgiwIGBP": {
+      "id": "1f3MAI6WcgiwIGBP",
+      "index": "a5",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "956xe2XvfSC2HGXy",
+      "type": "element"
+    },
+    "3pSK6HDifuLkOJAi": {
+      "defId": "basic:rect",
+      "id": "3pSK6HDifuLkOJAi",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "N_5nbw3cu-SNeysl",
+      "semantic": {
+        "slug": "file-1"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "deck.flux.html",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 220,
+        "w": 460,
+        "x": 1060,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "78SHZI3FiczbPPcL": {
+      "id": "78SHZI3FiczbPPcL",
+      "index": "a2",
+      "name": "Write",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "956xe2XvfSC2HGXy": {
+      "id": "956xe2XvfSC2HGXy",
+      "index": "a1",
+      "name": "Draw",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "Be58-5RKnIIbhBI1": {
+      "id": "Be58-5RKnIIbhBI1",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "cuF_1VU8tjCn0o1c",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Diagrams that move, in one file you can open anywhere.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1300,
+        "x": 120,
+        "y": 220
+      },
+      "type": "element"
+    },
+    "CPXnnDYHuFI-4-AY": {
+      "defId": "basic:rect",
+      "id": "CPXnnDYHuFI-4-AY",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "956xe2XvfSC2HGXy",
+      "semantic": {
+        "slug": "idea"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Idea",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 220,
+        "w": 360,
+        "x": 160,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "HU0V6B4i7Pg_cQ-S": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "QQ6EivOBmSkktrFy",
+      "elementId": "3pSK6HDifuLkOJAi",
+      "end": "target",
+      "id": "HU0V6B4i7Pg_cQ-S",
+      "type": "binding"
+    },
+    "IfSbrqXNNlBJYQ5M": {
+      "id": "IfSbrqXNNlBJYQ5M",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "78SHZI3FiczbPPcL",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Write text in place",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1400,
+        "x": 120,
+        "y": 80
+      },
+      "type": "element"
+    },
+    "MBo1nAYUTpcUMbVJ": {
+      "defId": "basic:rect",
+      "id": "MBo1nAYUTpcUMbVJ",
+      "index": "a4",
+      "kind": "shape",
+      "screenId": "956xe2XvfSC2HGXy",
+      "semantic": {
+        "slug": "share"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Share",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 220,
+        "w": 360,
+        "x": 1280,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "N_5nbw3cu-SNeysl": {
+      "id": "N_5nbw3cu-SNeysl",
+      "index": "a3",
+      "name": "Save",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "QQ6EivOBmSkktrFy": {
+      "id": "QQ6EivOBmSkktrFy",
+      "index": "a4",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "N_5nbw3cu-SNeysl",
+      "type": "element"
+    },
+    "QRiNM09LEL8QW5zs": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "1f3MAI6WcgiwIGBP",
+      "elementId": "CPXnnDYHuFI-4-AY",
+      "end": "source",
+      "id": "QRiNM09LEL8QW5zs",
+      "type": "binding"
+    },
+    "R-AlNyvJBDFedH9g": {
+      "id": "R-AlNyvJBDFedH9g",
+      "index": "a6",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "956xe2XvfSC2HGXy",
+      "type": "element"
+    },
+    "SG8F9TdLJWd1ne4Z": {
+      "id": "SG8F9TdLJWd1ne4Z",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "cuF_1VU8tjCn0o1c",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Welcome to Fluxion",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1400,
+        "x": 120,
+        "y": 80
+      },
+      "type": "element"
+    },
+    "SjCu2pmvDzZqRwiP": {
+      "id": "SjCu2pmvDzZqRwiP",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "78SHZI3FiczbPPcL",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Double-click a box, type, and press Escape.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1300,
+        "x": 120,
+        "y": 220
+      },
+      "type": "element"
+    },
+    "VH4mEwh2WAakxAjj": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "R-AlNyvJBDFedH9g",
+      "elementId": "_vODwF04WPaHVTbo",
+      "end": "source",
+      "id": "VH4mEwh2WAakxAjj",
+      "type": "binding"
+    },
+    "Wf1G0VeD7LTxWVob": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "R-AlNyvJBDFedH9g",
+      "elementId": "MBo1nAYUTpcUMbVJ",
+      "end": "target",
+      "id": "Wf1G0VeD7LTxWVob",
+      "type": "binding"
+    },
+    "_vODwF04WPaHVTbo": {
+      "defId": "basic:rect",
+      "id": "_vODwF04WPaHVTbo",
+      "index": "a3",
+      "kind": "shape",
+      "screenId": "956xe2XvfSC2HGXy",
+      "semantic": {
+        "slug": "sketch"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Sketch",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 220,
+        "w": 360,
+        "x": 720,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "agJQtpY7ACHzGZLf": {
+      "id": "agJQtpY7ACHzGZLf",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "956xe2XvfSC2HGXy",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Boxes, arrows and labels that stay joined when you move them.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1300,
+        "x": 120,
+        "y": 220
+      },
+      "type": "element"
+    },
+    "beBaBtr-5YNktfkv": {
+      "id": "beBaBtr-5YNktfkv",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "njzAYxPANJtJz6Bw",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Present it anywhere",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1400,
+        "x": 120,
+        "y": 80
+      },
+      "type": "element"
+    },
+    "cuF_1VU8tjCn0o1c": {
+      "id": "cuF_1VU8tjCn0o1c",
+      "index": "a0",
+      "name": "Welcome",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "dbwZ39MsZ-sBFjX2": {
+      "id": "dbwZ39MsZ-sBFjX2",
+      "title": "Fluxion in five screens",
+      "type": "document"
+    },
+    "f4y_sWUg3llGnj0m": {
+      "defId": "basic:rect",
+      "id": "f4y_sWUg3llGnj0m",
+      "index": "a2",
+      "kind": "shape",
+      "screenId": "N_5nbw3cu-SNeysl",
+      "semantic": {
+        "slug": "file-0"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "deck.flux",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 220,
+        "w": 460,
+        "x": 360,
+        "y": 520
+      },
+      "type": "element"
+    },
+    "lIYg5Nsg96PweArZ": {
+      "id": "lIYg5Nsg96PweArZ",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "956xe2XvfSC2HGXy",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Draw shapes and connect them",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1400,
+        "x": 120,
+        "y": 80
+      },
+      "type": "element"
+    },
+    "lgt_QguybBLsclGl": {
+      "id": "lgt_QguybBLsclGl",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "N_5nbw3cu-SNeysl",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "A .flux file, or a .flux.html that opens in any browser, offline.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1300,
+        "x": 120,
+        "y": 220
+      },
+      "type": "element"
+    },
+    "njzAYxPANJtJz6Bw": {
+      "id": "njzAYxPANJtJz6Bw",
+      "index": "a4",
+      "name": "Present",
+      "size": {
+        "h": 1080,
+        "w": 1920
+      },
+      "type": "screen"
+    },
+    "rug3CBMBtBkOh3ui": {
+      "id": "rug3CBMBtBkOh3ui",
+      "index": "a0",
+      "kind": "text",
+      "screenId": "N_5nbw3cu-SNeysl",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Save one portable file",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1400,
+        "x": 120,
+        "y": 80
+      },
+      "type": "element"
+    },
+    "uLixD_Lf-UMug47-": {
+      "id": "uLixD_Lf-UMug47-",
+      "index": "a1",
+      "kind": "text",
+      "screenId": "njzAYxPANJtJz6Bw",
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Arrow keys, a tap or a swipe: the next screen is one move away.",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 1300,
+        "x": 120,
+        "y": 220
+      },
+      "type": "element"
+    },
+    "ye0Mmg9xkg0PxR25": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "QQ6EivOBmSkktrFy",
+      "elementId": "f4y_sWUg3llGnj0m",
+      "end": "source",
+      "id": "ye0Mmg9xkg0PxR25",
+      "type": "binding"
+    }
+  },
+  "schemaVersion": "1.2"
+}

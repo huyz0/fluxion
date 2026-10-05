@@ -9,6 +9,7 @@
         "scripts/format/*.mjs",
         "scripts/harness/**/*.mjs",
         "scripts/docs/*.mjs",
+        "scripts/examples/*.mjs",
         "tools/gen/*.mjs",
         "tests/harness/*.test.mjs"
       ],

@@ -105,7 +105,7 @@ export const NAMED_PATH_HARNESS = [
   [/^\.changeset\/.+\.md$/, ['ci-workflow', 'milestone-checks']],
   // the shared documents: the harness files that name them (the Vitest suites that read them run through VITEST_GLOBAL)
   [/^(examples|fixtures)\/.+\.(json|md)$/, ['milestone-checks', 'tests-kept']],
-  [/^scripts\/(docs|fonts|format|fixtures)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
+  [/^scripts\/(docs|fonts|format|fixtures|examples)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
   // a pack's vendored font files, manifest and licence text: data that only the ladder's `licenses` step reads (hashes, licences, paths)
   [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
   // a package's own test fixtures: read only by that package's tests, which the staged Vitest step runs (the package is staged)
@@ -120,8 +120,8 @@ export const NAMED_PATH_HARNESS = [
   [/^\.size-limit\.js$/, []],
   // the format specification: prose no gate parses but the docs checks (links and terms)
   [/^specs\/format\/[^/]+\.md$/, ['docs-consistency', 'format-spec']],
-  // the embed example page: read by its e2e spec alone (the spec serves it as the repository holds it)
-  [/^examples\/embed\//, []],
+  // the embed example page and the R1 demo file: each read by its e2e spec alone (the spec serves or opens it as the repository holds it)
+  [/^examples\/(embed\/|r1-mvp-deck\.flux\.html$)/, []],
   // an app's page and static files (its web manifest, icons): read by the Vite build, which the ladder's `build` step runs, and by its e2e specs; no harness file reads them
   [/^apps\/[^/]+\/(index\.html|public\/.+)$/, []],
   // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test names it
@@ -358,6 +358,10 @@ function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = fals
     /^scripts\/gates\/m\d+-complete\.mjs$/.test(p) ||
     // the fixture generator reads documents, not a manifest, an export or a build setting
     p === 'scripts/fixtures/gen.mjs' ||
+    // the demo file's generator embeds a built player into a fixture; it packs nothing
+    /^scripts\/examples\/[^/]+\.mjs$/.test(p) ||
+    // the formatter and linter settings change no manifest, export or build
+    p === 'biome.json' ||
     // the API gate reads built declarations and a manifest's exports map; it changes none of them
     p === 'scripts/gates/check-api.mjs' ||
     // the scope module itself and the harness tests decide and test which checks run, and pack nothing (CI's `--all` ladder is the backstop for a scope change that hides a packaging check)
