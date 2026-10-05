@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect } from '../test.js';
 import type { EditorPage } from './editor.js';
 
@@ -46,4 +46,15 @@ export const textFamily = (editor: EditorPage): Promise<string> =>
   editor.elements.first().evaluate((el) => getComputedStyle(el.querySelector('.fx-label') ?? el).fontFamily);
 
 /** Open the Fonts dialog. */
+/**
+ * Search the Google tab of the font picker for `query`, once its catalog has arrived (or failed, which the picker says): the list is empty while the catalog is on its way,
+ * and a search typed before then finds nothing (the flaky webkit run of M11.57).
+ */
+export async function searchGoogle(dialog: Locator, query: string): Promise<void> {
+  await dialog.getByRole('tab', { name: 'Google' }).click();
+  await expect(dialog.getByText('Loading the catalog…')).toBeHidden({ timeout: 30_000 });
+  await expect(dialog.getByRole('alert')).toBeHidden();
+  await dialog.getByRole('searchbox', { name: 'Search Google Fonts' }).fill(query);
+}
+
 export const openFonts = (editor: EditorPage) => editor.root.getByRole('button', { name: 'Fonts', exact: true }).click();

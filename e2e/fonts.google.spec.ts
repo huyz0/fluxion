@@ -1,6 +1,6 @@
 import { dragOut } from './pages/create.js';
 import { EditorPage } from './pages/editor.js';
-import { mockGoogleFonts, openFonts, selectedText, textFamily } from './pages/fonts.js';
+import { mockGoogleFonts, openFonts, searchGoogle, selectedText, textFamily } from './pages/fonts.js';
 import { expect, test } from './test.js';
 
 // a dialog and the routes: desktop input
@@ -14,8 +14,7 @@ test.describe('Google Fonts', { tag: '@desktop' }, () => {
     await selectedText(page, editor, dragOut);
     await openFonts(editor);
     const dialog = page.getByRole('dialog', { name: 'Fonts' });
-    await dialog.getByRole('tab', { name: 'Google' }).click();
-    await dialog.getByRole('searchbox', { name: 'Search Google Fonts' }).fill('Roboto');
+    await searchGoogle(dialog, 'Roboto');
     await dialog.getByRole('button', { name: 'Add Roboto', exact: true }).click();
     await expect(dialog.getByRole('status')).toContainText('Roboto applied to the selection', { timeout: 60_000 });
 

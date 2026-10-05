@@ -1,6 +1,6 @@
 import { dragOut } from './pages/create.js';
 import { EditorPage } from './pages/editor.js';
-import { mockGoogleFonts, openFonts, robotoBytes, selectedText, textFamily } from './pages/fonts.js';
+import { mockGoogleFonts, openFonts, robotoBytes, searchGoogle, selectedText, textFamily } from './pages/fonts.js';
 import { expect, test } from './test.js';
 
 // a dialog, a file input and the routes: desktop input
@@ -24,11 +24,7 @@ test.describe('the font picker', { tag: '@desktop' }, () => {
     await expect.poll(() => textFamily(editor)).toContain('Inter');
 
     // google: search the catalog, add Roboto (mocked), and the text takes it
-    await dialog.getByRole('tab', { name: 'Google' }).click();
-    // the catalog is on its way when the tab opens: search once it has arrived (or has failed, which the picker says)
-    await expect(dialog.getByText('Loading the catalog…')).toBeHidden({ timeout: 30_000 });
-    await expect(dialog.getByRole('alert')).toBeHidden();
-    await dialog.getByRole('searchbox', { name: 'Search Google Fonts' }).fill('Roboto');
+    await searchGoogle(dialog, 'Roboto');
     await dialog.getByRole('button', { name: 'Add Roboto', exact: true }).click();
     await expect(dialog.getByRole('status')).toContainText('Roboto applied to the selection', { timeout: 60_000 });
     await expect.poll(() => textFamily(editor)).toContain('Roboto');
