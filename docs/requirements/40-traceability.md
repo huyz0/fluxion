@@ -312,7 +312,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PERF-007 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-008 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `packages/player-inline/src/zod-stub.test.ts`, `tests/harness/size-limit-config.test.mjs` |
-| NFR-SIZE-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-SIZE-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `tests/harness/editor-budget.test.mjs` |
 | NFR-SIZE-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/size-budget.test.ts` |
 | NFR-SIZE-004 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` |
 | NFR-SIZE-005 | S | R2 | M13 | [30-non-functional.md](30-non-functional.md) | — |
