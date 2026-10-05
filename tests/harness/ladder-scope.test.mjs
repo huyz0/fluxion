@@ -156,6 +156,13 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(harnessFiles(['.gitignore'], ALL), []);
     assert.deepEqual(harnessFiles(['lighthouserc.mjs'], ALL), only(['milestone-checks']));
     assert.deepEqual(harnessFiles(['scripts/gates/check-ci-evidence.mjs'], ALL), only(['ci-evidence']));
+    // the nightly's previous-Playwright script has its own tests and the workflow tests
+    const withScript = [...ALL, file('previous-playwright')];
+    assert.deepEqual(
+      harnessFiles(['scripts/ci/previous-playwright.mjs'], withScript),
+      withScript.filter((f) => ['previous-playwright', 'ci-workflow'].some((n) => f.endsWith(`/${n}.test.mjs`))),
+    );
+    assert.ok(harnessFiles(['scripts/ci/previous-playwright.mjs'], withScript).includes(file('previous-playwright')));
     // the format specification is read by the docs checks alone
     assert.deepEqual(harnessFiles(['specs/format/flux-1.0.md'], ALL), only(['docs-consistency', 'format-spec']));
     // an app's page and static files are built by the Vite build step, which the ladder runs

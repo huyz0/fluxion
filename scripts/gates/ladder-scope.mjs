@@ -114,6 +114,8 @@ export const NAMED_PATH_HARNESS = [
   [/^\.gitignore$/, []],
   // the Lighthouse config: run by the CI job, and the milestone-checks that look for it
   [/^lighthouserc\.mjs$/, ['milestone-checks']],
+  // the nightly's previous-major Playwright script: its own tests, and the workflow tests that read the nightly (M11.23)
+  [/^scripts\/ci\/previous-playwright\.mjs$/, ['previous-playwright', 'ci-workflow']],
   // the bundle budgets: read by the ladder's own `size-limit` step, which the staged ladder runs; no harness file reads them
   [/^\.size-limit\.js$/, []],
   // the format specification: prose no gate parses but the docs checks (links and terms)
