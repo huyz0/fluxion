@@ -89,8 +89,42 @@ jobs:
       # NFR-PORT-006: the visual suite on every OS, Chromium only
       - run: pnpm exec playwright test --grep @visual --project=chromium
 
+  # NFR-PORT-001: the whole e2e suite on the Playwright release before the pinned one (scripts/ci/previous-playwright.mjs sets the catalog's pins for this run only)
+  previous-playwright:
+    name: previous-playwright (${{ matrix.browser }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - browser: chromium
+            mobile: mobile-chrome
+          - browser: firefox
+            mobile: firefox
+          - browser: webkit
+            mobile: mobile-safari
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: node scripts/ci/previous-playwright.mjs
+      # the catalog now names the previous release, so the lockfile is re-resolved for this run (never committed)
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      - run: pnpm run build
+      - run: pnpm test:e2e --project="$BROWSER" --project="$MOBILE"
+        env:
+          BROWSER: ${{ matrix.browser }}
+          MOBILE: ${{ matrix.mobile }}
+
   report:
-    needs: [mutation, properties, perf, eval-live, visual-xos]
+    needs: [mutation, properties, perf, eval-live, visual-xos, previous-playwright]
     if: failure()
     runs-on: ubuntu-latest
     timeout-minutes: 5

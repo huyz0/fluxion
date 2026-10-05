@@ -234,10 +234,16 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
 
   it('nightly.yml has the planned jobs and reports failures as one issue (NFR-SEC-005)', () => {
     const nightly = workflow('nightly.yml');
-    assert.deepEqual(jobsOf(nightly), ['mutation', 'properties', 'perf', 'eval-live', 'visual-xos', 'report']);
+    assert.deepEqual(jobsOf(nightly), ['mutation', 'properties', 'perf', 'eval-live', 'visual-xos', 'previous-playwright', 'report']);
     assert.match(nightly, /FC_RUNS: '10000'/);
     const report = /^ {2}report:[\s\S]*/m.exec(nightly)[0];
-    assert.match(report, /needs: \[mutation, properties, perf, eval-live, visual-xos\]/);
+    assert.match(report, /needs: \[mutation, properties, perf, eval-live, visual-xos, previous-playwright\]/);
+    // NFR-PORT-001 (M11.23): the previous-major job points the catalog at the older Playwright, runs all five projects (three engines and their mobile presets), and commits nothing
+    const previous = /^ {2}previous-playwright:[\s\S]*?(?=^ {2}report:)/m.exec(nightly)[0];
+    assert.match(previous, /node scripts\/ci\/previous-playwright\.mjs/);
+    assert.match(previous, /pnpm install --no-frozen-lockfile/);
+    for (const project of ['chromium', 'firefox', 'webkit', 'mobile-chrome', 'mobile-safari']) assert.match(previous, new RegExp(`\\b${project}\\b`), project);
+    assert.doesNotMatch(previous, /git (commit|push)/);
     assert.match(report, /if: failure\(\)/);
     assert.equal([...nightly.matchAll(/issues: write/g)].length, 1, 'only the report job writes issues');
     assert.match(report, /issues: write/);
