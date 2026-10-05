@@ -14,6 +14,7 @@ import { bindLinks } from './deck-links.js';
 import { DeckOverview } from './deck-overview.js';
 import { toggleFullscreen } from './fullscreen.js';
 import { PresentationController } from './presentation-controller.js';
+import { ScreenBoundary } from './screen-boundary.js';
 import { useElementBox } from './use-box.js';
 
 /**
@@ -232,15 +233,18 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
       style={{ position: 'fixed', inset: 0, background }}
     >
       {shown === undefined || box.w === 0 ? null : (
-        <ScreenView
-          store={store}
-          screenId={shown}
-          mode="present"
-          view={{ kind: 'fit', box }}
-          registries={registries}
-          {...(assets === undefined ? {} : { assets })}
-          {...(hidden === undefined ? {} : { hidden })}
-        />
+        // a screen that cannot be drawn is drawn as nothing, and the next one is still reachable
+        <ScreenBoundary key={shown}>
+          <ScreenView
+            store={store}
+            screenId={shown}
+            mode="present"
+            view={{ kind: 'fit', box }}
+            registries={registries}
+            {...(assets === undefined ? {} : { assets })}
+            {...(hidden === undefined ? {} : { hidden })}
+          />
+        </ScreenBoundary>
       )}
       {chrome ? <ChromeOf deck={{ controller, overview, stage: ref, index, count: screens.length }} labels={labels} /> : null}
       {overview.open ? (

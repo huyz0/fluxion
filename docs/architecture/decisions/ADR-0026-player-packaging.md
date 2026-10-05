@@ -54,7 +54,7 @@ Chosen option: **3**, with 2 recorded as the fallback if the cuts of M11.5 and M
   verified as today, then `document.json` is read structurally (known record types, typed fields, a record that is not well formed dropped). The lean reader
   **does not migrate, repair or salvage**: a file whose `schemaVersion` is not the current one, whose `document.json` is truncated or whose structure it cannot read is
   refused with a message that says to open it in the studio (which migrates and repairs, FR-FIL-009), never half-drawn. What reaches the screen is built by the
-  render views from typed fields (rich text from the JSON tree, never from strings; links through `safeLinkUrl`; images from assets checked by `sanitizeAsset`),
+  render views from typed fields (rich text from the JSON tree, never from strings; links only to http(s), mailto and in-document screens (the schema's own rule, which the views keep: a link mark of any other target is plain text; the stricter `safeLinkUrl` of paste and import is M11.44); images from assets checked by `sanitizeAsset`),
   so a field the validator would have rejected can change a value but cannot become markup. The validating loader with Zod stays in the studio and the CLI.
   Confirmation for the untrusted-input claim: (1) a differential test, for every current-schema fixture the two readers give the same document, and for every
   non-conforming fixture the lean reader refuses or drops and never throws; (2) the existing security corpus (`specs/security/corpus`, the sanitiser and rich-text
@@ -90,3 +90,17 @@ the `@fluxion/render/ssr`, `@fluxion/format/player`, `@fluxion/player/element` a
 
 Evidence: `docs/research/07-player-size.md`. Related: ADR-0003 (file format, compact mode), ADR-0015 (static render path), ADR-0017 (hosts and packs),
 ADR-0154 (the one-file player). Rows: M11.5 (the first cuts), M11.14 (the element and the wrapper), M11.18 (the remaining cuts).
+
+## Amendments
+
+- 2026-10-05 (M11.42): how Zod leaves the file. The decision above holds (the player reads with a lean reader and ships no validator); the means changes. The packages
+  ship as one bundled `dist` file each and build their Zod schemas when they load (record schemas, a command's argument schema, theme tokens), so a bundler cannot
+  prove those statements unused and keeps Zod (25 kB gzip of the file) for schemas nothing in the player calls; replacing `createCore` with `createStore`, a lean loader
+  and a pass that marks every load-time call pure were each measured and removed none of it (`docs/research/07-player-size.md`, addendum of M11.27). The one-file
+  build therefore resolves `zod` to an inert stand-in (`packages/player-inline/src/zod-stub.ts`) that lets those statements run and build nothing, and whose
+  `parse` and every other call that would check a value **throws**, so a use of Zod that was missed fails a test and never lets a value through unchecked. The file
+  measured 167.2 kB at M11.13 and 138.3 kB with the lean reader and the stand-in. A screen that cannot be drawn (a field the lean reader does not check, read by a view)
+  is drawn as nothing by a boundary, and the deck goes on. The studio and the CLI keep the validating loader and Zod. The Preact fallback (option 2) was
+  measured at 109.5 kB and not taken: a new dependency changes the lockfile, which needs a `check-budget` record from a machine on which the worst-case staged
+  commit fits 120 s; it stays the fallback for a human to take.
+

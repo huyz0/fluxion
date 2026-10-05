@@ -1,8 +1,8 @@
 // The one-file player's entry (ADR-0154): `Fluxion.start(bytes, root)` opens a `.flux`, registers the bundled packs and draws the deck.
 // It is the whole of what a `.flux.html` runs: no network, no `eval`, nothing outside the file's own bytes. Bundled by tsdown into
 // `dist/player.inline.js` (one classic script that defines the global `Fluxion`).
-import { createCore } from '@fluxion/core';
-import { type ContentHasher, type LoadedFlux, loadFlux, sanitizeAsset, sha256Hex } from '@fluxion/format';
+import { type CoreRegistries, createCore, type Registry } from '@fluxion/core';
+import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
 import { basicPack } from '@fluxion/pack-basic';
 import { renderRegistriesFor } from '@fluxion/player';
 import { mountPlayer } from '@fluxion/player/mount';
@@ -62,14 +62,31 @@ function show(root: HTMLElement, message: string): StartResult {
   return { ok: false, message };
 }
 
+/**
+ * Register the bundled pack's shapes and markers. The pack is this script's own code, checked when it is built, so its definitions go into the registries
+ * as they are (`basicPack.register` would validate each with Zod, which the script does not carry). Returns why one was refused, or nothing.
+ */
+function registerBundled(registries: Pick<CoreRegistries, 'shapeDefs' | 'markers'>): string | undefined {
+  for (const [registry, items] of [
+    [registries.shapeDefs, basicPack.shapes],
+    [registries.markers, basicPack.markers],
+  ] as const) {
+    for (const item of items as readonly { readonly id: string }[]) {
+      const done = (registry as Registry<string, { readonly id: string }>).register(item.id, item, basicPack.id);
+      if (!done.ok) return done.error.message;
+    }
+  }
+  return undefined;
+}
+
 /** Open and draw; any throw is the caller's to turn into a message. */
 async function open(bytes: Uint8Array, root: HTMLElement, urls: { release: () => void }[]): Promise<StartResult> {
-  const loaded = await loadFlux(bytes, { hasher });
+  const loaded = await loadFluxLean(bytes, { hasher });
   if (!loaded.ok) return show(root, `This file cannot be opened: ${loaded.error.message}`);
   // a player never writes: its store refuses every transaction (FR-PRS-004)
   const core = createCore(loaded.value.document, { policy: 'read-only' });
-  const registered = basicPack.register(core.registries);
-  if (!registered.ok) return show(root, `The built-in shapes could not be registered: ${registered.error.map((d) => d.message).join('; ')}`);
+  const registered = registerBundled(core.registries);
+  if (registered !== undefined) return show(root, `The built-in shapes could not be registered: ${registered}`);
   const images = imageUrls(loaded.value);
   urls.push(images);
   // the file's own fonts first: the first paint is in them, measured with their recorded metrics

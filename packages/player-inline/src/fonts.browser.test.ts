@@ -1,5 +1,5 @@
 import type { FaceMetrics } from '@fluxion/core';
-import type { LoadedFlux } from '@fluxion/format';
+import type { LoadedFlux } from '@fluxion/format/player';
 import { describe, expect, it, vi } from 'vitest';
 import { loadEmbeddedFonts } from './fonts.js';
 
@@ -70,6 +70,18 @@ describe('the fonts a file carries (FR-THM-008)', () => {
       const register = vi.fn((_faces: readonly FaceMetrics[]) => vi.fn());
       const { release } = await loadEmbeddedFonts(file(`BadTable${i}`, bytes, metrics), { register });
       expect(register, `case ${i}`).not.toHaveBeenCalled();
+      release();
+    }
+  });
+
+  it('NFR-REL-002: a font asset whose font entry is not an object is skipped and the others still load', async () => {
+    const bytes = await roboto();
+    for (const font of [null, 5, 'roboto', [], true]) {
+      const loaded = file('Odd', bytes, undefined);
+      const broken = { ...loaded, document: { records: { f1: { ...(loaded.document.records['f1'] as object), font } } } } as unknown as LoadedFlux;
+      const register = vi.fn((_faces: readonly FaceMetrics[]) => vi.fn());
+      const { release } = await loadEmbeddedFonts(broken, { register });
+      expect(register).not.toHaveBeenCalled();
       release();
     }
   });

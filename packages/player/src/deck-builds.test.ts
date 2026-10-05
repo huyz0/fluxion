@@ -46,4 +46,21 @@ describe('the builds of a screen (FR-PRS-003)', () => {
     expect(hiddenAt(2)).toEqual([r[0]]);
     expect(store.query((view) => buildsOfScreen(view, s2))().clicks).toBe(0);
   });
+
+  it('NFR-REL-002: a step the file wrote wrongly (no animations list, null entries, a trigger that is not an object) reads as nothing and never throws', () => {
+    const { store, s1 } = doc();
+    const bad = (id: string, index: string, rest: object) => ({ id, type: 'step', timelineId: 'tl', index, ...rest });
+    const records = {
+      ...store.toDocument().records,
+      b1: bad('b1', 'b1', { trigger: { kind: 'onClick' }, animations: 5 }),
+      b2: bad('b2', 'b2', { trigger: { kind: 'onClick' }, animations: [null, 3, { effect: 7, targets: 'x' }] }),
+      b3: bad('b3', 'b3', { trigger: 'click', animations: [] }),
+      b4: bad('b4', 'b4', { trigger: null }),
+    };
+    const broken = createCore({ ...store.toDocument(), records } as unknown as DocumentFile, { validate: false }).store;
+    const builds = broken.query((view) => buildsOfScreen(view, s1))();
+    // the well-formed steps still read; the broken ones are steps with nothing in them
+    expect(builds.groups.length).toBeGreaterThanOrEqual(3);
+    expect(() => reduceBuild(builds, builds.clicks)).not.toThrow();
+  });
 });

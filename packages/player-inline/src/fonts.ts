@@ -2,7 +2,7 @@
 // `font-src` is needed under the file's CSP), and once the faces have loaded their recorded metrics (ADR-0148) are registered, so the page measures
 // text as the studio did when it saved. A face that does not load is skipped: its text is drawn in a fallback, as in any browser.
 import type { FaceMetrics } from '@fluxion/core';
-import type { LoadedFlux } from '@fluxion/format';
+import type { LoadedFlux } from '@fluxion/format/player';
 import { registerFontMetrics } from '@fluxion/player';
 
 type FontMeta = {
@@ -34,7 +34,7 @@ function embeddedFonts(loaded: LoadedFlux): Embedded[] {
     if (record.type !== 'asset') continue;
     const meta = (record as { font?: FontMeta }).font;
     const bytes = loaded.assets.get((record as { hash: string }).hash)?.bytes;
-    if (meta === undefined || bytes === undefined || typeof meta.family !== 'string' || typeof meta.weight !== 'number') continue;
+    if (typeof meta !== 'object' || meta === null || bytes === undefined || typeof meta.family !== 'string' || typeof meta.weight !== 'number') continue;
     out.push({ family: meta.family, weight: meta.weight, style: meta.style === 'italic' ? 'italic' : 'normal', bytes, meta });
   }
   return out;

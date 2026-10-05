@@ -5,6 +5,7 @@ import type { Store } from '@fluxion/core';
 import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type KeyboardEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
+import { ScreenBoundary } from './screen-boundary.js';
 
 /** The size each thumbnail is drawn in, in CSS pixels. */
 const THUMB = { w: 240, h: 135 } as const;
@@ -129,14 +130,16 @@ export function DeckOverview(props: DeckOverviewProps): ReactNode {
             }}
           >
             <span aria-hidden="true" inert style={{ display: 'block', width: THUMB.w, height: THUMB.h, overflow: 'hidden', pointerEvents: 'none' }}>
-              <ScreenView
-                store={store}
-                screenId={id}
-                mode="present"
-                view={{ kind: 'fit', box: THUMB }}
-                registries={registries}
-                {...(assets === undefined ? {} : { assets })}
-              />
+              <ScreenBoundary>
+                <ScreenView
+                  store={store}
+                  screenId={id}
+                  mode="present"
+                  view={{ kind: 'fit', box: THUMB }}
+                  registries={registries}
+                  {...(assets === undefined ? {} : { assets })}
+                />
+              </ScreenBoundary>
             </span>
           </button>
         );

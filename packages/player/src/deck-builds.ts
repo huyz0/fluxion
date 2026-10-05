@@ -32,11 +32,14 @@ function mainSteps(view: ReadView, screenId: RecordId): BuildStep<RecordId>[] {
     .sort((a, b) => byIndex(a.record, b.record) || (a.id < b.id ? -1 : 1))
     .map(({ id, record }) => ({
       id,
-      trigger: { kind: String(record.trigger?.kind ?? '') },
-      animations: (record.animations ?? []).map((a) => ({
-        effect: String(a.effect ?? ''),
-        targets: (Array.isArray(a.targets) ? a.targets : []).filter((t): t is RecordId => typeof t === 'string'),
-      })),
+      // a step is read as it is in the file (the lean reader checks no field of it): a trigger or an animation that is not an object counts as nothing
+      trigger: { kind: String(typeof record.trigger === 'object' && record.trigger !== null ? (record.trigger.kind ?? '') : '') },
+      animations: (Array.isArray(record.animations) ? record.animations : [])
+        .filter((a): a is NonNullable<typeof a> => typeof a === 'object' && a !== null)
+        .map((a) => ({
+          effect: String(a.effect ?? ''),
+          targets: (Array.isArray(a.targets) ? a.targets : []).filter((t: unknown): t is RecordId => typeof t === 'string'),
+        })),
     }));
 }
 

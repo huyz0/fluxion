@@ -1,4 +1,9 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'tsdown';
+
+// In the script, `zod` is an inert stand-in (src/zod-stub.ts, ADR-0026 amendment): the player validates nothing, and the schemas the bundled packages build while loading would
+// otherwise keep all of Zod in the file. The library output below keeps its dependencies external like every package.
+const ZOD_STUB = fileURLToPath(new URL('./src/zod-stub.ts', import.meta.url));
 
 // Two outputs (ADR-0154): the package itself (ESM and types, like every library), and `dist/player.inline.js`, the one classic script a
 // `.flux.html` embeds. The script bundles every dependency, targets the browser, is minified, and defines the global `Fluxion`.
@@ -21,6 +26,7 @@ export default defineConfig([
     dts: false,
     sourcemap: false,
     minify: true,
+    alias: { zod: ZOD_STUB },
     deps: { alwaysBundle: [/.*/] },
     define: { 'process.env.NODE_ENV': '"production"' },
     outputOptions: { entryFileNames: 'player.inline.js' },
