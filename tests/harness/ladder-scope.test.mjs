@@ -152,6 +152,10 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     );
     // the bundle budgets are read by the ladder's size-limit step alone
     assert.deepEqual(harnessFiles(['.size-limit.js'], ALL), []);
+    // the ignore list is read by git alone, the Lighthouse config by the milestone checks, the CI evidence gate by its own tests
+    assert.deepEqual(harnessFiles(['.gitignore'], ALL), []);
+    assert.deepEqual(harnessFiles(['lighthouserc.mjs'], ALL), only(['milestone-checks']));
+    assert.deepEqual(harnessFiles(['scripts/gates/check-ci-evidence.mjs'], ALL), only(['ci-evidence']));
     // the format specification is read by the docs checks alone
     assert.deepEqual(harnessFiles(['specs/format/flux-1.0.md'], ALL), only(['docs-consistency', 'format-spec']));
     // an app's page and static files are built by the Vite build step, which the ladder runs

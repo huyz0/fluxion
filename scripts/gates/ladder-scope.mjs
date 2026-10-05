@@ -91,6 +91,8 @@ export const GATE_SCRIPT_HARNESS = {
   // the budget record and the worst-case commit it times (M8.20): the budget harness file reads both, the scope tests read the commit
   'scripts/gates/check-budget.mjs': ['budget', 'ladder-scope'],
   'scripts/gates/worst-case.mjs': ['budget', 'ladder-scope'],
+  // the CI evidence gate: its own tests (a sandbox copy of scripts/ serves the rest)
+  'scripts/gates/check-ci-evidence.mjs': ['ci-evidence'],
 };
 
 /**
@@ -108,6 +110,10 @@ export const NAMED_PATH_HARNESS = [
   [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
   // a package's own test fixtures: read only by that package's tests, which the staged Vitest step runs (the package is staged)
   [/^(packages|packs|apps)\/[^/]+\/__fixtures__\/.+/, []],
+  // the ignore list: read by git alone, no harness file names it
+  [/^\.gitignore$/, []],
+  // the Lighthouse config: run by the CI job, and the milestone-checks that look for it
+  [/^lighthouserc\.mjs$/, ['milestone-checks']],
   // the bundle budgets: read by the ladder's own `size-limit` step, which the staged ladder runs; no harness file reads them
   [/^\.size-limit\.js$/, []],
   // the format specification: prose no gate parses but the docs checks (links and terms)
