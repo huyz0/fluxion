@@ -4,6 +4,7 @@
 import type { Store } from '@fluxion/core';
 import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { toggleFullscreen } from './fullscreen.js';
 import { useElementBox } from './use-box.js';
 
 /**
@@ -18,6 +19,8 @@ export type PlayerDeckProps = {
   readonly registries: RenderRegistries;
   /** The URLs images are drawn from, by asset id (keep it stable). */
   readonly assets?: AssetUrls;
+  /** The colour of the bars a screen of another shape leaves around it (a CSS colour; default black). */
+  readonly background?: string;
 };
 
 /** The key that moves the deck, as a step: `1` forward, `-1` back, `'first'` and `'last'` for the ends, or nothing. */
@@ -39,6 +42,21 @@ const MOVES: { readonly [key: string]: 1 | -1 | 'first' | 'last' } = {
 const interactive = (target: EventTarget | null): boolean =>
   target instanceof Element && target.closest('a, button, input, textarea, select, summary, [contenteditable], [tabindex]:not([tabindex="-1"])') !== null;
 
+/** Whether a key is not the deck's: one with a modifier, a repeat, one another handler took, or one aimed at a link, button or field. */
+const leftAlone = (e: KeyboardEvent): boolean => e.ctrlKey || e.metaKey || e.altKey || e.repeat || e.defaultPrevented || interactive(e.target);
+
+/** What a key asks of the deck: F is full screen (the browser's own F11 is left alone), a navigation key is its move, anything else is nothing. */
+const keyAction = (key: string): 'fullscreen' | string | undefined => (key === 'f' || key === 'F' ? 'fullscreen' : MOVES[key] === undefined ? undefined : key);
+
+/** Act on a key aimed at the window: the move or the full screen it asks for, or nothing; a handled key is not left to the page. */
+function handleKey(e: KeyboardEvent, stage: HTMLElement | null, move: (key: string) => void): void {
+  const action = leftAlone(e) ? undefined : keyAction(e.key);
+  if (action === undefined) return;
+  e.preventDefault();
+  if (action !== 'fullscreen') move(action);
+  else if (stage !== null) void toggleFullscreen(stage, document);
+}
+
 /** The index after `key` from `current` among `count` screens, kept inside the deck; `current` when the key moves nothing. */
 function moved(key: string, current: number, count: number): number {
   const move = MOVES[key];
@@ -54,18 +72,14 @@ function moved(key: string, current: number, count: number): number {
  * @public
  */
 export function PlayerDeck(props: PlayerDeckProps): ReactNode {
-  const { store, registries, assets } = props;
+  const { store, registries, assets, background = '#000' } = props;
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
   const screens = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)), [store]));
   const [index, setIndex] = useState(0);
   const count = screens.length;
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat || e.defaultPrevented || MOVES[e.key] === undefined || interactive(e.target)) return;
-      e.preventDefault();
-      setIndex((current) => moved(e.key, current, count));
-    };
+    const onKey = (e: KeyboardEvent) => handleKey(e, ref.current, (key) => setIndex((current) => moved(key, current, count)));
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [count]);
@@ -76,7 +90,7 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
       className="fx-player"
       data-testid="player-deck"
       data-screen-index={Math.min(index, Math.max(0, count - 1))}
-      style={{ position: 'fixed', inset: 0, background: '#000' }}
+      style={{ position: 'fixed', inset: 0, background }}
     >
       {shown === undefined || box.w === 0 ? null : (
         <ScreenView

@@ -15,6 +15,8 @@ export type PlayerRootProps = {
   readonly store: Store;
   /** Where element views, shapes and markers are looked up. */
   readonly registries: RenderRegistries;
+  /** The colour of the bars a screen of another shape leaves around it (a CSS colour; default black). */
+  readonly background?: string;
 };
 
 /**
@@ -28,7 +30,7 @@ export function PlayerRoot(props: PlayerRootProps): ReactNode {
   const box = useElementBox(ref);
   const first = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)[0]), [store]));
   return (
-    <div ref={ref} className="fx-player" data-testid="player-root" style={{ position: 'fixed', inset: 0, background: '#000' }}>
+    <div ref={ref} className="fx-player" data-testid="player-root" style={{ position: 'fixed', inset: 0, background: props.background ?? '#000' }}>
       {first === undefined || box.w === 0 ? null : (
         <ScreenView store={store} screenId={first} mode="present" view={{ kind: 'fit', box }} registries={registries} />
       )}

@@ -151,4 +151,36 @@ describe('the deck of the one-file player (FR-FIL-002)', () => {
     });
     expect(after.defaultPrevented).toBe(false);
   });
+
+  it('FR-PRS-001: the bars around a screen take the background colour given, black by default', async () => {
+    const { core } = deck();
+    const registries = renderRegistriesFor(core.registries);
+    await act(async () => root.render(<PlayerDeck store={core.store} registries={registries} />));
+    const stage = () => host.querySelector<HTMLElement>('[data-testid="player-deck"]');
+    expect(stage()?.style.background).toMatch(/rgb\(0, 0, 0\)|#000/);
+    await act(async () => root.render(<PlayerDeck store={core.store} registries={registries} background="#102030" />));
+    expect(stage()?.style.background).toMatch(/rgb\(16, 32, 48\)|#102030/);
+  });
+
+  it('FR-PRS-001: the F key puts the deck in full screen, and is a handled key; a modifier or a focused field leaves it alone', async () => {
+    const { core } = deck();
+    const requested: Element[] = [];
+    const original = Object.getOwnPropertyDescriptor(Element.prototype, 'requestFullscreen');
+    Element.prototype.requestFullscreen = function (this: Element) {
+      requested.push(this);
+      return Promise.resolve();
+    };
+    try {
+      await act(async () => root.render(<PlayerDeck store={core.store} registries={renderRegistriesFor(core.registries)} />));
+      const event = new KeyboardEvent('keydown', { key: 'f', bubbles: true, cancelable: true });
+      await act(async () => void window.dispatchEvent(event));
+      expect(event.defaultPrevented).toBe(true);
+      expect(requested.map((e) => e.getAttribute('data-testid'))).toEqual(['player-deck']);
+      await press('f', { ctrlKey: true });
+      expect(requested).toHaveLength(1);
+    } finally {
+      if (original === undefined) Reflect.deleteProperty(Element.prototype, 'requestFullscreen');
+      else Object.defineProperty(Element.prototype, 'requestFullscreen', original);
+    }
+  });
 });

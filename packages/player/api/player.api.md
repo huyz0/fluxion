@@ -27,6 +27,25 @@ export interface DeckSource {
 }
 
 // @public
+export type FullscreenDocument = {
+    readonly fullscreenElement?: Element | null;
+    readonly webkitFullscreenElement?: Element | null;
+    exitFullscreen?(): Promise<void>;
+    webkitExitFullscreen?(): void | Promise<void>;
+};
+
+// @public
+export type FullscreenResult = "entered" | "exited" | "unsupported" | "refused";
+
+// @public
+export type FullscreenTarget = {
+    requestFullscreen?(options?: {
+        navigationUI?: "hide" | "show" | "auto";
+    }): Promise<void>;
+    webkitRequestFullscreen?(): void | Promise<void>;
+};
+
+// @public
 export const LASER_FADE = "0.8s";
 
 // @public
@@ -52,6 +71,7 @@ export type PlayerDeckProps = {
     readonly store: Store;
     readonly registries: RenderRegistries;
     readonly assets?: AssetUrls;
+    readonly background?: string;
 };
 
 // @public
@@ -61,6 +81,7 @@ export function PlayerRoot(props: PlayerRootProps): ReactNode;
 export type PlayerRootProps = {
     readonly store: Store;
     readonly registries: RenderRegistries;
+    readonly background?: string;
 };
 
 // @public
@@ -87,6 +108,9 @@ export { registerFontMetrics }
 
 // @public
 export function renderRegistriesFor(host: CoreRegistries): RenderRegistries;
+
+// @public
+export function toggleFullscreen(target: FullscreenTarget, doc: FullscreenDocument): Promise<FullscreenResult>;
 
 // @public
 export type TrailDot = {
