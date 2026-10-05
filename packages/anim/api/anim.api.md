@@ -5,6 +5,50 @@
 ```ts
 
 // @public
+export type BuildEffect<Id extends string = string> = {
+    readonly kind: "appear" | "disappear";
+    readonly targets: readonly Id[];
+};
+
+// @public
+export type BuildGroup<Id extends string = string> = {
+    readonly steps: readonly Id[];
+    readonly effects: readonly BuildEffect<Id>[];
+};
+
+// @public
+export type Builds<Id extends string = string> = {
+    readonly groups: readonly BuildGroup<Id>[];
+    readonly clicks: number;
+    readonly initiallyHidden: ReadonlySet<Id>;
+};
+
+// @public
+export type BuildState<Id extends string = string> = {
+    readonly hidden: ReadonlySet<Id>;
+};
+
+// @public
+export type BuildStep<Id extends string = string> = {
+    readonly id: Id;
+    readonly trigger: {
+        readonly kind: string;
+    };
+    readonly animations: readonly {
+        readonly effect: string;
+        readonly targets: readonly Id[];
+    }[];
+};
+
+// @public
+export function compileBuilds<Id extends string>(steps: readonly BuildStep<Id>[]): Builds<Id>;
+
+// @public
+export function reduceBuild<Id extends string>(builds: Builds<Id>, group: number): BuildState<Id>;
+
+// @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```
