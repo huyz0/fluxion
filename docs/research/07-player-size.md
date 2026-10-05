@@ -62,3 +62,23 @@ The raw size drops with the same cuts: removing the two server renderers (195 kB
 validators another 30 kB or so. A `.flux.html` of the 20-screen fixture adds about 20 kB of base64, so the **raw** 450 kB reading of NFR-SIZE-003 becomes
 reachable by the same work that serves NFR-SIZE-001, and the gzip reading (241 kB today) shrinks with it. The choice of basis is still the human's (M10.45);
 this report removes the argument that the raw reading cannot be met.
+
+## Addendum (M11.27): where the budget went by M11.13, and two measurements
+
+By M11.13 the file had grown back to **167.2 kB gzip** (162.9 kB after the server renderer left; the controller, deep links, the overview grid and the chrome
+added 4.3 kB). Attributing the unminified bundle to its sources with the source map gave Zod 35 kB gzip alone, `@fluxion/core` 24 kB, `@fluxion/schema` 15.5 kB,
+`@fluxion/format` 12.6 kB and `@fluxion/theme` 9.6 kB. Getting Zod out by tree-shaking does not work: replacing `createCore` with `createStore` and
+`createCoreRegistries` in the file's entry saved 2 kB only, stubbing `loadFlux` dropped most of `format` and none of Zod, and marking every load-time call in
+the workspace packages pure (a transform over their `dist` files using the bundler's parser) removed nothing, because what keeps `CORE_COMMANDS`, the record
+schemas and the theme tokens alive is not one pattern but arrays with spreads, factory calls (`defineCommand`, `title`, `recordOf`) and schema constants in the
+same bundled module as the code the player does use. Splitting `core`, `schema` and `theme` into zod-free player entries is a refactor of three contracts.
+
+Two cheaper candidates were measured:
+
+| Build | Gzip | Note |
+|---|---:|---|
+| the file at M11.13 | 167.2 kB | React, Zod |
+| `zod` resolved to an inert stub in the iife build | 141.8 kB | nothing validates in the player (the lean reader reads the document), so the schemas the packages build at load cost nothing; M11.42 |
+| `react` and `react-dom` aliased to `preact/compat` (10.29.8) | 109.5 kB | every `.flux.html` spec passes on it, the pixel comparison with the studio's React rendering included; **not taken**: a new dependency changes `pnpm-lock.yaml`, and a commit that stages the lockfile must carry a `check-budget --record` measured on the worst-case staged commit, which takes 5 minutes on this 4-core box against the 120 s budget (the last record is from the project's own machine); ADR-0026 keeps it as the fallback, and a human with that machine can take it |
+
+The raw size drops with the stub as well (440 kB), so the raw reading of NFR-SIZE-003 (450 kB with a 20-screen document) is within reach of the same change.

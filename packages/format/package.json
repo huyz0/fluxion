@@ -10,6 +10,11 @@
       "@fluxion/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./player": {
+      "@fluxion/source": "./src/player.ts",
+      "types": "./dist/player.d.ts",
+      "default": "./dist/player.js"
     }
   },
   "files": [
