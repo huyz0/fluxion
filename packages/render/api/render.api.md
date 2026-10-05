@@ -267,6 +267,12 @@ export type RenderRegistries = {
 };
 
 // @public
+export const RenderStatsContext: Context<RenderStatsRecorder | undefined>;
+
+// @public
+export type RenderStatsRecorder = (name: string, ms: number) => void;
+
+// @public
 export function RichText(props: {
     readonly doc: RichTextDoc | undefined;
 }): ReactNode;

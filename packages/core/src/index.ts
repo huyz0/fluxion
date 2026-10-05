@@ -24,6 +24,7 @@ export { applyFork } from './fork.js';
 export type { History } from './history.js';
 export { CORE_HOOKS, type HookContext, type IntegrityHook, registerCoreHooks } from './hooks.js';
 export type { IndexName } from './indexes.js';
+export { type ConsoleLike, consoleSink, createLogger, type LogEntry, type LoggerOptions, type NamespacedLogger, namespaceEnabled } from './logger.js';
 export { MARKER_SIZE, type MarkerDef, markerDefSchema, markerTrim, parseMarkerDef } from './marker.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, TextMeasurer, TextMetrics } from './ports/ports.js';
 export { createRegistry, type Disposable, type PluginId, type Registry } from './registry.js';

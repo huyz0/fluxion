@@ -12,12 +12,13 @@ import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
 import { labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
 import type { ConnectorElement, Marker } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
-import { type CSSProperties, type ReactNode, useId, useMemo } from 'react';
+import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
 import { concreteLength } from './css-values.js';
 import { labelStyle } from './label.js';
 import { MarkerView, MidMarker } from './markers.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
+import { RenderStatsContext } from './render-stats.js';
 import { RichText } from './rich-text.js';
 import { useValue } from './use-value.js';
 
@@ -57,7 +58,20 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const element = props.element as ConnectorElement;
   const { id } = element;
   const base = `fx-marker-${useId().replace(/[^\w-]/g, '')}`;
-  const routed = useValue(useMemo(() => store.query((view) => routeConnector(view, registries, id)), [store, registries, id]));
+  const record = useContext(RenderStatsContext);
+  const routed = useValue(
+    useMemo(
+      () =>
+        store.query((view) => {
+          if (record === undefined) return routeConnector(view, registries, id);
+          const t0 = performance.now();
+          const route = routeConnector(view, registries, id);
+          record('route', performance.now() - t0);
+          return route;
+        }),
+      [store, registries, id, record],
+    ),
+  );
   const { style } = useMemo(() => resolveStyle(element.style, 'connector', theme, ['records', id, 'style']), [element.style, theme, id]);
   if (routed === undefined) return null;
   const [start, end, mid] = [

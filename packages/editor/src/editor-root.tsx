@@ -17,6 +17,7 @@ import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
 import { createClipboard } from './clipboard.js';
 import { PaletteHost } from './command-palette.js';
+import { Measured } from './debug-overlay.js';
 import { EditBody } from './edit-body.js';
 import { EditToolbar } from './edit-toolbar.js';
 import type { EditorCommand } from './editor-commands.js';
@@ -292,23 +293,25 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
           </>
         }
       />
-      <EditBody
-        store={store}
-        registries={registries}
-        session={session}
-        tools={tools}
-        execute={execute}
-        assetStore={assets}
-        notify={notify}
-        screenId={screenId}
-        area={area}
-        newId={newId}
-        onBox={setBox}
-        box={box}
-        layout={layout}
-        onLayout={setLayout}
-        menus={{ run, base, overrides, commands: props.commands, mac: onMac() }}
-      />
+      <Measured>
+        <EditBody
+          store={store}
+          registries={registries}
+          session={session}
+          tools={tools}
+          execute={execute}
+          assetStore={assets}
+          notify={notify}
+          screenId={screenId}
+          area={area}
+          newId={newId}
+          onBox={setBox}
+          box={box}
+          layout={layout}
+          onLayout={setLayout}
+          menus={{ run, base, overrides, commands: props.commands, mac: onMac() }}
+        />
+      </Measured>
       <Notice text={notice} onDismiss={() => notify('')} />
       <Dialogs dialogs={dialogs} commands={props.commands} overrides={overrides} onOverrides={setOverrides} tools={tools} run={run} />
     </div>

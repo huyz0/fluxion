@@ -91,6 +91,12 @@ export type CommandTxOptions = Omit<TxOptions, "origin"> & {
 export function computed<T>(fn: () => T): ReadSignal<T>;
 
 // @public
+export type ConsoleLike = { readonly [level in LogLevel]: (...args: unknown[]) => void; };
+
+// @public
+export function consoleSink(target: ConsoleLike): (entry: LogEntry) => void;
+
+// @public
 export type Core = {
     readonly store: Store;
     readonly registries: CoreRegistries;
@@ -127,6 +133,9 @@ export function createCore(file: DocumentFile, options?: Omit<StoreOptions, "hoo
 
 // @public
 export function createCoreRegistries(): CoreRegistries;
+
+// @public
+export function createLogger(options: LoggerOptions): NamespacedLogger;
 
 // @public
 export function createMetricsMeasurer(faces: readonly FaceMetrics[], fallback: TextMeasurer): TextMeasurer;
@@ -347,9 +356,24 @@ export type IndexName = "byScreen" | "byParent" | "byType" | "bindingsByElement"
 export type IntegrityHook = (context: HookContext) => void;
 
 // @public
+export type LogEntry = {
+    readonly level: LogLevel;
+    readonly namespace: string;
+    readonly message: string;
+    readonly fields: Readonly<Record<string, unknown>>;
+};
+
+// @public
 export interface Logger {
     log(level: LogLevel, message: string, fields?: Readonly<Record<string, unknown>>): void;
 }
+
+// @public
+export type LoggerOptions = {
+    readonly sink: (entry: LogEntry) => void;
+    readonly level?: LogLevel;
+    readonly namespaces?: string;
+};
 
 // @public
 export type LogLevel = "debug" | "info" | "warn" | "error";
@@ -376,6 +400,14 @@ export type MessageDescriptor = {
     readonly id: string;
     readonly defaultMessage: string;
 };
+
+// @public
+export interface NamespacedLogger extends Logger {
+    child(namespace: string): NamespacedLogger;
+}
+
+// @public
+export function namespaceEnabled(spec: string, namespace: string): boolean;
 
 // @public
 export function nextVisibleScreen(view: ReadView, from: RecordId, step?: 1 | -1): RecordId | undefined;

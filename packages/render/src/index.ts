@@ -18,6 +18,7 @@ export { BUILTIN_MARKERS, registerBuiltinMarkers } from './markers.js';
 export { type ModePolicy, modePolicy, type RenderMode } from './mode-policy.js';
 export { pathData } from './path-data.js';
 export { createRenderRegistries, type ElementView, type ElementViewProps, type RenderRegistries } from './registries.js';
+export { RenderStatsContext, type RenderStatsRecorder } from './render-stats.js';
 export { type BlockPlan, planBlock } from './rich-blocks.js';
 export { styledBlocks } from './rich-layout.js';
 export { type MarkPlan, planMarks } from './rich-marks.js';

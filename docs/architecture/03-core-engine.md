@@ -180,6 +180,8 @@ for bindings (no `eval`).
 | `Hasher` | sha256 | SubtleCrypto | `node:crypto` | same |
 | `Logger` | structured logs | console w/ namespaces | pino-like stdout | capture |
 
+`createLogger({ sink, level, namespaces })` is the pure implementation (M11.21, NFR-OBS-001): `child('layout')` writes under a namespace, `layout:route` below it, the level and a filter such as `render,layout:*,-noisy` decide what reaches the sink, and `consoleSink(console)` is the dev console's. The studio reads its level and filter from the address (`?level=debug&log=layout:*`).
+
 ## 8. Selection & editor state (not in document)
 
 Editor/session state (selection, camera, active tool, hover, preview clock) lives in a

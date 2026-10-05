@@ -7,6 +7,7 @@ import { ok, type RecordId } from '@fluxion/schema';
 import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { AutosaveBar } from './autosave/autosave-bar.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
+import { studioLogger } from './dev-logger.js';
 import { type Guard, useGuard, useProtection } from './document-protection.js';
 import { exampleNames, loadDocument } from './documents.js';
 import { FileBar, OpenControl, openPicked, pickedFromDrop } from './file-bar.js';
@@ -147,7 +148,7 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   const readOnly = guard.phase === 'read-only';
   const opened = useMemo(() => {
     const file = entry === undefined ? loadDocument(docId, cryptoRandom) : ok(entry.file.document);
-    const doc = file.ok ? openDocument(file.value, { readOnly }) : file;
+    const doc = file.ok ? openDocument(file.value, { readOnly, logger: studioLogger(window.location.search, console).child('studio') }) : file;
     if (!doc.ok) return doc;
     // the bytes of the document's assets (images, fonts) and the font picker's sources live as long as the document is open here
     const assets = createAssetStore();
