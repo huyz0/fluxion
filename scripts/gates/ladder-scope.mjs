@@ -314,6 +314,8 @@ function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = fals
     p === 'scripts/gates/ladder-scope.mjs' ||
     /^tests\/harness\/[^/]+\.test\.mjs$/.test(p) ||
     p === 'knip.json' ||
+    // the bundle budgets are read by the ladder's own size-limit step, not by publint or attw
+    p === '.size-limit.js' ||
     p === 'osv-scanner.toml' ||
     /^\.github\/workflows\/[^/]+\.ya?ml$/.test(p) ||
     p === 'scripts/gates/thresholds.mjs' ||

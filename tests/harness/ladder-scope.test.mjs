@@ -203,7 +203,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.ok(!SOURCE_HARNESS.includes('coverage') && SAMPLE_HARNESS.includes('coverage'));
     // a private app's manifest and tsconfig, a workspace-only lockfile and an unchanged library list are not packed
     assert.equal(packagingNeeded(['apps/studio/package.json', 'apps/studio/tsconfig.json']), false);
-    assert.equal(packagingNeeded(['specs/format/flux-1.0.md', 'scripts/gates/m10-complete.mjs']), false);
+    assert.equal(packagingNeeded(['specs/format/flux-1.0.md', 'scripts/gates/m10-complete.mjs', '.size-limit.js']), false);
     assert.equal(packagingNeeded(['apps/studio/index.html', 'apps/studio/public/manifest.webmanifest']), false);
     assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true }), false);
     assert.equal(packagingNeeded(['apps/studio/package.json', 'pnpm-lock.yaml']), true);
