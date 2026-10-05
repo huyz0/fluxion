@@ -71,6 +71,15 @@ function copyWorkspace(dir) {
     if (existsSync(join(REPO, dir, f))) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
 }
 
+/** The source files of a workspace's subpath entries (`exports` `./ssr` → `./src/ssr.ts`): another package imports them by name, so one that is dropped is replaced by an empty module (M11.32). */
+function entryFiles(dir) {
+  const { exports = {} } = JSON.parse(readFileSync(sb.path(`${dir}/package.json`), 'utf8'));
+  return Object.values(exports).flatMap((e) => {
+    const source = typeof e === 'object' ? e['@fluxion/source'] : undefined;
+    return typeof source === 'string' ? [source.replace(/^\.\/src\//, '')] : [];
+  });
+}
+
 function dropBrowserCovered(src) {
   const files = readdirSync(sb.path(src));
   const stem = (f) => f.split('.')[0];
@@ -78,6 +87,8 @@ function dropBrowserCovered(src) {
   covered.delete('index');
   const dropped = files.filter((f) => covered.has(stem(f)));
   for (const f of dropped) rmSync(sb.path(`${src}/${f}`));
+  // a subpath entry that was dropped stays importable, with nothing in it (the named imports of its users then read undefined, as they did from the pruned root entry)
+  for (const entry of entryFiles(src.replace(/\/src$/, ''))) if (dropped.includes(entry) && entry !== 'index.ts') sb.write(`${src}/${entry}`, 'export {};\n');
   // the package entry re-exports what was dropped: remove those re-exports so the entry still loads (M4.11)
   const index = `${src}/index.ts`;
   const gone = new Set(dropped.map(stem));
