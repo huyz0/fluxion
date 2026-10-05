@@ -56,6 +56,14 @@ describe('rich text (ADR-0013)', () => {
     expect(richTextSchema.parse(value)).toEqual(value);
   });
 
+  it('NFR-SEC-001: a link with user information, markup characters or spaces is an error, as it is for a pasted link', () => {
+    for (const href of ['https://paypal.com@evil.example/', 'https://a.example/"x', 'https://a.example/a b', 'https://', 'https://a.example/<x>']) {
+      const issues = checkRichText(doc(p(t('x', [{ type: 'link', attrs: { href } }]))));
+      expect(issues, href).toEqual([expect.objectContaining({ code: 'FLX_TEXT_UNSAFE_LINK', severity: 'error' })]);
+    }
+    expect(checkRichText(doc(p(t('x', [{ type: 'link', attrs: { href: 'https://example.com/a?b=1#c' } }]))))).toEqual([]);
+  });
+
   it('NFR-SEC-001: a javascript: or data: link is an error', () => {
     for (const href of ['javascript:alert(1)', 'JAVASCRIPT:x', 'data:text/html,x', 'vbscript:x', '//evil', 42]) {
       const issues = checkRichText(doc(p(t('x', [{ type: 'link', attrs: { href } }]))));

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { DiagnosticSeverity } from './diagnostics.js';
 import { tokenRefSchema } from './paint.js';
 import type { Extensible } from './primitives.js';
+import { safeLinkUrl } from './safe-url.js';
 
 /**
  * A mark on a text node (`bold`, `link`, …).
@@ -85,7 +86,6 @@ const SPACING: readonly (readonly [name: string, min: number, max: number])[] = 
   ['spaceBefore', 0, 400],
   ['spaceAfter', 0, 400],
 ];
-const SAFE_LINK = /^(?:https?:\/\/|mailto:|#screen:[A-Za-z0-9_-]{1,64}$)/i;
 
 type Obj = { readonly [key: string]: unknown };
 const isObject = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -253,8 +253,8 @@ const MARK_ATTRS: { readonly [type: string]: AttrCheck } = {
   code: none,
   link: (w, attrs, path) => {
     const href = attrs['href'];
-    if (typeof href !== 'string' || !SAFE_LINK.test(href))
-      w.error([...path, 'href'], 'link href must be http(s), mailto or #screen:<id> (NFR-SEC-001)', 'FLX_TEXT_UNSAFE_LINK');
+    if (typeof href !== 'string' || safeLinkUrl(href) === undefined)
+      w.error([...path, 'href'], 'link href must be http(s) without user information, mailto or #screen:<id> (NFR-SEC-001)', 'FLX_TEXT_UNSAFE_LINK');
     if (attrs['title'] !== undefined && typeof attrs['title'] !== 'string') w.error([...path, 'title'], 'link title must be a string');
   },
   color: colorAttr,

@@ -83,6 +83,13 @@ for an SVG that would change. **`sanitizeHtml` is not built in M10**: the editor
 call it, and a hand-written HTML sanitizer without a consumer is risk without value; backlog M10.27 holds it for the commit that adds
 HTML paste, with its own corpus.
 
+### Amendment (M11.44): one link rule in the schema, the views and paste
+
+The amendment above claimed the schema accepts what a pasted link may become; it did not, because the schema and the rich-text views shared a looser
+prefix test (`https://paypal.com@evil.example/` passed it). `safeLinkUrl` now lives in `@fluxion/schema` (`@fluxion/format` re-exports it), the schema's link
+check (`FLX_TEXT_UNSAFE_LINK`) and the views' link marks use it, so a document whose link carries user information, markup characters or spaces is an error and
+is drawn as text.
+
 ### Consequences
 
 - Good: no new package in the repository for the sanitizer, the minifier or the images; the lockfile and the budget record

@@ -607,6 +607,9 @@ export type Route = Extensible<{
 }>;
 
 // @public
+export function safeLinkUrl(href: string): string | undefined;
+
+// @public
 export type SameType<A, B> = (<G>() => G extends A ? 1 : 2) extends (<G>() => G extends B ? 1 : 2) ? true : false;
 
 // @public

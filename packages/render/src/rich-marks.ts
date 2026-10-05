@@ -3,7 +3,7 @@
 // styled span; every value a mark carries is checked again here, because a document can reach the
 // renderer without being validated: a link only to http(s), mailto and in-document screens, a colour
 // only a hex colour or a token, a font family only as a quoted CSS string.
-import type { RichTextMark } from '@fluxion/schema';
+import { type RichTextMark, safeLinkUrl } from '@fluxion/schema';
 import { cssVarName, tokenPath } from '@fluxion/theme';
 
 /**
@@ -25,7 +25,6 @@ export type MarkPlan = {
 /** The order marks nest in, outermost first: the same marks always give the same markup. */
 const ORDER = ['link', 'bold', 'italic', 'underline', 'strike', 'code', 'highlight', 'color', 'size', 'font'] as const;
 
-const SAFE_LINK = /^(?:https?:\/\/|mailto:|#screen:[A-Za-z0-9_-]{1,64}$)/i;
 const HEX = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 const TOKEN = /^\{[A-Za-z0-9_.-]+\}$/;
 
@@ -79,8 +78,9 @@ const PLANS: { readonly [type: string]: (attrs: Attrs) => MarkPlan | undefined }
   strike: plain('s'),
   code: plain('code'),
   link: (attrs) => {
-    const href = attrs['href'];
-    if (typeof href !== 'string' || !SAFE_LINK.test(href)) return undefined;
+    // the same policy as a pasted or imported link: no user information, markup characters or spaces
+    const href = typeof attrs['href'] === 'string' ? safeLinkUrl(attrs['href']) : undefined;
+    if (href === undefined) return undefined;
     return typeof attrs['title'] === 'string' ? { tag: 'a', href, title: attrs['title'] } : { tag: 'a', href };
   },
   highlight: styled('mark', 'color', (v) => {

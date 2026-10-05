@@ -8,6 +8,7 @@ import { AnyRecord } from '@fluxion/schema';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
+import { safeLinkUrl } from '@fluxion/schema';
 
 // @public
 export type AssetCheck = "clean" | "changed" | "refused";
@@ -297,8 +298,7 @@ export type ReplayStop = {
     readonly dropped: number;
 };
 
-// @public
-export function safeLinkUrl(href: string): string | undefined;
+export { safeLinkUrl }
 
 // @public
 export type Salvage = {

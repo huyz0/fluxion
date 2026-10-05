@@ -1,4 +1,4 @@
-import { type ContentHasher, writeFlux } from '@fluxion/format';
+import { type ContentHasher, safeLinkUrl, writeFlux } from '@fluxion/format';
 import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -175,12 +175,11 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
     expect(attributes.filter((a) => /^on/i.test(a.name))).toEqual([]);
     const compact = (value: string): string => [...value].filter((c) => c.charCodeAt(0) > 32).join('');
     expect(attributes.filter((a) => /^(javascript|vbscript|data):/i.test(compact(a.value)))).toEqual([]);
-    // the links: a link is drawn only to http(s), mailto or a screen (the schema's rule, kept by the views); a target of another scheme, a relative or a
-    // protocol-relative one is text. (The stricter `safeLinkUrl` of paste and import, which also refuses user information and markup characters, is not the views'.)
+    // the links: a link is drawn only where `safeLinkUrl` (the policy of paste, import, the schema and the views) accepts the target as it stands; a target of another
+    // scheme, a relative or protocol-relative one, one with user information, markup characters or spaces is text
     const hrefs = [...root.querySelectorAll('a')].map((a) => a.getAttribute('href') ?? '');
-    const SAFE_LINK = /^(?:https?:\/\/|mailto:|#screen:[A-Za-z0-9_-]{1,64}$)/i;
-    for (const href of hrefs) expect(href, href).toMatch(SAFE_LINK);
-    for (const link of LINKS.filter((l) => !SAFE_LINK.test(l.url))) expect(hrefs, link.name).not.toContain(link.url);
+    for (const href of hrefs) expect(safeLinkUrl(href), href).toBe(href);
+    for (const link of LINKS.filter((l) => safeLinkUrl(l.url) !== l.url)) expect(hrefs, link.name).not.toContain(link.url);
     expect(hrefs.length).toBeGreaterThan(0);
     // words that are markup are words
     expect(root.textContent).toContain('<script>alert(2)</script>');
