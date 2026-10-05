@@ -17,6 +17,9 @@ import { RenderRegistries } from '@fluxion/render';
 import { Store } from '@fluxion/core';
 
 // @public
+export function bindLinks(controller: PresentationController, win: LinkWindow): () => void;
+
+// @public
 export type Box = {
     readonly w: number;
     readonly h: number;
@@ -41,6 +44,9 @@ export interface DeckSource {
     groups?(screen: RecordId): number;
     screens(): readonly RecordId[];
 }
+
+// @public
+export const formatLink: (position: Position) => string;
 
 // @public
 export type FullscreenDocument = {
@@ -83,6 +89,20 @@ export type LaserTrailProps = {
 };
 
 // @public
+export type LinkWindow = {
+    readonly location: {
+        readonly hash: string;
+    };
+    readonly history: {
+        readonly state: unknown;
+        pushState(state: unknown, unused: string, url: string): void;
+        replaceState(state: unknown, unused: string, url: string): void;
+    };
+    addEventListener(type: "popstate", listener: () => void): void;
+    removeEventListener(type: "popstate", listener: () => void): void;
+};
+
+// @public
 export class NumberEntry {
     clear(): void;
     erase(): void;
@@ -93,6 +113,9 @@ export class NumberEntry {
 }
 
 // @public
+export function parseLink(hash: string): Position | undefined;
+
+// @public
 export function PlayerDeck(props: PlayerDeckProps): ReactNode;
 
 // @public
@@ -101,6 +124,7 @@ export type PlayerDeckProps = {
     readonly registries: RenderRegistries;
     readonly assets?: AssetUrls;
     readonly background?: string;
+    readonly links?: boolean;
 };
 
 // @public

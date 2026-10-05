@@ -14,6 +14,13 @@ export type MountedPlayer = {
 };
 
 // @public
-export function mountPlayer(root: HTMLElement, store: Store, registries: RenderRegistries, assets?: AssetUrls): MountedPlayer;
+export type MountOptions = {
+    readonly assets?: AssetUrls;
+    readonly links?: boolean;
+    readonly background?: string;
+};
+
+// @public
+export function mountPlayer(root: HTMLElement, store: Store, registries: RenderRegistries, options?: MountOptions): MountedPlayer;
 
 ```

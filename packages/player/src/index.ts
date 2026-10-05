@@ -5,6 +5,7 @@ export { registerFontMetrics } from '@fluxion/render';
 export { realtimeClock } from './clock.js';
 export { buildsOfScreen, hiddenAt } from './deck-builds.js';
 export { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
+export { bindLinks, formatLink, type LinkWindow, parseLink } from './deck-links.js';
 export { type FullscreenDocument, type FullscreenResult, type FullscreenTarget, toggleFullscreen } from './fullscreen.js';
 export { LASER_FADE, type LaserPoint, type TrailDot, trailKeys } from './laser-keys.js';
 export { LaserTrail, type LaserTrailProps } from './laser-trail.js';

@@ -186,7 +186,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-PRS-002 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.keyboard-nav.spec.ts` +6 |
 | FR-PRS-003 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `packages/anim/src/builds.test.ts` +4 |
 | FR-PRS-004 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.no-mutation-fuzz.spec.ts`, `packages/player/src/player-deck.browser.test.tsx` |
-| FR-PRS-005 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
+| FR-PRS-005 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.deep-link.spec.ts` +2 |
 | FR-PRS-006 | S | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-PRS-007 | S | R4 | M22 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-PRS-008 | S | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |

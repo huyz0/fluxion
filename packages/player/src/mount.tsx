@@ -16,12 +16,34 @@ export type MountedPlayer = {
 };
 
 /**
+ * How the deck mounted by {@link mountPlayer} behaves.
+ *
+ * @public
+ */
+export type MountOptions = {
+  /** The URLs images are drawn from, by asset id (keep it stable). */
+  readonly assets?: AssetUrls;
+  /** Keep the position in the page's URL hash (FR-PRS-005); default false. */
+  readonly links?: boolean;
+  /** The colour of the bars around a screen of another shape (default black). */
+  readonly background?: string;
+};
+
+/**
  * Draw the document in `store` into `root` as a deck of screens with keyboard navigation.
  *
  * @public
  */
-export function mountPlayer(root: HTMLElement, store: Store, registries: RenderRegistries, assets?: AssetUrls): MountedPlayer {
+export function mountPlayer(root: HTMLElement, store: Store, registries: RenderRegistries, options: MountOptions = {}): MountedPlayer {
   const mounted = createRoot(root);
-  mounted.render(<PlayerDeck store={store} registries={registries} {...(assets === undefined ? {} : { assets })} />);
+  mounted.render(
+    <PlayerDeck
+      store={store}
+      registries={registries}
+      {...(options.assets === undefined ? {} : { assets: options.assets })}
+      {...(options.links === undefined ? {} : { links: options.links })}
+      {...(options.background === undefined ? {} : { background: options.background })}
+    />,
+  );
   return { unmount: () => mounted.unmount() };
 }

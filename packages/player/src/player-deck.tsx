@@ -9,6 +9,7 @@ import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, us
 import { realtimeClock } from './clock.js';
 import { buildsOfScreen, hiddenAt } from './deck-builds.js';
 import { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
+import { bindLinks } from './deck-links.js';
 import { DeckOverview } from './deck-overview.js';
 import { toggleFullscreen } from './fullscreen.js';
 import { PresentationController } from './presentation-controller.js';
@@ -28,6 +29,8 @@ export type PlayerDeckProps = {
   readonly assets?: AssetUrls;
   /** The colour of the bars a screen of another shape leaves around it (a CSS colour; default black). */
   readonly background?: string;
+  /** Keep the position in the page's URL hash, so a reload or a shared link opens there and back moves between screens (default false: an embedding page keeps its own URL). */
+  readonly links?: boolean;
 };
 
 /** Whether `target` is something that takes the keys itself: a link, a button, a field. */
@@ -105,6 +108,7 @@ const TYPING_MS = 2000;
 function useDeck(
   store: Store,
   stage: RefObject<HTMLElement | null>,
+  links: boolean,
 ): { controller: PresentationController; screens: readonly RecordId[]; overview: OverviewSwitch } {
   // a document that changes under the deck re-renders it; the controller reads the screens afresh on every move
   const screens = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)), [store]));
@@ -124,6 +128,8 @@ function useDeck(
   const [open, setOpen] = useState(false);
   const overview = useMemo<OverviewSwitch>(() => ({ open, toggle: () => setOpen((was) => !was), close: () => setOpen(false) }), [open]);
   useEffect(() => controller.subscribe(moved), [controller]);
+  // the position is in the URL: a reload or a shared link opens there, back and forward move
+  useEffect(() => (links ? bindLinks(controller, window) : undefined), [controller, links]);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const parts = (): DeckParts => ({
@@ -155,10 +161,10 @@ function useDeck(
  * @public
  */
 export function PlayerDeck(props: PlayerDeckProps): ReactNode {
-  const { store, registries, assets, background = '#000' } = props;
+  const { store, registries, assets, background = '#000', links = false } = props;
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
-  const { controller, screens, overview } = useDeck(store, ref);
+  const { controller, screens, overview } = useDeck(store, ref, links);
   const position = controller.position();
   const shown = position?.screen;
   const group = position?.group ?? 0;

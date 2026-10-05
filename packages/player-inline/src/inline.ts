@@ -75,7 +75,10 @@ async function open(bytes: Uint8Array, root: HTMLElement, urls: { release: () =>
   // the file's own fonts first: the first paint is in them, measured with their recorded metrics
   const fonts = await loadEmbeddedFonts(loaded.value);
   urls.push(fonts);
-  const mounted = mountPlayer(root, core.store, renderRegistriesFor(core.registries), (id: RecordId) => images.urls.get(id));
+  const mounted = mountPlayer(root, core.store, renderRegistriesFor(core.registries), {
+    assets: (id: RecordId) => images.urls.get(id),
+    links: true,
+  });
   return {
     ok: true,
     unmount: () => {

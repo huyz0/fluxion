@@ -15,6 +15,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   act(() => root.unmount());
+  history.replaceState(null, '', location.pathname + location.search);
   host.remove();
 });
 
@@ -289,5 +290,28 @@ describe('the deck of the one-file player (FR-FIL-002)', () => {
     expect(shown()).toBe(c);
     expect(writes).toBe(0);
     expect(core.store.readOnly).toBe(true);
+  });
+
+  it('FR-PRS-005: with links the position is written to the hash and a deck mounted on a hash opens there; without them the URL is left alone', async () => {
+    const { core, ids } = deck();
+    const render = (links: boolean) =>
+      act(async () => root.render(<PlayerDeck store={core.store} registries={renderRegistriesFor(core.registries)} links={links} />));
+    await render(false);
+    await act(frame);
+    await press('ArrowRight');
+    expect(location.hash).toBe('');
+    await act(async () => root.unmount());
+    root = createRoot(host);
+    await render(true);
+    await act(frame);
+    expect(location.hash).toBe(`#/${ids[0]}/0`);
+    await press('ArrowRight');
+    await act(frame);
+    expect(location.hash).toBe(`#/${ids[1]}/0`);
+    await act(async () => root.unmount());
+    root = createRoot(host);
+    await render(true);
+    await act(frame);
+    expect(shown()).toBe(ids[1]);
   });
 });
