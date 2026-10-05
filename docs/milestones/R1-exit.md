@@ -10,8 +10,8 @@ today. `m11-complete` fails while a box is open.
   externalised as ICU messages, with a lint rule against JSX literals) has no test: its work is rows M9.19 and M9.20 (Lingui in the editor and studio, `check-i18n`, the conversion of the
   existing strings), which add dependencies and so a lockfile change, and that needs a `check-budget --record` from a machine whose staged ladder fits 120 s (this one takes 315 s; see M11.52
   and ADR-0156 for the same wait). NFR-SIZE-002 is named since M11.19 (`tests/harness/editor-budget.test.mjs`).
-- [ ] **2. CI green on main, and the visual baselines reviewed.** The `ci` run of the last code commit must be green; the visual job compares against the baselines made in the pinned image, and
-  no baseline was changed in M11 (no `Threshold-change:` trailer). Open until the last `ci` run on main is green: `node scripts/harness/last-ci.mjs`.
+- [x] **2. CI green on main, and the visual baselines reviewed.** The `ci` run of the last code commit must be green; the visual job compares against the baselines made in the pinned image, and
+  no baseline was changed in M11 (no `Threshold-change:` trailer). Met: the `ci` run 37375690437 at 6cdbad4 (after the last code commit eeea364 and the M11.58/M11.64 fixes) is green, as `node scripts/harness/last-ci.mjs` reports; the run includes 759bc86 (`nightly.yml` and its harness test), and 6cdbad4 only closes a backlog row. The visual baselines are the pinned image's; none changed in M11.
 - [x] **3a. Changesets.** Every package M11 touched has a changeset (`.changeset/m11-*.md`; `m11-complete` checks the range).
 - [x] **3b. The user guide and the API reference.** The API reports of every touched library are current (`check-api`), and the guide "Presenting" (`apps/docs/src/content/docs/guides/presenting.md`, M11.61) says how to present, move, share a link and embed.
 - [x] **4. A demo document, committed and run in CI.** `examples/r1-mvp-deck.flux.html` (M11.24), opened from `file://` offline by `e2e/examples.r1-offline.spec.ts`, checked with axe and walked with the
