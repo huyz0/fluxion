@@ -1,15 +1,16 @@
 // The one-file player's deck (FR-FIL-002, FR-EXP-001, FR-PRS-002): the document's visible screens, one at a time, fitted into the window and drawn by the
 // same <ScreenView> as the editor (FR-EDT-010). It is driven by a PresentationController over the presentation order and each screen's build groups: the arrow,
-// page, space, enter and backspace keys, Home and End, a click, and a typed screen number plus Enter move it; F is full screen. The deck draws no text of its own
+// page, space, enter and backspace keys, Home and End, a click, and a typed screen number plus Enter move it; F is full screen and O opens the overview grid of screens (deck-overview.tsx). The deck draws no text of its own
 // (ADR-0023). Keys are left to a focused link, button or field, to a key another handler took, and to key repeat.
 import { reduceBuild } from '@fluxion/anim';
 import type { Store } from '@fluxion/core';
 import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
-import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useReducer, useRef } from 'react';
+import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { realtimeClock } from './clock.js';
 import { buildsOfScreen } from './deck-builds.js';
 import { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
+import { DeckOverview } from './deck-overview.js';
 import { toggleFullscreen } from './fullscreen.js';
 import { PresentationController } from './presentation-controller.js';
 import { useElementBox } from './use-box.js';
@@ -37,11 +38,22 @@ const interactive = (target: EventTarget | null): boolean =>
 /** Whether a key is not the deck's: one with a modifier, a repeat, one another handler took, or one aimed at a link, button or field. */
 const leftAlone = (e: KeyboardEvent): boolean => e.ctrlKey || e.metaKey || e.altKey || e.repeat || e.defaultPrevented || interactive(e.target);
 
+/** The overview grid being open or not. */
+type OverviewSwitch = {
+  /** Whether the grid is open now. */
+  readonly open: boolean;
+  /** Open it when closed, close it when open. */
+  readonly toggle: () => void;
+  /** Close it. */
+  readonly close: () => void;
+};
+
 /** What the keys act on. */
 type DeckParts = {
   readonly controller: PresentationController;
   readonly entry: NumberEntry;
   readonly stage: HTMLElement | null;
+  readonly overview: OverviewSwitch;
   /** The screens in presentation order now. */
   readonly screens: () => readonly RecordId[];
 };
@@ -60,6 +72,11 @@ const RUN: { readonly [kind in DeckAction['kind']]: (parts: DeckParts, action: D
   first: ({ controller }) => void controller.first(),
   last: ({ controller }) => void controller.last(),
   fullscreen: ({ stage }) => void (stage !== null && toggleFullscreen(stage, document)),
+  overview: ({ overview, entry }) => {
+    // a number half typed is dropped, not left to surprise the deck when the grid closes
+    entry.clear();
+    overview.toggle();
+  },
   digit: ({ entry }, action) => entry.push((action as { digit: string }).digit),
   erase: ({ entry }) => entry.erase(),
   cancel: ({ entry }) => entry.clear(),
@@ -69,6 +86,14 @@ const RUN: { readonly [kind in DeckAction['kind']]: (parts: DeckParts, action: D
 /** Act on a key aimed at the window: the move, the full screen or the typing it asks for, or nothing; a handled key is not left to the page. */
 function handleKey(e: KeyboardEvent, parts: DeckParts): void {
   const action = leftAlone(e) ? undefined : deckAction(e.key, parts.entry.typing);
+  // an open grid takes the keys itself (its own handler, and Escape or O when focus is outside it); the deck behind it stays where it is
+  if (parts.overview.open) {
+    if (action?.kind === 'overview' || (e.key === 'Escape' && !leftAlone(e))) {
+      e.preventDefault();
+      parts.overview.close();
+    }
+    return;
+  }
   if (action === undefined) return;
   e.preventDefault();
   RUN[action.kind](parts, action);
@@ -78,7 +103,10 @@ function handleKey(e: KeyboardEvent, parts: DeckParts): void {
 const TYPING_MS = 2000;
 
 /** The controller over `store`'s presentation order and builds, the screen number being typed, and the keys that drive them; the component re-renders on every move. */
-function useDeck(store: Store, stage: RefObject<HTMLElement | null>): { controller: PresentationController; screens: readonly RecordId[] } {
+function useDeck(
+  store: Store,
+  stage: RefObject<HTMLElement | null>,
+): { controller: PresentationController; screens: readonly RecordId[]; overview: OverviewSwitch } {
   // a document that changes under the deck re-renders it; the controller reads the screens afresh on every move
   const screens = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)), [store]));
   const controller = useMemo(
@@ -94,10 +122,18 @@ function useDeck(store: Store, stage: RefObject<HTMLElement | null>): { controll
   );
   const [, moved] = useReducer((n: number) => n + 1, 0);
   const entry = useMemo(() => new NumberEntry(), []);
+  const [open, setOpen] = useState(false);
+  const overview = useMemo<OverviewSwitch>(() => ({ open, toggle: () => setOpen((was) => !was), close: () => setOpen(false) }), [open]);
   useEffect(() => controller.subscribe(moved), [controller]);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const parts = (): DeckParts => ({ controller, entry, stage: stage.current, screens: () => store.query((view) => presentationOrder(view, false))() });
+    const parts = (): DeckParts => ({
+      controller,
+      entry,
+      overview,
+      stage: stage.current,
+      screens: () => store.query((view) => presentationOrder(view, false))(),
+    });
     const onKey = (e: KeyboardEvent) => {
       handleKey(e, parts());
       // a number waits for Enter for a while and is then dropped
@@ -109,8 +145,8 @@ function useDeck(store: Store, stage: RefObject<HTMLElement | null>): { controll
       clearTimeout(timer);
       window.removeEventListener('keydown', onKey);
     };
-  }, [controller, entry, store, stage]);
-  return { controller, screens };
+  }, [controller, entry, overview, store, stage]);
+  return { controller, screens, overview };
 }
 
 /**
@@ -123,7 +159,7 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
   const { store, registries, assets, background = '#000' } = props;
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
-  const { controller, screens } = useDeck(store, ref);
+  const { controller, screens, overview } = useDeck(store, ref);
   const position = controller.position();
   const shown = position?.screen;
   const group = position?.group ?? 0;
@@ -160,6 +196,20 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
           {...(hidden === undefined ? {} : { hidden })}
         />
       )}
+      {overview.open ? (
+        <DeckOverview
+          store={store}
+          registries={registries}
+          {...(assets === undefined ? {} : { assets })}
+          screens={screens}
+          current={shown}
+          onPick={(screen) => {
+            controller.goTo(screen);
+            overview.close();
+          }}
+          onClose={overview.close}
+        />
+      ) : null}
     </div>
   );
 }

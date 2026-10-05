@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { deckAction, NumberEntry } from './deck-input.js';
 
 describe("the deck's keys (FR-PRS-002)", () => {
-  it('FR-PRS-002: arrows, page keys, space, enter and backspace move; Home and End jump; F is full screen; other keys are nothing', () => {
+  it('FR-PRS-002: arrows, page keys, space, enter and backspace move; Home and End jump; F is full screen and O the overview; other keys are nothing', () => {
     const kind = (key: string) => deckAction(key, false)?.kind;
     for (const key of ['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter']) expect(kind(key), key).toBe('next');
     for (const key of ['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace']) expect(kind(key), key).toBe('prev');
@@ -10,6 +10,8 @@ describe("the deck's keys (FR-PRS-002)", () => {
     expect(kind('End')).toBe('last');
     expect(kind('f')).toBe('fullscreen');
     expect(kind('F')).toBe('fullscreen');
+    expect(kind('o')).toBe('overview');
+    expect(kind('O')).toBe('overview');
     for (const key of ['a', 'Tab', 'Escape', 'F5', 'Shift']) expect(kind(key), key).toBeUndefined();
     expect(deckAction('7', false)).toEqual({ kind: 'digit', digit: '7' });
   });

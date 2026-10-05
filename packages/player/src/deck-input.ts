@@ -8,8 +8,8 @@
  */
 export type DeckAction =
   | {
-      /** The action: a move (`next`, `prev`, `first`, `last`), `fullscreen`, or an edit of the screen number being typed (`commit`, `erase`, `cancel`). */
-      readonly kind: 'next' | 'prev' | 'first' | 'last' | 'fullscreen' | 'commit' | 'erase' | 'cancel';
+      /** The action: a move (`next`, `prev`, `first`, `last`), `fullscreen`, `overview` (the grid of screens), or an edit of the screen number being typed (`commit`, `erase`, `cancel`). */
+      readonly kind: 'next' | 'prev' | 'first' | 'last' | 'fullscreen' | 'overview' | 'commit' | 'erase' | 'cancel';
     }
   | {
       /** A digit of a screen number. */
@@ -21,6 +21,7 @@ export type DeckAction =
 const NEXT: DeckAction = { kind: 'next' };
 const PREV: DeckAction = { kind: 'prev' };
 const FULLSCREEN: DeckAction = { kind: 'fullscreen' };
+const OVERVIEW: DeckAction = { kind: 'overview' };
 
 /** The keys that mean the same whatever is being typed. */
 const KEYS: { readonly [key: string]: DeckAction } = {
@@ -37,6 +38,8 @@ const KEYS: { readonly [key: string]: DeckAction } = {
   End: { kind: 'last' },
   f: FULLSCREEN,
   F: FULLSCREEN,
+  o: OVERVIEW,
+  O: OVERVIEW,
 };
 
 /** What a few keys mean while a screen number is being typed: Enter commits it, Backspace erases a digit, Escape drops it. */

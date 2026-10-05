@@ -27,7 +27,7 @@ export function buildsOfScreen(view: ReadView, screenId: RecordId): Builds<Recor
 
 // @public
 export type DeckAction = {
-    readonly kind: "next" | "prev" | "first" | "last" | "fullscreen" | "commit" | "erase" | "cancel";
+    readonly kind: "next" | "prev" | "first" | "last" | "fullscreen" | "overview" | "commit" | "erase" | "cancel";
 } | {
     readonly kind: "digit";
     readonly digit: string;
