@@ -1583,3 +1583,7 @@ Axe over the editor states (a11y.editor.spec.ts, Chromium here; Firefox/WebKit r
 ## 2026-10-03 M9.22 (claude)
 
 The Themes & fonts guide (apps/docs); changesets already cover the range. M9 state: done M9.1-M9.10, M9.12-M9.17, M9.21, M9.22, M9.24-M9.27; open: M9.11 (snapshots need the pinned image), M9.18 (editor has no persistence), M9.19/M9.20/M9.28 (Lingui needs external dependencies: the budget record cannot be re-measured in this container), M9.23 (final).
+
+## 2026-10-05 M11 (claude)
+
+The player half of M11 is built and landed: the deck, builds, overview, chrome, deep links, touch, the element and its React wrapper, the lean reader and the zod-free one-file player (139-141 kB gzip against 150), accessible structure and a live region, the keyboard-only pass, the Lighthouse job and the nightly previous-Playwright job, the logger and debug overlay, the diagnostic report and privacy page, the 50-screen open-time test, the R1 demo deck (journey spec, committed `.flux.html`, offline spec) and the Presenting guide. Landed alongside: three CI-red fixes (M11.37, M11.55, M11.57), the link policy (M11.44) and many staged-scope rows. Stopped at M11.25 (the R1 exit checklist is drafted in `docs/milestones/R1-exit.md` with three boxes open): see `blockedReason`. Next after the human's answers: M9.19/M9.20 from a machine that can record the budget, M10.45's decision, then M11.25 and M11.26.
