@@ -193,10 +193,11 @@ declare global {
 }
 const CATALOG = import.meta.glob('../../../packs/fonts-core/catalog.json', { query: '?url', import: 'default', eager: true });
 
-/** The catalog, fetched from where the studio serves it (when the picker opens, never at build time or in the player). */
+/** The catalog, fetched from where the studio serves it (when the picker opens, never at build time or in the player). A catalog that cannot be fetched is an error the picker shows, not an empty list. */
 export async function loadCatalog(http: Fetch = (url) => fetch(url)): Promise<readonly CatalogFamily[]> {
   const url = Object.values(CATALOG)[0];
-  if (url === undefined) return [];
+  if (url === undefined) throw new Error('the Google Fonts catalog is not part of this build');
   const response = await http(url);
-  return response.ok ? readCatalog(JSON.parse(await response.text())) : [];
+  if (!response.ok) throw new Error(`the Google Fonts catalog could not be fetched (${response.status})`);
+  return readCatalog(JSON.parse(await response.text()));
 }

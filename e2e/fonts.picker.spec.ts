@@ -8,10 +8,7 @@ test.describe('the font picker', { tag: '@desktop' }, () => {
   // adding a font records its metrics in the page (every pair and triple of letters, a few seconds a face)
   test.setTimeout(120_000);
 
-  test('FR-THM-008: a font picked from each source applies to the selected text', async ({ page, browserName }) => {
-    // QUARANTINE M11.37: on webkit the Google tab's "Add Roboto" row did not appear in one CI run (main 893955f), then passed on retry
-    // biome-ignore lint/suspicious/noSkippedTests: the quarantine testing.md rule 19 asks for, with its backlog row M11.37
-    test.fixme(browserName === 'webkit', 'QUARANTINE M11.37: webkit, catalog rows missing once; see the backlog row');
+  test('FR-THM-008: a font picked from each source applies to the selected text', async ({ page }) => {
     await mockGoogleFonts(page, 'Roboto');
     const editor = new EditorPage(page);
     await selectedText(page, editor, dragOut);
@@ -28,6 +25,9 @@ test.describe('the font picker', { tag: '@desktop' }, () => {
 
     // google: search the catalog, add Roboto (mocked), and the text takes it
     await dialog.getByRole('tab', { name: 'Google' }).click();
+    // the catalog is on its way when the tab opens: search once it has arrived (or has failed, which the picker says)
+    await expect(dialog.getByText('Loading the catalog…')).toBeHidden({ timeout: 30_000 });
+    await expect(dialog.getByRole('alert')).toBeHidden();
     await dialog.getByRole('searchbox', { name: 'Search Google Fonts' }).fill('Roboto');
     await dialog.getByRole('button', { name: 'Add Roboto', exact: true }).click();
     await expect(dialog.getByRole('status')).toContainText('Roboto applied to the selection', { timeout: 60_000 });

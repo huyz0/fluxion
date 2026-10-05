@@ -134,6 +134,9 @@ describe('Google Fonts in the studio (FR-THM-008, ADR-0022)', () => {
     expect(readCatalog({ families: [{ family: 'X' }, null, { ...FAMILY }, 'junk'] }).map((f) => f.family)).toEqual(['Fx Google']);
     expect(readCatalog(undefined)).toEqual([]);
     expect(readCatalog({ families: 'no' })).toEqual([]);
-    expect(await loadCatalog(async () => ({ ok: false, status: 404, text: async () => '', arrayBuffer: async () => new ArrayBuffer(0) }))).toEqual([]);
+    // a catalog that cannot be fetched is an error (the picker shows it), not an empty list
+    await expect(loadCatalog(async () => ({ ok: false, status: 404, text: async () => '', arrayBuffer: async () => new ArrayBuffer(0) }))).rejects.toThrow(
+      '404',
+    );
   });
 });
