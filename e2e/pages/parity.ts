@@ -5,11 +5,15 @@ import { type Pixels, pixels } from './image-diff.js';
 
 // Drawing a screen to pixels, in the file's player and in the studio's present-in-place, for the specs that compare the two.
 
+/** A stylesheet for a screenshot that leaves the player's chrome out. */
+const CHROME_OFF = '[part~="chrome"] { display: none !important; }';
+
 /** The screen on show, as pixels. */
 export async function shot(page: Page): Promise<Pixels> {
   const screen = page.locator('.fx-screen').first();
   await expect(screen).toBeVisible();
-  return pixels(page, await screen.screenshot({ animations: 'disabled' }));
+  // the player's chrome (controls, counter, progress bar) is drawn over the screen's bottom edge: the comparison is of the screen
+  return pixels(page, await screen.screenshot({ animations: 'disabled', style: CHROME_OFF }));
 }
 
 /** Every screen of the deck on `page`, one arrow key apart, starting from the first. */

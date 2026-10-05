@@ -3,6 +3,7 @@
 import type { Store } from '@fluxion/core';
 import type { AssetUrls, RenderRegistries } from '@fluxion/render';
 import { createRoot } from 'react-dom/client';
+import type { ChromeLabels } from './deck-chrome.js';
 import { PlayerDeck } from './player-deck.js';
 
 /**
@@ -25,6 +26,10 @@ export type MountOptions = {
   readonly assets?: AssetUrls;
   /** Keep the position in the page's URL hash (FR-PRS-005); default false. */
   readonly links?: boolean;
+  /** Draw the chrome (progress bar, counter, controls); default false. */
+  readonly chrome?: boolean;
+  /** The names of the chrome's controls in the page's language. */
+  readonly labels?: Partial<ChromeLabels>;
   /** The colour of the bars around a screen of another shape (default black). */
   readonly background?: string;
 };
@@ -42,6 +47,8 @@ export function mountPlayer(root: HTMLElement, store: Store, registries: RenderR
       registries={registries}
       {...(options.assets === undefined ? {} : { assets: options.assets })}
       {...(options.links === undefined ? {} : { links: options.links })}
+      {...(options.chrome === undefined ? {} : { chrome: options.chrome })}
+      {...(options.labels === undefined ? {} : { labels: options.labels })}
       {...(options.background === undefined ? {} : { background: options.background })}
     />,
   );

@@ -4,6 +4,7 @@
 export { registerFontMetrics } from '@fluxion/render';
 export { realtimeClock } from './clock.js';
 export { buildsOfScreen, hiddenAt } from './deck-builds.js';
+export { CHROME_IDLE_MS, type ChromeLabels, DEFAULT_LABELS, DeckChrome, type DeckChromeProps } from './deck-chrome.js';
 export { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
 export { bindLinks, formatLink, type LinkWindow, parseLink } from './deck-links.js';
 export { type FullscreenDocument, type FullscreenResult, type FullscreenTarget, toggleFullscreen } from './fullscreen.js';

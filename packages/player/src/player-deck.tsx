@@ -8,6 +8,7 @@ import type { RecordId } from '@fluxion/schema';
 import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { realtimeClock } from './clock.js';
 import { buildsOfScreen, hiddenAt } from './deck-builds.js';
+import { type ChromeLabels, DeckChrome } from './deck-chrome.js';
 import { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
 import { bindLinks } from './deck-links.js';
 import { DeckOverview } from './deck-overview.js';
@@ -31,14 +32,31 @@ export type PlayerDeckProps = {
   readonly background?: string;
   /** Keep the position in the page's URL hash, so a reload or a shared link opens there and back moves between screens (default false: an embedding page keeps its own URL). */
   readonly links?: boolean;
+  /** Draw the chrome over the screen: progress bar, screen counter and a controls bar that hides when idle (default false). */
+  readonly chrome?: boolean;
+  /** The names of the chrome's controls in the page's language (English by default). */
+  readonly labels?: Partial<ChromeLabels>;
 };
 
 /** Whether `target` is something that takes the keys itself: a link, a button, a field. */
 const interactive = (target: EventTarget | null): boolean =>
-  target instanceof Element && target.closest('a, button, input, textarea, select, summary, [contenteditable], [tabindex]:not([tabindex="-1"])') !== null;
+  target instanceof Element &&
+  target.closest('a, button, input, textarea, select, summary, [contenteditable], [tabindex]:not([tabindex="-1"]), [part~="chrome"]') !== null;
 
-/** Whether a key is not the deck's: one with a modifier, a repeat, one another handler took, or one aimed at a link, button or field. */
-const leftAlone = (e: KeyboardEvent): boolean => e.ctrlKey || e.metaKey || e.altKey || e.repeat || e.defaultPrevented || interactive(e.target);
+/** Whether `target` is in the deck's own chrome, whose buttons take only the keys that press them. */
+const inChrome = (target: EventTarget | null): boolean => target instanceof Element && target.closest('[part~="chrome"]') !== null;
+
+/**
+ * Whether a key is not the deck's: one with a modifier, a repeat, one another handler took, or one aimed at a link, button or field. A button of the deck's own chrome
+ * keeps Enter and Space (they press it) and lets the other keys through to the deck.
+ */
+const leftAlone = (e: KeyboardEvent): boolean =>
+  e.ctrlKey ||
+  e.metaKey ||
+  e.altKey ||
+  e.repeat ||
+  e.defaultPrevented ||
+  (interactive(e.target) && !(inChrome(e.target) && e.key !== 'Enter' && e.key !== ' '));
 
 /** The overview grid being open or not. */
 type OverviewSwitch = {
@@ -154,6 +172,31 @@ function useDeck(
   return { controller, screens, overview };
 }
 
+/** What the chrome acts on. */
+type ChromeDeck = {
+  readonly controller: PresentationController;
+  readonly overview: OverviewSwitch;
+  readonly stage: RefObject<HTMLElement | null>;
+  readonly index: number;
+  readonly count: number;
+};
+
+/** The chrome over a deck: its buttons are the deck's own moves, the overview and full screen. */
+function ChromeOf(props: { readonly deck: ChromeDeck; readonly labels: Partial<ChromeLabels> | undefined }): ReactNode {
+  const { controller, overview, stage, index, count } = props.deck;
+  return (
+    <DeckChrome
+      index={index}
+      count={count}
+      {...(props.labels === undefined ? {} : { labels: props.labels })}
+      onPrevious={() => void controller.prev()}
+      onNext={() => void controller.next()}
+      onOverview={overview.toggle}
+      onFullscreen={() => stage.current !== null && void toggleFullscreen(stage.current, document)}
+    />
+  );
+}
+
 /**
  * The document presented screen by screen: the visible screens in presentation order, the first one first, moved with the keyboard or a click, a screen's
  * build groups played before the next screen.
@@ -161,7 +204,7 @@ function useDeck(
  * @public
  */
 export function PlayerDeck(props: PlayerDeckProps): ReactNode {
-  const { store, registries, assets, background = '#000', links = false } = props;
+  const { store, registries, assets, background = '#000', links = false, chrome = false, labels } = props;
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
   const { controller, screens, overview } = useDeck(store, ref, links);
@@ -199,6 +242,7 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
           {...(hidden === undefined ? {} : { hidden })}
         />
       )}
+      {chrome ? <ChromeOf deck={{ controller, overview, stage: ref, index, count: screens.length }} labels={labels} /> : null}
       {overview.open ? (
         <DeckOverview
           store={store}

@@ -17,6 +17,8 @@ export type MountedPlayer = {
 export type MountOptions = {
     readonly assets?: AssetUrls;
     readonly links?: boolean;
+    readonly chrome?: boolean;
+    readonly labels?: Partial<ChromeLabels>;
     readonly background?: string;
 };
 

@@ -29,6 +29,19 @@ export type Box = {
 export function buildsOfScreen(view: ReadView, screenId: RecordId): Builds<RecordId>;
 
 // @public
+export const CHROME_IDLE_MS = 3e3;
+
+// @public
+export type ChromeLabels = {
+    readonly progress: string;
+    readonly controls: string;
+    readonly previous: string;
+    readonly next: string;
+    readonly overview: string;
+    readonly fullscreen: string;
+};
+
+// @public
 export type DeckAction = {
     readonly kind: "next" | "prev" | "first" | "last" | "fullscreen" | "overview" | "commit" | "erase" | "cancel";
 } | {
@@ -40,10 +53,28 @@ export type DeckAction = {
 export function deckAction(key: string, typing: boolean): DeckAction | undefined;
 
 // @public
+export function DeckChrome(props: DeckChromeProps): ReactNode;
+
+// @public
+export type DeckChromeProps = {
+    readonly index: number;
+    readonly count: number;
+    readonly onPrevious: () => void;
+    readonly onNext: () => void;
+    readonly onOverview: () => void;
+    readonly onFullscreen: () => void;
+    readonly labels?: Partial<ChromeLabels>;
+    readonly idleMs?: number;
+};
+
+// @public
 export interface DeckSource {
     groups?(screen: RecordId): number;
     screens(): readonly RecordId[];
 }
+
+// @public
+export const DEFAULT_LABELS: ChromeLabels;
 
 // @public
 export const formatLink: (position: Position) => string;
@@ -125,6 +156,8 @@ export type PlayerDeckProps = {
     readonly assets?: AssetUrls;
     readonly background?: string;
     readonly links?: boolean;
+    readonly chrome?: boolean;
+    readonly labels?: Partial<ChromeLabels>;
 };
 
 // @public

@@ -78,6 +78,7 @@ async function open(bytes: Uint8Array, root: HTMLElement, urls: { release: () =>
   const mounted = mountPlayer(root, core.store, renderRegistriesFor(core.registries), {
     assets: (id: RecordId) => images.urls.get(id),
     links: true,
+    chrome: true,
   });
   return {
     ok: true,
