@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A Fluxion deck in a page</title>
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; }
+      fluxion-player { width: 100%; aspect-ratio: 16 / 9; border: 1px solid #ccc; }
+      /* the chrome is styled from the page through parts and variables */
+      fluxion-player { --fx-player-progress-fill: #d94f00; }
+    </style>
+  </head>
+  <body>
+    <h1>A Fluxion deck in a page</h1>
+    <p>
+      The deck below is a <code>&lt;fluxion-player&gt;</code> element: its keys work while it has focus (click it, then use the arrow keys), and the page hears about every
+      move.
+    </p>
+
+    <!-- Make a deck with the studio (Save) or `fluxion convert`, put it next to this page as deck.flux, and build the script with `pnpm build`. -->
+    <script src="../../packages/player-inline/dist/fluxion-player.js"></script>
+    <fluxion-player id="deck" src="deck.flux" controls></fluxion-player>
+
+    <p>
+      <button type="button" id="prev">Previous</button>
+      <button type="button" id="next">Next</button>
+      <button type="button" id="third">Go to screen 3</button>
+      <output id="where" aria-live="polite">loading…</output>
+    </p>
+
+    <script>
+      const deck = document.getElementById('deck');
+      const where = document.getElementById('where');
+      // the element reports where the presentation is; the page does what it likes with it
+      deck.addEventListener('fluxion-position', (e) => {
+        where.textContent = `screen ${e.detail.index + 1} of ${e.detail.count}`;
+      });
+      deck.addEventListener('fluxion-error', (e) => {
+        where.textContent = e.detail.message;
+      });
+      document.getElementById('prev').addEventListener('click', () => deck.prev());
+      document.getElementById('next').addEventListener('click', () => deck.next());
+      document.getElementById('third').addEventListener('click', () => deck.goTo(3));
+    </script>
+  </body>
+</html>

@@ -190,7 +190,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-PRS-006 | S | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.chrome.spec.ts`, `packages/player/src/deck-chrome.browser.test.tsx` |
 | FR-PRS-007 | S | R4 | M22 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-PRS-008 | S | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
-| FR-PRS-009 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `packages/player/src/element.browser.test.tsx` |
+| FR-PRS-009 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.embed.spec.ts`, `packages/player/src/element.browser.test.tsx` |
 | FR-SPK-001 | M | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-SPK-002 | S | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |
 | FR-SPK-003 | S | R5 | M25 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | — |

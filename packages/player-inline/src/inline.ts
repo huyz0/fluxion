@@ -1,13 +1,8 @@
 // The one-file player's entry (ADR-0154): `Fluxion.start(bytes, root)` opens a `.flux`, registers the bundled packs and draws the deck.
 // It is the whole of what a `.flux.html` runs: no network, no `eval`, nothing outside the file's own bytes. Bundled by tsdown into
 // `dist/player.inline.js` (one classic script that defines the global `Fluxion`).
-import { type CoreRegistries, createCore, type Registry } from '@fluxion/core';
-import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
-import { basicPack } from '@fluxion/pack-basic';
-import { renderRegistriesFor } from '@fluxion/player';
 import { mountPlayer } from '@fluxion/player/mount';
-import type { AssetRecord, RecordId } from '@fluxion/schema';
-import { loadEmbeddedFonts } from './fonts.js';
+import { openFlux } from './open-flux.js';
 
 /**
  * What `start` came to.
@@ -28,83 +23,10 @@ export type StartResult =
       readonly message: string;
     };
 
-/** SubtleCrypto where the page has it (it needs a secure context), else the pure SHA-256 of `format`. */
-const hasher: ContentHasher = {
-  async sha256(bytes) {
-    const subtle = globalThis.crypto?.subtle;
-    if (subtle === undefined) return sha256Hex(bytes);
-    const digest = new Uint8Array(await subtle.digest('SHA-256', bytes.slice().buffer));
-    return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('');
-  },
-};
-
-/** Blob URLs of the image assets the document refers to, from the verified, sanitized bytes (an SVG is rebuilt from the allowlist first). */
-function imageUrls(loaded: LoadedFlux): { readonly urls: Map<string, string>; readonly release: () => void } {
-  const urls = new Map<string, string>();
-  for (const record of Object.values(loaded.document.records)) {
-    if (record.type !== 'asset') continue;
-    const asset = record as AssetRecord & { readonly font?: unknown };
-    const bytes = loaded.assets.get(asset.hash);
-    const safe = bytes === undefined || asset.font !== undefined ? undefined : sanitizeAsset(bytes);
-    if (safe !== undefined) urls.set(asset.id, URL.createObjectURL(new Blob([safe.bytes.slice().buffer], { type: safe.mime })));
-  }
-  return {
-    urls,
-    release: () => {
-      for (const url of urls.values()) URL.revokeObjectURL(url);
-    },
-  };
-}
-
 /** Write `message` into `root` as text (never as markup). */
 function show(root: HTMLElement, message: string): StartResult {
   root.textContent = message;
   return { ok: false, message };
-}
-
-/**
- * Register the bundled pack's shapes and markers. The pack is this script's own code, checked when it is built, so its definitions go into the registries
- * as they are (`basicPack.register` would validate each with Zod, which the script does not carry). Returns why one was refused, or nothing.
- */
-function registerBundled(registries: Pick<CoreRegistries, 'shapeDefs' | 'markers'>): string | undefined {
-  for (const [registry, items] of [
-    [registries.shapeDefs, basicPack.shapes],
-    [registries.markers, basicPack.markers],
-  ] as const) {
-    for (const item of items as readonly { readonly id: string }[]) {
-      const done = (registry as Registry<string, { readonly id: string }>).register(item.id, item, basicPack.id);
-      if (!done.ok) return done.error.message;
-    }
-  }
-  return undefined;
-}
-
-/** Open and draw; any throw is the caller's to turn into a message. */
-async function open(bytes: Uint8Array, root: HTMLElement, urls: { release: () => void }[]): Promise<StartResult> {
-  const loaded = await loadFluxLean(bytes, { hasher });
-  if (!loaded.ok) return show(root, `This file cannot be opened: ${loaded.error.message}`);
-  // a player never writes: its store refuses every transaction (FR-PRS-004)
-  const core = createCore(loaded.value.document, { policy: 'read-only' });
-  const registered = registerBundled(core.registries);
-  if (registered !== undefined) return show(root, `The built-in shapes could not be registered: ${registered}`);
-  const images = imageUrls(loaded.value);
-  urls.push(images);
-  // the file's own fonts first: the first paint is in them, measured with their recorded metrics
-  const fonts = await loadEmbeddedFonts(loaded.value);
-  urls.push(fonts);
-  const mounted = mountPlayer(root, core.store, renderRegistriesFor(core.registries), {
-    assets: (id: RecordId) => images.urls.get(id),
-    links: true,
-    chrome: true,
-  });
-  return {
-    ok: true,
-    unmount: () => {
-      mounted.unmount();
-      images.release();
-      fonts.release();
-    },
-  };
 }
 
 /**
@@ -115,13 +37,23 @@ async function open(bytes: Uint8Array, root: HTMLElement, urls: { release: () =>
  * @public
  */
 export async function start(bytes: Uint8Array, root: HTMLElement): Promise<StartResult> {
-  const made: { release: () => void }[] = [];
+  const opened = await openFlux(bytes);
+  if (!opened.ok) return show(root, opened.message);
   try {
-    const result = await open(bytes, root, made);
-    if (!result.ok) for (const m of made) m.release();
-    return result;
+    const mounted = mountPlayer(root, opened.value.store, opened.value.registries, {
+      ...(opened.value.assets === undefined ? {} : { assets: opened.value.assets }),
+      links: true,
+      chrome: true,
+    });
+    return {
+      ok: true,
+      unmount: () => {
+        mounted.unmount();
+        opened.value.release();
+      },
+    };
   } catch (e) {
-    for (const m of made) m.release();
+    opened.value.release();
     return show(root, `This file cannot be shown: ${e instanceof Error ? e.message : String(e)}`);
   }
 }

@@ -31,4 +31,18 @@ export default defineConfig([
     define: { 'process.env.NODE_ENV': '"production"' },
     outputOptions: { entryFileNames: 'player.inline.js' },
   },
+  {
+    // the same script for a page that embeds `<fluxion-player>` (FR-PRS-009): it defines the element and exports nothing
+    entry: { 'fluxion-player': 'src/element-entry.ts' },
+    format: 'iife',
+    platform: 'browser',
+    clean: false,
+    dts: false,
+    sourcemap: false,
+    minify: true,
+    alias: { zod: ZOD_STUB },
+    deps: { alwaysBundle: [/.*/] },
+    define: { 'process.env.NODE_ENV': '"production"' },
+    outputOptions: { entryFileNames: 'fluxion-player.js' },
+  },
 ]);
