@@ -86,6 +86,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
+      # the specs render through the built packages (the CLI), so the build comes first
+      - run: pnpm run build
       # NFR-PORT-006: the visual suite on every OS, Chromium only
       - run: pnpm exec playwright test --grep @visual --project=chromium
 
@@ -118,7 +120,8 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
       - run: pnpm run build
-      - run: pnpm test:e2e --project="$BROWSER" --project="$MOBILE"
+      # the visual baselines are the pinned image's pixels (ci.yml's visual job): they say nothing about another Playwright release
+      - run: pnpm exec playwright test --grep-invert "@perf|@visual" --project="$BROWSER" --project="$MOBILE"
         env:
           BROWSER: ${{ matrix.browser }}
           MOBILE: ${{ matrix.mobile }}
