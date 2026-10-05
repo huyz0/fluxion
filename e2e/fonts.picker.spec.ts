@@ -8,7 +8,10 @@ test.describe('the font picker', { tag: '@desktop' }, () => {
   // adding a font records its metrics in the page (every pair and triple of letters, a few seconds a face)
   test.setTimeout(120_000);
 
-  test('FR-THM-008: a font picked from each source applies to the selected text', async ({ page }) => {
+  test('FR-THM-008: a font picked from each source applies to the selected text', async ({ page, browserName }) => {
+    // QUARANTINE M11.37: on webkit the Google tab's "Add Roboto" row did not appear in one CI run (main 893955f), then passed on retry
+    // biome-ignore lint/suspicious/noSkippedTests: the quarantine testing.md rule 19 asks for, with its backlog row M11.37
+    test.fixme(browserName === 'webkit', 'QUARANTINE M11.37: webkit, catalog rows missing once; see the backlog row');
     await mockGoogleFonts(page, 'Roboto');
     const editor = new EditorPage(page);
     await selectedText(page, editor, dragOut);
