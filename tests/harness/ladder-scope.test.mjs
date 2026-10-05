@@ -41,6 +41,12 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     // an API report is read by no Vitest test: it does not start the Vitest step, while a source next to it does
     assert.deepEqual(testScope(['packages/core/api/core.testing.api.md'], workspaces, BROWSER), { run: false, browser: false });
     assert.equal(testScope(['packages/core/api/core.testing.api.md', 'packages/core/src/store.ts'], workspaces, BROWSER).run, true);
+    // a workspace's README, AGENTS.md and licence are read by no Vitest test either: a notes-only change runs none, with a source it does
+    assert.deepEqual(testScope(['packages/render/README.md', 'packages/render/AGENTS.md', 'packages/render/LICENSE'], workspaces, BROWSER), {
+      run: false,
+      browser: false,
+    });
+    assert.equal(testScope(['packages/render/README.md', 'packages/render/src/x.tsx'], workspaces, BROWSER).browser, true);
     // global Vitest inputs run everything
     for (const p of [
       'vitest.config.ts',

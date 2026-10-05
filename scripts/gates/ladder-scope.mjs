@@ -233,6 +233,8 @@ function harnessFor(p, workspaceLock, all = []) {
 const VITEST_GLOBAL =
   /^(vitest\.config\.ts|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig[^/]*\.json|scripts\/gates\/thresholds\.mjs|tools\/vitest\/|fixtures\/|specs\/security\/)/;
 const WORKSPACE = /^((?:packages|packs|apps)\/[^/]+)\//;
+/** A workspace's notes and licence: packed and read by the harness, but by no Vitest test (grep over every test for README and AGENTS.md finds none). */
+const WORKSPACE_NOTES = /^(?:packages|packs|apps)\/[^/]+\/(?:README\.md|AGENTS\.md|LICENSE)$/;
 
 /** `dirs` plus every workspace they depend on, transitively (dependsOn names are workspace basenames). */
 function withDependencies(dirs, workspaces) {
@@ -259,11 +261,11 @@ export function testScope(stagedPaths, workspaces, browserTested, { lockfileWork
   const staged = workspaceLock && stagedPaths.some((p) => MANIFEST.test(p)) ? stagedPaths.filter((p) => p !== 'pnpm-lock.yaml') : stagedPaths;
   const workspaceOf = (p) => WORKSPACE.exec(p)?.[1];
   const run = staged.some(
-    // an API report is written by check-api from the declarations and read by no Vitest test
+    // an API report is written by check-api from the declarations and read by no Vitest test; neither is a workspace's README, AGENTS.md or licence
     (p) =>
       VITEST_GLOBAL.test(p) ||
       /^examples\//.test(p) ||
-      (!API_REPORT.test(p) && workspaceOf(p) !== undefined && workspaces.some((w) => w.dir === workspaceOf(p))),
+      (!API_REPORT.test(p) && !WORKSPACE_NOTES.test(p) && workspaceOf(p) !== undefined && workspaces.some((w) => w.dir === workspaceOf(p))),
   );
   if (!run) return { run: false, browser: false };
   const affectsBrowser = withDependencies(browserTested, workspaces);
