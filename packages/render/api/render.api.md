@@ -228,6 +228,9 @@ export function planBlock(node: RichTextNode): BlockPlan | undefined;
 export function planMarks(marks: readonly RichTextMark[] | undefined): readonly MarkPlan[];
 
 // @public
+export function presentationOrder(view: ReadView, showHidden: boolean): RecordId[];
+
+// @public
 export type RecordedFace = {
     readonly family: string;
     readonly weight: number;

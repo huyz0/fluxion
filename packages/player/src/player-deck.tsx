@@ -2,7 +2,7 @@
 // the window and drawn by the same <ScreenView> as the editor (FR-EDT-010), with the arrow, page, space and home/end keys to move.
 // The deck draws no text of its own (ADR-0023). Keys are left to a focused link, button or field, to a key another handler took, and to key repeat.
 import type { Store } from '@fluxion/core';
-import { type AssetUrls, type RenderRegistries, ScreenView, screensInOrder, useValue } from '@fluxion/render';
+import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useElementBox } from './use-box.js';
 
@@ -57,7 +57,7 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
   const { store, registries, assets } = props;
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
-  const screens = useValue(useMemo(() => store.query((view) => screensInOrder(view, false)), [store]));
+  const screens = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)), [store]));
   const [index, setIndex] = useState(0);
   const count = screens.length;
   useEffect(() => {

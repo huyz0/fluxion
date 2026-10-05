@@ -6,7 +6,7 @@
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { LaserTrail, useElementBox } from '@fluxion/player';
-import { type AssetUrls, type RenderRegistries, ScreenView, screensInOrder, useValue } from '@fluxion/render';
+import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { usePointerInput } from './pointer-input.js';
@@ -45,7 +45,7 @@ export function useModeSwitch(store: Store, session: Session, edit: ToolDispatch
   return useCallback(
     (from = 'current') => {
       // F5 starts from the first visible screen; shift+F5, and the way out, leave the shown screen as it is (FR-EDT-009)
-      const first = from === 'start' && session.mode.get() === 'edit' ? screensInOrder(store, false)[0] : undefined;
+      const first = from === 'start' && session.mode.get() === 'edit' ? presentationOrder(store, false)[0] : undefined;
       if (first !== undefined && first !== session.screen.get()) switchScreen(session, first);
       switchMode(session, session.mode.get() === 'present' ? present : edit, saved);
     },
