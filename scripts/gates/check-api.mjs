@@ -4,7 +4,7 @@
 //                              package.json exports (`./mount`) vs api/<name>.<subpath>.api.md (M10.29)
 //   check-api.mjs --update     rewrite the reports (a reviewed contract change; run after a build)
 //   check-api.mjs --dir <root> [--package <dir>]   another checkout / one library (tests; tools from FLUXION_TOOLS_ROOT)
-//   check-api.mjs --package <dir> --typedoc        one library's reports, and TypeDoc's completeness check over all (the staged ladder; M11.39)
+//   check-api.mjs --package <dir> --typedoc        one library's reports, and TypeDoc's completeness check over that library (the staged ladder; M11.39)
 // API Extractor reads the emitted declarations with its own bundled compiler (ADR-0011). Exports need
 // a release tag (ae-missing-release-tag is an error); any other warning fails the gate too.
 import { mkdirSync, readFileSync } from 'node:fs';
@@ -120,7 +120,8 @@ for (const w of libraries) {
 if (!only || argv.includes('--typedoc')) {
   // apps/docs' typedoc (its peer is TS 6), run from the checkout so entry points resolve there
   const typedoc = join(tools, 'apps', 'docs', 'node_modules', 'typedoc', 'bin', 'typedoc');
-  const r = run(process.execPath, [typedoc, '--options', 'typedoc.json', '--emit', 'none'], { cwd: root });
+  // with --package, only that library's exports are read (a few seconds, not the twenty-odd libraries' half a minute)
+  const r = run(process.execPath, [typedoc, '--options', 'typedoc.json', '--emit', 'none', ...(only ? ['--entryPoints', only] : [])], { cwd: root });
   if (r.status !== 0) failures.push(`typedoc (typedoc.json):\n  ${`${r.stdout}\n${r.stderr}`.trim().split(/\r?\n/).slice(-15).join('\n  ')}`);
 }
 

@@ -78,9 +78,8 @@ async function api() {
   const scope = apiScope();
   if (scope === undefined) return node('scripts/gates/check-api.mjs');
   let result;
-  for (const [i, dir] of scope.dirs.entries()) {
-    const withTypedoc = scope.typedoc && i === scope.dirs.length - 1;
-    result = await node('scripts/gates/check-api.mjs', ['--package', dir, ...(withTypedoc ? ['--typedoc'] : [])]);
+  for (const dir of scope.dirs) {
+    result = await node('scripts/gates/check-api.mjs', ['--package', dir, ...(scope.typedoc ? ['--typedoc'] : [])]);
     if (result.status !== 0) return result;
   }
   return result;
