@@ -3,6 +3,7 @@
 // packs the host registers (ADR-0016, ADR-0017).
 import type { MarkerDef, Registry, ShapeDef } from '@fluxion/core';
 import { type Router, registerBuiltinRouters } from '@fluxion/routing';
+import { connectorText, imageAlt } from './a11y.js';
 import { ConnectorView } from './connector-view.js';
 import { FrameView, GroupView } from './container-views.js';
 import { ImageView } from './image-view.js';
@@ -19,8 +20,8 @@ import { TextView } from './text-view.js';
  */
 export function registerBuiltinViews(registries: RenderRegistries): void {
   registries.elementViews.register('shape', { Component: ShapeView }, 'core');
-  registries.elementViews.register('connector', { Component: ConnectorView }, 'core');
-  registries.elementViews.register('image', { Component: ImageView }, 'core');
+  registries.elementViews.register('connector', { Component: ConnectorView, a11y: connectorText }, 'core');
+  registries.elementViews.register('image', { Component: ImageView, a11y: imageAlt }, 'core');
   registries.elementViews.register('text', { Component: TextView }, 'core');
   registries.elementViews.register('group', { Component: GroupView }, 'core');
   registries.elementViews.register('frame', { Component: FrameView }, 'core');

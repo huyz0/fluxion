@@ -9,6 +9,7 @@ import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';
 import { MarkerDef } from '@fluxion/core';
 import { ReactNode } from 'react';
+import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { Router } from '@fluxion/routing';

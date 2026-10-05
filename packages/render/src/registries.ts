@@ -2,7 +2,7 @@
 // host's core `shapeDefs` registry (ADR-0016, ADR-0017), its `routers` (FR-RTE-001) and `markers`
 // (FR-CON-003), looked up here
 // and never switched on; built-ins register through the same API as plugins.
-import { createRegistry, type MarkerDef, type Registry, type ShapeDef, type Store } from '@fluxion/core';
+import { createRegistry, type MarkerDef, type ReadView, type Registry, type ShapeDef, type Store } from '@fluxion/core';
 import type { Router } from '@fluxion/routing';
 import type { ElementRecord } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
@@ -43,6 +43,11 @@ export type ElementViewProps = {
 export type ElementView = {
   /** Draws the element; must be pure: the same record gives the same markup in every mode. */
   readonly Component: ComponentType<ElementViewProps>;
+  /**
+   * The words a screen reader gets for what the view draws without words (an image's alt text, a connector's relation as "A connects to B: label"), or nothing.
+   * Pure; read through the store's tracked view, so the text follows the records. It is drawn visually hidden beside the view (NFR-A11Y-002).
+   */
+  readonly a11y?: (element: ElementRecord, view: ReadView) => string | undefined;
 };
 
 /**

@@ -212,6 +212,24 @@ function ChromeOf(props: { readonly deck: ChromeDeck; readonly labels: Partial<C
   );
 }
 
+/** The words of the screen on show for a screen reader: its name as a heading, and a live region that says where the deck is after every move (NFR-A11Y-002). */
+function Announcer(props: { readonly store: Store; readonly screen: RecordId | undefined; readonly index: number; readonly count: number }): ReactNode {
+  const { store, screen, index, count } = props;
+  const record = useValue(useMemo(() => (screen === undefined ? () => undefined : store.record$(screen)), [store, screen])) as
+    | { readonly name?: string }
+    | undefined;
+  if (screen === undefined) return null;
+  const name = record?.name?.trim() ?? '';
+  return (
+    <>
+      <h1 className="fx-sr-only">{name === '' ? `Screen ${index + 1}` : name}</h1>
+      <div className="fx-sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="deck-live">
+        {`Screen ${index + 1} of ${count}${name === '' ? '' : `: ${name}`}`}
+      </div>
+    </>
+  );
+}
+
 /** The screen on show, fitted into `box`; nothing before there is a screen or a box. A screen that cannot be drawn is drawn as nothing, and the next one is still reachable. */
 function ShownScreen(props: {
   readonly store: Store;
@@ -306,6 +324,7 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
       >
         <ShownScreen store={store} registries={registries} assets={assets} screen={shown} box={box} hidden={hidden} />
       </div>
+      <Announcer store={store} screen={shown} index={index} count={screens.length} />
       {chrome ? <ChromeOf deck={{ controller, overview, stage: ref, index, count: screens.length }} labels={labels} /> : null}
       {overview.open ? (
         <DeckOverview

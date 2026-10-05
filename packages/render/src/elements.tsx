@@ -129,6 +129,12 @@ const ElementNode = memo(function ElementNode(props: NodeProps): ReactNode {
     // tzap disable next-line ArrayDeclaration: only a re-render reads the list, which the node tests never do (browser-tested)
     [store, id, screenId, registries, theme, hidden],
   );
+  const words = useValue(
+    useMemo(
+      () => store.query((view) => (element === undefined ? undefined : registries.elementViews.get(element.kind)?.a11y?.(element, view))),
+      [store, registries, element],
+    ),
+  );
   if (element === undefined) return null;
   const View = registries.elementViews.get(element.kind)?.Component ?? PlaceholderView;
   return (
@@ -136,6 +142,7 @@ const ElementNode = memo(function ElementNode(props: NodeProps): ReactNode {
       <Body View={View} element={element} store={store} theme={theme} registries={registries} versions={versions}>
         {members}
       </Body>
+      {words === undefined ? null : <span className="fx-sr-only">{words}</span>}
     </div>
   );
 });

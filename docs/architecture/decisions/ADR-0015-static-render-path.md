@@ -134,3 +134,6 @@ visual baseline of the CLI output (pinned Playwright image), and `check-mode-pol
   may carry stale colour values and must draw colours from resolved styles. The SVG goldens changed
   only by the dropped fallbacks.
 - 2026-10-04 (M11.28, ADR-0026): `renderDocumentToHtml` and its types are exported from the subpath `@fluxion/render/ssr`, no longer from the root entry, so the player and the one-file player do not carry `react-dom/server`; the CLI imports it from there.
+- 2026-10-05 (M11.16, NFR-A11Y-002): `ElementView` gains an optional `a11y(element, view)`, the words a screen reader gets for what the view draws without words; the element wrapper draws them
+  as a visually hidden `span.fx-sr-only` beside the view (also in the static HTML), and it reads through the store's tracked view, so a rename or a rewire changes it. The connector view supplies
+  "A connects to B: label" (the elements it joins by their label, text or name, and its labels' text), the image view its semantic label as alt text. A kind with no `a11y` is as before.

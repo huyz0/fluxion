@@ -119,6 +119,7 @@ export function elementsInOrder(view: ReadView, screenId: RecordId, parentId?: R
 // @public
 export type ElementView = {
     readonly Component: ComponentType<ElementViewProps>;
+    readonly a11y?: (element: ElementRecord, view: ReadView) => string | undefined;
 };
 
 // @public
