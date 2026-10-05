@@ -5,8 +5,10 @@
 ```ts
 
 import { AssetUrls } from '@fluxion/render';
+import { Clock } from '@fluxion/core';
 import { CoreRegistries } from '@fluxion/core';
 import { ReactNode } from 'react';
+import { RecordId } from '@fluxion/schema';
 import { RefObject } from 'react';
 import { registerFontMetrics } from '@fluxion/render';
 import { RenderRegistries } from '@fluxion/render';
@@ -17,6 +19,12 @@ export type Box = {
     readonly w: number;
     readonly h: number;
 };
+
+// @public
+export interface DeckSource {
+    groups?(screen: RecordId): number;
+    screens(): readonly RecordId[];
+}
 
 // @public
 export const LASER_FADE = "0.8s";
@@ -55,6 +63,26 @@ export type PlayerRootProps = {
     readonly registries: RenderRegistries;
 };
 
+// @public
+export type Position = {
+    readonly screen: RecordId;
+    readonly group: number;
+};
+
+// @public
+export class PresentationController {
+    constructor(source: DeckSource, clock: Clock);
+    back(): boolean;
+    first(): boolean;
+    goTo(screen: RecordId, group?: number): boolean;
+    history(): readonly Visit[];
+    last(): boolean;
+    next(): boolean;
+    position(): Position | undefined;
+    prev(): boolean;
+    subscribe(listener: (position: Position | undefined) => void): () => void;
+}
+
 export { registerFontMetrics }
 
 // @public
@@ -74,5 +102,10 @@ export function useElementBox(ref: RefObject<HTMLElement | null>): Box;
 
 // @public
 export const VERSION: string;
+
+// @public
+export type Visit = Position & {
+    readonly at: number;
+};
 
 ```

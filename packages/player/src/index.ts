@@ -6,6 +6,7 @@ export { LASER_FADE, type LaserPoint, type TrailDot, trailKeys } from './laser-k
 export { LaserTrail, type LaserTrailProps } from './laser-trail.js';
 export { PlayerDeck, type PlayerDeckProps } from './player-deck.js';
 export { PlayerRoot, type PlayerRootProps } from './player-root.js';
+export { type DeckSource, type Position, PresentationController, type Visit } from './presentation-controller.js';
 export { renderRegistriesFor } from './registries.js';
 export { type Box, useElementBox } from './use-box.js';
 
