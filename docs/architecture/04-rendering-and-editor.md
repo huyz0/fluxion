@@ -75,7 +75,7 @@ function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderR
 function registerBuiltinViews(r: RenderRegistries): void;  // shape, connector (source `core`)
 function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>): RenderRegistries;  // shapes from the host's packs (ADR-0017)
 
-function renderDocumentToHtml(file: DocumentFile, options?: { screens?; theme?; registries? }): { html: string; screens: RecordId[] };  // ADR-0015
+function renderDocumentToHtml(file: DocumentFile, options?: { screens?; theme?; registries? }): { html: string; screens: RecordId[] };  // ADR-0015; subpath `@fluxion/render/ssr` (ADR-0026)
 function normalizeSvg(html: string): string;              // the goldens' normal form (NFR-REL-005)
 ```
 

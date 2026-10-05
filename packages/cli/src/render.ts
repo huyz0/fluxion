@@ -2,7 +2,8 @@
 // document as one static HTML page, written by render's renderDocumentToHtml. An invalid document
 // exits 1 with its diagnostics (as validate reports them); an unknown screen id is a usage error.
 import { writeFile } from 'node:fs/promises';
-import { builtinRegistries, renderDocumentToHtml } from '@fluxion/render';
+import { builtinRegistries } from '@fluxion/render';
+import { renderDocumentToHtml } from '@fluxion/render/ssr';
 import { type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
 import { type Command, internal, io, type Outcome, usage } from './command.js';
 import { hostRegistries } from './host.js';

@@ -6,7 +6,6 @@
 
 import { ComponentType } from 'react';
 import { CSSProperties } from 'react';
-import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';
 import { FaceMetrics } from '@fluxion/core';
 import { MarkerDef } from '@fluxion/core';
@@ -246,24 +245,6 @@ export function registerBuiltinViews(registries: RenderRegistries): void;
 
 // @public
 export function registerFontMetrics(faces: readonly FaceMetrics[]): () => void;
-
-// @public
-export function renderDocumentToHtml(file: DocumentFile, options?: RenderHtmlOptions): RenderedHtml;
-
-// @public
-export type RenderedHtml = {
-    readonly html: string;
-    readonly screens: readonly RecordId[];
-};
-
-// @public
-export type RenderHtmlOptions = {
-    readonly screens?: readonly RecordId[];
-    readonly theme?: Theme;
-    readonly registries?: RenderRegistries;
-    readonly assets?: AssetUrls;
-    readonly measurer?: TextMeasurer;
-};
 
 // @public
 export type RenderMode = "edit" | "present" | "export" | "thumbnail";

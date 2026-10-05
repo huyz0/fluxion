@@ -133,3 +133,4 @@ visual baseline of the CLI output (pinned Playwright image), and `check-mode-pol
   a change of colours restyles through the CSS variables alone (FR-SHP-004, 04 §2.3); a view's theme
   may carry stale colour values and must draw colours from resolved styles. The SVG goldens changed
   only by the dropped fallbacks.
+- 2026-10-04 (M11.28, ADR-0026): `renderDocumentToHtml` and its types are exported from the subpath `@fluxion/render/ssr`, no longer from the root entry, so the player and the one-file player do not carry `react-dom/server`; the CLI imports it from there.

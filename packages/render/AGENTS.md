@@ -17,7 +17,7 @@ React 19 DOM+SVG renderer of a screen, identical in edit and present mode.
 
 - Only `src/mode-policy.ts` reads the render mode (`check-mode-policy`); edit, present and export are the same components (04 §2.6).
 - Element views are looked up in `RenderRegistries` (`elementViews`, `shapeDefs`), never switched on by kind (`check-kind-switch`); an unknown kind or shape definition renders `PlaceholderView` and leaves the record unchanged (FR-DOC-005).
-- Views are pure: the same records give the same markup in the browser and through `renderDocumentToHtml` (T1 parity test, SVG goldens in `__golden__/`, `vitest -u` rewrites them in the commit that changes the drawing).
+- Views are pure: the same records give the same markup in the browser and through `renderDocumentToHtml` (`@fluxion/render/ssr`, its own entry: the main entry and the one-file player stay free of `react-dom/server`, ADR-0026) (T1 parity test, SVG goldens in `__golden__/`, `vitest -u` rewrites them in the commit that changes the drawing).
 - Content CSS is the `CONTENT_CSS` string in `@layer fx.content`, injected once in the browser and inlined by SSR (ADR-0015); per-render ids come from `useId`, and SSR gives each screen an `identifierPrefix`.
 - Group and frame members are stored in screen coordinates: their list sits in a `.fx-members` container that undoes the parent's placement.
 - A module covered only by browser tests needs a `*.browser.test.tsx` of its own stem (the coverage harness drops browser-covered modules from the node sandbox).
