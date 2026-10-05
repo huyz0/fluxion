@@ -373,6 +373,9 @@ export type InteractionRecord = Extensible<{
 export function isCoreElementKind(kind: unknown): kind is CoreElementKind;
 
 // @public
+export function isCssColor(value: string): boolean;
+
+// @public
 export function isGeneratedId(value: unknown): value is RecordId;
 
 // @public

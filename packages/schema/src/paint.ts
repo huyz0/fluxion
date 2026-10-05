@@ -44,12 +44,22 @@ function isColorFunction(value: string): boolean {
 }
 
 /**
+ * Whether `value` is a literal CSS colour: what {@link colorSchema} accepts, as a plain check (a reader that ships no validator, such as the one-file player's,
+ * uses it to keep other CSS out of a style).
+ *
+ * @public
+ */
+export function isCssColor(value: string): boolean {
+  return HEX.test(value) || isColorFunction(value) || CSS_NAMED_COLORS.has(value.toLowerCase());
+}
+
+/**
  * Schema of a literal CSS colour ({@link Color}): a hex colour, a colour function with numeric channels
  * or a CSS named colour — nothing that could carry other CSS.
  *
  * @public
  */
-export const colorSchema: z.ZodType<Color> = z.string().refine((v) => HEX.test(v) || isColorFunction(v) || CSS_NAMED_COLORS.has(v.toLowerCase()), {
+export const colorSchema: z.ZodType<Color> = z.string().refine(isCssColor, {
   message: 'expected a CSS colour (#hex, a colour function or a named colour)',
 });
 

@@ -1,7 +1,7 @@
 // The layered resolver of styles (02 §2 resolution order): the first layer that holds a valid value for
 // a field wins, the fallbacks last; token refs become `var(--fx-…)`, unknown ones are reported. Shared by
 // resolve-style.ts and effects.ts.
-import { colorSchema, DIAGNOSTIC_CODES, type Diagnostic, jsonPointer, type TokenRef } from '@fluxion/schema';
+import { DIAGNOSTIC_CODES, type Diagnostic, isCssColor, jsonPointer, type TokenRef } from '@fluxion/schema';
 import { type ColorResolver, colorResolver, needsResolving } from './alias.js';
 import { familyCss, resolveToken, tokenPath } from './resolve.js';
 import { cssVarName, FAMILY, isValidToken, type Theme, TOKEN_REF } from './tokens.js';
@@ -65,7 +65,7 @@ export class Resolver {
   color: (v: unknown, where: ReadonlyArray<string | number>) => string | undefined = (v, where) => {
     if (isRef(v)) return this.ref(v, where);
     // only a CSS colour: a literal from unvalidated theme defaults cannot carry other CSS (M4.10 review F2)
-    if (typeof v === 'string') return colorSchema.safeParse(v).success ? v : undefined;
+    if (typeof v === 'string') return isCssColor(v) ? v : undefined;
     if (isObject(v) && isRef(v['token'])) {
       const base = this.ref(v['token'], [...where, 'token']);
       return base === undefined ? undefined : transformed(base, isObject(v['transform']) ? v['transform'] : {});

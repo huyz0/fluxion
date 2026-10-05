@@ -34,6 +34,7 @@ export {
   type StyleResolution,
 } from './resolve-style.js';
 export { styleKey } from './style-key.js';
+export { themeOf } from './token-check.js';
 export {
   cssVarName,
   type Dimension,

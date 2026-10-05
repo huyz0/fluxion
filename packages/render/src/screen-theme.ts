@@ -3,7 +3,7 @@
 // theme is drawn as the light theme rather than half-styled.
 import type { Store } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
-import { LIGHT_THEME, type Theme, themeSchema } from '@fluxion/theme';
+import { LIGHT_THEME, type Theme, themeOf } from '@fluxion/theme';
 import { useMemo } from 'react';
 import { useValue } from './use-value.js';
 
@@ -22,11 +22,12 @@ export function useScreenTheme(store: Store, screenId: RecordId): Theme {
   const record = useValue(useMemo(() => store.record$(themeId as RecordId), [store, themeId])) as Rec;
   return useMemo(() => {
     if (record === undefined || record['type'] !== 'theme') return LIGHT_THEME;
-    const parsed = themeSchema.safeParse({
-      name: record['name'],
-      tokens: record['tokens'],
-      ...(record['defaults'] === undefined ? {} : { defaults: record['defaults'] }),
-    });
-    return parsed.success ? parsed.data : LIGHT_THEME;
+    return (
+      themeOf({
+        name: record['name'],
+        tokens: record['tokens'],
+        ...(record['defaults'] === undefined ? {} : { defaults: record['defaults'] }),
+      }) ?? LIGHT_THEME
+    );
   }, [record]);
 }

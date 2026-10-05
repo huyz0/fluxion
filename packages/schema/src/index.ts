@@ -25,6 +25,7 @@ export {
   type GradientPaint,
   type GradientStop,
   type ImagePaint,
+  isCssColor,
   type Paint,
   type TokenRef,
   type TransformedToken,

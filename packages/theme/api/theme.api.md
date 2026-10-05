@@ -107,7 +107,7 @@ export type FontSource = "bundled" | "google" | "upload";
 export const isToken: (node: Token | TokenGroup | undefined) => node is Token;
 
 // @public
-export const isValidToken: (token: unknown) => token is Token;
+export function isValidToken(token: unknown): token is Token;
 
 // @public
 export const LIGHT_THEME: Theme;
@@ -284,6 +284,9 @@ export type ThemeError = {
 
 // @public
 export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE" | "FONT_FORMAT" | "FONT_TOO_LARGE" | "FONT_CORRUPT";
+
+// @public
+export function themeOf(value: unknown): Theme | undefined;
 
 // @public
 export type ThemeProblem = {

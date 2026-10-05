@@ -4,105 +4,18 @@
 // theme records without renaming anything here.
 import { colorSchema } from '@fluxion/schema';
 import { z } from 'zod';
+import { FAMILY } from './token-check.js';
 
-/**
- * A length in px (DTCG `dimension`).
- *
- * @public
- */
-export type Dimension = {
-  /** The length. */
-  readonly value: number;
-  /** The unit (px only in M4). */
-  readonly unit: 'px';
-};
+export type { Dimension, Duration, ShadowValue, Theme, Token, TokenGroup, TypedToken } from './token-types.js';
 
-/**
- * A design token of DTCG type `T` holding a value of type `V`.
- *
- * @public
- */
-export type TypedToken<T extends string, V> = {
-  /** The DTCG type. */
-  readonly $type: T;
-  /** The value. */
-  readonly $value: V;
-  /** What the token is for. */
-  readonly $description?: string;
-  /** Data of other tools, kept and never emitted; `dev.fluxion.transform` holds the steps of a derived colour (ADR-0152). */
-  readonly $extensions?: { readonly [key: string]: unknown };
-};
-
-/**
- * A duration in milliseconds (DTCG `duration`).
- *
- * @public
- */
-export type Duration = {
-  /** The length of time. */
-  readonly value: number;
-  /** The unit (ms only). */
-  readonly unit: 'ms';
-};
-
-/**
- * A drop shadow (DTCG `shadow`): a colour and lengths in px.
- *
- * @public
- */
-export type ShadowValue = {
-  /** The shadow colour (a literal CSS colour). */
-  readonly color: string;
-  /** Horizontal offset, px. */
-  readonly offsetX: number;
-  /** Vertical offset, px. */
-  readonly offsetY: number;
-  /** Blur radius, px (not negative). */
-  readonly blur: number;
-  /** Spread, px. */
-  readonly spread: number;
-};
-
-/**
- * One design token (DTCG): a typed value. A `color` token's value may also be an alias to another token (`{color.primary}`).
- *
- * @public
- */
-export type Token =
-  | TypedToken<'color', string>
-  | TypedToken<'dimension', Dimension>
-  | TypedToken<'fontFamily', string | readonly string[]>
-  | TypedToken<'fontWeight', number>
-  | TypedToken<'number', number>
-  | TypedToken<'shadow', ShadowValue>
-  | TypedToken<'duration', Duration>
-  | TypedToken<'cubicBezier', readonly [number, number, number, number]>;
-
-/**
- * A group of tokens and nested groups, keyed by name (DTCG).
- *
- * @public
- */
-export type TokenGroup = { readonly [name: string]: Token | TokenGroup };
-
-/**
- * A theme: its name, its token tree and per-element-kind default styles (read by `resolveStyle`).
- *
- * @public
- */
-export type Theme = {
-  /** Theme name, e.g. `light`. */
-  readonly name: string;
-  /** The DTCG token tree: `color`, `font`, `space`, `radius`, `stroke`, … */
-  readonly tokens: TokenGroup;
-  /** Default styles by element kind (`shape`, `connector`, …); values may be token references. */
-  readonly defaults?: { readonly [kind: string]: { readonly [field: string]: unknown } };
-};
+import type { Theme, Token, TokenGroup } from './token-types.js';
 
 const NAME = /^[A-Za-z0-9_-]+$/;
+
 // a family name reaches CSS quoted and escaped (cssValue); markup and control characters could still
 // end a <style> element or an attribute, so they are refused (M4.9 review F2)
-export const FAMILY: RegExp = /^[^\p{Cc}<>]+$/u;
+export { FAMILY, isValidToken } from './token-check.js';
+
 const family = z.string().regex(FAMILY, 'a font family name has no control characters, "<" or ">"');
 const described = { $description: z.string().optional(), $extensions: z.record(z.string(), z.unknown()).optional() };
 const px = z.number().finite();
@@ -150,15 +63,6 @@ const groupSchema: z.ZodType<TokenGroup> = z.lazy(() =>
  */
 export const cssVarName = (path: string): string => `--fx-${path.split('.').join('-')}`;
 
-/**
- * Whether `token` is a valid token of the model (the schema a parsed theme passed). Emitters check it,
- * so a theme object that never went through `themeSchema` cannot put other CSS into their output
- * (M4.10 review round 2 F1).
- *
- * @public
- */
-export const isValidToken = (token: unknown): token is Token => tokenSchema.safeParse(token).success;
-
 /** A token reference whose path segments are token names: the only form emitters turn into `var(--fx-…)`. */
 export const TOKEN_REF: RegExp = /^\{[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*\}$/;
 
@@ -166,7 +70,9 @@ export const TOKEN_REF: RegExp = /^\{[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*\}$/;
 export function tokenEntries(group: TokenGroup, prefix = ''): Array<readonly [string, Token]> {
   return Object.entries(group).flatMap(([name, node]) => {
     const path = prefix ? `${prefix}.${name}` : name;
-    return isTokenLike(node) ? [[path, node as Token] as const] : tokenEntries(node as TokenGroup, path);
+    if (isTokenLike(node)) return [[path, node as Token] as const];
+    // a leaf that is neither a token nor a group (a malformed theme: `themeSchema` reports it, and still walks the tree) has no tokens
+    return typeof node === 'object' && node !== null ? tokenEntries(node as TokenGroup, path) : [];
   });
 }
 
