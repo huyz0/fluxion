@@ -158,6 +158,9 @@ export type PlayerDeckProps = {
     readonly links?: boolean;
     readonly chrome?: boolean;
     readonly labels?: Partial<ChromeLabels>;
+    readonly layout?: "viewport" | "container";
+    readonly scope?: "window" | "stage";
+    readonly onController?: (controller: PresentationController) => void;
 };
 
 // @public

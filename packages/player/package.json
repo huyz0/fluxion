@@ -15,6 +15,11 @@
       "@fluxion/source": "./src/mount.tsx",
       "types": "./dist/mount.d.ts",
       "default": "./dist/mount.js"
+    },
+    "./element": {
+      "@fluxion/source": "./src/element.tsx",
+      "types": "./dist/element.d.ts",
+      "default": "./dist/element.js"
     }
   },
   "files": [

@@ -42,6 +42,9 @@ function target(key: string, from: number, count: number): number | undefined {
   return to === undefined ? undefined : Math.min(count - 1, Math.max(0, to));
 }
 
+/** The element that has focus in the tree `node` is in: the document's, or the shadow root's when the deck is drawn inside one (`document.activeElement` is then the host). */
+const focusedIn = (node: Node): Element | null => (node.getRootNode() as Document | ShadowRoot).activeElement ?? null;
+
 /** Focus the thumbnail the arrow keys, Home, End or Tab ask for; Escape and `O` close the grid. Keys the grid takes do not reach the deck behind it. */
 function onGridKey(e: KeyboardEvent<HTMLElement>, onClose: () => void): void {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -53,7 +56,7 @@ function onGridKey(e: KeyboardEvent<HTMLElement>, onClose: () => void): void {
   }
   const buttons = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('button')];
   if (buttons.length === 0) return;
-  const from = buttons.indexOf(document.activeElement as HTMLButtonElement);
+  const from = buttons.indexOf(focusedIn(e.currentTarget) as HTMLButtonElement);
   // Tab goes round the thumbnails, so focus stays in the dialog
   const to = e.key === 'Tab' ? (from + (e.shiftKey ? -1 : 1) + buttons.length) % buttons.length : target(e.key, from, buttons.length);
   if (to === undefined) return;
@@ -65,7 +68,7 @@ function onGridKey(e: KeyboardEvent<HTMLElement>, onClose: () => void): void {
 /** The grid is a modal: focus goes to the current screen's thumbnail on open and back to where it was on close. */
 function useFocusKept(grid: RefObject<HTMLElement | null>): void {
   useEffect(() => {
-    const before = document.activeElement;
+    const before = grid.current === null ? null : focusedIn(grid.current);
     const buttons = grid.current?.querySelectorAll<HTMLButtonElement>('button');
     const here = grid.current?.querySelector<HTMLButtonElement>('button[aria-current="true"]') ?? buttons?.[0];
     here?.focus();

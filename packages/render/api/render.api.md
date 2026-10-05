@@ -5,6 +5,7 @@
 ```ts
 
 import { ComponentType } from 'react';
+import { Context } from 'react';
 import { CSSProperties } from 'react';
 import { ElementRecord } from '@fluxion/schema';
 import { FaceMetrics } from '@fluxion/core';
@@ -69,6 +70,9 @@ export function ConnectorView(props: ElementViewProps): ReactNode;
 
 // @public
 export const CONTENT_CSS: string;
+
+// @public
+export const ContentCssContext: Context<boolean>;
 
 // @public
 export function createCanvasMeasurer(): CanvasTextMeasurer;

@@ -5,7 +5,7 @@
 import type { Store, TextMeasurer } from '@fluxion/core';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
 import { resolveBackground, styleKey, type Theme, toCssVars } from '@fluxion/theme';
-import { type CSSProperties, type ReactNode, useInsertionEffect, useMemo } from 'react';
+import { type Context, type CSSProperties, createContext, type ReactNode, useContext, useInsertionEffect, useMemo } from 'react';
 import { AssetsContext, type AssetUrls } from './assets.js';
 import { paintCss } from './background.js';
 import { builtinRegistries } from './builtins.js';
@@ -89,15 +89,24 @@ export type ScreenViewProps = {
   readonly children?: ReactNode;
 };
 
+/**
+ * Whether a screen puts the content CSS into the document's head (default true). A host that supplies the CSS itself, such as a shadow root that adopts
+ * `CONTENT_CSS`, provides `false`, so the page around it is left alone.
+ *
+ * @public
+ */
+export const ContentCssContext: Context<boolean> = createContext<boolean>(true);
+
 /** Content CSS injected once per document in the browser (SSR inlines it instead; ADR-0015). */
 function useContentCss(): void {
+  const inject = useContext(ContentCssContext);
   useInsertionEffect(() => {
-    if (document.querySelector('style[data-fx-content]')) return;
+    if (!inject || document.querySelector('style[data-fx-content]')) return;
     const style = document.createElement('style');
     style.dataset['fxContent'] = '';
     style.textContent = CONTENT_CSS;
     document.head.append(style);
-  }, []);
+  }, [inject]);
 }
 
 /**

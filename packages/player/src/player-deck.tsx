@@ -37,12 +37,22 @@ export type PlayerDeckProps = {
   readonly chrome?: boolean;
   /** The names of the chrome's controls in the page's language (English by default). */
   readonly labels?: Partial<ChromeLabels>;
+  /** `viewport` (default) fills the window; `container` fills the nearest positioned ancestor, as inside the `<fluxion-player>` element. */
+  readonly layout?: 'viewport' | 'container';
+  /** Whose keys move the deck: `window` (default: a deck that is the page) or `stage` (the deck's own, when it has focus: an embedded deck must not take the page's keys). */
+  readonly scope?: 'window' | 'stage';
+  /** Called with the controller that moves this deck, once it exists (and again if the document changes under it), so a host can drive it and follow its position. */
+  readonly onController?: (controller: PresentationController) => void;
 };
 
-/** Whether `target` is something that takes the keys itself: a link, a button, a field. */
-const interactive = (target: EventTarget | null): boolean =>
-  target instanceof Element &&
-  target.closest('a, button, input, textarea, select, summary, [contenteditable], [tabindex]:not([tabindex="-1"]), [part~="chrome"]') !== null;
+/** Whether `target` is something that takes the keys itself: a link, a button, a field (the focusable stage of an embedded deck is not). */
+const interactive = (target: EventTarget | null): boolean => {
+  const hit =
+    target instanceof Element
+      ? target.closest('a, button, input, textarea, select, summary, [contenteditable], [tabindex]:not([tabindex="-1"]), [part~="chrome"]')
+      : null;
+  return hit !== null && !hit.hasAttribute('data-fx-stage');
+};
 
 /** Whether `target` is in the deck's own chrome, whose buttons take only the keys that press them. */
 const inChrome = (target: EventTarget | null): boolean => target instanceof Element && target.closest('[part~="chrome"]') !== null;
@@ -127,8 +137,9 @@ const TYPING_MS = 2000;
 function useDeck(
   store: Store,
   stage: RefObject<HTMLElement | null>,
-  links: boolean,
+  options: { readonly links: boolean; readonly scope: 'window' | 'stage'; readonly onController: ((controller: PresentationController) => void) | undefined },
 ): { controller: PresentationController; screens: readonly RecordId[]; overview: OverviewSwitch } {
+  const { links, scope, onController } = options;
   // a document that changes under the deck re-renders it; the controller reads the screens afresh on every move
   const screens = useValue(useMemo(() => store.query((view) => presentationOrder(view, false)), [store]));
   const controller = useMemo(
@@ -147,6 +158,7 @@ function useDeck(
   const [open, setOpen] = useState(false);
   const overview = useMemo<OverviewSwitch>(() => ({ open, toggle: () => setOpen((was) => !was), close: () => setOpen(false) }), [open]);
   useEffect(() => controller.subscribe(moved), [controller]);
+  useEffect(() => onController?.(controller), [controller, onController]);
   // the position is in the URL: a reload or a shared link opens there, back and forward move
   useEffect(() => (links ? bindLinks(controller, window) : undefined), [controller, links]);
   useEffect(() => {
@@ -164,12 +176,13 @@ function useDeck(
       clearTimeout(timer);
       if (entry.typing) timer = setTimeout(() => entry.clear(), TYPING_MS);
     };
-    window.addEventListener('keydown', onKey);
+    const target: EventTarget | null = scope === 'stage' ? stage.current : window;
+    target?.addEventListener('keydown', onKey as EventListener);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('keydown', onKey);
+      target?.removeEventListener('keydown', onKey as EventListener);
     };
-  }, [controller, entry, overview, store, stage]);
+  }, [controller, entry, overview, store, stage, scope]);
   return { controller, screens, overview };
 }
 
@@ -198,6 +211,49 @@ function ChromeOf(props: { readonly deck: ChromeDeck; readonly labels: Partial<C
   );
 }
 
+/** The screen on show, fitted into `box`; nothing before there is a screen or a box. A screen that cannot be drawn is drawn as nothing, and the next one is still reachable. */
+function ShownScreen(props: {
+  readonly store: Store;
+  readonly registries: RenderRegistries;
+  readonly assets: AssetUrls | undefined;
+  readonly screen: RecordId | undefined;
+  readonly box: { readonly w: number; readonly h: number };
+  readonly hidden: ReadonlySet<RecordId> | undefined;
+}): ReactNode {
+  const { store, registries, assets, screen, box, hidden } = props;
+  if (screen === undefined || box.w === 0) return null;
+  return (
+    <ScreenBoundary key={screen}>
+      <ScreenView
+        store={store}
+        screenId={screen}
+        mode="present"
+        view={{ kind: 'fit', box }}
+        registries={registries}
+        {...(assets === undefined ? {} : { assets })}
+        {...(hidden === undefined ? {} : { hidden })}
+      />
+    </ScreenBoundary>
+  );
+}
+
+/** The options of a deck with their defaults. */
+function withDefaults(props: PlayerDeckProps): {
+  background: string;
+  links: boolean;
+  chrome: boolean;
+  layout: 'viewport' | 'container';
+  scope: 'window' | 'stage';
+} {
+  return {
+    background: props.background ?? '#000',
+    links: props.links ?? false,
+    chrome: props.chrome ?? false,
+    layout: props.layout ?? 'viewport',
+    scope: props.scope ?? 'window',
+  };
+}
+
 /**
  * The document presented screen by screen: the visible screens in presentation order, the first one first, moved with the keyboard or a click, a screen's
  * build groups played before the next screen.
@@ -205,10 +261,11 @@ function ChromeOf(props: { readonly deck: ChromeDeck; readonly labels: Partial<C
  * @public
  */
 export function PlayerDeck(props: PlayerDeckProps): ReactNode {
-  const { store, registries, assets, background = '#000', links = false, chrome = false, labels } = props;
+  const { store, registries, assets, labels, onController } = props;
+  const { background, links, chrome, layout, scope } = withDefaults(props);
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
-  const { controller, screens, overview } = useDeck(store, ref, links);
+  const { controller, screens, overview } = useDeck(store, ref, { links, scope, onController });
   const position = controller.position();
   const shown = position?.screen;
   const group = position?.group ?? 0;
@@ -225,27 +282,16 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
       ref={ref}
       className="fx-player"
       data-testid="player-deck"
+      data-fx-stage=""
       role="application"
       aria-label="Presentation"
       data-screen-index={index}
       data-group={group}
       onClick={onClick}
-      style={{ position: 'fixed', inset: 0, background }}
+      tabIndex={scope === 'stage' ? 0 : undefined}
+      style={{ position: layout === 'container' ? 'absolute' : 'fixed', inset: 0, background }}
     >
-      {shown === undefined || box.w === 0 ? null : (
-        // a screen that cannot be drawn is drawn as nothing, and the next one is still reachable
-        <ScreenBoundary key={shown}>
-          <ScreenView
-            store={store}
-            screenId={shown}
-            mode="present"
-            view={{ kind: 'fit', box }}
-            registries={registries}
-            {...(assets === undefined ? {} : { assets })}
-            {...(hidden === undefined ? {} : { hidden })}
-          />
-        </ScreenBoundary>
-      )}
+      <ShownScreen store={store} registries={registries} assets={assets} screen={shown} box={box} hidden={hidden} />
       {chrome ? <ChromeOf deck={{ controller, overview, stage: ref, index, count: screens.length }} labels={labels} /> : null}
       {overview.open ? (
         <DeckOverview
