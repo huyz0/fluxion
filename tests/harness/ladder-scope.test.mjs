@@ -10,6 +10,7 @@ import {
   E2E_HARNESS,
   GATE_SCRIPT_HARNESS,
   harnessFiles,
+  licensesNeeded,
   lockfileWorkspaceOnly,
   MANIFEST_HARNESS,
   NAMED_PATH_HARNESS,
@@ -240,6 +241,26 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(apiScope(['docs/a.md', 'e2e/x.ts', 'scripts/gates/check-api.mjs']), { dirs: [], typedoc: false });
     for (const p of ['tools/gen/workspaces.json', 'scripts/gates/lib.mjs', 'typedoc.json', 'package.json', 'pnpm-lock.yaml', 'tsconfig.base.json'])
       assert.equal(apiScope(['packages/player/src/a.ts', p]), undefined, p);
+    // the licence check reads manifests, the lockfile, licence texts and a pack's font data: a source or a test changes none of them
+    assert.equal(
+      licensesNeeded(['packages/player/src/element.tsx', 'packages/player/api/player.api.md', 'docs/a.md', 'e2e/x.ts', 'packs/basic/src/a.ts']),
+      false,
+    );
+    for (const p of [
+      'packages/player/package.json',
+      'package.json',
+      'pnpm-lock.yaml',
+      'pnpm-workspace.yaml',
+      'packages/player/LICENSE',
+      'NOTICE',
+      'packs/fonts-core/fonts.json',
+      'packs/fonts-core/fonts/a.woff2',
+      'packs/fonts-core/src/x.woff2',
+      '.npmrc',
+      'tools/gen/workspaces.json',
+      'scripts/gates/check-licenses.mjs',
+    ])
+      assert.equal(licensesNeeded(['packages/player/src/a.ts', p]), true, p);
     // the API gate's script changes no manifest, export or build setting
     assert.equal(packagingNeeded(['scripts/gates/check-api.mjs', 'packages/core/api/core.testing.api.md']), false);
     // the ladder's own script decides which checks run and packs nothing
@@ -402,5 +423,16 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     const plain =
       '<section class="fx-screen"><div class="fx-el" data-kind="shape"></div><div class="fx-el" data-kind="connector"><svg><line/></svg></div></section>';
     assert.equal(checkDemoHtml(`${plain}${screen(shape + connector)}`, 2), 'screen 1 lacks a token style');
+  });
+
+  it('NFR-DX-002: the ladder imports every scope function it calls (a missing import fails only when that step runs)', async () => {
+    const source = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
+    const imported = /import \{([^}]*)\} from '\.\/ladder-scope\.mjs';/.exec(source)?.[1] ?? '';
+    const scope = await import('../../scripts/gates/ladder-scope.mjs');
+    const body = source.replace(/import \{[^}]*\} from '\.\/ladder-scope\.mjs';/, '');
+    for (const name of Object.keys(scope).filter((n) => typeof scope[n] === 'function')) {
+      if (new RegExp(`(?<![\\w.])${name}\\(`).test(body))
+        assert.match(imported, new RegExp(`\\b${name}\\b`), `${name} is called by precommit.mjs and not imported`);
+    }
   });
 });

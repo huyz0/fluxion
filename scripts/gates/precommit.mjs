@@ -13,7 +13,7 @@
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
-import { harnessFiles, lockfileWorkspaceOnly, packagingDirs, packagingNeeded, apiScope as stagedApiScope, testScope } from './ladder-scope.mjs';
+import { harnessFiles, licensesNeeded, lockfileWorkspaceOnly, packagingDirs, packagingNeeded, apiScope as stagedApiScope, testScope } from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
@@ -170,7 +170,12 @@ const STEPS = [
   [
     'licenses',
     (m) => m !== 'quick',
-    () => (exists('scripts/gates/check-licenses.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
+    () =>
+      exists('scripts/gates/check-licenses.mjs')
+        ? hasPkg
+          ? mode !== 'staged' || licensesNeeded(stagedPaths()) || 'no staged manifest, lockfile, licence file or font data (CI runs it)'
+          : 'no workspace yet (M1)'
+        : 'not written yet (M1)',
     () => node('scripts/gates/check-licenses.mjs'),
   ],
   [

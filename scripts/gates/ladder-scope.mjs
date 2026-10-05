@@ -321,6 +321,23 @@ export function apiScope(staged) {
   return { dirs: [...dirs].sort(), typedoc };
 }
 
+/**
+ * Whether the licence check can be affected by the staged paths: a manifest (a licence field, the dependency set), the lockfile or workspace file, a LICENSE or
+ * NOTICE, a pack's vendored font data, the workspace list or the gate's own script and its thresholds. A source or test file changes none of what it reads
+ * (the dependency listing and the licence texts), and it takes half a minute of the staged ladder's four cores. CI's `--all` ladder always runs it (NFR-DX-002).
+ */
+export function licensesNeeded(staged) {
+  return staged.some(
+    (p) =>
+      /(^|\/)package\.json$/.test(p) ||
+      /^pnpm-(lock|workspace)\.yaml$|^\.npmrc$/.test(p) ||
+      /(^|\/)(LICENSE|NOTICE)$/.test(p) ||
+      (/^packs\/[^/]+\//.test(p) && !/\.(tsx?|md)$/.test(p)) ||
+      p === 'tools/gen/workspaces.json' ||
+      /^scripts\/gates\/(check-licenses|spdx|thresholds|lib)\.mjs$/.test(p),
+  );
+}
+
 /** The staged paths that can change what is packed (those that are not inert). */
 function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = false, librariesUnchanged = false } = {}) {
   const inert = (p) =>
