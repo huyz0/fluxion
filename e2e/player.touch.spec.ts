@@ -6,7 +6,7 @@ import type { Locator, Page } from '@playwright/test';
 import { fluxHtmlOf } from './pages/flux-html.js';
 import { expect, test } from './test.js';
 
-// FR-RSP-001: the one-file player on the phone projects (mobile-chrome, mobile-safari). A tap steps forward through the real touchscreen; the swipe and the pinch
+// FR-RSP-001: the one-file player on the phone projects (mobile-chrome, mobile-safari). A tap steps forward (the touch's pointer events, then the click a browser makes of them: not every engine has a touchscreen); the swipe and the pinch
 // are pointer events of type touch on the stage, because Playwright has no multi-touch on WebKit and the deck reads pointer events alone.
 test.describe('touch on the player', () => {
   let dir = '';
@@ -53,7 +53,10 @@ test.describe('touch on the player', () => {
     await expect(counter(page)).toHaveText('2 / 20');
     await swipe(page, width * 0.2, width * 0.8);
     await expect(counter(page)).toHaveText('1 / 20');
-    await page.touchscreen.tap(width / 2, (page.viewportSize()?.height ?? 600) / 2);
+    const tap = { x: width / 2, y: (page.viewportSize()?.height ?? 600) / 2 };
+    await finger(stage(page), 'pointerdown', 1, tap);
+    await finger(stage(page), 'pointerup', 1, tap);
+    await stage(page).dispatchEvent('click', { button: 0, clientX: tap.x, clientY: tap.y, detail: 1 });
     await expect(counter(page)).toHaveText('2 / 20');
   });
 
