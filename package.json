@@ -35,6 +35,7 @@
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
     "@huyz0/tzap": "catalog:",
+    "@lhci/cli": "catalog:",
     "@lingui/conf": "catalog:",
     "@lingui/message-utils": "catalog:",
     "@lingui/native-tools": "catalog:",

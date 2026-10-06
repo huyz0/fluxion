@@ -87,6 +87,7 @@ catalog:
   "@lingui/native-tools": 0.1.5 # macro transform and message extraction without Babel (ADR-0023), MIT, dev only
   "@lingui/conf": 6.9.0 # peer of native-tools (ADR-0023), MIT, dev only
   "@lingui/message-utils": 6.9.0 # compiles ICU catalogs to function catalogs (ADR-0023), MIT, dev only
+  "@lhci/cli": 0.14.0 # Lighthouse CI for the editor time-to-interactive job (M11.54, closes ADR-0156), Apache-2.0, dev only
   oxc-parser: 0.151.0 # JSX parsing for scripts/gates/check-i18n.mjs (ADR-0159; TS 7 ships no compiler API), MIT, dev only
 
 # TS 6 for tools that need the compiler API (ADR-0011): apps/docs installs it as its own

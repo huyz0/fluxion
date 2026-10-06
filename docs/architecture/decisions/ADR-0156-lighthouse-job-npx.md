@@ -26,3 +26,7 @@ The `lighthouse` job in `ci.yml` runs `npx --yes @lhci/cli@0.14.0 autorun` with 
 
 - Good: the Lighthouse result is CI evidence now (`check-ci-evidence.mjs` requires the job), measured against `EDITOR_TTI_MS` from `thresholds.mjs`.
 - Bad: until M11.54, a compromised transitive release of `@lhci/cli` would run in a read-only, secret-free CI job. The exception ends there.
+
+## Update
+
+The exception is closed by M11.54 (2026-10-06): `@lhci/cli` 0.14.0 is a locked devDependency, and the job runs `pnpm exec lhci autorun`.

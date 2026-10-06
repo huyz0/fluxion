@@ -270,8 +270,8 @@ jobs:
       - run: pnpm exec node -e "process.stdout.write(require('@playwright/test').chromium.executablePath())" > "$RUNNER_TEMP/chrome-path"
       # lhci reads a JSON config: lighthouserc.mjs (which reads EDITOR_TTI_MS) is written out as one
       - run: node --input-type=module -e "import c from './lighthouserc.mjs'; import { writeFileSync } from 'node:fs'; writeFileSync(process.env.RUNNER_TEMP + '/lhci.json', JSON.stringify(c));"
-      # the top-level package is pinned and the job holds a read-only token and no secrets; its transitive tree is not locked until M11.54 (ADR-0156)
-      - run: CHROME_PATH="$(cat "$RUNNER_TEMP/chrome-path")" npx --yes @lhci/cli@0.14.0 autorun --config="$RUNNER_TEMP/lhci.json"
+      # @lhci/cli is a locked devDependency (M11.54, which closed ADR-0156's npx exception)
+      - run: CHROME_PATH="$(cat "$RUNNER_TEMP/chrome-path")" pnpm exec lhci autorun --config="$RUNNER_TEMP/lhci.json"
 
   size:
     needs: build
