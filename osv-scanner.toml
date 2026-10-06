@@ -1,5 +1,5 @@
 # Known vulnerabilities with no fixed version, accepted until the date given and then checked again (M8.38).
-# Both packages arrive only through the docs site's build tooling (apps/docs: astro, starlight-llms-txt); neither is in the
+# The first two arrive only through the docs site's build tooling (apps/docs: astro, starlight-llms-txt); neither is in the
 # player, the editor, the CLI or any published package.
 
 [[IgnoredVulns]]
@@ -11,3 +11,15 @@ reason = "braces 3.0.3 via micromatch via starlight-llms-txt (docs build only); 
 id = "GHSA-ch52-4w7c-c8xp"
 ignoreUntil = 2026-11-02
 reason = "http-cache-semantics 4.2.0 via astro (docs build only); no fixed version published"
+
+# Two more, found by the scanner on 2026-10-06 in the lockfile that M9.19 changed (they were there before it): dev and docs tooling only,
+# in no published package, the player, the editor or the studio. postcss-selector-parser 7 is a major version over what postcss-nested asks for.
+[[IgnoredVulns]]
+id = "GHSA-rj75-hqrm-r3gf"
+ignoreUntil = 2026-11-02
+reason = "postcss-selector-parser 6.1.4 via postcss-nested via @expressive-code/core via starlight (docs build only); the fix is a major version that postcss-nested does not accept"
+
+[[IgnoredVulns]]
+id = "GHSA-hp3w-g68c-fv3c"
+ignoreUntil = 2026-11-02
+reason = "sprintf-js 1.0.3 via argparse via @rushstack/ts-command-line via @microsoft/api-extractor (API report generation, development only); no fixed version published"

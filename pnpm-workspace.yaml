@@ -18,6 +18,10 @@ allowBuilds:
 # dependency-cruiser parses TypeScript through the compiler API, which TS 7 does not ship yet; it
 # gets TS 6 here: the only TS 6 version string, which the typescript6 catalog below reuses (YAML anchor;
 # pnpm allows no catalog: specifier in packageExtensions). ADR-0011. The repo's tsc stays on TS 7.
+# GHSA-68fv-2mgg-jv7q (CVSS 8.7): source-map-js 1.2.1 arrives through astro's svgo (docs build) and postcss; 1.2.2 is the fix (M11.73).
+overrides:
+  source-map-js: 1.2.2
+
 packageExtensions:
   dependency-cruiser:
     dependencies:
