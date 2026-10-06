@@ -1,0 +1,39 @@
+{
+  "FOoDGS": {
+    "message": "Presentation",
+    "origin": [
+      "packages/player/src/player-deck.tsx"
+    ]
+  },
+  "YwuHC5": {
+    "message": "Screen {n}",
+    "origin": [
+      "packages/player/src/deck-overview.tsx",
+      "packages/player/src/player-deck.tsx"
+    ]
+  },
+  "cUr8Sp": {
+    "message": "Screen overview",
+    "origin": [
+      "packages/player/src/deck-overview.tsx"
+    ]
+  },
+  "eSMMt3": {
+    "message": "Screen {n}: {name}",
+    "origin": [
+      "packages/player/src/deck-overview.tsx"
+    ]
+  },
+  "iqNpX9": {
+    "message": "Screen {n} of {count}: {name}",
+    "origin": [
+      "packages/player/src/player-deck.tsx"
+    ]
+  },
+  "oFptG6": {
+    "message": "Screen {n} of {count}",
+    "origin": [
+      "packages/player/src/player-deck.tsx"
+    ]
+  }
+}

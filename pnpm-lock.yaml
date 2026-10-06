@@ -538,6 +538,9 @@ importers:
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      '@lingui/core':
+        specifier: 'catalog:'
+        version: 6.9.0(@babel/core@7.29.7(supports-color@8.1.1))
     devDependencies:
       '@types/react':
         specifier: 'catalog:'

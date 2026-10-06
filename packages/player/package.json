@@ -42,7 +42,8 @@
     "@fluxion/anim": "workspace:*",
     "@fluxion/core": "workspace:*",
     "@fluxion/render": "workspace:*",
-    "@fluxion/schema": "workspace:*"
+    "@fluxion/schema": "workspace:*",
+    "@lingui/core": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",

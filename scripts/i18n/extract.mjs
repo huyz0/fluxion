@@ -13,6 +13,7 @@ import { listFiles, repoPath } from '../gates/lib.mjs';
 /** The packages that have UI strings: the source they are extracted from and where their English catalog lives. */
 export const TARGETS = [
   { name: 'editor', src: 'packages/editor/src', catalog: 'packages/editor/src/locales/en/messages.json' },
+  { name: 'player', src: 'packages/player/src', catalog: 'packages/player/src/locales/en/messages.json' },
   { name: 'studio', src: 'apps/studio/src', catalog: 'apps/studio/src/locales/en/messages.json' },
 ];
 

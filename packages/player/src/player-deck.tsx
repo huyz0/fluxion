@@ -2,9 +2,11 @@
 // same <ScreenView> as the editor (FR-EDT-010). It is driven by a PresentationController over the presentation order and each screen's build groups: the arrow,
 // page, space, enter and backspace keys, Home and End, a click, and a typed screen number plus Enter move it; F is full screen and O opens the overview grid of screens (deck-overview.tsx). The deck draws no text of its own
 // (ADR-0023). Keys are left to a focused link, button or field, to a key another handler took, and to key repeat.
+
 import type { Store } from '@fluxion/core';
 import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { realtimeClock } from './clock.js';
 import { buildsOfScreen, hiddenAt } from './deck-builds.js';
@@ -13,6 +15,7 @@ import { type DeckAction, deckAction, NumberEntry } from './deck-input.js';
 import { bindLinks } from './deck-links.js';
 import { DeckOverview } from './deck-overview.js';
 import { toggleFullscreen } from './fullscreen.js';
+import { i18n } from './i18n.js';
 import { PresentationController } from './presentation-controller.js';
 import { ScreenBoundary } from './screen-boundary.js';
 import { useElementBox } from './use-box.js';
@@ -220,11 +223,12 @@ function Announcer(props: { readonly store: Store; readonly screen: RecordId | u
     | undefined;
   if (screen === undefined) return null;
   const name = record?.name?.trim() ?? '';
+  const n = index + 1;
   return (
     <>
-      <h1 className="fx-sr-only">{name === '' ? `Screen ${index + 1}` : name}</h1>
+      <h1 className="fx-sr-only">{name === '' ? t(i18n)`Screen ${n}` : name}</h1>
       <div className="fx-sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="deck-live">
-        {`Screen ${index + 1} of ${count}${name === '' ? '' : `: ${name}`}`}
+        {name === '' ? t(i18n)`Screen ${n} of ${count}` : t(i18n)`Screen ${n} of ${count}: ${name}`}
       </div>
     </>
   );
@@ -304,7 +308,7 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
       data-testid="player-deck"
       data-fx-stage=""
       role="application"
-      aria-label="Presentation"
+      aria-label={t(i18n)`Presentation`}
       data-screen-index={index}
       data-group={group}
       data-zoom={touch.zoom}

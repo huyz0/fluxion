@@ -4,7 +4,9 @@
 import type { Store } from '@fluxion/core';
 import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type KeyboardEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
+import { i18n } from './i18n.js';
 import { ScreenBoundary } from './screen-boundary.js';
 
 /** The size each thumbnail is drawn in, in CSS pixels. */
@@ -94,7 +96,7 @@ export function DeckOverview(props: DeckOverviewProps): ReactNode {
       ref={grid}
       role="dialog"
       aria-modal="true"
-      aria-label="Screen overview"
+      aria-label={t(i18n)`Screen overview`}
       data-testid="deck-overview"
       onKeyDown={(e) => onGridKey(e, onClose)}
       onClick={(e) => e.stopPropagation()}
@@ -113,13 +115,14 @@ export function DeckOverview(props: DeckOverviewProps): ReactNode {
       }}
     >
       {screens.map((id, i) => {
-        const name = typeof names[i] === 'string' ? `: ${names[i]}` : '';
+        const name = typeof names[i] === 'string' ? String(names[i]) : undefined;
+        const n = i + 1;
         const here = id === current;
         return (
           <button
             key={id}
             type="button"
-            aria-label={`Screen ${i + 1}${name}`}
+            aria-label={name === undefined ? t(i18n)`Screen ${n}` : t(i18n)`Screen ${n}: ${name}`}
             aria-current={here ? 'true' : undefined}
             data-screen-id={id}
             onClick={() => onPick(id)}
