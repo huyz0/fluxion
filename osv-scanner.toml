@@ -23,3 +23,16 @@ reason = "postcss-selector-parser 6.1.4 via postcss-nested via @expressive-code/
 id = "GHSA-hp3w-g68c-fv3c"
 ignoreUntil = 2026-11-02
 reason = "sprintf-js 1.0.3 via argparse via @rushstack/ts-command-line via @microsoft/api-extractor (API report generation, development only); no fixed version published"
+
+# Found in the tree of @lhci/cli when it became a locked devDependency (M11.54, M11.77): extract-zip 2.0.1, used by puppeteer's browser downloader, which the
+# Lighthouse job never runs (the browser is the Playwright image's, passed in CHROME_PATH). The job holds a read-only token, no secrets, and reads only our own
+# built studio on localhost. The other advisories of that tree (basic-ftp, cookie, tmp, uuid) are fixed by overrides in pnpm-workspace.yaml.
+[[IgnoredVulns]]
+id = "GHSA-7pqw-9j4j-h8q3"
+ignoreUntil = 2026-11-02
+reason = "extract-zip 2.0.1 via puppeteer-core via @lhci/cli (the Lighthouse CI job; its downloader is not run); no fixed version published"
+
+[[IgnoredVulns]]
+id = "GHSA-jmr9-qjv8-65gv"
+ignoreUntil = 2026-11-02
+reason = "extract-zip 2.0.1 via puppeteer-core via @lhci/cli (the Lighthouse CI job; its downloader is not run); no fixed version published"
