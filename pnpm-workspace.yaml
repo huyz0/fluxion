@@ -21,10 +21,10 @@ allowBuilds:
 # GHSA-68fv-2mgg-jv7q (CVSS 8.7): source-map-js 1.2.1 arrives through astro's svgo (docs build) and postcss; 1.2.2 is the fix (M11.73).
 overrides:
   source-map-js: 1.2.2
-  # GHSA-c475-qrg2-pj4r, GHSA-pxg6-pf52-xh8x, GHSA-52f5-9888-hmc6, GHSA-ph9p-34f9-6g65, GHSA-w5hq-g745-h8pq: all reached only through @lhci/cli (M11.54, M11.77)
+  # GHSA-c475-qrg2-pj4r, GHSA-pxg6-pf52-xh8x, GHSA-52f5-9888-hmc6, GHSA-ph9p-34f9-6g65, GHSA-w5hq-g745-h8pq, GHSA-7c78-jf6q-g5cm: all reached only through @lhci/cli (M11.54, M11.77)
   basic-ftp: 6.2.1
   cookie@<0.7.0: 0.7.2
-  tmp@<0.2.4: 0.2.6
+  tmp@<0.2.7: 0.2.7
   uuid@<11.1.1: 11.1.1
 
 packageExtensions:
