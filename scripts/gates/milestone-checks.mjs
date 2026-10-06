@@ -177,6 +177,36 @@ export function backlogTextFor(milestone) {
 }
 
 /**
+ * Every row in `ids` is in `backlogText` and `done` (or descoped with a cited ADR or Deferred entry), whichever milestone the row belongs to: `true`, or the problem.
+ *
+ * @param {string} backlogText backlog tables (a milestone's archive and the current file may both be passed)
+ * @param {readonly string[]} ids rows such as `M9.19`
+ */
+export function checkRowsDone(backlogText, ids) {
+  const state = new Map(
+    backlogText
+      .split(/\r?\n/)
+      .filter((l) => /^\| M\d+\.\d+ \|/.test(l))
+      .map((l) => l.split('|').map((c) => c.trim()))
+      .map((c) => [c[1], c[6]]),
+  );
+  const closed = (s) => s === 'done' || (/^descoped \(\S.*\)$/.test(s ?? '') && /\bADR-\d{4}\b|\bDeferred\b/.test(s ?? ''));
+  const problems = ids.flatMap((id) => (!state.has(id) ? [`${id} (no such row)`] : closed(state.get(id)) ? [] : [`${id} (${state.get(id)})`]));
+  return problems.length === 0 || `not done: ${problems.join(', ')}`;
+}
+
+/**
+ * The i18n allowlist (scripts/gates/i18n-allowlist.json) holds no exact entry: `true`, or the problem. A missing file or one without an `entries` array is a problem.
+ *
+ * @param {unknown} allowlist the parsed file, or null when it is absent
+ */
+export function checkAllowlistEmpty(allowlist) {
+  const entries = allowlist?.entries;
+  if (!Array.isArray(entries)) return 'scripts/gates/i18n-allowlist.json is missing or has no `entries` list';
+  return entries.length === 0 || `scripts/gates/i18n-allowlist.json still lists ${entries.length} literal(s)`;
+}
+
+/**
  * Titles of passing leaf tests in node:test spec-reporter output. Suites print `▶ name` before
  * their children and `✔ name (…ms)` after them, so a ✔ line whose title opened a suite is not a test.
  */

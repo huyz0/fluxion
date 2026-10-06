@@ -9,8 +9,10 @@ import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs }
 import {
   backlogTextFor,
   changesetsCoverRange,
+  checkAllowlistEmpty,
   checkBacklogDone,
   checkFinalReview,
+  checkRowsDone,
   loadMilestoneReviews,
   titled,
   verifyLeg,
@@ -149,6 +151,17 @@ leg('the R1 demo has five screens and presents offline from file:// on three eng
   const made = e2e(['e2e/mvp.create-save-reopen-present.spec.ts'], DESKTOP);
   return made === true ? e2e(['e2e/examples.r1-offline.spec.ts'], DESKTOP) : made;
 });
+// NFR-I18N-001 is a Must of R1: its rows done (M9.19, M9.20 are M9 rows the sweep below cannot see), no literal allowlisted, no string literal in the JSX outside a Lingui macro, the
+// catalogs equal to the source (M11.75, milestone review cp1 F4)
+leg('NFR-I18N-001: its rows are done, the i18n allowlist is empty, check-i18n passes and the message catalogs match the source', () => {
+  const rows = checkRowsDone(`${backlogTextFor('M9')}\n${backlogTextFor('M11')}`, ['M9.19', 'M9.20', 'M11.71', 'M11.72']);
+  if (rows !== true) return rows;
+  const empty = checkAllowlistEmpty(json('scripts/gates/i18n-allowlist.json'));
+  if (empty !== true) return empty;
+  const literals = ok(node('scripts/gates/check-i18n.mjs'));
+  return literals === true ? ok(node('scripts/i18n/extract.mjs', ['--check'])) : literals;
+});
+
 leg('docs/milestones/R1-exit.md is complete: every checklist box ticked', () => {
   if (!exists('docs/milestones/R1-exit.md')) return 'missing docs/milestones/R1-exit.md';
   const open = (readText('docs/milestones/R1-exit.md').match(/^- \[ \]/gm) ?? []).length;

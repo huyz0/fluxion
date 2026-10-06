@@ -5,10 +5,12 @@ import { writeFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import {
   changesetGaps,
+  checkAllowlistEmpty,
   checkBacklogDone,
   checkDistArtifacts,
   checkDryRuns,
   checkReviewerSmoke,
+  checkRowsDone,
   checkVerifyOutput,
   passingTestTitles,
 } from '../../scripts/gates/milestone-checks.mjs';
@@ -585,5 +587,31 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.notEqual(typeof playwrightReport([spec], ['perf'], { runner, workers: 1 }), 'string');
     assert.deepEqual(seen, [spec, '--project=perf', '--workers=1', '--reporter=json']);
     assert.match(String(playwrightSpecs([spec], ['chromium'], { runner: () => ({ status: 1, stdout: '', stderr: 'boom' }) })), /wrote no report: boom/);
+  });
+});
+
+describe('the NFR-I18N-001 legs of m11-complete (M11.75, NFR-I18N-001)', () => {
+  const rows = (...pairs) => pairs.map(([id, state]) => `| ${id} | text | NFR-I18N-001 | accept | dep | ${state} | |`).join('\n');
+
+  it('NFR-I18N-001: checkRowsDone passes when every named row is done, whichever milestone it is in', () => {
+    assert.equal(
+      checkRowsDone(rows(['M9.19', 'done'], ['M9.20', 'done'], ['M11.71', 'done'], ['M11.72', 'done']), ['M9.19', 'M9.20', 'M11.71', 'M11.72']),
+      true,
+    );
+  });
+
+  it('NFR-I18N-001: checkRowsDone fails for a row that is not done, a missing row, and an uncited descope', () => {
+    const text = rows(['M9.19', 'done'], ['M9.20', 'todo'], ['M11.71', 'descoped (later)']);
+    assert.match(String(checkRowsDone(text, ['M9.19', 'M9.20'])), /M9\.20 \(todo\)/);
+    assert.match(String(checkRowsDone(text, ['M11.72'])), /M11\.72 \(no such row\)/);
+    assert.match(String(checkRowsDone(text, ['M11.71'])), /M11\.71 \(descoped \(later\)\)/);
+    assert.equal(checkRowsDone(rows(['M11.71', 'descoped (Deferred: roadmap)']), ['M11.71']), true);
+  });
+
+  it('NFR-I18N-001: checkAllowlistEmpty fails for an entry, a missing file and a file without entries', () => {
+    assert.equal(checkAllowlistEmpty({ globs: ['**/*.test.tsx'], entries: [] }), true);
+    assert.match(String(checkAllowlistEmpty({ entries: [{ file: 'a.tsx', text: 'x', reason: 'r' }] })), /still lists 1 literal/);
+    assert.match(String(checkAllowlistEmpty(null)), /missing or has no `entries`/);
+    assert.match(String(checkAllowlistEmpty({ globs: [] })), /missing or has no `entries`/);
   });
 });
