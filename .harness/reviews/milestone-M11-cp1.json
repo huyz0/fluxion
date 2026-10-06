@@ -1,0 +1,28 @@
+{
+  "milestone": "M11",
+  "checkpoint": "cp1",
+  "range": "b566eda..65a329d",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    { "id": "F1", "severity": "major", "file": "docs/milestones/R1-exit.md", "summary": "R1 exit box 1 (NFR-I18N-001, a Must of R1) is open and its text is stale; the requirement is only partly met: M11.71 (command, tool and menu titles by id) and M11.72 (the player's chrome strings) are todo and five player strings sit in scripts/gates/i18n-allowlist.json. check-trace and check-i18n are green only because of the allowlist and a title naming the ID. Ticking box 1 now would be dishonest." },
+    { "id": "F2", "severity": "major", "file": "docs/milestones/roadmap.md", "summary": "Release enablement (M1 final F2), fast-check out of @fluxion/schema's runtime dependencies (M2 final F6) and CODE_SCANNING (M1 final F1) were handed to M11 ('first release is M11') and have no M11 row." },
+    { "id": "F3", "severity": "major", "file": "docs/backlog/current.md", "summary": "M11.59 (older-WebKit nightly findings) is todo with no owner; M11.66/M11.67 hand the visual-xos baselines to M32 item 11 without a Deferred entry." },
+    { "id": "F4", "severity": "minor", "file": "scripts/gates/m11-complete.mjs", "summary": "No gate leg holds NFR-I18N-001 open: nothing checks check-i18n, an empty player allowlist, or M9.19/M9.20/M11.71/M11.72 being done; the CI-evidence leg needs the review range to end at the last code commit; the five-projects leg is a name match, the CI evidence file proves the runs." },
+    { "id": "F5", "severity": "minor", "file": "docs/architecture/decisions/ADR-0160-caniuse-lite-licence-exception.md", "summary": "ADR-0160 widens the licence policy and names harness, not the human, as decision-maker; bounded (one package, one licence, check-drift reports a widening) but the human should acknowledge it at sign-off. ADR-0158 and ADR-0161 raised NFR-DX-002 about 3x and 4x on one box's timings." },
+    { "id": "F6", "severity": "minor", "file": "tools/vite-lingui/index.mjs", "summary": "The i18n value pattern holds in production (editor dist and studio bundle contain activate('en')), but only a Vitest test against source covers it; no test asserts the studio's production bundle renders English text." },
+    { "id": "F7", "severity": "minor", "file": "docs/milestones/R1-exit.md", "summary": "Box 2 cites run 37375690437 at 6cdbad4; later code commits (lockfile, Lingui, gate changes) are not covered by it." },
+    { "id": "F8", "severity": "minor", "file": "docs/milestones/M11.md", "summary": "Plan health: 26 planned rows grew to 72 (about 2.8x). Causes: M10 rows open at start, webkit and visual flake and nightly findings, gate-budget growth, lockfile commits blocked by the budget, Lingui landing late. The Learned section is empty." }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "note": "M11.71 and M11.72 done and the allowlist empty before box 1 is rewritten and ticked (M11.25).", "target": "M11.71" },
+    { "finding": "F2", "disposition": "hand-off", "note": "The human chose on 2026-10-06 to defer them to an unscheduled R1 release step (on human request); the three Deferred rows say so; nothing is published or enabled." },
+    { "finding": "F3", "disposition": "reopen", "note": "The human chose on 2026-10-06 to fix M11.59 now (it stays a row); M11.66/M11.67's baselines are a Deferred entry for M32 item 11.", "target": "M11.59" },
+    { "finding": "F4", "disposition": "reopen", "note": "A gate leg: the i18n allowlist is empty and M9.19, M9.20, M11.71, M11.72 are done (M11.75).", "target": "M11.75" },
+    { "finding": "F5", "disposition": "argue", "note": "Bounded; the human is asked to acknowledge ADR-0160 at sign-off. The budgets are the human's decisions of 2026-10-06 and are lowered again on faster hardware." },
+    { "finding": "F6", "disposition": "reopen", "note": "An e2e on the studio's production build that asserts a translated string renders, naming NFR-I18N-001 (M11.76).", "target": "M11.76" },
+    { "finding": "F7", "disposition": "reopen", "note": "Box 2 re-ticked with the run of the final code commit (M11.25).", "target": "M11.25" },
+    { "finding": "F8", "disposition": "argue", "note": "Cause recorded; the Learned lines go in M11.md at close (M11.26)." }
+  ],
+  "planDelta": "After M11.71, M11.72, M11.75, M11.76 and M11.59 are done, redo this review over the new range (the final checkpoint), re-tick R1 boxes 1 and 2 (M11.25), fill M11.md 'Learned', and move the roadmap's Current milestone past M11."
+}
