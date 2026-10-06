@@ -2,7 +2,7 @@
 // What a browser does with Ctrl+C, Ctrl+X and Ctrl+V on a bare page (FR-EDT-007, NFR-PORT-001, M11.59). The editor copies and pastes only when the browser fires the
 // `copy` and `paste` events, and the nightly's older WebKit (Playwright 1.62.1) fails the three clipboard specs while the pinned one passes them. This prints, for each
 // starting state of the page (nothing selected, a selection, an editable field), which events fired and what the paste could read, so a log shows the engine's behaviour
-// without a trace. It never fails the run: the nightly's webkit job calls it after the suite, only when the suite failed.
+// without a trace; and what the async clipboard (navigator.clipboard) answers after a click, which a paste between two pages depends on. It never fails the run: the nightly's webkit job calls it after the suite, only when the suite failed.
 //   BROWSER=webkit|chromium|firefox   the engine (default webkit)
 import { fileURLToPath } from 'node:url';
 import { chromium, firefox, webkit } from '@playwright/test';
@@ -61,6 +61,30 @@ async function probe(page, state) {
   return fired;
 }
 
+/** What the async clipboard answers after a click: the permission state, a write and a read of text; each gives up after 3 s. */
+async function asyncClipboard(page) {
+  await page.setContent('<button id=go>go</button>');
+  await page.click('#go');
+  return page.evaluate(async () => {
+    const within = (promise) => Promise.race([promise, new Promise((resolve) => setTimeout(resolve, 3000, '(no answer in 3 s)'))]);
+    const describe = async (step) => {
+      try {
+        return await within(step());
+      } catch (e) {
+        return `error:${e?.name}`;
+      }
+    };
+    return {
+      permission: await describe(async () => (await navigator.permissions.query({ name: 'clipboard-read' })).state),
+      write: await describe(async () => {
+        await navigator.clipboard.writeText('probe');
+        return 'ok';
+      }),
+      read: await describe(async () => JSON.stringify(await navigator.clipboard.readText())),
+    };
+  });
+}
+
 async function main() {
   const name = process.env.BROWSER ?? 'webkit';
   const browser = await ENGINES[name].launch();
@@ -74,6 +98,10 @@ async function main() {
       console.log(`  ${state.name}: copy -> [${fired.copy}], cut -> [${fired.cut}], paste -> [${fired.paste}]`);
       await page.close();
     }
+    const page = await (await browser.newContext()).newPage();
+    page.setDefaultTimeout(5000);
+    const answer = await asyncClipboard(page);
+    console.log(`  async clipboard after a click: permission=${answer.permission}, write=${answer.write}, read=${answer.read}`);
   } finally {
     await browser.close();
   }
