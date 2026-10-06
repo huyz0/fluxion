@@ -2,6 +2,8 @@
 // layers), the inspector and the timeline. The panels are placeholders their milestones fill (M7, M8).
 
 import { useValue } from '@fluxion/render';
+import { t } from '@lingui/core/macro';
+import './i18n.js';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { InspectorFields, type InspectorFieldsProps } from './inspector.js';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
@@ -13,7 +15,18 @@ import type { Session } from './session.js';
 import type { Tool, ToolDispatcher } from './tools.js';
 
 /** Each panel's name: its landmark's label and its toolbar button's text. */
-export const PANEL_NAMES: { readonly [P in PanelId]: string } = { left: 'Screens, library and layers', right: 'Inspector', bottom: 'Timeline' };
+export const PANEL_NAMES: { readonly [P in PanelId]: string } = {
+  // getters: the message is looked up when read, after the i18n instance is active
+  get left() {
+    return t`Screens, library and layers`;
+  },
+  get right() {
+    return t`Inspector`;
+  },
+  get bottom() {
+    return t`Timeline`;
+  },
+};
 
 /** Props of {@link Toolbar}. */
 export type ToolbarProps = {
@@ -31,7 +44,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
   return (
     // a named banner landmark: biome takes a <header> as interactive once it has a role, so a div
     // biome-ignore lint/a11y/useSemanticElements: <header> with a label is refused by useAriaPropsSupportedByRole
-    <div className="fx-chrome-toolbar" role="banner" aria-label="Toolbar">
+    <div className="fx-chrome-toolbar" role="banner" aria-label={t`Toolbar`}>
       {props.children}
       <span className="fx-chrome-spacer" />
       {panelIds().map((p) => (
@@ -40,18 +53,58 @@ export function Toolbar(props: ToolbarProps): ReactNode {
         </button>
       ))}
       <button type="button" className="fx-chrome-button" aria-pressed={layout.focus} onClick={() => onLayout(toggleFocus(layout))}>
-        Focus mode
+        {t`Focus mode`}
       </button>
     </div>
   );
 }
 
 const TABS = [
-  { name: 'Screens', text: 'The screens of this document will be listed here.' },
-  { name: 'Library', text: 'Shapes and components will be listed here.' },
-  { name: 'Layers', text: 'The layers of this screen will be listed here.' },
-  { name: 'Problems', text: 'The problems of this document will be listed here.' },
-  { name: 'Notes', text: 'The speaker notes of this screen will be written here.' },
+  {
+    name: 'Screens',
+    get label() {
+      return t`Screens`;
+    },
+    get text() {
+      return t`The screens of this document will be listed here.`;
+    },
+  },
+  {
+    name: 'Library',
+    get label() {
+      return t`Library`;
+    },
+    get text() {
+      return t`Shapes and components will be listed here.`;
+    },
+  },
+  {
+    name: 'Layers',
+    get label() {
+      return t`Layers`;
+    },
+    get text() {
+      return t`The layers of this screen will be listed here.`;
+    },
+  },
+  {
+    name: 'Problems',
+    get label() {
+      return t`Problems`;
+    },
+    get text() {
+      return t`The problems of this document will be listed here.`;
+    },
+  },
+  {
+    name: 'Notes',
+    get label() {
+      return t`Notes`;
+    },
+    get text() {
+      return t`The speaker notes of this screen will be written here.`;
+    },
+  },
 ] as const;
 
 /** The next tab index after `key` from `i` (arrows wrap; Home and End), or undefined. */
@@ -101,10 +154,10 @@ export function LeftTabs(props: LeftTabsProps = {}): ReactNode {
   const tab = TABS[selected] ?? TABS[0];
   return (
     <>
-      <div role="tablist" aria-label="Left panel" className="fx-chrome-tabs" onKeyDown={onKeyDown}>
-        {TABS.map((t, i) => (
+      <div role="tablist" aria-label={t`Left panel`} className="fx-chrome-tabs" onKeyDown={onKeyDown}>
+        {TABS.map((tabItem, i) => (
           <button
-            key={t.name}
+            key={tabItem.name}
             id={`${id}-tab-${i}`}
             type="button"
             role="tab"
@@ -114,7 +167,7 @@ export function LeftTabs(props: LeftTabsProps = {}): ReactNode {
             tabIndex={i === selected ? 0 : -1}
             onClick={() => setSelected(i)}
           >
-            {t.name}
+            {tabItem.label}
           </button>
         ))}
       </div>
@@ -138,9 +191,9 @@ export function Inspector(props: InspectorProps): ReactNode {
   const count = useValue(props.session.selection.get).length;
   return (
     <>
-      <h2 className="fx-chrome-heading">Inspector</h2>
+      <h2 className="fx-chrome-heading">{t`Inspector`}</h2>
       <p className="fx-chrome-placeholder" aria-live="polite">
-        {count === 0 ? 'Select an element to see its properties.' : `${count} ${count === 1 ? 'element' : 'elements'} selected`}
+        {count === 0 ? t`Select an element to see its properties.` : count === 1 ? t`${count} element selected` : t`${count} elements selected`}
       </p>
       {props.fields === undefined ? null : <InspectorFields {...props.fields} session={props.session} />}
     </>
@@ -160,7 +213,7 @@ export function ToolButtons(props: ToolButtonsProps): ReactNode {
   const { session } = props;
   const current = useValue(session.tool.get);
   return (
-    <fieldset className="fx-chrome-zoom" aria-label="Tools">
+    <fieldset className="fx-chrome-zoom" aria-label={t`Tools`}>
       {props.tools.list().map((tool: Tool) => (
         <button
           key={tool.id}
@@ -182,8 +235,8 @@ export function ToolButtons(props: ToolButtonsProps): ReactNode {
 export function Timeline(): ReactNode {
   return (
     <>
-      <h2 className="fx-chrome-heading">Timeline</h2>
-      <p className="fx-chrome-placeholder">The animations of this screen will appear here.</p>
+      <h2 className="fx-chrome-heading">{t`Timeline`}</h2>
+      <p className="fx-chrome-placeholder">{t`The animations of this screen will appear here.`}</p>
     </>
   );
 }

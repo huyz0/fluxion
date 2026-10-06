@@ -3,6 +3,8 @@
 // matches are listed best first. Picking one is the host's (`onPick`, M8.18: click to insert, drag to drop).
 import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
 import { pathData, useValue } from '@fluxion/render';
+import { plural, t } from '@lingui/core/macro';
+import '../i18n.js';
 import { type ReactNode, useMemo, useState } from 'react';
 import { LIBRARY_DRAG_TYPE } from './library-insert.js';
 import { buildLibraryIndex, entryOf, type LibraryEntry } from './library-search.js';
@@ -102,21 +104,21 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
       <input
         type="search"
         className="fx-chrome-library-search"
-        aria-label="Search the library"
-        placeholder="Search shapes"
+        aria-label={t`Search the library`}
+        placeholder={t`Search shapes`}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
       <p className="fx-chrome-library-count" aria-live="polite">
-        {found.length} {found.length === 1 ? 'shape' : 'shapes'}
+        {plural(found.length, { one: '# shape', other: '# shapes' })}
       </p>
       {searching ? (
-        <ul className="fx-chrome-library-list" aria-label="Search results">
+        <ul className="fx-chrome-library-list" aria-label={t`Search results`}>
           {found.map(show)}
         </ul>
       ) : (
         grouped(found).map((p) => (
-          <section key={p.pack} aria-label={`Pack ${p.pack}`} data-pack={p.pack}>
+          <section key={p.pack} aria-label={t`Pack ${p.pack}`} data-pack={p.pack}>
             {p.categories.map((c) => (
               <div key={c.category}>
                 <h3 className="fx-chrome-heading">{`${p.pack} / ${c.category}`}</h3>

@@ -1,8 +1,10 @@
 // The font picker (FR-THM-008, M9.17): a dialog over the three sources of fonts, the bundled families, the Google Fonts catalog
 // and a file the user uploads, with the fonts the document already holds; a family chosen is applied to the selection. The host
 // supplies the sources (the studio fetches Google fonts; the editor never names a font host).
+
 import type { Store } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type ChangeEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { buttonsOf, dialogKey } from './dialog-keys.js';
 import { applyFontFamily, documentFontFamilies } from './font-apply.js';
@@ -75,6 +77,13 @@ export type FontPickerProps = {
 
 const TABS = ['Document', 'Bundled', 'Google', 'Upload'] as const;
 type Tab = (typeof TABS)[number];
+/** The tab names, built at render time so the language is the one active then. */
+const TAB_LABELS: Record<Tab, () => string> = {
+  Document: () => t`Document`,
+  Bundled: () => t`Bundled`,
+  Google: () => t`Google`,
+  Upload: () => t`Upload`,
+};
 /** The most catalog rows shown at once: a search narrows 1 700 families. */
 const SHOWN = 40;
 
@@ -88,10 +97,10 @@ function FamilyList(props: { readonly families: readonly string[]; readonly onUs
       {props.families.map((family) => (
         <li key={family} className="fx-chrome-fontrow">
           <span className="fx-chrome-fontpreview" style={{ fontFamily: stack(family) }}>
-            {family}: Hamburgefonstiv 0123
+            {t`${family}: Hamburgefonstiv 0123`}
           </span>
-          <button type="button" className="fx-chrome-button" aria-label={`Use ${family}`} onClick={() => props.onUse(family)}>
-            Use
+          <button type="button" className="fx-chrome-button" aria-label={t`Use ${family}`} onClick={() => props.onUse(family)}>
+            {t`Use`}
           </button>
         </li>
       ))}
@@ -114,9 +123,9 @@ function GoogleTab(props: { readonly sources: FontSources; readonly busy: string
   const shown = useMemo(() => (catalog ?? []).filter((c) => c.family.toLowerCase().includes(query.trim().toLowerCase())).slice(0, SHOWN), [catalog, query]);
   return (
     <div>
-      <input type="search" aria-label="Search Google Fonts" value={query} placeholder="Search Google Fonts" onChange={(e) => setQuery(e.target.value)} />
-      {catalog === undefined ? <p>Loading the catalog…</p> : null}
-      {failed ? <p role="alert">The Google Fonts catalog could not be loaded. Close the dialog and open it again to retry.</p> : null}
+      <input type="search" aria-label={t`Search Google Fonts`} value={query} placeholder={t`Search Google Fonts`} onChange={(e) => setQuery(e.target.value)} />
+      {catalog === undefined ? <p>{t`Loading the catalog…`}</p> : null}
+      {failed ? <p role="alert">{t`The Google Fonts catalog could not be loaded. Close the dialog and open it again to retry.`}</p> : null}
       <ul className="fx-chrome-fontlist">
         {shown.map((entry) => (
           <li key={entry.family} className="fx-chrome-fontrow">
@@ -127,10 +136,10 @@ function GoogleTab(props: { readonly sources: FontSources; readonly busy: string
               type="button"
               className="fx-chrome-button"
               disabled={busy !== undefined}
-              aria-label={`Add ${entry.family}`}
+              aria-label={t`Add ${entry.family}`}
               onClick={() => onAdd(entry.family)}
             >
-              {busy === entry.family ? 'Adding…' : 'Add'}
+              {busy === entry.family ? t`Adding…` : t`Add`}
             </button>
           </li>
         ))}
@@ -160,10 +169,10 @@ export function FontPicker(props: FontPickerProps): ReactNode {
   useEffect(() => {
     if (dialog.current) buttonsOf(dialog.current)[0]?.focus();
   }, []);
-  const tabs = TABS.filter((t) => t !== 'Google' || (sources.catalog !== undefined && sources.addGoogle !== undefined));
+  const tabs = TABS.filter((name) => name !== 'Google' || (sources.catalog !== undefined && sources.addGoogle !== undefined));
   const use = (family: string) => {
     const applied = applyFontFamily(store, execute, selection.current, family);
-    setMessage(applied ? `${family} applied to the selection.` : `${family} is ready; select an element to use it.`);
+    setMessage(applied ? t`${family} applied to the selection.` : t`${family} is ready; select an element to use it.`);
   };
   const added = (outcome: FontOutcome) => {
     if (!outcome.ok) return setMessage(outcome.message);
@@ -172,9 +181,9 @@ export function FontPicker(props: FontPickerProps): ReactNode {
   };
   const addGoogle = (family: string) => {
     setBusy(family);
-    setMessage(`Adding ${family}…`);
-    void (sources.addGoogle?.(family) ?? Promise.resolve<FontOutcome>({ ok: false, message: 'Google Fonts is not available.' }))
-      .catch((): FontOutcome => ({ ok: false, message: `${family} could not be added.` }))
+    setMessage(t`Adding ${family}…`);
+    void (sources.addGoogle?.(family) ?? Promise.resolve<FontOutcome>({ ok: false, message: t`Google Fonts is not available.` }))
+      .catch((): FontOutcome => ({ ok: false, message: t`${family} could not be added.` }))
       .then((outcome) => {
         setBusy(undefined);
         added(outcome);
@@ -186,27 +195,34 @@ export function FontPicker(props: FontPickerProps): ReactNode {
     // the same file chosen again must fire a change again
     input.value = '';
     if (file === undefined) return;
-    if (file.size > MAX_UPLOAD) return setMessage(`${file.name} is larger than 5 MB: fonts over 5 MB are not taken.`);
+    if (file.size > MAX_UPLOAD) return setMessage(t`${file.name} is larger than 5 MB: fonts over 5 MB are not taken.`);
     added(await sources.upload({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) }));
   };
   return (
-    <div ref={dialog} className="fx-chrome-picker fx-chrome-fonts" role="dialog" aria-modal="true" aria-label="Fonts" onKeyDown={(e) => dialogKey(e, onClose)}>
-      <h2 className="fx-chrome-heading">Fonts</h2>
-      <div role="tablist" aria-label="Font sources" className="fx-chrome-tabs">
-        {tabs.map((t) => (
-          <button key={t} type="button" role="tab" className="fx-chrome-button" aria-selected={t === tab} onClick={() => setTab(t)}>
-            {t}
+    <div
+      ref={dialog}
+      className="fx-chrome-picker fx-chrome-fonts"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t`Fonts`}
+      onKeyDown={(e) => dialogKey(e, onClose)}
+    >
+      <h2 className="fx-chrome-heading">{t`Fonts`}</h2>
+      <div role="tablist" aria-label={t`Font sources`} className="fx-chrome-tabs">
+        {tabs.map((name) => (
+          <button key={name} type="button" role="tab" className="fx-chrome-button" aria-selected={name === tab} onClick={() => setTab(name)}>
+            {TAB_LABELS[name]()}
           </button>
         ))}
       </div>
-      <div role="tabpanel" aria-label={tab}>
-        {tab === 'Document' ? <FamilyList families={held} onUse={use} empty="The document holds no fonts of its own yet." /> : null}
-        {tab === 'Bundled' ? <FamilyList families={sources.bundled} onUse={use} empty="No bundled fonts." /> : null}
+      <div role="tabpanel" aria-label={TAB_LABELS[tab]()}>
+        {tab === 'Document' ? <FamilyList families={held} onUse={use} empty={t`The document holds no fonts of its own yet.`} /> : null}
+        {tab === 'Bundled' ? <FamilyList families={sources.bundled} onUse={use} empty={t`No bundled fonts.`} /> : null}
         {tab === 'Google' ? <GoogleTab sources={sources} busy={busy} onAdd={addGoogle} /> : null}
         {tab === 'Upload' ? (
           <label>
-            Font file (WOFF2, TTF or OTF)
-            <input type="file" aria-label="Font file" accept=".woff2,.ttf,.otf" onChange={(e) => void upload(e)} />
+            {t`Font file (WOFF2, TTF or OTF)`}
+            <input type="file" aria-label={t`Font file`} accept=".woff2,.ttf,.otf" onChange={(e) => void upload(e)} />
           </label>
         ) : null}
       </div>
@@ -214,7 +230,7 @@ export function FontPicker(props: FontPickerProps): ReactNode {
         {message}
       </p>
       <button type="button" className="fx-chrome-button" onClick={onClose}>
-        Close
+        {t`Close`}
       </button>
     </div>
   );

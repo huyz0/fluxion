@@ -1,6 +1,8 @@
 // A section's header line in the navigator (FR-SCR-004, M8.15): a fold button with the name and the screen count,
 // an inline rename field, and a drop target for a dragged screen. Its menu is the section's own.
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
+import '../i18n.js';
 import type { DragEvent, ReactNode } from 'react';
 import type { SectionRow } from './navigator-model.js';
 import { RenameField } from './rename-field.js';
@@ -44,13 +46,13 @@ export function SectionHeader(props: SectionHeaderProps): ReactNode {
       }}
     >
       {renaming && actions !== undefined ? (
-        <RenameField label={s.name} name={`Rename section ${s.name}`} onCommit={(name) => actions.rename(s.id, name)} onDone={actions.stopRename} />
+        <RenameField label={s.name} name={t`Rename section ${s.name}`} onCommit={(name) => actions.rename(s.id, name)} onDone={actions.stopRename} />
       ) : (
         <button
           type="button"
           className="fx-chrome-button fx-chrome-section-button"
           aria-expanded={!s.collapsed}
-          aria-label={`Section ${s.name}`}
+          aria-label={t`Section ${s.name}`}
           onClick={() => actions?.toggle(s.id, !s.collapsed)}
           onDoubleClick={() => actions?.startRename(s.id)}
         >

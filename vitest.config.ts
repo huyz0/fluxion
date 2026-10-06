@@ -51,7 +51,7 @@ export default defineConfig({
     // limit there is a red main without a bug (M10.11: four CI runs lost to it). A genuine hang still fails, at 20 s.
     testTimeout: 20_000,
     hookTimeout: 20_000,
-    setupFiles: ['./tools/vitest/fast-check.setup.ts'],
+    setupFiles: ['./tools/vitest/fast-check.setup.ts', './tools/vitest/i18n.setup.ts'],
     env: { FC_SEED: process.env.FC_SEED ?? (process.env.CI ? String(CI_SEED) : ''), FC_RUNS: process.env.FC_RUNS ?? '' },
     projects: [
       {

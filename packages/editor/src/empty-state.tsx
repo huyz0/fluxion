@@ -1,3 +1,5 @@
+import { t } from '@lingui/core/macro';
+import './i18n.js';
 import type { JSX } from 'react';
 
 /** Props of {@link EmptyState}. */
@@ -11,7 +13,7 @@ export interface EmptyStateProps {
  */
 export function EmptyState({ message }: EmptyStateProps): JSX.Element {
   return (
-    <section aria-label="Empty screen">
+    <section aria-label={t`Empty screen`}>
       <p>{message}</p>
     </section>
   );

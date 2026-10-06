@@ -174,6 +174,13 @@ const STEPS = [
     () => (exists('scripts/i18n/extract.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M9)'),
     () => node('scripts/i18n/extract.mjs', ['--check']),
   ],
+  // no string literal in the JSX of the packages with UI outside a Lingui macro (NFR-I18N-001, ADR-0023, M9.20)
+  [
+    'literals',
+    (m) => m !== 'quick',
+    () => (exists('scripts/gates/check-i18n.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M9)'),
+    () => node('scripts/gates/check-i18n.mjs'),
+  ],
   [
     'licenses',
     (m) => m !== 'quick',

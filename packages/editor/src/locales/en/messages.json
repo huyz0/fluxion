@@ -1,1 +1,912 @@
-{}
+{
+  "-Tgvvf": {
+    "message": "{value} (custom)",
+    "origin": [
+      "packages/editor/src/theme-switcher.tsx"
+    ]
+  },
+  "-UN6-J": {
+    "message": "Mixed",
+    "origin": [
+      "packages/editor/src/inspector.tsx"
+    ]
+  },
+  "0HrOO3": {
+    "message": "No command matches",
+    "origin": [
+      "packages/editor/src/command-palette.tsx"
+    ]
+  },
+  "1DBGsz": {
+    "message": "Notes",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "1QfxQT": {
+    "message": "Dismiss",
+    "origin": [
+      "packages/editor/src/editor-root.tsx"
+    ]
+  },
+  "1SQczx": {
+    "message": "FPS {0}",
+    "origin": [
+      "packages/editor/src/debug-overlay.tsx"
+    ]
+  },
+  "1aBMyR": {
+    "message": "Toolbar",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "1eH_UF": {
+    "message": "Zoom to selection",
+    "origin": [
+      "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "1o3TeV": {
+    "message": "The problems of this document will be listed here.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "1s1S2n": {
+    "message": "Separate names with commas",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "2tU1mc": {
+    "message": "The layers of this screen will be listed here.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "3nLdaX": {
+    "message": "Add {0}",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "4-wWfe": {
+    "message": "A language tag such as en or pt-BR",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "45MZFs": {
+    "message": "Commands",
+    "origin": [
+      "packages/editor/src/command-palette.tsx"
+    ]
+  },
+  "4xxB5n": {
+    "message": "Import an image…",
+    "origin": [
+      "packages/editor/src/image-picker.tsx"
+    ]
+  },
+  "5WYZKZ": {
+    "message": "Search results",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
+    ]
+  },
+  "5mVHWx": {
+    "message": "{family} applied to the selection.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "6RpzCH": {
+    "message": "Clear {0}",
+    "origin": [
+      "packages/editor/src/inspector.tsx"
+    ]
+  },
+  "77Emn0": {
+    "message": "Keyboard shortcuts",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx",
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "77JB0Z": {
+    "message": "Add a custom field",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "7G2fPn": {
+    "message": "Type a command",
+    "origin": [
+      "packages/editor/src/command-palette.tsx"
+    ]
+  },
+  "7Zdnlq": {
+    "message": "Document",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "8uA5Jn": {
+    "message": "Shortcut",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "9IymPa": {
+    "message": "Hide {0} from presentation",
+    "origin": [
+      "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "9Qtk7A": {
+    "message": "Inspector",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "9oWmtA": {
+    "message": "Search shapes",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
+    ]
+  },
+  "9uI_rE": {
+    "message": "Undo",
+    "origin": [
+      "packages/editor/src/history-buttons.tsx"
+    ]
+  },
+  "ACjxWW": {
+    "message": "Zoom",
+    "origin": [
+      "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "AUiJVO": {
+    "message": "Reset {title}",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "AWOSPo": {
+    "message": "Zoom in",
+    "origin": [
+      "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "AbNeva": {
+    "message": "Search commands",
+    "origin": [
+      "packages/editor/src/command-palette.tsx"
+    ]
+  },
+  "BItucz": {
+    "message": "{0} colour",
+    "origin": [
+      "packages/editor/src/inspector.tsx"
+    ]
+  },
+  "BOOryO": {
+    "message": "Choose an image",
+    "origin": [
+      "packages/editor/src/image-picker.tsx"
+    ]
+  },
+  "CXDHcv": {
+    "message": "Grid",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "D-zLDD": {
+    "message": "Hidden",
+    "origin": [
+      "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "DaqVOF": {
+    "message": "Shapes and components will be listed here.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "Dq6GG7": {
+    "message": "Layers",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "DsBeuB": {
+    "message": "Use",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "Dw1T_W": {
+    "message": "Rename {label}",
+    "origin": [
+      "packages/editor/src/navigator/rename-field.tsx"
+    ]
+  },
+  "FEr96N": {
+    "message": "Theme",
+    "origin": [
+      "packages/editor/src/theme-switcher.tsx"
+    ]
+  },
+  "FUb1o7": {
+    "message": "Keyboard shortcuts (?)",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "FZ9Zfp": {
+    "message": "Search the library",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
+    ]
+  },
+  "FjkaiT": {
+    "message": "Zoom out",
+    "origin": [
+      "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "GX8GKD": {
+    "message": "Assets",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx",
+      "packages/editor/src/toolbar-extras.tsx"
+    ]
+  },
+  "GvwkUd": {
+    "message": "No bundled fonts.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "H3oH0g": {
+    "message": "Redo",
+    "origin": [
+      "packages/editor/src/history-buttons.tsx"
+    ]
+  },
+  "HzVv6g": {
+    "message": "Paste",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "I0oBSl": {
+    "message": "Fonts",
+    "origin": [
+      "packages/editor/src/font-picker.tsx",
+      "packages/editor/src/toolbar-extras.tsx"
+    ]
+  },
+  "IEOEF3": {
+    "message": "Font file (WOFF2, TTF or OTF)",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "IS-u2j": {
+    "message": "{family}: Hamburgefonstiv 0123",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "IruwXN": {
+    "message": "This document holds no images yet.",
+    "origin": [
+      "packages/editor/src/image-picker.tsx"
+    ]
+  },
+  "KaCJpx": {
+    "message": "Present (F5)",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "KiJn9B": {
+    "message": "Note",
+    "origin": [
+      "packages/editor/src/problems-tab.tsx"
+    ]
+  },
+  "KwmOUj": {
+    "message": "New screen",
+    "origin": [
+      "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "LgNEg7": {
+    "message": "Screens, library and layers",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "M6P3Qa": {
+    "message": "Context menu",
+    "origin": [
+      "packages/editor/src/context-menu.tsx"
+    ]
+  },
+  "MHrjPM": {
+    "message": "Title",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "MTqQMG": {
+    "message": "Not set",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "M_tKjE": {
+    "message": "Hidden from presentation",
+    "origin": [
+      "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "Nu4oKW": {
+    "message": "Description",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "NwJGar": {
+    "message": "Snap to a 24-unit grid (needs Snapping on)",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "NxZk6p": {
+    "message": "{family} is ready; select an element to use it.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "ONWvwQ": {
+    "message": "Upload",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "OSiAMq": {
+    "message": "The document holds no fonts of its own yet.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "OXdGnd": {
+    "message": "Problems",
+    "origin": [
+      "packages/editor/src/panels.tsx",
+      "packages/editor/src/problems-tab.tsx"
+    ]
+  },
+  "OYHzN1": {
+    "message": "Tags",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "OfhWJH": {
+    "message": "Reset",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "Po9RAe": {
+    "message": "{family} could not be added.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "Rr-tAv": {
+    "message": "Document details",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx",
+      "packages/editor/src/toolbar-extras.tsx"
+    ]
+  },
+  "SagCAA": {
+    "message": "New section",
+    "origin": [
+      "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "SlfejT": {
+    "message": "Error",
+    "origin": [
+      "packages/editor/src/problems-tab.tsx"
+    ]
+  },
+  "UOUary": {
+    "message": "Screen theme",
+    "origin": [
+      "packages/editor/src/theme-switcher.tsx"
+    ]
+  },
+  "URmyfc": {
+    "message": "Details",
+    "origin": [
+      "packages/editor/src/toolbar-extras.tsx"
+    ]
+  },
+  "UaOqyl": {
+    "message": "Screens",
+    "origin": [
+      "packages/editor/src/panels.tsx",
+      "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "WMlw1A": {
+    "message": "The animations of this screen will appear here.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "X7GiRg": {
+    "message": "The Google Fonts catalog could not be loaded. Close the dialog and open it again to retry.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "XIOifk": {
+    "message": "Language: {0}.",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "XLH7IW": {
+    "message": "Custom field {0} value",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "Xg7Ykr": {
+    "message": "Adding {family}…",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "YoYzpc": {
+    "message": "Google Fonts is not available.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "Z4OdvO": {
+    "message": "Adding…",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "ZI8uvA": {
+    "message": "No problems found.",
+    "origin": [
+      "packages/editor/src/problems-tab.tsx"
+    ]
+  },
+  "ZP_OWS": {
+    "message": "{count} elements selected",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "ZjtgI-": {
+    "message": "Command palette",
+    "origin": [
+      "packages/editor/src/command-palette.tsx"
+    ]
+  },
+  "Ztk-oG": {
+    "message": "Image placeholder",
+    "origin": [
+      "packages/editor/src/image-picker.tsx"
+    ]
+  },
+  "Zty_IJ": {
+    "message": "Canvas",
+    "origin": [
+      "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "_UOCa8": {
+    "message": "Remove custom field {0}",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "_xt4Y7": {
+    "message": "Rename section {0}",
+    "origin": [
+      "packages/editor/src/navigator/section-header.tsx"
+    ]
+  },
+  "aD15f5": {
+    "message": "Unused",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "aL1w5Z": {
+    "message": "Used",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "bwRvnp": {
+    "message": "Action",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "cPykn8": {
+    "message": "Loading the catalog…",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "cklVjM": {
+    "message": "Timeline",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "dEgA5A": {
+    "message": "Cancel",
+    "origin": [
+      "packages/editor/src/image-picker.tsx",
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "dpqPBg": {
+    "message": "Authors",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "du9n0H": {
+    "message": "Snap to guides (hold Alt or Ctrl while dragging to skip)",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "e9FHRh": {
+    "message": "{count} element selected",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "eZb-lw": {
+    "message": "Present",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "eoe8BR": {
+    "message": "Google",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "exYcTF": {
+    "message": "Library",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "fqSfXY": {
+    "message": "Replace",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "g8tPGj": {
+    "message": "Debug overlay",
+    "origin": [
+      "packages/editor/src/debug-overlay.tsx"
+    ]
+  },
+  "gvcBzV": {
+    "message": "{0}x{1}",
+    "origin": [
+      "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "gxG5Ip": {
+    "message": "Bundled",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "he3ygx": {
+    "message": "Copy",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "i22EYX": {
+    "message": "Left panel",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "iAiGZ2": {
+    "message": "{0} value",
+    "origin": [
+      "packages/editor/src/inspector.tsx"
+    ]
+  },
+  "kBaxJl": {
+    "message": "Empty screen",
+    "origin": [
+      "packages/editor/src/empty-state.tsx"
+    ]
+  },
+  "krk-q1": {
+    "message": "{0, plural, one {# asset} other {# assets}}, {total} in all",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "lG1keT": {
+    "message": "Hide from presentation",
+    "origin": [
+      "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "lvMnw2": {
+    "message": "Separate tags with commas",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "m16xKo": {
+    "message": "Add",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "n2ZXtR": {
+    "message": "The speaker notes of this screen will be written here.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "nFtI-h": {
+    "message": "This document holds no assets.",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "o-XJ9D": {
+    "message": "Change",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "oLa1bP": {
+    "message": "Section {0}",
+    "origin": [
+      "packages/editor/src/navigator/section-header.tsx"
+    ]
+  },
+  "oPwQt4": {
+    "message": "Custom fields",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "ovBPCi": {
+    "message": "Default",
+    "origin": [
+      "packages/editor/src/theme-switcher.tsx"
+    ]
+  },
+  "p7_fS2": {
+    "message": "Selection",
+    "origin": [
+      "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "pKmrF6": {
+    "message": "The screens of this document will be listed here.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "pSxyuz": {
+    "message": "Follows the document",
+    "origin": [
+      "packages/editor/src/theme-switcher.tsx"
+    ]
+  },
+  "qP9z7l": {
+    "message": "Pack {0}",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
+    ]
+  },
+  "qjVDid": {
+    "message": "Font sources",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "r-RIkK": {
+    "message": "Replace {0}",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "r6y-jM": {
+    "message": "Warning",
+    "origin": [
+      "packages/editor/src/problems-tab.tsx"
+    ]
+  },
+  "rG3WVm": {
+    "message": "Select",
+    "origin": [
+      "packages/editor/src/problems-tab.tsx"
+    ]
+  },
+  "r_FDxa": {
+    "message": "none",
+    "origin": [
+      "packages/editor/src/inspector.tsx"
+    ]
+  },
+  "rvRcE_": {
+    "message": "Use {family}",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "s0fNwJ": {
+    "message": "{0} is larger than 5 MB: fonts over 5 MB are not taken.",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "sya1gS": {
+    "message": "Search Google Fonts",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "t_YqKh": {
+    "message": "Remove",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx",
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "tfDRzk": {
+    "message": "Save",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "u4iXQi": {
+    "message": "Fit",
+    "origin": [
+      "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "uAH2vT": {
+    "message": "{0, plural, one {# shape} other {# shapes}}",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
+    ]
+  },
+  "uaiAWG": {
+    "message": "Select an element to see its properties.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "uonsbk": {
+    "message": "Font file",
+    "origin": [
+      "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "vLyv1R": {
+    "message": "Hide",
+    "origin": [
+      "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "vXIe7J": {
+    "message": "Language",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "vk-d3n": {
+    "message": "{0} ms mean, {1} ms max ({2})",
+    "origin": [
+      "packages/editor/src/debug-overlay.tsx"
+    ]
+  },
+  "vnJ9jj": {
+    "message": "Remove unused ({0})",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "w-TEqB": {
+    "message": "Snapping",
+    "origin": [
+      "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "w61W3L": {
+    "message": "Remove {0}",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "wNumhz": {
+    "message": "Press the new shortcut…",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "wr9E2_": {
+    "message": "Custom field {0} name",
+    "origin": [
+      "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "xAQnfp": {
+    "message": "Change {title}",
+    "origin": [
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "xdA_-p": {
+    "message": "Tools",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "yTqatN": {
+    "message": "Size of {0}",
+    "origin": [
+      "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "yVD-Cq": {
+    "message": "No screen to take notes for.",
+    "origin": [
+      "packages/editor/src/notes-panel.tsx"
+    ]
+  },
+  "ynYwHn": {
+    "message": "Focus mode",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
+  "yz7wBu": {
+    "message": "Close",
+    "origin": [
+      "packages/editor/src/asset-dialog.tsx",
+      "packages/editor/src/font-picker.tsx",
+      "packages/editor/src/keymap-dialog.tsx"
+    ]
+  }
+}

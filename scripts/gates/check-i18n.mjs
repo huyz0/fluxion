@@ -2,7 +2,7 @@
 // i18n gate (NFR-I18N-001; ADR-0023, ADR-0159): no text meant for people sits in JSX as a string literal. Every `.tsx` of the
 // packages with UI is parsed (oxc-parser; TypeScript 7 ships no compiler API) and these fail:
 //   a JSX text child that has a letter, outside a `<Trans>` (the macro takes its children as the message),
-//   a string literal (or a plain template) as the value of `aria-label`, `aria-description`, `aria-roledescription`, `aria-placeholder`, `aria-valuetext`,
+//   a string literal (or a template) as the value of `aria-label`, `aria-description`, `aria-roledescription`, `aria-placeholder`, `aria-valuetext`,
 // `title`, `placeholder`, `alt` or `label`, or in a JSX child expression, in either branch of `?:` and in the operands of `&&`, `||` and `??`.
 // Text that is purely symbols, digits or whitespace is exempt. `scripts/gates/i18n-allowlist.json` lists path globs (tests, stories,
 // fixtures) and exact `{ file, text, reason }` entries; an entry that matches nothing is itself an error (it would hide a future literal).
@@ -11,7 +11,7 @@ import { pathToFileURL } from 'node:url';
 import { parseSync } from 'oxc-parser';
 import { listFiles, repoPath } from './lib.mjs';
 
-/** The sources checked: every package and app that draws UI text for people. */
+/** The sources checked: every package and app that draws UI text for people. The player's chrome strings are allowlisted until M11.72. */
 export const ROOTS = ['packages/editor/src', 'packages/player/src', 'packages/render/src', 'apps/studio/src'];
 
 const ATTRIBUTES = new Set([
@@ -27,6 +27,8 @@ const ATTRIBUTES = new Set([
 ]);
 const TSX = /\.tsx$/;
 const LETTER = /\p{L}/u;
+/** An HTML entity in JSX text (`&times;`, `&nbsp;`): a glyph, not words. */
+const ENTITY = /&(?:#\d+|#x[\da-f]+|[a-z][a-z\d]*);/gi;
 
 const globToRegExp = (glob) =>
   new RegExp(
@@ -61,14 +63,19 @@ function walk(node, visit, parent = null) {
 const elementName = (opening) => (opening.name.type === 'JSXIdentifier' ? opening.name.name : '');
 const lineOf = (source, offset) => source.slice(0, offset).split('\n').length;
 
-/** The string literals an expression can yield as text: itself, both branches of `?:`, and the operands of `&&`, `||` and `??` (calls and objects are not followed). */
+/** The string literals an expression can yield as text: itself, both branches of `?:`, and the operands of `&&`, `||` and `??` (calls, objects and arrow bodies are not followed). */
 function* stringsOf(expr) {
   if (!expr) return;
   if (expr.type === 'Literal' && typeof expr.value === 'string') yield { node: expr, text: expr.value };
-  else if (expr.type === 'TemplateLiteral' && expr.expressions.length === 0) yield { node: expr, text: expr.quasis.map((q) => q.value.cooked ?? '').join('') };
+  else if (expr.type === 'TemplateLiteral') yield { node: expr, text: expr.quasis.map((q) => q.value.cooked ?? '').join('{}') };
   else if (expr.type === 'ConditionalExpression') yield* [...stringsOf(expr.consequent), ...stringsOf(expr.alternate)];
   else if (expr.type === 'LogicalExpression') yield* [...stringsOf(expr.left), ...stringsOf(expr.right)];
-  else if (expr.type === 'ParenthesizedExpression' || expr.type === 'TSAsExpression' || expr.type === 'TSSatisfiesExpression')
+  else if (
+    expr.type === 'ParenthesizedExpression' ||
+    expr.type === 'TSAsExpression' ||
+    expr.type === 'TSSatisfiesExpression' ||
+    expr.type === 'TSNonNullExpression'
+  )
     yield* stringsOf(expr.expression);
 }
 
@@ -80,7 +87,7 @@ function* attributeTexts(attribute) {
 
 /** The text a node holds for people: a JSX text child, a string in an expression child (`{'Save'}`, `{ok ? 'Yes' : 'No'}`), or a text attribute. */
 function* textsOf(node, parent) {
-  if (node.type === 'JSXText') yield { node, text: node.value };
+  if (node.type === 'JSXText') yield { node, text: node.value.replace(ENTITY, '') };
   else if (node.type === 'JSXAttribute') yield* attributeTexts(node);
   else if (node.type === 'JSXExpressionContainer' && (parent?.type === 'JSXElement' || parent?.type === 'JSXFragment')) yield* stringsOf(node.expression);
 }

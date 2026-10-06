@@ -30,6 +30,8 @@
     "@fluxion/pack-themes-core": "workspace:*",
     "@fluxion/player": "workspace:*",
     "@fluxion/schema": "workspace:*",
+    "@lingui/core": "catalog:",
+    "@lingui/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

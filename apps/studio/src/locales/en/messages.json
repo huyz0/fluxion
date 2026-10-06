@@ -1,0 +1,194 @@
+{
+  "07FUrc": {
+    "message": "change",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "1h5tvF": {
+    "message": "Back to the documents",
+    "origin": [
+      "apps/studio/src/App.tsx"
+    ]
+  },
+  "2TS7TV": {
+    "message": "Fluxion Studio",
+    "origin": [
+      "apps/studio/src/App.tsx"
+    ]
+  },
+  "3RsyDa": {
+    "message": "The diagnostic report could not be copied.",
+    "origin": [
+      "apps/studio/src/diagnostic-button.tsx"
+    ]
+  },
+  "7tdEVP": {
+    "message": "Open a file…",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "Aruo98": {
+    "message": "The file could not be opened: {0}",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "DNHQK9": {
+    "message": "The file was not saved: {0}",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "E_muDO": {
+    "message": "Documents",
+    "origin": [
+      "apps/studio/src/App.tsx"
+    ]
+  },
+  "FuBQJT": {
+    "message": "Save a copy",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "HAkEqR": {
+    "message": "Recent files",
+    "origin": [
+      "apps/studio/src/library/recent-files.tsx"
+    ]
+  },
+  "IftEM1": {
+    "message": "Diagnostic report copied.",
+    "origin": [
+      "apps/studio/src/diagnostic-button.tsx"
+    ]
+  },
+  "J2eKUI": {
+    "message": "File",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "KklCyD": {
+    "message": "Last changed {changed}: {screens} {screenWord}, {records} records, {changes} {changeWord} since it was saved.",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "NWyRJj": {
+    "message": "Example: {name}",
+    "origin": [
+      "apps/studio/src/App.tsx"
+    ]
+  },
+  "OkofjH": {
+    "message": "Recover",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "P7qtLL": {
+    "message": "screens",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "PBxg_E": {
+    "message": "Not now",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "XH30C4": {
+    "message": "document",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "Zt-Jx6": {
+    "message": "{0} cannot be opened: {1}",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "bzSI52": {
+    "message": "Discard",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "cZjL7_": {
+    "message": "Saved {0}.",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "egDhxW": {
+    "message": "screen",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "foO7Zk": {
+    "message": "Open…",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "hQ3o9-": {
+    "message": "changes",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "k0K487": {
+    "message": "Recover unsaved changes",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "mmYVfA": {
+    "message": "Saved.",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "p6y5jE": {
+    "message": "New document",
+    "origin": [
+      "apps/studio/src/App.tsx"
+    ]
+  },
+  "s1WR6A": {
+    "message": "The last session ended with work that was not saved to a file.",
+    "origin": [
+      "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "tfDRzk": {
+    "message": "Save",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "toVWhl": {
+    "message": " {0} assets had no bytes to write.",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "ursXsR": {
+    "message": "Copy diagnostic report",
+    "origin": [
+      "apps/studio/src/diagnostic-button.tsx"
+    ]
+  },
+  "wja8aL": {
+    "message": "Untitled",
+    "origin": [
+      "apps/studio/src/App.tsx"
+    ]
+  }
+}

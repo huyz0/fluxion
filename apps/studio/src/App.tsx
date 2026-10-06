@@ -1,9 +1,11 @@
 // The studio shell (04 §4): History API routes to the home page, the editor and present mode. A
 // document id opens through documents.ts and bootstrap.ts; the roots come from editor and player.
+
 import type { Core } from '@fluxion/core';
 import { type AssetStore, createAssetStore, createSession, EditorRoot } from '@fluxion/editor';
 import { PlayerRoot } from '@fluxion/player';
 import { ok, type RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { AutosaveBar } from './autosave/autosave-bar.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
@@ -58,20 +60,20 @@ function Home(): JSX.Element {
   const [problem, setProblem] = useState('');
   return (
     <main data-testid="studio-root">
-      <h1>Fluxion Studio</h1>
+      <h1>{t`Fluxion Studio`}</h1>
       <OpenControl host={host} onOpened={(docId) => navigate(`/edit/${docId}`)} />
       <RecentFiles onOpen={(file) => void openPicked(file, (docId) => navigate(`/edit/${docId}`)).then(setProblem)} />
       <p role="status" aria-live="polite">
         {problem}
       </p>
-      <nav aria-label="Documents">
+      <nav aria-label={t`Documents`}>
         <ul>
           <li>
-            <Link to="/edit/new">New document</Link>
+            <Link to="/edit/new">{t`New document`}</Link>
           </li>
           {exampleNames().map((name) => (
             <li key={name}>
-              <Link to={`/edit/example-${name}`}>Example: {name}</Link>
+              <Link to={`/edit/example-${name}`}>{t`Example: ${name}`}</Link>
             </li>
           ))}
         </ul>
@@ -83,9 +85,9 @@ function Home(): JSX.Element {
 function Problem(props: { readonly message: string }): JSX.Element {
   return (
     <main data-testid="studio-root">
-      <h1>Fluxion Studio</h1>
+      <h1>{t`Fluxion Studio`}</h1>
       <p role="alert">{props.message}</p>
-      <Link to="/">Back to the documents</Link>
+      <Link to="/">{t`Back to the documents`}</Link>
     </main>
   );
 }
@@ -94,7 +96,7 @@ function Problem(props: { readonly message: string }): JSX.Element {
 function titleOf(store: Core['store']): string {
   const record = store.get(store.members('byType', 'document')[0] as RecordId);
   const title = (record as { title?: unknown } | undefined)?.title;
-  return typeof title === 'string' && title !== '' ? title : 'Untitled';
+  return typeof title === 'string' && title !== '' ? title : t`Untitled`;
 }
 
 /** The editor over an open document, with its autosave and the status line in the toolbar. */

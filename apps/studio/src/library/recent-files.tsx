@@ -1,4 +1,5 @@
 // The recent files on the home page (FR-FIL-008): what the person saved in this browser, newest first, each with its preview, to open again.
+import { t } from '@lingui/core/macro';
 import { type JSX, useEffect, useState } from 'react';
 import { library } from './library-service.js';
 import type { LibraryEntry } from './store.js';
@@ -40,8 +41,8 @@ export function RecentFiles(props: { readonly onOpen: (file: { readonly name: st
   }, []);
   if (entries.length === 0) return null;
   return (
-    <section aria-label="Recent files">
-      <h2>Recent files</h2>
+    <section aria-label={t`Recent files`}>
+      <h2>{t`Recent files`}</h2>
       <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: 16 }}>
         {entries.map((entry) => (
           <li key={entry.id}>

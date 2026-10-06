@@ -1,6 +1,7 @@
 // The toolbar's Undo and Redo (FR-EDT-012, M7.24): their titles and `aria-keyshortcuts` name the keys the
 // commands have now, after the user's rebindings (M7.7 review F1).
 import type { Store } from '@fluxion/core';
+import { t } from '@lingui/core/macro';
 import type { ReactNode } from 'react';
 import type { KeyBinding } from './keymap.js';
 import type { KeyOverrides } from './keymap-overrides.js';
@@ -43,8 +44,8 @@ export function HistoryButtons(props: HistoryButtonsProps): ReactNode {
   const { history } = props.store;
   return (
     <>
-      <HistoryButton {...props} command="history.undo" label="Undo" enabled={history.canUndo()} />
-      <HistoryButton {...props} command="history.redo" label="Redo" enabled={history.canRedo()} />
+      <HistoryButton {...props} command="history.undo" label={t`Undo`} enabled={history.canUndo()} />
+      <HistoryButton {...props} command="history.redo" label={t`Redo`} enabled={history.canRedo()} />
     </>
   );
 }

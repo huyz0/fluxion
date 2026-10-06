@@ -1,6 +1,8 @@
 // The debug overlay (NFR-OBS-001): the frame rate, render counts and timings, shown over the editor while it is toggled on with Mod+Shift+D (Ctrl on Windows and Linux,
 // Cmd on a Mac). Off by default and then costing nothing: no frame loop runs. The stats come from a `DebugStats` the editor feeds.
 import { RenderStatsContext } from '@fluxion/render';
+import { t } from '@lingui/core/macro';
+import './i18n.js';
 import { Profiler, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { type DebugSnapshot, DebugStats, fpsOf } from './debug-stats.js';
 
@@ -63,7 +65,7 @@ export function DebugOverlay(props: DebugOverlayProps): ReactNode {
   return (
     <aside
       role="status"
-      aria-label="Debug overlay"
+      aria-label={t`Debug overlay`}
       data-testid="debug-overlay"
       style={{
         position: 'fixed',
@@ -78,15 +80,15 @@ export function DebugOverlay(props: DebugOverlayProps): ReactNode {
         pointerEvents: 'none',
       }}
     >
-      <div>FPS {fps.toFixed(0)}</div>
+      <div>{t`FPS ${fps.toFixed(0)}`}</div>
       {Object.entries(snapshot.counts).map(([name, count]) => (
         <div key={name}>
           {name}: {count}
         </div>
       ))}
-      {Object.entries(snapshot.timings).map(([name, t]) => (
+      {Object.entries(snapshot.timings).map(([name, timing]) => (
         <div key={name}>
-          {name}: {t.mean.toFixed(2)} ms mean, {t.max.toFixed(2)} ms max ({t.count})
+          {name}: {t`${timing.mean.toFixed(2)} ms mean, ${timing.max.toFixed(2)} ms max (${timing.count})`}
         </div>
       ))}
     </aside>

@@ -3,6 +3,7 @@
 import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
+import { t } from '@lingui/core/macro';
 import type { ReactNode } from 'react';
 import { ZoomControls } from './canvas.js';
 import { HistoryButtons } from './history-buttons.js';
@@ -52,32 +53,32 @@ export function EditToolbar(props: EditToolbarProps): ReactNode {
         type="button"
         className="fx-chrome-button"
         aria-pressed={snapping}
-        title="Snap to guides (hold Alt or Ctrl while dragging to skip)"
+        title={t`Snap to guides (hold Alt or Ctrl while dragging to skip)`}
         onClick={() => session.snap.set(!snapping)}
       >
-        Snapping
+        {t`Snapping`}
       </button>
       <button
         type="button"
         className="fx-chrome-button"
         aria-pressed={grid}
-        title="Snap to a 24-unit grid (needs Snapping on)"
+        title={t`Snap to a 24-unit grid (needs Snapping on)`}
         onClick={() => session.grid.set(!grid)}
       >
-        Grid
+        {t`Grid`}
       </button>
-      <button type="button" className="fx-chrome-button" title="Copy" onClick={() => void system.copy()}>
-        Copy
+      <button type="button" className="fx-chrome-button" title={t`Copy`} onClick={() => void system.copy()}>
+        {t`Copy`}
       </button>
-      <button type="button" className="fx-chrome-button" title="Paste" onClick={() => void system.paste()}>
-        Paste
+      <button type="button" className="fx-chrome-button" title={t`Paste`} onClick={() => void system.paste()}>
+        {t`Paste`}
       </button>
       {extras}
-      <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title="Present (F5)" onClick={() => switchMode('start')}>
-        Present
+      <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title={t`Present (F5)`} onClick={() => switchMode('start')}>
+        {t`Present`}
       </button>
-      <button type="button" className="fx-chrome-button" aria-keyshortcuts="?" title="Keyboard shortcuts (?)" onClick={openHelp}>
-        Keyboard shortcuts
+      <button type="button" className="fx-chrome-button" aria-keyshortcuts="?" title={t`Keyboard shortcuts (?)`} onClick={openHelp}>
+        {t`Keyboard shortcuts`}
       </button>
     </Toolbar>
   );

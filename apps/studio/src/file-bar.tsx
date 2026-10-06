@@ -1,10 +1,12 @@
 // The studio's file controls (FR-FIL-006, NFR-REL-001, M10.17): Open, Save and Save a copy over a document, and what to tell the person about the
 // file they opened. Save writes over the file only when the file may be written over (a whole `.flux` this major version wrote) and the
 // browser gave a handle; anything else, and Save a copy, asks for a new name. Ctrl or Cmd+S is Save.
+
 import type { Store } from '@fluxion/core';
 import type { AssetStore } from '@fluxion/editor';
 import type { FluxAsset } from '@fluxion/format';
 import { createId, type RecordId, type Result } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type JSX, useCallback, useEffect, useRef, useState } from 'react';
 import type { FileHost, PickedFile } from './file-host.js';
 import { describeFile, fileBytes, mayOverwrite, openFileBytes, type SavedBytes, webHasher } from './file-session.js';
@@ -36,7 +38,7 @@ export type FileBarProps = {
 /** The name a save suggests: the file's own name (or the document's title) as a `.flux`. */
 function suggestedName(entry: OpenedEntry | undefined, store: Store): string {
   const title = (store.toDocument().records[store.members('byType', 'document')[0] as RecordId] as { title?: unknown } | undefined)?.title;
-  const base = entry?.file.name.replace(/\.(flux\.html|flux\.json|flux|html|json)$/i, '') ?? (typeof title === 'string' && title !== '' ? title : 'document');
+  const base = entry?.file.name.replace(/\.(flux\.html|flux\.json|flux|html|json)$/i, '') ?? (typeof title === 'string' && title !== '' ? title : t`document`);
   return `${base.replace(/[\\/:*?"<>|]+/g, '-')}.flux`;
 }
 
@@ -75,7 +77,7 @@ export async function openPicked(pick: PickedFile, onOpened: (docId: string) => 
     onOpened(registerOpened(entry));
     return '';
   } catch (e) {
-    return `${pick.name} cannot be opened: ${lineOf(e)}`;
+    return t`${pick.name} cannot be opened: ${lineOf(e)}`;
   }
 }
 
@@ -85,7 +87,7 @@ export async function openWithHost(host: FileHost, onOpened: (docId: string) => 
     const pick = await host.openFile();
     return pick === undefined ? '' : await openPicked(pick, onOpened);
   } catch (e) {
-    return `The file could not be opened: ${lineOf(e)}`;
+    return t`The file could not be opened: ${lineOf(e)}`;
   }
 }
 
@@ -107,7 +109,7 @@ export function FileBar(props: FileBarProps): JSX.Element {
       if (saved === undefined) return '';
       if (saved.handle !== undefined) target.current = saved.handle;
       onSaved?.({ name: saved.name, bytes });
-      return `Saved ${saved.name}.`;
+      return t`Saved ${saved.name}.`;
     },
     [host, entry, store, onSaved],
   );
@@ -115,7 +117,7 @@ export function FileBar(props: FileBarProps): JSX.Element {
     async (handle: unknown, bytes: Uint8Array) => {
       await host.writeOver(handle, bytes);
       onSaved?.({ name: entry?.file.name ?? suggestedName(entry, store), bytes });
-      return 'Saved.';
+      return t`Saved.`;
     },
     [host, onSaved, entry, store],
   );
@@ -126,11 +128,11 @@ export function FileBar(props: FileBarProps): JSX.Element {
       try {
         const made = await currentFile(entry, store, assets);
         if (!made.ok) return setMessage(made.error);
-        const warning = made.value.missing > 0 ? ` ${made.value.missing} assets had no bytes to write.` : '';
+        const warning = made.value.missing > 0 ? t` ${made.value.missing} assets had no bytes to write.` : '';
         const said = !copy && target.current !== undefined ? await overwrite(target.current, made.value.bytes) : await saveAs(made.value.bytes);
         setMessage(`${said}${warning}`);
       } catch (e) {
-        setMessage(`The file was not saved: ${lineOf(e)}`);
+        setMessage(t`The file was not saved: ${lineOf(e)}`);
       } finally {
         saving.current = false;
       }
@@ -150,15 +152,15 @@ export function FileBar(props: FileBarProps): JSX.Element {
   const notes = entry === undefined ? [] : describeFile(entry.file);
   return (
     // biome-ignore lint/a11y/useSemanticElements: a fieldset draws a border and a legend box; `display: contents` lets the buttons join the editor toolbar's own layout
-    <div role="group" aria-label="File" className="fx-studio-filebar" style={{ display: 'contents' }}>
+    <div role="group" aria-label={t`File`} className="fx-studio-filebar" style={{ display: 'contents' }}>
       <button type="button" className="fx-chrome-button" onClick={() => void openWithHost(host, onOpened).then(setMessage)}>
-        Open…
+        {t`Open…`}
       </button>
       <button type="button" className="fx-chrome-button" onClick={() => void save(false)}>
-        Save
+        {t`Save`}
       </button>
       <button type="button" className="fx-chrome-button" onClick={() => void save(true)}>
-        Save a copy
+        {t`Save a copy`}
       </button>
       <span role="status" aria-live="polite">
         {[message, ...notes].filter((m) => m !== '').join(' ')}
@@ -177,7 +179,7 @@ export function OpenControl(props: { readonly host: FileHost; readonly onOpened:
   return (
     <p>
       <button type="button" onClick={() => void openWithHost(props.host, props.onOpened).then(setMessage)}>
-        Open a file…
+        {t`Open a file…`}
       </button>{' '}
       <span role="status" aria-live="polite">
         {message}

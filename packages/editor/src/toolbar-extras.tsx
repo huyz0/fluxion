@@ -1,8 +1,10 @@
 // The toolbar's host-supplied controls (FR-THM-004, FR-THM-008, FR-DOC-006): the theme switcher when the host offers themes, the Fonts
 // button with its picker when it offers fonts, and the Details button with the document's metadata dialog. One node for the toolbar.
+
 import type { Store } from '@fluxion/core';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type ReactNode, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AssetDialog } from './asset-dialog.js';
@@ -45,11 +47,11 @@ function AssetsControl(props: { readonly store: Store; readonly execute: Execute
         type="button"
         className="fx-chrome-button"
         aria-haspopup="dialog"
-        aria-label="Assets"
-        title="Assets"
+        aria-label={t`Assets`}
+        title={t`Assets`}
         onClick={() => setManaging(true)}
       >
-        Assets
+        {t`Assets`}
       </button>
       {managing
         ? dialog(
@@ -81,8 +83,8 @@ export function ToolbarExtras(props: ToolbarExtrasProps): ReactNode {
     <>
       {themes === undefined ? null : <ThemeSwitcher store={store} execute={execute} themes={themes} screenId={screenId} />}
       {fonts === undefined ? null : (
-        <button ref={button} type="button" className="fx-chrome-button" aria-haspopup="dialog" title="Fonts" onClick={() => setOpen(true)}>
-          Fonts
+        <button ref={button} type="button" className="fx-chrome-button" aria-haspopup="dialog" title={t`Fonts`} onClick={() => setOpen(true)}>
+          {t`Fonts`}
         </button>
       )}
       <button
@@ -90,11 +92,11 @@ export function ToolbarExtras(props: ToolbarExtrasProps): ReactNode {
         type="button"
         className="fx-chrome-button"
         aria-haspopup="dialog"
-        aria-label="Document details"
-        title="Document details"
+        aria-label={t`Document details`}
+        title={t`Document details`}
         onClick={() => setDetails(true)}
       >
-        Details
+        {t`Details`}
       </button>
       <AssetsControl store={store} execute={execute} assets={assets} />
       {details

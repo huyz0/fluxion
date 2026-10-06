@@ -43,6 +43,18 @@ describe('check-i18n (NFR-I18N-001)', () => {
     );
   });
 
+  it('NFR-I18N-001: a template with substitutions fails, and an HTML entity alone is a glyph that passes', () => {
+    assert.deepEqual(
+      findLiterals('a.tsx', 'const a = <p>{`Hello ${n}`}{x!}{"Hi there"!}</p>;').map((l) => l.text),
+      ['Hello {}', 'Hi there'],
+    );
+    assert.deepEqual(findLiterals('a.tsx', 'const a = <p>&times; &nbsp; &#8594;</p>;'), []);
+    assert.deepEqual(
+      findLiterals('a.tsx', 'const a = <p>&times; Close</p>;').map((l) => l.text),
+      ['Close'],
+    );
+  });
+
   it('NFR-I18N-001: values that are not text for people pass: classes, keys, calls, and messages', () => {
     const source = `export const A = (p) => (
   <p className={p.x ? 'row wide' : 'row'} key={'k'} data-state={p.on && 'open'}>{p.count}{fmt(p.x, 'long')}{p.x ? '•' : '12'}{t\`Save\`}</p>

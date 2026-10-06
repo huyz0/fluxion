@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import '../i18n.js';
 import type { Recoverable } from './recovery.js';
 import { RecoveryPrompt } from './recovery-prompt.js';
 

@@ -7,6 +7,8 @@ import type { Store } from '@fluxion/core';
 import { useValue } from '@fluxion/render';
 import type { FieldDef, RecordId } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
+import { t } from '@lingui/core/macro';
+import './i18n.js';
 import { type KeyboardEvent, type PointerEvent, type ReactNode, useEffect, useId, useMemo, useRef } from 'react';
 import { applyField, type InspectorField, type Inspectors, inspect } from './inspector-model.js';
 import { colorTokenRefs, gradientCss, isHex6, optionGlyph, paintKind, paintLabel, parseNumber, scrubbed, stepped } from './inspector-values.js';
@@ -188,7 +190,7 @@ function NumberField(props: { readonly field: InspectorField; readonly apply: Ap
         inputMode="decimal"
         aria-label={def.label}
         defaultValue={shown(field)}
-        placeholder={field.mixed ? 'Mixed' : ''}
+        placeholder={field.mixed ? t`Mixed` : ''}
         onKeyDown={(e) => {
           if (!arrowStep(e, field, apply)) commitKeys(e, shown(field));
           else refocus.current = true;
@@ -215,7 +217,7 @@ function SliderField(props: { readonly field: InspectorField; readonly apply: Ap
         className="fx-chrome-slider"
         type="range"
         aria-label={def.label}
-        aria-valuetext={field.mixed ? 'Mixed' : undefined}
+        aria-valuetext={field.mixed ? t`Mixed` : undefined}
         min={def.min ?? 0}
         max={def.max ?? 1}
         step={0.01}
@@ -266,7 +268,7 @@ function SelectField(props: { readonly field: InspectorField; readonly apply: Ap
           value={field.mixed ? '' : String(field.value ?? '')}
           onChange={(e) => apply.set(e.currentTarget.value === '' ? undefined : e.currentTarget.value)}
         >
-          {field.mixed || field.value === undefined ? <option value="">{field.mixed ? 'Mixed' : '—'}</option> : null}
+          {field.mixed || field.value === undefined ? <option value="">{field.mixed ? t`Mixed` : '—'}</option> : null}
           {options.map((o) => (
             <option key={o} value={o}>
               {o}
@@ -317,7 +319,7 @@ function PaintField(props: { readonly field: InspectorField; readonly apply: App
       <input
         type="color"
         className="fx-chrome-swatch"
-        aria-label={`${def.label} colour`}
+        aria-label={t`${def.label} colour`}
         value={isHex6(field.value) && !field.mixed ? field.value : '#000000'}
         data-mixed={field.mixed || undefined}
         onChange={(e) => apply.drag(e.currentTarget.value)}
@@ -329,9 +331,9 @@ function PaintField(props: { readonly field: InspectorField; readonly apply: App
         className="fx-chrome-input"
         type="text"
         list={list}
-        aria-label={`${def.label} value`}
+        aria-label={t`${def.label} value`}
         defaultValue={text}
-        placeholder={field.mixed ? 'Mixed' : 'none'}
+        placeholder={field.mixed ? t`Mixed` : t`none`}
         onKeyDown={(e) => commitKeys(e, text)}
         onBlur={(e) => {
           const typed = e.currentTarget.value.trim();
@@ -346,7 +348,7 @@ function PaintField(props: { readonly field: InspectorField; readonly apply: App
       <button
         type="button"
         className="fx-chrome-button"
-        aria-label={`Clear ${def.label}`}
+        aria-label={t`Clear ${def.label}`}
         disabled={!field.mixed && field.value === undefined}
         onClick={() => apply.set(undefined)}
       >
@@ -368,7 +370,7 @@ function TextField(props: { readonly field: InspectorField; readonly apply: Appl
         type="text"
         aria-label={field.def.label}
         defaultValue={shown(field)}
-        placeholder={field.mixed ? 'Mixed' : ''}
+        placeholder={field.mixed ? t`Mixed` : ''}
         onKeyDown={(e) => commitKeys(e, shown(field))}
         onBlur={(e) => {
           if (e.currentTarget.value !== shown(field) && !apply.set(e.currentTarget.value === '' ? undefined : e.currentTarget.value))

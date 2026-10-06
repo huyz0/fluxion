@@ -9,6 +9,8 @@ import type { Box, Vec2 } from '@fluxion/geometry';
 import { useElementBox } from '@fluxion/player';
 import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
+import './i18n.js';
 import { type DOMAttributes, type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, screenToPage, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { wheelCamera, ZOOM_STEP } from './canvas-input.js';
@@ -288,7 +290,7 @@ export function Canvas(props: CanvasProps): ReactNode {
   return (
     <main
       ref={ref}
-      aria-label="Canvas"
+      aria-label={t`Canvas`}
       className="fx-chrome-canvas"
       tabIndex={-1}
       onPointerDown={(e) => e.currentTarget.focus({ preventScroll: true })}
@@ -338,11 +340,11 @@ export function ZoomControls(props: ZoomControlsProps): ReactNode {
   const centre = { x: box.w / 2, y: box.h / 2 };
   const set = (next: typeof camera) => session.camera.set(next);
   return (
-    <fieldset className="fx-chrome-zoom" aria-label="Zoom">
+    <fieldset className="fx-chrome-zoom" aria-label={t`Zoom`}>
       <button
         type="button"
         className="fx-chrome-button"
-        aria-label="Zoom out"
+        aria-label={t`Zoom out`}
         disabled={camera.z <= ZOOM_LIMITS.min}
         onClick={() => set(zoomBy(camera, centre, 1 / ZOOM_STEP))}
       >
@@ -352,23 +354,23 @@ export function ZoomControls(props: ZoomControlsProps): ReactNode {
       <button
         type="button"
         className="fx-chrome-button"
-        aria-label="Zoom in"
+        aria-label={t`Zoom in`}
         disabled={camera.z >= ZOOM_LIMITS.max}
         onClick={() => set(zoomBy(camera, centre, ZOOM_STEP))}
       >
         +
       </button>
       <button type="button" className="fx-chrome-button" disabled={area === undefined} onClick={() => area && set(fitBox(area, box))}>
-        Fit
+        {t`Fit`}
       </button>
       <button
         type="button"
         className="fx-chrome-button"
-        aria-label="Zoom to selection"
+        aria-label={t`Zoom to selection`}
         disabled={bounds === undefined}
         onClick={() => bounds && set(fitBox(bounds, box))}
       >
-        Selection
+        {t`Selection`}
       </button>
       <button type="button" className="fx-chrome-button" onClick={() => set(zoomTo100(camera, box))}>
         100 %

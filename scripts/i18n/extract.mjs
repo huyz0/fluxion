@@ -11,7 +11,10 @@ import { extractMessagesFromFiles } from '@lingui/native-tools';
 import { listFiles, repoPath } from '../gates/lib.mjs';
 
 /** The packages that have UI strings: the source they are extracted from and where their English catalog lives. */
-export const TARGETS = [{ name: 'editor', src: 'packages/editor/src', catalog: 'packages/editor/src/locales/en/messages.json' }];
+export const TARGETS = [
+  { name: 'editor', src: 'packages/editor/src', catalog: 'packages/editor/src/locales/en/messages.json' },
+  { name: 'studio', src: 'apps/studio/src', catalog: 'apps/studio/src/locales/en/messages.json' },
+];
 
 const SOURCE = /\.tsx?$/;
 const NOT_SHIPPED = /\.(test|browser\.test|spec|stories|bench)\.tsx?$|\/__fixtures__\/|\/locales\/|\.d\.ts$/;

@@ -5,4 +5,5 @@ const at = (path) => fileURLToPath(new URL(`../../${path}`, import.meta.url));
 
 export const i18nCatalogs = {
   'virtual:fluxion/editor-messages': at('packages/editor/src/locales'),
+  'virtual:fluxion/studio-messages': at('apps/studio/src/locales'),
 };

@@ -8,6 +8,7 @@ import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
 import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
+import { t } from '@lingui/core/macro';
 import { I18nProvider } from '@lingui/react';
 import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { useEditorAssets } from './asset-revision.js';
@@ -235,7 +236,7 @@ function Notice(props: { readonly text: string; readonly onDismiss: () => void }
     <p role="status" className="fx-chrome-notice">
       {props.text}{' '}
       <button type="button" className="fx-chrome-button" onClick={props.onDismiss}>
-        Dismiss
+        {t`Dismiss`}
       </button>
     </p>
   );

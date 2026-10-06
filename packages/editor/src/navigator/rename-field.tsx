@@ -1,3 +1,5 @@
+import { t } from '@lingui/core/macro';
+import '../i18n.js';
 // The inline rename field of a screen row (FR-SCR-002, M8.12): Enter commits a changed, non-blank name, Esc or leaving
 // the field cancels. Its keys stay in the field (they are not the canvas's shortcuts).
 import type { ReactNode } from 'react';
@@ -22,7 +24,7 @@ export function RenameField(props: RenameFieldProps): ReactNode {
   return (
     <input
       className="fx-chrome-rename"
-      aria-label={given ?? `Rename ${label}`}
+      aria-label={given ?? t`Rename ${label}`}
       defaultValue={label}
       // biome-ignore lint/a11y/noAutofocus: the field exists because the user asked to rename; focus belongs in it
       autoFocus

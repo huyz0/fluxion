@@ -1,6 +1,7 @@
 // The keyboard shortcuts dialog (FR-EDT-012, M7.5): the cheat sheet that lists every action with its
 // chords, and the rebinding UI: Change waits for the next chord, Reset gives the defaults back. Opened
 // by `?` or the toolbar; Esc closes it.
+import { t } from '@lingui/core/macro';
 import { type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { buttonsOf, dialogKey } from './dialog-keys.js';
 import { EDITOR_COMMANDS } from './editor-commands.js';
@@ -39,7 +40,7 @@ export function KeymapDialog(props: KeymapDialogProps): ReactNode {
   }, []);
   const base = useMemo(() => baseKeymap(tools), [tools]);
   const groups = useMemo(() => keyGroups(base, overrides), [base, overrides]);
-  const toolTitle = (id: string) => tools.find((t) => t.id === id)?.title;
+  const toolTitle = (id: string) => tools.find((tool) => tool.id === id)?.title;
   const mac = onMac();
   /** While a chord is awaited every key is the dialog's: Esc cancels, a modifier alone waits, else it is the new chord. */
   const capture = (e: KeyboardEvent<HTMLElement>, id: string) => {
@@ -55,21 +56,21 @@ export function KeymapDialog(props: KeymapDialogProps): ReactNode {
       className="fx-chrome-picker fx-chrome-keymap"
       role="dialog"
       aria-modal="true"
-      aria-label="Keyboard shortcuts"
+      aria-label={t`Keyboard shortcuts`}
       onKeyDown={(e) => (capturing === undefined ? dialogKey(e, onClose) : capture(e, capturing))}
     >
-      <h2 className="fx-chrome-heading">Keyboard shortcuts</h2>
+      <h2 className="fx-chrome-heading">{t`Keyboard shortcuts`}</h2>
       <table className="fx-chrome-keys">
         <thead>
           <tr>
             <th scope="col" className="fx-chrome-cell">
-              Action
+              {t`Action`}
             </th>
             <th scope="col" className="fx-chrome-cell">
-              Shortcut
+              {t`Shortcut`}
             </th>
             <th scope="col" className="fx-chrome-cell">
-              Change
+              {t`Change`}
             </th>
           </tr>
         </thead>
@@ -82,14 +83,14 @@ export function KeymapDialog(props: KeymapDialogProps): ReactNode {
                 <th scope="row" className="fx-chrome-cell">
                   {title}
                 </th>
-                <td className="fx-chrome-cell">{g.keys.length === 0 ? 'Not set' : g.keys.map((k) => formatChord(k, mac)).join(', ')}</td>
+                <td className="fx-chrome-cell">{g.keys.length === 0 ? t`Not set` : g.keys.map((k) => formatChord(k, mac)).join(', ')}</td>
                 <td className="fx-chrome-cell">
-                  <button type="button" className="fx-chrome-button" aria-label={`Change ${title}`} onClick={() => setCapturing(g.id)}>
-                    {waiting ? 'Press the new shortcut…' : 'Change'}
+                  <button type="button" className="fx-chrome-button" aria-label={t`Change ${title}`} onClick={() => setCapturing(g.id)}>
+                    {waiting ? t`Press the new shortcut…` : t`Change`}
                   </button>
                   {g.changed ? (
-                    <button type="button" className="fx-chrome-button" aria-label={`Reset ${title}`} onClick={() => onOverrides(resetKey(overrides, g.id))}>
-                      Reset
+                    <button type="button" className="fx-chrome-button" aria-label={t`Reset ${title}`} onClick={() => onOverrides(resetKey(overrides, g.id))}>
+                      {t`Reset`}
                     </button>
                   ) : null}
                 </td>
@@ -99,7 +100,7 @@ export function KeymapDialog(props: KeymapDialogProps): ReactNode {
         </tbody>
       </table>
       <button type="button" className="fx-chrome-button" onClick={onClose}>
-        Close
+        {t`Close`}
       </button>
     </div>
   );

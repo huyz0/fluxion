@@ -1,6 +1,7 @@
 // The context menu (FR-EDT-013, M7.25): a menu of editor commands at the point it was asked for (a right click, a
 // finger held still). Up and Down move, Enter or Space runs, Esc or a press outside closes, and focus goes back to
 // where it was.
+import { t } from '@lingui/core/macro';
 import { type CSSProperties, type KeyboardEvent, type ReactNode, useEffect, useRef } from 'react';
 import type { MenuItem } from './context-menu-model.js';
 
@@ -65,7 +66,7 @@ export function ContextMenu(props: ContextMenuProps): ReactNode {
     <div
       ref={menu}
       role="menu"
-      aria-label="Context menu"
+      aria-label={t`Context menu`}
       className="fx-chrome-picker fx-chrome-menu"
       // a long menu scrolls inside the window rather than running off it; asked for in the lower half it opens upward
       style={{ left: at.x, transform: 'none', overflowY: 'auto', ...placed(at.y) }}

@@ -1,9 +1,11 @@
 // The asset manager dialog (FR-AST-005, M10.16): every asset of the document with its size and its share of the file, Replace for an image
 // (a new file through the same import as a drop, the record keeps its id so every element that shows it shows the new picture), Remove for
 // one nothing uses, and "Remove unused" for all of them at once, in one undo step. Esc or Close ends it.
+
 import type { Store } from '@fluxion/core';
 import { type ImageCodec, importImage, sha256Hex } from '@fluxion/format';
 import type { RecordId } from '@fluxion/schema';
+import { plural, t } from '@lingui/core/macro';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { type AssetRow, assetRows, formatBytes, unusedAssetIds } from './asset-manager.js';
 import type { AssetStore } from './asset-store.js';
@@ -62,16 +64,16 @@ function AssetItem(props: { readonly row: AssetRow; readonly onReplace: (file: F
       <span>
         {row.mime}, {formatBytes(row.size)} ({Math.round(row.share * 100)}%)
       </span>{' '}
-      <span>{row.used ? 'Used' : 'Unused'}</span>{' '}
+      <span>{row.used ? t`Used` : t`Unused`}</span>{' '}
       {row.font ? null : (
         <>
           <button
             type="button"
             className="fx-chrome-button"
-            aria-label={`Replace ${row.name}`}
+            aria-label={t`Replace ${row.name}`}
             onClick={(e) => (e.currentTarget.nextElementSibling as HTMLInputElement | null)?.click()}
           >
-            Replace
+            {t`Replace`}
           </button>
           <input
             type="file"
@@ -87,8 +89,8 @@ function AssetItem(props: { readonly row: AssetRow; readonly onReplace: (file: F
           />
         </>
       )}{' '}
-      <button type="button" className="fx-chrome-button" aria-label={`Remove ${row.name}`} disabled={row.used} onClick={() => onRemove()}>
-        Remove
+      <button type="button" className="fx-chrome-button" aria-label={t`Remove ${row.name}`} disabled={row.used} onClick={() => onRemove()}>
+        {t`Remove`}
       </button>
     </li>
   );
@@ -113,6 +115,7 @@ export function AssetDialog(props: AssetDialogProps): ReactNode {
   // `revision` is what makes this read again after each commit
   const rows = revision >= 0 ? assetRows(store.toDocument()) : [];
   const unused = unusedAssetIds(rows);
+  const total = formatBytes(rows.reduce((sum, r) => sum + r.size, 0));
   const remove = (ids: string[]) => {
     const done = execute('asset.delete', { ids });
     setMessage(done.ok ? '' : done.error.message);
@@ -123,16 +126,14 @@ export function AssetDialog(props: AssetDialogProps): ReactNode {
       className="fx-chrome-picker fx-chrome-assets"
       role="dialog"
       aria-modal="true"
-      aria-label="Assets"
+      aria-label={t`Assets`}
       onKeyDown={(e) => dialogKey(e, onClose)}
     >
       <h2 ref={heading} tabIndex={-1} className="fx-chrome-heading">
-        Assets
+        {t`Assets`}
       </h2>
-      <p>
-        {rows.length} asset{rows.length === 1 ? '' : 's'}, {formatBytes(rows.reduce((sum, r) => sum + r.size, 0))} in all
-      </p>
-      {rows.length === 0 ? <p className="fx-chrome-placeholder">This document holds no assets.</p> : null}
+      <p>{t`${plural(rows.length, { one: '# asset', other: '# assets' })}, ${total} in all`}</p>
+      {rows.length === 0 ? <p className="fx-chrome-placeholder">{t`This document holds no assets.`}</p> : null}
       <ul className="fx-chrome-assetlist">
         {rows.map((row) => (
           <AssetItem
@@ -146,10 +147,10 @@ export function AssetDialog(props: AssetDialogProps): ReactNode {
       {message === '' ? null : <p role="alert">{message}</p>}
       <div className="fx-chrome-actions">
         <button type="button" className="fx-chrome-button" disabled={unused.length === 0} onClick={() => remove(unused)}>
-          Remove unused ({unused.length})
+          {t`Remove unused (${unused.length})`}
         </button>
         <button type="button" className="fx-chrome-button" onClick={onClose}>
-          Close
+          {t`Close`}
         </button>
       </div>
     </div>

@@ -103,6 +103,7 @@ function Editing(props: InlineTextEditorProps & { readonly id: RecordId }): Reac
   if (element === undefined || placed === undefined) return null;
   const label = labelBox(element, registries, LIGHT_THEME);
   const at = pageToScreen(camera, { x: placed.x, y: placed.y });
+  const hideLabel = `.fx-el[data-el-id="${CSS.escape(id)}"] .fx-label { visibility: hidden; }`;
   return (
     <div
       ref={wrapper}
@@ -117,7 +118,7 @@ function Editing(props: InlineTextEditorProps & { readonly id: RecordId }): Reac
         ...toCssVars(LIGHT_THEME),
       }}
     >
-      <style>{`.fx-el[data-el-id="${CSS.escape(id)}"] .fx-label { visibility: hidden; }`}</style>
+      <style>{hideLabel}</style>
       <div className="fx-chrome-textedit-box" style={{ width: placed.w, height: placed.h, transform: `scale(${camera.z})` }}>
         <div ref={host} className="fx-label" style={label} />
       </div>

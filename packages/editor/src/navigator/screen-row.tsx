@@ -3,6 +3,8 @@
 import type { Store } from '@fluxion/core';
 import type { RenderRegistries } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
+import '../i18n.js';
 import type { DragEvent, ReactNode } from 'react';
 import { switchScreen } from '../screen-switch.js';
 import type { Session } from '../session.js';
@@ -45,8 +47,8 @@ function RowBody(props: ScreenRowProps): ReactNode {
     <>
       {state.sizing && actions !== undefined ? (
         <RenameField
-          label={`${r.size.w}x${r.size.h}`}
-          name={`Size of ${r.label}`}
+          label={t`${r.size.w}x${r.size.h}`}
+          name={t`Size of ${r.label}`}
           accepts={(text) => parseSize(text) !== undefined}
           onCommit={(text) => {
             const size = parseSize(text);
@@ -104,11 +106,11 @@ export function ScreenRow(props: ScreenRowProps): ReactNode {
           type="button"
           className="fx-chrome-button fx-chrome-screen-hide"
           aria-pressed={r.hidden}
-          aria-label={`Hide ${r.label} from presentation`}
-          title={r.hidden ? 'Hidden from presentation' : 'Hide from presentation'}
+          aria-label={t`Hide ${r.label} from presentation`}
+          title={r.hidden ? t`Hidden from presentation` : t`Hide from presentation`}
           onClick={() => actions.setHidden(r.id, !r.hidden)}
         >
-          {r.hidden ? 'Hidden' : 'Hide'}
+          {r.hidden ? t`Hidden` : t`Hide`}
         </button>
       )}
     </li>

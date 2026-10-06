@@ -4,6 +4,8 @@
 import type { Store } from '@fluxion/core';
 import { type RenderRegistries, screensInOrder, useValue } from '@fluxion/render';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
+import './i18n.js';
 import { type ReactNode, useMemo } from 'react';
 import { ContextMenu } from './context-menu.js';
 import type { MenuItem } from './context-menu-model.js';
@@ -83,14 +85,14 @@ export function ScreensTab(props: ScreensTabProps): ReactNode {
       {editable ? (
         <div className="fx-chrome-navigator-actions">
           <button type="button" className="fx-chrome-button" onClick={nav.add}>
-            New screen
+            {t`New screen`}
           </button>
           <button type="button" className="fx-chrome-button" onClick={sec.add}>
-            New section
+            {t`New section`}
           </button>
         </div>
       ) : null}
-      <ul className="fx-chrome-screens" aria-label="Screens">
+      <ul className="fx-chrome-screens" aria-label={t`Screens`}>
         {navigatorItems(rows, sections).map((item) =>
           item.kind === 'section' ? (
             <SectionHeader

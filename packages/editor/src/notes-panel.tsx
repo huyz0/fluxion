@@ -5,6 +5,8 @@
 import type { Store } from '@fluxion/core';
 import { useValue } from '@fluxion/render';
 import type { RecordId, RichTextDoc, ScreenRecord } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
+import './i18n.js';
 import { type EditorState, Selection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { type ReactNode, useEffect, useMemo, useRef } from 'react';
@@ -42,7 +44,7 @@ function stateFor(notes: RichTextDoc | undefined): EditorState {
 export function NotesPanel(props: NotesPanelProps): ReactNode {
   const { store, execute, screenId } = props;
   return screenId === undefined ? (
-    <p className="fx-chrome-placeholder">No screen to take notes for.</p>
+    <p className="fx-chrome-placeholder">{t`No screen to take notes for.`}</p>
   ) : (
     <Notes key={screenId} store={store} execute={execute} screenId={screenId} />
   );

@@ -6,6 +6,7 @@ import type { Store } from '@fluxion/core';
 import { themeRecordId } from '@fluxion/core';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type ReactNode, useMemo } from 'react';
 import type { Execute } from './pointer.js';
 
@@ -39,7 +40,7 @@ export type ThemeSwitcherProps = {
   readonly screenId: RecordId | undefined;
 };
 
-const body = (t: ThemeChoice) => ({ name: t.name, tokens: t.tokens, ...(t.defaults === undefined ? {} : { defaults: t.defaults }) });
+const body = (theme: ThemeChoice) => ({ name: theme.name, tokens: theme.tokens, ...(theme.defaults === undefined ? {} : { defaults: theme.defaults }) });
 
 /** The idle value of a control: the id of the theme record in use (empty for none). */
 function idOf(rec: unknown): string {
@@ -58,7 +59,7 @@ function ThemeSelect(props: {
   readonly onPick: (theme: ThemeChoice | undefined) => void;
 }): ReactNode {
   const { label, value, themes, none, clearable, onPick } = props;
-  const known = themes.some((t) => themeRecordId(t.name) === value);
+  const known = themes.some((th) => themeRecordId(th.name) === value);
   return (
     <label className="fx-chrome-pick">
       <span aria-hidden="true">{label}</span>
@@ -66,15 +67,15 @@ function ThemeSelect(props: {
         className="fx-chrome-pick-select"
         aria-label={label}
         value={value}
-        onChange={(e) => onPick(themes.find((t) => themeRecordId(t.name) === e.target.value))}
+        onChange={(e) => onPick(themes.find((th) => themeRecordId(th.name) === e.target.value))}
       >
         <option value="" disabled={clearable === false && value !== ''}>
           {none}
         </option>
-        {value !== '' && !known ? <option value={value}>{value} (custom)</option> : null}
-        {themes.map((t) => (
-          <option key={t.name} value={themeRecordId(t.name)}>
-            {t.name}
+        {value !== '' && !known ? <option value={value}>{t`${value} (custom)`}</option> : null}
+        {themes.map((th) => (
+          <option key={th.name} value={themeRecordId(th.name)}>
+            {th.name}
           </option>
         ))}
       </select>
@@ -96,23 +97,23 @@ export function ThemeSwitcher(props: ThemeSwitcherProps): ReactNode {
   return (
     <>
       <ThemeSelect
-        label="Theme"
+        label={t`Theme`}
         value={idOf(doc)}
         themes={themes}
-        none="Default"
+        none={t`Default`}
         clearable={false}
-        onPick={(t) => {
-          if (t !== undefined) execute('document.setTheme', { theme: body(t) });
+        onPick={(choice) => {
+          if (choice !== undefined) execute('document.setTheme', { theme: body(choice) });
         }}
       />
       {screenId === undefined ? null : (
         <ThemeSelect
-          label="Screen theme"
+          label={t`Screen theme`}
           value={idOf(screen)}
           themes={themes}
-          none="Follows the document"
+          none={t`Follows the document`}
           clearable
-          onPick={(t) => execute('screen.setThemeOverride', t === undefined ? { id: screenId } : { id: screenId, theme: body(t) })}
+          onPick={(choice) => execute('screen.setThemeOverride', choice === undefined ? { id: screenId } : { id: screenId, theme: body(choice) })}
         />
       )}
     </>

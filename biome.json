@@ -22,7 +22,8 @@
       "!fixtures/fonts/*.json",
       "!examples/**/*.flux.json",
       "!examples/**/*.flux.html",
-      "!specs/security/corpus"
+      "!specs/security/corpus",
+      "!**/locales/*/messages.json"
     ]
   },
   "formatter": {

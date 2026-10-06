@@ -1,6 +1,7 @@
 // The command palette (FR-EDT-011, M7.24): Ctrl/Cmd+K opens a search over every editor command the
 // mode offers, with its shortcut beside it. Type to narrow (fuzzy), Up/Down to move, Enter to run, Esc
 // to close. A combobox over a listbox, so a screen reader announces the highlighted command.
+import { t } from '@lingui/core/macro';
 import { type KeyboardEvent, type ReactNode, useId, useMemo, useRef, useState } from 'react';
 import { EDITOR_COMMANDS, type EditorCommand } from './editor-commands.js';
 import { EDIT_FLAGS, type KeyBinding } from './keymap.js';
@@ -60,7 +61,7 @@ export function CommandPalette(props: CommandPaletteProps): ReactNode {
     doing[act]();
   };
   return (
-    <div className="fx-chrome-picker fx-chrome-palette" role="dialog" aria-modal="true" aria-label="Command palette" onKeyDown={key}>
+    <div className="fx-chrome-picker fx-chrome-palette" role="dialog" aria-modal="true" aria-label={t`Command palette`} onKeyDown={key}>
       <input
         ref={input}
         // biome-ignore lint/a11y/noAutofocus: a dialog that opens to type in
@@ -68,19 +69,19 @@ export function CommandPalette(props: CommandPaletteProps): ReactNode {
         className="fx-chrome-input"
         type="text"
         role="combobox"
-        aria-label="Search commands"
+        aria-label={t`Search commands`}
         aria-expanded="true"
         aria-controls={`${id}-list`}
         aria-activedescendant={active === undefined ? undefined : `${id}-${active.id}`}
         aria-autocomplete="list"
-        placeholder="Type a command"
+        placeholder={t`Type a command`}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
           setAt(0);
         }}
       />
-      <div id={`${id}-list`} role="listbox" aria-label="Commands" className="fx-chrome-palette-list">
+      <div id={`${id}-list`} role="listbox" aria-label={t`Commands`} className="fx-chrome-palette-list">
         {shown.map((entry) => (
           // biome-ignore lint/a11y/useKeyWithClickEvents: the keys work through the combobox input (aria-activedescendant), as in the ARIA pattern
           <div
@@ -101,7 +102,7 @@ export function CommandPalette(props: CommandPaletteProps): ReactNode {
       {/* outside the listbox, whose children are options only (a status line for what the listbox lacks) */}
       {shown.length === 0 ? (
         <div role="status" className="fx-chrome-palette-empty">
-          No command matches
+          {t`No command matches`}
         </div>
       ) : null}
     </div>
@@ -136,7 +137,7 @@ export function PaletteHost(props: PaletteHostProps): ReactNode {
         base,
         overrides,
         flags: EDIT_FLAGS,
-        toolTitle: (id) => tools.find((t) => t.id === id)?.title,
+        toolTitle: (id) => tools.find((tool) => tool.id === id)?.title,
       }),
     [commands, base, overrides, tools],
   );
