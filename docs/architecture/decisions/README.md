@@ -63,6 +63,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0156](ADR-0156-lighthouse-job-npx.md) | The Lighthouse CI job fetches `@lhci/cli` with npx, exactly pinned, until a lockfile change can be recorded | accepted | 2026-10-05 |
 | [0157](ADR-0157-m10-decisions-gzip-budget-and-deferrals.md) | The `.flux.html` budget is gzip; the manifest's shape-def list and `sanitizeHtml` wait for their consumers | accepted | 2026-10-05 |
 | [0158](ADR-0158-precommit-budget-360s.md) | The pre-commit budget is 360 s | accepted | 2026-10-06 |
+| [0161](ADR-0161-quick-budget-120s.md) | The quick-gate budget is 120 s | accepted | 2026-10-06 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

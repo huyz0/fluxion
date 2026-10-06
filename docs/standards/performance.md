@@ -25,7 +25,7 @@ strengthening direction. → `check-drift`
 | NFR-SIZE-001 | Player core ≤ 150 kB gzip (React included) | size-limit |
 | NFR-SIZE-002 | Editor initial ≤ 600 kB gzip; TTI < 2.5 s | size-limit + Lighthouse |
 | NFR-SIZE-003 | 20-screen doc: `.flux` ≤ 150 kB, `.flux.html` ≤ 450 kB gzip | fixture size test |
-| NFR-DX-002 | Quick gate < 30 s; pre-commit gate < 360 s (ADR-0158) | `check-budget` |
+| NFR-DX-002 | Quick gate < 120 s (ADR-0161); pre-commit gate < 360 s (ADR-0158) | `check-budget` |
 
 "Desktop" = 4-core ≈2022 laptop, Chrome stable. "Mobile" = 4× CPU throttling in CI.
 
