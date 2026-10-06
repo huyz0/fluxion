@@ -86,6 +86,7 @@ receiving milestone's plan.
 
 | Item | From | To | Reason |
 |---|---|---|---|
+| The three WebKit clipboard specs that fail on the nightly's previous Playwright release (1.62.1): `clipboard.copy-paste` (2) and `clipboard.cross-document` (FR-EDT-007, NFR-PORT-001; M11.59). Cause not established: the traces are uploaded by the nightly (M11.79) but the agent could not read them or run WebKit 1.62.1; open `previous-playwright-webkit-results` of a nightly run, then fix the editor or record the WebKit limit | M11 | human, then a row of the next editor milestone | needs a person with artifact access or a local WebKit 1.62.1; the pinned WebKit 1.63 passes these specs in `ci` |
 | Presentation order follows sections: screens in no section first, then each section's screens, as the navigator lists them; F5 and the player use it (M8 cp2 F2) | M8 | M11 row 2a | the player owns the order |
 | The arrange UI for what only commands and AI reach today: align to a key object, distribute by centres, tidy to equal gaps (M8 cp1 F2, FR-ARR-002/003) | M8 | M19 | arrange polish; asked for, not yet needed |
 | Site navigation reads sections, their collapsed state and the migration's dropped `sectionId` (M8 cp2 F4) | M8 | M31 row 1a | the site owns the nav |
