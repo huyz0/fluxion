@@ -132,6 +132,12 @@ jobs:
           name: previous-playwright-${{ matrix.browser }}-results
           path: test-results
           retention-days: 14
+      # what the engine does with Ctrl+C and Ctrl+V on a bare page, in the log (M11.59: the three clipboard specs fail on the older WebKit and the log holds only counts);
+      # after the upload, bounded and never failing the job, so it cannot cost the traces
+      - if: ${{ failure() && matrix.browser == 'webkit' }}
+        continue-on-error: true
+        timeout-minutes: 2
+        run: node scripts/ci/clipboard-events-probe.mjs
 
   report:
     needs: [mutation, properties, perf, eval-live, visual-xos, previous-playwright]
