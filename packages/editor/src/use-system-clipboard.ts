@@ -2,9 +2,10 @@
 // (what Ctrl/Cmd+C, X and V fire) and the async path the menu commands use. A copy puts the payload on the system
 // clipboard in every representation at once; a paste reads it back, from this document, another or another tab,
 // and hands it to the editor's own clipboard so the paste command places it. Events in a text field, while a dialog
-// is open or while presenting are the browser's own.
+// is open or while presenting are the browser's own. An engine that raises no event for the chord on the canvas (WebKit 26.5, M11.59) is answered by the async path after a short wait.
 import { useCallback, useEffect, useRef } from 'react';
 import type { Clipboard } from './clipboard.js';
+import { type ChordFallback, chordAction, chordFallback, type Timers } from './clipboard-chord.js';
 import { readAsync, readFromEvent, writeAsync, writeToEvent } from './clipboard-dom.js';
 import { isEditable } from './editor-keys.js';
 import { readImageFile } from './image-file.js';
@@ -44,6 +45,34 @@ function pasteForeign(data: DataTransfer, kind: 'image' | 'svg' | 'text', place:
   });
 }
 
+/** What a paste event's handler uses. */
+type PasteEnv = Pick<SystemClipboardInput, 'clipboard' | 'run' | 'place' | 'notify'>;
+
+/** A paste event that is the editor's: Fluxion's payload first, else an image, an SVG or text. */
+function pasteEvent(e: ClipboardEvent, data: DataTransfer, env: PasteEnv): void {
+  const read = readFromEvent(data);
+  // a payload that fails validation is not used: the next representation is tried (ADR-0020), an image, an SVG, text
+  if (read?.parsed.ok === true) {
+    e.preventDefault();
+    env.clipboard.adopt(read.parsed.payload, read.json);
+    env.run('clipboard.paste');
+    return;
+  }
+  const kind = pastedKind(data);
+  if (kind === undefined) return;
+  // taken now, read after: a paste event ends with this handler, and the bytes of a file arrive later
+  e.preventDefault();
+  pasteForeign(data, kind, env.place, env.notify);
+}
+
+/** How long a paste waits for the async clipboard read before it pastes what the editor holds, ms. */
+const READ_WAIT_MS = 400;
+
+/** The system clipboard's payload, or undefined when it holds none or the read is not answered within {@link READ_WAIT_MS}. */
+function readWithin(): ReturnType<typeof readAsync> {
+  return Promise.race([readAsync(), new Promise<undefined>((resolve) => window.setTimeout(resolve, READ_WAIT_MS, undefined))]);
+}
+
 /** The menu commands: copy, cut and paste through the async Clipboard API. */
 export type SystemClipboardCommands = {
   /** Copy the selection to the system clipboard. */
@@ -54,13 +83,29 @@ export type SystemClipboardCommands = {
   paste(): Promise<void>;
 };
 
+const windowTimers: Timers = { set: (fn, ms) => window.setTimeout(fn, ms), clear: (handle) => window.clearTimeout(handle as number) };
+
+/** The chord fallback of one editor: made once and kept for its lifetime, so a re-render never drops a chord that is waiting for its event. */
+function useChordFallback(commands: { readonly current: SystemClipboardCommands | undefined }): ChordFallback {
+  const ref = useRef<ChordFallback | undefined>(undefined);
+  ref.current ??= chordFallback(windowTimers, (action) => void commands.current?.[action]());
+  const fallback = ref.current;
+  useEffect(() => () => fallback.cancel(), [fallback]);
+  return fallback;
+}
+
 /** Listen for the clipboard events while mounted; the menu commands over the async API. */
 export function useSystemClipboard(input: SystemClipboardInput): SystemClipboardCommands {
   const { clipboard, session, run, paused, place, notify } = input;
+  // the menu commands below, for the chords the browser raises no event for
+  const commandsRef = useRef<SystemClipboardCommands | undefined>(undefined);
+  const fallback = useChordFallback(commandsRef);
   useEffect(() => {
     // not the editor's: a field's own copy and paste, a dialog, presenting
-    const own = (e: ClipboardEvent) => !paused && e.clipboardData !== null && session.mode.get() === 'edit' && !isEditable(e.target);
+    const editingHere = (target: EventTarget | null) => !paused && session.mode.get() === 'edit' && !isEditable(target);
+    const own = (e: ClipboardEvent) => e.clipboardData !== null && editingHere(e.target);
     const out = (command: string) => (e: ClipboardEvent) => {
+      fallback.answered();
       const payload = own(e) && run(command) ? clipboard.get() : undefined;
       if (payload === undefined || e.clipboardData === null) return;
       clipboard.adopt(payload, writeToEvent(e.clipboardData, payload));
@@ -69,31 +114,25 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
     const onCopy = out('clipboard.copy');
     const onCut = out('clipboard.cut');
     const onPaste = (e: ClipboardEvent) => {
-      if (!own(e) || e.clipboardData === null) return;
-      const data = e.clipboardData;
-      const read = readFromEvent(data);
-      // a payload that fails validation is not used: the next representation is tried (ADR-0020), an image, an SVG, text
-      if (read?.parsed.ok === true) {
-        e.preventDefault();
-        clipboard.adopt(read.parsed.payload, read.json);
-        run('clipboard.paste');
-        return;
-      }
-      const kind = pastedKind(data);
-      if (kind === undefined) return;
-      // taken now, read after: a paste event ends with this handler, and the bytes of a file arrive later
-      e.preventDefault();
-      pasteForeign(data, kind, place, notify);
+      fallback.answered();
+      if (own(e) && e.clipboardData !== null) pasteEvent(e, e.clipboardData, { clipboard, run, place, notify });
     };
+    // a chord the browser answers with an event is done by that event; one it does not is done here after a short wait
+    const onKeyDown = (e: KeyboardEvent) => {
+      const action = chordAction(e);
+      if (action !== undefined && !e.defaultPrevented && editingHere(e.target)) fallback.pressed(action);
+    };
+    window.addEventListener('keydown', onKeyDown);
     window.addEventListener('copy', onCopy);
     window.addEventListener('cut', onCut);
     window.addEventListener('paste', onPaste);
     return () => {
+      window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('copy', onCopy);
       window.removeEventListener('cut', onCut);
       window.removeEventListener('paste', onPaste);
     };
-  }, [clipboard, session, run, paused, place]);
+  }, [clipboard, session, run, paused, place, notify, fallback]);
   // the last write was refused: the system clipboard holds something older, which a paste must not mistake for this copy
   const refused = useRef(false);
   const send = useCallback(
@@ -103,13 +142,16 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
     },
     [clipboard, run],
   );
-  return {
+  const commands: SystemClipboardCommands = {
     copy: () => send('clipboard.copy'),
     cut: () => send('clipboard.cut'),
     paste: async () => {
-      const read = refused.current ? undefined : await readAsync();
+      // a read nobody answers (no permission, no gesture) must not hold the paste: the editor's own copy is pasted after a moment
+      const read = refused.current ? undefined : await readWithin();
       if (read?.parsed.ok === true) clipboard.adopt(read.parsed.payload, read.json);
       run('clipboard.paste');
     },
   };
+  commandsRef.current = commands;
+  return commands;
 }
