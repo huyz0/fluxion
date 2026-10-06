@@ -93,6 +93,9 @@ export const GATE_SCRIPT_HARNESS = {
   'scripts/gates/worst-case.mjs': ['budget', 'ladder-scope'],
   // the CI evidence gate: its own tests (a sandbox copy of scripts/ serves the rest)
   'scripts/gates/check-ci-evidence.mjs': ['ci-evidence'],
+  // the i18n gate and its allowlist: the i18n harness file (the gate's, the extraction's and the Vite plugin's tests)
+  'scripts/gates/check-i18n.mjs': ['i18n'],
+  'scripts/gates/i18n-allowlist.json': ['i18n'],
 };
 
 /**
@@ -106,6 +109,8 @@ export const NAMED_PATH_HARNESS = [
   // the shared documents: the harness files that name them (the Vitest suites that read them run through VITEST_GLOBAL)
   [/^(examples|fixtures)\/.+\.(json|md)$/, ['milestone-checks', 'tests-kept']],
   [/^scripts\/(docs|fonts|format|fixtures|examples)\/[^/]+\.m?js$/, ['milestone-checks', 'portability', 'size']],
+  // the message extraction and the repository's Lingui plugin: their tests, and the portability and size scans of scripts (ADR-0023)
+  [/^(scripts\/i18n|tools\/vite-lingui)\/[^/]+\.m?js$/, ['i18n', 'portability', 'size']],
   // a pack's vendored font files, manifest and licence text: data that only the ladder's `licenses` step reads (hashes, licences, paths)
   [/^packs\/[^/]+\/(fonts\/[^/]+|fonts\.json|metrics\.json|catalog\.json|OFL\.txt)$/, []],
   // a package's own test fixtures: read only by that package's tests, which the staged Vitest step runs (the package is staged)
@@ -132,6 +137,8 @@ export const NAMED_PATH_HARNESS = [
   [/^scripts\/gates\/m\d+-complete\.mjs$/, ['milestone-checks', 'portability']],
   [/^apps\/docs\/src\/content\/docs\/guides\/[^/]+\.mdx?$/, ['architecture', 'workspace-shape']],
   [/^knip\.json$/, ['milestone-checks']],
+  // the layering rules: the layering tests, and the docs that quote the rules
+  [/^\.dependency-cruiser\.mjs$/, ['docs-consistency', 'layering']],
   // the formatter's config: the formatter's own tests and the workspace shape (which reads it)
   [/^biome\.json$/, ['biome', 'workspace-shape']],
   // the scanner's list of accepted advisories: read by the security workflow alone

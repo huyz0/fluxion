@@ -26,7 +26,8 @@
     "verify": "node scripts/gates/precommit.mjs --all",
     "verify:fast": "node scripts/gates/precommit.mjs --quick",
     "release": "turbo run build --filter=./packages/* --filter=./packs/* && changeset publish",
-    "mutate": "node scripts/harness/mutate.mjs"
+    "mutate": "node scripts/harness/mutate.mjs",
+    "i18n:extract": "node scripts/i18n/extract.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
@@ -34,6 +35,9 @@
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
     "@huyz0/tzap": "catalog:",
+    "@lingui/conf": "catalog:",
+    "@lingui/message-utils": "catalog:",
+    "@lingui/native-tools": "catalog:",
     "@microsoft/api-extractor": "catalog:",
     "@playwright/test": "catalog:",
     "@size-limit/preset-small-lib": "catalog:",
@@ -43,6 +47,7 @@
     "dependency-cruiser": "catalog:",
     "fast-check": "catalog:",
     "knip": "catalog:",
+    "oxc-parser": "catalog:",
     "playwright": "catalog:",
     "publint": "catalog:",
     "size-limit": "catalog:",

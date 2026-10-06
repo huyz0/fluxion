@@ -78,6 +78,12 @@ catalog:
   rbush: 4.0.1 # dynamic spatial index (ADR-0141), MIT; bundled by the player through @fluxion/geometry
   "@types/rbush": 4.0.0 # rbush ships no types; MIT, dev only
   flatbush: 4.6.2 # static spatial index (ADR-0141), ISC; bundled by the player through @fluxion/geometry
+  "@lingui/core": 6.9.0 # i18n runtime for the editor and studio (ADR-0023), MIT; the player takes none
+  "@lingui/react": 6.9.0 # I18nProvider and Trans for the editor and studio (ADR-0023), MIT
+  "@lingui/native-tools": 0.1.5 # macro transform and message extraction without Babel (ADR-0023), MIT, dev only
+  "@lingui/conf": 6.9.0 # peer of native-tools (ADR-0023), MIT, dev only
+  "@lingui/message-utils": 6.9.0 # compiles ICU catalogs to function catalogs (ADR-0023), MIT, dev only
+  oxc-parser: 0.151.0 # JSX parsing for scripts/gates/check-i18n.mjs (ADR-0159; TS 7 ships no compiler API), MIT, dev only
 
 # TS 6 for tools that need the compiler API (ADR-0011): apps/docs installs it as its own
 # `typescript` via "catalog:typescript6", so TypeDoc resolves its peer to TS 6, not the root TS 7.

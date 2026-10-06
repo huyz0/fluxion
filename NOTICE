@@ -9,6 +9,9 @@ Third-party software
 Shipped packages depend only on permissively licensed software (MIT, Apache-2.0, BSD-2-Clause,
 BSD-3-Clause, ISC, 0BSD, MPL-2.0 unmodified); scripts/gates/check-licenses.mjs enforces this.
 
+One data package is installed, never bundled, as a transitive of @lingui/core (through Babel's browserslist):
+caniuse-lite, CC-BY-4.0; its licence file ships in the package (ADR-0160).
+
 Optional packs may bundle, unmodified and loaded separately from the player, components under
 weak copyleft licences. Their notices ship with the pack:
   - packs/layouts-elk      elkjs        EPL-2.0

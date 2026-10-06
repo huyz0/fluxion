@@ -81,6 +81,11 @@ export const LICENSES = {
     'packs/layouts-elk': ['EPL-2.0'],
     'packs/routing-libavoid': ['LGPL-2.1-only', 'LGPL-2.1-or-later', 'LGPL-3.0-only', 'LGPL-3.0-or-later'],
   },
+  // one package, one licence, named with the reason in its ADR: ADR-0160 (caniuse-lite, CC-BY-4.0 browser data that Babel's browserslist reads;
+  // reached only through the Babel plugin that @lingui/core declares, and never bundled)
+  packageExceptions: {
+    'caniuse-lite': ['CC-BY-4.0'],
+  },
   // never, not even as a dev tool: strong copyleft and source-available licences (SPDX id prefixes)
   denyPrefixes: ['GPL-', 'AGPL-', 'SSPL-', 'BUSL-'],
   // watermark / domain-key / licence-key libraries (rule 3), whatever their licence field says

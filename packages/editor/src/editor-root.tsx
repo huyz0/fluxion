@@ -8,6 +8,7 @@ import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
 import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
+import { I18nProvider } from '@lingui/react';
 import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { useEditorAssets } from './asset-revision.js';
 import type { AssetStore } from './asset-store.js';
@@ -24,6 +25,7 @@ import type { EditorCommand } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
 import type { FontSources } from './font-picker.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
+import { i18n } from './i18n.js';
 import { ImagePicker } from './image-picker.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides.js';
@@ -245,6 +247,14 @@ function Notice(props: { readonly text: string; readonly onDismiss: () => void }
  * @public
  */
 export function EditorRoot(props: EditorRootProps): ReactNode {
+  return (
+    <I18nProvider i18n={i18n}>
+      <EditorShell {...props} />
+    </I18nProvider>
+  );
+}
+
+function EditorShell(props: EditorRootProps): ReactNode {
   const { store, registries, commands } = props;
   useChromeCss();
   const settings = useMemo(() => props.settings ?? memorySettings(), [props.settings]);

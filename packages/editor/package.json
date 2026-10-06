@@ -31,6 +31,8 @@
     "@fluxion/routing": "workspace:*",
     "@fluxion/schema": "workspace:*",
     "@fluxion/theme": "workspace:*",
+    "@lingui/core": "catalog:",
+    "@lingui/react": "catalog:",
     "prosemirror-commands": "catalog:",
     "prosemirror-history": "catalog:",
     "prosemirror-inputrules": "catalog:",

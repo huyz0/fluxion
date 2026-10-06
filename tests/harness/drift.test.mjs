@@ -79,6 +79,16 @@ describe('check-drift (NFR-DX-004)', () => {
       "'packs/layouts-elk': ['EPL-2.0', 'GPL-3.0-only']",
       /packExceptions\[packs\/layouts-elk\] gained GPL-3\.0-only/,
     ],
+    'a package exception added': [
+      "'caniuse-lite': ['CC-BY-4.0']",
+      "'caniuse-lite': ['CC-BY-4.0'], 'left-pad': ['WTFPL']",
+      /packageExceptions\[left-pad\] gained WTFPL/,
+    ],
+    'a package exception widened': [
+      "'caniuse-lite': ['CC-BY-4.0']",
+      "'caniuse-lite': ['CC-BY-4.0', 'GPL-3.0-only']",
+      /packageExceptions\[caniuse-lite\] gained GPL-3\.0-only/,
+    ],
     'a font licence added': ["allow: ['OFL-1.1', 'Apache-2.0']", "allow: ['OFL-1.1', 'Apache-2.0', 'UFL-1.0']", /FONT_LICENSES\.allow gained UFL-1\.0/],
     'a denied package dropped': ["'bpmn-js', ", '', /LICENSES\.denyPackages lost bpmn-js/],
   };

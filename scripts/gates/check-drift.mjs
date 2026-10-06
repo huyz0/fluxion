@@ -31,6 +31,9 @@ function licenceWeakening(o, n) {
   for (const [pack, list] of Object.entries(n.packExceptions ?? {})) {
     out.push(...gained(o.packExceptions?.[pack], list).map((l) => `LICENSES.packExceptions[${pack}] gained ${l}`));
   }
+  for (const [name, list] of Object.entries(n.packageExceptions ?? {})) {
+    out.push(...gained(o.packageExceptions?.[name], list).map((l) => `LICENSES.packageExceptions[${name}] gained ${l}`));
+  }
   for (const key of ['denyPrefixes', 'denyPackages']) out.push(...gained(n[key], o[key]).map((x) => `LICENSES.${key} lost ${x}`));
   return out;
 }

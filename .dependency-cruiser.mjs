@@ -104,8 +104,9 @@ export default {
       comment: 'an import that does not resolve is a typo or a missing dependency',
       severity: 'error',
       from: {},
-      // astro: modules are Astro's virtual modules, resolved by Astro at build time (apps/docs)
-      to: { couldNotResolve: true, pathNot: `${target(all)}|^astro:` },
+      // astro: modules are Astro's virtual modules, resolved by Astro at build time (apps/docs); virtual:fluxion/ modules are served by
+      // tools/vite-lingui (the message catalogs, ADR-0023)
+      to: { couldNotResolve: true, pathNot: `${target(all)}|^astro:|^virtual:fluxion/` },
     },
   ],
   options: {

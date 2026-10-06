@@ -6,6 +6,8 @@ import { readFileSync } from 'node:fs';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 import { t } from './scripts/gates/thresholds.mjs';
+import { i18nCatalogs } from './tools/vite-lingui/catalogs.mjs';
+import { lingui } from './tools/vite-lingui/index.mjs';
 
 interface Workspace {
   dir: string;
@@ -36,6 +38,7 @@ const CI_SEED = 20_260_926;
 const conditions = ['@fluxion/source', 'module', 'development|production'];
 
 export default defineConfig({
+  plugins: [lingui({ catalogs: i18nCatalogs })],
   // per checkout, not node_modules/.vite: harness sandboxes link the repo's node_modules, and a
   // shared cache would be written by the sandbox and the ladder's test step at once (M1.36).
   // FLUXION_VITEST_CACHE moves it: a tzap run in this checkout (pnpm mutate, also from the harness

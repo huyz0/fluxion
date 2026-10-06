@@ -10,6 +10,8 @@ const SHARED = [
   'e2e',
   'vitest.config.ts',
   'tools/vitest',
+  // the Lingui plugin the Vitest config imports (ADR-0023)
+  'tools/vite-lingui',
   'tools/gen/workspaces.json',
   'scripts/gates/thresholds.mjs',
   'package.json',

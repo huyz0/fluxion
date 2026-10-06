@@ -81,7 +81,9 @@ const denied = (expr) => {
 const at = (p) => `${p.name}@${p.version} (${p.license})`;
 
 function checkShipped(pkgs, allow, where) {
-  for (const p of pkgs) if (!allowedBy(p.license, allow)) errors.push(`${where}: ${at(p)} is not an allowed licence for shipped code`);
+  for (const p of pkgs)
+    if (!allowedBy(p.license, [...allow, ...(LICENSES.packageExceptions[p.name] ?? [])]))
+      errors.push(`${where}: ${at(p)} is not an allowed licence for shipped code`);
 }
 
 const { workspaces } = JSON.parse(readFileSync(join(root, 'tools/gen/workspaces.json'), 'utf8'));

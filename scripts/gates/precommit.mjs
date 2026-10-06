@@ -167,6 +167,13 @@ const STEPS = [
   ['kind-switch', () => true, () => exists('scripts/gates/check-kind-switch.mjs') || 'not written yet (M3)', () => node('scripts/gates/check-kind-switch.mjs')],
   // only render/src/mode-policy.ts branches on the render mode (04 §2.6, ADR-0015; M4.11)
   ['mode-policy', () => true, () => exists('scripts/gates/check-mode-policy.mjs') || 'not written yet (M4)', () => node('scripts/gates/check-mode-policy.mjs')],
+  // every message in the source is in the catalog, and no other (NFR-I18N-001, ADR-0023, M9.19)
+  [
+    'messages',
+    (m) => m !== 'quick',
+    () => (exists('scripts/i18n/extract.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M9)'),
+    () => node('scripts/i18n/extract.mjs', ['--check']),
+  ],
   [
     'licenses',
     (m) => m !== 'quick',
