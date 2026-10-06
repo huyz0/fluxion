@@ -61,9 +61,11 @@ async function probe(page, state) {
   return fired;
 }
 
-/** What the async clipboard answers after a click: the permission state, a write and a read of text; each gives up after 3 s. */
+/** What the async clipboard answers after a click, on a secure origin: the permission state, a write and a read of text; each gives up after 3 s. */
 async function asyncClipboard(page) {
-  await page.setContent('<button id=go>go</button>');
+  // navigator.clipboard exists only in a secure context: about:blank is not one, http://localhost is (the editor's e2e runs from it)
+  await page.route('http://localhost/**', (route) => route.fulfill({ contentType: 'text/html', body: '<button id=go>go</button>' }));
+  await page.goto('http://localhost/');
   await page.click('#go');
   return page.evaluate(async () => {
     const within = (promise) => Promise.race([promise, new Promise((resolve) => setTimeout(resolve, 3000, '(no answer in 3 s)'))]);
@@ -75,6 +77,7 @@ async function asyncClipboard(page) {
       }
     };
     return {
+      api: navigator.clipboard === undefined ? 'missing' : 'present',
       permission: await describe(async () => (await navigator.permissions.query({ name: 'clipboard-read' })).state),
       write: await describe(async () => {
         await navigator.clipboard.writeText('probe');
@@ -101,7 +104,7 @@ async function main() {
     const page = await (await browser.newContext()).newPage();
     page.setDefaultTimeout(5000);
     const answer = await asyncClipboard(page);
-    console.log(`  async clipboard after a click: permission=${answer.permission}, write=${answer.write}, read=${answer.read}`);
+    console.log(`  async clipboard after a click: api=${answer.api}, permission=${answer.permission}, write=${answer.write}, read=${answer.read}`);
   } finally {
     await browser.close();
   }
