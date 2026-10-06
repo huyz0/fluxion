@@ -6,12 +6,11 @@ today. `m11-complete` fails while a box is open.
 
 ## Common to every increment
 
-- [ ] **1. Every Must requirement of R1 has a passing test that names it.** `node scripts/gates/check-trace.mjs --increment R1` exits 0. Open: **NFR-I18N-001** (all UI strings
-  externalised as ICU messages, with a lint rule against JSX literals) has no test: its work is rows M9.19 and M9.20 (Lingui in the editor and studio, `check-i18n`, the conversion of the
-  existing strings), which add dependencies and so a lockfile change, and that needs a `check-budget --record` from a machine whose staged ladder fits 120 s (this one takes 315 s; see M11.52
-  and ADR-0156 for the same wait). NFR-SIZE-002 is named since M11.19 (`tests/harness/editor-budget.test.mjs`).
+- [x] **1. Every Must requirement of R1 has a passing test that names it.** `node scripts/gates/check-trace.mjs --increment R1` exits 0 ("338 requirements, 123 named by tests, every Must of R1 covered"). NFR-I18N-001 (all UI strings
+  externalised as ICU messages, with a lint rule against JSX literals) is met: rows M9.19, M9.20, M11.71, M11.72, M11.75 and M11.76 are done, `scripts/gates/i18n-allowlist.json` has no entries, `check-i18n` and the catalog check
+  (`scripts/i18n/extract.mjs --check`) are steps of the staged ladder, `m11-complete` re-checks them, and `e2e/i18n.studio-build.spec.ts` shows the translated text on the studio's production build. NFR-SIZE-002 is named since M11.19 (`tests/harness/editor-budget.test.mjs`).
 - [x] **2. CI green on main, and the visual baselines reviewed.** The `ci` run of the last code commit must be green; the visual job compares against the baselines made in the pinned image, and
-  no baseline was changed in M11 (no `Threshold-change:` trailer). Met: the `ci` run 37375690437 at 6cdbad4 (after the last code commit eeea364 and the M11.58/M11.64 fixes) is green, as `node scripts/harness/last-ci.mjs` reports; the run includes 759bc86 (`nightly.yml` and its harness test), and 6cdbad4 only closes a backlog row. The visual baselines are the pinned image's; none changed in M11.
+  no baseline was changed in M11 (no `Threshold-change:` trailer). Met: the `ci` run 37451871986 at e8fad47 (the closure of M11.76, the last code commit; `security / osv-scanner`, the e2e matrix on five projects and the Lighthouse job are green in it) is green, as `node scripts/harness/last-ci.mjs` reports. Later commits (M11.79: the nightly's trace upload; M11.80: the budget record) change no code the `ci` workflow runs. The visual baselines are the pinned image's; none changed in M11.
 - [x] **3a. Changesets.** Every package M11 touched has a changeset (`.changeset/m11-*.md`; `m11-complete` checks the range).
 - [x] **3b. The user guide and the API reference.** The API reports of every touched library are current (`check-api`), and the guide "Presenting" (`apps/docs/src/content/docs/guides/presenting.md`, M11.61) says how to present, move, share a link and embed.
 - [x] **4. A demo document, committed and run in CI.** `examples/r1-mvp-deck.flux.html` (M11.24), opened from `file://` offline by `e2e/examples.r1-offline.spec.ts`, checked with axe and walked with the
