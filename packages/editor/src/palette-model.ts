@@ -4,6 +4,7 @@
 import type { EditorCommand } from './editor-commands.js';
 import { type KeyBinding, whenHolds } from './keymap.js';
 import { bindingId, formatChord, groupTitle, type KeyGroup, type KeyOverrides, keyGroups } from './keymap-overrides.js';
+import { commandTitle } from './titles.js';
 
 /**
  * One line of the palette: an editor command, with the arguments a binding gives it (a tool's name, a nudge's
@@ -52,7 +53,10 @@ export function paletteEntries(source: PaletteSource): readonly PaletteEntry[] {
   const { commands, base, overrides, flags, toolTitle } = source;
   const byId = new Map(commands.map((c) => [c.id, c]));
   const groups = keyGroups(base, overrides);
-  const titleOf = (id: string) => byId.get(id)?.title;
+  const titleOf = (id: string) => {
+    const command = byId.get(id);
+    return command === undefined ? undefined : commandTitle(command);
+  };
   const shown = (command: string) => whenHolds(byId.get(command)?.when, flags);
   const bound = groups
     .filter((g) => byId.has(g.command) && shown(g.command) && whenHolds(g.when, flags))
@@ -66,7 +70,9 @@ export function paletteEntries(source: PaletteSource): readonly PaletteEntry[] {
       }),
     );
   const named = new Set(groups.map((g) => g.command));
-  const loose = commands.filter((c) => !named.has(c.id) && shown(c.id)).map((c): PaletteEntry => ({ id: c.id, command: c.id, title: c.title, keys: [] }));
+  const loose = commands
+    .filter((c) => !named.has(c.id) && shown(c.id))
+    .map((c): PaletteEntry => ({ id: c.id, command: c.id, title: commandTitle(c), keys: [] }));
   return [...bound, ...loose];
 }
 

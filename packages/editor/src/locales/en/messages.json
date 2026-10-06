@@ -563,6 +563,228 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "command.camera.fitScreen": {
+    "message": "Zoom to fit the screen",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.camera.fitSelection": {
+    "message": "Zoom to the selection",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.camera.zoom100": {
+    "message": "Zoom to 100 %",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.camera.zoomIn": {
+    "message": "Zoom in",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.camera.zoomOut": {
+    "message": "Zoom out",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.clipboard.copy": {
+    "message": "Copy",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.clipboard.cut": {
+    "message": "Cut",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.clipboard.duplicate": {
+    "message": "Duplicate",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.clipboard.paste": {
+    "message": "Paste",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.help.keys": {
+    "message": "Keyboard shortcuts",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.history.redo": {
+    "message": "Redo",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.history.undo": {
+    "message": "Undo",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.mode.present": {
+    "message": "Present from the first visible screen",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.mode.toggle": {
+    "message": "Present the shown screen / stop presenting",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.palette.open": {
+    "message": "Command palette",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.align.bottom": {
+    "message": "Align bottom",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.align.center": {
+    "message": "Align centre",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.align.left": {
+    "message": "Align left",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.align.middle": {
+    "message": "Align middle",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.align.right": {
+    "message": "Align right",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.align.top": {
+    "message": "Align top",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.all": {
+    "message": "Select all",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.delete": {
+    "message": "Delete the selection",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.distribute.horizontal": {
+    "message": "Distribute horizontally",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.distribute.vertical": {
+    "message": "Distribute vertically",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.group": {
+    "message": "Group",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.nudge": {
+    "message": "Nudge the selection",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.order.back": {
+    "message": "Send to back",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.order.backward": {
+    "message": "Send backward",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.order.forward": {
+    "message": "Bring forward",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.order.front": {
+    "message": "Bring to front",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.sameStyle": {
+    "message": "Select same style",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.sameType": {
+    "message": "Select same type",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.ungroup": {
+    "message": "Ungroup",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.text.edit": {
+    "message": "Edit the text",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.tool.escape": {
+    "message": "Cancel",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.tool.use": {
+    "message": "Use a tool",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "dEgA5A": {
     "message": "Cancel",
     "origin": [
@@ -797,6 +1019,66 @@
     "message": "Save",
     "origin": [
       "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "tool.connector": {
+    "message": "Connector",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.frame": {
+    "message": "Frame",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.freehand": {
+    "message": "Freehand",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.hand": {
+    "message": "Hand",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.image": {
+    "message": "Image",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.laser": {
+    "message": "Laser",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.pen": {
+    "message": "Pen",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.select": {
+    "message": "Select",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.shape": {
+    "message": "Shape",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "tool.text": {
+    "message": "Text",
+    "origin": [
+      "packages/editor/src/titles.ts"
     ]
   },
   "u4iXQi": {

@@ -1,6 +1,7 @@
 // The keyboard shortcuts dialog (FR-EDT-012, M7.5): the cheat sheet that lists every action with its
 // chords, and the rebinding UI: Change waits for the next chord, Reset gives the defaults back. Opened
 // by `?` or the toolbar; Esc closes it.
+
 import { t } from '@lingui/core/macro';
 import { type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { buttonsOf, dialogKey } from './dialog-keys.js';
@@ -8,6 +9,7 @@ import { EDITOR_COMMANDS } from './editor-commands.js';
 import { pressOf } from './editor-keys.js';
 import { chordOf, DEFAULT_KEYMAP, isModifierKey, type KeyBinding, toolBindings } from './keymap.js';
 import { assignKey, formatChord, groupTitle, type KeyOverrides, keyGroups, resetKey } from './keymap-overrides.js';
+import { commandTitle, toolTitle } from './titles.js';
 import type { Tool } from './tools.js';
 
 /** Props of {@link KeymapDialog}. */
@@ -22,7 +24,10 @@ export type KeymapDialogProps = {
   readonly onClose: () => void;
 };
 
-const TITLES = new Map(EDITOR_COMMANDS.map((c) => [c.id, c.title]));
+const titleOfCommand = (id: string): string | undefined => {
+  const command = EDITOR_COMMANDS.find((c) => c.id === id);
+  return command === undefined ? undefined : commandTitle(command);
+};
 
 /** Whether the page runs on a Mac, where the modifier is Cmd. */
 export const onMac = (): boolean => /Mac|iPhone|iPad/.test(navigator.platform);
@@ -40,7 +45,10 @@ export function KeymapDialog(props: KeymapDialogProps): ReactNode {
   }, []);
   const base = useMemo(() => baseKeymap(tools), [tools]);
   const groups = useMemo(() => keyGroups(base, overrides), [base, overrides]);
-  const toolTitle = (id: string) => tools.find((tool) => tool.id === id)?.title;
+  const toolTitleOf = (id: string) => {
+    const tool = tools.find((candidate) => candidate.id === id);
+    return tool === undefined ? undefined : toolTitle(tool);
+  };
   const mac = onMac();
   /** While a chord is awaited every key is the dialog's: Esc cancels, a modifier alone waits, else it is the new chord. */
   const capture = (e: KeyboardEvent<HTMLElement>, id: string) => {
@@ -76,7 +84,7 @@ export function KeymapDialog(props: KeymapDialogProps): ReactNode {
         </thead>
         <tbody>
           {groups.map((g) => {
-            const title = groupTitle(g, (c) => TITLES.get(c), toolTitle);
+            const title = groupTitle(g, titleOfCommand, toolTitleOf);
             const waiting = capturing === g.id;
             return (
               <tr key={g.id}>

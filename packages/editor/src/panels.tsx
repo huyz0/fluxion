@@ -3,6 +3,7 @@
 
 import { useValue } from '@fluxion/render';
 import { t } from '@lingui/core/macro';
+import { toolTitle } from './titles.js';
 import './i18n.js';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { InspectorFields, type InspectorFieldsProps } from './inspector.js';
@@ -221,10 +222,10 @@ export function ToolButtons(props: ToolButtonsProps): ReactNode {
           className="fx-chrome-button"
           aria-pressed={current === tool.id}
           aria-keyshortcuts={tool.shortcut?.toUpperCase()}
-          title={tool.shortcut === undefined ? tool.title : `${tool.title} (${tool.shortcut.toUpperCase()})`}
+          title={tool.shortcut === undefined ? toolTitle(tool) : `${toolTitle(tool)} (${tool.shortcut.toUpperCase()})`}
           onClick={() => session.tool.set(tool.id)}
         >
-          {tool.title}
+          {toolTitle(tool)}
         </button>
       ))}
     </fieldset>

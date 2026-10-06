@@ -4,6 +4,7 @@ import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { ALIGN_MODES, DISTRIBUTE_AXES, ORDER_MOVES } from './arrange-edit.js';
 import type { EditorCommand } from './editor-commands.js';
+import { commandTitle } from './titles.js';
 
 /**
  * Which menu: on an element, on a screen's own area, or on the canvas around the screens.
@@ -67,7 +68,7 @@ export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | un
  * @public
  */
 export function menuItems(target: MenuTarget, commands: readonly EditorCommand[]): readonly MenuItem[] {
-  const titles = new Map(commands.map((c) => [c.id, c.title]));
+  const titles = new Map(commands.map((c) => [c.id, commandTitle(c)]));
   return MENUS[target].flatMap((command): MenuItem[] => {
     const title = titles.get(command);
     return title === undefined ? [] : [{ command, title }];

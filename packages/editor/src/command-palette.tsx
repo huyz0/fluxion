@@ -1,12 +1,14 @@
 // The command palette (FR-EDT-011, M7.24): Ctrl/Cmd+K opens a search over every editor command the
 // mode offers, with its shortcut beside it. Type to narrow (fuzzy), Up/Down to move, Enter to run, Esc
 // to close. A combobox over a listbox, so a screen reader announces the highlighted command.
+
 import { t } from '@lingui/core/macro';
 import { type KeyboardEvent, type ReactNode, useId, useMemo, useRef, useState } from 'react';
 import { EDITOR_COMMANDS, type EditorCommand } from './editor-commands.js';
 import { EDIT_FLAGS, type KeyBinding } from './keymap.js';
 import { formatChord, type KeyOverrides } from './keymap-overrides.js';
 import { filterEntries, type PaletteEntry, paletteEntries } from './palette-model.js';
+import { toolTitle } from './titles.js';
 import type { Tool } from './tools.js';
 
 /** Props of {@link CommandPalette}. */
@@ -137,7 +139,10 @@ export function PaletteHost(props: PaletteHostProps): ReactNode {
         base,
         overrides,
         flags: EDIT_FLAGS,
-        toolTitle: (id) => tools.find((tool) => tool.id === id)?.title,
+        toolTitle: (id) => {
+          const tool = tools.find((candidate) => candidate.id === id);
+          return tool === undefined ? undefined : toolTitle(tool);
+        },
       }),
     [commands, base, overrides, tools],
   );
