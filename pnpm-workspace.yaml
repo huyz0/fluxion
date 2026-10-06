@@ -26,6 +26,9 @@ overrides:
   cookie@<0.7.0: 0.7.2
   tmp@<0.2.7: 0.2.7
   uuid@<11.1.1: 11.1.1
+  # GHSA-wq5f-xc86-pv6w (sharp, via astro: the docs build) and GHSA-pqg4-j6r4-53mv (shell-quote, via @changesets/cli and launch-editor): M11.84
+  sharp@<0.35.5: 0.35.5
+  shell-quote@<1.11.0: 1.11.0
 
 packageExtensions:
   dependency-cruiser:
