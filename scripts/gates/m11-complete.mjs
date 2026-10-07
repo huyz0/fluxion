@@ -46,6 +46,7 @@ const { e2e } = createE2e({
       'e2e/privacy.no-telemetry.spec.ts',
       'e2e/mvp.create-save-reopen-present.spec.ts',
       'e2e/examples.r1-offline.spec.ts',
+      'e2e/file.size.spec.ts',
     ],
   },
   mobile: { projects: MOBILE, specs: ['e2e/player.touch.spec.ts', 'e2e/player.orientation.spec.ts'] },
@@ -83,7 +84,7 @@ leg('the navigator order, the controller, hidden screens and build reduction are
       'FR-PRS-002: goTo and the history return to earlier positions',
       'FR-PRS-003: seeking group k equals stepping k times from 0',
     ],
-    ['packages/player', 'packages/anim', 'packages/core', 'packages/editor'],
+    ['packages/render', 'packages/player', 'packages/anim', 'packages/core', 'packages/editor'],
   ),
 );
 leg('full-screen letterboxing on three engines (player.letterbox)', () => e2e(['e2e/player.letterbox.spec.ts'], DESKTOP));
