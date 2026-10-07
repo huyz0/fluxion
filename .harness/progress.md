@@ -1619,3 +1619,7 @@ Schema 1.3: `LayoutSpec` (`records/layout-spec.ts`) on screen, group and frame; 
 ## 2026-10-07 M12.29 (claude)
 
 M12.8 (adds `yaml`, already locked as a transitive) ran the whole harness on its lockfile and catalog change: 409 s three times against the 360 s staged budget. `lockfileLockedOnly` (only `catalogs:`/`importers:` differ) and `workspaceCatalogOnly` (only the `catalog:` block differs) let such a change, staged with a manifest, run the staged manifest harness; a new package still runs every file. M12.8 is stashed and resumes next.
+
+## 2026-10-07 M12.30 (claude)
+
+`lockfileLockedOnly` now also requires HEAD's importer resolutions and catalog entries unchanged (additions only); checked on the stashed M12.8 change: qualifies. Next M12.8 (unstash).

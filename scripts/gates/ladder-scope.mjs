@@ -215,8 +215,32 @@ const CATALOG = /^catalog:\n(?:[ \t#][^\n]*\n|\n)*/m;
  * and installed, and nothing new is fetched (M12.29).
  */
 export function lockfileLockedOnly(before, after) {
-  const rest = (text) => text.replace(/\r\n/g, '\n').replace(IMPORTERS, '').replace(CATALOGS, '');
-  return rest(before) === rest(after);
+  const [b, a] = [before, after].map((text) => text.replace(/\r\n/g, '\n'));
+  const rest = (text) => text.replace(IMPORTERS, '').replace(CATALOGS, '');
+  if (rest(b) !== rest(a)) return false;
+  // additions only: every external dependency an importer resolves, and every catalog line, stays as it was (M12.29 review F1)
+  const kept = (lines, from) => lines.every((line) => from.has(line));
+  const imports = (text) =>
+    externalImports(IMPORTERS.exec(text)?.[0] ?? '')
+      .split('\n')
+      .filter(Boolean);
+  const catalog = (text) => (CATALOGS.exec(text)?.[0] ?? '').split('\n').filter((l) => l.trim() !== '');
+  return kept(imports(b), new Set(imports(a))) && catalogKept(catalog(b), catalog(a));
+}
+
+/** Whether every catalog entry of `before` (name and its specifier and version lines) is in `after` unchanged. */
+function catalogKept(before, after) {
+  const entries = (lines) => {
+    const out = new Map();
+    let name = '';
+    for (const line of lines) {
+      if (/^ {4}\S/.test(line)) name = line.trim();
+      else if (/^ {6}\S/.test(line)) out.set(name, `${out.get(name) ?? ''}${line.trim()};`);
+    }
+    return out;
+  };
+  const [b, a] = [entries(before), entries(after)];
+  return [...b].every(([name, value]) => a.get(name) === value);
 }
 
 /** True when two `pnpm-workspace.yaml` texts differ only inside the `catalog:` block (M12.29). */

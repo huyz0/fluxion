@@ -388,6 +388,14 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.equal(lockfileLockedOnly(before, lock(entry, uses, yaml + lines('  left-pad@1.0.0:', '    resolution: {integrity: sha512-c}', ''))), false);
     assert.equal(lockfileLockedOnly(before, lock(entry, uses, yaml.replace('sha512-y', 'sha512-z'))), false);
     assert.equal(lockfileLockedOnly(before, after.replace('autoInstallPeers: true', 'autoInstallPeers: false')), false);
+    // a version change to another locked version is not an addition: an importer's or a catalog's (M12.29 review F1)
+    const two = yaml + lines('  yaml@2.9.2:', '    resolution: {integrity: sha512-w}', '');
+    assert.equal(lockfileLockedOnly(lock(entry, uses, two), lock(entry, uses.replace('version: 2.9.1', 'version: 2.9.2'), two)), false);
+    const bumped = entry.replace('specifier: 2.9.1', 'specifier: 2.9.2').replace('version: 2.9.1', 'version: 2.9.2');
+    assert.equal(lockfileLockedOnly(lock(entry, '', two), lock(bumped, '', two)), false);
+    // a second catalog entry added beside the first is still an addition
+    const zod = lines('    zod:', '      specifier: 4.6.5', '      version: 4.6.5');
+    assert.equal(lockfileLockedOnly(lock(entry, uses, yaml), lock(entry + zod, uses, yaml)), true);
     // pnpm-workspace.yaml: only the catalog block may differ (a comment line inside it included)
     const ws = (catalog) =>
       lines(
