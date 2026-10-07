@@ -522,3 +522,4 @@ M11.11	2d3056fd8fc37478b6e73385a5e96f20c32342b845ffc33a0916addc6e6df168	r2	pass	
 M11.11	2d3056fd8fc37478b6e73385a5e96f20c32342b845ffc33a0916addc6e6df168	r3	pass	claude:reviewer	0 findings
 M12.1	82d9bca711cdb5cf7f2ef1c8aec19fae82738527910f98ea9a5e42899693a639	r1	changes-requested	claude:reviewer-subagent	3 findings
 M12.1	46c76af57c197bcd6b08319b2b2d5e19d74f53359f0fffb72ddc3ff17cd95544	r2	pass	claude:reviewer-subagent	1 findings
+M12.2	c763d777b017b123126875f93737cafe29e30f017a8cb1f7943f7196f827ebc8	r1	changes-requested	claude:reviewer-subagent	1 findings

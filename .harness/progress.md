@@ -1591,3 +1591,7 @@ The player half of M11 is built and landed: the deck, builds, overview, chrome, 
 ## 2026-10-07 M12.1 (claude)
 
 Planned M12: M9, M10 (unclosed; M9.11, M9.23, M9.28, M10.22 unscheduled) and M11 archived; `m12-complete` red (4/25 legs); 26 rows re-derived (schema is 1.2 with `placement` and `slug` already, so 1.3 adds `screen.layout` and `document.source`; a sync 128-bit hash port; a `stack` layout before the place stage). ADR-0160 acknowledged by the human. Found: m11's backlog leg reads M11.59 (descoped) as a reopened row not done (as before this commit): row M12.27. Plan review r2 F1 (minor, a false green: the CodeMirror leg reads only dist/index.js, not the chunks it imports, and not @fluxion/dsl in the editor) goes into M12.23's acceptance with M12.2's commit. Next M12.2.
+
+## 2026-10-07 M12.2 (claude)
+
+ADR-0030 accepted: `flux: 1` additive-only; R2 compiles a key subset and keeps the rest in `document.source` with `FLX_DSL_NOT_YET`; stages parse, resolve, expand, style, place, validate; ten `FLX_DSL_*` codes; nested `pin`, `layout`, `style`, archetype arguments specified (review r1 F1). 06-ai-authoring.md §3 notes the R2 stages. Also: 8b8f730's row close matched `| M12.1 | todo | |` in five rows' Deps cells and marked M12.2, M12.3, M12.4, M12.12, M12.27 done; reset here. M12.23 carries plan review r2 F1. Container: Playwright 1.63 wants Chromium 1243, /opt has 1194; /opt/pw-browsers/chromium*-1243 symlinked to 1194 (outside the repo) so browser tests run. Next M12.3.

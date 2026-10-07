@@ -117,6 +117,11 @@ interface CompileResult {
 | 6 | validate | Zod structural → referential → bindings/anchors | `FLX_SCHEMA_*`, `FLX_ANCHOR_UNKNOWN` |
 | 7 | lint | §7 rules; produce a quality score | `FLX_LINT_*` |
 
+**R2 (ADR-0030):** the stages are parse → resolve → expand → style → **place** → validate. Place keeps pins and puts unpinned
+elements through the screen's `layout` from the registry, else the built-in `stack`, at shape default sizes; measured text and
+`layered` come in M13, lint in M14. ADR-0030 freezes the `flux: 1` grammar, lists what R2 compiles and what it keeps in
+`document.source` with `FLX_DSL_NOT_YET`, and lists the diagnostic codes.
+
 Stages are pure functions `(input, ctx) → { output, diagnostics }` and deterministic
 (NFR-REL-005): same source + catalog + fonts → byte-identical `.flux.json`. Routes are not stored
 (02 §6); `render`/exporters compute them.
