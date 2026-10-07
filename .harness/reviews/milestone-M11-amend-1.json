@@ -1,0 +1,15 @@
+{
+  "milestone": "M11",
+  "checkpoint": "amend-1",
+  "reviewer": "human (answer to M12.27, 2026-10-07), recorded by harness",
+  "findings": [],
+  "dispositions": [
+    {
+      "finding": "cp1 F3",
+      "disposition": "supersede",
+      "supersedes": "cp1 F3",
+      "target": "M11.59",
+      "note": "The human chose on 2026-10-07 to supersede cp1 F3's reopen: M11.59 is descoped by the human's decision of 2026-10-07 (the older WebKit's clipboard limit, roadmap Deferred), not fixed."
+    }
+  ]
+}

@@ -1683,3 +1683,7 @@ The human answered both blocks: raise the budget to 480 s (ADR-0163, supersedes 
 ## 2026-10-07 M12.8 (claude)
 
 `parseFlux` (`dsl/src/parse/parse.ts`) lands from the stash with `yaml` 2.9.1 (ISC; catalog; already locked as a transitive, so M12.29's scope applies): a `YNode` tree with 1-based line/col and offsets; anchors, aliases, tags (once, on keys too) and duplicate keys are `FLX_DSL_SYNTAX`; keys keep the author's text (`007`, not `7`; review r1). The budget is re-recorded with this lockfile under ADR-0163 (480 s), cold setup pending CI (ADR-0145). Next M12.27 (supersede the reopen), then M12.10.
+
+## 2026-10-07 M12.27 (claude)
+
+The human chose to supersede M11.59's reopen: `supersede` disposition (names `<checkpoint> <finding>` and the row, cites the human, needs the row closed with a citation) in `checkBacklogDone`; `.harness/reviews/milestone-M11-amend-1.json` records it; M11's backlog check passes. Next M12.10 (resolve stage).

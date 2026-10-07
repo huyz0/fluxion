@@ -285,6 +285,24 @@ describe('descoped rows (NFR-DX-003, user decision 2026-09-26)', () => {
     assert.equal(checkBacklogDone(`${row('M0.1', 'descoped (user decision; ADR-0137)')}\n`, 'M0'), true);
   });
 
+  it('HARNESS: a later human supersede closes a reopened row descoped with a citation, and nothing less does (M12.27)', () => {
+    const reopen = { checkpoint: 'cp1', dispositions: [{ finding: 'F3', disposition: 'reopen', target: 'M0.2' }] };
+    const supersede = (note, extra = {}) => ({
+      checkpoint: 'amend',
+      dispositions: [{ finding: 'A1', disposition: 'supersede', supersedes: 'cp1 F3', target: 'M0.2', note, ...extra }],
+    });
+    const descoped = `${row('M0.1', 'done')}\n${row('M0.2', 'descoped (human decision; roadmap Deferred)')}\n`;
+    assert.equal(checkBacklogDone(descoped, 'M0', [reopen, supersede('the human descoped it on 2026-10-07')]), true);
+    // without the supersede the reopen still needs done
+    assert.match(String(checkBacklogDone(descoped, 'M0', [reopen])), /reopened M0\.2 missing or not done/);
+    // a supersede must name a real reopen of that row, cite the human, and the row must be closed with a citation
+    assert.match(String(checkBacklogDone(descoped, 'M0', [reopen, supersede('the human', { supersedes: 'cp1 F9' })])), /names no reopen/);
+    assert.match(String(checkBacklogDone(descoped, 'M0', [reopen, supersede('the human', { target: 'M0.1' })])), /names no reopen/);
+    assert.match(String(checkBacklogDone(descoped, 'M0', [reopen, supersede('decided later')])), /cite the human/);
+    const uncited = `${row('M0.1', 'done')}\n${row('M0.2', 'descoped (not now)')}\n`;
+    assert.match(String(checkBacklogDone(uncited, 'M0', [reopen, supersede('the human')])), /not done: M0\.2|not closed/);
+  });
+
   it('rejects a bare descoped state and a descoped reopen target', () => {
     assert.match(String(checkBacklogDone(`${row('M0.1', 'descoped')}\n`, 'M0')), /not done: M0\.1/);
     const reviews = [{ checkpoint: 'cp9', dispositions: [{ finding: 'F1', disposition: 'reopen', target: 'M0.2' }] }];

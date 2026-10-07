@@ -67,7 +67,8 @@ export function checkReviewerSmoke(record, digest = '', task = 'M0.13') {
  * covers the WHOLE milestone: base strictly before the milestone's first commit, end at or after
  * its last non-bookkeeping commit.
  */
-const DISPOSITIONS = ['reopen', 'hand-off', 'argue'];
+// `supersede` (M12.27): a later human decision replaces an earlier reopen; it names that reopen (`supersedes: '<checkpoint> <finding>'`)
+const DISPOSITIONS = ['reopen', 'hand-off', 'argue', 'supersede'];
 
 /** Shape of a review record: reviewer, findings array, well-formed dispositions, none missing. */
 function reviewShapeProblem(review, milestone) {
@@ -141,12 +142,41 @@ export function checkBacklogDone(backlogText, milestone, reviews = []) {
   const closed = (s) => s === 'done' || (/^descoped \(\S.*\)$/.test(s) && /\bADR-\d{4}\b|\bDeferred\b/.test(s));
   const notDone = [...state].filter(([, s]) => !closed(s)).map(([id, s]) => `${id} (${s})`);
   if (notDone.length) return `not done: ${notDone.join(', ')}`;
+  const superseded = supersededReopens(reviews, state);
+  if (typeof superseded === 'string') return superseded;
   const reopens = reviews.flatMap((r) => (r?.dispositions ?? []).filter((d) => d.disposition === 'reopen').map((d) => [r, d]));
   for (const [r, d] of reopens) {
+    if (superseded.has(`${r.checkpoint ?? 'review'} ${d.finding}`)) continue;
     const problem = reopenProblem(d, milestone, state);
     if (problem) return `${r.checkpoint ?? 'review'} ${d.finding}: ${problem}`;
   }
   return true;
+}
+
+/**
+ * The reopens (`<checkpoint> <finding>`) a later `supersede` disposition replaces: a human decision that closed the reopened row another
+ * way. It must name the reopen and its row, cite a human decision, and the row must be closed (done, or descoped citing an ADR or the
+ * Deferred table); otherwise the problem as a string.
+ */
+function supersededReopens(reviews, state) {
+  const out = new Set();
+  for (const r of reviews) {
+    for (const d of (r?.dispositions ?? []).filter((x) => x.disposition === 'supersede')) {
+      const problem = supersedeProblem(d, reviews, state);
+      if (problem) return `${r.checkpoint ?? 'review'} ${d.finding}: ${problem}`;
+      out.add(d.supersedes);
+    }
+  }
+  return out;
+}
+
+/** Why one supersede disposition does not hold, or null. */
+function supersedeProblem(d, reviews, state) {
+  const closed = (s) => s === 'done' || (/^descoped \(\S.*\)$/.test(s ?? '') && /\bADR-\d{4}\b|\bDeferred\b/.test(s ?? ''));
+  const reopenOf = (o, x) => x.disposition === 'reopen' && `${o.checkpoint ?? 'review'} ${x.finding}` === d.supersedes && x.target === d.target;
+  if (!reviews.some((o) => (o?.dispositions ?? []).some((x) => reopenOf(o, x)))) return `supersede names no reopen "${d.supersedes}" of ${d.target}`;
+  if (!/\bhuman\b/i.test(String(d.note ?? ''))) return 'a supersede must cite the human decision';
+  return closed(state.get(d.target)) ? null : `superseded ${d.target} is not closed (${state.get(d.target) ?? 'missing'})`;
 }
 
 /** A reopen disposition must name rows of this milestone, and each must be `done`. */
