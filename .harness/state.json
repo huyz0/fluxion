@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M12: every remaining row needs M12.8 (the parse stage), which is done but cannot commit: it adds `yaml` (lockfile change), and `check-budget --record` times the worst-case staged commit at about 410 s on this 4-core container (four runs) against PRECOMMIT_BUDGET_MS 360 s (ADR-0158). Needs the human: raise the budget by ADR, or record the budget on a faster machine. The M12.8 code is in `git stash` (and scratchpad m12.8.patch).",
+  "blockedReason": "M12.8 waits for the human (answer 2026-10-07: record on a faster machine). They apply m12.8-deps.patch (yaml 2.9.1 for @fluxion/dsl) to claude/ecstatic-edison-ms4g6k, run `pnpm i && pnpm run setup && node scripts/gates/check-budget.mjs --record`, and hand back .harness/budget.json; then M12.8 (code in git stash) commits with that record, and M12.9 onward continue. This container times the worst-case staged commit at ~410 s against PRECOMMIT_BUDGET_MS 360 s.",
   "updated": "2026-10-07"
 }
