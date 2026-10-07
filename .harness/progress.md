@@ -1663,3 +1663,7 @@ While M12.8 waits on the budget record: the edge tokenizer needs no YAML, so M12
 ## 2026-10-07 M12.34 (claude)
 
 `dsl/src/resolve/suggest.ts`: `editDistance` (optimal string alignment), `nearest` (reach = a third of the word, 1 to 3 edits; case ignored; the word itself never), `toSlug`; the edge tokenizer's bad-slug hint uses it (M12.9 review F1). Split from M12.10, which keeps the resolve stage itself (needs M12.8).
+
+## 2026-10-07 M12.35 (claude)
+
+`nearest` reach tested at its edges (6, 9, 12+ letters and the floor); a cap of 4 fails them. M12 left: everything needs M12.8 (budget record pending from the human).

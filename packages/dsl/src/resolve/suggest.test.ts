@@ -31,6 +31,17 @@ describe('did-you-mean (FR-DSL-006)', () => {
     expect(nearest('anything', [])).toBeUndefined();
     // the word itself is not a suggestion
     expect(nearest('db', ['db'])).toBeUndefined();
+    // the reach at its edges (M12.34 review): a third of the word, so 2 edits for 6 letters and 3 for 9; never more than 3, however long
+    expect(nearest('abcdef', ['abcdxx'])).toBe('abcdxx');
+    expect(nearest('abcdef', ['abcxxx'])).toBeUndefined();
+    expect(nearest('abcdefghi', ['abcdefxxx'])).toBe('abcdefxxx');
+    expect(nearest('abcdefghi', ['abcdexxxx'])).toBeUndefined();
+    expect(nearest('abcdefghijkl', ['abcdefghixxx'])).toBe('abcdefghixxx');
+    expect(nearest('abcdefghijkl', ['abcdefghxxxx'])).toBeUndefined();
+    expect(nearest('authentication', ['authorization'])).toBeUndefined();
+    // and at least 1, however short
+    expect(nearest('ab', ['ax'])).toBe('ax');
+    expect(nearest('ab', ['xy'])).toBeUndefined();
   });
 
   it('FR-DSL-006: toSlug turns a name into a valid slug, or nothing when no letter is left', () => {
