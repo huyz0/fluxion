@@ -147,6 +147,12 @@ describe('.flux.json (FR-FIL-005)', () => {
     });
     expect(bad).toMatchObject({ ok: false, error: { reason: expect.stringContaining('has the hash') } });
     expect(readFluxJson('not json')).toMatchObject({ ok: false });
+    // an assets folder name the reader would refuse is refused when writing
+    for (const name of ['.deck', 'a:b', '../x', 'a/b', 'a\\b']) {
+      expect(await writeFluxJson({ document: docOf('two-rects-line'), assets, appVersion: '1', hasher, assetsMode: 'external', name }), name).toMatchObject({
+        ok: false,
+      });
+    }
     expect(readFluxJson('{"records":{}}')).toMatchObject({ ok: false, error: { reason: expect.stringContaining('fluxion') } });
     expect(readFluxJson('{"fluxion":"1.0","schemaVersion":"1.3","records":5}')).toMatchObject({ ok: false });
   });

@@ -1,13 +1,14 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { readFluxHtml, sha256Hex, writeFlux } from '@fluxion/format';
+import { loadFlux, readFluxHtml, sha256Hex, writeFlux } from '@fluxion/format';
 import { parseDocument } from '@fluxion/schema';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { OUTPUT_SCHEMAS } from '../output.js';
 import { E2E_TIMEOUT, fluxion, REPO } from './spawn-bin.js';
 
 const hasher = { sha256: (bytes: Uint8Array) => Promise.resolve(sha256Hex(bytes)) };
+const PNG = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
 let dir: string;
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'fluxion-convert-'));
@@ -15,10 +16,11 @@ beforeEach(() => {
 afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 /** A `.flux` of the two-rects-line fixture, written to `dir`. */
-async function fluxFile(name = 'deck.flux'): Promise<string> {
+async function fluxFile(name = 'deck.flux', withAsset = false): Promise<string> {
   const parsed = parseDocument(readFileSync(join(REPO, 'fixtures/docs/two-rects-line.flux.json'), 'utf8'));
   if (!parsed.ok) throw new Error('the fixture does not parse');
-  const written = await writeFlux({ document: parsed.value.document, appVersion: '1.0.0', hasher });
+  const assets = withAsset ? new Map([[sha256Hex(PNG), { bytes: PNG, mime: 'image/png' }]]) : undefined;
+  const written = await writeFlux({ document: parsed.value.document, appVersion: '1.0.0', hasher, source: 'flux: 1\n', ...(assets ? { assets } : {}) });
   if (!written.ok) throw new Error(written.error.reason);
   const path = join(dir, name);
   writeFileSync(path, written.value);
@@ -32,6 +34,31 @@ function convert(...args: string[]) {
   const parsed = OUTPUT_SCHEMAS['convert']?.safeParse(JSON.parse(r.stdout));
   expect(parsed?.success, parsed?.error?.message).toBe(true);
   return { status: r.status, reply: parsed?.data as Reply };
+}
+
+/** `.flux` → `.flux.json` → `.flux` → `.flux.json`, with inline or external assets: the same document, then the same JSON bytes. */
+async function roundTrip(flux: string, document: unknown, external: boolean): Promise<void> {
+  const json = join(dir, external ? 'ext.flux.json' : 'deck.flux.json');
+  const back = join(dir, external ? 'ext-back.flux' : 'back.flux');
+  const there = convert(flux, json, ...(external ? ['--assets', 'external'] : []));
+  expect(there.status).toBe(0);
+  expect(there.reply.result).toMatchObject({ direction: 'to-json', bytes: readFileSync(json).length });
+  const text = readFileSync(json, 'utf8');
+  expect(text).toContain('"fluxion": "1.0"');
+  expect(text.includes('base64')).toBe(!external);
+  expect(existsSync(join(dir, `ext.assets/${sha256Hex(PNG)}.png`))).toBe(external);
+  const home = convert(json, back);
+  expect(home.status).toBe(0);
+  expect(home.reply.result).toMatchObject({ direction: 'from-json' });
+  const reopened = await loadFlux(readFileSync(back), { hasher });
+  if (!reopened.ok) throw new Error(reopened.error.message);
+  expect(reopened.value.document).toEqual(document);
+  expect(reopened.value.source).toBe('flux: 1\n');
+  expect(Uint8Array.from(reopened.value.assets.get(sha256Hex(PNG))?.bytes ?? [])).toEqual(PNG);
+  // the JSON written again from the round-tripped .flux is the same bytes
+  const again = join(dir, external ? 'ext2.flux.json' : 'again.flux.json');
+  convert(back, again, ...(external ? ['--assets', 'external'] : []));
+  expect(readFileSync(again, 'utf8').replace(/ext2\.assets/g, 'ext.assets')).toBe(text);
 }
 
 describe('fluxion convert (FR-FIL-003, FR-CLI-001, ADR-0155)', { timeout: E2E_TIMEOUT }, () => {
@@ -55,6 +82,27 @@ describe('fluxion convert (FR-FIL-003, FR-CLI-001, ADR-0155)', { timeout: E2E_TI
     // and the page's archive is what a reader finds in it
     const found = await readFluxHtml(page, hasher);
     expect(found.ok && Buffer.from(found.value).equals(readFileSync(flux))).toBe(true);
+  });
+
+  it('FR-FIL-005: fluxion convert turns a .flux into a .flux.json and back to the same document, inline or with external assets', async () => {
+    const flux = await fluxFile('deck.flux', true);
+    const opened = await loadFlux(readFileSync(flux), { hasher });
+    if (!opened.ok) throw new Error(opened.error.message);
+    for (const external of [false, true]) await roundTrip(flux, opened.value.document, external);
+  });
+
+  it('FR-CLI-001: a bad --assets value, --assets on another output, and a .flux.html with a .flux.json are usage errors', async () => {
+    const flux = await fluxFile();
+    for (const args of [
+      [flux, join(dir, 'a.flux.json'), '--assets', 'zip'],
+      [flux, join(dir, 'a.flux.html'), '--assets', 'external'],
+      [join(dir, 'a.flux.html'), join(dir, 'a.flux.json')],
+    ]) {
+      const { status, reply } = convert(...args);
+      expect(status, args.join(' ')).toBe(2);
+      expect(reply.errors?.[0]?.code).toBe('FLX_CLI_USAGE');
+    }
+    expect(existsSync(join(dir, 'a.flux.json'))).toBe(false);
   });
 
   it('FR-CLI-001: a pair that is not one .flux and one .flux.html, or the wrong number of files, is a usage error and writes nothing', async () => {

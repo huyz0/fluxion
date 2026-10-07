@@ -73,7 +73,11 @@ type AssetOut = { mime: string; base64?: string; path?: string };
 async function assetsOut(
   input: WriteFluxJsonInput,
 ): Promise<Result<{ assets: { [hash: string]: AssetOut }; files: FluxJsonOutput['files'] }, FluxJsonFailure>> {
-  const folder = `${input.name ?? 'document'}.assets`;
+  const name = input.name ?? 'document';
+  // the reader takes only <name>.assets/<hash>.<ext> with a plain name: refuse a name it would refuse (M12.15 review r2 F1)
+  if (input.assetsMode === 'external' && !/^[^/\\:.][^/\\:]*$/.test(name))
+    return err({ reason: `"${name}" cannot name an assets folder: it starts with "." or has "/", "\\" or ":"` });
+  const folder = `${name}.assets`;
   const assets: { [hash: string]: AssetOut } = {};
   const files: { path: string; bytes: Uint8Array }[] = [];
   for (const key of [...(input.assets?.keys() ?? [])].sort()) {

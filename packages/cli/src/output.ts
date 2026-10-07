@@ -51,7 +51,9 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
   convert: reply(
     z.literal('convert'),
     z.union([
-      z.object({ from: z.string(), to: z.string(), direction: z.enum(['to-html', 'to-flux']), bytes: z.number().int().min(0) }).strict(),
+      z
+        .object({ from: z.string(), to: z.string(), direction: z.enum(['to-html', 'to-flux', 'to-json', 'from-json']), bytes: z.number().int().min(0) })
+        .strict(),
       helpResult,
       versionResult,
     ]),

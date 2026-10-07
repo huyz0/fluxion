@@ -36,7 +36,9 @@
                   "type": "string",
                   "enum": [
                     "to-html",
-                    "to-flux"
+                    "to-flux",
+                    "to-json",
+                    "from-json"
                   ]
                 },
                 "bytes": {

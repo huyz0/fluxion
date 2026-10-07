@@ -48,3 +48,15 @@ Add `--json` to any command to get one JSON object on stdout:
 A failure has `"ok": false` and an `errors` array of diagnostics instead of `result`. The schema of
 each command's reply is in `packages/cli/schemas/`. Exit codes: 0 ok, 1 the input has errors, 2
 usage error, 3 internal error.
+
+## Convert between file kinds
+
+`convert` turns a `.flux` into a `.flux.html` (one file with the player in it) or a `.flux.json` (pretty, byte-stable JSON for diffs and
+git), and either of those back into a `.flux`. With `--assets external`, a `.flux.json`'s images and fonts are written beside it in a
+`<name>.assets/` folder, so a diff shows only the hash that changed:
+
+```sh
+node packages/cli/dist/bin.js convert deck.flux deck.flux.html
+node packages/cli/dist/bin.js convert deck.flux deck.flux.json --assets external
+node packages/cli/dist/bin.js convert deck.flux.json deck.flux
+```

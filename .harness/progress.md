@@ -1639,3 +1639,7 @@ M12.8's code passes its staged ladder (203 s with M12.29/M12.30), but the lockfi
 ## 2026-10-07 M12.15 (claude)
 
 `writeFluxJson`/`readFluxJson` (`format/src/flux-json.ts`): `{fluxion, schemaVersion, manifest {app, generator?}, records (via serializeDocument), theme?, source?, assets?}` in canonical JSON; assets inline base64 or external `<name>.assets/<sha>.<ext>` (the reader takes only `<name>.assets/<hash>.<ext>` through `unsafeName`, and checks each asset's bytes against its hash; review r1); the reader goes through `parseDocument`. The CLI flag is row M12.31. Next: everything else in M12 needs M12.8 (blocked).
+
+## 2026-10-07 M12.31 (claude)
+
+ADR-0162: `fluxion convert` pairs a `.flux` with a `.flux.json` either way; `--assets inline|external` (usage error otherwise or on another output); reply `direction` adds `to-json`/`from-json` (additive, apiVersion 1); schema snapshot regenerated. `writeFluxJson` refuses an assets folder name the reader would (M12.15 review r2 F1). CLI e2e: the round trip keeps the document, source and assets, and the JSON written again is the same bytes. Cli-quickstart guide updated. Next: the rest of M12 needs M12.8 (blocked).

@@ -48,7 +48,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-002 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/examples.r1-offline.spec.ts` +6 |
 | FR-FIL-003 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/cli/src/e2e/cli.convert.test.ts` +4 |
 | FR-FIL-004 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/blobs.browser.test.ts` +6 |
-| FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | `packages/format/src/flux-json.test.ts` |
+| FR-FIL-005 | S | R2 | M12 | [10-document-and-file.md](10-document-and-file.md) | `packages/cli/src/e2e/cli.convert.test.ts`, `packages/format/src/flux-json.test.ts` |
 | FR-FIL-006 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +5 |
 | FR-FIL-007 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/autosave/autosave-bar.test.tsx` +12 |
 | FR-FIL-008 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/library/library-service.browser.test.ts` +4 |
