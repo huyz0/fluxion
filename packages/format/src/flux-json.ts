@@ -70,7 +70,9 @@ export type FluxJsonOutput = {
 type AssetOut = { mime: string; base64?: string; path?: string; ext?: string };
 
 /** `{ ext }` when `asset` names an extension its media type does not imply, else nothing: a round trip keeps the asset's file name. */
-const ownExt = (asset: FluxAsset): { ext?: string } => (asset.ext === undefined || asset.ext === extensionOf(asset.mime) ? {} : { ext: asset.ext });
+const ownExt = (asset: FluxAsset): { ext?: string } =>
+  // only an extension the reader takes back (lower-case letters and digits) is written; any other falls back to the media type's
+  asset.ext === undefined || asset.ext === extensionOf(asset.mime) || !/^[a-z0-9]+$/.test(asset.ext) ? {} : { ext: asset.ext };
 
 /** The extension an entry read back carries: from its external path, else its inline `ext`. */
 function entryExt(entry: Raw): string | undefined {
@@ -102,7 +104,7 @@ async function assetsOut(
       assets[key] = { mime: asset.mime, base64: encodeBase64(asset.bytes), ...ownExt(asset) };
       continue;
     }
-    const path = `${folder.value}/${key}.${asset.ext ?? extensionOf(asset.mime)}`;
+    const path = `${folder.value}/${key}.${ownExt(asset).ext ?? extensionOf(asset.mime)}`;
     files.push({ path, bytes: asset.bytes });
     assets[key] = { mime: asset.mime, path };
   }

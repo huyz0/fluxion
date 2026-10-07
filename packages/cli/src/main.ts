@@ -18,8 +18,6 @@ const COMMANDS: { readonly [name: string]: Command } = {
 
 const GLOBAL: Options = { help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, json: { type: 'boolean' } };
 
-/** The version the bin reports. */
-
 function helpText(): string {
   const width = Math.max(...Object.keys(COMMANDS).map((n) => n.length));
   const list = Object.entries(COMMANDS).map(([name, c]) => `  ${name.padEnd(width)}  ${c.summary}`);

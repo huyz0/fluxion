@@ -1,5 +1,5 @@
 ---
-'@fluxion/format': patch
+'@fluxion/format': minor
 '@fluxion/cli': patch
 ---
 

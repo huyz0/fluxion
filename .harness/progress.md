@@ -1647,3 +1647,7 @@ ADR-0162: `fluxion convert` pairs a `.flux` with a `.flux.json` either way; `--a
 ## 2026-10-07 M12.32 (claude)
 
 `.flux.json` keeps an asset's own extension (inline `ext` when the media type does not imply it; external from the path) and takes `[a-z0-9]+` like the `.flux` loader; `packages/cli/src/version.ts` is the one CLI version (`--version`, `VERSION`, files `convert` writes). Next: M12 rows left need M12.8 (blocked on the staged budget).
+
+## 2026-10-07 M12.33 (claude)
+
+M12.32 review minors: no unreadable `ext` written, inline or as an external file name (r1 F1), 08 §4 documents `ext`/paths/hash check, the format changeset is minor, a stray CLI comment removed. Next: every remaining M12 row needs M12.8 (blocked on the staged budget; see that row).

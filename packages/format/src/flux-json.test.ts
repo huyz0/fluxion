@@ -158,6 +158,24 @@ describe('.flux.json (FR-FIL-005)', () => {
     expect(back.ok && back.value.assets.get(sha256Hex(blob))?.ext).toBe('thingamajig');
   });
 
+  it('FR-FIL-005: an extension the reader would not take back is not written, and a second write is the same bytes', async () => {
+    const blob = Uint8Array.from([1, 2, 3, 4]);
+    const odd = new Map([[sha256Hex(blob), { bytes: blob, mime: 'application/x-thing', ext: 'Thing' }]]);
+    const plain = await writeFluxJson({ document: docOf('two-rects-line'), assets: odd, appVersion: '1', hasher });
+    if (!plain.ok) throw new Error(plain.error.reason);
+    expect(plain.value.text).not.toContain('"ext"');
+    const reread = readFluxJson(plain.value.text);
+    if (!reread.ok) throw new Error(reread.error.reason);
+    const second = await writeFluxJson({ document: reread.value.document, assets: reread.value.assets, appVersion: '1', hasher });
+    expect(second.ok && second.value.text).toBe(plain.value.text);
+    // external too: the file takes its media type's extension, and the writer's own output reads back
+    const ext = await writeFluxJson({ document: docOf('two-rects-line'), assets: odd, appVersion: '1', hasher, assetsMode: 'external', name: 'd' });
+    if (!ext.ok) throw new Error(ext.error.reason);
+    expect(ext.value.files.map((f) => f.path)).toEqual([`d.assets/${sha256Hex(blob)}.bin`]);
+    const disk = new Map(ext.value.files.map((f) => [f.path, f.bytes]));
+    expect(readFluxJson(ext.value.text, (p) => disk.get(p)).ok).toBe(true);
+  });
+
   it('FR-FIL-005: a key that is not the hash of its bytes, text that is not JSON and a file without a version are refused', async () => {
     const bad = await writeFluxJson({
       document: docOf('two-rects-line'),

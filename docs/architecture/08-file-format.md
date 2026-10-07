@@ -115,7 +115,7 @@ the player. The player reads the zip with fflate and inflates entries with nativ
   "records": { "doc": { "…": "…" }, "e1": { "…": "…" } },
   "theme": { "…": "DTCG tokens" },
   "source": "flux: 1\n…",
-  "assets": { "3f9a…c1": { "mime": "image/webp", "base64": "UklGR…" } },
+  "assets": { "3f9a…c1": { "mime": "image/webp", "base64": "UklGR…" }, "8b2e…07": { "mime": "application/x-thing", "base64": "…", "ext": "thing" } },
   "plugins": { "acme.chart@1.4.2": { "manifest": {}, "player": "base64…" } }
 }
 ```
@@ -126,8 +126,9 @@ recursively, 2-space indent, LF, trailing newline, geometry numbers rounded to 1
 `viewport`; magnitudes of 1e12 or more are kept, the grid being finer than their precision) and
 `-0` → `0`, every other number (unknown fields and plugin data included) written exactly, no
 `undefined`/`NaN`. `@fluxion/schema`
-`serializeDocument`/`canonicalNumber` is the reference implementation. `--assets=external` writes assets as `<name>.assets/<sha256>.<ext>` next to
-the JSON so git diffs stay small.
+`serializeDocument`/`canonicalNumber` is the reference implementation. `--assets external` (`fluxion convert`, ADR-0162) writes assets as `<name>.assets/<sha256>.<ext>` next to
+the JSON so git diffs stay small. An inline asset whose extension its media type does not imply carries it as `ext`; a reader checks
+each asset's bytes against its hash and reads an external one only from that path.
 
 ## 5. Size estimates
 
