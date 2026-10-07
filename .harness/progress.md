@@ -1611,3 +1611,7 @@ Schema 1.3: `LayoutSpec` (`records/layout-spec.ts`) on screen, group and frame; 
 ## 2026-10-07 M12.6 (claude)
 
 `SyncHash128` port, `sha256Hash128`, `base62` (22 chars, order-keeping), `stableId`, `idKeys`, `resolveSalt` (base salt, else given, else empty; review r1 F1) in `core/src/hash/`; the pure SHA-256 moved from format to core (`sha256Bytes` added), format re-exports `sha256Hex` and now depends on core (lockfile: a workspace link). FIPS vectors, a 10k no-collision corpus, a base62 property. M12.5 review: F1 became M12.28, F2 argued. Next M12.7.
+
+## 2026-10-07 M12.7 (claude)
+
+`packages/dsl`: `diagnostics/codes.ts` (the ten ADR-0030 codes), `types.ts` (`SourceRange`, `DslDiagnostic` = schema `Diagnostic` with a FluxScript or schema code and a source range, `CompileOptions`, `CompileResult`), `diagnostics/format.ts` (rank, dedupe, cap 20, `+N more`). dsl depends on core and schema. The `yaml` dependency moved to M12.8 (knip refuses an unused one). Next M12.8.

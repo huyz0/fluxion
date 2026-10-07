@@ -4,7 +4,70 @@
 
 ```ts
 
+import { CoreRegistries } from '@fluxion/core';
+import { Diagnostic } from '@fluxion/schema';
+import { DiagnosticCode } from '@fluxion/schema';
+import { DiagnosticSeverity } from '@fluxion/schema';
+import { DocumentFile } from '@fluxion/schema';
+import { RecordId } from '@fluxion/schema';
+import { SyncHash128 } from '@fluxion/core';
+
+// @public
+export type CompileOptions = {
+    readonly registries: CoreRegistries;
+    readonly hasher?: SyncHash128;
+    readonly salt?: string;
+    readonly mode?: "strict" | "lenient";
+    readonly base?: DocumentFile;
+};
+
+// @public
+export type CompileResult = {
+    readonly doc?: DocumentFile;
+    readonly diagnostics: readonly DslDiagnostic[];
+    readonly sourceMap: ReadonlyMap<RecordId, SourceRange>;
+    readonly stats: {
+        readonly screens: number;
+        readonly records: number;
+    };
+};
+
+// @public
+export const DSL_CODES: { readonly [C in DslCode]: DslCodeEntry; };
+
+// @public
+export type DslCode = "FLX_DSL_SYNTAX" | "FLX_DSL_VERSION" | "FLX_DSL_UNKNOWN_KEY" | "FLX_DSL_EDGE_SYNTAX" | "FLX_DSL_BAD_SLUG" | "FLX_DSL_DUP_SLUG" | "FLX_DSL_UNKNOWN_SHAPE" | "FLX_DSL_AMBIGUOUS_SHAPE" | "FLX_DSL_UNKNOWN_PACK" | "FLX_DSL_NOT_YET";
+
+// @public
+export type DslCodeEntry = {
+    readonly severity: DiagnosticSeverity;
+    readonly description: string;
+};
+
+// @public
+export type DslDiagnostic = Omit<Diagnostic, "code"> & {
+    readonly code: DslCode | DiagnosticCode;
+    readonly source?: SourceRange;
+};
+
+// @public
+export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], input?: {
+    readonly cap?: number;
+}): string[];
+
+// @public
+export type SourceRange = {
+    readonly line: number;
+    readonly col: number;
+    readonly endLine: number;
+    readonly endCol: number;
+    readonly offset: number;
+    readonly end: number;
+};
+
 // @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```

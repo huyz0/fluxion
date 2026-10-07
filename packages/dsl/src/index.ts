@@ -4,6 +4,10 @@
  * @packageDocumentation
  */
 
+export { DSL_CODES, type DslCode, type DslCodeEntry } from './diagnostics/codes.js';
+export { formatDiagnostics } from './diagnostics/format.js';
+export type { CompileOptions, CompileResult, DslDiagnostic, SourceRange } from './types.js';
+
 /**
  * Version of this package.
  *
