@@ -1675,3 +1675,7 @@ While M12.8 waits on the budget record: the edge tokenizer needs no YAML, so M12
 ## 2026-10-07 stop 2 (claude)
 
 Done since stop 1: M12.9 (edge tokenizer, re-pointed at M12.7), M12.34-M12.36 (did-you-mean, its boundary tests, the diagnostics page). Every M12 row left needs M12.8 (budget record from a faster machine) or, for M12.27, a decision on the reopen rule.
+
+## 2026-10-07 M12.37 (claude)
+
+The human answered both blocks: raise the budget to 480 s (ADR-0163, supersedes ADR-0158; requirement and standards updated) and supersede M11.59's reopen (M12.27). Next: re-record the budget with M12.8's lockfile and commit M12.8.

@@ -65,11 +65,12 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0155](ADR-0155-cli-convert.md) | `fluxion convert`: a `.flux` and a `.flux.html` are the same document | accepted | 2026-10-04 |
 | [0156](ADR-0156-lighthouse-job-npx.md) | The Lighthouse CI job fetches `@lhci/cli` with npx, exactly pinned, until a lockfile change can be recorded | accepted | 2026-10-05 |
 | [0157](ADR-0157-m10-decisions-gzip-budget-and-deferrals.md) | The `.flux.html` budget is gzip; the manifest's shape-def list and `sanitizeHtml` wait for their consumers | accepted | 2026-10-05 |
-| [0158](ADR-0158-precommit-budget-360s.md) | The pre-commit budget is 360 s | accepted | 2026-10-06 |
+| [0158](ADR-0158-precommit-budget-360s.md) | The pre-commit budget is 360 s | superseded by 0163 | 2026-10-06 |
 | [0159](ADR-0159-check-i18n-parses-with-oxc.md) | `check-i18n` parses JSX with `oxc-parser` | accepted | 2026-10-06 |
 | [0160](ADR-0160-caniuse-lite-licence-exception.md) | `caniuse-lite` (CC-BY-4.0) is allowed as a transitive of `@lingui/core` | accepted | 2026-10-06 |
 | [0161](ADR-0161-quick-budget-120s.md) | The quick-gate budget is 120 s | accepted | 2026-10-06 |
 | [0162](ADR-0162-convert-flux-json.md) | `fluxion convert` writes and reads `.flux.json`, with `--assets inline|external` | accepted | 2026-10-07 |
+| [0163](ADR-0163-precommit-budget-480s.md) | The pre-commit budget is 480 s (supersedes 0158) | accepted | 2026-10-07 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 
