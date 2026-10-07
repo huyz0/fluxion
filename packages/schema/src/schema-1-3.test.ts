@@ -1,5 +1,6 @@
 // Schema 1.3 (ADR-0031): layout specs on screens, groups and frames, and the FluxScript a document was compiled from.
 import { describe, expect, it } from 'vitest';
+import mixed from './__fixtures__/migration/mixed-1.2.flux.json' with { type: 'json' };
 import nonconforming from './__fixtures__/migration/nonconforming-1.2.flux.json' with { type: 'json' };
 import v12 from './__fixtures__/v1.2/document.flux.json' with { type: 'json' };
 import v13 from './__fixtures__/v1.3/document.flux.json' with { type: 'json' };
@@ -39,6 +40,19 @@ describe('schema 1.3 (FR-DSL-005, FR-DSL-002)', () => {
     expect('source' in (out['doc'] ?? {})).toBe(false);
     // a shape is not a container: whatever it carries under `layout` is an unknown field, kept (FR-DOC-005)
     expect(out['e1']?.['layout']).toEqual({ type: 'Anything Goes' });
+  });
+
+  it('FR-DSL-005: the 1.2 to 1.3 step keeps conforming layouts and sources beside the values it drops', () => {
+    const r = migrate(mixed);
+    if (!r.ok) throw new Error(r.error.message);
+    expect(validate(r.value.document)).toEqual([]);
+    const out = records(r.value.document);
+    const before = records(mixed);
+    expect(out['s1']?.['layout']).toEqual(before['s1']?.['layout']);
+    expect(out['g1']?.['layout']).toEqual(before['g1']?.['layout']);
+    expect(out['doc']?.['source']).toEqual(before['doc']?.['source']);
+    // the bad one beside them goes
+    expect('layout' in (out['s2'] ?? {})).toBe(false);
   });
 
   it("FR-DSL-005: screen.layout and a group's and a frame's layout round-trip and must name a layout", () => {
