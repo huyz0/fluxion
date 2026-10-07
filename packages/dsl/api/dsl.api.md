@@ -51,9 +51,57 @@ export type DslDiagnostic = Omit<Diagnostic, "code"> & {
 };
 
 // @public
+export type Edge = {
+    readonly from: EdgeEnd;
+    readonly op: EdgeOp;
+    readonly to: EdgeEnd;
+};
+
+// @public
+export const EDGE_OPS: readonly ["->", "<-", "<->", "--", "~>"];
+
+// @public
+export function edgeDiagnostic(failure: Extract<EdgeResult, {
+    ok: false;
+}>, key: SourceRange, path: string): DslDiagnostic;
+
+// @public
+export type EdgeEnd = {
+    readonly slug: string;
+    readonly anchor?: string;
+    readonly col: number;
+};
+
+// @public
+export type EdgeOp = (typeof EDGE_OPS)[number];
+
+// @public
+export type EdgeResult = {
+    readonly ok: true;
+    readonly edge: Edge;
+} | {
+    readonly ok: false;
+    readonly code: "FLX_DSL_EDGE_SYNTAX" | "FLX_DSL_BAD_SLUG";
+    readonly field?: "from" | "to" | "op";
+    readonly col: number;
+    readonly message: string;
+    readonly hint: string;
+};
+
+// @public
 export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], input?: {
     readonly cap?: number;
 }): string[];
+
+// @public
+export function parseEdge(text: string): EdgeResult;
+
+// @public
+export function parseEdgeObject(value: {
+    readonly from?: unknown;
+    readonly to?: unknown;
+    readonly op?: unknown;
+}): EdgeResult;
 
 // @public
 export type SourceRange = {

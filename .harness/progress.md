@@ -1655,3 +1655,7 @@ M12.32 review minors: no unreadable `ext` written, inline or as an external file
 ## 2026-10-07 stop (claude)
 
 Done since the plan: M12.2-M12.7, M12.12, M12.15, M12.28-M12.33. Blocked: M12.8 and everything after it (see `blockedReason`). Next after the human's answer: commit M12.8 from the stash, then M12.9.
+
+## 2026-10-07 M12.9 (claude)
+
+While M12.8 waits on the budget record: the edge tokenizer needs no YAML, so M12.9 depends on M12.7 now. `parseEdge` (`dsl/src/parse/edge.ts`): five ops, anchor suffix, whitespace required around the op (a slug may hold `-`), column + message + hint + code (`FLX_DSL_BAD_SLUG` for a bad slug) per failure; `parseEdgeObject` for `{from, to, op?}` names the failing field; `edgeDiagnostic` places it in the source (review r1). Next: rows that need no YAML.
