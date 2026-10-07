@@ -1,9 +1,9 @@
 {
   "milestone": "M12",
-  "currentTask": "M12.33",
+  "currentTask": null,
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": null,
+  "blockedReason": "M12: every remaining row needs M12.8 (the parse stage), which is done but cannot commit: it adds `yaml` (lockfile change), and `check-budget --record` times the worst-case staged commit at about 410 s on this 4-core container (four runs) against PRECOMMIT_BUDGET_MS 360 s (ADR-0158). Needs the human: raise the budget by ADR, or record the budget on a faster machine. The M12.8 code is in `git stash` (and scratchpad m12.8.patch).",
   "updated": "2026-10-07"
 }

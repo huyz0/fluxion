@@ -1651,3 +1651,7 @@ ADR-0162: `fluxion convert` pairs a `.flux` with a `.flux.json` either way; `--a
 ## 2026-10-07 M12.33 (claude)
 
 M12.32 review minors: no unreadable `ext` written, inline or as an external file name (r1 F1), 08 §4 documents `ext`/paths/hash check, the format changeset is minor, a stray CLI comment removed. Next: every remaining M12 row needs M12.8 (blocked on the staged budget; see that row).
+
+## 2026-10-07 stop (claude)
+
+Done since the plan: M12.2-M12.7, M12.12, M12.15, M12.28-M12.33. Blocked: M12.8 and everything after it (see `blockedReason`). Next after the human's answer: commit M12.8 from the stash, then M12.9.
