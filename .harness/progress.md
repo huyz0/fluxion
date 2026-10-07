@@ -1599,3 +1599,7 @@ ADR-0030 accepted: `flux: 1` additive-only; R2 compiles a key subset and keeps t
 ## 2026-10-07 M12.3 (claude)
 
 ADR-0031 accepted: `stableId(salt, key) = base62(hash128(salt:key))`, 22 chars, `SyncHash128` in core over SHA-256 truncated (the pure one moves from format); one salt per document in `document.source.salt` (options or empty; a recompile reuses it; review r1 F1/F2); key scheme per record kind. Schema 1.3: `LayoutSpec`, `screen.layout`, group/frame `layout`, `document.source.deferred` by pointer. M12.5/M12.6 rows sharpened; ADR-0030 review r2 minors F1/F2 went into M12.11/M12.13 acceptance. Next M12.4.
+
+## 2026-10-07 M12.4 (claude)
+
+ADR-0032 accepted: CodeMirror 6 (MIT, editor only, the editor's first lazy chunk with `@fluxion/dsl`), `lang-yaml`'s Lezer grammar plus a FluxScript layer from the dsl tokenizer (not an own Lezer grammar), a hand-written TextMate grammar; sync: 300 ms debounce, one `source.apply` undo step, apply touches only source-owned records; a focused or dirty view regenerates only on consent, blur flushes (review r1 F1/F2); the apply is a three-way merge against the view's base text (r2 F1). tech-stack row added; M12.20 reworded to match. Next M12.5.

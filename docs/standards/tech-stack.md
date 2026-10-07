@@ -52,6 +52,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | Optional packs | elkjs (EPL-2.0), libavoid-js (LGPL, wasm) | latest | lazy, unmodified, separate chunk |
 | Animation helpers | WAAPI, flubber, d3-interpolate-path; Motion (editor UI only) | latest | own scheduler does the rest (ADR-0006) |
 | DSL parsing | `yaml` | 2.x | source ranges for diagnostics |
+| Source view | CodeMirror 6 (`@codemirror/*` with `lang-yaml`, `@lezer/highlight`) | 6.x | MIT, modular, small; **editor only**, a lazy chunk loaded by the Source tab (ADR-0032) |
 | MCP | `@modelcontextprotocol/sdk` | latest | stdio + streamable HTTP |
 
 ## 2. Rejected alternatives
