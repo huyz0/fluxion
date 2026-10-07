@@ -41,6 +41,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0028](ADR-0028-editor-interaction-architecture.md) | Editor interaction: statechart tools, a signal session store, a screen-space SVG overlay, a frame-batched pointer pipeline | accepted | 2026-09-30 |
 | [0029](ADR-0029-editor-chrome-primitives.md) | Editor chrome: own splitters, a scoped `@layer fx.chrome` stylesheet, the panel layout in a settings port (amends 0010's timing) | accepted | 2026-09-30 |
 | [0030](ADR-0030-fluxscript-grammar-v1.md) | FluxScript grammar v1: `flux: 1` is additive-only, R2 compiles a subset and keeps the deferred sections, the diagnostic codes | accepted | 2026-10-07 |
+| [0031](ADR-0031-stable-ids-and-placement.md) | Stable ids `base62(hash128(salt:key))` through a sync port (SHA-256/128), layout specs on screens and containers, deferred FluxScript in `document.source`: schema 1.3 | accepted | 2026-10-07 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |

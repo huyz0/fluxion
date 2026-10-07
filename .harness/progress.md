@@ -1595,3 +1595,7 @@ Planned M12: M9, M10 (unclosed; M9.11, M9.23, M9.28, M10.22 unscheduled) and M11
 ## 2026-10-07 M12.2 (claude)
 
 ADR-0030 accepted: `flux: 1` additive-only; R2 compiles a key subset and keeps the rest in `document.source` with `FLX_DSL_NOT_YET`; stages parse, resolve, expand, style, place, validate; ten `FLX_DSL_*` codes; nested `pin`, `layout`, `style`, archetype arguments specified (review r1 F1). 06-ai-authoring.md §3 notes the R2 stages. Also: 8b8f730's row close matched `| M12.1 | todo | |` in five rows' Deps cells and marked M12.2, M12.3, M12.4, M12.12, M12.27 done; reset here. M12.23 carries plan review r2 F1. Container: Playwright 1.63 wants Chromium 1243, /opt has 1194; /opt/pw-browsers/chromium*-1243 symlinked to 1194 (outside the repo) so browser tests run. Next M12.3.
+
+## 2026-10-07 M12.3 (claude)
+
+ADR-0031 accepted: `stableId(salt, key) = base62(hash128(salt:key))`, 22 chars, `SyncHash128` in core over SHA-256 truncated (the pure one moves from format); one salt per document in `document.source.salt` (options or empty; a recompile reuses it; review r1 F1/F2); key scheme per record kind. Schema 1.3: `LayoutSpec`, `screen.layout`, group/frame `layout`, `document.source.deferred` by pointer. M12.5/M12.6 rows sharpened; ADR-0030 review r2 minors F1/F2 went into M12.11/M12.13 acceptance. Next M12.4.
