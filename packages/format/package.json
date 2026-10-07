@@ -29,6 +29,7 @@
     "provenance": true
   },
   "dependencies": {
+    "@fluxion/core": "workspace:*",
     "@fluxion/schema": "workspace:*"
   }
 }

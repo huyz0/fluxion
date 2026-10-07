@@ -82,6 +82,16 @@ export interface Hasher {
 }
 
 /**
+ * A synchronous 128-bit hash for stable ids (ADR-0031): pure compiles cannot await {@link Hasher}.
+ *
+ * @public
+ */
+export interface SyncHash128 {
+  /** 16 bytes hashed from the UTF-8 bytes of `text`. */
+  hash128(text: string): Uint8Array;
+}
+
+/**
  * Severity of a {@link Logger} entry.
  *
  * @public

@@ -258,7 +258,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-PKG-004 | S | R6 | M27 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-PKG-005 | S | R8 | M33 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-DSL-001 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-DSL-002 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/schema/src/schema-1-3.test.ts` |
+| FR-DSL-002 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/hash/stable-id.test.ts`, `packages/schema/src/schema-1-3.test.ts` |
 | FR-DSL-003 | M | R4 | M22 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-004 | M | R5 | M24 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-005 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/schema/src/schema-1-3.test.ts` |
@@ -326,7 +326,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/flux-html-reader.test.ts` +15 |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +10 |
+| NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +11 |
 | NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +20 |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts`, `packages/format/src/flux-html.test.ts` |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |

@@ -53,6 +53,9 @@ export type ArgsSchema<A> = {
 };
 
 // @public
+export function base62(bytes: Uint8Array): string;
+
+// @public
 export function batch(fn: () => void): void;
 
 // @public
@@ -161,6 +164,15 @@ export type Diff = {
 // @public
 export type Disposable = {
     dispose(): void;
+};
+
+// @public
+export type EdgeKey = {
+    readonly screen: string;
+    readonly from: string;
+    readonly op: string;
+    readonly to: string;
+    readonly n?: number;
 };
 
 // @public
@@ -350,6 +362,15 @@ export type HookContext = {
 };
 
 // @public
+export const idKeys: {
+    readonly document: () => string;
+    readonly theme: (name: string) => string;
+    readonly screen: (id: string) => string;
+    readonly node: (slug: string) => string;
+    readonly edge: (e: EdgeKey) => string;
+};
+
+// @public
 export type IndexName = "byScreen" | "byParent" | "byType" | "bindingsByElement";
 
 // @public
@@ -511,10 +532,26 @@ export interface Registry<K extends string, V> {
 }
 
 // @public
+export function resolveSalt(base: {
+    readonly source?: {
+        readonly salt?: unknown;
+    };
+} | undefined, given?: string): string;
+
+// @public
 export function runExpr(src: string, scope: ExprScope, budget: ExprBudget, at?: ReadonlyArray<string | number>): Result<number, Diagnostic>;
 
 // @public
 export function screenRecordsToCopy(view: ReadView, screen: RecordId): RecordId[];
+
+// @public
+export function sha256Bytes(data: Uint8Array): Uint8Array;
+
+// @public
+export const sha256Hash128: SyncHash128;
+
+// @public
+export function sha256Hex(data: Uint8Array): string;
 
 // @public
 export type ShapeDef = {
@@ -568,6 +605,9 @@ export type ShapeTextInput = {
 export function shrinksText(fit: TextFit | undefined): boolean;
 
 // @public
+export function stableId(hasher: SyncHash128, salt: string, key: string): string;
+
+// @public
 export interface Store {
     diffFrom(parent: Store): Diff | undefined;
     fork(): Store;
@@ -618,6 +658,11 @@ export type StyledRun = {
     readonly style?: string;
     readonly family?: string;
 };
+
+// @public
+export interface SyncHash128 {
+    hash128(text: string): Uint8Array;
+}
 
 // @public
 export const TEXT_FIT_DEFAULTS: {

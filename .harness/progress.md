@@ -1607,3 +1607,7 @@ ADR-0032 accepted: CodeMirror 6 (MIT, editor only, the editor's first lazy chunk
 ## 2026-10-07 M12.5 (claude)
 
 Schema 1.3: `LayoutSpec` (`records/layout-spec.ts`) on screen, group and frame; `document.source {flux: 1, salt, deferred}`; migration 1.2 to 1.3 drops non-conforming values; fixtures `v1.3/`, `migration/nonconforming-1.2`; `fixtures/docs` regenerated and examples bumped to 1.3; tests that pinned the current version moved to 1.3; the lean (player) reader also opens 1.2 (its step adds only fields the player does not read), and format's 1.2 goldens are checked as migrated; 02-document-model, format spec, diagnostics reference, schema AGENTS.md, API report, changeset. M12.22 carries ADR-0032 review r3 F1 (slug rename keeps the record). Next M12.6.
+
+## 2026-10-07 M12.6 (claude)
+
+`SyncHash128` port, `sha256Hash128`, `base62` (22 chars, order-keeping), `stableId`, `idKeys`, `resolveSalt` (base salt, else given, else empty; review r1 F1) in `core/src/hash/`; the pure SHA-256 moved from format to core (`sha256Bytes` added), format re-exports `sha256Hex` and now depends on core (lockfile: a workspace link). FIPS vectors, a 10k no-collision corpus, a base62 property. M12.5 review: F1 became M12.28, F2 argued. Next M12.7.

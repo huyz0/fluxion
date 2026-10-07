@@ -21,12 +21,14 @@ export { CORE_REGISTRY_NAMES, type CoreRegistries, type CoreRegistryName, create
 export type { CoreError, CoreErrorCode } from './errors.js';
 export { type BinaryOp, type Expr, type ExprBudget, type ExprScope, type ExprWhere, evaluateExpr, parseExpr, runExpr } from './expr/expr.js';
 export { applyFork } from './fork.js';
+export { sha256Bytes, sha256Hex } from './hash/sha256.js';
+export { base62, type EdgeKey, idKeys, resolveSalt, sha256Hash128, stableId } from './hash/stable-id.js';
 export type { History } from './history.js';
 export { CORE_HOOKS, type HookContext, type IntegrityHook, registerCoreHooks } from './hooks.js';
 export type { IndexName } from './indexes.js';
 export { type ConsoleLike, consoleSink, createLogger, type LogEntry, type LoggerOptions, type NamespacedLogger, namespaceEnabled } from './logger.js';
 export { MARKER_SIZE, type MarkerDef, markerDefSchema, markerTrim, parseMarkerDef } from './marker.js';
-export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, TextMeasurer, TextMetrics } from './ports/ports.js';
+export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, SyncHash128, TextMeasurer, TextMetrics } from './ports/ports.js';
 export { createRegistry, type Disposable, type PluginId, type Registry } from './registry.js';
 export { screenRecordsToCopy } from './screens/screen-commands.js';
 export { nextVisibleScreen } from './screens/screen-order.js';

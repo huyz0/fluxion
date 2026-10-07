@@ -7,6 +7,7 @@
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
+import { sha256Hex } from '@fluxion/core';
 
 // @public
 export type ContentHasher = {
@@ -51,8 +52,7 @@ export type LoadOptions = {
 // @public
 export function sanitizeAsset(asset: FluxAsset): FluxAsset | undefined;
 
-// @public
-export function sha256Hex(data: Uint8Array): string;
+export { sha256Hex }
 
 // (No @packageDocumentation comment for this package)
 

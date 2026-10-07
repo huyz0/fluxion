@@ -9,6 +9,7 @@ import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { safeLinkUrl } from '@fluxion/schema';
+import { sha256Hex } from '@fluxion/core';
 
 // @public
 export type AssetCheck = "clean" | "changed" | "refused";
@@ -329,8 +330,7 @@ export type SelectedAssets = {
 // @public
 export const serializeEntry: (entry: JournalEntry) => string;
 
-// @public
-export function sha256Hex(data: Uint8Array): string;
+export { sha256Hex }
 
 // @public
 export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;

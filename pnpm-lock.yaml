@@ -505,6 +505,9 @@ importers:
 
   packages/format:
     dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../core
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
