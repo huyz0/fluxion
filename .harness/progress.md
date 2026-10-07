@@ -1703,3 +1703,7 @@ M12.39 review minors: `screenId` and `layout` report a wrong-kind id or type onc
 ## 2026-10-07 M12.41 (claude)
 
 M12.10 staged a workspace link (`@fluxion/theme` in dsl) and the budget step failed: the record (taken under `--cold-pending` with M12.8's lockfile staged) names its parent commit, whose lockfile is not the measured one, so the workspace-link exemption never applied. `check-budget` now takes the measured lockfile from the record's commit or the next commit on HEAD's history that changed `pnpm-lock.yaml`, each only if it hashes to the record's lockfile. Next M12.10.
+
+## 2026-10-07 M12.10 (claude)
+
+Resolve stage (`dsl/src/resolve/resolve.ts`): `resolveFlux(ast, registries)` returns the theme (by name or registry id, else light) and each node's qualified shape. Short shape names go through `uses` (all packs without it); two used packs with the name are `FLX_DSL_AMBIGUOUS_SHAPE`; unregistered packs warn (`FLX_DSL_UNKNOWN_PACK`); slugs and screen ids are unique (`FLX_DSL_DUP_SLUG`, naming the first line); edge ends and group members must be on the same screen (`FLX_REF_MISSING`, naming the other screen); dotted token names in styles and background, and every override key, warn when unknown (`FLX_TOKEN_UNKNOWN`). Each has a did-you-mean hint. The read stage now keeps where each edge end, style entry and override key is (review r1), so block-style diagnostics point at their own text. Next M12.11 (expand/style).

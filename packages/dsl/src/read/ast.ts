@@ -32,7 +32,7 @@ export type NodeAst = {
   /** A theme variant (`accent`). */
   readonly tone?: Located<string>;
   /** Element style: token names by key, or a stroke preset. */
-  readonly style?: Located<StyleAst>;
+  readonly style?: LocatedStyle;
   /** A pinned box. */
   readonly pin?: Located<PinAst>;
   /** Alternative text. */
@@ -63,6 +63,16 @@ export type PinAst = {
 export type StyleAst = { readonly [key: string]: string | number | boolean } | 'solid' | 'dashed' | 'dotted';
 
 /**
+ * A style with its source range and, for a map, where each entry's value is.
+ *
+ * @public
+ */
+export type LocatedStyle = Located<StyleAst> & {
+  /** Where each entry's value is, by key (a map style). */
+  readonly entries?: { readonly [key: string]: SourceRange };
+};
+
+/**
  * A layout intent: a `layouts` registry name and its own options.
  *
  * @public
@@ -87,7 +97,7 @@ export type GroupAst = {
   /** The slugs of its members. */
   readonly contains: readonly Located<string>[];
   /** Its style. */
-  readonly style?: Located<StyleAst>;
+  readonly style?: LocatedStyle;
   /** How it lays out its members. */
   readonly layout?: LayoutAst;
 };
@@ -102,10 +112,17 @@ export type EdgeAst = {
   readonly edge: Edge;
   /** Where the edge is written. */
   readonly range: SourceRange;
+  /** Where each end is written. */
+  readonly ends: {
+    /** Where the `from` end is. */
+    readonly from: SourceRange;
+    /** Where the `to` end is. */
+    readonly to: SourceRange;
+  };
   /** Its label. */
   readonly label?: Located<string>;
   /** Its style. */
-  readonly style?: Located<StyleAst>;
+  readonly style?: LocatedStyle;
   /** Its route type. */
   readonly route?: Located<'straight' | 'curved' | 'orthogonal' | 'polyline'>;
 };
@@ -146,6 +163,8 @@ export type ThemeAst = {
   readonly name?: Located<string>;
   /** Token values by token name. */
   readonly overrides: { readonly [token: string]: string | number };
+  /** Where each override's token name is written. */
+  readonly overrideKeys: { readonly [token: string]: SourceRange };
 };
 
 /**

@@ -11,6 +11,7 @@ import { DiagnosticSeverity } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
 import { SyncHash128 } from '@fluxion/core';
+import { Theme } from '@fluxion/theme';
 
 // @public
 export type CompileOptions = {
@@ -64,8 +65,12 @@ export const EDGE_OPS: readonly ["->", "<-", "<->", "--", "~>"];
 export type EdgeAst = {
     readonly edge: Edge;
     readonly range: SourceRange;
+    readonly ends: {
+        readonly from: SourceRange;
+        readonly to: SourceRange;
+    };
     readonly label?: Located<string>;
-    readonly style?: Located<StyleAst>;
+    readonly style?: LocatedStyle;
     readonly route?: Located<"straight" | "curved" | "orthogonal" | "polyline">;
 };
 
@@ -121,7 +126,7 @@ export type GroupAst = {
     readonly slug: Located<string>;
     readonly label?: Located<string>;
     readonly contains: readonly Located<string>[];
-    readonly style?: Located<StyleAst>;
+    readonly style?: LocatedStyle;
     readonly layout?: LayoutAst;
 };
 
@@ -140,6 +145,13 @@ export type Located<T> = {
 };
 
 // @public
+export type LocatedStyle = Located<StyleAst> & {
+    readonly entries?: {
+        readonly [key: string]: SourceRange;
+    };
+};
+
+// @public
 export function nearest(word: string, candidates: readonly string[]): string | undefined;
 
 // @public
@@ -149,7 +161,7 @@ export type NodeAst = {
     readonly text?: Located<string>;
     readonly label?: Located<string>;
     readonly tone?: Located<string>;
-    readonly style?: Located<StyleAst>;
+    readonly style?: LocatedStyle;
     readonly pin?: Located<PinAst>;
     readonly alt?: Located<string>;
 };
@@ -191,6 +203,22 @@ export type ReadResult = {
 };
 
 // @public
+export type Resolution = {
+    readonly theme: Theme;
+    readonly themeId?: string;
+    readonly shapes: ReadonlyMap<string, string>;
+};
+
+// @public
+export function resolveFlux(ast: FluxAst, registries: CoreRegistries): ResolveResult;
+
+// @public
+export type ResolveResult = {
+    readonly resolution: Resolution;
+    readonly diagnostics: readonly DslDiagnostic[];
+};
+
+// @public
 export type ScreenAst = {
     readonly id: Located<string>;
     readonly title?: Located<string>;
@@ -223,6 +251,9 @@ export type ThemeAst = {
     readonly name?: Located<string>;
     readonly overrides: {
         readonly [token: string]: string | number;
+    };
+    readonly overrideKeys: {
+        readonly [token: string]: SourceRange;
     };
 };
 

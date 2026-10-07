@@ -26,6 +26,7 @@
   "dependencies": {
     "@fluxion/core": "workspace:*",
     "@fluxion/schema": "workspace:*",
+    "@fluxion/theme": "workspace:*",
     "yaml": "catalog:"
   }
 }

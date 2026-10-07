@@ -1,11 +1,11 @@
 // Read stage (ADR-0030, FR-DSL-001/002/006): the parsed tree checked against the `flux: 1` key table and turned into a typed, located
 // tree. Unknown keys are `FLX_DSL_UNKNOWN_KEY` with the nearest valid key; sections R2 does not compile are `FLX_DSL_NOT_YET` warnings and
 // keep their source text by pointer; slugs and screen ids follow the slug rule; edges go through the edge tokenizer.
-import { edgeDiagnostic, parseEdge, parseEdgeObject } from '../parse/edge.js';
+import { type EdgeEnd, edgeDiagnostic, parseEdge, parseEdgeObject } from '../parse/edge.js';
 import { isYMap, isYScalar, isYSeq, type YEntry, type YMap, type YNode } from '../parse/parse.js';
 import { nearest } from '../resolve/suggest.js';
-import type { DslDiagnostic } from '../types.js';
-import type { EdgeAst, FluxAst, GroupAst, Located, NodeAst, ScreenAst } from './ast.js';
+import type { DslDiagnostic, SourceRange } from '../types.js';
+import type { EdgeAst, FluxAst, GroupAst, Located, NodeAst, ScreenAst, ThemeAst } from './ast.js';
 import { asMap, type Ctx, entries, KEYS, layout, pin, report, slug, stringList, style, text, textOf } from './fields.js';
 
 /** Content keys: a node that has none of them after deferral has nothing to draw and is deferred whole (ADR-0030 review r2 F1). */
@@ -131,7 +131,7 @@ function fromShorthand(ctx: Ctx, { key, range, value }: Shorthand, { path, point
     ctx.diagnostics.push(edgeDiagnostic(r, range, path));
     return undefined;
   }
-  return { edge: r.edge, range, ...details(ctx, value, path, pointer) };
+  return { edge: r.edge, range, ends: { from: endIn(ctx, range, r.edge.from), to: endIn(ctx, range, r.edge.to) }, ...details(ctx, value, path, pointer) };
 }
 
 function fromObject(ctx: Ctx, m: YMap, path: string, pointer: string): EdgeAst | undefined {
@@ -146,7 +146,24 @@ function fromObject(ctx: Ctx, m: YMap, path: string, pointer: string): EdgeAst |
     ctx.diagnostics.push(edgeDiagnostic(r, where, r.field ? `${path}/${r.field}` : path));
     return undefined;
   }
-  return { edge: r.edge, range: m.range, ...attributes(ctx, f, path) };
+  const at = (k: 'from' | 'to') => f.get(k)?.value.range ?? m.range;
+  return { edge: r.edge, range: m.range, ends: { from: at('from'), to: at('to') }, ...attributes(ctx, f, path) };
+}
+
+/** Where an end of a shorthand edge is: its column inside the edge text, past an opening quote; the whole text when it spans lines. */
+function endIn(ctx: Ctx, range: SourceRange, end: EdgeEnd): SourceRange {
+  if (range.line !== range.endLine) return range;
+  const quote = /^["']/.test(ctx.text.slice(range.offset, range.offset + 1)) ? 1 : 0;
+  const shift = quote + end.col - 1;
+  const length = end.slug.length + (end.anchor === undefined ? 0 : end.anchor.length + 1);
+  return {
+    line: range.line,
+    col: range.col + shift,
+    endLine: range.line,
+    endCol: range.col + shift + length,
+    offset: range.offset + shift,
+    end: range.offset + shift + length,
+  };
 }
 
 function list<T>(ctx: Ctx, e: YEntry | undefined, path: string, each: (entry: YEntry) => T | undefined): T[] {
@@ -206,8 +223,8 @@ function screen(ctx: Ctx, item: YNode, index: number): ScreenAst | undefined {
 }
 
 /** Token overrides: string or number values by token name; anything else is an error. */
-function tokens(ctx: Ctx, o: YNode | undefined): { [token: string]: string | number } {
-  if (o === undefined) return {};
+function tokens(ctx: Ctx, o: YNode | undefined): Pick<ThemeAst, 'overrides' | 'overrideKeys'> {
+  if (o === undefined) return { overrides: {}, overrideKeys: {} };
   if (!isYMap(o)) {
     report(ctx, {
       code: 'FLX_SCHEMA_INVALID',
@@ -216,20 +233,23 @@ function tokens(ctx: Ctx, o: YNode | undefined): { [token: string]: string | num
       message: 'overrides are token values by token name',
       hint: 'overrides: { color.accent: "#7C5CFF" }',
     });
-    return {};
+    return { overrides: {}, overrideKeys: {} };
   }
   const out: { [token: string]: string | number } = {};
+  const keys: { [token: string]: SourceRange } = {};
   for (const x of o.entries) {
     const v = isYScalar(x.value) ? x.value.value : null;
-    if (typeof v === 'string' || typeof v === 'number') out[x.key] = v;
-    else report(ctx, { code: 'FLX_SCHEMA_INVALID', range: x.value.range, path: `/theme/overrides/${x.key}`, message: `${x.key} must be a token value` });
+    if (typeof v === 'string' || typeof v === 'number') {
+      out[x.key] = v;
+      keys[x.key] = x.keyRange;
+    } else report(ctx, { code: 'FLX_SCHEMA_INVALID', range: x.value.range, path: `/theme/overrides/${x.key}`, message: `${x.key} must be a token value` });
   }
-  return out;
+  return { overrides: out, overrideKeys: keys };
 }
 
 function theme(ctx: Ctx, e: YEntry | undefined): FluxAst['theme'] {
   if (!e) return undefined;
-  if (isYScalar(e.value) && typeof e.value.value === 'string') return { name: { value: e.value.value, range: e.value.range }, overrides: {} };
+  if (isYScalar(e.value) && typeof e.value.value === 'string') return { name: { value: e.value.value, range: e.value.range }, overrides: {}, overrideKeys: {} };
   const m = asMap(ctx, e.value, '/theme', 'theme');
   if (!m) return undefined;
   const f = entries(ctx, m, KEYS.theme, { path: '/theme', pointer: '/theme' });
@@ -243,7 +263,7 @@ function theme(ctx: Ctx, e: YEntry | undefined): FluxAst['theme'] {
       message: 'a theme has a preset or a name, not both',
       hint: 'keep one of them',
     });
-  return { ...(name ? { name } : {}), overrides: tokens(ctx, f.get('overrides')?.value) };
+  return { ...(name ? { name } : {}), ...tokens(ctx, f.get('overrides')?.value) };
 }
 
 /**

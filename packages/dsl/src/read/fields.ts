@@ -2,7 +2,7 @@
 import { isYMap, isYScalar, isYSeq, type YEntry, type YMap, type YNode } from '../parse/parse.js';
 import { nearest } from '../resolve/suggest.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
-import type { LayoutAst, Located, NodeAst, StyleAst } from './ast.js';
+import type { LayoutAst, Located, LocatedStyle, NodeAst } from './ast.js';
 
 /** The `flux: 1` key table (ADR-0030): compiled keys and kept-but-deferred keys at each level. */
 export const KEYS = {
@@ -104,15 +104,18 @@ export function slug(ctx: Ctx, value: string, range: SourceRange, path: string):
   return false;
 }
 
-export function style(ctx: Ctx, e: YEntry | undefined, path: string): Located<StyleAst> | undefined {
+export function style(ctx: Ctx, e: YEntry | undefined, path: string): LocatedStyle | undefined {
   if (e === undefined) return undefined;
   const n = e.value;
   if (isYScalar(n) && typeof n.value === 'string' && STROKES.has(n.value)) return { value: n.value as 'solid' | 'dashed' | 'dotted', range: n.range };
   if (isYMap(n)) {
     const out: { [key: string]: string | number | boolean } = {};
+    const at: { [key: string]: SourceRange } = {};
     for (const s of n.entries) {
-      if (isYScalar(s.value) && s.value.value !== null) out[s.key] = s.value.value;
-      else
+      if (isYScalar(s.value) && s.value.value !== null) {
+        out[s.key] = s.value.value;
+        at[s.key] = s.value.range;
+      } else
         report(ctx, {
           code: 'FLX_SCHEMA_INVALID',
           range: s.value.range,
@@ -120,7 +123,7 @@ export function style(ctx: Ctx, e: YEntry | undefined, path: string): Located<St
           message: `style ${s.key} must be a token name or a value`,
         });
     }
-    return { value: out, range: n.range };
+    return { value: out, range: n.range, entries: at };
   }
   report(ctx, { code: 'FLX_SCHEMA_INVALID', range: n.range, path: `${path}/style`, message: 'style is token names by key, or solid, dashed or dotted' });
   return undefined;

@@ -422,6 +422,9 @@ importers:
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      '@fluxion/theme':
+        specifier: workspace:*
+        version: link:../theme
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
