@@ -532,7 +532,14 @@ importers:
         specifier: 'catalog:'
         version: 4.0.0
 
-  packages/layout: {}
+  packages/layout:
+    dependencies:
+      '@fluxion/core':
+        specifier: workspace:*
+        version: link:../core
+      '@fluxion/geometry':
+        specifier: workspace:*
+        version: link:../geometry
 
   packages/mcp: {}
 

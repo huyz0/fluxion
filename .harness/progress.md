@@ -1631,3 +1631,7 @@ M12.8's code passes its staged ladder (203 s with M12.29/M12.30), but the lockfi
 ## 2026-10-07 M12.28 (claude)
 
 `migration/mixed-1.2` fixture (conforming screen and group layouts and a source beside a bad layout); the test asserts the good ones survive the step and the bad one goes; a mutant that drops every layout fails it. Next M12.12.
+
+## 2026-10-07 M12.12 (claude)
+
+`@fluxion/layout`: the M12 layout contract (`LayoutAlgorithm` with `parseOptions` and a pure `run`, `LayoutInput/Node/Output`; no Zod, layout depends on core and geometry only), the `stack` layout (down/right, gap 24, align, padding 80; the main-axis start rounds up to the half pixel, so it never overlaps or loops (review r1); steps past pinned boxes), `registerBuiltInLayouts` (source `core`). A property: same boxes whatever the input order, no placed box overlaps another, pins kept. M12.28's minors argued. Next M12.15.

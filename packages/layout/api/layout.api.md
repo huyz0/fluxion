@@ -4,7 +4,64 @@
 
 ```ts
 
+import { Box } from '@fluxion/geometry';
+import { Registry } from '@fluxion/core';
+
+// @public
+export interface LayoutAlgorithm<O> {
+    readonly id: string;
+    parseOptions(raw: unknown): OptionsResult<O>;
+    run(input: LayoutInput, options: O): LayoutOutput;
+    readonly version: string;
+}
+
+// @public
+export type LayoutInput = {
+    readonly nodes: readonly LayoutNode[];
+    readonly frame: Box;
+};
+
+// @public
+export type LayoutNode = {
+    readonly id: string;
+    readonly box: Box;
+    readonly order: number;
+    readonly pinned?: boolean;
+};
+
+// @public
+export type LayoutOutput = {
+    readonly boxes: {
+        readonly [id: string]: Box;
+    };
+};
+
+// @public
+export type OptionsResult<O> = {
+    readonly ok: true;
+    readonly value: O;
+} | {
+    readonly ok: false;
+    readonly message: string;
+};
+
+// @public
+export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>["register"]>;
+
+// @public
+export const stackLayout: LayoutAlgorithm<StackOptions>;
+
+// @public
+export type StackOptions = {
+    readonly direction: "down" | "right";
+    readonly gap: number;
+    readonly align: "start" | "center" | "end";
+    readonly padding: number;
+};
+
 // @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```
