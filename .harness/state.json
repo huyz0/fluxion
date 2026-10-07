@@ -1,9 +1,9 @@
 {
   "milestone": "M12",
-  "currentTask": "M12.36",
+  "currentTask": null,
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M12.8 waits for the human (answer 2026-10-07: record on a faster machine). They apply m12.8-deps.patch (yaml 2.9.1 for @fluxion/dsl) to claude/ecstatic-edison-ms4g6k, run `pnpm i && pnpm run setup && node scripts/gates/check-budget.mjs --record`, and hand back .harness/budget.json; then M12.8 (code in git stash) commits with that record, and M12.9 onward continue. This container times the worst-case staged commit at ~410 s against PRECOMMIT_BUDGET_MS 360 s.",
+  "blockedReason": "M12.8 waits for the human (answer 2026-10-07: record on a faster machine). They apply m12.8-deps.patch (yaml 2.9.1 for @fluxion/dsl) to claude/ecstatic-edison-ms4g6k, run `pnpm i && pnpm run setup && node scripts/gates/check-budget.mjs --record`, and hand back .harness/budget.json; then M12.8 (code in git stash) commits with that record, and M12.9 onward continue. This container times the worst-case staged commit at ~410 s against PRECOMMIT_BUDGET_MS 360 s. Also M12.27 needs a decision: \"reopened rows must be done\" (M11.59 was reopened by cp1 F3, then descoped by the human) \u2014 supersede the reopen in the M11 review record, or change the rule by ADR.",
   "updated": "2026-10-07"
 }

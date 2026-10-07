@@ -1671,3 +1671,7 @@ While M12.8 waits on the budget record: the edge tokenizer needs no YAML, so M12
 ## 2026-10-07 M12.36 (claude)
 
 `scripts/docs/fluxscript-diagnostics.mjs` writes `reference/fluxscript-diagnostics.md` from the built `DSL_CODES` (`--check` mode); the sidebar's Reference group waits for M12.24 (an astro config change runs every harness file, over the staged budget); harness test `fluxscript-diagnostics.test.mjs`. Docs site builds (145 pages). M12.24 keeps the guide, README, AGENTS.md and 06 updates.
+
+## 2026-10-07 stop 2 (claude)
+
+Done since stop 1: M12.9 (edge tokenizer, re-pointed at M12.7), M12.34-M12.36 (did-you-mean, its boundary tests, the diagnostics page). Every M12 row left needs M12.8 (budget record from a faster machine) or, for M12.27, a decision on the reopen rule.
