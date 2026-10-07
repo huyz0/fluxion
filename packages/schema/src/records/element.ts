@@ -5,6 +5,7 @@ import type { RecordId } from '../ids.js';
 import type { Extensible, Meta } from '../primitives.js';
 import type { RichTextDoc } from '../rich-text.js';
 import type { AnchorDef, BoxedBase, ElementBase, Point, QualifiedName } from './element-base.js';
+import type { LayoutSpec } from './layout-spec.js';
 
 /**
  * How a shape's text fits its region (FR-SHP-006, ADR-0018). Alignment is `style.font`'s.
@@ -123,6 +124,8 @@ export type GroupElement = Extensible<
   BoxedBase & {
     /** Element kind. */
     readonly kind: 'group';
+    /** How the group lays out its `auto` members (schema 1.3, ADR-0031). */
+    readonly layout?: LayoutSpec;
   }
 >;
 
@@ -139,6 +142,8 @@ export type FrameElement = Extensible<
     readonly clip?: boolean;
     /** Inner padding in px. */
     readonly padding?: number;
+    /** How the frame lays out its `auto` children (schema 1.3, ADR-0031). */
+    readonly layout?: LayoutSpec;
   }
 >;
 

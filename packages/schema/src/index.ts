@@ -42,7 +42,7 @@ export type {
   VariableRecord,
 } from './records/behaviour.js';
 export type { AnchorRef, AutoAnchor, BindingRecord, FloatingAnchor, NamedAnchor, PointAnchor, SideAnchor } from './records/binding.js';
-export type { DocumentRecord, DocumentSettings } from './records/document.js';
+export type { DocumentRecord, DocumentSettings, DocumentSource } from './records/document.js';
 export {
   type ComponentElement,
   type ConnectorElement,
@@ -67,6 +67,7 @@ export {
 export type { AnchorDef, BoxedBase, ElementBase, Locks, Point, QualifiedName, Semantic } from './records/element-base.js';
 export { qualifiedNameSchema } from './records/element-base.js';
 export { anchorDefSchema } from './records/element-schemas.js';
+export { type LayoutSpec, layoutSpecSchema } from './records/layout-spec.js';
 export type { AssetRecord, PluginRefRecord, ResourceRecord, ThemeRecord } from './records/resources.js';
 export {
   DEFAULT_SCREEN_SIZE,

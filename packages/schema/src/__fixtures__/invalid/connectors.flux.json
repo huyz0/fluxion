@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.2",
+  "schemaVersion": "1.3",
   "records": {
     "doc": { "id": "doc", "type": "document" },
     "s1": { "id": "s1", "type": "screen", "index": "a0" },

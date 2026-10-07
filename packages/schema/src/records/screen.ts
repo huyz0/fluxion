@@ -6,6 +6,7 @@ import type { RecordId } from '../ids.js';
 import { type Paint, paintSchema } from '../paint.js';
 import { type Extensible, finite, indexKeySchema, type Meta, metaSchema, recordIdSchema } from '../primitives.js';
 import { type RichTextDoc, richTextSchema } from '../rich-text.js';
+import { type LayoutSpec, layoutSpecSchema } from './layout-spec.js';
 
 /**
  * A width and height in logical pixels.
@@ -74,6 +75,8 @@ export type ScreenRecord = Extensible<{
   readonly sectionId?: RecordId;
   /** The `theme` record this screen uses instead of the document's: its theme override (schema 1.2, FR-THM-004). */
   readonly themeId?: RecordId;
+  /** How the screen lays out its `auto` elements, as the root container (schema 1.3, ADR-0031). */
+  readonly layout?: LayoutSpec;
   /** Hidden screens are skipped in presentation. */
   readonly hidden?: boolean;
   /** Speaker notes. */
@@ -101,6 +104,7 @@ export const screenRecordSchema: z.ZodType<ScreenRecord> = checkedSchema<ScreenR
       parentElementId: recordIdSchema.optional(),
       sectionId: recordIdSchema.optional(),
       themeId: recordIdSchema.optional(),
+      layout: layoutSpecSchema.optional(),
       hidden: z.boolean().optional(),
       notes: richTextSchema.optional(),
     })

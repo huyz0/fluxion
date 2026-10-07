@@ -201,6 +201,7 @@ export type DocumentRecord = Extensible<{
     };
     readonly created?: string;
     readonly modified?: string;
+    readonly source?: DocumentSource;
 }>;
 
 // @public
@@ -208,6 +209,15 @@ export type DocumentSettings = Extensible<{
     readonly responsive?: "scale" | "reflow";
     readonly reducedMotion?: "respect" | "ignore";
     readonly lineJumps?: boolean;
+}>;
+
+// @public
+export type DocumentSource = Extensible<{
+    readonly flux: 1;
+    readonly salt: string;
+    readonly deferred: {
+        readonly [pointer: string]: string;
+    };
 }>;
 
 // @public
@@ -311,6 +321,7 @@ export type FrameElement = Extensible<BoxedBase & {
     readonly kind: "frame";
     readonly clip?: boolean;
     readonly padding?: number;
+    readonly layout?: LayoutSpec;
 }>;
 
 // @public
@@ -329,6 +340,7 @@ export type GradientStop = Extensible<{
 // @public
 export type GroupElement = Extensible<BoxedBase & {
     readonly kind: "group";
+    readonly layout?: LayoutSpec;
 }>;
 
 // @public
@@ -392,6 +404,17 @@ export function jsonPointer(segments: readonly (string | number)[]): string;
 
 // @public
 export function keyBetween(a: string | null, b: string | null): Result<IndexKey>;
+
+// @public
+export type LayoutSpec = Extensible<{
+    readonly type: string;
+    readonly options?: {
+        readonly [key: string]: unknown;
+    };
+}>;
+
+// @public
+export const layoutSpecSchema: z.ZodType<LayoutSpec>;
 
 // @public
 export type Locks = Extensible<{
@@ -646,6 +669,7 @@ export type ScreenRecord = Extensible<{
     readonly parentElementId?: RecordId;
     readonly sectionId?: RecordId;
     readonly themeId?: RecordId;
+    readonly layout?: LayoutSpec;
     readonly hidden?: boolean;
     readonly notes?: RichTextDoc;
 }>;

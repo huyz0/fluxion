@@ -15,7 +15,11 @@ Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema
 
 ## Version 1.2 (M9)
 
-- `document.description`, `tags`, `custom` and `screen.themeId` (a `theme` record; `FLX_REF_MISSING`, `FLX_REF_WRONG_TYPE`). The migration `migrations/1.1-to-1.2.ts` normalises what a loose 1.1 file may already carry there (ADR-0152). Released fixtures stay frozen: `__fixtures__/v1.0/`, `v1.1/` (inputs that migrate), `v1.2/` (current), and `migration/` (`dangling-section-1.0`, `nonconforming-1.1`). A new field or reference check bumps the version, appends a step and adds a fixture of the version it leaves.
+- `document.description`, `tags`, `custom` and `screen.themeId` (a `theme` record; `FLX_REF_MISSING`, `FLX_REF_WRONG_TYPE`). The migration `migrations/1.1-to-1.2.ts` normalises what a loose 1.1 file may already carry there (ADR-0152). Released fixtures stay frozen: `__fixtures__/v1.0/`, `v1.1/`, `v1.2/` (inputs that migrate), `v1.3/` (current), and `migration/` (`dangling-section-1.0`, `nonconforming-1.1`, `nonconforming-1.2`). A new field or reference check bumps the version, appends a step and adds a fixture of the version it leaves.
+
+## Version 1.3 (M12)
+
+- `LayoutSpec` on `screen`, `group` and `frame` (`records/layout-spec.ts`) and `document.source` (FluxScript salt and deferred sections), ADR-0031. `migrations/1.2-to-1.3.ts` drops non-conforming values there.
 
 ## Tests
 

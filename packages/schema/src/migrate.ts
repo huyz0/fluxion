@@ -6,6 +6,7 @@ import type { FluxError } from './errors.js';
 import type { Migration, RawDocument } from './migration-types.js';
 import { migrate10to11 } from './migrations/1.0-to-1.1.js';
 import { migrate11to12 } from './migrations/1.1-to-1.2.js';
+import { migrate12to13 } from './migrations/1.2-to-1.3.js';
 import { err, ok, type Result } from './result.js';
 
 export type { Migration, RawDocument } from './migration-types.js';
@@ -16,7 +17,7 @@ export type { Migration, RawDocument } from './migration-types.js';
  *
  * @public
  */
-export const MIGRATIONS: readonly Migration[] = [migrate10to11, migrate11to12];
+export const MIGRATIONS: readonly Migration[] = [migrate10to11, migrate11to12, migrate12to13];
 
 /**
  * Result of {@link migrate}: the document at the current version and the steps applied.

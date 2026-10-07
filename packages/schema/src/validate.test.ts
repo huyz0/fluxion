@@ -17,7 +17,7 @@ import { isValid, validate, validateRecord, validateReferences } from './validat
 const summary = (doc: unknown) => validate(doc).map(({ code, severity, path }) => ({ code, severity, path }));
 
 const minimal = {
-  schemaVersion: '1.2',
+  schemaVersion: '1.3',
   records: {
     doc: { id: 'doc', type: 'document', title: 'Two rects' },
     s1: { id: 's1', type: 'screen', index: 'a0' },
@@ -90,7 +90,7 @@ describe('validate', () => {
         version,
       ).toEqual(['FLX_VERSION_INVALID']);
     expect(summary({ schemaVersion: '0.9', records: minimal.records }).map((x) => x.code)).toEqual(['FLX_VERSION_UNSUPPORTED']);
-    expect(summary({ schemaVersion: '1.3', records: minimal.records })).toEqual([{ code: 'FLX_VERSION_NEWER', severity: 'warning', path: '/schemaVersion' }]);
+    expect(summary({ schemaVersion: '1.4', records: minimal.records })).toEqual([{ code: 'FLX_VERSION_NEWER', severity: 'warning', path: '/schemaVersion' }]);
   });
 
   it('FR-DOC-005: unknown rich-text nodes and marks are warnings with their pointers', () => {
@@ -132,7 +132,7 @@ describe('validateRecord and validateReferences', () => {
     expect(validateReferences(records)).toEqual([]);
     const { s1: _s, ...noScreen } = minimal.records;
     const without = new Map(Object.entries(noScreen)) as unknown as Parameters<typeof validateReferences>[0];
-    expect(validateReferences(without)).toEqual(validate({ schemaVersion: '1.2', records: noScreen }));
+    expect(validateReferences(without)).toEqual(validate({ schemaVersion: '1.3', records: noScreen }));
     expect(validateReferences(without).map((d) => d.code)).toContain('FLX_REF_MISSING');
   });
 });

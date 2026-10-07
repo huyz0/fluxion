@@ -7,7 +7,7 @@ import { parseDocument, serializeDocument } from './serialize.js';
 // a plugin element kind with props, an unknown core-style element kind, unknown fields at the top
 // level, on records and deep inside known objects, an unknown rich-text node and mark
 const FUTURE = {
-  schemaVersion: '1.2',
+  schemaVersion: '1.3',
   collab: { room: 'r1', peers: [1, 2], precision: 0.0001 },
   records: {
     doc: { id: 'doc', type: 'document', title: 'Future', settings: { grid: { size: 8, snap: true } } },

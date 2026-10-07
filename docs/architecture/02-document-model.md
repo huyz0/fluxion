@@ -48,10 +48,10 @@ not in the current schema; until added (minor version) they are preserved but no
 
 | Record | Key fields | Notes |
 |---|---|---|
-| `document` (singleton) | `title?`, `description?`, `lang?`, `themeId?`, `settings?` (`responsive`, `reducedMotion`, `lineJumps`), `authors?`, `tags?` (strings), `custom?` (string key-values), `created?`, `modified?` | One per file; `description`, `tags` and `custom` arrive with schema `1.2` (ADR-0152) |
-| `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `themeId?` (a `theme` record: the screen's theme override, schema `1.2`, ADR-0152), `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints`, `layout` (screen-level layout intent, e.g. layered LR — FR-LAY-005) |
+| `document` (singleton) | `title?`, `description?`, `lang?`, `themeId?`, `settings?` (`responsive`, `reducedMotion`, `lineJumps`), `authors?`, `tags?` (strings), `custom?` (string key-values), `created?`, `modified?`, `source? {flux: 1, salt, deferred}` (the FluxScript it was compiled from, schema `1.3`, ADR-0031) | One per file; `description`, `tags` and `custom` arrive with schema `1.2` (ADR-0152) |
+| `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `themeId?` (a `theme` record: the screen's theme override, schema `1.2`, ADR-0152), `layout?` (a `LayoutSpec {type, options?}`, the screen as root container, schema `1.3`, ADR-0031), `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints` |
 | `section` | `name`, `index`, `collapsed?` | A named group of screens (ADR-0021, schema `1.1`); `screen.sectionId` names it |
-| `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `style?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`; fields common to every core kind. Boxed kinds (all but connector) add transform {x,y,w,h,rot?,flipX?,flipY?} and text? (element kinds table). Planned: `layout` (container layout spec), `overrides` (per state/breakpoint) |
+| `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `style?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`; fields common to every core kind. Boxed kinds (all but connector) add transform {x,y,w,h,rot?,flipX?,flipY?} and text? (element kinds table). Planned: `overrides` (per state/breakpoint) |
 | `binding` | `connectorId`, `end: 'source'\|'target'`, `elementId`, `anchor: AnchorRef` | Separate record → moving/deleting shapes updates bindings cleanly (tldraw pattern) |
 | `asset` | `hash` (sha256), `mime`, `size`, `name`, `w?`, `h?`, `source?` (URL if external) | Bytes live in the container, not in the record |
 | `theme` | `name`, `tokens` (DTCG token tree; a colour token may be an alias with a `dev.fluxion` transform, ADR-0152), `defaults?` (per kind/variant styles) | Themes may also come from packs; choosing one copies it into the document |
@@ -68,8 +68,8 @@ not in the current schema; until added (minor version) they are preserved but no
 |---|---|---|
 | `shape` | `transform`, `text?`, `defId` (e.g. `basic:rect`), `params?` (definition params), `anchors?` (instance-custom), `textFit? {mode?, padding?, minSize?, overflow?}` (ADR-0018) | |
 | `connector` | `route {type: 'straight'\|'curved'\|'orthogonal'\|'polyline'\|<plugin>, waypoints?, cornerRadius?}`, `markers? {start?,end?,mid?}`, `labels?[]`, `freeSource?`, `freeTarget?` (points for an end without a `binding` record); no transform | `riders`, `effects`, `jumps` |
-| `group` | `transform`, `text?` (children via `parentId`) | |
-| `frame` | `transform`, `text?`, `clip?`, `padding?` | `layout` (live container) |
+| `group` | `transform`, `text?` (children via `parentId`), `layout?` (`LayoutSpec`, schema `1.3`) | |
+| `frame` | `transform`, `text?`, `clip?`, `padding?`, `layout?` (`LayoutSpec`, schema `1.3`) | |
 | `text` | `transform`, `text` (rich text doc, required), `autoSize?` | |
 | `image` | `transform`, `text?`, `assetId`, `crop?`, `fit?`, `maskDefId?` | |
 | `component` | `transform`, `text?`, `componentId` (`<plugin>:<name>`), `props`, `snapshotAssetId?` (fallback) | |
@@ -86,6 +86,12 @@ Schema `1.2` (M9.5, ADR-0152) adds `document.description`, `tags` and `custom` a
 record that a screen uses instead of the document's (FR-THM-004; `FLX_REF_MISSING` when it names nothing, `FLX_REF_WRONG_TYPE`
 when it names another type). The `1.1 → 1.2` migration removes what a 1.1 file may already carry in those places that does not
 conform: a non-string `description`, `tags` that are not strings, non-string `custom` values, a `themeId` that names no theme.
+
+Schema `1.3` (M12.5, ADR-0031) adds a `LayoutSpec` (`type`: a `layouts` registry name such as `stack` or `<pack>:<name>`;
+`options?`: the layout's own, checked by it) on screens, groups and frames, and `document.source` (`flux: 1`, the id `salt` every
+FluxScript compile into the document uses, and `deferred`: the YAML text of each section the compiler kept but did not compile, keyed
+by a pointer such as `/screens/arch/steps`). The `1.2 → 1.3` migration removes what a 1.2 file may carry in those places that does not
+conform.
 
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with
 only its envelope checked.

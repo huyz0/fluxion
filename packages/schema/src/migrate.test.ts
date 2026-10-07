@@ -4,6 +4,7 @@ import nonconforming from './__fixtures__/migration/nonconforming-1.1.flux.json'
 import v10 from './__fixtures__/v1.0/document.flux.json' with { type: 'json' };
 import v11 from './__fixtures__/v1.1/document.flux.json' with { type: 'json' };
 import v12 from './__fixtures__/v1.2/document.flux.json' with { type: 'json' };
+import v13 from './__fixtures__/v1.3/document.flux.json' with { type: 'json' };
 import { MIGRATIONS, type Migration, migrate, type RawDocument } from './migrate.js';
 import { parseDocument, serializeDocument } from './serialize.js';
 import { isValid, validate } from './validate.js';
@@ -47,15 +48,19 @@ describe('migrations (FR-DOC-003)', () => {
     const r = migrate(v09, CHAIN);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value.applied).toEqual(['0.9→1.0', '1.0→1.1', '1.1→1.2']);
+    expect(r.value.applied).toEqual(['0.9→1.0', '1.0→1.1', '1.1→1.2', '1.2→1.3']);
     expect(r.value.document.records['s1']).toEqual({ id: 's1', type: 'screen', index: 'a0', size: { w: 800, h: 600 } });
     expect(validate(r.value.document)).toEqual([]);
   });
 
   it('FR-DOC-003: the v1.2 fixture validates with 0 errors and round-trips byte for byte', () => {
-    expect(validate(v12)).toEqual([]);
+    // no longer current (1.3): it migrates without a change to its records, then validates and round-trips
+    const m = migrate(v12);
+    if (!m.ok) throw new Error(m.error.message);
+    expect(m.value.document.records).toEqual(v12.records);
+    expect(validate(m.value.document)).toEqual([]);
     const r = parseDocument(JSON.stringify(v12));
-    expect(r.ok && serializeDocument(r.value.document)).toBe(`${JSON.stringify(v12, null, 2)}\n`);
+    expect(r.ok && serializeDocument(r.value.document)).toBe(`${JSON.stringify({ ...v12, schemaVersion: '1.3' }, null, 2)}\n`);
     // sections are records in order, and a screen names one of them
     const types = Object.values(v12.records).map((x) => (x as { type: string }).type);
     expect(types.filter((t) => t === 'section')).toHaveLength(2);
@@ -67,8 +72,8 @@ describe('migrations (FR-DOC-003)', () => {
     const r = migrate(v11);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value.applied).toEqual(['1.1→1.2']);
-    expect(r.value.document.schemaVersion).toBe('1.2');
+    expect(r.value.applied).toEqual(['1.1→1.2', '1.2→1.3']);
+    expect(r.value.document.schemaVersion).toBe('1.3');
     expect(validate(r.value.document)).toEqual([]);
     // nothing else changed: the same records
     expect(r.value.document.records).toEqual(v11.records);
@@ -149,8 +154,8 @@ describe('migrations (FR-DOC-003)', () => {
     const r = migrate(v10);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value.applied).toEqual(['1.0→1.1', '1.1→1.2']);
-    expect(r.value.document.schemaVersion).toBe('1.2');
+    expect(r.value.applied).toEqual(['1.0→1.1', '1.1→1.2', '1.2→1.3']);
+    expect(r.value.document.schemaVersion).toBe('1.3');
     expect(validate(r.value.document)).toEqual([]);
     // nothing else changed: the same records, the same bytes once the version is told
     expect(r.value.document.records).toEqual(v10.records);
@@ -175,11 +180,11 @@ describe('migrations (FR-DOC-003)', () => {
     expect(once.ok).toBe(true);
     if (!once.ok) return;
     expect(migrate(once.value.document, CHAIN)).toEqual({ ok: true, value: { document: once.value.document, applied: [] } });
-    expect(migrate(v12)).toEqual({ ok: true, value: { document: v12, applied: [] } });
+    expect(migrate(v13)).toEqual({ ok: true, value: { document: v13, applied: [] } });
   });
 
   it('the released chain is 1.0 to 1.1 to 1.2, and refuses what it cannot convert', () => {
-    expect(MIGRATIONS.map((m) => `${m.from}→${m.to}`)).toEqual(['1.0→1.1', '1.1→1.2']);
+    expect(MIGRATIONS.map((m) => `${m.from}→${m.to}`)).toEqual(['1.0→1.1', '1.1→1.2', '1.2→1.3']);
     const code = (doc: unknown, chain?: readonly Migration[]) => {
       const r = migrate(doc, chain);
       return r.ok ? 'ok' : r.error.code;
@@ -199,6 +204,6 @@ describe('migrations (FR-DOC-003)', () => {
       { from: '0.9', to: '0.8', up: (d) => ({ ...d, schemaVersion: '0.8' }) },
     ];
     expect(code({ ...v09, schemaVersion: '0.8' }, loop)).toBe('MIGRATION_UNSUPPORTED');
-    expect(isValid(validate(v12))).toBe(true);
+    expect(isValid(validate(v13))).toBe(true);
   });
 });

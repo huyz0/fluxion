@@ -18,6 +18,7 @@ import type {
   UnknownElement,
 } from './element.js';
 import { type AnchorDef, pointSchema, qualifiedNameSchema } from './element-base.js';
+import { layoutSpecSchema } from './layout-spec.js';
 
 const props = z.record(z.string(), z.unknown());
 const base = {
@@ -119,13 +120,14 @@ export const elementKindSchemas: {
       freeTarget: pointSchema.optional(),
     }),
   ),
-  group: checkedSchema<GroupElement>()(z.looseObject({ ...boxed, kind: z.literal('group') })),
+  group: checkedSchema<GroupElement>()(z.looseObject({ ...boxed, kind: z.literal('group'), layout: layoutSpecSchema.optional() })),
   frame: checkedSchema<FrameElement>()(
     z.looseObject({
       ...boxed,
       kind: z.literal('frame'),
       clip: z.boolean().meta({ ui: 'toggle', group: 'Frame', order: 1, label: 'Clip contents' }).optional(),
       padding: z.number().min(0).meta({ ui: 'number', group: 'Frame', order: 2, label: 'Padding' }).optional(),
+      layout: layoutSpecSchema.optional(),
     }),
   ),
   text: checkedSchema<TextElement>()(

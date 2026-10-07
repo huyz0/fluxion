@@ -60,7 +60,7 @@ describe('robust parse (NFR-REL-002)', () => {
         runs++;
         const r = parseDocument(text);
         // either a document, or a structured error with diagnostics that carry paths
-        if (r.ok) expect(r.value.document.schemaVersion).toBe('1.2');
+        if (r.ok) expect(r.value.document.schemaVersion).toBe('1.3');
         else expect(r.error.diagnostics.length).toBeGreaterThan(0);
       }),
     );
@@ -144,21 +144,21 @@ describe('robust parse (NFR-REL-002)', () => {
       };
       records[`b${i}`] = { id: `b${i}`, type: 'binding', connectorId: `c${i}`, end: 'source', elementId: 'gone', anchor: { kind: 'auto' } };
     }
-    const r = repair({ schemaVersion: '1.2', records });
+    const r = repair({ schemaVersion: '1.3', records });
     expect(r.diagnostics.filter((d) => d.code === 'FLX_REPAIRED_BINDING')).toHaveLength(30_000);
   }, 30_000);
 
   it('NFR-REL-002: hostile nesting is reported, not a stack overflow', () => {
     const deep = `${'['.repeat(100_000)}${']'.repeat(100_000)}`;
-    const r = parseDocument(`{"schemaVersion":"1.2","records":{"doc":{"id":"doc","type":"document","x":${deep}}}}`);
+    const r = parseDocument(`{"schemaVersion":"1.3","records":{"doc":{"id":"doc","type":"document","x":${deep}}}}`);
     expect(r.ok ? [] : r.error.diagnostics.map((d) => d.code)).toEqual(['FLX_JSON_TOO_DEEP']);
     expect(r.ok ? 'ok' : r.error.salvaged).toBeNull();
     const fine = `${'['.repeat(MAX_JSON_DEPTH - 8)}${']'.repeat(MAX_JSON_DEPTH - 8)}`;
-    expect(parseDocument(`{"schemaVersion":"1.2","records":{"doc":{"id":"doc","type":"document","x":${fine}}}}`).ok).toBe(true);
+    expect(parseDocument(`{"schemaVersion":"1.3","records":{"doc":{"id":"doc","type":"document","x":${fine}}}}`).ok).toBe(true);
   });
 
   it('salvage is null when nothing structural is left', () => {
-    for (const text of ['', 'null', '[]', '{"schemaVersion":"1.2"}', '{"records":{}}']) {
+    for (const text of ['', 'null', '[]', '{"schemaVersion":"1.3"}', '{"records":{}}']) {
       const r = parseDocument(text);
       expect(r.ok, text).toBe(false);
       if (!r.ok) expect(r.error.salvaged, text).toBeNull();

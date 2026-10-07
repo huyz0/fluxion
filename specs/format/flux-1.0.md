@@ -23,7 +23,7 @@ A package is a zip archive. A writer must produce the entries below in this orde
 |---|---|---|
 | `mimetype` | stored | the text `application/vnd.fluxion+zip`, no extra field; always first |
 | `manifest.json` | deflate | the manifest (§3) |
-| `document.json` | deflate | `{ "schemaVersion": <the document schema version, now 1.2>, "records": { <id>: <record> } }` |
+| `document.json` | deflate | `{ "schemaVersion": <the document schema version, now 1.3>, "records": { <id>: <record> } }` |
 | `theme/tokens.json` | deflate | the active theme's design tokens |
 | `source/document.flux.yaml` | deflate | optional: the FluxScript the document came from |
 | `assets/<sha256>.<ext>` | stored for `webp`, `avif`, `png`, `jpg`, `gif`, `woff2` and `mp4`, otherwise deflate | one entry per distinct asset, named by the SHA-256 of its bytes |

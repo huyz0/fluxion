@@ -50,7 +50,31 @@ export type DocumentRecord = Extensible<{
   readonly created?: string;
   /** Last modification time, ISO 8601. */
   readonly modified?: string;
+  /** The FluxScript this document was compiled from: its id salt and the sections the compiler kept but did not compile (schema 1.3, ADR-0031). */
+  readonly source?: DocumentSource;
 }>;
+
+/**
+ * What a FluxScript compile keeps in the document (ADR-0030, ADR-0031).
+ *
+ * @public
+ */
+export type DocumentSource = Extensible<{
+  /** The FluxScript grammar version. */
+  readonly flux: 1;
+  /** The id salt every compile into this document uses. */
+  readonly salt: string;
+  /** The YAML text of each deferred section, keyed by a pointer into the FluxScript (`/vars`, `/screens/<id>/steps`). */
+  readonly deferred: { readonly [pointer: string]: string };
+}>;
+
+const sourceSchema = checkedSchema<DocumentSource>()(
+  z.looseObject({
+    flux: z.literal(1),
+    salt: z.string(),
+    deferred: z.record(z.string().startsWith('/'), z.string()),
+  }),
+);
 
 const settingsSchema = checkedSchema<DocumentSettings>()(
   z.looseObject({
@@ -79,5 +103,6 @@ export const documentRecordSchema: z.ZodType<DocumentRecord> = checkedSchema<Doc
     custom: z.record(z.string(), z.string()).optional(),
     created: z.iso.datetime({ offset: true }).optional(),
     modified: z.iso.datetime({ offset: true }).optional(),
+    source: sourceSchema.optional(),
   }),
 );

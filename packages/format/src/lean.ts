@@ -23,9 +23,13 @@ function wellFormed(key: string, record: unknown): record is AnyRecord {
   return record['type'] !== 'element' || (typeof record['screenId'] === 'string' && typeof record['kind'] === 'string');
 }
 
+// The schema versions this reader opens without migrating: the current one, and 1.2, whose step to 1.3 only adds optional fields the player
+// does not read (ADR-0031: layouts and the FluxScript source). It reads them as the current version, as the validating loader would after migrating.
+const LEAN_READS: ReadonlySet<string> = new Set([SCHEMA_VERSION, '1.2']);
+
 /**
  * Read the text of a `document.json` by structure: the records that are well formed, the ids of those that are not. Refuses a text that is not JSON, one that names
- * another schema version than the current one, and one with no readable record. Never throws.
+ * a schema version other than the current one or 1.2, and one with no readable record. Never throws.
  *
  * @public
  */
@@ -37,7 +41,7 @@ export function leanDocumentText(text: string): Result<OpenedDocument, FormatErr
     return fail(`document.json cannot be read (it is not valid JSON or is cut off): ${STUDIO}`);
   }
   if (!isObject(value) || !isObject(value['records'])) return fail(`document.json is not a document: ${STUDIO}`);
-  if (value['schemaVersion'] !== SCHEMA_VERSION)
+  if (typeof value['schemaVersion'] !== 'string' || !LEAN_READS.has(value['schemaVersion']))
     return fail(`this document was written for schema ${String(value['schemaVersion'])} and this player reads ${SCHEMA_VERSION}: ${STUDIO}`);
   const kept: { [id: string]: AnyRecord } = {};
   const dropped: string[] = [];

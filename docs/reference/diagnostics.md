@@ -18,7 +18,7 @@ id, then referential ones grouped by check (each group by record id).
 | `FLX_JSON_INVALID` | error | `parseDocument` was given text that is not JSON; the message carries the parser's reason. | Fix the syntax. |
 | `FLX_JSON_TOO_DEEP` | error | The JSON nests deeper than 256 levels (`MAX_JSON_DEPTH`); rejected before anything walks it (NFR-REL-002). | Flatten the data. |
 | `FLX_DOC_NOT_OBJECT` | error | The input is not a JSON object. | Pass the parsed document object. |
-| `FLX_VERSION_INVALID` | error | `schemaVersion` is missing or not `MAJOR.MINOR`. | Set `"schemaVersion": "1.2"`. |
+| `FLX_VERSION_INVALID` | error | `schemaVersion` is missing or not `MAJOR.MINOR`. | Set `"schemaVersion": "1.3"`. |
 | `FLX_VERSION_UNSUPPORTED` | error | The major version is newer than this reader, or the version is older and was not migrated. | Open with a newer Fluxion, or run `migrate()` first. |
 | `FLX_VERSION_NEWER` | warning | A newer minor version: fields and kinds this reader does not know are kept, not interpreted. | None needed. |
 | `FLX_RECORDS_INVALID` | error | `records` is missing or not an object keyed by record id. | Store records as `{ "<id>": { … } }`. |

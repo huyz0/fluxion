@@ -1,4 +1,4 @@
-import { type AnyRecord, type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
+import { type AnyRecord, type DocumentFile, parseDocument, type RecordId, SCHEMA_VERSION } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
 import { writeFlux } from './flux-writer.js';
 import { type LoadedFlux, loadFlux } from './loader.js';
@@ -81,17 +81,24 @@ describe('the v1.0 goldens', () => {
       expect(loaded.salvage, name).toBeUndefined();
       const again = await resave(loaded);
       if (!again.ok) throw new Error(again.error.reason);
-      // a file still at schema 1.0 opens migrated: its document is saved at 1.2, so it is not the same bytes
-      if (name === 'schema-1.0') {
-        expect(loaded.document.schemaVersion).toBe('1.2');
-        expect(same(again.value, bytes)).toBe(false);
-      } else expect(same(again.value, bytes), name).toBe(true);
+      // every golden predates the current schema: it opens migrated, so its document saves at the current version
+      expect(loaded.document.schemaVersion, name).toBe(SCHEMA_VERSION);
+      if (name === 'schema-1.0') expect(same(again.value, bytes)).toBe(false);
+      else {
+        // the 1.2 goldens: written back at their own version, the bytes are the golden's, so only the version moved
+        const asWritten = await resave({ ...loaded, document: { ...loaded.document, schemaVersion: '1.2' } });
+        expect(asWritten.ok && same(asWritten.value, bytes), name).toBe(true);
+      }
+      // and the migrated file round-trips byte-identically from then on
+      const twice = await resave(await load(again.value));
+      expect(twice.ok && same(twice.value, again.value), name).toBe(true);
     }
   });
 
   it('NFR-PORT-003: the writer still produces the goldens from the shared document fixtures', async () => {
     for (const name of ['minimal', 'two-rects-line', 'shapes-gallery', 'rich-text']) {
-      const zip = await writeFlux({ document: documentOf(name), appVersion: '1.0.0', generator: 'fluxion goldens', hasher });
+      // the goldens hold schema 1.2 documents; the shared fixtures are now current (1.3) with the same records
+      const zip = await writeFlux({ document: { ...documentOf(name), schemaVersion: '1.2' }, appVersion: '1.0.0', generator: 'fluxion goldens', hasher });
       expect(zip.ok && same(zip.value, goldens.get(name) as Uint8Array), name).toBe(true);
     }
   });
