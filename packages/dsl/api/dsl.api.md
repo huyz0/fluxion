@@ -110,6 +110,15 @@ export function parseEdgeObject(value: {
 }): EdgeResult;
 
 // @public
+export function parseFlux(text: string): ParseResult;
+
+// @public
+export type ParseResult = {
+    readonly root?: YNode;
+    readonly diagnostics: readonly DslDiagnostic[];
+};
+
+// @public
 export type SourceRange = {
     readonly line: number;
     readonly col: number;
@@ -124,6 +133,37 @@ export function toSlug(name: string): string | undefined;
 
 // @public
 export const VERSION: string;
+
+// @public
+export type YEntry = {
+    readonly key: string;
+    readonly keyRange: SourceRange;
+    readonly value: YNode;
+};
+
+// @public
+export type YMap = {
+    readonly kind: "map";
+    readonly range: SourceRange;
+    readonly entries: readonly YEntry[];
+};
+
+// @public
+export type YNode = YMap | YSeq | YScalar;
+
+// @public
+export type YScalar = {
+    readonly kind: "scalar";
+    readonly range: SourceRange;
+    readonly value: string | number | boolean | null;
+};
+
+// @public
+export type YSeq = {
+    readonly kind: "seq";
+    readonly range: SourceRange;
+    readonly items: readonly YNode[];
+};
 
 // (No @packageDocumentation comment for this package)
 

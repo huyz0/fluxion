@@ -177,6 +177,9 @@ catalogs:
     vitest:
       specifier: 5.0.2
       version: 5.0.2
+    yaml:
+      specifier: 2.9.1
+      version: 2.9.1
     zod:
       specifier: 4.6.5
       version: 4.6.5
@@ -419,6 +422,9 @@ importers:
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      yaml:
+        specifier: 'catalog:'
+        version: 2.9.1
 
   packages/editor:
     dependencies:
