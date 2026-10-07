@@ -5,7 +5,7 @@
 > *and* a milestone review (fresh agent) has recorded a verdict. The command is written first,
 > red (see `docs/standards/sdd.md`, skill `plan-milestone`).
 
-**Current milestone: `M9`** (the `drive` skill reads this line).
+**Current milestone: `M12`** (the `drive` skill reads this line). M11 closed 2026-10-07 (final review `.harness/reviews/milestone-M11-final.json`, `m11-complete` green). M9 and M10 were never closed: their open rows (M9.11, M9.23, M9.28, M10.22: Docker-image baselines, three-engine CI) wait for things the cloud container lacks and are unscheduled hand-offs; the nightly's `previous-playwright (webkit)` job stays red on `clipboard.cross-document` until the older Playwright release is retired (M11.59, Deferred).
 
 **Also active: `M10`** (started 2026-10-04 on the human's instruction, "Let start m10", while M9's rows M9.11, M9.19, M9.20, M9.23 and M9.28 are blocked on things the cloud container lacks: the pinned Docker image, a desktop budget re-record, a three-engine CI run). M10's rows are in `docs/backlog/current.md` under M9's. M9 stays current until `m9-complete` passes; M10 does not advance the roadmap.
 

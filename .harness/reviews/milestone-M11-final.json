@@ -1,0 +1,22 @@
+{
+  "milestone": "M11",
+  "checkpoint": "final",
+  "range": "b566eda..4fb0b96",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "approve",
+  "findings": [
+    { "id": "F1", "severity": "major", "file": "docs/milestones/R1-exit.md", "summary": "Box 2 was stale again (cited ci run 37451871986 at e8fad47 as the last code commit; later commits changed code)." },
+    { "id": "F2", "severity": "minor", "file": ".harness/state.json", "summary": "blockedReason still said M11.59 was blocked and the final review file did not exist." },
+    { "id": "F3", "severity": "minor", "file": "docs/backlog/current.md", "summary": "Row M11.59 kept 'NOT met ... blocked' text beside its descoped state; 'recorded as the release's limit' overstated what the probe shows." },
+    { "id": "F4", "severity": "minor", "file": "scripts/gates/m11-complete.mjs", "summary": "The nightly's red previous-playwright job has no gate leg; the roadmap line was still M9 and advancing it skips M9/M10; R1-exit box 2 is text only." },
+    { "id": "F5", "severity": "minor", "file": "docs/architecture/decisions/ADR-0160-caniuse-lite-licence-exception.md", "summary": "ADR-0160 is not yet acknowledged by the human; the staged-ladder budget margin is thin (353 s of 360 s)." }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "note": "Fixed in the closing commit: box 2 cites ci run 37497697812 at b8ab3ec and gates run 37574909448 at 4fb0b96.", "target": "M11.26" },
+    { "finding": "F2", "disposition": "reopen", "note": "state.json blockedReason rewritten in the closing commit.", "target": "M11.26" },
+    { "finding": "F3", "disposition": "argue", "note": "The descope is recorded in the row and the Deferred table; the stale 'NOT met' sentence is replaced in the closing commit and the Deferred row keeps 'not proven'." },
+    { "finding": "F4", "disposition": "hand-off", "note": "Roadmap Current milestone moved to M12; M9/M10 open rows and the red nightly job on clipboard.cross-document are recorded there as unscheduled and accepted until the older release is retired (M11.59, Deferred)." },
+    { "finding": "F5", "disposition": "argue", "note": "A bounded decision; the human is asked to acknowledge ADR-0160 at sign-off." }
+  ],
+  "planDelta": "M11 grew from 26 planned rows to about 86 (3.3x): late M9/M10 rows, nightly and older-WebKit findings, gate-budget growth, repeated osv-scanner advisories (M11.73, M11.77, M11.78, M11.84). Later milestones: plan a standing dependency-advisory chore and measure the staged-ladder budget at plan time."
+}
