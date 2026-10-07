@@ -7,9 +7,11 @@
 export type { CliIo, ExitCode } from './command.js';
 export { run } from './main.js';
 
+import { CLI_VERSION } from './version.js';
+
 /**
  * Version of this package.
  *
  * @public
  */
-export const VERSION: string = '0.0.0';
+export const VERSION: string = CLI_VERSION;

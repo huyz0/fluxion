@@ -138,6 +138,26 @@ describe('.flux.json (FR-FIL-005)', () => {
     expect(readFluxJson(inline.replace('"mime": "image/png"', '"mime": 5'))).toMatchObject({ ok: false });
   });
 
+  it('FR-FIL-005: an asset of a media type with no known extension, or a long one, keeps its file name through a round trip', async () => {
+    const blob = Uint8Array.from([1, 2, 3, 4]);
+    const own = new Map([[sha256Hex(blob), { bytes: blob, mime: 'application/x-thing', ext: 'thingamajig' }]]);
+    const first = await writeFluxJson({ document: docOf('two-rects-line'), assets: own, appVersion: '1', hasher, assetsMode: 'external', name: 'd' });
+    if (!first.ok) throw new Error(first.error.reason);
+    expect(first.value.files.map((f) => f.path)).toEqual([`d.assets/${sha256Hex(blob)}.thingamajig`]);
+    const disk = new Map(first.value.files.map((f) => [f.path, f.bytes]));
+    const read = readFluxJson(first.value.text, (p) => disk.get(p));
+    if (!read.ok) throw new Error(read.error.reason);
+    expect(read.value.assets.get(sha256Hex(blob))?.ext).toBe('thingamajig');
+    const again = await writeFluxJson({ document: read.value.document, assets: read.value.assets, appVersion: '1', hasher, assetsMode: 'external', name: 'd' });
+    expect(again.ok && again.value.text).toBe(first.value.text);
+    // inline too: the extension rides beside the bytes
+    const inline = await writeFluxJson({ document: docOf('two-rects-line'), assets: own, appVersion: '1', hasher });
+    if (!inline.ok) throw new Error(inline.error.reason);
+    expect(inline.value.text).toContain('"ext": "thingamajig"');
+    const back = readFluxJson(inline.value.text);
+    expect(back.ok && back.value.assets.get(sha256Hex(blob))?.ext).toBe('thingamajig');
+  });
+
   it('FR-FIL-005: a key that is not the hash of its bytes, text that is not JSON and a file without a version are refused', async () => {
     const bad = await writeFluxJson({
       document: docOf('two-rects-line'),

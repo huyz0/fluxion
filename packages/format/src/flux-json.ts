@@ -67,17 +67,31 @@ export type FluxJsonOutput = {
   readonly files: readonly FluxJsonFile[];
 };
 
-type AssetOut = { mime: string; base64?: string; path?: string };
+type AssetOut = { mime: string; base64?: string; path?: string; ext?: string };
+
+/** `{ ext }` when `asset` names an extension its media type does not imply, else nothing: a round trip keeps the asset's file name. */
+const ownExt = (asset: FluxAsset): { ext?: string } => (asset.ext === undefined || asset.ext === extensionOf(asset.mime) ? {} : { ext: asset.ext });
+
+/** The extension an entry read back carries: from its external path, else its inline `ext`. */
+function entryExt(entry: Raw): string | undefined {
+  if (typeof entry['path'] === 'string') return /\.([a-z0-9]+)$/.exec(entry['path'])?.[1];
+  return typeof entry['ext'] === 'string' && /^[a-z0-9]+$/.test(entry['ext']) ? entry['ext'] : undefined;
+}
+
+/** The external assets folder, `<name>.assets`; a name the reader would refuse is refused (M12.15 review r2 F1). */
+function assetsFolder(input: WriteFluxJsonInput): Result<string, FluxJsonFailure> {
+  const name = input.name ?? 'document';
+  if (input.assetsMode === 'external' && !/^[^/\\:.][^/\\:]*$/.test(name))
+    return err({ reason: `"${name}" cannot name an assets folder: it starts with "." or has "/", "\\" or ":"` });
+  return ok(`${name}.assets`);
+}
 
 /** The assets section and the files beside the JSON, sorted by hash; a key that is not its bytes' hash is a failure. */
 async function assetsOut(
   input: WriteFluxJsonInput,
 ): Promise<Result<{ assets: { [hash: string]: AssetOut }; files: FluxJsonOutput['files'] }, FluxJsonFailure>> {
-  const name = input.name ?? 'document';
-  // the reader takes only <name>.assets/<hash>.<ext> with a plain name: refuse a name it would refuse (M12.15 review r2 F1)
-  if (input.assetsMode === 'external' && !/^[^/\\:.][^/\\:]*$/.test(name))
-    return err({ reason: `"${name}" cannot name an assets folder: it starts with "." or has "/", "\\" or ":"` });
-  const folder = `${name}.assets`;
+  const folder = assetsFolder(input);
+  if (!folder.ok) return folder;
   const assets: { [hash: string]: AssetOut } = {};
   const files: { path: string; bytes: Uint8Array }[] = [];
   for (const key of [...(input.assets?.keys() ?? [])].sort()) {
@@ -85,10 +99,10 @@ async function assetsOut(
     const actual = await input.hasher.sha256(asset.bytes);
     if (actual !== key) return err({ reason: `the asset ${key} has the hash ${actual}` });
     if (input.assetsMode !== 'external') {
-      assets[key] = { mime: asset.mime, base64: encodeBase64(asset.bytes) };
+      assets[key] = { mime: asset.mime, base64: encodeBase64(asset.bytes), ...ownExt(asset) };
       continue;
     }
-    const path = `${folder}/${key}.${asset.ext ?? extensionOf(asset.mime)}`;
+    const path = `${folder.value}/${key}.${asset.ext ?? extensionOf(asset.mime)}`;
     files.push({ path, bytes: asset.bytes });
     assets[key] = { mime: asset.mime, path };
   }
@@ -138,7 +152,7 @@ const isObject = (v: unknown): v is Raw => typeof v === 'object' && v !== null &
 
 /** The only external path an asset may have: `<name>.assets/<its hash>.<ext>`, one folder deep, beside the JSON (security.md §1.7). */
 const safeAssetPath = (path: string, hash: string): boolean => {
-  const m = /^([^/\\:]+)\.assets\/([0-9a-f]{64})\.([a-z0-9]{1,8})$/.exec(path);
+  const m = /^([^/\\:]+)\.assets\/([0-9a-f]{64})\.([a-z0-9]+)$/.exec(path);
   return m !== null && m[2] === hash && !m[1]?.startsWith('.') && unsafeName(path) === undefined;
 };
 
@@ -167,7 +181,8 @@ function assetsIn(section: unknown, readFile: (path: string) => Uint8Array | und
     if (!isObject(entry) || typeof entry['mime'] !== 'string') return err({ reason: `the asset ${hash} has no media type` });
     const bytes = assetBytes(hash, entry, readFile);
     if (!bytes.ok) return bytes;
-    assets.set(hash, { bytes: bytes.value, mime: entry['mime'] });
+    const ext = entryExt(entry);
+    assets.set(hash, { bytes: bytes.value, mime: entry['mime'], ...(ext === undefined || ext === extensionOf(entry['mime']) ? {} : { ext }) });
   }
   return ok(assets);
 }

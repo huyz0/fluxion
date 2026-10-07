@@ -1643,3 +1643,7 @@ M12.8's code passes its staged ladder (203 s with M12.29/M12.30), but the lockfi
 ## 2026-10-07 M12.31 (claude)
 
 ADR-0162: `fluxion convert` pairs a `.flux` with a `.flux.json` either way; `--assets inline|external` (usage error otherwise or on another output); reply `direction` adds `to-json`/`from-json` (additive, apiVersion 1); schema snapshot regenerated. `writeFluxJson` refuses an assets folder name the reader would (M12.15 review r2 F1). CLI e2e: the round trip keeps the document, source and assets, and the JSON written again is the same bytes. Cli-quickstart guide updated. Next: the rest of M12 needs M12.8 (blocked).
+
+## 2026-10-07 M12.32 (claude)
+
+`.flux.json` keeps an asset's own extension (inline `ext` when the media type does not imply it; external from the path) and takes `[a-z0-9]+` like the `.flux` loader; `packages/cli/src/version.ts` is the one CLI version (`--version`, `VERSION`, files `convert` writes). Next: M12 rows left need M12.8 (blocked on the staged budget).

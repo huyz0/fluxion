@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type ContentHasher, loadFlux, readFluxHtml, readFluxJson, sha256Hex, writeFlux, writeFluxHtml, writeFluxJson } from '@fluxion/format';
 import { type Command, internal, io, type Outcome, usage } from './command.js';
+import { CLI_VERSION } from './version.js';
 
 const hasher: ContentHasher = { sha256: (bytes) => Promise.resolve(sha256Hex(bytes)) };
 
@@ -18,7 +19,6 @@ const kindOf = (path: string): 'flux' | 'html' | 'json' | undefined => {
   return name.endsWith('.flux.html') ? 'html' : name.endsWith('.flux.json') ? 'json' : name.endsWith('.flux') ? 'flux' : undefined;
 };
 const DIRECTION = { html: 'to-html', flux: 'to-flux', json: 'to-json' } as const;
-const CLI_APP = '0.0.0';
 
 /** The text of the one-file player next to the `@fluxion/player-inline` package's entry (its build output), or undefined when it is not built. */
 async function playerScript(): Promise<string | undefined> {
@@ -68,7 +68,7 @@ async function toJson(flux: Uint8Array, input: string, output: string, assets: '
     document,
     assets: loaded.value.assets,
     ...(source === undefined ? {} : { source }),
-    appVersion: CLI_APP,
+    appVersion: CLI_VERSION,
     generator: 'fluxion convert',
     assetsMode: assets,
     name,
@@ -90,7 +90,14 @@ async function fromJson(text: string, input: string): Promise<Produced | Outcome
   });
   if (!read.ok) return io(`cannot convert ${input}: ${read.error.reason}`, ['argv']);
   const { document, source, assets } = read.value;
-  const written = await writeFlux({ document, assets, ...(source === undefined ? {} : { source }), appVersion: CLI_APP, generator: 'fluxion convert', hasher });
+  const written = await writeFlux({
+    document,
+    assets,
+    ...(source === undefined ? {} : { source }),
+    appVersion: CLI_VERSION,
+    generator: 'fluxion convert',
+    hasher,
+  });
   return written.ok ? { bytes: written.value, files: [] } : io(`cannot convert ${input}: ${written.error.reason}`, ['argv']);
 }
 

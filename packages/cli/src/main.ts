@@ -8,6 +8,7 @@ import { CONVERT } from './convert.js';
 import { API_VERSION, OUTPUT_SCHEMAS } from './output.js';
 import { RENDER } from './render.js';
 import { VALIDATE } from './validate.js';
+import { CLI_VERSION } from './version.js';
 
 const COMMANDS: { readonly [name: string]: Command } = {
   validate: VALIDATE,
@@ -18,7 +19,6 @@ const COMMANDS: { readonly [name: string]: Command } = {
 const GLOBAL: Options = { help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, json: { type: 'boolean' } };
 
 /** The version the bin reports. */
-const CLI_VERSION = '0.0.0';
 
 function helpText(): string {
   const width = Math.max(...Object.keys(COMMANDS).map((n) => n.length));
