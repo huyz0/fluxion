@@ -89,9 +89,15 @@ export type EdgeResult = {
 };
 
 // @public
+export function editDistance(a: string, b: string): number;
+
+// @public
 export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], input?: {
     readonly cap?: number;
 }): string[];
+
+// @public
+export function nearest(word: string, candidates: readonly string[]): string | undefined;
 
 // @public
 export function parseEdge(text: string): EdgeResult;
@@ -112,6 +118,9 @@ export type SourceRange = {
     readonly offset: number;
     readonly end: number;
 };
+
+// @public
+export function toSlug(name: string): string | undefined;
 
 // @public
 export const VERSION: string;

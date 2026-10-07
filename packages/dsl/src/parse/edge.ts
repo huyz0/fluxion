@@ -1,6 +1,7 @@
 // The edge shorthand of FluxScript (ADR-0030, FR-DSL-001): `<end> <op> <end>`, where an end is a slug with an optional anchor suffix
 // (`api.e`, `db.out-1`) and the op one of `->`, `<-`, `<->`, `--`, `~>`. Hand-written, so a malformed edge is reported at its column
 // with a fix (FR-DSL-006). The value after the edge's `:` (a label or an object) is YAML, read by the parse stage.
+import { toSlug } from '../resolve/suggest.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
 
 /**
@@ -90,6 +91,11 @@ const badSlug = (col: number, message: string, hint: string, field?: Field): Edg
   hint,
   ...(field ? { field } : {}),
 });
+/** The fix for a bad slug: a valid one made from it, or the rule when none can be. */
+const slugHint = (slug: string): string => {
+  const fixed = toSlug(slug);
+  return fixed === undefined ? 'a slug starts with a letter: `api`, `db-main`' : `write it as "${fixed}"`;
+};
 /** Whether `word` holds an op glued between two ends (`web--api`, `a->b`). */
 const glued = (word: string) => EDGE_OPS.some((op) => word.slice(1, -1).includes(op));
 
@@ -108,13 +114,7 @@ function end(word: string, col: number, field?: Field): EdgeEnd | EdgeResult {
   const slug = dot < 0 ? word : word.slice(0, dot);
   const anchor = dot < 0 ? undefined : word.slice(dot + 1);
   if (glued(word) && !SLUG.test(word)) return fail(col, `"${word}" is not a slug`, 'put spaces around the op: `a -> b`', field);
-  if (!SLUG.test(slug))
-    return badSlug(
-      col,
-      `"${slug}" is not a slug: lower-case letters, digits and "-", starting with a letter`,
-      `write it as "${slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}"`,
-      field,
-    );
+  if (!SLUG.test(slug)) return badSlug(col, `"${slug}" is not a slug: lower-case letters, digits and "-", starting with a letter`, slugHint(slug), field);
   if (anchor !== undefined && !SLUG.test(anchor))
     return fail(
       col,

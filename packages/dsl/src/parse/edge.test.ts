@@ -43,6 +43,9 @@ describe('edge shorthand (FR-DSL-001, FR-DSL-006, ADR-0030)', () => {
     // a slug that breaks the slug rule is FLX_DSL_BAD_SLUG (ADR-0030); every other problem FLX_DSL_EDGE_SYNTAX
     expect(bad('Api -> b')).toMatchObject({ code: 'FLX_DSL_BAD_SLUG', col: 1, message: expect.stringContaining('slug') });
     expect(bad('a => b')).toMatchObject({ code: 'FLX_DSL_EDGE_SYNTAX' });
+    // the suggested slug is itself valid, or the rule is stated (M12.9 review F1)
+    expect(bad('1web -> api').hint).toBe('write it as "web"');
+    expect(bad('.e -> api').hint).toContain('starts with a letter');
     // an op glued between two slugs, even one that reads as a slug itself, gets the spaces hint
     expect(bad('web--api')).toMatchObject({ col: 1, hint: expect.stringContaining('spaces') });
     expect(bad('web-->api')).toMatchObject({ col: 1, hint: expect.stringContaining('spaces') });

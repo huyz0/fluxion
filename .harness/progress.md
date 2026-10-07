@@ -1659,3 +1659,7 @@ Done since the plan: M12.2-M12.7, M12.12, M12.15, M12.28-M12.33. Blocked: M12.8 
 ## 2026-10-07 M12.9 (claude)
 
 While M12.8 waits on the budget record: the edge tokenizer needs no YAML, so M12.9 depends on M12.7 now. `parseEdge` (`dsl/src/parse/edge.ts`): five ops, anchor suffix, whitespace required around the op (a slug may hold `-`), column + message + hint + code (`FLX_DSL_BAD_SLUG` for a bad slug) per failure; `parseEdgeObject` for `{from, to, op?}` names the failing field; `edgeDiagnostic` places it in the source (review r1). Next: rows that need no YAML.
+
+## 2026-10-07 M12.34 (claude)
+
+`dsl/src/resolve/suggest.ts`: `editDistance` (optimal string alignment), `nearest` (reach = a third of the word, 1 to 3 edits; case ignored; the word itself never), `toSlug`; the edge tokenizer's bad-slug hint uses it (M12.9 review F1). Split from M12.10, which keeps the resolve stage itself (needs M12.8).
