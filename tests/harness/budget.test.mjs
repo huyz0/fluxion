@@ -110,6 +110,39 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.match(external.stderr, /predates the current pnpm-lock\.yaml/);
   });
 
+  it('NFR-DX-001: a record taken with its lockfile staged is matched to the commit that committed it, not only to its parent', () => {
+    sb.cleanup();
+    sb = sandbox(['scripts'], { git: true });
+    const lock = (importers) =>
+      `lockfileVersion: '9.0'\n\nimporters:\n\n  .:\n    dependencies:\n      react:\n        specifier: 19.2.0\n        version: 19.2.0\n${importers}`;
+    const link = "\n  packs/x:\n    dependencies:\n      '@fluxion/sdk':\n        specifier: workspace:*\n        version: link:../../packages/sdk\n";
+    sb.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n");
+    sb.git('add', 'pnpm-lock.yaml');
+    sb.git('commit', '-q', '--no-verify', '-m', 'old lockfile');
+    // the record is taken at this commit with the new lockfile staged, then that lockfile is committed
+    const parent = sb.git('rev-parse', 'HEAD').stdout.trim();
+    sb.write('pnpm-lock.yaml', lock(''));
+    const hash = createHash('sha256').update(lock('')).digest('hex');
+    sb.git('add', 'pnpm-lock.yaml');
+    sb.git('commit', '-q', '--no-verify', '-m', 'the lockfile the record measured');
+    const record = { ...OK, commit: parent, lockfile: hash };
+    sb.write('pnpm-lock.yaml', lock(link));
+    const linked = budget(record);
+    assert.equal(linked.status, 0, out(linked));
+    // only the first later lockfile commit is the record's: a record naming a later one's lockfile is not trusted, even one that
+    // differs from the working tree's only in workspace links
+    const later = lock("\n  packs/y:\n    dependencies:\n      '@fluxion/sdk':\n        specifier: workspace:*\n        version: link:../../packages/sdk\n");
+    sb.write('pnpm-lock.yaml', later);
+    sb.git('add', 'pnpm-lock.yaml');
+    sb.git('commit', '-q', '--no-verify', '-m', 'a later lockfile');
+    sb.write('pnpm-lock.yaml', lock(link));
+    const notFirst = budget({ ...record, lockfile: createHash('sha256').update(later).digest('hex') });
+    assert.equal(notFirst.status, 1, out(notFirst));
+    // a record whose lockfile is neither its commit's nor the next lockfile commit's is not trusted
+    const stale = budget({ ...record, lockfile: 'f'.repeat(64) });
+    assert.equal(stale.status, 1, out(stale));
+  });
+
   it('the committed record is within the thresholds (cold setup < 10 min, NFR-DX-001)', () => {
     const record = JSON.parse(readFileSync(join(REPO, '.harness/budget.json'), 'utf8'));
     assert.ok(record.coldSetupMs > 0 && record.coldSetupMs <= t('COLD_SETUP_MAX_MS'), JSON.stringify(record));

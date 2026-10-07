@@ -1699,3 +1699,7 @@ Read stage (`dsl/src/read/`): `KEYS` (ADR-0030's table), `readFlux` to a located
 ## 2026-10-07 M12.40 (claude)
 
 M12.39 review minors: `screenId` and `layout` report a wrong-kind id or type once; a theme with both preset and name is refused; ranges of nodes, groups, members, pins, styles, shorthand and object edges and uses are asserted. Next M12.10.
+
+## 2026-10-07 M12.41 (claude)
+
+M12.10 staged a workspace link (`@fluxion/theme` in dsl) and the budget step failed: the record (taken under `--cold-pending` with M12.8's lockfile staged) names its parent commit, whose lockfile is not the measured one, so the workspace-link exemption never applied. `check-budget` now takes the measured lockfile from the record's commit or the next commit on HEAD's history that changed `pnpm-lock.yaml`, each only if it hashes to the record's lockfile. Next M12.10.

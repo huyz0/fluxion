@@ -220,10 +220,22 @@ const inCi = /^(1|true)$/i.test(process.env.CI ?? '') && !argv.includes('--stage
  * time measures, is the same (a new workspace adds an importer and links, nothing to download). Read from the record's commit.
  */
 function sameDependencies() {
-  const then = git(['show', `${record.commit}:pnpm-lock.yaml`]);
-  // the blob must be the lockfile the record measured, or the record's number belongs to another dependency set
-  const sameBlob = then.status === 0 && createHash('sha256').update(then.stdout).digest('hex') === record.lockfile;
-  return sameBlob && existsSync(repoPath('pnpm-lock.yaml')) && lockfileWorkspaceOnly(then.stdout, readFileSync(repoPath('pnpm-lock.yaml'), 'utf8'));
+  const then = measuredLockfile();
+  return then !== undefined && existsSync(repoPath('pnpm-lock.yaml')) && lockfileWorkspaceOnly(then, readFileSync(repoPath('pnpm-lock.yaml'), 'utf8'));
+}
+/**
+ * The lockfile the record measured: the one at its commit, or, for a record taken with a lockfile change staged (--cold-pending), the
+ * one the next commit on HEAD's history that changed pnpm-lock.yaml committed. Either blob must hash to the record's lockfile, or the
+ * record's number belongs to another dependency set.
+ */
+function measuredLockfile() {
+  const next = git(['log', '--reverse', '--format=%H', `${record.commit}..HEAD`, '--', 'pnpm-lock.yaml']);
+  const commits = [record.commit, ...(next.status === 0 ? next.stdout.split(/\r?\n/).filter(Boolean).slice(0, 1) : [])];
+  for (const commit of commits) {
+    const blob = git(['show', `${commit}:pnpm-lock.yaml`]);
+    if (blob.status === 0 && createHash('sha256').update(blob.stdout).digest('hex') === record.lockfile) return blob.stdout;
+  }
+  return undefined;
 }
 if (record.lockfile !== lockfileHash() && !sameDependencies()) {
   if (inCi) console.log('budget: the record predates pnpm-lock.yaml; in CI the cold-setup job measures this lockfile (ADR-0143)');
