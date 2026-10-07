@@ -132,13 +132,15 @@ export function layout(ctx: Ctx, e: YEntry | undefined, path: string): LayoutAst
   const type = m.entries.find((x) => x.key === 'type');
   const typeText = text(ctx, type, `${path}/layout`);
   if (!typeText) {
-    report(ctx, {
-      code: 'FLX_SCHEMA_INVALID',
-      range: m.range,
-      path: `${path}/layout/type`,
-      message: 'a layout names its type',
-      hint: 'layout: { type: stack }',
-    });
+    // a type of the wrong kind was already reported by text(); only a missing one is reported here
+    if (type === undefined)
+      report(ctx, {
+        code: 'FLX_SCHEMA_INVALID',
+        range: m.range,
+        path: `${path}/layout/type`,
+        message: 'a layout names its type',
+        hint: 'layout: { type: stack }',
+      });
     return undefined;
   }
   const options: { [key: string]: unknown } = {};

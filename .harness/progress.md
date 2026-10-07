@@ -1695,3 +1695,7 @@ Review minors: `propertyRange` stops at a flow indicator (`[`, `{`, `,`); the su
 ## 2026-10-07 M12.39 (claude)
 
 Read stage (`dsl/src/read/`): `KEYS` (ADR-0030's table), `readFlux` to a located `FluxAst`; deferred sections by pointer (`/theme/mode`, `/screens/<id>/steps`, a kind-screen whole under `/kind`, a component-only node whole); a node without content and without a kept key is an error (a typo is not kept); a node kept whole still has its unknown keys reported, `title` is required, wrong-typed `uses`, `contains`, overrides and style values are `FLX_SCHEMA_INVALID` (review r1). The checkout example of 06 §2.1 is a fixture: only `FLX_DSL_NOT_YET`. M12.10 now depends on it. Next M12.10 (resolve).
+
+## 2026-10-07 M12.40 (claude)
+
+M12.39 review minors: `screenId` and `layout` report a wrong-kind id or type once; a theme with both preset and name is refused; ranges of nodes, groups, members, pins, styles, shorthand and object edges and uses are asserted. Next M12.10.

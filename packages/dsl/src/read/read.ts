@@ -154,20 +154,21 @@ function list<T>(ctx: Ctx, e: YEntry | undefined, path: string, each: (entry: YE
   return m ? m.entries.flatMap((x) => each(x) ?? []) : [];
 }
 
+/** A screen's id: present, a single value and a slug, else undefined with one diagnostic. */
+function screenId(ctx: Ctx, m: YMap, path: string): Located<string> | undefined {
+  const entry = m.entries.find((x) => x.key === 'id');
+  const id = text(ctx, entry, path);
+  // an id of the wrong kind was already reported by text(); only a missing one is reported here
+  if (!entry) report(ctx, { code: 'FLX_SCHEMA_INVALID', range: m.range, path: `${path}/id`, message: 'a screen needs an id', hint: '- id: intro' });
+  return id && slug(ctx, id.value, id.range, `${path}/id`) ? id : undefined;
+}
+
 function screen(ctx: Ctx, item: YNode, index: number): ScreenAst | undefined {
   const path = `/screens/${index}`;
   const m = asMap(ctx, item, path, 'a screen');
   if (!m) return undefined;
-  const id = text(
-    ctx,
-    m.entries.find((x) => x.key === 'id'),
-    path,
-  );
-  if (!id) {
-    report(ctx, { code: 'FLX_SCHEMA_INVALID', range: m.range, path: `${path}/id`, message: 'a screen needs an id', hint: '- id: intro' });
-    return undefined;
-  }
-  if (!slug(ctx, id.value, id.range, `${path}/id`)) return undefined;
+  const id = screenId(ctx, m, path);
+  if (!id) return undefined;
   const pointer = `/screens/${id.value}`;
   const kind = m.entries.find((x) => x.key === 'kind');
   if (kind) {
@@ -233,6 +234,15 @@ function theme(ctx: Ctx, e: YEntry | undefined): FluxAst['theme'] {
   if (!m) return undefined;
   const f = entries(ctx, m, KEYS.theme, { path: '/theme', pointer: '/theme' });
   const name = text(ctx, f.get('preset') ?? f.get('name'), '/theme');
+  const both = f.get('name');
+  if (f.has('preset') && both)
+    report(ctx, {
+      code: 'FLX_SCHEMA_INVALID',
+      range: both.keyRange,
+      path: '/theme/name',
+      message: 'a theme has a preset or a name, not both',
+      hint: 'keep one of them',
+    });
   return { ...(name ? { name } : {}), overrides: tokens(ctx, f.get('overrides')?.value) };
 }
 

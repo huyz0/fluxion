@@ -154,6 +154,33 @@ describe('read stage (FR-DSL-001, FR-DSL-002, ADR-0030)', () => {
     ]);
   });
 
+  it('FR-DSL-006: one problem is one diagnostic, and a preset with a name is refused (M12.39 review F2, F3)', () => {
+    expect(codes('flux: 1\ntitle: t\nscreens:\n  - id: [a]\n')).toEqual(['FLX_SCHEMA_INVALID /screens/0/id']);
+    expect(codes('flux: 1\ntitle: t\nscreens:\n  - id: a\n    layout: { type: [stack] }\n')).toEqual(['FLX_SCHEMA_INVALID /screens/0/layout/type']);
+    expect(codes('flux: 1\ntitle: t\ntheme: { preset: ocean, name: brand }\nscreens: []\n')).toEqual(['FLX_SCHEMA_INVALID /theme/name']);
+  });
+
+  it('FR-DSL-001: every construct keeps the place it is written at (M12.39 review F1)', () => {
+    const { ast } = read(SOURCE);
+    const at = (needle: string, from = 0) => {
+      const i = SOURCE.indexOf(needle, from);
+      const before = SOURCE.slice(0, i).split('\n');
+      return { line: before.length, col: (before.at(-1)?.length ?? 0) + 1 };
+    };
+    const s = ast?.screens[0];
+    // a node and a group are placed at their key, a pin and a style at their value
+    expect(s?.nodes[1]?.slug.range).toMatchObject(at('api: {'));
+    expect(s?.nodes[1]?.pin?.range).toMatchObject(at('{ x: 100'));
+    expect(s?.nodes[1]?.style?.range).toMatchObject(at('{ fill:'));
+    expect(s?.nodes[0]?.shape?.range).toMatchObject(at('rounded-rect'));
+    expect(s?.groups[0]?.slug.range).toMatchObject(at('backend:'));
+    expect(s?.groups[0]?.contains[0]?.range).toMatchObject(at('api]'));
+    // a shorthand edge at its key text, an object edge at its mapping
+    expect(s?.edges[1]?.range).toMatchObject(at('web.e -> api.w'));
+    expect(s?.edges[3]?.range).toMatchObject(at('{ from: api'));
+    expect(ast?.uses[1]?.range).toMatchObject(at('flowchart'));
+  });
+
   it('FR-DSL-006: a malformed edge, shorthand or object, is reported at its place', () => {
     const r = read(
       'flux: 1\ntitle: t\nscreens:\n  - id: a\n    edges:\n      - a => b\n      - { from: a, to: B }\n      - { from: a, to: b, wat: 1 }\n      - 5\n',
