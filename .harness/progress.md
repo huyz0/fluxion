@@ -1587,3 +1587,7 @@ The Themes & fonts guide (apps/docs); changesets already cover the range. M9 sta
 ## 2026-10-05 M11 (claude)
 
 The player half of M11 is built and landed: the deck, builds, overview, chrome, deep links, touch, the element and its React wrapper, the lean reader and the zod-free one-file player (139-141 kB gzip against 150), accessible structure and a live region, the keyboard-only pass, the Lighthouse job and the nightly previous-Playwright job, the logger and debug overlay, the diagnostic report and privacy page, the 50-screen open-time test, the R1 demo deck (journey spec, committed `.flux.html`, offline spec) and the Presenting guide. Landed alongside: three CI-red fixes (M11.37, M11.55, M11.57), the link policy (M11.44) and many staged-scope rows. Stopped at M11.25 (the R1 exit checklist is drafted in `docs/milestones/R1-exit.md` with three boxes open): see `blockedReason`. Next after the human's answers: M9.19/M9.20 from a machine that can record the budget, M10.45's decision, then M11.25 and M11.26.
+
+## 2026-10-07 M12.1 (claude)
+
+Planned M12: M9, M10 (unclosed; M9.11, M9.23, M9.28, M10.22 unscheduled) and M11 archived; `m12-complete` red (4/25 legs); 26 rows re-derived (schema is 1.2 with `placement` and `slug` already, so 1.3 adds `screen.layout` and `document.source`; a sync 128-bit hash port; a `stack` layout before the place stage). ADR-0160 acknowledged by the human. Found: m11's backlog leg reads M11.59 (descoped) as a reopened row not done (as before this commit): row M12.27. Next M12.2.

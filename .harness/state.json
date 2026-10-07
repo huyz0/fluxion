@@ -1,9 +1,9 @@
 {
   "milestone": "M12",
-  "currentTask": "M12.plan",
+  "currentTask": null,
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M11 closed 2026-10-07. Needs the human: acknowledge ADR-0160 (caniuse-lite licence exception). Open items that need CI or the pinned Docker image, unscheduled: M10.22, M9.11, M9.23, M9.28; release items (R1 release step, roadmap Deferred); nightly previous-playwright (webkit) red on clipboard.cross-document by decision (M11.59). Next: plan M12 (skill plan-milestone).",
+  "blockedReason": null,
   "updated": "2026-10-07"
 }
