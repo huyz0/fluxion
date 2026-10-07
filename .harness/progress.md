@@ -1623,3 +1623,7 @@ M12.8 (adds `yaml`, already locked as a transitive) ran the whole harness on its
 ## 2026-10-07 M12.30 (claude)
 
 `lockfileLockedOnly` now also requires HEAD's importer resolutions and catalog entries unchanged (additions only); checked on the stashed M12.8 change: qualifies. Next M12.8 (unstash).
+
+## 2026-10-07 M12.8 blocked (claude)
+
+M12.8's code passes its staged ladder (203 s with M12.29/M12.30), but the lockfile change needs `check-budget --record`, whose worst-case staged run takes about 410 s here (four runs) against `PRECOMMIT_BUDGET_MS` 360 s (ADR-0158); `stagedMs` cannot be recorded. Needs the human (raise the budget by ADR, or record on a faster machine). Code parked in a stash. Continuing with rows that do not need M12.8: M12.12, M12.15, M12.28.
