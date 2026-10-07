@@ -11,6 +11,7 @@ import {
   GATE_SCRIPT_HARNESS,
   harnessFiles,
   licensesNeeded,
+  lockfileLockedOnly,
   lockfileWorkspaceOnly,
   MANIFEST_HARNESS,
   NAMED_PATH_HARNESS,
@@ -19,6 +20,7 @@ import {
   SAMPLE_HARNESS,
   SOURCE_HARNESS,
   testScope,
+  workspaceCatalogOnly,
 } from '../../scripts/gates/ladder-scope.mjs';
 import { checkDemoHtml, titled } from '../../scripts/gates/milestone-checks.mjs';
 import { REPO } from './helpers.mjs';
@@ -361,6 +363,58 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       false,
     );
     assert.equal(lockfileWorkspaceOnly(base, base.replace('autoInstallPeers: true', 'autoInstallPeers: false')), false);
+  });
+
+  it('NFR-DX-002: a workspace newly linked to an already-locked package runs the manifest harness, a new package runs them all (M12.29)', () => {
+    const lines = (...l) => `${l.join('\n')}\n`;
+    const yaml = lines('  yaml@2.9.1:', '    resolution: {integrity: sha512-y}', '');
+    const lock = (catalogs, importers, packages) =>
+      lines("lockfileVersion: '9.0'", '', 'settings:', '  autoInstallPeers: true', '', 'catalogs:', '  default:') +
+      catalogs +
+      lines('', 'importers:', '', '  .:', '    devDependencies: {}', '') +
+      importers +
+      lines('packages:', '') +
+      packages +
+      lines('snapshots:', '') +
+      packages;
+    const entry = lines('    yaml:', '      specifier: 2.9.1', '      version: 2.9.1');
+    const uses = lines('  packages/dsl:', '    dependencies:', '      yaml:', "        specifier: 'catalog:'", '        version: 2.9.1', '');
+    const before = lock('', '', yaml);
+    const after = lock(entry, uses, yaml);
+    // a catalog entry and an importer resolving to a package already locked: nothing new is fetched
+    assert.equal(lockfileLockedOnly(before, after), true);
+    assert.equal(lockfileLockedOnly(before, after.replaceAll('\n', '\r\n')), true);
+    // a new package, a changed integrity or a setting is not
+    assert.equal(lockfileLockedOnly(before, lock(entry, uses, yaml + lines('  left-pad@1.0.0:', '    resolution: {integrity: sha512-c}', ''))), false);
+    assert.equal(lockfileLockedOnly(before, lock(entry, uses, yaml.replace('sha512-y', 'sha512-z'))), false);
+    assert.equal(lockfileLockedOnly(before, after.replace('autoInstallPeers: true', 'autoInstallPeers: false')), false);
+    // pnpm-workspace.yaml: only the catalog block may differ (a comment line inside it included)
+    const ws = (catalog) =>
+      lines(
+        'packages:',
+        '  - packages/*',
+        '',
+        'catalog:',
+        '  # one version per dependency',
+        '  zod: 4.6.5',
+        ...catalog,
+        '',
+        'overrides:',
+        '  tmp@<0.2.7: 0.2.7',
+      );
+    assert.equal(workspaceCatalogOnly(ws([]), ws(['  yaml: 2.9.1 # parsing'])), true);
+    assert.equal(workspaceCatalogOnly(ws([]), ws([]).replace('tmp@<0.2.7: 0.2.7', 'tmp@<0.2.8: 0.2.8')), false);
+    assert.equal(workspaceCatalogOnly(ws([]), ws([]).replace('  - packages/*', '  - packages/*\n  - tools/*')), false);
+    // the harness scope: with a manifest, the lockfile and the catalog run the manifest harness; without the flag or a manifest, all
+    const manifest = ALL.filter((f) =>
+      MANIFEST_HARNESS.filter((n) => !['api', 'coverage', 'layering', 'licenses'].includes(n))
+        .map(file)
+        .includes(f),
+    );
+    const staged = ['pnpm-lock.yaml', 'pnpm-workspace.yaml', 'packages/dsl/package.json'];
+    assert.deepEqual(harnessFiles(staged, ALL, { lockedDependency: true }), manifest);
+    assert.deepEqual(harnessFiles(staged, ALL), ALL);
+    assert.deepEqual(harnessFiles(['pnpm-lock.yaml', 'pnpm-workspace.yaml'], ALL, { lockedDependency: true }), ALL);
   });
 
   it('every harness file that names a manifest or the lockfile is a manifest harness file (M4.29)', () => {

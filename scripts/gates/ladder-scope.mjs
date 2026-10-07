@@ -205,14 +205,42 @@ export function lockfileWorkspaceOnly(before, after) {
   return b.replace(IMPORTERS, '') === a.replace(IMPORTERS, '') && externalImports(section(b)) === externalImports(section(a));
 }
 
+// the catalogs section (lockfile) and the catalog block (pnpm-workspace.yaml) run from their key to the next top-level key
+const CATALOGS = /^catalogs:\n(?:[ \t][^\n]*\n|\n)*/m;
+const CATALOG = /^catalog:\n(?:[ \t#][^\n]*\n|\n)*/m;
+
+/**
+ * True when two pnpm lockfiles lock the same packages: everything outside the `catalogs:` and `importers:` sections (settings,
+ * `packages:`, `snapshots:`) is byte-identical, so a workspace that newly depends on a package depends on a version already locked
+ * and installed, and nothing new is fetched (M12.29).
+ */
+export function lockfileLockedOnly(before, after) {
+  const rest = (text) => text.replace(/\r\n/g, '\n').replace(IMPORTERS, '').replace(CATALOGS, '');
+  return rest(before) === rest(after);
+}
+
+/** True when two `pnpm-workspace.yaml` texts differ only inside the `catalog:` block (M12.29). */
+export function workspaceCatalogOnly(before, after) {
+  const rest = (text) => text.replace(/\r\n/g, '\n').replace(CATALOG, '');
+  return rest(before) === rest(after);
+}
+
 /**
  * The harness test files to run for `staged` (repo-relative paths) out of `all`, in `all`'s order:
  * the SOURCE_HARNESS files for sources and API reports, the MANIFEST_HARNESS files for workspace
- * manifests and a workspace-only lockfile change staged with a manifest (`lockfileWorkspaceOnly`), `trace` for the
+ * manifests and a workspace-only lockfile change staged with a manifest (`lockfileWorkspaceOnly`), or a lockfile and catalog change
+ * that only links an already-locked package, staged with a manifest (`lockedDependency`: `lockfileLockedOnly` and
+ * `workspaceCatalogOnly`), `trace` for the
  * traceability matrix, nothing for bookkeeping, and every file for any other path.
  */
-export function harnessFiles(staged, all, { lockfileWorkspaceOnly: workspaceLock = false } = {}) {
-  const needs = staged.map((p) => harnessFor(p, workspaceLock && staged.some((q) => MANIFEST.test(q)), all));
+export function harnessFiles(staged, all, { lockfileWorkspaceOnly: workspaceLock = false, lockedDependency = false } = {}) {
+  const manifest = staged.some((q) => MANIFEST.test(q));
+  const needs = staged.map((p) =>
+    // an already-locked dependency added to a workspace: its catalog line and lockfile entries are the manifest's (M12.29)
+    manifest && lockedDependency && (p === 'pnpm-lock.yaml' || p === 'pnpm-workspace.yaml')
+      ? STAGED_MANIFEST_HARNESS
+      : harnessFor(p, workspaceLock && manifest, all),
+  );
   if (needs.includes(null)) return all;
   const names = new Set(needs.flat());
   return all.filter((f) => [...names].some((name) => f.endsWith(`/${name}.test.mjs`)));

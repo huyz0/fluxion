@@ -13,7 +13,17 @@
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
-import { harnessFiles, licensesNeeded, lockfileWorkspaceOnly, packagingDirs, packagingNeeded, apiScope as stagedApiScope, testScope } from './ladder-scope.mjs';
+import {
+  harnessFiles,
+  licensesNeeded,
+  lockfileLockedOnly,
+  lockfileWorkspaceOnly,
+  packagingDirs,
+  packagingNeeded,
+  apiScope as stagedApiScope,
+  testScope,
+  workspaceCatalogOnly,
+} from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
 import { t } from './thresholds.mjs';
 
@@ -35,7 +45,17 @@ const HARNESS = () =>
     .map((f) => `tests/harness/${f}`);
 // a staged lockfile whose external packages match HEAD's changes only workspace links (M4.29)
 const workspaceLock = () => lockfileStaged() && lockfileWorkspaceOnly(git(['show', 'HEAD:pnpm-lock.yaml']).stdout, git(['show', ':pnpm-lock.yaml']).stdout);
-const scopeOptions = () => ({ lockfileWorkspaceOnly: workspaceLock() });
+// a staged lockfile (and catalog) that links a workspace to a package HEAD already locks fetches nothing new (M12.29)
+const lockedDependency = () => {
+  const staged = stagedPaths();
+  if (!staged.includes('pnpm-lock.yaml') || !lockfileLockedOnly(git(['show', 'HEAD:pnpm-lock.yaml']).stdout, git(['show', ':pnpm-lock.yaml']).stdout))
+    return false;
+  return (
+    !staged.includes('pnpm-workspace.yaml') ||
+    workspaceCatalogOnly(git(['show', 'HEAD:pnpm-workspace.yaml']).stdout, git(['show', ':pnpm-workspace.yaml']).stdout)
+  );
+};
+const scopeOptions = () => ({ lockfileWorkspaceOnly: workspaceLock(), lockedDependency: lockedDependency() });
 const harnessToRun = () => (mode === 'staged' ? harnessFiles(stagedPaths(), HARNESS(), scopeOptions()) : HARNESS());
 const workspaces = () => (exists('tools/gen/workspaces.json') ? JSON.parse(readFileSync(repoPath('tools/gen/workspaces.json'), 'utf8')).workspaces : []);
 const browserTested = () =>

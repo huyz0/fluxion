@@ -1615,3 +1615,7 @@ Schema 1.3: `LayoutSpec` (`records/layout-spec.ts`) on screen, group and frame; 
 ## 2026-10-07 M12.7 (claude)
 
 `packages/dsl`: `diagnostics/codes.ts` (the ten ADR-0030 codes), `types.ts` (`SourceRange`, `DslDiagnostic` = schema `Diagnostic` with a FluxScript or schema code and a source range, `CompileOptions`, `CompileResult`), `diagnostics/format.ts` (rank, dedupe, cap 20, `+N more`). dsl depends on core and schema. The `yaml` dependency moved to M12.8 (knip refuses an unused one). Next M12.8.
+
+## 2026-10-07 M12.29 (claude)
+
+M12.8 (adds `yaml`, already locked as a transitive) ran the whole harness on its lockfile and catalog change: 409 s three times against the 360 s staged budget. `lockfileLockedOnly` (only `catalogs:`/`importers:` differ) and `workspaceCatalogOnly` (only the `catalog:` block differs) let such a change, staged with a manifest, run the staged manifest harness; a new package still runs every file. M12.8 is stashed and resumes next.
