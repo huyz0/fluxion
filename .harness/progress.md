@@ -1687,3 +1687,7 @@ The human answered both blocks: raise the budget to 480 s (ADR-0163, supersedes 
 ## 2026-10-07 M12.27 (claude)
 
 The human chose to supersede M11.59's reopen: `supersede` disposition (names `<checkpoint> <finding>` and the row, cites the human, needs the row closed with a citation) in `checkBacklogDone`; `.harness/reviews/milestone-M11-amend-1.json` records it; M11's backlog check passes. Next M12.10 (resolve stage).
+
+## 2026-10-07 M12.38 (claude)
+
+Review minors: `propertyRange` stops at a flow indicator (`[`, `{`, `,`); the supersede check of a missing row is tested. Next: the read stage (YNode to an AST per ADR-0030's key table) as its own row before M12.10.

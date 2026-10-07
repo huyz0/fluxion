@@ -115,6 +115,14 @@ describe('parse stage (FR-DSL-001, ADR-0030)', () => {
       expect(d, text).toHaveLength(1);
       expect(d[0]).toMatchObject({ code: 'FLX_DSL_SYNTAX', source: { line: 2, col: 3 } });
     }
+    // inside a flow collection the property starts after the bracket or brace (M12.8 review r3)
+    for (const [text, at] of [
+      ['uses: [!!str basic]\n', 8],
+      ['theme: {&a preset: x}\n', 9],
+      ['a: [&x b]\n', 5],
+    ] as const) {
+      expect(parseFlux(text).diagnostics[0]?.source?.col, text).toBe(at);
+    }
     // one tag, one error (M12.8 review F2)
     expect(parseFlux('flux: 1\nshape: !rect x\n').diagnostics).toHaveLength(1);
     // a complex key is refused

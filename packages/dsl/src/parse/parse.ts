@@ -96,8 +96,8 @@ function syntax(ctx: Ctx, range: SourceRange, message: string, hint?: string): v
 function propertyRange(ctx: Ctx, range: SourceRange, mark: string): SourceRange {
   let i = ctx.text.lastIndexOf(mark, range.offset);
   if (i < 0) return range;
-  // the whole property token: `!!str` starts at its first `!`
-  while (i > 0 && !/\s/.test(ctx.text[i - 1] ?? ' ')) i--;
+  // the whole property token: `!!str` starts at its first `!`; a flow indicator before it is not part of it (M12.8 review r3)
+  while (i > 0 && !/[\s[{,]/.test(ctx.text[i - 1] ?? ' ')) i--;
   return rangeFrom(ctx.lines, i, i + mark.length);
 }
 

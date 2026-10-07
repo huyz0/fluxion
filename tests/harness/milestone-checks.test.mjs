@@ -301,6 +301,13 @@ describe('descoped rows (NFR-DX-003, user decision 2026-09-26)', () => {
     assert.match(String(checkBacklogDone(descoped, 'M0', [reopen, supersede('decided later')])), /cite the human/);
     const uncited = `${row('M0.1', 'done')}\n${row('M0.2', 'descoped (not now)')}\n`;
     assert.match(String(checkBacklogDone(uncited, 'M0', [reopen, supersede('the human')])), /not done: M0\.2|not closed/);
+    // the supersede's own check: a reopen and a supersede of a row the backlog does not have (M12.27 review)
+    const ghost = { checkpoint: 'cp1', dispositions: [{ finding: 'F4', disposition: 'reopen', target: 'M0.9' }] };
+    const ghostSupersede = {
+      checkpoint: 'amend',
+      dispositions: [{ finding: 'A2', disposition: 'supersede', supersedes: 'cp1 F4', target: 'M0.9', note: 'the human' }],
+    };
+    assert.match(String(checkBacklogDone(descoped, 'M0', [reopen, supersede('the human'), ghost, ghostSupersede])), /not closed \(missing\)/);
   });
 
   it('rejects a bare descoped state and a descoped reopen target', () => {
