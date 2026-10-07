@@ -1667,3 +1667,7 @@ While M12.8 waits on the budget record: the edge tokenizer needs no YAML, so M12
 ## 2026-10-07 M12.35 (claude)
 
 `nearest` reach tested at its edges (6, 9, 12+ letters and the floor); a cap of 4 fails them. M12 left: everything needs M12.8 (budget record pending from the human).
+
+## 2026-10-07 M12.36 (claude)
+
+`scripts/docs/fluxscript-diagnostics.mjs` writes `reference/fluxscript-diagnostics.md` from the built `DSL_CODES` (`--check` mode); the sidebar's Reference group waits for M12.24 (an astro config change runs every harness file, over the staged budget); harness test `fluxscript-diagnostics.test.mjs`. Docs site builds (145 pages). M12.24 keeps the guide, README, AGENTS.md and 06 updates.

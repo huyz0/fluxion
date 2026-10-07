@@ -124,6 +124,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'bench-leg',
       'diagnostics-doc',
       'format-spec',
+      'fluxscript-diagnostics',
       'google-fonts',
       'kind-switch',
       'milestone-checks',

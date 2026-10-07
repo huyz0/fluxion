@@ -26,6 +26,8 @@ export const SOURCE_HARNESS = [
   // the format specification states numbers the loader and the writer hold (limits, stored extensions) and the schema version
   'format-spec',
   'docs-consistency',
+  // the FluxScript diagnostics page is generated from @fluxion/dsl's code registry (M12.36)
+  'fluxscript-diagnostics',
   'google-fonts',
   'kind-switch',
   'mode-policy',
