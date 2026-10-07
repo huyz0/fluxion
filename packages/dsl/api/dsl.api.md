@@ -61,6 +61,15 @@ export type Edge = {
 export const EDGE_OPS: readonly ["->", "<-", "<->", "--", "~>"];
 
 // @public
+export type EdgeAst = {
+    readonly edge: Edge;
+    readonly range: SourceRange;
+    readonly label?: Located<string>;
+    readonly style?: Located<StyleAst>;
+    readonly route?: Located<"straight" | "curved" | "orthogonal" | "polyline">;
+};
+
+// @public
 export function edgeDiagnostic(failure: Extract<EdgeResult, {
     ok: false;
 }>, key: SourceRange, path: string): DslDiagnostic;
@@ -92,12 +101,58 @@ export type EdgeResult = {
 export function editDistance(a: string, b: string): number;
 
 // @public
+export type FluxAst = {
+    readonly title?: Located<string>;
+    readonly theme?: ThemeAst;
+    readonly uses: readonly Located<string>[];
+    readonly screens: readonly ScreenAst[];
+    readonly deferred: {
+        readonly [pointer: string]: string;
+    };
+};
+
+// @public
 export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], input?: {
     readonly cap?: number;
 }): string[];
 
 // @public
+export type GroupAst = {
+    readonly slug: Located<string>;
+    readonly label?: Located<string>;
+    readonly contains: readonly Located<string>[];
+    readonly style?: Located<StyleAst>;
+    readonly layout?: LayoutAst;
+};
+
+// @public
+export type LayoutAst = {
+    readonly type: Located<string>;
+    readonly options: {
+        readonly [key: string]: unknown;
+    };
+};
+
+// @public
+export type Located<T> = {
+    readonly value: T;
+    readonly range: SourceRange;
+};
+
+// @public
 export function nearest(word: string, candidates: readonly string[]): string | undefined;
+
+// @public
+export type NodeAst = {
+    readonly slug: Located<string>;
+    readonly shape?: Located<string>;
+    readonly text?: Located<string>;
+    readonly label?: Located<string>;
+    readonly tone?: Located<string>;
+    readonly style?: Located<StyleAst>;
+    readonly pin?: Located<PinAst>;
+    readonly alt?: Located<string>;
+};
 
 // @public
 export function parseEdge(text: string): EdgeResult;
@@ -119,6 +174,36 @@ export type ParseResult = {
 };
 
 // @public
+export type PinAst = {
+    readonly x: number;
+    readonly y: number;
+    readonly w?: number;
+    readonly h?: number;
+};
+
+// @public
+export function readFlux(root: YNode, text: string): ReadResult;
+
+// @public
+export type ReadResult = {
+    readonly ast?: FluxAst;
+    readonly diagnostics: readonly DslDiagnostic[];
+};
+
+// @public
+export type ScreenAst = {
+    readonly id: Located<string>;
+    readonly title?: Located<string>;
+    readonly layout?: LayoutAst;
+    readonly background?: Located<string>;
+    readonly nodes: readonly NodeAst[];
+    readonly groups: readonly GroupAst[];
+    readonly edges: readonly EdgeAst[];
+    readonly notes?: Located<string>;
+    readonly range: SourceRange;
+};
+
+// @public
 export type SourceRange = {
     readonly line: number;
     readonly col: number;
@@ -126,6 +211,19 @@ export type SourceRange = {
     readonly endCol: number;
     readonly offset: number;
     readonly end: number;
+};
+
+// @public
+export type StyleAst = {
+    readonly [key: string]: string | number | boolean;
+} | "solid" | "dashed" | "dotted";
+
+// @public
+export type ThemeAst = {
+    readonly name?: Located<string>;
+    readonly overrides: {
+        readonly [token: string]: string | number;
+    };
 };
 
 // @public

@@ -1691,3 +1691,7 @@ The human chose to supersede M11.59's reopen: `supersede` disposition (names `<c
 ## 2026-10-07 M12.38 (claude)
 
 Review minors: `propertyRange` stops at a flow indicator (`[`, `{`, `,`); the supersede check of a missing row is tested. Next: the read stage (YNode to an AST per ADR-0030's key table) as its own row before M12.10.
+
+## 2026-10-07 M12.39 (claude)
+
+Read stage (`dsl/src/read/`): `KEYS` (ADR-0030's table), `readFlux` to a located `FluxAst`; deferred sections by pointer (`/theme/mode`, `/screens/<id>/steps`, a kind-screen whole under `/kind`, a component-only node whole); a node without content and without a kept key is an error (a typo is not kept); a node kept whole still has its unknown keys reported, `title` is required, wrong-typed `uses`, `contains`, overrides and style values are `FLX_SCHEMA_INVALID` (review r1). The checkout example of 06 §2.1 is a fixture: only `FLX_DSL_NOT_YET`. M12.10 now depends on it. Next M12.10 (resolve).

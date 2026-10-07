@@ -67,6 +67,26 @@ export type YScalar = {
   readonly value: string | number | boolean | null;
 };
 
+// A parsed node's kind is a closed union of three, not an element kind: these guards are the one place it is compared.
+/**
+ * Whether `n` is a mapping.
+ *
+ * @public
+ */
+export const isYMap = (n: YNode | undefined): n is YMap => n?.kind === 'map'; // kind-switch-allow: a parsed YAML node is map, seq or scalar
+/**
+ * Whether `n` is a sequence.
+ *
+ * @public
+ */
+export const isYSeq = (n: YNode | undefined): n is YSeq => n?.kind === 'seq'; // kind-switch-allow: a parsed YAML node is map, seq or scalar
+/**
+ * Whether `n` is a scalar.
+ *
+ * @public
+ */
+export const isYScalar = (n: YNode | undefined): n is YScalar => n?.kind === 'scalar'; // kind-switch-allow: a parsed YAML node is map, seq or scalar
+
 /**
  * What the parse stage gives back: the tree (absent when the text does not parse) and the problems.
  *
