@@ -1635,3 +1635,7 @@ M12.8's code passes its staged ladder (203 s with M12.29/M12.30), but the lockfi
 ## 2026-10-07 M12.12 (claude)
 
 `@fluxion/layout`: the M12 layout contract (`LayoutAlgorithm` with `parseOptions` and a pure `run`, `LayoutInput/Node/Output`; no Zod, layout depends on core and geometry only), the `stack` layout (down/right, gap 24, align, padding 80; the main-axis start rounds up to the half pixel, so it never overlaps or loops (review r1); steps past pinned boxes), `registerBuiltInLayouts` (source `core`). A property: same boxes whatever the input order, no placed box overlaps another, pins kept. M12.28's minors argued. Next M12.15.
+
+## 2026-10-07 M12.15 (claude)
+
+`writeFluxJson`/`readFluxJson` (`format/src/flux-json.ts`): `{fluxion, schemaVersion, manifest {app, generator?}, records (via serializeDocument), theme?, source?, assets?}` in canonical JSON; assets inline base64 or external `<name>.assets/<sha>.<ext>` (the reader takes only `<name>.assets/<hash>.<ext>` through `unsafeName`, and checks each asset's bytes against its hash; review r1); the reader goes through `parseDocument`. The CLI flag is row M12.31. Next: everything else in M12 needs M12.8 (blocked).

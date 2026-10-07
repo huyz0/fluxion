@@ -10,6 +10,15 @@ export type { FormatError, FormatErrorCode, LoadNote, LoadNoteCode } from './err
 export { FLUX_HTML_BOOT, FLUX_HTML_MARKER_COMMENT, FLUX_HTML_MARKER_META, type WriteFluxHtmlInput, writeFluxHtml } from './flux-html.js';
 export { readFluxHtml } from './flux-html-reader.js';
 export {
+  type FluxJsonFailure,
+  type FluxJsonFile,
+  type FluxJsonOutput,
+  type ReadFluxJson,
+  readFluxJson,
+  type WriteFluxJsonInput,
+  writeFluxJson,
+} from './flux-json.js';
+export {
   type ContentHasher,
   FLUX_FORMAT_VERSION,
   FLUX_MIMETYPE,
@@ -19,6 +28,7 @@ export {
   type WriteFluxInput,
   writeFlux,
 } from './flux-writer.js';
+
 export {
   type EncodedImage,
   type ImageCodec,

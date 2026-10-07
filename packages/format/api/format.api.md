@@ -101,6 +101,23 @@ export type FluxBakes = {
 };
 
 // @public
+export type FluxJsonFailure = {
+    readonly reason: string;
+};
+
+// @public
+export type FluxJsonFile = {
+    readonly path: string;
+    readonly bytes: Uint8Array;
+};
+
+// @public
+export type FluxJsonOutput = {
+    readonly text: string;
+    readonly files: readonly FluxJsonFile[];
+};
+
+// @public
 export type FluxWriteFailure = ZipFailure;
 
 // @public
@@ -261,6 +278,16 @@ export function readEntry(text: string): EntryRead | EntryRefused;
 export function readFluxHtml(html: string, hasher: ContentHasher): Promise<Result<Uint8Array, FormatError>>;
 
 // @public
+export type ReadFluxJson = {
+    readonly document: DocumentFile;
+    readonly source?: string;
+    readonly assets: ReadonlyMap<string, FluxAsset>;
+};
+
+// @public
+export function readFluxJson(text: string, readFile?: (path: string) => Uint8Array | undefined): Result<ReadFluxJson, FluxJsonFailure>;
+
+// @public
 export function readZip(bytes: Uint8Array, limits?: ZipLimits): Result<ZipEntry[], ZipFailure>;
 
 // @public
@@ -381,6 +408,21 @@ export type WriteFluxInput = {
     };
     readonly plugins?: readonly unknown[];
     readonly bakes?: FluxBakes;
+    readonly hasher: ContentHasher;
+};
+
+// @public
+export function writeFluxJson(input: WriteFluxJsonInput): Promise<Result<FluxJsonOutput, FluxJsonFailure>>;
+
+// @public
+export type WriteFluxJsonInput = {
+    readonly document: DocumentFile;
+    readonly assets?: ReadonlyMap<string, FluxAsset>;
+    readonly source?: string;
+    readonly appVersion: string;
+    readonly generator?: string;
+    readonly assetsMode?: "inline" | "external";
+    readonly name?: string;
     readonly hasher: ContentHasher;
 };
 

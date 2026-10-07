@@ -120,13 +120,13 @@ const STORED = new Set(['webp', 'avif', 'png', 'jpg', 'gif', 'woff2', 'mp4']);
 type Fields = { readonly [key: string]: unknown; readonly themeId?: unknown; readonly tokens?: unknown; readonly type?: unknown };
 
 /** The file extension of an asset of media type `mime`. */
-const extensionOf = (mime: string): string => EXTENSIONS[mime] ?? 'bin';
+export const extensionOf = (mime: string): string => EXTENSIONS[mime] ?? 'bin';
 
 /** The document's `document` record. */
 const documentRecordOf = (doc: DocumentFile): Fields | undefined => Object.values(doc.records).find((r) => r.type === 'document') as Fields | undefined;
 
 /** The tokens of the document's own theme (the record `document.themeId` names), as DTCG JSON; undefined when it has none. */
-function themeTokens(doc: DocumentFile): unknown {
+export function themeTokens(doc: DocumentFile): unknown {
   const themeId = documentRecordOf(doc)?.themeId;
   const theme = typeof themeId === 'string' ? (doc.records[themeId as RecordId] as Fields | undefined) : undefined;
   return theme?.type === 'theme' ? theme.tokens : undefined;
