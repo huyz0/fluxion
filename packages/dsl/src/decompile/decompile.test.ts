@@ -168,6 +168,39 @@ describe('decompile', () => {
     expect(bytes(build(r.text))).toBe(bytes(first));
   });
 
+  it('FR-DSL-002: an edge drawn by hand is searched only among the edges joining its two ends, so hashes grow with the edges, not their square', () => {
+    const slugs = Array.from({ length: 10 }, (_, i) => `n${i}`);
+    const first = build(doc(`  - id: a\n    nodes:\n${slugs.map((n) => `      ${n}: { shape: rect }\n`).join('')}`));
+    const screenId = id(idKeys.screen('a'));
+    // 40 connectors with random-looking ids over 9 pairs of neighbours: about 4 to 5 per pair
+    const drawn = Array.from({ length: 40 }, (_, k) => {
+      const link = {
+        id: `drawn${String(k).padStart(11, '0')}`,
+        type: 'element',
+        kind: 'connector',
+        screenId,
+        index: `b${String(k).padStart(2, '0')}`,
+        route: { type: 'straight' },
+        markers: { end: 'arrow' },
+      };
+      const ends = ['source', 'target'].map((end, i) => ({
+        id: `bind${String(k).padStart(10, '0')}${i}`,
+        type: 'binding',
+        connectorId: link.id,
+        end,
+        elementId: id(`node:n${(k % 9) + i}`),
+        anchor: { kind: 'auto' },
+      }));
+      return [link, ...ends];
+    });
+    let hashes = 0;
+    const hasher = { hash128: (text: string) => (hashes++, sha256Hash128.hash128(text)) };
+    const r = decompile(withRecords(first, ...(drawn.flat() as unknown as AnyRecord[])), { registries: registries(), hasher });
+    expect(r.text.match(/ -> /g)).toHaveLength(40);
+    // two ops for an end arrow, times the edges joining the same ends (at most 5), for each edge
+    expect(hashes).toBeLessThanOrEqual(40 * 2 * 5);
+  });
+
   it('FR-DSL-002: a deferred block written with other indentation is re-indented to fit, and means the same', () => {
     const src =
       'flux: 1\ntitle: T\nvars:\n    brand:\n        name: Acme\nscreens:\n- id: a\n  steps:\n  - show: [x]\n  - effect: fade\n  markdown: |\n   **Hi**\n'.replace(

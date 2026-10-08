@@ -140,7 +140,7 @@ const OPS_BY_MARKERS: { readonly [markers: string]: readonly EdgeOp[] } = {
 };
 const ROUTES = new Set(['straight', 'curved', 'orthogonal', 'polyline']);
 
-/** Where an edge is: its screen's id, how many edges the screen has, and the edge's deferred sections. */
+/** Where an edge is: its screen's id, how many edges of the screen join the same two ends, and the edge's deferred sections. */
 type EdgeAt = { readonly sid: string; readonly count: number; readonly extras: readonly Entry[] };
 
 /** The op of an edge between `fromSlug` and `toSlug`: the one whose ADR-0031 key gives its id, else the one its markers and dash say. */
@@ -247,8 +247,15 @@ function body(ctx: Ctx, els: readonly El[], sid: string, d: ScreenDeferred): { r
   const groups = groupEls.map(groupEntry);
   const slugs = new Map([...ctx.slugs].filter(([id]) => fields.has(id)));
   const connectors = els.filter((el) => CONNECTORS.has(el.kind));
+  // a repeat number counts the edges between the same two ends, so an edge's key is searched only up to that count (M12.16 review F1)
+  const pair = (el: El) => {
+    const ends = ctx.bindings.get(el.id);
+    return `${String(ends?.source?.['elementId'])} ${String(ends?.target?.['elementId'])}`;
+  };
+  const between = new Map<string, number>();
+  for (const el of connectors) between.set(pair(el), (between.get(pair(el)) ?? 0) + 1);
   const edges = connectors.flatMap(
-    (el, i) => attempt(() => edgeItem({ ...ctx, slugs }, el, { sid, count: connectors.length, extras: d.edgeKeys.get(String(i)) ?? [] })) ?? [],
+    (el, i) => attempt(() => edgeItem({ ...ctx, slugs }, el, { sid, count: between.get(pair(el)) ?? 1, extras: d.edgeKeys.get(String(i)) ?? [] })) ?? [],
   );
   const entries: Entry[] = [
     ...(nodes.length > 0 ? ([['nodes', { map: nodes }]] as const) : []),
