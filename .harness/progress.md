@@ -1739,3 +1739,7 @@ Decompile searches an edge's repeat number only up to the edges joining its two 
 ## 2026-10-08 M12.25 (claude)
 
 Checkpoint cp1 (`.harness/reviews/milestone-M12-cp1.json`, range 9cac20d..f015941): changes requested. Reopened as M12.45 (gate title lists empty), M12.46 (the trace leg checks Musts only; no completion leg), M12.47 (two salt helpers), M12.24 gains the ADR-0030, 06 §3 and ADR-0031 corrections; M12.22 split into M12.22, M12.48 and M12.49; the dsl public API shrink handed to M26 row 16a (Deferred). Missing Commit shas filled. Next M12.45, M12.46, M12.47, then M12.18.
+
+## 2026-10-08 M12.47 (claude)
+
+`compile()` takes its salt from core's `resolveSalt` over the base's document record; the private `baseSalt` is gone (cp1 F3). Next M12.45.

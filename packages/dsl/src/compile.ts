@@ -3,6 +3,7 @@
 // read stage cannot take as FluxScript (not a mapping, no `flux: 1`). Every later stage runs whatever the earlier ones reported, so one
 // compile shows every problem. Diagnostics come in stage order, each stage's in its own deterministic order (validate's in source order);
 // the formatter ranks them when shown. No clock: `stats` holds counts only (06's `msPerStage` needs a clock port, and R2 has none).
+import { resolveSalt } from '@fluxion/core';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { expandFlux } from './expand/expand.js';
 import { parseFlux } from './parse/parse.js';
@@ -12,13 +13,9 @@ import { resolveFlux } from './resolve/resolve.js';
 import type { CompileOptions, CompileResult, DslDiagnostic, SourceRange } from './types.js';
 import { validateFlux } from './validate/validate.js';
 
-/** The salt a base document keeps in its document record's `source.salt` (ADR-0031), when it has one. */
-function baseSalt(base: DocumentFile | undefined): string | undefined {
-  for (const r of Object.values(base?.records ?? {})) {
-    const salt = r.type === 'document' ? (r as { readonly source?: { readonly salt?: unknown } }).source?.salt : undefined;
-    if (typeof salt === 'string') return salt;
-  }
-  return undefined;
+/** The base document's document record, whose `source.salt` a recompile keeps (ADR-0031). */
+function documentOf(base: DocumentFile | undefined): { readonly source?: { readonly salt?: unknown } } | undefined {
+  return Object.values(base?.records ?? {}).find((r) => r.type === 'document') as { readonly source?: { readonly salt?: unknown } } | undefined;
 }
 
 const stopped = (diagnostics: readonly DslDiagnostic[]): CompileResult => ({ diagnostics, sourceMap: new Map(), stats: { screens: 0, records: 0 } });
@@ -40,7 +37,7 @@ export function compile(text: string, options: CompileOptions): CompileResult {
   if (!read.ast) return stopped([...parsed.diagnostics, ...read.diagnostics]);
   const { registries } = options;
   const resolved = resolveFlux(read.ast, registries);
-  const salt = baseSalt(options.base) ?? options.salt ?? '';
+  const salt = resolveSalt(documentOf(options.base), options.salt);
   const expanded = expandFlux(read.ast, resolved.resolution, { salt, registries, ...(options.hasher ? { hasher: options.hasher } : {}) });
   const placed = placeFlux(expanded, { registries });
   const whole: SourceRange = parsed.root.range;
