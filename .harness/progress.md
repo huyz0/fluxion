@@ -1723,3 +1723,7 @@ Validate stage and `compile()` (`dsl/src/validate/validate.ts`, `dsl/src/compile
 ## 2026-10-08 M12.42 (claude)
 
 Lenient validate remembers an error no removal fixed and does not retry it after later fixes; 12 fixable and 12 unfixable errors take 97 validations at most (201 before). Next M12.16 (decompiler).
+
+## 2026-10-08 M12.16 (claude)
+
+Decompiler v0 (`dsl/src/decompile/`): `decompile(doc, options)` and `decompileScreen` write FluxScript with `kept` and the slug map. Screen records now keep their source id in `meta.slug` (ADR-0031 note). An edge's op is the one whose ADR-0031 key hashes to its id (so `~>` and a dashed `->` differ); styles, tone, pins (default sizes left out), theme overrides that differ from the registered theme, `uses` and deferred sections come back; elements without a slug get one from their label; records outside the subset are counted in `# kept:` (ADR-0032; 06 §3.1's `raw:` not used). `roundtrip.prop.test.ts`: 200 runs, fixed seed, byte-equal recompile. The m12-complete round-trip leg named a bare id that matched no test, so it read 0 runs; it now names the property's title and needs runs > 0. Next M12.17 (examples).

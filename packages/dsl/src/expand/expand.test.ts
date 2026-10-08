@@ -99,6 +99,7 @@ describe('expand and style stages (FR-DSL-002, ADR-0030, ADR-0031)', () => {
     const two = rec(r, 'screen:two');
     expect(one).toMatchObject({
       type: 'screen',
+      meta: { slug: 'one' },
       name: 'Architecture',
       layout: { type: 'layered', options: { direction: 'right' } },
       background: '{color.surface}',

@@ -38,6 +38,26 @@ export type CompileResult = {
 };
 
 // @public
+export function decompile(doc: DocumentFile, options: DecompileOptions): DecompileResult;
+
+// @public
+export type DecompileOptions = {
+    readonly registries: CoreRegistries;
+    readonly hasher?: SyncHash128;
+    readonly screens?: readonly RecordId[];
+};
+
+// @public
+export type DecompileResult = {
+    readonly text: string;
+    readonly kept: number;
+    readonly slugs: ReadonlyMap<RecordId, string>;
+};
+
+// @public
+export function decompileScreen(doc: DocumentFile, screenId: RecordId, options: DecompileOptions): DecompileResult;
+
+// @public
 export const DSL_CODES: { readonly [C in DslCode]: DslCodeEntry; };
 
 // @public

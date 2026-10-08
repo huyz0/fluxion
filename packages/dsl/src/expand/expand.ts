@@ -1,8 +1,9 @@
 // Expand and style stages (06-ai-authoring.md §3, ADR-0030, ADR-0031, FR-DSL-002): the resolved tree to document records. Meta is the
 // document record (title, theme, `source` with the salt and the deferred sections), the theme is a theme record with its overrides
-// applied, screens are screen records, nodes are shape or text elements, groups are group elements their members name as parent, and
-// edges are connectors with two bindings. Ids are stable ids of the ADR-0031 keys. Placement is the place stage's (M12.13): elements get
-// their shape's default size at the origin, or their pin.
+// applied, screens are screen records (keeping their source id in `meta.slug`, for the decompiler: the record id is a hash of it), nodes
+// are shape or text elements, groups are group elements their members name as parent, and edges are connectors with two bindings. Ids are
+// stable ids of the ADR-0031 keys. Placement is the place stage's (M12.13): elements get their shape's default size at the origin, or
+// their pin.
 import { type CoreRegistries, type EdgeKey, idKeys, type SyncHash128, sha256Hash128, stableId } from '@fluxion/core';
 import { type AnyRecord, DIAGNOSTIC_CODES, type LayoutSpec, nKeysBetween, type RecordId, type RichTextDoc, type Transform } from '@fluxion/schema';
 import { isToken, isValidToken, type Theme, type Token, type TokenGroup } from '@fluxion/theme';
@@ -42,7 +43,7 @@ export type ExpandResult = {
 };
 
 /** The size of a node whose shape states none (ADR-0030: text is not measured in R2). */
-const DEFAULT_SIZE = { w: 160, h: 80 } as const;
+export const DEFAULT_SIZE = { w: 160, h: 80 } as const;
 
 type Rec = { [key: string]: unknown };
 type Ctx = {
@@ -269,6 +270,8 @@ function screen(ctx: Ctx, s: ScreenAst, i: number, index: string | undefined): v
       id: screenId,
       type: 'screen',
       index,
+      // the source id, for the decompiler: the record id is a hash of it (ADR-0031)
+      meta: { slug: s.id.value },
       ...(s.title ? { name: s.title.value } : {}),
       ...(s.layout ? { layout: layoutOf(s.layout) } : {}),
       ...(s.background ? { background: paintOf(s.background.value) } : {}),

@@ -29,6 +29,7 @@ const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(
 const DSL = 'dsl';
 const EXAMPLES = 'examples/dsl';
 const ROUNDTRIP = 'packages/dsl/src/roundtrip.prop.test.ts';
+const ROUNDTRIP_TITLE = 'FR-DSL-002: compile(decompile(compile(src))) equals compile(src) for generated sources';
 
 const { e2e } = createE2e({
   desktop: { projects: DESKTOP, specs: ['e2e/source-view.two-way-sync.spec.ts', 'e2e/dsl.streaming-render.spec.ts'] },
@@ -73,8 +74,10 @@ leg('the round-trip property compile(decompile(compile(src))) = compile(src) pas
   if (!exists(ROUNDTRIP)) return `missing ${ROUNDTRIP}`;
   const r = ok(pnpm('exec', 'vitest', 'run', '--project', 'node', ROUNDTRIP));
   if (r !== true) return r;
-  const runs = propertyRuns(readText(ROUNDTRIP), 'FR-DSL-002');
-  return !Number.isNaN(runs) || `${ROUNDTRIP}: numRuns is computed and cannot be read: use a number or a constant`;
+  // the property's own title: a bare requirement id matched no test, so the run count was never read (M12.16)
+  const runs = propertyRuns(readText(ROUNDTRIP), ROUNDTRIP_TITLE);
+  if (Number.isNaN(runs)) return `${ROUNDTRIP}: numRuns is computed and cannot be read: use a number or a constant`;
+  return runs > 0 || `${ROUNDTRIP}: no test titled "${ROUNDTRIP_TITLE}" with a fixed numRuns`;
 });
 // the rows that write these tests add their exact titles (parse ranges, diagnostics with hints, placement, determinism)
 const COMPILER_TITLES = [];

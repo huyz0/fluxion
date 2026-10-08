@@ -74,3 +74,31 @@ export type CompileResult = {
     readonly records: number;
   };
 };
+
+/**
+ * How to decompile a document to FluxScript.
+ *
+ * @public
+ */
+export type DecompileOptions = {
+  /** The registries shapes and themes are looked up in: a shape is written by its short name when one used pack has it. */
+  readonly registries: CoreRegistries;
+  /** The stable-id hash the document was compiled with (ADR-0031), to tell an edge's op from its id; the SHA-256 one when omitted. */
+  readonly hasher?: SyncHash128;
+  /** The screens to write, by record id; every screen when omitted. The header (title, theme, uses) is always written. */
+  readonly screens?: readonly RecordId[];
+};
+
+/**
+ * What a decompile gives back.
+ *
+ * @public
+ */
+export type DecompileResult = {
+  /** The FluxScript: a whole file for `decompile`, one `screens:` item for `decompileScreen`. */
+  readonly text: string;
+  /** Records the text leaves out (outside the v0 subset, ADR-0032): elements of the screens written, and records of no screen. */
+  readonly kept: number;
+  /** The slug each node and group of the document is written with: its own, else one made from its label (ADR-0031). */
+  readonly slugs: ReadonlyMap<RecordId, string>;
+};

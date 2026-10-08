@@ -57,6 +57,7 @@ Chosen option **2 with hash (a)**.
   document into another re-ids them, as paste and import already do (ADR-0020).
 - **Keys.** The document is `document`. The theme is `theme:<name>`. A screen is `screen:<id>`. A node or group is `node:<slug>`. An edge is
   `edge:<screen>:<from>:<op>:<to>`, plus `:<n>` for the n-th repeat of the same edge on the same screen (n ≥ 2).
+- A screen record keeps its FluxScript id in `meta.slug` (M12.16), the schema's free-form field, so a decompile writes the same id back.
 - Records created by hand in the editor keep random ids (ADR-0012). Decompiling writes their `semantic.slug` (generated from the label when missing, 02 §3).
   A later compile then derives a new id from that slug, and the source view maps the old id to the new one in one undo step (ADR-0032).
 
