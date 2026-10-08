@@ -50,7 +50,7 @@ export type CompileOptions = {
   readonly salt?: string;
   /** `strict` (default) or `lenient`: lenient applies auto-fixes and downgrades them to warnings. */
   readonly mode?: 'strict' | 'lenient';
-  /** The document a screen is compiled into. */
+  /** The document a screen is compiled into. R2 reads its kept salt (ADR-0031); the upsert of a screen into it is M12.18. */
   readonly base?: DocumentFile;
 };
 

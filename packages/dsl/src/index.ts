@@ -4,6 +4,7 @@
  * @packageDocumentation
  */
 
+export { compile } from './compile.js';
 export { DSL_CODES, type DslCode, type DslCodeEntry } from './diagnostics/codes.js';
 export { formatDiagnostics } from './diagnostics/format.js';
 export { type ExpandOptions, type ExpandResult, expandFlux } from './expand/expand.js';
@@ -15,6 +16,7 @@ export { type ReadResult, readFlux } from './read/read.js';
 export { type Resolution, type ResolveResult, resolveFlux } from './resolve/resolve.js';
 export { editDistance, nearest, toSlug } from './resolve/suggest.js';
 export type { CompileOptions, CompileResult, DslDiagnostic, SourceRange } from './types.js';
+export { type ValidateInput, type ValidateOptions, type ValidateResult, validateFlux } from './validate/validate.js';
 
 /**
  * Version of this package.

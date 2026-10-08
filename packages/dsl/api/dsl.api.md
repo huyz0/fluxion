@@ -15,6 +15,9 @@ import { SyncHash128 } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 
 // @public
+export function compile(text: string, options: CompileOptions): CompileResult;
+
+// @public
 export type CompileOptions = {
     readonly registries: CoreRegistries;
     readonly hasher?: SyncHash128;
@@ -304,6 +307,29 @@ export type ThemeAst = {
 
 // @public
 export function toSlug(name: string): string | undefined;
+
+// @public
+export function validateFlux(input: ValidateInput, options?: ValidateOptions): ValidateResult;
+
+// @public
+export type ValidateInput = {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly sourceMap: ReadonlyMap<RecordId, SourceRange>;
+};
+
+// @public
+export type ValidateOptions = {
+    readonly mode?: "strict" | "lenient";
+    readonly fallback?: SourceRange;
+};
+
+// @public
+export type ValidateResult = {
+    readonly doc: DocumentFile;
+    readonly diagnostics: readonly DslDiagnostic[];
+};
 
 // @public
 export const VERSION: string;
