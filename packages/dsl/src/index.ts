@@ -6,6 +6,7 @@
 
 export { DSL_CODES, type DslCode, type DslCodeEntry } from './diagnostics/codes.js';
 export { formatDiagnostics } from './diagnostics/format.js';
+export { type ExpandOptions, type ExpandResult, expandFlux } from './expand/expand.js';
 export { EDGE_OPS, type Edge, type EdgeEnd, type EdgeOp, type EdgeResult, edgeDiagnostic, parseEdge, parseEdgeObject } from './parse/edge.js';
 export { type ParseResult, parseFlux, type YEntry, type YMap, type YNode, type YScalar, type YSeq } from './parse/parse.js';
 export type { EdgeAst, FluxAst, GroupAst, LayoutAst, Located, LocatedStyle, NodeAst, PinAst, ScreenAst, StyleAst, ThemeAst } from './read/ast.js';

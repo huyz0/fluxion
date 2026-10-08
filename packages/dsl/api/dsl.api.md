@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AnyRecord } from '@fluxion/schema';
 import { CoreRegistries } from '@fluxion/core';
 import { Diagnostic } from '@fluxion/schema';
 import { DiagnosticCode } from '@fluxion/schema';
@@ -104,6 +105,25 @@ export type EdgeResult = {
 
 // @public
 export function editDistance(a: string, b: string): number;
+
+// @public
+export function expandFlux(ast: FluxAst, resolution: Resolution, options?: ExpandOptions): ExpandResult;
+
+// @public
+export type ExpandOptions = {
+    readonly salt?: string;
+    readonly hasher?: SyncHash128;
+    readonly registries?: CoreRegistries;
+};
+
+// @public
+export type ExpandResult = {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly sourceMap: ReadonlyMap<RecordId, SourceRange>;
+    readonly diagnostics: readonly DslDiagnostic[];
+};
 
 // @public
 export type FluxAst = {

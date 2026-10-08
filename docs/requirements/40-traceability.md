@@ -258,7 +258,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-PKG-004 | S | R6 | M27 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-PKG-005 | S | R8 | M33 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-DSL-001 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/parse/edge.test.ts` +2 |
-| FR-DSL-002 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/hash/stable-id.test.ts` +2 |
+| FR-DSL-002 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/hash/stable-id.test.ts` +3 |
 | FR-DSL-003 | M | R4 | M22 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-004 | M | R5 | M24 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-005 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/layout/src/stack.test.ts`, `packages/schema/src/schema-1-3.test.ts` |
