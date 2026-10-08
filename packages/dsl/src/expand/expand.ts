@@ -35,6 +35,8 @@ export type ExpandResult = {
   readonly records: { readonly [id: string]: AnyRecord };
   /** Where each record came from, by id (the document and theme records only when the source names them). */
   readonly sourceMap: ReadonlyMap<RecordId, SourceRange>;
+  /** Where each screen's and group's `layout` type came from, by record id (only those the source gives a layout). */
+  readonly layoutSources: ReadonlyMap<RecordId, SourceRange>;
   /** Problems found expanding. */
   readonly diagnostics: readonly DslDiagnostic[];
 };
@@ -46,6 +48,7 @@ type Rec = { [key: string]: unknown };
 type Ctx = {
   readonly records: { [id: string]: AnyRecord };
   readonly sourceMap: Map<RecordId, SourceRange>;
+  readonly layoutSources: Map<RecordId, SourceRange>;
   readonly diagnostics: DslDiagnostic[];
   readonly id: (key: string) => RecordId;
   readonly resolution: Resolution;
@@ -152,6 +155,7 @@ function node(ctx: Ctx, n: NodeAst, screenId: RecordId): Pending | undefined {
 
 function group(ctx: Ctx, g: GroupAst, screenId: RecordId): Pending {
   const style = styleOf({ style: g.style });
+  if (g.layout) ctx.layoutSources.set(ctx.id(idKeys.node(g.slug.value)), g.layout.type.range);
   const record: Rec = {
     id: ctx.id(idKeys.node(g.slug.value)),
     type: 'element',
@@ -258,6 +262,7 @@ function assignIndices(ctx: Ctx, pending: readonly Pending[]): void {
 
 function screen(ctx: Ctx, s: ScreenAst, i: number, index: string | undefined): void {
   const screenId = ctx.id(idKeys.screen(s.id.value));
+  if (s.layout) ctx.layoutSources.set(screenId, s.layout.type.range);
   add(
     ctx,
     {
@@ -297,6 +302,7 @@ export function expandFlux(ast: FluxAst, resolution: Resolution, options: Expand
   const ctx: Ctx = {
     records: {},
     sourceMap: new Map(),
+    layoutSources: new Map(),
     diagnostics: [],
     id: (key) => stableId(hasher, salt, key) as RecordId,
     resolution,
@@ -307,5 +313,5 @@ export function expandFlux(ast: FluxAst, resolution: Resolution, options: Expand
   ast.screens.forEach((s, i) => {
     screen(ctx, s, i, keys.ok ? keys.value[i] : undefined);
   });
-  return { records: ctx.records, sourceMap: ctx.sourceMap, diagnostics: ctx.diagnostics };
+  return { records: ctx.records, sourceMap: ctx.sourceMap, layoutSources: ctx.layoutSources, diagnostics: ctx.diagnostics };
 }

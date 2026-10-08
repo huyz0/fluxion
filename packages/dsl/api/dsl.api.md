@@ -122,6 +122,7 @@ export type ExpandResult = {
         readonly [id: string]: AnyRecord;
     };
     readonly sourceMap: ReadonlyMap<RecordId, SourceRange>;
+    readonly layoutSources: ReadonlyMap<RecordId, SourceRange>;
     readonly diagnostics: readonly DslDiagnostic[];
 };
 
@@ -211,6 +212,30 @@ export type PinAst = {
     readonly y: number;
     readonly w?: number;
     readonly h?: number;
+};
+
+// @public
+export function placeFlux(input: PlaceInput, options: PlaceOptions): PlaceResult;
+
+// @public
+export type PlaceInput = {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly layoutSources?: ReadonlyMap<RecordId, SourceRange>;
+};
+
+// @public
+export type PlaceOptions = {
+    readonly registries: CoreRegistries;
+};
+
+// @public
+export type PlaceResult = {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly diagnostics: readonly DslDiagnostic[];
 };
 
 // @public

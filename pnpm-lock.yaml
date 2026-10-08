@@ -419,6 +419,9 @@ importers:
       '@fluxion/core':
         specifier: workspace:*
         version: link:../core
+      '@fluxion/layout':
+        specifier: workspace:*
+        version: link:../layout
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
