@@ -11,6 +11,7 @@ import {
   checkDryRuns,
   checkReviewerSmoke,
   checkRowsDone,
+  checkRowsTitled,
   checkVerifyOutput,
   passingTestTitles,
 } from '../../scripts/gates/milestone-checks.mjs';
@@ -638,5 +639,42 @@ describe('the NFR-I18N-001 legs of m11-complete (M11.75, NFR-I18N-001)', () => {
     assert.match(String(checkAllowlistEmpty({ entries: [{ file: 'a.tsx', text: 'x', reason: 'r' }] })), /still lists 1 literal/);
     assert.match(String(checkAllowlistEmpty(null)), /missing or has no `entries`/);
     assert.match(String(checkAllowlistEmpty({ globs: [] })), /missing or has no `entries`/);
+  });
+});
+
+describe('checkRowsTitled (NFR-DX-003, M12 cp1 F1)', () => {
+  const row = (id, acceptance, state = 'done') => `| ${id} | task | FR-DSL-001 | ${acceptance} | — | ${state} | |`;
+  const backlog = (...rows) => `| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`;
+  const text = backlog(
+    row('M12.8', 'T0: every construct parses with its line and column'),
+    row('M12.21', 'T1 `completion.browser.test.ts`: the list holds every shape'),
+    row('M12.16', 'property `roundtrip.prop.test.ts` (fixed numRuns)'),
+    row('M12.18', 'T0: never a half screen', 'todo'),
+    row('M12.1', 'the gate prints every leg'),
+    row('M12.31', 'CLI e2e: a `.flux` converts'),
+  );
+  const lists = [
+    [['M12.8', 'FR-DSL-001: every construct parses with its line and column', 'dsl']],
+    [['M12.21', 'FR-DSL-009: completion lists every shape', 'dsl', {}, 'browser']],
+  ];
+  const exempt = { 'M12.16': 'the round-trip property leg runs it' };
+
+  it('HARNESS: a done row whose acceptance names a T0 or T1 test has a title in some leg, or a reasoned exemption (M12.45)', () => {
+    assert.equal(checkRowsTitled(text, 'M12', lists, exempt), true);
+  });
+
+  it('HARNESS: a done T0, T1 or *.test.ts row with no title and no exemption fails, naming the row (M12.45)', () => {
+    assert.match(String(checkRowsTitled(text, 'M12', [lists[1]], exempt)), /M12\.8/);
+    assert.match(String(checkRowsTitled(text, 'M12', lists, {})), /no title in any leg: M12\.16/);
+    assert.match(String(checkRowsTitled(text, 'M12', [lists[0]], exempt)), /M12\.21/);
+    // rows not done, not tested at T0/T1 (HARNESS, CLI e2e) are not asked for
+    assert.doesNotMatch(String(checkRowsTitled(text, 'M12', [], exempt)), /M12\.(18|1|31)\b/);
+  });
+
+  it('HARNESS: exemptions need a reason and a row, and a title must name a row of the backlog (M12.45)', () => {
+    assert.match(String(checkRowsTitled(text, 'M12', lists, { ...exempt, 'M12.8': '' })), /exemption of M12\.8 gives no reason/);
+    assert.match(String(checkRowsTitled(text, 'M12', lists, { ...exempt, 'M12.99': 'gone' })), /exemption names no row: M12\.99/);
+    assert.match(String(checkRowsTitled(text, 'M12', [...lists, [['M12.98', 'x', 'dsl']]], exempt)), /a title names no row: M12\.98/);
+    assert.match(String(checkRowsTitled('# empty\n', 'M12', lists, exempt)), /no M12 rows/);
   });
 });

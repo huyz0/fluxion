@@ -1743,3 +1743,7 @@ Checkpoint cp1 (`.harness/reviews/milestone-M12-cp1.json`, range 9cac20d..f01594
 ## 2026-10-08 M12.47 (claude)
 
 `compile()` takes its salt from core's `resolveSalt` over the base's document record; the private `baseSalt` is gone (cp1 F3). Next M12.45.
+
+## 2026-10-08 M12.45 (claude)
+
+`m12-complete.mjs`: `COMPILER_TITLES` (32) and `FORMAT_TITLES` (13), each title copied from its row's own test; `checkRowsTitled` (milestone-checks.mjs, reusable) fails a done row whose acceptance names T0, T1 or a `*.test.*` file with no title in a leg and no reasoned exemption (M12.16: the round-trip leg; M12.41: a node:test harness test). Renaming a listed test fails its leg. Titles match by substring (`vitestTitles`), so a suffix added to a title still passes. Next M12.46.

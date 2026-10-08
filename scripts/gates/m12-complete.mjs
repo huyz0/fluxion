@@ -14,6 +14,7 @@ import {
   changesetsCoverRange,
   checkBacklogDone,
   checkFinalReview,
+  checkRowsTitled,
   coverageGaps,
   loadMilestoneReviews,
   propertyRuns,
@@ -79,14 +80,62 @@ leg('the round-trip property compile(decompile(compile(src))) = compile(src) pas
   if (Number.isNaN(runs)) return `${ROUNDTRIP}: numRuns is computed and cannot be read: use a number or a constant`;
   return runs > 0 || `${ROUNDTRIP}: no test titled "${ROUNDTRIP_TITLE}" with a fixed numRuns`;
 });
-// the rows that write these tests add their exact titles (parse ranges, diagnostics with hints, placement, determinism)
-const COMPILER_TITLES = [];
+// the rows that write these tests add their exact titles (parse ranges, diagnostics with hints, placement, determinism); each entry names
+// its row, and the row-title leg below refuses a done T0 or T1 row with none (M12.45)
+const COMPILER_TITLES = [
+  ['M12.7', 'FR-DSL-006: the formatter ranks errors first then by position, dedupes one per root cause, and caps the list', DSL],
+  ['M12.8', 'FR-DSL-001: every construct parses with its line and column', DSL],
+  ['M12.8', 'FR-DSL-001: a syntax error is a diagnostic at its line and column, and the tree is absent', DSL],
+  ['M12.9', 'FR-DSL-001: every op and every anchor suffix tokenizes', DSL],
+  ['M12.9', 'FR-DSL-006: a malformed edge is a diagnostic with its column and a hint', DSL],
+  ['M12.34', 'FR-DSL-006: edit distance counts insertions, deletions, substitutions and swaps of neighbours', DSL],
+  ['M12.34', 'FR-DSL-006: toSlug turns a name into a valid slug, or nothing when no letter is left', DSL],
+  ['M12.35', 'FR-DSL-006: nearest names the closest candidate within reach, the first by order on a tie, and nothing far off', DSL],
+  ['M12.38', 'FR-DSL-001: empty values are null scalars with a place, and an empty file has no root content', DSL],
+  ['M12.39', 'FR-DSL-002: meta, theme, screens, nodes, groups and edges read into a typed tree with their places', DSL],
+  ['M12.39', 'FR-DSL-001: the documented checkout example reads with only FLX_DSL_NOT_YET warnings, its deferred sections kept by pointer', DSL],
+  ['M12.39', 'FR-DSL-006: an unknown key is an error at its place with the nearest valid key', DSL],
+  ['M12.39', 'FR-DSL-006: a missing or wrong version, a bad slug or screen id, and malformed values are diagnostics with their pointer', DSL],
+  ['M12.40', 'FR-DSL-006: one problem is one diagnostic, and a preset with a name is refused (M12.39 review F2, F3)', DSL],
+  ['M12.40', 'FR-DSL-001: every construct keeps the place it is written at (M12.39 review F1)', DSL],
+  ['M12.10', 'FR-DSL-006: an unknown shape, slug or token is a diagnostic with line, column and a hint naming the nearest id', DSL],
+  ['M12.11', 'FR-DSL-002: meta compiles to a document record with its title, theme and source (salt, deferred sections)', DSL],
+  ['M12.11', 'FR-DSL-002: the theme compiles to a theme record named by the theme, with its token overrides applied', DSL],
+  ['M12.11', 'FR-DSL-002: screens compile in order with their title, layout intent, background and notes', DSL],
+  ['M12.11', 'FR-DSL-002: nodes compile to shape and text elements: slug, label as rich text, tone as variant, token styles, pins, alt', DSL],
+  ['M12.11', 'FR-DSL-002: groups compile to group elements holding their members, with label, layout and style', DSL],
+  ['M12.11', 'FR-DSL-002: edges compile to connectors and two bindings: markers and dashing by op, anchors, label, route, style', DSL],
+  ['M12.11', 'FR-DSL-002: the checkout example compiles end to end (parse, read, resolve, expand) to a document that validates', DSL],
+  ['M12.12', 'FR-DSL-005: stacked boxes never overlap and keep the gap, down from the padded top-left by default', 'layout'],
+  ['M12.12', 'FR-DSL-005: the same input gives the same boxes, whatever the node order, and no placed box overlaps another', 'layout'],
+  ['M12.13', 'FR-DSL-005: in a mixed fixture pinned boxes are exact and the others are placed without overlap', DSL],
+  ['M12.14', 'FR-DSL-001: the checkout example compiles twice to byte-identical .flux.json, with only FLX_DSL_NOT_YET warnings', DSL],
+  ['M12.14', 'FR-DSL-001: every record maps to a source range: its construct, else (a theme the file does not name) the whole file', DSL],
+  ['M12.14', 'FR-DSL-006: a schema problem is a diagnostic at its source line, with the schema code and document pointer', DSL],
+  ['M12.42', 'FR-DSL-006: a deck with many unfixable and many fixable errors validates a number of times linear in its errors', DSL],
+  ['M12.43', 'FR-DSL-002: an edge drawn by hand is searched only among the edges joining its two ends, so hashes grow with the edges, not their square', DSL],
+  ['M12.47', 'FR-DSL-001: ids come from the salt and hasher of the options; a base document kept salt wins (ADR-0031)', DSL],
+];
 leg('the compiler stages are tested under their requirement titles (T0)', () =>
   COMPILER_TITLES.length === 0 ? 'no compiler titles yet: the M12 rows add them' : titled(COMPILER_TITLES),
 );
 
 // ── the file (FR-FIL-005) and the schema minor (ADR-0031) ─────────────────────────────────────────────
-const FORMAT_TITLES = [];
+const FORMAT_TITLES = [
+  ['M12.5', 'FR-DSL-005: a 1.2 document migrates to a valid 1.3 one and round-trips', 'schema'],
+  ['M12.5', 'FR-DSL-005: a 1.2 document with non-conforming layout or source values migrates to a valid 1.3 one', 'schema'],
+  ['M12.5', "FR-DSL-005: screen.layout and a group's and a frame's layout round-trip and must name a layout", 'schema'],
+  ['M12.5', 'FR-DSL-002: document.source keeps its salt and deferred sections through a round trip', 'schema'],
+  ['M12.28', 'FR-DSL-005: the 1.2 to 1.3 step keeps conforming layouts and sources beside the values it drops', 'schema'],
+  ['M12.6', 'NFR-REL-005: SHA-256 matches the FIPS 180-4 vectors', 'core'],
+  ['M12.6', 'FR-DSL-002: hash128 is the first 16 bytes of the SHA-256 of the UTF-8 text, and base62 writes 22 characters', 'core'],
+  ['M12.6', 'FR-DSL-002: the same salt and key give the same id, which is a valid record id', 'core'],
+  ['M12.6', 'FR-DSL-002: distinct slugs over a 10k corpus give distinct ids', 'core'],
+  ['M12.15', 'FR-FIL-005: an identical document written twice gives byte-identical files, whatever its key order', 'format'],
+  ['M12.15', 'FR-FIL-005: external assets are written beside the JSON by hash and read back', 'format'],
+  ['M12.32', 'FR-FIL-005: an asset of a media type with no known extension, or a long one, keeps its file name through a round trip', 'format'],
+  ['M12.33', 'FR-FIL-005: an extension the reader would not take back is not written, and a second write is the same bytes', 'format'],
+];
 leg('.flux.json is byte-deterministic and schema 1.3 (screen.layout, document.source) migrates from 1.2 (T0)', () =>
   FORMAT_TITLES.length === 0 ? 'no format titles yet: the M12 rows add them' : titled(FORMAT_TITLES),
 );
@@ -101,6 +150,14 @@ leg('the TextMate and Lezer grammars exist and accept every example', () => {
   if (!exists('packages/dsl/grammar/fluxscript.tmLanguage.json')) return 'missing packages/dsl/grammar/fluxscript.tmLanguage.json';
   return GRAMMAR_TITLES.length === 0 ? 'no grammar titles yet: the M12 rows add them' : titled(GRAMMAR_TITLES);
 });
+// rows whose T0 or T1 test another leg runs, so it is listed in no title list
+const UNTITLED_ROWS = {
+  'M12.16': 'the round-trip property leg runs roundtrip.prop.test.ts under ROUNDTRIP_TITLE and reads its numRuns',
+  'M12.41': "a harness test of the budget gate (tests/harness/budget.test.mjs): node:test, run by pnpm verify's harness-tests step",
+};
+leg('every done M12 row whose acceptance names a T0 or T1 test has a title in a leg (or a reasoned exemption)', () =>
+  checkRowsTitled(backlogTextFor('M12'), 'M12', [COMPILER_TITLES, FORMAT_TITLES, STREAM_TITLES, GRAMMAR_TITLES], UNTITLED_ROWS),
+);
 leg('the studio renders a streamed source screen by screen and the source view syncs both ways (three engines)', () =>
   e2e(['e2e/dsl.streaming-render.spec.ts', 'e2e/source-view.two-way-sync.spec.ts'], DESKTOP),
 );

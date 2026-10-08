@@ -226,6 +226,36 @@ export function checkRowsDone(backlogText, ids) {
 }
 
 /**
+ * Every `done` row of `milestone` whose acceptance names a T0 or T1 test (or a `*.test.*` file) has a title in some leg of the gate, or
+ * an exemption with its reason (a row another leg runs, such as a property or a harness test): `true`, or the problem. A gate's lists
+ * otherwise only grow when a row remembers to add its titles (M12 cp1 F1).
+ *
+ * @param {string} backlogText backlog tables holding the milestone's rows
+ * @param {string} milestone such as `M12`
+ * @param {readonly (readonly (readonly [string, ...unknown[]])[])[]} lists the gate's `titled` lists: entries `[row, title, ...]`
+ * @param {Record<string, string>} exempt row to the reason it has no title
+ */
+export function checkRowsTitled(backlogText, milestone, lists, exempt = {}) {
+  const rows = backlogText
+    .split(/\r?\n/)
+    .filter((l) => new RegExp(`^\\| ${milestone}\\.\\d+ \\|`).test(l))
+    .map((l) => l.split('|').map((c) => c.trim()));
+  if (rows.length === 0) return `no ${milestone} rows in the backlog`;
+  const ids = new Set(rows.map((c) => c[1]));
+  const titled = new Set(lists.flatMap((list) => list.map(([row]) => row)));
+  const problems = [];
+  const ghosts = [...titled].filter((id) => !ids.has(id));
+  if (ghosts.length) problems.push(`a title names no row: ${ghosts.join(', ')}`);
+  const strays = Object.keys(exempt).filter((id) => !ids.has(id));
+  if (strays.length) problems.push(`exemption names no row: ${strays.join(', ')}`);
+  for (const [id, reason] of Object.entries(exempt)) if (ids.has(id) && !String(reason ?? '').trim()) problems.push(`exemption of ${id} gives no reason`);
+  const tested = (acceptance) => /\bT[01]\b/.test(acceptance) || /\.test\.[cm]?[jt]sx?\b/.test(acceptance);
+  const untitled = rows.filter((c) => c[6] === 'done' && tested(c[4]) && !titled.has(c[1]) && !(c[1] in exempt)).map((c) => c[1]);
+  if (untitled.length) problems.push(`done rows with a T0 or T1 test and no title in any leg: ${untitled.join(', ')}`);
+  return problems.length === 0 || problems.join('; ');
+}
+
+/**
  * The i18n allowlist (scripts/gates/i18n-allowlist.json) holds no exact entry: `true`, or the problem. A missing file or one without an `entries` array is a problem.
  *
  * @param {unknown} allowlist the parsed file, or null when it is absent
