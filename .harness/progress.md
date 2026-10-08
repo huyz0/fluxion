@@ -1735,3 +1735,7 @@ Decompile searches an edge's repeat number only up to the edges joining its two 
 ## 2026-10-08 M12.17 (claude)
 
 `examples/dsl/`: 8 examples (checkout with its deferred sections; flowchart, architecture with nested groups and layouts, the five edge ops and routes, theme overrides, pins with auto layout, text and notes, style tokens and presets). `pnpm --filter @fluxion/dsl test:examples` runs `scripts/dsl/examples.test.ts` (root scripts: dsl may not import packs or `node:*`) against the real packs as studio registers them: no errors, byte-identical twice, checkout warns only `FLX_DSL_NOT_YET` and keeps its deferred pointers, the others warn nothing, and each round-trips through decompile. Only basic, themes-core and fonts-core exist, so the checkout copy uses `corporate`, `uses: [basic]`, `cylinder` and `parallelogram`; 06 §2 notes it. Next M12.25 (checkpoint review cp1), then M12.18.
+
+## 2026-10-08 M12.25 (claude)
+
+Checkpoint cp1 (`.harness/reviews/milestone-M12-cp1.json`, range 9cac20d..f015941): changes requested. Reopened as M12.45 (gate title lists empty), M12.46 (the trace leg checks Musts only; no completion leg), M12.47 (two salt helpers), M12.24 gains the ADR-0030, 06 §3 and ADR-0031 corrections; M12.22 split into M12.22, M12.48 and M12.49; the dsl public API shrink handed to M26 row 16a (Deferred). Missing Commit shas filled. Next M12.45, M12.46, M12.47, then M12.18.

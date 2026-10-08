@@ -1,0 +1,24 @@
+{
+  "milestone": "M12",
+  "checkpoint": "cp1",
+  "range": "9cac20d..f015941",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    { "id": "F1", "severity": "major", "file": "scripts/gates/m12-complete.mjs", "summary": "COMPILER_TITLES and FORMAT_TITLES are still [] although M12.5, .6, .8-.11, .13-.15 and .28 are done with titled acceptance tests; the two legs say 'no titles yet', so deleting or renaming those tests touches no leg. Only M12.16 followed the rule that a row adds its titles." },
+    { "id": "F2", "severity": "major", "file": "scripts/gates/m12-complete.mjs", "summary": "The trace leg runs check-trace --milestone M12, which checks Must requirements only; FR-DSL-009, FR-EDT-022, FR-AI-010 and FR-FIL-005 are Should, so the leg is green while three of them have no test. No leg names completion.browser.test.ts (M12.21)." },
+    { "id": "F3", "severity": "minor", "file": "packages/dsl/src/compile.ts", "summary": "compile.ts has a private baseSalt re-implementing core's public, tested resolveSalt, which nothing in production calls: two helpers for ADR-0031's salt rule that can drift apart." },
+    { "id": "F4", "severity": "minor", "file": "docs/architecture/decisions/ADR-0030-fluxscript-grammar-v1.md", "summary": "ADR-0030 and 06 section 3 list parse, resolve, expand, style, place, validate; compile.ts runs parse, read, resolve, expand (style inside), place, validate, and the read stage emits FLX_DSL_UNKNOWN_KEY, VERSION and BAD_SLUG. ADR-0031's Keys omit the binding keys <edge key>:source and :target." },
+    { "id": "F5", "severity": "minor", "file": "docs/backlog/current.md", "summary": "The Commit column is blank for done rows M12.7, .10, .11, .13, .14, .16, .17, .27, .39-.43; earlier rows and milestones closed each row with its sha." },
+    { "id": "F6", "severity": "minor", "file": "packages/dsl/src/index.ts", "summary": "Every internal stage (parseFlux to validateFlux), the YAML CST and AST types and the suggest helpers are @public; M13, M22/M24 and M12.18 will change them, as API churn on a package meant to offer compile, decompile and diagnostics." }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "note": "Fill COMPILER_TITLES and FORMAT_TITLES with the exact titles of the done rows, both legs green; a harness check that every done row whose acceptance names a T0/T1 test has a title in some leg.", "target": "M12.45" },
+    { "finding": "F2", "disposition": "reopen", "note": "The trace leg checks every requirement ID of the plan, Should included; a leg for completion.browser.test.ts with M12.21's titles.", "target": "M12.46" },
+    { "finding": "F3", "disposition": "reopen", "note": "compile() calls core's resolveSalt; baseSalt goes.", "target": "M12.47" },
+    { "finding": "F4", "disposition": "reopen", "note": "M12.24's acceptance gains: ADR-0030's stage list (read; style inside expand) and 06 section 3 match compile.ts; ADR-0031's Keys name the binding keys, with a dated amendment line.", "target": "M12.24" },
+    { "finding": "F5", "disposition": "reopen", "note": "The missing shas are filled in this cp1 record commit; from now on each row closes with its sha in its digest commit.", "target": "M12.25" },
+    { "finding": "F6", "disposition": "hand-off", "note": "Before the first publish, the stage functions, CST/AST types and suggest helpers become @internal or move to a @fluxion/dsl/internal entry; compile, decompile, decompileScreen, formatDiagnostics and DSL_CODES stay public.", "target": "M26" }
+  ],
+  "planDelta": "27 rows grew to 44 (1.63x; 2.3x the plan's 19), from per-commit review minors and staged-budget harness fixes, not new scope. M12.45-M12.47 come before M12.18; M12.22 splits into the panel with DSL to canvas (M12.22), canvas to DSL with the focus and dirty rules and one undo step (M12.48), and the three-way merge and id remap (M12.49), each with its own spec titles in the gate."
+}
