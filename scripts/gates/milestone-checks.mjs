@@ -336,7 +336,7 @@ export function vitestNamed(title, paths, { env = {}, min = 1, project = 'node' 
  * joined as alternatives), then judge each title as {@link vitestNamed} does: true | '<reason>' per
  * title, in order. `runner(args, env)` is injectable for tests (M4 cp1 F3).
  */
-export function vitestTitles(titles, paths, { env = {}, min = 1, project = 'node', runner = runVitest } = {}) {
+export function vitestTitles(titles, paths, { env = {}, min = 1, project = 'node', runner = runVitest, exact = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'gate-vitest-'));
   try {
     const out = join(dir, 'report.json');
@@ -346,7 +346,8 @@ export function vitestTitles(titles, paths, { env = {}, min = 1, project = 'node
     if (!existsSync(out)) return titles.map(() => `vitest wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`);
     const tests = JSON.parse(readFileSync(out, 'utf8')).testResults.flatMap((f) => f.assertionResults);
     return titles.map((title) => {
-      const named = tests.filter((x) => x.fullName.includes(title));
+      // exact: the test's own title, whole; else any full name containing it (the gates before M12)
+      const named = tests.filter((x) => (exact ? x.title === title : x.fullName.includes(title)));
       const failed = named.filter((x) => x.status === 'failed');
       const passed = named.filter((x) => x.status === 'passed');
       // a failed run fails every title in it: another title's failure is not this one's pass
@@ -372,7 +373,7 @@ export function namedCases(file, patterns) {
 }
 
 /** Every [row, title, package, env?, project?] passes under its exact title. */
-export function titled(list, { runner } = {}) {
+export function titled(list, { runner, exact = false } = {}) {
   // one Vitest run per project and environment, over every package the titles name (M4 cp1 F3)
   const groups = new Map();
   for (const [row, title, pkg, env = {}, project = 'node'] of list) {
@@ -388,7 +389,7 @@ export function titled(list, { runner } = {}) {
     const verdicts = vitestTitles(
       entries.map((e) => e.title),
       paths,
-      { env, project, ...(runner ? { runner } : {}) },
+      { env, project, exact, ...(runner ? { runner } : {}) },
     );
     entries.forEach((e, i) => {
       if (verdicts[i] !== true) bad.push(`${e.row} ${verdicts[i]}`);

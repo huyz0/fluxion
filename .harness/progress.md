@@ -1747,3 +1747,7 @@ Checkpoint cp1 (`.harness/reviews/milestone-M12-cp1.json`, range 9cac20d..f01594
 ## 2026-10-08 M12.45 (claude)
 
 `m12-complete.mjs`: `COMPILER_TITLES` (32) and `FORMAT_TITLES` (13), each title copied from its row's own test; `checkRowsTitled` (milestone-checks.mjs, reusable) fails a done row whose acceptance names T0, T1 or a `*.test.*` file with no title in a leg and no reasoned exemption (M12.16: the round-trip leg; M12.41: a node:test harness test). Renaming a listed test fails its leg. Titles match by substring (`vitestTitles`), so a suffix added to a title still passes. Next M12.46.
+
+## 2026-10-08 M12.50 (claude)
+
+`vitestTitles` and `titled` take `exact`: a title counts only as a test's own title, whole (review r1: not the end of a full name, which a prefix would still match); M12.50 is exempt from the row-title leg as a node:test harness test. M12's four title legs pass `exact`; the gates before M12 keep substring matching, so their closed verdicts stand. The M12 title legs stay green under it (gate run: 16/26, the reds are unbuilt rows). Next M12.46.

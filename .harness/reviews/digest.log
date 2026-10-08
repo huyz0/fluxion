@@ -574,3 +574,4 @@ M12.25	f4011e6c5d4ee383af19a0cfa25ede608655b7f6c54f2319e3fc5817d25eb8e7	r1	chang
 M12.25	8a47dece0d326cd7c495e1b9fae82b5cc3e8561ff96c5854a6624b99a9079b4f	r2	pass	claude:isolated-subagent	0 findings
 M12.47	ab028dacbe62295da1bf0bd76c8fb181f3b0c45cf342a8c9f5b2b320d61e23a4	r1	pass	claude:isolated-subagent	0 findings
 M12.45	e645f2f5ae74e622a2e7a77941cebe596452f0392e708b5a9e987a843a3a3705	r1	pass	claude:isolated-subagent	0 findings
+M12.50	790ddf9128ca781bf22519a321f52a9c77486ff447efa6f8f79d412335372963	r1	changes-requested	claude:isolated-subagent	1 findings

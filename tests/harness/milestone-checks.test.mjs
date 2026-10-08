@@ -593,6 +593,23 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.match(String(checkPlaywrightTitles(titled('parity.edit-vs-present.spec.ts', []), spec, many, ['chromium'])), /; … 2 more$/);
   });
 
+  it('vitestTitles with exact matches a whole title: a suffixed or prefixed test no longer counts (M12.50)', async () => {
+    const { vitestTitles } = await import('../../scripts/gates/milestone-checks.mjs');
+    const report = (titles) => (args) => {
+      const out = args.find((a) => a.startsWith('--outputFile=')).slice('--outputFile='.length);
+      const assertionResults = titles.map((title) => ({ title, fullName: `suite ${title}`, status: 'passed' }));
+      writeFileSync(out, JSON.stringify({ testResults: [{ assertionResults }] }));
+      return { status: 0, stdout: '', stderr: '' };
+    };
+    const t = 'FR-X-001: it works';
+    assert.deepEqual(vitestTitles([t], ['p'], { runner: report([t]), exact: true }), [true]);
+    for (const other of [`${t} (renamed)`, `regression ${t}`, `FR-X-001: now it works`]) {
+      assert.match(String(vitestTitles([t], ['p'], { runner: report([other]), exact: true })[0]), /0 passing test\(s\), need 1/);
+    }
+    // without exact (the gates before M12) a suffixed title still counts
+    assert.deepEqual(vitestTitles([t], ['p'], { runner: report([`${t} (renamed)`]) }), [true]);
+  });
+
   it('playwrightSpecs refuses a missing spec and judges the report the runner writes', async () => {
     const { playwrightSpecs } = await import('../../scripts/gates/milestone-checks.mjs');
     assert.match(String(playwrightSpecs(['e2e/no-such.spec.ts'], ['chromium'])), /missing e2e\/no-such\.spec\.ts/);

@@ -29,6 +29,8 @@ const pnpm = (...a) => run('pnpm', a);
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
 const DSL = 'dsl';
 const EXAMPLES = 'examples/dsl';
+// a title is matched whole: a test renamed by adding words no longer counts (M12.50)
+const EXACT = { exact: true };
 const ROUNDTRIP = 'packages/dsl/src/roundtrip.prop.test.ts';
 const ROUNDTRIP_TITLE = 'FR-DSL-002: compile(decompile(compile(src))) equals compile(src) for generated sources';
 
@@ -117,7 +119,7 @@ const COMPILER_TITLES = [
   ['M12.47', 'FR-DSL-001: ids come from the salt and hasher of the options; a base document kept salt wins (ADR-0031)', DSL],
 ];
 leg('the compiler stages are tested under their requirement titles (T0)', () =>
-  COMPILER_TITLES.length === 0 ? 'no compiler titles yet: the M12 rows add them' : titled(COMPILER_TITLES),
+  COMPILER_TITLES.length === 0 ? 'no compiler titles yet: the M12 rows add them' : titled(COMPILER_TITLES, EXACT),
 );
 
 // ── the file (FR-FIL-005) and the schema minor (ADR-0031) ─────────────────────────────────────────────
@@ -137,23 +139,24 @@ const FORMAT_TITLES = [
   ['M12.33', 'FR-FIL-005: an extension the reader would not take back is not written, and a second write is the same bytes', 'format'],
 ];
 leg('.flux.json is byte-deterministic and schema 1.3 (screen.layout, document.source) migrates from 1.2 (T0)', () =>
-  FORMAT_TITLES.length === 0 ? 'no format titles yet: the M12 rows add them' : titled(FORMAT_TITLES),
+  FORMAT_TITLES.length === 0 ? 'no format titles yet: the M12 rows add them' : titled(FORMAT_TITLES, EXACT),
 );
 
 // ── streaming (FR-AI-010), grammars and completion (FR-DSL-009), the source view (FR-EDT-022) ─────────
 const STREAM_TITLES = [];
 leg('the streaming splitter never emits a half screen (T0)', () =>
-  STREAM_TITLES.length === 0 ? 'no streaming titles yet: the M12 rows add them' : titled(STREAM_TITLES),
+  STREAM_TITLES.length === 0 ? 'no streaming titles yet: the M12 rows add them' : titled(STREAM_TITLES, EXACT),
 );
 const GRAMMAR_TITLES = [];
 leg('the TextMate and Lezer grammars exist and accept every example', () => {
   if (!exists('packages/dsl/grammar/fluxscript.tmLanguage.json')) return 'missing packages/dsl/grammar/fluxscript.tmLanguage.json';
-  return GRAMMAR_TITLES.length === 0 ? 'no grammar titles yet: the M12 rows add them' : titled(GRAMMAR_TITLES);
+  return GRAMMAR_TITLES.length === 0 ? 'no grammar titles yet: the M12 rows add them' : titled(GRAMMAR_TITLES, EXACT);
 });
 // rows whose T0 or T1 test another leg runs, so it is listed in no title list
 const UNTITLED_ROWS = {
   'M12.16': 'the round-trip property leg runs roundtrip.prop.test.ts under ROUNDTRIP_TITLE and reads its numRuns',
   'M12.41': "a harness test of the budget gate (tests/harness/budget.test.mjs): node:test, run by pnpm verify's harness-tests step",
+  'M12.50': "a harness test of vitestTitles (tests/harness/milestone-checks.test.mjs): node:test, run by pnpm verify's harness-tests step",
 };
 leg('every done M12 row whose acceptance names a T0 or T1 test has a title in a leg (or a reasoned exemption)', () =>
   checkRowsTitled(backlogTextFor('M12'), 'M12', [COMPILER_TITLES, FORMAT_TITLES, STREAM_TITLES, GRAMMAR_TITLES], UNTITLED_ROWS),
