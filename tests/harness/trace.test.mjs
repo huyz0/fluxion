@@ -97,6 +97,31 @@ describe('check-trace (NFR-MNT-008)', () => {
     assert.equal(r.status, 0, out(r));
   });
 
+  it('--priority M,S checks the Should requirements of a milestone too, naming each, and the default stays Must only (M12.46)', () => {
+    const should = ['FR-DSL-009', 'FR-EDT-022', 'FR-AI-010', 'FR-FIL-005'];
+    const must = trace('--milestone', 'M12');
+    assert.equal(must.status, 1, out(must));
+    assert.match(must.stderr, /FR-DSL-001 \(Must, milestone M12\) has no test/);
+    for (const id of should) assert.doesNotMatch(must.stderr, new RegExp(id));
+    const all = trace('--milestone', 'M12', '--priority', 'M,S');
+    assert.equal(all.status, 1, out(all));
+    for (const id of should) assert.match(all.stderr, new RegExp(`${id} \\(Should, milestone M12\\) has no test naming it`));
+    assert.match(all.stderr, /FR-DSL-001 \(Must, milestone M12\) has no test/);
+    sb.write(
+      'packages/dsl/src/a.test.ts',
+      "import { it } from 'vitest';\nit('FR-DSL-001 FR-DSL-002 FR-DSL-005 FR-DSL-006: compiles', () => {});\nit('FR-DSL-009 FR-EDT-022 FR-AI-010 FR-FIL-005: the rest', () => {});\n",
+    );
+    const green = trace('--milestone', 'M12', '--priority', 'M,S', '--write');
+    assert.equal(green.status, 0, out(green));
+    assert.match(green.stdout, /every Must or Should of M12 covered/);
+  });
+
+  it('--priority refuses a letter that is not M, S or C', () => {
+    const r = trace('--milestone', 'M12', '--priority', 'M,X');
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /--priority X: not one of M, S, C/);
+  });
+
   it('checks an increment (--increment R8), including area codes with digits', () => {
     const r = trace('--increment', 'R8');
     assert.equal(r.status, 1, out(r));

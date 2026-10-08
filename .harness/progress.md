@@ -1751,3 +1751,7 @@ Checkpoint cp1 (`.harness/reviews/milestone-M12-cp1.json`, range 9cac20d..f01594
 ## 2026-10-08 M12.50 (claude)
 
 `vitestTitles` and `titled` take `exact`: a title counts only as a test's own title, whole (review r1: not the end of a full name, which a prefix would still match); M12.50 is exempt from the row-title leg as a node:test harness test. M12's four title legs pass `exact`; the gates before M12 keep substring matching, so their closed verdicts stand. The M12 title legs stay green under it (gate run: 16/26, the reds are unbuilt rows). Next M12.46.
+
+## 2026-10-08 M12.46 (claude)
+
+`check-trace --priority M,S` (default Must only, so earlier gates are unchanged); the m12 trace leg reads the plan's 8 requirement IDs, checks the matrix assigns them to M12, and runs it with Should included: it fails now on FR-EDT-022, FR-DSL-009 and FR-AI-010. check-trace checks naming; passing is the verify and e2e legs'. A `COMPLETION_TITLES` leg (browser project, exact) waits for M12.21. Next M12.44, then M12.18.

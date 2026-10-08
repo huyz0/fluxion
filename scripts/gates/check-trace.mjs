@@ -3,6 +3,7 @@
 //   check-trace.mjs                      unknown IDs in test titles / backlog Req cells; matrix drift
 //   check-trace.mjs --milestone M<n>     + every M-priority requirement the matrix assigns to M<n> has a test
 //   check-trace.mjs --increment R<k>     + every M-priority requirement of increment R<k> has a test
+//   … --priority M,S                     with --milestone/--increment: check these priorities instead of Must only (M12.46)
 //   check-trace.mjs --write              refill the matrix Tests column from test titles
 //   check-trace.mjs --dir <root>         check another checkout (tests)
 // A running test "names" a requirement when the ID appears in its own title or a describe title
@@ -104,13 +105,22 @@ if (existsSync(backlog)) {
   }
 }
 
-// coverage of Must requirements for a milestone or an increment
+// coverage of a milestone's or an increment's requirements: Must only, unless --priority names more (M12 cp1 F2)
+const PRIORITY = { M: 'Must', S: 'Should', C: 'Could' };
+const priorities = (opt('priority') ?? 'M')
+  .split(',')
+  .map((p) => p.trim())
+  .filter(Boolean);
+for (const p of priorities) if (!(p in PRIORITY)) errors.push(`--priority ${p}: not one of ${Object.keys(PRIORITY).join(', ')}`);
+const priorityWords = priorities.map((p) => PRIORITY[p] ?? p).join(' or ');
 const scope = opt('milestone') ? ['milestone', opt('milestone')] : opt('increment') ? ['increment', opt('increment')] : null;
 if (scope) {
   const [kind, value] = scope;
-  const inScope = [...reqs].filter(([id, r]) => r.pri === 'M' && (kind === 'increment' ? r.inc === value : matrix.get(id)?.milestones.includes(value)));
-  if (inScope.length === 0) errors.push(`no Must requirement is assigned to ${kind} ${value}`);
-  for (const [id] of inScope) if (!cited.has(id)) errors.push(`${id} (Must, ${kind} ${value}) has no test naming it`);
+  const inScope = [...reqs].filter(
+    ([id, r]) => priorities.includes(r.pri) && (kind === 'increment' ? r.inc === value : matrix.get(id)?.milestones.includes(value)),
+  );
+  if (inScope.length === 0) errors.push(`no ${priorityWords} requirement is assigned to ${kind} ${value}`);
+  for (const [id, r] of inScope) if (!cited.has(id)) errors.push(`${id} (${PRIORITY[r.pri]}, ${kind} ${value}) has no test naming it`);
 }
 
 // the matrix Tests column is generated: --write refills it, otherwise a stale column fails (M1.36, cp3 F5)
@@ -138,4 +148,4 @@ if (errors.length) {
   process.exit(1);
 }
 const traced = [...cited.keys()].length;
-console.log(`trace: ${reqs.size} requirements, ${traced} named by tests${scope ? `, every Must of ${scope[1]} covered` : ''}`);
+console.log(`trace: ${reqs.size} requirements, ${traced} named by tests${scope ? `, every ${priorityWords} of ${scope[1]} covered` : ''}`);

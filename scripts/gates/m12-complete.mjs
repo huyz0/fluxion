@@ -38,7 +38,18 @@ const { e2e } = createE2e({
   desktop: { projects: DESKTOP, specs: ['e2e/source-view.two-way-sync.spec.ts', 'e2e/dsl.streaming-render.spec.ts'] },
 });
 
-leg('check-trace --milestone M12 green', () => ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M12'])));
+// every requirement of the plan, Should included, has a running test naming it (M12 cp1 F2): check-trace counts a titled test that is not
+// skipped; that it passes is the verify leg's (its test step runs every Vitest and node:test file) and the e2e leg's (the two specs)
+leg('check-trace --milestone M12 --priority M,S green: every requirement of the plan, Should included, has a test naming it', () => {
+  const plan = exists('docs/milestones/M12.md') ? readText('docs/milestones/M12.md') : '';
+  const planIds = (plan.match(/^## Requirements\r?\n([\s\S]*?)(?:^Enables later|^## )/m)?.[1] ?? '').match(/\b(?:FR|NFR)-[A-Z][A-Z0-9]*-\d{3}\b/g);
+  if (!planIds?.length) return 'docs/milestones/M12.md: no requirement IDs under ## Requirements';
+  // check-trace scopes by the matrix Milestone(s) column, so a plan ID the matrix does not give M12 would escape it
+  const matrix = readText('docs/requirements/40-traceability.md');
+  const unassigned = planIds.filter((id) => !new RegExp(`^\\| ${id} \\|[^|]*\\|[^|]*\\|[^|]*\\bM12\\b`, 'm').test(matrix));
+  if (unassigned.length) return `40-traceability.md does not assign ${unassigned.join(', ')} to M12`;
+  return ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M12', '--priority', 'M,S']));
+});
 
 // ── decisions ────────────────────────────────────────────────────────────────────────────────────────
 const DECISIONS = 'docs/architecture/decisions';
@@ -152,6 +163,12 @@ leg('the TextMate and Lezer grammars exist and accept every example', () => {
   if (!exists('packages/dsl/grammar/fluxscript.tmLanguage.json')) return 'missing packages/dsl/grammar/fluxscript.tmLanguage.json';
   return GRAMMAR_TITLES.length === 0 ? 'no grammar titles yet: the M12 rows add them' : titled(GRAMMAR_TITLES, EXACT);
 });
+// M12.21 writes packages/editor/src/source-view/completion.browser.test.ts (ADR-0032) and adds its exact titles as browser-project entries:
+// ['M12.21', '<exact title>', 'editor', {}, 'browser']
+const COMPLETION_TITLES = [];
+leg('completion offers shape ids (packs included), token names and slugs in edges (T1 completion.browser.test.ts)', () =>
+  COMPLETION_TITLES.length === 0 ? 'no completion titles yet: M12.21 adds them' : titled(COMPLETION_TITLES, EXACT),
+);
 // rows whose T0 or T1 test another leg runs, so it is listed in no title list
 const UNTITLED_ROWS = {
   'M12.16': 'the round-trip property leg runs roundtrip.prop.test.ts under ROUNDTRIP_TITLE and reads its numRuns',
@@ -159,7 +176,7 @@ const UNTITLED_ROWS = {
   'M12.50': "a harness test of vitestTitles (tests/harness/milestone-checks.test.mjs): node:test, run by pnpm verify's harness-tests step",
 };
 leg('every done M12 row whose acceptance names a T0 or T1 test has a title in a leg (or a reasoned exemption)', () =>
-  checkRowsTitled(backlogTextFor('M12'), 'M12', [COMPILER_TITLES, FORMAT_TITLES, STREAM_TITLES, GRAMMAR_TITLES], UNTITLED_ROWS),
+  checkRowsTitled(backlogTextFor('M12'), 'M12', [COMPILER_TITLES, FORMAT_TITLES, STREAM_TITLES, GRAMMAR_TITLES, COMPLETION_TITLES], UNTITLED_ROWS),
 );
 leg('the studio renders a streamed source screen by screen and the source view syncs both ways (three engines)', () =>
   e2e(['e2e/dsl.streaming-render.spec.ts', 'e2e/source-view.two-way-sync.spec.ts'], DESKTOP),
