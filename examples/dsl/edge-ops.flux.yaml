@@ -1,0 +1,48 @@
+flux: 1
+title: Edges, ops and anchors
+uses: [basic]
+screens:
+  - id: ops
+    title: The five edge ops
+    layout: { type: stack, direction: down, gap: 40 }
+    nodes:
+      client:  { shape: rect, label: Client }
+      server:  { shape: rect, label: Server }
+      cache:   { shape: cylinder, label: Cache }
+      peer:    { shape: rect, label: Peer }
+      log:     { shape: document, label: Audit log }
+      worker:  { shape: rounded-rect, label: Worker }
+    edges:
+      - client -> server: request
+      - client <- server: response
+      - server <-> cache: read and write
+      - server -- log
+      - server ~> worker: job queued
+      - peer <-> client
+  - id: anchors
+    title: Anchors and routes
+    nodes:
+      hub:    { shape: ellipse, label: Hub, pin: { x: 860, y: 440, w: 200, h: 200 } }
+      north:  { shape: rect, label: North, pin: { x: 860, y: 120, w: 200, h: 100 } }
+      east:   { shape: rect, label: East, pin: { x: 1300, y: 490, w: 200, h: 100 } }
+      south:  { shape: rect, label: South, pin: { x: 860, y: 860, w: 200, h: 100 } }
+      west:   { shape: rect, label: West, pin: { x: 420, y: 490, w: 200, h: 100 } }
+    edges:
+      - hub.n -> north.s: { label: straight, route: straight }
+      - hub.e -> east.w: { label: curved, route: curved }
+      - hub.s -> south.n: { label: orthogonal, route: orthogonal }
+      - hub.w -> west.e: { label: polyline, route: polyline }
+      - north.e <- east.n: { route: orthogonal, style: dashed }
+      - west.s -- south.w: { route: curved, style: dotted }
+  - id: object-form
+    title: The object form
+    layout: { type: stack, direction: right, gap: 120, align: center }
+    nodes:
+      producer: { shape: rounded-rect, label: Producer }
+      broker:   { shape: hexagon, label: Broker }
+      consumer: { shape: rounded-rect, label: Consumer }
+    edges:
+      - { from: producer.e, to: broker.w, op: "->", label: publish }
+      - { from: broker, to: consumer, op: "~>", label: deliver, route: orthogonal }
+      - { from: consumer.s, to: producer.s, op: "<-", label: ack, route: curved, style: { stroke: color.success, stroke.width: stroke.thick } }
+      - { from: broker.n, to: producer.n, op: "--" }

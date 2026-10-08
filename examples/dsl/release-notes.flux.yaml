@@ -1,0 +1,31 @@
+flux: 1
+title: Release 2.4 notes
+theme: { name: pastel }
+uses: [basic]
+screens:
+  - id: welcome
+    title: What is new in 2.4
+    layout: { type: stack, direction: down, gap: 24, align: center }
+    nodes:
+      heading:  { text: Release 2.4, style: { font.size: font.size.xl, font.weight: font.weight.bold } }
+      tagline:  { text: Faster exports and a calmer editor, style: { font.color: color.muted } }
+    notes: |
+      Welcome everyone. This release took six weeks.
+      Thank the docs team for the new guides.
+  - id: highlights
+    title: Highlights
+    layout: { type: stack, direction: down, gap: 16 }
+    nodes:
+      item-1:   { text: "Exports run in the background" }
+      item-2:   { text: "PDF export keeps links" }
+      item-3:   { text: "The inspector remembers its tab" }
+      item-4:   { text: "Keyboard shortcuts for alignment" }
+      aside:    { shape: note, label: "Measured on a 500-element deck", pin: { x: 1300, y: 160, w: 360, h: 140 } }
+    notes: Read the list top to bottom; the aside explains the numbers.
+  - id: breaking
+    title: Breaking changes
+    nodes:
+      warning-box: { shape: callout, label: "Plugins built for 2.2 need a rebuild", tone: warning, pin: { x: 160, y: 200, w: 720, h: 200 } }
+      detail:   { text: "The manifest field engines.fluxion is now required.\nRun the pack command again to add it.", pin: { x: 160, y: 480, w: 900, h: 160 } }
+      link:     { text: See the migration guide in the docs, style: { font.color: color.primary }, alt: Link to the migration guide }
+    notes: Pause here for questions.

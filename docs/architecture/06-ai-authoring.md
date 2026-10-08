@@ -88,6 +88,8 @@ screens:
         ORDER }o--|| CUSTOMER : "placed by"
 ```
 
+The repository's copy, `examples/dsl/checkout.flux.yaml` (M12.17), compiles against the packs that exist today: `preset: corporate`, `uses: [basic]`, and `cylinder` and `parallelogram` in place of the flowchart shapes. It returns to this text when the flowchart, icons-lucide and effects-core packs and an ocean theme exist.
+
 ## 3. Compile pipeline
 
 ```ts

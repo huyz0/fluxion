@@ -1,0 +1,58 @@
+flux: 1
+title: Platform architecture in three views
+theme: { preset: blueprint }
+uses: [basic]
+screens:
+  - id: context
+    title: System context
+    layout: { type: stack, direction: right, gap: 80, align: center }
+    nodes:
+      shopper:  { shape: ellipse, label: Shopper }
+      platform: { shape: rounded-rect, label: Commerce platform, tone: accent }
+      psp:      { shape: cloud, label: Payment provider }
+      carrier:  { shape: cloud, label: Shipping carrier }
+    edges:
+      - shopper -> platform: browses and buys
+      - platform -> psp: charges
+      - platform -> carrier: books delivery
+  - id: containers
+    title: Containers
+    layout: { type: stack, direction: right, gap: 64 }
+    nodes:
+      spa:      { shape: rounded-rect, label: Storefront SPA }
+      gateway:  { shape: hexagon, label: API gateway }
+      catalog:  { shape: rounded-rect, label: Catalog service }
+      orders:   { shape: rounded-rect, label: Order service }
+      search:   { shape: rounded-rect, label: Search service }
+      orders-db: { shape: cylinder, label: Orders DB, alt: Orders database }
+      index:    { shape: cylinder, label: Search index }
+    groups:
+      edge-tier:   { label: Edge, contains: [spa, gateway], layout: { type: stack, direction: down, gap: 24 } }
+      services:    { label: Services, contains: [catalog, orders, search], style: dashed, layout: { type: stack, direction: down, gap: 24 } }
+      data:        { label: Data, contains: [orders-db, index], style: dotted, layout: { type: stack, direction: down, gap: 24 } }
+    edges:
+      - spa -> gateway: HTTPS
+      - gateway -> catalog
+      - gateway -> orders
+      - gateway -> search
+      - orders -> orders-db: SQL
+      - search -> index
+      - catalog ~> index: reindex
+  - id: deployment
+    title: Deployment
+    layout: { type: stack, direction: right, gap: 56 }
+    nodes:
+      lb:       { shape: trapezoid, label: Load balancer }
+      node-a:   { shape: rect, label: App node A }
+      node-b:   { shape: rect, label: App node B }
+      primary:  { shape: cylinder, label: Primary }
+      replica:  { shape: cylinder, label: Replica }
+    groups:
+      zone-a:  { label: Zone A, contains: [node-a, primary], layout: { type: stack, direction: down, gap: 24 } }
+      zone-b:  { label: Zone B, contains: [node-b, replica], layout: { type: stack, direction: down, gap: 24 } }
+      region:  { label: eu-west-1, contains: [zone-a, zone-b], style: dashed, layout: { type: stack, direction: right, gap: 40 } }
+    edges:
+      - lb -> node-a
+      - lb -> node-b
+      - primary -> replica: { label: streaming replication, route: curved }
+    notes: Two zones in one region; the replica can take over.

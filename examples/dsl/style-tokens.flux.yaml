@@ -1,0 +1,35 @@
+flux: 1
+title: Styling with tokens and presets
+theme: vibrant
+uses: [basic]
+screens:
+  - id: fills
+    title: Fills and strokes from tokens
+    layout: { type: stack, direction: right, gap: 32, align: center }
+    nodes:
+      primary:   { shape: rect, label: Primary, style: { fill: color.primary, font.color: color.background } }
+      secondary: { shape: rect, label: Secondary, style: { fill: color.secondary, font.color: color.background } }
+      outlined:  { shape: rect, label: Outlined, style: { fill: color.background, stroke: color.primary, stroke.width: stroke.thick } }
+      faded:     { shape: rect, label: Faded, style: { fill: color.accent-2, opacity: 0.4 } }
+  - id: presets
+    title: Stroke presets
+    layout: { type: stack, direction: right, gap: 48, align: center }
+    nodes:
+      solid-box:  { shape: rounded-rect, label: Solid, style: solid }
+      dashed-box: { shape: rounded-rect, label: Dashed, style: dashed }
+      dotted-box: { shape: rounded-rect, label: Dotted, style: dotted }
+    groups:
+      preset-row: { label: Presets, contains: [solid-box, dashed-box, dotted-box], style: { stroke: color.muted, stroke.width: stroke.thin } }
+    edges:
+      - solid-box -- dashed-box: { style: dashed }
+      - dashed-box -- dotted-box: { style: dotted }
+  - id: tones
+    title: Tones and type
+    layout: { type: stack, direction: down, gap: 20 }
+    nodes:
+      ok:       { shape: rounded-rect, label: Success tone, tone: success }
+      careful:  { shape: rounded-rect, label: Warning tone, tone: warning }
+      stop:     { shape: rounded-rect, label: Danger tone, tone: danger }
+      small:    { text: Small body text, style: { font.size: font.size.sm } }
+      large:    { text: Large heading text, style: { font.size: font.size.lg, font.weight: font.weight.bold, font.family: font.heading } }
+      code:     { text: "compile(text, { registries })", style: { font.family: font.mono, font.color: color.accent-6 } }

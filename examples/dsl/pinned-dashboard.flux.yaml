@@ -1,0 +1,39 @@
+flux: 1
+title: Operations dashboard
+theme: dark
+uses: [basic]
+screens:
+  - id: overview
+    title: Service health
+    layout: { type: stack, direction: right, gap: 32, padding: 120 }
+    nodes:
+      banner:   { shape: rect, label: All systems operational, tone: success, pin: { x: 80, y: 40, w: 1760, h: 80 } }
+      web-tile: { shape: rounded-rect, label: Web 99.98% }
+      api-tile: { shape: rounded-rect, label: API 99.95% }
+      db-tile:  { shape: rounded-rect, label: Database 99.99% }
+      queue-tile: { shape: rounded-rect, label: Queue 99.90%, tone: warning }
+      legend:   { shape: note, label: Thirty-day availability, pin: { x: 1540, y: 900, w: 300, h: 120 } }
+  - id: incidents
+    title: Open incidents
+    layout: { type: stack, direction: down, gap: 16, align: start }
+    nodes:
+      inc-1:    { shape: rect, label: "INC-1042: slow search", tone: warning }
+      inc-2:    { shape: rect, label: "INC-1043: delayed e-mails" }
+      inc-3:    { shape: rect, label: "INC-1044: card declines in one region", tone: danger }
+      owner:    { shape: callout, label: On call is Priya, pin: { x: 1200, y: 200 } }
+      pager:    { shape: ellipse, label: Pager, pin: { x: 1500, y: 600, w: 160, h: 160 } }
+    edges:
+      - owner -> inc-3: investigating
+      - pager ~> owner: paged
+  - id: capacity
+    title: Capacity by zone
+    layout: { type: stack, direction: right, gap: 48 }
+    nodes:
+      zone-1:   { shape: rect, label: Zone 1 at 62% }
+      zone-2:   { shape: rect, label: Zone 2 at 71% }
+      zone-3:   { shape: rect, label: Zone 3 at 88%, tone: danger }
+      spare:    { shape: rect, label: Spare zone, style: dashed, pin: { x: 1400, y: 700, w: 240, h: 120 } }
+    groups:
+      live:     { label: Serving traffic, contains: [zone-1, zone-2, zone-3], layout: { type: stack, direction: right, gap: 24 } }
+    edges:
+      - zone-3 ~> spare: { label: overflow, route: orthogonal }

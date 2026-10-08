@@ -1,0 +1,38 @@
+flux: 1
+title: Quarterly roadmap in our brand
+theme:
+  preset: corporate
+  overrides:
+    color.primary: "#0f766e"
+    color.secondary: "#7c2d12"
+    color.accent-1: "#f59e0b"
+    font.size.md: 20
+    font.size.xl: 44px
+    radius.md: 12
+uses: [basic]
+screens:
+  - id: cover
+    title: Roadmap, Q3
+    background: color.primary
+    nodes:
+      headline: { text: "Q3 roadmap\nWhat we ship and why", style: { font.size: font.size.xl, font.color: color.background } }
+  - id: themes
+    title: Three themes this quarter
+    background: color.surface
+    layout: { type: stack, direction: right, gap: 40, align: center }
+    nodes:
+      speed:    { shape: rounded-rect, label: Faster checkout, tone: accent, style: { radius: radius.md, fill: color.primary, font.color: color.background } }
+      trust:    { shape: rounded-rect, label: Fewer failed payments, style: { radius: radius.md, fill: color.secondary, font.color: color.background } }
+      reach:    { shape: rounded-rect, label: Two new markets, style: { radius: radius.md, fill: color.accent-1 } }
+  - id: timeline
+    title: Timeline
+    background: "#fdfaf3"
+    layout: { type: stack, direction: right, gap: 24, align: center }
+    nodes:
+      july:     { shape: block-arrow, label: July, style: { fill: color.primary, font.color: color.background } }
+      august:   { shape: block-arrow, label: August, style: { fill: color.secondary, font.color: color.background } }
+      september: { shape: block-arrow, label: September, style: { fill: color.accent-1 } }
+      launch:   { shape: star, label: Launch, tone: success }
+    edges:
+      - september -> launch
+    notes: The overrides above change the corporate preset's primary, secondary and first accent colours, two font sizes and the medium radius.

@@ -1,0 +1,44 @@
+flux: 1
+title: Order approval flowchart
+theme: light
+uses: [basic]
+screens:
+  - id: approval
+    title: Approving an order
+    layout: { type: stack, direction: down, gap: 32, align: center }
+    nodes:
+      start:    { shape: ellipse, label: Order received, tone: accent }
+      validate: { shape: rect, label: Validate items and address }
+      in-stock: { shape: diamond, label: In stock? }
+      reserve:  { shape: rect, label: Reserve stock }
+      amount:   { shape: diamond, label: Over 1000 EUR? }
+      review:   { shape: rounded-rect, label: Manual review }
+      invoice:  { shape: document, label: Send invoice }
+      done:     { shape: ellipse, label: Approved }
+      backorder: { shape: parallelogram, label: Notify customer, pin: { x: 1300, y: 300 } }
+    edges:
+      - start -> validate
+      - validate -> in-stock
+      - in-stock.s -> reserve.n: yes
+      - in-stock.e -> backorder.w: no
+      - reserve -> amount
+      - amount.e -> review: yes
+      - amount.s -> invoice.n: no
+      - review -> invoice: approved
+      - invoice -> done
+    notes: |
+      Two decisions, each with a yes and a no branch.
+      The backorder path ends at the customer notice.
+  - id: escalation
+    title: When review takes too long
+    layout: { type: stack, direction: right, gap: 48, align: center }
+    nodes:
+      waiting:  { shape: rounded-rect, label: Waiting for review }
+      timer:    { shape: octagon, label: 48 h passed?, tone: warning }
+      escalate: { shape: rounded-rect, label: Escalate to team lead }
+      closed:   { shape: ellipse, label: Decision made }
+    edges:
+      - waiting -> timer
+      - timer -> escalate: yes
+      - escalate -> closed
+      - timer.s -> closed.s: { label: no, route: orthogonal }

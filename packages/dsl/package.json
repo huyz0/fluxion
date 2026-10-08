@@ -17,7 +17,8 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "test:examples": "vitest run --config ../../scripts/dsl/examples.config.ts --reporter=verbose"
   },
   "publishConfig": {
     "access": "public",
