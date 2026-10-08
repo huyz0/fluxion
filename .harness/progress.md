@@ -1719,3 +1719,7 @@ Place stage v0 (`dsl/src/place/place.ts`): `placeFlux({records, layoutSources}, 
 ## 2026-10-08 M12.14 (claude)
 
 Validate stage and `compile()` (`dsl/src/validate/validate.ts`, `dsl/src/compile.ts`): parse → read → resolve → expand → place → validate; no `doc` only when parse or read leave nothing. Schema diagnostics keep the schema pointer as `path` and take the record's FluxScript range as `source` (root range when none), in source order. Every record has a source-map entry. Strict keeps schema errors; lenient removes a refused field when that clears the error and adds none, as a warning. The salt is `base`'s kept salt, else `options.salt`, else `''`; merging into `base` is M12.18. `stats` is `{screens, records}` (no clock in R2). The checkout compiles twice to the same `.flux.json`. Next M12.16 (decompiler).
+
+## 2026-10-08 M12.42 (claude)
+
+Lenient validate remembers an error no removal fixed and does not retry it after later fixes; 12 fixable and 12 unfixable errors take 97 validations at most (201 before). Next M12.16 (decompiler).

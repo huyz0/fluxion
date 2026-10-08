@@ -84,15 +84,26 @@ function fixFor(doc: DocumentFile, before: readonly Diagnostic[], error: Diagnos
   return undefined;
 }
 
-/** Lenient fixes, one error at a time until none can be fixed; each fix removes at least one error, so this ends. */
+/** An error by what it says, to remember one no removal fixes. */
+const problemKey = (d: Diagnostic): string => `${d.code}\u0000${d.path}\u0000${d.message}`;
+
+/**
+ * Lenient fixes, one error at a time until none can be fixed; each fix removes at least one error, so this ends. An error no removal
+ * fixed is not tried again after a later fix, so the validations grow with the errors, not with their product (M12.14 review F1).
+ */
 function fixAll(doc: DocumentFile, found: readonly Diagnostic[]): { doc: DocumentFile; found: readonly Diagnostic[]; fixed: Map<Diagnostic, string> } {
   const fixed = new Map<Diagnostic, string>();
+  const unfixable = new Set<string>();
   let state = { doc, found };
   for (let progress = true; progress; ) {
     progress = false;
     for (const error of state.found.filter(isError)) {
+      if (unfixable.has(problemKey(error))) continue;
       const fix = fixFor(state.doc, state.found, error);
-      if (!fix) continue;
+      if (!fix) {
+        unfixable.add(problemKey(error));
+        continue;
+      }
       fixed.set(error, fix.removed);
       state = fix;
       progress = true;
