@@ -189,6 +189,10 @@ const STREAM_TITLES = [
   ['M12.18', 'FR-AI-010: a text that does not parse leaves no document, and so nothing to merge', DSL],
   ['M12.18', 'FR-AI-010: uses, title and theme written after the screens give the whole-file document at end(), recompiled', DSL],
   ['M12.18', 'FR-AI-010: settings after the screens is a plain tail: no recompile, still the whole-file document', DSL],
+  ['M12.51', 'FR-AI-010: a quoted uses, title or theme after the screens gives the whole-file document at end(), recompiled, at every chunk size', DSL],
+  ['M12.51', 'FR-AI-010: a quoted settings after the screens stays a plain tail: no recompile, still the whole-file document', DSL],
+  ['M12.51', 'FR-AI-010: a quoted tail key gives the whole-file document for any chunking (property, fixed seed)', DSL],
+  ['M12.51', 'FR-AI-010: a quoted top-level key at column 0 after the screens starts the tail, never a screen, at any indent and chunk size', DSL],
   ['M12.18', 'FR-AI-010: a diagnostic without a source range is reported once in the whole stream, not once per screen', DSL],
 ];
 leg('the streaming splitter never emits a half screen (T0)', () =>

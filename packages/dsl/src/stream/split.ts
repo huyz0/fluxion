@@ -10,7 +10,7 @@
 //    quoted scalar cannot hold a line at the item's indent (YAML needs its lines deeper than the item), so tracking indent alone is sound.
 //  - Blank and comment lines belong to the block they appear in: trailing ones to the screen before the next item, leading ones (between
 //    `screens:` and the first item) to the first screen.
-//  - A content line at the item indent that is no item, or at a lower indent (a top-level key after the screens, a `---` or `...` marker),
+//  - A content line at the item indent that is no item, or at a lower indent (a top-level key after the screens, bare or quoted, a `---` or `...` marker),
 //    ends the screens: its text and everything after it is the `tail`, emitted by `end()`.
 //  - A line is complete at its `\n`; a final line without one is complete at `end()`. A `\r` before the `\n` is kept in the text.
 //  - Tabs count as one column of indent.

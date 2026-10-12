@@ -82,9 +82,14 @@ export type StreamCompiler = {
   readonly doc: DocumentFile | undefined;
 };
 
-/** Whether the tail has a column-0 key that changes how screens compile (every compiled top-level key but `screens`). */
+/** A column-0 top-level key: bare, or in double or single quotes (group 1 or 2 is a quoted name, group 3 a bare one), then optional blanks and a colon. */
+const TAIL_KEY = /^(?:"([^"\r\n]*)"|'([^'\r\n]*)'|([A-Za-z_][\w-]*))(?=[ \t]*:)/gm;
+/** Whether the tail has a column-0 key, bare or quoted, that changes how screens compile (every compiled top-level key but `screens`). */
 const changesScreens = (tail: string): boolean =>
-  (tail.match(/^[A-Za-z_][\w-]*(?=[ \t]*:)/gm) ?? []).some((k) => (KEYS.top.compiled as readonly string[]).includes(k) && k !== 'screens');
+  [...tail.matchAll(TAIL_KEY)].some((m) => {
+    const k = m[1] ?? m[2] ?? m[3] ?? '';
+    return (KEYS.top.compiled as readonly string[]).includes(k) && k !== 'screens';
+  });
 const isBlank = (text: string): boolean => text.split('\n').every((l) => /^[ \t\r]*(#.*)?$/.test(l));
 /** The text with every character but a line break a space: same offsets, lines and columns, no content. */
 const blanked = (text: string): string => text.replace(/[^\r\n]/g, ' ');

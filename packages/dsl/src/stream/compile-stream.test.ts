@@ -130,6 +130,42 @@ describe('stream compiler: keys after the screens', () => {
     }
   });
 
+  const quotedTails = ['"uses": [basic]\n', "'title': Late\nuses: [basic]\n", '"theme": ocean\nuses: [basic]\n', '"uses" : [basic]\n', "'uses'\t: [basic]\n"];
+  it('FR-AI-010: a quoted uses, title or theme after the screens gives the whole-file document at end(), recompiled, at every chunk size', () => {
+    for (const eol of ['\n', '\r\n']) {
+      for (const raw of quotedTails) {
+        const text = withTail(raw).replace(/\n/g, eol);
+        const expected = whole(text);
+        for (const size of [1, 7, text.length]) {
+          const { compiler, updates } = stream(text, [size]);
+          const label = `${JSON.stringify(raw)} eol=${JSON.stringify(eol)} size=${size}`;
+          expect(bytes(compiler.doc), label).toBe(bytes(expected.doc));
+          expect(updates.at(-1)?.recompiled, label).toBe(true);
+          expect(updates.at(-1)?.tail?.diagnostics.map(said).sort(), label).toEqual(expected.diagnostics.map(said).sort());
+        }
+      }
+    }
+  });
+
+  it('FR-AI-010: a quoted settings after the screens stays a plain tail: no recompile, still the whole-file document', () => {
+    const text = `flux: 1\ntitle: T\nuses: [basic]\nscreens:\n${screens}"settings": { autoplay: false }\n`;
+    const { compiler, updates } = stream(text, [7]);
+    expect(updates.some((u) => u.recompiled)).toBe(false);
+    expect(bytes(compiler.doc)).toBe(bytes(whole(text).doc));
+  });
+
+  it('FR-AI-010: a quoted tail key gives the whole-file document for any chunking (property, fixed seed)', () => {
+    const text = withTail('"uses": [basic]\n');
+    const expected = bytes(whole(text).doc);
+    fc.assert(
+      fc.property(fc.array(fc.integer({ min: 1, max: 30 }), { minLength: 1, maxLength: 8 }), (sizes) => {
+        const { compiler, updates } = stream(text, sizes);
+        return bytes(compiler.doc) === expected && updates.at(-1)?.recompiled === true;
+      }),
+      { seed: 5120, numRuns: 40 },
+    );
+  });
+
   it('FR-AI-010: settings after the screens is a plain tail: no recompile, still the whole-file document', () => {
     const text = `flux: 1\ntitle: T\nuses: [basic]\nscreens:\n${screens}settings: { autoplay: false }\n`;
     const { compiler, updates } = stream(text, lines(text));

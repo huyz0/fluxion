@@ -49,6 +49,20 @@ describe('stream splitter', () => {
     expect(whole(STREAM_TEXTS['crlf'] as string).screens[1]?.text.endsWith('b: { shape: rect }')).toBe(true);
   });
 
+  it('FR-AI-010: a quoted top-level key at column 0 after the screens starts the tail, never a screen, at any indent and chunk size', () => {
+    for (const indent of ['  ', '']) {
+      for (const key of ['"uses": [basic]\n', "'title' : T\n"]) {
+        const text = `flux: 1\nscreens:\n${indent}- id: one\n${indent}  nodes: {}\n${key}`;
+        for (const size of [1, 7, text.length]) {
+          const r = feed(text, [size]).run;
+          expect(ids(r), key).toEqual(['one']);
+          expect(r.tail, key).toBe(key);
+          expect(joined(r)).toBe(text);
+        }
+      }
+    }
+  });
+
   it('FR-AI-010: comments and blanks stay in the block they appear in, and a dashed line deeper than the item does not start a screen', () => {
     const r = whole(STREAM_TEXTS['comments, blanks and a dashed note'] as string);
     expect(ids(r)).toEqual(['one', 'two']);
