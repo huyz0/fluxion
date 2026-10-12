@@ -80,6 +80,50 @@ describe('FluxScript TextMate grammar (FR-DSL-009, ADR-0032)', () => {
     expect(new Set(ops.slice(1, -1).split('|'))).toEqual(new Set(EDGE_OPS));
   });
 
+  it('FR-DSL-009: every key has the same class (compiled or deferred) in the key table, the TextMate grammar and the Lezer layer', () => {
+    // A minimal document per level puts `key: x` where the compiler reads that level. No name is compiled at one level and deferred at another
+    // (the table forbids a key in both lists, and a name shared by levels, like label/style/layout, is compiled at each), so the grammar needs no
+    // neutral class: this allowlist of names whose levels disagree must stay empty.
+    const MIXED: readonly string[] = [];
+    const wrap: Record<keyof ReturnType<typeof fluxScriptKeys>, (kv: string) => string> = {
+      top: (kv) => `${kv}\n`,
+      theme: (kv) => `theme:\n  ${kv}\n`,
+      screen: (kv) => `screens:\n  - ${kv}\n`,
+      node: (kv) => `screens:\n  - nodes:\n      n:\n        ${kv}\n`,
+      group: (kv) => `screens:\n  - groups:\n      g:\n        ${kv}\n`,
+      edge: (kv) => `screens:\n  - edges:\n      - ${kv}\n`,
+      pin: (kv) => `screens:\n  - nodes:\n      n:\n        pin:\n          ${kv}\n`,
+    };
+    const tmClass = (doc: string, key: string): string | undefined => {
+      const scope = tokenize(doc).find((t) => t.text === key && t.scopes.some((s) => s.startsWith('support.type.property-name')));
+      if (!scope) return undefined;
+      return scope.scopes.some((s) => s === 'support.type.property-name.deferred.fluxscript') ? 'deferred' : 'compiled';
+    };
+    const lezerClass = (doc: string, key: string): string | undefined => {
+      const at = doc.indexOf(`${key}: x`);
+      const t = fluxScriptTokens(doc).find((tok) => tok.from === at && tok.to === at + key.length);
+      return t?.class === 'fx-key' ? 'compiled' : t?.class === 'fx-key-deferred' ? 'deferred' : undefined;
+    };
+    const classes = new Map<string, Set<string>>();
+    let checked = 0;
+    for (const [level, table] of Object.entries(fluxScriptKeys()) as [keyof typeof wrap, ReturnType<typeof fluxScriptKeys>['top']][]) {
+      for (const [expected, keys] of [
+        ['compiled', table.compiled],
+        ['deferred', table.deferred],
+      ] as const) {
+        for (const key of keys) {
+          const doc = wrap[level](`${key}: x`);
+          expect(tmClass(doc, key), `grammar, ${level}.${key}`).toBe(expected);
+          expect(lezerClass(doc, key), `Lezer, ${level}.${key}`).toBe(expected);
+          classes.set(key, (classes.get(key) ?? new Set()).add(expected));
+          checked++;
+        }
+      }
+    }
+    expect([...classes].filter(([, c]) => c.size > 1).map(([k]) => k)).toEqual([...MIXED]);
+    expect(checked).toBeGreaterThan(50);
+  });
+
   it('FR-DSL-009: the grammar file declares scope source.fluxscript and extends source.yaml', () => {
     expect(grammarJson.scopeName).toBe('source.fluxscript');
     expect(grammarJson.patterns).toEqual([{ include: 'source.yaml' }]);

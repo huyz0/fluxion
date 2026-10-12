@@ -24,6 +24,9 @@
           "include": "#shape-ref"
         },
         {
+          "include": "#component-ref"
+        },
+        {
           "include": "#uses-flow"
         },
         {
@@ -116,10 +119,37 @@
     },
     "shape-ref": {
       "name": "meta.shape-ref.fluxscript",
-      "match": "(?<![\\w.-])(shape|component)(:)(\\s+)([\\\"']?)(?:([A-Za-z][\\w-]*)(:))?([A-Za-z][\\w.-]*)([\\\"']?)(?=\\s*(?:[,}\\]]|#|$))",
+      "match": "(?<![\\w.-])(shape)(:)(\\s+)([\\\"']?)(?:([A-Za-z][\\w-]*)(:))?([A-Za-z][\\w.-]*)([\\\"']?)(?=\\s*(?:[,}\\]]|#|$))",
       "captures": {
         "1": {
           "name": "entity.name.tag.yaml support.type.property-name.fluxscript"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        },
+        "4": {
+          "name": "punctuation.definition.string.fluxscript"
+        },
+        "5": {
+          "name": "entity.name.namespace.pack.fluxscript"
+        },
+        "6": {
+          "name": "punctuation.separator.pack.fluxscript"
+        },
+        "7": {
+          "name": "entity.name.type.shape.fluxscript"
+        },
+        "8": {
+          "name": "punctuation.definition.string.fluxscript"
+        }
+      }
+    },
+    "component-ref": {
+      "name": "meta.component-ref.fluxscript",
+      "match": "(?<![\\w.-])(component)(:)(\\s+)([\\\"']?)(?:([A-Za-z][\\w-]*)(:))?([A-Za-z][\\w.-]*)([\\\"']?)(?=\\s*(?:[,}\\]]|#|$))",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.yaml support.type.property-name.deferred.fluxscript"
         },
         "2": {
           "name": "punctuation.separator.key-value.mapping.yaml"

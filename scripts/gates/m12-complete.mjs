@@ -217,6 +217,7 @@ const GRAMMAR_TITLES = [
   ['M12.20', 'FR-DSL-009: a document that is not a mapping, or is empty, has no tokens', 'editor'],
   ['M12.20', 'FR-DSL-009: the language is YAML with the FluxScript layer, which marks ops, slugs and anchors in a view', 'editor', {}, 'browser'],
   ['M12.20', 'FR-DSL-009: the marks follow an edit of the document', 'editor', {}, 'browser'],
+  ['M12.53', 'FR-DSL-009: every key has the same class (compiled or deferred) in the key table, the TextMate grammar and the Lezer layer', 'editor'],
 ];
 leg('the TextMate and Lezer grammars exist and accept every example', () => {
   if (!exists('packages/dsl/grammar/fluxscript.tmLanguage.json')) return 'missing packages/dsl/grammar/fluxscript.tmLanguage.json';

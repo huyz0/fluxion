@@ -36,7 +36,7 @@
 18:53 "pin" support.type.property-name.fluxscript
 18:60 "x" support.type.property-name.fluxscript
 18:69 "y" support.type.property-name.fluxscript
-19:16 "component" support.type.property-name.fluxscript
+19:16 "component" support.type.property-name.deferred.fluxscript
 19:27 "basic" entity.name.namespace.pack.fluxscript
 19:32 ":" punctuation.separator.pack.fluxscript
 19:33 "stat" entity.name.type.shape.fluxscript
