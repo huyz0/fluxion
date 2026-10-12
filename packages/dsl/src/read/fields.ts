@@ -18,6 +18,51 @@ export const KEYS = {
   pin: { compiled: ['x', 'y', 'w', 'h'], deferred: [] as string[] },
 } as const;
 
+/**
+ * The keys of one level of the `flux: 1` key table: those the compiler reads and those it keeps but defers.
+ *
+ * @public
+ */
+export type FluxScriptKeyLevel = {
+  /** Keys the compiler reads at this level. */
+  readonly compiled: readonly string[];
+  /** Keys the compiler keeps without compiling them yet. */
+  readonly deferred: readonly string[];
+};
+
+/**
+ * The levels of the key table: the document, its theme, a screen, a node, a group, an edge object and a pin.
+ *
+ * @public
+ */
+export type FluxScriptKeyTable = {
+  /** Keys at the top of the document. */
+  readonly top: FluxScriptKeyLevel;
+  /** Keys of the `theme` mapping. */
+  readonly theme: FluxScriptKeyLevel;
+  /** Keys of a screen. */
+  readonly screen: FluxScriptKeyLevel;
+  /** Keys of a node. */
+  readonly node: FluxScriptKeyLevel;
+  /** Keys of a group. */
+  readonly group: FluxScriptKeyLevel;
+  /** Keys of an edge in the object form (and after the shorthand's `:`). */
+  readonly edge: FluxScriptKeyLevel;
+  /** Keys of a `pin`. */
+  readonly pin: FluxScriptKeyLevel;
+};
+
+/**
+ * The key table of `flux: 1` (ADR-0030) the compiler reads, for tools that highlight or complete FluxScript from the compiler's own
+ * list so they cannot drift from it.
+ *
+ * @returns the table by level
+ * @public
+ */
+export function fluxScriptKeys(): FluxScriptKeyTable {
+  return KEYS;
+}
+
 const SLUG = /^[a-z][a-z0-9-]*$/;
 const STROKES = new Set(['solid', 'dashed', 'dotted']);
 

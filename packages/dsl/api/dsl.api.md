@@ -167,6 +167,26 @@ export type FluxAst = {
 };
 
 // @public
+export type FluxScriptKeyLevel = {
+    readonly compiled: readonly string[];
+    readonly deferred: readonly string[];
+};
+
+// @public
+export function fluxScriptKeys(): FluxScriptKeyTable;
+
+// @public
+export type FluxScriptKeyTable = {
+    readonly top: FluxScriptKeyLevel;
+    readonly theme: FluxScriptKeyLevel;
+    readonly screen: FluxScriptKeyLevel;
+    readonly node: FluxScriptKeyLevel;
+    readonly group: FluxScriptKeyLevel;
+    readonly edge: FluxScriptKeyLevel;
+    readonly pin: FluxScriptKeyLevel;
+};
+
+// @public
 export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], input?: {
     readonly cap?: number;
 }): string[];

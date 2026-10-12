@@ -13,7 +13,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "grammar"
   ],
   "scripts": {
     "build": "tsdown",

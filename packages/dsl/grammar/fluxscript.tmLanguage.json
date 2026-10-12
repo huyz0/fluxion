@@ -1,0 +1,208 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "FluxScript",
+  "scopeName": "source.fluxscript",
+  "fileTypes": ["flux.yaml"],
+  "patterns": [
+    {
+      "include": "source.yaml"
+    }
+  ],
+  "injections": {
+    "L:source.fluxscript - comment - string.quoted - string.unquoted.block": {
+      "patterns": [
+        {
+          "include": "#edge-shorthand"
+        },
+        {
+          "include": "#edge-end"
+        },
+        {
+          "include": "#edge-op"
+        },
+        {
+          "include": "#shape-ref"
+        },
+        {
+          "include": "#uses-flow"
+        },
+        {
+          "include": "#uses-block"
+        },
+        {
+          "include": "#key-compiled"
+        },
+        {
+          "include": "#key-deferred"
+        }
+      ]
+    }
+  },
+  "repository": {
+    "edge-shorthand": {
+      "name": "meta.edge.fluxscript",
+      "match": "^(\\s*)(-)(\\s+)([a-z][a-z0-9-]*)(?:(\\.)([a-z][a-z0-9-]*))?(\\s+)(<->|->|<-|--|~>)(\\s+)([a-z][a-z0-9-]*)(?:(\\.)([a-z][a-z0-9-]*))?(?=\\s*(?::(?:\\s|$)|$|#))(?:(\\s*)(:)(?=\\s|$))?",
+      "captures": {
+        "2": {
+          "name": "punctuation.definition.block.sequence.item.yaml"
+        },
+        "4": {
+          "name": "variable.other.slug.fluxscript"
+        },
+        "5": {
+          "name": "punctuation.separator.anchor.fluxscript"
+        },
+        "6": {
+          "name": "variable.other.anchor.fluxscript"
+        },
+        "8": {
+          "name": "keyword.operator.edge.fluxscript"
+        },
+        "10": {
+          "name": "variable.other.slug.fluxscript"
+        },
+        "11": {
+          "name": "punctuation.separator.anchor.fluxscript"
+        },
+        "12": {
+          "name": "variable.other.anchor.fluxscript"
+        },
+        "14": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        }
+      }
+    },
+    "edge-end": {
+      "name": "meta.edge-end.fluxscript",
+      "match": "(?<![\\w.-])(from|to)(:)(\\s+)([a-z][a-z0-9-]*)(?:(\\.)([a-z][a-z0-9-]*))?(?=\\s*(?:[,}\\]]|#|$))",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.yaml support.type.property-name.fluxscript"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        },
+        "4": {
+          "name": "variable.other.slug.fluxscript"
+        },
+        "5": {
+          "name": "punctuation.separator.anchor.fluxscript"
+        },
+        "6": {
+          "name": "variable.other.anchor.fluxscript"
+        }
+      }
+    },
+    "edge-op": {
+      "name": "meta.edge-op.fluxscript",
+      "match": "(?<![\\w.-])(op)(:)(\\s+)([\\\"']?)(<->|->|<-|--|~>)([\\\"']?)(?=\\s*(?:[,}\\]]|#|$))",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.yaml support.type.property-name.fluxscript"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        },
+        "4": {
+          "name": "punctuation.definition.string.fluxscript"
+        },
+        "5": {
+          "name": "keyword.operator.edge.fluxscript"
+        },
+        "6": {
+          "name": "punctuation.definition.string.fluxscript"
+        }
+      }
+    },
+    "shape-ref": {
+      "name": "meta.shape-ref.fluxscript",
+      "match": "(?<![\\w.-])(shape|component)(:)(\\s+)([\\\"']?)(?:([A-Za-z][\\w-]*)(:))?([A-Za-z][\\w.-]*)([\\\"']?)(?=\\s*(?:[,}\\]]|#|$))",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.yaml support.type.property-name.fluxscript"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        },
+        "4": {
+          "name": "punctuation.definition.string.fluxscript"
+        },
+        "5": {
+          "name": "entity.name.namespace.pack.fluxscript"
+        },
+        "6": {
+          "name": "punctuation.separator.pack.fluxscript"
+        },
+        "7": {
+          "name": "entity.name.type.shape.fluxscript"
+        },
+        "8": {
+          "name": "punctuation.definition.string.fluxscript"
+        }
+      }
+    },
+    "uses-flow": {
+      "name": "meta.uses.fluxscript",
+      "match": "(?<![\\w.-])(uses)(:)(\\s*)(\\[)([^\\]\\n]*)(\\])",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.yaml support.type.property-name.fluxscript"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        },
+        "4": {
+          "name": "punctuation.definition.sequence.begin.yaml"
+        },
+        "5": {
+          "patterns": [
+            {
+              "match": "[A-Za-z][\\w-]*",
+              "name": "entity.name.namespace.pack.fluxscript"
+            }
+          ]
+        },
+        "6": {
+          "name": "punctuation.definition.sequence.end.yaml"
+        }
+      }
+    },
+    "uses-block": {
+      "name": "meta.uses.fluxscript",
+      "begin": "^(\\s*)(uses)(:)\\s*(?=#|$)",
+      "beginCaptures": {
+        "2": {
+          "name": "entity.name.tag.yaml support.type.property-name.fluxscript"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        }
+      },
+      "end": "^(?!\\s*(?:-\\s|#|$))",
+      "patterns": [
+        {
+          "include": "source.yaml#comment"
+        },
+        {
+          "match": "^(\\s*)(-)(\\s+)([A-Za-z][\\w-]*)",
+          "captures": {
+            "2": {
+              "name": "punctuation.definition.block.sequence.item.yaml"
+            },
+            "4": {
+              "name": "entity.name.namespace.pack.fluxscript"
+            }
+          }
+        }
+      ]
+    },
+    "key-compiled": {
+      "name": "entity.name.tag.yaml support.type.property-name.fluxscript",
+      "match": "(?<![\\w.-])(background|overrides|contains|screens|groups|layout|preset|edges|label|nodes|notes|route|shape|style|theme|title|flux|from|name|text|tone|uses|alt|pin|id|op|to|h|w|x|y)(?=\\s*:(?:\\s|$))"
+    },
+    "key-deferred": {
+      "name": "entity.name.tag.yaml support.type.property-name.deferred.fluxscript",
+      "match": "(?<![\\w.-])(interactions|breakpoints|component|markdown|settings|mermaid|accent|riders|badge|image|props|steps|flow|icon|kind|mode|near|vars|raw)(?=\\s*:(?:\\s|$))"
+    }
+  }
+}

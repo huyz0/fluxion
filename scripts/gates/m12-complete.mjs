@@ -188,7 +188,26 @@ const STREAM_TITLES = [
 leg('the streaming splitter never emits a half screen (T0)', () =>
   STREAM_TITLES.length === 0 ? 'no streaming titles yet: the M12 rows add them' : titled(STREAM_TITLES, EXACT),
 );
-const GRAMMAR_TITLES = [];
+// M12.20 writes the grammar tests in packages/editor/src/source-view/ (the node project; the language extension's in the browser project)
+const GRAMMAR_TITLES = [
+  ['M12.20', 'FR-DSL-009: the key table lists the compiled and deferred keys of every level, and no key is both', 'dsl'],
+  ['M12.20', 'FR-DSL-009: the TextMate tokenization of checkout.flux.yaml matches its snapshot', 'editor'],
+  ['M12.20', 'FR-DSL-009: the TextMate snapshot is stable: two tokenizations of every example give the same tokens', 'editor'],
+  ['M12.20', 'FR-DSL-009: the grammar names the same keys and the same five edge ops as the compiler', 'editor'],
+  ['M12.20', 'FR-DSL-009: the grammar file declares scope source.fluxscript and extends source.yaml', 'editor'],
+  ['M12.20', 'FR-DSL-009: the TextMate grammar and the compiler tokenizer agree on every op, slug and anchor of every example', 'editor'],
+  ['M12.20', 'FR-DSL-009: the Lezer YAML tree of every example has no error node', 'editor'],
+  ['M12.20', 'FR-DSL-009: edge ops, slugs and anchors of the shorthand come from the compiler tokenizer', 'editor'],
+  ['M12.20', 'FR-DSL-009: the five ops of edge-ops.flux.yaml are marked, in the shorthand and in the object form', 'editor'],
+  ['M12.20', 'FR-DSL-009: an edge the compiler tokenizer refuses is left unmarked', 'editor'],
+  ['M12.20', 'FR-DSL-009: keys are marked by level: compiled keys, deferred keys, and nothing for a name the table lacks', 'editor'],
+  ['M12.20', 'FR-DSL-009: shape ids are split into pack and shape, and uses names the packs', 'editor'],
+  ['M12.20', 'FR-DSL-009: checkout.flux.yaml marks its five edges and no range overlaps another', 'editor'],
+  ['M12.20', 'FR-DSL-009: object-form ends are marked at their position inside the flow mapping', 'editor'],
+  ['M12.20', 'FR-DSL-009: a document that is not a mapping, or is empty, has no tokens', 'editor'],
+  ['M12.20', 'FR-DSL-009: the language is YAML with the FluxScript layer, which marks ops, slugs and anchors in a view', 'editor', {}, 'browser'],
+  ['M12.20', 'FR-DSL-009: the marks follow an edit of the document', 'editor', {}, 'browser'],
+];
 leg('the TextMate and Lezer grammars exist and accept every example', () => {
   if (!exists('packages/dsl/grammar/fluxscript.tmLanguage.json')) return 'missing packages/dsl/grammar/fluxscript.tmLanguage.json';
   return GRAMMAR_TITLES.length === 0 ? 'no grammar titles yet: the M12 rows add them' : titled(GRAMMAR_TITLES, EXACT);
