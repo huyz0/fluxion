@@ -118,6 +118,20 @@ function step(s: State, el: string): State {
 
 const walk = (path: readonly string[]): State => path.reduce<State>(step, { t: 'map', level: 'top' });
 
+/** The levels whose mapping has a `style` key. */
+const STYLED: ReadonlySet<Level> = new Set<Level>(['node', 'group', 'edge']);
+
+/** A walk down `els` from `from`: the state it ends in, and whether it passed through a `style` key (not a slug named `style`). */
+function walkFrom(from: State, els: readonly string[]): { readonly state: State; readonly inStyle: boolean } {
+  let state = from;
+  let inStyle = false;
+  for (const el of els) {
+    if (el === 'style' && state.t === 'map' && STYLED.has(state.level)) inStyle = true;
+    state = step(state, el);
+  }
+  return { state, inStyle };
+}
+
 /** Whether the cursor is inside a block scalar (`notes: |`): text there is prose. */
 function inBlockScalar(text: string, pos: number): boolean {
   const tree = yamlLanguage.parser.parse(text);
@@ -129,7 +143,7 @@ type Ctx = { readonly level?: Level; readonly inStyle: boolean };
 
 /** The kind of value a key holds, for the keys whose values are ids, packs, tokens or slugs. */
 function valueKind(key: string, ctx: Ctx): 'shape' | 'token' | 'pack' | 'slug' | undefined {
-  if (key === 'shape' || key === 'component') return 'shape';
+  if ((key === 'shape' || key === 'component') && ctx.level === 'node') return 'shape';
   if (ctx.inStyle || key === 'background') return 'token';
   if (key === 'uses') return 'pack';
   if ((key === 'from' || key === 'to') && ctx.level === 'edge') return 'slug';
@@ -172,7 +186,7 @@ type Cur = {
   readonly path: readonly string[];
   /** The mapping the line's keys belong to. */
   readonly state: State;
-  /** The key whose value opens a flow collection on this line (`style: {`). */
+  /** The key whose value opens the innermost flow collection still open on this line (`style: {`). */
   readonly owner: string | undefined;
   readonly inStyle: boolean;
 };
@@ -189,10 +203,10 @@ function seqFlow(c: Cur, part: string): Site | undefined {
 
 /** `{ a: b, c: | }`: a value of a key, or a key of the mapping the braces open. */
 function mapFlow(c: Cur, part: string): Site | undefined {
-  const owned = c.owner === undefined ? c.state : step(c.state, c.owner);
+  const owned = c.state;
   const value = /^\s*([\w-]+)\s*:\s+([\w.:-]*)$/.exec(part);
   if (value !== null) {
-    const kind = valueKind(value[1] as string, { ...levelOf(owned), inStyle: c.inStyle || c.owner === 'style' });
+    const kind = valueKind(value[1] as string, { ...levelOf(owned), inStyle: c.inStyle });
     return kind === undefined ? undefined : valueSite(kind, value[2] as string, c.pos);
   }
   const key = /^\s*([\w-]*)$/.exec(part);
@@ -215,6 +229,28 @@ function itemSite(rest: string, pos: number, state: State, last: string | undefi
   return state.level === 'edge' ? edgeSite(rest, pos) : { kind: 'key', level: state.level, from: pos - (/[\w-]*$/.exec(rest)?.[0] ?? '').length };
 }
 
+/** The key whose value opens the `k`th open bracket (`key: {`), if the bracket has one. */
+function bracketOwner(rest: string, stack: readonly Bracket[], k: number): string | undefined {
+  const start = k === 0 ? 0 : (stack[k - 1] as Bracket).at + 1;
+  const seg = rest.slice(start, (stack[k] as Bracket).at);
+  // trim, not a regex: `^\s*(.+?)\s*:\s*$` backtracks cubically on a long run of whitespace (M12.54 review)
+  const tail = seg.slice(seg.lastIndexOf(',') + 1).trim();
+  if (!tail.endsWith(':')) return undefined;
+  const key = tail.slice(0, -1).trim();
+  return key === '' ? undefined : unquote(key);
+}
+
+/** A bracket without a key: the braces of a flow sequence's item, the braces that open the line's own mapping, or something not read. */
+const anonymous = (stack: readonly Bracket[], k: number): string[] =>
+  (stack[k] as Bracket).ch === '{' ? (k === 0 ? [] : (stack[k - 1] as Bracket).ch === '[' ? ['-'] : ['?']) : ['?'];
+
+/** The keys (and `-` for an item) the open brackets of a line go down through, outermost first. */
+const flowElements = (rest: string, stack: readonly Bracket[]): string[] =>
+  stack.flatMap((_, k) => {
+    const owner = bracketOwner(rest, stack, k);
+    return owner === undefined ? anonymous(stack, k) : [owner];
+  });
+
 /** The cursor's line and what encloses it, or nothing in a comment, a quoted string or a block scalar. */
 function cursorAt(text: string, pos: number): Cur | undefined {
   const lineStart = text.lastIndexOf('\n', pos - 1) + 1;
@@ -225,7 +261,8 @@ function cursorAt(text: string, pos: number): Cur | undefined {
   if (sc.comment || sc.inQuote || inBlockScalar(text, pos)) return undefined;
   const dashed = (head[2] ?? '').length > 0;
   const path = enclosing(text.slice(0, lineStart).split('\n').slice(0, -1), head[1]?.length ?? 0, dashed);
-  const outside = sc.colon >= 0 && sc.stack.length > 0 && sc.colon < (sc.stack[0] as Bracket).at;
+  const block = walkFrom({ t: 'map', level: 'top' }, path);
+  const flow = walkFrom(lineState(block.state, dashed), flowElements(rest, sc.stack));
   return {
     pos,
     before,
@@ -233,9 +270,9 @@ function cursorAt(text: string, pos: number): Cur | undefined {
     sc,
     dashed,
     path,
-    state: lineState(walk(path), dashed),
-    owner: outside ? unquote(rest.slice(0, sc.colon)) : undefined,
-    inStyle: path.includes('style'),
+    state: flow.state,
+    owner: sc.stack.length > 0 ? bracketOwner(rest, sc.stack, sc.stack.length - 1) : undefined,
+    inStyle: block.inStyle || flow.inStyle,
   };
 }
 

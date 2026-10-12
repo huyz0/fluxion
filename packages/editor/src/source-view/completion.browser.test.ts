@@ -57,12 +57,33 @@ describe('fluxScriptCompletion (FR-DSL-009, ADR-0032)', () => {
   it('FR-DSL-009: token names after fill: are the theme tokens, narrowed by the prefix typed', async () => {
     const all = await labelsAfter(`${NODE}        style:\n          fill: `);
     expect(all.length).toBeGreaterThan(3);
-    const prefix = (all[0] as string).slice(0, 4);
+    const prefix = (all[0] as string).split('.').slice(0, 2).join('.');
+    const expected = all.filter((l) => l.startsWith(prefix));
+    const other = all.find((l) => !l.startsWith(prefix)) as string;
+    expect(other).toBeDefined();
     view?.destroy();
     const narrowed = await labelsAfter(`${NODE}        style:\n          fill: ${prefix}`);
-    expect(narrowed.length).toBeGreaterThan(0);
-    expect(narrowed.length).toBeLessThanOrEqual(all.length);
-    expect(narrowed.every((l) => l.includes(prefix))).toBe(true);
+    expect([...narrowed].sort()).toEqual([...expected].sort());
+    expect(narrowed).not.toContain(other);
+    expect(narrowed.length).toBeLessThan(all.length);
+  });
+
+  it('FR-DSL-009: token names are offered inside a nested flow map of an edge, and shape ids are not offered in an edge', async () => {
+    const tokens = await labelsAfter(`${NODE}        style:\n          fill: `);
+    view?.destroy();
+    const nested = await labelsAfter('flux: 1\nscreens:\n  - id: s\n    edges:\n      - api -> db: { style: { fill: ');
+    expect([...nested].sort()).toEqual([...tokens].sort());
+    view?.destroy();
+    const { catalog } = setup();
+    const parent = document.body.appendChild(document.createElement('div'));
+    const doc = 'flux: 1\nscreens:\n  - id: s\n    edges:\n      - { shape: ';
+    view = new EditorView({
+      parent,
+      state: EditorState.create({ doc, selection: { anchor: doc.length }, extensions: [fluxScriptLanguage(), fluxScriptCompletion(catalog)] }),
+    });
+    startCompletion(view);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(completionStatus(view.state)).toBe(null);
   });
 
   it('FR-DSL-009: after an edge op the list holds the slugs of the open screen and not those of another', async () => {

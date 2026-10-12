@@ -228,6 +228,7 @@ leg('the TextMate and Lezer grammars exist and accept every example', () => {
 const COMPLETION_TITLES = [
   ['M12.21', 'FR-DSL-009: after shape: the list holds every registered basic shape and no shape of a pack that is not registered', 'editor', {}, 'browser'],
   ['M12.21', 'FR-DSL-009: token names after fill: are the theme tokens, narrowed by the prefix typed', 'editor', {}, 'browser'],
+  ['M12.54', 'FR-DSL-009: token names are offered inside a nested flow map of an edge, and shape ids are not offered in an edge', 'editor', {}, 'browser'],
   ['M12.21', 'FR-DSL-009: after an edge op the list holds the slugs of the open screen and not those of another', 'editor', {}, 'browser'],
   ['M12.21', 'FR-DSL-009: after a slug and a dot the list holds the anchors', 'editor', {}, 'browser'],
 ];

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { completionsAt, usedPacks } from './completion.js';
 import { BASIC_IDS, catalog } from './completion-fixture.js';
+import { siteAt } from './completion-site.js';
 
 /** Completions at the `|` in `src` (the bar is removed). */
 function at(src: string, cat = catalog()) {
@@ -117,5 +118,40 @@ describe('completionsAt (FR-DSL-009, ADR-0032)', () => {
   it('FR-DSL-009: an empty list is no completion', () => {
     expect(at(`${NODES}        shape: |`, catalog({ shapes: () => [] }))).toBeNull();
     expect(at(`${SCREEN}    edges:\n      - api -> |`, catalog({ slugs: () => [] }))).toBeNull();
+  });
+
+  it('FR-DSL-009: a nested flow map offers token names where the block form does', () => {
+    const E = `${SCREEN}    edges:\n      - `;
+    expect(at(`${E}a -> b: { style: { fill: |`)?.labels).toContain('color.brand.primary');
+    expect(at(`${E}a -> b: { style: { fill: color.t|`)?.word).toBe('color.t');
+    expect(at(`${E}{ style: { fill: |`)?.labels).toContain('space.4');
+    expect(at(`${E}a -> b: { label: x, style: { fill: |`)?.labels).toContain('space.4');
+    expect(at(`${E}a -> b: { style: { fill: red }, label: |`)).toBeNull();
+    expect(at(`${NODES.replace('api:\n', 'api: { style: { stroke: |')}`)?.labels).toContain('space.4');
+  });
+
+  it('FR-DSL-009: shape and component are shape ids at node level only, and a node named style is not a style', () => {
+    expect(at(`${SCREEN}    edges:\n      - { shape: |`)).toBeNull();
+    expect(at(`${SCREEN}    edges:\n      - from: a\n        shape: |`)).toBeNull();
+    expect(at(`${SCREEN}    shape: |`)).toBeNull();
+    expect(at(`${SCREEN}    groups:\n      g:\n        component: |`)).toBeNull();
+    expect(at(`${SCREEN}    nodes:\n      api: { shape: |`)?.labels).toContain('basic:rect');
+    const named = `${SCREEN}    nodes:\n      style:\n`;
+    expect(at(`${named}        text: |`)).toBeNull();
+    expect(at(`${named}        shape: |`)?.labels).toContain('basic:rect');
+    expect(at(`${named}        style:\n          fill: |`)?.labels).toContain('space.4');
+    expect(at(`${SCREEN}    nodes:\n      style: { text: |`)).toBeNull();
+  });
+
+  it('FR-DSL-009: a long run of whitespace between two open flow brackets is read in linear time', () => {
+    // the owner of a bracket was read with a backtracking regex: `api: {` + 2,000 spaces + `x {` took 6.7 s and 5,000 did not finish
+    const head = 'flux: 1\nscreens:\n  - id: s\n    edges:\n';
+    const text = `${head}      - a -> b: {${' '.repeat(2000)}x { fill: `;
+    const started = performance.now();
+    siteAt(text, text.length);
+    expect(performance.now() - started).toBeLessThan(1000);
+    // a long run of whitespace after a key still finds the nested site
+    const spaced = `${head}      - a -> b: { style:${' '.repeat(2000)}{ fill: `;
+    expect(siteAt(spaced, spaced.length)?.kind).toBe('token');
   });
 });

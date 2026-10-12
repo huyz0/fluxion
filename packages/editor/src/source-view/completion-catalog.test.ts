@@ -1,4 +1,5 @@
-import { createCore } from '@fluxion/core';
+import { createCore, type ReadView } from '@fluxion/core';
+import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
@@ -31,5 +32,29 @@ describe('completionCatalog (FR-DSL-009, ADR-0032)', () => {
     expect(cat.slugs()).toEqual(['other']);
     screen = undefined;
     expect(cat.slugs()).toEqual([]);
+  });
+
+  it('FR-DSL-009: token names come from the tokens of the screen theme record, else the document theme record, else the light theme', () => {
+    const tok = (...names: string[]) => Object.fromEntries(names.map((n) => [n, { $type: 'color', $value: '#000000' }]));
+    const records: Record<string, object> = {
+      doc: { type: 'document', themeId: 'thDoc' },
+      thDoc: { type: 'theme', tokens: { docgroup: tok('one', 'two') } },
+      thScr: { type: 'theme', tokens: { scrgroup: tok('only') } },
+      scrA: { type: 'screen', themeId: 'thScr' },
+      scrB: { type: 'screen' },
+      scrC: { type: 'screen', themeId: 'missing' },
+    };
+    const view = { get: (id: string) => records[id], members: (_i: string, _k: string) => ['doc'] } as unknown as ReadView;
+    let open: string | undefined = 'scrA';
+    const c = completionCatalog({ shapeDefs: core.registries.shapeDefs, view, screen: () => open as RecordId | undefined });
+    expect(c.tokens()).toEqual(['scrgroup.only']);
+    open = 'scrB';
+    expect(c.tokens()).toEqual(['docgroup.one', 'docgroup.two']);
+    open = undefined;
+    expect(c.tokens()).toEqual(['docgroup.one', 'docgroup.two']);
+    open = 'scrC';
+    expect(c.tokens()).toEqual(['docgroup.one', 'docgroup.two']);
+    records['doc'] = { type: 'document', themeId: 'gone' };
+    expect(c.tokens()).toEqual(cat.tokens());
   });
 });
