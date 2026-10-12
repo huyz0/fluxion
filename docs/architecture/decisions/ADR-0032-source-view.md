@@ -76,6 +76,14 @@ Chosen option **2 with grammar (b)**.
     view with its diagnostics, and the banner stays.
   - Regenerating replaces the block as one CodeMirror change that keeps the cursor's slug. It is not a document change, so it cannot loop. It is also an
     entry in CodeMirror's own history, so a reload can be undone inside the view.
+- **Merge details (M12.49).** The base is the compile of the base text on its own with the document's salt; the new compile is compared with it, record by
+  record, field by field (`transform`, `style`, `semantic`, `meta` and `params` one level down). The z-order `index` of an existing record is never written
+  by a text edit (a new record goes on top of its siblings); the `transform` of an element that neither text pins is the layout's output, and never
+  replaces the pin the canvas gave it; a screen is never deleted by an apply. A removed owned record takes its dependents with it in the same transaction:
+  comments, interactions and bindings that point at it are deleted, a gone id is taken out of the lists of a step's animation or an action, an element the
+  block does not show that sat in a deleted group moves up to the group's parent, and the status line counts what was touched. A removed and an added
+  record that are the same but for the slug (and the one of each) are an id remap; so are records whose ids are not the ones their slugs derive (made by
+  hand), on the first apply. Every record that held an old id is rewritten by value, and the host moves the selection and the shown screen to the new ids.
 - **Undo.** Document undo and redo are the editor's (ADR-0014). CodeMirror's history covers the view's text only (keystrokes and reloads). It is kept for as long as the screen is open.
 
 ### Consequences

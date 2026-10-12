@@ -1,18 +1,17 @@
-// The text half of the source view (FR-EDT-022, ADR-0032): the screen's FluxScript shown, and the author's edits applied to the canvas.
-// Pure of CodeMirror and React so it is tested without a DOM. Lazy chunk: it imports `@fluxion/dsl`; nothing in the editor's initial chunk may
-// import this file statically.
+// The debounce and the controller of the source view (FR-EDT-022, ADR-0032): the author's edits applied to the canvas after a pause (the apply itself, a
+// three-way merge, is source-apply.ts), and canvas changes shown in the text only while the view is clean. Pure of CodeMirror and React so it is tested
+// without a DOM. Lazy chunk: it imports `@fluxion/dsl`; nothing in the editor's initial chunk may import this file statically.
 //
 // Decision (M12.22): the view shows a whole file for ONE screen: `decompile(doc, { screens: [id] })`, i.e. the header (`flux`, `title`, `theme`,
 // `uses`, up to and including the `screens:` line) and that screen's block. The header is read-only in the view (`headerLength` says where the
-// editable part starts); the whole text is compiled into the open document as `compile(text, { base })`, so the screen's block replaces the
-// records it owns (the upsert rules of M12.18) and every other screen is untouched.
+// editable part starts). Decision (M12.49): the whole text is compiled on its own with the document's salt, and only what changed since the last
+// generated or applied text is merged into the document; every other screen and every record the block does not own is untouched.
 import type { CoreRegistries, Store } from '@fluxion/core';
-import { compile, type DslDiagnostic, decompile } from '@fluxion/dsl';
-import type { AnyRecord, RecordId } from '@fluxion/schema';
+import type { RecordId } from '@fluxion/schema';
 import type { Execute } from '../pointer.js';
+import { applyMerged, type Base, baseOf, blocks, drifted, type Generated, generate, type SyncResult } from './source-apply.js';
 
-/** The undo merge key of one apply. */
-const MERGE_KEY = 'source-view.apply';
+export { applyMerged, applySource, type Base, baseOf, generate, type SyncResult, sourceOf } from './source-apply.js';
 
 /** How long the text must rest before it is compiled. */
 export const APPLY_DELAY_MS = 300;
@@ -34,48 +33,10 @@ export const BROWSER_SCHEDULER: Scheduler = {
   clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
 };
 
-/** What one try at applying the text came to. */
-export type SyncResult = {
-  /** `applied` (the canvas changed, one undo step), `unchanged` (the text compiles to what the document holds), `invalid` (errors: nothing applied) or `refused` (the store refused the write). */
-  readonly status: 'applied' | 'unchanged' | 'invalid' | 'refused';
-  /** Every diagnostic of the compile, warnings included. */
-  readonly diagnostics: readonly DslDiagnostic[];
-  /** Why the store refused the write. */
-  readonly problem?: string;
-};
-
-/** The FluxScript of one screen: the header and its block. */
-export function sourceOf(store: Store, registries: CoreRegistries, screen: RecordId): string {
-  return decompile(store.toDocument(), { registries, screens: [screen] }).text;
-}
-
 /** Where the editable part of a source starts: just after the `screens:` line (0 when there is none, so nothing is locked). */
 export function headerLength(text: string): number {
   const match = /^screens:[^\n]*\n?/m.exec(text);
   return match === null ? 0 : match.index + match[0].length;
-}
-
-const same = (a: unknown, b: unknown): boolean => a === b || JSON.stringify(a) === JSON.stringify(b);
-
-/** Whether a diagnostic stops the apply: warnings (the deferred sections the compiler keeps but does not compile) do not. */
-export const blocks = (d: DslDiagnostic): boolean => d.severity === 'error';
-
-/** Compile `text` into the open document and write what changed as one command and one undo step. */
-export function applySource(text: string, store: Store, execute: Execute, registries: CoreRegistries): SyncResult {
-  const base = store.toDocument();
-  const result = compile(text, { registries, base });
-  const diagnostics = result.diagnostics;
-  if (result.doc === undefined || diagnostics.some(blocks)) return { status: 'invalid', diagnostics };
-  const next = result.doc.records as Record<string, AnyRecord>;
-  const puts = Object.values(next).filter((r) => !same(base.records[r.id], r));
-  const put = new Set(puts.map((r) => r.id as string));
-  const deletes = Object.keys(base.records).filter((id) => !(id in next) && !put.has(id));
-  if (puts.length === 0 && deletes.length === 0) return { status: 'unchanged', diagnostics };
-  // each apply is its own undo step: not merged into the edit before it, nor into the next apply
-  store.history.seal();
-  const written = execute('document.applyRecords', { puts, deletes }, { mergeKey: MERGE_KEY });
-  store.history.seal();
-  return written.ok ? { status: 'applied', diagnostics } : { status: 'refused', diagnostics, problem: written.error.message };
 }
 
 /** Options of {@link createSourceSync}. */
@@ -92,6 +53,10 @@ export type SourceSyncOptions = {
   readonly scheduler?: Scheduler;
   /** The quiet time before a compile (300 ms by default). */
   readonly delayMs?: number;
+  /** The base the next apply merges against (the compile of the text as last generated or applied); without it the document is taken as the base. */
+  readonly base?: () => Base | undefined;
+  /** Told when an apply changed ids (a renamed slug, a record made by hand): the selection and the shown screen follow. */
+  readonly onRemap?: (remap: ReadonlyMap<RecordId, RecordId>) => void;
 };
 
 /** The debounced text to canvas sync of one source view. */
@@ -127,10 +92,11 @@ export function createSourceSync(options: SourceSyncOptions): SourceSync {
     busy = true;
     let result: SyncResult;
     try {
-      result = applySource(text, store, execute, registries);
+      result = applyMerged(text, { store, execute, registries }, options.base?.());
     } finally {
       busy = false;
     }
+    if (result.remap !== undefined && result.remap.size > 0) options.onRemap?.(result.remap);
     onResult(result, text);
   };
   const cancel = (): void => {
@@ -288,6 +254,7 @@ export function createSourceController(options: SourceControllerOptions): Source
   const { store, registries, screen, port } = options;
   const scheduler = options.scheduler ?? BROWSER_SCHEDULER;
   let base = options.initial;
+  let merging = baseOf(base, registries, generate(store, registries, screen), screen);
   let focused = false;
   let changed = false;
   let errors = 0;
@@ -298,31 +265,35 @@ export function createSourceController(options: SourceControllerOptions): Source
   };
   const sync = createSourceSync({
     ...options,
+    base: () => merging,
     onResult: (result, text) => {
       errors = result.diagnostics.filter(blocks).length;
       if (result.status === 'applied' || result.status === 'unchanged') {
         base = text;
-        banner(false);
+        merging = result.base ?? merging;
+        // the text now says what it says, but the canvas may be ahead of it (a change the merge kept): then the view is behind
+        banner(drifted(store, registries, screen, merging));
       }
       port.result(result);
     },
   });
   const clean = (): boolean => !sync.pending() && errors === 0 && port.text() === base;
-  const put = (next: string): void => {
-    base = next;
+  const put = (made: Generated): void => {
+    base = made.text;
+    merging = baseOf(made.text, registries, made, screen);
     errors = 0;
-    port.replace(next);
+    port.replace(made.text);
     banner(false);
   };
   const reconcile = (): void => {
     // a banner that is up stays up while the view is focused or dirty: nothing could change, so nothing is generated
     if (changed && (focused || !clean())) return;
     if (store.get(screen) === undefined) return;
-    const next = sourceOf(store, registries, screen);
-    if (next === port.text()) {
-      base = next;
+    const made = generate(store, registries, screen);
+    if (made.text === port.text()) {
+      base = made.text;
       banner(false);
-    } else if (clean() && !focused) put(next);
+    } else if (clean() && !focused) put(made);
     else banner(true);
   };
   const looker = gatherChanges(store, scheduler, () => sync.applying(), reconcile);
@@ -342,7 +313,7 @@ export function createSourceController(options: SourceControllerOptions): Source
       sync.cancel();
       looker.cancel();
       port.result(undefined);
-      put(sourceOf(store, registries, screen));
+      put(generate(store, registries, screen));
     },
     dispose: () => {
       looker.dispose();

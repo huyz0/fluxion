@@ -1,8 +1,8 @@
 // The lazy half of `streamFluxScript` (FR-AI-010, ADR-0032): the only editor module that imports `@fluxion/dsl`, loaded by a dynamic import so
 // the editor's initial chunk never holds the compiler. Do not import this file statically from anywhere but its own tests.
-import type { Store } from '@fluxion/core';
 import { createStreamCompiler, type DslDiagnostic, type StreamUpdate } from '@fluxion/dsl';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
+import { diffRecords } from '../record-diff.js';
 import { DEFAULT_CAMERA } from '../session.js';
 import type { StreamFluxOptions, StreamFluxResult } from '../stream-flux-types.js';
 
@@ -18,8 +18,6 @@ function withoutContent(doc: DocumentFile): DocumentFile {
   return { ...doc, records };
 }
 
-const same = (a: unknown, b: unknown): boolean => a === b || JSON.stringify(a) === JSON.stringify(b);
-
 /**
  * Write the stream's own work since `run.prev` through the `document.applyRecords` command: the records that differ between the previous running doc and
  * `doc` are put, the ones `doc` lacks are deleted (when still in the store). What the user changed meanwhile, and the stream did not, is left alone. A
@@ -27,9 +25,7 @@ const same = (a: unknown, b: unknown): boolean => a === b || JSON.stringify(a) =
  */
 function applyDoc(options: StreamFluxOptions, doc: DocumentFile, run: Run): string | undefined {
   const { store, execute } = options;
-  const prev = run.prev.records;
-  const puts = Object.values(doc.records).filter((record) => !same(prev[record.id], record));
-  const gone = Object.keys(prev).filter((id) => !(id in doc.records));
+  const { puts, gone } = diffRecords(run.prev.records, doc.records);
   // ids are stable hashes (ADR-0031): content streamed again has the ids of what it replaces, and a put must not be undone by a delete of the same id
   const put = new Set(puts.map((r) => r.id as string));
   const deletes = [...new Set([...gone, ...run.stale])].filter((id) => !put.has(id) && store.has(id as RecordId));

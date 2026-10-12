@@ -72,3 +72,26 @@ export function retitle(fixture: Pick<Core, 'execute'>, title: string): void {
   const result = fixture.execute('document.updateMeta', { fields: { title }, modified: '2026-01-01T00:00:00.000Z' });
   if (!result.ok) throw new Error(result.error.message);
 }
+
+/** Records made beside the source's: what a person or another tool added to the document (an element the grammar cannot say, a comment). */
+export function addRecords(fixture: Pick<Core, 'execute'>, puts: readonly object[]): void {
+  const result = fixture.execute('document.applyRecords', { puts, deletes: [] });
+  if (!result.ok) throw new Error(result.error.message);
+}
+
+/** A frame on `screen`: an element the decompiler leaves out. */
+export const frameOn = (screen: RecordId, id = 'kept-frame'): object => ({
+  id,
+  type: 'element',
+  kind: 'frame',
+  screenId: screen,
+  index: 'a8',
+  transform: { x: 600, y: 600, w: 200, h: 120 },
+});
+
+/** A comment on `target`. */
+export const commentOn = (target: RecordId, id: string): object => ({ id, type: 'comment', targetId: target, author: 'ada', body: `on ${target}` });
+
+/** The record `id` of the document, loosely. */
+export const recordOf = (store: Core['store'], id: string): Record<string, unknown> | undefined =>
+  store.get(id as RecordId) as unknown as Record<string, unknown> | undefined;

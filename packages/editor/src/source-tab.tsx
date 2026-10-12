@@ -27,6 +27,8 @@ export type SourceTabProps = {
   readonly screenId: RecordId | undefined;
   /** Escape in the editor: put the focus back on the tab. */
   readonly onEscape?: () => void;
+  /** An apply changed ids: the selection and the shown screen follow them. */
+  readonly onRemap?: (remap: ReadonlyMap<RecordId, RecordId>) => void;
 };
 
 /** The Source tab: a skeleton, then the source view. */

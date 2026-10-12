@@ -17,6 +17,12 @@
       "packages/editor/src/command-palette.tsx"
     ]
   },
+  "0QG_4U": {
+    "message": "label",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "1DBGsz": {
     "message": "Notes",
     "origin": [
@@ -264,6 +270,12 @@
       "packages/editor/src/source-view/source-view.tsx"
     ]
   },
+  "F0lHkW": {
+    "message": "text",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "FEr96N": {
     "message": "Theme",
     "origin": [
@@ -274,6 +286,12 @@
     "message": "Keyboard shortcuts (?)",
     "origin": [
       "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "FYBgK3": {
+    "message": "deleted on the canvas",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "FZ9Zfp": {
@@ -293,6 +311,12 @@
     "origin": [
       "packages/editor/src/asset-dialog.tsx",
       "packages/editor/src/toolbar-extras.tsx"
+    ]
+  },
+  "Gl1I_5": {
+    "message": "Overwrote canvas changes to: {list}.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "GvwkUd": {
@@ -378,6 +402,12 @@
     "message": "Screens, library and layers",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "LsTKGV": {
+    "message": "Could not tell which node was renamed: {0}. Their comments and canvas changes were removed.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "M6P3Qa": {
@@ -496,6 +526,12 @@
     "origin": [
       "packages/editor/src/panels.tsx",
       "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "WJ8iwk": {
+    "message": "Removed or cleaned 1 record that pointed at a deleted element.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "WMlw1A": {
@@ -931,6 +967,12 @@
       "packages/editor/src/edit-toolbar.tsx"
     ]
   },
+  "hsax1u": {
+    "message": "position",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "i22EYX": {
     "message": "Left panel",
     "origin": [
@@ -953,6 +995,12 @@
     "message": "{0, plural, one {# asset} other {# assets}}, {total} in all",
     "origin": [
       "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "l2EobP": {
+    "message": "position and size",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "lG1keT": {
@@ -991,6 +1039,12 @@
       "packages/editor/src/asset-dialog.tsx"
     ]
   },
+  "nUKWVw": {
+    "message": "style",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "o-XJ9D": {
     "message": "Change",
     "origin": [
@@ -1027,10 +1081,22 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "pPA51L": {
+    "message": "group",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "pSxyuz": {
     "message": "Follows the document",
     "origin": [
       "packages/editor/src/theme-switcher.tsx"
+    ]
+  },
+  "qNiGUh": {
+    "message": "size",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "qP9z7l": {
@@ -1197,6 +1263,12 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
+  "vBkVQS": {
+    "message": "tone",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "vLyv1R": {
     "message": "Hide",
     "origin": [
@@ -1249,6 +1321,12 @@
     "message": "Custom field {0} name",
     "origin": [
       "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "x5QjUE": {
+    "message": "Removed or cleaned {n} records that pointed at a deleted element.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "xAQnfp": {

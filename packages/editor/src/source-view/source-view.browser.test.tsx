@@ -1,9 +1,10 @@
 import { EditorView } from '@codemirror/view';
+import type { RecordId } from '@fluxion/schema';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { has, manualScheduler, moveOnCanvas, retitle, setup } from './source-fixture.js';
+import { addRecords, commentOn, elementOf, has, manualScheduler, moveOnCanvas, retitle, setup } from './source-fixture.js';
 import { headerLength, RECONCILE_DELAY_MS, sourceOf } from './source-sync.js';
 import { SourceView } from './source-view.js';
 
@@ -20,7 +21,7 @@ afterEach(() => {
   host.remove();
 });
 
-async function mount(onEscape?: () => void) {
+async function mount(onEscape?: () => void, onRemap?: (remap: ReadonlyMap<RecordId, RecordId>) => void) {
   const fixture = setup();
   const timer = manualScheduler();
   await act(async () =>
@@ -32,6 +33,7 @@ async function mount(onEscape?: () => void) {
         screenId={fixture.one}
         scheduler={timer.scheduler}
         {...(onEscape ? { onEscape } : {})}
+        {...(onRemap ? { onRemap } : {})}
       />,
     ),
   );
@@ -233,5 +235,35 @@ describe('source view', () => {
     expect(text).toContain('xxxx');
     const headerLines = text.slice(0, headerLength(text)).trimEnd().split('\n').length;
     expect(host.querySelectorAll('.fx-source-header').length).toBe(headerLines);
+  });
+
+  it('FR-EDT-022: the status line names the records whose canvas changes the text overwrote, and the records a deleted element took with it', async () => {
+    const { store, timer, replace, execute } = await mount();
+    // the canvas pins Alpha; the view is clean, so the banner path does not matter here: the text is typed over the pin before it is regenerated
+    await act(async () => replace('a: { shape: rect, label: Alpha }', 'a: { shape: rect, label: Alpha, pin: { x: 10, y: 20 } }'));
+    moveOnCanvas({ store, execute });
+    await act(async () => timer.advance(300));
+    const status = host.querySelector('.fx-chrome-source-status');
+    expect(status?.textContent).toBe('Applied to the canvas. Overwrote canvas changes to: a (position).');
+    addRecords({ execute }, [commentOn(elementOf(store, 'Beta'), 'note')]);
+    await act(async () => replace('\n      b: { shape: rect, label: Beta }', ''));
+    await act(async () => replace('\n    edges:\n      - a -> b', ''));
+    await act(async () => timer.advance(300));
+    expect(has(store, 'Beta')).toBe(false);
+    expect(host.querySelector('.fx-chrome-source-status')?.textContent).toBe(
+      'Applied to the canvas. Removed or cleaned 1 record that pointed at a deleted element.',
+    );
+  });
+
+  it('FR-EDT-022: a renamed slug is told to the host with the old and the new id', async () => {
+    const seen: ReadonlyMap<RecordId, RecordId>[] = [];
+    const { store, timer, replace } = await mount(undefined, (remap) => seen.push(remap));
+    const alpha = elementOf(store, 'Alpha');
+    await act(async () => replace('a: {', 'alp: {'));
+    await act(async () => replace('- a -> b', '- alp -> b'));
+    await act(async () => timer.advance(300));
+    expect(seen).toHaveLength(1);
+    expect([...(seen[0] ?? [])].find(([old]) => old === alpha)?.[1]).toBeDefined();
+    expect(store.has(alpha)).toBe(false);
   });
 });

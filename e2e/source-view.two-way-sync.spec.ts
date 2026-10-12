@@ -4,13 +4,19 @@ import { expect, test } from './test.js';
 
 // FR-EDT-022: the Source tab shows the open screen's FluxScript. An edit of the text reaches the canvas after the pause (300 ms), a typo shows
 // a gutter diagnostic and leaves the canvas as it was, and each apply is one undo step. A canvas edit regenerates the text of a clean view and raises the
-// reload banner on a dirty one; blur applies the typed text at once (M12.48). The merge is M12.49.
+// reload banner on a dirty one; blur applies the typed text at once (M12.48). An apply is a three-way merge (M12.49): what the canvas changed and the
+// text did not stays, a renamed slug keeps its record, and a record that points at a deleted element is cleaned.
 const SOURCE =
   'flux: 1\ntitle: Synced\nuses: [basic]\nscreens:\n' +
   '- id: one\n  title: One\n  nodes:\n    a: { shape: rect, label: Alpha }\n    b: { shape: rect, label: Beta }\n  edges:\n  - a -> b\n' +
   '- id: two\n  title: Two\n  nodes:\n    c: { shape: rect, label: Gamma }\n';
 
 type Stream = { push(chunk: string): Promise<void>; close(): Promise<{ status: string; screens: number }> };
+type Records = { readonly [id: string]: { readonly [field: string]: unknown } };
+type Hooks = { records(): Records; applyRecords(puts: readonly object[], deletes?: readonly string[]): string | undefined };
+
+/** The same screen with a third node on its own (no edge), for the cases that delete one. */
+const SOURCE_SOLO = SOURCE.replace('b: { shape: rect, label: Beta }\n', 'b: { shape: rect, label: Beta }\n    d: { shape: rect, label: Delta }\n');
 
 /** Select the first occurrence of `word` in the line the way a person's drag would: through the DOM selection, which CodeMirror reads. */
 async function select(line: Locator, word: string): Promise<void> {
@@ -25,7 +31,7 @@ async function select(line: Locator, word: string): Promise<void> {
 }
 
 /** Open a new document holding the two-screen source, with the Source tab shown on the first. */
-async function openSource(page: Page) {
+async function openSource(page: Page, source = SOURCE) {
   await page.addInitScript(() => {
     const w = window as unknown as { __FLUXION_TEST_HOOKS__: boolean; __holdApply?: boolean };
     w.__FLUXION_TEST_HOOKS__ = true;
@@ -40,7 +46,7 @@ async function openSource(page: Page) {
     const stream = (window as unknown as { __fluxion: { streamFlux(): Stream } }).__fluxion.streamFlux();
     await stream.push(source);
     await stream.close();
-  }, SOURCE);
+  }, source);
   await expect(editor.canvas.getByText('Alpha', { exact: true })).toBeVisible();
   const left = editor.panel('Screens, library and layers');
   await left.getByRole('tab', { name: 'Source' }).click();
@@ -48,6 +54,24 @@ async function openSource(page: Page) {
   await expect(text).toContainText('label: Alpha');
   return { editor, left, text };
 }
+
+/** Every record of the open document (the test hook). */
+const recordsOf = (page: Page): Promise<Records> => page.evaluate(() => (window as unknown as { __fluxion: Hooks }).__fluxion.records());
+
+/** Write records beside the source's, through the test hook. */
+async function addRecords(page: Page, puts: readonly object[]): Promise<void> {
+  const problem = await page.evaluate((list) => (window as unknown as { __fluxion: Hooks }).__fluxion.applyRecords(list), puts);
+  expect(problem).toBeUndefined();
+}
+
+/** The record id of the element whose slug is `slug`, and the id of the screen whose source id is `screen`. */
+const idOfSlug = (records: Records, slug: string): string | undefined =>
+  Object.keys(records).find((id) => (records[id]?.['semantic'] as { slug?: string } | undefined)?.slug === slug);
+const screenOf = (records: Records, slug: string): string => {
+  const id = Object.keys(records).find((i) => records[i]?.['type'] === 'screen' && (records[i]?.['meta'] as { slug?: string } | undefined)?.slug === slug);
+  if (id === undefined) throw new Error(`no screen ${slug}`);
+  return id;
+};
 
 /** Where a shape that shows `label` is drawn, in the screen's own units (the fitted screen is `DEFAULT_SCREEN_SIZE` wide: 1920). */
 async function placeOf(editor: EditorPage, label: string): Promise<{ x: number; y: number; w: number; h: number; scale: number }> {
@@ -205,5 +229,125 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await expect(editor.canvas.getByText('Omega', { exact: true })).toBeVisible();
     await expect(left.getByRole('status').filter({ hasText: 'Applied' })).toBeVisible();
     await expect(editor.canvas.getByText('Alpha', { exact: true })).toHaveCount(0);
+  });
+
+  test('FR-EDT-022: an element outside the subset survives an apply, with the comment on it', async ({ page }) => {
+    const { editor, left, text } = await openSource(page);
+    const screen = screenOf(await recordsOf(page), 'one');
+    await addRecords(page, [
+      { id: 'kept-frame', type: 'element', kind: 'frame', screenId: screen, index: 'a8', transform: { x: 900, y: 600, w: 200, h: 120 } },
+      { id: 'kept-note', type: 'comment', targetId: 'kept-frame', author: 'ada', body: 'keep me' },
+    ]);
+    // the view is clean: it shows the frame as left out
+    await expect(text).toContainText('kept: 1 records not shown');
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'Alpha');
+    await page.keyboard.type('Omega');
+    await expect(editor.canvas.getByText('Omega', { exact: true })).toBeVisible();
+    await expect(left.getByRole('status').filter({ hasText: 'Applied' })).toBeVisible();
+    const records = await recordsOf(page);
+    expect(records['kept-frame']).toMatchObject({ kind: 'frame', transform: { x: 900, y: 600, w: 200, h: 120 } });
+    expect(records['kept-note']).toMatchObject({ targetId: 'kept-frame' });
+    await expect(text).toContainText('kept: 1 records not shown');
+  });
+
+  test('FR-EDT-022: a shape dragged while the view holds unapplied text keeps its new pin after that text is applied (e2e, a real drag)', async ({ page }) => {
+    const { editor, left, text } = await openSource(page);
+    await page.evaluate(() => {
+      (window as unknown as { __holdApply: boolean }).__holdApply = true;
+    });
+    // a typo: the text does not compile, so it is unapplied while the canvas changes
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'rect');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.type('t');
+    await editor.toolbarButton('Snapping').click();
+    await dragShape(editor, 'Beta', 120, 80);
+    await expect(left.getByText('Canvas changed — reload')).toBeVisible();
+    const dragged = await placeOf(editor, 'Beta');
+    // the author fixes the typo and edits a label, then leaves the view: both are applied at once
+    await select(text.locator('.cm-line', { hasText: 'shape: rectt' }), 'rectt');
+    await page.keyboard.type('rect');
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'Alpha');
+    await page.keyboard.type('Omega');
+    await left.getByRole('tab', { name: 'Source' }).focus();
+    await expect(editor.canvas.getByText('Omega', { exact: true })).toBeVisible();
+    await expect(left.getByRole('status').filter({ hasText: 'Applied' })).toBeVisible();
+    // Beta is where the canvas put it: the pin is in the document, and the regenerated text says it
+    const after = await placeOf(editor, 'Beta');
+    expect(Math.abs(after.x - dragged.x)).toBeLessThan(1);
+    expect(Math.abs(after.y - dragged.y)).toBeLessThan(1);
+    const beta = Object.values(await recordsOf(page)).find((r) => (r['semantic'] as { slug?: string } | undefined)?.slug === 'b');
+    expect(beta).toMatchObject({ placement: 'pinned' });
+    await expect(text.locator('.cm-line', { hasText: 'label: Beta' })).toContainText('pin: { x: ');
+    await expect(left.getByText('Canvas changed — reload')).toHaveCount(0);
+  });
+
+  test('FR-EDT-022: a slug renamed in place keeps its record under a new id, and what pointed at it follows', async ({ page }) => {
+    const { editor, left, text } = await openSource(page);
+    let records = await recordsOf(page);
+    const before = idOfSlug(records, 'b');
+    expect(before).toBeDefined();
+    // a layer name and a comment: neither is in the text, so a delete and an add would lose them
+    await addRecords(page, [
+      { ...records[before as string], name: 'Backend layer' },
+      { id: 'note-b', type: 'comment', targetId: before, author: 'ada', body: 'on b' },
+    ]);
+    await select(text.locator('.cm-line', { hasText: 'label: Beta' }), 'b');
+    await page.keyboard.type('bee');
+    await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(1);
+    await select(text.locator('.cm-line', { hasText: '- a -> b' }), 'b');
+    await page.keyboard.type('bee');
+    await expect(left.getByRole('status').filter({ hasText: 'Applied' })).toBeVisible();
+    await expect(editor.canvas.getByText('Beta', { exact: true })).toBeVisible();
+    records = await recordsOf(page);
+    const now = idOfSlug(records, 'bee');
+    expect(now).toBeDefined();
+    expect(now).not.toBe(before);
+    expect(records[before as string]).toBeUndefined();
+    expect(records[now as string]).toMatchObject({ name: 'Backend layer', semantic: { slug: 'bee', label: 'Beta' } });
+    expect(records['note-b']).toMatchObject({ targetId: now });
+    const ends = Object.values(records).filter((r) => r['type'] === 'binding' && r['end'] === 'target');
+    expect(ends.map((b) => b['elementId'])).toEqual([now]);
+    // one undo step takes the rename back
+    await editor.toolbarButton('Undo').click();
+    expect((await recordsOf(page))[before as string]).toMatchObject({ name: 'Backend layer' });
+    expect((await recordsOf(page))['note-b']).toMatchObject({ targetId: before });
+  });
+
+  test('FR-EDT-022: records that pointed at an element the text deleted are removed or cleaned, never left dangling, and undo brings them back', async ({
+    page,
+  }) => {
+    const { editor, left, text } = await openSource(page, SOURCE_SOLO);
+    const records = await recordsOf(page);
+    const delta = idOfSlug(records, 'd') as string;
+    const alpha = idOfSlug(records, 'a') as string;
+    await addRecords(page, [
+      { id: 'note-d', type: 'comment', targetId: delta, author: 'ada', body: 'on d' },
+      { id: 'click-d', type: 'interaction', ownerId: delta, trigger: { kind: 'onClick' }, actions: [] },
+      { id: 'tl', type: 'timeline', screenId: screenOf(records, 'one'), name: 'main', index: 'a0' },
+      {
+        id: 'step',
+        type: 'step',
+        timelineId: 'tl',
+        index: 'a0',
+        trigger: { kind: 'onClick' },
+        animations: [{ id: 'x', effect: 'appear', targets: [delta, alpha] }],
+      },
+    ]);
+    await expect(editor.canvas.getByText('Delta', { exact: true })).toBeVisible();
+    // three clicks select the line; deleting it removes the node
+    await text.locator('.cm-line', { hasText: 'label: Delta' }).click({ clickCount: 3 });
+    await page.keyboard.press('Delete');
+    await expect(editor.canvas.getByText('Delta', { exact: true })).toHaveCount(0);
+    await expect(left.getByRole('status').filter({ hasText: 'Removed or cleaned 3 records' })).toBeVisible();
+    const after = await recordsOf(page);
+    expect(after['note-d']).toBeUndefined();
+    expect(after['click-d']).toBeUndefined();
+    expect(after['step']).toMatchObject({ animations: [{ id: 'x', effect: 'appear', targets: [alpha] }] });
+    expect(JSON.stringify(after)).not.toContain(delta);
+    await editor.toolbarButton('Undo').click();
+    await expect(editor.canvas.getByText('Delta', { exact: true })).toBeVisible();
+    const restored = await recordsOf(page);
+    expect(restored['note-d']).toMatchObject({ targetId: delta });
+    expect(restored['click-d']).toBeDefined();
   });
 });

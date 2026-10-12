@@ -16,6 +16,7 @@ import { placeImageFiles } from './place-images.js';
 import type { Execute } from './pointer.js';
 import { usePanels } from './root-hooks.js';
 import type { Session } from './session.js';
+import { followRemap } from './source-remap.js';
 import type { ToolDispatcher } from './tools.js';
 
 /** Props of {@link EditBody}. */
@@ -74,6 +75,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
       }),
     [store, execute, screenId, newId, assetStore, session, box, notify],
   );
+  const onRemap = useCallback((remap: ReadonlyMap<RecordId, RecordId>) => followRemap(session, remap), [session]);
   return (
     <div className="fx-chrome-body">
       {panel(
@@ -83,7 +85,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
           problems={{ store, session, execute }}
           notes={{ store, execute, screenId }}
           library={{ shapeDefs: registries.shapeDefs, onPick: (id) => insert(id) }}
-          source={sourceRegistries === undefined ? undefined : { store, execute, registries: sourceRegistries, screenId }}
+          source={sourceRegistries === undefined ? undefined : { store, execute, registries: sourceRegistries, screenId, onRemap }}
         />,
       )}
       {splitter('left')}

@@ -23,6 +23,10 @@ export type FakeStream = {
 export type StudioTestHooks = {
   /** Open a stream that replaces the document's screens with the streamed source's. */
   streamFlux(): FakeStream;
+  /** Every record of the open document, by id (a test reads what an apply of the Source view left). */
+  records(): { readonly [id: string]: { readonly [field: string]: unknown } };
+  /** Write records beside the source's (an element the grammar cannot say, a comment on one) as one undo step; the store's problem when it refuses, else `undefined`. */
+  applyRecords(puts: readonly object[], deletes?: readonly string[]): string | undefined;
 };
 
 declare global {
@@ -87,6 +91,13 @@ export function installTestHooks(doc: {
   if (window.__FLUXION_TEST_HOOKS__ !== true) return () => undefined;
   const hooks: StudioTestHooks = {
     streamFlux: () => fakeStream((source) => streamFluxScript(source, { ...doc, replace: true })),
+    records: () => doc.store.toDocument().records as unknown as ReturnType<StudioTestHooks['records']>,
+    applyRecords: (puts, deletes = []) => {
+      doc.store.history.seal();
+      const result = doc.execute('document.applyRecords', { puts, deletes });
+      doc.store.history.seal();
+      return result.ok ? undefined : result.error.message;
+    },
   };
   window.__fluxion = hooks;
   return () => {
