@@ -205,8 +205,8 @@ function benchArgs(
     'element.ungroup': { ids: [BENCH_GROUP] },
     // two shapes of screen 5 aligned by their left edges
     'element.align': { ids: [shapes[1400], shapes[1401]], mode: 'left', to: 'selection' },
-    // five shapes of screen 5 spaced evenly
-    'element.distribute': { ids: shapes.slice(1410, 1415), axis: 'horizontal', by: 'gaps' },
+    // five shapes of screen 5 spaced evenly; not neighbours (60 apart, already even: a no-op, no history entry)
+    'element.distribute': { ids: [1410, 1411, 1413, 1414, 1417].map((i) => shapes[i]), axis: 'horizontal', by: 'gaps' },
     // a shape of screen 5 to the front
     'element.zOrder': { ids: [shapes[1420]], to: 'front' },
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
