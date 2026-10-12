@@ -5,6 +5,7 @@
 import type { ReadView } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
 import { type AnyRecord, keyBetween, type RecordId } from '@fluxion/schema';
+import { roundGeom } from './round-geom.js';
 import { type Box2, carry } from './transform.js';
 
 /**
@@ -54,7 +55,11 @@ export function starts(view: ReadView, ids: readonly RecordId[]): Start[] {
   });
 }
 
-const shift = (p: Vec2, d: Vec2): Vec2 => ({ x: p.x + d.x, y: p.y + d.y });
+/** `p` moved by `d`, to the precision a gesture writes (the pointer's float noise stays out of the document). */
+const shift = (p: Vec2, d: Vec2): Vec2 => ({ x: roundGeom(p.x + d.x), y: roundGeom(p.y + d.y) });
+
+/** `p` carried to the frame `after`, to the same precision. */
+const roundVec = (p: Vec2): Vec2 => ({ x: roundGeom(p.x), y: roundGeom(p.y) });
 
 /**
  * The fields that put each record of `from` `d` away from where it started (element.updateMany's
@@ -106,7 +111,7 @@ export function restored(from: readonly Start[]): { readonly id: RecordId; reado
  * @public
  */
 export function reframed(from: readonly Start[], before: Box2, after: Box2): { readonly id: RecordId; readonly fields: Record<string, unknown> }[] {
-  const at = (p: Vec2) => carry(before, after, p);
+  const at = (p: Vec2) => roundVec(carry(before, after, p));
   return from.flatMap((s) => {
     const fields: Record<string, unknown> = {};
     if (s.transform) {
@@ -125,7 +130,7 @@ type Placed = { readonly x: number; readonly y: number; readonly w: number; read
 /**
  * The box `t` carried from the frame `before` to `after`: its centre carried, its turn turned, its
  * size scaled along its own axes, each taken into the frame's and stretched by the frame's scales
- * (exact for turns by quarters against the frame, M6.15 review F1).
+ * (exact for turns by quarters against the frame, M6.15 review F1). Written to 2 decimals (FR-EDT-022), the turn too.
  */
 function reframedBox(t: Placed & Record<string, unknown>, before: Box2, after: Box2): Record<string, unknown> {
   const sx = before.w === 0 ? 1 : after.w / before.w;
@@ -135,7 +140,7 @@ function reframedBox(t: Placed & Record<string, unknown>, before: Box2, after: B
   const h = t.h * Math.hypot(Math.sin(r) * sx, Math.cos(r) * sy);
   const centre = carry(before, after, { x: t.x + t.w / 2, y: t.y + t.h / 2 });
   const rot = ((((t.rot ?? 0) + after.rot - before.rot) % 360) + 360) % 360;
-  return { ...t, x: centre.x - w / 2, y: centre.y - h / 2, w, h, rot };
+  return { ...t, x: roundGeom(centre.x - w / 2), y: roundGeom(centre.y - h / 2), w: roundGeom(w), h: roundGeom(h), rot: roundGeom(rot) % 360 };
 }
 
 /** The first of the sorted `indexes` after `index`, if any (a binary search). */

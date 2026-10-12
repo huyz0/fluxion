@@ -3,6 +3,7 @@ import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { duplicates, moved, reframed, restored, starts } from './move.js';
+import { roundGeom } from './round-geom.js';
 
 function setup() {
   const b = documentBuilder({ seed: 140 });
@@ -169,5 +170,44 @@ describe('moving and duplicating (FR-EDT-005)', () => {
     expect(back[0]).toEqual({ id: a, fields: { transform: expect.objectContaining({ x: 10, y: 20 }), placement: undefined } });
     core.store.transact('pin', (tx) => tx.patch(a, { placement: 'pinned' }));
     expect(restored(starts(core.store, [a]))[0]?.fields['placement']).toBe('pinned');
+  });
+});
+
+describe('rounding what a gesture writes (FR-EDT-022)', () => {
+  it('FR-EDT-022: roundGeom rounds to 2 decimals, half away from zero, never gives -0, and leaves round and large values alone', () => {
+    expect([roundGeom(109.99999999999997), roundGeom(99.99997161155522), roundGeom(10.004), roundGeom(9.996)]).toEqual([110, 100, 10, 10]);
+    expect([roundGeom(1.005 + 1e-9), roundGeom(0.005), roundGeom(-0.005), roundGeom(-1.234), roundGeom(0.5)]).toEqual([1.01, 0.01, -0.01, -1.23, 0.5]);
+    expect(Object.is(roundGeom(-0.001), 0)).toBe(true);
+    expect(Object.is(roundGeom(-0), 0)).toBe(true);
+    expect([roundGeom(123456789.126), roundGeom(1e15), roundGeom(3, 0), roundGeom(2.5678, 3)]).toEqual([123456789.13, 1e15, 3, 2.568]);
+  });
+
+  it('FR-EDT-022: a move by a fractional delta writes positions of 2 decimals: boxes, free ends and waypoints', () => {
+    const { core, a, free } = setup();
+    const updates = moved(starts(core.store, [a, free]), { x: 10.004, y: 9.996 });
+    expect(updates[0]?.fields['transform']).toEqual({ x: 20, y: 30, w: 30, h: 40, rot: 15 });
+    expect(updates[1]?.fields).toEqual({
+      freeSource: { x: 10, y: 10 },
+      freeTarget: { x: 60, y: 60 },
+      route: { type: 'straight', waypoints: [{ x: 35, y: 15 }] },
+    });
+    // float noise in the pointer's delta is gone too
+    expect(moved(starts(core.store, [a]), { x: 99.99999999999997 - 90, y: 0.1 + 0.2 }).map((u) => u.fields['transform'])).toEqual([
+      { x: 20, y: 20.3, w: 30, h: 40, rot: 15 },
+    ]);
+  });
+
+  it('FR-EDT-022: a resize or turn by a fractional delta writes sizes, positions and turn of 2 decimals', () => {
+    const { core, group } = setup();
+    const before = { x: 0, y: 300, w: 100, h: 100, rot: 0 };
+    const sized = reframed(starts(core.store, [group]), before, { ...before, w: 100 + 10.004, h: 100 + 9.996 });
+    expect(sized[0]?.fields['transform']).toEqual({ x: 0, y: 300, w: 110, h: 110, rot: 0 });
+    const third = reframed(starts(core.store, [group]), before, { ...before, w: 100 / 3 });
+    expect(third[0]?.fields['transform']).toEqual({ x: 0, y: 300, w: 33.33, h: 100, rot: 0 });
+    const turned = reframed(starts(core.store, [group]), before, { ...before, rot: 33.33333333 });
+    expect((turned[0]?.fields['transform'] as { rot: number } | undefined)?.rot).toBe(33.33);
+    // a turn that rounds up to a full one stays within [0, 360)
+    const full = reframed(starts(core.store, [group]), before, { ...before, rot: -0.001 });
+    expect((full[0]?.fields['transform'] as { rot: number } | undefined)?.rot).toBe(0);
   });
 });

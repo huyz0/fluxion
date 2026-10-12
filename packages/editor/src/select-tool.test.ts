@@ -249,4 +249,55 @@ describe('moving with the select tool (FR-EDT-005)', () => {
     core.store.history.undo();
     expect(placement(c)).toBe('auto');
   });
+
+  it('FR-EDT-022: a resize or a turn cancelled with Esc leaves the element as it was: placement auto, no undo step', () => {
+    const { core, session, tools, a } = setup();
+    const placement = () => (core.store.get(a) as { placement?: string }).placement ?? 'auto';
+    const box = () => (core.store.get(a) as { transform: unknown }).transform;
+    const start = box();
+    session.selection.set([a]);
+    // the se handle at (100, 100): dragged, pinned while it runs, then Esc
+    tools.pointer(at('down', 100, 100));
+    expect(tools.current).toBe('select.resizing');
+    tools.pointer(at('move', 150, 130));
+    expect(placement()).toBe('pinned');
+    press(tools, key('Escape'));
+    tools.pointer(at('up', 150, 130));
+    expect([tools.current, placement(), box(), core.store.history.undoDepth]).toEqual(['select.idle', 'auto', start, 0]);
+    // the rotate handle 24 px above the top edge's middle (50, 0)
+    tools.pointer(at('down', 50, -24));
+    expect(tools.current).toBe('select.rotating');
+    tools.pointer(at('move', 150, 52));
+    expect(placement()).toBe('pinned');
+    press(tools, key('Escape'));
+    tools.pointer(at('up', 150, 52));
+    expect([tools.current, placement(), box(), core.store.history.undoDepth]).toEqual(['select.idle', 'auto', start, 0]);
+  });
+
+  it('FR-EDT-022: a drag, a nudge, a resize and a turn by fractions write values of at most 2 decimals', () => {
+    const { core, session, tools, a, c } = setup();
+    const box = (id: RecordId) => (core.store.get(id) as { transform: { x: number; y: number; w: number; h: number; rot?: number } }).transform;
+    // a drag of 10.004 units (snapping bypassed with the mod key would not matter: the grid and the other elements are far)
+    tools.pointer(at('down', 50, 50));
+    tools.pointer(at('move', 50 + 10.004, 50 + 9.996));
+    tools.pointer(at('up', 50 + 10.004, 50 + 9.996));
+    expect(box(a)).toMatchObject({ x: 10, y: 10 });
+    // a nudge of an element that holds float noise writes a round value
+    core.store.transact('noise', (tx) => tx.patch(c, { transform: { x: 200.00000000000003, y: 0.1 + 0.2, w: 100, h: 100 } }));
+    session.selection.set([c]);
+    press(tools, key('ArrowRight'));
+    expect(box(c)).toMatchObject({ x: 201, y: 0.3 });
+    // a resize by a fraction: the se handle of a is at (110, 110)
+    session.selection.set([a]);
+    tools.pointer(at('down', 110, 110));
+    tools.pointer(at('move', 110 + 10.004, 110 + 100 / 3));
+    tools.pointer(at('up', 110 + 10.004, 110 + 100 / 3));
+    expect(box(a)).toMatchObject({ x: 10, y: 10, w: 110, h: 133.33 });
+    // a turn
+    tools.pointer(at('down', 65, -14));
+    tools.pointer(at('move', 150, 52));
+    tools.pointer(at('up', 150, 52));
+    const { rot, ...rest } = box(a);
+    for (const n of [rot ?? 0, ...Object.values(rest)]) expect(Math.abs(n * 100 - Math.round(n * 100))).toBeLessThan(1e-9);
+  });
 });

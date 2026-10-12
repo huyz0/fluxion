@@ -19,6 +19,9 @@ export const APPLY_DELAY_MS = 300;
 /** How long the canvas must be quiet before the view looks at what changed (a drag changes the document every frame: one look, after it). */
 export const RECONCILE_DELAY_MS = 50;
 
+/** The longest the view waits to look when changes keep coming less than {@link RECONCILE_DELAY_MS} apart, counted from the first it has not looked at. */
+export const RECONCILE_MAX_WAIT_MS = 1000;
+
 /** A timer the caller injects (the tests drive it by hand). */
 export type Scheduler = {
   /** Run `run` after `ms`; returns a handle for `clear`. */
@@ -217,9 +220,12 @@ export type SourceController = SourceSync & {
 /** The store's changes gathered into one `look` per quiet time, however many came in (a drag is one per frame); the view's own applies are not counted. */
 function gatherChanges(store: Store, scheduler: Scheduler, own: () => boolean, look: () => void) {
   let handle: unknown;
+  let longest: unknown;
   const cancel = (): void => {
     if (handle !== undefined) scheduler.clear(handle);
+    if (longest !== undefined) scheduler.clear(longest);
     handle = undefined;
+    longest = undefined;
   };
   const now = (): void => {
     cancel();
@@ -227,9 +233,10 @@ function gatherChanges(store: Store, scheduler: Scheduler, own: () => boolean, l
   };
   const unsubscribe = store.subscribe(() => {
     if (own()) return;
-    // each change restarts the wait: a drag is looked at once, when it settles, not every 50 ms of it
+    // each change restarts the wait: a drag is looked at once, when it settles, not every 50 ms of it; but never later than the longest wait after the first
     if (handle !== undefined) scheduler.clear(handle);
     handle = scheduler.set(now, RECONCILE_DELAY_MS);
+    longest ??= scheduler.set(now, RECONCILE_MAX_WAIT_MS);
   });
   return {
     /** Whether changes wait to be looked at. */

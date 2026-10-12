@@ -184,6 +184,11 @@ test.describe('source view', { tag: '@desktop' }, () => {
     // the pin is where the shape was put (a pixel of the stroke aside)
     expect(Math.abs(pin.x - (before.x + dx))).toBeLessThan(4);
     expect(Math.abs(pin.y - (before.y + dy))).toBeLessThan(4);
+    // the pointer's float noise is not written (M12.57): every number of the pin has at most 2 decimals
+    const written = (await alpha.innerText()).replace(/^.*pin: \{/, '').replace(/\}.*$/, '');
+    const numbers = written.match(/-?\d[\d.e+-]*/g) ?? [];
+    expect(numbers.length).toBeGreaterThanOrEqual(2);
+    for (const n of numbers) expect(n).toMatch(/^-?\d+(\.\d{1,2})?$/);
     await expect(text.locator('.cm-line', { hasText: 'label: Beta' })).not.toContainText('pin:');
     // one text with the pin came out of the whole drag, however many frames it ran
     const texts = await page.evaluate(() => (window as unknown as { __texts: string[] }).__texts);

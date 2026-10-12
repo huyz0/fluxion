@@ -8,6 +8,7 @@ import {
   cursorIn,
   headerLength,
   RECONCILE_DELAY_MS,
+  RECONCILE_MAX_WAIT_MS,
   type SourceControllerOptions,
   type SyncResult,
   sourceOf,
@@ -281,6 +282,41 @@ describe('source view, canvas to text', () => {
     expect(has(c.store, 'Omega')).toBe(false);
     c.controller.blur();
     expect(has(c.store, 'Omega')).toBe(true);
+  });
+
+  it('FR-EDT-022: changes spaced less than the quiet time apart are looked at once the longest wait has passed, not never', () => {
+    const c = controlled();
+    const decompiles = vi.spyOn(c.store, 'toDocument');
+    const nudge = (x: number) =>
+      c.execute('element.update', { id: elementOf(c.store, 'Alpha'), fields: { placement: 'pinned', transform: { x, y: 5, w: 160, h: 80 } } });
+    // 100 changes 40 ms apart (less than the 50 ms quiet time): the first is at 0, so the look is due at the maximum wait
+    for (let i = 0; i < 100; i++) {
+      nudge(i + 1);
+      if (i === 24) expect(decompiles).not.toHaveBeenCalled();
+      c.timer.advance(40);
+      if (i === 24) expect(decompiles).toHaveBeenCalledTimes(1);
+    }
+    expect(RECONCILE_MAX_WAIT_MS).toBe(1000);
+    // a look every maximum wait while the churn lasts (at 1000, 2000, 3000 and 4000 ms), and nothing left waiting after the last
+    expect(decompiles).toHaveBeenCalledTimes(4);
+    c.timer.advance(RECONCILE_MAX_WAIT_MS);
+    expect(decompiles).toHaveBeenCalledTimes(4);
+  });
+
+  it('FR-EDT-022: one burst of changes and then silence is looked at once, the quiet time after the last', () => {
+    const c = controlled();
+    const decompiles = vi.spyOn(c.store, 'toDocument');
+    for (let i = 0; i < 10; i++) {
+      c.execute('element.update', { id: elementOf(c.store, 'Alpha'), fields: { placement: 'pinned', transform: { x: i + 1, y: 5, w: 160, h: 80 } } });
+      c.timer.advance(40);
+    }
+    c.timer.advance(RECONCILE_DELAY_MS - 41);
+    expect(decompiles).not.toHaveBeenCalled();
+    c.timer.advance(1);
+    expect(decompiles).toHaveBeenCalledTimes(1);
+    c.timer.advance(RECONCILE_MAX_WAIT_MS * 2);
+    expect(decompiles).toHaveBeenCalledTimes(1);
+    expect(c.timer.count()).toBe(0);
   });
 
   it('FR-EDT-022: 100 canvas changes before the quiet time pass are looked at once, and a banner that is up needs no look', () => {
