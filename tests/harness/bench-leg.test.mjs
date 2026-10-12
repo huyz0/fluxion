@@ -5,7 +5,15 @@ import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
-import { BENCH_COMMANDS, BENCH_FILES, benchLeg, benchUnder, checkBenchReport, checkBenchTask } from '../../scripts/gates/milestone-checks.mjs';
+import {
+  BENCH_COMMANDS,
+  BENCH_FILES,
+  benchLeg,
+  benchUnder,
+  checkBenchReport,
+  checkBenchTask,
+  upFrontViolations,
+} from '../../scripts/gates/milestone-checks.mjs';
 import { REPO, sandbox } from './helpers.mjs';
 
 /** A Vitest 5 JSON bench report: one passing test per command, each with its undo/redo/transact tasks. */
@@ -166,5 +174,34 @@ describe('one bench under a budget (FR-EDT-004)', () => {
     } finally {
       sb.cleanup();
     }
+  });
+});
+
+describe('upFrontViolations (M12.23, FR-EDT-022)', () => {
+  const files = (o) => (p) => o[p];
+  it('FR-EDT-022: follows static imports and re-exports through chunks, and refuses CodeMirror, Lezer and the DSL in any', () => {
+    const read = files({
+      'd/index.js': 'import { a } from "./one.js";\nexport * from "./two.js";\nimport "./three.js";',
+      'd/one.js': 'import x from "react";',
+      'd/two.js': 'export { y } from "./sub/four.js";',
+      'd/three.js': 'const z = 1;',
+      'd/sub/four.js': 'import { s } from "@codemirror/state";',
+    });
+    assert.deepEqual(upFrontViolations('d/index.js', read), ['d/sub/four.js imports CodeMirror, Lezer or @fluxion/dsl']);
+    for (const bad of ['@lezer/common', '@fluxion/dsl', '@codemirror/view']) {
+      const r = files({ 'd/index.js': 'import "./a.js";', 'd/a.js': `import { q } from "${bad}";` });
+      assert.equal(upFrontViolations('d/index.js', r).length, 1, bad);
+    }
+    assert.equal(upFrontViolations('d/index.js', files({ 'd/index.js': 'import { v } from "@fluxion/dsl";' })).length, 1);
+  });
+  it('FR-EDT-022: does not follow a dynamic import(), and reports a missing chunk and cycles once', () => {
+    const lazy = files({
+      'd/index.js': 'const m = await import("./lazy.js"); const l = lazy(() => import("./lazy.js"));',
+      'd/lazy.js': 'import "@codemirror/state";',
+    });
+    assert.deepEqual(upFrontViolations('d/index.js', lazy), []);
+    assert.deepEqual(upFrontViolations('d/index.js', files({ 'd/index.js': 'import "./gone.js";' })), ['d/gone.js is missing']);
+    const cycle = files({ 'd/index.js': 'import "./a.js";', 'd/a.js': 'import "./index.js"; import "@lezer/lr";' });
+    assert.equal(upFrontViolations('d/index.js', cycle).length, 1);
   });
 });

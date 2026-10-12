@@ -44,6 +44,7 @@ export const THRESHOLDS = {
 
   // performance (NFR-PERF)
   EDITOR_DRAG_MIN_FPS: { value: 55, weakens: 'down' },
+  DSL_COMPILE_10_MAX_MS: { value: 200, weakens: 'up' }, // M12: compile a 10-screen FluxScript file, p99 (FR-EDT-022)
   HIT_TEST_2000_MAX_MS: { value: 1, weakens: 'up' }, // M6: point hit-test among 2000 elements (FR-EDT-004)
   NAVIGATOR_OPEN_50_MAX_MS: { value: 200, weakens: 'up' }, // M8: the screens navigator opens with 50 screens (FR-SCR-002)
   LIBRARY_SEARCH_10K_MAX_MS: { value: 100, weakens: 'up' }, // M8: keyword search over 10k library entries (FR-LIB-001)

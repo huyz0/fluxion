@@ -20,9 +20,10 @@ import {
   propertyRuns,
   readmeGaps,
   titled,
+  upFrontViolations,
   verifyLeg,
 } from './milestone-checks.mjs';
-import { THRESHOLDS, t } from './thresholds.mjs';
+import { t } from './thresholds.mjs';
 
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
 const pnpm = (...a) => run('pnpm', a);
@@ -406,17 +407,16 @@ leg(`size-limit: editor initial ≤ EDITOR_INITIAL_GZIP (${t('EDITOR_INITIAL_GZI
   return player <= t('PLAYER_CORE_GZIP') || `player core ${player} B > ${t('PLAYER_CORE_GZIP')}`;
 });
 leg('CodeMirror and the DSL are not in the editor initial chunk or the player', () => {
+  // the static imports of each entry are followed through its chunks; a dynamic import() is a lazy chunk and is not (plan review r2 F1)
   for (const f of ['packages/editor/dist/index.js', 'packages/player/dist/index.js']) {
     if (!exists(f)) return `missing ${f} (run the build)`;
-    if (/@codemirror\/|@lezer\//.test(readText(f))) return `${f} holds CodeMirror or Lezer`;
+    const bad = upFrontViolations(f, (p) => (exists(p) ? readText(p) : undefined));
+    if (bad.length) return bad.join('; ');
   }
-  return /@fluxion\/dsl/.test(readText('packages/player/dist/index.js')) ? 'the player bundle imports @fluxion/dsl' : true;
+  return true;
 });
-// DSL_COMPILE_10_MAX_MS (200 ms, M12.md row 18) is added to thresholds.mjs by M12.23, the row that writes the bench
 leg('a 10-screen example compiles within DSL_COMPILE_10_MAX_MS (p99)', () =>
-  'DSL_COMPILE_10_MAX_MS' in THRESHOLDS
-    ? benchUnder('packages/dsl/bench/compile-10.bench.ts', 'compile-10', t('DSL_COMPILE_10_MAX_MS'))
-    : 'no DSL_COMPILE_10_MAX_MS in thresholds.mjs yet (M12.23)',
+  benchUnder('packages/dsl/bench/compile-10.bench.ts', 'compile-10', t('DSL_COMPILE_10_MAX_MS')),
 );
 
 // ── coverage, docs, changesets ──────────────────────────────────────────────────────────────────────

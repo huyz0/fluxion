@@ -2,7 +2,7 @@
 // file exists can be satisfied by a stub). Each returns true | '<reason>' for lib.mjs leg().
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, sep } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import { exists, git, repoPath, run } from './lib.mjs';
 
 /** Paths a commit may touch after the final review range without invalidating the review. */
@@ -751,4 +751,33 @@ export function playwrightSpecs(specs, projects, { runner = runPlaywright } = {}
   if (missing.length) return `missing ${missing.join(', ')}`;
   const report = playwrightReport(specs, projects, { runner });
   return typeof report === 'string' ? report : checkPlaywrightReport(report, specs, projects);
+}
+
+// ── what an entry bundle loads up front (M12.23: CodeMirror and the DSL stay out of the initial chunks) ──
+/** Static `import … from "./x.js"`, `import "./x.js"` and `export … from "./x.js"` (never the dynamic `import("./x.js")`). */
+const STATIC_RELATIVE = /(?:^|[;}\s])(?:import|export)\s*(?:[^'"();]*?\sfrom\s*)?["'](\.{1,2}\/[^"']+)["']/g;
+const FORBIDDEN_UP_FRONT = /@codemirror\/|@lezer\/|@fluxion\/dsl\b/;
+
+/**
+ * Follow the static relative imports of the built entry `entry` through its chunks (a dynamic `import()` is a
+ * lazy chunk and is not followed) and name each file that mentions `@codemirror/`, `@lezer/` or `@fluxion/dsl`.
+ * `read(path)` returns a file's text or undefined when it is missing (a missing chunk is reported too).
+ */
+export function upFrontViolations(entry, read, forbidden = FORBIDDEN_UP_FRONT) {
+  const seen = new Set();
+  const bad = [];
+  const queue = [entry];
+  while (queue.length) {
+    const file = queue.pop();
+    if (seen.has(file)) continue;
+    seen.add(file);
+    const text = read(file);
+    if (text === undefined) {
+      bad.push(`${file} is missing`);
+      continue;
+    }
+    if (forbidden.test(text)) bad.push(`${file} imports CodeMirror, Lezer or @fluxion/dsl`);
+    for (const m of text.matchAll(STATIC_RELATIVE)) queue.push(join(dirname(file), m[1]).split(sep).join('/'));
+  }
+  return bad;
 }
