@@ -121,6 +121,7 @@ function ProtectedEditor(props: {
       store={core.store}
       execute={core.execute}
       registries={registries}
+      sourceRegistries={core.registries}
       settings={settings}
       session={session}
       themes={themes}

@@ -349,6 +349,7 @@ export type EditorRootProps = {
     readonly commands?: readonly EditorCommand[];
     readonly themes?: readonly ThemeChoice[];
     readonly fonts?: FontSources;
+    readonly sourceRegistries?: CoreRegistries;
 };
 
 // @public

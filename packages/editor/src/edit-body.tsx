@@ -1,5 +1,5 @@
 // The edit mode's body (split from the root, M7.24): the screens list, the canvas with the timeline, and the inspector.
-import type { Store } from '@fluxion/core';
+import type { CoreRegistries, Store } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RenderRegistries } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
@@ -41,11 +41,14 @@ export type EditBodyProps = {
   readonly assetStore: AssetStore;
   /** Tell the person something (an image that was refused). */
   readonly notify: (message: string) => void;
+  /** The core registries the Source tab compiles against; without them the tab is a placeholder. */
+  readonly sourceRegistries?: CoreRegistries | undefined;
 };
 
 /** The panels around the canvas. */
 export function EditBody(props: EditBodyProps): ReactNode {
-  const { store, registries, session, tools, execute, screenId, area, newId, onBox, box, layout, onLayout, menus, assetStore, notify } = props;
+  const { store, registries, session, tools, execute, screenId, area, newId, onBox, box, layout, onLayout, menus, assetStore, notify, sourceRegistries } =
+    props;
   const { panel, splitter } = usePanels(layout, onLayout);
   const { onMenu, menu } = useCanvasMenu({ ...menus, tools, area });
   // a library item put on the canvas: at the drop point, or at the middle of the view for a click
@@ -80,6 +83,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
           problems={{ store, session, execute }}
           notes={{ store, execute, screenId }}
           library={{ shapeDefs: registries.shapeDefs, onPick: (id) => insert(id) }}
+          source={sourceRegistries === undefined ? undefined : { store, execute, registries: sourceRegistries, screenId }}
         />,
       )}
       {splitter('left')}

@@ -120,6 +120,12 @@
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
+  "7FamGZ": {
+    "message": "Go to line",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "7G2fPn": {
     "message": "Type a command",
     "origin": [
@@ -148,6 +154,12 @@
     "message": "Inspector",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "9YwmXg": {
+    "message": "{errors} errors: the canvas keeps its last good state.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "9oWmtA": {
@@ -234,6 +246,24 @@
       "packages/editor/src/navigator/rename-field.tsx"
     ]
   },
+  "EGEvKg": {
+    "message": "1 error: the canvas keeps its last good state.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
+  "EKpV8E": {
+    "message": "Applied to the canvas.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
+  "EPVGbb": {
+    "message": "Line {0}: ",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "FEr96N": {
     "message": "Theme",
     "origin": [
@@ -277,6 +307,12 @@
       "packages/editor/src/history-buttons.tsx"
     ]
   },
+  "HemInN": {
+    "message": "Loading the source view…",
+    "origin": [
+      "packages/editor/src/source-tab.tsx"
+    ]
+  },
   "HzVv6g": {
     "message": "Paste",
     "origin": [
@@ -300,6 +336,12 @@
     "message": "{family}: Hamburgefonstiv 0123",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "ImGCFI": {
+    "message": "Up to date.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "IruwXN": {
@@ -427,7 +469,8 @@
   "SlfejT": {
     "message": "Error",
     "origin": [
-      "packages/editor/src/problems-tab.tsx"
+      "packages/editor/src/problems-tab.tsx",
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "UOUary": {
@@ -521,6 +564,12 @@
       "packages/editor/src/canvas.tsx"
     ]
   },
+  "ZvJXpi": {
+    "message": "The document refused the change: {0}",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "_UOCa8": {
     "message": "Remove custom field {0}",
     "origin": [
@@ -549,6 +598,12 @@
     "message": "Action",
     "origin": [
       "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "cEvn37": {
+    "message": "Source problems",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "cPykn8": {
@@ -816,6 +871,12 @@
       "packages/editor/src/edit-toolbar.tsx"
     ]
   },
+  "ek3kNx": {
+    "message": "The FluxScript of this screen will be shown here.",
+    "origin": [
+      "packages/editor/src/panels.tsx"
+    ]
+  },
   "eoe8BR": {
     "message": "Google",
     "origin": [
@@ -906,6 +967,12 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "n6WAvS": {
+    "message": "Source view",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "nFtI-h": {
     "message": "This document holds no assets.",
     "origin": [
@@ -975,13 +1042,20 @@
   "r6y-jM": {
     "message": "Warning",
     "origin": [
-      "packages/editor/src/problems-tab.tsx"
+      "packages/editor/src/problems-tab.tsx",
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "rG3WVm": {
     "message": "Select",
     "origin": [
       "packages/editor/src/problems-tab.tsx"
+    ]
+  },
+  "rKUI47": {
+    "message": "There is no screen to show the source of.",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "r_FDxa": {
@@ -1000,6 +1074,12 @@
     "message": "{0} is larger than 5 MB: fonts over 5 MB are not taken.",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "snYg8R": {
+    "message": "FluxScript source",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "sya1gS": {
@@ -1145,6 +1225,12 @@
     "message": "Press the new shortcut…",
     "origin": [
       "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "wdxz7K": {
+    "message": "Source",
+    "origin": [
+      "packages/editor/src/panels.tsx"
     ]
   },
   "wr9E2_": {

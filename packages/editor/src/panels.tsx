@@ -13,6 +13,7 @@ import { NotesPanel, type NotesPanelProps } from './notes-panel.js';
 import { ProblemsTab, type ProblemsTabProps } from './problems-tab.js';
 import { ScreensTab, type ScreensTabProps } from './screens-tab.js';
 import type { Session } from './session.js';
+import { SourceTab, type SourceTabProps } from './source-tab.js';
 import type { Tool, ToolDispatcher } from './tools.js';
 
 /** Each panel's name: its landmark's label and its toolbar button's text. */
@@ -98,6 +99,15 @@ const TABS = [
     },
   },
   {
+    name: 'Source',
+    get label() {
+      return t`Source`;
+    },
+    get text() {
+      return t`The FluxScript of this screen will be shown here.`;
+    },
+  },
+  {
     name: 'Notes',
     get label() {
       return t`Notes`;
@@ -129,15 +139,18 @@ export type LeftTabsProps = {
   readonly notes?: NotesPanelProps | undefined;
   /** The shape definitions the Library tab lists; without them it is a placeholder. */
   readonly library?: LibraryPanelProps | undefined;
+  /** The document, command runner, registries and shown screen the Source tab edits the FluxScript of; without them it is a placeholder. */
+  readonly source?: Omit<SourceTabProps, 'onEscape'> | undefined;
 };
 
 /** The content of a left tab: its panel when the host gave it what it needs, else the placeholder text. */
-function TabBody(props: LeftTabsProps & { readonly tab: (typeof TABS)[number] }): ReactNode {
-  const { tab, screens, problems, notes, library } = props;
+function TabBody(props: LeftTabsProps & { readonly tab: (typeof TABS)[number]; readonly onEscape: () => void }): ReactNode {
+  const { tab, screens, problems, notes, library, source, onEscape } = props;
   if (tab.name === 'Screens' && screens !== undefined) return <ScreensTab {...screens} />;
   if (tab.name === 'Problems' && problems !== undefined) return <ProblemsTab {...problems} />;
   if (tab.name === 'Notes' && notes !== undefined) return <NotesPanel {...notes} />;
   if (tab.name === 'Library' && library !== undefined) return <LibraryPanel {...library} />;
+  if (tab.name === 'Source' && source !== undefined) return <SourceTab {...source} onEscape={onEscape} />;
   return <p className="fx-chrome-placeholder">{tab.text}</p>;
 }
 
@@ -173,7 +186,7 @@ export function LeftTabs(props: LeftTabsProps = {}): ReactNode {
         ))}
       </div>
       <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${selected}`}>
-        <TabBody tab={tab} {...props} />
+        <TabBody tab={tab} {...props} onEscape={() => document.getElementById(`${id}-tab-${selected}`)?.focus()} />
       </div>
     </>
   );

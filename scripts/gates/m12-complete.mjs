@@ -223,6 +223,21 @@ const COMPLETION_TITLES = [
 leg('completion offers shape ids (packs included), token names and slugs in edges (T1 completion.browser.test.ts)', () =>
   COMPLETION_TITLES.length === 0 ? 'no completion titles yet: M12.21 adds them' : titled(COMPLETION_TITLES, EXACT),
 );
+// M12.22 writes packages/editor/src/source-view/source-sync.test.ts (node) and source-view.browser.test.tsx (browser project), FR-EDT-022
+const SOURCE_VIEW_TITLES = [
+  ['M12.22', 'FR-EDT-022: the source shown is the screen alone under the header, and the header ends at the screens line', 'editor'],
+  ['M12.22', 'FR-EDT-022: an edit is compiled after 300 ms of quiet and the last of several edits wins', 'editor'],
+  ['M12.22', 'FR-EDT-022: each apply is one undo step and undo restores the document before it', 'editor'],
+  ['M12.22', 'FR-EDT-022: only the shown screen changes, and a text that changes nothing writes nothing', 'editor'],
+  ['M12.22', 'FR-EDT-022: a text with an error applies nothing and reports its diagnostic at its line', 'editor'],
+  ['M12.22', 'FR-EDT-022: the view shows the screen alone and a change of the header is refused', 'editor', {}, 'browser'],
+  ['M12.22', 'FR-EDT-022: a valid edit reaches the canvas only after the debounce, as one undo step', 'editor', {}, 'browser'],
+  ['M12.22', 'FR-EDT-022: an error marks its line in the gutter, lists it and leaves the canvas as it was', 'editor', {}, 'browser'],
+  ['M12.22', 'FR-EDT-022: Escape hands the focus back to the host', 'editor', {}, 'browser'],
+];
+leg("the source view applies the author's edits to the canvas after a pause, one undo step each, and marks errors in the gutter (T0, T1)", () =>
+  SOURCE_VIEW_TITLES.length === 0 ? 'no source view titles yet: M12.22 adds them' : titled(SOURCE_VIEW_TITLES, EXACT),
+);
 // rows whose T0 or T1 test another leg runs, so it is listed in no title list
 const UNTITLED_ROWS = {
   'M12.16': 'the round-trip property leg runs roundtrip.prop.test.ts under ROUNDTRIP_TITLE and reads its numRuns',
@@ -230,7 +245,12 @@ const UNTITLED_ROWS = {
   'M12.50': "a harness test of vitestTitles (tests/harness/milestone-checks.test.mjs): node:test, run by pnpm verify's harness-tests step",
 };
 leg('every done M12 row whose acceptance names a T0 or T1 test has a title in a leg (or a reasoned exemption)', () =>
-  checkRowsTitled(backlogTextFor('M12'), 'M12', [COMPILER_TITLES, FORMAT_TITLES, STREAM_TITLES, GRAMMAR_TITLES, COMPLETION_TITLES], UNTITLED_ROWS),
+  checkRowsTitled(
+    backlogTextFor('M12'),
+    'M12',
+    [COMPILER_TITLES, FORMAT_TITLES, STREAM_TITLES, GRAMMAR_TITLES, COMPLETION_TITLES, SOURCE_VIEW_TITLES],
+    UNTITLED_ROWS,
+  ),
 );
 leg('the studio renders a streamed source screen by screen and the source view syncs both ways (three engines)', () =>
   e2e(['e2e/dsl.streaming-render.spec.ts', 'e2e/source-view.two-way-sync.spec.ts'], DESKTOP),

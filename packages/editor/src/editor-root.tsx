@@ -1,7 +1,7 @@
 // The edit-mode root (FR-EDT-001): the chrome (ADR-0029) around the canvas, where the document's first
 // screen is drawn by the same <ScreenView> as present mode (FR-EDT-010) through the session camera
 // (FR-EDT-002), fitted on open, with the tools (FR-EDT-003) working on it.
-import type { ReadView, Registry, Store } from '@fluxion/core';
+import type { CoreRegistries, ReadView, Registry, Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import type { AssetUrls } from '@fluxion/render';
 import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
@@ -77,6 +77,8 @@ export type EditorRootProps = {
   readonly themes?: readonly ThemeChoice[];
   /** Where the font picker gets fonts from (the host's bundled, Google and uploaded fonts); no Fonts button without it. */
   readonly fonts?: FontSources;
+  /** The core registries (shapes, layouts, themes) the Source tab compiles the author's FluxScript against; no Source tab content without them. */
+  readonly sourceRegistries?: CoreRegistries;
 };
 
 /** Randomness from the browser's crypto. */
@@ -255,6 +257,12 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
   );
 }
 
+/** What happens once a document is shown: the view is fitted, and an entered group that is gone is left. */
+function useOnOpen(store: Store, session: Session, area: Box | undefined, box: { readonly w: number; readonly h: number }): void {
+  useFitOnOpen(session, area, box);
+  useEnteredLapse(store, session);
+}
+
 function EditorShell(props: EditorRootProps): ReactNode {
   const { store, registries, commands } = props;
   useChromeCss();
@@ -276,8 +284,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
   const base = useMemo(() => baseKeymap(tools.list()), [tools]);
   const { assets, url: assetUrl } = useEditorAssets(store, props.assets);
   const { run, system, notice, notify } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands });
-  useFitOnOpen(session, area, box);
-  useEnteredLapse(store, session);
+  useOnOpen(store, session, area, box);
   const shell = { store, registries, screenId, area, session, tools: present, assets: assetUrl, revision };
   if (mode === 'present') return <PresentShell {...shell} />;
   return (
@@ -313,6 +320,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
           execute={execute}
           assetStore={assets}
           notify={notify}
+          sourceRegistries={props.sourceRegistries}
           screenId={screenId}
           area={area}
           newId={newId}
