@@ -194,6 +194,23 @@ describe('upFrontViolations (M12.23, FR-EDT-022)', () => {
     }
     assert.equal(upFrontViolations('d/index.js', files({ 'd/index.js': 'import { v } from "@fluxion/dsl";' })).length, 1);
   });
+  it('FR-EDT-022: follows static imports as a minifier writes them, with no space before from or after the specifier', () => {
+    const read = files({
+      'd/index.js': 'const a=1;import{b}from"./one.js";export*from"./two.js";import*as c from"./three.js";import d,{e}from"./four.js";',
+      'd/one.js': 'const x=1;',
+      'd/two.js': 'export{y}from"./five.js";',
+      'd/three.js': 'const z=1;',
+      'd/four.js': 'const w=1;',
+      'd/five.js': 'import"@codemirror/state";',
+    });
+    assert.deepEqual(upFrontViolations('d/index.js', read), ['d/five.js imports CodeMirror, Lezer or @fluxion/dsl']);
+    for (const spec of ['import{a}from"./x.js"', 'export*from"./x.js"', 'export{a}from"./x.js"', 'import*as a from"./x.js"', 'import a,{b}from"./x.js"']) {
+      const r = files({ 'd/index.js': `;${spec};`, 'd/x.js': 'import "@lezer/lr";' });
+      assert.equal(upFrontViolations('d/index.js', r).length, 1, spec);
+    }
+    // a dynamic import written without a space is still not followed
+    assert.deepEqual(upFrontViolations('d/index.js', files({ 'd/index.js': 'const m=import("./x.js");', 'd/x.js': 'import"@lezer/lr";' })), []);
+  });
   it('FR-EDT-022: does not follow a dynamic import(), and reports a missing chunk and cycles once', () => {
     const lazy = files({
       'd/index.js': 'const m = await import("./lazy.js"); const l = lazy(() => import("./lazy.js"));',

@@ -754,8 +754,12 @@ export function playwrightSpecs(specs, projects, { runner = runPlaywright } = {}
 }
 
 // ── what an entry bundle loads up front (M12.23: CodeMirror and the DSL stay out of the initial chunks) ──
-/** Static `import … from "./x.js"`, `import "./x.js"` and `export … from "./x.js"` (never the dynamic `import("./x.js")`). */
-const STATIC_RELATIVE = /(?:^|[;}\s])(?:import|export)\s*(?:[^'"();]*?\sfrom\s*)?["'](\.{1,2}\/[^"']+)["']/g;
+/**
+ * Static `import … from "./x.js"`, `import "./x.js"` and `export … from "./x.js"` (never the dynamic `import("./x.js")`), also as a
+ * minifier writes them (`import{a}from"./x.js"`, `export*from"./x.js"`). Only relative specifiers are followed: a bare package
+ * import is not (size-limit is the backstop for what a package pulls in).
+ */
+const STATIC_RELATIVE = /(?:^|[;}\s])(?:import|export)\s*(?:[^'"();]*?(?:\s|[}*])from\s*)?["'](\.{1,2}\/[^"']+)["']/g;
 const FORBIDDEN_UP_FRONT = /@codemirror\/|@lezer\/|@fluxion\/dsl\b/;
 
 /**

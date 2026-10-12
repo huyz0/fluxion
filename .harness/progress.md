@@ -1803,3 +1803,7 @@ The undo bench's `element.distribute` failure was a bench-setup bug since M9.19 
 ## 2026-10-12 M12.51 (claude)
 
 `changesScreens` accepts a column-0 tail key written bare, `"double"` or `'single'` quoted, with spaces or a tab before the colon, so a quoted `"uses"`, `'title'` or `"theme"` after `screens:` now triggers the whole-input recompile at `end()` (`recompiled: true`); the splitter already sent a quoted column-0 key to the tail. A quoted `"settings"` stays a plain tail. 4 new FR-AI-010 titles (chunk sizes 1, 7 and whole, LF and CRLF, a seeded property over chunkings). Keys with escapes (`"uses"`) are not decoded. Next M12.58.
+
+## 2026-10-12 M12.58 (claude)
+
+`STATIC_RELATIVE` (milestone-checks.mjs) takes `from` after `}` and `*` as well as whitespace, so `import{a}from"./x.js"`, `export*from"./x.js"`, `export{a}from`, `import*as a from` and `import a,{b}from` written by a minifier are followed (a dynamic `import("./x.js")` without a space still is not); a harness test covers them and fails against the old regex. The comment says bare package imports are not followed and size-limit is the backstop. Next M12.53.
