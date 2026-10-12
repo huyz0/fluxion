@@ -38,6 +38,12 @@ export type CompileResult = {
 };
 
 // @public
+export function createStreamCompiler(options: CompileOptions): StreamCompiler;
+
+// @public
+export function createStreamSplitter(): StreamSplitter;
+
+// @public
 export function decompile(doc: DocumentFile, options: DecompileOptions): DecompileResult;
 
 // @public
@@ -196,6 +202,12 @@ export type LocatedStyle = Located<StyleAst> & {
 };
 
 // @public
+export type NamedHeader = {
+    readonly title: boolean;
+    readonly theme: boolean;
+};
+
+// @public
 export function nearest(word: string, candidates: readonly string[]): string | undefined;
 
 // @public
@@ -300,6 +312,13 @@ export type ScreenAst = {
 };
 
 // @public
+export type ScreenBlock = {
+    readonly text: string;
+    readonly offset: number;
+    readonly line: number;
+};
+
+// @public
 export type SourceRange = {
     readonly line: number;
     readonly col: number;
@@ -307,6 +326,49 @@ export type SourceRange = {
     readonly endCol: number;
     readonly offset: number;
     readonly end: number;
+};
+
+// @public
+export type SplitOutput = {
+    readonly header?: string;
+    readonly screens: readonly ScreenBlock[];
+    readonly tail?: string;
+};
+
+// @public
+export type StreamCompiler = {
+    push(chunk: string): StreamUpdate;
+    end(): StreamUpdate;
+    readonly doc: DocumentFile | undefined;
+};
+
+// @public
+export type StreamPart = {
+    readonly doc: DocumentFile | undefined;
+    readonly diagnostics: readonly DslDiagnostic[];
+};
+
+// @public
+export type StreamScreen = {
+    readonly id: string | undefined;
+    readonly text: string;
+    readonly compiled: boolean;
+    readonly doc: DocumentFile | undefined;
+    readonly diagnostics: readonly DslDiagnostic[];
+};
+
+// @public
+export type StreamSplitter = {
+    push(chunk: string): SplitOutput;
+    end(): SplitOutput;
+};
+
+// @public
+export type StreamUpdate = {
+    readonly header?: StreamPart;
+    readonly screens: readonly StreamScreen[];
+    readonly tail?: StreamPart;
+    readonly recompiled?: true;
 };
 
 // @public
@@ -327,6 +389,9 @@ export type ThemeAst = {
 
 // @public
 export function toSlug(name: string): string | undefined;
+
+// @public
+export function upsertScreens(base: DocumentFile, fresh: DocumentFile, named: NamedHeader): DocumentFile;
 
 // @public
 export function validateFlux(input: ValidateInput, options?: ValidateOptions): ValidateResult;

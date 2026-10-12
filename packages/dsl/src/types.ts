@@ -50,7 +50,10 @@ export type CompileOptions = {
   readonly salt?: string;
   /** `strict` (default) or `lenient`: lenient applies auto-fixes and downgrades them to warnings. */
   readonly mode?: 'strict' | 'lenient';
-  /** The document a screen is compiled into. R2 reads its kept salt (ADR-0031); the upsert of a screen into it is M12.18. */
+  /**
+   * The document the text's screens are upserted into (FR-AI-010): its kept salt is the id salt (ADR-0031), the records each screen owns
+   * are replaced by the text's, and every other record is kept. The compile's `doc` is then the whole merged document.
+   */
   readonly base?: DocumentFile;
 };
 

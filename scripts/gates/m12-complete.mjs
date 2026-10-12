@@ -154,7 +154,37 @@ leg('.flux.json is byte-deterministic and schema 1.3 (screen.layout, document.so
 );
 
 // ── streaming (FR-AI-010), grammars and completion (FR-DSL-009), the source view (FR-EDT-022) ─────────
-const STREAM_TITLES = [];
+const STREAM_TITLES = [
+  ['M12.18', 'FR-AI-010: the checkout example splits into its header and four screens, each from its item line to the next item', DSL],
+  ['M12.18', 'FR-AI-010: items at column 0, deep indents and CRLF line ends split the same way', DSL],
+  ['M12.18', 'FR-AI-010: comments and blanks stay in the block they appear in, and a dashed line deeper than the item does not start a screen', DSL],
+  ['M12.18', 'FR-AI-010: a top-level key after the screens is the tail, and the last screen ends before it', DSL],
+  ['M12.18', 'FR-AI-010: a text with no screens key, or with the screens as a flow list, is all header', DSL],
+  ['M12.18', 'FR-AI-010: fed line by line, a screen is emitted when the next item line is complete, never before, and the last one at end()', DSL],
+  ['M12.18', 'FR-AI-010: a line is held back until its newline: single characters give the same pieces and nothing early', DSL],
+  ['M12.18', 'FR-AI-010: blocks carry their offset and line in the whole input', DSL],
+  ['M12.18', 'FR-AI-010: the header, the screens and the tail join back to the input, in any chunking, with every screen emitted once', DSL],
+  ['M12.18', 'FR-AI-010: a splitter that has ended refuses more input', DSL],
+  ['M12.18', 'FR-AI-010: fed line by line, each screen arrives when its block completes, in source order, and the result is the whole-file compile', DSL],
+  ['M12.18', 'FR-AI-010: the checkout example streams its screens one update at a time, the last one at end()', DSL],
+  ['M12.18', 'FR-AI-010: char by char and in random chunks give the same document and diagnostics as the whole file', DSL],
+  ['M12.18', 'FR-AI-010: a screen with a syntax error reports its own diagnostics, and the screens after it still compile', DSL],
+  ['M12.18', 'FR-AI-010: the header is compiled once, with its own diagnostics, and a block reports only its own', DSL],
+  ['M12.18', 'FR-AI-010: a stream into a base document upserts its screens and keeps the rest of the base', DSL],
+  [
+    'M12.18',
+    'FR-AI-010: with a base, an edited screen replaces its own records, keeps the ids of those that did not change, and leaves other screens byte-equal',
+    DSL,
+  ],
+  ['M12.18', 'FR-AI-010: a node deleted from the text leaves with its connectors and bindings, and nothing dangles', DSL],
+  ['M12.18', 'FR-AI-010: a screen block alone keeps the base title, theme, salt and header-level deferred sections, and replaces its own deferred ones', DSL],
+  ['M12.18', 'FR-AI-010: a screen the base lacks is appended after the last, and a screen the text leaves out is kept', DSL],
+  ['M12.18', 'FR-AI-010: compile without a base is unchanged, and the base itself is not mutated', DSL],
+  ['M12.18', 'FR-AI-010: a text that does not parse leaves no document, and so nothing to merge', DSL],
+  ['M12.18', 'FR-AI-010: uses, title and theme written after the screens give the whole-file document at end(), recompiled', DSL],
+  ['M12.18', 'FR-AI-010: settings after the screens is a plain tail: no recompile, still the whole-file document', DSL],
+  ['M12.18', 'FR-AI-010: a diagnostic without a source range is reported once in the whole stream, not once per screen', DSL],
+];
 leg('the streaming splitter never emits a half screen (T0)', () =>
   STREAM_TITLES.length === 0 ? 'no streaming titles yet: the M12 rows add them' : titled(STREAM_TITLES, EXACT),
 );

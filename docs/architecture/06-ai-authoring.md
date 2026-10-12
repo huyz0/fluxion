@@ -214,6 +214,8 @@ prompt / outline / source text
   ▼ canonical records → editor (single undo entry "AI: generate deck")
 ```
 
+Streaming (FR-AI-010): `createStreamSplitter` cuts the stream into the header and one block per `screens[]` item (by indentation, no YAML parse); `createStreamCompiler` compiles each block into the running document, which equals the whole-file compile after `end()`. Limit: a top-level `uses`, `theme`, `title` or `flux` key written *after* `screens:` can change how the screens already streamed compile, so `end()` compiles the whole input again and that result replaces the running document (`StreamUpdate.recompiled`); `vars` and `settings` after the screens need no recompile.
+
 The orchestrator (`packages/dsl/src/generate/`) takes an `LlmClient` port and holds no network
 code. FR-AI-008 modes (restyle, animate, portrait variant, explain as steps) are prompt templates
 with an expected output kind (patch or screen). A block splitter emits each screen as it completes.

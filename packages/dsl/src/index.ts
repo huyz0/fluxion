@@ -16,6 +16,15 @@ export type { EdgeAst, FluxAst, GroupAst, LayoutAst, Located, LocatedStyle, Node
 export { type ReadResult, readFlux } from './read/read.js';
 export { type Resolution, type ResolveResult, resolveFlux } from './resolve/resolve.js';
 export { editDistance, nearest, toSlug } from './resolve/suggest.js';
+export {
+  createStreamCompiler,
+  type StreamCompiler,
+  type StreamPart,
+  type StreamScreen,
+  type StreamUpdate,
+} from './stream/compile-stream.js';
+export { createStreamSplitter, type ScreenBlock, type SplitOutput, type StreamSplitter } from './stream/split.js';
+export { type NamedHeader, upsertScreens } from './stream/upsert.js';
 export type { CompileOptions, CompileResult, DecompileOptions, DecompileResult, DslDiagnostic, SourceRange } from './types.js';
 export { type ValidateInput, type ValidateOptions, type ValidateResult, validateFlux } from './validate/validate.js';
 
