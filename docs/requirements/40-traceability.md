@@ -180,7 +180,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-019 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/touch.edit-basics.spec.ts` +3 |
 | FR-EDT-020 | S | R8 | M32 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-021 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/validation.fix-broken-ref.spec.ts` +2 |
-| FR-EDT-022 | S | R2 | M12 | [15-editor.md](15-editor.md) | `e2e/source-view.two-way-sync.spec.ts` +17 |
+| FR-EDT-022 | S | R2 | M12 | [15-editor.md](15-editor.md) | `e2e/source-view.two-way-sync.spec.ts` +18 |
 | FR-EDT-023 | C | R8 | M32 | [15-editor.md](15-editor.md) | — |
 | FR-PRS-001 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.letterbox.spec.ts` +2 |
 | FR-PRS-002 | M | R1 | M11 | [16-player-presentation-responsive.md](16-player-presentation-responsive.md) | `e2e/player.keyboard-nav.spec.ts` +6 |

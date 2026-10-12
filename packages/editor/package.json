@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@codemirror/autocomplete": "catalog:",
+    "@codemirror/commands": "catalog:",
     "@codemirror/lang-yaml": "catalog:",
     "@codemirror/language": "catalog:",
     "@codemirror/state": "catalog:",

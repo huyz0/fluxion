@@ -100,6 +100,13 @@ Chosen option **2 with grammar (b)**.
   completion test (M12.21); and `e2e/source-view.two-way-sync.spec.ts` on three engines (M12.22).
 - `check-licenses` passes with the new dependencies.
 
+## Amendment (2026-10-12, M12.59)
+
+The text history is CodeMirror's `history()` with `historyKeymap` (`@codemirror/commands`, MIT; Mod-z, Mod-Shift-z, Mod-y), per mounted editor. A
+regeneration is its own history entry (`isolateHistory`), so a Reload can be undone; the restored text is an ordinary edit for the sync (debounce, then
+apply). A regeneration that rewrites the read-only header is not recorded and restarts the history (the header filter would refuse an undo that
+touched it, which would leave the history stuck). The window's key dispatcher ignores keys typed into the editor (`isEditable`), so one press is never both undos.
+
 ## More Information
 
 ADR-0030 (grammar), ADR-0031 (ids and salt), ADR-0014 (transactions), ADR-0064 (another editor-only lazy library). Architecture: 04-rendering-and-editor.md,

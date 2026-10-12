@@ -213,7 +213,7 @@ In the studio, the left panel has a Source tab. It loads on first use, so it cos
 - `# kept: 3 records not shown` marks records the text form cannot express yet (an image, free rich text). They stay as they are.
 - Completion offers shape ids, token names and, after an edge op, the slugs of the screen.
 - Renaming a slug changes the record id; the view maps the old id to the new one, so selection and undo survive.
-- Undo (Mod-z) acts on the canvas document, one step per applied edit. The text itself has no undo history yet: Mod-z inside the editor does not undo typing.
+- Undo has two scopes. Inside the editor, Mod-z and Mod-Shift-z (or Mod-y) undo and redo the typing in the text, and a Reload is one step of them; they never touch the document, and the history lasts while the screen is open. The text you get back is your edit like any other, so after the pause it is applied to the canvas as one more step. The Undo of the toolbar, or Mod-z with the canvas focused, undoes the document, one step per applied edit. A text regenerated with a different header (the canvas changed the title or the theme) cannot be undone and starts the text history over.
 
 The TextMate grammar `packages/dsl/grammar/fluxscript.tmLanguage.json` highlights `*.flux.yaml` in VS Code and other editors.
 

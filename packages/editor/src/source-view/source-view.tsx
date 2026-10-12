@@ -3,9 +3,11 @@
 // the lazy chunk's root: the editor's initial chunk reaches it only through `loadSourceView` (a dynamic import).
 // A canvas change regenerates the text only while the view is clean and not focused; otherwise a banner offers the reload (M12.48, ADR-0032).
 // An apply is the three-way merge of ADR-0032 (merge.ts): what the canvas changed and the text did not stays, a conflict is named in the status line,
-// and ids that changed (a renamed slug) are told to the host (`onRemap`). There is no CodeMirror history (`@codemirror/commands` is not locked): a
-// regeneration is one change, but not an undo entry of the text.
-import { Annotation, EditorState, type Extension } from '@codemirror/state';
+// and ids that changed (a renamed slug) are told to the host (`onRemap`). The text has CodeMirror's own history (M12.59): Mod-z and Mod-Shift-z act on
+// the text only, never on the document (ADR-0014's undo is the toolbar's and the canvas's). A regeneration is one entry of it, so a Reload can be undone;
+// one that rewrites the header is not (the header is read-only, so no undo may touch it) and starts the history over.
+import { history, historyKeymap, isolateHistory } from '@codemirror/commands';
+import { Annotation, Compartment, EditorState, type Extension, Transaction } from '@codemirror/state';
 import { Decoration, EditorView, keymap, lineNumbers } from '@codemirror/view';
 import type { CoreRegistries, Store } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
@@ -51,6 +53,9 @@ export type SourceViewProps = {
 
 /** Marks the transaction of a regeneration: it is not the author's edit, so it must not schedule an apply (and cannot loop). */
 const REGENERATED = Annotation.define<boolean>();
+
+/** The text history lives in a compartment so a regeneration of the header can drop it and start a new one. */
+const HISTORY = new Compartment();
 
 const HEADER_LINE = Decoration.line({ class: 'fx-source-header' });
 
@@ -110,13 +115,10 @@ function extensionsFor(
       // an IME composition holds the apply back (`composing` below); its end schedules the text that waited
       compositionend: () => void controller().resume(),
     }),
-    // no text history without @codemirror/commands (not locked): the browser's undo would desynchronise the view, so Mod-z is not passed on
-    keymap.of([
-      { key: 'Escape', run: () => (props.onEscape === undefined ? false : (props.onEscape(), true)) },
-      { key: 'Mod-z', run: () => true },
-      { key: 'Mod-y', run: () => true },
-      { key: 'Mod-Shift-z', run: () => true },
-    ]),
+    HISTORY.of(history()),
+    // Mod-z, Mod-Shift-z and Mod-y are the text's own history (the browser's native undo would desynchronise the view); the window's key dispatcher
+    // leaves a key typed into the contenteditable alone (`isEditable`), so the document is not undone by the same press
+    keymap.of([{ key: 'Escape', run: () => (props.onEscape === undefined ? false : (props.onEscape(), true)) }, ...historyKeymap]),
     EditorView.updateListener.of((u) => {
       if (u.docChanged && !u.transactions.some((tr) => tr.annotation(REGENERATED) === true)) controller().edit(u.state.doc.toString());
     }),
@@ -154,12 +156,16 @@ function regenerate(editor: EditorView, next: string, editFrom: number): void {
   // the header is kept as it is unless the canvas changed it; then the whole text is replaced
   const start = from === editFrom && old.slice(0, editFrom) === next.slice(0, from) ? editFrom : 0;
   const cursor = cursorIn(next, cursorAnchor(old, editor.state.selection.main.head), from);
+  // a change of the header cannot be undone (the filter would refuse the header's part): it is not recorded, and the history ends with the old text
+  const header = start === 0;
   editor.dispatch({
     changes: { from: start, to: old.length, insert: next.slice(start) },
     selection: { anchor: cursor },
-    effects: setDiagnostics.of([]),
-    annotations: REGENERATED.of(true),
+    effects: [setDiagnostics.of([]), ...(header ? [HISTORY.reconfigure([])] : [])],
+    // a Reload is its own entry, apart from the typing around it
+    annotations: header ? [REGENERATED.of(true), Transaction.addToHistory.of(false)] : [REGENERATED.of(true), isolateHistory.of('full')],
   });
+  if (header) editor.dispatch({ effects: HISTORY.reconfigure(history()) });
 }
 
 /** The banner of a canvas that changed under a view that is focused or dirty. It follows the editor in the tab order. */

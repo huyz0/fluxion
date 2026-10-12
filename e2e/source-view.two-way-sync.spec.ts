@@ -355,4 +355,54 @@ test.describe('source view', { tag: '@desktop' }, () => {
     expect(restored['note-d']).toMatchObject({ targetId: delta });
     expect(restored['click-d']).toBeDefined();
   });
+
+  test('FR-EDT-022: Mod-z in the editor undoes the typing in the text, not the document; the restored text is applied as one more step, and Mod-Shift-z redoes it', async ({
+    page,
+  }) => {
+    const { editor, left, text } = await openSource(page);
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'Alpha');
+    await page.keyboard.type('Omega');
+    await expect(editor.canvas.getByText('Omega', { exact: true })).toBeVisible();
+    await expect(left.getByRole('status').filter({ hasText: 'Applied' })).toBeVisible();
+    // the pause is held: only a blur applies now, so what Mod-z does to the canvas on its own can be told
+    await page.evaluate((on) => {
+      (window as unknown as { __holdApply: boolean }).__holdApply = on;
+    }, true);
+    await page.keyboard.press('Control+z');
+    await expect(text).toContainText('label: Alpha');
+    await expect(text).not.toContainText('Omega');
+    // the text was undone, the document was not (and was not undone by the window's shortcut too): the canvas still shows the applied label
+    await expect(editor.canvas.getByText('Omega', { exact: true })).toBeVisible();
+    await page.keyboard.press('Control+Shift+z');
+    await expect(text).toContainText('label: Omega');
+    await page.keyboard.press('Control+z');
+    await expect(text).toContainText('label: Alpha');
+    // the restored text is the author's edit: leaving the editor applies it, as one more document step
+    await page.evaluate((on) => {
+      (window as unknown as { __holdApply: boolean }).__holdApply = on;
+    }, false);
+    await page.keyboard.press('Escape');
+    await expect(editor.canvas.getByText('Alpha', { exact: true })).toBeVisible();
+    await expect(editor.canvas.getByText('Omega', { exact: true })).toHaveCount(0);
+    // the toolbar's Undo is the document's own and independent of the text: it takes that apply back
+    await editor.toolbarButton('Undo').click();
+    await expect(editor.canvas.getByText('Omega', { exact: true })).toBeVisible();
+    await expect(text).toContainText('label: Omega');
+  });
+
+  test('FR-EDT-022: a Reload is undone inside the view with Mod-z, and the restored text goes through the usual apply', async ({ page }) => {
+    const { editor, left, text } = await openSource(page);
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'rect');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.type('t');
+    await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(1);
+    await editor.toolbarButton('Snapping').click();
+    await dragShape(editor, 'Beta', 120, 80);
+    await left.getByRole('button', { name: 'Reload' }).click();
+    await expect(text).toContainText('pin: { x: ');
+    await expect(text).not.toContainText('shape: rectt');
+    await page.keyboard.press('Control+z');
+    await expect(text).toContainText('shape: rectt');
+    await expect(text).not.toContainText('pin:');
+  });
 });

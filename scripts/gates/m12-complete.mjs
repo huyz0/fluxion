@@ -421,6 +421,23 @@ const SOURCE_VIEW_TITLES = [
   ],
   ['M12.55', 'FR-EDT-022: nothing is applied while the view is composing, and the end of the composition is followed by the apply', 'editor', {}, 'browser'],
   ['M12.55', 'FR-EDT-022: all six left tabs are visible in one row at the default panel width, whole and named in full', 'editor', {}, 'browser'],
+  ['M12.59', 'FR-EDT-022: Mod-z in the editor undoes the typing in the text and leaves the document and its undo stack alone', 'editor', {}, 'browser'],
+  ['M12.59', 'FR-EDT-022: Mod-Shift-z and Mod-y redo what Mod-z undid, in the text only', 'editor', {}, 'browser'],
+  ['M12.59', 'FR-EDT-022: a text restored by Mod-z is an ordinary edit: it is applied after the pause, as one more document step', 'editor', {}, 'browser'],
+  [
+    'M12.59',
+    'FR-EDT-022: a Reload is one entry of the text history: Mod-z brings the text it replaced back and the annotation of the regeneration does not stick',
+    'editor',
+    {},
+    'browser',
+  ],
+  [
+    'M12.59',
+    'FR-EDT-022: a regeneration that changes the header is not undoable and ends the text history, so the read-only header cannot be corrupted',
+    'editor',
+    {},
+    'browser',
+  ],
 ];
 leg("the source view applies the author's edits to the canvas after a pause, one undo step each, and marks errors in the gutter (T0, T1)", () =>
   SOURCE_VIEW_TITLES.length === 0 ? 'no source view titles yet: M12.22 adds them' : titled(SOURCE_VIEW_TITLES, EXACT),
