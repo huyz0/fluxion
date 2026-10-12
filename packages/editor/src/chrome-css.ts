@@ -123,6 +123,8 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-source { display: flex; flex-direction: column; gap: 4px; padding: 4px; min-width: 0; }
 .fx-chrome-source-host { min-width: 0; border: 1px solid var(--ui-border); border-radius: 4px; overflow: hidden; }
 .fx-chrome-source-status { margin: 0; padding: 2px 4px; color: var(--ui-muted); min-height: 1.4em; }
+.fx-chrome-source-banner:empty { display: none; }
+.fx-chrome-source-banner { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border: 1px solid var(--ui-border); border-left: 3px solid #d97706; border-radius: 4px; color: var(--ui-text); }
 .fx-chrome-kbd { font: inherit; }
 .fx-chrome-keys { border-collapse: collapse; }
 .fx-chrome-keys .fx-chrome-cell { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--ui-border); font-weight: normal; }

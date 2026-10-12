@@ -1,9 +1,10 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { EditorPage } from './pages/editor.js';
 import { expect, test } from './test.js';
 
 // FR-EDT-022: the Source tab shows the open screen's FluxScript. An edit of the text reaches the canvas after the pause (300 ms), a typo shows
-// a gutter diagnostic and leaves the canvas as it was, and each apply is one undo step. (Canvas to text is M12.48, the merge M12.49.)
+// a gutter diagnostic and leaves the canvas as it was, and each apply is one undo step. A canvas edit regenerates the text of a clean view and raises the
+// reload banner on a dirty one; blur applies the typed text at once (M12.48). The merge is M12.49.
 const SOURCE =
   'flux: 1\ntitle: Synced\nuses: [basic]\nscreens:\n' +
   '- id: one\n  title: One\n  nodes:\n    a: { shape: rect, label: Alpha }\n    b: { shape: rect, label: Beta }\n  edges:\n  - a -> b\n' +
@@ -21,6 +22,38 @@ async function select(line: Locator, word: string): Promise<void> {
       if (at >= 0) return getSelection()?.setBaseAndExtent(n, at, n, at + w.length);
     }
   }, word);
+}
+
+/** Open a new document holding the two-screen source, with the Source tab shown on the first. */
+async function openSource(page: Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __FLUXION_TEST_HOOKS__: boolean; __holdApply?: boolean };
+    w.__FLUXION_TEST_HOOKS__ = true;
+    // a test can stop the 300 ms pause of the source view from ever ending: only a blur can apply the text then
+    const set = window.setTimeout.bind(window);
+    window.setTimeout = ((run: TimerHandler, ms?: number, ...rest: unknown[]) =>
+      w.__holdApply === true && ms === 300 ? 0 : set(run, ms, ...rest)) as typeof window.setTimeout;
+  });
+  const editor = new EditorPage(page);
+  await editor.open('new');
+  await page.evaluate(async (source) => {
+    const stream = (window as unknown as { __fluxion: { streamFlux(): Stream } }).__fluxion.streamFlux();
+    await stream.push(source);
+    await stream.close();
+  }, SOURCE);
+  await expect(editor.canvas.getByText('Alpha', { exact: true })).toBeVisible();
+  const left = editor.panel('Screens, library and layers');
+  await left.getByRole('tab', { name: 'Source' }).click();
+  const text = left.getByRole('textbox', { name: 'FluxScript source' });
+  await expect(text).toContainText('label: Alpha');
+  return { editor, left, text };
+}
+
+/** A canvas edit: pin the shape that shows `label` (the test hook runs the `element.update` command a gesture runs; a drag alone does not pin an auto-placed shape). */
+async function pinShape(page: Page, label: string): Promise<void> {
+  await page.evaluate((l) => {
+    (window as unknown as { __fluxion: { pinElement(label: string, x: number, y: number): void } }).__fluxion.pinElement(l, 400, 300);
+  }, label);
 }
 
 test.describe('source view', { tag: '@desktop' }, () => {
@@ -77,5 +110,50 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await text.click();
     await page.keyboard.press('Escape');
     await expect(tab).toBeFocused();
+  });
+
+  test('FR-EDT-022: a shape pinned on the canvas regenerates the text of a clean view with its pin', async ({ page }) => {
+    const { text } = await openSource(page);
+    await expect(text).not.toContainText('pin:');
+    await pinShape(page, 'Alpha');
+    await expect(text.locator('.cm-line', { hasText: 'label: Alpha' })).toContainText('pin: { x: 400, y: 300 }');
+    await expect(text.locator('.cm-line', { hasText: 'label: Beta' })).not.toContainText('pin:');
+    await expect(text).toContainText('label: Alpha');
+  });
+
+  test('FR-EDT-022: a canvas change under a dirty view is not written over it: the banner shows, and Reload takes the canvas', async ({ page }) => {
+    const { left, text } = await openSource(page);
+    // a typo: the text does not compile, so it stays unapplied and the view stays dirty
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'rect');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.type('t');
+    await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(1);
+    await pinShape(page, 'Beta');
+    const banner = left.getByText('Canvas changed — reload');
+    await expect(banner).toBeVisible();
+    await expect(text).toContainText('shape: rectt');
+    await expect(text).not.toContainText('pin:');
+    // only the author's click replaces the text
+    await left.getByRole('button', { name: 'Reload' }).click();
+    await expect(text.locator('.cm-line', { hasText: 'label: Beta' })).toContainText('pin: { x: 400, y: 300 }');
+    await expect(text).not.toContainText('rectt');
+    await expect(banner).toHaveCount(0);
+    await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(0);
+  });
+
+  test('FR-EDT-022: text typed just before the editor is blurred is applied at once', async ({ page }) => {
+    const { editor, left, text } = await openSource(page);
+    await page.evaluate(() => {
+      (window as unknown as { __holdApply: boolean }).__holdApply = true;
+    });
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'Alpha');
+    await page.keyboard.type('Omega');
+    // the pause never ends here: nothing has reached the canvas
+    await expect(editor.canvas.getByText('Alpha', { exact: true })).toBeVisible();
+    // leaving the editor for the tab (Escape would close the completion list first)
+    await left.getByRole('tab', { name: 'Source' }).focus();
+    await expect(editor.canvas.getByText('Omega', { exact: true })).toBeVisible();
+    await expect(left.getByRole('status').filter({ hasText: 'Applied' })).toBeVisible();
+    await expect(editor.canvas.getByText('Alpha', { exact: true })).toHaveCount(0);
   });
 });

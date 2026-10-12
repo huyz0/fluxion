@@ -2,7 +2,9 @@ import { EditorView } from '@codemirror/view';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { has, manualScheduler, setup } from './source-fixture.js';
+import { userEvent } from 'vitest/browser';
+import { has, manualScheduler, moveOnCanvas, retitle, setup } from './source-fixture.js';
+import { headerLength, RECONCILE_DELAY_MS, sourceOf } from './source-sync.js';
 import { SourceView } from './source-view.js';
 
 // T1 for FR-EDT-022 (M12.22): the source view in a real CodeMirror, over a real store, with a timer the test advances by hand.
@@ -108,5 +110,128 @@ describe('source view', () => {
     editor.focus();
     editor.contentDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(onEscape).toHaveBeenCalledOnce();
+  });
+
+  it('FR-EDT-022: a canvas change replaces the block of a clean view in one change, keeps the header and the cursor line, and applies nothing', async () => {
+    const fixture = await mount();
+    const { editor, timer, store } = fixture;
+    const header = editor.state.doc.toString().slice(0, editor.state.doc.toString().indexOf('- id: one'));
+    const at = editor.state.doc.toString().indexOf('label: Beta') + 3;
+    editor.dispatch({ selection: { anchor: at } });
+    const dispatch = vi.spyOn(editor, 'dispatch');
+    await act(async () => {
+      moveOnCanvas(fixture);
+      timer.advance(RECONCILE_DELAY_MS);
+    });
+    const edits = dispatch.mock.calls.filter(([spec]) => (spec as { changes?: unknown }).changes !== undefined);
+    expect(edits).toHaveLength(1);
+    const text = editor.state.doc.toString();
+    expect(text.startsWith(header)).toBe(true);
+    expect(text).toContain('a: { shape: rect, label: Alpha, pin: { x: 300, y: 200 } }');
+    expect(text).toBe(sourceOf(store, fixture.registries, fixture.one));
+    expect(editor.state.doc.sliceString(editor.state.selection.main.head - 3, editor.state.selection.main.head + 8)).toBe('label: Beta');
+    expect(timer.count()).toBe(0);
+    expect(host.querySelector('.fx-chrome-source-banner button')).toBeNull();
+  });
+
+  it('FR-EDT-022: a canvas change under a dirty or focused view raises the banner, and Reload (a focusable button) replaces the text', async () => {
+    const fixture = await mount();
+    const { editor, store, timer, replace } = fixture;
+    await act(async () => replace('Alpha', 'Alp'));
+    expect(timer.count()).toBe(1);
+    const typed = editor.state.doc.toString();
+    await act(async () => {
+      moveOnCanvas(fixture, 'Beta');
+      timer.advance(RECONCILE_DELAY_MS);
+    });
+    expect(editor.state.doc.toString()).toBe(typed);
+    const banner = host.querySelector('.fx-chrome-source-banner');
+    expect(banner?.getAttribute('role')).toBe('status');
+    expect(banner?.textContent).toContain('Canvas changed — reload');
+    const button = host.querySelector<HTMLButtonElement>('.fx-chrome-source-banner button');
+    expect(button?.textContent).toBe('Reload');
+    // the keyboard: the button is a real button, so Enter activates it
+    button?.focus();
+    expect(document.activeElement).toBe(button);
+    await act(async () => button?.click());
+    expect(editor.state.doc.toString()).toBe(sourceOf(store, fixture.registries, fixture.one));
+    expect(editor.state.doc.toString()).toContain('label: Beta, pin: { x: 300, y: 200 }');
+    expect(host.querySelector('.fx-chrome-source-banner button')).toBeNull();
+    expect(timer.count()).toBe(0);
+    expect(has(store, 'Alp')).toBe(false);
+    // focused: a clean view is not regenerated either, until it is blurred
+    await act(async () => editor.contentDOM.dispatchEvent(new FocusEvent('focus')));
+    await act(async () => {
+      store.history.undo();
+      timer.advance(RECONCILE_DELAY_MS);
+    });
+    expect(editor.state.doc.toString()).toContain('pin:');
+    expect(host.querySelector('.fx-chrome-source-banner button')).not.toBeNull();
+    await act(async () => editor.contentDOM.dispatchEvent(new FocusEvent('blur')));
+    expect(editor.state.doc.toString()).not.toContain('pin:');
+    expect(host.querySelector('.fx-chrome-source-banner button')).toBeNull();
+  });
+
+  it('FR-EDT-022: blur applies the waiting text at once', async () => {
+    const { store, timer, replace, editor } = await mount();
+    await act(async () => editor.contentDOM.dispatchEvent(new FocusEvent('focus')));
+    await act(async () => replace('Alpha', 'Omega'));
+    expect(has(store, 'Omega')).toBe(false);
+    await act(async () => editor.contentDOM.dispatchEvent(new FocusEvent('blur')));
+    expect(has(store, 'Omega')).toBe(true);
+    expect(timer.count()).toBe(0);
+  });
+
+  it('FR-EDT-022: Tab from the editor to the banner keeps the waiting text unapplied, and Reload by keyboard replaces it and returns the focus to the editor', async () => {
+    const fixture = await mount();
+    const { editor, store, timer, replace } = fixture;
+    editor.focus();
+    await act(async () => replace('Alpha', 'Alp'));
+    await act(async () => {
+      moveOnCanvas(fixture, 'Beta');
+      timer.advance(RECONCILE_DELAY_MS);
+    });
+    const button = host.querySelector<HTMLButtonElement>('.fx-chrome-source-banner button');
+    expect(button).not.toBeNull();
+    // the banner follows the editor in the tab order
+    expect(editor.dom.compareDocumentPosition(button as Node) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await act(async () => userEvent.tab());
+    expect(document.activeElement).toBe(button);
+    expect(has(store, 'Alp')).toBe(false);
+    expect(timer.count()).toBe(1);
+    expect(host.querySelector('.fx-chrome-source-banner button')).toBe(button);
+    await act(async () => userEvent.keyboard('{Enter}'));
+    expect(editor.state.doc.toString()).toBe(sourceOf(store, fixture.registries, fixture.one));
+    expect(host.querySelector('.fx-chrome-source-banner button')).toBeNull();
+    expect(editor.hasFocus).toBe(true);
+    expect(has(store, 'Alp')).toBe(false);
+  });
+
+  it('FR-EDT-022: leaving the banner for elsewhere applies the waiting text', async () => {
+    const fixture = await mount();
+    const { editor, store, timer, replace } = fixture;
+    editor.focus();
+    await act(async () => replace('Alpha', 'Alp'));
+    await act(async () => {
+      moveOnCanvas(fixture, 'Beta');
+      timer.advance(RECONCILE_DELAY_MS);
+    });
+    await act(async () => userEvent.tab());
+    expect(has(store, 'Alp')).toBe(false);
+    await act(async () => userEvent.tab());
+    expect(has(store, 'Alp')).toBe(true);
+  });
+
+  it('FR-EDT-022: a regenerated header of another length gets exactly its own header lines decorated', async () => {
+    const fixture = await mount();
+    const { editor, timer } = fixture;
+    act(() => {
+      retitle(fixture, `A document title that is a good deal longer than the one before it ${'x'.repeat(40)}`);
+      timer.advance(RECONCILE_DELAY_MS);
+    });
+    const text = editor.state.doc.toString();
+    expect(text).toContain('xxxx');
+    const headerLines = text.slice(0, headerLength(text)).trimEnd().split('\n').length;
+    expect(host.querySelectorAll('.fx-source-header').length).toBe(headerLines);
   });
 });

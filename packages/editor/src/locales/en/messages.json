@@ -313,6 +313,12 @@
       "packages/editor/src/source-tab.tsx"
     ]
   },
+  "HpK_8d": {
+    "message": "Reload",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
   "HzVv6g": {
     "message": "Paste",
     "origin": [
@@ -520,6 +526,12 @@
     "message": "Adding {family}…",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "Y_0yYP": {
+    "message": "Canvas changed — reload",
+    "origin": [
+      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "YoYzpc": {
