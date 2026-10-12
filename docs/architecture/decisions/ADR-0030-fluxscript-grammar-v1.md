@@ -128,3 +128,12 @@ severities, and fills in `source`. `FLX_DSL_MACRO_ARGS`, `FLX_LAYOUT_OVERFLOW` a
 ## More Information
 
 ADR-0004 (FluxScript), ADR-0031 (stable ids, `document.source`), ADR-0032 (source view). Architecture: 06-ai-authoring.md §2–§4. Requirements: 20-ai-authoring.md.
+
+## Amendments
+
+- Amendment 2026-10-12 (M12 cp1 F4): the stages "Pipeline stages in R2" lists are those `compile.ts` runs: **parse → read → resolve → expand → place →
+  validate**, with the *style* stage inside *expand* (tone and style tokens become style values while the records are made), not a stage of its own. *Read*
+  is the stage between parse and resolve: it checks the parsed tree against the key table above and builds the typed, located AST, and it reports
+  `FLX_DSL_UNKNOWN_KEY`, `FLX_DSL_VERSION`, `FLX_DSL_BAD_SLUG`, `FLX_DSL_EDGE_SYNTAX` and `FLX_SCHEMA_INVALID` (a value of the wrong shape), keeps the
+  sections the table defers by pointer with `FLX_DSL_NOT_YET`, and passes edges through the edge tokenizer. 06-ai-authoring.md §3 now lists the same
+  stages. No decision changes.

@@ -18,7 +18,7 @@ incremental edits, and **commands** (03 §2), which patches lower to.
 
 FluxScript is a YAML 1.2 document with a fixed top-level shape plus one micro-syntax, the edge
 shorthand. It is parsed with `yaml` (`keepSourceTokens`, `LineCounter`) so every node keeps its
-range. The full grammar is published as JSON Schema generated from the Zod source (FR-AI-001).
+range. The grammar is frozen by ADR-0030 (`flux: 1`); a generated JSON Schema (FR-AI-001) is not built yet.
 
 ```
 file        := header screens
@@ -92,52 +92,65 @@ The repository's copy, `examples/dsl/checkout.flux.yaml` (M12.17), compiles agai
 
 ## 3. Compile pipeline
 
+`@fluxion/dsl` is a pure package (no DOM, clock or network). Its one entry is `compile`:
+
 ```ts
+function compile(text: string, options: CompileOptions): CompileResult;
+
 interface CompileOptions {
-  catalog: Catalog;                 // built from registries (§6)
-  measurer: TextMeasurer;           // port (03 §7) — fontkit in Node, canvas in browser
-  hasher: SyncHash128;              // stable IDs: id = base62(hash(docSalt + ':' + slug))
-  mode: 'strict' | 'lenient';       // lenient = apply auto-fixes, downgrade to warnings
-  base?: DocSnapshot;               // upsert a screen into an existing document
-  stages?: { layout?: boolean; lint?: boolean };
+  registries: CoreRegistries;       // shapes, layouts, packs, themes the text is resolved against
+  hasher?: SyncHash128;             // stable ids: id = base62(hash128(salt + ':' + key)), ADR-0031; SHA-256 by default
+  salt?: string;                    // id salt of a first compile; a base document's kept salt wins
+  mode?: 'strict' | 'lenient';      // lenient: a field the schema refuses is removed and reported as a warning
+  base?: DocumentFile;              // upsert the text's screens into an existing document (FR-AI-010)
 }
 interface CompileResult {
-  doc?: DocSnapshot;                // absent only when a fatal parse error blocks everything
-  diagnostics: Diagnostic[];        // 02 §5 shape, `source` filled
+  doc?: DocumentFile;               // absent only when the text does not parse or is not a `flux: 1` mapping
+  diagnostics: DslDiagnostic[];     // 02 §5 shape plus `source: SourceRange`
   sourceMap: Map<RecordId, SourceRange>; // editor Source view (FR-EDT-022), diagnostics
-  stats: { screens: number; records: number; msPerStage: Record<string, number> };
+  stats: { screens: number; records: number }; // counts only: the package has no clock
 }
 ```
 
+The catalog (§6), a text measurer, a lint stage and `stages` switches are not part of R2; they come with M13 and M14.
+
 | # | Stage | What happens | Typical diagnostics |
 |---|---|---|---|
-| 1 | parse | `yaml` → CST with ranges; edge shorthand parsed by a hand-written tokenizer | `FLX_DSL_SYNTAX`, `FLX_DSL_EDGE_SYNTAX` |
-| 2 | resolve | slug table; shapes/components/tokens/layouts looked up in the catalog; did-you-mean by edit distance over catalog + slugs (FR-DSL-006) | `FLX_DSL_UNKNOWN_SHAPE`, `FLX_REF_MISSING`, `FLX_DSL_DUP_SLUG` |
-| 3 | expand | archetypes (`kind: title`), `dslMacros`, `mermaid:`/`markdown:` importers, groups → `group`/`frame` records | `FLX_DSL_MACRO_ARGS` |
-| 4 | style | `tone`/`variant` → `style.variant`; defaults from `theme.defaults[kind][variant]` are **referenced, not copied** (02 §2 resolution order) | `FLX_TOKEN_UNKNOWN` |
-| 5 | layout | measure text → node sizes; run `@fluxion/layout` (pure, same code in Node and worker) per screen/container; pins honoured; positions written to `transform` | `FLX_LAYOUT_OVERFLOW` |
-| 6 | validate | Zod structural → referential → bindings/anchors | `FLX_SCHEMA_*`, `FLX_ANCHOR_UNKNOWN` |
-| 7 | lint | §7 rules; produce a quality score | `FLX_LINT_*` |
+| 1 | parse | `yaml` → tree with ranges; anchors, aliases, tags and duplicate keys refused; no document at all when the text does not parse | `FLX_DSL_SYNTAX` |
+| 2 | read | the tree checked against the `flux: 1` key table (ADR-0030) and turned into a typed, located AST; the edge shorthand goes through a hand-written tokenizer; sections R2 does not compile are kept by pointer | `FLX_DSL_UNKNOWN_KEY`, `FLX_DSL_VERSION`, `FLX_DSL_BAD_SLUG`, `FLX_DSL_EDGE_SYNTAX`, `FLX_DSL_NOT_YET`, `FLX_SCHEMA_INVALID` |
+| 3 | resolve | slug table; shapes looked up through `uses:` packs; edge ends, layout types and style tokens looked up; did-you-mean by edit distance (FR-DSL-006) | `FLX_DSL_UNKNOWN_SHAPE`, `FLX_DSL_AMBIGUOUS_SHAPE`, `FLX_DSL_DUP_SLUG`, `FLX_DSL_UNKNOWN_PACK`, `FLX_REF_MISSING`, `FLX_TOKEN_UNKNOWN` |
+| 4 | expand | AST → records with stable ids (ADR-0031): document (with `source`: salt and deferred sections), theme, screens, nodes, groups, connectors and their bindings. **Style is inside this stage:** `tone` and `style` tokens become `style` values; defaults from `theme.defaults[kind][variant]` are **referenced, not copied** (02 §2 resolution order) | — |
+| 5 | place | pins kept exactly; unpinned elements go through the screen's `layout` from the `layouts` registry, else the built-in `stack`, at shape default sizes; positions written to `transform` | `FLX_DSL_NOT_YET` (a `layered` layout), `FLX_REF_MISSING` |
+| 6 | validate | `@fluxion/schema` structural → referential, each diagnostic pointed at its source; lenient auto-fix | `FLX_SCHEMA_*`, `FLX_ANCHOR_UNKNOWN` |
 
-**R2 (ADR-0030):** the stages are parse → resolve → expand → style → **place** → validate. Place keeps pins and puts unpinned
-elements through the screen's `layout` from the registry, else the built-in `stack`, at shape default sizes; measured text and
-`layered` come in M13, lint in M14. ADR-0030 freezes the `flux: 1` grammar, lists what R2 compiles and what it keeps in
-`document.source` with `FLX_DSL_NOT_YET`, and lists the diagnostic codes.
+Every stage runs whatever the earlier ones reported, so one compile shows every problem; only text that does not parse, or a file
+that is not a `flux: 1` mapping, stops with no `doc`. Diagnostics come in stage order and are ranked only when shown (§4).
 
-Stages are pure functions `(input, ctx) → { output, diagnostics }` and deterministic
-(NFR-REL-005): same source + catalog + fonts → byte-identical `.flux.json`. Routes are not stored
-(02 §6); `render`/exporters compute them.
+**R2 (ADR-0030):** the pipeline above is what M12 built. Text is not measured: a node takes its shape's default size. `layered` and
+measured text come in M13 (a *layout* stage replacing place's stack), lint in M14, archetypes (`kind:`), `dslMacros`, and the Mermaid and Markdown importers in
+later milestones; until then ADR-0030 keeps their sections in `document.source` with `FLX_DSL_NOT_YET`. ADR-0030 freezes the grammar and lists the diagnostic codes.
 
-**Schema additions this needs (additive minor, tracked in 02):** `screen.layout?` (screen as root
-container, same spec as `frame.layout`) and `element.placement?: 'auto' | 'pinned'`. Layout only
-moves `auto` elements. A human drag flips the element to `pinned`.
+Stages are pure functions `(input, options) → { output, diagnostics }` and deterministic (NFR-REL-005): same source + options +
+registries → byte-identical `.flux.json`. Routes are not stored (02 §6); `render`/exporters compute them.
+
+**Schema additions (additive minor 1.3, ADR-0031):** `screen.layout?` (screen as root container, same spec as `frame.layout`),
+`layout?` on `group` and `frame`, and `document.source`. `element.placement: 'auto' | 'pinned'` already exists: layout only moves
+`auto` elements, and a human drag flips the element to `pinned`.
 
 ### 3.1 Decompiler (FR-DSL-008)
 
-`decompile(doc, { screens? }) → string` emits canonical FluxScript: slugs (generated from labels
-when missing, 02 §3), short shape names, edge shorthand, steps, interactions; `pin:` only for
-`placement: 'pinned'`; anything inexpressible goes into a `raw:` block. Contract:
-`compile(decompile(doc))` ≡ `doc` (property test). `get_screen` returns this form to models.
+`decompile(doc, { registries, screens? }) → { text, kept, slugs }` emits canonical FluxScript: slugs (generated from labels when
+missing, 02 §3), short shape names, edge shorthand, deferred sections written back in place from `document.source`; `pin:` only for
+`placement: 'pinned'`. `decompileScreen` writes one `screens:` item. A record the text form cannot express (an image, free rich text,
+anything outside the v0 subset) is left out and counted in `kept`; the Source view shows it as a `# kept:` comment (ADR-0032), and
+nothing is damaged. Contract: `compile(decompile(doc))` ≡ `doc` (property test). `get_screen` returns this form to models.
+
+### 3.2 Streaming and the Source view
+
+`createStreamSplitter` and `createStreamCompiler` compile a screen the moment its block completes (§8). The studio's Source view
+(ADR-0032, FR-EDT-022) compiles the shown screen into the open document 300 ms after the last keystroke, with `base` set so ids
+stay stable, and applies it as one undo step through a three-way merge; it is a lazy editor chunk, and `@fluxion/dsl` loads with it.
+The how-to for authors is the guide [Writing FluxScript](../../apps/docs/src/content/docs/guides/writing-fluxscript.md).
 
 ## 4. Diagnostics for humans and models
 

@@ -93,3 +93,10 @@ Chosen option **2 with hash (a)**.
 ## More Information
 
 ADR-0003 (file format), ADR-0012 (ids), ADR-0030 (grammar). Architecture: 02-document-model.md, 06-ai-authoring.md §3, 08-file-format.md.
+
+## Amendments
+
+- Amendment 2026-10-12 (M12 cp1 F4): the **Keys** list also names two keys the compiler derives for an edge's bindings: **`<edge key>:source`** and
+  **`<edge key>:target`**, where `<edge key>` is the connector's key above (`edge:<screen>:<from>:<op>:<to>`, with `:<n>` for a repeat). The screen
+  record's `meta.slug` holds the screen's FluxScript id (M12.16), as the bullet after the keys says; it is the only place the id is kept, because the
+  record id is a hash of `screen:<id>`. No decision changes.

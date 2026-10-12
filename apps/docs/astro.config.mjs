@@ -19,7 +19,11 @@ export default defineConfig({
         }),
         starlightLlmsTxt(),
       ],
-      sidebar: [{ label: 'Guides', items: [{ autogenerate: { directory: 'guides' } }] }, typeDocSidebarGroup],
+      sidebar: [
+        { label: 'Guides', items: [{ autogenerate: { directory: 'guides' } }] },
+        { label: 'Reference', items: [{ autogenerate: { directory: 'reference' } }] },
+        typeDocSidebarGroup,
+      ],
     }),
   ],
 });

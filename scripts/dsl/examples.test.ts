@@ -95,3 +95,38 @@ describe('examples/dsl', () => {
     });
   });
 });
+
+// The "Writing FluxScript" guide (M12.24, FR-DSL-001, FR-DSL-006): every fenced `yaml flux` block compiles with no error, and the diagnostics
+// the guide shows (the `yaml` block followed by a `text` block) are what the compiler prints for that text.
+describe('guide: Writing FluxScript', () => {
+  const GUIDE = join(import.meta.dirname, '..', '..', 'apps', 'docs', 'src', 'content', 'docs', 'guides', 'writing-fluxscript.md');
+  const page = readFileSync(GUIDE, 'utf8');
+  const blocks = [...page.matchAll(/^```(\S+)(?: (\S+))?\n([\s\S]*?)^```$/gm)].map((m) => ({ lang: m[1], tag: m[2], body: m[3] as string }));
+  const samples = blocks.filter((b) => b.lang === 'yaml' && b.tag === 'flux');
+
+  it('FR-DSL-001: the guide has runnable samples', () => {
+    expect(samples.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it.each(samples.map((s, i) => [i + 1, s.body] as const))('FR-DSL-001: sample %i compiles with no error', (_i, body) => {
+    const r = run(body);
+    expect(
+      r.diagnostics.filter((d) => d.severity === 'error'),
+      shown(r),
+    ).toEqual([]);
+    expect(r.doc).toBeDefined();
+  });
+
+  it('FR-DSL-006: the diagnostics shown are the ones the compiler prints', () => {
+    const at = blocks.findIndex((b, i) => b.lang === 'yaml' && b.tag === undefined && blocks[i + 1]?.lang === 'text');
+    expect(at).toBeGreaterThanOrEqual(0);
+    const r = run((blocks[at] as { body: string }).body);
+    expect(r.diagnostics.length).toBeGreaterThan(0);
+    expect((blocks[at + 1] as { body: string }).body.trimEnd()).toBe(shown(r));
+  });
+
+  it('FR-DSL-001: the deferred-sections sample warns FLX_DSL_NOT_YET for steps', () => {
+    const s = samples.find((b) => b.body.includes('steps:'));
+    expect(run((s as { body: string }).body).diagnostics.map((d) => d.code)).toContain('FLX_DSL_NOT_YET');
+  });
+});
