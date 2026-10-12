@@ -14,6 +14,7 @@
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
 import {
+  examplesNeeded,
   harnessFiles,
   licensesNeeded,
   lockfileLockedOnly,
@@ -159,6 +160,23 @@ const STEPS = [
       if (plan.browser) return pnpm('run', 'test:coverage');
       return pnpm('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`));
     },
+  ],
+  // the FluxScript example corpus compiles against the real packs (FR-DSL-001, FR-DSL-006; M12.44): a staged commit runs it when it touches dsl,
+  // a pack, an example or a workspace the examples compile against; --all (verify, CI) always does. Sources through aliases: no build needed.
+  // Its own Vite cache: it runs beside the test step, whose browser run serves the optimized deps of .vitest-cache (M1.36, M5.29)
+  [
+    'examples',
+    (m) => m !== 'quick',
+    () =>
+      !hasPkg
+        ? 'no workspace yet (M1)'
+        : !exists('scripts/dsl/examples.config.ts')
+          ? 'not written yet (M12)'
+          : mode !== 'staged' || examplesNeeded(stagedPaths(), workspaces()) || 'no staged dsl, pack, example or workspace they compile against (CI runs it)',
+    () =>
+      runAsync('pnpm', ['--filter', '@fluxion/dsl', 'run', 'test:examples'], {
+        env: { ...process.env, FLUXION_VITEST_CACHE: repoPath('.vitest-cache/dsl-examples') },
+      }),
   ],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
   ['knip', (m) => m !== 'quick', () => (hasPkg && exists('knip.json')) || 'knip not configured', () => pnpm('exec', 'knip', '--no-progress')],

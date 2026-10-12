@@ -1755,3 +1755,7 @@ Checkpoint cp1 (`.harness/reviews/milestone-M12-cp1.json`, range 9cac20d..f01594
 ## 2026-10-08 M12.46 (claude)
 
 `check-trace --priority M,S` (default Must only, so earlier gates are unchanged); the m12 trace leg reads the plan's 8 requirement IDs, checks the matrix assigns them to M12, and runs it with Should included: it fails now on FR-EDT-022, FR-DSL-009 and FR-AI-010. check-trace checks naming; passing is the verify and e2e legs'. A `COMPLETION_TITLES` leg (browser project, exact) waits for M12.21. Next M12.44, then M12.18.
+
+## 2026-10-08 M12.44 (claude)
+
+Ladder step `examples` (`pnpm --filter @fluxion/dsl run test:examples`, own Vite cache): `--all` always (so `pnpm verify` and CI run it), `--staged` when `examplesNeeded` selects it: examples/dsl, scripts/dsl, the runner's resolution files, a root tsconfig (review r1), any pack, or a non-test source of the workspaces the runner imports and their dependencies. 3.7 s alone; a worst-case staged run took 339.5 s, harness-tests still the longest step, so the budget record stands. A staged `examples/dsl/*.flux.yaml` runs every harness file (`harnessFor` has no rule for it). Next M12.18.

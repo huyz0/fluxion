@@ -455,3 +455,27 @@ function packagingRelevant(staged, { lockfileWorkspaceOnly: workspaceLock = fals
     (p === 'tools/gen/workspaces.json' && librariesUnchanged);
   return staged.filter((p) => !inert(p));
 }
+
+/** The workspaces scripts/dsl/examples.test.ts imports (`@fluxion/*`, aliased to their sources by scripts/dsl/examples.config.ts). */
+const EXAMPLES_IMPORTS = ['packages/dsl', 'packages/layout', 'packages/schema', 'packages/sdk', 'packs/basic', 'packs/themes-core'];
+/** What the example run reads beyond the workspaces: the corpus, its runner and config, and what resolves its imports (the workspace list, the install). */
+const EXAMPLES_GLOBAL =
+  /^(examples\/dsl\/|scripts\/dsl\/|tools\/gen\/workspaces\.json$|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsconfig[^/]*\.json$)/;
+/** A test, browser test or story: read by Vitest and Storybook, never by the example compile. */
+const TEST_FILE = /\.(?:test|browser\.test|stories)\.[cm]?[jt]sx?$/;
+
+/**
+ * Whether the staged paths can change what `pnpm --filter @fluxion/dsl test:examples` compiles (M12.44, FR-DSL-001, FR-DSL-006): an example,
+ * its runner, any pack (a pack the runner does not load yet is one a host registers beside them), a workspace the runner imports or one those
+ * depend on (`dependsOn`, transitively), or what resolves the imports. A workspace's tests, stories, notes and API report are not compiled.
+ * `pnpm verify` (--all) and CI always run it.
+ */
+export function examplesNeeded(staged, workspaces) {
+  const reached = withDependencies(EXAMPLES_IMPORTS, workspaces);
+  return staged.some((p) => {
+    if (EXAMPLES_GLOBAL.test(p)) return true;
+    const dir = WORKSPACE.exec(p)?.[1];
+    if (dir === undefined || !(dir.startsWith('packs/') || reached.has(dir))) return false;
+    return !WORKSPACE_NOTES.test(p) && !API_REPORT.test(p) && !TEST_FILE.test(p);
+  });
+}

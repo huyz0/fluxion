@@ -8,6 +8,7 @@ import {
   apiScope,
   DOCS_HARNESS,
   E2E_HARNESS,
+  examplesNeeded,
   GATE_SCRIPT_HARNESS,
   harnessFiles,
   licensesNeeded,
@@ -300,6 +301,58 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.equal(packagingNeeded(['packages/core/package.json', 'pnpm-lock.yaml'], { lockfileWorkspaceOnly: true, librariesUnchanged: true }), true);
     for (const p of ['packages/core/package.json', 'pnpm-lock.yaml', 'tsconfig.base.json', 'packages/core/tsup.config.ts', 'scripts/gates/check-packages.mjs'])
       assert.equal(packagingNeeded(['packages/core/src/x.ts', p]), true, p);
+  });
+
+  it('FR-DSL-001, FR-DSL-006: a staged change to dsl, a pack, an example or what the examples compile against runs test:examples (M12.44)', () => {
+    for (const p of [
+      'packages/dsl/src/compile.ts',
+      'packages/dsl/package.json',
+      'packs/basic/src/index.ts',
+      'packs/fonts-core/catalog.json',
+      'examples/dsl/checkout.flux.yaml',
+      'scripts/dsl/examples.test.ts',
+      'scripts/dsl/examples.config.ts',
+      // the workspaces the runner imports, and what they depend on
+      'packages/schema/src/document.ts',
+      'packages/core/src/a.ts',
+      'packages/layout/src/a.ts',
+      'packages/sdk/src/a.ts',
+      'packages/theme/src/a.ts',
+      // what resolves the runner's imports
+      'tools/gen/workspaces.json',
+      'pnpm-lock.yaml',
+      'package.json',
+      // the root tsconfig the workspaces extend: Vitest transforms with it (M12.44 review F1)
+      'tsconfig.base.json',
+      'tsconfig.json',
+    ])
+      assert.equal(examplesNeeded(['docs/a.md', p], workspaces), true, p);
+    // a doc, a workspace the runner does not reach, a test, a story, a report or a workspace's notes compile no example
+    assert.equal(
+      examplesNeeded(
+        [
+          'docs/a.md',
+          'docs/backlog/current.md',
+          'packages/editor/src/a.ts',
+          'packages/cli/src/a.ts',
+          'apps/studio/src/a.ts',
+          'packages/dsl/src/compile.test.ts',
+          'packages/core/src/a.browser.test.ts',
+          'packages/dsl/api/dsl.api.md',
+          'packages/dsl/README.md',
+          'packs/basic/AGENTS.md',
+          'examples/r0-static.flux.json',
+          'e2e/x.ts',
+        ],
+        workspaces,
+      ),
+      false,
+    );
+    // the ladder has the step and runs it unscoped in --all, which is `pnpm verify`, which ci.yml runs on three OSes
+    const ladder = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
+    assert.match(ladder, /\[\s*'examples',[\s\S]*?examplesNeeded\([\s\S]*?'test:examples'/);
+    assert.match(JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts.verify, /precommit\.mjs --all$/);
+    assert.match(readFileSync(join(REPO, '.github/workflows/ci.yml'), 'utf8'), /^\s+- run: pnpm verify$/m);
   });
 
   it('a workspace manifest or a workspace-only lockfile runs the manifest harness; an external lockfile change runs them all (M4.29)', () => {
