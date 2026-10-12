@@ -80,6 +80,20 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
         transform: { x: op.value + k, y: 0, w: 10, h: 10 },
       })),
     }),
+    'document.applyRecords': () => ({
+      puts: [
+        {
+          id: newId(n + 1500),
+          type: 'element',
+          kind: 'shape',
+          defId: 'basic:rect',
+          screenId: screen,
+          index: 'a0',
+          transform: { x: op.value, y: 0, w: 10, h: 10 },
+        },
+      ],
+      deletes: [],
+    }),
     'element.updateMany': () => ({ updates: [{ id: element, fields: { name: `m${op.value}` } }] }),
     'element.delete': () => ({ ids: [element] }),
     'screen.create': () => ({ screen: { id: newId(n), type: 'screen', index: 'a0' } }),
@@ -202,6 +216,7 @@ const SECTION_OPS: Op[] = [
 const MISC_OPS: Op[] = [
   'element.create',
   'element.createMany',
+  'document.applyRecords',
   'element.update',
   'element.updateMany',
   'binding.set',

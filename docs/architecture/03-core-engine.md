@@ -87,6 +87,7 @@ type CommandDef<A> = {
   element.align (edges or centres to the selection, the screen or a key element, by drawn bounds; M8.6),
   element.distribute (equal gaps or centre distances, or a fixed gap, along an axis; M8.7),
   element.zOrder (front, forward, backward, back among siblings by fractional index: only the moved elements are written; M8.8),
+  document.applyRecords (a prepared record set, puts and deletes, in one transaction: a streamed source's screen, FR-AI-010; guards: a put keeps the type of the record it replaces and ids are put once, a delete names an existing record once and never the document record, and no id is both put and deleted),
   screen.rename / screen.setHidden (the hidden mark is removed, not written false) / screen.duplicate (a copy just after the original: its elements and the bindings between them under caller-supplied ids, slugs dropped; timelines and interactions are copied by the animation milestone; M8.11),
   section.create / rename / setCollapsed / reorder / delete screen.setSection and screen.move (a drop's place and section in one step) (sections are records ordered by index; deleting one lets its screens go in the same transaction; M8.15),
   screen.setNotes (the speaker notes, a rich-text document; absent removes the field; M8.16),

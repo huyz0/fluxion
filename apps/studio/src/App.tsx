@@ -26,6 +26,7 @@ import { registerOpenedFonts } from './opened-fonts.js';
 import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
 import { routeOf } from './routes.js';
+import { installTestHooks } from './test-hooks.js';
 
 const subscribe = (onChange: () => void) => {
   window.addEventListener('popstate', onChange);
@@ -113,6 +114,7 @@ function ProtectedEditor(props: {
   const settings = useMemo(() => localSettings(), []);
   const session = useMemo(() => createSession(docId), [docId]);
   const title = useCallback(() => titleOf(core.store), [core]);
+  useEffect(() => installTestHooks({ store: core.store, execute: core.execute, registries: core.registries, session }), [core, session]);
   const { autosave, state } = useProtection({ id: journalId(docId, entry, instance), store: core.store, assets, entry, title, guard });
   return (
     <EditorRoot

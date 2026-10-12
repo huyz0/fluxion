@@ -76,3 +76,48 @@ describe('built-in commands on several elements (FR-EDT-005)', () => {
     expect(store.toDocument()).toEqual(snapshot);
   });
 });
+
+describe('document.applyRecords (FR-AI-010)', () => {
+  it('FR-AI-010: puts and deletes a prepared record set in one transaction', () => {
+    const { store, run, diffs, s1, a, c, line } = setup();
+    const kept = store.get(c) as { id: string };
+    const moved = { ...(store.get(a) as { id: string; type: string }), name: 'renamed' };
+    const before = diffs.length;
+    // delete the connector with its end and a binding-free shape; replace another record whole
+    expect(run('document.applyRecords', { puts: [moved], deletes: [line] }).ok).toBe(true);
+    expect(diffs.length).toBe(before + 1);
+    expect(store.has(line as RecordId)).toBe(false);
+    expect((store.get(a) as { name?: string }).name).toBe('renamed');
+    expect(store.get(c)).toEqual(kept);
+    expect(store.has(s1 as RecordId)).toBe(true);
+  });
+
+  it('FR-AI-010: a record set that leaves a dangling reference is refused and changes nothing', () => {
+    const { store, run, a } = setup();
+    const size = store.size;
+    const stray = { ...(store.get(a) as { id: string; type: string }), id: 'Stray0000000000', screenId: 'Missing0000000' };
+    expect(run('document.applyRecords', { puts: [stray], deletes: [] }).ok).toBe(false);
+    expect(store.size).toBe(size);
+    expect(store.has(a)).toBe(true);
+  });
+
+  it("FR-AI-010: a put cannot change a record's type, a record is put once, a delete names an existing record and never the document", () => {
+    const { store, run, a, s1, line } = setup();
+    const size = store.size;
+    const asScreen = { ...(store.get(a) as { id: string; type: string }), type: 'screen' };
+    const doc = store.members('byType', 'document')[0] as string;
+    const rec = store.get(a) as { id: string; type: string };
+    const refused = (args: unknown) => {
+      const r = run('document.applyRecords', args);
+      return r.ok ? 'ok' : r.error.code;
+    };
+    expect(refused({ puts: [asScreen], deletes: [] })).toBe('COMMAND_ARGS');
+    expect(refused({ puts: [rec, rec], deletes: [] })).toBe('COMMAND_ARGS');
+    expect(refused({ puts: [], deletes: ['Nope000000000000'] })).toBe('COMMAND_ARGS');
+    expect(refused({ puts: [], deletes: [doc] })).toBe('COMMAND_ARGS');
+    expect(refused({ puts: [rec], deletes: [a] })).toBe('COMMAND_ARGS');
+    expect(refused({ puts: [], deletes: [line, line] })).toBe('COMMAND_ARGS');
+    expect(store.size).toBe(size);
+    expect(store.has(s1 as RecordId)).toBe(true);
+  });
+});

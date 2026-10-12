@@ -125,6 +125,22 @@ const themeArgs = (screen: RecordId) => {
   };
 };
 
+/** A streamed screen's records: 25 new shapes put at once (the streaming render's per-screen write, FR-AI-010). */
+const applyArgs = (screen: RecordId) => ({
+  'document.applyRecords': {
+    puts: Array.from({ length: 25 }, (_, i) => ({
+      id: `BenchApplyRec${String(i).padStart(5, '0')}`,
+      type: 'element',
+      kind: 'shape',
+      defId: 'basic:rect',
+      screenId: screen,
+      index: MANY_KEYS[i] as string,
+      transform: { x: i * 10, y: 0, w: 10, h: 10 },
+    })),
+    deletes: [],
+  },
+});
+
 /** Arguments that succeed against the fixture document (and again after the command is undone). */
 function benchArgs(
   screens: readonly RecordId[],
@@ -162,6 +178,7 @@ function benchArgs(
         transform: { x: i * 10, y: 0, w: 10, h: 10 },
       })),
     },
+    ...applyArgs(screen),
     // a bound shape: the delete cascades to its bindings through the hooks
     'element.delete': { ids: [shapes[1001]] },
     'screen.create': { screen: { id: 'BenchNewScreen001', type: 'screen', index: 'a0' } },
@@ -218,6 +235,7 @@ function withAssets<T extends { readonly records: object }>(file: T): T {
 export const COMMANDS = [
   'element.create',
   'element.createMany',
+  'document.applyRecords',
   'element.update',
   'element.updateMany',
   'element.delete',

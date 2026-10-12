@@ -275,7 +275,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-008 | S | R4 | M23 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/stream/compile-stream.test.ts` +2 |
+| FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `e2e/dsl.streaming-render.spec.ts` +5 |
 | FR-AI-011 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.convert.test.ts` +6 |
 | FR-CLI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |

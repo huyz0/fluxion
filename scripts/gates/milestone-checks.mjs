@@ -403,6 +403,7 @@ export function titled(list, { runner, exact = false } = {}) {
 export const BENCH_COMMANDS = [
   'element.create',
   'element.createMany',
+  'document.applyRecords',
   'element.update',
   'element.updateMany',
   'element.delete',

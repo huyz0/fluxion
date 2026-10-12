@@ -14,6 +14,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'asset.update',
       'binding.set',
       'connector.freeEnd',
+      'document.applyRecords',
       'document.setTheme',
       'document.update',
       'document.updateMeta',

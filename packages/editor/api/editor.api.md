@@ -11,8 +11,10 @@ import { browserMeasurer } from '@fluxion/render';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
 import { ConnectorElement } from '@fluxion/schema';
+import { CoreRegistries } from '@fluxion/core';
 import { createCanvasMeasurer } from '@fluxion/render';
 import { DocumentFile } from '@fluxion/schema';
+import { DslDiagnostic } from '@fluxion/dsl';
 import { FieldDef } from '@fluxion/schema';
 import { ImageCodec } from '@fluxion/format';
 import { LoadableFace } from '@fluxion/render';
@@ -1110,6 +1112,30 @@ export type StateNode = {
     onKeyDown?(ctx: ToolCtx, e: KeyInfo): Transition | undefined;
     onCancel?(ctx: ToolCtx): Transition | undefined;
 };
+
+// @public
+export type StreamFluxOptions = {
+    readonly store: Store;
+    readonly execute: Execute;
+    readonly registries: CoreRegistries;
+    readonly session?: Session;
+    readonly replace?: boolean;
+    readonly salt?: string;
+    readonly signal?: AbortSignal;
+    readonly onDiagnostics?: (diagnostics: readonly DslDiagnostic[]) => void;
+};
+
+// @public
+export type StreamFluxResult = {
+    readonly status: "done" | "aborted" | "refused";
+    readonly screens: number;
+    readonly diagnostics: readonly DslDiagnostic[];
+    readonly recompiled: boolean;
+    readonly problem?: string;
+};
+
+// @public
+export function streamFluxScript(source: AsyncIterable<string> | ReadableStream<string>, options: StreamFluxOptions): Promise<StreamFluxResult>;
 
 // @public
 export function switchScreen(session: Session, id: RecordId): void;

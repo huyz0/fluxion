@@ -180,5 +180,6 @@ describe('decompile round trip', () => {
       }),
       { numRuns: 200, seed: 20261008 },
     );
-  });
+    // 4 s alone, over 20 s in the whole suite under coverage: the default 20 s timeout is a limit of the machine, not of the property
+  }, 120_000);
 });

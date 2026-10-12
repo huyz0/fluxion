@@ -19,7 +19,7 @@ import { ALIGN_COMMANDS } from './arrange/align.js';
 import { DISTRIBUTE_COMMANDS } from './arrange/distribute.js';
 import { GROUP_COMMANDS } from './arrange/group.js';
 import { Z_ORDER_COMMANDS } from './arrange/z-order.js';
-import { checkIds, fields, id, recordOf, repeated, title, write } from './command-helpers.js';
+import { checkIds, fields, id, recordOf, refuse, repeated, title, write } from './command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
 import type { Registry } from './registry.js';
 import { SCREEN_COMMANDS } from './screens/screen-commands.js';
@@ -34,6 +34,40 @@ function bindingAt(ctx: CommandContext, connectorId: string, end: string): Recor
     const r = ctx.store.get(b) as { connectorId?: unknown; end?: unknown } | undefined;
     return r?.connectorId === connectorId && r.end === end;
   });
+}
+
+type ApplyArgs = { puts: ReadonlyArray<{ id: string; type: string }>; deletes: readonly string[] };
+const APPLY = 'document.applyRecords';
+
+/** The delete half of document.applyRecords' guards: an existing record, once, not the document, and not also put. */
+function deleteGuard(ctx: CommandContext, args: ApplyArgs): Result<never, TxFailure> | null {
+  const put = new Set(args.puts.map((r) => r.id));
+  for (const [i, x] of args.deletes.entries()) {
+    if (put.has(x)) return refuse(APPLY, ['deletes', i], `"${x}" is both put and deleted`);
+    if (args.deletes.indexOf(x) !== i) return refuse(APPLY, ['deletes', i], `"${x}" is deleted twice`);
+    const current = ctx.store.get(x as RecordId);
+    if (!current) return refuse(APPLY, ['deletes', i], `"${x}" does not exist`);
+    if (current.type === 'document') return refuse(APPLY, ['deletes', i], 'the document record cannot be deleted');
+  }
+  return null;
+}
+
+/**
+ * document.applyRecords' guards (a built-in never touches another type): a put keeps the type of the record it replaces and a record is put once;
+ * a delete names an existing record once, never the document record, and no id is both put and deleted.
+ */
+function applyGuard(ctx: CommandContext, args: ApplyArgs): Result<never, TxFailure> | null {
+  const twice = repeated(
+    APPLY,
+    args.puts.map((r) => r.id),
+    'puts',
+  );
+  if (twice) return twice;
+  for (const [i, r] of args.puts.entries()) {
+    const current = ctx.store.get(r.id as RecordId);
+    if (current && current.type !== r.type) return refuse(APPLY, ['puts', i, 'type'], `"${r.id}" is a ${current.type}, a put cannot make it a ${r.type}`);
+  }
+  return deleteGuard(ctx, args);
 }
 
 const endSchema = z.enum(['source', 'target']);
@@ -224,6 +258,19 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
         if (bound !== undefined) tx.delete(bound);
       });
     },
+  }),
+  // a prepared record set written at once: what a streamed or imported source makes of the document, one screen after another. Records are
+  // put whole (new or replacing), the listed ids deleted; the transaction nets it, validates it and runs the hooks (FR-AI-010)
+  defineCommand({
+    id: 'document.applyRecords',
+    title: title('document.applyRecords', 'Apply records'),
+    args: z.object({ puts: z.array(z.looseObject({ id, type: id })), deletes: z.array(id) }),
+    run: (ctx, args) =>
+      applyGuard(ctx, args) ??
+      write(ctx, 'document.applyRecords', (tx) => {
+        for (const r of args.puts) tx.put(r as AnyRecord);
+        for (const x of args.deletes) tx.delete(x as RecordId);
+      }),
   }),
   defineCommand({
     id: 'document.update',
