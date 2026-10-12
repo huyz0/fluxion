@@ -101,6 +101,7 @@ catalog:
   "@codemirror/state": 6.7.6 # source view, editor only, lazy chunk (ADR-0032), MIT, M12.20
   "@codemirror/view": 6.43.14 # source view (ADR-0032), MIT, M12.20
   "@codemirror/language": 6.13.1 # source view: LanguageSupport, syntax tree (ADR-0032), MIT, M12.20
+  "@codemirror/autocomplete": 6.20.3 # source view: completion of shape ids, tokens and slugs (ADR-0032), MIT, M12.21
   "@codemirror/lang-yaml": 6.1.3 # source view: the Lezer YAML grammar under the FluxScript layer (ADR-0032), MIT, M12.20
   shiki: 4.4.3 # TextMate tokenizer for the grammar snapshot test (M12.20), MIT, dev only
 

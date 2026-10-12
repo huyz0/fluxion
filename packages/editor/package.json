@@ -23,6 +23,7 @@
     "test:storybook": "vitest run --root ../.. --project browser packages/editor/src"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "catalog:",
     "@codemirror/lang-yaml": "catalog:",
     "@codemirror/language": "catalog:",
     "@codemirror/state": "catalog:",

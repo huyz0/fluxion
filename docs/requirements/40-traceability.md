@@ -265,7 +265,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DSL-006 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/compile.test.ts` +8 |
 | FR-DSL-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-008 | S | R3 | M20 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-DSL-009 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/read/key-table.test.ts` +3 |
+| FR-DSL-009 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/read/key-table.test.ts` +6 |
 | FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-003 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |

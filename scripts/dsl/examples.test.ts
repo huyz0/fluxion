@@ -12,6 +12,7 @@ import { themesCorePack } from '@fluxion/pack-themes-core';
 import { type DocumentFile, serializeDocument } from '@fluxion/schema';
 import { type CoreRegistries, createCoreRegistries } from '@fluxion/sdk';
 import { describe, expect, it } from 'vitest';
+import { BASIC_IDS } from '../../packages/editor/src/source-view/completion-fixture.js';
 
 const DIR = join(import.meta.dirname, '..', '..', 'examples', 'dsl');
 const FILES = readdirSync(DIR)
@@ -35,6 +36,18 @@ function registries(): CoreRegistries {
 const run = (text: string): CompileResult => compile(text, { registries: registries() });
 const bytes = (r: CompileResult): string => serializeDocument(r.doc as DocumentFile);
 const shown = (r: CompileResult): string => formatDiagnostics(r.diagnostics).join('\n');
+
+// the editor's completion tests list the basic pack's shape ids by hand (the editor may not import a pack): this keeps that list honest
+describe('completion fixture', () => {
+  it('FR-DSL-009: the basic shape ids the completion tests use are the ids the basic pack registers', () => {
+    const ids = registries()
+      .shapeDefs.list()
+      .map(([id]) => id)
+      .filter((id) => id.startsWith('basic:'))
+      .sort();
+    expect([...BASIC_IDS].sort()).toEqual(ids);
+  });
+});
 
 describe('examples/dsl', () => {
   it('FR-DSL-001: the corpus holds at least 8 examples, checkout.flux.yaml among them', () => {

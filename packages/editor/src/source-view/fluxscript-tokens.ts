@@ -10,12 +10,16 @@ export type FluxScriptTokenClass = 'fx-key' | 'fx-key-deferred' | 'fx-op' | 'fx-
 /** A range of the document with the FluxScript class it is marked with. */
 export type FluxScriptToken = { readonly from: number; readonly to: number; readonly class: FluxScriptTokenClass };
 
-type Level = keyof FluxScriptKeyTable;
+/** A level of the key table (ADR-0030's document layout). */
+export type Level = keyof FluxScriptKeyTable;
 /** What a value holds, by the key above it: a mapping of a level, a sequence of mappings of a level, or a mapping of slugs to mappings. */
-type Shape = { readonly of: 'map'; readonly level: Level } | { readonly of: 'items'; readonly level: Level } | { readonly of: 'slugs'; readonly level: Level };
+export type Shape =
+  | { readonly of: 'map'; readonly level: Level }
+  | { readonly of: 'items'; readonly level: Level }
+  | { readonly of: 'slugs'; readonly level: Level };
 
 /** The shape of the value under `key` at `level` (ADR-0030's document layout), if the compiler reads one. */
-const CHILD: { readonly [L in Level]?: { readonly [key: string]: Shape } } = {
+export const CHILD: { readonly [L in Level]?: { readonly [key: string]: Shape } } = {
   top: { theme: { of: 'map', level: 'theme' }, screens: { of: 'items', level: 'screen' } },
   screen: { nodes: { of: 'slugs', level: 'node' }, groups: { of: 'slugs', level: 'group' }, edges: { of: 'items', level: 'edge' } },
   node: { pin: { of: 'map', level: 'pin' } },

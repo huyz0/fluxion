@@ -214,7 +214,12 @@ leg('the TextMate and Lezer grammars exist and accept every example', () => {
 });
 // M12.21 writes packages/editor/src/source-view/completion.browser.test.ts (ADR-0032) and adds its exact titles as browser-project entries:
 // ['M12.21', '<exact title>', 'editor', {}, 'browser']
-const COMPLETION_TITLES = [];
+const COMPLETION_TITLES = [
+  ['M12.21', 'FR-DSL-009: after shape: the list holds every registered basic shape and no shape of a pack that is not registered', 'editor', {}, 'browser'],
+  ['M12.21', 'FR-DSL-009: token names after fill: are the theme tokens, narrowed by the prefix typed', 'editor', {}, 'browser'],
+  ['M12.21', 'FR-DSL-009: after an edge op the list holds the slugs of the open screen and not those of another', 'editor', {}, 'browser'],
+  ['M12.21', 'FR-DSL-009: after a slug and a dot the list holds the anchors', 'editor', {}, 'browser'],
+];
 leg('completion offers shape ids (packs included), token names and slugs in edges (T1 completion.browser.test.ts)', () =>
   COMPLETION_TITLES.length === 0 ? 'no completion titles yet: M12.21 adds them' : titled(COMPLETION_TITLES, EXACT),
 );
