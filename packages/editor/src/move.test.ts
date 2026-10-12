@@ -2,7 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { duplicates, moved, reframed, starts } from './move.js';
+import { duplicates, moved, reframed, restored, starts } from './move.js';
 
 function setup() {
   const b = documentBuilder({ seed: 140 });
@@ -38,10 +38,10 @@ describe('moving and duplicating (FR-EDT-005)', () => {
     const from = starts(core.store, [group, a, member, 'missing' as RecordId]);
     expect(from.map((s) => s.id)).toEqual([group, member, a]);
     expect(moved(from, { x: 5, y: -10 })).toEqual([
-      { id: group, fields: { transform: { x: 5, y: 290, w: 100, h: 100 } } },
-      { id: member, fields: { transform: { x: 5, y: 290, w: 100, h: 100 } } },
+      { id: group, fields: { transform: { x: 5, y: 290, w: 100, h: 100 }, placement: 'pinned' } },
+      { id: member, fields: { transform: { x: 5, y: 290, w: 100, h: 100 }, placement: 'pinned' } },
       // the whole transform is kept: size and turn included
-      { id: a, fields: { transform: { x: 15, y: 10, w: 30, h: 40, rot: 15 } } },
+      { id: a, fields: { transform: { x: 15, y: 10, w: 30, h: 40, rot: 15 }, placement: 'pinned' } },
     ]);
     // a free connector moves its ends and waypoints; a bound one follows its ends
     expect(moved(starts(core.store, [free, bound]), { x: 1, y: 2 })).toEqual([
@@ -56,8 +56,8 @@ describe('moving and duplicating (FR-EDT-005)', () => {
     const before = { x: 0, y: 300, w: 100, h: 100, rot: 0 };
     // the group doubled rightwards: its member too
     expect(reframed(starts(core.store, [group]), before, { ...before, w: 200 })).toEqual([
-      { id: group, fields: { transform: { x: 0, y: 300, w: 200, h: 100, rot: 0 } } },
-      { id: member, fields: { transform: { x: 0, y: 300, w: 200, h: 100, rot: 0 } } },
+      { id: group, fields: { transform: { x: 0, y: 300, w: 200, h: 100, rot: 0 }, placement: 'pinned' } },
+      { id: member, fields: { transform: { x: 0, y: 300, w: 200, h: 100, rot: 0 }, placement: 'pinned' } },
     ]);
     // turned a quarter: a's own turn of 15° becomes 105°; free ends are carried too
     const frame = { x: 0, y: 0, w: 100, h: 100, rot: 0 };
@@ -156,5 +156,18 @@ describe('moving and duplicating (FR-EDT-005)', () => {
     // a member copied without its group stays in the group
     const alone = duplicates(core.store, [member], () => 'membercopy00001' as RecordId);
     expect((alone.records[0] as { parentId?: string }).parentId).toBe(group);
+  });
+
+  it('FR-EDT-022: a move or resize pins the boxes it moves; restored puts transform and placement back, removing a placement the record did not have', () => {
+    const { core, a, free } = setup();
+    const from = starts(core.store, [a, free]);
+    expect(moved(from, { x: 1, y: 1 })[0]?.fields['placement']).toBe('pinned');
+    expect(reframed(from, { x: 0, y: 0, w: 10, h: 10, rot: 0 }, { x: 0, y: 0, w: 20, h: 10, rot: 0 })[0]?.fields['placement']).toBe('pinned');
+    // a connector has no box to pin
+    expect(moved(starts(core.store, [free]), { x: 1, y: 1 })[0]?.fields).not.toHaveProperty('placement');
+    const back = restored(from);
+    expect(back[0]).toEqual({ id: a, fields: { transform: expect.objectContaining({ x: 10, y: 20 }), placement: undefined } });
+    core.store.transact('pin', (tx) => tx.patch(a, { placement: 'pinned' }));
+    expect(restored(starts(core.store, [a]))[0]?.fields['placement']).toBe('pinned');
   });
 });

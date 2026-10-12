@@ -6,7 +6,7 @@
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { adjusting, bending, type ConnectorGrab, connectorHandleUnder, ending, type ParamGrab, paramHandleUnder } from './handle-states.js';
-import { duplicates, moved, reframed, type Start, starts } from './move.js';
+import { duplicates, moved, reframed, restored, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
@@ -179,7 +179,8 @@ function transforming(p: Press, id: string, after: (h: Handle, e: PointerInfo, c
     onPointerUp: () => ({ to: 'idle' }),
     onCancel: () => {
       const h = p.handle as Handle;
-      set(h, h.box);
+      gesture?.update('element.updateMany', { updates: restored(h.from) });
+      gesture?.commit();
       return { to: 'idle' };
     },
     // tzap disable next-line BlockStatement: each frame commits at once, and the next gesture's own merge key starts a new undo step anyway
@@ -294,8 +295,10 @@ function translating(p: Press): StateNode {
     // history then drops the step, which changed nothing)
     onCancel: (ctx) => {
       const drag = p.drag as Drag;
-      if (drag.copies === undefined) follow(ctx, drag, drag.page, true);
-      else {
+      if (drag.copies === undefined) {
+        drag.gesture.update('element.updateMany', { updates: restored(drag.from) });
+        drag.gesture.commit();
+      } else {
         // committed as the gesture ends, on leaving this state
         drag.gesture.update('element.delete', { ids: drag.copies.ids });
         ctx.session.selection.set(drag.copies.before);

@@ -17,6 +17,8 @@ export type Start = {
   readonly id: RecordId;
   /** Its transform, when it has one. */
   readonly transform?: { readonly x: number; readonly y: number } & { readonly [field: string]: unknown };
+  /** Its placement, when it has one (a move pins it; putting it back restores this). */
+  readonly placement?: 'auto' | 'pinned';
   /** A connector's free source, free target and route, when it has them. */
   readonly freeSource?: Vec2;
   readonly freeTarget?: Vec2;
@@ -38,8 +40,17 @@ export function starts(view: ReadView, ids: readonly RecordId[]): Start[] {
   return all.flatMap((id) => {
     const r = view.get(id) as (AnyRecord & Omit<Start, 'id'>) | undefined;
     if (r?.type !== 'element') return [];
-    const { transform, freeSource, freeTarget, route } = r;
-    return [{ id, ...(transform && { transform }), ...(freeSource && { freeSource }), ...(freeTarget && { freeTarget }), ...(route && { route }) }];
+    const { transform, placement, freeSource, freeTarget, route } = r;
+    return [
+      {
+        id,
+        ...(transform && { transform }),
+        ...(placement && { placement }),
+        ...(freeSource && { freeSource }),
+        ...(freeTarget && { freeTarget }),
+        ...(route && { route }),
+      },
+    ];
   });
 }
 
@@ -47,14 +58,18 @@ const shift = (p: Vec2, d: Vec2): Vec2 => ({ x: p.x + d.x, y: p.y + d.y });
 
 /**
  * The fields that put each record of `from` `d` away from where it started (element.updateMany's
- * updates); a record with nothing placed (a bound connector) is left to follow its ends.
+ * updates); a record with nothing placed (a bound connector) is left to follow its ends. A box that moves is pinned
+ * (ADR-0031: a human drag sets `placement: 'pinned'`, so layout keeps it where it was put), in the same patch.
  *
  * @public
  */
 export function moved(from: readonly Start[], d: Vec2): { readonly id: RecordId; readonly fields: Record<string, unknown> }[] {
   return from.flatMap((s) => {
     const fields: Record<string, unknown> = {};
-    if (s.transform) fields['transform'] = { ...s.transform, ...shift(s.transform, d) };
+    if (s.transform) {
+      fields['transform'] = { ...s.transform, ...shift(s.transform, d) };
+      fields['placement'] = 'pinned';
+    }
     if (s.freeSource) fields['freeSource'] = shift(s.freeSource, d);
     if (s.freeTarget) fields['freeTarget'] = shift(s.freeTarget, d);
     if (s.route?.waypoints) fields['route'] = { ...s.route, waypoints: s.route.waypoints.map((w) => shift(w, d)) };
@@ -63,9 +78,30 @@ export function moved(from: readonly Start[], d: Vec2): { readonly id: RecordId;
 }
 
 /**
+ * The fields that put each record of `from` back exactly as it started, its placement too (a field it did not have is
+ * removed): what Esc during a move or a resize sends, so a cancelled gesture pins nothing.
+ *
+ * @public
+ */
+export function restored(from: readonly Start[]): { readonly id: RecordId; readonly fields: Record<string, unknown> }[] {
+  return from.flatMap((s) => {
+    const fields: Record<string, unknown> = {};
+    if (s.transform) {
+      fields['transform'] = s.transform;
+      fields['placement'] = s.placement;
+    }
+    if (s.freeSource) fields['freeSource'] = s.freeSource;
+    if (s.freeTarget) fields['freeTarget'] = s.freeTarget;
+    if (s.route) fields['route'] = s.route;
+    return Object.keys(fields).length === 0 ? [] : [{ id: s.id, fields }];
+  });
+}
+
+/**
  * The fields that carry each record of `from` from the frame `before` to the frame `after` (a resize
  * or rotation of the selection): a box's centre carried, its size scaled, its turn turned; a free
- * connector's ends and waypoints carried.
+ * connector's ends and waypoints carried. A box is pinned too: layout sizes an auto element by its shape's default,
+ * so a size the hand chose would be lost otherwise (and the decompiler writes `w`/`h` only for a pin).
  *
  * @public
  */
@@ -73,7 +109,10 @@ export function reframed(from: readonly Start[], before: Box2, after: Box2): { r
   const at = (p: Vec2) => carry(before, after, p);
   return from.flatMap((s) => {
     const fields: Record<string, unknown> = {};
-    if (s.transform) fields['transform'] = reframedBox(s.transform as Placed & Record<string, unknown>, before, after);
+    if (s.transform) {
+      fields['transform'] = reframedBox(s.transform as Placed & Record<string, unknown>, before, after);
+      fields['placement'] = 'pinned';
+    }
     if (s.freeSource) fields['freeSource'] = at(s.freeSource);
     if (s.freeTarget) fields['freeTarget'] = at(s.freeTarget);
     if (s.route?.waypoints) fields['route'] = { ...s.route, waypoints: s.route.waypoints.map(at) };

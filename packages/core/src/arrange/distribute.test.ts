@@ -165,4 +165,17 @@ describe('distribute (FR-ARR-003)', () => {
     expect(r.ok).toBe(false);
     expect(!r.ok && r.error.code).toBe('COMMAND_ARGS');
   });
+
+  it('FR-EDT-022: distribute pins only the elements it moves (the end ones stay in place); undo restores them', () => {
+    const { run, ids, store } = setup([
+      { x: 0, y: 0, w: 100, h: 50 },
+      { x: 120, y: 0, w: 100, h: 50 },
+      { x: 600, y: 0, w: 100, h: 50 },
+    ]);
+    const placement = (id: RecordId) => (store.get(id) as unknown as { placement?: string }).placement ?? 'auto';
+    expect(run('element.distribute', { ids, axis: 'horizontal', by: 'gaps' }).ok).toBe(true);
+    expect(ids.map(placement)).toEqual(['auto', 'pinned', 'auto']);
+    store.history.undo();
+    expect(ids.map(placement)).toEqual(['auto', 'auto', 'auto']);
+  });
 });

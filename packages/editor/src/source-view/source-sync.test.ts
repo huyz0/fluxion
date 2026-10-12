@@ -290,9 +290,13 @@ describe('source view, canvas to text', () => {
       c.execute('element.update', { id: elementOf(c.store, 'Alpha'), fields: { placement: 'pinned', transform: { x, y: 5, w: 160, h: 80 } } });
     c.timer.advance(RECONCILE_DELAY_MS - 1);
     expect(decompiles).not.toHaveBeenCalled();
+    // a change in the quiet time restarts it: a drag that pauses less than the delay between frames is looked at once, after it
+    c.execute('element.update', { id: elementOf(c.store, 'Alpha'), fields: { placement: 'pinned', transform: { x: 101, y: 5, w: 160, h: 80 } } });
+    c.timer.advance(RECONCILE_DELAY_MS - 1);
+    expect(decompiles).not.toHaveBeenCalled();
     c.timer.advance(1);
     expect(decompiles).toHaveBeenCalledTimes(1);
-    expect(c.view.text).toContain('pin: { x: 100, y: 5 }');
+    expect(c.view.text).toContain('pin: { x: 101, y: 5 }');
     // focused: the banner goes up after one look, and later changes are not looked at
     c.controller.focus();
     change(c, 'Beta');

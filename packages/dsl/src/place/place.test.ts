@@ -112,6 +112,17 @@ describe('place stage (FR-DSL-005, ADR-0030)', () => {
     expect([box(r, 'web').x, box(r, 'web').y]).not.toEqual([0, 0]);
   });
 
+  it('FR-DSL-005: an element a human moved (pin: at its new place) stays there when the layout runs again; its auto neighbour is laid out around it', () => {
+    const text = (pin: string) =>
+      doc(
+        `  - id: one\n    title: One\n    nodes:\n      a: { shape: rect, label: A${pin} }\n      b: { shape: rect, label: B }\n    edges:\n      - a -> b\n`,
+      );
+    const r = place(text(', pin: { x: 640, y: 480 }'));
+    expect([el(r, 'a').placement, box(r, 'a').x, box(r, 'a').y]).toEqual(['pinned', 640, 480]);
+    expect(el(r, 'b').placement).not.toBe('pinned');
+    expect(overlapping(r)).toEqual([]);
+  });
+
   it('FR-DSL-005: a group encloses its members, nested groups too, and follows its own layout', () => {
     const r = place(MIXED);
     for (const [g, members] of [

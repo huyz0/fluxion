@@ -49,11 +49,37 @@ async function openSource(page: Page) {
   return { editor, left, text };
 }
 
-/** A canvas edit: pin the shape that shows `label` (the test hook runs the `element.update` command a gesture runs; a drag alone does not pin an auto-placed shape). */
-async function pinShape(page: Page, label: string): Promise<void> {
-  await page.evaluate((l) => {
-    (window as unknown as { __fluxion: { pinElement(label: string, x: number, y: number): void } }).__fluxion.pinElement(l, 400, 300);
-  }, label);
+/** Where a shape that shows `label` is drawn, in the screen's own units (the fitted screen is `DEFAULT_SCREEN_SIZE` wide: 1920). */
+async function placeOf(editor: EditorPage, label: string): Promise<{ x: number; y: number; w: number; h: number; scale: number }> {
+  const [shape, screen] = [await editor.shapes.filter({ hasText: label }).boundingBox(), await editor.screenBox()];
+  if (shape === null) throw new Error(`no shape shows "${label}"`);
+  const scale = screen.width / 1920;
+  return { x: (shape.x - screen.x) / scale, y: (shape.y - screen.y) / scale, w: shape.width / scale, h: shape.height / scale, scale };
+}
+
+/**
+ * A canvas edit by a real drag: the shape that shows `label` is pressed at its centre and moved by (`dx`, `dy`) screen units with snapping off, so the
+ * pointer's own distance is the move. Returns where the shape was drawn before and the distance it was dragged.
+ */
+async function dragShape(editor: EditorPage, label: string, dx: number, dy: number) {
+  const { page } = editor;
+  const before = await placeOf(editor, label);
+  const from = { x: before.x + before.w / 2, y: before.y + before.h / 2 };
+  const screen = await editor.screenBox();
+  const at = (p: { x: number; y: number }) => ({ x: screen.x + p.x * before.scale, y: screen.y + p.y * before.scale });
+  await page.mouse.move(at(from).x, at(from).y);
+  await page.mouse.down();
+  await page.mouse.move(at({ x: from.x + dx, y: from.y + dy }).x, at({ x: from.x + dx, y: from.y + dy }).y, { steps: 8 });
+  await page.mouse.up();
+  return { before, dx, dy };
+}
+
+/** The `x` and `y` of the `pin:` written on the line of `text` that shows `label`. */
+async function pinOf(text: Locator, label: string): Promise<{ x: number; y: number }> {
+  const line = await text.locator('.cm-line', { hasText: `label: ${label}` }).innerText();
+  const m = /pin: \{ x: (-?[\d.]+), y: (-?[\d.]+)/.exec(line);
+  if (m === null) throw new Error(`no pin on the line of "${label}": ${line}`);
+  return { x: Number(m[1]), y: Number(m[2]) };
 }
 
 test.describe('source view', { tag: '@desktop' }, () => {
@@ -112,30 +138,54 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await expect(tab).toBeFocused();
   });
 
-  test('FR-EDT-022: a shape pinned on the canvas regenerates the text of a clean view with its pin', async ({ page }) => {
-    const { text } = await openSource(page);
+  test('FR-EDT-022: a shape dragged on the canvas writes its pin, in one regenerated text, and undo takes the pin away', async ({ page }) => {
+    const { editor, text } = await openSource(page);
     await expect(text).not.toContainText('pin:');
-    await pinShape(page, 'Alpha');
-    await expect(text.locator('.cm-line', { hasText: 'label: Alpha' })).toContainText('pin: { x: 400, y: 300 }');
+    // the drag is the pointer's exactly: snapping is off
+    await editor.toolbarButton('Snapping').click();
+    // every text the view shows while the drag runs: the regeneration waits for the drag to settle (50 ms look, M12.48)
+    await page.evaluate(() => {
+      const w = window as unknown as { __texts: string[] };
+      w.__texts = [];
+      const line = () => document.querySelector('[aria-label="FluxScript source"]')?.textContent ?? '';
+      new MutationObserver(() => {
+        const now = line();
+        if (w.__texts.at(-1) !== now) w.__texts.push(now);
+      }).observe(document.body, { subtree: true, childList: true, characterData: true });
+    });
+    const { before, dx, dy } = await dragShape(editor, 'Alpha', 120, 80);
+    const alpha = text.locator('.cm-line', { hasText: 'label: Alpha' });
+    await expect(alpha).toContainText('pin: { x: ');
+    const pin = await pinOf(text, 'Alpha');
+    // the pin is where the shape was put (a pixel of the stroke aside)
+    expect(Math.abs(pin.x - (before.x + dx))).toBeLessThan(4);
+    expect(Math.abs(pin.y - (before.y + dy))).toBeLessThan(4);
     await expect(text.locator('.cm-line', { hasText: 'label: Beta' })).not.toContainText('pin:');
+    // one text with the pin came out of the whole drag, however many frames it ran
+    const texts = await page.evaluate(() => (window as unknown as { __texts: string[] }).__texts);
+    expect(texts.filter((t) => t.includes('pin:'))).toHaveLength(1);
+    // the drag was one undo step: the pin goes, the text is the generated one again
+    await editor.toolbarButton('Undo').click();
+    await expect(text).not.toContainText('pin:');
     await expect(text).toContainText('label: Alpha');
   });
 
   test('FR-EDT-022: a canvas change under a dirty view is not written over it: the banner shows, and Reload takes the canvas', async ({ page }) => {
-    const { left, text } = await openSource(page);
+    const { editor, left, text } = await openSource(page);
     // a typo: the text does not compile, so it stays unapplied and the view stays dirty
     await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'rect');
     await page.keyboard.press('ArrowRight');
     await page.keyboard.type('t');
     await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(1);
-    await pinShape(page, 'Beta');
+    await editor.toolbarButton('Snapping').click();
+    await dragShape(editor, 'Beta', 120, 80);
     const banner = left.getByText('Canvas changed — reload');
     await expect(banner).toBeVisible();
     await expect(text).toContainText('shape: rectt');
     await expect(text).not.toContainText('pin:');
     // only the author's click replaces the text
     await left.getByRole('button', { name: 'Reload' }).click();
-    await expect(text.locator('.cm-line', { hasText: 'label: Beta' })).toContainText('pin: { x: 400, y: 300 }');
+    await expect(text.locator('.cm-line', { hasText: 'label: Beta' })).toContainText('pin: { x: ');
     await expect(text).not.toContainText('rectt');
     await expect(banner).toHaveCount(0);
     await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(0);

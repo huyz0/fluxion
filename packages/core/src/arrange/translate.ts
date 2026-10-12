@@ -16,10 +16,16 @@ type Moving = {
 
 const shift = (p: Vec, d: Vec): Vec => ({ x: p.x + d.x, y: p.y + d.y });
 
-/** The fields that put `record` `d` away from where it is; empty when it has nothing placed (a bound connector follows its ends). */
+/**
+ * The fields that put `record` `d` away from where it is; empty when it has nothing placed (a bound connector follows its ends).
+ * A box that moves is pinned (ADR-0031: a hand placing an element sets `pinned`, so layout keeps it there).
+ */
 export function translateFields(record: Moving, d: Vec): Record<string, unknown> {
   const fields: Record<string, unknown> = {};
-  if (record.transform) fields['transform'] = { ...record.transform, ...shift(record.transform, d) };
+  if (record.transform) {
+    fields['transform'] = { ...record.transform, ...shift(record.transform, d) };
+    fields['placement'] = 'pinned';
+  }
   if (record.freeSource) fields['freeSource'] = shift(record.freeSource, d);
   if (record.freeTarget) fields['freeTarget'] = shift(record.freeTarget, d);
   if (record.route?.waypoints) fields['route'] = { ...record.route, waypoints: record.route.waypoints.map((w) => shift(w, d)) };

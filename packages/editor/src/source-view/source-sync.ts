@@ -17,7 +17,7 @@ const MERGE_KEY = 'source-view.apply';
 /** How long the text must rest before it is compiled. */
 export const APPLY_DELAY_MS = 300;
 
-/** How long canvas changes are gathered before the view looks at them (a drag changes the document every frame). */
+/** How long the canvas must be quiet before the view looks at what changed (a drag changes the document every frame: one look, after it). */
 export const RECONCILE_DELAY_MS = 50;
 
 /** A timer the caller injects (the tests drive it by hand). */
@@ -260,7 +260,10 @@ function gatherChanges(store: Store, scheduler: Scheduler, own: () => boolean, l
     look();
   };
   const unsubscribe = store.subscribe(() => {
-    if (!own() && handle === undefined) handle = scheduler.set(now, RECONCILE_DELAY_MS);
+    if (own()) return;
+    // each change restarts the wait: a drag is looked at once, when it settles, not every 50 ms of it
+    if (handle !== undefined) scheduler.clear(handle);
+    handle = scheduler.set(now, RECONCILE_DELAY_MS);
   });
   return {
     /** Whether changes wait to be looked at. */

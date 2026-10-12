@@ -128,6 +128,11 @@ const COMPILER_TITLES = [
   ['M12.42', 'FR-DSL-006: a deck with many unfixable and many fixable errors validates a number of times linear in its errors', DSL],
   ['M12.43', 'FR-DSL-002: an edge drawn by hand is searched only among the edges joining its two ends, so hashes grow with the edges, not their square', DSL],
   ['M12.47', 'FR-DSL-001: ids come from the salt and hasher of the options; a base document kept salt wins (ADR-0031)', DSL],
+  [
+    'M12.56',
+    'FR-DSL-005: an element a human moved (pin: at its new place) stays there when the layout runs again; its auto neighbour is laid out around it',
+    DSL,
+  ],
 ];
 leg('the compiler stages are tested under their requirement titles (T0)', () =>
   COMPILER_TITLES.length === 0 ? 'no compiler titles yet: the M12 rows add them' : titled(COMPILER_TITLES, EXACT),
@@ -271,6 +276,14 @@ const SOURCE_VIEW_TITLES = [
   ],
   ['M12.48', 'FR-EDT-022: leaving the banner for elsewhere applies the waiting text', 'editor', {}, 'browser'],
   ['M12.48', 'FR-EDT-022: a regenerated header of another length gets exactly its own header lines decorated', 'editor', {}, 'browser'],
+  [
+    'M12.56',
+    'FR-EDT-022: a move or resize pins the boxes it moves; restored puts transform and placement back, removing a placement the record did not have',
+    'editor',
+  ],
+  ['M12.56', 'FR-EDT-022: a drag, a nudge and a resize pin the element in the same undo step; undo and Esc leave it auto', 'editor'],
+  ['M12.56', 'FR-EDT-022: align pins the elements it moves and only those; undo restores them', 'core'],
+  ['M12.56', 'FR-EDT-022: distribute pins only the elements it moves (the end ones stay in place); undo restores them', 'core'],
 ];
 leg("the source view applies the author's edits to the canvas after a pause, one undo step each, and marks errors in the gutter (T0, T1)", () =>
   SOURCE_VIEW_TITLES.length === 0 ? 'no source view titles yet: M12.22 adds them' : titled(SOURCE_VIEW_TITLES, EXACT),

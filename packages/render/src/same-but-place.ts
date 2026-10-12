@@ -14,14 +14,16 @@ function samePlaced(a: object | undefined, b: object | undefined): boolean {
 }
 
 /**
- * Whether two records of one element are equal but for their box's place (`transform.x` and `.y`):
- * what a move changes. Fields are compared by identity, as records are immutable.
+ * Whether two records of one element are equal but for their box's place (`transform.x` and `.y`) and
+ * its `placement`: what a move changes (a move pins the element, ADR-0031; layout's bookkeeping is never
+ * drawn). Fields are compared by identity, as records are immutable.
  */
 export function sameButPlace(a: ElementRecord, b: ElementRecord): boolean {
   // tzap disable next-line ConditionalExpression: a fast path; the same record compares equal below too
   if (a === b) return true;
-  const ka = Object.keys(a);
-  const kb = Object.keys(b);
+  const drawn = (k: string) => k !== 'placement';
+  const ka = Object.keys(a).filter(drawn);
+  const kb = Object.keys(b).filter(drawn);
   const field = (r: ElementRecord, k: string) => (r as unknown as Record<string, unknown>)[k];
   const same = (k: string) =>
     field(a, k) === field(b, k) || (k === 'transform' && samePlaced(field(a, k) as object | undefined, field(b, k) as object | undefined));

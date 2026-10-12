@@ -16,6 +16,13 @@ describe('what a move changes (NFR-PERF-001)', () => {
     expect(sameButPlace(rec({}), rec({}))).toBe(true);
   });
 
+  it('NFR-PERF-001: a move that pins the element (its placement set or changed) is still the same to draw', () => {
+    const a = rec({ transform: box, name: 'n' });
+    expect(sameButPlace(a, rec({ transform: { ...box, x: 11 }, name: 'n', placement: 'pinned' }))).toBe(true);
+    expect(sameButPlace(rec({ transform: box, name: 'n', placement: 'pinned' }), rec({ transform: box, name: 'n', placement: 'auto' }))).toBe(true);
+    expect(sameButPlace(rec({ transform: box, placement: 'pinned' }), rec({ transform: box, name: 'n' }))).toBe(false);
+  });
+
   it('NFR-PERF-001: a resize, turn, flip, or any other field changed is drawn again', () => {
     const a = rec({ transform: box, name: 'n' });
     for (const b of [

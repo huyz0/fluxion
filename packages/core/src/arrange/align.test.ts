@@ -167,4 +167,14 @@ describe('align (FR-ARR-002)', () => {
     // but the selection's own bounds are a reference anywhere
     expect(run('element.align', { ids: [shape, other], mode: 'left', to: 'selection' }).ok).toBe(true);
   });
+
+  it('FR-EDT-022: align pins the elements it moves and only those; undo restores them', () => {
+    const { run, ids, store } = setup();
+    const placement = (id: RecordId) => (store.get(id) as unknown as { placement?: string }).placement ?? 'auto';
+    // b is the key: it is already in place
+    expect(run('element.align', { ids, mode: 'left', to: { key: ids[1] } }).ok).toBe(true);
+    expect(ids.map(placement)).toEqual(['pinned', 'auto', 'pinned']);
+    store.history.undo();
+    expect(ids.map(placement)).toEqual(['auto', 'auto', 'auto']);
+  });
 });

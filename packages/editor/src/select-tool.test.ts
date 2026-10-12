@@ -226,4 +226,27 @@ describe('moving with the select tool (FR-EDT-005)', () => {
     expect([press(tools, key('ArrowRight', { mod: true })), press(tools, key('ArrowRight', { alt: true }))]).toEqual([false, false]);
     expect(xy(a)).toEqual([10, 9]);
   });
+
+  it('FR-EDT-022: a drag, a nudge and a resize pin the element in the same undo step; undo and Esc leave it auto', () => {
+    const { core, session, tools, a, c } = setup();
+    const placement = (id: RecordId) => (core.store.get(id) as { placement?: string }).placement ?? 'auto';
+    tools.pointer(at('down', 50, 50));
+    tools.pointer(at('move', 90, 90));
+    tools.pointer(at('up', 90, 90));
+    expect([placement(a), placement(c), core.store.history.undoDepth]).toEqual(['pinned', 'auto', 1]);
+    core.store.history.undo();
+    expect([placement(a), core.store.history.undoDepth]).toEqual(['auto', 0]);
+    // Esc puts the placement back too, and leaves no step
+    tools.pointer(at('down', 50, 50));
+    tools.pointer(at('move', 90, 90));
+    press(tools, key('Escape'));
+    tools.pointer(at('up', 90, 90));
+    expect([placement(a), core.store.history.undoDepth]).toEqual(['auto', 0]);
+    // a nudge pins the selection only
+    session.selection.set([c]);
+    press(tools, key('ArrowRight'));
+    expect([placement(a), placement(c), core.store.history.undoDepth]).toEqual(['auto', 'pinned', 1]);
+    core.store.history.undo();
+    expect(placement(c)).toBe('auto');
+  });
 });
