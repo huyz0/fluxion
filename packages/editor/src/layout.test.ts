@@ -26,7 +26,7 @@ describe('editor layout (FR-EDT-001, ADR-0029)', () => {
   it('FR-EDT-001: a first visit shows the side panels, the timeline collapsed, under a versioned key', () => {
     expect(LAYOUT_KEY).toBe('fluxion.editor.layout.v1');
     expect(DEFAULT_LAYOUT).toEqual({
-      panels: { left: { size: 240, collapsed: false }, right: { size: 280, collapsed: false }, bottom: { size: 160, collapsed: true } },
+      panels: { left: { size: 280, collapsed: false }, right: { size: 280, collapsed: false }, bottom: { size: 160, collapsed: true } },
       focus: false,
     });
     expect(panelIds()).toEqual(['left', 'right', 'bottom']);
@@ -51,7 +51,7 @@ describe('editor layout (FR-EDT-001, ADR-0029)', () => {
       focus: 1,
     });
     expect(broken).toEqual({ ...DEFAULT_LAYOUT, panels: { ...DEFAULT_LAYOUT.panels, bottom: { size: 160, collapsed: false } } });
-    expect(readLayout({ panels: { left: { size: Number.POSITIVE_INFINITY, collapsed: true } } }).panels.left).toEqual({ size: 240, collapsed: true });
+    expect(readLayout({ panels: { left: { size: Number.POSITIVE_INFINITY, collapsed: true } } }).panels.left).toEqual({ size: 280, collapsed: true });
   });
 
   it('FR-EDT-001: stored sizes are rounded and clamped to each panel`s limits', () => {
@@ -92,8 +92,8 @@ describe('editor layout (FR-EDT-001, ADR-0029)', () => {
 
   it('FR-EDT-001: splitter keys follow the WAI-ARIA window splitter pattern', () => {
     const size = (l: EditorLayout | undefined, p: 'left' | 'right' | 'bottom') => l?.panels[p].size;
-    expect(size(splitterKey(DEFAULT_LAYOUT, 'left', 'ArrowRight', false), 'left')).toBe(250);
-    expect(size(splitterKey(DEFAULT_LAYOUT, 'left', 'ArrowLeft', true), 'left')).toBe(190);
+    expect(size(splitterKey(DEFAULT_LAYOUT, 'left', 'ArrowRight', false), 'left')).toBe(290);
+    expect(size(splitterKey(DEFAULT_LAYOUT, 'left', 'ArrowLeft', true), 'left')).toBe(230);
     expect(size(splitterKey(DEFAULT_LAYOUT, 'right', 'ArrowLeft', false), 'right')).toBe(290);
     expect(size(splitterKey(DEFAULT_LAYOUT, 'right', 'ArrowRight', false), 'right')).toBe(270);
     const open = withPanel('bottom', 160);
@@ -107,8 +107,8 @@ describe('editor layout (FR-EDT-001, ADR-0029)', () => {
 
   it('FR-EDT-001: Enter collapses and restores; a collapsed panel opens at its minimum and does not shrink', () => {
     const collapsed = splitterKey(DEFAULT_LAYOUT, 'left', 'Enter', false);
-    expect(collapsed?.panels.left).toEqual({ size: 240, collapsed: true });
-    expect(collapsed && splitterKey(collapsed, 'left', 'Enter', false)?.panels.left).toEqual({ size: 240, collapsed: false });
+    expect(collapsed?.panels.left).toEqual({ size: 280, collapsed: true });
+    expect(collapsed && splitterKey(collapsed, 'left', 'Enter', false)?.panels.left).toEqual({ size: 280, collapsed: false });
     expect(splitterKey(DEFAULT_LAYOUT, 'bottom', 'ArrowUp', false)?.panels.bottom).toEqual({ size: 80, collapsed: false });
     expect(splitterKey(DEFAULT_LAYOUT, 'bottom', 'ArrowDown', false)).toBe(DEFAULT_LAYOUT);
     expect(splitterKey(DEFAULT_LAYOUT, 'bottom', 'End', false)?.panels.bottom).toEqual({ size: 400, collapsed: false });
@@ -117,7 +117,7 @@ describe('editor layout (FR-EDT-001, ADR-0029)', () => {
 
 describe('the panel buttons (FR-EDT-001)', () => {
   it('FR-EDT-001: a shown panel collapses; a hidden one opens and leaves focus mode', () => {
-    expect(togglePanelShown(DEFAULT_LAYOUT, 'left').panels.left).toEqual({ size: 240, collapsed: true });
+    expect(togglePanelShown(DEFAULT_LAYOUT, 'left').panels.left).toEqual({ size: 280, collapsed: true });
     expect(togglePanelShown(DEFAULT_LAYOUT, 'bottom')).toEqual({
       ...DEFAULT_LAYOUT,
       panels: { ...DEFAULT_LAYOUT.panels, bottom: { size: 160, collapsed: false } },

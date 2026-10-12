@@ -2,6 +2,7 @@ import { act, type ReactNode, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { registerBuiltinTools } from './builtin-tools.js';
+import { CHROME_CSS } from './chrome-css.js';
 import { DEFAULT_LAYOUT, type EditorLayout } from './layout.js';
 import { Inspector, LeftTabs, Timeline, ToolButtons, Toolbar } from './panels.js';
 import { createSession } from './session.js';
@@ -156,5 +157,40 @@ describe('editor chrome panels (FR-EDT-001)', () => {
     expect(said()).toBe('1 element selected');
     act(() => session.selection.set(['a' as never, 'b' as never]));
     expect(said()).toBe('2 elements selected');
+  });
+});
+
+describe('editor chrome left tabs (FR-EDT-022)', () => {
+  it('FR-EDT-022: all six left tabs are visible in one row at the default panel width, whole and named in full', async () => {
+    await act(async () =>
+      root.render(
+        <>
+          <style>{CHROME_CSS}</style>
+          <div className="fx-chrome-panel" style={{ width: DEFAULT_LAYOUT.panels.left.size }}>
+            <LeftTabs />
+          </div>
+        </>,
+      ),
+    );
+    const strip = host.querySelector<HTMLElement>('[role="tablist"]') as HTMLElement;
+    const tabs = [...strip.querySelectorAll<HTMLElement>('[role="tab"]')];
+    expect(tabs).toHaveLength(6);
+    expect(new Set(tabs.map((tab) => tab.offsetTop)).size).toBe(1);
+    expect(strip.scrollWidth).toBeLessThanOrEqual(strip.clientWidth);
+    const box = strip.getBoundingClientRect();
+    for (const tab of tabs) {
+      const r = tab.getBoundingClientRect();
+      expect(r.left).toBeGreaterThanOrEqual(box.left - 0.5);
+      expect(r.right).toBeLessThanOrEqual(box.right + 0.5);
+      // the label is not cut: no ellipsis at the default width, and the full label is its accessible name and tooltip
+      expect(tab.scrollWidth, tab.textContent ?? '').toBeLessThanOrEqual(tab.clientWidth);
+      expect(tab.getAttribute('aria-label')).toBe(tab.textContent);
+      expect(tab.title).toBe(tab.textContent);
+    }
+    // the tabs keep their roving focus
+    act(() => tabs[0]?.focus());
+    key(tabs[0] as HTMLElement, 'End');
+    expect(document.activeElement).toBe(tabs[5]);
+    expect(tabs[5]?.getAttribute('aria-selected')).toBe('true');
   });
 });

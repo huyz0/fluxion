@@ -13,8 +13,8 @@ const MERGE_KEY = 'source-view.apply';
 
 /** What one try at applying the text came to. */
 export type SyncResult = {
-  /** `applied` (the canvas changed, one undo step), `unchanged` (the text compiles to what the document holds), `invalid` (errors: nothing applied) or `refused` (the store refused the write). */
-  readonly status: 'applied' | 'unchanged' | 'invalid' | 'refused';
+  /** `applied` (the canvas changed, one undo step), `unchanged` (the text compiles to what the document holds), `invalid` (errors: nothing applied) or `refused` (the store refused the write) or `gone` (the screen the text was typed on was deleted on the canvas: nothing is applied). */
+  readonly status: 'applied' | 'unchanged' | 'invalid' | 'refused' | 'gone';
   /** Every diagnostic of the compile, warnings included. */
   readonly diagnostics: readonly DslDiagnostic[];
   /** Why the store refused the write. */

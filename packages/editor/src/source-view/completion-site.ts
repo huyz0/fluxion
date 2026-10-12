@@ -14,7 +14,23 @@ export type Site =
 /** The shape of the value a key of `CHILD` opens, as a state of the walk down the enclosing keys. */
 type State = { readonly t: 'map' | 'seq' | 'slugs'; readonly level: Level } | { readonly t: 'none' };
 const NONE: State = { t: 'none' };
-const WORD = /[\w.:-]*$/;
+
+/** The characters of a word that is a slug, an anchor, a token or a shape id. */
+const isWord = (c: string): boolean => /[\w.:-]/.test(c);
+/** The characters of a key. */
+const isKey = (c: string): boolean => /[\w-]/.test(c);
+/** Any character that is not whitespace. */
+const isSolid = (c: string): boolean => !/\s/.test(c);
+
+/**
+ * The run of `isWordChar` characters that ends at `pos`, found by walking back from the cursor (a `/x*$/` regex is tried from every start and takes
+ * quadratic time on a long line of word characters, M12.54 review).
+ */
+export function wordBefore(text: string, pos: number, isWordChar: (c: string) => boolean): string {
+  let start = pos;
+  while (start > 0 && isWordChar(text.charAt(start - 1))) start--;
+  return text.slice(start, pos);
+}
 
 type Line = { readonly ind: number; readonly dashes: number; readonly kc: number; readonly key?: string; readonly valueEmpty: boolean };
 type Bracket = { readonly ch: string; readonly at: number };
@@ -163,9 +179,9 @@ function valueSite(kind: 'shape' | 'token' | 'pack' | 'slug', word: string, pos:
 
 /** The shorthand edge `a -> b`, cursor at the end of `rest`: slug (or edge key) first, op second, slug last. */
 function edgeSite(rest: string, pos: number): Site | undefined {
-  const m = /^(.*?)(\S*)$/s.exec(rest);
-  const done = (m?.[1] ?? '').trim() === '' ? 0 : (m?.[1] ?? '').trim().split(/\s+/).length;
-  const word = m?.[2] ?? '';
+  const word = wordBefore(rest, rest.length, isSolid);
+  const head = rest.slice(0, rest.length - word.length).trim();
+  const done = head === '' ? 0 : head.split(/\s+/).length;
   if (done === 0) return slugOrAnchor(word, pos, 'edge-start');
   if (done === 1) return { kind: 'op', from: pos - word.length };
   return done === 2 ? slugOrAnchor(word, pos) : undefined;
@@ -195,7 +211,7 @@ const levelOf = (s: State): { level?: Level } => (s.t === 'none' ? {} : { level:
 
 /** `[ a, | ]`: items of `contains` (slugs) or `uses` (packs). */
 function seqFlow(c: Cur, part: string): Site | undefined {
-  const word = WORD.exec(part)?.[0] ?? '';
+  const word = wordBefore(part, part.length, isWord);
   if (c.sc.stack.length > 1) return undefined;
   const kind = c.owner === 'contains' ? 'slug' : c.owner === 'uses' ? 'pack' : undefined;
   return kind === undefined ? undefined : { kind, from: c.pos - word.length };
@@ -223,10 +239,10 @@ function flowSite(c: Cur): Site | undefined {
 
 /** A bare word on a dashed line: an item of `contains` or `uses`, an edge, or the first key of a mapping item. */
 function itemSite(rest: string, pos: number, state: State, last: string | undefined): Site | undefined {
-  const word = WORD.exec(rest)?.[0] ?? '';
+  const word = wordBefore(rest, rest.length, isWord);
   if (last === 'contains' || last === 'uses') return { kind: last === 'uses' ? 'pack' : 'slug', from: pos - word.length };
   if (state.t !== 'seq') return undefined;
-  return state.level === 'edge' ? edgeSite(rest, pos) : { kind: 'key', level: state.level, from: pos - (/[\w-]*$/.exec(rest)?.[0] ?? '').length };
+  return state.level === 'edge' ? edgeSite(rest, pos) : { kind: 'key', level: state.level, from: pos - wordBefore(rest, rest.length, isKey).length };
 }
 
 /** The key whose value opens the `k`th open bracket (`key: {`), if the bracket has one. */
@@ -281,7 +297,7 @@ function valueAt(c: Cur): Site | undefined {
   const key = unquote(c.rest.slice(0, c.sc.colon));
   if (/\s/.test(key)) return undefined;
   const kind = valueKind(key, { ...levelOf(c.state), inStyle: c.inStyle });
-  return kind === undefined ? undefined : valueSite(kind, WORD.exec(c.before)?.[0] ?? '', c.pos);
+  return kind === undefined ? undefined : valueSite(kind, wordBefore(c.before, c.before.length, isWord), c.pos);
 }
 
 /**
@@ -299,5 +315,5 @@ export function siteAt(text: string, pos: number): Site | undefined {
   if (c.sc.colon >= 0) return valueAt(c);
   if (c.rest.endsWith(':')) return undefined;
   if (c.dashed) return itemSite(c.rest, pos, walk(c.path), c.path[c.path.length - 1]);
-  return c.state.t === 'map' ? { kind: 'key', level: c.state.level, from: pos - (/[\w-]*$/.exec(c.rest)?.[0] ?? '').length } : undefined;
+  return c.state.t === 'map' ? { kind: 'key', level: c.state.level, from: pos - wordBefore(c.rest, c.rest.length, isKey).length } : undefined;
 }

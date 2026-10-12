@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { detectRenames, mergeOwned, type Recs } from './merge.js';
-import { applied, base, blockRecords, document, node, patched, rec, table, without, withRec } from './merge-fixture.js';
+import { applied, base, binding, blockRecords, document, edge, keptRecords, node, patched, rec, table, without, withRec } from './merge-fixture.js';
 import type { Rec } from './remap.js';
 
 describe('source view merge, groups', () => {
@@ -193,5 +193,32 @@ describe('source view merge, ambiguous renames', () => {
     const both = table([same('u1', 'a0'), same('u2', 'a1')]);
     expect(mergeOwned({ base: twins, next: both, current: { ...document(), ...twins } }).unpaired).toEqual([]);
     expect(mergeOwned({ base: base(), next: without(base(), 'b', 'e', 'eb1', 'eb2'), current: document() }).unpaired).toEqual([]);
+  });
+
+  /** The fixture block with edges a -> b, identical but for its ids, one edge and its two bindings per id given. */
+  const twinEdges = (ids: readonly string[]): Recs => {
+    const list = ids.flatMap((id) => [edge(id), binding(`${id}-s`, id, 'source', 'a'), binding(`${id}-t`, id, 'target', 'b')]);
+    return table([...blockRecords().filter((r) => !['e', 'eb1', 'eb2'].includes(r.id)), ...list]);
+  };
+
+  it('FR-EDT-022: two connectors identical but for their ids are named by their ends when the one removed loses a comment or an interaction', () => {
+    const before = twinEdges(['e1', 'e2']);
+    const after = twinEdges(['e3', 'e4']);
+    let current = { ...before, ...table(keptRecords()) };
+    current = withRec(current, rec({ id: 'note-e1', type: 'comment', targetId: 'e1', author: 'x', body: 'on the edge' }));
+    const result = mergeOwned({ base: before, next: after, current });
+    expect(result.unpaired).toEqual(['a \u2192 b']);
+    expect(result.remap.size).toBe(0);
+    expect(applied(current, result)['note-e1']).toBeUndefined();
+    // an interaction on the other twin is named the same way, and a connector of other ends is told apart by them
+    const click = withRec(current, rec({ id: 'click-e2', type: 'interaction', ownerId: 'e2', trigger: { kind: 'onClick' }, actions: [] }));
+    expect(mergeOwned({ base: before, next: after, current: click }).unpaired).toEqual(['a \u2192 b']);
+  });
+
+  it('FR-EDT-022: connector twins that lose nothing, and a plain connector delete, name nobody', () => {
+    const before = twinEdges(['e1', 'e2']);
+    const current = { ...before, ...table(keptRecords()) };
+    expect(mergeOwned({ base: before, next: twinEdges(['e3', 'e4']), current }).unpaired).toEqual([]);
+    expect(mergeOwned({ base: before, next: twinEdges([]), current }).unpaired).toEqual([]);
   });
 });

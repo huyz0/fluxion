@@ -17,7 +17,7 @@ import { fluxScriptCompletion } from './completion.js';
 import { completionCatalog } from './completion-catalog.js';
 import { diagnosticsGutter, type ShownDiagnostic, setDiagnostics, shownDiagnostics } from './diagnostics-gutter.js';
 import { fluxScriptLanguage } from './fluxscript-language.js';
-import type { MergeConflict } from './merge.js';
+import { statusText } from './source-status.js';
 import {
   createSourceController,
   cursorAnchor,
@@ -107,6 +107,8 @@ function extensionsFor(
     EditorView.domEventHandlers({
       focus: () => void controller().focus(),
       blur: (e) => void controller().blur({ toBanner: inBanner(e.relatedTarget) }),
+      // an IME composition holds the apply back (`composing` below); its end schedules the text that waited
+      compositionend: () => void controller().resume(),
     }),
     // no text history without @codemirror/commands (not locked): the browser's undo would desynchronise the view, so Mod-z is not passed on
     keymap.of([
@@ -119,57 +121,6 @@ function extensionsFor(
       if (u.docChanged && !u.transactions.some((tr) => tr.annotation(REGENERATED) === true)) controller().edit(u.state.doc.toString());
     }),
   ];
-}
-
-/** What a field of a conflict is called to the author: the whole path, else its first part. */
-const FIELD_NAMES: { readonly [field: string]: () => string } = {
-  '*': () => t`deleted on the canvas`,
-  placement: () => t`position`,
-  transform: () => t`position and size`,
-  'transform.x': () => t`position`,
-  'transform.y': () => t`position`,
-  'transform.w': () => t`size`,
-  'transform.h': () => t`size`,
-  text: () => t`text`,
-  'semantic.label': () => t`label`,
-  style: () => t`style`,
-  tone: () => t`tone`,
-  parentId: () => t`group`,
-};
-
-const fieldName = (path: string): string => (FIELD_NAMES[path] ?? FIELD_NAMES[path.split('.')[0] ?? ''])?.() ?? path;
-
-/** "Overwrote canvas changes to: api (position), db (label)": the records the text overwrote, with what of them. */
-function conflictText(conflicts: readonly MergeConflict[]): string {
-  const list = conflicts.map((c) => `${c.label} (${[...new Set(c.fields.map(fieldName))].join(', ')})`).join(', ');
-  return t`Overwrote canvas changes to: ${list}.`;
-}
-
-/** What a deleted element took with it: the records outside the view that pointed at it. */
-const dependentText = (n: number): string =>
-  n === 1 ? t`Removed or cleaned 1 record that pointed at a deleted element.` : t`Removed or cleaned ${n} records that pointed at a deleted element.`;
-
-/** The nodes the merge could not tell the rename of. */
-const unpairedText = (slugs: readonly string[]): string =>
-  t`Could not tell which node was renamed: ${slugs.join(', ')}. Their comments and canvas changes were removed.`;
-
-/** What an apply did beyond the change: conflicts, records cleaned, nodes it could not pair. */
-function appliedNotes(result: SyncResult): string[] {
-  return [
-    ...(result.conflicts !== undefined && result.conflicts.length > 0 ? [conflictText(result.conflicts)] : []),
-    ...(result.dependents !== undefined && result.dependents > 0 ? [dependentText(result.dependents)] : []),
-    ...(result.unpaired !== undefined && result.unpaired.length > 0 ? [unpairedText(result.unpaired)] : []),
-  ];
-}
-
-/** A short line of what the last try came to. */
-function statusText(result: SyncResult | undefined, errors: number): string {
-  if (result === undefined) return '';
-  if (result.status === 'invalid')
-    return errors === 1 ? t`1 error: the canvas keeps its last good state.` : t`${errors} errors: the canvas keeps its last good state.`;
-  if (result.status === 'refused') return t`The document refused the change: ${result.problem ?? ''}`;
-  if (result.status === 'unchanged') return t`Up to date.`;
-  return [t`Applied to the canvas.`, ...appliedNotes(result)].join(' ');
 }
 
 /** The list of problems; each row jumps to its line. */
@@ -242,6 +193,8 @@ type MountContext = {
   readonly text: string;
   readonly view: { current: EditorView | null };
   readonly control: { current: SourceController | null };
+  /** The result of a waiting text dropped because its screen was deleted: the next mount shows it once (the status of the view that left would be lost). */
+  readonly notice: { current: SyncResult | undefined };
   /** Whether the focus went to the banner. */
   readonly inBanner: (to: EventTarget | null) => boolean;
   readonly set: {
@@ -253,7 +206,7 @@ type MountContext = {
 
 /** Build the editor and its controller for one screen; returns the cleanup (it applies a waiting edit, which belongs to the screen being left). */
 function mountEditor(ctx: MountContext): () => void {
-  const { parent, props, screenId, text, view, control, set } = ctx;
+  const { parent, props, screenId, text, view, control, set, notice } = ctx;
   const { store, execute, registries, scheduler, delayMs } = props;
   let alive = true;
   let editFrom = headerLength(text);
@@ -264,6 +217,7 @@ function mountEditor(ctx: MountContext): () => void {
     registries,
     screen: screenId,
     initial: text,
+    composing: () => view.current?.composing === true,
     ...(scheduler === undefined ? {} : { scheduler }),
     ...(delayMs === undefined ? {} : { delayMs }),
     onRemap: (remap) => props.onRemap?.(remap),
@@ -284,6 +238,7 @@ function mountEditor(ctx: MountContext): () => void {
       result: (r) => {
         const editor = live();
         if (editor === null) return;
+        if (r?.status === 'gone') notice.current = r;
         const list = r === undefined ? [] : shownDiagnostics(r.diagnostics, editor.state.doc.toString());
         editor.dispatch({ effects: setDiagnostics.of(list) });
         set.setShown(list);
@@ -306,7 +261,8 @@ function mountEditor(ctx: MountContext): () => void {
   });
   view.current = editor;
   set.setShown([]);
-  set.setResult(undefined);
+  set.setResult(notice.current);
+  notice.current = undefined;
   set.setCanvasChanged(false);
   return () => {
     controller.flush();
@@ -329,6 +285,7 @@ export function SourceView(props: SourceViewProps): ReactNode {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const control = useRef<SourceController | null>(null);
+  const notice = useRef<SyncResult | undefined>(undefined);
   const banner = useRef<HTMLDivElement>(null);
   const latest = useRef(props);
   latest.current = props;
@@ -341,7 +298,7 @@ export function SourceView(props: SourceViewProps): ReactNode {
   useEffect(() => {
     const parent = host.current;
     if (parent === null || screenId === undefined) return;
-    return mountEditor({ parent, props: latest.current, screenId, text, view, control, inBanner, set: { setShown, setResult, setCanvasChanged } });
+    return mountEditor({ parent, props: latest.current, screenId, text, view, control, notice, inBanner, set: { setShown, setResult, setCanvasChanged } });
   }, [store, execute, registries, screenId, text, scheduler, delayMs]);
 
   const inBanner = (to: EventTarget | null): boolean => to instanceof Node && banner.current?.contains(to) === true;

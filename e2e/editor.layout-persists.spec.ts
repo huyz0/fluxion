@@ -7,7 +7,7 @@ test('FR-EDT-001: a resized panel keeps its width across a reload', async ({ pag
   const editor = new EditorPage(page);
   await editor.open('new');
   await editor.showSidePanels();
-  expect(await width(editor, 'Screens, library and layers')).toBe(240);
+  expect(await width(editor, 'Screens, library and layers')).toBe(280);
   const splitter = editor.splitter('Resize the left panel');
   const box = await splitter.boundingBox();
   if (box === null) throw new Error('the left splitter is not laid out');
@@ -15,16 +15,16 @@ test('FR-EDT-001: a resized panel keeps its width across a reload', async ({ pag
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2, { steps: 4 });
   await page.mouse.up();
-  expect(await width(editor, 'Screens, library and layers')).toBe(300);
+  expect(await width(editor, 'Screens, library and layers')).toBe(340);
   // the keyboard resizes too: the inspector grows toward the canvas
   await editor.splitter('Resize the inspector').focus();
   await page.keyboard.press('Shift+ArrowLeft');
   expect(await width(editor, 'Inspector')).toBe(330);
   await page.reload();
   await editor.screens.first().waitFor();
-  expect(await width(editor, 'Screens, library and layers')).toBe(300);
+  expect(await width(editor, 'Screens, library and layers')).toBe(340);
   expect(await width(editor, 'Inspector')).toBe(330);
-  await expect(editor.splitter('Resize the left panel')).toHaveAttribute('aria-valuenow', '300');
+  await expect(editor.splitter('Resize the left panel')).toHaveAttribute('aria-valuenow', '340');
 });
 
 test('FR-EDT-001: hidden panels and focus mode persist; the canvas keeps its screen', async ({ page }) => {

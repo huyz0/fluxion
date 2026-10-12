@@ -16,6 +16,9 @@ export { applyMerged, applySource, type Base, baseOf, generate, type SyncResult,
 /** How long the text must rest before it is compiled. */
 export const APPLY_DELAY_MS = 300;
 
+/** The longest a text is held back by a composition that never reports its end (an IME cancelled by a focus change), counted in ms of continuous composing. */
+export const COMPOSITION_MAX_HOLD_MS = 10_000;
+
 /** How long the canvas must be quiet before the view looks at what changed (a drag changes the document every frame: one look, after it). */
 export const RECONCILE_DELAY_MS = 50;
 
@@ -60,14 +63,20 @@ export type SourceSyncOptions = {
   readonly base?: () => Base | undefined;
   /** Told when an apply changed ids (a renamed slug, a record made by hand): the selection and the shown screen follow. */
   readonly onRemap?: (remap: ReadonlyMap<RecordId, RecordId>) => void;
+  /** The screen the text was typed on: a text is dropped (status `gone`) when this screen no longer exists, so an apply cannot bring it back. */
+  readonly screen?: RecordId;
+  /** Whether an IME composition is running: the pause does not compile the partial text then but starts again (at most {@link COMPOSITION_MAX_HOLD_MS}), and {@link SourceSync.resume} is the fast path. */
+  readonly composing?: () => boolean;
 };
 
 /** The debounced text to canvas sync of one source view. */
 export type SourceSync = {
   /** The text changed: compile it once the author has stopped typing for the delay. */
   readonly edit: (text: string) => void;
-  /** Compile the last text now, if one is waiting. */
+  /** Compile the last text now, if one is waiting (also while composing: the view is being left). */
   readonly flush: () => void;
+  /** The composition ended: a text that waited for it is compiled after the pause. */
+  readonly resume: () => void;
   /** Drop a waiting text. */
   readonly cancel: () => void;
   /** Whether a text waits for its pause (the view is dirty). */
@@ -86,12 +95,11 @@ export function createSourceSync(options: SourceSyncOptions): SourceSync {
   const { store, execute, registries, onResult } = options;
   const scheduler = options.scheduler ?? BROWSER_SCHEDULER;
   const delay = options.delayMs ?? APPLY_DELAY_MS;
-  let waiting: { text: string; handle: unknown } | undefined;
+  // `held` counts the pauses the text was held back by a composition
+  let waiting: { text: string; handle: unknown; held: number } | undefined;
+  const maxHolds = Math.max(1, Math.ceil(COMPOSITION_MAX_HOLD_MS / delay));
   let busy = false;
-  const run = (): void => {
-    if (waiting === undefined) return;
-    const { text } = waiting;
-    waiting = undefined;
+  const apply = (text: string): void => {
     busy = true;
     let result: SyncResult;
     try {
@@ -102,18 +110,42 @@ export function createSourceSync(options: SourceSyncOptions): SourceSync {
     if (result.remap !== undefined && result.remap.size > 0) options.onRemap?.(result.remap);
     onResult(result, text);
   };
+  const stop = (): void => {
+    if (waiting?.handle !== undefined) scheduler.clear(waiting.handle);
+  };
+  const run = (force: boolean): void => {
+    if (waiting === undefined) return;
+    if (!force && options.composing?.() === true && waiting.held < maxHolds) {
+      // held: the pause starts again (a composition that never reports its end cannot strand the text); `resume` is the fast path
+      schedule(waiting.text, waiting.held + 1);
+      return;
+    }
+    const { text } = waiting;
+    waiting = undefined;
+    // the screen was deleted on the canvas meanwhile: applying would put it back in the same undo step
+    if (options.screen !== undefined && store.get(options.screen) === undefined) onResult({ status: 'gone', diagnostics: [] }, text);
+    else apply(text);
+  };
   const cancel = (): void => {
-    if (waiting !== undefined) scheduler.clear(waiting.handle);
+    stop();
     waiting = undefined;
   };
+  function schedule(text: string, held = 0): void {
+    waiting = { text, handle: scheduler.set(() => run(false), delay), held };
+  }
   return {
     edit: (text) => {
       cancel();
-      waiting = { text, handle: scheduler.set(run, delay) };
+      schedule(text);
     },
     flush: () => {
-      if (waiting !== undefined) scheduler.clear(waiting.handle);
-      run();
+      stop();
+      run(true);
+    },
+    resume: () => {
+      if (waiting === undefined) return;
+      stop();
+      schedule(waiting.text);
     },
     cancel,
     pending: () => waiting !== undefined,
@@ -293,8 +325,7 @@ export function createSourceController(options: SourceControllerOptions): Source
     banner(false);
   };
   const reconcile = (): void => {
-    // a banner that is up stays up while the view is focused or dirty: nothing could change, so nothing is generated
-    if (changed && (focused || !clean())) return;
+    // a banner that is up is looked at too: the canvas may have come back to the text, and then the banner goes (the text is not touched)
     if (store.get(screen) === undefined) return;
     const made = generate(store, registries, screen);
     if (made.text === port.text()) {

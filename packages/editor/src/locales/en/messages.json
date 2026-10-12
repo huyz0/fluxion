@@ -20,7 +20,7 @@
   "0QG_4U": {
     "message": "label",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "1DBGsz": {
@@ -165,7 +165,7 @@
   "9YwmXg": {
     "message": "{errors} errors: the canvas keeps its last good state.",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "9oWmtA": {
@@ -222,6 +222,12 @@
       "packages/editor/src/edit-toolbar.tsx"
     ]
   },
+  "CmIKXf": {
+    "message": "Could not tell which node or connector was renamed: {0}. Their comments and canvas changes were removed.",
+    "origin": [
+      "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
   "D-zLDD": {
     "message": "Hidden",
     "origin": [
@@ -255,13 +261,13 @@
   "EGEvKg": {
     "message": "1 error: the canvas keeps its last good state.",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "EKpV8E": {
     "message": "Applied to the canvas.",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "EPVGbb": {
@@ -273,7 +279,7 @@
   "F0lHkW": {
     "message": "text",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "FEr96N": {
@@ -291,7 +297,7 @@
   "FYBgK3": {
     "message": "deleted on the canvas",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "FZ9Zfp": {
@@ -316,7 +322,7 @@
   "Gl1I_5": {
     "message": "Overwrote canvas changes to: {list}.",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "GvwkUd": {
@@ -371,7 +377,7 @@
   "ImGCFI": {
     "message": "Up to date.",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "IruwXN": {
@@ -402,12 +408,6 @@
     "message": "Screens, library and layers",
     "origin": [
       "packages/editor/src/panels.tsx"
-    ]
-  },
-  "LsTKGV": {
-    "message": "Could not tell which node was renamed: {0}. Their comments and canvas changes were removed.",
-    "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
     ]
   },
   "M6P3Qa": {
@@ -489,11 +489,23 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
+  "Px-rYS": {
+    "message": "details",
+    "origin": [
+      "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
   "Rr-tAv": {
     "message": "Document details",
     "origin": [
       "packages/editor/src/metadata-dialog.tsx",
       "packages/editor/src/toolbar-extras.tsx"
+    ]
+  },
+  "S1d9D8": {
+    "message": "The screen was deleted on the canvas: the text was not applied.",
+    "origin": [
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "SagCAA": {
@@ -531,7 +543,7 @@
   "WJ8iwk": {
     "message": "Removed or cleaned 1 record that pointed at a deleted element.",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "WMlw1A": {
@@ -562,6 +574,12 @@
     "message": "Adding {family}…",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "XmJfZT": {
+    "message": "name",
+    "origin": [
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "Y_0yYP": {
@@ -615,7 +633,13 @@
   "ZvJXpi": {
     "message": "The document refused the change: {0}",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "_RhvUo": {
+    "message": "settings",
+    "origin": [
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "_UOCa8": {
@@ -970,7 +994,7 @@
   "hsax1u": {
     "message": "position",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "i22EYX": {
@@ -1000,7 +1024,7 @@
   "l2EobP": {
     "message": "position and size",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "lG1keT": {
@@ -1042,7 +1066,7 @@
   "nUKWVw": {
     "message": "style",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "o-XJ9D": {
@@ -1084,7 +1108,7 @@
   "pPA51L": {
     "message": "group",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "pSxyuz": {
@@ -1096,7 +1120,7 @@
   "qNiGUh": {
     "message": "size",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "qP9z7l": {
@@ -1266,7 +1290,7 @@
   "vBkVQS": {
     "message": "tone",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "vLyv1R": {
@@ -1326,7 +1350,7 @@
   "x5QjUE": {
     "message": "Removed or cleaned {n} records that pointed at a deleted element.",
     "origin": [
-      "packages/editor/src/source-view/source-view.tsx"
+      "packages/editor/src/source-view/source-status.ts"
     ]
   },
   "xAQnfp": {

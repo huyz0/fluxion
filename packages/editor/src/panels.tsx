@@ -176,6 +176,8 @@ export function LeftTabs(props: LeftTabsProps = {}): ReactNode {
             type="button"
             role="tab"
             className="fx-chrome-tab"
+            aria-label={tabItem.label}
+            title={tabItem.label}
             aria-selected={i === selected}
             aria-controls={`${id}-panel`}
             tabIndex={i === selected ? 0 : -1}

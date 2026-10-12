@@ -154,4 +154,37 @@ describe('completionsAt (FR-DSL-009, ADR-0032)', () => {
     const spaced = `${head}      - a -> b: { style:${' '.repeat(2000)}{ fill: `;
     expect(siteAt(spaced, spaced.length)?.kind).toBe('token');
   });
+
+  it('FR-DSL-009: a 50,000-character line is scanned back from the cursor in linear time, whatever its shape', () => {
+    // the word before the cursor was found with `/[\w.:-]*$/`, `/^(.*?)(\S*)$/s` and `/[\w-]*$/`: each took about 2.5 s on 'a' x 50,000 + '!'
+    const long = 'a'.repeat(50_000);
+    const E = `${SCREEN}    edges:\n      - `;
+    const N = `${SCREEN}    nodes:\n      api:\n        `;
+    const shapes: readonly string[] = [
+      `${E}${long}!`,
+      `${E}${long} `,
+      `${E}x -> ${long}!`,
+      `${E}${long} -> `,
+      `${N}${long}!`,
+      `${N}${long} `,
+      `${N}shape: ${long}!`,
+      `${N}shape: ${long} `,
+      `${N}style: { fill: ${long}!`,
+      `${N}style: { fill: ${long} `,
+      `${SCREEN}    groups:\n      g:\n        contains: [${long}!`,
+      `${SCREEN}    groups:\n      g:\n        contains: [${long} `,
+      `flux: 1\nuses:\n  - ${long}!`,
+      `${E}{ ${long}!`,
+    ];
+    for (const text of shapes) {
+      const started = performance.now();
+      siteAt(text, text.length);
+      completionsAt(text, text.length, catalog());
+      expect(performance.now() - started, text.slice(0, 60)).toBeLessThan(1000);
+    }
+    // the sites themselves are unchanged: the word is what the cursor is after, back to its start
+    expect(siteAt(`${E}${long}`, `${E}${long}`.length)).toEqual({ kind: 'edge-start', from: E.length });
+    expect(siteAt(`${E}x -> ${long}`, `${E}x -> ${long}`.length)).toEqual({ kind: 'slug', from: E.length + 5 });
+    expect(siteAt(`${N}${long}`, `${N}${long}`.length)).toEqual({ kind: 'key', level: 'node', from: N.length });
+  });
 });

@@ -266,4 +266,129 @@ describe('source view', () => {
     expect([...(seen[0] ?? [])].find(([old]) => old === alpha)?.[1]).toBeDefined();
     expect(store.has(alpha)).toBe(false);
   });
+
+  it('FR-EDT-022: the header takes an insert at its end and refuses a replace that spans its end and a backspace into it', async () => {
+    const { editor } = await mount();
+    const before = editor.state.doc.toString();
+    const from = headerLength(before);
+    // a backspace at the first editable column deletes the header's last character; a paste over the end of the header starts inside it
+    editor.dispatch({ changes: { from: from - 1, to: from } });
+    editor.dispatch({ changes: { from: from - 4, to: from + 4, insert: 'pasted' } });
+    editor.dispatch({ changes: { from: from - 1, to: from + 1 } });
+    expect(editor.state.doc.toString()).toBe(before);
+    // an insert at exactly the end of the header is the editable part's first column
+    editor.dispatch({ changes: { from, insert: '# note\n' } });
+    expect(editor.state.doc.toString()).toBe(`${before.slice(0, from)}# note\n${before.slice(from)}`);
+    // a replace that starts at the end of the header is the editable part's too
+    editor.dispatch({ changes: { from, to: from + 6, insert: '# memo' } });
+    expect(editor.state.doc.sliceString(from, from + 6)).toBe('# memo');
+  });
+
+  it('FR-EDT-022: a screen switch and an unmount flush the waiting text to the screen it was typed on, and change nothing on the other screen', async () => {
+    const fixture = setup();
+    const timer = manualScheduler();
+    const two = fixture.store
+      .members('byType', 'screen')
+      .find((id) => (fixture.store.get(id) as { meta?: { slug?: string } }).meta?.slug === 'two') as RecordId;
+    const show = (screenId: RecordId) =>
+      act(async () =>
+        root.render(
+          <SourceView store={fixture.store} execute={fixture.execute} registries={fixture.registries} screenId={screenId} scheduler={timer.scheduler} />,
+        ),
+      );
+    const recordsOf = (id: RecordId) =>
+      JSON.stringify(
+        fixture.store
+          .members('byType', 'element')
+          .filter((e) => (fixture.store.get(e) as { screenId?: RecordId }).screenId === id)
+          .map((e) => fixture.store.get(e)),
+      );
+    await show(fixture.one);
+    const editor = EditorView.findFromDOM(host) as EditorView;
+    const gamma = recordsOf(two);
+    const at = editor.state.doc.toString().indexOf('Alpha');
+    await act(async () => editor.dispatch({ changes: { from: at, to: at + 5, insert: 'Omega' } }));
+    expect(timer.count()).toBe(1);
+    // switch before the pause is over: the text goes to screen one, and screen two is as it was
+    await show(two);
+    expect(has(fixture.store, 'Omega')).toBe(true);
+    expect(recordsOf(two)).toBe(gamma);
+    expect(EditorView.findFromDOM(host)?.state.doc.toString()).toContain('Gamma');
+    expect(timer.count()).toBe(0);
+    // and an unmount flushes too
+    const view = EditorView.findFromDOM(host) as EditorView;
+    const c = view.state.doc.toString().indexOf('Gamma');
+    await act(async () => view.dispatch({ changes: { from: c, to: c + 5, insert: 'Delta' } }));
+    expect(has(fixture.store, 'Delta')).toBe(false);
+    await act(async () => root.render(<div />));
+    expect(has(fixture.store, 'Delta')).toBe(true);
+    expect(has(fixture.store, 'Omega')).toBe(true);
+  });
+
+  it('FR-EDT-022: text waiting for a screen that was deleted on the canvas is dropped with a status, not applied', async () => {
+    const { store, execute, one, timer, replace } = await mount();
+    await act(async () => replace('Alpha', 'Omega'));
+    execute('screen.delete', { id: one });
+    const after = store.toDocument();
+    await act(async () => timer.advance(300));
+    expect(store.toDocument()).toEqual(after);
+    expect(store.get(one)).toBeUndefined();
+    expect(host.querySelector('.fx-chrome-source-status')?.getAttribute('data-status')).toBe('gone');
+    expect(host.querySelector('.fx-chrome-source-status')?.textContent).toBe('The screen was deleted on the canvas: the text was not applied.');
+  });
+
+  it('FR-EDT-022: nothing is applied while the view is composing, and the end of the composition is followed by the apply', async () => {
+    const { store, timer, replace, editor } = await mount();
+    let composing = true;
+    Object.defineProperty(editor, 'composing', { get: () => composing, configurable: true });
+    await act(async () => replace('Alpha', 'Omega'));
+    await act(async () => timer.advance(300));
+    await act(async () => timer.advance(300));
+    expect(has(store, 'Omega')).toBe(false);
+    expect(host.querySelector('.fx-chrome-source-status')?.getAttribute('data-status')).toBeNull();
+    composing = false;
+    await act(async () => editor.contentDOM.dispatchEvent(new CompositionEvent('compositionend', { data: 'Omega', bubbles: true })));
+    await act(async () => timer.advance(299));
+    expect(has(store, 'Omega')).toBe(false);
+    await act(async () => timer.advance(1));
+    expect(has(store, 'Omega')).toBe(true);
+    expect(host.querySelector('.fx-chrome-source-status')?.getAttribute('data-status')).toBe('applied');
+  });
+
+  it('FR-EDT-022: a screen switch or an unmount with text waiting for a deleted screen drops it, and the next screen shows the notice once', async () => {
+    const fixture = setup();
+    const timer = manualScheduler();
+    const two = fixture.store
+      .members('byType', 'screen')
+      .find((id) => (fixture.store.get(id) as { meta?: { slug?: string } }).meta?.slug === 'two') as RecordId;
+    const show = (screenId: RecordId) =>
+      act(async () =>
+        root.render(
+          <SourceView store={fixture.store} execute={fixture.execute} registries={fixture.registries} screenId={screenId} scheduler={timer.scheduler} />,
+        ),
+      );
+    const status = () => host.querySelector('.fx-chrome-source-status');
+    await show(fixture.one);
+    const editor = EditorView.findFromDOM(host) as EditorView;
+    const at = editor.state.doc.toString().indexOf('Alpha');
+    await act(async () => editor.dispatch({ changes: { from: at, to: at + 5, insert: 'Omega' } }));
+    fixture.execute('screen.delete', { id: fixture.one });
+    const after = fixture.store.toDocument();
+    await show(two);
+    expect(fixture.store.toDocument()).toEqual(after);
+    expect(status()?.getAttribute('data-status')).toBe('gone');
+    expect(status()?.textContent).toBe('The screen was deleted on the canvas: the text was not applied.');
+    // shown once: the next screen starts clean
+    await show(fixture.store.members('byType', 'screen').find((id) => id !== two) as RecordId);
+    expect(status()?.getAttribute('data-status')).toBeNull();
+    // an unmount writes nothing either
+    await show(two);
+    const view = EditorView.findFromDOM(host) as EditorView;
+    const c = view.state.doc.toString().indexOf('Gamma');
+    await act(async () => view.dispatch({ changes: { from: c, to: c + 5, insert: 'Delta' } }));
+    fixture.execute('screen.delete', { id: two });
+    const gone = fixture.store.toDocument();
+    await act(async () => root.render(<div />));
+    expect(fixture.store.toDocument()).toEqual(gone);
+  });
 });

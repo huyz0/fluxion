@@ -53,7 +53,7 @@ export type MergeResult = {
   readonly conflicts: readonly MergeConflict[];
   /** How many records outside the block were deleted or lost a reference because the element they pointed at went. */
   readonly dependents: number;
-  /** The slugs of removed nodes that could not be paired with an added one (the same shape came and went more than once) and lost a comment, interaction or canvas field with it. */
+  /** The names of removed nodes (their slugs) and connectors (`a \u2192 b`, their ends) that could not be paired with an added one (the same shape came and went more than once) and lost a comment, interaction or canvas field with it. */
   readonly unpaired: readonly string[];
   /** Each document id that changes, to the id it becomes. */
   readonly remap: ReadonlyMap<string, string>;
@@ -309,13 +309,25 @@ function scrubDependents(work: Work, gone: Set<string>): number {
   return touched;
 }
 
-/** The slugs of the ambiguous removed nodes whose record the canvas changed, or that records outside the block point at: what the delete will take with it. */
+/** What a removed connector is called to the author: the slugs of the elements it joined (`a \u2192 b`; `?` for an end bound to nothing). */
+function endsLabel(connector: Rec, bindings: ReadonlyMap<string, Rec[]>, base: Recs): string {
+  const end = (which: string): string => {
+    const bound = (bindings.get(connector.id) ?? []).find((b) => b['end'] === which);
+    const target = bound === undefined ? undefined : base[String(bound['elementId'])];
+    return target === undefined ? '?' : labelOf(target);
+  };
+  return `${end('source')} \u2192 ${end('target')}`;
+}
+
+/** The names of the ambiguous removed nodes and connectors whose record the canvas changed, or that records outside the block point at: what the delete will take with it. */
 function unpairedLosses(work: Work, base: Recs, next: Recs, ambiguous: readonly string[]): string[] {
-  const lost = ambiguous.filter((id) => id in work && !(id in next) && isNode(base[id] as Rec));
+  const lost = ambiguous.filter((id) => id in work && !(id in next) && (isNode(base[id] as Rec) || isConnector(base[id] as Rec)));
   if (lost.length === 0) return [];
   const outside = Object.values(work).filter((r) => !(r.id in base) && !(r.id in next));
   const losing = lost.filter((id) => !sameValue(work[id], base[id]) || outside.some((r) => JSON.stringify(r).includes(`"${id}"`)));
-  return losing.map((id) => labelOf(base[id] as Rec)).sort();
+  const bindings = bindingsOf(base);
+  const named = losing.map((id) => (isConnector(base[id] as Rec) ? endsLabel(base[id] as Rec, bindings, base) : labelOf(base[id] as Rec)));
+  return [...new Set(named)].sort();
 }
 
 /** Delete the owned records the new compile lacks (not a screen), and see to what pointed at them. Returns how many records outside the block that touched. */

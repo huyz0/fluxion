@@ -70,7 +70,7 @@ describe('touch recognizers (FR-EDT-019)', () => {
     expect(defaultLayout(768)).toBe(DEFAULT_LAYOUT);
     const narrow = defaultLayout(767);
     expect([narrow.panels.left.collapsed, narrow.panels.right.collapsed, narrow.panels.bottom]).toEqual([true, true, DEFAULT_LAYOUT.panels.bottom]);
-    expect([narrow.panels.left.size, narrow.panels.right.size, narrow.focus]).toEqual([240, 280, false]);
+    expect([narrow.panels.left.size, narrow.panels.right.size, narrow.focus]).toEqual([280, 280, false]);
   });
 
   it('FR-EDT-019: a finger reaches a handle further than a mouse', () => {

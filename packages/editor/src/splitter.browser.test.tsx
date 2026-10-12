@@ -45,7 +45,7 @@ describe('Splitter (FR-EDT-001, ADR-0029)', () => {
   it('FR-EDT-001: a splitter is a named, focusable separator whose value is its panel`s size', async () => {
     const s = await mount('left');
     expect([s.tabIndex, s.getAttribute('aria-label'), s.getAttribute('aria-controls')]).toEqual([0, 'Resize it', 'p']);
-    expect(['aria-orientation', 'aria-valuenow', 'aria-valuemin', 'aria-valuemax'].map((a) => s.getAttribute(a))).toEqual(['vertical', '240', '0', '480']);
+    expect(['aria-orientation', 'aria-valuenow', 'aria-valuemin', 'aria-valuemax'].map((a) => s.getAttribute(a))).toEqual(['vertical', '280', '0', '480']);
     expect(s.className).toBe('fx-chrome-splitter');
     const b = await mount('bottom');
     // the timeline starts collapsed: its splitter reads 0 and controls nothing
@@ -55,9 +55,9 @@ describe('Splitter (FR-EDT-001, ADR-0029)', () => {
   it('FR-EDT-001: arrows, Home, End and Enter resize and collapse; other keys pass through', async () => {
     const s = await mount('left');
     expect(key(s, 'ArrowRight')).toBe(true);
-    expect(s.getAttribute('aria-valuenow')).toBe('250');
+    expect(s.getAttribute('aria-valuenow')).toBe('290');
     key(s, 'ArrowLeft', true);
-    expect(layout.panels.left.size).toBe(200);
+    expect(layout.panels.left.size).toBe(240);
     key(s, 'End');
     expect(s.getAttribute('aria-valuenow')).toBe('480');
     key(s, 'Enter');

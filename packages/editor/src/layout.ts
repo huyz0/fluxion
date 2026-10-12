@@ -41,7 +41,7 @@ export const PANEL_LIMITS: { readonly [P in PanelId]: { readonly min: number; re
  */
 export const DEFAULT_LAYOUT: EditorLayout = {
   panels: {
-    left: { size: 240, collapsed: false },
+    left: { size: 280, collapsed: false },
     right: { size: 280, collapsed: false },
     bottom: { size: 160, collapsed: true },
   },

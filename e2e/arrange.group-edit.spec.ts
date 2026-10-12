@@ -34,10 +34,10 @@ test.describe('groups', { tag: '@desktop' }, () => {
     if (a0 === undefined || b0 === undefined) throw new Error('two shapes');
     // move: a drag from the first member takes both
     const from = centre(a0);
-    await drag(page, from, { x: from.x + 40, y: from.y + 30 });
+    await drag(page, from, { x: from.x + 40, y: from.y + 20 });
     const [a1, b1] = await boxes(editor);
-    expect([(a1 as Box).x - a0.x, (a1 as Box).y - a0.y]).toEqual([expect.closeTo(40, 0), expect.closeTo(30, 0)]);
-    expect([(b1 as Box).x - b0.x, (b1 as Box).y - b0.y]).toEqual([expect.closeTo(40, 0), expect.closeTo(30, 0)]);
+    expect([(a1 as Box).x - a0.x, (a1 as Box).y - a0.y]).toEqual([expect.closeTo(40, 0), expect.closeTo(20, 0)]);
+    expect([(b1 as Box).x - b0.x, (b1 as Box).y - b0.y]).toEqual([expect.closeTo(40, 0), expect.closeTo(20, 0)]);
     // resize: the se handle drags the group's corner and both members scale with it
     const se = await handle(page, 'se');
     await drag(page, se, { x: se.x + 80, y: se.y + 40 });
