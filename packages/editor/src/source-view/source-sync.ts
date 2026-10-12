@@ -205,8 +205,11 @@ export function cursorIn(next: string, anchor: CursorAnchor, editFrom: number): 
 export type SourcePort = {
   /** The text the editor holds now. */
   readonly text: () => string;
-  /** Replace the editable text by `text` in one change that is not the author's (it must not schedule an apply). */
-  readonly replace: (text: string) => void;
+  /**
+   * Replace the editable text by `text` in one change that is not the author's (it must not schedule an apply). `explicit` is the author's own Reload
+   * (an entry of the text history); otherwise it is an automatic regeneration after a canvas change (not recorded, the history starts over).
+   */
+  readonly replace: (text: string, explicit: boolean) => void;
   /** Show or hide the "Canvas changed — reload" banner. */
   readonly banner: (show: boolean) => void;
   /** Show what the last try came to (`undefined` clears it and the diagnostics). */
@@ -317,11 +320,11 @@ export function createSourceController(options: SourceControllerOptions): Source
     },
   });
   const clean = (): boolean => !sync.pending() && errors === 0 && port.text() === base;
-  const put = (made: Generated): void => {
+  const put = (made: Generated, explicit: boolean): void => {
     base = made.text;
     merging = baseOf(made.text, registries, made, screen);
     errors = 0;
-    port.replace(made.text);
+    port.replace(made.text, explicit);
     banner(false);
   };
   const reconcile = (): void => {
@@ -331,7 +334,7 @@ export function createSourceController(options: SourceControllerOptions): Source
     if (made.text === port.text()) {
       base = made.text;
       banner(false);
-    } else if (clean() && !focused) put(made);
+    } else if (clean() && !focused) put(made, false);
     else banner(true);
   };
   const looker = gatherChanges(store, scheduler, () => sync.applying(), reconcile);
@@ -351,7 +354,7 @@ export function createSourceController(options: SourceControllerOptions): Source
       sync.cancel();
       looker.cancel();
       port.result(undefined);
-      put(generate(store, registries, screen));
+      put(generate(store, registries, screen), true);
     },
     dispose: () => {
       looker.dispose();

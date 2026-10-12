@@ -4,9 +4,10 @@
 // A canvas change regenerates the text only while the view is clean and not focused; otherwise a banner offers the reload (M12.48, ADR-0032).
 // An apply is the three-way merge of ADR-0032 (merge.ts): what the canvas changed and the text did not stays, a conflict is named in the status line,
 // and ids that changed (a renamed slug) are told to the host (`onRemap`). The text has CodeMirror's own history (M12.59): Mod-z and Mod-Shift-z act on
-// the text only, never on the document (ADR-0014's undo is the toolbar's and the canvas's). A regeneration is one entry of it, so a Reload can be undone;
-// one that rewrites the header is not (the header is read-only, so no undo may touch it) and starts the history over.
-import { history, historyKeymap, isolateHistory } from '@codemirror/commands';
+// the text only, never on the document (ADR-0014's undo is the toolbar's and the canvas's). Only the explicit Reload is one entry of it, so it can be
+// undone; an automatic regeneration after a canvas change is not recorded and starts the history over (a stale Mod-z could bring the pre-drag text back,
+// and the sync would merge it as the author's edit), and so does one that rewrites the header (read-only: no undo may touch it). M12.60.
+import { history, isolateHistory, redo, undo } from '@codemirror/commands';
 import { Annotation, Compartment, EditorState, type Extension, Transaction } from '@codemirror/state';
 import { Decoration, EditorView, keymap, lineNumbers } from '@codemirror/view';
 import type { CoreRegistries, Store } from '@fluxion/core';
@@ -117,8 +118,14 @@ function extensionsFor(
     }),
     HISTORY.of(history()),
     // Mod-z, Mod-Shift-z and Mod-y are the text's own history (the browser's native undo would desynchronise the view); the window's key dispatcher
-    // leaves a key typed into the contenteditable alone (`isEditable`), so the document is not undone by the same press
-    keymap.of([{ key: 'Escape', run: () => (props.onEscape === undefined ? false : (props.onEscape(), true)) }, ...historyKeymap]),
+    // leaves a key typed into the contenteditable alone (`isEditable`), so the document is not undone by the same press. Not `historyKeymap`: its
+    // Mod-u and Alt-u (selection undo) would swallow Ctrl-U, the browser's view-source, for nothing the author asked for.
+    keymap.of([
+      { key: 'Escape', run: () => (props.onEscape === undefined ? false : (props.onEscape(), true)) },
+      { key: 'Mod-z', run: undo, preventDefault: true },
+      { key: 'Mod-y', mac: 'Mod-Shift-z', run: redo, preventDefault: true },
+      { key: 'Mod-Shift-z', run: redo, preventDefault: true },
+    ]),
     EditorView.updateListener.of((u) => {
       if (u.docChanged && !u.transactions.some((tr) => tr.annotation(REGENERATED) === true)) controller().edit(u.state.doc.toString());
     }),
@@ -150,22 +157,23 @@ function ProblemList(props: { readonly items: readonly ShownDiagnostic[]; readon
 }
 
 /** Replace the editable text of `editor` by `next` in one change that is not the author's; `editFrom` is where the editable part started. */
-function regenerate(editor: EditorView, next: string, editFrom: number): void {
+function regenerate(editor: EditorView, next: string, editFrom: number, explicit: boolean): void {
   const old = editor.state.doc.toString();
   const from = headerLength(next);
   // the header is kept as it is unless the canvas changed it; then the whole text is replaced
   const start = from === editFrom && old.slice(0, editFrom) === next.slice(0, from) ? editFrom : 0;
   const cursor = cursorIn(next, cursorAnchor(old, editor.state.selection.main.head), from);
-  // a change of the header cannot be undone (the filter would refuse the header's part): it is not recorded, and the history ends with the old text
-  const header = start === 0;
+  // only the Reload the author chose is an entry of the history, apart from the typing around it. A change of the header cannot be undone (the filter would
+  // refuse the header's part), and an automatic regeneration must not be undone to a text from before the canvas changed: neither is recorded, and the
+  // history ends with the old text. A clean view holds no pending typing, so nothing the author has not applied is lost.
+  const recorded = explicit && start !== 0;
   editor.dispatch({
     changes: { from: start, to: old.length, insert: next.slice(start) },
     selection: { anchor: cursor },
-    effects: [setDiagnostics.of([]), ...(header ? [HISTORY.reconfigure([])] : [])],
-    // a Reload is its own entry, apart from the typing around it
-    annotations: header ? [REGENERATED.of(true), Transaction.addToHistory.of(false)] : [REGENERATED.of(true), isolateHistory.of('full')],
+    effects: [setDiagnostics.of([]), ...(recorded ? [] : [HISTORY.reconfigure([])])],
+    annotations: recorded ? [REGENERATED.of(true), isolateHistory.of('full')] : [REGENERATED.of(true), Transaction.addToHistory.of(false)],
   });
-  if (header) editor.dispatch({ effects: HISTORY.reconfigure(history()) });
+  if (!recorded) editor.dispatch({ effects: HISTORY.reconfigure(history()) });
 }
 
 /** The banner of a canvas that changed under a view that is focused or dirty. It follows the editor in the tab order. */
@@ -229,13 +237,13 @@ function mountEditor(ctx: MountContext): () => void {
     onRemap: (remap) => props.onRemap?.(remap),
     port: {
       text: () => view.current?.state.doc.toString() ?? '',
-      replace: (next) => {
+      replace: (next, explicit) => {
         const editor = live();
         if (editor === null) return;
         // the new boundary first: the decorations and the filter of the dispatch itself read it
         const old = editFrom;
         editFrom = headerLength(next);
-        regenerate(editor, next, old);
+        regenerate(editor, next, old, explicit);
         set.setShown([]);
       },
       banner: (show) => {

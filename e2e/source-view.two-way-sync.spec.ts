@@ -405,4 +405,21 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await expect(text).toContainText('shape: rectt');
     await expect(text).not.toContainText('pin:');
   });
+
+  test('FR-EDT-022: after a canvas drag regenerated the text, Mod-z in the editor leaves the drag and the text as they are (M12.60)', async ({ page }) => {
+    const { editor, text } = await openSource(page);
+    await editor.toolbarButton('Snapping').click();
+    await dragShape(editor, 'Alpha', 120, 80);
+    const alpha = text.locator('.cm-line', { hasText: 'label: Alpha' });
+    await expect(alpha).toContainText('pin: { x: ');
+    const pinned = await pinOf(text, 'Alpha');
+    await alpha.click();
+    await page.keyboard.press('Control+z');
+    // the pause would have applied a restored pre-drag text by now
+    await page.waitForTimeout(600);
+    await expect(alpha).toContainText('pin: { x: ');
+    expect(await pinOf(text, 'Alpha')).toEqual(pinned);
+    await text.press('Escape');
+    expect(await pinOf(text, 'Alpha')).toEqual(pinned);
+  });
 });

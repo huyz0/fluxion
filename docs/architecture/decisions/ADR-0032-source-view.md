@@ -107,6 +107,11 @@ regeneration is its own history entry (`isolateHistory`), so a Reload can be und
 apply). A regeneration that rewrites the read-only header is not recorded and restarts the history (the header filter would refuse an undo that
 touched it, which would leave the history stuck). The window's key dispatcher ignores keys typed into the editor (`isEditable`), so one press is never both undos.
 
+2026-10-12 (M12.60, the M12.59 review): only the explicit Reload is a history entry. An automatic regeneration after a canvas change is not recorded
+(`addToHistory: false`) and restarts the history, like one that rewrites the header: otherwise the first Mod-z after a drag would restore the pre-drag
+text, which the sync would merge as the author's edit and so revert the drag. A clean view holds no pending typing, so nothing unapplied is lost. The
+keymap is Mod-z, Mod-Shift-z and Mod-y only (`undo`, `redo`): Mod-u and Alt-u (selection undo) are not bound, so Ctrl-U (view-source) stays the browser's.
+
 ## More Information
 
 ADR-0030 (grammar), ADR-0031 (ids and salt), ADR-0014 (transactions), ADR-0064 (another editor-only lazy library). Architecture: 04-rendering-and-editor.md,

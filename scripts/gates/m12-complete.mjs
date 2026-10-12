@@ -426,7 +426,7 @@ const SOURCE_VIEW_TITLES = [
   ['M12.59', 'FR-EDT-022: a text restored by Mod-z is an ordinary edit: it is applied after the pause, as one more document step', 'editor', {}, 'browser'],
   [
     'M12.59',
-    'FR-EDT-022: a Reload is one entry of the text history: Mod-z brings the text it replaced back and the annotation of the regeneration does not stick',
+    'FR-EDT-022: a Reload is one entry of the text history, apart from the typing before it: Mod-z brings the text it replaced back and the annotation of the regeneration does not stick',
     'editor',
     {},
     'browser',
@@ -438,6 +438,15 @@ const SOURCE_VIEW_TITLES = [
     {},
     'browser',
   ],
+  ['M12.60', 'FR-EDT-022: a regeneration that changes the header is not recorded in the text history (its transaction says so)', 'editor', {}, 'browser'],
+  [
+    'M12.60',
+    'FR-EDT-022: after a canvas drag regenerated the text, Mod-z in the editor does not revert the drag nor bring the pre-drag text back',
+    'editor',
+    {},
+    'browser',
+  ],
+  ['M12.60', 'FR-EDT-022: Mod-u and Alt-u are not bound: selection undo is not offered and the keys reach the browser', 'editor', {}, 'browser'],
 ];
 leg("the source view applies the author's edits to the canvas after a pause, one undo step each, and marks errors in the gutter (T0, T1)", () =>
   SOURCE_VIEW_TITLES.length === 0 ? 'no source view titles yet: M12.22 adds them' : titled(SOURCE_VIEW_TITLES, EXACT),
