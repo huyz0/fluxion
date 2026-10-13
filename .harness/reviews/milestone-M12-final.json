@@ -1,0 +1,96 @@
+{
+  "milestone": "M12",
+  "checkpoint": "final",
+  "range": "9cac20d..03fd82f",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "scripts/gates/m12-complete.mjs",
+      "summary": "The titled-rows leg was red for done rows M12.44, M12.52 and M12.58: no title in a leg and no UNTITLED_ROWS exemption."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "file": "scripts/gates/m12-complete.mjs",
+      "summary": "The e2e leg for dsl.streaming-render and source-view.two-way-sync fails on firefox and webkit in the cloud container (engines not installed); nothing records that no M12 row or Deferred entry named it."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "file": "scripts/gates/m12-complete.mjs",
+      "summary": "The pnpm verify leg fails at precommit --all with no detail in the gate output; the cause must be shown and recorded, not assumed pre-existing."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": ".harness/progress.md",
+      "summary": "Review ledger gap: 1bfb762 (M12.24 docs) and 1991c27 were committed with core.hooksPath unset, so no verdict is bound to their diff."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "summary": "Plan health: 19 planned rows, 27 after planning, 60 at the review; about 15 are review-minor chains and about 37 of 150 commits are bookkeeping."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "file": "docs/standards/performance.md",
+      "summary": "Staged budget headroom is about 34 s (446 of 480 s, ADR-0163), the cold-setup figure is pending CI, and NFR-PERF-006 is unverified on CI hardware."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "file": "scripts/gates/m12-complete.mjs",
+      "summary": "Remaining red legs (CI evidence, cold budget, e2e engines, verify) cannot go green silently; write them down once so M12.26 does not close on a partially skipped gate."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "note": "Fixed in M12.61 (4da3c5b): M12.44 and M12.58 exempt as node:test harness tests, M12.52 exempt because its titles come from COMMANDS; checkRowsTitled over the backlog no longer names them.",
+      "target": "M12.61"
+    },
+    {
+      "finding": "F2",
+      "disposition": "hand-off",
+      "note": "Roadmap Deferred row: the firefox and webkit run of the two specs waits for the first CI run on the M12 range. The leg is not edited to pass.",
+      "target": "roadmap Deferred"
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand-off",
+      "note": "precommit --all was run to the end (451 s): every step passes except lint (a format error in the M12.61 draft, fixed before the commit) and budget (cold setup pending CI). There is no render.shapes-gallery failure in that run. The cold-setup record is a roadmap Deferred row.",
+      "target": "roadmap Deferred"
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "Line in review-argued.txt; history is not rewritten.",
+      "target": "review-argued.txt"
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "note": "Real growth from review minors, not scope; lesson in M12.md Learned.",
+      "target": "M12.md Learned"
+    },
+    {
+      "finding": "F6",
+      "disposition": "hand-off",
+      "note": "M13.md Risks now carries the ladder-cost rule for dependency rows and the first CI bench run as the NFR-PERF-006 check; the Deferred row exists.",
+      "target": "M13"
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "note": "The remaining red legs are the CI evidence and cold-setup record (a push a human asks for), the e2e engines (Deferred), and M12.26's own final record and roadmap advance; the gate needs no change.",
+      "target": "review-argued.txt"
+    }
+  ],
+  "planDelta": "27 rows after planning (19 planned) grew to 61, from per-commit review minors, staged-budget harness fixes and splits (M12.22 into three, M12.55 into M12.59), not new scope. M12.61 closes F1."
+}
