@@ -455,6 +455,10 @@ leg("the source view applies the author's edits to the canvas after a pause, one
 const UNTITLED_ROWS = {
   'M12.16': 'the round-trip property leg runs roundtrip.prop.test.ts under ROUNDTRIP_TITLE and reads its numRuns',
   'M12.41': "a harness test of the budget gate (tests/harness/budget.test.mjs): node:test, run by pnpm verify's harness-tests step",
+  'M12.44': "a harness test of the ladder scope (tests/harness/ladder-scope.test.mjs): node:test, run by pnpm verify's harness-tests step",
+  'M12.52':
+    "bench-fixture.test.ts builds its titles from the fixture's COMMANDS list (one test per command, element.distribute among them), so no fixed title exists; the bench leg runs the fixture through checkBenchReport",
+  'M12.58': "a harness test of upFrontViolations (tests/harness/bench-leg.test.mjs): node:test, run by pnpm verify's harness-tests step",
   'M12.50': "a harness test of vitestTitles (tests/harness/milestone-checks.test.mjs): node:test, run by pnpm verify's harness-tests step",
 };
 leg('every done M12 row whose acceptance names a T0 or T1 test has a title in a leg (or a reasoned exemption)', () =>
