@@ -191,4 +191,12 @@ describe('canonical serialization', () => {
     expect(serializeDocument(parsed(once))).toBe(once);
     expect(parsed(once)).toEqual(parsed(text));
   });
+  it('FR-DOC-007: a semantic with extra data keys survives serialize and parse unchanged', () => {
+    const semantic = { slug: 'api', label: 'API', role: 'service', tags: ['edge'], owner: 'platform', data: { tier: 1, regions: ['eu', 'us'] } };
+    const doc = asDoc({ ...base, records: { ...base.records, e1: { ...base.records.e1, semantic } } });
+    const once = serializeDocument(doc);
+    const back = parsed(once);
+    expect((back.records['e1'] as { semantic?: unknown }).semantic).toEqual(semantic);
+    expect(serializeDocument(back)).toBe(once);
+  });
 });

@@ -61,7 +61,11 @@ const LAYOUT_TITLES = []; // ['M13.k', '<exact title>', 'layout', {}, 'node']
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
   LAYOUT_TITLES.length === 0 ? 'no layout titles yet: the M13 rows add them' : titled(LAYOUT_TITLES, EXACT),
 );
-const SEMANTIC_TITLES = [];
+const SEMANTIC_TITLES = [
+  ['M13.4', 'FR-DOC-007: element.update of style leaves semantic byte-equal, extra data keys included', 'core'],
+  ['M13.4', 'FR-DOC-007: element.updateMany of style leaves the semantic of every target byte-equal', 'core'],
+  ['M13.4', 'FR-DOC-007: a semantic with extra data keys survives serialize and parse unchanged', 'schema'],
+];
 leg('FR-DOC-007: an element keeps its semantic data byte-equal through every style command (T0)', () =>
   SEMANTIC_TITLES.length === 0 ? 'no semantic titles yet: M13.4 adds them' : titled(SEMANTIC_TITLES, EXACT),
 );

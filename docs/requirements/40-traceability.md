@@ -32,7 +32,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
 | FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/pm-json.test.ts` +13 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | `e2e/document.metadata.spec.ts` +5 |
-| FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/semantic.test.ts`, `packages/schema/src/serialize.test.ts` |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-009 | C | R6 | M28 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-010 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/builtin-commands.test.ts` +3 |
