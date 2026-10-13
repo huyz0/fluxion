@@ -1,6 +1,6 @@
 # Backlog — M13 Layout engine v1
 
-Planned: 24 rows
+Planned: 24 rows, grown to 25 (M13.25: the quick budget, human decision 2026-10-13)
 
 Only the current milestone lives here. Closed milestones move to `archive/M<n>.md`. M12 is built and finally reviewed but not closed (its CI evidence, cold-setup record and three-engine e2e wait for a push a human asks for; roadmap Deferred), so its rows are archived in `archive/M12.md` with M12.26 still todo, as M9 and M10 were.
 States: `todo` · `doing` · `done` · `blocked (<reason>)` · `descoped (<reason>)` (human decision only; the reason must cite an ADR or a roadmap Deferred entry; reopened rows must be `done`). Commit: the sha of the row's commit.
@@ -32,4 +32,5 @@ Reviews: isolated reviewer subagent only (ADR-0137). The row that writes a test 
 | M13.21 | `examples/dsl/layered-flow.flux.yaml` compiles and renders; T3 golden SVG | FR-LAY-002 | T3 (titled in the gate): the example compiles with 0 errors twice to the same bytes and its SVG equals the golden | M13.17 | todo |  |
 | M13.22 | Docs: update `05-layout-and-routing.md` (§2 per ADR-0033; §3 and §6 per ADR-0034: the own overlap sweep, the `preferAxis` option, the sfc32 seeding) and ADR-0005's overlap line (a link to ADR-0034), layout README and AGENTS.md, the "Writing FluxScript" guide's layout section; changesets for every changed package | HARNESS | The docs leg and `changesets cover every package` pass; the guide's layout claims compile | M13.21 | todo |  |
 | M13.23 | Checkpoint review cp1 (fresh milestone-reviewer) after the engine (M13.5 to M13.14); dispositions recorded | HARNESS | `.harness/reviews/milestone-M13-cp1.json` records a verdict | M13.14 | todo |  |
+| M13.25 | The quick-gate budget no longer fits a budget record (123.6 to 128.1 s measured, idle machine, against 120 s): ADR-0164 raises `QUICK_GATE_BUDGET_MS` to 180 s (human decision), with the standards and NFR-DX-002 text | HARNESS | `thresholds.mjs`, performance.md, ci-cd.md and NFR-DX-002 say 180 s; `check-budget.mjs` reads the new limit; the commit carries `Threshold-change:` citing ADR-0164 | M13.4 | done | |
 | M13.24 | Final milestone review, three-OS CI evidence, the advance to M14 | HARNESS | `.harness/reviews/milestone-M13-final.json` records a verdict; `m13-complete` exits 0 | M13.22, M13.23 | todo |  |
