@@ -15,6 +15,9 @@ export type AbortSignalLike = {
 };
 
 // @public
+export function buildSnapshot(records: readonly SnapshotRecord[], request: SnapshotRequest): SnapshotInput;
+
+// @public
 export type ContainerScope = {
     readonly containerId: string;
 };
@@ -128,6 +131,38 @@ export type RegisterLayoutResult = {
 } | {
     readonly ok: false;
     readonly message: string;
+};
+
+// @public
+export type SnapshotInput = LayoutInput & {
+    readonly edges: readonly LayoutEdge[];
+    readonly scope: LayoutScope;
+};
+
+// @public
+export type SnapshotRecord = {
+    readonly id: string;
+    readonly type: string;
+    readonly screenId?: unknown;
+    readonly kind?: unknown;
+    readonly index?: unknown;
+    readonly parentId?: unknown;
+    readonly transform?: unknown;
+    readonly placement?: unknown;
+    readonly locks?: unknown;
+    readonly hidden?: unknown;
+    readonly semantic?: unknown;
+    readonly connectorId?: unknown;
+    readonly elementId?: unknown;
+    readonly end?: unknown;
+};
+
+// @public
+export type SnapshotRequest = {
+    readonly screenId: string;
+    readonly scope?: LayoutScope;
+    readonly selection?: readonly string[];
+    readonly frame?: Box;
 };
 
 // @public

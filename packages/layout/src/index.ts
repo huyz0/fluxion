@@ -7,6 +7,7 @@ import type { Registry } from '@fluxion/core';
 import { stackLayout } from './stack.js';
 
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
+export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
 export type {
   AbortSignalLike,

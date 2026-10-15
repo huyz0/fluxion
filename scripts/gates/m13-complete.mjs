@@ -63,6 +63,15 @@ const LAYOUT_TITLES = [
   ['M13.5', 'FR-LAY-001: the options schema of stack agrees with parseOptions on defaults and on refusals', 'layout'],
   ['M13.5', 'FR-LAY-001: the options of a layout are published as JSON Schema', 'layout'],
   ['M13.5', 'FR-LAY-001: a layout registered through registerLayout resolves by name and a mistyped option is a diagnostic', 'dsl'],
+  ['M13.6', 'FR-LAY-005: the snapshot of a screen equals its golden input', 'layout'],
+  ['M13.6', 'FR-LAY-005: a selection scope keeps the selected nodes and the edges between them, and drops a parent that is not selected', 'layout'],
+  ['M13.6', "FR-LAY-005: a container scope covers the container's descendants, frames on its own box, and keeps nested parents", 'layout'],
+  ['M13.6', 'FR-LAY-005: the snapshot does not depend on the order of the records, and hidden, other-screen and boxless elements are left out', 'layout'],
+  ['M13.6', 'FR-LAY-005: hints are the role, tags and plain data of the semantic field, never the slug or label', 'layout'],
+  ['M13.6', 'FR-LAY-005: a connector with one bound end, a hidden connector, one on another screen or bound outside the set is not an edge', 'layout'],
+  ['M13.6', 'FR-LAY-005: two bindings for one end resolve by binding id, whatever the record order', 'layout'],
+  ['M13.6', 'FR-LAY-005: hidden hides the whole subtree, and a container scope on a hidden container has nothing to lay out', 'layout'],
+  ['M13.6', 'FR-LAY-005: tag hints keep strings only and are copies, and a rotated element keeps its stored footprint', 'layout'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
