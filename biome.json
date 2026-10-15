@@ -18,6 +18,7 @@
       "!packs/fonts-core/catalog.json",
       "!packages/render/__golden__",
       "!packages/cli/__golden__",
+      "!examples/dsl/__golden__",
       "!fixtures/docs",
       "!fixtures/fonts/*.json",
       "!examples/**/*.flux.json",

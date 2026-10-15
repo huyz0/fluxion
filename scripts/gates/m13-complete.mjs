@@ -217,7 +217,9 @@ leg('the no-overlap property and the determinism harness pass at the CI seed', (
   const file = 'packages/layout/src/no-overlap.prop.test.ts';
   return exists(file) ? ok(run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', file])) : `missing ${file}`;
 });
-const UNTITLED_ROWS = {};
+const UNTITLED_ROWS = {
+  'M13.21': 'the golden test runs in the examples runner (scripts/dsl/examples.test.ts), a Vitest config of its own, under GOLDEN_TITLE in the golden leg',
+};
 leg('every done M13 row whose acceptance names a T0 or T1 test has a title in a leg (or a reasoned exemption)', () =>
   checkRowsTitled(backlogTextFor('M13'), 'M13', [LAYOUT_TITLES, SEMANTIC_TITLES, WORKER_TITLES, SIZE_TITLES, GOLDEN_TITLES], UNTITLED_ROWS),
 );
@@ -230,14 +232,20 @@ leg('a mixed DSL fixture keeps its pins and lays out the rest with no overlap; e
 });
 
 // ── size and speed ─────────────────────────────────────────────────────────────────────────────────
-const SIZE_TITLES = [['M13.20', 'NFR-SIZE-005: the one-file player and a saved .flux.html of a laid-out document hold no layout engine code', 'format']];
+const SIZE_TITLES = [
+  ['M13.20', 'NFR-SIZE-005: the one-file player reaches no layout package or dagre through its dependencies', 'format'],
+  ['M13.20', 'NFR-SIZE-005: the one-file player and a saved .flux.html of a laid-out document hold no layout engine code', 'format'],
+];
+const GOLDEN_TITLE = 'FR-LAY-002: the example is drawn as its golden SVG, twice to the same bytes';
 const GOLDEN_TITLES = [];
 leg('NFR-SIZE-005: a saved file of a laid-out document and the player contain no layout module (T0)', () =>
   SIZE_TITLES.length === 0 ? 'no size titles yet: M13.20 adds them' : titled(SIZE_TITLES, EXACT),
 );
-leg('examples/dsl/layered-flow.flux.yaml renders to its golden SVG (T3)', () =>
-  GOLDEN_TITLES.length === 0 ? 'no golden titles yet: M13.21 adds them' : titled(GOLDEN_TITLES, EXACT),
-);
+// the example runner (scripts/dsl/examples.config.ts) is its own Vitest config, so the golden test is run there by its title
+leg('examples/dsl/layered-flow.flux.yaml renders to its golden SVG (T3)', () => {
+  const r = run('pnpm', ['--filter', '@fluxion/dsl', 'run', 'test:examples', '-t', GOLDEN_TITLE]);
+  return r.status === 0 && r.stdout.includes(GOLDEN_TITLE) ? true : `the golden test did not pass: ${ok(r)}`;
+});
 leg(`size-limit: player core ≤ PLAYER_CORE_GZIP (${t('PLAYER_CORE_GZIP')})`, () => {
   const r = run('pnpm', ['exec', 'size-limit', '--json']);
   const entries = r.status === 0 ? JSON.parse(r.stdout) : null;

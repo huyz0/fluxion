@@ -8,7 +8,10 @@ import { join } from 'node:path';
 import { type CompileResult, compile, decompile, formatDiagnostics } from '@fluxion/dsl';
 import { registerBuiltInLayouts } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
+import { FONT_METRICS } from '@fluxion/pack-fonts-core';
 import { themesCorePack } from '@fluxion/pack-themes-core';
+import { builtinRegistries, normalizeSvg, serverMeasurer } from '@fluxion/render';
+import { renderDocumentToHtml } from '@fluxion/render/ssr';
 import { type DocumentFile, serializeDocument } from '@fluxion/schema';
 import { type CoreRegistries, createCoreRegistries } from '@fluxion/sdk';
 import { describe, expect, it } from 'vitest';
@@ -128,5 +131,27 @@ describe('guide: Writing FluxScript', () => {
   it('FR-DSL-001: the deferred-sections sample warns FLX_DSL_NOT_YET for steps', () => {
     const s = samples.find((b) => b.body.includes('steps:'));
     expect(run((s as { body: string }).body).diagnostics.map((d) => d.code)).toContain('FLX_DSL_NOT_YET');
+  });
+});
+
+// The layered example (M13.21, FR-LAY-002, FR-LAY-008): a screen with no `layout:` is laid out by `layered`; its drawing is the golden, the same bytes
+// on every run. Update the golden only on purpose: `vitest -u` rewrites examples/dsl/__golden__/layered-flow.svg.
+describe('examples/dsl/layered-flow.flux.yaml', () => {
+  const text = readFileSync(join(DIR, 'layered-flow.flux.yaml'), 'utf8');
+  const drawn = (): string => {
+    const r = registries();
+    const done = compile(text, { registries: r });
+    if (!done.doc) throw new Error(shown(done));
+    const html = renderDocumentToHtml(done.doc, {
+      registries: builtinRegistries(r.shapeDefs, undefined, r.markers),
+      measurer: serverMeasurer([...FONT_METRICS]),
+    }).html;
+    return normalizeSvg(html);
+  };
+
+  it('FR-LAY-002: the example is drawn as its golden SVG, twice to the same bytes', async () => {
+    const svg = drawn();
+    expect(drawn()).toBe(svg);
+    await expect(svg).toMatchFileSnapshot(join(DIR, '__golden__', 'layered-flow.svg'));
   });
 });

@@ -17,7 +17,11 @@ export default defineConfig({
   cacheDir: process.env.FLUXION_VITEST_CACHE ?? '.vitest-cache',
   resolve: {
     conditions,
-    alias: workspaces.map((w) => ({ find: new RegExp(`^${w.name.replace('/', '\\/')}$`), replacement: join(ROOT, w.dir, 'src', 'index.ts') })),
+    alias: [
+      // a subpath of a workspace the examples draw with (the golden of layered-flow, M13.21)
+      { find: /^@fluxion\/render\/ssr$/, replacement: join(ROOT, 'packages/render/src/ssr.ts') },
+      ...workspaces.map((w) => ({ find: new RegExp(`^${w.name.replace('/', '\\/')}$`), replacement: join(ROOT, w.dir, 'src', 'index.ts') })),
+    ],
   },
   ssr: { resolve: { conditions } },
   test: { name: 'dsl-examples', environment: 'node', include: ['scripts/dsl/examples.test.ts'], testTimeout: 60_000 },

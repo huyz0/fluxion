@@ -1,0 +1,28 @@
+flux: 1
+title: Support ticket triage
+theme: light
+uses: [basic]
+screens:
+  - id: triage
+    title: Triaging a ticket
+    # no layout: the screen is laid out by `layered`, which ranks the nodes along the edges
+    nodes:
+      new:     { shape: ellipse, label: Ticket received, tone: accent }
+      urgent:  { shape: diamond, label: How urgent? }
+      page:    { shape: rounded-rect, label: Page on-call }
+      queue:   { shape: rounded-rect, label: Add to the queue }
+      finance: { shape: rect, label: Hand to finance }
+      reply:   { shape: document, label: Send a reply }
+      close:   { shape: ellipse, label: Ticket closed }
+    edges:
+      - new -> urgent
+      - urgent -> page: now
+      - urgent -> queue: later
+      - urgent -> finance: billing
+      - page -> reply
+      - queue -> reply
+      - finance -> reply
+      - reply -> close
+    notes: |
+      The three branches meet again at the reply: five ranks, three boxes wide.
+      Nothing is pinned, so every box is placed by the layout.
