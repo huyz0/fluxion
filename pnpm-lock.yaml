@@ -347,6 +347,9 @@ importers:
       '@fluxion/format':
         specifier: workspace:*
         version: link:../../packages/format
+      '@fluxion/layout':
+        specifier: workspace:*
+        version: link:../../packages/layout
       '@fluxion/pack-basic':
         specifier: workspace:*
         version: link:../../packs/basic

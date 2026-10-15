@@ -48,6 +48,7 @@ describe('arrange command (FR-LAY-005)', () => {
   it('FR-LAY-005: arranging a selection moves only the selection, keeps clear of the rest, and leaves the rest where it was', () => {
     const core = setup([shape('a', [0, 0]), shape('b', [5, 5]), shape('c', [10, 10]), shape('rest', [400, 300], [200, 100])]);
     const rest = core.box('rest');
+    const before = ['a', 'b', 'c'].map((id) => core.box(id));
     const result = core.execute('layout.arrange', {
       screenId: 's1',
       scope: 'selection',
@@ -64,6 +65,10 @@ describe('arrange command (FR-LAY-005)', () => {
       [b, c],
     ] as const)
       expect(overlapping(x as Box, y as Box)).toBe(false);
+    // one undo step brings the selection back
+    expect(core.store.history.undo().ok).toBe(true);
+    expect(['a', 'b', 'c'].map((id) => core.box(id))).toEqual(before);
+    expect(core.store.history.canUndo()).toBe(false);
     for (const moved of [a, b, c]) expect(overlapping(moved as Box, rest)).toBe(false);
     // nothing selected means nothing moves
     const idle = core.execute('layout.arrange', { screenId: 's1', scope: 'selection', selection: [], algorithm: 'grid' });
@@ -90,6 +95,8 @@ describe('arrange command (FR-LAY-005)', () => {
       { screenId: 's1', algorithm: 'grid', options: { columns: 0 } },
       { screenId: 'nowhere' },
       { screenId: 's1', scope: { containerId: 'ghost' } },
+      // a record of the screen that is not an element (the screen itself)
+      { screenId: 's1', scope: { containerId: 's1' } },
     ]) {
       expect(core.execute('layout.arrange', args)).toMatchObject({ ok: false, error: { code: 'COMMAND_ARGS' } });
     }

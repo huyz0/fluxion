@@ -156,6 +156,9 @@ const LAYOUT_TITLES = [
     'FR-LAY-001: arrange refuses an unknown algorithm, an option the algorithm rejects, an empty screen and an unknown container, and changes nothing',
     'layout',
   ],
+  ['M13.16', 'FR-LAY-005: the screen is laid out whole, and the selection among the rest, with the chosen layout', 'editor'],
+  ['M13.16', 'FR-LAY-005: a selected group is laid out by its own layout; anything else is refused', 'editor'],
+  ['M13.16', 'FR-LAY-001: a refusal by the document comes back as false, and each choice has a screen and a selection command', 'editor'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>

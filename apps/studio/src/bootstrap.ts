@@ -2,6 +2,7 @@
 // packs registered into its core registries (ADR-0017: the studio bundles packs/basic), and the
 // render registries that draw from them.
 import { type Core, createCore, type Logger } from '@fluxion/core';
+import { layeredLayout, registerArrangeCommand, registerBuiltInLayouts } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
 import { themesCorePack } from '@fluxion/pack-themes-core';
 import { renderRegistriesFor } from '@fluxion/player';
@@ -25,6 +26,16 @@ export type OpenDocument = {
   }[];
 };
 
+/** The built-in layouts and the `layout.arrange` command (M13.16) in a document's registries, or why one was refused. */
+function registerLayouts(registries: Core['registries']): { readonly ok: true } | { readonly ok: false; readonly message: string } {
+  const failed = [
+    registerBuiltInLayouts(registries.layouts),
+    registries.layouts.register(layeredLayout.id, layeredLayout, 'core'),
+    registerArrangeCommand(registries.commands, registries.layouts),
+  ].find((r) => !r.ok);
+  return failed && !failed.ok ? { ok: false, message: `The layout engine failed to register: ${failed.error.message}` } : { ok: true };
+}
+
 /**
  * `file` opened with the bundled packs (read-only when `options.readOnly`; the open is logged at debug level to `options.logger`), or why a pack failed to register (the studio's own fault).
  *
@@ -37,6 +48,8 @@ export function openDocument(file: DocumentFile, options: { readonly readOnly?: 
   if (!registered.ok) return err(`The basic pack failed to register: ${registered.error.map((d) => d.message).join('; ')}`);
   const themed = themesCorePack.register(core.registries);
   if (!themed.ok) return err(`The themes pack failed to register: ${themed.error.map((d) => d.message).join('; ')}`);
+  const laidOut = registerLayouts(core.registries);
+  if (!laidOut.ok) return err(laidOut.message);
   return ok({ core, registries: renderRegistriesFor(core.registries), themes: themesCorePack.themes });
 }
 

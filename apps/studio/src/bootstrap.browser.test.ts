@@ -24,4 +24,21 @@ describe('studio bootstrap (FR-EDT-001, ADR-0017)', () => {
     const n = cryptoRandom.next();
     expect(n >= 0 && n < 1).toBe(true);
   });
+
+  it('FR-LAY-005: the opened document can arrange a screen with the registered layouts, in one undo step', () => {
+    const gallery = loadDocument('example-shapes-gallery', seededRandom(1));
+    if (!gallery.ok) throw new Error(gallery.error);
+    const opened = openDocument(gallery.value);
+    if (!opened.ok) throw new Error(opened.error);
+    const { core } = opened.value;
+    expect(core.registries.layouts.list().map(([id]) => id)).toEqual(['grid', 'layered', 'stack']);
+    const screenId = Object.values(gallery.value.records).find((r) => r.type === 'screen')?.id;
+    if (screenId === undefined) throw new Error('the example has no screen');
+    for (const algorithm of ['grid', 'layered', 'stack']) {
+      const before = core.store.history.undoDepth;
+      const r = core.execute('layout.arrange', { screenId, scope: 'screen', algorithm });
+      expect(r.ok, algorithm).toBe(true);
+      expect(core.store.history.undoDepth - before, algorithm).toBeLessThanOrEqual(1);
+    }
+  });
 });

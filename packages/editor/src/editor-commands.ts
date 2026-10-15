@@ -11,6 +11,7 @@ import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js'
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
 import { exitGroup, groupSelection, ungroupSelection } from './group-edit.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
+import { arrangeContainer, arrangeScreen, arrangeSelected, LAYOUT_CHOICES } from './layout-arrange.js';
 import { selectSame } from './select-same.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-tool.js';
 import { editSelectedText } from './text-edit.js';
@@ -223,6 +224,15 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   ...ORDER_MOVES.map(
     ([to, title]): EditorCommand => ({ id: `selection.order.${to}`, title, run: (ctx) => selectIdle(ctx) && orderSelection(ctx.tools.ctx, to) }),
   ),
+  ...LAYOUT_CHOICES.flatMap(([name, words]): EditorCommand[] => [
+    { id: `layout.arrange.screen.${name}`, title: `Arrange the screen (${words})`, run: (ctx) => selectIdle(ctx) && arrangeScreen(ctx.tools.ctx, name) },
+    {
+      id: `layout.arrange.selection.${name}`,
+      title: `Arrange the selection (${words})`,
+      run: (ctx) => selectIdle(ctx) && arrangeSelected(ctx.tools.ctx, name),
+    },
+  ]),
+  { id: 'layout.arrange.container', title: 'Arrange the container', run: (ctx) => selectIdle(ctx) && arrangeContainer(ctx.tools.ctx) },
   {
     id: 'tool.use',
     title: 'Use a tool',

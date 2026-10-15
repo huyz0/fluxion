@@ -150,7 +150,7 @@ export function arrangeCommand(lookup: AlgorithmByName): AnyCommand {
       const records = recordsOf(ctx.store, args.screenId);
       const byId = new Map(records.map((r) => [r.id, r] as const));
       if (!records.some((r) => r.type === 'element')) return refuse(`no elements on screen "${args.screenId}"`, ['screenId']);
-      if (typeof args.scope === 'object' && !byId.has(args.scope.containerId))
+      if (typeof args.scope === 'object' && byId.get(args.scope.containerId)?.type !== 'element')
         return refuse(`"${args.scope.containerId}" is not an element of the screen`, ['scope', 'containerId']);
       let boxes: Boxes;
       try {

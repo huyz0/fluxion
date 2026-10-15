@@ -762,6 +762,48 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.layout.arrange.container": {
+    "message": "Arrange the container",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.layout.arrange.screen.grid": {
+    "message": "Arrange the screen (grid)",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.layout.arrange.screen.layered": {
+    "message": "Arrange the screen (layered)",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.layout.arrange.screen.stack": {
+    "message": "Arrange the screen (stack)",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.layout.arrange.selection.grid": {
+    "message": "Arrange the selection (grid)",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.layout.arrange.selection.layered": {
+    "message": "Arrange the selection (layered)",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.layout.arrange.selection.stack": {
+    "message": "Arrange the selection (stack)",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.mode.present": {
     "message": "Present from the first visible screen",
     "origin": [

@@ -4,6 +4,7 @@ import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { ALIGN_MODES, DISTRIBUTE_AXES, ORDER_MOVES } from './arrange-edit.js';
 import type { EditorCommand } from './editor-commands.js';
+import { LAYOUT_CHOICES } from './layout-arrange.js';
 import { commandTitle } from './titles.js';
 
 /**
@@ -30,6 +31,9 @@ const ARRANGE = [
   ...ALIGN_MODES.map(([m]) => `selection.align.${m}`),
   ...DISTRIBUTE_AXES.map(([a]) => `selection.distribute.${a}`),
   ...ORDER_MOVES.map(([t]) => `selection.order.${t}`),
+  // the layout lines (M13.16)
+  ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.selection.${n}`),
+  'layout.arrange.container',
 ];
 
 /** The commands of each menu, in order. */
@@ -46,7 +50,7 @@ const MENUS: { readonly [T in MenuTarget]: readonly string[] } = {
     // the Arrange lines (M8.26)
     ...ARRANGE,
   ],
-  screen: ['clipboard.paste', 'selection.all', 'camera.fitScreen'],
+  screen: ['clipboard.paste', 'selection.all', 'camera.fitScreen', ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.screen.${n}`)],
   canvas: ['clipboard.paste', 'camera.fitScreen', 'camera.zoom100'],
 };
 
