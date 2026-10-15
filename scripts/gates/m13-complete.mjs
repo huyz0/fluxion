@@ -118,6 +118,16 @@ const LAYOUT_TITLES = [
     'FR-LAY-004: for random graphs, every built-in plus the post-passes leaves unpinned boxes clear of every other box and pinned boxes unmoved',
     'layout',
   ],
+  ['M13.12', 'FR-LAY-005: fixture nested-containers sizes a container to its children plus the inset and puts them inside it', 'layout'],
+  ['M13.12', 'FR-LAY-005: containers inside containers are laid out deepest first and move with their parent', 'layout'],
+  ['M13.12', 'FR-LAY-005: a pinned container keeps its box and lays its children out inside it; one with a pinned node below it keeps its box too', 'layout'],
+  ['M13.12', 'FR-LAY-005: a parent that is missing, its own or in a cycle makes the node a root, and every node still gets a box', 'layout'],
+  ['M13.12', 'FR-LAY-005: the runner gets the container id, the edges between siblings, and a container frame of its own', 'layout'],
+  [
+    'M13.12',
+    'FR-LAY-005: for random trees of depth up to 3 every unpinned container holds its children, siblings stay clear, pinned boxes are exact and the result is deterministic',
+    'layout',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>

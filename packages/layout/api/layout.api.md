@@ -112,6 +112,9 @@ export type LayoutMetrics = {
 };
 
 // @public
+export function layoutNested(input: LayoutInput, run: NestedRunner, options?: NestedOptions): Boxes;
+
+// @public
 export type LayoutNode = {
     readonly id: string;
     readonly box: Box;
@@ -140,6 +143,14 @@ export type LayoutScope = "screen" | "selection" | ContainerScope;
 
 // @public
 export function listLayouts(layouts: Registry<string, unknown>): readonly LayoutAlgorithm<unknown>[];
+
+// @public
+export type NestedOptions = {
+    readonly inset?: number;
+};
+
+// @public
+export type NestedRunner = (container: string | undefined, input: LayoutInput) => Boxes;
 
 // @public
 export type OptionsResult<O> = {

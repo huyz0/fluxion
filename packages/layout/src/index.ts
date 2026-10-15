@@ -10,6 +10,7 @@ import { stackLayout } from './stack.js';
 
 export { type GridOptions, gridLayout } from './grid.js';
 export { type LayeredOptions, layeredLayout } from './layered.js';
+export { layoutNested, type NestedOptions, type NestedRunner } from './nested.js';
 export { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
 export { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
