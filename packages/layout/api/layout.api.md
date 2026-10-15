@@ -43,6 +43,18 @@ export type LaidOut = {
 };
 
 // @public
+export const layeredLayout: LayoutAlgorithm<LayeredOptions>;
+
+// @public
+export type LayeredOptions = {
+    readonly direction: "down" | "right" | "up" | "left";
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
+    readonly padding: number;
+};
+
+// @public
 export interface LayoutAlgorithm<O> {
     readonly capabilities: LayoutCapabilities;
     readonly id: string;

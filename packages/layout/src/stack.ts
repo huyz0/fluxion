@@ -103,8 +103,9 @@ function run(input: LayoutInput, o: StackOptions): LayoutOutput {
   const down = o.direction === 'down';
   const nodes = [...input.nodes].sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const pinned = nodes.filter((n) => n.pinned).map((n) => n.box);
-  const boxes: { [id: string]: Box } = {};
-  for (const n of nodes) if (n.pinned) boxes[n.id] = n.box;
+  // a Map, then fromEntries: a record id may be `__proto__`, which an assignment to a plain object would not keep as a key
+  const boxes = new Map<string, Box>();
+  for (const n of nodes) if (n.pinned) boxes.set(n.id, n.box);
   // each line is a stack of its own, beside the one before it
   let crossStart = halfUp((down ? input.frame.x : input.frame.y) + o.padding);
   for (const line of linesOf(
@@ -116,12 +117,12 @@ function run(input: LayoutInput, o: StackOptions): LayoutOutput {
     let main = (down ? input.frame.y : input.frame.x) + o.padding;
     for (const n of line) {
       const box = place(axis, n, main, pinned);
-      boxes[n.id] = box;
+      boxes.set(n.id, box);
       main = (down ? box.y + box.h : box.x + box.w) + o.gap;
     }
     crossStart = halfUp(crossStart + span + o.gap);
   }
-  return { boxes };
+  return { boxes: Object.fromEntries(boxes) };
 }
 
 /**

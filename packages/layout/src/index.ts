@@ -5,9 +5,11 @@
  */
 import type { Registry } from '@fluxion/core';
 import { gridLayout } from './grid.js';
+import { layeredLayout } from './layered.js';
 import { stackLayout } from './stack.js';
 
 export { type GridOptions, gridLayout } from './grid.js';
+export { type LayeredOptions, layeredLayout } from './layered.js';
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';

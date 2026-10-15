@@ -100,14 +100,18 @@ function boxOf(transform: unknown): Box | undefined {
  */
 function hintsOf(semantic: unknown): { readonly [key: string]: unknown } | undefined {
   if (!isObject(semantic)) return undefined;
-  const hints: { [key: string]: unknown } = {};
+  const hints = new Map<string, unknown>();
   for (const key of Object.keys(semantic).sort()) {
     const value = semantic[key];
     if (NAMING.has(key)) continue;
-    if (key === 'tags' && Array.isArray(value)) hints[key] = value.filter((t): t is string => typeof t === 'string');
-    else if (['string', 'number', 'boolean'].includes(typeof value)) hints[key] = value;
+    if (key === 'tags' && Array.isArray(value))
+      hints.set(
+        key,
+        value.filter((t): t is string => typeof t === 'string'),
+      );
+    else if (['string', 'number', 'boolean'].includes(typeof value)) hints.set(key, value);
   }
-  return Object.keys(hints).length > 0 ? hints : undefined;
+  return hints.size > 0 ? Object.fromEntries(hints) : undefined;
 }
 
 /** A record as a laid-out candidate: an element that occupies a box and is not a connector (hidden ones included, see `visible`). */

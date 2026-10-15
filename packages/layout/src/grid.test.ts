@@ -141,7 +141,7 @@ describe('grid layout (FR-LAY-002)', () => {
     expect(gridLayout.schema.parse({ columns: 4 })).toEqual({ columns: 4, gap: 24, align: 'start', padding: 80 });
   });
 
-  it('FR-LAY-001: the built-in layouts register stack and grid under their names', () => {
+  it('FR-LAY-001: the built-in layouts register under their names', () => {
     const layouts = createRegistry<string, unknown>('layouts');
     expect(registerBuiltInLayouts(layouts).ok).toBe(true);
     expect(layouts.list().map(([id]) => id)).toEqual(['grid', 'stack']);

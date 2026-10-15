@@ -100,8 +100,9 @@ function run(input: LayoutInput, o: GridOptions): LayoutOutput {
     cellH,
   };
   const below = Math.max(0, ...pinned.map((p) => p.y + p.h));
-  const boxes: { [id: string]: Box } = {};
-  for (const n of nodes) if (n.pinned) boxes[n.id] = n.box;
+  // a Map, then fromEntries: a record id may be `__proto__`, which an assignment to a plain object would not keep as a key
+  const boxes = new Map<string, Box>();
+  for (const n of nodes) if (n.pinned) boxes.set(n.id, n.box);
   let [cell, tries] = [0, 0];
   for (const n of loose) {
     let box = boxIn(cells, o, n, cell);
@@ -110,9 +111,9 @@ function run(input: LayoutInput, o: GridOptions): LayoutOutput {
       if (tries === MAX_TRIES) cell = Math.max(cell, o.columns * (Math.ceil((below - cells.startY) / cells.strideY) + 1));
       box = boxIn(cells, o, n, cell);
     }
-    boxes[n.id] = box;
+    boxes.set(n.id, box);
   }
-  return { boxes };
+  return { boxes: Object.fromEntries(boxes) };
 }
 
 /**

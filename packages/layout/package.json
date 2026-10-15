@@ -24,6 +24,7 @@
     "provenance": true
   },
   "dependencies": {
+    "@dagrejs/dagre": "catalog:",
     "@fluxion/core": "workspace:*",
     "@fluxion/geometry": "workspace:*",
     "zod": "catalog:"

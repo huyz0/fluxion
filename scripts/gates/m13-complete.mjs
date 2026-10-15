@@ -79,10 +79,20 @@ const LAYOUT_TITLES = [
   ['M13.7', 'FR-LAY-002: the same input gives the same boxes, and no unpinned box overlaps another, for any sizes, gaps, columns, frame and pins', 'layout'],
   ['M13.7', 'FR-LAY-002: zero-size boxes inside a huge pin, and a pin covering most of the screen, still finish and clear the pin', 'layout'],
   ['M13.7', 'FR-LAY-001: the grid options are checked with a message naming the bad one, and the schema agrees', 'layout'],
-  ['M13.7', 'FR-LAY-001: the built-in layouts register stack and grid under their names', 'layout'],
+  ['M13.7', 'FR-LAY-001: the built-in layouts register under their names', 'layout'],
   ['M13.7', 'FR-LAY-002: fixture stack-wrap starts a new line beside the first when a box would pass the wrap length', 'layout'],
   ['M13.7', 'FR-LAY-002: wrapped lines never overlap for fractional sizes, gaps and alignments, and a pin may push a line past the wrap length', 'layout'],
   ['M13.7', 'FR-LAY-005: a parent cycle (a merged or corrupt file) neither hangs the snapshot nor hides the elements in it', 'layout'],
+  ['M13.8', 'FR-LAY-002: fixture layered-diamond gives golden boxes for each direction, ranks one rank gap apart', 'layout'],
+  ['M13.8', 'FR-LAY-002: padding and the frame origin set where the diagram starts, and the gaps are the configured ones', 'layout'],
+  ['M13.8', 'FR-LAY-008: the same input twice, and the same graph given in another order, give the same boxes', 'layout'],
+  ['M13.8', 'FR-LAY-008: ids such as constructor and __proto__ are laid out like any other', 'layout'],
+  ['M13.8', 'FR-LAY-002: pinned nodes keep their boxes, still rank through their edges, and the rest start at the padded frame origin', 'layout'],
+  ['M13.8', 'FR-LAY-002: unconnected nodes, an empty input, self loops, duplicate edges and edges to unknown nodes all lay out', 'layout'],
+  ['M13.8', 'FR-LAY-008: for any graph the output is deterministic, covers every node, and boxes keep their sizes', 'layout'],
+  ['M13.8', 'FR-LAY-002: spacing presets set the gaps, and nodeGap and rankGap override them', 'layout'],
+  ['M13.8', 'FR-LAY-001: the layered options are checked with a message naming the bad one, and the schema agrees', 'layout'],
+  ['M13.8', 'FR-LAY-008: every built-in keeps a box for a node whose id is __proto__', 'layout'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
