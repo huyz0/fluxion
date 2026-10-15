@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AnyCommand } from '@fluxion/core';
 import { Box } from '@fluxion/geometry';
 import { Registry } from '@fluxion/core';
 import { TextMeasurer } from '@fluxion/core';
@@ -15,7 +16,16 @@ export type AbortSignalLike = {
 };
 
 // @public
+export type AlgorithmByName = (name: string) => LayoutAlgorithm<never> | undefined;
+
+// @public
 export function applyPins(input: LayoutInput, boxes: Boxes): Boxes;
+
+// @public
+export const ARRANGE_COMMAND_ID = "layout.arrange";
+
+// @public
+export function arrangeCommand(lookup: AlgorithmByName): AnyCommand;
 
 // @public
 export type Boxes = {
@@ -229,6 +239,9 @@ export type OverlapOptions = {
 
 // @public
 export type PostPassId = "pins" | "overlap" | "snap";
+
+// @public
+export function registerArrangeCommand(commands: Registry<string, AnyCommand>, layouts: Registry<string, unknown>): ReturnType<Registry<string, AnyCommand>["register"]>;
 
 // @public
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>["register"]>;

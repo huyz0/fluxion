@@ -8,6 +8,7 @@ import { gridLayout } from './grid.js';
 import { layeredLayout } from './layered.js';
 import { stackLayout } from './stack.js';
 
+export { type AlgorithmByName, ARRANGE_COMMAND_ID, arrangeCommand, registerArrangeCommand } from './arrange.js';
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type GridOptions, gridLayout } from './grid.js';
 export { type LayeredOptions, layeredLayout } from './layered.js';

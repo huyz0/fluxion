@@ -148,6 +148,14 @@ const LAYOUT_TITLES = [
     'layout',
   ],
   ['M13.14', "FR-LAY-008: a result is frozen, so a caller cannot change what the cache hands the next one, and the input boxes stay the caller's", 'layout'],
+  ['M13.15', 'FR-LAY-005: arranging a screen lays its elements out with the chosen algorithm as one undo step, and undo restores every box', 'layout'],
+  ['M13.15', 'FR-LAY-005: arranging a selection moves only the selection, keeps clear of the rest, and leaves the rest where it was', 'layout'],
+  ['M13.15', 'FR-LAY-005: arranging a container lays its children out inside its frame, and a container layout spec picks the algorithm', 'layout'],
+  [
+    'M13.15',
+    'FR-LAY-001: arrange refuses an unknown algorithm, an option the algorithm rejects, an empty screen and an unknown container, and changes nothing',
+    'layout',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
