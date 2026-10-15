@@ -1,11 +1,11 @@
 # Backlog — M13 Layout engine v1
 
-Planned: 24 rows, grown to 26 (M13.25 and M13.26: the quick and staged budgets, human decisions 2026-10-13 and 2026-10-15)
+Planned: 24 rows, grown to 27 (M13.25 to M13.27: the quick and staged budgets, human decisions 2026-10-13 and 2026-10-15)
 
 Only the current milestone lives here. Closed milestones move to `archive/M<n>.md`. M12 is built and finally reviewed but not closed (its CI evidence, cold-setup record and three-engine e2e wait for a push a human asks for; roadmap Deferred), so its rows are archived in `archive/M12.md` with M12.26 still todo, as M9 and M10 were.
 States: `todo` · `doing` · `done` · `blocked (<reason>)` · `descoped (<reason>)` (human decision only; the reason must cite an ADR or a roadmap Deferred entry; reopened rows must be `done`). Commit: the sha of the row's commit.
 
-Reviews: isolated reviewer subagent only (ADR-0137). The row that writes a test adds its exact titles to its leg in `scripts/gates/m13-complete.mjs` (none guessed at plan time). T1 titles run in the Vitest browser project. A review's minors ride the stage's next row unless they touch a gate (M12 final F5). A row that adds a dependency states its estimated ladder cost and re-records the budget in the same commit (staged budget 600 s, ADR-0165; the last records measured 523 to 541 s).
+Reviews: isolated reviewer subagent only (ADR-0137). The row that writes a test adds its exact titles to its leg in `scripts/gates/m13-complete.mjs` (none guessed at plan time). T1 titles run in the Vitest browser project. A review's minors ride the stage's next row unless they touch a gate (M12 final F5). A row that adds a dependency states its estimated ladder cost and re-records the budget in the same commit (staged budget 900 s, ADR-0166; the last records measured 523 to 617 s).
 
 | ID | Task | Req | Acceptance (EARS) | Deps | State | Commit |
 |---|---|---|---|---|---|---|
@@ -34,4 +34,5 @@ Reviews: isolated reviewer subagent only (ADR-0137). The row that writes a test 
 | M13.23 | Checkpoint review cp1 (fresh milestone-reviewer) after the engine (M13.5 to M13.14); dispositions recorded | HARNESS | `.harness/reviews/milestone-M13-cp1.json` records a verdict | M13.14 | todo |  |
 | M13.25 | The quick-gate budget no longer fits a budget record (123.6 to 128.1 s measured, idle machine, against 120 s): ADR-0164 raises `QUICK_GATE_BUDGET_MS` to 180 s (human decision), with the standards and NFR-DX-002 text | HARNESS | `thresholds.mjs`, performance.md, ci-cd.md and NFR-DX-002 say 180 s; `check-budget.mjs` reads the new limit; the commit carries `Threshold-change:` citing ADR-0164 | M13.4 | done | |
 | M13.26 | The staged worst case no longer fits a budget record (523.5, 534.0 and 541.5 s on an idle container against 480 s): ADR-0165 raises `PRECOMMIT_BUDGET_MS` to 600 s (human decision), with the standards and NFR-DX-002 text | HARNESS | `thresholds.mjs`, performance.md, ci-cd.md and NFR-DX-002 say 600 s; the commit carries `Threshold-change:` citing ADR-0165 | M13.25 | done | |
+| M13.27 | The 600 s staged budget fails on the next recording (597.8 s, then 616.5 s; the same worst case measured 446 s a week earlier): ADR-0166 raises `PRECOMMIT_BUDGET_MS` to 900 s (human decision), with the standards and NFR-DX-002 text | HARNESS | `thresholds.mjs`, performance.md, ci-cd.md and NFR-DX-002 say 900 s; the commit carries `Threshold-change:` citing ADR-0166 | M13.26 | done | |
 | M13.24 | Final milestone review, three-OS CI evidence, the advance to M14 | HARNESS | `.harness/reviews/milestone-M13-final.json` records a verdict; `m13-complete` exits 0 | M13.22, M13.23 | todo |  |

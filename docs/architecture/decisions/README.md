@@ -74,7 +74,8 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0162](ADR-0162-convert-flux-json.md) | `fluxion convert` writes and reads `.flux.json`, with `--assets inline|external` | accepted | 2026-10-07 |
 | [0163](ADR-0163-precommit-budget-480s.md) | The pre-commit budget is 480 s (supersedes 0158) | superseded by 0165 | 2026-10-07 |
 | [0164](ADR-0164-quick-budget-180s.md) | The quick-gate budget is 180 s | accepted | 2026-10-13 |
-| [0165](ADR-0165-precommit-budget-600s.md) | The pre-commit budget is 600 s | accepted | 2026-10-15 |
+| [0165](ADR-0165-precommit-budget-600s.md) | The pre-commit budget is 600 s | superseded by 0166 | 2026-10-15 |
+| [0166](ADR-0166-precommit-budget-900s.md) | The pre-commit budget is 900 s | accepted | 2026-10-15 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 
