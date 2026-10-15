@@ -41,7 +41,7 @@ Defaults:
 - `@dagrejs/dagre` for layered (main thread);
 - d3-hierarchy + d3-flextree for tree and mindmap;
 - d3-force, seeded, for force;
-- WebCola for constraints and overlap removal;
+- WebCola for constraints and overlap removal (M13 ships an own overlap sweep first, ADR-0034; WebCola arrives with the constraints in M17);
 - own grid, stack and templates.
 
 Optional packs:

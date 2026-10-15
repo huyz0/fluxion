@@ -132,10 +132,27 @@ screens:
 ## Layouts and pins
 
 Give a screen `layout: { type: stack, direction: down, gap: 40, align: center, padding: 120 }` and the engine places the nodes you did not
-pin. Pinned nodes stay where they are. With no `layout`, a screen stacks its nodes. A group takes its own `layout` for its members.
+pin. Pinned nodes stay where they are. With no `layout`, a screen is laid out by `layered`, which ranks the nodes along the edges. A group takes its own `layout` for its members.
 
-`layout: { type: layered }` is in the grammar but not compiled yet: the screen falls back to `stack` and the compiler warns
-`FLX_DSL_NOT_YET`. Text is not measured yet either, so a node has its shape's default size.
+`layered` takes `direction` (`down`, `right`, `up` or `left`) and `spacing` (`compact`, `comfortable` or `spacious`), or `nodeGap` and `rankGap` in px:
+
+```yaml flux
+flux: 1
+title: Flow
+uses: [basic]
+screens:
+  - id: flow
+    layout: { type: layered, direction: right, spacing: compact }
+    nodes:
+      a: { shape: rect, label: Start }
+      b: { shape: rect, label: Check }
+      c: { shape: rect, label: Done }
+    edges:
+      - a -> b
+      - b -> c
+```
+
+Text is not measured yet, so a node has its shape's default size.
 
 ## What is not compiled yet
 
@@ -258,4 +275,4 @@ const back = doc ? decompile(doc, { registries }).text : undefined;
 
 - Flow-style `screens: [...]` is not streamed; the whole text is then the header.
 - YAML anchors, aliases, tags and duplicate keys are errors.
-- `layered` layouts, measured text, archetypes, steps, interactions and the Mermaid and Markdown importers come in later milestones.
+- Measured text, archetypes, steps, interactions and the Mermaid and Markdown importers come in later milestones.

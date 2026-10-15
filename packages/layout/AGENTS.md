@@ -1,6 +1,6 @@
 # @fluxion/layout — agent notes
 
-Layout interface, built-in algorithms, worker host, constraint/overlap pass, text-measure port.
+Layout interface (v1, ADR-0033), the built-in algorithms `grid`, `stack` and `layered` (dagre), the pipeline (pins, overlap, snap), nested containers, the worker host, the `layout.arrange` commands.
 
 ## Rules
 
@@ -12,3 +12,10 @@ Layout interface, built-in algorithms, worker host, constraint/overlap pass, tex
 
 - Co-locate `*.test.ts` next to the code; name tests with requirement IDs.
 - T0 (node) only — no DOM in tests.
+
+## Local rules
+
+- Determinism is the contract (FR-LAY-008): canonical order (`order`, then id), the seeded `ctx.rng` only, fixed iteration counts, snap to 0.5 px on the way out. Ids such as `constructor` or `__proto__` must work: use `Map`, never plain objects, for ids.
+- Worker glue (`Worker`, `postMessage`, `self`) lives only under `src/worker`; the gate `m13-complete` checks it.
+- The overlap pass is our own sweep (ADR-0034); do not add a solver without an ADR.
+- A change to a built-in's output needs a golden update with the reason in the commit (and a `version` bump once the algorithm has shipped).

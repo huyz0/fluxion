@@ -43,8 +43,8 @@ publish (M26 row 16a). Do not build on them.
 ## Behaviour to know
 
 - Sections `flux: 1` names but R2 does not compile (`vars`, `settings`, `kind`, `steps`, `interactions`, `markdown`, `mermaid`, `raw`,
-  `component`, `icon`, `flow`, …) are kept in `document.source` and reported as the warning `FLX_DSL_NOT_YET`. A `layered` layout falls
-  back to `stack` with the same warning.
+  `component`, `icon`, `flow`, …) are kept in `document.source` and reported as the warning `FLX_DSL_NOT_YET`. A screen or group with no `layout` is
+  laid out by `layered` (`stack` on a host that registers neither); `layered` named on a host that does not register it falls back with the same warning.
 - Ids are hashes of the document's salt and a key derived from the source (ADR-0031): recompiling keeps ids, and a screen block that
   did not change keeps its records.
 - Diagnostics are the document's `Diagnostic` plus a `source` range. Codes: [FluxScript diagnostics](../../apps/docs/src/content/docs/reference/fluxscript-diagnostics.md).

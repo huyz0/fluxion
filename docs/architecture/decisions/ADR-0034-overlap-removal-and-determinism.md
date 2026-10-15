@@ -52,3 +52,7 @@ M13 must guarantee that no two unpinned boxes overlap after a layout (FR-LAY-004
 ## More Information
 
 ADR-0005, ADR-0033, ADR-0163; 05-layout-and-routing.md §3 and §6; research/02 §4.
+
+## Amendments
+
+- Amendment 2026-10-15 (M13.22): the `preferAxis` option of the overlap pass exists (`LayoutRequest.overlap.preferAxis`), but `layered` does not set it in v1: the pipeline passes the caller's overlap options unchanged. Siblings of a rank that overlap after dagre are separated along the axis of least penetration, as for any algorithm. Setting it from the algorithm is left to a later milestone if the `layered` scorecard asks for it. No other decision changes.

@@ -114,14 +114,30 @@ interface TextMeasurer {                // the core port (03 §7); layout adds a
 
 `AnchorRef` is the persisted **intent** (02 §2). `ResolvedAnchor` is always derived.
 
+**As built in v1 (M13, ADR-0033).** `@fluxion/layout` implements the part of this contract that `grid`, `stack` and `layered` need; the rest
+stays as designed above for the milestones that add it (constraints and `incremental` M17, routes and anchors M16).
+
+- `LayoutNode` is `{ id, box, order, pinned?, parentId?, hints? }`; `LayoutEdge` is `{ id, source, target, order }`. `LayoutInput` is
+  `{ nodes, frame, edges?, scope? }`, with `scope` `'screen' | 'selection' | { containerId }`.
+- `LayoutOutput` is `{ boxes, metrics?, fingerprint? }`: an algorithm returns boxes; the pipeline fills `metrics` (`overlaps`, `crossings`,
+  `bends`, `ms`) and `fingerprint`, so what `layoutSync` returns (`LaidOut`) always has both. `LayoutCtx` is `{ rng, measure, signal }`.
+- `LayoutAlgorithm` is `{ id, version, schema, capabilities: { pins, compound, runsIn }, parseOptions, run }`. `schema` is the Zod options schema
+  (`layoutOptionsJsonSchema` turns it into JSON Schema for the inspector, the AI catalog and MCP); `parseOptions` returns a `Result`.
+- `layoutSync(req)` is the one pure function: validate, canonical order, seeded rng, algorithm, then the post-passes `pins`, `overlap`, `snap`
+  in that order. `createLayoutCache` keeps results by fingerprint. `layoutNested` solves nested containers bottom-up.
+- `createLayoutHost(spawn)` (entry `@fluxion/layout/worker`) runs jobs in workers: one job per scope, a newer revision supersedes the running
+  one, an abort ends the worker (a worker busy in a synchronous layout cannot read a cancel message). `serveLayoutWorker` is the worker side.
+- The `layout.arrange` command lays out a screen, a selection or a container in one transaction; `createAsyncArranger` does the same off the
+  caller's thread for a flat plan and writes the boxes with `layout.applyBoxes`.
+
 ## 3. Built-in algorithms and backing libraries
 
 | id | Purpose (FR) | Backing | Thread |
 |---|---|---|---|
-| `grid`, `stack` | Cells / flex row-column with gap, align, wrap (LAY-002) | own TS | main |
+| `grid`, `stack` | Cells / flex row-column with gap, align, wrap (LAY-002); built in M13 | own TS | main |
 | `timeline` | Horizontal/vertical with lanes (LAY-003) | own TS | main |
 | `template.*` | Smart templates (§7) | own TS | main |
-| `layered` (**default**) | Flow/hierarchical TB/LR/BT/RL (LAY-002) | `@dagrejs/dagre` | main (<300 nodes) / worker |
+| `layered` (**default**) | Flow/hierarchical TB/LR/BT/RL (LAY-002); built in M13. dagre ranks with `network-simplex` up to 200 nodes and `tight-tree` above (a quarter of the time at 500 nodes) | `@dagrejs/dagre` | main / worker (the studio's Arrange uses the worker) |
 | `tree`, `orgchart`, `radial` | Tidy trees, variable node sizes | `d3-hierarchy` + `d3-flextree` | main |
 | `mindmap` | Two-sided balanced tree | `d3-flextree` ×2, mirrored | main |
 | `circular`, `packing` | Ring; rect packing (shelf/skyline) | own TS | main |
@@ -131,8 +147,8 @@ interface TextMeasurer {                // the core port (03 §7); layout adds a
 | `layouts-elk:*` (pack) | `layered` with ports, compound, labels; `stress`; `rectpacking`; `mrtree` | `elkjs`, **unmodified**, lazy worker chunk (EPL-2.0) | worker |
 
 Post-passes: **pins** (least-squares fit to pins, then pinned nodes fixed), **constraints**
-(align/order/within; Cassowary via `@lume/kiwi` is reserved for R3+), **overlap** (VPSC from
-WebCola, the FR-LAY-004 guarantee), **snap** (0.5 px or grid), **fit** (FR-LAY-012).
+(align/order/within; Cassowary via `@lume/kiwi` is reserved for R3+), **overlap** (M13: an own two-stage sweep, ADR-0034, the
+FR-LAY-004 guarantee; VPSC from WebCola joins with the constraints in M17), **snap** (0.5 px or grid), **fit** (FR-LAY-012).
 
 | Router id | Algorithm | Notes |
 |---|---|---|
@@ -182,15 +198,15 @@ LayoutEngine.run(req, signal) ──post {id, revision, algId, input, seed}─�
 
 ## 6. Determinism (FR-LAY-008, FR-RTE-004, NFR-REL-005)
 
-1. **Seeded PRNG** from the `Random` port (sfc32). Every algorithm uses only `ctx.rng`, and
+1. **Seeded PRNG** (sfc32, seeded from the request's `seed` through splitmix32: four words and 12 warm-up draws). Every algorithm uses only `ctx.rng`, and
    lint forbids `Math.random` in L2.
 2. **Stable ordering**: nodes and edges are sorted by `order` (fractional index rank), then id,
    before any library call. Map iteration order never leaks.
 3. **Fixed iteration counts**; no time-budgeted early exit in deterministic mode.
-4. **Rounding**: outputs are quantized to 0.5 px (boxes, bend points) before diffing and
-   committing.
-5. **Input-hash cache**: `fingerprint = sha256(algId@version, options, seed, canonical input,
-   measured sizes)` via the `Hasher` port. A hit returns the cached output, so "make it neat"
+4. **Rounding**: outputs are quantized to 0.5 px (the `snap` post-pass, which skips pinned boxes) before diffing and
+   committing. Inputs are not rounded.
+5. **Input-hash cache**: `fingerprint` = the first 128 bits (32 hex digits) of the SHA-256 of `(algId@version, options, seed, canonical
+   input, post-passes, fontHash)`, with the synchronous `sha256Hash128` of `@fluxion/core` (ADR-0033). A hit returns the cached output, so "make it neat"
    is idempotent. Measured sizes depend on fonts, so the font-subset hash is part of the input.
 
 ## 7. Responsive re-layout & smart templates
