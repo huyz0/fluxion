@@ -59,3 +59,13 @@ M13.5 to M13.14 tests: a test layout registers and appears in the registry, DSL 
 ## More Information
 
 05-layout-and-routing.md §2, §4, §6; ADR-0005 (stack), ADR-0030 and ADR-0031 (the synchronous compiler), ADR-0034 (determinism and overlap).
+
+## Amendments
+
+- Amendment 2026-10-15 (M13 cp1 F6, M13.37): the decision above describes `LayoutEngine.run(...)` as one object with the cache, the worker and revision handling. v1 has no such object; the same behaviour is four exported pieces, which are the contract:
+  - `layoutSync(req)`, the synchronous pipeline (validate, canonical order, seeded rng, algorithm, `pins`, `overlap`, `snap`, `metrics` and `fingerprint`). The compiler, the `layout.arrange` command and the worker all call it.
+  - `createLayoutCache(limit?)`, a cache of `layoutSync` results by fingerprint. **No production code uses it yet**: `layout.arrange`, the DSL place stage and the worker handler (which the studio runs) call `layoutSync` directly, so "make it neat" is idempotent by determinism, not by a cache hit. It is tested and exported for hosts that lay out repeatedly (M17's live containers).
+  - `createLayoutHost(spawn)` (entry `@fluxion/layout/worker`), the revision-and-abort half of the engine: one job per scope, a newer revision supersedes the running one, an abort ends the worker. It rejects with an `AbortError`; `layoutSync` has no promise.
+  - `createAsyncArranger`, which composes the host with the `layout.arrange` snapshot and `layout.applyBoxes`.
+  A `LayoutEngine` that joins the cache and the host in one object, and `tidy`, stay reserved for M17. **`fontHash` is accepted by `layoutSync`, the host job and the worker message, but no caller supplies it in v1** (text is not measured yet, so it is always empty); the first caller to measure text with fonts passes the subset hash. No other decision changes.
+

@@ -52,7 +52,10 @@ function adrLeg(num, also) {
     return /^status:\s*accepted\s*$/m.test(text) || `${file} is not accepted`;
   };
 }
-leg('ADR-0033 layout engine contract v1 is accepted', adrLeg('0033', ['LayoutAlgorithm', 'LayoutEngine', 'worker', 'revision', 'fingerprint', 'AbortSignal']));
+leg(
+  'ADR-0033 layout engine contract v1 is accepted',
+  adrLeg('0033', ['LayoutAlgorithm', 'LayoutEngine', 'worker', 'revision', 'fingerprint', 'AbortSignal', 'createLayoutHost', 'createLayoutCache', 'fontHash']),
+);
 leg('ADR-0034 overlap removal and determinism is accepted', adrLeg('0034', ['VPSC', 'sfc32', 'quantiz', 'dagre', 'licen', 'ladder']));
 leg('packages/layout is pure: check-layering passes', () => ok(node('scripts/gates/check-layering.mjs')));
 
