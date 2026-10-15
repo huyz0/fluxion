@@ -253,15 +253,16 @@ function attempt(env: Env, chosen: Chosen, input: Frame): { readonly boxes: Layo
   const r = layoutSync({ input, algorithm: chosen.algorithm, options: chosen.options });
   if (r.ok) return { boxes: r.value.boxes, used: chosen };
   if (r.error.code === 'LAYOUT_INPUT_INVALID') return { boxes: {}, used: chosen };
+  const plain = fallback(env.ctx);
+  // the default layout failing too (it is the one that failed) leaves the nodes where they are
+  const again = plain.algorithm === chosen.algorithm ? undefined : layoutSync({ input, algorithm: plain.algorithm, options: plain.options });
   report(env.ctx, env.c, {
     code: 'FLX_SCHEMA_INVALID',
     severity: DIAGNOSTIC_CODES.FLX_SCHEMA_INVALID,
     path: `${env.c.path}/layout`,
-    message: `layout "${chosen.algorithm.id}" failed: ${r.error.message}; placed with the default layout`,
+    message: `layout "${chosen.algorithm.id}" failed: ${r.error.message}; ${again?.ok ? 'placed with the default layout' : 'the nodes are left in place'}`,
   });
-  const plain = fallback(env.ctx);
-  const again = layoutSync({ input, algorithm: plain.algorithm, options: plain.options });
-  return { boxes: again.ok ? again.value.boxes : {}, used: plain };
+  return { boxes: again?.ok ? again.value.boxes : {}, used: plain };
 }
 
 /** The layout's boxes for `nodes`: from the first frame that keeps every loose node on the screen, else from the first frame. */

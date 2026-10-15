@@ -66,11 +66,14 @@ function withUncovered(dirs) {
 // The sandbox runs the node project only (a browser launch per case would double this suite).
 // Modules covered only by a sibling *.browser.test (stories, components) are not part of the floor
 // mechanics tested here; the ladder's test step checks the real coverage with both projects.
-/** A workspace's sources and configs, and the generated snapshots and fixtures its tests compare against (CLI reply schemas, ADR-0147; SVG goldens, M4.19; the format goldens, M10.8; the FluxScript TextMate grammar the editor's tests tokenize with, M12.20; the bench fixture core's bench-fixture test runs every command from, M12.52). */
+/** A workspace's sources and configs, and the generated snapshots and fixtures its tests compare against (CLI reply schemas, ADR-0147; SVG goldens, M4.19; the format goldens, M10.8; the FluxScript TextMate grammar the editor's tests tokenize with, M12.20; the bench fixture core's bench-fixture test runs every command from, M12.52; the built one-file player, M13.20). */
 function copyWorkspace(dir) {
   for (const f of ['src', 'package.json', 'tsconfig.json']) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
   for (const f of ['schemas', '__golden__', '__fixtures__', 'grammar', 'bench'])
     if (existsSync(join(REPO, dir, f))) cpSync(join(REPO, dir, f), sb.path(`${dir}/${f}`), { recursive: true });
+  // the built one-file player, which the no-layout-in-saved test (NFR-SIZE-005) scans: the ladder builds before it tests
+  const player = join(REPO, dir, 'dist', 'player.inline.js');
+  if (existsSync(player)) cpSync(player, sb.path(`${dir}/dist/player.inline.js`));
 }
 
 /** The source files of a workspace's subpath entries (`exports` `./ssr` → `./src/ssr.ts`): another package imports them by name, so one that is dropped is replaced by an empty module (M11.32). */

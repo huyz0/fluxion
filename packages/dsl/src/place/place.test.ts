@@ -235,6 +235,37 @@ describe('place stage (FR-DSL-005, ADR-0030)', () => {
     }
   });
 
+  it('FR-DSL-005: a failing layout is reported once per container, left in place when the default fails too, and silent when the document is the problem', () => {
+    const failing = (id: string): LayoutAlgorithm<unknown> => ({
+      id,
+      version: '1',
+      schema: stackLayout.schema as unknown as LayoutAlgorithm<unknown>['schema'],
+      capabilities: { pins: true, compound: false, runsIn: 'main' },
+      parseOptions: () => ({ ok: true, value: {} }),
+      run: () => {
+        throw new Error('boom');
+      },
+    });
+    // the default layout is the one that fails: nothing can place the nodes, and the message says so
+    const noDefault = registries((r) => void r.layouts.register('layered', failing('layered'), 'test'), 'stack');
+    const left = place(doc('  - id: a\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n'), noDefault);
+    expect(left.diagnostics.map((d) => d.message)).toEqual([expect.stringContaining('the nodes are left in place')]);
+    const named = place(doc('  - id: a\n    layout: { type: layered }\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n'), noDefault);
+    expect(named.diagnostics.map((d) => d.message)).toEqual([expect.stringContaining('the nodes are left in place')]);
+    // a group holding a pin is tried in up to three frames: the failure is still one diagnostic
+    const frames = registries((r) => void registerLayout(r.layouts, failing('test:fails'), 'test'));
+    const grouped = place(
+      doc(
+        '  - id: a\n    nodes:\n      x: { shape: rect, pin: { x: 1800, y: 1000, w: 100, h: 50 } }\n      y: { shape: rect }\n    groups:\n      g: { contains: [x, y], layout: { type: test:fails } }\n',
+      ),
+      frames,
+    );
+    expect(grouped.diagnostics.filter((d) => d.code === 'FLX_SCHEMA_INVALID')).toHaveLength(1);
+    // a box the pipeline refuses (a negative pinned size) is the document's problem: validation reports it, the place stage adds nothing
+    const negative = place(doc('  - id: a\n    nodes:\n      x: { shape: rect, pin: { x: 0, y: 0, w: -1, h: 10 } }\n      y: { shape: rect }\n'));
+    expect(negative.diagnostics).toEqual([]);
+  });
+
   it('FR-LAY-001: a layout registered through registerLayout resolves by name and a mistyped option is a diagnostic', () => {
     const column: LayoutAlgorithm<{ step: number }> = {
       id: 'test:column',

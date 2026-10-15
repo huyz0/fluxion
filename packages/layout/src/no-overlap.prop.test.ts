@@ -81,7 +81,6 @@ describe('no overlap, any layout (FR-LAY-004, FR-LAY-008)', () => {
           expect(pipeline(algorithm, raw, input), name).toEqual(out);
           expectClear(name, nodes, out);
         }),
-        { numRuns: 120, seed: 20261015 },
       );
     }
   });

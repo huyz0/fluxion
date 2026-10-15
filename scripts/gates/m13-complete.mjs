@@ -185,6 +185,11 @@ const LAYOUT_TITLES = [
   ['M13.34', "FR-LAY-005: arranging starts where the screen is: an infinite screen's viewport sets the origin, and a selection stays where it was", 'layout'],
   ['M13.35', 'FR-LAY-001: a layout a plugin registers gets Arrange commands that run layout.arrange with its name, and the menus list them', 'editor'],
   ['M13.36', 'FR-DSL-005: a layout that throws, or that the pipeline refuses, is a diagnostic at the layout and the default layout places the screen', 'dsl'],
+  [
+    'M13.32',
+    'FR-DSL-005: a failing layout is reported once per container, left in place when the default fails too, and silent when the document is the problem',
+    'dsl',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
@@ -250,7 +255,10 @@ leg('NFR-SIZE-005: a saved file of a laid-out document and the player contain no
 // the example runner (scripts/dsl/examples.config.ts) is its own Vitest config, so the golden test is run there by its title
 leg('examples/dsl/layered-flow.flux.yaml renders to its golden SVG (T3)', () => {
   const r = run('pnpm', ['--filter', '@fluxion/dsl', 'run', 'test:examples', '-t', GOLDEN_TITLE]);
-  return r.status === 0 && r.stdout.includes(GOLDEN_TITLE) ? true : `the golden test did not pass: ${ok(r)}`;
+  // the verbose reporter marks a passed test with a check and a skipped one with an arrow: only the check counts
+  return r.status === 0 && r.stdout.split(/\r?\n/).some((line) => line.includes('✓') && line.includes(GOLDEN_TITLE))
+    ? true
+    : `the golden test did not pass: ${ok(r)}`;
 });
 leg(`size-limit: player core ≤ PLAYER_CORE_GZIP (${t('PLAYER_CORE_GZIP')})`, () => {
   const r = run('pnpm', ['exec', 'size-limit', '--json']);

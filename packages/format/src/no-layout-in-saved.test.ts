@@ -1,8 +1,7 @@
 // NFR-SIZE-005: layout engines are not embedded in a saved file; computed positions are baked. The saved `.flux.html` is the `.flux` archive plus the one-file
-// player (`@fluxion/player-inline`'s build output). Two checks: the player's dependency closure (the workspaces' package.json files, no build needed) does not
-// reach the layout package or dagre, and, where the build output exists (every run after `pnpm build`, which the ladder does first), the player's text and a whole
-// `.flux.html` written from a document that was laid out name no layout engine code. The coverage sandbox of the harness tests copies sources only, so the
-// second check reads the output when it is there.
+// player (`@fluxion/player-inline`'s build output). Two checks: the player's dependency closure (the workspaces' package.json files) does not reach the layout
+// package or dagre, and the player's text and a whole `.flux.html` written from a document that was laid out name no layout engine code. The second needs
+// `pnpm build` (the ladder and CI build before they test; the harness's coverage sandbox copies the output in), and fails with that instruction without it.
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { writeFluxHtml } from './flux-html.js';
@@ -17,7 +16,11 @@ declare global {
 }
 
 const PLAYER = Object.values(import.meta.glob('../../player-inline/dist/player.inline.js', { query: '?raw', import: 'default', eager: true }))[0];
-const MANIFESTS = import.meta.glob('../../*/package.json', { query: '?raw', import: 'default', eager: true });
+// the manifests of packages/* and packs/*: the workspaces the player's dependencies can name
+const MANIFESTS = {
+  ...import.meta.glob('../../*/package.json', { query: '?raw', import: 'default', eager: true }),
+  ...import.meta.glob('../../../packs/*/package.json', { query: '?raw', import: 'default', eager: true }),
+};
 const hasher = { sha256: (bytes: Uint8Array) => Promise.resolve(sha256Hex(bytes)) };
 
 /** Names that only the layout engine (the `layered` algorithm over dagre, the pipeline, the worker glue) brings into a bundle. */
@@ -52,6 +55,8 @@ describe('no layout engine in a saved file (NFR-SIZE-005)', () => {
   it('NFR-SIZE-005: the one-file player reaches no layout package or dagre through its dependencies', () => {
     const closure = closureOf('@fluxion/player-inline');
     expect(closure.has('@fluxion/player'), 'the closure is read from the package.json files').toBe(true);
+    // every workspace the closure names has a manifest, so the walk never stops at a package it could not read
+    expect([...closure].filter((name) => name.startsWith('@fluxion/') && !manifests.has(name))).toEqual([]);
     expect([...closure].filter((name) => name === '@fluxion/layout' || name.startsWith('@dagrejs/') || name === 'dagre')).toEqual([]);
   });
 
@@ -67,7 +72,8 @@ describe('no layout engine in a saved file (NFR-SIZE-005)', () => {
     if (!flux.ok) throw new Error('the document did not write');
     // the check sees what it should: the engine's names are found in a text that holds them
     expect(found('const x = layoutSync(dagre);')).toEqual(['dagre', 'layoutSync']);
-    if (PLAYER === undefined) return;
+    // the build output is made by `pnpm build`, which the ladder and CI run before the tests (the harness's coverage sandbox copies it in)
+    if (PLAYER === undefined) throw new Error('packages/player-inline/dist/player.inline.js is missing: run `pnpm build` first');
     expect(found(PLAYER)).toEqual([]);
     const html = await writeFluxHtml({ flux: flux.value, playerScript: PLAYER, title: 'Laid out', hasher });
     if (!html.ok) throw new Error('the html did not write');

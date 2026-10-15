@@ -3,7 +3,7 @@
 // (06-ai-authoring.md §2) has deferred sections: it warns `FLX_DSL_NOT_YET` and nothing else, and keeps those sections in `document.source`;
 // every other example warns nothing. Each also survives a round trip: compile(decompile(compile(src))) equals compile(src) (FR-DSL-002).
 // Run: `pnpm --filter @fluxion/dsl test:examples` (scripts/dsl/examples.config.ts says why the runner lives here).
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { type CompileResult, compile, decompile, formatDiagnostics } from '@fluxion/dsl';
 import { registerBuiltInLayouts } from '@fluxion/layout';
@@ -136,6 +136,8 @@ describe('guide: Writing FluxScript', () => {
 
 // The layered example (M13.21, FR-LAY-002, FR-LAY-008): a screen with no `layout:` is laid out by `layered`; its drawing is the golden, the same bytes
 // on every run. Update the golden only on purpose: `vitest -u` rewrites examples/dsl/__golden__/layered-flow.svg.
+const GOLDEN = join(DIR, '__golden__', 'layered-flow.svg');
+
 describe('examples/dsl/layered-flow.flux.yaml', () => {
   const text = readFileSync(join(DIR, 'layered-flow.flux.yaml'), 'utf8');
   const drawn = (): string => {
@@ -150,8 +152,10 @@ describe('examples/dsl/layered-flow.flux.yaml', () => {
   };
 
   it('FR-LAY-002: the example is drawn as its golden SVG, twice to the same bytes', async () => {
+    // outside CI a missing snapshot is written, not compared: the golden has to be there
+    expect(existsSync(GOLDEN), 'examples/dsl/__golden__/layered-flow.svg is missing').toBe(true);
     const svg = drawn();
     expect(drawn()).toBe(svg);
-    await expect(svg).toMatchFileSnapshot(join(DIR, '__golden__', 'layered-flow.svg'));
+    await expect(svg).toMatchFileSnapshot(GOLDEN);
   });
 });
