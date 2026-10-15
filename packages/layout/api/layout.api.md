@@ -15,6 +15,14 @@ export type AbortSignalLike = {
 };
 
 // @public
+export function applyPins(input: LayoutInput, boxes: Boxes): Boxes;
+
+// @public
+export type Boxes = {
+    readonly [id: string]: Box;
+};
+
+// @public
 export function buildSnapshot(records: readonly SnapshotRecord[], request: SnapshotRequest): SnapshotInput;
 
 // @public
@@ -143,6 +151,9 @@ export type OptionsResult<O> = {
 };
 
 // @public
+export type PostPassId = "pins" | "overlap" | "snap";
+
+// @public
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>["register"]>;
 
 // @public
@@ -155,6 +166,9 @@ export type RegisterLayoutResult = {
     readonly ok: false;
     readonly message: string;
 };
+
+// @public
+export function snapBoxes(input: LayoutInput, boxes: Boxes): Boxes;
 
 // @public
 export type SnapshotInput = LayoutInput & {

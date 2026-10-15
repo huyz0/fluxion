@@ -93,6 +93,10 @@ const LAYOUT_TITLES = [
   ['M13.8', 'FR-LAY-002: spacing presets set the gaps, and nodeGap and rankGap override them', 'layout'],
   ['M13.8', 'FR-LAY-001: the layered options are checked with a message naming the bad one, and the schema agrees', 'layout'],
   ['M13.8', 'FR-LAY-008: every built-in keeps a box for a node whose id is __proto__', 'layout'],
+  ['M13.9', 'FR-LAY-004: the pins pass puts a pinned node back on its input box, whatever the algorithm did to it', 'layout'],
+  ['M13.9', 'FR-LAY-004: the pins pass adds a pinned node the algorithm left out and drops ids the input does not have', 'layout'],
+  ['M13.9', 'FR-LAY-008: the snap pass rounds positions to the half pixel, halves toward +infinity, and never produces -0', 'layout'],
+  ['M13.9', 'FR-LAY-008: snapping leaves pinned boxes exact, and is idempotent for any boxes', 'layout'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
