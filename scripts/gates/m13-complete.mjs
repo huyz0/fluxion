@@ -168,6 +168,15 @@ const LAYOUT_TITLES = [
     'layout',
   ],
   ['M13.18', 'FR-LAY-002: a graph of more than 200 nodes is ranked quickly, ranks still run along the direction, and the result is deterministic', 'layout'],
+  ['M13.29', 'FR-LAY-007: a flat screen arranged in a worker gets the boxes layout.arrange gives, as one undo step', 'layout'],
+  ['M13.29', 'FR-LAY-005: a plan with nested containers is laid out by layout.arrange on the caller and no worker starts', 'layout'],
+  ['M13.29', 'FR-LAY-007: a screen edited while the worker ran is refused and nothing is written', 'layout'],
+  ['M13.29', 'FR-LAY-007: a newer arrange of a screen supersedes the older one, which rejects with AbortError', 'layout'],
+  [
+    'M13.29',
+    'FR-LAY-005: a request layout.arrange would refuse comes back as an error with nothing started, and applyBoxes writes only elements of the screen',
+    'layout',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>

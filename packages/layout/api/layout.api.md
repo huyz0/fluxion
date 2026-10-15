@@ -7,6 +7,7 @@
 import { AnyCommand } from '@fluxion/core';
 import { Box } from '@fluxion/geometry';
 import { Registry } from '@fluxion/core';
+import { Store } from '@fluxion/core';
 import { TextMeasurer } from '@fluxion/core';
 import { ZodType } from 'zod';
 
@@ -16,7 +17,19 @@ export type AbortSignalLike = {
 };
 
 // @public
+export type AbortSignalWithEvents = {
+    readonly aborted: boolean;
+    addEventListener(type: "abort", listener: () => void, options?: {
+        readonly once?: boolean;
+    }): void;
+    removeEventListener(type: "abort", listener: () => void): void;
+};
+
+// @public
 export type AlgorithmByName = (name: string) => LayoutAlgorithm<never> | undefined;
+
+// @public
+export const APPLY_BOXES_COMMAND_ID = "layout.applyBoxes";
 
 // @public
 export function applyPins(input: LayoutInput, boxes: Boxes): Boxes;
@@ -26,6 +39,34 @@ export const ARRANGE_COMMAND_ID = "layout.arrange";
 
 // @public
 export function arrangeCommand(lookup: AlgorithmByName): AnyCommand;
+
+// @public
+export type ArrangeCommandError = {
+    readonly message?: string;
+};
+
+// @public
+export type ArrangeCommandResult = {
+    readonly ok: boolean;
+    readonly value?: unknown;
+    readonly error?: ArrangeCommandError;
+};
+
+// @public
+export type ArrangeMoved = {
+    readonly moved: number;
+};
+
+// @public
+export type AsyncArrangeDeps = {
+    readonly store: Reader;
+    readonly execute: (id: string, args: unknown) => ArrangeCommandResult;
+    readonly host: LayoutHost;
+    readonly lookup: AlgorithmByName;
+};
+
+// @public
+export type AsyncArrangeResult = Result<ArrangeMoved>;
 
 // @public
 export type Boxes = {
@@ -39,6 +80,9 @@ export function buildSnapshot(records: readonly SnapshotRecord[], request: Snaps
 export type ContainerScope = {
     readonly containerId: string;
 };
+
+// @public
+export function createAsyncArranger(deps: AsyncArrangeDeps): (rawArgs: unknown, signal?: AbortSignalWithEvents) => Promise<AsyncArrangeResult>;
 
 // @public
 export function createLayoutCache(limit?: number): LayoutCache;
@@ -67,6 +111,15 @@ export type GridOptions = {
     readonly gap: number;
     readonly align: "start" | "center" | "end";
     readonly padding: number;
+};
+
+// @public
+export type HostJob = Omit<LayoutJobMessage, "type" | "id" | "revision" | "seed" | "fontHash" | "post"> & {
+    readonly scope: string;
+    readonly revision: number;
+    readonly seed?: number;
+    readonly fontHash?: string;
+    readonly post?: LayoutJobMessage["post"];
 };
 
 // @public
@@ -139,11 +192,31 @@ export type LayoutError = {
 export type LayoutErrorCode = "LAYOUT_INPUT_INVALID" | "LAYOUT_OPTIONS_INVALID" | "LAYOUT_FAILED" | "LAYOUT_ALGORITHM_UNKNOWN";
 
 // @public
+export type LayoutHost = {
+    run(job: HostJob, signal?: AbortSignalWithEvents): Promise<Result<LaidOut>>;
+    dispose(): void;
+};
+
+// @public
 export type LayoutInput = {
     readonly nodes: readonly LayoutNode[];
     readonly frame: Box;
     readonly edges?: readonly LayoutEdge[];
     readonly scope?: LayoutScope;
+};
+
+// @public
+export type LayoutJobMessage = {
+    readonly type: "layout";
+    readonly id: number;
+    readonly revision: number;
+    readonly algorithm: string;
+    readonly options?: unknown;
+    readonly input: LayoutInput;
+    readonly seed: number;
+    readonly fontHash: string;
+    readonly post: readonly PostPassId[];
+    readonly overlap?: OverlapOptions;
 };
 
 // @public
@@ -239,6 +312,9 @@ export type OverlapOptions = {
 
 // @public
 export type PostPassId = "pins" | "overlap" | "snap";
+
+// @public
+export type Reader = Pick<Store, "members" | "get">;
 
 // @public
 export function registerArrangeCommand(commands: Registry<string, AnyCommand>, layouts: Registry<string, unknown>): ReturnType<Registry<string, AnyCommand>["register"]>;

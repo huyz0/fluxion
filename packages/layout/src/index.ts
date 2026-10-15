@@ -8,7 +8,20 @@ import { gridLayout } from './grid.js';
 import { layeredLayout } from './layered.js';
 import { stackLayout } from './stack.js';
 
-export { type AlgorithmByName, ARRANGE_COMMAND_ID, arrangeCommand, registerArrangeCommand } from './arrange.js';
+export {
+  type AlgorithmByName,
+  APPLY_BOXES_COMMAND_ID,
+  ARRANGE_COMMAND_ID,
+  type ArrangeCommandError,
+  type ArrangeCommandResult,
+  type ArrangeMoved,
+  type AsyncArrangeDeps,
+  type AsyncArrangeResult,
+  arrangeCommand,
+  createAsyncArranger,
+  type Reader,
+  registerArrangeCommand,
+} from './arrange.js';
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type GridOptions, gridLayout } from './grid.js';
 export { type LayeredOptions, layeredLayout } from './layered.js';
@@ -35,6 +48,8 @@ export type {
   LayoutScope,
   OptionsResult,
 } from './types.js';
+export type { AbortSignalWithEvents, HostJob, LayoutHost } from './worker/host.js';
+export type { LayoutJobMessage } from './worker/protocol.js';
 
 /**
  * Register the built-in layouts in a host's `layouts` registry, as source `core` (built-ins use the plugin API, 03 §4).
