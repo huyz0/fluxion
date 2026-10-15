@@ -11,7 +11,9 @@ export type LayoutErrorCode =
   /** The algorithm refused its options. */
   | 'LAYOUT_OPTIONS_INVALID'
   /** The algorithm threw, or returned a box that is not finite. */
-  | 'LAYOUT_FAILED';
+  | 'LAYOUT_FAILED'
+  /** A worker was asked for an algorithm it has not registered. */
+  | 'LAYOUT_ALGORITHM_UNKNOWN';
 
 /**
  * A failed layout request.

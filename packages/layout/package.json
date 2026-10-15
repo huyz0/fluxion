@@ -10,6 +10,11 @@
       "@fluxion/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./worker": {
+      "@fluxion/source": "./src/worker/index.ts",
+      "types": "./dist/worker.d.ts",
+      "default": "./dist/worker.js"
     }
   },
   "files": [

@@ -55,8 +55,10 @@ function inputProblem(input: LayoutInput): string | undefined {
     seen.add(n.id);
     const problem = boxProblem(n.box);
     if (problem) return `the box of node "${n.id}" ${problem}`;
+    if (!finite(n.order)) return `the order of node "${n.id}" is not finite`;
   }
-  return undefined;
+  const edge = (input.edges ?? []).find((e) => !finite(e.order));
+  return edge ? `the order of edge "${edge.id}" is not finite` : undefined;
 }
 
 /** The input in canonical order: nodes and edges by (order, id). Values are untouched (ADR-0033). */
@@ -75,6 +77,10 @@ function canonicalJson(value: unknown): string {
       .sort(([a], [b]) => compare(a, b))
       .map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`);
     return `{${fields.join(',')}}`;
+  }
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new RangeError('a number that is not finite');
+    return Object.is(value, -0) ? '-0' : String(value);
   }
   return JSON.stringify(value) ?? 'null';
 }
@@ -106,19 +112,23 @@ export function fingerprintOf<O>(req: LayoutRequest<O>): Result<string> {
 function prepare<O>(req: LayoutRequest<O>): Result<Prepared<O>> {
   const problem = inputProblem(req.input);
   if (problem) return fail('LAYOUT_INPUT_INVALID', problem);
-  const options = req.algorithm.parseOptions(req.options);
-  if (!options.ok) return fail('LAYOUT_OPTIONS_INVALID', options.message);
-  const input = canonicalInput(req.input);
-  const passes = passesOf(req.post);
-  const request = {
-    algorithm: `${req.algorithm.id}@${req.algorithm.version}`,
-    options: options.value,
-    seed: req.seed ?? 0,
-    input,
-    post: passes.map((p) => (p === 'overlap' ? { pass: p, ...req.overlap } : { pass: p })),
-    fontHash: req.fontHash ?? '',
-  };
-  return ok({ input, options: options.value, passes, fingerprint: hex(sha256Hash128.hash128(canonicalJson(request))) });
+  try {
+    const options = req.algorithm.parseOptions(req.options);
+    if (!options.ok) return fail('LAYOUT_OPTIONS_INVALID', options.message);
+    const input = canonicalInput(req.input);
+    const passes = passesOf(req.post);
+    const request = {
+      algorithm: `${req.algorithm.id}@${req.algorithm.version}`,
+      options: options.value,
+      seed: req.seed ?? 0,
+      input,
+      post: passes.map((p) => (p === 'overlap' ? { pass: p, ...req.overlap } : { pass: p })),
+      fontHash: req.fontHash ?? '',
+    };
+    return ok({ input, options: options.value, passes, fingerprint: hex(sha256Hash128.hash128(canonicalJson(request))) });
+  } catch (e) {
+    return fail('LAYOUT_OPTIONS_INVALID', `the options or seed cannot be fingerprinted: ${e instanceof Error ? e.message : String(e)}`);
+  }
 }
 
 /** The boxes after the post-passes. */
@@ -128,6 +138,13 @@ function afterPasses(input: LayoutInput, boxes: Boxes, passes: readonly PostPass
   if (passes.includes('overlap')) out = removeOverlap(input, out, overlap);
   if (passes.includes('snap')) out = snapBoxes(input, out);
   return out;
+}
+
+/** The result with every level frozen: a cached result is shared, so no caller can change it for the next. */
+function frozen(laid: LaidOut): LaidOut {
+  // copies: the boxes of pinned nodes are the caller's own objects, and freezing those would change the caller's input
+  const boxes = Object.fromEntries(Object.entries(laid.boxes).map(([id, b]) => [id, Object.freeze({ ...b })]));
+  return Object.freeze({ boxes: Object.freeze(boxes), metrics: Object.freeze({ ...laid.metrics }), fingerprint: laid.fingerprint });
 }
 
 /** True when every node of the input has a finite box in `boxes`. */
@@ -148,8 +165,12 @@ function complete(nodes: readonly LayoutNode[], boxes: Boxes): string | undefine
  */
 export function layoutSync<O>(req: LayoutRequest<O>): Result<LaidOut> {
   const prepared = prepare(req);
-  if (!prepared.ok) return prepared;
-  const { input, options, fingerprint, passes } = prepared.value;
+  return prepared.ok ? execute(req, prepared.value) : prepared;
+}
+
+/** Run a prepared request. */
+function execute<O>(req: LayoutRequest<O>, prepared: Prepared<O>): Result<LaidOut> {
+  const { input, options, fingerprint, passes } = prepared;
   const ctx: LayoutCtx = { rng: createRng(req.seed ?? 0), measure: req.measure ?? NO_MEASURER, signal: { aborted: false } };
   let boxes: Boxes;
   try {
@@ -160,7 +181,7 @@ export function layoutSync<O>(req: LayoutRequest<O>): Result<LaidOut> {
   const missing = complete(input.nodes, boxes);
   if (missing) return fail('LAYOUT_FAILED', missing);
   const laid = afterPasses(input, boxes, passes, req.overlap);
-  return ok({ boxes: laid, metrics: { overlaps: overlapCount(laid), crossings: 0, bends: 0, ms: 0 }, fingerprint });
+  return ok(frozen({ boxes: laid, metrics: { overlaps: overlapCount(laid), crossings: 0, bends: 0, ms: 0 }, fingerprint }));
 }
 
 /**
@@ -176,26 +197,29 @@ export type LayoutCache = {
 };
 
 /**
- * Create a cache that keeps the `limit` most recently used results (default 64).
+ * Create a cache that keeps the `limit` most recently used results (default 64; anything but a number of 1 or more is read as 64). Results are
+ * frozen, so a caller cannot change what the next one receives.
  *
  * @public
  */
 export function createLayoutCache(limit = 64): LayoutCache {
+  const capacity = Number.isFinite(limit) && limit >= 1 ? Math.floor(limit) : 64;
   const stored = new Map<string, LaidOut>();
   return {
     layout(req) {
-      const key = fingerprintOf(req);
-      if (!key.ok) return key;
-      const hit = stored.get(key.value);
+      const prepared = prepare(req);
+      if (!prepared.ok) return prepared;
+      const key = prepared.value.fingerprint;
+      const hit = stored.get(key);
       if (hit) {
-        stored.delete(key.value);
-        stored.set(key.value, hit);
+        stored.delete(key);
+        stored.set(key, hit);
         return ok(hit);
       }
-      const result = layoutSync(req);
+      const result = execute(req, prepared.value);
       if (result.ok) {
-        stored.set(key.value, result.value);
-        if (stored.size > limit) stored.delete(stored.keys().next().value as string);
+        stored.set(key, result.value);
+        if (stored.size > capacity) stored.delete(stored.keys().next().value as string);
       }
       return result;
     },

@@ -142,6 +142,12 @@ const LAYOUT_TITLES = [
     'FR-LAY-008: the cache returns the stored result for an identical request without running the algorithm, and misses when anything differs',
     'layout',
   ],
+  [
+    'M13.14',
+    'FR-LAY-001: options that throw, hold a BigInt, a cycle or a number that is not finite, and a NaN order, are LayoutError results; -0 and 0 fingerprint apart',
+    'layout',
+  ],
+  ['M13.14', "FR-LAY-008: a result is frozen, so a caller cannot change what the cache hands the next one, and the input boxes stay the caller's", 'layout'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
@@ -155,7 +161,24 @@ const SEMANTIC_TITLES = [
 leg('FR-DOC-007: an element keeps its semantic data byte-equal through every style command (T0)', () =>
   SEMANTIC_TITLES.length === 0 ? 'no semantic titles yet: M13.4 adds them' : titled(SEMANTIC_TITLES, EXACT),
 );
-const WORKER_TITLES = [];
+const WORKER_TITLES = [
+  ['M13.14', 'FR-LAY-007: a job goes to the worker and its result is the one layoutSync gives', 'layout'],
+  ['M13.14', 'FR-LAY-007: aborting a running job rejects with AbortError, ends its worker, and the next job runs on a fresh one', 'layout'],
+  ['M13.14', 'FR-LAY-007: a reply of an older job or with the wrong id never settles a newer job of the same scope', 'layout'],
+  ['M13.14', 'FR-LAY-007: a newer revision of a scope supersedes the running one, and an older revision is refused at once', 'layout'],
+  ['M13.14', 'FR-LAY-007: jobs of different scopes run side by side, and dispose ends every worker and rejects what is in flight', 'layout'],
+  [
+    'M13.14',
+    'FR-LAY-007: an aborted signal rejects before any worker starts, a worker error is a LAYOUT_FAILED result, and an unknown algorithm is LAYOUT_ALGORITHM_UNKNOWN',
+    'layout',
+  ],
+  [
+    'M13.14',
+    'FR-LAY-007: a worker that cannot be started, cannot be sent the job, sends an unreadable message or cannot be ended still settles the job',
+    'layout',
+  ],
+  ['M13.14', 'FR-LAY-007: serveLayoutWorker answers each job with done or error and ignores cancel and messages of other protocols', 'layout'],
+];
 leg('FR-LAY-007: aborting a layout job rejects with AbortError and a stale revision is discarded (T1)', () =>
   WORKER_TITLES.length === 0 ? 'no worker titles yet: M13.14 adds them' : titled(WORKER_TITLES, EXACT),
 );

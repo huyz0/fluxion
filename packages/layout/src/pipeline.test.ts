@@ -132,6 +132,34 @@ describe('layout pipeline (FR-LAY-008)', () => {
     expect(code(layoutSync({ input: input([node('__proto__', 0)]), algorithm: stackLayout }))).toBe('ok');
   });
 
+  it('FR-LAY-001: options that throw, hold a BigInt, a cycle or a number that is not finite, and a NaN order, are LayoutError results; -0 and 0 fingerprint apart', () => {
+    const nodes = [node('a', 0)];
+    const options = (raw: unknown): LayoutAlgorithm<unknown> => ({ ...(pileUp as LayoutAlgorithm<unknown>), parseOptions: () => ({ ok: true, value: raw }) });
+    const cyclic: Record<string, unknown> = {};
+    cyclic['self'] = cyclic;
+    for (const raw of [{ big: 1n }, cyclic, { gap: Number.POSITIVE_INFINITY }, { gap: Number.NaN }]) {
+      expect(layoutSync({ input: input(nodes), algorithm: options(raw) })).toMatchObject({ ok: false, error: { code: 'LAYOUT_OPTIONS_INVALID' } });
+      expect(fingerprintOf({ input: input(nodes), algorithm: options(raw) })).toMatchObject({ ok: false });
+    }
+    const throwing: LayoutAlgorithm<unknown> = {
+      ...(pileUp as LayoutAlgorithm<unknown>),
+      parseOptions: () => {
+        throw new Error('bad schema');
+      },
+    };
+    expect(layoutSync({ input: input(nodes), algorithm: throwing })).toMatchObject({ ok: false, error: { code: 'LAYOUT_OPTIONS_INVALID' } });
+    expect(layoutSync({ input: input([{ ...node('a', 0), order: Number.NaN }]), algorithm: stackLayout })).toMatchObject({
+      ok: false,
+      error: { code: 'LAYOUT_INPUT_INVALID' },
+    });
+    expect(layoutSync({ input: input(nodes, { edges: [{ id: 'e', source: 'a', target: 'a', order: Number.NaN }] }), algorithm: stackLayout })).toMatchObject({
+      ok: false,
+    });
+    const zero = fingerprintOf({ input: input(nodes), algorithm: options({ gap: 0 }) });
+    const negative = fingerprintOf({ input: input(nodes), algorithm: options({ gap: -0 }) });
+    expect(zero.ok && negative.ok && zero.value !== negative.value).toBe(true);
+  });
+
   it('FR-LAY-008: the cache returns the stored result for an identical request without running the algorithm, and misses when anything differs', () => {
     let runs = 0;
     const counting: LayoutAlgorithm<{ jitter: number }> = {
@@ -149,13 +177,30 @@ describe('layout pipeline (FR-LAY-008)', () => {
     expect(runs).toBe(1);
     cache.layout({ ...req, options: { jitter: 3 } });
     expect(runs).toBe(2);
-    // a third distinct request evicts the least recently used one (the first was used before the second)
+    // the first request is used again, so the jitter one is the least recently used: a third request evicts it, not the first
+    cache.layout(req);
     cache.layout({ ...req, seed: 9 });
     expect(cache.size()).toBe(2);
     cache.layout(req);
+    expect(runs).toBe(3);
+    cache.layout({ ...req, options: { jitter: 3 } });
     expect(runs).toBe(4);
     // a failure is not stored
     expect(cache.layout({ ...req, input: input([node('a', 0), node('a', 1)]) }).ok).toBe(false);
     expect(cache.size()).toBe(2);
+    // a limit that is not a number of 1 or more is read as 64
+    const odd = createLayoutCache(Number.NaN);
+    for (let seed = 0; seed < 5; seed += 1) odd.layout({ ...req, seed });
+    expect(odd.size()).toBe(5);
+  });
+
+  it("FR-LAY-008: a result is frozen, so a caller cannot change what the cache hands the next one, and the input boxes stay the caller's", () => {
+    const pin = node('p', 1, [100, 50], { x: 10, y: 20 });
+    const out = laid(layoutSync({ input: input([node('a', 0), pin]), algorithm: pileUp, options: { jitter: 0 } }));
+    expect(Object.isFrozen(out) && Object.isFrozen(out.boxes) && Object.isFrozen(out.boxes['p']) && Object.isFrozen(out.metrics)).toBe(true);
+    expect(() => {
+      (out.boxes['p'] as { x: number }).x = 99;
+    }).toThrow();
+    expect(Object.isFrozen(pin.box)).toBe(false);
   });
 });

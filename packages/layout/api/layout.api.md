@@ -126,7 +126,7 @@ export type LayoutError = {
 };
 
 // @public
-export type LayoutErrorCode = "LAYOUT_INPUT_INVALID" | "LAYOUT_OPTIONS_INVALID" | "LAYOUT_FAILED";
+export type LayoutErrorCode = "LAYOUT_INPUT_INVALID" | "LAYOUT_OPTIONS_INVALID" | "LAYOUT_FAILED" | "LAYOUT_ALGORITHM_UNKNOWN";
 
 // @public
 export type LayoutInput = {
