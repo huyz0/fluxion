@@ -13,7 +13,7 @@ import type { LayoutInput } from './types.js';
  * @public
  */
 export type OverlapOptions = {
-  /** The space left between any two boxes, px (default 1: it absorbs text-measurement drift and the half-pixel rounding of `snap`). */
+  /** The space left between any two boxes, px, 0 or more (default 1: it absorbs text-measurement drift and the half-pixel rounding of `snap`; anything else is read as 1). */
   readonly margin?: number;
   /** The axis along which a pair is separated; the axis of least penetration when omitted. `layered` sets the axis its ranks are spread along. */
   readonly preferAxis?: 'x' | 'y';
@@ -35,14 +35,12 @@ const DIRECTIONS: ReadonlyArray<readonly [number, number]> = [
   [-1, -1],
 ];
 
-/** How far `a` and `b` overlap on one axis once each is grown by `margin` (positive: they touch). */
-type Span = readonly [start: number, length: number];
-const reach = ([aStart, aLen]: Span, [bStart, bLen]: Span, margin: number): number =>
-  Math.min(aStart + aLen, bStart + bLen) - Math.max(aStart, bStart) + margin;
+/** How far two spans overlap (negative: the gap between them). */
+const lap = (aStart: number, aLen: number, bStart: number, bLen: number): number => Math.min(aStart + aLen, bStart + bLen) - Math.max(aStart, bStart);
 
 /** True when `a` and `b` overlap or are closer than `margin`. */
 function touches(a: Box, b: Box, margin: number): boolean {
-  return reach([a.x, a.w], [b.x, b.w], margin) > EPSILON && reach([a.y, a.h], [b.y, b.h], margin) > EPSILON;
+  return lap(a.x, a.w, b.x, b.w) + margin > EPSILON && lap(a.y, a.h, b.y, b.h) + margin > EPSILON;
 }
 
 type Item = { readonly id: string; readonly pinned: boolean };
@@ -51,19 +49,29 @@ type Item = { readonly id: string; readonly pinned: boolean };
 function itemsOf(input: LayoutInput, boxes: Boxes): Item[] {
   return [...input.nodes]
     .sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-    .filter((n) => boxes[n.id] !== undefined)
+    .filter((n) => Object.hasOwn(boxes, n.id))
     .map((n) => ({ id: n.id, pinned: n.pinned === true }));
 }
 
 /** `b` moved along one axis. */
 const shifted = (b: Box, axis: 'x' | 'y', by: number): Box => (axis === 'x' ? { ...b, x: b.x + by } : { ...b, y: b.y + by });
 
-/** The box of `mover` pushed clear of `anchor` along the axis of least penetration (or the preferred one), away from the anchor. */
+/** The shift that puts `mover` just clear of `anchor` along one axis (start, length), on the side the mover's centre is on. */
+function clearance(mover: readonly [number, number], anchor: readonly [number, number], margin: number): number {
+  const [m0, mLen] = mover;
+  const [a0, aLen] = anchor;
+  return m0 + mLen / 2 >= a0 + aLen / 2 ? a0 + aLen + margin - m0 : a0 - margin - mLen - m0;
+}
+
+/**
+ * The box of `mover` pushed clear of `anchor` along the preferred axis, else along the axis that needs the shorter move, away from the anchor
+ * (a box inside another is pushed all the way out, not just by the overlap).
+ */
 function separated(mover: Box, anchor: Box, margin: number, prefer: OverlapOptions['preferAxis']): Box {
-  const [px, py] = [reach([mover.x, mover.w], [anchor.x, anchor.w], margin), reach([mover.y, mover.h], [anchor.y, anchor.h], margin)];
-  const axis = prefer ?? (px <= py ? 'x' : 'y');
-  const away = axis === 'x' ? mover.x + mover.w / 2 >= anchor.x + anchor.w / 2 : mover.y + mover.h / 2 >= anchor.y + anchor.h / 2;
-  return shifted(mover, axis, (away ? 1 : -1) * (axis === 'x' ? px : py));
+  const sx = clearance([mover.x, mover.w], [anchor.x, anchor.w], margin);
+  const sy = clearance([mover.y, mover.h], [anchor.y, anchor.h], margin);
+  const axis = prefer ?? (Math.abs(sx) <= Math.abs(sy) ? 'x' : 'y');
+  return shifted(mover, axis, axis === 'x' ? sx : sy);
 }
 
 type Resolved = Required<Pick<OverlapOptions, 'margin'>> & OverlapOptions;
@@ -82,7 +90,7 @@ function separate(items: readonly Item[], boxes: Map<string, Box>, o: Resolved):
   for (let pass = 0; pass < PASSES; pass += 1) {
     let moved = false;
     for (const [i, a] of items.entries()) {
-      for (const b of items.slice(i + 1)) moved = resolvePair(a, b, boxes, o) || moved;
+      for (let j = i + 1; j < items.length; j += 1) moved = resolvePair(a, items[j] as Item, boxes, o) || moved;
     }
     if (!moved) return;
   }
@@ -106,7 +114,8 @@ function relocated(box: Box, self: string, boxes: ReadonlyMap<string, Box>, marg
   candidates.sort((a, b) => a.d - b.d || a.k - b.k);
   const free = candidates.find((c) => !crowded(c.at, self, boxes, margin));
   if (free) return free.at;
-  const right = Math.max(...[...boxes].filter(([id]) => id !== self).map(([, b]) => b.x + b.w));
+  let right = Number.NEGATIVE_INFINITY;
+  for (const [id, b] of boxes) if (id !== self) right = Math.max(right, b.x + b.w);
   return { ...box, x: right + margin + 1 };
 }
 
@@ -117,7 +126,9 @@ function relocated(box: Box, self: string, boxes: ReadonlyMap<string, Box>, marg
  * @public
  */
 export function removeOverlap(input: LayoutInput, boxes: Boxes, options: OverlapOptions = {}): Boxes {
-  const o = { ...options, margin: options.margin ?? 1 };
+  const given = options.margin;
+  const margin = given !== undefined && Number.isFinite(given) && given >= 0 ? given : 1;
+  const o = { ...options, margin };
   const items = itemsOf(input, boxes);
   const work = new Map(items.map((i) => [i.id, boxes[i.id] as Box] as const));
   separate(items, work, o);
@@ -136,6 +147,8 @@ export function removeOverlap(input: LayoutInput, boxes: Boxes, options: Overlap
 export function overlapCount(boxes: Boxes): number {
   const all = Object.values(boxes);
   let count = 0;
-  for (const [i, a] of all.entries()) for (const b of all.slice(i + 1)) if (touches(a, b, 0)) count += 1;
+  for (let i = 0; i < all.length; i += 1) {
+    for (let j = i + 1; j < all.length; j += 1) if (touches(all[i] as Box, all[j] as Box, 0)) count += 1;
+  }
   return count;
 }

@@ -103,4 +103,31 @@ describe('overlap pass (FR-LAY-004)', () => {
       { numRuns: 300, seed: 20261015 },
     );
   });
+
+  it('FR-LAY-004: a pair is separated by exactly the distance that clears it, a contained box is pushed all the way out, and margin 0 is allowed', () => {
+    const pair = [node('a', 0), node('b', 1)];
+    expect(removeOverlap(input(pair), { a: box(0, 0), b: box(90, 5) })['b']).toEqual(box(101, 5));
+    // a small box inside a big one: out in one move on the nearer side, not by the overlap length
+    const inner = removeOverlap(input([node('big', 0), node('small', 1)]), { big: box(0, 0, 100, 100), small: box(45, 45, 10, 10) });
+    expect(inner['big']).toEqual(box(0, 0, 100, 100));
+    const out = inner['small'] as Placed;
+    expect(gap(out, inner['big'] as Placed)).toBeGreaterThanOrEqual(1 - 1e-6);
+    expect(Math.hypot(out.x - 45, out.y - 45)).toBeLessThanOrEqual(61);
+    // margin 0: boxes that exactly touch are left alone, and ones that overlap end exactly touching
+    expect(removeOverlap(input(pair), { a: box(0, 0), b: box(100, 0) }, { margin: 0 })['b']).toEqual(box(100, 0));
+    expect(removeOverlap(input(pair), { a: box(0, 0), b: box(90, 0) }, { margin: 0 })['b']).toEqual(box(100, 0));
+    // boxes that are exactly `margin` apart are clear
+    expect(removeOverlap(input(pair), { a: box(0, 0), b: box(101, 0) })['b']).toEqual(box(101, 0));
+    // a negative or NaN margin is read as the default
+    expect(removeOverlap(input(pair), { a: box(0, 0), b: box(90, 0) }, { margin: -5 })['b']).toEqual(box(101, 0));
+    expect(removeOverlap(input(pair), { a: box(0, 0), b: box(90, 0) }, { margin: Number.NaN })['b']).toEqual(box(101, 0));
+  });
+
+  it('FR-LAY-004: an id the algorithm left out is ignored even when it is __proto__, and 1000 boxes in a pile end clear of each other', () => {
+    const out = removeOverlap(input([node('__proto__', 0), node('a', 1)]), { a: box(0, 0) });
+    expect(Object.keys(out)).toEqual(['a']);
+    const ids = Array.from({ length: 1000 }, (_, i) => `n${i}`);
+    const pile = removeOverlap(input(ids.map((id, i) => node(id, i))), Object.fromEntries(ids.map((id, i) => [id, box(i % 10, i % 7)])));
+    expect(overlapCount(pile)).toBe(0);
+  });
 });

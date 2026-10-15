@@ -107,6 +107,17 @@ const LAYOUT_TITLES = [
     'FR-LAY-004: for any boxes and pins no unpinned box overlaps or touches another, pinned boxes and sizes are unchanged, and the result is deterministic',
     'layout',
   ],
+  [
+    'M13.11',
+    'FR-LAY-004: a pair is separated by exactly the distance that clears it, a contained box is pushed all the way out, and margin 0 is allowed',
+    'layout',
+  ],
+  ['M13.11', 'FR-LAY-004: an id the algorithm left out is ignored even when it is __proto__, and 1000 boxes in a pile end clear of each other', 'layout'],
+  [
+    'M13.11',
+    'FR-LAY-004: for random graphs, every built-in plus the post-passes leaves unpinned boxes clear of every other box and pinned boxes unmoved',
+    'layout',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
