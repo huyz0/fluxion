@@ -31,6 +31,24 @@ export type ContainerScope = {
 };
 
 // @public
+export function createLayoutCache(limit?: number): LayoutCache;
+
+// @public
+export function createRng(seed: number): () => number;
+
+// @public
+export type Err<E> = {
+    readonly ok: false;
+    readonly error: E;
+};
+
+// @public
+export const err: <E>(error: E) => Err<E>;
+
+// @public
+export function fingerprintOf<O>(req: LayoutRequest<O>): Result<string>;
+
+// @public
 export const gridLayout: LayoutAlgorithm<GridOptions>;
 
 // @public
@@ -73,6 +91,12 @@ export interface LayoutAlgorithm<O> {
 }
 
 // @public
+export type LayoutCache = {
+    layout<O>(req: LayoutRequest<O>): Result<LaidOut>;
+    readonly size: () => number;
+};
+
+// @public
 export type LayoutCapabilities = {
     readonly pins: boolean;
     readonly compound: boolean;
@@ -94,6 +118,15 @@ export type LayoutEdge = {
     readonly target: string;
     readonly order: number;
 };
+
+// @public
+export type LayoutError = {
+    readonly code: LayoutErrorCode;
+    readonly message: string;
+};
+
+// @public
+export type LayoutErrorCode = "LAYOUT_INPUT_INVALID" | "LAYOUT_OPTIONS_INVALID" | "LAYOUT_FAILED";
 
 // @public
 export type LayoutInput = {
@@ -139,7 +172,22 @@ export type LayoutOutput = {
 };
 
 // @public
+export type LayoutRequest<O> = {
+    readonly input: LayoutInput;
+    readonly algorithm: LayoutAlgorithm<O>;
+    readonly options?: unknown;
+    readonly seed?: number;
+    readonly fontHash?: string;
+    readonly post?: readonly PostPassId[];
+    readonly overlap?: OverlapOptions;
+    readonly measure?: LayoutCtx["measure"];
+};
+
+// @public
 export type LayoutScope = "screen" | "selection" | ContainerScope;
+
+// @public
+export function layoutSync<O>(req: LayoutRequest<O>): Result<LaidOut>;
 
 // @public
 export function listLayouts(layouts: Registry<string, unknown>): readonly LayoutAlgorithm<unknown>[];
@@ -151,6 +199,15 @@ export type NestedOptions = {
 
 // @public
 export type NestedRunner = (container: string | undefined, input: LayoutInput) => Boxes;
+
+// @public
+export type Ok<T> = {
+    readonly ok: true;
+    readonly value: T;
+};
+
+// @public
+export const ok: <T>(value: T) => Ok<T>;
 
 // @public
 export type OptionsResult<O> = {
@@ -189,6 +246,9 @@ export type RegisterLayoutResult = {
 
 // @public
 export function removeOverlap(input: LayoutInput, boxes: Boxes, options?: OverlapOptions): Boxes;
+
+// @public
+export type Result<T, E = LayoutError> = Ok<T> | Err<E>;
 
 // @public
 export function snapBoxes(input: LayoutInput, boxes: Boxes): Boxes;

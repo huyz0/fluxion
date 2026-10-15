@@ -8,12 +8,15 @@ import { gridLayout } from './grid.js';
 import { layeredLayout } from './layered.js';
 import { stackLayout } from './stack.js';
 
+export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type GridOptions, gridLayout } from './grid.js';
 export { type LayeredOptions, layeredLayout } from './layered.js';
 export { layoutNested, type NestedOptions, type NestedRunner } from './nested.js';
 export { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
 export { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
+export { createLayoutCache, fingerprintOf, type LayoutCache, type LayoutRequest, layoutSync } from './pipeline.js';
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
+export { createRng } from './rng.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
 export type {

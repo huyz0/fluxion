@@ -128,6 +128,20 @@ const LAYOUT_TITLES = [
     'FR-LAY-005: for random trees of depth up to 3 every unpinned container holds its children, siblings stay clear, pinned boxes are exact and the result is deterministic',
     'layout',
   ],
+  ['M13.13', 'FR-LAY-008: the same request twice gives equal boxes and fingerprint, whatever the order of nodes, edges and keys', 'layout'],
+  ['M13.13', 'FR-LAY-008: the fingerprint changes with the input, options, seed, algorithm version, font hash and post-passes', 'layout'],
+  ['M13.13', 'FR-LAY-004: the pipeline puts pinned nodes back, removes overlap, snaps, and counts overlapping pinned pairs', 'layout'],
+  ['M13.13', 'FR-LAY-008: the algorithm gets a seeded stream: the same seed gives the same boxes, another seed other ones', 'layout'],
+  [
+    'M13.13',
+    'FR-LAY-001: a duplicate id, a non-finite box or frame, bad options, a throwing algorithm or non-finite output is a LayoutError, not an exception',
+    'layout',
+  ],
+  [
+    'M13.13',
+    'FR-LAY-008: the cache returns the stored result for an identical request without running the algorithm, and misses when anything differs',
+    'layout',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
