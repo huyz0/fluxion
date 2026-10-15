@@ -176,6 +176,12 @@ export function createLayoutHost(spawn: () => WorkerLike): LayoutHost {
   const state: State = { spawn, running: new Map(), newest: new Map(), nextId: 1 };
   return {
     run(job, signal) {
+      // a revision that is not a number would defeat every later comparison (NaN is neither older nor newer than anything)
+      if (!Number.isFinite(job.revision)) {
+        return Promise.resolve(
+          err({ code: 'LAYOUT_INPUT_INVALID', message: `the revision of a layout job must be a finite number, not ${String(job.revision)}` }),
+        );
+      }
       const seen = state.newest.get(job.scope) ?? Number.NEGATIVE_INFINITY;
       if (signal?.aborted) return Promise.reject(abortError('the layout was aborted'));
       if (job.revision < seen) return Promise.reject(abortError(`superseded by revision ${seen}`));

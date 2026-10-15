@@ -162,6 +162,12 @@ const LAYOUT_TITLES = [
   ['M13.17', 'FR-LAY-001: a screen without a layout is laid out by layered: connectors give the ranks, and nothing overlaps', 'dsl'],
   ['M13.17', 'FR-DSL-005: `layered`, named by v1 but not registered by the host, places with stack and warns FLX_DSL_NOT_YET at the layout', 'dsl'],
   ['M13.17', 'FR-DSL-005: in a mixed fixture pinned boxes are exact and the others are placed without overlap', 'dsl'],
+  [
+    'M13.18',
+    'FR-LAY-007: a revision that is not a finite number is refused as LAYOUT_INPUT_INVALID, and an abort listener is removed on every way a job ends',
+    'layout',
+  ],
+  ['M13.18', 'FR-LAY-002: a graph of more than 200 nodes is ranked quickly, ranks still run along the direction, and the result is deterministic', 'layout'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>

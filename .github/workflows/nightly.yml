@@ -57,9 +57,25 @@ jobs:
 
   perf:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     steps:
-      - run: echo "perf — SKIP, benches and perf-baseline.json land in M13"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm run build
+      # NFR-PERF-005: layered-100 and layered-500 (the layout worker path) against their thresholds and perf-baseline.json
+      - run: node scripts/ci/perf-baseline.mjs
+      # NFR-PERF-001: the hit-test-2000 bench (M6 final F4)
+      - run: pnpm exec vitest bench --run --project "node (bench)" packages/editor/bench/hit-test-2000.bench.ts
+      # the @perf Playwright specs: perf.drag-500, perf.layout-500 (no main-thread long task over 50 ms) and the rest, one worker
+      - run: pnpm exec playwright test --project=perf --workers=1
 
   eval-live:
     runs-on: ubuntu-latest

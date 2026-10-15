@@ -86,6 +86,16 @@ function controller(): { signal: AbortSignalWithEvents; abort(): void } {
   };
 }
 
+/** The newest worker answers its job with a `done`. */
+function answerLast(workers: readonly ManualWorker[]): void {
+  const last = workers[workers.length - 1] as ManualWorker;
+  last.say({
+    type: 'done',
+    id: (last.sent[0] as LayoutJobMessage).id,
+    output: { boxes: {}, metrics: { overlaps: 0, crossings: 0, bends: 0, ms: 0 }, fingerprint: 'x' },
+  });
+}
+
 const rejection = async (p: Promise<unknown>) =>
   p.then(
     () => undefined,
@@ -190,6 +200,61 @@ describe('layout worker (FR-LAY-007)', () => {
     const sent = workers[1]?.sent[0] as LayoutJobMessage;
     workers[1]?.say({ type: 'error', id: sent.id, error: { code: 'LAYOUT_INPUT_INVALID', message: 'no' } });
     expect(await second).toEqual({ ok: false, error: { code: 'LAYOUT_INPUT_INVALID', message: 'no' } });
+  });
+
+  it('FR-LAY-007: a revision that is not a finite number is refused as LAYOUT_INPUT_INVALID, and an abort listener is removed on every way a job ends', async () => {
+    const workers: ManualWorker[] = [];
+    const host = createLayoutHost(() => {
+      const w = new ManualWorker();
+      workers.push(w);
+      return w;
+    });
+    for (const revision of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(await host.run(job({ revision }))).toMatchObject({ ok: false, error: { code: 'LAYOUT_INPUT_INVALID' } });
+    }
+    expect(workers).toHaveLength(0);
+    // the signal holds the host's listener while a job runs and none once it ended: by a reply, an error, a supersede, and an abort
+    const listening = () => {
+      const added: Array<() => void> = [];
+      const c = controller();
+      const signal: AbortSignalWithEvents = {
+        get aborted() {
+          return c.signal.aborted;
+        },
+        addEventListener: (type, fn, options) => {
+          added.push(fn);
+          c.signal.addEventListener(type, fn, options);
+        },
+        removeEventListener: (type, fn) => {
+          added.splice(added.indexOf(fn), 1);
+          c.signal.removeEventListener(type, fn);
+        },
+      };
+      return { signal, count: () => added.length, abort: c.abort };
+    };
+    const byReply = listening();
+    const replied = host.run(job({ scope: 'r', revision: 1 }), byReply.signal);
+    expect(byReply.count()).toBe(1);
+    answerLast(workers);
+    await replied;
+    expect(byReply.count()).toBe(0);
+    const byError = listening();
+    const failedRun = host.run(job({ scope: 'e', revision: 1 }), byError.signal);
+    workers.at(-1)?.onerror?.({ message: 'boom' });
+    await failedRun;
+    expect(byError.count()).toBe(0);
+    const bySupersede = listening();
+    const older = rejection(host.run(job({ scope: 's', revision: 1 }), bySupersede.signal));
+    const newer = host.run(job({ scope: 's', revision: 2 }));
+    await older;
+    expect(bySupersede.count()).toBe(0);
+    answerLast(workers);
+    await newer;
+    const byAbort = listening();
+    const aborted = rejection(host.run(job({ scope: 'a', revision: 1 }), byAbort.signal));
+    byAbort.abort();
+    await aborted;
+    expect(byAbort.count()).toBe(0);
   });
 
   it('FR-LAY-007: jobs of different scopes run side by side, and dispose ends every worker and rejects what is in flight', async () => {

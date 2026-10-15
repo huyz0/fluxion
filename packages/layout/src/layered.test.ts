@@ -116,6 +116,16 @@ describe('layered layout (FR-LAY-002, FR-LAY-008)', () => {
     );
   });
 
+  it('FR-LAY-002: a graph of more than 200 nodes is ranked quickly, ranks still run along the direction, and the result is deterministic', () => {
+    const count = 240;
+    const nodes = Array.from({ length: count }, (_, i) => node(`n${i}`, [100, 50], i));
+    const edges = nodes.slice(12).map((n, i) => edge(`e${i}`, `n${i}`, n.id, i));
+    const first = layeredLayout.run({ frame, nodes, edges }, options({}));
+    expect(layeredLayout.run({ frame, nodes, edges }, options({}))).toEqual(first);
+    for (const e of edges) expect((first.boxes[e.source]?.y ?? 0) < (first.boxes[e.target]?.y ?? 0)).toBe(true);
+    expect(Object.keys(first.boxes)).toHaveLength(count);
+  });
+
   it('FR-LAY-002: spacing presets set the gaps, and nodeGap and rankGap override them', () => {
     const gaps = (raw: unknown) => {
       const out = layeredLayout.run({ frame, ...diamond }, options({ padding: 0, ...(raw as object) }));

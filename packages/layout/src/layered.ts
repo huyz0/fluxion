@@ -56,11 +56,24 @@ function parseOptions(raw: unknown): OptionsResult<LayeredOptions> {
   return { ok: true, value: { ...DEFAULTS, ...(Object.fromEntries(given) as Partial<LayeredOptions>) } };
 }
 
+/**
+ * Above this many nodes dagre ranks with its `tight-tree` ranker instead of `network-simplex`: the ranks are slightly less compact, but a
+ * 500-node chart is laid out in a quarter of the time (NFR-PERF-005, LAYOUT_500_NODES_MS); a chart this large is not read for its minimal ranks.
+ */
+const SIMPLEX_MAX_NODES = 200;
+
 /** dagre's centres for `nodes` (by index), ranked along `o.direction`, with the connections `edges` given as index pairs. */
 function rank(nodes: readonly LayoutNode[], edges: ReadonlyArray<readonly [number, number]>, o: LayeredOptions): Array<{ x: number; y: number }> {
   const g = new dagre.graphlib.Graph();
   const [nodeGap, rankGap] = GAPS[o.spacing];
-  g.setGraph({ rankdir: RANKDIR[o.direction], nodesep: o.nodeGap ?? nodeGap, ranksep: o.rankGap ?? rankGap, marginx: 0, marginy: 0 });
+  g.setGraph({
+    rankdir: RANKDIR[o.direction],
+    nodesep: o.nodeGap ?? nodeGap,
+    ranksep: o.rankGap ?? rankGap,
+    marginx: 0,
+    marginy: 0,
+    ranker: nodes.length > SIMPLEX_MAX_NODES ? 'tight-tree' : 'network-simplex',
+  });
   g.setDefaultEdgeLabel(() => ({}));
   for (const [i, n] of nodes.entries()) g.setNode(`n${i}`, { width: n.box.w, height: n.box.h });
   for (const [from, to] of edges) g.setEdge(`n${from}`, `n${to}`);

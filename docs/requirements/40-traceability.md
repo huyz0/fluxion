@@ -124,7 +124,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LAY-004 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/no-overlap.prop.test.ts` +3 |
 | FR-LAY-005 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/bootstrap.browser.test.ts` +4 |
 | FR-LAY-006 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
-| FR-LAY-007 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/worker/worker.test.ts` |
+| FR-LAY-007 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/bench/layered-500.bench.ts`, `packages/layout/src/worker/worker.test.ts` |
 | FR-LAY-008 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/layered.test.ts` +3 |
 | FR-LAY-009 | M | R4 | M22 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-010 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
@@ -307,7 +307,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PERF-002 | M | R3 | M16 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-003 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.open-50.spec.ts` |
 | NFR-PERF-004 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-PERF-005 | M | R2 | M13 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-PERF-005 | M | R2 | M13 | [30-non-functional.md](30-non-functional.md) | `packages/layout/bench/layered-100.bench.ts`, `packages/layout/bench/layered-500.bench.ts` |
 | NFR-PERF-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/bench/transact-5000.bench.ts` +3 |
 | NFR-PERF-007 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-008 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
