@@ -1,0 +1,135 @@
+{
+  "milestone": "M13",
+  "checkpoint": "cp1",
+  "range": "bd7bf3b..34a69c0",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "scripts/gates/m13-complete.mjs; docs/backlog/current.md (M13.22)",
+      "summary": "M13.22 is done but the changesets leg is red: no changeset for @fluxion/schema, @fluxion/core, @fluxion/format, which changed only in test files."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "file": "packages/layout/src/arrange.ts; packages/layout/src/snapshot.ts",
+      "summary": "Editor Arrange never passes the screen's size: buildSnapshot falls back to a fixed 1920x1080 frame at the origin, so a mobile screen is laid out as if 1920 wide and a selection jumps to the screen's top-left."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "file": "packages/editor/src/layout-arrange.ts; docs/milestones/M13.md task 4",
+      "summary": "FR-LAY-001's UI half (a registered custom layout is available in the UI) is a hardcoded three-entry list; no UI code reads the layouts registry. The narrowing is recorded in no row or Deferred entry."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "packages/layout/src/no-overlap.prop.test.ts",
+      "summary": "The property hardcodes numRuns and seed, so the nightly 10k-run setting is ignored."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "packages/dsl/src/place/place.ts",
+      "summary": "When layoutSync fails, laidOut re-runs the algorithm outside any try: a throwing plugin layout throws out of the compiler; a refused pipeline returns raw boxes with no diagnostic. The FLX_DSL_NOT_YET text still says it comes in M13."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "file": "docs/architecture/decisions/ADR-0033-layout-engine-contract-v1.md",
+      "summary": "ADR-0033 freezes a LayoutEngine that does not exist; createLayoutCache has no production caller and fontHash is never supplied."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "file": "packages/layout/src/pipeline.ts",
+      "summary": "metrics.crossings, bends and ms are hardcoded 0 and the layered scorecard the risk table and ADR-0034 promise does not exist."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "file": "packages/layout/src",
+      "summary": "Small coherence drift: compare copied four times, two identical lookup types, three result shapes for one operation, an unbounded newest map in the host."
+    },
+    {
+      "id": "F9",
+      "severity": "minor",
+      "file": "scripts/gates/m13-complete.mjs",
+      "summary": "The perf leg's name must change when M13.31 bounds the write; the size leg checks a ceiling, not 'unchanged'; the bench bound uses a provisional local baseline."
+    },
+    {
+      "id": "F10",
+      "severity": "minor",
+      "file": "docs/backlog/current.md (M13.23)",
+      "summary": "The cp1 checkpoint ran after 30 rows, 16 past the engine it was meant to review."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "note": "The changesets leg is red for packages that changed only in test files: add test-only patch changesets or let the leg ignore test-only changes, with a harness test.",
+      "target": "M13.33"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "note": "Arrange passes the screen's size and frames a selection on its bounds; a T0 with a 390 x 844 screen.",
+      "target": "M13.34"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "note": "Registry-driven Arrange choices with an options form (FR-LAY-001's UI half). Descoping it is a human decision and needs a Deferred entry; an agent does not descope it.",
+      "target": "M13.35"
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "note": "The no-overlap property takes its runs and seed from the global fast-check configuration.",
+      "target": "M13.32"
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "note": "A failing layout becomes a DSL diagnostic and the default layout places the screen; fix the FLX_DSL_NOT_YET wording.",
+      "target": "M13.36"
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "note": "Amend ADR-0033 to say what exists (engine = host plus cache and the synchronous pipeline; cache unused in v1; fontHash not supplied).",
+      "target": "M13.37"
+    },
+    {
+      "finding": "F7",
+      "disposition": "hand-off",
+      "note": "The layout scorecard and computed crossings/bends metrics move to M14 (row 19, roadmap Deferred).",
+      "target": "M14.19"
+    },
+    {
+      "finding": "F8",
+      "disposition": "argue",
+      "note": "No behaviour differs between the duplicates; share them when next touched (review-argued.txt)."
+    },
+    {
+      "finding": "F9",
+      "disposition": "hand-off",
+      "note": "The gate-text edit and the player-core size comparison join M13.31; the provisional bench baseline is re-recorded at the first CI bench run (M13.24 acceptance).",
+      "target": "M13.31"
+    },
+    {
+      "finding": "F10",
+      "disposition": "argue",
+      "note": "Process lapse, corrected by this record (review-argued.txt)."
+    }
+  ],
+  "planDelta": "Rows grew from 24 planned to 37 (1.5x). Added: M13.33 to M13.37 (the reopened findings). M13.24 depends on all of M13.31 to M13.37. Budget redesign (a CPU-normalised measure) is a question for M14 planning: the staged budget was raised three times in three days.",
+  "learned": [
+    "Check a UI row against the requirement's acceptance sentence, not only its own narrowed row text: a fixed list passed every row and still dropped the registry.",
+    "A snapshot builder with a default frame hides the difference between hosts: pass the frame explicitly (or make it required).",
+    "A property test that hardcodes numRuns and seed defeats the nightly 'run it 10k times' setting; leave the settings to the global config."
+  ]
+}
