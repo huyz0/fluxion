@@ -127,7 +127,7 @@ function unknownType(ctx: Ctx, c: Container, type: string): void {
       code: 'FLX_DSL_NOT_YET',
       severity: 'warning',
       path,
-      message: `layout "${type}" is not compiled yet (it comes in M13); placed with the default layout`,
+      message: `layout "${type}" is not registered by this host; placed with the default layout`,
     });
     return;
   }
@@ -239,20 +239,43 @@ function edgesAmong(ctx: Ctx, nodes: readonly LayoutNode[]): LayoutEdge[] {
   return edges;
 }
 
-/** One layout run through the pipeline (pins, the overlap pass and the 0.5 px snap); the algorithm's own boxes when the pipeline refuses. */
-function laidOut(chosen: Chosen, input: { nodes: readonly LayoutNode[]; edges: readonly LayoutEdge[]; frame: Box }): LayoutOutput['boxes'] {
+type Frame = { nodes: readonly LayoutNode[]; edges: readonly LayoutEdge[]; frame: Box };
+/** Where a layout runs: the context and the container, for the diagnostic a failing layout leaves. */
+type Env = { readonly ctx: Ctx; readonly c: Container };
+
+/**
+ * One layout run through the pipeline (pins, the overlap pass and the 0.5 px snap). When the layout throws or the pipeline refuses its result,
+ * the failure is reported at the container's `layout` and the default layout places the nodes instead (none, if that fails too: they stay
+ * where they are); `used` is the layout that gave the boxes. An input the pipeline refuses (a box with a negative size, say) is the document's
+ * own problem, which validation reports at its record: nothing is added and the nodes stay where they are.
+ */
+function attempt(env: Env, chosen: Chosen, input: Frame): { readonly boxes: LayoutOutput['boxes']; readonly used: Chosen } {
   const r = layoutSync({ input, algorithm: chosen.algorithm, options: chosen.options });
-  return r.ok ? r.value.boxes : chosen.algorithm.run(input, chosen.options).boxes;
+  if (r.ok) return { boxes: r.value.boxes, used: chosen };
+  if (r.error.code === 'LAYOUT_INPUT_INVALID') return { boxes: {}, used: chosen };
+  report(env.ctx, env.c, {
+    code: 'FLX_SCHEMA_INVALID',
+    severity: DIAGNOSTIC_CODES.FLX_SCHEMA_INVALID,
+    path: `${env.c.path}/layout`,
+    message: `layout "${chosen.algorithm.id}" failed: ${r.error.message}; placed with the default layout`,
+  });
+  const plain = fallback(env.ctx);
+  const again = layoutSync({ input, algorithm: plain.algorithm, options: plain.options });
+  return { boxes: again.ok ? again.value.boxes : {}, used: plain };
 }
 
 /** The layout's boxes for `nodes`: from the first frame that keeps every loose node on the screen, else from the first frame. */
-function run(c: Container, chosen: Chosen, graph: Graph, frames: readonly Box[]): LayoutOutput['boxes'] {
+function run(env: Env, chosen: Chosen, graph: Graph, frames: readonly Box[]): LayoutOutput['boxes'] {
   const { nodes, edges } = graph;
   let first: LayoutOutput['boxes'] | undefined;
+  let current = chosen;
   for (const frame of frames) {
-    const out = laidOut(chosen, { nodes, edges, frame });
+    const done = attempt(env, current, { nodes, edges, frame });
+    const out = done.boxes;
+    // a layout that failed is replaced for the frames that follow, so it is reported once
+    current = done.used;
     first ??= out;
-    if (frames.length === 1 || nodes.every((n) => n.pinned || !finite(out[n.id]) || contains(c.screen.frame, out[n.id] as Box))) return out;
+    if (frames.length === 1 || nodes.every((n) => n.pinned || !finite(out[n.id]) || contains(env.c.screen.frame, out[n.id] as Box))) return out;
   }
   return first ?? {};
 }
@@ -268,7 +291,7 @@ function arrange(ctx: Ctx, c: Container): boolean {
   const pins = nodes.filter((n) => n.pinned).map((n) => n.box);
   const extra = pins.length > 0 && c.record.type !== 'screen' ? obstacles(ctx, c, c.record.id, nodes.length) : [];
   const all = [...nodes, ...extra];
-  const out = run(c, layoutFor(ctx, c), { nodes: all, edges: edgesAmong(ctx, all) }, framesFor(c, pins));
+  const out = run({ ctx, c }, layoutFor(ctx, c), { nodes: all, edges: edgesAmong(ctx, all) }, framesFor(c, pins));
   members.forEach((m, k) => {
     const to = out[m.id];
     // a group keeps the size of its members' bounds: only its position is the layout's

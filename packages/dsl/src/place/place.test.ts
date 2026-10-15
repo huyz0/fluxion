@@ -209,6 +209,32 @@ describe('place stage (FR-DSL-005, ADR-0030)', () => {
     expect(box(r, 'y')).toEqual({ x: 80, y: 184, w: 160, h: 80 });
   });
 
+  it('FR-DSL-005: a layout that throws, or that the pipeline refuses, is a diagnostic at the layout and the default layout places the screen', () => {
+    const broken = (id: string, run: LayoutAlgorithm<unknown>['run']): LayoutAlgorithm<unknown> => ({
+      id,
+      version: '1',
+      schema: stackLayout.schema as unknown as LayoutAlgorithm<unknown>['schema'],
+      capabilities: { pins: true, compound: false, runsIn: 'main' },
+      parseOptions: () => ({ ok: true, value: {} }),
+      run,
+    });
+    const throwing = broken('test:throws', () => {
+      throw new Error('boom');
+    });
+    // a box missing from the result: the pipeline refuses it
+    const forgetful = broken('test:forgets', () => ({ boxes: {} }));
+    for (const layout of [throwing, forgetful]) {
+      const reg = registries((r) => void registerLayout(r.layouts, layout, 'test'));
+      const text = doc(`  - id: a\n    layout: { type: ${layout.id} }\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n`);
+      const r = place(text, reg);
+      expect(r.diagnostics.map((d) => [d.code, d.severity, d.path])).toEqual([['FLX_SCHEMA_INVALID', 'error', '/screens/0/layout']]);
+      expect(r.diagnostics[0]?.message).toContain(`layout "${layout.id}" failed`);
+      // the default layout (layered) placed both, clear of each other
+      expect(overlaps(box(r, 'x'), box(r, 'y'))).toBe(false);
+      expect(overlapping(r)).toEqual([]);
+    }
+  });
+
   it('FR-LAY-001: a layout registered through registerLayout resolves by name and a mistyped option is a diagnostic', () => {
     const column: LayoutAlgorithm<{ step: number }> = {
       id: 'test:column',

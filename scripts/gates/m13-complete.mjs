@@ -181,6 +181,7 @@ const LAYOUT_TITLES = [
   ['M13.30', 'FR-LAY-007: an Arrange runs in the worker, moves the elements, is one undo step, and a refusal comes back as a message', 'apps/studio'],
   ['M13.34', "FR-LAY-005: arranging starts where the screen is: an infinite screen's viewport sets the origin, and a selection stays where it was", 'layout'],
   ['M13.35', 'FR-LAY-001: a layout a plugin registers gets Arrange commands that run layout.arrange with its name, and the menus list them', 'editor'],
+  ['M13.36', 'FR-DSL-005: a layout that throws, or that the pipeline refuses, is a diagnostic at the layout and the default layout places the screen', 'dsl'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
