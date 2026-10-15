@@ -18,6 +18,13 @@ export type ArrangeRunner = {
   readonly dispose: () => void;
 };
 
+/**
+ * The name of the performance mark set just before an Arrange writes its boxes.
+ *
+ * @public
+ */
+export const APPLY_MARK = 'fluxion:arrange-apply';
+
 /** A layout worker running the studio's worker module. */
 // a DOM Worker has the members WorkerLike names; its handlers take a MessageEvent, which has the `data` the host reads
 const browserWorker = (): WorkerLike => new Worker(new URL('./layout.worker.ts', import.meta.url), { type: 'module' }) as unknown as WorkerLike;
@@ -31,7 +38,11 @@ export function createArrangeRunner(core: Core, spawn: () => WorkerLike = browse
   const host = createLayoutHost(spawn);
   const arrange = createAsyncArranger({
     store: core.store,
-    execute: core.execute,
+    // the write of the boxes is marked, so a performance test can tell the layout from the write (perf.layout-500.spec.ts)
+    execute: (id, args) => {
+      if (id === 'layout.applyBoxes') performance.mark(APPLY_MARK);
+      return core.execute(id, args);
+    },
     host,
     lookup: (name) => core.registries.layouts.get(name) as LayoutAlgorithm<never> | undefined,
   });

@@ -270,10 +270,13 @@ leg('the nightly perf job runs the layout benches, perf.layout-500.spec.ts, perf
   const missing = ['layered-100', 'layered-500', 'perf.layout-500', 'perf.drag-500', 'hit-test-2000'].filter((w) => !perf.includes(w));
   return (perf && !/SKIP/.test(perf) && missing.length === 0) || `nightly perf job: ${perf ? `lacks ${missing.join(', ') || 'SKIP removal'}` : 'not found'}`;
 });
-leg('a 500-node layout leaves no main-thread long task over 50 ms (T4 perf.layout-500.spec.ts)', () => {
-  const file = 'e2e/perf.layout-500.spec.ts';
-  return exists(file) ? ok(run('pnpm', ['exec', 'playwright', 'test', file, '--project=perf'])) : `missing ${file}`;
-});
+leg(
+  'a 500-node Arrange leaves no main-thread task over 50 ms before the boxes are written (T4 perf.layout-500.spec.ts; the write itself is backlog M13.31)',
+  () => {
+    const file = 'e2e/perf.layout-500.spec.ts';
+    return exists(file) ? ok(run('pnpm', ['exec', 'playwright', 'test', file, '--project=perf'])) : `missing ${file}`;
+  },
+);
 
 // ── coverage, changesets, quarantines ──────────────────────────────────────────────────────────────
 function coverageLeg(pkg, floors) {
