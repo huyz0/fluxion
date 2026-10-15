@@ -315,7 +315,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SIZE-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `tests/harness/editor-budget.test.mjs` |
 | NFR-SIZE-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.size.spec.ts`, `packages/format/src/size-budget.test.ts` |
 | NFR-SIZE-004 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` |
-| NFR-SIZE-005 | S | R2 | M13 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-SIZE-005 | S | R2 | M13 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/no-layout-in-saved.test.ts` |
 | NFR-PORT-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `packages/editor/src/clipboard-chord.test.ts`, `tests/harness/previous-playwright.test.mjs` |
 | NFR-PORT-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts` |
 | NFR-PORT-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/file-session.test.ts` +3 |

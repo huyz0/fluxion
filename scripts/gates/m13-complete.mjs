@@ -230,7 +230,7 @@ leg('a mixed DSL fixture keeps its pins and lays out the rest with no overlap; e
 });
 
 // ── size and speed ─────────────────────────────────────────────────────────────────────────────────
-const SIZE_TITLES = [];
+const SIZE_TITLES = [['M13.20', 'NFR-SIZE-005: the one-file player and a saved .flux.html of a laid-out document hold no layout engine code', 'format']];
 const GOLDEN_TITLES = [];
 leg('NFR-SIZE-005: a saved file of a laid-out document and the player contain no layout module (T0)', () =>
   SIZE_TITLES.length === 0 ? 'no size titles yet: M13.20 adds them' : titled(SIZE_TITLES, EXACT),
