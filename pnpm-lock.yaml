@@ -597,6 +597,9 @@ importers:
       '@fluxion/geometry':
         specifier: workspace:*
         version: link:../geometry
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
 
   packages/mcp: {}
 

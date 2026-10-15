@@ -1,5 +1,5 @@
 import { createCoreRegistries, type ShapeDef, sha256Hash128, stableId } from '@fluxion/core';
-import { type LayoutAlgorithm, type LayoutInput, registerBuiltInLayouts } from '@fluxion/layout';
+import { type LayoutAlgorithm, type LayoutInput, registerBuiltInLayouts, registerLayout, stackLayout } from '@fluxion/layout';
 import { type AnyRecord, SCHEMA_VERSION, validate } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
 import { expandFlux } from '../expand/expand.js';
@@ -207,6 +207,28 @@ describe('place stage (FR-DSL-005, ADR-0030)', () => {
     expect(box(r, 'y')).toEqual({ x: 80, y: 184, w: 160, h: 80 });
   });
 
+  it('FR-LAY-001: a layout registered through registerLayout resolves by name and a mistyped option is a diagnostic', () => {
+    const column: LayoutAlgorithm<{ step: number }> = {
+      id: 'test:column',
+      version: '1',
+      schema: stackLayout.schema as unknown as LayoutAlgorithm<{ step: number }>['schema'],
+      capabilities: { pins: true, compound: false, runsIn: 'main' },
+      parseOptions: (raw) => {
+        const step = (raw as { step?: unknown } | undefined)?.step;
+        return step === undefined || typeof step === 'number' ? { ok: true, value: { step: step ?? 10 } } : { ok: false, message: 'step must be a number' };
+      },
+      run: (input, options) => ({ boxes: Object.fromEntries(input.nodes.map((n, i) => [n.id, { ...n.box, x: 400, y: i * options.step }])) }),
+    };
+    const reg = registries((x) => expect(registerLayout(x.layouts, column, 'test')).toEqual({ ok: true }));
+    const text = (step: string) =>
+      doc(`  - id: a\n    layout: { type: test:column, step: ${step} }\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n`);
+    const good = place(text('300'), reg);
+    expect(good.diagnostics).toEqual([]);
+    expect(box(good, 'x').x).toBe(400);
+    expect(box(good, 'y').y).toBe(300);
+    expect(place(text('wide'), reg).diagnostics.map((d) => [d.code, d.severity])).toEqual([['FLX_SCHEMA_INVALID', 'error']]);
+  });
+
   it('FR-DSL-005: an unknown layout type is FLX_REF_MISSING with a did-you-mean from the registry, and places with stack', () => {
     const r = place(
       doc('  - id: a\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n    groups:\n      g: { contains: [x, y], layout: { type: stak } }\n'),
@@ -222,6 +244,9 @@ describe('place stage (FR-DSL-005, ADR-0030)', () => {
     const fan: LayoutAlgorithm<{ step: number }> = {
       id: 'test:fan',
       version: '1',
+      // this fixture reads its options in parseOptions; the schema is only listed, so stack's stands in
+      schema: stackLayout.schema as unknown as LayoutAlgorithm<{ step: number }>['schema'],
+      capabilities: { pins: true, compound: false, runsIn: 'either' },
       parseOptions: (raw) => ({ ok: true, value: { step: Number((raw as { step?: number } | undefined)?.step ?? 10) } }),
       run: (input, options) => {
         calls.push({ input, options });

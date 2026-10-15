@@ -2,6 +2,7 @@
 // the frame, aligned on the other axis; pinned nodes keep their boxes and the stack steps past any it would overlap. It is the fallback
 // FluxScript places with until `layered` lands in M13 (ADR-0030).
 import type { Box } from '@fluxion/geometry';
+import { z } from 'zod';
 import type { LayoutAlgorithm, LayoutInput, LayoutNode, LayoutOutput, OptionsResult } from './types.js';
 
 /**
@@ -40,12 +41,14 @@ function option(key: string, value: unknown): string | undefined {
 function parseOptions(raw: unknown): OptionsResult<StackOptions> {
   if (raw === undefined) return { ok: true, value: DEFAULTS };
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return fail('stack options must be an object');
-  for (const [key, value] of Object.entries(raw)) {
+  // an option set to undefined is absent, as the schema reads it
+  const given = Object.entries(raw).filter(([, value]) => value !== undefined);
+  for (const [key, value] of given) {
     if (!KEYS.has(key)) return fail(`unknown stack option "${key}" (direction, gap, align, padding)`);
     const problem = option(key, value);
     if (problem) return fail(problem);
   }
-  return { ok: true, value: { ...DEFAULTS, ...(raw as Partial<StackOptions>) } };
+  return { ok: true, value: { ...DEFAULTS, ...(Object.fromEntries(given) as Partial<StackOptions>) } };
 }
 
 /** The box of `n` with its main-axis start at `main` and its cross-axis offset `cross`. */
@@ -100,4 +103,18 @@ function run(input: LayoutInput, o: StackOptions): LayoutOutput {
  *
  * @public
  */
-export const stackLayout: LayoutAlgorithm<StackOptions> = { id: 'stack', version: '1', parseOptions, run };
+export const stackLayout: LayoutAlgorithm<StackOptions> = {
+  id: 'stack',
+  version: '1',
+  schema: z
+    .strictObject({
+      direction: z.enum(['down', 'right']).default(DEFAULTS.direction),
+      gap: z.number().finite().min(0).default(DEFAULTS.gap),
+      align: z.enum(['start', 'center', 'end']).default(DEFAULTS.align),
+      padding: z.number().finite().min(0).default(DEFAULTS.padding),
+    })
+    .default(DEFAULTS),
+  capabilities: { pins: true, compound: false, runsIn: 'either' },
+  parseOptions,
+  run,
+};

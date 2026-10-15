@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@fluxion/core": "workspace:*",
-    "@fluxion/geometry": "workspace:*"
+    "@fluxion/geometry": "workspace:*",
+    "zod": "catalog:"
   }
 }

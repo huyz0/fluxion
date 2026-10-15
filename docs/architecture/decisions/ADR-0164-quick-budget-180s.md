@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-10-13
-decision-makers: the human (answer to the quick-budget question, 2026-10-13: "Raise quick to 180 s"), recorded by harness (M13.5; amends NFR-DX-002, weakens `QUICK_GATE_BUDGET_MS`; supersedes ADR-0161)
+decision-makers: the human (answer to the quick-budget question, 2026-10-13: "Raise quick to 180 s"), recorded by harness (M13.25; amends NFR-DX-002, weakens `QUICK_GATE_BUDGET_MS`; supersedes ADR-0161)
 ---
 
 # ADR-0164 — The quick-gate budget is 180 s

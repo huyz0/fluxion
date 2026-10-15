@@ -57,7 +57,14 @@ leg('ADR-0034 overlap removal and determinism is accepted', adrLeg('0034', ['VPS
 leg('packages/layout is pure: check-layering passes', () => ok(node('scripts/gates/check-layering.mjs')));
 
 // ── the engine (T0/T1 under exact titles; rows add them) ───────────────────────────────────────────
-const LAYOUT_TITLES = []; // ['M13.k', '<exact title>', 'layout', {}, 'node']
+const LAYOUT_TITLES = [
+  ['M13.5', 'FR-LAY-001: a registered layout is listed with its id, version and options schema', 'layout'],
+  ['M13.5', 'FR-LAY-001: a value without an options schema, capabilities, run or parseOptions is refused at registration', 'layout'],
+  ['M13.5', 'FR-LAY-001: the options schema of stack agrees with parseOptions on defaults and on refusals', 'layout'],
+  ['M13.5', 'FR-LAY-001: the options of a layout are published as JSON Schema', 'layout'],
+  ['M13.5', 'FR-LAY-001: a layout registered through registerLayout resolves by name and a mistyped option is a diagnostic', 'dsl'],
+  // ['M13.k', '<exact title>', 'layout', {}, 'node']
+];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
   LAYOUT_TITLES.length === 0 ? 'no layout titles yet: the M13 rows add them' : titled(LAYOUT_TITLES, EXACT),
 );

@@ -6,8 +6,23 @@
 import type { Registry } from '@fluxion/core';
 import { stackLayout } from './stack.js';
 
+export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
 export { type StackOptions, stackLayout } from './stack.js';
-export type { LayoutAlgorithm, LayoutInput, LayoutNode, LayoutOutput, OptionsResult } from './types.js';
+export type {
+  AbortSignalLike,
+  ContainerScope,
+  LaidOut,
+  LayoutAlgorithm,
+  LayoutCapabilities,
+  LayoutCtx,
+  LayoutEdge,
+  LayoutInput,
+  LayoutMetrics,
+  LayoutNode,
+  LayoutOutput,
+  LayoutScope,
+  OptionsResult,
+} from './types.js';
 
 /**
  * Register the built-in layouts in a host's `layouts` registry, as source `core` (built-ins use the plugin API, 03 §4).

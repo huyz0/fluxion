@@ -612,3 +612,6 @@ M13.2	80ce8d54c1aa43617673818acf7f881831bfc3c27611dfbcf23619260e1ad88f	r1	pass	c
 M13.3	88aa63b67db9f43bbed1a1313fd76401acfa0534bb746d05bb2fa45539ea3157	r1	pass	claude:subagent	0 findings
 M13.4	1ce39a596af1bf9934ce21faca1bb2edc0b08aee0d2bcf83e271093f0dc1afa8	r1	pass	claude:subagent	0 findings
 M13.4	db5a584d88622bbb90a2572b0635cafec70f14b7cc9a8820506ec0126b75c22d	r2	pass	claude:subagent	0 findings
+M13.25	f9db5a8d95b8a26c97fffa3758deb30583028b2a3fd3a42db214cb076871056f	r1	pass	claude:subagent	1 findings
+M13.26	008a46cbb82ac85d3baecd5edc49cdaace3f64aca827d6b09fbc2e2ed6fa318e	r1	pass	claude:subagent	0 findings
+M13.27	807626c6063b6651781d6b58d15594f70ad0632e8a7be668f0ae9fa31c0d1dd8	r1	pass	claude:subagent	1 findings

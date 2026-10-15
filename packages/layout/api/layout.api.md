@@ -6,19 +6,75 @@
 
 import { Box } from '@fluxion/geometry';
 import { Registry } from '@fluxion/core';
+import { TextMeasurer } from '@fluxion/core';
+import { ZodType } from 'zod';
+
+// @public
+export type AbortSignalLike = {
+    readonly aborted: boolean;
+};
+
+// @public
+export type ContainerScope = {
+    readonly containerId: string;
+};
+
+// @public
+export type LaidOut = {
+    readonly boxes: {
+        readonly [id: string]: Box;
+    };
+    readonly metrics: LayoutMetrics;
+    readonly fingerprint: string;
+};
 
 // @public
 export interface LayoutAlgorithm<O> {
+    readonly capabilities: LayoutCapabilities;
     readonly id: string;
     parseOptions(raw: unknown): OptionsResult<O>;
-    run(input: LayoutInput, options: O): LayoutOutput;
+    run(input: LayoutInput, options: O, ctx?: LayoutCtx): LayoutOutput;
+    readonly schema: ZodType<O>;
     readonly version: string;
 }
+
+// @public
+export type LayoutCapabilities = {
+    readonly pins: boolean;
+    readonly compound: boolean;
+    readonly constraints?: readonly string[];
+    readonly runsIn: "main" | "worker" | "either";
+};
+
+// @public
+export type LayoutCtx = {
+    readonly rng: () => number;
+    readonly measure: TextMeasurer;
+    readonly signal: AbortSignalLike;
+};
+
+// @public
+export type LayoutEdge = {
+    readonly id: string;
+    readonly source: string;
+    readonly target: string;
+    readonly order: number;
+};
 
 // @public
 export type LayoutInput = {
     readonly nodes: readonly LayoutNode[];
     readonly frame: Box;
+    readonly edges?: readonly LayoutEdge[];
+    readonly scope?: LayoutScope;
+};
+
+// @public
+export type LayoutMetrics = {
+    readonly overlaps: number;
+    readonly crossings: number;
+    readonly bends: number;
+    readonly ms: number;
 };
 
 // @public
@@ -27,14 +83,29 @@ export type LayoutNode = {
     readonly box: Box;
     readonly order: number;
     readonly pinned?: boolean;
+    readonly parentId?: string;
+    readonly hints?: {
+        readonly [key: string]: unknown;
+    };
 };
+
+// @public
+export function layoutOptionsJsonSchema(algorithm: LayoutAlgorithm<unknown>): unknown;
 
 // @public
 export type LayoutOutput = {
     readonly boxes: {
         readonly [id: string]: Box;
     };
+    readonly metrics?: LayoutMetrics;
+    readonly fingerprint?: string;
 };
+
+// @public
+export type LayoutScope = "screen" | "selection" | ContainerScope;
+
+// @public
+export function listLayouts(layouts: Registry<string, unknown>): readonly LayoutAlgorithm<unknown>[];
 
 // @public
 export type OptionsResult<O> = {
@@ -47,6 +118,17 @@ export type OptionsResult<O> = {
 
 // @public
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>["register"]>;
+
+// @public
+export function registerLayout<O>(layouts: Registry<string, unknown>, algorithm: LayoutAlgorithm<O>, source: string): RegisterLayoutResult;
+
+// @public
+export type RegisterLayoutResult = {
+    readonly ok: true;
+} | {
+    readonly ok: false;
+    readonly message: string;
+};
 
 // @public
 export const stackLayout: LayoutAlgorithm<StackOptions>;
