@@ -61,6 +61,10 @@ const lookupIn = (c: Core) => (name: string) => c.registries.layouts.get(name) a
 const arranger = (c: Core, workers: ReturnType<typeof heldWorkers>) =>
   createAsyncArranger({ store: c.store, execute: c.execute, host: createLayoutHost(workers.spawn), lookup: lookupIn(c) });
 const boxesOf = (c: Core, ids: readonly string[]): Box[] => ids.map((id) => (c.store.get(id as never) as unknown as { transform: Box }).transform);
+/** A turn of the event loop: the arranger's pause before its snapshot has passed and the worker has the job. */
+const later = async (): Promise<void> => {
+  for (let turn = 0; turn < 20; turn += 1) await Promise.resolve();
+};
 const IDS = ['a', 'b', 'c'] as const;
 const three = () => [shape('a', [0, 0]), shape('b', [10, 10]), shape('c', [20, 20])];
 
@@ -131,5 +135,67 @@ describe('async arrange (FR-LAY-007, FR-LAY-005)', () => {
     expect(c.execute('layout.applyBoxes', { screenId: 's1', boxes: { a: { ...box, w: -1 } } }).ok).toBe(false);
     expect(c.execute('layout.applyBoxes', { screenId: 's1', boxes: { a: box } })).toMatchObject({ ok: true, value: { moved: 1 } });
     expect(boxesOf(c, ['a'])[0]).toEqual(box);
+  });
+
+  it('FR-LAY-007: a large result is written in slices with the thread given back between them, as one undo step; a slice whose elements changed ends it', async () => {
+    const many = () => Array.from({ length: 7 }, (_, i) => shape('pqrstuv'[i] as string, [i, i]));
+    const ids = many().map((e) => e.id);
+    const sync = core(many());
+    sync.execute('layout.arrange', { screenId: 's1', algorithm: 'layered' });
+    // slices of three: 3 + 3 + 1, a pause before the second and the third
+    const c = core(many());
+    const workers = heldWorkers();
+    let pauses = 0;
+    const writes: Array<{ keys: number; merge: string | undefined }> = [];
+    const sliced = createAsyncArranger({
+      store: c.store,
+      execute: (id, args, options) => {
+        if (id === 'layout.applyBoxes') writes.push({ keys: Object.keys((args as { boxes: object }).boxes).length, merge: options?.mergeKey });
+        return c.execute(id, args, options?.mergeKey === undefined ? undefined : { mergeKey: options.mergeKey });
+      },
+      host: createLayoutHost(workers.spawn),
+      lookup: lookupIn(c),
+      slice: 3,
+      pause: () => {
+        pauses += 1;
+        return Promise.resolve();
+      },
+    });
+    const pending = sliced({ screenId: 's1', algorithm: 'layered' });
+    await later();
+    workers.release();
+    expect(await pending).toMatchObject({ ok: true, value: { moved: 7 } });
+    // one pause before the snapshot, one before each later slice
+    expect(pauses).toBe(3);
+    expect(writes.map((w) => w.keys)).toEqual([3, 3, 1]);
+    expect(new Set(writes.map((w) => w.merge)).size).toBe(1);
+    expect(writes[0]?.merge).toBeDefined();
+    expect(boxesOf(c, ids)).toEqual(boxesOf(sync, ids));
+    // one undo step takes all three slices back
+    expect(c.store.history.undo().ok).toBe(true);
+    expect(c.store.history.canUndo()).toBe(false);
+    expect(boxesOf(c, ids)).toEqual(boxesOf(core(many()), ids));
+    // an element of a later slice edited by a person while the first slice was written: the write stops there, and says how far it got
+    const d = core(many());
+    const held = heldWorkers();
+    let stops = 0;
+    const stopping = createAsyncArranger({
+      store: d.store,
+      execute: d.execute,
+      host: createLayoutHost(held.spawn),
+      lookup: lookupIn(d),
+      slice: 3,
+      pause: () => {
+        stops += 1;
+        // the first pause is before the snapshot; the second is between the slices, when a person edits an element of the next one
+        if (stops === 2) d.execute('element.update', { id: 'u', fields: { transform: { x: 900, y: 900, w: 100, h: 50 } } });
+        return Promise.resolve();
+      },
+    });
+    const second = stopping({ screenId: 's1', algorithm: 'layered' });
+    await later();
+    held.release();
+    expect(await second).toMatchObject({ ok: false, error: { code: 'LAYOUT_INPUT_INVALID' } });
+    expect(boxesOf(d, ['u'])[0]).toEqual({ x: 900, y: 900, w: 100, h: 50 });
   });
 });

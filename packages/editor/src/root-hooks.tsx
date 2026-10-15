@@ -1,6 +1,6 @@
 // The root's hooks that carry its keys, panels and dialogs (split from editor-root.tsx, M7.24).
 
-import type { Store } from '@fluxion/core';
+import { type Store, type WritableSignal, writable } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
@@ -70,11 +70,15 @@ export type RootKeys = {
 export function useRootKeys(i: RootKeys): {
   readonly run: (command: string, args?: unknown) => boolean;
   readonly system: SystemClipboardCommands;
-  /** What the editor has to tell the person (an image that was refused), and the way to set or clear it. */
-  readonly notice: string;
+  /**
+   * What the editor has to tell the person (an image that was refused, an Arrange under way), as a signal only the notice itself reads, and the way to set or
+   * clear it: a message that comes and goes does not draw the whole editor again.
+   */
+  readonly notice: WritableSignal<string>;
   readonly notify: (message: string) => void;
 } {
-  const [notice, notify] = useState('');
+  const notice = useMemo(() => writable(''), []);
+  const notify = useCallback((message: string) => notice.set(message), [notice]);
   const { store, session, shown } = i;
   const restore = useCallback(
     (meta: unknown) => {

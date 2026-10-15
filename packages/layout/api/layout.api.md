@@ -58,11 +58,18 @@ export type ArrangeMoved = {
 };
 
 // @public
+export type ArrangeWriteOptions = {
+    readonly mergeKey?: string;
+};
+
+// @public
 export type AsyncArrangeDeps = {
     readonly store: Reader;
-    readonly execute: (id: string, args: unknown) => ArrangeCommandResult;
+    readonly execute: (id: string, args: unknown, options?: ArrangeWriteOptions) => ArrangeCommandResult;
     readonly host: LayoutHost;
     readonly lookup: AlgorithmByName;
+    readonly slice?: number;
+    readonly pause?: () => Promise<void>;
 };
 
 // @public
@@ -314,7 +321,7 @@ export type OverlapOptions = {
 export type PostPassId = "pins" | "overlap" | "snap";
 
 // @public
-export type Reader = Pick<Store, "members" | "get">;
+export type Reader = Pick<Store, "members" | "get" | "subscribe">;
 
 // @public
 export function registerArrangeCommand(commands: Registry<string, AnyCommand>, layouts: Registry<string, unknown>): ReturnType<Registry<string, AnyCommand>["register"]>;

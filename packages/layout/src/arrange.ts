@@ -11,10 +11,9 @@ import type { Boxes } from './passes.js';
 import { layoutSync } from './pipeline.js';
 import { buildSnapshot, type SnapshotRecord } from './snapshot.js';
 import type { LayoutAlgorithm, LayoutInput, LayoutNode } from './types.js';
-import type { AbortSignalWithEvents, LayoutHost } from './worker/host.js';
 
 /** A record id as the store takes it (the schema's branded string; this package reads ids as plain strings). */
-type StoreId = Parameters<Tx['patch']>[0];
+export type StoreId = Parameters<Tx['patch']>[0];
 
 /**
  * The id of the arrange command.
@@ -30,8 +29,18 @@ export const ARRANGE_COMMAND_ID = 'layout.arrange';
  */
 export type AlgorithmByName = (name: string) => LayoutAlgorithm<never> | undefined;
 
+/** The arguments of `layout.arrange` once parsed (defaults applied). */
+export type Args = {
+  readonly screenId: string;
+  readonly scope: 'screen' | 'selection' | { readonly containerId: string };
+  readonly selection?: string[] | undefined;
+  readonly algorithm: string;
+  readonly options?: unknown;
+  readonly seed?: number | undefined;
+};
+
 const scopeSchema = z.union([z.literal('screen'), z.literal('selection'), z.object({ containerId: z.string().min(1) })]);
-const argsSchema = z.object({
+const argsSchema: z.ZodType<Args> = z.object({
   screenId: z.string().min(1),
   scope: scopeSchema.default('screen'),
   selection: z.array(z.string().min(1)).optional(),
@@ -39,9 +48,8 @@ const argsSchema = z.object({
   options: z.unknown().optional(),
   seed: z.number().finite().optional(),
 });
-type Args = z.infer<typeof argsSchema>;
 
-type Rec = SnapshotRecord & {
+export type Rec = SnapshotRecord & {
   readonly transform?: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
   readonly layout?: unknown;
 };
@@ -64,11 +72,11 @@ function refuse(message: string, at: ReadonlyArray<string | number>): Refusal {
  *
  * @public
  */
-export type Reader = Pick<Store, 'members' | 'get'>;
+export type Reader = Pick<Store, 'members' | 'get' | 'subscribe'>;
 /** A refusal as a command result. */
 type Refusal = { ok: false; error: TxFailure };
 /** The records of one screen and the layout input read from them (for the scope of the request). */
-type Prepared = {
+export type Prepared = {
   /** The elements of the screen and every binding. */
   readonly byId: ReadonlyMap<string, Rec>;
   /** What the layout covers. */
@@ -137,7 +145,7 @@ function specOf(record: Rec | undefined): { type: string; options: unknown } | u
 }
 
 /** The layout spec that applies at a level: that of the container (the top level of a container scope is that container's own children), if any. */
-function specAt(args: Args, container: string | undefined, byId: ReadonlyMap<string, Rec>): { type: string; options: unknown } | undefined {
+export function specAt(args: Args, container: string | undefined, byId: ReadonlyMap<string, Rec>): { type: string; options: unknown } | undefined {
   const owner = container ?? (typeof args.scope === 'object' ? args.scope.containerId : undefined);
   return owner === undefined ? undefined : specOf(byId.get(owner));
 }
@@ -176,7 +184,7 @@ function changes(byId: ReadonlyMap<string, Rec>, boxes: Boxes): Array<[string, N
 }
 
 /** The records of the request's screen and the layout input for its scope, or why the request is refused. */
-function prepare(store: Reader, args: Args): { ok: true; value: Prepared } | Refusal {
+export function prepare(store: Reader, args: Args): { ok: true; value: Prepared } | Refusal {
   const records = recordsOf(store, args.screenId);
   const byId = new Map(records.map((r) => [r.id, r] as const));
   if (!records.some((r) => r.type === 'element')) return refuse(`no elements on screen "${args.screenId}"`, ['screenId']);
@@ -262,129 +270,10 @@ function applyBoxesCommand(): AnyCommand {
   });
 }
 
-/**
- * What the host's command runner gives back: whether the command ran, its value and why not.
- *
- * @public
- */
-export type ArrangeCommandResult = {
-  /** True when the command ran. */
-  readonly ok: boolean;
-  /** What a successful command returned (`{ moved }` for the arrange commands). */
-  readonly value?: unknown;
-  /** Why it did not run. */
-  readonly error?: ArrangeCommandError;
-};
-
-/**
- * Why a command did not run.
- *
- * @public
- */
-export type ArrangeCommandError = {
-  /** A sentence naming the cause. */
-  readonly message?: string;
-};
-
-/**
- * How many elements an arrange moved.
- *
- * @public
- */
-export type ArrangeMoved = {
-  /** The number of elements whose box changed. */
-  readonly moved: number;
-};
-
-/**
- * Where an arrange runs: the host's store (read), the command runner, a layout host (workers) and the algorithms by name.
- *
- * @public
- */
-export type AsyncArrangeDeps = {
-  /** The document to read. */
-  readonly store: Reader;
-  /** Runs a command of the host by id (`layout.applyBoxes`, `layout.arrange`). */
-  readonly execute: (id: string, args: unknown) => ArrangeCommandResult;
-  /** Runs a flat layout in a worker. */
-  readonly host: LayoutHost;
-  /** Finds an algorithm by name. */
-  readonly lookup: AlgorithmByName;
-};
-
-/**
- * The outcome of an async arrange: how many elements moved, or why not.
- *
- * @public
- */
-export type AsyncArrangeResult = Result<ArrangeMoved>;
-
-const invalid = <T>(message: string): Result<T> => err<LayoutError>({ code: 'LAYOUT_INPUT_INVALID', message });
-
-/** The `{ moved }` a command result carries, or 0. */
-function movedOf(r: { readonly ok: boolean; readonly value?: unknown }): number {
-  const moved = (r.value as { moved?: unknown } | undefined)?.moved;
-  return typeof moved === 'number' ? moved : 0;
-}
+export const invalid = <T>(message: string): Result<T> => err<LayoutError>({ code: 'LAYOUT_INPUT_INVALID', message });
 
 /** The request's arguments, or the reason they are refused. */
-function parseArgs(rawArgs: unknown): Result<Args> {
+export function parseArgs(rawArgs: unknown): Result<Args> {
   const parsed = argsSchema.safeParse(rawArgs);
   return parsed.success ? ok(parsed.data) : invalid(`${ARRANGE_COMMAND_ID}: ${parsed.error.issues.map((i) => i.message).join('; ')}`);
-}
-
-/** The outcome of a command run on the caller as an async arrange result. */
-function movedResult(done: ArrangeCommandResult, failure: string): AsyncArrangeResult {
-  return done.ok ? ok({ moved: movedOf(done) }) : invalid(done.error?.message ?? failure);
-}
-
-/** Lay a flat plan out in a worker and write the boxes, unless the screen changed meanwhile. */
-async function arrangeFlat(
-  deps: AsyncArrangeDeps,
-  job: { args: Args; prepared: Prepared; revision: number },
-  signal?: AbortSignalWithEvents,
-): Promise<AsyncArrangeResult> {
-  const { args, prepared, revision } = job;
-  const chosen = chosenName(deps.lookup, args, prepared.byId);
-  if (!chosen.ok) return chosen;
-  const laid = await deps.host.run(
-    { scope: args.screenId, revision, algorithm: chosen.value.name, options: chosen.value.options, input: prepared.input, seed: args.seed ?? 0 },
-    signal,
-  );
-  if (!laid.ok) return laid;
-  const after = prepare(deps.store, args);
-  if (!after.ok || JSON.stringify(after.value.input) !== JSON.stringify(prepared.input))
-    return invalid('the screen changed while it was being arranged; nothing was written');
-  return movedResult(deps.execute(APPLY_BOXES_COMMAND_ID, { screenId: args.screenId, boxes: laid.value.boxes }), 'the layout could not be applied');
-}
-
-/**
- * An arranger that lays a screen out off the caller's thread: it reads the snapshot on the caller, runs a flat layout (no nested containers) in
- * a worker through the host, and writes the boxes with `layout.applyBoxes` (one undo step). A plan with nested containers is laid out on the
- * caller, bottom-up, by `layout.arrange` itself. It resolves with an error and writes nothing when the request is refused, the layout fails, or
- * the screen was edited while the worker ran; a newer arrange of the same screen supersedes an older one (the older rejects with an
- * `AbortError`, from the host). The arguments are those of `layout.arrange`.
- *
- * @public
- */
-export function createAsyncArranger(deps: AsyncArrangeDeps): (rawArgs: unknown, signal?: AbortSignalWithEvents) => Promise<AsyncArrangeResult> {
-  let revision = 0;
-  return async (rawArgs, signal) => {
-    const args = parseArgs(rawArgs);
-    if (!args.ok) return args;
-    const prepared = prepare(deps.store, args.value);
-    if (!prepared.ok) return invalid(prepared.error.message);
-    if (prepared.value.input.nodes.some((n) => n.parentId !== undefined))
-      return movedResult(deps.execute(ARRANGE_COMMAND_ID, rawArgs), 'the arrange was refused');
-    revision += 1;
-    return arrangeFlat(deps, { args: args.value, prepared: prepared.value, revision }, signal);
-  };
-}
-
-/** The registered name and options the top level of a flat plan is laid out with. */
-function chosenName(lookup: AlgorithmByName, args: Args, byId: ReadonlyMap<string, Rec>): Result<{ name: string; options: unknown }> {
-  const spec = specAt(args, undefined, byId);
-  if (spec && lookup(spec.type)) return ok({ name: spec.type, options: spec.options });
-  if (!lookup(args.algorithm)) return invalid(`${ARRANGE_COMMAND_ID}: no layout algorithm named "${args.algorithm}"`);
-  return ok({ name: args.algorithm, options: args.options });
 }

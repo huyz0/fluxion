@@ -18,12 +18,8 @@ export type ArrangeRunner = {
   readonly dispose: () => void;
 };
 
-/**
- * The name of the performance mark set just before an Arrange writes its boxes.
- *
- * @public
- */
-export const APPLY_MARK = 'fluxion:arrange-apply';
+/** Boxes written per slice: a 500-element Arrange is a few dozen short writes, one undo step, so no write holds the page's thread past 50 ms. */
+const SLICE = 8;
 
 /** A layout worker running the studio's worker module. */
 // a DOM Worker has the members WorkerLike names; its handlers take a MessageEvent, which has the `data` the host reads
@@ -38,11 +34,10 @@ export function createArrangeRunner(core: Core, spawn: () => WorkerLike = browse
   const host = createLayoutHost(spawn);
   const arrange = createAsyncArranger({
     store: core.store,
-    // the write of the boxes is marked, so a performance test can tell the layout from the write (perf.layout-500.spec.ts)
-    execute: (id, args) => {
-      if (id === 'layout.applyBoxes') performance.mark(APPLY_MARK);
-      return core.execute(id, args);
-    },
+    execute: (id, args, options) => core.execute(id, args, options),
+    slice: SLICE,
+    // between two slices the page draws and answers input
+    pause: () => new Promise<void>((resume) => void setTimeout(resume, 0)),
     host,
     lookup: (name) => core.registries.layouts.get(name) as LayoutAlgorithm<never> | undefined,
   });

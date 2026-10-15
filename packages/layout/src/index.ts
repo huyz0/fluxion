@@ -12,16 +12,19 @@ export {
   type AlgorithmByName,
   APPLY_BOXES_COMMAND_ID,
   ARRANGE_COMMAND_ID,
-  type ArrangeCommandError,
-  type ArrangeCommandResult,
-  type ArrangeMoved,
-  type AsyncArrangeDeps,
-  type AsyncArrangeResult,
   arrangeCommand,
-  createAsyncArranger,
   type Reader,
   registerArrangeCommand,
 } from './arrange.js';
+export {
+  type ArrangeCommandError,
+  type ArrangeCommandResult,
+  type ArrangeMoved,
+  type ArrangeWriteOptions,
+  type AsyncArrangeDeps,
+  type AsyncArrangeResult,
+  createAsyncArranger,
+} from './arrange-async.js';
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type GridOptions, gridLayout } from './grid.js';
 export { type LayeredOptions, layeredLayout } from './layered.js';

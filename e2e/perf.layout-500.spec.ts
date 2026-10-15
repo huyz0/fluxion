@@ -2,52 +2,59 @@ import type { Page } from '@playwright/test';
 import { EditorPage } from './pages/editor.js';
 import { expect, test } from './test.js';
 
-// The layout benchmark (FR-LAY-007, NFR-PERF-005, 05 §2): Arrange the 500 elements of the perf-500 example with `layered`; the layout runs in the
-// studio's worker, so the page's main thread must stay free: no long task (the browser reports one past 50 ms) while the job is started and runs. Writing the 500 new boxes into the document (one
-// transaction, so one undo step) and drawing them is a task of its own; its length is reported with the test, not bounded (backlog M13.31). It runs in its own project (`perf`, chromium) with one worker, nothing beside it (@perf).
+// The layout benchmark (FR-LAY-007, NFR-PERF-005, 05 §2): Arrange the 500 elements of the perf-500 example with `layered`; the layout runs in the studio's
+// worker and its 500 boxes are written in slices (one undo step), so the page's main thread stays free: no long task (the browser reports one past 50 ms)
+// from the click to the last box. It runs in its own project (`perf`, chromium) with one worker, nothing beside it (@perf).
 
-/** What the main thread did while `during` ran: its tasks past 50 ms (the browser reports no others), split at the mark set just before the boxes are written. */
-async function tasksDuring(page: Page, during: () => Promise<void>): Promise<{ layout: number[]; write: number[] }> {
+/** The tasks past 50 ms, in ms, reported while `during` runs (the browser reports no others). */
+async function longTasksDuring(page: Page, during: () => Promise<void>): Promise<number[]> {
   await page.evaluate(() => {
-    const w = window as unknown as { longTasks: { start: number; end: number }[] };
+    const w = window as unknown as { longTasks: number[] };
     w.longTasks = [];
     new PerformanceObserver((list) => {
-      for (const e of list.getEntries()) w.longTasks.push({ start: e.startTime, end: e.startTime + e.duration });
+      for (const e of list.getEntries()) w.longTasks.push(e.duration);
     }).observe({ type: 'longtask' });
   });
   await during();
   // the observer reports on the next turn of the event loop
   await page.waitForTimeout(500);
-  return page.evaluate(() => {
-    const tasks = (window as unknown as { longTasks: { start: number; end: number }[] }).longTasks;
-    const mark = performance.getEntriesByName('fluxion:arrange-apply')[0]?.startTime ?? Number.POSITIVE_INFINITY;
-    // a task that ends by the mark is the layout's (reading the document, starting the job); one that holds the mark or follows it is the write's
-    const ms = (list: { start: number; end: number }[]) => list.map((t) => t.end - t.start);
-    return { layout: ms(tasks.filter((t) => t.end <= mark + 1)), write: ms(tasks.filter((t) => t.end > mark + 1)) };
-  });
+  return page.evaluate(() => (window as unknown as { longTasks: number[] }).longTasks);
 }
 
 test.describe('layout performance', { tag: '@perf' }, () => {
-  test('FR-LAY-007: arranging 500 elements with layered leaves no main-thread task over 50 ms before the boxes are written', async ({ page }) => {
+  test('FR-LAY-007: arranging 500 elements with layered leaves no main-thread task over 50 ms', async ({ page }) => {
     const editor = new EditorPage(page);
     await editor.open('example-perf-500');
     await expect(editor.elements).toHaveCount(500);
     const first = editor.elements.first();
     const start = await first.boundingBox();
     if (start === null) throw new Error('the first element is not drawn');
-    await page.keyboard.press('ControlOrMeta+a');
-    const at = { x: start.x + start.width / 2, y: start.y + start.height / 2 };
-    // the menu is open and its item found before the measure starts: finding it walks the whole page, which is the test's own work
-    await page.mouse.click(at.x, at.y, { button: 'right' });
-    const item = page.getByRole('menuitem', { name: 'Arrange the selection (layered)' });
+    // right-click the empty corner of the screen: the screen's own menu, with nothing selected (a selection of 500 makes the inspector's mixed-value
+    // fields a cost of their own, which this spec does not measure)
+    const screen = await editor.screenBox();
+    await page.mouse.click(screen.x + 2, screen.y + 2, { button: 'right' });
+    const item = page.getByRole('menuitem', { name: 'Arrange the screen (layered)' });
     await item.waitFor();
-    const tasks = await tasksDuring(page, async () => {
-      await item.click();
-      // the boxes change when the worker has answered and the result is written
-      await expect.poll(async () => JSON.stringify(await first.boundingBox()), { timeout: 30_000 }).not.toBe(JSON.stringify(start));
-    });
-    // the layout (the worker's) leaves the main thread free; writing 500 new boxes into the document and drawing them is its own task, reported, not bounded here
-    test.info().annotations.push({ type: 'write task ms', description: tasks.write.map((ms) => ms.toFixed(0)).join(', ') || 'none' });
-    expect(tasks.layout, `main-thread tasks over 50 ms before the boxes were written: ${tasks.layout.map((ms) => ms.toFixed(0)).join(', ')} ms`).toEqual([]);
+    // the click and the wait run inside the page: Playwright's own click (its actionability checks) and its polling would be tasks of the page too
+    const tasks = await longTasksDuring(page, () =>
+      item.evaluate(
+        (el) =>
+          new Promise<void>((done) => {
+            (el as HTMLElement).click();
+            // the notice says "Arranging…" from the click until the last slice is written
+            const timer = setInterval(() => {
+              if (document.querySelector('.fx-chrome-notice') === null) {
+                clearInterval(timer);
+                done();
+              }
+            }, 50);
+          }),
+      ),
+    );
+    expect(JSON.stringify(await first.boundingBox()), 'the elements moved').not.toBe(JSON.stringify(start));
+    expect(
+      tasks.map((ms) => ms.toFixed(0)),
+      'main-thread tasks over 50 ms (ms)',
+    ).toEqual([]);
   });
 });

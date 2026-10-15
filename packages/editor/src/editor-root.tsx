@@ -1,7 +1,7 @@
 // The edit-mode root (FR-EDT-001): the chrome (ADR-0029) around the canvas, where the document's first
 // screen is drawn by the same <ScreenView> as present mode (FR-EDT-010) through the session camera
 // (FR-EDT-002), fitted on open, with the tools (FR-EDT-003) working on it.
-import type { CoreRegistries, ReadView, Registry, Store } from '@fluxion/core';
+import type { CoreRegistries, ReadView, Registry, Store, WritableSignal } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import type { AssetUrls } from '@fluxion/render';
 import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
@@ -236,10 +236,11 @@ function PresentShell(props: {
 }
 
 /** What the editor has to tell the person (an image that was refused), until it is dismissed. */
-function Notice(props: { readonly text: string; readonly onDismiss: () => void }): ReactNode {
-  return props.text === '' ? null : (
+function Notice(props: { readonly notice: WritableSignal<string>; readonly onDismiss: () => void }): ReactNode {
+  const text = useValue(props.notice.get);
+  return text === '' ? null : (
     <p role="status" className="fx-chrome-notice">
-      {props.text}{' '}
+      {text}{' '}
       <button type="button" className="fx-chrome-button" onClick={props.onDismiss}>
         {t`Dismiss`}
       </button>
@@ -348,7 +349,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
           menus={{ run, base, overrides, commands: props.commands, mac: onMac() }}
         />
       </Measured>
-      <Notice text={notice} onDismiss={() => notify('')} />
+      <Notice notice={notice} onDismiss={() => notify('')} />
       <Dialogs dialogs={dialogs} commands={props.commands} overrides={overrides} onOverrides={setOverrides} tools={tools} run={run} />
     </div>
   );

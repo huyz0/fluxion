@@ -190,6 +190,11 @@ const LAYOUT_TITLES = [
     'FR-DSL-005: a failing layout is reported once per container, left in place when the default fails too, and silent when the document is the problem',
     'dsl',
   ],
+  [
+    'M13.31',
+    'FR-LAY-007: a large result is written in slices with the thread given back between them, as one undo step; a slice whose elements changed ends it',
+    'layout',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
@@ -292,13 +297,10 @@ leg('the nightly perf job runs the layout benches, perf.layout-500.spec.ts, perf
   const missing = ['layered-100', 'layered-500', 'perf.layout-500', 'perf.drag-500', 'hit-test-2000'].filter((w) => !perf.includes(w));
   return (perf && !/SKIP/.test(perf) && missing.length === 0) || `nightly perf job: ${perf ? `lacks ${missing.join(', ') || 'SKIP removal'}` : 'not found'}`;
 });
-leg(
-  'a 500-node Arrange leaves no main-thread task over 50 ms before the boxes are written (T4 perf.layout-500.spec.ts; the write itself is backlog M13.31)',
-  () => {
-    const file = 'e2e/perf.layout-500.spec.ts';
-    return exists(file) ? ok(run('pnpm', ['exec', 'playwright', 'test', file, '--project=perf'])) : `missing ${file}`;
-  },
-);
+leg('a 500-node Arrange leaves no main-thread task over 50 ms, the write of the boxes included (T4 perf.layout-500.spec.ts)', () => {
+  const file = 'e2e/perf.layout-500.spec.ts';
+  return exists(file) ? ok(run('pnpm', ['exec', 'playwright', 'test', file, '--project=perf'])) : `missing ${file}`;
+});
 
 // ── coverage, changesets, quarantines ──────────────────────────────────────────────────────────────
 function coverageLeg(pkg, floors) {
