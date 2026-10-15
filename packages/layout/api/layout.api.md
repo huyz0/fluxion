@@ -151,6 +151,15 @@ export type OptionsResult<O> = {
 };
 
 // @public
+export function overlapCount(boxes: Boxes): number;
+
+// @public
+export type OverlapOptions = {
+    readonly margin?: number;
+    readonly preferAxis?: "x" | "y";
+};
+
+// @public
 export type PostPassId = "pins" | "overlap" | "snap";
 
 // @public
@@ -166,6 +175,9 @@ export type RegisterLayoutResult = {
     readonly ok: false;
     readonly message: string;
 };
+
+// @public
+export function removeOverlap(input: LayoutInput, boxes: Boxes, options?: OverlapOptions): Boxes;
 
 // @public
 export function snapBoxes(input: LayoutInput, boxes: Boxes): Boxes;

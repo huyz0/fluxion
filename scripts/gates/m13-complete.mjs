@@ -97,6 +97,16 @@ const LAYOUT_TITLES = [
   ['M13.9', 'FR-LAY-004: the pins pass adds a pinned node the algorithm left out and drops ids the input does not have', 'layout'],
   ['M13.9', 'FR-LAY-008: the snap pass rounds positions to the half pixel, halves toward +infinity, and never produces -0', 'layout'],
   ['M13.9', 'FR-LAY-008: snapping leaves pinned boxes exact, and is idempotent for any boxes', 'layout'],
+  ['M13.10', 'FR-LAY-004: a fixture of overlapping boxes ends with a margin between them, the earlier box where it was', 'layout'],
+  ['M13.10', 'FR-LAY-004: pinned boxes do not move, and the other box of a pair moves clear of them', 'layout'],
+  ['M13.10', 'FR-LAY-004: overlapping pinned pairs stay, are counted, and every other box keeps clear of both', 'layout'],
+  ['M13.10', 'FR-LAY-004: a box with no free place nearby, or in a pile of identical boxes, still ends clear of every other', 'layout'],
+  ['M13.10', 'FR-LAY-004: preferAxis chooses the axis a pair is separated along, margin the space left, and ids without a box are ignored', 'layout'],
+  [
+    'M13.10',
+    'FR-LAY-004: for any boxes and pins no unpinned box overlaps or touches another, pinned boxes and sizes are unchanged, and the result is deterministic',
+    'layout',
+  ],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>
