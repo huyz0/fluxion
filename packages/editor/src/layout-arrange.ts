@@ -19,24 +19,125 @@ export type LayoutChoice = (typeof LAYOUT_CHOICES)[number][0];
 const CONTAINER_KINDS = new Set(['group', 'frame']);
 
 /**
+ * The tools an Arrange reads the session and the document through.
+ *
+ * @public
+ */
+export type ArrangeTools = {
+  /** The tool context: the session and the document. */
+  readonly ctx: ToolCtx;
+};
+
+/**
+ * What the Arrange commands use of an editor command's context: the tools (and through them the document), the background runner and the notice.
+ *
+ * @public
+ */
+export type ArrangeHost = {
+  /** The current mode's tools. */
+  readonly tools: ArrangeTools;
+  /** Runs an Arrange off the main thread; without one it runs on the spot. */
+  readonly arrange?: ArrangePort | undefined;
+  /** Shows a short notice (an empty one clears it). */
+  notify?(message: string): void;
+};
+
+/**
+ * What an Arrange covers: the whole screen, the selected elements, or the children of one container.
+ *
+ * @public
+ */
+export type ArrangeScope = 'screen' | 'selection' | ArrangeContainer;
+
+/**
+ * The container whose children an Arrange lays out.
+ *
+ * @public
+ */
+export type ArrangeContainer = {
+  /** The group or frame. */
+  readonly containerId: RecordId;
+};
+
+/**
+ * What an Arrange asks of the layout engine: the arguments of the `layout.arrange` command.
+ *
+ * @public
+ */
+export type ArrangeRequest = {
+  /** The screen to lay out. */
+  readonly screenId: RecordId;
+  /** All of the screen, the selected elements, or the children of one container. */
+  readonly scope: ArrangeScope;
+  /** The selected elements, for the `selection` scope. */
+  readonly selection?: readonly RecordId[];
+  /** The layout to use (a container's own layout wins); `layered` when omitted. */
+  readonly algorithm?: string;
+};
+
+/**
+ * How an Arrange ended.
+ *
+ * @public
+ */
+export type ArrangeOutcome = {
+  /** True when the boxes were written. */
+  readonly ok: boolean;
+  /** Why not, as a sentence. */
+  readonly message?: string;
+};
+
+/**
+ * Runs an Arrange off the main thread (the studio's, through a layout worker); without one the editor runs the command on the spot.
+ *
+ * @public
+ */
+export type ArrangePort = (request: ArrangeRequest) => Promise<ArrangeOutcome>;
+
+/**
+ * Start an Arrange. With a port in `ctx` it runs in the background: the notice says it is working, then clears or says why it failed, and the
+ * command counts as taken. Without one the command runs at once, and its refusal is the result.
+ */
+function start(ctx: ArrangeHost, request: ArrangeRequest): boolean {
+  const port = ctx.arrange;
+  if (port === undefined) return ctx.tools.ctx.execute('layout.arrange', request).ok;
+  // only the newest request of a port speaks: an older one that ends after it (superseded) leaves the notice alone
+  const mine = (newest.get(port) ?? 0) + 1;
+  newest.set(port, mine);
+  const say = (message: string): void => {
+    if (newest.get(port) === mine) ctx.notify?.(message);
+  };
+  say('Arranging…');
+  void port(request).then(
+    (done) => say(done.ok ? '' : `Could not arrange: ${done.message ?? 'the layout was refused'}`),
+    (error: unknown) => say(`Could not arrange: ${error instanceof Error ? error.message : 'the layout was cancelled'}`),
+  );
+  return true;
+}
+
+/** The number of the newest request of each port. */
+const newest = new WeakMap<ArrangePort, number>();
+
+/**
  * Lay out the whole shown screen with `algorithm`. False when no screen is shown or the document refuses (no layout of that name, nothing to lay out).
  *
  * @public
  */
-export function arrangeScreen(ctx: ToolCtx, algorithm: LayoutChoice): boolean {
-  const screenId = shownScreen(ctx.view, ctx.session.screen.get());
-  return screenId !== undefined && ctx.execute('layout.arrange', { screenId, scope: 'screen', algorithm }).ok;
+export function arrangeScreen(ctx: ArrangeHost, algorithm: LayoutChoice): boolean {
+  const screenId = shownScreen(ctx.tools.ctx.view, ctx.tools.ctx.session.screen.get());
+  return screenId !== undefined && start(ctx, { screenId, scope: 'screen', algorithm });
 }
 
 /**
- * Lay out the selected elements with `algorithm`; the rest of the screen stays where it is. False with nothing selected or when the document refuses.
+ * Lay out the selected elements with `algorithm`; the rest of the screen stays where it is. False with fewer than two selected or when the document refuses.
  *
  * @public
  */
-export function arrangeSelected(ctx: ToolCtx, algorithm: LayoutChoice): boolean {
-  const screenId = shownScreen(ctx.view, ctx.session.screen.get());
-  const selection = ctx.session.selection.get();
-  return screenId !== undefined && selection.length > 1 && ctx.execute('layout.arrange', { screenId, scope: 'selection', selection, algorithm }).ok;
+export function arrangeSelected(ctx: ArrangeHost, algorithm: LayoutChoice): boolean {
+  const t = ctx.tools.ctx;
+  const screenId = shownScreen(t.view, t.session.screen.get());
+  const selection = t.session.selection.get();
+  return screenId !== undefined && selection.length > 1 && start(ctx, { screenId, scope: 'selection', selection, algorithm });
 }
 
 /** The one selected group or frame, if the selection is exactly that. */
@@ -52,8 +153,9 @@ function selectedContainer(ctx: ToolCtx): RecordId | undefined {
  *
  * @public
  */
-export function arrangeContainer(ctx: ToolCtx): boolean {
-  const screenId = shownScreen(ctx.view, ctx.session.screen.get());
-  const containerId = selectedContainer(ctx);
-  return screenId !== undefined && containerId !== undefined && ctx.execute('layout.arrange', { screenId, scope: { containerId } }).ok;
+export function arrangeContainer(ctx: ArrangeHost): boolean {
+  const t = ctx.tools.ctx;
+  const screenId = shownScreen(t.view, t.session.screen.get());
+  const containerId = selectedContainer(t);
+  return screenId !== undefined && containerId !== undefined && start(ctx, { screenId, scope: { containerId } });
 }

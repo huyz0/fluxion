@@ -3,12 +3,12 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { EDITOR_COMMANDS } from './editor-commands.js';
-import { arrangeContainer, arrangeScreen, arrangeSelected, LAYOUT_CHOICES } from './layout-arrange.js';
+import { EDITOR_COMMANDS, type EditorCommandCtx } from './editor-commands.js';
+import { type ArrangeOutcome, type ArrangeRequest, arrangeContainer, arrangeScreen, arrangeSelected, LAYOUT_CHOICES } from './layout-arrange.js';
 import { createSession } from './session.js';
 import type { ToolCtx } from './tools.js';
 
-function setup(accept = true) {
+function setup(accept = true, background?: (request: ArrangeRequest) => Promise<ArrangeOutcome>) {
   const b = documentBuilder({ seed: 1301 });
   const screen = b.screen({ size: { w: 1000, h: 600 } });
   const a = b.rect(screen, { x: 20, y: 100, w: 100, h: 50 });
@@ -22,8 +22,15 @@ function setup(accept = true) {
     calls.push({ id, args });
     return accept ? { ok: true } : { ok: false };
   };
-  const ctx = { session, view: core.store, execute } as unknown as ToolCtx;
-  return { screen, a, c, group, session, ctx, calls };
+  const tool = { session, view: core.store, execute } as unknown as ToolCtx;
+  const notices: string[] = [];
+  const ctx = {
+    mode: 'edit',
+    tools: { ctx: tool },
+    notify: (m: string) => void notices.push(m),
+    ...(background ? { arrange: background } : {}),
+  } as unknown as EditorCommandCtx;
+  return { screen, a, c, group, session, ctx, calls, notices };
 }
 
 describe('arranging with a layout in the editor (FR-LAY-005, FR-LAY-001)', () => {
@@ -54,5 +61,34 @@ describe('arranging with a layout in the editor (FR-LAY-005, FR-LAY-001)', () =>
     const ids = EDITOR_COMMANDS.map((c) => c.id);
     for (const [name] of LAYOUT_CHOICES) expect(ids).toEqual(expect.arrayContaining([`layout.arrange.screen.${name}`, `layout.arrange.selection.${name}`]));
     expect(ids).toContain('layout.arrange.container');
+  });
+
+  it('FR-LAY-007: with a background runner the Arrange is taken at once, says it is working, and then clears or says why it failed', async () => {
+    const requests: ArrangeRequest[] = [];
+    let finish: (o: ArrangeOutcome) => void = () => undefined;
+    const t = setup(true, (request) => {
+      requests.push(request);
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    });
+    expect(arrangeScreen(t.ctx, 'layered')).toBe(true);
+    expect(requests).toEqual([{ screenId: t.screen, scope: 'screen', algorithm: 'layered' }]);
+    expect(t.calls).toEqual([]);
+    expect(t.notices).toEqual(['Arranging…']);
+    finish({ ok: true });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(t.notices).toEqual(['Arranging…', '']);
+    const failing = setup(true, () => Promise.resolve({ ok: false, message: 'the screen changed' }));
+    expect(arrangeScreen(failing.ctx, 'grid')).toBe(true);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(failing.notices).toEqual(['Arranging…', 'Could not arrange: the screen changed']);
+    const cancelled = setup(true, () => Promise.reject(new Error('superseded by revision 2')));
+    arrangeScreen(cancelled.ctx, 'grid');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(cancelled.notices.at(-1)).toBe('Could not arrange: superseded by revision 2');
   });
 });

@@ -2,11 +2,12 @@
 // document id opens through documents.ts and bootstrap.ts; the roots come from editor and player.
 
 import type { Core } from '@fluxion/core';
-import { type AssetStore, createAssetStore, createSession, EditorRoot } from '@fluxion/editor';
+import { type ArrangePort, type AssetStore, createAssetStore, createSession, EditorRoot } from '@fluxion/editor';
 import { PlayerRoot } from '@fluxion/player';
 import { ok, type RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
 import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { createArrangeRunner } from './arrange-port.js';
 import { AutosaveBar } from './autosave/autosave-bar.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
 import { studioLogger } from './dev-logger.js';
@@ -100,6 +101,13 @@ function titleOf(store: Core['store']): string {
   return typeof title === 'string' && title !== '' ? title : t`Untitled`;
 }
 
+/** The Arrange runner of `core`: its layout workers start with the first Arrange and end when the document closes. */
+function useArrangeRunner(core: Core): ArrangePort {
+  const runner = useMemo(() => createArrangeRunner(core), [core]);
+  useEffect(() => () => runner.dispose(), [runner]);
+  return runner.port;
+}
+
 /** The editor over an open document, with its autosave and the status line in the toolbar. */
 function ProtectedEditor(props: {
   readonly opened: OpenDocument & { readonly assets: AssetStore; readonly fonts: ReturnType<typeof fontSources> };
@@ -114,6 +122,7 @@ function ProtectedEditor(props: {
   const settings = useMemo(() => localSettings(), []);
   const session = useMemo(() => createSession(docId), [docId]);
   const title = useCallback(() => titleOf(core.store), [core]);
+  const arrange = useArrangeRunner(core);
   useEffect(() => installTestHooks({ store: core.store, execute: core.execute, registries: core.registries, session }), [core, session]);
   const { autosave, state } = useProtection({ id: journalId(docId, entry, instance), store: core.store, assets, entry, title, guard });
   return (
@@ -127,6 +136,7 @@ function ProtectedEditor(props: {
       themes={themes}
       assets={assets}
       fonts={fonts}
+      arrange={arrange}
       toolbar={
         <>
           <FileBar

@@ -31,6 +31,7 @@ import { ImagePicker } from './image-picker.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
+import type { ArrangePort } from './layout-arrange.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
 import { PresentInPlace, useModeSwitch, useRevision } from './present.js';
@@ -69,6 +70,8 @@ export type EditorRootProps = {
   readonly random?: Random;
   /** The bytes of the document's assets (default: an in-memory store for this root, which pasted images fill). */
   readonly assets?: AssetStore;
+  /** Runs the Arrange commands off the main thread (the studio's layout worker); without one they run on the spot. */
+  readonly arrange?: ArrangePort;
   /** Controls the host adds to the end of the toolbar (the studio's Open, Save and Save a copy). */
   readonly toolbar?: ReactNode;
   /** Editor commands besides the built-in ones, e.g. a plugin's: bindable in the keymap and listed by the command palette. */
@@ -263,9 +266,9 @@ function useOnOpen(store: Store, session: Session, area: Box | undefined, box: {
   useEnteredLapse(store, session);
 }
 
-function EditorShell(props: EditorRootProps): ReactNode {
-  const { store, registries, commands } = props;
-  useChromeCss();
+/** What the shell is built on: its settings, layout, session, the screen shown, the tools of both modes and the way to switch between them. */
+function useShellBasics(props: EditorRootProps) {
+  const { store } = props;
   const settings = useMemo(() => props.settings ?? memorySettings(), [props.settings]);
   const [layout, setLayout] = useLayout(settings);
   const session = useMemo(() => props.session ?? createSession('local'), [props.session]);
@@ -273,6 +276,14 @@ function EditorShell(props: EditorRootProps): ReactNode {
   const { screenId, shown, execute } = useShownScreen(props, session);
   const { tools, present } = useTools({ ...props, execute }, session, screenId);
   const switchMode = useModeSwitch(store, session, tools, present);
+  return { store, settings, layout, setLayout, session, screenId, shown, execute, tools, present, switchMode };
+}
+
+function EditorShell(props: EditorRootProps): ReactNode {
+  const { store, registries } = props;
+  useChromeCss();
+  const basics = useShellBasics(props);
+  const { settings, layout, setLayout, session, screenId, execute, tools, present, switchMode } = basics;
   const mode = useValue(session.mode.get);
   const revision = useRevision(store);
   const newId = useNewId(props.random);
@@ -283,7 +294,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
   const dialogs = useDialogs();
   const base = useMemo(() => baseKeymap(tools.list()), [tools]);
   const { assets, url: assetUrl } = useEditorAssets(store, props.assets);
-  const { run, system, notice, notify } = useRootKeys({ store, session, tools, present, box, area, switchMode, shown, overrides, assets, dialogs, commands });
+  const { run, system, notice, notify } = useRootKeys({ ...basics, box, area, overrides, assets, dialogs, from: props });
   useOnOpen(store, session, area, box);
   const shell = { store, registries, screenId, area, session, tools: present, assets: assetUrl, revision };
   if (mode === 'present') return <PresentShell {...shell} />;

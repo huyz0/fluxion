@@ -177,6 +177,8 @@ const LAYOUT_TITLES = [
     'FR-LAY-005: a request layout.arrange would refuse comes back as an error with nothing started, and applyBoxes writes only elements of the screen',
     'layout',
   ],
+  ['M13.30', 'FR-LAY-007: with a background runner the Arrange is taken at once, says it is working, and then clears or says why it failed', 'editor'],
+  ['M13.30', 'FR-LAY-007: an Arrange runs in the worker, moves the elements, is one undo step, and a refusal comes back as a message', 'apps/studio'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>

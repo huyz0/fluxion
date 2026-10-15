@@ -15,6 +15,7 @@ import { enteredHolds } from './group-edit.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import type { KeyOverrides } from './keymap-overrides.js';
 import { type EditorLayout, type PanelId, panelShown } from './layout.js';
+import type { ArrangePort } from './layout-arrange.js';
 import { PANEL_NAMES } from './panels.js';
 import type { ModeSwitch } from './present.js';
 import { useRevision } from './present.js';
@@ -59,9 +60,10 @@ export type RootKeys = {
   readonly overrides: KeyOverrides;
   /** The dialogs: while one is open the keys are not the editor's. */
   readonly dialogs: DialogState;
-  readonly commands: readonly EditorCommand[] | undefined;
   /** The bytes of the document's assets. */
   readonly assets: AssetStore;
+  /** The root's props: the editor commands besides the built-in ones, and the runner of the Arrange commands. */
+  readonly from: { readonly commands?: readonly EditorCommand[] | undefined; readonly arrange?: ArrangePort | undefined };
 };
 
 /** The editor's keys over the root's tools, with its own clipboard (the system clipboard joins it in M7.22); the runner of a command by id. */
@@ -93,10 +95,12 @@ export function useRootKeys(i: RootKeys): {
     switchMode: i.switchMode,
     openHelp: i.dialogs.openHelp,
     openPalette: i.dialogs.openPalette,
-    commands: i.commands,
+    commands: i.from.commands,
     restoreView: restore,
     clipboard,
     assets,
+    arrange: i.from.arrange,
+    notify,
     overrides: i.overrides,
     paused: i.dialogs.help || i.dialogs.palette,
   });

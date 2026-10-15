@@ -11,6 +11,7 @@ import type { Clipboard } from './clipboard.js';
 import { type CanvasSize, commandMap, dispatchKey, EDITOR_COMMANDS, type EditorCommand, type EditorCommandCtx } from './editor-commands.js';
 import { DEFAULT_KEYMAP, type KeyPress, toolBindings } from './keymap.js';
 import { applyOverrides, type KeyOverrides } from './keymap-overrides.js';
+import type { ArrangePort } from './layout-arrange.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
 import type { ModeSwitch } from './present.js';
 import type { Session } from './session.js';
@@ -71,6 +72,10 @@ export type EditorKeysInput = {
   readonly clipboard?: Clipboard | undefined;
   /** The bytes of the assets the editor holds. */
   readonly assets?: AssetStore | undefined;
+  /** Runs the Arrange commands off the main thread. */
+  readonly arrange?: ArrangePort | undefined;
+  /** Shows a short notice. */
+  readonly notify?: ((message: string) => void) | undefined;
   /** Keys are not the editor's while a dialog is open. */
   readonly paused?: boolean | undefined;
 };
@@ -86,7 +91,7 @@ export const pressOf = (e: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'met
 
 /** What the editor's commands act on at a key press, in the session's mode. */
 function commandCtx(input: EditorKeysInput): EditorCommandCtx {
-  const { store, session, tools, present, viewport, area, switchMode, openHelp, openPalette, restoreView, clipboard, assets } = input;
+  const { store, session, tools, present, viewport, area, switchMode, openHelp, openPalette, restoreView, clipboard, assets, arrange, notify } = input;
   const presenting = session.mode.get() === 'present' && present !== undefined;
   return {
     mode: presenting ? 'present' : 'edit',
@@ -100,6 +105,8 @@ function commandCtx(input: EditorKeysInput): EditorCommandCtx {
     ...(restoreView === undefined ? {} : { restoreView }),
     ...(clipboard === undefined ? {} : { clipboard }),
     ...(assets === undefined ? {} : { assets }),
+    ...(arrange === undefined ? {} : { arrange }),
+    ...(notify === undefined ? {} : { notify }),
   };
 }
 
@@ -116,17 +123,19 @@ export function useEditorKeys(input: EditorKeysInput): (command: string, args?: 
   latest.current = input;
   const commands = useMemo(() => commandMap([...EDITOR_COMMANDS, ...(input.commands ?? [])]), [input.commands]);
   const run = useCallback((command: string, args?: unknown) => commands.get(command)?.run(commandCtx(latest.current), args) === true, [commands]);
-  const { store, session, tools, present, viewport, area, switchMode, openHelp, openPalette, restoreView, clipboard, assets, overrides, paused } = input;
+  const { paused } = input;
   useEffect(() => {
     if (paused === true) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (notTheKeymaps(e)) return;
-      const ctx = commandCtx({ store, session, tools, present, viewport, area, switchMode, openHelp, openPalette, restoreView, clipboard, assets });
-      const keymap = applyOverrides([...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list())], overrides ?? {});
+      // read at the key press, so the handler outlives every change of the editor's inputs
+      const now = latest.current;
+      const ctx = commandCtx(now);
+      const keymap = applyOverrides([...DEFAULT_KEYMAP, ...toolBindings(ctx.tools.list())], now.overrides ?? {});
       if (dispatchKey(pressOf(e), keymap, commands, ctx)) e.preventDefault();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [store, session, tools, present, viewport, area, switchMode, openHelp, openPalette, restoreView, clipboard, assets, overrides, paused, commands]);
+  }, [paused, commands]);
   return run;
 }

@@ -53,6 +53,43 @@ export function applyOverrides(base: readonly KeyBinding[], overrides: KeyOverri
 export function ariaShortcuts(base: readonly KeyBinding[], overrides: KeyOverrides, action: PaletteAction, mac?: boolean): string | undefined;
 
 // @public
+export type ArrangeContainer = {
+    readonly containerId: RecordId;
+};
+
+// @public
+export type ArrangeHost = {
+    readonly tools: ArrangeTools;
+    readonly arrange?: ArrangePort | undefined;
+    notify?(message: string): void;
+};
+
+// @public
+export type ArrangeOutcome = {
+    readonly ok: boolean;
+    readonly message?: string;
+};
+
+// @public
+export type ArrangePort = (request: ArrangeRequest) => Promise<ArrangeOutcome>;
+
+// @public
+export type ArrangeRequest = {
+    readonly screenId: RecordId;
+    readonly scope: ArrangeScope;
+    readonly selection?: readonly RecordId[];
+    readonly algorithm?: string;
+};
+
+// @public
+export type ArrangeScope = "screen" | "selection" | ArrangeContainer;
+
+// @public
+export type ArrangeTools = {
+    readonly ctx: ToolCtx;
+};
+
+// @public
 export function AssetDialog(props: AssetDialogProps): ReactNode;
 
 // @public
@@ -311,6 +348,8 @@ export type EditorCommandCtx = {
     restoreView?(meta: unknown): void;
     readonly clipboard?: Clipboard_2;
     readonly assets?: AssetStore;
+    readonly arrange?: ArrangePort;
+    notify?(message: string): void;
 };
 
 // @public
@@ -329,6 +368,8 @@ export type EditorKeysInput = {
     readonly restoreView?: ((meta: unknown) => void) | undefined;
     readonly clipboard?: Clipboard_2 | undefined;
     readonly assets?: AssetStore | undefined;
+    readonly arrange?: ArrangePort | undefined;
+    readonly notify?: ((message: string) => void) | undefined;
     readonly paused?: boolean | undefined;
 };
 
@@ -345,6 +386,7 @@ export type EditorRootProps = {
     readonly tools?: Registry<string, Tool>;
     readonly random?: Random;
     readonly assets?: AssetStore;
+    readonly arrange?: ArrangePort;
     readonly toolbar?: ReactNode;
     readonly commands?: readonly EditorCommand[];
     readonly themes?: readonly ThemeChoice[];
