@@ -22,7 +22,7 @@ import { PaletteHost } from './command-palette.js';
 import { Measured } from './debug-overlay.js';
 import { EditBody } from './edit-body.js';
 import { EditToolbar } from './edit-toolbar.js';
-import type { EditorCommand } from './editor-commands.js';
+import { type EditorCommand, registeredLayoutCommands } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
 import type { FontSources } from './font-picker.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
@@ -31,7 +31,7 @@ import { ImagePicker } from './image-picker.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
-import type { ArrangePort } from './layout-arrange.js';
+import { type ArrangePort, registeredLayoutIds } from './layout-arrange.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
 import { PresentInPlace, useModeSwitch, useRevision } from './present.js';
@@ -253,9 +253,15 @@ function Notice(props: { readonly text: string; readonly onDismiss: () => void }
  * @public
  */
 export function EditorRoot(props: EditorRootProps): ReactNode {
+  // the layouts the host registered (a plugin's included) are in the Arrange menus and the palette
+  const layouts = registeredLayoutIds(props.sourceRegistries?.layouts.list() ?? []).join('\n');
+  const commands = useMemo(
+    () => [...(props.commands ?? []), ...registeredLayoutCommands(layouts === '' ? [] : layouts.split('\n'))],
+    [props.commands, layouts],
+  );
   return (
     <I18nProvider i18n={i18n}>
-      <EditorShell {...props} />
+      <EditorShell {...props} commands={commands} />
     </I18nProvider>
   );
 }

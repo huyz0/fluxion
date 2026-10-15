@@ -12,8 +12,16 @@ export const LAYOUT_CHOICES = [
   ['stack', 'stack'],
 ] as const;
 
-/** A layout name the Arrange menu offers. */
-export type LayoutChoice = (typeof LAYOUT_CHOICES)[number][0];
+/**
+ * The layouts the Arrange menus offer besides the built-in choices: the keys of the registry entries that have a string `id` and are not `grid`, `layered` or `stack`.
+ *
+ * @public
+ */
+export function registeredLayoutIds(entries: readonly (readonly [string, unknown])[]): readonly string[] {
+  const builtIn = new Set<string>(LAYOUT_CHOICES.map(([name]) => name));
+  const ids = entries.flatMap(([key, value]) => (typeof (value as { id?: unknown } | null)?.id === 'string' && !builtIn.has(key) ? [key] : []));
+  return [...new Set(ids)].sort();
+}
 
 /** The kinds of element that hold others and may carry a layout of their own. */
 const CONTAINER_KINDS = new Set(['group', 'frame']);
@@ -123,7 +131,7 @@ const newest = new WeakMap<ArrangePort, number>();
  *
  * @public
  */
-export function arrangeScreen(ctx: ArrangeHost, algorithm: LayoutChoice): boolean {
+export function arrangeScreen(ctx: ArrangeHost, algorithm: string): boolean {
   const screenId = shownScreen(ctx.tools.ctx.view, ctx.tools.ctx.session.screen.get());
   return screenId !== undefined && start(ctx, { screenId, scope: 'screen', algorithm });
 }
@@ -133,7 +141,7 @@ export function arrangeScreen(ctx: ArrangeHost, algorithm: LayoutChoice): boolea
  *
  * @public
  */
-export function arrangeSelected(ctx: ArrangeHost, algorithm: LayoutChoice): boolean {
+export function arrangeSelected(ctx: ArrangeHost, algorithm: string): boolean {
   const t = ctx.tools.ctx;
   const screenId = shownScreen(t.view, t.session.screen.get());
   const selection = t.session.selection.get();

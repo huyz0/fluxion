@@ -361,3 +361,16 @@ export function dispatchKey(k: KeyPress, bindings: readonly KeyBinding[], comman
  * @public
  */
 export const commandMap = (commands: readonly EditorCommand[] = EDITOR_COMMANDS): ReadonlyMap<string, EditorCommand> => new Map(commands.map((c) => [c.id, c]));
+
+/**
+ * The Arrange commands of the layouts a host registered besides the built-in three (a plugin's `pack:name`), by their ids (`registeredLayoutIds` of its `layouts` registry):
+ * `layout.arrange.screen.<id>` and `layout.arrange.selection.<id>`, which the palette and the context menus list like the built-in ones.
+ *
+ * @public
+ */
+export function registeredLayoutCommands(ids: readonly string[]): readonly EditorCommand[] {
+  return ids.flatMap((id): EditorCommand[] => [
+    { id: `layout.arrange.screen.${id}`, title: `Arrange the screen (${id})`, run: (ctx) => selectIdle(ctx) && arrangeScreen(ctx, id) },
+    { id: `layout.arrange.selection.${id}`, title: `Arrange the selection (${id})`, run: (ctx) => selectIdle(ctx) && arrangeSelected(ctx, id) },
+  ]);
+}

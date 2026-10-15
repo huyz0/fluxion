@@ -79,6 +79,7 @@ export {
   type EditorCommand,
   type EditorCommandCtx,
   type HistoryResult,
+  registeredLayoutCommands,
 } from './editor-commands.js';
 export { type EditorKeysInput, isEditable, useEditorKeys } from './editor-keys.js';
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
@@ -124,6 +125,7 @@ export {
 export { LASER_TRAIL, laserTool } from './laser-tool.js';
 export { LAYOUT_KEY } from './layout.js';
 export type { ArrangeContainer, ArrangeHost, ArrangeOutcome, ArrangePort, ArrangeRequest, ArrangeScope, ArrangeTools } from './layout-arrange.js';
+export { registeredLayoutIds } from './layout-arrange.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
 export { newDocument } from './new-document.js';

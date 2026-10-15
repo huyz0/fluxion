@@ -73,7 +73,10 @@ export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | un
  */
 export function menuItems(target: MenuTarget, commands: readonly EditorCommand[]): readonly MenuItem[] {
   const titles = new Map(commands.map((c) => [c.id, commandTitle(c)]));
-  return MENUS[target].flatMap((command): MenuItem[] => {
+  // the Arrange lines of registered layouts (a plugin's) follow the built-in ones
+  const prefix = target === 'element' ? 'layout.arrange.selection.' : target === 'screen' ? 'layout.arrange.screen.' : undefined;
+  const added = prefix === undefined ? [] : [...titles.keys()].filter((id) => id.startsWith(prefix) && !MENUS[target].includes(id));
+  return [...MENUS[target], ...added].flatMap((command): MenuItem[] => {
     const title = titles.get(command);
     return title === undefined ? [] : [{ command, title }];
   });

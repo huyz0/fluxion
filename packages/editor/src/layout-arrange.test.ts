@@ -3,8 +3,17 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { EDITOR_COMMANDS, type EditorCommandCtx } from './editor-commands.js';
-import { type ArrangeOutcome, type ArrangeRequest, arrangeContainer, arrangeScreen, arrangeSelected, LAYOUT_CHOICES } from './layout-arrange.js';
+import { menuItems } from './context-menu-model.js';
+import { EDITOR_COMMANDS, type EditorCommandCtx, registeredLayoutCommands } from './editor-commands.js';
+import {
+  type ArrangeOutcome,
+  type ArrangeRequest,
+  arrangeContainer,
+  arrangeScreen,
+  arrangeSelected,
+  LAYOUT_CHOICES,
+  registeredLayoutIds,
+} from './layout-arrange.js';
 import { createSession } from './session.js';
 import type { ToolCtx } from './tools.js';
 
@@ -90,5 +99,34 @@ describe('arranging with a layout in the editor (FR-LAY-005, FR-LAY-001)', () =>
     await Promise.resolve();
     await Promise.resolve();
     expect(cancelled.notices.at(-1)).toBe('Could not arrange: superseded by revision 2');
+  });
+
+  it('FR-LAY-001: a layout a plugin registers gets Arrange commands that run layout.arrange with its name, and the menus list them', () => {
+    const entries = [
+      ['grid', { id: 'grid' }],
+      ['layered', { id: 'layered' }],
+      ['stack', { id: 'stack' }],
+      ['test:ring', { id: 'test:ring' }],
+      ['not-a-layout', 'text'],
+    ] as const;
+    expect(registeredLayoutIds(entries)).toEqual(['test:ring']);
+    const added = registeredLayoutCommands(registeredLayoutIds(entries));
+    expect(added.map((c) => c.id)).toEqual(['layout.arrange.screen.test:ring', 'layout.arrange.selection.test:ring']);
+    // they run the layout command with the plugin's name, from the select tool's idle state
+    const t = setup();
+    t.session.selection.set([t.a, t.c]);
+    const ctx = { ...t.ctx, tools: { ...t.ctx.tools, current: 'select.idle' } } as unknown as EditorCommandCtx;
+    for (const c of added) expect(c.run(ctx)).toBe(true);
+    expect(t.calls.map((c) => (c.args as { algorithm: string; scope: string }).algorithm)).toEqual(['test:ring', 'test:ring']);
+    expect(t.calls.map((c) => (c.args as { scope: string }).scope)).toEqual(['screen', 'selection']);
+    // the menus list them after the built-in lines
+    const all = [...EDITOR_COMMANDS, ...added];
+    expect(
+      menuItems('screen', all)
+        .map((i) => i.title)
+        .at(-1),
+    ).toBe('Arrange the screen (test:ring)');
+    expect(menuItems('element', all).map((i) => i.title)).toContain('Arrange the selection (test:ring)');
+    expect(menuItems('canvas', all).map((i) => i.command)).not.toContain('layout.arrange.screen.test:ring');
   });
 });

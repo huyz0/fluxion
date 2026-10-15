@@ -982,6 +982,12 @@ export function readViewMeta(value: unknown): ViewMeta | undefined;
 // @public
 export function registerBuiltinTools(registry: Registry<string, Tool>): void;
 
+// @public
+export function registeredLayoutCommands(ids: readonly string[]): readonly EditorCommand[];
+
+// @public
+export function registeredLayoutIds(entries: readonly (readonly [string, unknown])[]): readonly string[];
+
 export { registerFontMetrics }
 
 // @public
