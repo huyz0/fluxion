@@ -3,6 +3,7 @@
 // lives here, beside the algorithms, so the editor, the CLI and MCP register the same one; it reads records structurally (this package has no
 // schema dependency) and registers into a host's `commands` registry.
 import { type AnyCommand, defineCommand, type Registry, type Store, type Tx, type TxFailure } from '@fluxion/core';
+import type { Box } from '@fluxion/geometry';
 import { z } from 'zod';
 import { err, type LayoutError, ok, type Result } from './errors.js';
 import { layoutNested, type NestedRunner } from './nested.js';
@@ -98,13 +99,35 @@ function withDescendants(nodes: readonly LayoutNode[], roots: ReadonlySet<string
   return found;
 }
 
-/** The layout input for the scope. A selection is laid out among the rest of the screen, which stays where it is (it is pinned). */
-function inputFor(records: readonly Rec[], args: Args): LayoutInput {
+/** The area of a screen: its size (1920 x 1080 when it has none), or the viewport of an infinite screen. */
+function screenFrame(screen: unknown): Box {
+  const s = (screen ?? {}) as { kind?: unknown; size?: { w?: unknown; h?: unknown }; viewport?: Box };
+  if (s.kind === 'infinite' && s.viewport) return { x: s.viewport.x, y: s.viewport.y, w: s.viewport.w, h: s.viewport.h };
+  const [w, h] = [s.size?.w, s.size?.h];
+  return { x: 0, y: 0, w: typeof w === 'number' && w > 0 ? w : 1920, h: typeof h === 'number' && h > 0 ? h : 1080 };
+}
+
+/** The bounds of `boxes`, grown to reach the screen's far edges (so a layout wraps at the screen, not at the selection). */
+function selectionFrame(boxes: readonly Box[], screen: Box): Box {
+  const x = Math.min(...boxes.map((b) => b.x));
+  const y = Math.min(...boxes.map((b) => b.y));
+  const right = Math.max(...boxes.map((b) => b.x + b.w), screen.x + screen.w);
+  const bottom = Math.max(...boxes.map((b) => b.y + b.h), screen.y + screen.h);
+  return { x, y, w: right - x, h: bottom - y };
+}
+
+/**
+ * The layout input for the scope, in the screen's own area. A selection is laid out among the rest of the screen, which stays where it is (it is
+ * pinned), starting where the selection is. A container's children use the container's box.
+ */
+function inputFor(records: readonly Rec[], args: Args, screen: Box): LayoutInput {
   const scope = args.scope;
-  if (scope !== 'selection') return buildSnapshot(records, { screenId: args.screenId, scope });
-  const whole = buildSnapshot(records, { screenId: args.screenId, scope: 'screen' });
+  if (scope !== 'selection') return buildSnapshot(records, { screenId: args.screenId, scope, ...(scope === 'screen' ? { frame: screen } : {}) });
+  const whole = buildSnapshot(records, { screenId: args.screenId, scope: 'screen', frame: screen });
   const free = withDescendants(whole.nodes, new Set(args.selection ?? []));
-  return { ...whole, scope, nodes: whole.nodes.map((n) => (free.has(n.id) ? n : { ...n, pinned: true })) };
+  const freeBoxes = whole.nodes.filter((n) => free.has(n.id)).map((n) => n.box);
+  const frame = freeBoxes.length > 0 ? selectionFrame(freeBoxes, screen) : screen;
+  return { ...whole, frame, scope, nodes: whole.nodes.map((n) => (free.has(n.id) ? n : { ...n, pinned: true })) };
 }
 
 /** The `{ type, options }` layout spec a container record carries, if it has a usable one. */
@@ -159,7 +182,7 @@ function prepare(store: Reader, args: Args): { ok: true; value: Prepared } | Ref
   if (!records.some((r) => r.type === 'element')) return refuse(`no elements on screen "${args.screenId}"`, ['screenId']);
   if (typeof args.scope === 'object' && byId.get(args.scope.containerId)?.type !== 'element')
     return refuse(`"${args.scope.containerId}" is not an element of the screen`, ['scope', 'containerId']);
-  return { ok: true, value: { byId, input: inputFor(records, args) } };
+  return { ok: true, value: { byId, input: inputFor(records, args, screenFrame(store.get(args.screenId as StoreId))) } };
 }
 
 /** The transaction body that writes the new `transform` of every element whose box differs; it returns `{ moved }`. */

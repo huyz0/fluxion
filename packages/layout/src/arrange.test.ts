@@ -16,10 +16,10 @@ const shape = (id: string, [x, y]: readonly [number, number], [w, h]: readonly [
 });
 
 /** A core with the built-in layouts, layered, and the arrange command registered. The schema version is the one of the format at M13. */
-function setup(elements: ReadonlyArray<ReturnType<typeof shape>>): Core & { box(id: string): Box } {
+function setup(elements: ReadonlyArray<ReturnType<typeof shape>>, screen: Record<string, unknown> = {}): Core & { box(id: string): Box } {
   const records = Object.fromEntries([
     ['doc', { id: 'doc', type: 'document', title: 'Arrange' }],
-    ['s1', { id: 's1', type: 'screen', index: 'a0', name: 'Main' }],
+    ['s1', { id: 's1', type: 'screen', index: 'a0', name: 'Main', ...screen }],
     ...elements.map((e) => [e.id, e] as const),
   ]);
   const core = createCore({ schemaVersion: '1.3', records } as never);
@@ -103,5 +103,21 @@ describe('arrange command (FR-LAY-005)', () => {
     expect(core.execute('layout.arrange', { screenId: 7 })).toMatchObject({ ok: false });
     expect(JSON.stringify(core.store.toDocument())).toBe(snapshot);
     expect(core.store.history.canUndo()).toBe(false);
+  });
+
+  it("FR-LAY-005: arranging starts where the screen is: an infinite screen's viewport sets the origin, and a selection stays where it was", () => {
+    const viewport = { x: -900, y: -500, w: 1200, h: 800 };
+    const infinite = setup([shape('a', [-800, -400]), shape('b', [-790, -390])], { kind: 'infinite', viewport });
+    expect(infinite.execute('layout.arrange', { screenId: 's1', algorithm: 'stack', options: { padding: 20 } }).ok).toBe(true);
+    // the stack starts at the viewport's corner plus the padding, not at the origin of the plane
+    expect(infinite.box('a')).toMatchObject({ x: -880, y: -480 });
+    // a selection in the middle of a screen is laid out from its own corner, not thrown to the screen's top-left
+    const mid = setup([shape('p', [600, 400]), shape('q', [610, 410]), shape('r', [620, 420]), shape('rest', [100, 100], [100, 50])]);
+    expect(
+      mid.execute('layout.arrange', { screenId: 's1', scope: 'selection', selection: ['p', 'q', 'r'], algorithm: 'stack', options: { padding: 0 } }).ok,
+    ).toBe(true);
+    expect(mid.box('p')).toMatchObject({ x: 600, y: 400 });
+    for (const id of ['q', 'r']) expect(mid.box(id).y).toBeGreaterThan(400);
+    expect(mid.box('rest')).toEqual({ x: 100, y: 100, w: 100, h: 50 });
   });
 });
