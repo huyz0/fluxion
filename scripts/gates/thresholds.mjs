@@ -20,7 +20,7 @@ export const THRESHOLDS = {
 
   // gate latency (NFR-DX-002), milliseconds
   QUICK_GATE_BUDGET_MS: { value: 180_000, weakens: 'up' }, // ADR-0164 (was 120 s, ADR-0161; 30 s before)
-  PRECOMMIT_BUDGET_MS: { value: 480_000, weakens: 'up' }, // ADR-0163 (was 360 s, ADR-0158; 120 s before)
+  PRECOMMIT_BUDGET_MS: { value: 600_000, weakens: 'up' }, // ADR-0165 (was 480 s, ADR-0163; 360 s, ADR-0158; 120 s before)
   COLD_SETUP_MAX_MS: { value: 600_000, weakens: 'up' }, // fresh clone: pnpm i + pnpm run setup + pnpm verify (NFR-DX-001)
 
   // coverage floors (NFR-MNT-004), percent

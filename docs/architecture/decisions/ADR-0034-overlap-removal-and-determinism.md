@@ -8,7 +8,7 @@ decision-makers: harness (M13.3; within FR-LAY-004/008, NFR-LIC-002 and ADR-0005
 
 ## Context and Problem Statement
 
-M13 must guarantee that no two unpinned boxes overlap after a layout (FR-LAY-004) and that the same input and seed give the same output (FR-LAY-008), in the browser, the worker and Node. The `layered` algorithm is backed by dagre (ADR-0005, 05-layout-and-routing.md §3), which places by rank and does not know about pinned nodes, container margins or measured text drift. 05 §3 names VPSC from WebCola for the overlap pass. The staged pre-commit ladder is near its budget (446 s of 480 s, ADR-0163), so each dependency has a cost.
+M13 must guarantee that no two unpinned boxes overlap after a layout (FR-LAY-004) and that the same input and seed give the same output (FR-LAY-008), in the browser, the worker and Node. The `layered` algorithm is backed by dagre (ADR-0005, 05-layout-and-routing.md §3), which places by rank and does not know about pinned nodes, container margins or measured text drift. 05 §3 names VPSC from WebCola for the overlap pass. The staged pre-commit ladder is near its budget (446 s of 480 s when this was written, ADR-0163; the budget is now 600 s, ADR-0165), so each dependency has a cost.
 
 ## Decision Drivers
 
@@ -29,7 +29,7 @@ M13 must guarantee that no two unpinned boxes overlap after a layout (FR-LAY-004
 
 **Layered: `@dagrejs/dagre` 3.1.1 (MIT, with `@dagrejs/graphlib` 4.0.5, MIT)**, as 05 §3 and ADR-0005 already name. Licence check: both are MIT, so `check-licenses` passes without an allow-list entry. It is a dependency of `packages/layout` only, never of the player (the player core size limit and the NFR-SIZE-005 test guard that). The version is pinned in the pnpm catalog. dagre uses no randomness; determinism is kept by feeding it nodes and edges in canonical order and reading results back in the same order.
 
-**Ladder cost.** Adding the two packages changes the lockfile once (M13.8). The cost is **unmeasured**: a lockfile change re-runs the install-dependent steps, and nothing here times it. M13.8 measures it, re-records the budget in the same commit, and stops for a human decision if the staged worst case then leaves less than 15 s of the 480 s (ADR-0163).
+**Ladder cost.** Adding the two packages changes the lockfile once (M13.8). The cost is **unmeasured**: a lockfile change re-runs the install-dependent steps, and nothing here times it. M13.8 measures it, re-records the budget in the same commit, and stops for a human decision if the staged worst case then leaves less than 15 s of the current `PRECOMMIT_BUDGET_MS` (600 s, ADR-0165).
 
 **Determinism rules** (every algorithm and post-pass):
 1. **PRNG**: `sfc32`, own code in `packages/layout`. The integer seed expands to sfc32's four 32-bit words by four successive `splitmix32` outputs starting at `seed | 0`, then twelve discarded draws. `ctx.rng` satisfies the `Random` port (`next(): number` in [0, 1)). `Math.random` is forbidden (layering rule). Algorithms get it as `ctx.rng` (ADR-0033).

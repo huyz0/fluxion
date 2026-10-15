@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0165
 date: 2026-10-07
 decision-makers: the human (answer to the budget question, 2026-10-07: "Raise budget to 480 s instead"), recorded by harness (M12.37; amends NFR-DX-002, weakens `PRECOMMIT_BUDGET_MS`; supersedes ADR-0158)
 ---
