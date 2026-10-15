@@ -43,7 +43,7 @@ export type {
  */
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>['register']> {
   // every built-in is tried; the first refusal is what comes back (the others stay registered), else the last success
-  const results = [stackLayout, gridLayout].map((layout) => layouts.register(layout.id, layout, 'core'));
+  const results = [stackLayout, gridLayout, layeredLayout].map((layout) => layouts.register(layout.id, layout, 'core'));
   return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }
 

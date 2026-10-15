@@ -1,11 +1,11 @@
 // Place stage (ADR-0030 "Pipeline stages in R2", ADR-0031, FR-DSL-005): the 06 §3 layout stage of R2. Pinned elements keep their exact
-// boxes; the others are laid out by their container's `layout` from the `layouts` registry, else by `stack`. Groups are laid out bottom-up:
+// boxes; the others are laid out by their container's `layout` from the `layouts` registry, else by `layered` (M13.17; `stack` where a host registers none). Groups are laid out bottom-up:
 // a group's members first (nested groups before the group around them), then the group, sized to the bounds of its members (02 §3: the box
 // the core:5-group-bounds hook keeps), is one node of its own container; moving it moves its members, which stay in screen coordinates. A
 // group holding a pin (at any depth) cannot move without moving the pin, so it is pinned in its container. Connectors are not placed:
 // their bindings route them.
 import type { CoreRegistries } from '@fluxion/core';
-import { type LayoutAlgorithm, type LayoutNode, type LayoutOutput, stackLayout } from '@fluxion/layout';
+import { type LayoutAlgorithm, type LayoutEdge, type LayoutNode, type LayoutOutput, layeredLayout, layoutSync, stackLayout } from '@fluxion/layout';
 import { type AnyRecord, DIAGNOSTIC_CODES, type LayoutSpec, type RecordId, screenSize } from '@fluxion/schema';
 import { nearest } from '../resolve/suggest.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
@@ -45,7 +45,7 @@ export type PlaceResult = {
   readonly diagnostics: readonly DslDiagnostic[];
 };
 
-/** Layout types the v1 grammar names that R2 does not register: placed with `stack` and `FLX_DSL_NOT_YET` (ADR-0030; `layered` is M13). */
+/** Layout types the v1 grammar names that a host may not register: placed with the default and `FLX_DSL_NOT_YET` (ADR-0030; `layered` is built in since M13.17). */
 const NOT_YET: ReadonlySet<string> = new Set(['layered']);
 
 type Box = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
@@ -71,7 +71,10 @@ type Ctx = {
   readonly boxes: Map<RecordId, Box>;
   /** The parent of every element that has one. */
   readonly parents: ReadonlyMap<RecordId, RecordId>;
+  /** The bound connectors of the document: id, model order and the elements at its ends. */
+  readonly connectors: readonly Connector[];
 };
+type Connector = { readonly id: string; readonly order: number; readonly source: RecordId; readonly target: RecordId };
 /** The screen being placed: its diagnostic path, its frame, and the boxes that will not move again (pins, and what pinned groups hold). */
 type ScreenCtx = { readonly path: string; readonly frame: Box; readonly settled: Map<RecordId, Box> };
 /** A container being laid out: its record (a screen or a group), its diagnostic path, and its screen. */
@@ -106,13 +109,17 @@ function withDefaults(algorithm: Algorithm): Chosen | undefined {
   return defaults.ok ? { algorithm, options: defaults.value } : undefined;
 }
 
-/** `stack` from the registry with its defaults, else the built-in one (which always accepts its defaults). */
+/** The default layout with its defaults: `layered` from the registry, else `stack`, else the built-in ones (which always accept their defaults). */
 function fallback(ctx: Ctx): Chosen {
-  const registered = ctx.registries.layouts.get(stackLayout.id);
-  return (isAlgorithm(registered) ? withDefaults(registered) : undefined) ?? (withDefaults(stackLayout as Algorithm) as Chosen);
+  for (const id of [layeredLayout.id, stackLayout.id]) {
+    const registered = ctx.registries.layouts.get(id);
+    const chosen = isAlgorithm(registered) ? withDefaults(registered) : undefined;
+    if (chosen) return chosen;
+  }
+  return withDefaults(stackLayout as Algorithm) as Chosen;
 }
 
-/** A layout type no registry entry has: `stack`, with `FLX_DSL_NOT_YET` for one v1 names, `FLX_REF_MISSING` and a did-you-mean otherwise. */
+/** A layout type no registry entry has: the default, with `FLX_DSL_NOT_YET` for one v1 names, `FLX_REF_MISSING` and a did-you-mean otherwise. */
 function unknownType(ctx: Ctx, c: Container, type: string): void {
   const path = `${c.path}/layout/type`;
   if (NOT_YET.has(type)) {
@@ -120,7 +127,7 @@ function unknownType(ctx: Ctx, c: Container, type: string): void {
       code: 'FLX_DSL_NOT_YET',
       severity: 'warning',
       path,
-      message: `layout "${type}" is not compiled yet (it comes in M13); placed with "stack"`,
+      message: `layout "${type}" is not compiled yet (it comes in M13); placed with the default layout`,
     });
     return;
   }
@@ -130,7 +137,7 @@ function unknownType(ctx: Ctx, c: Container, type: string): void {
     code: 'FLX_REF_MISSING',
     severity: DIAGNOSTIC_CODES.FLX_REF_MISSING,
     path,
-    message: `no layout "${type}" is registered; placed with "stack"`,
+    message: `no layout "${type}" is registered; placed with the default layout`,
     ...(near ? { hint: `did you mean "${near}"?` } : {}),
   });
 }
@@ -215,11 +222,35 @@ function nodeOf(ctx: Ctx, c: Container, m: El, order: number): LayoutNode {
 
 const contains = (outer: Box, b: Box) => b.x >= outer.x && b.y >= outer.y && b.x + b.w <= outer.x + outer.w && b.y + b.h <= outer.y + outer.h;
 
+type Graph = { readonly nodes: readonly LayoutNode[]; readonly edges: readonly LayoutEdge[] };
+
+/** The edges between `nodes`: a connector whose two ends are in the nodes (an end inside a nested group counts for the group). */
+function edgesAmong(ctx: Ctx, nodes: readonly LayoutNode[]): LayoutEdge[] {
+  const ids = new Set(nodes.map((n) => n.id));
+  const owner = (id: RecordId): string | undefined => {
+    for (let at: RecordId | undefined = id; at !== undefined; at = ctx.parents.get(at)) if (ids.has(at)) return at;
+    return undefined;
+  };
+  const edges: LayoutEdge[] = [];
+  for (const k of ctx.connectors) {
+    const [source, target] = [owner(k.source), owner(k.target)];
+    if (source !== undefined && target !== undefined && source !== target) edges.push({ id: k.id, source, target, order: k.order });
+  }
+  return edges;
+}
+
+/** One layout run through the pipeline (pins, the overlap pass and the 0.5 px snap); the algorithm's own boxes when the pipeline refuses. */
+function laidOut(chosen: Chosen, input: { nodes: readonly LayoutNode[]; edges: readonly LayoutEdge[]; frame: Box }): LayoutOutput['boxes'] {
+  const r = layoutSync({ input, algorithm: chosen.algorithm, options: chosen.options });
+  return r.ok ? r.value.boxes : chosen.algorithm.run(input, chosen.options).boxes;
+}
+
 /** The layout's boxes for `nodes`: from the first frame that keeps every loose node on the screen, else from the first frame. */
-function run(c: Container, chosen: Chosen, nodes: readonly LayoutNode[], frames: readonly Box[]): LayoutOutput['boxes'] {
+function run(c: Container, chosen: Chosen, graph: Graph, frames: readonly Box[]): LayoutOutput['boxes'] {
+  const { nodes, edges } = graph;
   let first: LayoutOutput['boxes'] | undefined;
   for (const frame of frames) {
-    const out = chosen.algorithm.run({ nodes, frame }, chosen.options).boxes;
+    const out = laidOut(chosen, { nodes, edges, frame });
     first ??= out;
     if (frames.length === 1 || nodes.every((n) => n.pinned || !finite(out[n.id]) || contains(c.screen.frame, out[n.id] as Box))) return out;
   }
@@ -236,7 +267,8 @@ function arrange(ctx: Ctx, c: Container): boolean {
   const nodes = members.map((m, order) => nodeOf(ctx, c, m, order));
   const pins = nodes.filter((n) => n.pinned).map((n) => n.box);
   const extra = pins.length > 0 && c.record.type !== 'screen' ? obstacles(ctx, c, c.record.id, nodes.length) : [];
-  const out = run(c, layoutFor(ctx, c), [...nodes, ...extra], framesFor(c, pins));
+  const all = [...nodes, ...extra];
+  const out = run(c, layoutFor(ctx, c), { nodes: all, edges: edgesAmong(ctx, all) }, framesFor(c, pins));
   members.forEach((m, k) => {
     const to = out[m.id];
     // a group keeps the size of its members' bounds: only its position is the layout's
@@ -257,10 +289,25 @@ function childrenOf(records: { readonly [id: string]: AnyRecord }): Map<string, 
   return out;
 }
 
+/** The connectors with both ends bound to an element, in model order (ties by id). */
+function connectorsOf(records: { readonly [id: string]: AnyRecord }): Connector[] {
+  const ends = new Map<string, { source?: RecordId; target?: RecordId }>();
+  for (const r of Object.values(records) as Array<AnyRecord & { connectorId?: string; elementId?: RecordId; end?: string }>) {
+    if (r.type === 'binding' && r.connectorId !== undefined && r.elementId !== undefined && (r.end === 'source' || r.end === 'target'))
+      ends.set(r.connectorId, { ...ends.get(r.connectorId), [r.end]: r.elementId });
+  }
+  const connectors = (Object.values(records) as El[]).filter((r) => r.type === 'element' && r.kind === 'connector').sort(byIndex);
+  return connectors.flatMap((k, order) => {
+    const e = ends.get(k.id);
+    return e?.source !== undefined && e.target !== undefined ? [{ id: k.id, order, source: e.source, target: e.target }] : [];
+  });
+}
+
 /**
  * Place compiled records (the place stage, ADR-0030): pinned elements keep their boxes; the rest are laid out by their screen's or
- * group's `layout` from the `layouts` registry, else `stack`. A layout type v1 names but R2 does not register (`layered`) is placed with
- * `stack` and `FLX_DSL_NOT_YET`; any other unknown type with `stack` and `FLX_REF_MISSING`. A group's box is the bounds of its members.
+ * group's `layout` from the `layouts` registry, else `layered` (`stack` on a host that registers neither). `layered` named on a host that does not
+ * register it is placed with the default and `FLX_DSL_NOT_YET`; any other unknown type with the default and `FLX_REF_MISSING`. Connectors with both ends
+ * bound are the layout's edges. A group's box is the bounds of its members.
  *
  * @public
  */
@@ -270,7 +317,15 @@ export function placeFlux(input: PlaceInput, options: PlaceOptions): PlaceResult
   for (const list of children.values()) for (const r of list) boxes.set(r.id, r.transform as Box);
   const parents = new Map<RecordId, RecordId>();
   for (const list of children.values()) for (const r of list) if (r.parentId !== undefined) parents.set(r.id, r.parentId);
-  const ctx: Ctx = { registries: options.registries, sources: input.layoutSources ?? new Map(), diagnostics: [], children, boxes, parents };
+  const ctx: Ctx = {
+    registries: options.registries,
+    sources: input.layoutSources ?? new Map(),
+    diagnostics: [],
+    children,
+    boxes,
+    parents,
+    connectors: connectorsOf(input.records),
+  };
   const screens = (Object.values(input.records) as El[]).filter((r) => r.type === 'screen').sort(byIndex);
   screens.forEach((s, i) => {
     const size = screenSize(s as Parameters<typeof screenSize>[0]);

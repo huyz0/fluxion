@@ -18,12 +18,13 @@ type El = AnyRecord & {
 };
 
 /** Registries with a few shapes and the built-in layouts, plus whatever `extra` registers. */
-function registries(extra?: (r: ReturnType<typeof createCoreRegistries>) => void) {
+function registries(extra?: (r: ReturnType<typeof createCoreRegistries>) => void, only: 'all' | 'stack' = 'all') {
   const r = createCoreRegistries();
   const sized: { readonly [id: string]: { w: number; h: number } } = { 'basic:rounded-rect': { w: 200, h: 100 } };
   for (const id of ['basic:rect', 'basic:rounded-rect'])
     r.shapeDefs.register(id, { id, ...(sized[id] ? { defaultSize: sized[id] } : {}) } as unknown as ShapeDef, 'basic');
-  registerBuiltInLayouts(r.layouts);
+  if (only === 'all') registerBuiltInLayouts(r.layouts);
+  else r.layouts.register(stackLayout.id, stackLayout, 'core');
   extra?.(r);
   return r;
 }
@@ -91,7 +92,7 @@ const MIXED = doc(`  - id: one
       note: { text: Hello }
     groups:
       backend: { label: Backend, contains: [api, data], layout: { type: stack, direction: right, gap: 40 } }
-      data: { label: Data, contains: [db, cache] }
+      data: { label: Data, contains: [db, cache], layout: { type: stack } }
       jobs: { contains: [queue, worker] }
     edges:
       - web -> api
@@ -199,8 +200,9 @@ describe('place stage (FR-DSL-005, ADR-0030)', () => {
     expect(overlapping(r)).toEqual([]);
   });
 
-  it('FR-DSL-005: `layered`, named by v1 but not registered in R2, places with stack and warns FLX_DSL_NOT_YET at the layout', () => {
-    const r = place(doc('  - id: a\n    layout: { type: layered, direction: right }\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n'));
+  it('FR-DSL-005: `layered`, named by v1 but not registered by the host, places with stack and warns FLX_DSL_NOT_YET at the layout', () => {
+    const text = doc('  - id: a\n    layout: { type: layered, direction: right }\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n');
+    const r = place(text, registries(undefined, 'stack'));
     expect(r.diagnostics.map((d) => [d.code, d.severity, d.path, d.source?.line])).toEqual([['FLX_DSL_NOT_YET', 'warning', '/screens/0/layout/type', 6]]);
     // stack defaults: down from padding 80, gap 24
     expect(box(r, 'x')).toEqual({ x: 80, y: 80, w: 160, h: 80 });
@@ -229,14 +231,29 @@ describe('place stage (FR-DSL-005, ADR-0030)', () => {
     expect(place(text('wide'), reg).diagnostics.map((d) => [d.code, d.severity])).toEqual([['FLX_SCHEMA_INVALID', 'error']]);
   });
 
-  it('FR-DSL-005: an unknown layout type is FLX_REF_MISSING with a did-you-mean from the registry, and places with stack', () => {
+  it('FR-DSL-005: an unknown layout type is FLX_REF_MISSING with a did-you-mean from the registry, and places with the default layout', () => {
     const r = place(
       doc('  - id: a\n    nodes:\n      x: { shape: rect }\n      y: { shape: rect }\n    groups:\n      g: { contains: [x, y], layout: { type: stak } }\n'),
     );
     expect(r.diagnostics.map((d) => [d.code, d.severity, d.path, d.source?.line, d.hint])).toEqual([
       ['FLX_REF_MISSING', 'error', '/screens/0/groups/g/layout/type', 10, 'did you mean "stack"?'],
     ]);
-    expect(box(r, 'y').y).toBe(box(r, 'x').y + 80 + 24);
+    // no edges: layered puts both in the one rank, side by side and clear of each other
+    expect(overlaps(box(r, 'x'), box(r, 'y'))).toBe(false);
+  });
+
+  it('FR-LAY-001: a screen without a layout is laid out by layered: connectors give the ranks, and nothing overlaps', () => {
+    const r = place(MIXED);
+    expect(r.diagnostics).toEqual([]);
+    // web -> api -> db: each target is a rank below its source (layered runs down by default)
+    expect(box(r, 'web').y).toBeLessThan(box(r, 'api').y);
+    expect(overlapping(r)).toEqual([]);
+    const flow = place(
+      doc('  - id: f\n    nodes:\n      a: { shape: rect }\n      b: { shape: rect }\n      c: { shape: rect }\n    edges:\n      - a -> b\n      - b -> c\n'),
+    );
+    expect(flow.diagnostics).toEqual([]);
+    expect(box(flow, 'a').y).toBeLessThan(box(flow, 'b').y);
+    expect(box(flow, 'b').y).toBeLessThan(box(flow, 'c').y);
   });
 
   it("FR-DSL-005: a registered layout is looked up by type and run on the container's members with its options", () => {

@@ -2,7 +2,7 @@
 // packs registered into its core registries (ADR-0017: the studio bundles packs/basic), and the
 // render registries that draw from them.
 import { type Core, createCore, type Logger } from '@fluxion/core';
-import { layeredLayout, registerArrangeCommand, registerBuiltInLayouts } from '@fluxion/layout';
+import { registerArrangeCommand, registerBuiltInLayouts } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
 import { themesCorePack } from '@fluxion/pack-themes-core';
 import { renderRegistriesFor } from '@fluxion/player';
@@ -28,11 +28,7 @@ export type OpenDocument = {
 
 /** The built-in layouts and the `layout.arrange` command (M13.16) in a document's registries, or why one was refused. */
 function registerLayouts(registries: Core['registries']): { readonly ok: true } | { readonly ok: false; readonly message: string } {
-  const failed = [
-    registerBuiltInLayouts(registries.layouts),
-    registries.layouts.register(layeredLayout.id, layeredLayout, 'core'),
-    registerArrangeCommand(registries.commands, registries.layouts),
-  ].find((r) => !r.ok);
+  const failed = [registerBuiltInLayouts(registries.layouts), registerArrangeCommand(registries.commands, registries.layouts)].find((r) => !r.ok);
   return failed && !failed.ok ? { ok: false, message: `The layout engine failed to register: ${failed.error.message}` } : { ok: true };
 }
 
