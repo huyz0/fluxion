@@ -19,12 +19,16 @@ export type StackOptions = {
   readonly align: 'start' | 'center' | 'end';
   /** Space between the frame's edge and the stack, px (default 80). */
   readonly padding: number;
+  /** Length along the stack, px, after which a box starts a new line beside the first (default 0: never wrap). Sizes and gaps are counted; a box a pin pushes forward can end a line longer than this. */
+  readonly wrap: number;
 };
 
-const DEFAULTS: StackOptions = { direction: 'down', gap: 24, align: 'start', padding: 80 };
+const DEFAULTS: StackOptions = { direction: 'down', gap: 24, align: 'start', padding: 80, wrap: 0 };
 const KEYS = new Set(Object.keys(DEFAULTS));
 
 const half = (n: number) => Math.round(n * 2) / 2;
+// the cross-axis start of a line rounds up and a box's offset in it rounds down: a box then stays inside its line, and the next line starts past it
+const downHalf = (n: number) => Math.floor(n * 2) / 2 || 0;
 // the main-axis start rounds up, never down: rounding down could pull a box back over the one before it or a pin (M12.12 review)
 const halfUp = (n: number) => Math.ceil(n * 2) / 2 || 0; // no epsilon: a value a hair past a half pixel goes to the next one; `|| 0`: never -0
 const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
@@ -44,7 +48,7 @@ function parseOptions(raw: unknown): OptionsResult<StackOptions> {
   // an option set to undefined is absent, as the schema reads it
   const given = Object.entries(raw).filter(([, value]) => value !== undefined);
   for (const [key, value] of given) {
-    if (!KEYS.has(key)) return fail(`unknown stack option "${key}" (direction, gap, align, padding)`);
+    if (!KEYS.has(key)) return fail(`unknown stack option "${key}" (direction, gap, align, padding, wrap)`);
     const problem = option(key, value);
     if (problem) return fail(problem);
   }
@@ -62,7 +66,7 @@ type Axis = { readonly down: boolean; readonly span: number; readonly crossStart
 /** The cross-axis offset of `n` in the stack. */
 function crossOf(axis: Axis, n: LayoutNode): number {
   const slack = axis.span - (axis.down ? n.box.w : n.box.h);
-  return axis.crossStart + (axis.o.align === 'start' ? 0 : axis.o.align === 'center' ? slack / 2 : slack);
+  return axis.crossStart + downHalf(axis.o.align === 'start' ? 0 : axis.o.align === 'center' ? slack / 2 : slack);
 }
 
 /** `n` placed at `main` or, when that overlaps a pinned box, past every pinned box it would overlap (each step moves forward). */
@@ -76,24 +80,46 @@ function place(axis: Axis, n: LayoutNode, start: number, pinned: readonly Box[])
   return box;
 }
 
+/** The unpinned nodes cut into lines: one line, or a new line whenever the next box would pass `wrap` px along the stack. */
+function linesOf(loose: readonly LayoutNode[], o: StackOptions): LayoutNode[][] {
+  const down = o.direction === 'down';
+  const lines: LayoutNode[][] = [];
+  let extent = 0;
+  for (const n of loose) {
+    const size = down ? n.box.h : n.box.w;
+    const last = lines[lines.length - 1];
+    if (last === undefined || (o.wrap > 0 && extent + o.gap + size > o.wrap)) {
+      lines.push([n]);
+      extent = size;
+    } else {
+      last.push(n);
+      extent += o.gap + size;
+    }
+  }
+  return lines;
+}
+
 function run(input: LayoutInput, o: StackOptions): LayoutOutput {
   const down = o.direction === 'down';
   const nodes = [...input.nodes].sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const pinned = nodes.filter((n) => n.pinned).map((n) => n.box);
-  const loose = nodes.filter((n) => !n.pinned);
-  const axis: Axis = {
-    down,
-    o,
-    span: Math.max(0, ...loose.map((n) => (down ? n.box.w : n.box.h))),
-    crossStart: (down ? input.frame.x : input.frame.y) + o.padding,
-  };
   const boxes: { [id: string]: Box } = {};
   for (const n of nodes) if (n.pinned) boxes[n.id] = n.box;
-  let main = (down ? input.frame.y : input.frame.x) + o.padding;
-  for (const n of loose) {
-    const box = place(axis, n, main, pinned);
-    boxes[n.id] = box;
-    main = (down ? box.y + box.h : box.x + box.w) + o.gap;
+  // each line is a stack of its own, beside the one before it
+  let crossStart = halfUp((down ? input.frame.x : input.frame.y) + o.padding);
+  for (const line of linesOf(
+    nodes.filter((n) => !n.pinned),
+    o,
+  )) {
+    const span = Math.max(...line.map((n) => (down ? n.box.w : n.box.h)));
+    const axis: Axis = { down, o, span, crossStart };
+    let main = (down ? input.frame.y : input.frame.x) + o.padding;
+    for (const n of line) {
+      const box = place(axis, n, main, pinned);
+      boxes[n.id] = box;
+      main = (down ? box.y + box.h : box.x + box.w) + o.gap;
+    }
+    crossStart = halfUp(crossStart + span + o.gap);
   }
   return { boxes };
 }
@@ -105,13 +131,14 @@ function run(input: LayoutInput, o: StackOptions): LayoutOutput {
  */
 export const stackLayout: LayoutAlgorithm<StackOptions> = {
   id: 'stack',
-  version: '1',
+  version: '2', // 2: a box's cross-axis offset rounds down to the half pixel, so wrapped lines never overlap (fractional sizes only)
   schema: z
     .strictObject({
       direction: z.enum(['down', 'right']).default(DEFAULTS.direction),
       gap: z.number().finite().min(0).default(DEFAULTS.gap),
       align: z.enum(['start', 'center', 'end']).default(DEFAULTS.align),
       padding: z.number().finite().min(0).default(DEFAULTS.padding),
+      wrap: z.number().finite().min(0).default(DEFAULTS.wrap),
     })
     .default(DEFAULTS),
   capabilities: { pins: true, compound: false, runsIn: 'either' },

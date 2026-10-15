@@ -164,4 +164,10 @@ describe('snapshot builder (FR-LAY-005)', () => {
     expect(node?.hints?.['tags']).not.toBe(semantic.tags);
     expect(node?.box).toEqual(box(0, 0, 80, 40));
   });
+
+  it('FR-LAY-005: a parent cycle (a merged or corrupt file) neither hangs the snapshot nor hides the elements in it', () => {
+    const cyclic: readonly SnapshotRecord[] = [el('a', 'a0', { parentId: 'b' }), el('b', 'a1', { parentId: 'a' }), el('c', 'a2')];
+    expect(buildSnapshot(cyclic, { screenId: 's1' }).nodes.map((n) => n.id)).toEqual(['a', 'b', 'c']);
+    expect(buildSnapshot(cyclic, { screenId: 's1', scope: { containerId: 'a' } }).nodes.map((n) => n.id)).toEqual(['a', 'b']); // in a cycle each is below the other
+  });
 });

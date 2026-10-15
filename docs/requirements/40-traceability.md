@@ -118,8 +118,8 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-RDR-003 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RDR-004 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RDR-005 | M | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
-| FR-LAY-001 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/dsl/src/place/place.test.ts`, `packages/layout/src/registry.test.ts` |
-| FR-LAY-002 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
+| FR-LAY-001 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/dsl/src/place/place.test.ts` +2 |
+| FR-LAY-002 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/grid.test.ts`, `packages/layout/src/stack.test.ts` |
 | FR-LAY-003 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-004 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-005 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/snapshot.test.ts` |

@@ -22,10 +22,11 @@ describe('layout registry (FR-LAY-001)', () => {
     registerBuiltInLayouts(r);
     expect(registerLayout(r, ring, 'test')).toEqual({ ok: true });
     expect(listLayouts(r).map((a) => [a.id, a.version])).toEqual([
-      ['stack', '1'],
+      ['grid', '1'],
+      ['stack', '2'],
       ['test:ring', '2'],
     ]);
-    expect(listLayouts(r)[1]?.schema.safeParse({ radius: 0 }).success).toBe(false);
+    expect(listLayouts(r)[2]?.schema.safeParse({ radius: 0 }).success).toBe(false);
   });
 
   it('FR-LAY-001: a value without an options schema, capabilities, run or parseOptions is refused at registration', () => {
@@ -61,7 +62,7 @@ describe('layout registry (FR-LAY-001)', () => {
 
   it('FR-LAY-001: the options of a layout are published as JSON Schema', () => {
     const json = layoutOptionsJsonSchema(stackLayout) as { properties?: Record<string, { enum?: string[]; type?: string }> };
-    expect(Object.keys(json.properties ?? {}).sort()).toEqual(['align', 'direction', 'gap', 'padding']);
+    expect(Object.keys(json.properties ?? {}).sort()).toEqual(['align', 'direction', 'gap', 'padding', 'wrap']);
     expect(json.properties?.['direction']?.enum).toEqual(['down', 'right']);
     expect(json.properties?.['gap']?.type).toBe('number');
   });

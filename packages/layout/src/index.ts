@@ -4,8 +4,10 @@
  * @packageDocumentation
  */
 import type { Registry } from '@fluxion/core';
+import { gridLayout } from './grid.js';
 import { stackLayout } from './stack.js';
 
+export { type GridOptions, gridLayout } from './grid.js';
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
@@ -31,7 +33,9 @@ export type {
  * @public
  */
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>['register']> {
-  return layouts.register(stackLayout.id, stackLayout, 'core');
+  // every built-in is tried; the first refusal is what comes back (the others stay registered), else the last success
+  const results = [stackLayout, gridLayout].map((layout) => layouts.register(layout.id, layout, 'core'));
+  return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }
 
 /**

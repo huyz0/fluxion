@@ -72,6 +72,17 @@ const LAYOUT_TITLES = [
   ['M13.6', 'FR-LAY-005: two bindings for one end resolve by binding id, whatever the record order', 'layout'],
   ['M13.6', 'FR-LAY-005: hidden hides the whole subtree, and a container scope on a hidden container has nothing to lay out', 'layout'],
   ['M13.6', 'FR-LAY-005: tag hints keep strings only and are copies, and a rotated element keeps its stored footprint', 'layout'],
+  ['M13.7', 'FR-LAY-002: fixture grid-3x3 gives row-major boxes in equal cells with the configured gap', 'layout'],
+  ['M13.7', 'FR-LAY-002: align centres or ends a box in its cell, on the half-pixel grid', 'layout'],
+  ['M13.7', 'FR-LAY-002: columns, padding and the frame origin set where the grid starts and how wide a row is', 'layout'],
+  ['M13.7', 'FR-LAY-002: pinned boxes are not moved and the grid skips the cells they cover', 'layout'],
+  ['M13.7', 'FR-LAY-002: the same input gives the same boxes, and no unpinned box overlaps another, for any sizes, gaps, columns, frame and pins', 'layout'],
+  ['M13.7', 'FR-LAY-002: zero-size boxes inside a huge pin, and a pin covering most of the screen, still finish and clear the pin', 'layout'],
+  ['M13.7', 'FR-LAY-001: the grid options are checked with a message naming the bad one, and the schema agrees', 'layout'],
+  ['M13.7', 'FR-LAY-001: the built-in layouts register stack and grid under their names', 'layout'],
+  ['M13.7', 'FR-LAY-002: fixture stack-wrap starts a new line beside the first when a box would pass the wrap length', 'layout'],
+  ['M13.7', 'FR-LAY-002: wrapped lines never overlap for fractional sizes, gaps and alignments, and a pin may push a line past the wrap length', 'layout'],
+  ['M13.7', 'FR-LAY-005: a parent cycle (a merged or corrupt file) neither hangs the snapshot nor hides the elements in it', 'layout'],
   // ['M13.k', '<exact title>', 'layout', {}, 'node']
 ];
 leg('the layout algorithms, snapshot, passes and cache are tested under their requirement titles (T0)', () =>

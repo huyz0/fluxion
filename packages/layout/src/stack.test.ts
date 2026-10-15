@@ -76,7 +76,7 @@ describe('stack layout (FR-DSL-005, ADR-0030)', () => {
   });
 
   it('FR-DSL-005: options are checked, with a message naming the bad one', () => {
-    expect(stackLayout.parseOptions(undefined)).toEqual({ ok: true, value: { direction: 'down', gap: 24, align: 'start', padding: 80 } });
+    expect(stackLayout.parseOptions(undefined)).toEqual({ ok: true, value: { direction: 'down', gap: 24, align: 'start', padding: 80, wrap: 0 } });
     for (const [raw, word] of [
       [{ direction: 'up' }, 'direction'],
       [{ gap: -1 }, 'gap'],
@@ -101,5 +101,47 @@ describe('stack layout (FR-DSL-005, ADR-0030)', () => {
     expect(registries.layouts.source('stack')).toBe('core');
     // a second call by the same source replaces its own entry
     expect(registerBuiltInLayouts(registries.layouts).ok).toBe(true);
+  });
+
+  it('FR-LAY-002: fixture stack-wrap starts a new line beside the first when a box would pass the wrap length', () => {
+    const o = options({ gap: 10, padding: 0, wrap: 200 });
+    const out = stackLayout.run({ frame, nodes: [node('a', [50, 100], 1), node('b', [60, 80], 2), node('c', [70, 60], 3)] }, o);
+    // a and b fit in 190 px; c would reach 260, so it starts the next line, 60 + 10 px to the right of the first
+    expect(out.boxes).toEqual({ a: { x: 0, y: 0, w: 50, h: 100 }, b: { x: 0, y: 110, w: 60, h: 80 }, c: { x: 70, y: 0, w: 70, h: 60 } });
+    const row = stackLayout.run(
+      { frame, nodes: [node('a', [100, 50], 1), node('b', [100, 50], 2), node('c', [100, 30], 3)] },
+      options({ direction: 'right', gap: 0, padding: 0, wrap: 200, align: 'end' }),
+    );
+    expect(row.boxes).toEqual({ a: { x: 0, y: 0, w: 100, h: 50 }, b: { x: 100, y: 0, w: 100, h: 50 }, c: { x: 0, y: 50, w: 100, h: 30 } });
+    // a box longer than the wrap length stays alone on its line; wrap 0 never wraps
+    const tall = stackLayout.run({ frame, nodes: [node('a', [10, 500], 1), node('b', [10, 10], 2)] }, options({ gap: 0, padding: 0, wrap: 100 }));
+    expect(tall.boxes['b']).toEqual({ x: 10, y: 0, w: 10, h: 10 });
+    const flat = stackLayout.run({ frame, nodes: [node('a', [10, 500], 1), node('b', [10, 10], 2)] }, options({ gap: 0, padding: 0 }));
+    expect(flat.boxes['b']).toEqual({ x: 0, y: 500, w: 10, h: 10 });
+  });
+
+  it('FR-LAY-002: wrapped lines never overlap for fractional sizes, gaps and alignments, and a pin may push a line past the wrap length', () => {
+    const sizes: ReadonlyArray<readonly [number, number]> = [
+      [10.2, 40.3],
+      [7.7, 30.1],
+      [9.4, 55.5],
+      [10.2, 20.2],
+      [3.3, 70.7],
+    ];
+    for (const align of ['start', 'center', 'end'] as const) {
+      const nodes = sizes.map((s, i) => node(`n${i}`, s, i));
+      const out = stackLayout.run({ frame, nodes }, options({ gap: 0.3, padding: 0.1, wrap: 100, align }));
+      const boxes = nodes.map((n) => out.boxes[n.id] as { x: number; y: number; w: number; h: number });
+      for (const [i, a] of boxes.entries()) for (const b of boxes.slice(i + 1)) expect(overlaps(a, b)).toBe(false);
+    }
+    // wrap counts sizes and gaps only: a pin in the middle of the first line pushes b, and so c, down to 150, past the wrap length of 130
+    const pin = node('p', [50, 50], 0, { x: 0, y: 60 });
+    const out = stackLayout.run(
+      { frame, nodes: [pin, node('a', [10, 40], 1), node('b', [10, 40], 2), node('c', [10, 40], 3)] },
+      options({ gap: 0, padding: 0, wrap: 130 }),
+    );
+    expect(out.boxes['p']).toEqual(pin.box);
+    expect(out.boxes['c']?.y).toBe(150);
+    expect(out.boxes['c']?.x).toBe(0);
   });
 });

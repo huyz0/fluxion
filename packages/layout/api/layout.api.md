@@ -23,6 +23,17 @@ export type ContainerScope = {
 };
 
 // @public
+export const gridLayout: LayoutAlgorithm<GridOptions>;
+
+// @public
+export type GridOptions = {
+    readonly columns: number;
+    readonly gap: number;
+    readonly align: "start" | "center" | "end";
+    readonly padding: number;
+};
+
+// @public
 export type LaidOut = {
     readonly boxes: {
         readonly [id: string]: Box;
@@ -174,6 +185,7 @@ export type StackOptions = {
     readonly gap: number;
     readonly align: "start" | "center" | "end";
     readonly padding: number;
+    readonly wrap: number;
 };
 
 // @public
