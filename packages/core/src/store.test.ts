@@ -85,6 +85,21 @@ describe('RecordStore (ADR-0002, 03-core-engine §1)', () => {
     expect([kept, dropped]).toEqual([['one', 'two'], ['one']]);
   });
 
+  it('FR-AI-003: the revision counts committed changes, undo and redo included, and not empty or refused transactions', () => {
+    const { file, a } = fixture();
+    const store = new RecordStore(file);
+    expect(store.revision).toBe(0);
+    store.transact('same', () => {});
+    store.transact('bad', (tx) => tx.patch(a, { transform: 'bad' } as never));
+    expect(store.revision).toBe(0);
+    store.transact('one', (tx) => tx.patch(a, { name: '1' }));
+    expect(store.revision).toBe(1);
+    store.history.undo();
+    store.history.redo();
+    expect(store.revision).toBe(3);
+    expect(store.fork().revision).toBe(0);
+  });
+
   it('NFR-MNT-006: refused transactions name their label; the history origins are reserved', () => {
     const { file, a } = fixture();
     for (const origin of ['undo', 'redo'] as const) {

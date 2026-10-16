@@ -632,6 +632,7 @@ export interface Store {
     query<T>(fn: (view: ReadView) => T): ReadSignal<T>;
     readonly readOnly: boolean;
     record$(id: RecordId): ReadSignal<AnyRecord | undefined>;
+    readonly revision: number;
     readonly size: number;
     subscribe(listener: (diff: Diff, meta: TxMeta) => void): () => void;
     toDocument(): DocumentFile;

@@ -17,7 +17,7 @@ const slugSchema = z
   .describe('a new slug: lowercase letters, digits and hyphens, starting with a letter');
 
 /** A style: a stroke preset name, or token names by key. */
-const styleSchema = z.record(z.string(), z.string()).describe('token names by key, e.g. { fill: "surface", stroke: "accent" }');
+const styleSchema = z.record(z.string(), z.string()).describe('token names by key, e.g. { fill: "color.surface" }');
 const pinSchema = z.object({ x: z.number(), y: z.number(), w: z.number().positive().optional(), h: z.number().positive().optional() }).strict();
 
 /** The node keys the FluxScript reader compiles (ADR-0030), as one payload. */

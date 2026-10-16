@@ -78,3 +78,13 @@ M14.5 (schema generation and the provider-rules fixture), M14.9 (fixtures `packa
 - **`addStep` and `addInteraction`** have bounded v1 payloads (`label` and `reveal`; `on`, `do` and `to`). They are in the schema so a model can emit them, and the resolver rejects them with `FLX_PATCH_OP_INVALID` and a hint until steps and interactions compile (M18).
 - **Object depth**: the strict schema stays within five levels of nested objects, the common limit of the providers' structured output (`packages/dsl/src/patch/__fixtures__/provider-rules.ts`); arrays and unions add none.
 - **Files**: `specs/schema/flux-document.schema.json` (the document file, from the Zod records of `@fluxion/schema`), `ai-patch.schema.json` and `ai-patch.strict.schema.json` (from `@fluxion/dsl`'s patch Zod schema). Each is a Vitest file snapshot (`vitest -u` rewrites it) and a drift test fails when the code and the file differ. A FluxScript JSON Schema is not generated here (see M14.25).
+
+## Amendment (M14.10, 2026-10-16): how `ai.applyPatch` is built
+
+- **Revision.** `Store.revision` (core, additive) counts committed transactions with a non-empty diff, undo and redo included; it is 0 for a new store and for a fork. The patch's `r<N>` is this number, so a patch read at `r41` is stale after any later edit or undo. `resolvePatch` skips the check when no revision is passed; the command always passes it.
+- **Apply.** The command resolves and lowers the patch inside the transaction, applies the lowered records to a fork of the store (validation and integrity hooks run there), lays out the touched containers on the fork with `layout.arrange` (a screen: its own layout type if registered, else `layered`; a group: its own layout), then writes the fork's net change (`diffFrom`) into the real transaction. A refusal at any step leaves the store untouched.
+- **Ids** of added records are the stable ids of ADR-0031 (a node by its slug, an edge by its key), made with the document's `source.salt`, so a patch and a compile of the same text agree.
+- **Removal** of an element removes what hangs off it: its children, the connectors that end on any of them, and their bindings. `cascade` is still required when a connector ends directly on the target.
+- **Undo** restores every record exactly; the order records are listed in `toDocument()` may differ (a record put back is listed last), so equality is by record, not by file bytes.
+- **Style tokens** are the dotted names of the theme (`color.surface`); a bare word is not a colour and is rejected by document validation.
+

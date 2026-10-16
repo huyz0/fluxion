@@ -39,7 +39,9 @@ export { buildCatalog, type Catalog, type CatalogEntry, type CatalogOptions, typ
 export { CHEAT_SHEET } from './catalog/cheatsheet.js';
 export { type CatalogFormat, formatCatalog } from './catalog/format.js';
 export { catalogJsonSchema } from './catalog/json-schema.js';
+export { APPLY_PATCH_COMMAND_ID, type AppliedPatch, applyPatchCommand, registerApplyPatchCommand } from './patch/apply.js';
 export { patchJsonSchema, strictPatchJsonSchema } from './patch/json-schema.js';
+export { type LowerContext, type Lowered, lowerPatch, type Relayout } from './patch/lower.js';
 export { type PatchContext, type PatchResolution, type ResolvedOp, type ResolvedPatch, type ResolvedRef, resolvePatch } from './patch/resolve.js';
 export {
   type AiPatch,

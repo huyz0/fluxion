@@ -161,11 +161,18 @@ class Resolver {
     return target ? { op: 'update', index: i, target: ref(target), set: op.set } : undefined;
   }
 
+  /** The ids of everything inside the group `id`, at any depth. */
+  private below(id: string): string[] {
+    const kids = [...this.index.values()].filter((e) => e.parent === id).map((e) => e.id);
+    return kids.flatMap((k) => [k, ...this.below(k)]);
+  }
+
   private remove(op: Extract<PatchOp, { op: 'remove' }>, i: number): ResolvedOp | undefined {
     const target = this.lookup(op.target, ['ops', i, 'target'], ['element', 'group', 'connector']);
     if (!target) return undefined;
+    const doomed = new Set([target.id, ...this.below(target.id)]);
     const attached = [...this.index.values()]
-      .filter((e) => e.kind === 'connector' && (e.ends?.[0] === target.id || e.ends?.[1] === target.id))
+      .filter((e) => e.kind === 'connector' && (doomed.has(e.ends?.[0] ?? '') || doomed.has(e.ends?.[1] ?? '')))
       .map((e) => e.id);
     if (attached.length > 0 && op.cascade !== true)
       return this.fail(
@@ -174,7 +181,7 @@ class Resolver {
         `"${op.target}" still has ${attached.length} connector(s)`,
         'set cascade: true, or disconnect them first',
       );
-    this.index.delete(target.id);
+    for (const x of doomed) this.index.delete(x);
     for (const c of attached) this.index.delete(c);
     return { op: 'remove', index: i, target: ref(target), connectors: attached };
   }
@@ -192,6 +199,9 @@ class Resolver {
       return this.fail('FLX_PATCH_CONFLICT', path, `"${from.slug}" and "${to.slug}" are in different screens`, 'an edge joins two elements of one screen');
     const spec = label === '' || op.spec?.label !== undefined ? (op.spec ?? {}) : { ...op.spec, label };
     const anchors = { ...(from.anchor ? { from: from.anchor } : {}), ...(to.anchor ? { to: to.anchor } : {}) };
+    // later ops see the connector: it can be removed or disconnected, and a remove of its end finds it attached
+    const added: Entry = { id: `new:edge:${i}`, kind: 'connector', screen: screen.id, ends: [a.id, b.id] };
+    this.index.set(added.id, added);
     return { op: 'connect', index: i, screen: ref(screen), from: ref(a), to: ref(b), arrow, anchors, spec };
   }
 

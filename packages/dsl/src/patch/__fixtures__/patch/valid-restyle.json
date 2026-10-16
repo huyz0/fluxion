@@ -6,7 +6,7 @@
         "op": "restyle",
         "targets": ["api", "db"],
         "style": {
-          "fill": "surface"
+          "fill": "color.surface"
         }
       }
     ]

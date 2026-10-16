@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AnyCommand } from '@fluxion/core';
 import { AnyRecord } from '@fluxion/schema';
 import { CoreRegistries } from '@fluxion/core';
 import { Diagnostic } from '@fluxion/schema';
@@ -11,6 +12,7 @@ import { DiagnosticCode } from '@fluxion/schema';
 import { DiagnosticSeverity } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
+import { Registry } from '@fluxion/core';
 import { SyncHash128 } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { z } from 'zod';
@@ -24,6 +26,19 @@ export type AiPatch = {
 
 // @public
 export const aiPatchSchema: z.ZodType<AiPatch>;
+
+// @public
+export type AppliedPatch = {
+    readonly ops: number;
+    readonly changed: number;
+    readonly revision: string;
+};
+
+// @public
+export const APPLY_PATCH_COMMAND_ID = "ai.applyPatch";
+
+// @public
+export function applyPatchCommand(registries: CoreRegistries): AnyCommand;
 
 // @public
 export function buildCatalog(registries: CoreRegistries, options?: CatalogOptions): CatalogResult;
@@ -304,6 +319,26 @@ export type LocatedStyle = Located<StyleAst> & {
 };
 
 // @public
+export type LowerContext = {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly salt: string;
+    readonly hasher: SyncHash128;
+    readonly registries?: CoreRegistries;
+};
+
+// @public
+export type Lowered = {
+    readonly puts: readonly AnyRecord[];
+    readonly deletes: readonly RecordId[];
+    readonly relayout: readonly Relayout[];
+};
+
+// @public
+export function lowerPatch(patch: ResolvedPatch, ctx: LowerContext): Lowered;
+
+// @public
 export const MAX_PATCH_OPS = 200;
 
 // @public
@@ -482,6 +517,15 @@ export type ReadResult = {
 
 // @public
 export type RefKind = "screen" | "element" | "group" | "connector";
+
+// @public
+export function registerApplyPatchCommand(commands: Registry<string, AnyCommand>, registries: CoreRegistries): ReturnType<Registry<string, AnyCommand>["register"]>;
+
+// @public
+export type Relayout = {
+    readonly screenId: string;
+    readonly containerId?: string;
+};
 
 // @public
 export type Resolution = {

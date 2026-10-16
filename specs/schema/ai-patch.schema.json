@@ -60,7 +60,7 @@
                     "additionalProperties": {
                       "type": "string"
                     },
-                    "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+                    "description": "token names by key, e.g. { fill: \"color.surface\" }"
                   },
                   "pin": {
                     "description": "a box in screen units; the layout leaves it alone",
@@ -144,7 +144,7 @@
                     "additionalProperties": {
                       "type": "string"
                     },
-                    "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+                    "description": "token names by key, e.g. { fill: \"color.surface\" }"
                   },
                   "pin": {
                     "description": "a box in screen units; the layout leaves it alone",
@@ -233,7 +233,7 @@
                     "additionalProperties": {
                       "type": "string"
                     },
-                    "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+                    "description": "token names by key, e.g. { fill: \"color.surface\" }"
                   },
                   "route": {
                     "type": "string",
@@ -425,7 +425,7 @@
                 "additionalProperties": {
                   "type": "string"
                 },
-                "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+                "description": "token names by key, e.g. { fill: \"color.surface\" }"
               }
             },
             "required": [

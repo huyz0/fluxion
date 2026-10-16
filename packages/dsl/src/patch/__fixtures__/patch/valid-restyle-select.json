@@ -11,7 +11,7 @@
           }
         },
         "style": {
-          "fill": "surface"
+          "fill": "color.surface"
         }
       }
     ]

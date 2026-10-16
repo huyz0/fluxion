@@ -80,6 +80,8 @@ export interface Store {
   readonly history: History;
   /** Whether the store refuses every write (policy `read-only`; TX_READ_ONLY). */
   readonly readOnly: boolean;
+  /** Committed transactions with a non-empty diff, undo and redo included (0 for a new store or a fork); the AI patch prints it as `r<N>` (ADR-0035). */
+  readonly revision: number;
   /**
    * A store that starts from this one's current state (O(1), copy-on-write, ADR-0014 §Forks): writes
    * to it never reach this store, and this store's later writes are not visible in it. A fork is a
@@ -152,6 +154,7 @@ export class RecordStore implements Store {
   readonly #membership: WritableSignal<number> = writable(0);
   #memberships = 0;
   #open: WorkingCopy | undefined;
+  #revision = 0;
   // referential errors the document already has (computed on first use), so they do not block
   // unrelated transactions; replaced by the post-state's after each commit
   #knownErrors: Map<string, Diagnostic> | undefined;
@@ -187,6 +190,9 @@ export class RecordStore implements Store {
     return this.#indexCache;
   }
 
+  get revision(): number {
+    return this.#revision;
+  }
   get readOnly(): boolean {
     return this.#options.policy === 'read-only';
   }
@@ -317,6 +323,7 @@ export class RecordStore implements Store {
       [...diff.puts.values()].map((p) => p.after),
       [...diff.deletes.keys()],
     );
+    this.#revision += 1;
     const meta: TxMeta = { ...options, label, origin: options.origin ?? 'user' };
     // history records inside the commit, before any subscriber can react (M3.11 review F1)
     this.#history.record(diff, meta);

@@ -12,7 +12,7 @@ import type { RefKind } from './working-index.js';
 export type PatchContext = {
   /** The document's records, keyed by id. */
   readonly records: { readonly [id: string]: AnyRecord };
-  /** The document revision as `r<N>` (ADR-0035); a patch with a different `baseRevision` is stale. */
+  /** The document revision as `r<N>` (ADR-0035); a patch with a different `baseRevision` is stale; without it the stale check is skipped. */
   readonly revision?: string;
   /** Shape and layout lookups; without them a shape or layout name is not checked. */
   readonly registries?: CoreRegistries;
