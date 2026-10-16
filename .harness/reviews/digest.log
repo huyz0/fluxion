@@ -671,3 +671,4 @@ M14.17	8a3b62a59c75a34a0fcc57206e818fc3b95b12d16e5633825ce6e1105f8d8dc1	r1	pass	
 M14.18	98cc99529afc7644939563dd0b4f7ec89d11c3bfc8fd00e30ebe9f68a41ce442	r1	pass	claude:reviewer	2 findings
 M14.19	d6bea9a9b0a12fcd1a564110bc28b6f0678d5b995c2e7d289cb874f21c7bec0c	r1	pass	claude:reviewer	0 findings
 M14.20	79f95287c9991d6a6618e4a7a6478b7854677cfb43bf807f105fd52df5a22d41	r1	pass	claude:sonnet-5.5	0 findings
+M14.21	529cb1e36fbf8b9b96fb5f0ee39b683eb62b6b987a85e15bcb013370f10ce0dd	r1	pass	claude:reviewer-subagent	1 findings
