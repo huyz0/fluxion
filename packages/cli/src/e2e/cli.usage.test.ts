@@ -25,7 +25,7 @@ describe('fluxion usage (FR-CLI-001, ADR-0147)', { timeout: E2E_TIMEOUT }, () =>
     // a command's own help
     const render = fluxion(['render', '--help']);
     expect(render.status).toBe(0);
-    expect(render.stdout).toContain('Usage: fluxion render <file> -o <out.html>');
+    expect(render.stdout).toContain('Usage: fluxion render <file> -o <out.html | out-dir>');
   });
 
   it('FR-CLI-001: an unknown flag exits 2', () => {

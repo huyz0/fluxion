@@ -5,9 +5,10 @@ import { writeFile } from 'node:fs/promises';
 import { builtinRegistries } from '@fluxion/render';
 import { renderDocumentToHtml } from '@fluxion/render/ssr';
 import { type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
-import { type Command, internal, io, type Outcome, usage } from './command.js';
+import { type Command, internal, io, type Outcome, unsupported, usage } from './command.js';
 import { hostRegistries } from './host.js';
 import { measurerFor } from './measurer.js';
+import { type Launcher, playwrightLauncher, renderPngs } from './render-png.js';
 import { readInput } from './validate.js';
 
 /**
@@ -22,8 +23,39 @@ function screenProblem(document: DocumentFile, wanted: readonly string[], file: 
   return undefined;
 }
 
+/** What `render` was asked for. */
+type Request = {
+  readonly file: string;
+  /** The HTML file, or for png the directory of the images. */
+  readonly out: string;
+  readonly format: 'html' | 'png';
+  readonly screens: readonly string[] | undefined;
+  readonly launch: Launcher;
+};
+
+/** What the page is written as: the files or the one HTML file, and the reply's result; or the outcome that says why not. */
+async function emit(
+  { html, drawn, out, format, launch }: { html: string; drawn: readonly string[]; out: string; format: 'html' | 'png'; launch: Launcher },
+  log: (text: string) => void,
+): Promise<Outcome | { out: string; screens: number; files?: readonly string[] }> {
+  if (format === 'png') {
+    const files = await renderPngs(html, drawn, out, launch);
+    if (!Array.isArray(files)) return files as Outcome;
+    log(`${out}: ${files.length} PNG${files.length === 1 ? '' : 's'}\n`);
+    return { out, screens: files.length, files };
+  }
+  try {
+    await writeFile(out, html, 'utf8');
+  } catch (e) {
+    return io(`cannot write ${out}: ${e instanceof Error ? e.message : String(e)}`, ['argv']);
+  }
+  // the renderer says what it drew; the markup is not parsed for it (M4 final F2)
+  log(`${out}: ${drawn.length} screen${drawn.length === 1 ? '' : 's'}\n`);
+  return { out, screens: drawn.length };
+}
+
 /** Renders the document at `file` to `out`. */
-async function render(file: string, out: string, screens: readonly string[] | undefined, log: (text: string) => void): Promise<Outcome> {
+async function render({ file, out, format, screens, launch }: Request, log: (text: string) => void): Promise<Outcome> {
   // the bundled packs are the CLI's own: one failing to register is an internal error (ADR-0017)
   const host = hostRegistries();
   if (host.problems.length > 0) return internal(host.problems.map((d) => d.message).join('; '));
@@ -40,29 +72,24 @@ async function render(file: string, out: string, screens: readonly string[] | un
     measurer: measurerFor(parsed.value.document),
     ...(screens === undefined ? {} : { screens: screens as readonly RecordId[] }),
   });
-  try {
-    await writeFile(out, html, 'utf8');
-  } catch (e) {
-    return io(`cannot write ${out}: ${e instanceof Error ? e.message : String(e)}`, ['argv']);
-  }
-  // the renderer says what it drew; the markup is not parsed for it (M4 final F2)
-  const count = drawn.length;
-  log(`${out}: ${count} screen${count === 1 ? '' : 's'}\n`);
-  return { exitCode: 0, diagnostics: parsed.value.diagnostics, result: { out, screens: count } };
+  const written = await emit({ html, drawn, out, format, launch }, log);
+  return 'exitCode' in written ? written : { exitCode: 0, diagnostics: parsed.value.diagnostics, result: written };
 }
 
 /** The `render` command. */
 export const RENDER: Command = {
-  summary: 'Render a document to a static HTML file',
-  usage: 'render <file> -o <out.html> [--screen <id>]',
-  options: { out: { type: 'string', short: 'o' }, screen: { type: 'string', multiple: true } },
+  summary: 'Render a document to a static HTML file, or a PNG per screen',
+  usage: 'render <file> -o <out.html | out-dir> [--format html|png] [--screen <id>]',
+  options: { out: { type: 'string', short: 'o' }, format: { type: 'string' }, screen: { type: 'string', multiple: true } },
   run: ({ values, positionals }, out) => {
     const [file, ...extra] = positionals;
     if (file === undefined) return usage('render needs a document file');
     if (extra.length > 0) return usage(`render takes one file, got ${positionals.length}`);
     const target = values['out'];
     if (typeof target !== 'string' || target === '') return usage('render needs -o <out.html>');
+    const format = values['format'] ?? 'html';
+    if (format !== 'html' && format !== 'png') return unsupported(`render writes html or png, not "${String(format)}"`, ['argv']);
     const screens = values['screen'] as string[] | undefined;
-    return render(file, target, screens, out.stderr);
+    return render({ file, out: target, format, screens, launch: playwrightLauncher }, out.stderr);
   },
 };

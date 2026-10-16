@@ -60,7 +60,10 @@ function reply<C extends z.ZodType, R extends z.ZodType>(command: C, result: R) 
 export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
   fluxion: reply(z.null(), z.union([helpResult, versionResult])),
   validate: reply(z.literal('validate'), z.union([z.object({ diagnostics: z.array(diagnosticSchema) }).strict(), helpResult, versionResult])),
-  render: reply(z.literal('render'), z.union([z.object({ out: z.string(), screens: z.number().int().min(0) }).strict(), helpResult, versionResult])),
+  render: reply(
+    z.literal('render'),
+    z.union([z.object({ out: z.string(), screens: z.number().int().min(0), files: z.array(z.string()).optional() }).strict(), helpResult, versionResult]),
+  ),
   convert: reply(
     z.literal('convert'),
     z.union([

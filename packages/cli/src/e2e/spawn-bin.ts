@@ -9,9 +9,13 @@ export const BIN: string = fileURLToPath(new URL('../../dist/bin.js', import.met
 export const REPO: string = fileURLToPath(new URL('../../../../', import.meta.url));
 
 /** Runs the built bin with `args` in `cwd` (default: the repo root). */
-export function fluxion(args: readonly string[], cwd: string = REPO): { status: number | null; stdout: string; stderr: string } {
+export function fluxion(
+  args: readonly string[],
+  cwd: string = REPO,
+  env: NodeJS.ProcessEnv = process.env,
+): { status: number | null; stdout: string; stderr: string } {
   if (!existsSync(BIN)) throw new Error(`${BIN} is missing: run pnpm run build first`);
-  const r = spawnSync(process.execPath, [BIN, ...args], { cwd, encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [BIN, ...args], { cwd, env, encoding: 'utf8' });
   return { status: r.status, stdout: r.stdout, stderr: r.stderr };
 }
 
