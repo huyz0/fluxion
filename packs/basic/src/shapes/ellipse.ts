@@ -10,6 +10,7 @@ export const ellipse: ShapeDef = {
   id: 'basic:ellipse',
   outline: { path: 'M 0 {h/2} A {w/2} {h/2} 0 1 1 {w} {h/2} A {w/2} {h/2} 0 1 1 0 {h/2} Z' },
   defaultSize: { w: 140, h: 100 },
+  describe: 'An ellipse or circle, for start and end points, states and actors.',
   keywords: ['ellipse', 'circle', 'oval'],
   category: 'basic',
   license: 'MIT',

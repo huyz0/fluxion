@@ -147,6 +147,7 @@
                   "FLX_REPAIRED_PARENT",
                   "FLX_REPAIRED_INDEX",
                   "FLX_REGISTRY_DUPLICATE",
+                  "FLX_REGISTRY_UNDESCRIBED",
                   "FLX_COMMAND_UNKNOWN",
                   "FLX_COMMAND_DISABLED",
                   "FLX_COMMAND_ARGS",

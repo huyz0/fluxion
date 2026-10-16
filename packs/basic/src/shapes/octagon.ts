@@ -15,6 +15,7 @@ export const octagon: ShapeDef = {
   outline: { path: `M {${q}} 0 L {w - ${q}} 0 L {w} {${q}} L {w} {h - ${q}} L {w - ${q}} {h} L {${q}} {h} L 0 {h - ${q}} L 0 {${q}} Z` },
   handles: [{ param: 'cut', x: q, y: '0' }],
   defaultSize: { w: 120, h: 120 },
+  describe: 'An eight-sided shape, for stop signs and terminators.',
   keywords: ['octagon', 'stop'],
   category: 'basic',
   license: 'MIT',

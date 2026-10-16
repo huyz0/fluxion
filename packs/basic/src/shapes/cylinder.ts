@@ -17,6 +17,7 @@ export const cylinder: ShapeDef = {
   handles: [{ param: 'depth', x: 'w/2', y: `2 * ${e}` }],
   textRegions: [{ name: 'body', x: 0.05, y: 0.35, w: 0.9, h: 0.5 }],
   defaultSize: { w: 120, h: 140 },
+  describe: 'A can: the classic database or storage symbol.',
   keywords: ['cylinder', 'database', 'storage'],
   category: 'basic',
   license: 'MIT',

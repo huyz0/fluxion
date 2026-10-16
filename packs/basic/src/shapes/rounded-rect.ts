@@ -17,6 +17,7 @@ export const roundedRect: ShapeDef = {
   },
   handles: [{ param: 'r', x: q, y: '0' }],
   defaultSize: { w: 160, h: 100 },
+  describe: 'A rectangle with rounded corners, a friendly box for steps and cards.',
   keywords: ['rounded', 'rectangle', 'card', 'button'],
   category: 'basic',
   license: 'MIT',

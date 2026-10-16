@@ -26,6 +26,7 @@ export const freehand: ShapeDef = {
   outline: { points: 'stroke', smooth: true },
   defaultSize: { w: 160, h: 80 },
   defaultStyle: { stroke: { cap: 'round', join: 'round' } },
+  describe: 'A hand-drawn stroke along points the author draws.',
   keywords: ['freehand', 'pen', 'scribble', 'drawing'],
   category: 'basic',
   license: 'MIT',

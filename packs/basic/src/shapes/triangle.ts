@@ -13,6 +13,7 @@ export const triangle: ShapeDef = {
   outline: { path: 'M {w * apex} 0 L {w} {h} L 0 {h} Z' },
   handles: [{ param: 'apex', x: 'w * apex', y: '0' }],
   defaultSize: { w: 120, h: 100 },
+  describe: 'A triangle, for warnings, hierarchies and play buttons.',
   keywords: ['triangle', 'warning'],
   category: 'basic',
   license: 'MIT',

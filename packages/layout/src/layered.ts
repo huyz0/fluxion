@@ -123,6 +123,7 @@ function run(input: LayoutInput, o: LayeredOptions): LayoutOutput {
  */
 export const layeredLayout: LayoutAlgorithm<LayeredOptions> = {
   id: 'layered',
+  describe: 'Flow layout by layers along the edges, for diagrams with direction.',
   version: '1',
   schema: z
     .strictObject({

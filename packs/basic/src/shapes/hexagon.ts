@@ -13,6 +13,7 @@ export const hexagon: ShapeDef = {
   outline: { path: 'M {w * inset} 0 L {w - w * inset} 0 L {w} {h/2} L {w - w * inset} {h} L {w * inset} {h} L 0 {h/2} Z' },
   handles: [{ param: 'inset', x: 'w * inset', y: '0' }],
   defaultSize: { w: 140, h: 120 },
+  describe: 'A six-sided shape, for preparation steps, services and cells.',
   keywords: ['hexagon', 'preparation'],
   category: 'basic',
   license: 'MIT',

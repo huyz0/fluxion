@@ -43,16 +43,44 @@ export interface Registry<K extends string, V> {
   readonly changes$: ReadSignal<number>;
 }
 
+/** The longest `describe` line (FR-AI-002): a catalog line must stay short. */
+const MAX_DESCRIBE = 160;
+
+/**
+ * The one-line description a registered value carries in its `describe` field (FR-AI-002): plain text on one line, at most 160
+ * characters. `undefined` when the value has none or it is not such a line.
+ *
+ * @public
+ */
+export function describeOf(value: unknown): string | undefined {
+  const text = typeof value === 'object' && value !== null ? (value as { readonly describe?: unknown }).describe : undefined;
+  if (typeof text !== 'string') return undefined;
+  const line = text.trim();
+  return line.length > 0 && line.length <= MAX_DESCRIBE && !/[\r\n]/.test(line) ? line : undefined;
+}
+
+/**
+ * How a registry behaves.
+ *
+ * @public
+ */
+export type RegistryOptions = {
+  /** Refuse a value with no {@link describeOf} line with `FLX_REGISTRY_UNDESCRIBED` (a dev host's check, FR-AI-002). */
+  readonly requireDescribe?: boolean;
+};
+
 type Entry<V> = { readonly value: V; readonly source: PluginId };
 
 class MapRegistry<K extends string, V> implements Registry<K, V> {
   readonly name: string;
+  readonly #requireDescribe: boolean;
   readonly #entries = new Map<K, Entry<V>>();
   readonly #changes: WritableSignal<number> = writable(0);
   #version = 0;
 
-  constructor(name: string) {
+  constructor(name: string, options: RegistryOptions) {
     this.name = name;
+    this.#requireDescribe = options.requireDescribe === true;
   }
 
   get changes$(): ReadSignal<number> {
@@ -60,6 +88,15 @@ class MapRegistry<K extends string, V> implements Registry<K, V> {
   }
 
   register(key: K, value: V, source: PluginId): Result<Disposable, Diagnostic> {
+    if (this.#requireDescribe && describeOf(value) === undefined) {
+      return err({
+        code: 'FLX_REGISTRY_UNDESCRIBED',
+        severity: 'error',
+        path: jsonPointer(['registries', this.name, key]),
+        message: `"${key}" has no one-line describe, which ${this.name} requires`,
+        hint: `give ${source}'s "${key}" a describe of one line, at most ${MAX_DESCRIBE} characters`,
+      });
+    }
     const held = this.#entries.get(key);
     if (held && held.source !== source) {
       return err({
@@ -106,6 +143,6 @@ class MapRegistry<K extends string, V> implements Registry<K, V> {
  *
  * @public
  */
-export function createRegistry<K extends string, V>(name: string): Registry<K, V> {
-  return new MapRegistry<K, V>(name);
+export function createRegistry<K extends string, V>(name: string, options: RegistryOptions = {}): Registry<K, V> {
+  return new MapRegistry<K, V>(name, options);
 }

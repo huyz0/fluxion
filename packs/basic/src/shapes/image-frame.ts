@@ -17,6 +17,7 @@ export const imageFrame: ShapeDef = {
     },
   ],
   defaultSize: { w: 160, h: 120 },
+  describe: 'A rectangular frame that holds an image.',
   keywords: ['image', 'picture', 'photo', 'placeholder'],
   category: 'basic',
   license: 'MIT',

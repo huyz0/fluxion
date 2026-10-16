@@ -35,6 +35,7 @@ export { type ValidateInput, type ValidateOptions, type ValidateResult, validate
  * @public
  */
 export const VERSION: string = '0.0.0';
+export { buildCatalog, type Catalog, type CatalogEntry, type CatalogOptions, type CatalogResult } from './catalog/catalog.js';
 export { patchJsonSchema, strictPatchJsonSchema } from './patch/json-schema.js';
 export {
   type AiPatch,

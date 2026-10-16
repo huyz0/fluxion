@@ -153,6 +153,7 @@ export type LayeredOptions = {
 // @public
 export interface LayoutAlgorithm<O> {
     readonly capabilities: LayoutCapabilities;
+    readonly describe?: string;
     readonly id: string;
     parseOptions(raw: unknown): OptionsResult<O>;
     run(input: LayoutInput, options: O, ctx?: LayoutCtx): LayoutOutput;

@@ -22,6 +22,7 @@ export const callout: ShapeDef = {
   // the body shrinks as the tail grows: the region follows the param (ADR-0018, M5.11 review F2)
   textRegions: [{ name: 'body', x: 0.05, y: 0.05, w: 0.9, h: '1 - tail - 0.1' }],
   defaultSize: { w: 180, h: 110 },
+  describe: 'A speech-bubble box with a pointer, for comments and annotations.',
   keywords: ['callout', 'speech', 'bubble', 'comment'],
   category: 'basic',
   license: 'MIT',

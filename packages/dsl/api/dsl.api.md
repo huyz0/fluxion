@@ -26,6 +26,42 @@ export type AiPatch = {
 export const aiPatchSchema: z.ZodType<AiPatch>;
 
 // @public
+export function buildCatalog(registries: CoreRegistries, options?: CatalogOptions): CatalogResult;
+
+// @public
+export type Catalog = {
+    readonly shapes: readonly CatalogEntry[];
+    readonly connectors: readonly CatalogEntry[];
+    readonly markers: readonly CatalogEntry[];
+    readonly layouts: readonly CatalogEntry[];
+    readonly themes: readonly CatalogEntry[];
+    readonly effects: readonly CatalogEntry[];
+    readonly transitions: readonly CatalogEntry[];
+};
+
+// @public
+export type CatalogEntry = {
+    readonly id: string;
+    readonly describe: string;
+    readonly source: string;
+    readonly detail?: {
+        readonly [key: string]: unknown;
+    };
+};
+
+// @public
+export type CatalogOptions = {
+    readonly detail?: "summary" | "full";
+    readonly pack?: string;
+};
+
+// @public
+export type CatalogResult = {
+    readonly catalog: Catalog;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
 export function compile(text: string, options: CompileOptions): CompileResult;
 
 // @public

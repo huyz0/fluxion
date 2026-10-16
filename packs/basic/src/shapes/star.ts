@@ -24,6 +24,7 @@ export const star: ShapeDef = {
   },
   handles: [{ param: 'inner', x: 'w/2 + inner * w/2 * sin(pi / points)', y: 'h/2 - inner * h/2 * cos(pi / points)' }],
   defaultSize: { w: 120, h: 120 },
+  describe: 'A star with a chosen number of points, for ratings and highlights.',
   keywords: ['star', 'rating', 'favourite'],
   category: 'basic',
   license: 'MIT',

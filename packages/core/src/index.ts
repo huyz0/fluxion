@@ -17,7 +17,13 @@ export {
   executeCommand,
   type MessageDescriptor,
 } from './commands.js';
-export { CORE_REGISTRY_NAMES, type CoreRegistries, type CoreRegistryName, createCoreRegistries } from './core-registries.js';
+export {
+  CORE_REGISTRY_NAMES,
+  type CoreRegistries,
+  type CoreRegistryName,
+  createCoreRegistries,
+  DESCRIBED_REGISTRY_NAMES,
+} from './core-registries.js';
 export type { CoreError, CoreErrorCode } from './errors.js';
 export { type BinaryOp, type Expr, type ExprBudget, type ExprScope, type ExprWhere, evaluateExpr, parseExpr, runExpr } from './expr/expr.js';
 export { applyFork } from './fork.js';
@@ -29,7 +35,7 @@ export type { IndexName } from './indexes.js';
 export { type ConsoleLike, consoleSink, createLogger, type LogEntry, type LoggerOptions, type NamespacedLogger, namespaceEnabled } from './logger.js';
 export { MARKER_SIZE, type MarkerDef, markerDefSchema, markerTrim, parseMarkerDef } from './marker.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, SyncHash128, TextMeasurer, TextMetrics } from './ports/ports.js';
-export { createRegistry, type Disposable, type PluginId, type Registry } from './registry.js';
+export { createRegistry, type Disposable, describeOf, type PluginId, type Registry, type RegistryOptions } from './registry.js';
 export { screenRecordsToCopy } from './screens/screen-commands.js';
 export { nextVisibleScreen } from './screens/screen-order.js';
 export { type HandleSubject, handleValue, type ParamHandle, shapeHandles } from './shape/handles.js';

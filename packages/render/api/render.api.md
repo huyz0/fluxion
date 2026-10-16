@@ -247,7 +247,7 @@ export type RecordedFace = {
 export function recordFaceMetrics(bytes: Uint8Array, face: RecordedFace): Promise<FaceMetrics>;
 
 // @public
-export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): void;
+export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): ReturnType<Registry<string, MarkerDef>["register"]>;
 
 // @public
 export function registerBuiltinViews(registries: RenderRegistries): void;

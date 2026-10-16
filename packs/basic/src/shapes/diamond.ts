@@ -11,6 +11,7 @@ export const diamond: ShapeDef = {
   id: 'basic:diamond',
   outline: { path: 'M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z' },
   defaultSize: { w: 140, h: 100 },
+  describe: 'A rhombus, the decision point of a flowchart.',
   keywords: ['diamond', 'rhombus', 'decision'],
   category: 'basic',
   license: 'MIT',

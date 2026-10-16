@@ -20,6 +20,8 @@ export type MarkerDef = {
   readonly inset: number;
   /** Filled with the stroke colour; otherwise stroked as wide as the connector (an open marker). */
   readonly filled: boolean;
+  /** One line saying what the marker looks like, for the AI catalog (FR-AI-002). */
+  readonly describe?: string;
 };
 
 /**
@@ -67,11 +69,13 @@ function pathProblem(path: string): string | undefined {
  * @public
  */
 export const markerDefSchema: z.ZodType<MarkerDef> = checkedSchema<MarkerDef>()(
-  z.object({ id: z.string().min(1), path: z.string().min(1), inset: z.number().min(0).max(10), filled: z.boolean() }).superRefine((def, ctx) => {
-    // an empty path is already refused for its length
-    const problem = def.path === '' ? undefined : pathProblem(def.path);
-    if (problem !== undefined) ctx.addIssue({ code: 'custom', path: ['path'], message: problem });
-  }),
+  z
+    .object({ id: z.string().min(1), path: z.string().min(1), inset: z.number().min(0).max(10), filled: z.boolean(), describe: z.string().optional() })
+    .superRefine((def, ctx) => {
+      // an empty path is already refused for its length
+      const problem = def.path === '' ? undefined : pathProblem(def.path);
+      if (problem !== undefined) ctx.addIssue({ code: 'custom', path: ['path'], message: problem });
+    }),
 );
 
 /**

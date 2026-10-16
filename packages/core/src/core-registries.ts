@@ -3,7 +3,7 @@
 import type { AnyCommand } from './commands.js';
 import type { IntegrityHook } from './hook-types.js';
 import type { MarkerDef } from './marker.js';
-import { createRegistry, type Registry } from './registry.js';
+import { createRegistry, type Registry, type RegistryOptions } from './registry.js';
 import type { ShapeDef } from './shape/shape-def.js';
 
 /**
@@ -58,10 +58,23 @@ export type CoreRegistries = {
 };
 
 /**
- * A fresh set of empty core registries.
+ * The registries whose entries appear in the AI catalog (FR-AI-002), so a dev host can require a `describe` on each.
  *
  * @public
  */
-export function createCoreRegistries(): CoreRegistries {
-  return Object.fromEntries(CORE_REGISTRY_NAMES.map((name) => [name, createRegistry<string, unknown>(name)])) as CoreRegistries;
+export const DESCRIBED_REGISTRY_NAMES: readonly CoreRegistryName[] = ['shapeDefs', 'markers', 'routers', 'layouts', 'effects', 'transitions'];
+
+/**
+ * A fresh set of empty core registries; `requireDescribe` makes the catalog registries refuse an entry with no `describe` line (a dev
+ * host's check, FR-AI-002).
+ *
+ * @public
+ */
+export function createCoreRegistries(options: RegistryOptions = {}): CoreRegistries {
+  return Object.fromEntries(
+    CORE_REGISTRY_NAMES.map((name) => [
+      name,
+      createRegistry<string, unknown>(name, { requireDescribe: options.requireDescribe === true && DESCRIBED_REGISTRY_NAMES.includes(name) }),
+    ]),
+  ) as CoreRegistries;
 }

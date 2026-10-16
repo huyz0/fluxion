@@ -16,6 +16,7 @@ export const note: ShapeDef = {
   decorations: [{ path: `M {w - ${f}} 0 V {${f}} H {w}` }],
   handles: [{ param: 'fold', x: `w - ${f}`, y: '0' }],
   defaultSize: { w: 140, h: 140 },
+  describe: 'A sticky note with a folded corner, for remarks.',
   keywords: ['note', 'sticky', 'comment'],
   category: 'basic',
   license: 'MIT',

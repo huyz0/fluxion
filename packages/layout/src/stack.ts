@@ -132,6 +132,7 @@ function run(input: LayoutInput, o: StackOptions): LayoutOutput {
  */
 export const stackLayout: LayoutAlgorithm<StackOptions> = {
   id: 'stack',
+  describe: 'Boxes in one row or column, with an even gap.',
   version: '2', // 2: a box's cross-axis offset rounds down to the half pixel, so wrapped lines never overlap (fractional sizes only)
   schema: z
     .strictObject({

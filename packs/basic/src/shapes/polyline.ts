@@ -24,6 +24,7 @@ export const polyline: ShapeDef = {
   },
   outline: { points: 'vertices' },
   defaultSize: { w: 160, h: 80 },
+  describe: 'An open or closed shape through points the author chooses.',
   keywords: ['polyline', 'zigzag', 'path'],
   category: 'basic',
   license: 'MIT',

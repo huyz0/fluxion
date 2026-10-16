@@ -12,13 +12,31 @@ import type { MarkerDef } from '@fluxion/sdk';
 export const basicMarkers: readonly MarkerDef[] = [
   // an open arrowhead: the line runs to its tip; the vertex sits half a unit back, so the stroke's bevel
   // (about 0.45 units beyond it at this angle) ends at the tip (M5.36 review F1)
-  { id: 'basic:open-arrow', path: 'M0 0 L9.5 5 L0 10', inset: 0, filled: false },
+  { id: 'basic:open-arrow', path: 'M0 0 L9.5 5 L0 10', inset: 0, filled: false, describe: 'An open arrowhead (two strokes meeting at the tip).' },
   // exactly one: two bars across the line
-  { id: 'basic:crows-foot-one', path: 'M5 0 L5 10 M8 0 L8 10', inset: 0, filled: false },
+  { id: 'basic:crows-foot-one', path: 'M5 0 L5 10 M8 0 L8 10', inset: 0, filled: false, describe: 'Entity-relationship: exactly one (two bars).' },
   // one or many: a crow's foot opening onto the entity, with a bar
-  { id: 'basic:crows-foot-many', path: 'M4 5 L10 0 M4 5 L10 10 M2 0 L2 10', inset: 0, filled: false },
+  {
+    id: 'basic:crows-foot-many',
+    path: 'M4 5 L10 0 M4 5 L10 10 M2 0 L2 10',
+    inset: 0,
+    filled: false,
+    describe: "Entity-relationship: one or many (a crow's foot and a bar).",
+  },
   // zero or one: a ring, then a bar
-  { id: 'basic:crows-foot-zero-one', path: 'M0 5 A2 2 0 1 1 4 5 A2 2 0 1 1 0 5 M4 5 L10 5 M7 0 L7 10', inset: 10, filled: false },
+  {
+    id: 'basic:crows-foot-zero-one',
+    path: 'M0 5 A2 2 0 1 1 4 5 A2 2 0 1 1 0 5 M4 5 L10 5 M7 0 L7 10',
+    inset: 10,
+    filled: false,
+    describe: 'Entity-relationship: zero or one (a ring and a bar).',
+  },
   // zero or many: a ring, then a crow's foot
-  { id: 'basic:crows-foot-zero-many', path: 'M0 5 A2 2 0 1 1 4 5 A2 2 0 1 1 0 5 M4 5 L10 5 M6 5 L10 0 M6 5 L10 10', inset: 10, filled: false },
+  {
+    id: 'basic:crows-foot-zero-many',
+    path: 'M0 5 A2 2 0 1 1 4 5 A2 2 0 1 1 0 5 M4 5 L10 5 M6 5 L10 0 M6 5 L10 10',
+    inset: 10,
+    filled: false,
+    describe: "Entity-relationship: zero or many (a ring and a crow's foot).",
+  },
 ];

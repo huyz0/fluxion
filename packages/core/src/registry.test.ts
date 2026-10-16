@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CORE_REGISTRY_NAMES, createCoreRegistries } from './core-registries.js';
-import { createRegistry } from './registry.js';
+import { CORE_REGISTRY_NAMES, createCoreRegistries, DESCRIBED_REGISTRY_NAMES } from './core-registries.js';
+import { createRegistry, type Registry } from './registry.js';
 import { effect } from './signals.js';
 
 describe('registries (03-core-engine §4)', () => {
@@ -64,5 +64,18 @@ describe('registries (03-core-engine §4)', () => {
     // independent instances
     regs.effects.register('x', 1, 'core');
     expect(regs.markers.get('x')).toBeUndefined();
+  });
+});
+
+describe('registries that require a describe (FR-AI-002)', () => {
+  it('FR-AI-002: requireDescribe holds exactly the catalog registries to a describe line, and the others are left alone', () => {
+    const registries = createCoreRegistries({ requireDescribe: true });
+    for (const name of CORE_REGISTRY_NAMES) {
+      const registry = registries[name] as unknown as Registry<string, unknown>;
+      const refused = registry.register('probe', { id: 'probe' }, 'test');
+      expect([name, !refused.ok]).toEqual([name, DESCRIBED_REGISTRY_NAMES.includes(name)]);
+      const described = registry.register('probe2', { id: 'probe2', describe: 'A probe for the test.' }, 'test');
+      expect([name, described.ok]).toEqual([name, true]);
+    }
   });
 });

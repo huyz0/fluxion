@@ -24,6 +24,7 @@ export const blockArrow: ShapeDef = {
     { param: 'shaft', x: '0', y: edge },
   ],
   defaultSize: { w: 160, h: 80 },
+  describe: 'A thick arrow block pointing right, for flows, steps and calls to action.',
   keywords: ['arrow', 'next', 'direction'],
   category: 'basic',
   license: 'MIT',

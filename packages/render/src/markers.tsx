@@ -13,22 +13,24 @@ import type { CSSProperties, ReactNode } from 'react';
  */
 export const BUILTIN_MARKERS: readonly MarkerDef[] = [
   // a notched arrowhead: the line stops at the notch
-  { id: 'arrow', path: 'M0 0 L10 5 L0 10 L3 5 Z', inset: 7, filled: true },
-  { id: 'triangle', path: 'M0 0 L10 5 L0 10 Z', inset: 10, filled: true },
-  { id: 'diamond', path: 'M0 5 L5 0 L10 5 L5 10 Z', inset: 10, filled: true },
-  { id: 'circle', path: 'M0 5 A5 5 0 1 1 10 5 A5 5 0 1 1 0 5 Z', inset: 10, filled: true },
+  { id: 'arrow', path: 'M0 0 L10 5 L0 10 L3 5 Z', inset: 7, filled: true, describe: 'A filled arrowhead with a notched back, the default connector end.' },
+  { id: 'triangle', path: 'M0 0 L10 5 L0 10 Z', inset: 10, filled: true, describe: 'A filled triangle pointing along the connector.' },
+  { id: 'diamond', path: 'M0 5 L5 0 L10 5 L5 10 Z', inset: 10, filled: true, describe: 'A filled diamond, for aggregation and composition ends.' },
+  { id: 'circle', path: 'M0 5 A5 5 0 1 1 10 5 A5 5 0 1 1 0 5 Z', inset: 10, filled: true, describe: 'A filled circle at the end of the connector.' },
   // a bar across the end: the line runs up to it
-  { id: 'bar', path: 'M8 0 L10 0 L10 10 L8 10 Z', inset: 2, filled: true },
+  { id: 'bar', path: 'M8 0 L10 0 L10 10 L8 10 Z', inset: 2, filled: true, describe: 'A bar across the end of the connector.' },
 ];
 
 /**
  * Register the built-in markers into `markers` (source `core`); an id another source already holds
- * keeps that source's marker.
+ * keeps that source's marker. Returns the first refusal (a dev host's `requireDescribe`, a duplicate), else the last success.
  *
  * @public
  */
-export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): void {
-  for (const def of BUILTIN_MARKERS) markers.register(def.id, def, 'core');
+export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): ReturnType<Registry<string, MarkerDef>['register']> {
+  // every built-in is tried; the first refusal is what comes back (the others stay registered), else the last success
+  const results = BUILTIN_MARKERS.map((def) => markers.register(def.id, def, 'core'));
+  return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }
 
 /**

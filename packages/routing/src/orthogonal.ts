@@ -96,6 +96,7 @@ function candidates(a: Vec2, da: Vec2, b: Vec2, db: Vec2): Vec2[][] {
  * @public
  */
 export const orthogonalRouter: Router = {
+  describe: 'Axis-aligned segments with right-angle bends, routed around the shapes.',
   route: ({ source, target, route }) => {
     const waypoints = route.waypoints ?? [];
     const ds = facing(source, waypoints[0] ?? target.point);

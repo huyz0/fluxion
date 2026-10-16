@@ -49,7 +49,7 @@ export const orthogonalRouter: Router;
 export const polylineRouter: Router;
 
 // @public
-export function registerBuiltinRouters(routers: Registry<string, Router>): void;
+export function registerBuiltinRouters(routers: Registry<string, Router>): ReturnType<Registry<string, Router>["register"]>;
 
 // @public
 export function resolveAnchor(target: AnchorTarget, ref: AnchorRef, toward: Vec2): ResolvedAnchor;
@@ -86,6 +86,7 @@ export function routePoint(commands: readonly PathCommand[], t: number): RoutePo
 
 // @public
 export type Router = {
+    readonly describe?: string;
     route(request: RouteRequest): readonly PathCommand[];
 };
 

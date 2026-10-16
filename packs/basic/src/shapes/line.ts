@@ -11,6 +11,7 @@ export const line: ShapeDef = {
   id: 'basic:line',
   outline: { path: 'M 0 {h/2} L {w} {h/2}' },
   defaultSize: { w: 160, h: 16 },
+  describe: 'A plain line between two points, with no connector behaviour.',
   keywords: ['line', 'rule', 'divider', 'separator'],
   category: 'basic',
   license: 'MIT',

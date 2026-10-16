@@ -123,6 +123,7 @@ function run(input: LayoutInput, o: GridOptions): LayoutOutput {
  */
 export const gridLayout: LayoutAlgorithm<GridOptions> = {
   id: 'grid',
+  describe: 'Boxes in rows and columns, in reading order.',
   version: '1',
   schema: z
     .strictObject({

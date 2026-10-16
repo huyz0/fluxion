@@ -15,6 +15,7 @@ export const document: ShapeDef = {
   outline: { path: `M 0 0 H {w} V {h - ${a}} C {w * 0.7} {h - 2 * ${a}} {w * 0.3} {h} 0 {h - ${a}} Z` },
   handles: [{ param: 'wave', x: 'w', y: `h - ${a}` }],
   defaultSize: { w: 160, h: 100 },
+  describe: 'A page with a wavy bottom edge, for files, reports and documents.',
   keywords: ['document', 'page', 'report'],
   category: 'basic',
   license: 'MIT',

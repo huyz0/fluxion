@@ -135,7 +135,7 @@ export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
 export function createCore(file: DocumentFile, options?: Omit<StoreOptions, "hooks">): Core;
 
 // @public
-export function createCoreRegistries(): CoreRegistries;
+export function createCoreRegistries(options?: RegistryOptions): CoreRegistries;
 
 // @public
 export function createLogger(options: LoggerOptions): NamespacedLogger;
@@ -144,7 +144,7 @@ export function createLogger(options: LoggerOptions): NamespacedLogger;
 export function createMetricsMeasurer(faces: readonly FaceMetrics[], fallback: TextMeasurer): TextMeasurer;
 
 // @public
-export function createRegistry<K extends string, V>(name: string): Registry<K, V>;
+export function createRegistry<K extends string, V>(name: string, options?: RegistryOptions): Registry<K, V>;
 
 // @public
 export function createStore(file: DocumentFile, options?: StoreOptions): Store;
@@ -154,6 +154,12 @@ export const DEFAULT_OUTLINE_BUDGET = 1e5;
 
 // @public
 export function defineCommand<A>(def: CommandDef<A>): CommandDef<A>;
+
+// @public
+export const DESCRIBED_REGISTRY_NAMES: readonly CoreRegistryName[];
+
+// @public
+export function describeOf(value: unknown): string | undefined;
 
 // @public
 export type Diff = {
@@ -408,6 +414,7 @@ export type MarkerDef = {
     readonly path: string;
     readonly inset: number;
     readonly filled: boolean;
+    readonly describe?: string;
 };
 
 // @public
@@ -532,6 +539,11 @@ export interface Registry<K extends string, V> {
 }
 
 // @public
+export type RegistryOptions = {
+    readonly requireDescribe?: boolean;
+};
+
+// @public
 export function resolveSalt(base: {
     readonly source?: {
         readonly salt?: unknown;
@@ -571,6 +583,7 @@ export type ShapeDef = {
     readonly decorations?: readonly {
         readonly path: string;
     }[];
+    readonly describe?: string;
     readonly keywords?: readonly string[];
     readonly category?: string;
     readonly license?: string;

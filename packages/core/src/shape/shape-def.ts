@@ -167,6 +167,8 @@ export type ShapeDef = {
     /** One subpath of absolute SVG path data whose numbers may be `{expr}`, stroked only. */
     readonly path: string;
   }[];
+  /** One line saying what the shape is for, for the AI catalog (FR-AI-002); required by a dev host's registries. */
+  readonly describe?: string;
   /** Search words for the shape picker. */
   readonly keywords?: readonly string[];
   /** Picker category. */
@@ -242,6 +244,7 @@ const shapeDefObject = z.strictObject({
     .array(z.strictObject({ path: expr.max(100_000) }))
     .max(16)
     .optional(),
+  describe: z.string().optional(),
   keywords: z.array(z.string()).optional(),
   category: z.string().optional(),
   license: z.string().optional(),

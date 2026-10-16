@@ -194,10 +194,11 @@ unless `relayout: false`. The patch JSON Schema is generated from Zod in the pro
 
 ## 6. AI catalog (FR-AI-002, NFR-AI-002)
 
-`buildCatalog(registries, { packs?, detail })` walks `shapeDefs`, `elementKinds`, `components`,
-`layouts`, `routers`, `markers`, `effects`, `transitions`, `themes`, `dslMacros` and token names.
-Every registered item must carry an AI one-liner (`describe`) — the registry rejects items without
-one in dev builds. `--format=llm` (default) prints one line per item
+`buildCatalog(registries, { pack?, detail })` (M14.6) walks `shapeDefs`, `routers` (connector types), `markers`, `layouts`, `themes`, `effects` and `transitions`
+and returns, per kind, entries sorted by id with the registering plugin; `elementKinds`, `components`, `dslMacros` and token names join as they get registries
+(M18 and later). Every shape, marker, router, layout, effect and transition must carry an AI one-liner (`describe`, one line, at most 160 characters): a host
+created with `createCoreRegistries({ requireDescribe: true })` (a dev host) refuses one without it (`FLX_REGISTRY_UNDESCRIBED`), and `buildCatalog` lists such an
+entry with an empty line and a diagnostic. Themes are listed by id and name. `--format=llm` (default) prints one line per item
 (`basic:diamond — decision; params: none; anchors: n,e,s,w`) for prompts and `list_catalog`;
 `json` adds param schemas (editor completion, FR-DSL-009); `md` feeds the docs site. Budget: the core-pack catalog plus the cheat sheet must fit in **8 000 tokens** (NFR-AI-002),
 checked by a token-count test with a fixed tokenizer in `pnpm verify`. Additional packs cost only

@@ -38,6 +38,8 @@ export type RouteRequest = {
  * @public
  */
 export type Router = {
+  /** One line saying how the router draws a connector, for the AI catalog (FR-AI-002). */
+  readonly describe?: string;
   /** The path of `request`. */
   route(request: RouteRequest): readonly PathCommand[];
 };
@@ -48,6 +50,7 @@ export type Router = {
  * @public
  */
 export const straightRouter: Router = {
+  describe: 'One straight line from end to end.',
   route: ({ source, target }) => [
     { kind: 'M', to: source.point },
     { kind: 'L', to: target.point },

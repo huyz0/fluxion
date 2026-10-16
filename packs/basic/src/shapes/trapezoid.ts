@@ -12,6 +12,7 @@ export const trapezoid: ShapeDef = {
   outline: { path: 'M {w * inset} 0 L {w - w * inset} 0 L {w} {h} L 0 {h} Z' },
   handles: [{ param: 'inset', x: 'w * inset', y: '0' }],
   defaultSize: { w: 160, h: 90 },
+  describe: 'A box with slanted sides, for manual steps and funnels.',
   keywords: ['trapezoid', 'manual operation'],
   category: 'basic',
   license: 'MIT',

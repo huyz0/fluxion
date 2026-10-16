@@ -395,9 +395,15 @@ importers:
 
   packages/cli:
     dependencies:
+      '@fluxion/dsl':
+        specifier: workspace:*
+        version: link:../dsl
       '@fluxion/format':
         specifier: workspace:*
         version: link:../format
+      '@fluxion/layout':
+        specifier: workspace:*
+        version: link:../layout
       '@fluxion/pack-basic':
         specifier: workspace:*
         version: link:../../packs/basic
@@ -410,6 +416,9 @@ importers:
       '@fluxion/render':
         specifier: workspace:*
         version: link:../render
+      '@fluxion/routing':
+        specifier: workspace:*
+        version: link:../routing
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema

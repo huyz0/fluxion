@@ -12,6 +12,7 @@ export const textBox: ShapeDef = {
   textRegions: [{ name: 'body', x: 0, y: 0, w: 1, h: 1 }],
   defaultSize: { w: 200, h: 60 },
   defaultStyle: { fill: 'transparent', stroke: { width: 0 } },
+  describe: 'A box that is only text, with no border or fill by default.',
   keywords: ['text', 'label', 'title'],
   category: 'basic',
   license: 'MIT',

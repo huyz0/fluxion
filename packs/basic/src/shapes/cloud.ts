@@ -25,6 +25,7 @@ export const cloud: ShapeDef = {
   outline: { path: `M ${joint(0)} ${bumps.join(' ')} Z` },
   textRegions: [{ name: 'body', x: 0.2, y: 0.25, w: 0.6, h: 0.5 }],
   defaultSize: { w: 180, h: 120 },
+  describe: 'A cloud outline, for the internet, a cloud service or a vague area.',
   keywords: ['cloud', 'internet', 'network'],
   category: 'basic',
   license: 'MIT',

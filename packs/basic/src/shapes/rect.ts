@@ -10,6 +10,7 @@ export const rect: ShapeDef = {
   id: 'basic:rect',
   outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' },
   defaultSize: { w: 160, h: 100 },
+  describe: 'A rectangle, the default box for a component, step or service.',
   keywords: ['rectangle', 'box', 'square'],
   category: 'basic',
   license: 'MIT',

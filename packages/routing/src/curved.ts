@@ -23,6 +23,7 @@ const outward = (end: RouteEnd, next: Vec2): Vec2 => end.dir ?? unit(sub(next, e
  * @public
  */
 export const curvedRouter: Router = {
+  describe: 'A smooth curve that leaves and enters each end along its side.',
   route: ({ source, target, route }) => {
     const points = [source.point, ...(route.waypoints ?? []), target.point];
     const last = points.length - 1;
@@ -47,6 +48,7 @@ export const curvedRouter: Router = {
  * @public
  */
 export const polylineRouter: Router = {
+  describe: 'Straight segments through the waypoints the author set.',
   route: ({ source, target, route }) => [
     { kind: 'M', to: source.point },
     ...[...(route.waypoints ?? []), target.point].map((to): PathCommand => ({ kind: 'L', to })),

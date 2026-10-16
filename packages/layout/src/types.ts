@@ -184,6 +184,8 @@ export type OptionsResult<O> =
 export interface LayoutAlgorithm<O> {
   /** The registry name, e.g. `stack`. */
   readonly id: string;
+  /** One line saying what the layout does, for the AI catalog (FR-AI-002); required by a dev host's registries. */
+  readonly describe?: string;
   /** Bumped when the output for the same input changes. */
   readonly version: string;
   /** The options as a Zod schema: the source of the inspector form, the catalog and MCP metadata (FR-LAY-001); required from M13.5. */

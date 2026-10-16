@@ -13,6 +13,7 @@ export const parallelogram: ShapeDef = {
   outline: { path: 'M {w * skew} 0 L {w} 0 L {w - w * skew} {h} L 0 {h} Z' },
   handles: [{ param: 'skew', x: 'w * skew', y: '0' }],
   defaultSize: { w: 160, h: 90 },
+  describe: 'A slanted box, the input and output step of a flowchart.',
   keywords: ['parallelogram', 'input', 'output'],
   category: 'basic',
   license: 'MIT',
