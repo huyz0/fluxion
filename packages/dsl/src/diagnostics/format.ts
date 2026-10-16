@@ -3,6 +3,21 @@
 import type { DslDiagnostic } from '../types.js';
 
 const RANK = { error: 0, warning: 1, info: 2 } as const;
+
+/** What to try for a code whose diagnostic carries no hint of its own, so an agent always gets a next step (FR-AI-004). */
+const DEFAULT_HINTS: { readonly [code: string]: string } = {
+  FLX_DSL_SYNTAX: 'fix the YAML at this line; use plain mappings with no anchors, tags or duplicate keys',
+  FLX_DSL_VERSION: 'start the file with `flux: 1`',
+  FLX_DSL_BAD_SLUG: 'use lower-case letters, digits and "-", starting with a letter',
+  FLX_DSL_DUP_SLUG: 'give each node in a screen its own slug',
+  FLX_DSL_UNKNOWN_KEY: 'remove the key or check its spelling against the cheat sheet',
+  FLX_DSL_UNKNOWN_SHAPE: 'pick a shape from the catalog',
+  FLX_DSL_EDGE_SYNTAX: 'write an edge as `a -> b` or `a ~> b`, with an optional `: label`',
+  FLX_REF_MISSING: 'name a node or group that exists in the same screen',
+  FLX_SCHEMA_INVALID: 'change the value to one the schema accepts; the message says which bound it broke',
+};
+const hintOf = (d: DslDiagnostic): string | undefined =>
+  d.hint ?? (d.severity === 'error' ? (DEFAULT_HINTS[d.code] ?? 'see the code in the diagnostics docs') : undefined);
 const where = (d: DslDiagnostic) => (d.source ? `L${d.source.line}:${d.source.col}` : d.path);
 
 /** -1, 0 or 1: `a` before `b` by severity, then line, then column, then path. */
@@ -27,6 +42,6 @@ export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], { cap =
     seen.add(key);
     return true;
   });
-  const lines = unique.slice(0, cap).map((d) => `${where(d)}  ${d.severity.padEnd(7)} ${d.code}  ${d.message}${d.hint ? ` — hint: ${d.hint}` : ''}`);
+  const lines = unique.slice(0, cap).map((d) => `${where(d)}  ${d.severity.padEnd(7)} ${d.code}  ${d.message}${hintOf(d) ? ` — hint: ${hintOf(d)}` : ''}`);
   return unique.length > cap ? [...lines, `+${unique.length - cap} more`] : lines;
 }

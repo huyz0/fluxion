@@ -41,7 +41,7 @@ describe('diagnostics for people and models (FR-DSL-006, ADR-0030)', () => {
     expect(lines).toEqual(["L23:9  error   FLX_REF_MISSING  edge target 'dbb' not found — hint: did you mean 'db'?"]);
     // without a source range the position is the path
     const noSource: DslDiagnostic = { code: 'FLX_DSL_VERSION', severity: 'error', path: '/flux', message: 'flux must be 1' };
-    expect(formatDiagnostics([noSource])).toEqual(['/flux  error   FLX_DSL_VERSION  flux must be 1']);
+    expect(formatDiagnostics([noSource])).toEqual(['/flux  error   FLX_DSL_VERSION  flux must be 1 — hint: start the file with `flux: 1`']);
   });
 
   it('FR-DSL-006: the formatter ranks errors first then by position, dedupes one per root cause, and caps the list', () => {
@@ -67,7 +67,7 @@ describe('diagnostics for people and models (FR-DSL-006, ADR-0030)', () => {
 
   it('FR-DSL-006: ties fall back to the path, and diagnostics without a place in the source come after those with one', () => {
     const tie = (path: string) => d({ code: 'FLX_DSL_SYNTAX', severity: 'error', line: 4, col: 2, message: `at ${path}`, path });
-    expect(formatDiagnostics([tie('/b'), tie('/a'), tie('/a')]).map((l) => l.split('  ').at(-1))).toEqual(['at /a', 'at /b']);
+    expect(formatDiagnostics([tie('/b'), tie('/a'), tie('/a')]).map((l) => l.split('  ').at(-1)?.split(' — ')[0])).toEqual(['at /a', 'at /b']);
     const placeless: DslDiagnostic = { code: 'FLX_DSL_VERSION', severity: 'error', path: '/flux', message: 'no version' };
     const placed = d({ code: 'FLX_DSL_SYNTAX', severity: 'error', line: 900, col: 1, message: 'late' });
     expect(formatDiagnostics([placeless, placed]).map((l) => l.split(/\s+/)[0])).toEqual(['L900:1', '/flux']);

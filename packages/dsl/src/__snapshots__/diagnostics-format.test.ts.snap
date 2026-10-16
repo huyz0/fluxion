@@ -1,0 +1,37 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the diagnostic formatter for models (FR-AI-004) > FR-AI-004: the formatted output of ten broken files is stable 1`] = `
+{
+  "bad edge syntax": [
+    "L9:11  error   FLX_DSL_EDGE_SYNTAX  "=>" is not an edge op — hint: did you mean "->"? (ops: -> <- <-> -- ~>)",
+  ],
+  "bad slug": [
+    "L7:7  error   FLX_DSL_BAD_SLUG  "Bad Slug!" is not a slug: lower-case letters, digits and "-", starting with a letter — hint: use lower-case letters, digits and "-", starting with a letter",
+  ],
+  "bad yaml": [
+    "L3:1  error   FLX_DSL_SYNTAX  Flow sequence in block collection must be sufficiently indented and end with a ] — hint: fix the YAML at this line; use plain mappings with no anchors, tags or duplicate keys",
+  ],
+  "duplicate slug": [
+    "L8:7  error   FLX_DSL_SYNTAX  a key is used twice in the same mapping — hint: keep one of them",
+    "L8:7  error   FLX_DSL_DUP_SLUG  "x" is already used at line 7 — hint: slugs are unique in the document",
+  ],
+  "missing edge target": [
+    "L9:14  error   FLX_REF_MISSING  edge end "nowhere" is not a node or group of screen "a" — hint: name a node or group that exists in the same screen",
+  ],
+  "negative size": [
+    "L7:7  error   FLX_SCHEMA_INVALID  Too small: expected number to be >=0 — hint: change the value to one the schema accepts; the message says which bound it broke",
+  ],
+  "no version": [
+    "L1:1  error   FLX_DSL_VERSION  the file has no flux version — hint: start the file with \`flux: 1\`",
+  ],
+  "unknown key": [
+    "L7:25  error   FLX_DSL_UNKNOWN_KEY  "colour" is not a key here — hint: keys here: shape, text, label, tone, style, pin, alt",
+  ],
+  "unknown shape": [
+    "L7:19  error   FLX_DSL_UNKNOWN_SHAPE  no used pack has a shape "rectt" — hint: did you mean "rect"?",
+  ],
+  "wrong version": [
+    "L1:7  error   FLX_DSL_VERSION  flux must be 1 — hint: start the file with \`flux: 1\`",
+  ],
+}
+`;
