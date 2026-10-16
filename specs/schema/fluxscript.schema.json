@@ -1,0 +1,498 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fluxion.dev/schema/fluxscript.schema.json",
+  "title": "FluxScript flux: 1",
+  "type": "object",
+  "properties": {
+    "flux": {
+      "const": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "theme": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/theme"
+        }
+      ]
+    },
+    "uses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "screens": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/screen"
+      }
+    },
+    "vars": {
+      "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+    },
+    "settings": {
+      "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+    }
+  },
+  "required": [
+    "flux",
+    "title",
+    "screens"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "theme": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "description": "token values by token name"
+        },
+        "mode": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        },
+        "accent": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "screen": {
+      "description": "a screen; one with a kind is an archetype, kept whole with any other keys",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            },
+            "title": {
+              "type": "string"
+            },
+            "layout": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "description": "a layout algorithm by name; the other keys are its options"
+            },
+            "background": {
+              "type": "string"
+            },
+            "nodes": {
+              "type": "object",
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/node"
+              }
+            },
+            "groups": {
+              "type": "object",
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/group"
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/edge"
+              }
+            },
+            "notes": {
+              "type": "string"
+            },
+            "kind": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            },
+            "steps": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            },
+            "interactions": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            },
+            "breakpoints": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            },
+            "markdown": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            },
+            "mermaid": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            },
+            "raw": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "kind"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            },
+            "kind": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "node": {
+      "type": "object",
+      "properties": {
+        "shape": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "tone": {
+          "type": "string"
+        },
+        "style": {
+          "anyOf": [
+            {
+              "enum": [
+                "solid",
+                "dashed",
+                "dotted"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            }
+          ],
+          "description": "token names by key, or solid, dashed or dotted"
+        },
+        "pin": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "w": {
+              "type": "number"
+            },
+            "h": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        "alt": {
+          "type": "string"
+        },
+        "component": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        },
+        "image": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        },
+        "icon": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        },
+        "badge": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        },
+        "props": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        },
+        "near": {
+          "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "shape"
+          ]
+        },
+        {
+          "required": [
+            "text"
+          ]
+        },
+        {
+          "required": [
+            "label"
+          ]
+        },
+        {
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "required": [
+            "image"
+          ]
+        },
+        {
+          "required": [
+            "icon"
+          ]
+        },
+        {
+          "required": [
+            "badge"
+          ]
+        },
+        {
+          "required": [
+            "props"
+          ]
+        },
+        {
+          "required": [
+            "near"
+          ]
+        }
+      ]
+    },
+    "group": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "contains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "style": {
+          "anyOf": [
+            {
+              "enum": [
+                "solid",
+                "dashed",
+                "dotted"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            }
+          ],
+          "description": "token names by key, or solid, dashed or dotted"
+        },
+        "layout": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "description": "a layout algorithm by name; the other keys are its options"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "edge": {
+      "description": "a -> b, a -> b: label (as text), a one-entry mapping { \"a -> b\": label or details }, or { from, to, op, label, style, route }",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "op": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "style": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "solid",
+                    "dashed",
+                    "dotted"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                }
+              ],
+              "description": "token names by key, or solid, dashed or dotted"
+            },
+            "route": {
+              "enum": [
+                "straight",
+                "curved",
+                "orthogonal",
+                "polyline"
+              ]
+            },
+            "flow": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            },
+            "riders": {
+              "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "propertyNames": {
+            "not": {
+              "enum": [
+                "from",
+                "to",
+                "op",
+                "label",
+                "style",
+                "route"
+              ]
+            }
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "style": {
+                    "anyOf": [
+                      {
+                        "enum": [
+                          "solid",
+                          "dashed",
+                          "dotted"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": [
+                            "string",
+                            "number",
+                            "boolean"
+                          ]
+                        }
+                      }
+                    ],
+                    "description": "token names by key, or solid, dashed or dotted"
+                  },
+                  "route": {
+                    "enum": [
+                      "straight",
+                      "curved",
+                      "orthogonal",
+                      "polyline"
+                    ]
+                  },
+                  "flow": {
+                    "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+                  },
+                  "riders": {
+                    "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

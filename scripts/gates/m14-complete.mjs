@@ -67,6 +67,13 @@ leg('the CPU-normalised budget ADR is on file as proposed, never silently accept
 
 // ── the agent surface ──────────────────────────────────────────────────────────────────────────────
 leg('the generated JSON Schemas match the committed specs/schema files (FR-AI-001)', () => vitestFile('packages/dsl/src/schema-drift.test.ts'));
+leg('the FluxScript schema matches its committed copy and rejects bad files (M14.25, FR-AI-001)', () =>
+  vitestFile('packages/dsl/src/read/json-schema.test.ts'),
+);
+leg('every FluxScript example validates against the FluxScript schema (M14.25, FR-AI-001)', () => {
+  if (!exists('scripts/dsl/fluxscript-schema.test.ts')) return 'missing scripts/dsl/fluxscript-schema.test.ts';
+  return ok(run('pnpm', ['--filter', '@fluxion/dsl', 'run', 'test:examples', '-t', 'FR-AI-001']));
+});
 leg('every registry item has a describe line and the catalog lists plugin items (FR-AI-002)', () => vitestFile('packages/dsl/src/catalog/catalog.test.ts'));
 leg(`the core catalog and cheat sheet fit AI_CATALOG_MAX_TOKENS (${t('AI_CATALOG_MAX_TOKENS')}) (NFR-AI-002)`, () =>
   vitestFile('packages/dsl/src/catalog/token-budget.test.ts'),

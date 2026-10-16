@@ -16,6 +16,7 @@ export { type ParseResult, parseFlux, type YEntry, type YMap, type YNode, type Y
 export { type PlaceInput, type PlaceOptions, type PlaceResult, placeFlux } from './place/place.js';
 export type { EdgeAst, FluxAst, GroupAst, LayoutAst, Located, LocatedStyle, NodeAst, PinAst, ScreenAst, StyleAst, ThemeAst } from './read/ast.js';
 export { type FluxScriptKeyLevel, type FluxScriptKeyTable, fluxScriptKeys } from './read/fields.js';
+export { type FluxScriptJsonSchema, fluxScriptJsonSchema } from './read/json-schema.js';
 export { type ReadResult, readFlux } from './read/read.js';
 export { type Resolution, type ResolveResult, resolveFlux } from './resolve/resolve.js';
 export { editDistance, nearest, toSlug } from './resolve/suggest.js';

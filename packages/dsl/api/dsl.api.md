@@ -251,6 +251,14 @@ export type FluxAst = {
 };
 
 // @public
+export type FluxScriptJsonSchema = {
+    readonly [keyword: string]: unknown;
+};
+
+// @public
+export function fluxScriptJsonSchema(): FluxScriptJsonSchema;
+
+// @public
 export type FluxScriptKeyLevel = {
     readonly compiled: readonly string[];
     readonly deferred: readonly string[];
