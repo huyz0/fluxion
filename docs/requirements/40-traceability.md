@@ -271,7 +271,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-003 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/store.test.ts` +5 |
 | FR-AI-004 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/diagnostics-format.test.ts` |
 | FR-AI-005 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/lint/lint.test.ts` |
-| FR-AI-006 | S | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/render-png.test.ts`, `packages/cli/src/render-png.test.ts` |
+| FR-AI-006 | S | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/studio/src/png-export.browser.test.ts` +2 |
 | FR-AI-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-008 | S | R4 | M23 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
