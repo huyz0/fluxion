@@ -250,9 +250,7 @@ All commands wrap `@fluxion/cli/ops`, the same functions the MCP server calls.
 | `patch <file> <patch.json>` | apply an AI patch atomically |
 | `pack <plugin-dir>` · `site build <file…> -o dir` | `.fluxpack` (09); static site (10) |
 
-`--json` prints exactly one `CliResult<T> { ok, command, version, diagnostics, data?, ms }` to
-stdout; logs go to stderr. Exit codes (FR-CLI-005): **0** ok (warnings allowed), **1** validation/lint errors (or score below
-`--min-score`), **2** usage error, **3** internal error (bug; stack trace on stderr).
+`--json` prints exactly one reply to stdout (ADR-0147's envelope: `apiVersion`, `command`, `ok`, `exitCode`, and `result` or `errors[]`; a successful reply may also carry `diagnostics` for warnings, ADR-0036); logs go to stderr. Exit codes (FR-CLI-005): **0** ok (warnings allowed), **1** the input is wrong (validation or lint errors, a score below `--min-score`, a rejected patch), **2** usage error (including an absent optional Chromium for `render --png`), **3** internal error (bug; stack trace on stderr). The operations live in `@fluxion/cli/ops` (ADR-0036).
 
 ## 10. MCP server (`@fluxion/mcp`)
 
