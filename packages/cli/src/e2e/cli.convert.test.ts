@@ -62,7 +62,7 @@ async function roundTrip(flux: string, document: unknown, external: boolean): Pr
 }
 
 describe('fluxion convert (FR-FIL-003, FR-CLI-001, ADR-0155)', { timeout: E2E_TIMEOUT }, () => {
-  it('FR-FIL-003: fluxion convert turns a .flux into a .flux.html and back to the same bytes', async () => {
+  it('FR-FIL-003, FR-EXP-008: fluxion convert --json turns a .flux into a .flux.html and back to the same bytes', async () => {
     const flux = await fluxFile();
     const html = join(dir, 'deck.flux.html');
     const back = join(dir, 'back.flux');

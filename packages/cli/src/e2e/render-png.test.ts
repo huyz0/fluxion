@@ -15,7 +15,7 @@ const file = join(dir, 'doc.flux.json');
 writeFileSync(file, serializeDocument(b.build()));
 
 describe('fluxion render --format png (FR-AI-006, ADR-0036)', () => {
-  it('FR-AI-006: writes one PNG per screen at the size of the screen', { timeout: 60_000 }, () => {
+  it('FR-AI-006: fluxion render --json writes one PNG per screen at the size of the screen', { timeout: 60_000 }, () => {
     const out = join(dir, 'shots');
     const r = fluxion(['render', file, '--format', 'png', '-o', out, '--json']);
     expect(JSON.parse(r.stdout), r.stdout).toMatchObject({ ok: true, exitCode: 0, result: { screens: 1 } });

@@ -66,7 +66,7 @@ leg('ADR-0035 (AI patch format v1), ADR-0036 (CLI contract) and ADR-0037 (fixed 
 leg('the CPU-normalised budget ADR is on file as proposed, never silently accepted (M14.22)', () => adr('0167', 'proposed'));
 
 // ── the agent surface ──────────────────────────────────────────────────────────────────────────────
-leg('the generated JSON Schemas match the committed specs/schema files (FR-AI-001)', () => vitestFile('packages/dsl/src/schema-drift.test.ts'));
+leg('the generated JSON Schemas match the committed specs/schema files (FR-AI-001)', () => vitestFile('packages/dsl/src/patch/json-schema.test.ts'));
 leg('the FluxScript schema matches its committed copy and rejects bad files (M14.25, FR-AI-001)', () =>
   vitestFile('packages/dsl/src/read/json-schema.test.ts'),
 );
@@ -85,7 +85,7 @@ leg('DSL tokens against canonical JSON tokens reach AI_DSL_TOKEN_RATIO_MIN over 
 });
 leg('an invalid patch is rejected whole with pointer diagnostics; a valid one is one undo step (FR-AI-003)', () => {
   const fixtures = exists('packages/dsl/src/patch/__fixtures__') ? true : 'missing packages/dsl/src/patch/__fixtures__';
-  return fixtures === true ? vitestFile('packages/dsl/src/patch/patch.test.ts') : fixtures;
+  return fixtures === true ? vitestFile('packages/dsl/src/patch/apply.test.ts') : fixtures;
 });
 leg('the diagnostic formatter ranks, dedupes and caps, and every error line carries a hint (FR-AI-004)', () =>
   vitestFile('packages/dsl/src/diagnostics-format.test.ts'),
@@ -97,18 +97,18 @@ leg('the layout scorecard fails a change that makes the layered golden look wors
 leg('the exit-code matrix: ok 0, invalid 1, bad flag 2, crash 3 (FR-CLI-005)', () => vitestFile('packages/cli/src/e2e/exit-codes.test.ts'));
 const CLI_COMMANDS = ['compile', 'validate', 'lint', 'layout', 'migrate', 'convert', 'patch', 'decompile', 'catalog', 'render'];
 leg('every CLI command has a passing --json test and its output validates against specs/schema/cli-result.json (FR-CLI-002)', () => {
-  const r = vitestReport(['packages/cli/src/e2e/commands.test.ts', 'packages/cli/src/e2e/convert.test.ts', 'packages/cli/src/e2e/render-png.test.ts']);
+  const r = vitestReport(['packages/cli/src/e2e/commands.test.ts', 'packages/cli/src/e2e/cli.convert.test.ts', 'packages/cli/src/e2e/render-png.test.ts']);
   if (typeof r === 'string') return r;
   const absent = CLI_COMMANDS.filter((c) => !r.titles.some((title) => title.includes(`fluxion ${c} --json`)));
   return absent.length === 0 || `no passing test titled "fluxion <command> --json" for: ${absent.join(', ')}`;
 });
 leg('convert round-trips flux, flux.html and flux.json by hash; decompile output recompiles equal (FR-EXP-008)', () =>
-  vitestFile('packages/cli/src/e2e/convert.test.ts'),
+  vitestFile('packages/cli/src/e2e/cli.convert.test.ts'),
 );
 leg('fluxion render --png writes one PNG per screen with the expected dimensions (FR-AI-006)', () => vitestFile('packages/cli/src/e2e/render-png.test.ts'));
 leg('the studio exports a screen as PNG through SVG serialization (FR-AI-006)', () => vitestFile('apps/studio/src/png-export.browser.test.ts', 'browser'));
-leg('the Mermaid exporter renders its golden .mmd for the fixture diagram (FR-EXP-007)', () => vitestFile('packages/format/src/mermaid.test.ts'));
-leg('the Problems tab lists a lint finding (FR-EDT-021)', () => vitestFile('packages/editor/src/problems.lint.browser.test.tsx', 'browser'));
+leg('the Mermaid exporter renders its golden .mmd for the fixture diagram (FR-EXP-007)', () => vitestFile('packages/dsl/src/export/mermaid.test.ts'));
+leg('the Problems tab lists a lint finding (FR-EDT-021)', () => vitestFile('packages/editor/src/problems.test.ts'));
 leg('apps/docs builds llms.txt and llms-full.txt, and a guide naming a missing catalog id fails the build (FR-AI-011)', () => {
   // the drift check that fails the build is its own test (written by M14.20)
   const drift = vitestFile('apps/docs/src/guide-drift.test.ts');
