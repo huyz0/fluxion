@@ -235,6 +235,10 @@ leg('the no-overlap property and the determinism harness pass at the CI seed', (
 });
 const UNTITLED_ROWS = {
   'M13.21': 'the golden test runs in the examples runner (scripts/dsl/examples.test.ts), a Vitest config of its own, under GOLDEN_TITLE in the golden leg',
+  // CI repairs of earlier rows' specs (the Playwright menu, smart-guides and undo specs, a harness helper): the CI run on main is their proof
+  'M13.39': "a repair of the context-menu Playwright spec and a harness sandbox helper; main's green three-OS CI run is the proof",
+  'M13.40': "a repair of the panels browser test, the smart-guides spec and the Source undo test; main's green three-OS CI run is the proof",
+  'M13.41': "a repair of the smart-guides spec and the Source undo test; main's green three-OS CI run is the proof",
 };
 leg('every done M13 row whose acceptance names a T0 or T1 test has a title in a leg (or a reasoned exemption)', () =>
   checkRowsTitled(backlogTextFor('M13'), 'M13', [LAYOUT_TITLES, SEMANTIC_TITLES, WORKER_TITLES, SIZE_TITLES, GOLDEN_TITLES], UNTITLED_ROWS),

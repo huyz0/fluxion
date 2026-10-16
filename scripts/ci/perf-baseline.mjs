@@ -12,10 +12,13 @@ const baseline = JSON.parse(readFileSync(new URL('../../perf-baseline.json', imp
 const problems = [];
 for (const [name, file, key] of BENCHES) {
   const limit = Math.min(t(key), (baseline[name] ?? Number.NaN) * 1.15);
-  const verdict = Number.isFinite(limit) ? benchUnder(file, name, limit) : `perf-baseline.json has no "${name}" entry`;
+  // one run: a limit of -1 always fails with the measured p99 in its message, which is judged here and printed for the re-record
+  const verdict = Number.isFinite(limit) ? String(benchUnder(file, name, -1)) : `perf-baseline.json has no "${name}" entry`;
+  const p99 = Number(verdict.match(/p99 ([\d.]+) ms/)?.[1]);
+  const pass = Number.isFinite(limit) && p99 <= limit;
   console.log(
-    `${verdict === true ? 'PASS' : 'FAIL'} ${name} (limit ${Number.isFinite(limit) ? limit.toFixed(0) : '?'} ms)${verdict === true ? '' : `: ${verdict}`}`,
+    `${pass ? 'PASS' : 'FAIL'} ${name} (limit ${Number.isFinite(limit) ? limit.toFixed(0) : '?'} ms): ${Number.isFinite(p99) ? `measured ${p99} ms p99` : verdict}`,
   );
-  if (verdict !== true) problems.push(name);
+  if (!pass) problems.push(name);
 }
 process.exit(problems.length === 0 ? 0 : 1);
