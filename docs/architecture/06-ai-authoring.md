@@ -168,6 +168,8 @@ L31:5  warning FLX_LINT_TEXT_OVERFLOW label of 'pay' overflows by 34px — hint:
 
 ## 5. AI patch format (FR-AI-003)
 
+Frozen by ADR-0035 (the Ref grammar, atomicity, staleness, the strict schema subset and the error codes).
+
 ```ts
 type Ref = string;          // slug ('api'), '#<RecordId>', or edge key ('api->db', 'pay~>queue')
 interface AiPatch { flux: 1; baseRevision?: string /* stale → FLX_PATCH_STALE */; ops: PatchOp[] }

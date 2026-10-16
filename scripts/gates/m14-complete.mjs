@@ -30,6 +30,8 @@ function vitestReport(files, project = 'node') {
     const r = run('pnpm', ['exec', 'vitest', 'run', '--project', project, '--reporter=json', `--outputFile=${out}`, ...files]);
     if (!existsSync(out)) return `vitest wrote no report: ${ok(r)}`;
     const rep = JSON.parse(readFileSync(out, 'utf8'));
+    if (rep.numFailedTestSuites > 0 || rep.testResults.some((f) => f.status === 'failed' && f.assertionResults.length === 0))
+      return `a test file failed to run (${rep.numFailedTestSuites} failed suites)`;
     const tests = rep.testResults.flatMap((f) => f.assertionResults);
     const bad = tests.filter((a) => a.status !== 'passed');
     if (bad.length) return `${bad.length} test(s) not passed (${[...new Set(bad.map((a) => a.status))].join('/')}): ${bad[0].title}`;
@@ -125,8 +127,9 @@ function coverageLeg(pkg, floors) {
       pkg,
     ]);
     if (!existsSync(report)) return `vitest wrote no report: ${ok(r)}`;
-    const { numFailedTests, numPassedTests } = JSON.parse(readFileSync(report, 'utf8'));
-    if (numFailedTests > 0 || numPassedTests === 0) return `${pkg}: ${numFailedTests} failed, ${numPassedTests} passed`;
+    const { numFailedTests, numPassedTests, numFailedTestSuites } = JSON.parse(readFileSync(report, 'utf8'));
+    if (numFailedTests > 0 || numFailedTestSuites > 0 || numPassedTests === 0)
+      return `${pkg}: ${numFailedTests} failed tests, ${numFailedTestSuites} failed suites, ${numPassedTests} passed`;
     const summary = join(out, 'coverage-summary.json');
     return existsSync(summary) ? coverageGaps(JSON.parse(readFileSync(summary, 'utf8')), pkg, floors, 300) : `no coverage summary: ${ok(r)}`;
   } finally {

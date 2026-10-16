@@ -45,6 +45,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0032](ADR-0032-source-view.md) | Source view: CodeMirror 6 in a lazy chunk, Lezer YAML with a FluxScript layer, a TextMate grammar, screen-scoped two-way sync | accepted | 2026-10-07 |
 | [0033](ADR-0033-layout-engine-contract-v1.md) | Layout engine contract v1: synchronous algorithms, an asynchronous engine, the worker protocol, the fingerprint | accepted | 2026-10-13 |
 | [0034](ADR-0034-overlap-removal-and-determinism.md) | Overlap removal by an own two-stage sweep, determinism rules, and the `@dagrejs/dagre` dependency | accepted | 2026-10-13 |
+| [0035](ADR-0035-ai-patch-format-v1.md) | AI patch format v1: the nine ops, references, atomicity, staleness, the strict schema subset | accepted | 2026-10-16 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
