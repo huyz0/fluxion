@@ -1,5 +1,5 @@
 // The `patch`, `decompile` and `catalog` operations (FR-AI-003, FR-DSL-004, FR-AI-002, FR-CLI-002).
-import { type AppliedPatch, buildCatalog, type CatalogFormat, decompile, formatCatalog, patchDocument } from '@fluxion/dsl';
+import { type AppliedPatch, buildCatalog, type CatalogFormat, decompile, formatCatalog, type MermaidExport, patchDocument, toMermaid } from '@fluxion/dsl';
 import { type Diagnostic, type DocumentFile, parseDocument, serializeDocument } from '@fluxion/schema';
 import type { CoreRegistries } from '@fluxion/sdk';
 import { type OpResult, opFail, opOk } from './result.js';
@@ -54,4 +54,15 @@ export function decompileText(text: string, registries: CoreRegistries): OpResul
 export function catalogText(registries: CoreRegistries, format: CatalogFormat): OpResult<{ readonly text: string }> {
   const built = buildCatalog(registries);
   return opOk({ text: formatCatalog(built.catalog, format) }, built.diagnostics);
+}
+
+/**
+ * The first screen (or `screenId`) of the document in `text` as a Mermaid flowchart; lossy (FR-EXP-007).
+ *
+ * @public
+ */
+export function mermaidText(text: string, screenId?: string): OpResult<MermaidExport> {
+  const parsed = parseDocument(text);
+  if (!parsed.ok) return opFail(parsed.error.diagnostics);
+  return opOk(toMermaid(parsed.value.document, screenId), parsed.value.diagnostics);
 }

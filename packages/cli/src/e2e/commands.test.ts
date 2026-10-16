@@ -102,6 +102,15 @@ describe('the document commands (FR-CLI-002, ADR-0036)', { timeout: E2E_TIMEOUT 
     expect(readFileSync(again, 'utf8')).toBe(readFileSync(compiled, 'utf8'));
   });
 
+  it('FR-EXP-007: fluxion decompile --format mermaid writes a flowchart, and another format is unsupported', () => {
+    const mmd = join(dir, 'flow.mmd');
+    const { status, reply } = json('decompile', [compiled, '-o', mmd, '--format', 'mermaid']);
+    expect(status).toBe(0);
+    expect(reply.result).toMatchObject({ out: mmd, format: 'mermaid' });
+    expect(readFileSync(mmd, 'utf8').startsWith('flowchart TD\n')).toBe(true);
+    expect(json('decompile', [compiled, '-o', mmd, '--format', 'dot']).status).toBe(2);
+  });
+
   it('FR-CLI-002: fluxion patch --json applies a fixture patch, and a bad patch is rejected whole with exit 1', () => {
     const base = join(dir, 'base.flux.json');
     const src = join(dir, 'base.flux.yaml');

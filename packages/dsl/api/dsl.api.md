@@ -398,6 +398,14 @@ export type MeasureText = (text: string, font: {
 }, maxWidth: number) => TextSize;
 
 // @public
+export type MermaidExport = {
+    readonly text: string;
+    readonly nodes: number;
+    readonly edges: number;
+    readonly dropped: number;
+};
+
+// @public
 export type NamedHeader = {
     readonly title: boolean;
     readonly theme: boolean;
@@ -789,6 +797,9 @@ export type ThemeAst = {
         readonly [token: string]: SourceRange;
     };
 };
+
+// @public
+export function toMermaid(doc: DocumentFile, screenId?: string): MermaidExport;
 
 // @public
 export function toSlug(name: string): string | undefined;

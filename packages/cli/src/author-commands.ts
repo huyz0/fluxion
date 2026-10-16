@@ -1,7 +1,7 @@
 // `patch`, `decompile` and `catalog` (FR-CLI-002, ADR-0036): the authoring loop over the ops layer.
 import { type Command, internal, type Outcome, unsupported, usage } from './command.js';
 import { hostRegistries } from './host.js';
-import { catalogText, decompileText, patchText } from './ops/index.js';
+import { catalogText, decompileText, mermaidText, patchText } from './ops/index.js';
 import { readInput } from './validate.js';
 import { writeText } from './write-file.js';
 
@@ -41,21 +41,35 @@ export const PATCH: Command = {
   },
 };
 
+/** `decompile --format mermaid`: the screen as a flowchart, written to `output`. */
+async function mermaid(text: string, { output, screen, log }: { output: string; screen: unknown; log: (text: string) => void }): Promise<Outcome> {
+  const r = mermaidText(text, typeof screen === 'string' ? screen : undefined);
+  if (!r.ok) return { exitCode: 1, diagnostics: r.diagnostics };
+  const bad = await writeText(output, r.value.text);
+  if (bad) return bad;
+  log(`${output}: ${r.value.nodes} nodes, ${r.value.edges} edges, ${r.value.dropped} dropped\n`);
+  const { nodes, edges, dropped } = r.value;
+  return { exitCode: 0, diagnostics: r.diagnostics, result: { out: output, format: 'mermaid', nodes, edges, dropped } };
+}
+
 /** `decompile <document> -o <out.flux.yaml>`. */
 export const DECOMPILE: Command = {
-  summary: 'Write a document as FluxScript',
-  usage: 'decompile <document> -o <out.flux.yaml>',
-  options: { out: { type: 'string', short: 'o' } },
+  summary: 'Write a document as FluxScript, or a screen as a Mermaid flowchart',
+  usage: 'decompile <document> -o <out> [--format flux|mermaid] [--screen <id>]',
+  options: { out: { type: 'string', short: 'o' }, format: { type: 'string' }, screen: { type: 'string' } },
   run: async ({ values, positionals }, io) => {
     const [file, ...extra] = positionals;
     if (file === undefined) return usage('decompile needs a document file');
     if (extra.length > 0) return usage(`decompile takes one file, got ${positionals.length}`);
     const output = outputOf('decompile', values);
     if (typeof output !== 'string') return output;
-    const registries = host();
-    if (!('layouts' in registries)) return registries;
+    const format = values['format'] ?? 'flux';
+    if (format !== 'flux' && format !== 'mermaid') return unsupported(`--format is flux or mermaid; got "${String(format)}"`);
     const text = await readInput(file);
     if (typeof text !== 'string') return text;
+    if (format === 'mermaid') return mermaid(text, { output, screen: values['screen'], log: io.stderr });
+    const registries = host();
+    if (!('layouts' in registries)) return registries;
     const r = decompileText(text, registries);
     if (!r.ok) return { exitCode: 1, diagnostics: r.diagnostics };
     const bad = await writeText(output, r.value.text);

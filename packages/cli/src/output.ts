@@ -104,7 +104,23 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
       versionResult,
     ]),
   ),
-  decompile: reply(z.literal('decompile'), z.union([z.object({ out: z.string(), kept: z.number().int().min(0) }).strict(), helpResult, versionResult])),
+  decompile: reply(
+    z.literal('decompile'),
+    z.union([
+      z.object({ out: z.string(), kept: z.number().int().min(0) }).strict(),
+      z
+        .object({
+          out: z.string(),
+          format: z.literal('mermaid'),
+          nodes: z.number().int().min(0),
+          edges: z.number().int().min(0),
+          dropped: z.number().int().min(0),
+        })
+        .strict(),
+      helpResult,
+      versionResult,
+    ]),
+  ),
   catalog: reply(
     z.literal('catalog'),
     z.union([

@@ -296,7 +296,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EXP-004 | M | R3 | M20 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-005 | S | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-006 | S | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
-| FR-EXP-007 | S | R2 | M14 | [21-import-export-publish.md](21-import-export-publish.md) | — |
+| FR-EXP-007 | S | R2 | M14 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/cli/src/e2e/commands.test.ts`, `packages/dsl/src/export/mermaid.test.ts` |
 | FR-EXP-008 | M | R2 | M14 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-SITE-001 | M | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-SITE-002 | M | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |

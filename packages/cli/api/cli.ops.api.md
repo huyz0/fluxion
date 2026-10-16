@@ -11,6 +11,7 @@ import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { LintFinding } from '@fluxion/dsl';
 import { MeasureText } from '@fluxion/dsl';
+import { MermaidExport } from '@fluxion/dsl';
 
 // @public
 export function catalogText(registries: CoreRegistries, format: CatalogFormat): OpResult<{
@@ -49,6 +50,9 @@ export type Linted = {
     readonly score: number;
     readonly findings: readonly LintFinding[];
 };
+
+// @public
+export function mermaidText(text: string, screenId?: string): OpResult<MermaidExport>;
 
 // @public
 export function migrateDocument(text: string): OpResult<{
