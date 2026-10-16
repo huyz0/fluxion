@@ -4,6 +4,10 @@
  * @packageDocumentation
  */
 
+export { createServer, type ServerOptions } from './server.js';
+export { serveStdio } from './stdio.js';
+export { type Created, type DocLookupError, type DocResult, DocStore, MAX_OPEN_DOCS, type OpenDoc } from './store.js';
+
 /**
  * Version of this package.
  *

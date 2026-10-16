@@ -76,7 +76,7 @@ leg('AI_LINT_SCORE_MIN (85, weakens down) is in thresholds.mjs', () => {
 
 // ── the MCP server ─────────────────────────────────────────────────────────────────────────────────
 leg('a client lists the server tools over the in-memory transport (FR-MCP-001)', () => vitestFile('packages/mcp/src/server.test.ts'));
-leg('the stdio server starts from its bin and lists its tools to a spawned client (FR-MCP-001)', () => vitestFile('packages/mcp/src/stdio.test.ts'));
+leg('the stdio server starts from its bin and lists its tools to a spawned client (FR-MCP-001)', () => vitestFile('packages/mcp/src/e2e/stdio.test.ts'));
 leg('the read tools return diagnostics and a revision (FR-MCP-001)', () => vitestFile('packages/mcp/src/tools-read.test.ts'));
 leg('the write tools enforce roots and revisions; a path outside the roots writes nothing (FR-MCP-001)', () =>
   vitestFile('packages/mcp/src/tools-write.test.ts'),

@@ -12,7 +12,11 @@ import { DocumentFile } from '@fluxion/schema';
 import { LintFinding } from '@fluxion/dsl';
 import { MeasureText } from '@fluxion/dsl';
 import { MermaidExport } from '@fluxion/dsl';
+import { Pack } from '@fluxion/sdk';
 import { ScreenScore } from '@fluxion/dsl';
+
+// @public
+export const BUNDLED_PACKS: readonly Pack[];
 
 // @public
 export function catalogText(registries: CoreRegistries, format: CatalogFormat): OpResult<{
@@ -32,6 +36,14 @@ export function decompileText(text: string, registries: CoreRegistries): OpResul
     readonly text: string;
     readonly kept: number;
 }>;
+
+// @public
+export function hostRegistries(packs?: readonly Pack[], options?: {
+    readonly requireDescribe?: boolean;
+}): {
+    registries: CoreRegistries;
+    problems: readonly Diagnostic[];
+};
 
 // @public
 export function layoutDocument(text: string, registries: CoreRegistries, algorithm?: string): OpResult<{

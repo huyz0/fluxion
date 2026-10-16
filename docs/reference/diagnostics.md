@@ -162,3 +162,7 @@ whole (an option parse error, a file that cannot be read); an internal error has
 | `FLX_CLI_INTERNAL` | error | The command failed for a reason that is not the input's: an exception, a command not available in this build, or a reply outside its own schema; the exit code is 3. | Report it with the command line and the input. |
 | `FLX_CLI_PEER_MISSING` | error | The command needs an optional peer that is not installed (for example a browser for `render --png`); the exit code is 2. | Install the peer named in the message, or use another format. |
 | `FLX_CLI_FORMAT_UNSUPPORTED` | error | The requested output format or file kind is not one this command writes; the exit code is 2. | Use a format the command lists in `--help`. |
+| `FLX_MCP_NO_SUCH_DOC` | error | An MCP tool was given a `docHandle` this server never issued (ADR-0038). | Create the document first with `create_document`, and use the handle it returned. |
+| `FLX_MCP_DOC_EVICTED` | error | The `docHandle` named a document the server dropped to stay within its 32 open documents. | Create the document again from its text or file. |
+| `FLX_MCP_STALE_REVISION` | error | `apply_patch` named a `baseRevision` older than the document's current revision, so another change landed first. | Read the document again, rebase the patch on the new revision and retry. |
+| `FLX_MCP_PATH_OUTSIDE_ROOTS` | error | A path argument resolves outside the roots the server was started with (`--root`); nothing was read or written. | Use a path inside an allowed root, or start the server with the folder as a root. |

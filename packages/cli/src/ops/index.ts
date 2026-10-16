@@ -4,6 +4,7 @@
 import { type Diagnostic, type DocumentFile, parseDocument } from '@fluxion/schema';
 import { type OpResult, opFail, opOk } from './result.js';
 
+export { BUNDLED_PACKS, hostRegistries } from '../host.js';
 export { compileDocument } from './compile.js';
 export { layoutDocument } from './layout.js';
 export { type Linted, lintDocument, wrappedMeasure } from './lint.js';

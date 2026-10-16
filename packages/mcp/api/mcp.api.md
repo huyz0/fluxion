@@ -4,7 +4,62 @@
 
 ```ts
 
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
+// @public
+export interface Created {
+    readonly doc: OpenDoc;
+    readonly evicted?: string;
+}
+
+// @public
+export function createServer(_options?: ServerOptions): McpServer;
+
+// @public
+export interface DocLookupError {
+    readonly code: "FLX_MCP_NO_SUCH_DOC" | "FLX_MCP_DOC_EVICTED" | "FLX_MCP_STALE_REVISION";
+    readonly message: string;
+}
+
+// @public
+export type DocResult = {
+    readonly ok: true;
+    readonly doc: OpenDoc;
+} | {
+    readonly ok: false;
+    readonly error: DocLookupError;
+};
+
+// @public
+export class DocStore {
+    create(text: string, path?: string): Created;
+    get(handle: string): DocResult;
+    replace(handle: string, text: string, baseRevision?: number): DocResult;
+    get size(): number;
+}
+
+// @public
+export const MAX_OPEN_DOCS = 32;
+
+// @public
+export interface OpenDoc {
+    readonly handle: string;
+    readonly path?: string;
+    readonly revision: number;
+    readonly text: string;
+}
+
+// @public
+export interface ServerOptions {
+    readonly roots?: readonly string[];
+}
+
+// @public
+export function serveStdio(options?: ServerOptions): Promise<void>;
+
 // @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```

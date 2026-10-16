@@ -7,12 +7,18 @@ import { registerBuiltinRouters } from '@fluxion/routing';
 import type { Diagnostic } from '@fluxion/schema';
 import { type CoreRegistries, createCoreRegistries, type Pack } from '@fluxion/sdk';
 
-/** The packs every command loads. */
+/**
+ * The packs every command loads.
+ *
+ * @public
+ */
 export const BUNDLED_PACKS: readonly Pack[] = [basicPack];
 
 /**
  * Fresh core registries holding `packs`, or the diagnostics of every pack that failed to register
  * (a bundled pack failing is the CLI's own fault: callers report it as internal).
+ *
+ * @public
  */
 export function hostRegistries(
   packs: readonly Pack[] = BUNDLED_PACKS,

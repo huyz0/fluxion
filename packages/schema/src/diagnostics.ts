@@ -66,6 +66,10 @@ export type DiagnosticCode =
   | 'FLX_CLI_INTERNAL'
   | 'FLX_CLI_PEER_MISSING'
   | 'FLX_CLI_FORMAT_UNSUPPORTED'
+  | 'FLX_MCP_NO_SUCH_DOC'
+  | 'FLX_MCP_DOC_EVICTED'
+  | 'FLX_MCP_STALE_REVISION'
+  | 'FLX_MCP_PATH_OUTSIDE_ROOTS'
   | 'FLX_EXPR_SYNTAX'
   | 'FLX_EXPR_UNKNOWN'
   | 'FLX_EXPR_DOMAIN'
@@ -142,6 +146,10 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_CLI_INTERNAL: 'error',
   FLX_CLI_PEER_MISSING: 'error',
   FLX_CLI_FORMAT_UNSUPPORTED: 'error',
+  FLX_MCP_NO_SUCH_DOC: 'error',
+  FLX_MCP_DOC_EVICTED: 'error',
+  FLX_MCP_STALE_REVISION: 'error',
+  FLX_MCP_PATH_OUTSIDE_ROOTS: 'error',
   FLX_EXPR_SYNTAX: 'error',
   FLX_EXPR_UNKNOWN: 'error',
   FLX_EXPR_DOMAIN: 'error',
