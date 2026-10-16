@@ -10,7 +10,7 @@ Reviews: isolated reviewer subagent only (ADR-0137). The row that writes a test 
 | ID | Task | Req | Acceptance (EARS) | Deps | State | Commit |
 |---|---|---|---|---|---|---|
 | M15.1 | Write the completion gate `scripts/gates/m15-complete.mjs` first, red | HARNESS | `node scripts/gates/m15-complete.mjs` prints every leg and exits 1 | M14.23 | done | |
-| M15.2 | ADR-0038 MCP server model: `docHandle` sessions, allowed file roots, stdio and streamable HTTP (127.0.0.1 bind, origin check), tool result shapes, image content | FR-MCP-001 | ADR committed `accepted`; the gate's ADR leg passes | M15.1 | todo | |
+| M15.2 | ADR-0038 MCP server model: `docHandle` sessions, allowed file roots, stdio and streamable HTTP (127.0.0.1 bind, origin check), tool result shapes, image content | FR-MCP-001 | ADR committed `accepted`; the gate's ADR leg passes | M15.1 | done | |
 | M15.3 | ADR-0039 Eval harness: case schema, recording key `hash(case + prompt version + model)`, scorecard metrics, the alt-text metric defined without an invented threshold | FR-AI-009 | ADR committed `accepted` | M15.1 | todo | |
 | M15.4 | ADR-0040 Mermaid and Markdown import: parsing strategy (hand-written subset parser versus the `mermaid` package), `mdast-util-from-markdown` for Markdown, both emit FluxScript | FR-IMP-001 | ADR committed `accepted` | M15.1 | todo | |
 | M15.5 | ADR-0041 Provider adapters and key storage: `LlmClient` port, adapters under `apps/studio/src/ai/`, IndexedDB key store with optional passphrase encryption | FR-AI-007 | ADR committed `accepted` | M15.1 | todo | |
