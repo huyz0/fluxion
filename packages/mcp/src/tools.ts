@@ -1,8 +1,11 @@
 // The read tools (FR-MCP-001, ADR-0038): each runs an operation of @fluxion/cli/ops over a document named by handle, text or path.
+
+import type { Launcher } from '@fluxion/cli';
 import { catalogText, compileDocument, hostRegistries, lintDocument, type OpResult, outlineDocument, screenText, validateDocument } from '@fluxion/cli/ops';
 import type { CatalogFormat } from '@fluxion/dsl';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { registerRenderTool } from './render-tool.js';
 import { failure, type Reply, success } from './reply.js';
 import type { Roots } from './roots.js';
 import { type Source, Sources, sourceSchema } from './source.js';
@@ -124,10 +127,11 @@ function registerCompileTools(server: McpServer, sources: Sources): void {
  *
  * @internal
  */
-export function registerReadTools(server: McpServer, store: DocStore, roots: Roots): void {
+export function registerReadTools(server: McpServer, store: DocStore, roots: Roots, launch?: Launcher): void {
   const sources = new Sources(store, roots, hostRegistries().registries);
   registerDocumentTools(server, sources);
   registerCheckTools(server, sources);
   registerCompileTools(server, sources);
   registerWriteTools(server, sources);
+  registerRenderTool(server, sources, launch);
 }

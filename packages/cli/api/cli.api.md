@@ -4,6 +4,16 @@
 
 ```ts
 
+import { Diagnostic } from '@fluxion/schema';
+
+// @public
+export type Browser = {
+    readonly newPage: (options: {
+        readonly deviceScaleFactor: number;
+    }) => Promise<Shot>;
+    readonly close: () => Promise<void>;
+};
+
 // @public
 export type CliIo = {
     readonly stdout: (text: string) => void;
@@ -14,7 +24,48 @@ export type CliIo = {
 export type ExitCode = 0 | 1 | 2 | 3;
 
 // @public
+export type Launcher = () => Promise<Browser>;
+
+// @public
+export const playwrightLauncher: Launcher;
+
+// @public
+export function renderScreenPng(text: string, options?: {
+    readonly screen?: string;
+    readonly width?: number;
+    readonly launch?: Launcher;
+}): Promise<ScreenImageResult>;
+
+// @public
 export function run(argv: readonly string[], io: CliIo): Promise<ExitCode>;
+
+// @public
+export type ScreenImage = {
+    readonly screen: string;
+    readonly png: Uint8Array;
+    readonly width: number;
+    readonly height: number;
+};
+
+// @public
+export type ScreenImageResult = {
+    readonly ok: true;
+    readonly value: ScreenImage;
+    readonly diagnostics: readonly Diagnostic[];
+} | {
+    readonly ok: false;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
+export type Shot = {
+    readonly setContent: (html: string) => Promise<void>;
+    readonly locator: (selector: string) => {
+        readonly screenshot: (options: {
+            readonly path?: string;
+        }) => Promise<unknown>;
+    };
+};
 
 // @public
 export const VERSION: string;

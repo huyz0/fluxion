@@ -4,7 +4,7 @@
 import { writeFile } from 'node:fs/promises';
 import { builtinRegistries } from '@fluxion/render';
 import { renderDocumentToHtml } from '@fluxion/render/ssr';
-import { type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
+import { type Diagnostic, type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
 import { type Command, internal, io, type Outcome, unsupported, usage } from './command.js';
 import { hostRegistries } from './host.js';
 import { measurerFor } from './measurer.js';
@@ -54,16 +54,18 @@ async function emit(
   return { out, screens: drawn.length };
 }
 
-/** Renders the document at `file` to `out`. */
-async function render({ file, out, format, screens, launch }: Request, log: (text: string) => void): Promise<Outcome> {
+/** The static page of the document in `text`: its HTML, the screens drawn and the document; or the outcome that says why not. */
+export function staticPage(
+  text: string,
+  screens: readonly string[] | undefined,
+  label: string,
+): Outcome | { html: string; drawn: readonly string[]; document: DocumentFile; diagnostics: readonly Diagnostic[] } {
   // the bundled packs are the CLI's own: one failing to register is an internal error (ADR-0017)
   const host = hostRegistries();
   if (host.problems.length > 0) return internal(host.problems.map((d) => d.message).join('; '));
-  const text = await readInput(file);
-  if (typeof text !== 'string') return text;
   const parsed = parseDocument(text);
   if (!parsed.ok) return { exitCode: 1, diagnostics: parsed.error.diagnostics };
-  const problem = screenProblem(parsed.value.document, screens ?? [], file);
+  const problem = screenProblem(parsed.value.document, screens ?? [], label);
   if (problem !== undefined) return usage(problem);
   // shapes and markers come from the bundled packs, registered in the host's core registries (ADR-0017)
   const registries = builtinRegistries(host.registries.shapeDefs, undefined, host.registries.markers);
@@ -72,8 +74,20 @@ async function render({ file, out, format, screens, launch }: Request, log: (tex
     measurer: measurerFor(parsed.value.document),
     ...(screens === undefined ? {} : { screens: screens as readonly RecordId[] }),
   });
-  const written = await emit({ html, drawn, out, format, launch }, log);
-  return 'exitCode' in written ? written : { exitCode: 0, diagnostics: parsed.value.diagnostics, result: written };
+  return { html, drawn, document: parsed.value.document, diagnostics: parsed.value.diagnostics };
+}
+
+/** Renders the document at `file` to `out`. */
+async function render({ file, out, format, screens, launch }: Request, log: (text: string) => void): Promise<Outcome> {
+  // checked before the input is read: a broken bundle is not the user's file
+  const host = hostRegistries();
+  if (host.problems.length > 0) return internal(host.problems.map((d) => d.message).join('; '));
+  const text = await readInput(file);
+  if (typeof text !== 'string') return text;
+  const page = staticPage(text, screens, file);
+  if ('exitCode' in page) return page;
+  const written = await emit({ html: page.html, drawn: page.drawn, out, format, launch }, log);
+  return 'exitCode' in written ? written : { exitCode: 0, diagnostics: page.diagnostics, result: written };
 }
 
 /** The `render` command. */

@@ -84,6 +84,9 @@ leg('the write tools enforce roots and revisions; a path outside the roots write
 leg('the HTTP transport binds 127.0.0.1 and refuses a foreign Origin; render_screen_png returns image/png (FR-MCP-001)', () =>
   vitestFile('packages/mcp/src/http.test.ts'),
 );
+leg('render_screen_png returns image/png content, scaled to the width, and FLX_CLI_PEER_MISSING without a browser (FR-MCP-001)', () =>
+  vitestFile('packages/mcp/src/tools-render.test.ts'),
+);
 leg('the inspector lists 11 tools, 6 resource URIs and 3 prompts (FR-MCP-002)', () => {
   const r = vitestReport(['packages/mcp/src/inspector.test.ts']);
   if (typeof r === 'string') return r;

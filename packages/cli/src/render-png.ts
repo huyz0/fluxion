@@ -5,22 +5,45 @@ import { join } from 'node:path';
 import { jsonPointer } from '@fluxion/schema';
 import { io, type Outcome } from './command.js';
 
-/** The part of a Playwright page this command uses. */
-type Shot = {
+/**
+ * What a page can photograph: one element, to a file or, with no path, to bytes.
+ *
+ * @public
+ */
+export type Shot = {
+  /** Replaces the page with `html`. */
   readonly setContent: (html: string) => Promise<void>;
-  readonly locator: (selector: string) => { readonly screenshot: (options: { readonly path: string }) => Promise<unknown> };
+  /** The element matching `selector`. */
+  readonly locator: (selector: string) => {
+    /** Photographs the element; the PNG bytes when no `path` is given. */
+    readonly screenshot: (options: { readonly path?: string }) => Promise<unknown>;
+  };
 };
 
-/** A launched headless browser. */
+/**
+ * A launched headless browser.
+ *
+ * @public
+ */
 export type Browser = {
+  /** Opens a page whose pixels are `deviceScaleFactor` per logical unit. */
   readonly newPage: (options: { readonly deviceScaleFactor: number }) => Promise<Shot>;
+  /** Closes the browser. */
   readonly close: () => Promise<void>;
 };
 
-/** Starts a headless Chromium; throws when the peer or the browser is absent. */
+/**
+ * Starts a headless Chromium; throws when the peer or the browser is absent.
+ *
+ * @public
+ */
 export type Launcher = () => Promise<Browser>;
 
-/** The Playwright module, found by name at run time so that installing the CLI needs no browser. */
+/**
+ * The Playwright module, found by name at run time so that installing the CLI needs no browser.
+ *
+ * @public
+ */
 export const playwrightLauncher: Launcher = async () => {
   const name = 'playwright';
   const module = (await import(name)) as { readonly chromium: { readonly launch: () => Promise<Browser> } };
@@ -61,6 +84,29 @@ export async function renderPngs(html: string, screens: readonly string[], dir: 
     return files;
   } catch (e) {
     return io(`cannot write PNGs to ${dir}: ${e instanceof Error ? e.message : String(e)}`, ['argv']);
+  } finally {
+    await browser.close();
+  }
+}
+
+/**
+ * Photographs one screen of `html` in memory at `scale` device pixels per unit; the PNG bytes, or the outcome that says why not.
+ *
+ * @internal
+ */
+export async function renderPngBytes(html: string, screen: string, scale: number, launch: Launcher): Promise<Uint8Array | Outcome> {
+  let browser: Browser;
+  try {
+    browser = await launch();
+  } catch (e) {
+    return peerMissing(e instanceof Error ? (e.message.split('\n')[0] ?? 'launch failed') : String(e));
+  }
+  try {
+    const page = await browser.newPage({ deviceScaleFactor: scale });
+    await page.setContent(html);
+    return (await page.locator(`[data-screen-id="${screen}"]`).screenshot({})) as Uint8Array;
+  } catch (e) {
+    return io(`cannot photograph screen ${screen}: ${e instanceof Error ? e.message : String(e)}`, ['argv']);
   } finally {
     await browser.close();
   }

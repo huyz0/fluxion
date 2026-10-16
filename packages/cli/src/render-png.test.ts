@@ -17,7 +17,7 @@ function fakeBrowser(log: string[]): Browser {
       locator: (selector) => ({
         screenshot: async ({ path }) => {
           log.push(`shot:${selector}`);
-          writeFileSync(path, 'png');
+          writeFileSync(path ?? '', 'png');
         },
       }),
     }),

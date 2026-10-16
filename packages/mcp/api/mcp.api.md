@@ -4,6 +4,7 @@
 
 ```ts
 
+import { Launcher } from '@fluxion/cli';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 // @public
@@ -39,6 +40,18 @@ export class DocStore {
 }
 
 // @public
+export interface HttpHandle {
+    readonly close: () => Promise<void>;
+    readonly port: number;
+    readonly url: string;
+}
+
+// @public
+export interface HttpOptions extends ServerOptions {
+    readonly port?: number;
+}
+
+// @public
 export const MAX_OPEN_DOCS = 32;
 
 // @public
@@ -56,7 +69,11 @@ export class Roots {
 }
 
 // @public
+export function serveHttp(options?: HttpOptions): Promise<HttpHandle>;
+
+// @public
 export interface ServerOptions {
+    readonly launch?: Launcher;
     readonly roots?: readonly string[];
     readonly store?: DocStore;
 }
