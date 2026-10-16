@@ -1,7 +1,10 @@
 // The document's problems (FR-EDT-021, M7.26): what `validate()` reports about the records, and what a few lint
 // rules notice about how they are laid out, each with the fix the panel offers when there is one. Pure: the Problems
 // tab (problems-tab.tsx) shows the list and runs the fixes through the editor's `execute`.
+import { createRegistry } from '@fluxion/core';
+import { CORE_LINT_RULES, type LintFinding, lint, registerLintRules } from '@fluxion/dsl';
 import { DEFAULT_SCREEN_SIZE, type Diagnostic, type DocumentFile, type RecordId, validate } from '@fluxion/schema';
+import { themeOf } from '@fluxion/theme';
 
 /**
  * A fix: a document command with its arguments.
@@ -112,11 +115,46 @@ function stacked(doc: DocumentFile): readonly Problem[] {
     });
 }
 
+const CORE_RULES = createRegistry<string, unknown>('lintRules');
+registerLintRules(CORE_RULES);
+const SEVERITY: { readonly [id: string]: Problem['severity'] } = Object.fromEntries(CORE_LINT_RULES.map((r) => [r.code, r.severity]));
+
+/** The fix for an element that sticks out of its screen: move it back inside (the size is kept, or shrunk to the screen). */
+function inside(doc: DocumentFile, id: string): ProblemFix | undefined {
+  const e = recordOf(doc, id);
+  const t = e?.['transform'] as (Box & { rot?: number }) | undefined;
+  const size = (recordOf(doc, String(e?.['screenId']))?.['size'] as { w?: number; h?: number } | undefined) ?? DEFAULT_SCREEN_SIZE;
+  if (e === undefined || t === undefined || size.w === undefined || size.h === undefined) return undefined;
+  const [w, h] = [Math.min(t.w, size.w), Math.min(t.h, size.h)];
+  const moved = { ...t, w, h, x: Math.min(Math.max(t.x, 0), size.w - w), y: Math.min(Math.max(t.y, 0), size.h - h) };
+  return { title: 'Move inside the screen', command: 'element.update', args: { id, fields: { transform: moved } } };
+}
+
+/** The problem a lint finding makes, with the fix its rule offers where there is one. */
+function fromFinding(doc: DocumentFile, f: LintFinding): Problem {
+  const fix = f.code === 'FLX_LINT_OFFSCREEN' ? inside(doc, f.elements[0] ?? '') : undefined;
+  const base: Problem = { id: `${f.code}|${f.elements.join('|')}`, severity: SEVERITY[f.code] ?? f.severity, message: f.message, elements: f.elements };
+  return fix === undefined ? base : { ...base, fix };
+}
+
+/** The document's theme record read as a theme, for the contrast rule. */
+function themeOfDocument(doc: DocumentFile) {
+  const record = (Object.values(doc.records) as Rec[]).find((r) => r.type === 'theme');
+  return record === undefined ? undefined : themeOf(record);
+}
+
 /**
  * The problems of `doc`: its validation diagnostics, then the lint findings, in a stable order.
  *
  * @public
  */
 export function problemsOf(doc: DocumentFile): readonly Problem[] {
-  return [...validate(doc).map((d) => fromDiagnostic(doc, d)), ...stacked(doc)];
+  const stack = stacked(doc);
+  const theme = themeOfDocument(doc);
+  // elements exactly on top of one another are reported once, by `stacked`, with its fix
+  const covered = new Set(stack.map((p) => [...p.elements].sort().join('|')));
+  const found = lint(doc, CORE_RULES, theme === undefined ? {} : { theme }).findings.filter(
+    (f) => !(f.code === 'FLX_LINT_OVERLAP' && covered.has([...f.elements].sort().join('|'))),
+  );
+  return [...validate(doc).map((d) => fromDiagnostic(doc, d)), ...stack, ...found.map((f) => fromFinding(doc, f))];
 }

@@ -1,6 +1,7 @@
 import { createCore } from '@fluxion/core';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
+import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
 import { problemsOf } from './problems.js';
 
@@ -67,11 +68,36 @@ describe('the problems of a document (FR-EDT-021)', () => {
     const fix = p?.fix;
     expect(fix?.title).toBe('Offset the top one');
     expect(core.execute(fix?.command ?? '', fix?.args).ok).toBe(true);
-    expect(problemsOf(core.store.toDocument())).toEqual([]);
+    // the pair no longer lies exactly on top; the lint rule still sees them overlap
+    expect(problemsOf(core.store.toDocument()).map((p) => p.id.split('|')[0])).toEqual(['FLX_LINT_OVERLAP']);
     const moved = (id: RecordId) => (core.store.get(id) as { transform: { x: number; y: number } }).transform;
     // exactly one of the two moved, by 16 px
     expect([moved(below), moved(top)].filter((t) => t.x === 26 && t.y === 36)).toHaveLength(1);
     // connectors do not stack; a diagnostic with no known fix is listed without one
     expect(problemsOf({ ...core.store.toDocument(), schemaVersion: '9.0' }).every((p) => p.fix === undefined)).toBe(true);
+  });
+
+  it('FR-EDT-021: a lint finding (contrast) is listed in the Problems tab', () => {
+    const b = documentBuilder({ seed: 92 });
+    const s = b.screen();
+    const label = b.text(s, 'pale on pale', { x: 10, y: 10, w: 200, h: 50 });
+    const doc = b.build();
+    const styled = { ...(doc.records[label] as object), style: { fill: '#999999', font: { color: '#888888', size: 16 } } };
+    const withTheme = { ...doc, records: { ...doc.records, [label]: styled, th1: { id: 'th1', type: 'theme', ...LIGHT_THEME } } } as unknown as DocumentFile;
+    const found = problemsOf(withTheme).filter((p) => p.id.startsWith('FLX_LINT_CONTRAST'));
+    expect(found.map((p) => [p.severity, p.elements])).toEqual([['warning', [label]]]);
+  });
+
+  it('FR-EDT-021: an element past the screen edge is listed with a fix that moves it back inside', () => {
+    const b = documentBuilder({ seed: 93 });
+    const s = b.screen({ size: { w: 400, h: 300 } });
+    const out = b.rect(s, { x: 350, y: 10, w: 100, h: 50 });
+    const core = createCore(b.build());
+    const [p] = problemsOf(core.store.toDocument()).filter((x) => x.id.startsWith('FLX_LINT_OFFSCREEN'));
+    expect(p?.elements).toEqual([out]);
+    expect(p?.fix?.title).toBe('Move inside the screen');
+    expect(core.execute(p?.fix?.command ?? '', p?.fix?.args).ok).toBe(true);
+    expect((core.store.get(out) as { transform: { x: number } }).transform.x).toBe(300);
+    expect(problemsOf(core.store.toDocument())).toEqual([]);
   });
 });
