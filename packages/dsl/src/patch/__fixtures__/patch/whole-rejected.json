@@ -1,0 +1,21 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "add",
+        "screen": "arch",
+        "slug": "ok",
+        "node": {}
+      },
+      {
+        "op": "update",
+        "target": "nope",
+        "set": {
+          "label": "x"
+        }
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_REF_UNKNOWN", "/ops/1/target"]]
+}

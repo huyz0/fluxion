@@ -1,0 +1,16 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "setLayout",
+        "scope": "arch",
+        "layout": {
+          "type": "layered",
+          "direction": "right"
+        }
+      }
+    ]
+  },
+  "ops": ["setLayout"]
+}

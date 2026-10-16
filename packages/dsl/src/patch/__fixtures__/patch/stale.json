@@ -1,0 +1,17 @@
+{
+  "patch": {
+    "flux": 1,
+    "baseRevision": "r1",
+    "ops": [
+      {
+        "op": "update",
+        "target": "api",
+        "set": {
+          "label": "x"
+        }
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_STALE", "/baseRevision"]],
+  "revision": "r2"
+}

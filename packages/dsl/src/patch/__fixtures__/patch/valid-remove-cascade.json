@@ -1,0 +1,13 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "remove",
+        "target": "db",
+        "cascade": true
+      }
+    ]
+  },
+  "ops": ["remove"]
+}

@@ -1,0 +1,16 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "update",
+        "target": "api",
+        "set": {
+          "label": "Gateway",
+          "tone": "accent"
+        }
+      }
+    ]
+  },
+  "ops": ["update"]
+}

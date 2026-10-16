@@ -1,0 +1,14 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "add",
+        "screen": "arch",
+        "slug": "api",
+        "node": {}
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_CONFLICT", "/ops/0/slug"]]
+}

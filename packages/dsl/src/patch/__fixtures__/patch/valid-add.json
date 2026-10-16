@@ -1,0 +1,17 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "add",
+        "screen": "arch",
+        "slug": "cache",
+        "node": {
+          "shape": "rect",
+          "label": "Cache"
+        }
+      }
+    ]
+  },
+  "ops": ["add"]
+}

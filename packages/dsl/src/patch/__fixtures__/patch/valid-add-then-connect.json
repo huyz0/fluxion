@@ -1,0 +1,20 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "add",
+        "screen": "arch",
+        "slug": "cache",
+        "node": {
+          "shape": "rect"
+        }
+      },
+      {
+        "op": "connect",
+        "edge": "api -> cache"
+      }
+    ]
+  },
+  "ops": ["add", "connect"]
+}

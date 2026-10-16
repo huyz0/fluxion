@@ -1,0 +1,15 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "setLayout",
+        "scope": "arch",
+        "layout": {
+          "type": "layerd"
+        }
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_OP_INVALID", "/ops/0/layout/type"]]
+}

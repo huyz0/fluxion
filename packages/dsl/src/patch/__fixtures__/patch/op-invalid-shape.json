@@ -1,0 +1,16 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "add",
+        "screen": "arch",
+        "slug": "cache",
+        "node": {
+          "shape": "recct"
+        }
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_OP_INVALID", "/ops/0/node/shape"]]
+}

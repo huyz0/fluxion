@@ -62,6 +62,16 @@ describe('the AI patch JSON Schemas (FR-AI-001, FR-AI-003)', () => {
     ]);
   });
 
+  it('FR-AI-003: the provider rules checker has a failing case for depth, width and each forbidden keyword', () => {
+    const closed = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, properties, required: Object.keys(properties) });
+    let deep: unknown = { type: 'string' };
+    for (let i = 0; i <= rules.maxObjectDepth; i++) deep = closed({ a: deep });
+    expect(problems(deep).some((p) => p.includes('nested deeper'))).toBe(true);
+    const wide = closed(Object.fromEntries(Array.from({ length: rules.maxProperties + 1 }, (_, i) => [`p${i}`, { type: 'string' }])));
+    expect(problems(wide)).toEqual(['#: more than 100 properties']);
+    for (const keyword of rules.forbiddenKeywords) expect(problems({ type: 'string', [keyword]: 1 }), keyword).toEqual([`#: keyword ${keyword}`]);
+  });
+
   it('FR-AI-003: the patch covers the nine ops of ADR-0035 and caps a patch at 200 ops', () => {
     const ops = ['add', 'update', 'remove', 'connect', 'disconnect', 'setLayout', 'restyle', 'addStep', 'addInteraction'];
     for (const op of ops) expect(JSON.stringify(patchJsonSchema())).toContain(`"const":"${op}"`);

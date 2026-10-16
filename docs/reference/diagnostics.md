@@ -90,6 +90,12 @@ Paths point into the engine (`/registries/<name>/<key>`), not into the document.
 |---|---|---|---|
 | `FLX_REGISTRY_DUPLICATE` | error | A key is already registered by another source (plugin); the first registration stays (FR-EXT-001). | Rename the key or namespace it `<plugin>:<name>`. |
 | `FLX_REGISTRY_UNDESCRIBED` | error | A registry that requires descriptions (a dev host) was given a shape, marker, router, layout, effect or transition with no one-line `describe` (FR-AI-002). | Add a `describe`: one line of plain text, at most 160 characters. |
+| `FLX_PATCH_STALE` | error | The patch names a `baseRevision` that is not the document's revision; nothing was applied (FR-AI-003). | Read the document again, take its `r<N>`, and rewrite the patch against it. |
+| `FLX_PATCH_REF_UNKNOWN` | error | A reference of the patch matches no screen, element or connector (`/ops/<n>/…`). | Use a slug or edge key the document has (or an earlier op of the patch adds), or `#<RecordId>`. |
+| `FLX_PATCH_REF_AMBIGUOUS` | error | A slug matches elements in several screens, or an edge key matches several connectors. | Name the op's `screen`, or write the reference as `#<RecordId>`. |
+| `FLX_PATCH_OP_INVALID` | error | An op that fails its schema, names an unknown shape, a layout or a field the engine cannot apply, or is not compiled yet (`addStep`, `addInteraction`). | Fix the field the pointer names; see the hint. |
+| `FLX_PATCH_CONFLICT` | error | An `add` whose slug exists, a `remove` that would leave a dangling connector without `cascade`, or a parent that is not a group of the screen. | Choose a new slug, set `cascade: true`, or name a group of the same screen. |
+| `FLX_PATCH_TOO_LARGE` | error | A patch with more than 200 ops. | Split it into several patches. |
 | `FLX_COMMAND_UNKNOWN` | error | No command is registered under the id (`/commands/<id>`). | Check the id; load the plugin that provides it. |
 | `FLX_COMMAND_DISABLED` | error | The command's `when` is false in the current context; nothing ran. | Change the selection or state it needs. |
 | `FLX_COMMAND_ARGS` | error | An argument does not match the command's schema (`/args/<path>`); nothing ran. | Fix the argument the path names. |

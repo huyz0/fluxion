@@ -312,6 +312,12 @@ export type AiPatch = {
   readonly ops: readonly PatchOp[];
 };
 
+// the hand-written AiPatch is the Zod input in both directions (readonly aside): a field added to one and not the other fails to compile here
+type Mutable<T> = T extends readonly (infer U)[] ? Mutable<U>[] : T extends object ? { -readonly [K in keyof T]: Mutable<T[K]> } : T;
+type PatchInput = z.input<typeof patchSchema>;
+const sameAsInput: [Mutable<AiPatch>] extends [PatchInput] ? ([PatchInput] extends [Mutable<AiPatch>] ? true : never) : never = true;
+void sameAsInput;
+
 /**
  * An AI patch (ADR-0035): `flux: 1`, an optional `r<N>` base revision, and 1 to {@link MAX_PATCH_OPS} ops.
  *

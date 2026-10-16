@@ -1,0 +1,20 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "restyle",
+        "targets": {
+          "select": {
+            "screen": "arch",
+            "shape": "rect"
+          }
+        },
+        "style": {
+          "fill": "surface"
+        }
+      }
+    ]
+  },
+  "ops": ["restyle"]
+}

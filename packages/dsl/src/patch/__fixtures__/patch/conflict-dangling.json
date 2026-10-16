@@ -1,0 +1,12 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "remove",
+        "target": "db"
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_CONFLICT", "/ops/0/target"]]
+}

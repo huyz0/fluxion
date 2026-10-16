@@ -40,6 +40,7 @@ export { CHEAT_SHEET } from './catalog/cheatsheet.js';
 export { type CatalogFormat, formatCatalog } from './catalog/format.js';
 export { catalogJsonSchema } from './catalog/json-schema.js';
 export { patchJsonSchema, strictPatchJsonSchema } from './patch/json-schema.js';
+export { type PatchContext, type PatchResolution, type ResolvedOp, type ResolvedPatch, type ResolvedRef, resolvePatch } from './patch/resolve.js';
 export {
   type AiPatch,
   aiPatchSchema,
@@ -52,3 +53,4 @@ export {
   type Selector,
   type StyleSpec,
 } from './patch/schema.js';
+export type { RefKind } from './patch/working-index.js';

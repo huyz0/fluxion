@@ -1,0 +1,15 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "addStep",
+        "screen": "arch",
+        "step": {
+          "label": "one"
+        }
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_OP_INVALID", "/ops/0"]]
+}

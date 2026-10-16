@@ -1,0 +1,15 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "restyle",
+        "targets": ["api", "db"],
+        "style": {
+          "fill": "surface"
+        }
+      }
+    ]
+  },
+  "ops": ["restyle"]
+}

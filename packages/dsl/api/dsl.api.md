@@ -366,6 +366,15 @@ export type ParseResult = {
 };
 
 // @public
+export type PatchContext = {
+    readonly records: {
+        readonly [id: string]: AnyRecord;
+    };
+    readonly revision?: string;
+    readonly registries?: CoreRegistries;
+};
+
+// @public
 export function patchJsonSchema(): {
     readonly [key: string]: unknown;
 };
@@ -422,6 +431,15 @@ export type PatchOp = {
 };
 
 // @public
+export type PatchResolution = {
+    readonly ok: true;
+    readonly value: ResolvedPatch;
+} | {
+    readonly ok: false;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
 export type PinAst = {
     readonly x: number;
     readonly y: number;
@@ -463,6 +481,9 @@ export type ReadResult = {
 };
 
 // @public
+export type RefKind = "screen" | "element" | "group" | "connector";
+
+// @public
 export type Resolution = {
     readonly theme: Theme;
     readonly themeId?: string;
@@ -470,7 +491,69 @@ export type Resolution = {
 };
 
 // @public
+export type ResolvedOp = {
+    readonly op: "add";
+    readonly index: number;
+    readonly screen: ResolvedRef;
+    readonly slug: string;
+    readonly parent?: ResolvedRef;
+    readonly node: NodeSpec;
+} | {
+    readonly op: "update";
+    readonly index: number;
+    readonly target: ResolvedRef;
+    readonly set: NodeSpec;
+} | {
+    readonly op: "remove";
+    readonly index: number;
+    readonly target: ResolvedRef;
+    readonly connectors: readonly string[];
+} | {
+    readonly op: "connect";
+    readonly index: number;
+    readonly screen: ResolvedRef;
+    readonly from: ResolvedRef;
+    readonly to: ResolvedRef;
+    readonly arrow: string;
+    readonly anchors: {
+        readonly from?: string;
+        readonly to?: string;
+    };
+    readonly spec: EdgeSpec;
+} | {
+    readonly op: "disconnect";
+    readonly index: number;
+    readonly target: ResolvedRef;
+} | {
+    readonly op: "setLayout";
+    readonly index: number;
+    readonly scope: ResolvedRef;
+    readonly layout: LayoutIntent;
+    readonly relayout: boolean;
+} | {
+    readonly op: "restyle";
+    readonly index: number;
+    readonly targets: readonly ResolvedRef[];
+    readonly style: StyleSpec;
+};
+
+// @public
+export type ResolvedPatch = {
+    readonly ops: readonly ResolvedOp[];
+};
+
+// @public
+export type ResolvedRef = {
+    readonly id: string;
+    readonly kind: RefKind;
+    readonly added?: true;
+};
+
+// @public
 export function resolveFlux(ast: FluxAst, registries: CoreRegistries): ResolveResult;
+
+// @public
+export function resolvePatch(input: unknown, context: PatchContext): PatchResolution;
 
 // @public
 export type ResolveResult = {

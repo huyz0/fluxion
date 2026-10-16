@@ -1,0 +1,12 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "disconnect",
+        "target": "api->db"
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_REF_AMBIGUOUS", "/ops/0/target"]]
+}

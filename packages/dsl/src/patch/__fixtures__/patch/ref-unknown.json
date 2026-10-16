@@ -1,0 +1,15 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "update",
+        "target": "apii",
+        "set": {
+          "label": "x"
+        }
+      }
+    ]
+  },
+  "errors": [["FLX_PATCH_REF_UNKNOWN", "/ops/0/target"]]
+}

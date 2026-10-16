@@ -1,0 +1,12 @@
+{
+  "patch": {
+    "flux": 1,
+    "ops": [
+      {
+        "op": "connect",
+        "edge": "web -> db: reads"
+      }
+    ]
+  },
+  "ops": ["connect"]
+}
