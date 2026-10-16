@@ -71,9 +71,11 @@ leg('every registry item has a describe line and the catalog lists plugin items 
 leg(`the core catalog and cheat sheet fit AI_CATALOG_MAX_TOKENS (${t('AI_CATALOG_MAX_TOKENS')}) (NFR-AI-002)`, () =>
   vitestFile('packages/dsl/src/catalog/token-budget.test.ts'),
 );
-leg('DSL tokens against canonical JSON tokens reach AI_DSL_TOKEN_RATIO_MIN over examples/dsl (NFR-AI-003)', () =>
-  vitestFile('packages/dsl/src/token-ratio.test.ts'),
-);
+// the corpus compiles against the first-party packs, which packages/dsl may not import: the test lives in the examples runner (scripts/dsl)
+leg('DSL tokens against canonical JSON tokens reach AI_DSL_TOKEN_RATIO_MIN over examples/dsl (NFR-AI-003)', () => {
+  if (!exists('scripts/dsl/token-ratio.test.ts')) return 'missing scripts/dsl/token-ratio.test.ts';
+  return ok(run('pnpm', ['--filter', '@fluxion/dsl', 'run', 'test:examples', '-t', 'NFR-AI-003']));
+});
 leg('an invalid patch is rejected whole with pointer diagnostics; a valid one is one undo step (FR-AI-003)', () => {
   const fixtures = exists('packages/dsl/src/patch/__fixtures__') ? true : 'missing packages/dsl/src/patch/__fixtures__';
   return fixtures === true ? vitestFile('packages/dsl/src/patch/patch.test.ts') : fixtures;

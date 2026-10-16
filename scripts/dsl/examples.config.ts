@@ -24,5 +24,5 @@ export default defineConfig({
     ],
   },
   ssr: { resolve: { conditions } },
-  test: { name: 'dsl-examples', environment: 'node', include: ['scripts/dsl/examples.test.ts'], testTimeout: 60_000 },
+  test: { name: 'dsl-examples', environment: 'node', include: ['scripts/dsl/examples.test.ts', 'scripts/dsl/token-ratio.test.ts'], testTimeout: 60_000 },
 });

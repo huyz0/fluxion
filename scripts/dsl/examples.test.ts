@@ -6,16 +6,13 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { type CompileResult, compile, decompile, formatDiagnostics } from '@fluxion/dsl';
-import { registerBuiltInLayouts } from '@fluxion/layout';
-import { basicPack } from '@fluxion/pack-basic';
 import { FONT_METRICS } from '@fluxion/pack-fonts-core';
-import { themesCorePack } from '@fluxion/pack-themes-core';
 import { builtinRegistries, normalizeSvg, serverMeasurer } from '@fluxion/render';
 import { renderDocumentToHtml } from '@fluxion/render/ssr';
 import { type DocumentFile, serializeDocument } from '@fluxion/schema';
-import { type CoreRegistries, createCoreRegistries } from '@fluxion/sdk';
 import { describe, expect, it } from 'vitest';
 import { BASIC_IDS } from '../../packages/editor/src/source-view/completion-fixture.js';
+import { registries } from './host-registries.js';
 
 const DIR = join(import.meta.dirname, '..', '..', 'examples', 'dsl');
 const FILES = readdirSync(DIR)
@@ -23,18 +20,6 @@ const FILES = readdirSync(DIR)
   .sort();
 /** The one example with deferred sections. */
 const DEFERRED = 'checkout.flux.yaml';
-
-/** Fresh registries as a host has them: the bundled packs, then the built-in layouts. */
-function registries(): CoreRegistries {
-  const r = createCoreRegistries();
-  for (const pack of [basicPack, themesCorePack]) {
-    const done = pack.register(r);
-    if (!done.ok) throw new Error(`pack ${pack.id} failed to register: ${done.error.map((d) => d.message).join('; ')}`);
-  }
-  const layouts = registerBuiltInLayouts(r.layouts);
-  if (!layouts.ok) throw new Error('the built-in layouts failed to register');
-  return r;
-}
 
 const run = (text: string): CompileResult => compile(text, { registries: registries() });
 const bytes = (r: CompileResult): string => serializeDocument(r.doc as DocumentFile);
