@@ -1,0 +1,20 @@
+{
+  "milestone": "M14",
+  "range": "11a1295..795a771",
+  "reviewer": "fresh milestone-reviewer subagent (not the driver)",
+  "findings": [
+    {"id": "F1", "severity": "minor", "summary": "Gate leg 'every CLI command has a passing --json test and its output validates against specs/schema/cli-result.json' only checks test titles; the e2e helper validates replies with the Zod OUTPUT_SCHEMAS, not the committed JSON file. The file is separately pinned by a toMatchFileSnapshot generation test, so the chain holds, but the leg text overstates what it runs."},
+    {"id": "F2", "severity": "minor", "summary": "Plan task 14 said render per screen/step. --step was cut in the M14.17 row text ('deferred with the player step API') but no roadmap Deferred row or receiving-milestone row records it, so the requirement part could be lost silently."},
+    {"id": "F3", "severity": "minor", "summary": "render --format html has no in-process test (coverage sandbox lacks built packages); it is covered only by the spawned e2e. The CLI coverage leg therefore measures the CLI against the render floors without that path. Known; the leg text states it uses the nearer class (no CLI floor)."},
+    {"id": "F4", "severity": "minor", "summary": "Bookkeeping: backlog rows M14.14 and M14.27 have an empty Commit cell (31867c0 and 795a771); the header says 'Planned: 26 rows' but 27 exist (plan 19 to 27 rows is 1.4x, within 1.5x, from splits M14.24/25/26/27 with no new scope); M14.13 has a follow-up fix commit 6161160 listed out of order."},
+    {"id": "F5", "severity": "minor", "summary": "Spot checks of mutant sensitivity: token-budget.test (limit parsed by regex, NaN fails the >0 test; both catalog and cheat sheet counted, dropping one would still pass but a growing one fails: constraining), token-ratio.test (sum over sum, non-empty corpus guard; a mutant that drops the DSL cost fails), scorecard.test (golden columns per fixture plus a crossing graph with non-zero metrics; constrains) and render-png e2e (checks IHDR width/height, PNG magic and the peer-missing exit 2) all kill plausible mutants. No weak test found."}
+  ],
+  "dispositions": [
+    {"finding": "F1", "disposition": "argue", "reason": "The committed JSON file is generated from the same Zod reply schemas and pinned by output.test.ts snapshot tests, and commands.test validates every reply against those schemas; reword the leg label when the gate is next touched."},
+    {"finding": "F2", "disposition": "hand off", "reason": "The player step API belongs to a later milestone (animation/steps, M21); add a roadmap Deferred row 'fluxion render --step' to M21 so FR-AI-006's per-step capture is not lost."},
+    {"finding": "F3", "disposition": "argue", "reason": "Known sandbox limit; the spawned CLI e2e exercises html render, and FR-CLI-002 is covered by tests naming it. Revisit when the coverage sandbox can build packages."},
+    {"finding": "F4", "disposition": "argue", "reason": "Bookkeeping only; fill the two Commit cells and the planned-row count in the closing M14.23 commit. No requirement affected."},
+    {"finding": "F5", "disposition": "argue", "reason": "Positive result of the mutant spot check, no defect."}
+  ],
+  "planDelta": "Q1 coherence: one design (ops layer -> CliResult envelope -> commands; schemas generated and drift-tested), no duplicate helpers found. Q2 spec fidelity: all plan tasks 1-19 map to done rows; only the --step part of render is dropped (F2). Q3 standards: changesets, api reports, traceability and ADRs were kept to the end. Q4 gate honesty: the 25 green legs run real tests; remaining red legs are the closing steps (verify --all, CI evidence, M14.23, final review file, roadmap). Q5 architecture: new deps are the dev tokenizer (ADR-0037) and an optional Playwright peer (ADR-0036); pure packages untouched by DOM/node; API growth recorded in api reports. Q6 plan health: 19 planned rows grew to 27 (1.4x) via splits, within 1.5x. ADR-0167 stays proposed for a human."
+}

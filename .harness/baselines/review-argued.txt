@@ -97,3 +97,6 @@ M12 final F5: the backlog grew 19 to 60 from per-commit review minors, staged-bu
 M12 final F7: the legs still red after M12.61 are the CI evidence and the cold-setup budget record (a push, a human decision), the e2e and verify legs (machine limits, Deferred in the roadmap), the final record and the roadmap advance (M12.26's own steps); none can go green silently, and the gate needs no change.
 M13 cp1 F8: no behaviour differs between the duplicated compare functions and lookup types, and the pipeline's canonical sorter is the one all paths go through; share them when next touched (M14 or M17).
 M13 cp1 F10: the checkpoint ran late (after 30 rows); a process lapse, corrected by this record; no gate can enforce a checkpoint cadence.
+M14 final F1: the CLI-result leg checks test titles; the e2e helper validates replies against the Zod schemas that the snapshot tests pin to the committed JSON, so the chain holds; the leg label overstates what runs.
+M14 final F3: the `render` html path has no in-process test (the coverage sandbox lacks the built packages); the spawned e2e covers it.
+M14 final F4: bookkeeping, fixed in the closing commit (empty Commit cells, the Planned count).
