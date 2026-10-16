@@ -92,10 +92,33 @@ export type OpResult<T> = {
 };
 
 // @public
+export type Outline = {
+    readonly title: string;
+    readonly screens: readonly OutlineScreen[];
+};
+
+// @public
+export function outlineDocument(text: string): OpResult<Outline>;
+
+// @public
+export type OutlineScreen = {
+    readonly id: string;
+    readonly name: string;
+    readonly elements: number;
+};
+
+// @public
 export function patchText(text: string, patchJson: string, registries: CoreRegistries): OpResult<{
     readonly document: DocumentFile;
     readonly text: string;
     readonly applied: AppliedPatch;
+}>;
+
+// @public
+export function screenText(text: string, registries: CoreRegistries, screenId?: string): OpResult<{
+    readonly screen: string;
+    readonly text: string;
+    readonly kept: number;
 }>;
 
 // @public

@@ -13,7 +13,7 @@ export interface Created {
 }
 
 // @public
-export function createServer(_options?: ServerOptions): McpServer;
+export function createServer(options?: ServerOptions): McpServer;
 
 // @public
 export interface DocLookupError {
@@ -50,8 +50,15 @@ export interface OpenDoc {
 }
 
 // @public
+export class Roots {
+    constructor(roots: readonly string[]);
+    resolve(path: string): string | undefined;
+}
+
+// @public
 export interface ServerOptions {
     readonly roots?: readonly string[];
+    readonly store?: DocStore;
 }
 
 // @public

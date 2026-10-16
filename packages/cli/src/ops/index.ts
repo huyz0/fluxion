@@ -9,6 +9,7 @@ export { compileDocument } from './compile.js';
 export { layoutDocument } from './layout.js';
 export { type Linted, lintDocument, wrappedMeasure } from './lint.js';
 export { migrateDocument } from './migrate.js';
+export { type Outline, type OutlineScreen, outlineDocument, screenText } from './outline.js';
 export { catalogText, decompileText, mermaidText, patchText } from './patch.js';
 export { type OpResult, opFail, opOk } from './result.js';
 
