@@ -1,6 +1,32 @@
 // Allowed roots (ADR-0038): a path argument must resolve, symlinks followed, to a place inside one of the roots.
-import { realpathSync } from 'node:fs';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { lstatSync, realpathSync } from 'node:fs';
+import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
+
+/** Whether `path` is itself a symlink, dangling or not. */
+function isLink(path: string): boolean {
+  try {
+    return lstatSync(path).isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
+
+/** The real path of `abs`, or, for one that does not exist yet, its nearest existing ancestor's real path plus the missing tail. */
+function realOrPlanned(abs: string): string | undefined {
+  let existing = abs;
+  const tail: string[] = [];
+  for (;;) {
+    try {
+      return resolve(realpathSync(existing), ...tail);
+    } catch {
+      if (isLink(existing)) return undefined; // a dangling symlink: writing through it would leave the roots
+      const parent = dirname(existing);
+      if (parent === existing) return undefined;
+      tail.unshift(basename(existing));
+      existing = parent;
+    }
+  }
+}
 
 /**
  * The folders a server may read from and write into.
@@ -26,17 +52,8 @@ export class Roots {
    * save can create it; a symlink inside a root that points outside is refused.
    */
   resolve(path: string): string | undefined {
-    const abs = resolve(path);
-    let real: string;
-    try {
-      real = realpathSync(abs);
-    } catch {
-      try {
-        real = resolve(realpathSync(resolve(abs, '..')), abs.slice(resolve(abs, '..').length + 1));
-      } catch {
-        return undefined;
-      }
-    }
+    const real = realOrPlanned(resolve(path));
+    if (real === undefined) return undefined;
     return this.#roots.some((r) => {
       const rel = relative(r, real);
       return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));

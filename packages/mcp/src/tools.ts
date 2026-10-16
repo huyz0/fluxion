@@ -7,6 +7,7 @@ import { failure, type Reply, success } from './reply.js';
 import type { Roots } from './roots.js';
 import { type Source, Sources, sourceSchema } from './source.js';
 import type { DocStore } from './store.js';
+import { registerWriteTools } from './write-tools.js';
 
 const FORMATS = ['llm', 'json', 'md'] as const satisfies readonly CatalogFormat[];
 
@@ -119,7 +120,7 @@ function registerCompileTools(server: McpServer, sources: Sources): void {
 }
 
 /**
- * Registers `get_document_outline`, `get_screen`, `validate`, `lint`, `list_catalog` and `compile_dsl` on `server`.
+ * Registers the read tools (`get_document_outline`, `get_screen`, `validate`, `lint`, `list_catalog`, `compile_dsl`) and the write tools on `server`.
  *
  * @internal
  */
@@ -128,4 +129,5 @@ export function registerReadTools(server: McpServer, store: DocStore, roots: Roo
   registerDocumentTools(server, sources);
   registerCheckTools(server, sources);
   registerCompileTools(server, sources);
+  registerWriteTools(server, sources);
 }

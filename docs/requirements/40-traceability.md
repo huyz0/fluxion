@@ -282,7 +282,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-CLI-003 | M | R6 | M26 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-004 | S | R7 | M31 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-005 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/exit-codes.test.ts`, `packages/cli/src/output.test.ts` |
-| FR-MCP-001 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/mcp/src/e2e/stdio.test.ts` +2 |
+| FR-MCP-001 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/mcp/src/e2e/stdio.test.ts` +3 |
 | FR-MCP-002 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-MCP-003 | S | R5 | M25 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-IMP-001 | M | R2 | M15 | [21-import-export-publish.md](21-import-export-publish.md) | — |

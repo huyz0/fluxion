@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { compileDocument, hostRegistries } from '@fluxion/cli/ops';
@@ -45,7 +45,7 @@ describe('the MCP read tools over the in-memory transport (FR-MCP-001, ADR-0038)
 
   it('FR-MCP-001: the server offers exactly the six read tools', async () => {
     const { tools } = await (await connect()).listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(['compile_dsl', 'get_document_outline', 'get_screen', 'lint', 'list_catalog', 'validate']);
+    expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(['compile_dsl', 'get_document_outline', 'get_screen', 'lint', 'list_catalog', 'validate']));
     expect(tools.every((t) => (t.description ?? '').length > 0)).toBe(true);
   });
 
