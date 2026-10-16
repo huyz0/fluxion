@@ -19,6 +19,8 @@ const SHARED = [
   'fixtures',
   // the security corpus the sanitiser tests read (M7.23)
   'specs/security',
+  // the generated JSON Schemas the drift tests compare against (M14.1)
+  'specs/schema',
   // the studio bundles the examples (M6.4)
   'examples',
 ];
