@@ -18,7 +18,8 @@ test.describe('the Problems tab', { tag: '@desktop' }, () => {
     await problems.getByRole('button', { name: 'Select' }).click();
     await expect(editor.inspectorText).toHaveText('2 elements selected');
     await problems.getByRole('button', { name: 'Offset the top one' }).click();
-    await expect(editor.panel('Screens, library and layers').getByText('No problems found.')).toBeVisible();
+    // the stacked problem is gone (the offset boxes may still overlap, which the OVERLAP lint reports)
+    await expect(problems).not.toContainText('on top of one another');
     // the fix is one undo step: the problem is back
     await page.keyboard.press('Control+z');
     await expect(problems).toContainText('2 elements lie exactly on top of one another');
