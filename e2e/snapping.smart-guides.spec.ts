@@ -39,12 +39,12 @@ test.describe('snapping', { tag: '@desktop' }, () => {
     // 5 px below the other shape's top: within 8 px, so the top edges line up and the guide is drawn
     await expect(page.locator('[data-guide="y"]').first()).toBeAttached();
     const [a, b] = await shapeBoxes(editor);
-    // mid-drag the boxes are layer-rounded (WebKit differs by up to 0.01 px); the released position below is exact
+    // a snapped box lines up to the sub-pixel: WebKit's float32 layout differs by up to 0.01 px, unsnapped it would be 5 px off
     expect(b.y).toBeCloseTo(a.y, 1);
     await page.mouse.up();
     await expect(guides).toHaveCount(0);
     const [a1, b1] = await shapeBoxes(editor);
-    expect(b1.y).toBeCloseTo(a1.y, 3);
+    expect(b1.y).toBeCloseTo(a1.y, 1);
   });
 
   test('FR-ARR-005: the snapping toggle in the toolbar turns snapping off and the setting persists', async ({ page }) => {
