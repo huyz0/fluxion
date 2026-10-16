@@ -72,6 +72,8 @@ export const THRESHOLDS = {
   AI_CATALOG_MAX_TOKENS: { value: 8_000, weakens: 'up' },
   // NFR-AI-003: canonical JSON tokens divided by FluxScript tokens over examples/dsl, counted with the ADR-0037 tokenizer
   AI_DSL_TOKEN_RATIO_MIN: { value: 3, weakens: 'down' },
+  // NFR-AI-004: mean lint score (0 to 100) of the generated documents in the recorded eval run (ADR-0039)
+  AI_LINT_SCORE_MIN: { value: 85, weakens: 'down' },
 };
 
 // Licence policy (NFR-LIC-002, tech-stack.md §3), read by check-licenses.mjs. check-drift treats a
