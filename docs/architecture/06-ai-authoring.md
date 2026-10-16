@@ -290,12 +290,12 @@ is placed first so providers can cache it. Prompt templates are versioned files 
 
 ## 12. Eval suite (FR-AI-009)
 
-- Cases: `eval/cases/*.yaml` — `{ id, mode, prompt, inputs?, expect: { screens?, kinds?, mustContain?, minLint? } }`.
+- Cases (ADR-0039): `eval/cases/*.json` — `{ id, mode, prompt, inputs?, expect: { screens?, kinds?, mustContain?, minLint? } }`.
 - `pnpm eval --recorded` (CI): replays `eval/recordings/<hash>.json`, where the hash covers case +
-  prompt version + model. `pnpm eval --live` (nightly) calls providers and may refresh recordings.
+  rendered system prompt + tokenizer + model (ADR-0039). `pnpm eval --live` (nightly) calls providers and may refresh recordings.
 - Scorecard (`eval/out/scorecard.{json,md}`): one-shot / post-repair validity (NFR-AI-001: ≥ 90 /
   ≥ 99 %), repair rounds, lint score (≥ 85), expectation pass rate, DSL-vs-JSON token ratio (≥ 3×,
-  NFR-AI-003), tokens, latency. Thresholds live in `scripts/gates/thresholds.mjs`.
+  NFR-AI-003), tokens, alt-text coverage (reported, not gated); latency only in live runs. Thresholds live in `scripts/gates/thresholds.mjs`.
 
 ## 13. llms.txt and the authoring guide (FR-AI-011)
 
