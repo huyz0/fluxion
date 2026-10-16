@@ -70,6 +70,8 @@ export const THRESHOLDS = {
   AI_ONE_SHOT_VALID_PCT: { value: 90, weakens: 'down' },
   AI_AFTER_REPAIR_VALID_PCT: { value: 99, weakens: 'down' },
   AI_CATALOG_MAX_TOKENS: { value: 8_000, weakens: 'up' },
+  // NFR-AI-003: canonical JSON tokens divided by FluxScript tokens over examples/dsl, counted with the ADR-0037 tokenizer
+  AI_DSL_TOKEN_RATIO_MIN: { value: 3, weakens: 'down' },
 };
 
 // Licence policy (NFR-LIC-002, tech-stack.md §3), read by check-licenses.mjs. check-drift treats a

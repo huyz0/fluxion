@@ -458,6 +458,10 @@ importers:
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
+    devDependencies:
+      gpt-tokenizer:
+        specifier: 4.0.3
+        version: 4.0.3
 
   packages/editor:
     dependencies:
@@ -4518,6 +4522,9 @@ packages:
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
+
+  gpt-tokenizer@4.0.3:
+    resolution: {integrity: sha512-GrrPDreSy2c3ZgM/u+5JN+lnHTLrJKm7QAFfTD5J+vgcSP69C+fFIUaJWiey/QQ8lS5u79OvluKuEmGBAbOS4A==}
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
@@ -10280,6 +10287,8 @@ snapshots:
       ini: 4.1.1
 
   gopd@1.2.0: {}
+
+  gpt-tokenizer@4.0.3: {}
 
   graceful-fs@4.2.11: {}
 

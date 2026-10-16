@@ -31,5 +31,8 @@
     "@fluxion/schema": "workspace:*",
     "@fluxion/theme": "workspace:*",
     "yaml": "catalog:"
+  },
+  "devDependencies": {
+    "gpt-tokenizer": "4.0.3"
   }
 }

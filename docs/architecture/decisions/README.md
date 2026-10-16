@@ -47,6 +47,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0034](ADR-0034-overlap-removal-and-determinism.md) | Overlap removal by an own two-stage sweep, determinism rules, and the `@dagrejs/dagre` dependency | accepted | 2026-10-13 |
 | [0035](ADR-0035-ai-patch-format-v1.md) | AI patch format v1: the nine ops, references, atomicity, staleness, the strict schema subset | accepted | 2026-10-16 |
 | [0036](ADR-0036-cli-contract.md) | CLI contract v1: the operation layer, the full command set, exit-code meaning, the optional Chromium peer (extends ADR-0147) | accepted | 2026-10-16 |
+| [0037](ADR-0037-fixed-tokenizer-for-budgets.md) | One pinned offline tokenizer (gpt-tokenizer, o200k_base) counts the AI token budgets; its margin is UNDERIVED until M15 | accepted | 2026-10-16 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
