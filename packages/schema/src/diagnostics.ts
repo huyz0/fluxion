@@ -64,6 +64,8 @@ export type DiagnosticCode =
   | 'FLX_CLI_USAGE'
   | 'FLX_CLI_IO'
   | 'FLX_CLI_INTERNAL'
+  | 'FLX_CLI_PEER_MISSING'
+  | 'FLX_CLI_FORMAT_UNSUPPORTED'
   | 'FLX_EXPR_SYNTAX'
   | 'FLX_EXPR_UNKNOWN'
   | 'FLX_EXPR_DOMAIN'
@@ -79,7 +81,8 @@ export type DiagnosticCode =
   | 'FLX_LINT_DENSITY'
   | 'FLX_LINT_ORPHAN_CONNECTOR'
   | 'FLX_LINT_STYLE_LITERAL'
-  | 'FLX_LINT_STYLE_INCONSISTENT';
+  | 'FLX_LINT_STYLE_INCONSISTENT'
+  | 'FLX_LINT_SCORE_BELOW_MIN';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -137,6 +140,8 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_CLI_USAGE: 'error',
   FLX_CLI_IO: 'error',
   FLX_CLI_INTERNAL: 'error',
+  FLX_CLI_PEER_MISSING: 'error',
+  FLX_CLI_FORMAT_UNSUPPORTED: 'error',
   FLX_EXPR_SYNTAX: 'error',
   FLX_EXPR_UNKNOWN: 'error',
   FLX_EXPR_DOMAIN: 'error',
@@ -153,6 +158,7 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_LINT_ORPHAN_CONNECTOR: 'warning',
   FLX_LINT_STYLE_LITERAL: 'warning',
   FLX_LINT_STYLE_INCONSISTENT: 'warning',
+  FLX_LINT_SCORE_BELOW_MIN: 'error',
 };
 
 /**

@@ -118,7 +118,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-RDR-003 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RDR-004 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RDR-005 | M | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
-| FR-LAY-001 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/dsl/src/place/place.test.ts` +6 |
+| FR-LAY-001 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/dsl/src/layout-document.test.ts` +7 |
 | FR-LAY-002 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/grid.test.ts` +2 |
 | FR-LAY-003 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-004 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/no-overlap.prop.test.ts` +3 |
@@ -278,7 +278,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `e2e/dsl.streaming-render.spec.ts` +5 |
 | FR-AI-011 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.convert.test.ts` +6 |
-| FR-CLI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/output.test.ts` |
+| FR-CLI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/commands.test.ts` +2 |
 | FR-CLI-003 | M | R6 | M26 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-004 | S | R7 | M31 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-005 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/exit-codes.test.ts`, `packages/cli/src/output.test.ts` |

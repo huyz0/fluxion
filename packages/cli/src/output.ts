@@ -2,6 +2,7 @@
 // command reply, the source of the generated snapshots packages/cli/schemas/<command>.output.json
 // and, from M15, of the MCP tool output shapes. Each reply carries `apiVersion`, `ok` and either a
 // `result` (ok) or `errors[]` (not ok); `run` parses every reply with its schema before printing it.
+import { DSL_CODES } from '@fluxion/dsl';
 import { DIAGNOSTIC_CODES } from '@fluxion/schema';
 import { z } from 'zod';
 
@@ -10,11 +11,13 @@ export const API_VERSION: 1 = 1;
 
 const diagnosticSchema = z
   .object({
-    code: z.enum(Object.keys(DIAGNOSTIC_CODES) as [keyof typeof DIAGNOSTIC_CODES, ...(keyof typeof DIAGNOSTIC_CODES)[]]),
+    code: z.enum([...Object.keys(DIAGNOSTIC_CODES), ...Object.keys(DSL_CODES)] as [string, ...string[]]),
     severity: z.enum(['error', 'warning', 'info']),
     path: z.string().regex(/^(\/.*)?$/, 'a JSON pointer'),
     message: z.string(),
     hint: z.string().optional(),
+    // the elements a lint finding is about
+    elements: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -68,6 +71,28 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
       versionResult,
     ]),
   ),
+  compile: reply(
+    z.literal('compile'),
+    z.union([z.object({ out: z.string(), screens: z.number().int().min(0), records: z.number().int().min(0) }).strict(), helpResult, versionResult]),
+  ),
+  lint: reply(
+    z.literal('lint'),
+    z.union([
+      z
+        .object({
+          score: z.number().min(0).max(100),
+          findings: z.array(diagnosticSchema),
+        })
+        .strict(),
+      helpResult,
+      versionResult,
+    ]),
+  ),
+  layout: reply(
+    z.literal('layout'),
+    z.union([z.object({ out: z.string(), algorithm: z.string(), screens: z.number().int().min(0) }).strict(), helpResult, versionResult]),
+  ),
+  migrate: reply(z.literal('migrate'), z.union([z.object({ out: z.string(), applied: z.array(z.string()) }).strict(), helpResult, versionResult])),
 };
 
 /**

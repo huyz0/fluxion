@@ -287,12 +287,25 @@ export type GroupAst = {
 };
 
 // @public
+export type LaidOut = {
+    readonly ok: true;
+    readonly document: DocumentFile;
+    readonly screens: number;
+} | {
+    readonly ok: false;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
 export type LayoutAst = {
     readonly type: Located<string>;
     readonly options: {
         readonly [key: string]: unknown;
     };
 };
+
+// @public
+export function layoutDocument(doc: DocumentFile, registries: CoreRegistries, algorithm?: string): LaidOut;
 
 // @public
 export type LayoutIntent = {

@@ -147,6 +147,7 @@ the codes of shape definitions (`FLX_SHAPE_DEF_INVALID`, and `FLX_SHAPE_PATH`, `
 | `FLX_LINT_ORPHAN_CONNECTOR` | warning | A connector with neither end attached to an element. | Attach at least one end to an element, or delete it. |
 | `FLX_LINT_STYLE_LITERAL` | warning | A style that writes a colour literal where a theme token would do. | Use a token such as `{color.primary}`. |
 | `FLX_LINT_STYLE_INCONSISTENT` | warning | A screen that mixes more font sizes or families than a consistent design uses. | Use one size scale and at most two families. |
+| `FLX_LINT_SCORE_BELOW_MIN` | error | The lint score is below the `--min-score` the command was given; the exit code is 1. | Fix the findings, or lower the minimum. |
 
 ## Command line
 
@@ -159,3 +160,5 @@ whole (an option parse error, a file that cannot be read); an internal error has
 | `FLX_CLI_USAGE` | error | The command line is not understood: an unknown command, an unknown or malformed option, or a missing argument; nothing ran, and the exit code is 2. | Run `fluxion --help` or `fluxion <command> --help`. |
 | `FLX_CLI_IO` | error | A file the command line names cannot be read or written (missing, a directory, no permission); the exit code is 1. | Check the path and its permissions. |
 | `FLX_CLI_INTERNAL` | error | The command failed for a reason that is not the input's: an exception, a command not available in this build, or a reply outside its own schema; the exit code is 3. | Report it with the command line and the input. |
+| `FLX_CLI_PEER_MISSING` | error | The command needs an optional peer that is not installed (for example a browser for `render --png`); the exit code is 2. | Install the peer named in the message, or use another format. |
+| `FLX_CLI_FORMAT_UNSUPPORTED` | error | The requested output format or file kind is not one this command writes; the exit code is 2. | Use a format the command lists in `--help`. |

@@ -2,41 +2,13 @@
 // thin wrapper (read files, call the operation, write files, map the result to an exit code), and the MCP tools call the same operations
 // (M15). Nothing here touches `node:fs`, the process or the console.
 import { type Diagnostic, type DocumentFile, parseDocument } from '@fluxion/schema';
+import { type OpResult, opFail, opOk } from './result.js';
 
-/**
- * What an operation returns: a value with the notes it made (warnings and infos), or the diagnostics that made it fail.
- *
- * @public
- */
-export type OpResult<T> =
-  | {
-      /** The operation succeeded. */
-      readonly ok: true;
-      /** The value that becomes the reply's `result`. */
-      readonly value: T;
-      /** Warnings and infos; the reply carries them beside the result. */
-      readonly diagnostics: readonly Diagnostic[];
-    }
-  | {
-      /** The operation failed. */
-      readonly ok: false;
-      /** Why; at least one error. */
-      readonly diagnostics: readonly Diagnostic[];
-    };
-
-/**
- * A successful operation.
- *
- * @public
- */
-export const opOk = <T>(value: T, diagnostics: readonly Diagnostic[] = []): OpResult<T> => ({ ok: true, value, diagnostics });
-
-/**
- * A failed operation.
- *
- * @public
- */
-export const opFail = (diagnostics: readonly Diagnostic[]): OpResult<never> => ({ ok: false, diagnostics });
+export { compileDocument } from './compile.js';
+export { layoutDocument } from './layout.js';
+export { type Linted, lintDocument, wrappedMeasure } from './lint.js';
+export { migrateDocument } from './migrate.js';
+export { type OpResult, opFail, opOk } from './result.js';
 
 /**
  * The `validate` operation: parse the text of a document and report every diagnostic. A document with errors fails; one with warnings

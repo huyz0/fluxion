@@ -4,6 +4,7 @@
 // an IO port and returns the exit code, so tests run it in-process as well as through the built bin.
 import { parseArgs } from 'node:util';
 import { type CliIo, type Command, type ExitCode, internal, type Options, type Outcome, ok, usage } from './command.js';
+import { COMPILE, LAYOUT, LINT, MIGRATE } from './commands.js';
 import { CONVERT } from './convert.js';
 import { API_VERSION, OUTPUT_SCHEMAS } from './output.js';
 import { RENDER } from './render.js';
@@ -14,6 +15,10 @@ const COMMANDS: { readonly [name: string]: Command } = {
   validate: VALIDATE,
   render: RENDER,
   convert: CONVERT,
+  compile: COMPILE,
+  lint: LINT,
+  layout: LAYOUT,
+  migrate: MIGRATE,
 };
 
 const GLOBAL: Options = { help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, json: { type: 'boolean' } };

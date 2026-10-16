@@ -105,6 +105,8 @@
                   "FLX_CLI_USAGE",
                   "FLX_CLI_IO",
                   "FLX_CLI_INTERNAL",
+                  "FLX_CLI_PEER_MISSING",
+                  "FLX_CLI_FORMAT_UNSUPPORTED",
                   "FLX_EXPR_SYNTAX",
                   "FLX_EXPR_UNKNOWN",
                   "FLX_EXPR_DOMAIN",
@@ -120,7 +122,18 @@
                   "FLX_LINT_DENSITY",
                   "FLX_LINT_ORPHAN_CONNECTOR",
                   "FLX_LINT_STYLE_LITERAL",
-                  "FLX_LINT_STYLE_INCONSISTENT"
+                  "FLX_LINT_STYLE_INCONSISTENT",
+                  "FLX_LINT_SCORE_BELOW_MIN",
+                  "FLX_DSL_SYNTAX",
+                  "FLX_DSL_VERSION",
+                  "FLX_DSL_UNKNOWN_KEY",
+                  "FLX_DSL_EDGE_SYNTAX",
+                  "FLX_DSL_BAD_SLUG",
+                  "FLX_DSL_DUP_SLUG",
+                  "FLX_DSL_UNKNOWN_SHAPE",
+                  "FLX_DSL_AMBIGUOUS_SHAPE",
+                  "FLX_DSL_UNKNOWN_PACK",
+                  "FLX_DSL_NOT_YET"
                 ]
               },
               "severity": {
@@ -140,6 +153,12 @@
               },
               "hint": {
                 "type": "string"
+              },
+              "elements": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             },
             "required": [
@@ -249,6 +268,8 @@
                   "FLX_CLI_USAGE",
                   "FLX_CLI_IO",
                   "FLX_CLI_INTERNAL",
+                  "FLX_CLI_PEER_MISSING",
+                  "FLX_CLI_FORMAT_UNSUPPORTED",
                   "FLX_EXPR_SYNTAX",
                   "FLX_EXPR_UNKNOWN",
                   "FLX_EXPR_DOMAIN",
@@ -264,7 +285,18 @@
                   "FLX_LINT_DENSITY",
                   "FLX_LINT_ORPHAN_CONNECTOR",
                   "FLX_LINT_STYLE_LITERAL",
-                  "FLX_LINT_STYLE_INCONSISTENT"
+                  "FLX_LINT_STYLE_INCONSISTENT",
+                  "FLX_LINT_SCORE_BELOW_MIN",
+                  "FLX_DSL_SYNTAX",
+                  "FLX_DSL_VERSION",
+                  "FLX_DSL_UNKNOWN_KEY",
+                  "FLX_DSL_EDGE_SYNTAX",
+                  "FLX_DSL_BAD_SLUG",
+                  "FLX_DSL_DUP_SLUG",
+                  "FLX_DSL_UNKNOWN_SHAPE",
+                  "FLX_DSL_AMBIGUOUS_SHAPE",
+                  "FLX_DSL_UNKNOWN_PACK",
+                  "FLX_DSL_NOT_YET"
                 ]
               },
               "severity": {
@@ -284,6 +316,12 @@
               },
               "hint": {
                 "type": "string"
+              },
+              "elements": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             },
             "required": [

@@ -4,8 +4,45 @@
 
 ```ts
 
+import { CoreRegistries } from '@fluxion/sdk';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
+import { LintFinding } from '@fluxion/dsl';
+import { MeasureText } from '@fluxion/dsl';
+
+// @public
+export function compileDocument(text: string, registries: CoreRegistries): OpResult<{
+    readonly document: DocumentFile;
+    readonly text: string;
+    readonly screens: number;
+    readonly records: number;
+}>;
+
+// @public
+export function layoutDocument(text: string, registries: CoreRegistries, algorithm?: string): OpResult<{
+    readonly document: DocumentFile;
+    readonly text: string;
+    readonly screens: number;
+}>;
+
+// @public
+export function lintDocument(text: string, registries: CoreRegistries, options?: {
+    readonly minScore?: number;
+    readonly measure?: MeasureText;
+}): OpResult<Linted>;
+
+// @public
+export type Linted = {
+    readonly score: number;
+    readonly findings: readonly LintFinding[];
+};
+
+// @public
+export function migrateDocument(text: string): OpResult<{
+    readonly document: DocumentFile;
+    readonly text: string;
+    readonly applied: readonly string[];
+}>;
 
 // @public
 export const opFail: (diagnostics: readonly Diagnostic[]) => OpResult<never>;
@@ -28,6 +65,18 @@ export function validateDocument(text: string): OpResult<{
     readonly document: DocumentFile;
     readonly diagnostics: readonly Diagnostic[];
 }>;
+
+// @public
+export function wrappedMeasure(measurer: {
+    readonly measure: (text: string, font: {
+        readonly family: string;
+        readonly size: number;
+        readonly weight?: number;
+    }) => {
+        readonly width: number;
+        readonly height: number;
+    };
+}): MeasureText;
 
 // (No @packageDocumentation comment for this package)
 

@@ -1,9 +1,9 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { serializeDocument } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import type { CliIo, Command } from '../command.js';
 import { runCommands } from '../main.js';
 import { E2E_TIMEOUT, fluxion } from './spawn-bin.js';
@@ -14,6 +14,7 @@ const VALID = serializeDocument(b.build());
 
 describe('the exit-code matrix (FR-CLI-005, ADR-0036)', () => {
   const dir = mkdtempSync(join(tmpdir(), 'fluxion-exit-'));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
   const write = (name: string, text: string) => {
     const file = join(dir, name);
     writeFileSync(file, text);
@@ -62,6 +63,7 @@ describe('the exit-code matrix (FR-CLI-005, ADR-0036)', () => {
     const ops = await import('../ops/index.js');
     expect(ops.validateDocument('not json').ok).toBe(false);
     expect(ops.validateDocument(VALID).ok).toBe(true);
-    rmSync(dir, { recursive: true, force: true });
+    for (const file of readdirSync(new URL('../ops/', import.meta.url)).filter((f) => f.endsWith('.ts')))
+      expect(readFileSync(new URL(`../ops/${file}`, import.meta.url), 'utf8'), file).not.toMatch(/from 'node:/);
   });
 });
