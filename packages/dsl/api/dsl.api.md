@@ -50,6 +50,14 @@ export type CatalogEntry = {
 };
 
 // @public
+export type CatalogFormat = "llm" | "json" | "md";
+
+// @public
+export function catalogJsonSchema(): {
+    readonly [key: string]: unknown;
+};
+
+// @public
 export type CatalogOptions = {
     readonly detail?: "summary" | "full";
     readonly pack?: string;
@@ -60,6 +68,9 @@ export type CatalogResult = {
     readonly catalog: Catalog;
     readonly diagnostics: readonly Diagnostic[];
 };
+
+// @public
+export const CHEAT_SHEET: string;
 
 // @public
 export function compile(text: string, options: CompileOptions): CompileResult;
@@ -241,6 +252,9 @@ export type FluxScriptKeyTable = {
 };
 
 // @public
+export function formatCatalog(catalog: Catalog, format: CatalogFormat): string;
+
+// @public
 export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], input?: {
     readonly cap?: number;
 }): string[];
@@ -265,9 +279,15 @@ export type LayoutAst = {
 // @public
 export type LayoutIntent = {
     readonly type: string;
-    readonly dir?: "TB" | "LR" | "BT" | "RL" | undefined;
+    readonly direction?: "down" | "right" | "up" | "left" | undefined;
+    readonly spacing?: "compact" | "comfortable" | "spacious" | undefined;
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
     readonly gap?: number | undefined;
     readonly columns?: number | undefined;
+    readonly align?: "start" | "center" | "end" | undefined;
+    readonly padding?: number | undefined;
+    readonly wrap?: number | undefined;
 };
 
 // @public

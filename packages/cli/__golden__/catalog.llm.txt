@@ -1,0 +1,42 @@
+shapes:
+basic:block-arrow — A thick arrow block pointing right, for flows, steps and calls to action.; params: head:number=0.35, shaft:number=0.5
+basic:callout — A speech-bubble box with a pointer, for comments and annotations.; params: tail:number=0.25, tip:number=0.25, width:number=0.15
+basic:cloud — A cloud outline, for the internet, a cloud service or a vague area.
+basic:cylinder — A can: the classic database or storage symbol.; params: depth:number=0.15
+basic:diamond — A rhombus, the decision point of a flowchart.
+basic:document — A page with a wavy bottom edge, for files, reports and documents.; params: wave:number=0.1
+basic:ellipse — An ellipse or circle, for start and end points, states and actors.
+basic:freehand — A hand-drawn stroke along points the author draws.; params: stroke:points=[[0,0.5],[0.25,0.2],[0.5,0.5],[0.75,0.8],[1,0.5]]
+basic:hexagon — A six-sided shape, for preparation steps, services and cells.; params: inset:number=0.25
+basic:image-frame — A rectangular frame that holds an image.
+basic:line — A plain line between two points, with no connector behaviour.
+basic:note — A sticky note with a folded corner, for remarks.; params: fold:number=0.2
+basic:octagon — An eight-sided shape, for stop signs and terminators.; params: cut:number=0.29
+basic:parallelogram — A slanted box, the input and output step of a flowchart.; params: skew:number=0.2
+basic:polyline — An open or closed shape through points the author chooses.; params: vertices:points=[[0,1],[0.35,0],[0.65,1],[1,0]]
+basic:rect — A rectangle, the default box for a component, step or service.
+basic:rounded-rect — A rectangle with rounded corners, a friendly box for steps and cards.; params: r:number=12
+basic:star — A star with a chosen number of points, for ratings and highlights.; params: points:int=5, inner:number=0.5
+basic:text-box — A box that is only text, with no border or fill by default.
+basic:trapezoid — A box with slanted sides, for manual steps and funnels.; params: inset:number=0.2
+basic:triangle — A triangle, for warnings, hierarchies and play buttons.; params: apex:number=0.5
+connectors:
+curved — A smooth curve that leaves and enters each end along its side.
+orthogonal — Axis-aligned segments with right-angle bends, routed around the shapes.
+polyline — Straight segments through the waypoints the author set.
+straight — One straight line from end to end.
+markers:
+arrow — A filled arrowhead with a notched back, the default connector end.
+bar — A bar across the end of the connector.
+basic:crows-foot-many — Entity-relationship: one or many (a crow's foot and a bar).
+basic:crows-foot-one — Entity-relationship: exactly one (two bars).
+basic:crows-foot-zero-many — Entity-relationship: zero or many (a ring and a crow's foot).
+basic:crows-foot-zero-one — Entity-relationship: zero or one (a ring and a bar).
+basic:open-arrow — An open arrowhead (two strokes meeting at the tip).
+circle — A filled circle at the end of the connector.
+diamond — A filled diamond, for aggregation and composition ends.
+triangle — A filled triangle pointing along the connector.
+layouts:
+grid — Boxes in rows and columns, in reading order.; options: columns, gap, align, padding
+layered — Flow layout by layers along the edges, for diagrams with direction.; options: direction, spacing, nodeGap, rankGap, padding
+stack — Boxes in one row or column, with an even gap.; options: direction, gap, align, padding, wrap

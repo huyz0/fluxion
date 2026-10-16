@@ -33,13 +33,19 @@ const nodeSpecSchema = z
   })
   .strict();
 
-/** The layout intents of the built-in layouts; a plugin's options travel in the plain schema only. */
+/** The layout intents of the built-in layouts (`layered`, `grid`, `stack`); a plugin layout's own options travel in the plain schema and the CLI only. */
 const layoutIntentSchema = z
   .object({
     type: z.string().describe('a layouts registry name: layered, grid, stack, or a plugin layout'),
-    dir: z.enum(['TB', 'LR', 'BT', 'RL']).optional(),
-    gap: z.number().min(0).optional(),
-    columns: z.number().int().positive().optional(),
+    direction: z.enum(['down', 'right', 'up', 'left']).optional().describe('layered: all four; stack: down or right'),
+    spacing: z.enum(['compact', 'comfortable', 'spacious']).optional().describe('layered: the gap preset'),
+    nodeGap: z.number().min(0).optional().describe('layered: space between boxes of one rank, px'),
+    rankGap: z.number().min(0).optional().describe('layered: space between ranks, px'),
+    gap: z.number().min(0).optional().describe('grid and stack: space between boxes, px'),
+    columns: z.number().int().positive().optional().describe('grid: the number of columns'),
+    align: z.enum(['start', 'center', 'end']).optional().describe('grid and stack: alignment in the cell or the line'),
+    padding: z.number().min(0).optional().describe('the space around the laid-out boxes, px'),
+    wrap: z.number().min(0).optional().describe('stack: length after which a box starts a new line, px (0: never)'),
   })
   .strict();
 
@@ -154,12 +160,24 @@ export type EdgeSpec = {
 export type LayoutIntent = {
   /** A `layouts` registry name. */
   readonly type: string;
-  /** The direction of a layered layout. */
-  readonly dir?: 'TB' | 'LR' | 'BT' | 'RL' | undefined;
-  /** The gap between boxes. */
+  /** The direction: layered takes all four, stack `down` or `right`. */
+  readonly direction?: 'down' | 'right' | 'up' | 'left' | undefined;
+  /** Layered: the gap preset. */
+  readonly spacing?: 'compact' | 'comfortable' | 'spacious' | undefined;
+  /** Layered: space between boxes of one rank, px. */
+  readonly nodeGap?: number | undefined;
+  /** Layered: space between ranks, px. */
+  readonly rankGap?: number | undefined;
+  /** Grid and stack: space between boxes, px. */
   readonly gap?: number | undefined;
-  /** The columns of a grid. */
+  /** Grid: the number of columns. */
   readonly columns?: number | undefined;
+  /** Grid and stack: alignment. */
+  readonly align?: 'start' | 'center' | 'end' | undefined;
+  /** The space around the laid-out boxes, px. */
+  readonly padding?: number | undefined;
+  /** Stack: length after which a box starts a new line, px. */
+  readonly wrap?: number | undefined;
 };
 
 /**

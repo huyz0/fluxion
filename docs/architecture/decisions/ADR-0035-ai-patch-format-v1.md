@@ -49,7 +49,7 @@ Option 2.
   { "op": "add", "screen": "checkout", "slug": "cache", "node": { "shape": "cylinder", "label": "Cache" } },
   { "op": "connect", "edge": "api -> cache: reads" },
   { "op": "restyle", "targets": ["api", "cache"], "style": { "tone": "accent" } },
-  { "op": "setLayout", "scope": "checkout", "layout": { "type": "layered", "dir": "LR" } } ] }
+  { "op": "setLayout", "scope": "checkout", "layout": { "type": "layered", "direction": "right" } } ] }
 ```
 
 If `baseRevision` is not the document's, the result is `FLX_PATCH_STALE`. If `api` does not exist, it is `FLX_PATCH_REF_UNKNOWN` at `/ops/1/edge` and nothing is added.
@@ -74,7 +74,7 @@ M14.5 (schema generation and the provider-rules fixture), M14.9 (fixtures `packa
 
 - **Node payloads** are the keys the FluxScript reader knows (`shape`, `text`, `label`, `tone`, `style`, `pin`, `alt`); a test ties `NODE_SPEC_KEYS` to the reader's key table (ADR-0030), so the patch and the compiler cannot drift apart. Keys the reader defers (`component`, `image`, `icon`, `badge`, `props`, `near`) join the payload when the compiler compiles them.
 - **Free-key records** (a `style` map) are objects in the plain schema and `{ key, value }` arrays in the strict one, because the strict subset has no open objects. The resolver (M14.9) accepts both forms and reads the pair form back into the map.
-- **Layout intents** in the strict schema carry the options of the built-in layouts (`dir`, `gap`, `columns`); a plugin layout's own options travel in the plain schema and in the CLI only.
+- **Layout intents** in the strict schema carry the options of the built-in layouts under the names their `parseOptions` accepts (`direction`, `spacing`, `nodeGap`, `rankGap`, `gap`, `columns`, `align`, `padding`, `wrap`); a plugin layout's own options travel in the plain schema and in the CLI only. (The first text of this amendment said `dir`; the cheat sheet's compiling example (M14.7) showed the names were wrong.)  The worked patch above was corrected to `direction: right` in the same commit.
 - **`addStep` and `addInteraction`** have bounded v1 payloads (`label` and `reveal`; `on`, `do` and `to`). They are in the schema so a model can emit them, and the resolver rejects them with `FLX_PATCH_OP_INVALID` and a hint until steps and interactions compile (M18).
 - **Object depth**: the strict schema stays within five levels of nested objects, the common limit of the providers' structured output (`packages/dsl/src/patch/__fixtures__/provider-rules.ts`); arrays and unions add none.
 - **Files**: `specs/schema/flux-document.schema.json` (the document file, from the Zod records of `@fluxion/schema`), `ai-patch.schema.json` and `ai-patch.strict.schema.json` (from `@fluxion/dsl`'s patch Zod schema). Each is a Vitest file snapshot (`vitest -u` rewrites it) and a drift test fails when the code and the file differ. A FluxScript JSON Schema is not generated here (see M14.25).

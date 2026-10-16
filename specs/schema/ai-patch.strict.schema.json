@@ -509,16 +509,55 @@
                     "type": "string",
                     "description": "a layouts registry name: layered, grid, stack, or a plugin layout"
                   },
-                  "dir": {
+                  "direction": {
                     "anyOf": [
                       {
+                        "description": "layered: all four; stack: down or right",
                         "type": "string",
                         "enum": [
-                          "TB",
-                          "LR",
-                          "BT",
-                          "RL"
+                          "down",
+                          "right",
+                          "up",
+                          "left"
                         ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "spacing": {
+                    "anyOf": [
+                      {
+                        "description": "layered: the gap preset",
+                        "type": "string",
+                        "enum": [
+                          "compact",
+                          "comfortable",
+                          "spacious"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "nodeGap": {
+                    "anyOf": [
+                      {
+                        "description": "layered: space between boxes of one rank, px",
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rankGap": {
+                    "anyOf": [
+                      {
+                        "description": "layered: space between ranks, px",
+                        "type": "number"
                       },
                       {
                         "type": "null"
@@ -528,6 +567,7 @@
                   "gap": {
                     "anyOf": [
                       {
+                        "description": "grid and stack: space between boxes, px",
                         "type": "number"
                       },
                       {
@@ -538,7 +578,46 @@
                   "columns": {
                     "anyOf": [
                       {
+                        "description": "grid: the number of columns",
                         "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "align": {
+                    "anyOf": [
+                      {
+                        "description": "grid and stack: alignment in the cell or the line",
+                        "type": "string",
+                        "enum": [
+                          "start",
+                          "center",
+                          "end"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "padding": {
+                    "anyOf": [
+                      {
+                        "description": "the space around the laid-out boxes, px",
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "wrap": {
+                    "anyOf": [
+                      {
+                        "description": "stack: length after which a box starts a new line, px (0: never)",
+                        "type": "number"
                       },
                       {
                         "type": "null"
@@ -548,9 +627,15 @@
                 },
                 "required": [
                   "type",
-                  "dir",
+                  "direction",
+                  "spacing",
+                  "nodeGap",
+                  "rankGap",
                   "gap",
-                  "columns"
+                  "columns",
+                  "align",
+                  "padding",
+                  "wrap"
                 ],
                 "additionalProperties": false
               },

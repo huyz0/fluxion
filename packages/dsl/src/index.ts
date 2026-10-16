@@ -36,6 +36,9 @@ export { type ValidateInput, type ValidateOptions, type ValidateResult, validate
  */
 export const VERSION: string = '0.0.0';
 export { buildCatalog, type Catalog, type CatalogEntry, type CatalogOptions, type CatalogResult } from './catalog/catalog.js';
+export { CHEAT_SHEET } from './catalog/cheatsheet.js';
+export { type CatalogFormat, formatCatalog } from './catalog/format.js';
+export { catalogJsonSchema } from './catalog/json-schema.js';
 export { patchJsonSchema, strictPatchJsonSchema } from './patch/json-schema.js';
 export {
   type AiPatch,

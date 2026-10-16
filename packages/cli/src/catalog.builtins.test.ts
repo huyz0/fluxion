@@ -1,4 +1,4 @@
-import { buildCatalog } from '@fluxion/dsl';
+import { buildCatalog, CHEAT_SHEET, compile, formatCatalog } from '@fluxion/dsl';
 import { describe, expect, it } from 'vitest';
 import { hostRegistries } from './host.js';
 
@@ -23,5 +23,22 @@ describe('the built-in catalog (FR-AI-002)', () => {
       'diamond',
       'triangle',
     ]);
+  });
+});
+
+describe('the cheat sheet and the catalog text (FR-AI-002)', () => {
+  it("FR-AI-002: the cheat sheet's example compiles against the CLI host with no error", () => {
+    const { registries } = hostRegistries();
+    const example = /```yaml\n([\s\S]*?)```/.exec(CHEAT_SHEET)?.[1] ?? '';
+    expect(example).toContain('flux: 1');
+    const result = compile(example, { registries });
+    expect(result.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(result.doc).toBeDefined();
+  });
+
+  it('FR-AI-002: the llm catalog of the bundled packs is the committed golden', async () => {
+    const { registries } = hostRegistries(undefined, { requireDescribe: true });
+    const text = formatCatalog(buildCatalog(registries, { detail: 'full' }).catalog, 'llm');
+    await expect(text).toMatchFileSnapshot('../__golden__/catalog.llm.txt');
   });
 });
