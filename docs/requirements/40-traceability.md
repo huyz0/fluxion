@@ -352,7 +352,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-MNT-007 | M | R0 | M1, M33 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/result-convention.test.ts` +2 |
 | NFR-MNT-008 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/api.test.mjs` +2 |
 | NFR-AI-001 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-AI-002 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/catalog/format.test.ts`, `packages/dsl/src/token-count.test.ts` |
+| NFR-AI-002 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/catalog/format.test.ts` +2 |
 | NFR-AI-003 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/token-count.test.ts` |
 | NFR-AI-004 | S | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-OBS-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/dev-logger.test.ts` +3 |
