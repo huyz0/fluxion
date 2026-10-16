@@ -139,6 +139,14 @@ the codes of shape definitions (`FLX_SHAPE_DEF_INVALID`, and `FLX_SHAPE_PATH`, `
 | Code | Severity | Meaning | Typical fix |
 |---|---|---|---|
 | `FLX_PACK_INVALID` | error | The pack id is not lower-case letters, digits and `-`, or a definition's id is outside the pack's namespace (`<pack>:<name>`). | Rename the pack or the definition. |
+| `FLX_LINT_OVERLAP` | warning | Two elements of one screen, neither inside the other, whose boxes cover a large part of the smaller one. | Move or resize one of them. |
+| `FLX_LINT_OFFSCREEN` | warning | An element whose box reaches past the edge of its fixed screen. | Move it inside the screen or shrink it. |
+| `FLX_LINT_TEXT_OVERFLOW` | warning | Measured text that does not fit the box of its element. | Enlarge the box, shorten the text or lower the font size. |
+| `FLX_LINT_CONTRAST` | warning | Text whose colour has a WCAG contrast below 4.5:1 (3:1 for large text) against the fill behind it. | Pick a text colour or a fill with more contrast. |
+| `FLX_LINT_DENSITY` | warning | A screen with more words or more text elements than a slide holds. | Split the screen or cut text. |
+| `FLX_LINT_ORPHAN_CONNECTOR` | warning | A connector with neither end attached to an element. | Attach at least one end to an element, or delete it. |
+| `FLX_LINT_STYLE_LITERAL` | warning | A style that writes a colour literal where a theme token would do. | Use a token such as `{color.primary}`. |
+| `FLX_LINT_STYLE_INCONSISTENT` | warning | A screen that mixes more font sizes or families than a consistent design uses. | Use one size scale and at most two families. |
 
 ## Command line
 

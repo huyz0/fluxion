@@ -187,7 +187,15 @@
                   "FLX_SHAPE_DEF_INVALID",
                   "FLX_SHAPE_PATH",
                   "FLX_SHAPE_LIMIT",
-                  "FLX_PACK_INVALID"
+                  "FLX_PACK_INVALID",
+                  "FLX_LINT_OVERLAP",
+                  "FLX_LINT_OFFSCREEN",
+                  "FLX_LINT_TEXT_OVERFLOW",
+                  "FLX_LINT_CONTRAST",
+                  "FLX_LINT_DENSITY",
+                  "FLX_LINT_ORPHAN_CONNECTOR",
+                  "FLX_LINT_STYLE_LITERAL",
+                  "FLX_LINT_STYLE_INCONSISTENT"
                 ]
               },
               "severity": {

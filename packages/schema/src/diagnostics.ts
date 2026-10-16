@@ -71,7 +71,15 @@ export type DiagnosticCode =
   | 'FLX_SHAPE_DEF_INVALID'
   | 'FLX_SHAPE_PATH'
   | 'FLX_SHAPE_LIMIT'
-  | 'FLX_PACK_INVALID';
+  | 'FLX_PACK_INVALID'
+  | 'FLX_LINT_OVERLAP'
+  | 'FLX_LINT_OFFSCREEN'
+  | 'FLX_LINT_TEXT_OVERFLOW'
+  | 'FLX_LINT_CONTRAST'
+  | 'FLX_LINT_DENSITY'
+  | 'FLX_LINT_ORPHAN_CONNECTOR'
+  | 'FLX_LINT_STYLE_LITERAL'
+  | 'FLX_LINT_STYLE_INCONSISTENT';
 
 /**
  * Every diagnostic code with the severity it is reported at (the mapped type makes the list
@@ -137,6 +145,14 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_SHAPE_PATH: 'error',
   FLX_SHAPE_LIMIT: 'error',
   FLX_PACK_INVALID: 'error',
+  FLX_LINT_OVERLAP: 'warning',
+  FLX_LINT_OFFSCREEN: 'warning',
+  FLX_LINT_TEXT_OVERFLOW: 'warning',
+  FLX_LINT_CONTRAST: 'warning',
+  FLX_LINT_DENSITY: 'warning',
+  FLX_LINT_ORPHAN_CONNECTOR: 'warning',
+  FLX_LINT_STYLE_LITERAL: 'warning',
+  FLX_LINT_STYLE_INCONSISTENT: 'warning',
 };
 
 /**

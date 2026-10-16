@@ -111,6 +111,9 @@ export type CompileResult = {
 };
 
 // @public
+export const CORE_LINT_RULES: readonly LintRule[];
+
+// @public
 export function createStreamCompiler(options: CompileOptions): StreamCompiler;
 
 // @public
@@ -306,6 +309,39 @@ export type LayoutIntent = {
 };
 
 // @public
+export function lint(doc: DocumentFile, registry: LintRegistry, ctx?: LintContext): LintReport;
+
+// @public
+export type LintContext = {
+    readonly theme?: Theme;
+    readonly measureText?: MeasureText;
+};
+
+// @public
+export type LintFinding = Diagnostic & {
+    readonly elements: readonly RecordId[];
+};
+
+// @public
+export type LintRegistry = Registry<string, unknown>;
+
+// @public
+export type LintReport = {
+    readonly score: number;
+    readonly findings: readonly LintFinding[];
+};
+
+// @public
+export type LintRule = {
+    readonly id: string;
+    readonly code: Diagnostic["code"];
+    readonly severity: DiagnosticSeverity;
+    readonly weight: number;
+    readonly describe: string;
+    readonly check: (doc: DocumentFile, ctx: LintContext) => readonly LintFinding[];
+};
+
+// @public
 export type Located<T> = {
     readonly value: T;
     readonly range: SourceRange;
@@ -340,6 +376,13 @@ export function lowerPatch(patch: ResolvedPatch, ctx: LowerContext): Lowered;
 
 // @public
 export const MAX_PATCH_OPS = 200;
+
+// @public
+export type MeasureText = (text: string, font: {
+    readonly family: string;
+    readonly size: number;
+    readonly weight: number;
+}, maxWidth: number) => TextSize;
 
 // @public
 export type NamedHeader = {
@@ -522,6 +565,9 @@ export type RefKind = "screen" | "element" | "group" | "connector";
 export function registerApplyPatchCommand(commands: Registry<string, AnyCommand>, registries: CoreRegistries): ReturnType<Registry<string, AnyCommand>["register"]>;
 
 // @public
+export function registerLintRules(registry: LintRegistry): void;
+
+// @public
 export type Relayout = {
     readonly screenId: string;
     readonly containerId?: string;
@@ -699,6 +745,12 @@ export type StyleAst = {
 // @public
 export type StyleSpec = {
     readonly [key: string]: string;
+};
+
+// @public
+export type TextSize = {
+    readonly w: number;
+    readonly h: number;
 };
 
 // @public

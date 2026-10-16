@@ -39,6 +39,8 @@ export { buildCatalog, type Catalog, type CatalogEntry, type CatalogOptions, typ
 export { CHEAT_SHEET } from './catalog/cheatsheet.js';
 export { type CatalogFormat, formatCatalog } from './catalog/format.js';
 export { catalogJsonSchema } from './catalog/json-schema.js';
+export { CORE_LINT_RULES, lint, registerLintRules } from './lint/lint.js';
+export type { LintContext, LintFinding, LintRegistry, LintReport, LintRule, MeasureText, TextSize } from './lint/types.js';
 export { APPLY_PATCH_COMMAND_ID, type AppliedPatch, applyPatchCommand, registerApplyPatchCommand } from './patch/apply.js';
 export { patchJsonSchema, strictPatchJsonSchema } from './patch/json-schema.js';
 export { type LowerContext, type Lowered, lowerPatch, type Relayout } from './patch/lower.js';
