@@ -55,10 +55,14 @@ async function withCommand(command: Command, rest: readonly string[], io: CliIo)
   return command.run(parsed, io);
 }
 
-/** The reply object of `outcome` (contracts.md rule 13): `result` when ok, `errors[]` otherwise. */
+/** The reply object of `outcome` (contracts.md rule 13): `result` (and any `diagnostics`) when ok, `errors[]` otherwise. */
 function reply(command: string | null, outcome: Outcome): unknown {
   const base = { apiVersion: API_VERSION, command, ok: outcome.exitCode === 0, exitCode: outcome.exitCode };
-  return outcome.exitCode === 0 ? { ...base, result: outcome.result ?? {} } : { ...base, errors: outcome.diagnostics };
+  if (outcome.exitCode !== 0) return { ...base, errors: outcome.diagnostics };
+  const result = outcome.result ?? {};
+  // warnings and infos ride beside the result (ADR-0036); `validate` already lists them as its result
+  const carried = 'diagnostics' in (result as object) || outcome.diagnostics.length === 0;
+  return carried ? { ...base, result } : { ...base, result, diagnostics: outcome.diagnostics };
 }
 
 const printDiagnostics = (outcome: Outcome, io: CliIo) => {

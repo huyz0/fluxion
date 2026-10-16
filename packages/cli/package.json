@@ -13,6 +13,11 @@
       "@fluxion/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./ops": {
+      "@fluxion/source": "./src/ops/index.ts",
+      "types": "./dist/ops/index.d.ts",
+      "default": "./dist/ops/index.js"
     }
   },
   "files": [

@@ -2,8 +2,8 @@
 // package, and report every diagnostic with its JSON pointer. Valid (warnings at most): exit 0, the
 // warnings are the result; invalid or unreadable: exit 1 with every diagnostic as the errors.
 import { readFile } from 'node:fs/promises';
-import { parseDocument } from '@fluxion/schema';
 import { type Command, io, type Outcome, usage } from './command.js';
+import { validateDocument } from './ops/index.js';
 
 /** The text of the document at `file`, or the IO error outcome when it cannot be read. */
 export async function readInput(file: string): Promise<string | Outcome> {
@@ -16,9 +16,8 @@ export async function readInput(file: string): Promise<string | Outcome> {
 
 /** The outcome of validating the text of a document. */
 export function validateText(text: string): Outcome {
-  const r = parseDocument(text);
-  if (r.ok) return { exitCode: 0, diagnostics: r.value.diagnostics, result: { diagnostics: r.value.diagnostics } };
-  return { exitCode: 1, diagnostics: r.error.diagnostics };
+  const r = validateDocument(text);
+  return r.ok ? { exitCode: 0, diagnostics: r.diagnostics, result: { diagnostics: r.value.diagnostics } } : { exitCode: 1, diagnostics: r.diagnostics };
 }
 
 /** The `validate` command. */

@@ -24,7 +24,17 @@ const versionResult = z.object({ version: z.string() }).strict();
 /** One command's reply: success with its result, or failure with the diagnostics that caused it. */
 function reply<C extends z.ZodType, R extends z.ZodType>(command: C, result: R) {
   return z.discriminatedUnion('ok', [
-    z.object({ apiVersion: z.literal(API_VERSION), command, ok: z.literal(true), exitCode: z.literal(0), result }).strict(),
+    z
+      .object({
+        apiVersion: z.literal(API_VERSION),
+        command,
+        ok: z.literal(true),
+        exitCode: z.literal(0),
+        result,
+        // warnings and infos of a successful run (ADR-0036)
+        diagnostics: z.array(diagnosticSchema).optional(),
+      })
+      .strict(),
     z
       .object({
         apiVersion: z.literal(API_VERSION),
@@ -59,6 +69,16 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
     ]),
   ),
 };
+
+/**
+ * The JSON Schema of every command's reply in one document (specs/schema/cli-result.json): a reply of any command validates against it.
+ *
+ * @public
+ */
+export function resultJsonSchema(): object {
+  const replies = Object.keys(OUTPUT_SCHEMAS).map((c) => z.toJSONSchema(OUTPUT_SCHEMAS[c] as z.ZodType));
+  return { $id: 'https://fluxion.dev/schemas/cli-result.json', title: 'Fluxion CLI result', anyOf: replies };
+}
 
 /**
  * The JSON Schema snapshot of `command`'s reply (packages/cli/schemas/<command>.output.json).

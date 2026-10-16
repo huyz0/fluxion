@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OUTPUT_SCHEMAS, outputJsonSchema } from './output.js';
+import { OUTPUT_SCHEMAS, outputJsonSchema, resultJsonSchema } from './output.js';
 
 describe('--json reply schemas (contracts.md §1, §6; ADR-0147)', () => {
   // the committed snapshots are generated from the Zod schemas (contracts.md rule 1): a changed
@@ -9,6 +9,20 @@ describe('--json reply schemas (contracts.md §1, §6; ADR-0147)', () => {
       await expect(`${JSON.stringify(outputJsonSchema(command), null, 2)}\n`).toMatchFileSnapshot(`../schemas/${command}.output.json`);
     });
   }
+
+  it('FR-CLI-002: specs/schema/cli-result.json is generated from the reply schemas of every command', async () => {
+    await expect(`${JSON.stringify(resultJsonSchema(), null, 2)}\n`).toMatchFileSnapshot('../../../specs/schema/cli-result.json');
+  });
+
+  it('FR-CLI-005: a successful reply may carry diagnostics beside its result; a failed one may not', () => {
+    const note = { code: 'FLX_LINT_OVERLAP', severity: 'warning', path: '/records/a', message: 'x' };
+    const render = OUTPUT_SCHEMAS['render'];
+    const good = { apiVersion: 1, command: 'render', ok: true, exitCode: 0, result: { out: 'a.html', screens: 1 } };
+    expect(render?.safeParse({ ...good, diagnostics: [note] }).success).toBe(true);
+    expect(render?.safeParse({ ...good, diagnostics: [{ ...note, code: 'NOPE' }] }).success).toBe(false);
+    const bad = { apiVersion: 1, command: 'render', ok: false, exitCode: 1, errors: [{ ...note, severity: 'error' }] };
+    expect(render?.safeParse({ ...bad, diagnostics: [note] }).success).toBe(false);
+  });
 
   it('FR-CLI-001: a reply has apiVersion and ok, and either a result or errors', () => {
     const fluxion = OUTPUT_SCHEMAS['fluxion'];
