@@ -1,5 +1,5 @@
 // The `layout` operation: arrange every screen of a document with a registered algorithm (FR-LAY-001, FR-CLI-002).
-import { layoutDocument as arrangeDocument } from '@fluxion/dsl';
+import { layoutDocument as arrangeDocument, type ScreenScore } from '@fluxion/dsl';
 import { type DocumentFile, parseDocument, serializeDocument } from '@fluxion/schema';
 import type { CoreRegistries } from '@fluxion/sdk';
 import { type OpResult, opFail, opOk } from './result.js';
@@ -13,10 +13,13 @@ export function layoutDocument(
   text: string,
   registries: CoreRegistries,
   algorithm = 'layered',
-): OpResult<{ readonly document: DocumentFile; readonly text: string; readonly screens: number }> {
+): OpResult<{ readonly document: DocumentFile; readonly text: string; readonly screens: number; readonly scores: readonly ScreenScore[] }> {
   const parsed = parseDocument(text);
   if (!parsed.ok) return opFail(parsed.error.diagnostics);
   const arranged = arrangeDocument(parsed.value.document, registries, algorithm);
   if (!arranged.ok) return opFail(arranged.diagnostics);
-  return opOk({ document: arranged.document, text: serializeDocument(arranged.document), screens: arranged.screens }, parsed.value.diagnostics);
+  return opOk(
+    { document: arranged.document, text: serializeDocument(arranged.document), screens: arranged.screens, scores: arranged.scores },
+    parsed.value.diagnostics,
+  );
 }

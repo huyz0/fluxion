@@ -8,6 +8,7 @@ import { err, type LayoutError, ok, type Result } from './errors.js';
 import { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
 import { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
 import { createRng } from './rng.js';
+import { bendCount, crossingCount } from './scorecard.js';
 import type { LaidOut, LayoutAlgorithm, LayoutCtx, LayoutInput, LayoutNode } from './types.js';
 
 /**
@@ -181,7 +182,13 @@ function execute<O>(req: LayoutRequest<O>, prepared: Prepared<O>): Result<LaidOu
   const missing = complete(input.nodes, boxes);
   if (missing) return fail('LAYOUT_FAILED', missing);
   const laid = afterPasses(input, boxes, passes, req.overlap);
-  return ok(frozen({ boxes: laid, metrics: { overlaps: overlapCount(laid), crossings: 0, bends: 0, ms: 0 }, fingerprint }));
+  return ok(
+    frozen({
+      boxes: laid,
+      metrics: { overlaps: overlapCount(laid), crossings: crossingCount(input.edges ?? [], laid), bends: bendCount(input.edges ?? [], laid), ms: 0 },
+      fingerprint,
+    }),
+  );
 }
 
 /**

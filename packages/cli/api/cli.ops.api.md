@@ -12,6 +12,7 @@ import { DocumentFile } from '@fluxion/schema';
 import { LintFinding } from '@fluxion/dsl';
 import { MeasureText } from '@fluxion/dsl';
 import { MermaidExport } from '@fluxion/dsl';
+import { ScreenScore } from '@fluxion/dsl';
 
 // @public
 export function catalogText(registries: CoreRegistries, format: CatalogFormat): OpResult<{
@@ -37,6 +38,7 @@ export function layoutDocument(text: string, registries: CoreRegistries, algorit
     readonly document: DocumentFile;
     readonly text: string;
     readonly screens: number;
+    readonly scores: readonly ScreenScore[];
 }>;
 
 // @public

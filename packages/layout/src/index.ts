@@ -34,6 +34,7 @@ export { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
 export { createLayoutCache, fingerprintOf, type LayoutCache, type LayoutRequest, layoutSync } from './pipeline.js';
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
 export { createRng } from './rng.js';
+export { type Scorecard, scoreLayout } from './scorecard.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
 export type {

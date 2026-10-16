@@ -13,6 +13,7 @@ import { DiagnosticSeverity } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
+import { Scorecard } from '@fluxion/layout';
 import { SyncHash128 } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { z } from 'zod';
@@ -291,6 +292,7 @@ export type LaidOut = {
     readonly ok: true;
     readonly document: DocumentFile;
     readonly screens: number;
+    readonly scores: readonly ScreenScore[];
 } | {
     readonly ok: false;
     readonly diagnostics: readonly Diagnostic[];
@@ -703,6 +705,11 @@ export type ScreenBlock = {
     readonly text: string;
     readonly offset: number;
     readonly line: number;
+};
+
+// @public
+export type ScreenScore = Scorecard & {
+    readonly screen: string;
 };
 
 // @public

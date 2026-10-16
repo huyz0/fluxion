@@ -1,4 +1,6 @@
 // `compile`, `lint`, `layout` and `migrate` (FR-CLI-002, ADR-0036): each reads one file, calls its operation (ops/) and writes its output atomically.
+
+import type { ScreenScore } from '@fluxion/dsl';
 import { type Command, internal, type Outcome, usage } from './command.js';
 import { hostRegistries } from './host.js';
 import { measurerFor } from './measurer.js';
@@ -28,11 +30,13 @@ type Transform<T> = {
   /** The output file and its text; none writes nothing. */
   readonly write?: { readonly output: string; readonly text: (value: T) => string };
   readonly result: (value: T) => unknown;
+  /** A summary of the value for the log, after the output is written. */
+  readonly summary?: (value: T) => string;
   readonly log: (text: string) => void;
 };
 
 /** Reads `file`, runs the operation on its text; with `write` writes the output and returns the reply's result. */
-async function transform<T>({ file, op, write, result, log }: Transform<T>): Promise<Outcome> {
+async function transform<T>({ file, op, write, result, summary, log }: Transform<T>): Promise<Outcome> {
   const text = await readInput(file);
   if (typeof text !== 'string') return text;
   const r = op(text);
@@ -42,6 +46,7 @@ async function transform<T>({ file, op, write, result, log }: Transform<T>): Pro
     if (bad) return bad;
     log(`${file} -> ${write.output}\n`);
   }
+  if (summary) log(summary(r.value));
   return { exitCode: 0, diagnostics: r.diagnostics, result: result(r.value) };
 }
 
@@ -99,25 +104,34 @@ export const LINT: Command = {
   },
 };
 
-/** `layout <file> -o <out> [--algorithm name]`. */
+/** What the layout operation gives back. */
+type Arranged = { readonly text: string; readonly screens: number; readonly scores: readonly ScreenScore[] };
+
+/** The scorecard as a table, one line per screen. */
+const scoreTable = (scores: readonly ScreenScore[]): string =>
+  scores.map((s) => `${s.screen}: ${s.overlaps} overlaps, ${s.crossings} crossings, ${s.bends} bends, displacement ${s.displacement}px\n`).join('');
+
+/** `layout <file> [-o <out>] [--algorithm name] [--score]`; `-o` is optional only with `--score`, which then writes nothing. */
 export const LAYOUT: Command = {
-  summary: 'Arrange the screens of a document',
-  usage: 'layout <file> -o <out.json> [--algorithm <name>]',
-  options: { out: { type: 'string', short: 'o' }, algorithm: { type: 'string' } },
+  summary: 'Arrange the screens of a document, or score the arrangement',
+  usage: 'layout <file> -o <out.json> [--algorithm <name>] [--score]   (--score alone prints the scorecard and writes nothing)',
+  options: { out: { type: 'string', short: 'o' }, algorithm: { type: 'string' }, score: { type: 'boolean' } },
   run: ({ values, positionals }, io) => {
     const file = oneFile('layout', positionals);
-    const output = outputOf('layout', values);
+    const score = values['score'] === true;
+    const output = score && values['out'] === undefined ? undefined : outputOf('layout', values);
     if (typeof file !== 'string') return file;
-    if (typeof output !== 'string') return output;
+    if (typeof output === 'object') return output;
     const registries = host();
     if (!('layouts' in registries)) return registries;
     const algorithm = typeof values['algorithm'] === 'string' ? values['algorithm'] : 'layered';
     if (registries.layouts.get(algorithm) === undefined) return usage(`no layout algorithm named "${algorithm}"`);
-    return transform({
+    return transform<Arranged>({
       file,
       op: (text) => layoutDocument(text, registries, algorithm),
-      write: { output, text: (v) => v.text },
-      result: (v) => ({ out: output, algorithm, screens: v.screens }),
+      ...(output === undefined ? {} : { write: { output, text: (v) => v.text } }),
+      result: (v) => ({ ...(output === undefined ? {} : { out: output }), algorithm, screens: v.screens, ...(score ? { scores: v.scores } : {}) }),
+      ...(score ? { summary: (v) => scoreTable(v.scores) } : {}),
       log: io.stderr,
     });
   },

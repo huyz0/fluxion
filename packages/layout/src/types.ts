@@ -95,9 +95,9 @@ export type LayoutOutput = {
 export type LayoutMetrics = {
   /** Pairs of boxes that overlap (pinned pairs included, ADR-0034). */
   readonly overlaps: number;
-  /** Edge crossings, 0 when edges are not routed. */
+  /** Pairs of edges that cross, as straight lines between box centres (edges that share a node do not count). */
   readonly crossings: number;
-  /** Edge bends, 0 when edges are not routed. */
+  /** Edges that are neither horizontal nor vertical, each needing a bend in an orthogonal route. */
   readonly bends: number;
   /** Milliseconds the run took, 0 when no clock is injected. */
   readonly ms: number;

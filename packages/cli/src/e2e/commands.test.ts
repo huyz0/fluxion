@@ -78,6 +78,17 @@ describe('the document commands (FR-CLI-002, ADR-0036)', { timeout: E2E_TIMEOUT 
     expect(fluxion(['layout', compiled, '-o', out, '--algorithm', 'nope', '--json']).status).toBe(2);
   });
 
+  it('FR-LAY-004: fluxion layout --score prints the scorecard of every screen and writes nothing without -o', () => {
+    const { status, reply } = json('layout', [compiled, '--score']);
+    expect(status).toBe(0);
+    expect(reply.result?.['out']).toBeUndefined();
+    const scores = reply.result?.['scores'] as { screen: string; overlaps: number; crossings: number; bends: number; displacement: number }[];
+    expect(scores.length).toBe(reply.result?.['screens']);
+    expect(scores[0]).toMatchObject({ overlaps: 0, crossings: expect.any(Number), bends: expect.any(Number) });
+    expect(fluxion(['layout', compiled, '--json']).status).toBe(2);
+    expect(fluxion(['layout', compiled, '--score']).stderr).toContain('crossings');
+  });
+
   it('FR-CLI-002: fluxion migrate --json brings an old document to the current version', () => {
     const out = join(dir, 'migrated.flux.json');
     const { status, reply } = json('migrate', ['packages/schema/src/__fixtures__/v1.0/document.flux.json', '-o', out]);

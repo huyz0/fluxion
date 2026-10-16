@@ -348,6 +348,17 @@ export function removeOverlap(input: LayoutInput, boxes: Boxes, options?: Overla
 export type Result<T, E = LayoutError> = Ok<T> | Err<E>;
 
 // @public
+export type Scorecard = {
+    readonly overlaps: number;
+    readonly crossings: number;
+    readonly bends: number;
+    readonly displacement: number;
+};
+
+// @public
+export function scoreLayout(input: LayoutInput, boxes: Boxes): Scorecard;
+
+// @public
 export function snapBoxes(input: LayoutInput, boxes: Boxes): Boxes;
 
 // @public

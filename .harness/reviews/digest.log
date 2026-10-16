@@ -660,3 +660,14 @@ M14.7	10e19fc3a11d8864b693495f3837f6a0eff9dd44ba01702956c0ee39eba566d1	r1	pass	c
 M14.7	bb131fa9de46b38070802a7b5768bd2664a9b0e5c67a0e923257963033f6c07a	r2	pass	claude:sonnet-5.5	0 findings
 M14.8	51f9b502c890cd6e62c807b0bbe6c9368a40a67ecaad90a3f2c825bff9590b3d	r1	pass	claude:reviewer	0 findings
 M14.9	3cf38dedb64e4a081fb7c20ed3cd37553bfd5007822d0861de35ac902c5d5337	r1	pass	claude:sonnet-5.5	3 findings
+M14.11	0c1e83cd5cac5b5abc7522be85b94bd75b750f48e81ff8d2e33d96ee17f91b5e	r1	pass	claude:subagent	1 findings
+M14.12	d02973ef99ae114af0bc7d0239d96b79f5db702a23eb0946127f5fd3bdf555f8	r1	pass	claude:sonnet-5.5	0 findings
+M14.13	d7637927423558d4940c6e2ee04a30ffd92538d59895fc42fbb7f7e3a6926a4b	r1	pass	claude:sonnet-5.5	0 findings
+M14.14	c2168281dd242a4483b959c07f218b1c9ef309b526e989b38e8001c84cd5e525	r1	pass	claude:reviewer-subagent	1 findings
+M14.13	ca15b508caebf99a9d96b411e17e25c423862f01c2f95799f8dc3bc34295ae83	r2	pass	claude:reviewer-subagent	0 findings
+M14.15	a3decafe18491a960a99f2700c8b8330b74686f275c23ea7ef33d8f8ea87f83d	r1	pass	claude:reviewer-subagent	1 findings
+M14.16	c3d64b2c50bb8398053c8745e2d3c7332a51cdbaf394db1dbb4364b19947809f	r1	pass	claude:reviewer-subagent	0 findings
+M14.17	8a3b62a59c75a34a0fcc57206e818fc3b95b12d16e5633825ce6e1105f8d8dc1	r1	pass	claude:sonnet-5.5	0 findings
+M14.18	98cc99529afc7644939563dd0b4f7ec89d11c3bfc8fd00e30ebe9f68a41ce442	r1	pass	claude:reviewer	2 findings
+M14.19	d6bea9a9b0a12fcd1a564110bc28b6f0678d5b995c2e7d289cb874f21c7bec0c	r1	pass	claude:reviewer	0 findings
+M14.20	79f95287c9991d6a6618e4a7a6478b7854677cfb43bf807f105fd52df5a22d41	r1	pass	claude:sonnet-5.5	0 findings

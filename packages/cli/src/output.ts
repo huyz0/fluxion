@@ -93,7 +93,30 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
   ),
   layout: reply(
     z.literal('layout'),
-    z.union([z.object({ out: z.string(), algorithm: z.string(), screens: z.number().int().min(0) }).strict(), helpResult, versionResult]),
+    z.union([
+      z
+        .object({
+          out: z.string().optional(),
+          algorithm: z.string(),
+          screens: z.number().int().min(0),
+          scores: z
+            .array(
+              z
+                .object({
+                  screen: z.string(),
+                  overlaps: z.number().int().min(0),
+                  crossings: z.number().int().min(0),
+                  bends: z.number().int().min(0),
+                  displacement: z.number().min(0),
+                })
+                .strict(),
+            )
+            .optional(),
+        })
+        .strict(),
+      helpResult,
+      versionResult,
+    ]),
   ),
   migrate: reply(z.literal('migrate'), z.union([z.object({ out: z.string(), applied: z.array(z.string()) }).strict(), helpResult, versionResult])),
   patch: reply(
