@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node ../../scripts/docs/authoring-guide.mjs --check && astro build",
     "api:docs": "typedoc --options ../../typedoc.json --emit none"
   },
   "devDependencies": {

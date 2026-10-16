@@ -19,7 +19,16 @@
       "outputs": ["dist/**"]
     },
     "@fluxion/docs#build": {
-      "dependsOn": ["^build", "@fluxion/core#typecheck"],
+      "dependsOn": [
+        "^build",
+        "@fluxion/core#typecheck",
+        "@fluxion/dsl#build",
+        "@fluxion/schema#build",
+        "@fluxion/sdk#build",
+        "@fluxion/layout#build",
+        "@fluxion/pack-basic#build",
+        "@fluxion/pack-themes-core#build"
+      ],
       "inputs": [
         "src/**",
         "!src/content/docs/api/**",
@@ -28,7 +37,10 @@
         "package.json",
         "$TURBO_ROOT$/typedoc.json",
         "$TURBO_ROOT$/packages/core/src/**",
-        "$TURBO_ROOT$/packages/core/tsconfig.json"
+        "$TURBO_ROOT$/packages/core/tsconfig.json",
+        "$TURBO_ROOT$/scripts/docs/authoring-guide.mjs",
+        "$TURBO_ROOT$/examples/dsl/**",
+        "$TURBO_ROOT$/packages/dsl/src/**"
       ],
       "outputs": ["dist/**"]
     }
