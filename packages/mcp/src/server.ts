@@ -2,6 +2,8 @@
 
 import type { Launcher } from '@fluxion/cli';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { registerPrompts } from './prompts.js';
+import { registerResources } from './resources.js';
 import { Roots } from './roots.js';
 import { DocStore } from './store.js';
 import { registerReadTools } from './tools.js';
@@ -28,5 +30,7 @@ export interface ServerOptions {
 export function createServer(options: ServerOptions = {}): McpServer {
   const server = new McpServer({ name: 'fluxion', version: '0.0.0' });
   registerReadTools(server, options.store ?? new DocStore(), new Roots(options.roots ?? [process.cwd()]), options.launch);
+  registerResources(server);
+  registerPrompts(server);
   return server;
 }
