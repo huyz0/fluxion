@@ -22,8 +22,10 @@ afterEach(() => {
   host.remove();
 });
 
-const UNDO = '{Control>}z{/Control}';
-const REDO = '{Control>}{Shift>}Z{/Shift}{/Control}';
+// CodeMirror's Mod is Meta on macOS and Control elsewhere
+const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? 'Meta' : 'Control';
+const UNDO = `{${MOD}>}z{/${MOD}}`;
+const REDO = `{${MOD}>}{Shift>}Z{/Shift}{/${MOD}}`;
 
 async function mount() {
   const fixture = setup();
@@ -85,7 +87,7 @@ describe('source view text history', () => {
     await act(async () => userEvent.keyboard(REDO));
     expect(text()).toBe(typed);
     await act(async () => userEvent.keyboard(UNDO));
-    await act(async () => userEvent.keyboard('{Control>}y{/Control}'));
+    await act(async () => userEvent.keyboard(`{${MOD}>}y{/${MOD}}`));
     expect(text()).toBe(typed);
     expect(store.history.undoDepth).toBe(depth);
   });

@@ -34,7 +34,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-notice { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 20; margin: 0; padding: 8px 12px; background: var(--ui-bg-elevated, #fff); color: var(--ui-fg, #0f172a); border: 1px solid var(--ui-border, #cbd5e1); border-radius: 6px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); }
 .fx-chrome-panel .fx-chrome-placeholder { margin: 0; padding: 8px 12px; color: var(--ui-muted); }
 .fx-chrome-panel .fx-chrome-tabs { display: flex; flex-wrap: nowrap; gap: 0; overflow: hidden; border-bottom: 1px solid var(--ui-border); }
-.fx-chrome-panel .fx-chrome-tab { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: inherit; font-size: 12px; color: var(--ui-muted); padding: 8px 2px; border: 0; border-bottom: 2px solid transparent; background: transparent; cursor: pointer; }
+.fx-chrome-panel .fx-chrome-tab { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: inherit; font-size: 11px; color: var(--ui-muted); padding: 8px 2px; border: 0; border-bottom: 2px solid transparent; background: transparent; cursor: pointer; }
 .fx-chrome-panel .fx-chrome-tab[aria-selected="true"] { color: var(--ui-text); border-bottom-color: var(--ui-accent); }
 .fx-chrome-overlay { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
 .fx-chrome-overlay .fx-chrome-frame { fill: none; stroke: var(--ui-accent); stroke-width: 1; }

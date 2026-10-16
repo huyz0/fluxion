@@ -39,7 +39,8 @@ test.describe('snapping', { tag: '@desktop' }, () => {
     // 5 px below the other shape's top: within 8 px, so the top edges line up and the guide is drawn
     await expect(page.locator('[data-guide="y"]').first()).toBeAttached();
     const [a, b] = await shapeBoxes(editor);
-    expect(b.y).toBeCloseTo(a.y, 3);
+    // mid-drag the boxes are layer-rounded (WebKit differs by up to 0.01 px); the released position below is exact
+    expect(b.y).toBeCloseTo(a.y, 1);
     await page.mouse.up();
     await expect(guides).toHaveCount(0);
     const [a1, b1] = await shapeBoxes(editor);
