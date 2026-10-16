@@ -3,6 +3,7 @@
 // stdout, parsed by its schema (output.ts) before it is printed. `run` takes the argument list and
 // an IO port and returns the exit code, so tests run it in-process as well as through the built bin.
 import { parseArgs } from 'node:util';
+import { CATALOG, DECOMPILE, PATCH } from './author-commands.js';
 import { type CliIo, type Command, type ExitCode, internal, type Options, type Outcome, ok, usage } from './command.js';
 import { COMPILE, LAYOUT, LINT, MIGRATE } from './commands.js';
 import { CONVERT } from './convert.js';
@@ -19,6 +20,9 @@ const COMMANDS: { readonly [name: string]: Command } = {
   lint: LINT,
   layout: LAYOUT,
   migrate: MIGRATE,
+  patch: PATCH,
+  decompile: DECOMPILE,
+  catalog: CATALOG,
 };
 
 const GLOBAL: Options = { help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, json: { type: 'boolean' } };

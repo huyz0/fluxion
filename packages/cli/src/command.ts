@@ -61,3 +61,9 @@ export const io = (message: string, at: readonly (string | number)[]): Outcome =
   exitCode: 1,
   diagnostics: [{ code: 'FLX_CLI_IO', severity: 'error', path: jsonPointer(at), message }],
 });
+
+/** An output format or file kind the command does not write (exit 2). */
+export const unsupported = (message: string, at: readonly (string | number)[] = ['argv']): Outcome => ({
+  exitCode: 2,
+  diagnostics: [{ code: 'FLX_CLI_FORMAT_UNSUPPORTED', severity: 'error', path: jsonPointer(at), message, hint: 'Run fluxion <command> --help.' }],
+});

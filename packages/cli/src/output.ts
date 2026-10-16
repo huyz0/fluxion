@@ -93,6 +93,23 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
     z.union([z.object({ out: z.string(), algorithm: z.string(), screens: z.number().int().min(0) }).strict(), helpResult, versionResult]),
   ),
   migrate: reply(z.literal('migrate'), z.union([z.object({ out: z.string(), applied: z.array(z.string()) }).strict(), helpResult, versionResult])),
+  patch: reply(
+    z.literal('patch'),
+    z.union([
+      z.object({ out: z.string(), ops: z.number().int().min(0), changed: z.number().int().min(0), revision: z.string() }).strict(),
+      helpResult,
+      versionResult,
+    ]),
+  ),
+  decompile: reply(z.literal('decompile'), z.union([z.object({ out: z.string(), kept: z.number().int().min(0) }).strict(), helpResult, versionResult])),
+  catalog: reply(
+    z.literal('catalog'),
+    z.union([
+      z.object({ format: z.enum(['llm', 'json', 'md']), bytes: z.number().int().min(0), out: z.string().optional(), text: z.string().optional() }).strict(),
+      helpResult,
+      versionResult,
+    ]),
+  ),
 };
 
 /**

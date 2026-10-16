@@ -4,6 +4,8 @@
 
 ```ts
 
+import { AppliedPatch } from '@fluxion/dsl';
+import { CatalogFormat } from '@fluxion/dsl';
 import { CoreRegistries } from '@fluxion/sdk';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
@@ -11,11 +13,22 @@ import { LintFinding } from '@fluxion/dsl';
 import { MeasureText } from '@fluxion/dsl';
 
 // @public
+export function catalogText(registries: CoreRegistries, format: CatalogFormat): OpResult<{
+    readonly text: string;
+}>;
+
+// @public
 export function compileDocument(text: string, registries: CoreRegistries): OpResult<{
     readonly document: DocumentFile;
     readonly text: string;
     readonly screens: number;
     readonly records: number;
+}>;
+
+// @public
+export function decompileText(text: string, registries: CoreRegistries): OpResult<{
+    readonly text: string;
+    readonly kept: number;
 }>;
 
 // @public
@@ -59,6 +72,13 @@ export type OpResult<T> = {
     readonly ok: false;
     readonly diagnostics: readonly Diagnostic[];
 };
+
+// @public
+export function patchText(text: string, patchJson: string, registries: CoreRegistries): OpResult<{
+    readonly document: DocumentFile;
+    readonly text: string;
+    readonly applied: AppliedPatch;
+}>;
 
 // @public
 export function validateDocument(text: string): OpResult<{

@@ -69,7 +69,12 @@ describe('the document commands (FR-CLI-002, ADR-0036)', { timeout: E2E_TIMEOUT 
     const { status, reply } = json('layout', [compiled, '-o', out, '--algorithm', 'layered']);
     expect(status).toBe(0);
     expect(reply.result).toMatchObject({ out, algorithm: 'layered' });
-    expect(JSON.parse(readFileSync(out, 'utf8')).schemaVersion).toBeTypeOf('string');
+    // the arrangement moved something: the output is not the input
+    const boxes = (file: string) =>
+      Object.values(JSON.parse(readFileSync(file, 'utf8')).records as Record<string, { transform?: unknown }>).map((r) => r.transform);
+    const grid = join(dir, 'grid.flux.json');
+    expect(json('layout', [compiled, '-o', grid, '--algorithm', 'grid']).status).toBe(0);
+    expect(boxes(grid)).not.toEqual(boxes(compiled));
     expect(fluxion(['layout', compiled, '-o', out, '--algorithm', 'nope', '--json']).status).toBe(2);
   });
 
@@ -85,5 +90,43 @@ describe('the document commands (FR-CLI-002, ADR-0036)', { timeout: E2E_TIMEOUT 
   it('FR-CLI-002: a missing -o is a usage error', () => {
     expect(fluxion(['compile', 'examples/dsl/edge-ops.flux.yaml', '--json']).status).toBe(2);
     expect(fluxion(['migrate', compiled, '--json']).status).toBe(2);
+  });
+
+  it('FR-CLI-002: fluxion decompile --json writes FluxScript that recompiles to the same document', () => {
+    const yaml = join(dir, 'back.flux.yaml');
+    const { status, reply } = json('decompile', [compiled, '-o', yaml]);
+    expect(status).toBe(0);
+    expect(reply.result).toMatchObject({ out: yaml });
+    const again = join(dir, 'again-compiled.flux.json');
+    expect(json('compile', [yaml, '-o', again]).status).toBe(0);
+    expect(readFileSync(again, 'utf8')).toBe(readFileSync(compiled, 'utf8'));
+  });
+
+  it('FR-CLI-002: fluxion patch --json applies a fixture patch, and a bad patch is rejected whole with exit 1', () => {
+    const base = join(dir, 'base.flux.json');
+    const src = join(dir, 'base.flux.yaml');
+    writeFileSync(src, 'flux: 1\ntitle: Base\nuses: [basic]\nscreens:\n  - id: main\n    nodes:\n      a: { shape: rect }\n');
+    expect(json('compile', [src, '-o', base]).status).toBe(0);
+    const out = join(dir, 'patched.flux.json');
+    const ok = json('patch', [base, 'fixtures/patches/add-node.patch.json', '-o', out]);
+    expect(ok.status).toBe(0);
+    expect(ok.reply.result).toMatchObject({ out, ops: 1 });
+    expect(Object.keys(JSON.parse(readFileSync(out, 'utf8')).records).length).toBeGreaterThan(
+      Object.keys(JSON.parse(readFileSync(base, 'utf8')).records).length,
+    );
+    const bad = join(dir, 'bad.patch.json');
+    writeFileSync(bad, '{"flux":1,"ops":[{"op":"remove","target":"nothing-here"}]}');
+    const rejected = json('patch', [base, bad, '-o', join(dir, 'never-patched.json')]);
+    expect(rejected.status).toBe(1);
+    expect(existsSync(join(dir, 'never-patched.json'))).toBe(false);
+  });
+
+  it('FR-CLI-002: fluxion catalog --json lists the host, and an unknown format exits 2 with FLX_CLI_FORMAT_UNSUPPORTED', () => {
+    const ok = json('catalog', ['--format', 'json']);
+    expect(ok.status).toBe(0);
+    expect(String(ok.reply.result?.['text'])).toContain('basic:rect');
+    const bad = json('catalog', ['--format', 'xml']);
+    expect(bad.status).toBe(2);
+    expect(bad.reply.errors?.map((e) => e.code)).toContain('FLX_CLI_FORMAT_UNSUPPORTED');
   });
 });

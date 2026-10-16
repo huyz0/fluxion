@@ -466,6 +466,19 @@ export type PatchContext = {
 };
 
 // @public
+export function patchDocument(doc: DocumentFile, patch: unknown, registries: CoreRegistries): Patched;
+
+// @public
+export type Patched = {
+    readonly ok: true;
+    readonly document: DocumentFile;
+    readonly applied: AppliedPatch;
+} | {
+    readonly ok: false;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
 export function patchJsonSchema(): {
     readonly [key: string]: unknown;
 };
