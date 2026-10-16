@@ -1,0 +1,86 @@
+{
+  "milestone": "M13",
+  "checkpoint": "final",
+  "range": "d27b949976607f4903665c9afb988dd9c94ab034..abae8c4",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "docs/backlog/current.md (M13.24); perf-baseline.json; .github/workflows/nightly.yml",
+      "summary": "perf-baseline.json was still the local provisional 130 and 480 ms; the layout benches had never run on CI, so the layered legs passed against a local baseline."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "docs/backlog/current.md (M13.24, M13.41)",
+      "summary": "M13.41 done with an empty Commit cell; M13.24 Deps missed M13.38 to M13.41."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "scripts/gates/m13-complete.mjs; e2e/perf.layout-500.spec.ts",
+      "summary": "The T4 perf leg passed by retry on the dev container (GC outliers of 50 to 90 ms) and the gate leg text did not say so."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "scripts/gates/m13-complete.mjs (UNTITLED_ROWS)",
+      "summary": "Exemptions for M13.39 to M13.41 were uncommitted; the three-engine arrange leg cannot run in the container (no Docker, Firefox or WebKit)."
+    },
+    {
+      "id": "F5",
+      "severity": "info",
+      "file": ".harness/reviews/milestone-M13-cp1.json",
+      "summary": "cp1 dispositions are truly resolved (M13.33 to M13.38; F7 handed to M14.19; F8 and F10 argued; the options form descoped by the human to M17 row 20)."
+    },
+    {
+      "id": "F6",
+      "severity": "info",
+      "file": "packages/layout; docs/architecture",
+      "summary": "Coherence, architecture and standards drift are clean. 24 planned rows grew to 41 (1.7x): about 11 CI or budget repairs, 6 cp1 reopenings, 3 worker-path rows. Budget ceilings were raised three times in three days."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "note": "Fixed in M13.43: the nightly perf job was dispatched on abae8c4 (run 38854685960); layered-100 measured 57.793 ms p99 and layered-500 210.914 ms p99 on CI, and perf-baseline.json is re-recorded to 58 and 211.",
+      "target": "M13.43"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "note": "Fixed in M13.43: M13.41 carries 302311e and M13.24 lists M13.38 to M13.43 as dependencies.",
+      "target": "M13.43"
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "note": "The first CI perf run passed perf.layout-500.spec.ts on its first attempt (nightly run 38854685960), so the retry dependence was the dev container's. The GC outlier stays disclosed in M13.31; M14 watches the nightly."
+    },
+    {
+      "finding": "F4",
+      "disposition": "hand-off",
+      "note": "The exemptions are committed in M13.42. The three-engine arrange leg waits for a run with Docker or the three engines, as M12's engine leg does; the roadmap Deferred table names it and the leg is not edited to pass.",
+      "target": "roadmap Deferred"
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "note": "Information only: cp1 findings are resolved as recorded."
+    },
+    {
+      "finding": "F6",
+      "disposition": "hand-off",
+      "note": "M14 planning takes the CPU-normalised budget idea (the staged and quick ceilings were raised three times in three days) and the layout scorecard (M14 row 19).",
+      "target": "M14"
+    }
+  ],
+  "planDelta": "Close M13 when a run with the three engines passes the arrange leg (Deferred). Carry to M14: scorecard metrics (row 19), the budget redesign, watching layout-500 on the nightly.",
+  "learned": [
+    "A gate leg that holds a threshold to a local provisional baseline needs its re-record row to name the job that produces the number; here the nightly perf job, which now prints the measured p99.",
+    "A spec that passes only by retry must say so in its gate leg; the first CI run showed the dev container, not the code, caused the retry."
+  ]
+}

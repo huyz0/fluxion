@@ -283,11 +283,12 @@ leg('packages/layout has a ./worker entry and worker glue lives only under src/w
   const stray = r.stdout.split(/\r?\n/).filter((f) => f && !f.includes('/src/worker/') && !f.endsWith('.test.ts'));
   return stray.length === 0 || `worker glue outside src/worker: ${stray.join(', ')}`;
 });
-// the threshold and no more than 15 % over the recorded baseline (perf-baseline.json: { "layered-100": p99 ms, ... })
+// the threshold and, on CI, no more than 15 % over the recorded baseline (perf-baseline.json: { "layered-100": p99 ms, ... }). The baseline
+// is the GitHub runner's p99 (M13 final F1), so another machine is held to the threshold only; the nightly perf job holds the runner to both.
 function benchLeg(file, name, limit) {
   const baseline = json('perf-baseline.json')?.[name];
   if (typeof baseline !== 'number') return `perf-baseline.json has no "${name}" entry`;
-  return benchUnder(file, name, Math.min(limit, baseline * 1.15));
+  return benchUnder(file, name, process.env.CI ? Math.min(limit, baseline * 1.15) : limit);
 }
 leg(`layered 100 nodes within LAYOUT_100_NODES_MS (${t('LAYOUT_100_NODES_MS')} ms, p99) and 15 % of its baseline`, () =>
   benchLeg('packages/layout/bench/layered-100.bench.ts', 'layered-100', t('LAYOUT_100_NODES_MS')),
