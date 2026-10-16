@@ -44,6 +44,10 @@ test.describe('context menus: mouse', { tag: '@desktop' }, () => {
       /Bring forward/,
       /Send backward/,
       /Send to back/,
+      /Arrange the selection \(layered\)/,
+      /Arrange the selection \(grid\)/,
+      /Arrange the selection \(stack\)/,
+      /Arrange the container/,
     ]);
     await item(editor, /Select same type/).click();
     await expect(menu(editor)).toBeHidden();
@@ -65,7 +69,14 @@ test.describe('context menus: mouse', { tag: '@desktop' }, () => {
     await editor.open('example-shapes-gallery');
     const empty = await client(editor, 1880, 20);
     await page.mouse.click(empty.x, empty.y, { button: 'right' });
-    await expect(menu(editor).getByRole('menuitem')).toHaveText([/Paste/, /Select all/, /Zoom to fit the screen/]);
+    await expect(menu(editor).getByRole('menuitem')).toHaveText([
+      /Paste/,
+      /Select all/,
+      /Zoom to fit the screen/,
+      /Arrange the screen \(layered\)/,
+      /Arrange the screen \(grid\)/,
+      /Arrange the screen \(stack\)/,
+    ]);
     await page.keyboard.press('Escape');
     await expect(menu(editor)).toBeHidden();
     // beyond the screen's edge, on the canvas around it

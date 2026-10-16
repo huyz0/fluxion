@@ -74,7 +74,7 @@ export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
     node: (script, args = [], opts = {}) =>
       spawnSync(process.execPath, [join(dir, script), ...args], { cwd: dir, encoding: 'utf8', ...opts, env: cleanEnv(opts.env) }),
     git: (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8', env: cleanEnv() }),
-    cleanup: () => rmSync(dir, { recursive: true, force: true }),
+    cleanup: () => rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }),
   };
   if (git) {
     sb.git('init', '-q', '-b', 'main');
