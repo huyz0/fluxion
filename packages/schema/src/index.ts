@@ -106,3 +106,4 @@ export { isValid, validate, validateRecord, validateReferences } from './validat
  * @public
  */
 export const VERSION: string = '0.0.0';
+export { documentJsonSchema } from './json-schema.js';

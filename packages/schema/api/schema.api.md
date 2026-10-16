@@ -185,6 +185,11 @@ export type DocumentFile = Extensible<{
 }>;
 
 // @public
+export function documentJsonSchema(): {
+    readonly [key: string]: unknown;
+};
+
+// @public
 export type DocumentRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "document";

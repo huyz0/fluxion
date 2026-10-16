@@ -30,7 +30,8 @@
     "@fluxion/layout": "workspace:*",
     "@fluxion/schema": "workspace:*",
     "@fluxion/theme": "workspace:*",
-    "yaml": "catalog:"
+    "yaml": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "gpt-tokenizer": "4.0.3"

@@ -19,6 +19,7 @@
       "!packages/render/__golden__",
       "!packages/cli/__golden__",
       "!examples/dsl/__golden__",
+      "!specs/schema",
       "!fixtures/docs",
       "!fixtures/fonts/*.json",
       "!examples/**/*.flux.json",

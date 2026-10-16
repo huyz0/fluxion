@@ -1,0 +1,504 @@
+{
+  "title": "Fluxion AI patch",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "flux": {
+      "type": "number",
+      "const": 1
+    },
+    "baseRevision": {
+      "description": "the document revision r<N>; a different revision rejects the patch",
+      "type": "string",
+      "pattern": "^r\\d+$"
+    },
+    "ops": {
+      "minItems": 1,
+      "maxItems": 200,
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "add"
+              },
+              "screen": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "description": "a new slug: lowercase letters, digits and hyphens, starting with a letter"
+              },
+              "node": {
+                "type": "object",
+                "properties": {
+                  "shape": {
+                    "description": "a shape id, short (rect) or qualified (basic:rect)",
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "tone": {
+                    "description": "a theme variant, e.g. accent",
+                    "type": "string"
+                  },
+                  "style": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+                  },
+                  "pin": {
+                    "description": "a box in screen units; the layout leaves it alone",
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "w": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "h": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "alt": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "parent": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              }
+            },
+            "required": [
+              "op",
+              "screen",
+              "slug",
+              "node"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "update"
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              },
+              "set": {
+                "type": "object",
+                "properties": {
+                  "shape": {
+                    "description": "a shape id, short (rect) or qualified (basic:rect)",
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "tone": {
+                    "description": "a theme variant, e.g. accent",
+                    "type": "string"
+                  },
+                  "style": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+                  },
+                  "pin": {
+                    "description": "a box in screen units; the layout leaves it alone",
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "w": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "h": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "alt": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "op",
+              "target",
+              "set"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "remove"
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              },
+              "cascade": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "op",
+              "target"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "connect"
+              },
+              "edge": {
+                "type": "string",
+                "minLength": 1,
+                "description": "the edge shorthand: a.e -> b: label"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "style": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+                  },
+                  "route": {
+                    "type": "string",
+                    "enum": [
+                      "straight",
+                      "curved",
+                      "orthogonal",
+                      "polyline"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "op",
+              "edge"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "disconnect"
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              }
+            },
+            "required": [
+              "op",
+              "target"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "setLayout"
+              },
+              "scope": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              },
+              "layout": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "a layouts registry name: layered, grid, stack, or a plugin layout"
+                  },
+                  "dir": {
+                    "type": "string",
+                    "enum": [
+                      "TB",
+                      "LR",
+                      "BT",
+                      "RL"
+                    ]
+                  },
+                  "gap": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "columns": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              "relayout": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "op",
+              "scope",
+              "layout"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "restyle"
+              },
+              "targets": {
+                "anyOf": [
+                  {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "select": {
+                        "type": "object",
+                        "properties": {
+                          "screen": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+                          },
+                          "shape": {
+                            "type": "string"
+                          },
+                          "tone": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "select"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "style": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "token names by key, e.g. { fill: \"surface\", stroke: \"accent\" }"
+              }
+            },
+            "required": [
+              "op",
+              "targets",
+              "style"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "addStep"
+              },
+              "screen": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              },
+              "at": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "string",
+                    "const": "end"
+                  }
+                ]
+              },
+              "step": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "reveal": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "op",
+              "screen",
+              "step"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "addInteraction"
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 1,
+                "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
+              },
+              "rule": {
+                "type": "object",
+                "properties": {
+                  "on": {
+                    "type": "string",
+                    "enum": [
+                      "click",
+                      "hover"
+                    ]
+                  },
+                  "do": {
+                    "type": "string",
+                    "enum": [
+                      "goto",
+                      "step"
+                    ]
+                  },
+                  "to": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "on",
+                  "do",
+                  "to"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "op",
+              "owner",
+              "rule"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "flux",
+    "ops"
+  ],
+  "additionalProperties": false
+}

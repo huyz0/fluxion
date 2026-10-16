@@ -13,6 +13,17 @@ import { DocumentFile } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
 import { SyncHash128 } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+import { z } from 'zod';
+
+// @public
+export type AiPatch = {
+    readonly flux: 1;
+    readonly baseRevision?: string | undefined;
+    readonly ops: readonly PatchOp[];
+};
+
+// @public
+export const aiPatchSchema: z.ZodType<AiPatch>;
 
 // @public
 export function compile(text: string, options: CompileOptions): CompileResult;
@@ -133,6 +144,13 @@ export type EdgeResult = {
 };
 
 // @public
+export type EdgeSpec = {
+    readonly label?: string | undefined;
+    readonly style?: StyleSpec | undefined;
+    readonly route?: "straight" | "curved" | "orthogonal" | "polyline" | undefined;
+};
+
+// @public
 export function editDistance(a: string, b: string): number;
 
 // @public
@@ -209,6 +227,14 @@ export type LayoutAst = {
 };
 
 // @public
+export type LayoutIntent = {
+    readonly type: string;
+    readonly dir?: "TB" | "LR" | "BT" | "RL" | undefined;
+    readonly gap?: number | undefined;
+    readonly columns?: number | undefined;
+};
+
+// @public
 export type Located<T> = {
     readonly value: T;
     readonly range: SourceRange;
@@ -222,6 +248,9 @@ export type LocatedStyle = Located<StyleAst> & {
 };
 
 // @public
+export const MAX_PATCH_OPS = 200;
+
+// @public
 export type NamedHeader = {
     readonly title: boolean;
     readonly theme: boolean;
@@ -229,6 +258,9 @@ export type NamedHeader = {
 
 // @public
 export function nearest(word: string, candidates: readonly string[]): string | undefined;
+
+// @public
+export const NODE_SPEC_KEYS: readonly string[];
 
 // @public
 export type NodeAst = {
@@ -240,6 +272,22 @@ export type NodeAst = {
     readonly style?: LocatedStyle;
     readonly pin?: Located<PinAst>;
     readonly alt?: Located<string>;
+};
+
+// @public
+export type NodeSpec = {
+    readonly shape?: string | undefined;
+    readonly text?: string | undefined;
+    readonly label?: string | undefined;
+    readonly tone?: string | undefined;
+    readonly style?: StyleSpec | undefined;
+    readonly pin?: {
+        readonly x: number;
+        readonly y: number;
+        readonly w?: number | undefined;
+        readonly h?: number | undefined;
+    } | undefined;
+    readonly alt?: string | undefined;
 };
 
 // @public
@@ -259,6 +307,62 @@ export function parseFlux(text: string): ParseResult;
 export type ParseResult = {
     readonly root?: YNode;
     readonly diagnostics: readonly DslDiagnostic[];
+};
+
+// @public
+export function patchJsonSchema(): {
+    readonly [key: string]: unknown;
+};
+
+// @public
+export type PatchOp = {
+    readonly op: "add";
+    readonly screen: string;
+    readonly slug: string;
+    readonly node: NodeSpec;
+    readonly parent?: string | undefined;
+} | {
+    readonly op: "update";
+    readonly target: string;
+    readonly set: NodeSpec;
+} | {
+    readonly op: "remove";
+    readonly target: string;
+    readonly cascade?: boolean | undefined;
+} | {
+    readonly op: "connect";
+    readonly edge: string;
+    readonly spec?: EdgeSpec | undefined;
+} | {
+    readonly op: "disconnect";
+    readonly target: string;
+} | {
+    readonly op: "setLayout";
+    readonly scope: string;
+    readonly layout: LayoutIntent;
+    readonly relayout?: boolean | undefined;
+} | {
+    readonly op: "restyle";
+    readonly targets: readonly string[] | {
+        readonly select: Selector;
+    };
+    readonly style: StyleSpec;
+} | {
+    readonly op: "addStep";
+    readonly screen: string;
+    readonly at?: number | "end" | undefined;
+    readonly step: {
+        readonly label?: string | undefined;
+        readonly reveal?: readonly string[] | undefined;
+    };
+} | {
+    readonly op: "addInteraction";
+    readonly owner: string;
+    readonly rule: {
+        readonly on: "click" | "hover";
+        readonly do: "goto" | "step";
+        readonly to: string;
+    };
 };
 
 // @public
@@ -339,6 +443,14 @@ export type ScreenBlock = {
 };
 
 // @public
+export type Selector = {
+    readonly screen?: string | undefined;
+    readonly shape?: string | undefined;
+    readonly tone?: string | undefined;
+    readonly kind?: string | undefined;
+};
+
+// @public
 export type SourceRange = {
     readonly line: number;
     readonly col: number;
@@ -392,9 +504,19 @@ export type StreamUpdate = {
 };
 
 // @public
+export function strictPatchJsonSchema(): {
+    readonly [key: string]: unknown;
+};
+
+// @public
 export type StyleAst = {
     readonly [key: string]: string | number | boolean;
 } | "solid" | "dashed" | "dotted";
+
+// @public
+export type StyleSpec = {
+    readonly [key: string]: string;
+};
 
 // @public
 export type ThemeAst = {
