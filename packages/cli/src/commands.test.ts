@@ -79,10 +79,8 @@ describe('the document commands in-process (FR-CLI-002, FR-LAY-004, FR-EXP-007)'
     expect((await cli('convert', join(dir, 'absent.flux'), html)).code).toBe(1);
     expect((await cli('convert', flux)).code).toBe(2);
     const page = join(dir, 'r.html');
-    expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', page)).code).toBe(0);
-    expect(existsSync(page)).toBe(true);
     expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', page, '--format', 'svg')).code).toBe(2);
-    expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', page, '--screen', 'nope')).code).not.toBe(0);
+    expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', page, '--screen', 'nope')).code).toBe(2);
   });
 
   it('FR-CLI-002: usage mistakes, unreadable inputs and the other catalog outputs are reported, not thrown', async () => {

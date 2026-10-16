@@ -243,13 +243,15 @@ All commands wrap `@fluxion/cli/ops`, the same functions the MCP server calls.
 | Command | Purpose |
 |---|---|
 | `validate <file>` · `lint <file> [--min-score n]` | validation; quality rules and score |
-| `compile <in.flux.yaml> -o <out>` · `decompile <file> [--screen id]` | FluxScript ⇄ document |
-| `layout <file> [--screen id] [--algorithm a]` | re-run layout, write positions |
-| `render <file> --format html\|png\|svg\|pdf [--screen id] [--step n]` | headless render (Playwright for raster/PDF) |
+| `compile <in.flux.yaml> -o <out>` · `decompile <file> -o <out> [--format flux\|mermaid] [--screen id]` | FluxScript ⇄ document; a screen as a Mermaid flowchart (FR-EXP-007) |
+| `layout <file> -o <out> [--algorithm a]` · `layout <file> --score` | re-run layout and write positions; or print the scorecard per screen (overlaps, crossings, bends, displacement; FR-LAY-004) |
+| `render <file> -o <out> [--format html\|png] [--screen id]` | static HTML, or a PNG per screen (Playwright; svg, pdf and `--step` are not built yet) |
 | `catalog [--format llm\|json\|md] [--pack p]` | AI catalog |
 | `migrate <file>` · `convert <in> <out>` | upgrade schema; `.flux` ⇄ `.flux.html` ⇄ `.flux.json` |
 | `patch <file> <patch.json>` | apply an AI patch atomically |
-| `pack <plugin-dir>` · `site build <file…> -o dir` | `.fluxpack` (09); static site (10) |
+| `pack <plugin-dir>` · `site build <file…> -o dir` | `.fluxpack` (09); static site (10); not built yet |
+
+The JSON Schemas an agent validates against are in `specs/schema/` (the document, the plain and strict patch, and `fluxscript.schema.json`, generated from the reader's key table, M14.25); the CLI replies are in `packages/cli/schemas/`. A scripted session: `examples/cli/`.
 
 `--json` prints exactly one reply to stdout (ADR-0147's envelope: `apiVersion`, `command`, `ok`, `exitCode`, and `result` or `errors[]`; a successful reply may also carry `diagnostics` for warnings, ADR-0036); logs go to stderr. Exit codes (FR-CLI-005): **0** ok (warnings allowed), **1** the input is wrong (validation or lint errors, a score below `--min-score`, a rejected patch), **2** usage error (including an absent optional Chromium for `render --png`), **3** internal error (bug; stack trace on stderr). The operations live in `@fluxion/cli/ops` (ADR-0036).
 
