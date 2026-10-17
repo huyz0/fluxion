@@ -23,6 +23,12 @@
       "apps/studio/src/diagnostic-button.tsx"
     ]
   },
+  "7Zdnlq": {
+    "message": "Document",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
   "7tdEVP": {
     "message": "Open a file…",
     "origin": [
@@ -35,6 +41,12 @@
       "apps/studio/src/file-bar.tsx"
     ]
   },
+  "DB8zMK": {
+    "message": "Apply",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
   "DNHQK9": {
     "message": "The file was not saved: {0}",
     "origin": [
@@ -45,6 +57,12 @@
     "message": "Documents",
     "origin": [
       "apps/studio/src/App.tsx"
+    ]
+  },
+  "F-vBv0": {
+    "message": "Ask",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
     ]
   },
   "FuBQJT": {
@@ -65,6 +83,12 @@
       "apps/studio/src/library/recent-files.tsx"
     ]
   },
+  "HXcxUP": {
+    "message": "What should change?",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
   "IftEM1": {
     "message": "Diagnostic report copied.",
     "origin": [
@@ -81,6 +105,12 @@
     "message": "Last changed {changed}: {screens} {screenWord}, {records} records, {changes} {changeWord} since it was saved.",
     "origin": [
       "apps/studio/src/autosave/recovery-prompt.tsx"
+    ]
+  },
+  "MT99Ku": {
+    "message": "Asking…",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
     ]
   },
   "NWyRJj": {
@@ -107,6 +137,12 @@
       "apps/studio/src/autosave/recovery-prompt.tsx"
     ]
   },
+  "PnVUnz": {
+    "message": "Screen",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
   "XH30C4": {
     "message": "document",
     "origin": [
@@ -119,9 +155,29 @@
       "apps/studio/src/file-bar.tsx"
     ]
   },
+  "a5zD9f": {
+    "message": "Changes",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
+  "a9Wnir": {
+    "message": "AI assistant",
+    "origin": [
+      "apps/studio/src/App.tsx",
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
+  "aBgwis": {
+    "message": "Scope",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
   "bzSI52": {
     "message": "Discard",
     "origin": [
+      "apps/studio/src/ai/ai-panel.tsx",
       "apps/studio/src/autosave/recovery-prompt.tsx"
     ]
   },
@@ -129,6 +185,12 @@
     "message": "Saved {0}.",
     "origin": [
       "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "e6j4Yn": {
+    "message": "Applied. Undo takes it back in one step.",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
     ]
   },
   "egDhxW": {
@@ -161,10 +223,22 @@
       "apps/studio/src/file-bar.tsx"
     ]
   },
+  "nRmasm": {
+    "message": "Preview of the change",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
   "p6y5jE": {
     "message": "New document",
     "origin": [
       "apps/studio/src/App.tsx"
+    ]
+  },
+  "p7_fS2": {
+    "message": "Selection",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
     ]
   },
   "s1WR6A": {
@@ -183,6 +257,12 @@
     "message": " {0} assets had no bytes to write.",
     "origin": [
       "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "u9y3L7": {
+    "message": "Proposed change",
+    "origin": [
+      "apps/studio/src/ai/ai-panel.tsx"
     ]
   },
   "ursXsR": {

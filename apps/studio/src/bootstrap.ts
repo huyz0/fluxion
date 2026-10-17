@@ -2,6 +2,7 @@
 // packs registered into its core registries (ADR-0017: the studio bundles packs/basic), and the
 // render registries that draw from them.
 import { type Core, createCore, type Logger } from '@fluxion/core';
+import { registerApplyPatchCommand } from '@fluxion/dsl';
 import { registerArrangeCommand, registerBuiltInLayouts } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
 import { themesCorePack } from '@fluxion/pack-themes-core';
@@ -46,6 +47,9 @@ export function openDocument(file: DocumentFile, options: { readonly readOnly?: 
   if (!themed.ok) return err(`The themes pack failed to register: ${themed.error.map((d) => d.message).join('; ')}`);
   const laidOut = registerLayouts(core.registries);
   if (!laidOut.ok) return err(laidOut.message);
+  // `ai.applyPatch` (FR-AI-003): the AI panel's Apply
+  const patching = registerApplyPatchCommand(core.registries.commands, core.registries);
+  if (!patching.ok) return err(`The AI patch command failed to register: ${patching.error.message}`);
   return ok({ core, registries: renderRegistriesFor(core.registries), themes: themesCorePack.themes });
 }
 

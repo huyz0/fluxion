@@ -7,6 +7,8 @@ import { PlayerRoot } from '@fluxion/player';
 import { ok, type RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
 import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { AiPanel } from './ai/ai-panel.js';
+import { registerStoredKeys } from './ai/client.js';
 import { createArrangeRunner } from './arrange-port.js';
 import { AutosaveBar } from './autosave/autosave-bar.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
@@ -123,38 +125,52 @@ function ProtectedEditor(props: {
   const session = useMemo(() => createSession(docId), [docId]);
   const title = useCallback(() => titleOf(core.store), [core]);
   const arrange = useArrangeRunner(core);
+  const [aiOpen, setAiOpen] = useState(false);
+  useEffect(() => {
+    void registerStoredKeys();
+  }, []);
   useEffect(() => installTestHooks({ store: core.store, execute: core.execute, registries: core.registries, session }), [core, session]);
   const { autosave, state } = useProtection({ id: journalId(docId, entry, instance), store: core.store, assets, entry, title, guard });
   return (
-    <EditorRoot
-      store={core.store}
-      execute={core.execute}
-      registries={registries}
-      sourceRegistries={core.registries}
-      settings={settings}
-      session={session}
-      themes={themes}
-      assets={assets}
-      fonts={fonts}
-      arrange={arrange}
-      toolbar={
-        <>
-          <FileBar
-            host={host}
-            store={core.store}
-            assets={assets}
-            entry={entry}
-            onOpened={(id) => navigate(`/edit/${id}`)}
-            onSaved={(saved) => {
-              void autosave?.saved();
-              void rememberSaved(saved, core.store.toDocument().records);
-            }}
-          />
-          <AutosaveBar state={state} readOnly={guard.phase === 'read-only'} />
-          <DiagnosticButton store={core.store} />
-        </>
-      }
-    />
+    <>
+      <EditorRoot
+        store={core.store}
+        execute={core.execute}
+        registries={registries}
+        sourceRegistries={core.registries}
+        settings={settings}
+        session={session}
+        themes={themes}
+        assets={assets}
+        fonts={fonts}
+        arrange={arrange}
+        toolbar={
+          <>
+            <FileBar
+              host={host}
+              store={core.store}
+              assets={assets}
+              entry={entry}
+              onOpened={(id) => navigate(`/edit/${id}`)}
+              onSaved={(saved) => {
+                void autosave?.saved();
+                void rememberSaved(saved, core.store.toDocument().records);
+              }}
+            />
+            <AutosaveBar state={state} readOnly={guard.phase === 'read-only'} />
+            <DiagnosticButton store={core.store} />
+            <button type="button" aria-pressed={aiOpen} onClick={() => setAiOpen((open) => !open)}>
+              {t`AI assistant`}
+            </button>
+          </>
+        }
+      />
+      {aiOpen ? (
+        <div style={{ position: 'fixed', top: 48, right: 8, zIndex: 9000, background: 'var(--fx-bg, #fff)', border: '1px solid #cbd5e1' }}>
+          <AiPanel store={core.store} execute={core.execute} registries={core.registries} session={session} />
+        </div>
+      ) : null}
+    </>
   );
 }
 

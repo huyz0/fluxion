@@ -172,7 +172,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/command-palette.browser.test.tsx` +2 |
 | FR-EDT-012 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/keymap.rebind.spec.ts` +6 |
 | FR-EDT-013 | S | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/context-menu.element.spec.ts` +2 |
-| FR-EDT-014 | M | R2 | M15 | [15-editor.md](15-editor.md) | — |
+| FR-EDT-014 | M | R2 | M15 | [15-editor.md](15-editor.md) | `apps/studio/src/ai/ai-panel.test.ts`, `e2e/ai-panel.apply-undo.spec.ts` |
 | FR-EDT-015 | S | R3 | M19 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-016 | S | R3 | M19 | [15-editor.md](15-editor.md) | — |
 | FR-EDT-017 | S | R4 | M22 | [15-editor.md](15-editor.md) | — |

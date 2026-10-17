@@ -2,6 +2,7 @@
 // (`window.__FLUXION_TEST_HOOKS__ = true`, set by an init script), so a user's page has no handle on the document.
 import type { Core, CoreRegistries, LogLevel } from '@fluxion/core';
 import { type Session, type StreamFluxResult, streamFluxScript } from '@fluxion/editor';
+import { useRecordedReply } from './ai/client.js';
 import { idbKeyRecords } from './ai/key-records.js';
 import { createKeyStore } from './ai/key-store.js';
 import { studioRedactor } from './ai/redactor.js';
@@ -36,6 +37,8 @@ export type StudioTestHooks = {
   holdKey(provider: string, value: string): Promise<void>;
   /** Write a line through the studio logger (the console and the diagnostic report's source). */
   log(level: LogLevel, message: string, fields?: { readonly [key: string]: unknown }): void;
+  /** The AI panel answers its next asks with this text, as a recorded model reply (no provider is called). */
+  recordedReply(text: string): void;
   /** The diagnostic report the Copy button would put on the clipboard. */
   report(): string;
 };
@@ -111,6 +114,7 @@ export function installTestHooks(doc: {
     },
     holdKey: (provider, value) => createKeyStore({ records: idbKeyRecords(indexedDB), crypto, redactor: studioRedactor }).set(provider, value),
     log: (level, message, fields = {}) => studioLogger(window.location.search, console).child('studio').log(level, message, fields),
+    recordedReply: (text) => useRecordedReply(text),
     report: () =>
       diagnosticReport({
         versions: { studio: 'test' },
