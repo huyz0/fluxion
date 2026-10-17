@@ -2,18 +2,11 @@
 // along its anchor's outward direction (toward the other end when the anchor has none); through
 // waypoints it is a chain of cubics with Catmull-Rom tangents inside. A polyline is straight lines
 // through the waypoints.
-import type { PathCommand, Vec2 } from '@fluxion/geometry';
+import { add, normalize, type PathCommand, scale, sub, type Vec2 } from '@fluxion/geometry';
 import type { RouteEnd, Router } from './router.js';
 
-const sub = (a: Vec2, b: Vec2): Vec2 => ({ x: a.x - b.x, y: a.y - b.y });
-const along = (p: Vec2, d: Vec2, k: number): Vec2 => ({ x: p.x + d.x * k, y: p.y + d.y * k });
-const unit = (v: Vec2): Vec2 | undefined => {
-  const n = Math.hypot(v.x, v.y);
-  return n > 0 ? { x: v.x / n, y: v.y / n } : undefined;
-};
-
 /** The end's outward direction, or the unit direction toward `next` (none when they coincide). */
-const outward = (end: RouteEnd, next: Vec2): Vec2 => end.dir ?? unit(sub(next, end.point)) ?? { x: 0, y: 0 };
+const outward = (end: RouteEnd, next: Vec2): Vec2 => end.dir ?? normalize(sub(next, end.point));
 
 /**
  * The `curved` router: one cubic per leg between the ends and the waypoints. The first leg leaves the
@@ -30,13 +23,13 @@ export const curvedRouter: Router = {
     // the tangent at point k, scaled to its legs: the end directions at the ends, Catmull-Rom inside
     const tangent = (k: number): Vec2 => {
       if (k === 0) return outward(source, points[1] as Vec2);
-      if (k === last) return along({ x: 0, y: 0 }, outward(target, points[last - 1] as Vec2), -1);
-      return unit(sub(points[k + 1] as Vec2, points[k - 1] as Vec2)) ?? { x: 0, y: 0 };
+      if (k === last) return scale(outward(target, points[last - 1] as Vec2), -1);
+      return normalize(sub(points[k + 1] as Vec2, points[k - 1] as Vec2));
     };
     const legs = points.slice(1).map((to, k): PathCommand => {
       const from = points[k] as Vec2;
       const reach = Math.hypot(to.x - from.x, to.y - from.y) / 3;
-      return { kind: 'C', control1: along(from, tangent(k), reach), control2: along(to, tangent(k + 1), -reach), to };
+      return { kind: 'C', control1: add(from, scale(tangent(k), reach)), control2: add(to, scale(tangent(k + 1), -reach)), to };
     });
     return [{ kind: 'M', to: source.point }, ...legs];
   },

@@ -27,7 +27,10 @@ point and the outward direction in screen coordinates, through the element's rot
 
 `routeConnector(view, { shapeDefs, routers }, id)` resolves both ends of a connector from its
 bindings (or free points) and routes them with the router registered for its `route.type`; an
-unknown type, or a router that fails, draws straight. `registerBuiltinRouters` registers:
+unknown type, or a router that fails, draws straight; so does a router whose path does not run
+from the source point to the target point (the `Router` contract). The registry is core's `routers`
+registry: packs register theirs there as `<namespace>:<name>`, and `RouteContext.routers` is that
+registry. `registerBuiltinRouters` registers:
 
 | Type | Router |
 |---|---|

@@ -82,13 +82,24 @@ function pending(view: ReadView, ctx: RouteContext, { connectorId, end, free }: 
 /** The end resolved, aiming at `toward`. */
 const resolved = (p: Pending, toward: Vec2): RouteEnd => ('target' in p ? resolveAnchor(p.target, p.anchor, toward) : { point: p.at });
 
-/** `router`'s path, or a straight line when it throws or does not start at the source. */
+/** `router`'s path, or a straight line when it throws or does not run from the source point to the target point. */
 function pathOf(router: Router, source: RouteEnd, target: RouteEnd, route: Route): readonly PathCommand[] {
   try {
     const commands = router.route({ source, target, route });
     const first = commands[0];
     // a path must start at the source point: one that starts elsewhere would look detached (M5.17 review F1)
-    if (first?.kind === 'M' && first.to.x === source.point.x && first.to.y === source.point.y) return commands;
+    // and end at the target (the Router contract: source to target; M5 final F6), or it would stop short of the element
+    const end = commands.at(-1);
+    if (
+      first?.kind === 'M' &&
+      first.to.x === source.point.x &&
+      first.to.y === source.point.y &&
+      end !== undefined &&
+      'to' in end &&
+      end.to.x === target.point.x &&
+      end.to.y === target.point.y
+    )
+      return commands;
   } catch {
     // a plugin router's failure draws the connector straight rather than not at all
   }

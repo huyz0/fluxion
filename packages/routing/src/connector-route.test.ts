@@ -112,7 +112,18 @@ describe('routers by route type (FR-RTE-001)', () => {
       },
       'test',
     );
-    for (const type of ['test:missing', 'test:boom', 'test:empty', 'test:lines', 'test:left', 'test:beside'] as const) {
+    // starts at the source but stops short of the target
+    ctx.routers.register(
+      'test:short',
+      {
+        route: ({ source, target }) => [
+          { kind: 'M', to: source.point },
+          { kind: 'L', to: { x: target.point.x - 10, y: target.point.y } },
+        ],
+      },
+      'test',
+    );
+    for (const type of ['test:missing', 'test:boom', 'test:empty', 'test:lines', 'test:left', 'test:beside', 'test:short'] as const) {
       const { store, line } = scene((records, ids) => {
         (records[ids.line] as { route: unknown }).route = { type };
       });
