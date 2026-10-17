@@ -5,6 +5,7 @@ export { AUTO_WEIGHTS, type AutoChoice, type AutoEdge, type AutoEnd, type AutoOp
 export { registerBuiltinRouters } from './builtins.js';
 export { type ConnectorRoute, type RouteContext, routeConnector } from './connector-route.js';
 export { curvedRouter, polylineRouter } from './curved.js';
+export { distributeSlots, type Slot, type SlotEnd } from './distribution.js';
 export { labelPosition, type RoutePoint, routePoint } from './labels.js';
 export { buildGrid, type Grid, type GridInput } from './orthogonal/grid.js';
 export { type NudgeRoute, nudge } from './orthogonal/nudge.js';

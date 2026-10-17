@@ -86,6 +86,9 @@ export const curvedRouter: Router;
 export const DEFAULT_ANCHORS: readonly AnchorDef[];
 
 // @public
+export function distributeSlots(ends: readonly SlotEnd[]): Slot[];
+
+// @public
 export type Grid = {
     readonly xs: readonly number[];
     readonly ys: readonly number[];
@@ -211,6 +214,23 @@ export function simplify(path: readonly Vec2[], options?: SimplifyOptions): Vec2
 export type SimplifyOptions = {
     readonly minJog?: number | undefined;
     readonly minStub?: number | undefined;
+};
+
+// @public
+export type Slot = {
+    readonly id: string;
+    readonly side: Side;
+    readonly t: number;
+};
+
+// @public
+export type SlotEnd = {
+    readonly id: string;
+    readonly key: string;
+    readonly box: Box;
+    readonly side: Side;
+    readonly far: Vec2;
+    readonly max?: number | undefined;
 };
 
 // @public
