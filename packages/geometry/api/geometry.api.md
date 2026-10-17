@@ -71,6 +71,15 @@ export function createStaticIndex(items: readonly IndexedBox[]): SpatialIndex;
 export function cross(a: Vec2, b: Vec2): number;
 
 // @public
+export type Crossing = {
+    readonly a: string;
+    readonly b: string;
+    readonly aSegment: number;
+    readonly bSegment: number;
+    readonly at: Vec2;
+};
+
+// @public
 export type CubicSegment = {
     readonly p0: Vec2;
     readonly p1: Vec2;
@@ -245,6 +254,15 @@ export function pointAt(seg: CubicSegment, t: number): Vec2;
 
 // @public
 export function pointInPath(path: Path, p: Vec2, rule?: FillRule): boolean;
+
+// @public
+export type Polyline = {
+    readonly id: string;
+    readonly points: readonly Vec2[];
+};
+
+// @public
+export function polylineCrossings(lines: readonly Polyline[]): Crossing[];
 
 // @public
 export type Result<T, E = GeometryError> = Ok<T> | Err<E>;

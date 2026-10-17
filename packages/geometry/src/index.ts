@@ -20,6 +20,7 @@ export {
   boxUnion,
   transformBox,
 } from './box.js';
+export { type Crossing, type Polyline, polylineCrossings } from './crossings.js';
 export { type ElementTransform, elementBounds, elementCorners, elementMatrix } from './element-transform.js';
 export type { GeometryError, GeometryErrorCode } from './errors.js';
 export { intersectCubics, intersectPaths, intersectSegments, type LineSegment } from './intersections.js';

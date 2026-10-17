@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Connectors with line jumps" viewBox="0 0 100 100">
+  <path id="h" fill="none" stroke="black" d="M0 50 L100 50"/>
+  <path id="v" fill="none" stroke="black" d="M40 0 L40 44 C48 44 48 56 40 56 L40 100"/>
+  <path id="w" fill="none" stroke="black" d="M70 0 L70 44 M70 56 L70 100"/>
+</svg>

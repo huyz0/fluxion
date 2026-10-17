@@ -80,6 +80,9 @@ export type ConnectorRoute = {
 };
 
 // @public
+export function createJumpCache(): (routes: readonly JumpRoute[], documentStyle?: JumpStyle) => JumpMap;
+
+// @public
 export const curvedRouter: Router;
 
 // @public
@@ -95,6 +98,9 @@ export function fanOrthogonal(points: readonly Vec2[], offset: number, stub?: nu
 export function fanWaypoint(from: Vec2, to: Vec2, offset: number): Vec2;
 
 // @public
+export function findJumps(routes: readonly JumpRoute[], documentStyle?: JumpStyle): JumpMap;
+
+// @public
 export type Grid = {
     readonly xs: readonly number[];
     readonly ys: readonly number[];
@@ -107,6 +113,30 @@ export type GridInput = {
     readonly margin: number;
     readonly window?: Box | undefined;
 };
+
+// @public
+export function hopPath(points: readonly Vec2[], jumps: readonly Jump[], style?: "arc" | "gap", radius?: number): PathCommand[];
+
+// @public
+export type Jump = {
+    readonly at: Vec2;
+    readonly segment: number;
+};
+
+// @public
+export type JumpMap = ReadonlyMap<string, readonly Jump[]>;
+
+// @public
+export type JumpRoute = {
+    readonly id: string;
+    readonly z: number;
+    readonly revision: string;
+    readonly points: readonly Vec2[];
+    readonly style?: JumpStyle | undefined;
+};
+
+// @public
+export type JumpStyle = "arc" | "gap" | "none";
 
 // @public
 export function labelPosition(commands: readonly PathCommand[], t: number, offset?: Vec2): Vec2;
