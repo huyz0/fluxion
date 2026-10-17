@@ -83,10 +83,16 @@ export type Locks = Extensible<{
 export type AnchorDef = Extensible<{
   /** Anchor name, unique on the element. */
   readonly name: string;
-  /** Horizontal position, 0 (left) to 1 (right). */
-  readonly x: number;
-  /** Vertical position, 0 (top) to 1 (bottom). */
-  readonly y: number;
+  /** Kind (ADR-0043): `fixed` (default) a point, `side` a fraction along a side, `perimeter` the floating outline point (or a fixed fraction of its length with `t`), `center` the box centre. */
+  readonly kind?: 'fixed' | 'side' | 'perimeter' | 'center';
+  /** Horizontal position, 0 (left) to 1 (right); required for `fixed`. */
+  readonly x?: number;
+  /** Vertical position, 0 (top) to 1 (bottom); required for `fixed`. */
+  readonly y?: number;
+  /** The side of a `side` anchor. */
+  readonly side?: 'n' | 'e' | 's' | 'w';
+  /** Fraction 0..1 along the side (`side`, default 0.5) or along the outline's length (`perimeter`, absent: floating). */
+  readonly t?: number;
   /** Outward direction. */
   readonly dir?: Point;
   /** Whether connectors may start (`out`), end (`in`) or both here. */

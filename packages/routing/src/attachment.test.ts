@@ -50,7 +50,10 @@ const matrixOf = (t: Transform): Mat2d => elementMatrix({ ...t, rot: t.rot ?? 0 
 
 /** The fraction of the box the anchor `ref` pins an end to; undefined for a floating one (it depends on the other end). */
 function fraction(ref: AnchorRef): Vec2 | undefined {
-  if (ref.kind === 'named') return DEFAULT_ANCHORS.find((a) => a.name === ref.name);
+  if (ref.kind === 'named') {
+    const a = DEFAULT_ANCHORS.find((d) => d.name === ref.name);
+    return a?.x === undefined || a.y === undefined ? undefined : { x: a.x, y: a.y };
+  }
   if (ref.kind === 'point') return ref;
   if (ref.kind !== 'side') return undefined;
   const t = ref.t ?? 0.5;

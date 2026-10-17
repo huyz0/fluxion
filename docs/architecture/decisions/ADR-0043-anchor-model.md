@@ -26,7 +26,14 @@ Today an `AnchorDef` is a named point (`name`, `x`, `y`, `dir`, `role`, `max`). 
 
 Option 2.
 
-**Schema.** `AnchorDef` gains optional `kind` (`fixed` | `side` | `perimeter` | `center`, default `fixed`), plus `side` (`n`|`e`|`s`|`w`) for `side` and `t` (0 to 1) for `side` and `perimeter`. `role`, `dir` and `max` apply to every kind. The `max` field is `maxConnections`. This is a minor schema bump: a document without `kind` reads as `fixed`, and the migration adds nothing but the version.
+**Schema.** `AnchorDef` gains optional `kind` (`fixed` | `side` | `perimeter` | `center`, default `fixed`), plus `side` (`n`|`e`|`s`|`w`) for `side` and `t` (0 to 1) for `side` and `perimeter`. `x` and `y` stay required for `fixed` (and for a def without `kind`) and are optional for the other kinds. Field names stay as the schema has them today, with no rename: `dir` is the direction, `role` the role and `max` the requirement's `maxConnections`, and they apply to every kind. This is a minor schema bump (1.3 to 1.4): a document without `kind` reads as `fixed`, and the migration changes nothing but the version.
+
+**Kinds.**
+
+- `fixed`: the point (`x`, `y`) in the box; `dir` is the declared direction.
+- `side`: the point at fraction `t` (default 0.5) along side `side`; `dir` defaults to that side's outward normal.
+- `center`: the box centre; `dir` points toward the other end.
+- `perimeter`: a FLOATING anchor. It lands on the outline where the ray from the element centre toward the other end crosses it (the same projection as the floating anchor), and it is listed as a kind so it carries a name, a role and a limit. `t` is optional: when absent the anchor floats; when present it pins the point at that fixed fraction of the outline's length (measured along the outline path from its start; the box outline starts at the top-left corner and runs clockwise) instead of projecting.
 
 **Resolution.** Each kind resolves to a point and an outward normal in the element's box, mapped through its placement as today (`anchor.ts`).
 

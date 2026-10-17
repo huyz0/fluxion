@@ -2,11 +2,24 @@
 // coordinates, with the direction the route leaves along. A floating anchor casts a ray from the
 // element's centre toward the other end and lands on its outline (core's projectToOutline); a named
 // anchor is a fraction of the element's box, from the instance's anchors, then the definition's, then
-// the default set (n, e, s, w, center). Side and point anchors are fractions of the box too; `auto`
+// the default set (n, e, s, w, center); an anchor def resolves by its kind (ADR-0043, FR-ANC-003): fixed, side,
+// center or perimeter. Side and point anchors are fractions of the box too; `auto`
 // floats until the anchor choice of FR-ANC-004 (M16). Everything is computed in the element's own
 // box and mapped through its placement, so an anchor follows every move, resize, rotation and flip.
 import { evaluateOutline, projectToOutline, type ShapeDef } from '@fluxion/core';
-import { apply, elementMatrix, invert, type Mat2d, normalize, type Ok, type Path, pathFromCommands, sub, type Vec2 } from '@fluxion/geometry';
+import {
+  apply,
+  createPathSampler,
+  elementMatrix,
+  invert,
+  type Mat2d,
+  normalize,
+  type Ok,
+  type Path,
+  pathFromCommands,
+  sub,
+  type Vec2,
+} from '@fluxion/geometry';
 import { type AnchorDef, type AnchorRef, type Transform, transformRotation } from '@fluxion/schema';
 
 /**
@@ -99,6 +112,50 @@ function floating(target: AnchorTarget, toward: Vec2): ResolvedAnchor {
   return { point, dir: screenDir(m, dir) };
 }
 
+/** The center anchor: the box centre, leaving toward `toward` (none when the other end is at the centre). */
+function centre(target: AnchorTarget, toward: Vec2, declared: Vec2 | undefined): ResolvedAnchor {
+  const { transform: t } = target;
+  const m = matrixOf(t);
+  const back = (invert(m) as Ok<Mat2d>).value;
+  const c = { x: t.w / 2, y: t.h / 2 };
+  const dir = declared ?? sub(apply(back, toward), c);
+  return { point: apply(m, c), dir: screenDir(m, dir) };
+}
+
+/** The perimeter anchor pinned at fraction `f` of the outline's length, leaving along the outline's normal that faces away from the centre. */
+function atOutlineFraction(target: AnchorTarget, f: number, declared: Vec2 | undefined): ResolvedAnchor {
+  const { transform: t } = target;
+  const m = matrixOf(t);
+  const sampler = createPathSampler(target.outline ?? boxOutline(t.w, t.h));
+  const local = sampler.pointAtFraction(f);
+  const centreOut = sub(local, { x: t.w / 2, y: t.h / 2 });
+  const tangent = sampler.tangentAtLength(Math.min(Math.max(f, 0), 1) * sampler.length);
+  // the normal of the outline, turned to face away from the centre; the centre's direction where the outline has no tangent
+  const normal = { x: tangent.y, y: -tangent.x };
+  const away = normal.x * centreOut.x + normal.y * centreOut.y >= 0 ? normal : { x: -normal.x, y: -normal.y };
+  const dir = declared ?? (Math.hypot(normal.x, normal.y) > 0 ? away : centreOut);
+  return { point: apply(m, local), dir: screenDir(m, dir) };
+}
+
+/** An anchor def resolved by its kind (default `fixed`); one that lacks what its kind needs floats. */
+function resolveDef(target: AnchorTarget, def: AnchorDef, toward: Vec2): ResolvedAnchor {
+  switch (
+    def.kind // kind-switch-allow: anchor kinds are a closed union of the schema, not element kinds
+  ) {
+    case 'side': {
+      if (def.side === undefined) return floating(target, toward);
+      const side = SIDES[def.side];
+      return atFraction(target, side.at(def.t ?? 0.5), def.dir ?? side.dir);
+    }
+    case 'center':
+      return centre(target, toward, def.dir);
+    case 'perimeter':
+      return def.t === undefined ? floating(target, toward) : atOutlineFraction(target, def.t, def.dir);
+    default:
+      return def.x === undefined || def.y === undefined ? floating(target, toward) : atFraction(target, { x: def.x, y: def.y }, def.dir);
+  }
+}
+
 /**
  * Where the end anchored by `ref` attaches to `target`, the route's other end being toward `toward`
  * (screen coordinates). An unknown anchor name floats.
@@ -111,7 +168,7 @@ export function resolveAnchor(target: AnchorTarget, ref: AnchorRef, toward: Vec2
   ) {
     case 'named': {
       const anchor = [...target.anchors, ...DEFAULT_ANCHORS].find((a) => a.name === ref.name);
-      return anchor === undefined ? floating(target, toward) : atFraction(target, anchor, anchor.dir);
+      return anchor === undefined ? floating(target, toward) : resolveDef(target, anchor, toward);
     }
     case 'side': {
       const side = SIDES[ref.side];

@@ -62,14 +62,26 @@ const unit = z.number().min(0).max(1);
  * @public
  */
 export const anchorDefSchema: z.ZodType<AnchorDef> = checkedSchema<AnchorDef>()(
-  z.looseObject({
-    name: z.string().min(1),
-    x: unit,
-    y: unit,
-    dir: pointSchema.optional(),
-    role: z.enum(['in', 'out', 'any']).optional(),
-    max: z.number().int().min(1).optional(),
-  }),
+  z
+    .looseObject({
+      name: z.string().min(1),
+      kind: z.enum(['fixed', 'side', 'perimeter', 'center']).optional(),
+      x: unit.optional(),
+      y: unit.optional(),
+      side: z.enum(['n', 'e', 's', 'w']).optional(),
+      t: unit.optional(),
+      dir: pointSchema.optional(),
+      role: z.enum(['in', 'out', 'any']).optional(),
+      max: z.number().int().min(1).optional(),
+    })
+    .superRefine((value, ctx) => {
+      // a fixed anchor (the default kind) is a point; a side anchor names its side
+      if (value.kind === undefined || value.kind === 'fixed') {
+        for (const axis of ['x', 'y'] as const)
+          if (value[axis] === undefined) ctx.addIssue({ code: 'custom', path: [axis], message: `a fixed anchor needs ${axis}` });
+      }
+      if (value.kind === 'side' && value.side === undefined) ctx.addIssue({ code: 'custom', path: ['side'], message: 'a side anchor needs side' });
+    }),
 );
 const textFitSchema = checkedSchema<TextFit>()(
   z.looseObject({

@@ -21,6 +21,10 @@ Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema
 
 - `LayoutSpec` on `screen`, `group` and `frame` (`records/layout-spec.ts`) and `document.source` (FluxScript salt and deferred sections), ADR-0031. `migrations/1.2-to-1.3.ts` drops non-conforming values there.
 
+## Version 1.4 (M16)
+
+- `AnchorDef` gains `kind` (`fixed` | `side` | `perimeter` | `center`), `side` and `t`; `x`/`y` are required for `fixed` only (ADR-0043). `migrations/1.3-to-1.4.ts` drops a `kind`/`side`/`t` the typed fields refuse. Fixtures: `v1.4/` (current), `migration/nonconforming-1.3`.
+
 ## Tests
 
 - Co-locate `*.test.ts` next to the code; name tests with requirement IDs.

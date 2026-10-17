@@ -9,8 +9,11 @@ import { z } from 'zod';
 // @public
 export type AnchorDef = Extensible<{
     readonly name: string;
-    readonly x: number;
-    readonly y: number;
+    readonly kind?: "fixed" | "side" | "perimeter" | "center";
+    readonly x?: number;
+    readonly y?: number;
+    readonly side?: "n" | "e" | "s" | "w";
+    readonly t?: number;
     readonly dir?: Point;
     readonly role?: "in" | "out" | "any";
     readonly max?: number;

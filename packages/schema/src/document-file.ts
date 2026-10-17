@@ -77,7 +77,7 @@ export const RECORD_TYPES: readonly string[] = [
  *
  * @public
  */
-export const SCHEMA_VERSION: string = '1.3';
+export const SCHEMA_VERSION: string = '1.4';
 
 /**
  * A document file: schema version plus records keyed by ID.

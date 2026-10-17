@@ -97,7 +97,7 @@ describe('the v1.0 goldens', () => {
 
   it('NFR-PORT-003: the writer still produces the goldens from the shared document fixtures', async () => {
     for (const name of ['minimal', 'two-rects-line', 'shapes-gallery', 'rich-text']) {
-      // the goldens hold schema 1.2 documents; the shared fixtures are now current (1.3) with the same records
+      // the goldens hold schema 1.2 documents; the shared fixtures are now current (1.4) with the same records
       const zip = await writeFlux({ document: { ...documentOf(name), schemaVersion: '1.2' }, appVersion: '1.0.0', generator: 'fluxion goldens', hasher });
       expect(zip.ok && same(zip.value, goldens.get(name) as Uint8Array), name).toBe(true);
     }

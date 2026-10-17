@@ -66,7 +66,7 @@ not in the current schema; until added (minor version) they are preserved but no
 
 | `kind` | Extra fields | Planned |
 |---|---|---|
-| `shape` | `transform`, `text?`, `defId` (e.g. `basic:rect`), `params?` (definition params), `anchors?` (instance-custom), `textFit? {mode?, padding?, minSize?, overflow?}` (ADR-0018) | |
+| `shape` | `transform`, `text?`, `defId` (e.g. `basic:rect`), `params?` (definition params), `anchors?` (instance-custom; kinds `fixed`/`side`/`perimeter`/`center`, schema `1.4`, ADR-0043), `textFit? {mode?, padding?, minSize?, overflow?}` (ADR-0018) | |
 | `connector` | `route {type: 'straight'\|'curved'\|'orthogonal'\|'polyline'\|<plugin>, waypoints?, cornerRadius?}`, `markers? {start?,end?,mid?}`, `labels?[]`, `freeSource?`, `freeTarget?` (points for an end without a `binding` record); no transform | `riders`, `effects`, `jumps` |
 | `group` | `transform`, `text?` (children via `parentId`), `layout?` (`LayoutSpec`, schema `1.3`) | |
 | `frame` | `transform`, `text?`, `clip?`, `padding?`, `layout?` (`LayoutSpec`, schema `1.3`) | |
@@ -92,6 +92,12 @@ Schema `1.3` (M12.5, ADR-0031) adds a `LayoutSpec` (`type`: a `layouts` registry
 FluxScript compile into the document uses, and `deferred`: the YAML text of each section the compiler kept but did not compile, keyed
 by a pointer such as `/screens/arch/steps`). The `1.2 → 1.3` migration removes what a 1.2 file may carry in those places that does not
 conform.
+
+Schema `1.4` (M16.4, ADR-0043) adds anchor kinds to an `AnchorDef` (an element's `anchors[]`): `kind` (`fixed` default, `side`, `perimeter`
+or `center`), `side` (north, east, south or west as `n`, `e`, `s`, `w`; required for `side`) and `t` (0 to 1: the place along a side, default 0.5, or along the outline's
+length for `perimeter`, where an absent `t` floats). `x` and `y` are required for `fixed` only. `dir`, `role` and `max` (the
+`maxConnections`) keep their names and apply to every kind. The `1.3 → 1.4` migration removes a `kind`, `side` or `t` that a 1.3 file may
+carry and the typed fields refuse, and changes nothing else.
 
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with
 only its envelope checked.
