@@ -4,7 +4,7 @@
 // other end's reference point (a bound element's centre, a free point) or at the nearest waypoint.
 // Reads records through a ReadView, so a store query over it re-routes when a bound element changes.
 import type { ReadView, Registry, ShapeDef } from '@fluxion/core';
-import type { PathCommand, Vec2 } from '@fluxion/geometry';
+import { createPathSampler, type PathCommand, pathFromCommands, type Vec2 } from '@fluxion/geometry';
 import type { AnchorDef, AnchorRef, RecordId, Route, Transform } from '@fluxion/schema';
 import { type AnchorTarget, resolveAnchor, shapeAnchorTarget } from './anchor.js';
 import { type RouteEnd, type Router, straightRouter } from './router.js';
@@ -48,25 +48,51 @@ type Bound = {
   readonly transform?: Transform;
   readonly kind?: unknown;
   readonly defId?: string;
+  readonly route?: Route;
   readonly params?: { readonly [key: string]: unknown };
   readonly anchors?: readonly AnchorDef[];
 };
 type ConnectorLike = { readonly route?: Route; readonly freeSource?: Vec2; readonly freeTarget?: Vec2 };
 
 /** One end before its anchor is resolved: a bound element with its anchor, or a free point. */
-type Pending = { readonly target: AnchorTarget; readonly anchor: AnchorRef; readonly at: Vec2 } | { readonly at: Vec2 };
+type Pending = { readonly target: AnchorTarget; readonly anchor: AnchorRef; readonly at: Vec2 } | { readonly at: Vec2; readonly dir?: Vec2 | undefined };
 
 /** One end of a connector: its id, which end, and its free point. */
 type EndOf = { readonly connectorId: RecordId; readonly end: End; readonly free: Vec2 | undefined };
 
+/** The connectors being routed up the chain of hosts, so a ring of connectors bound to each other ends instead of looping. */
+type Seen = ReadonlySet<RecordId>;
+
+/**
+ * An end bound to another connector (FR-CON-009): the point at the path fraction `anchor.x` of the host's route, leaving along its tangent.
+ * Undefined when the host cannot be routed, so the end cannot be placed.
+ */
+function onHost(
+  view: ReadView,
+  ctx: RouteContext,
+  { id, anchor }: { readonly id: RecordId; readonly anchor: AnchorRef | undefined },
+  seen: Seen,
+): Pending | undefined {
+  const route = seen.has(id) ? undefined : routeOf(view, ctx, id, seen);
+  const path = route === undefined ? undefined : pathFromCommands(route.commands);
+  if (path === undefined || !path.ok) return undefined;
+  const sampler = createPathSampler(path.value);
+  const f = Math.min(Math.max(anchor?.kind === 'point' ? anchor.x : 0.5, 0), 1);
+  const tangent = sampler.tangentAtLength(f * sampler.length);
+  const point = sampler.pointAtFraction(f);
+  return { at: point, dir: Math.hypot(tangent.x, tangent.y) > 0 ? { x: tangent.y, y: -tangent.x } : undefined };
+}
+
 /** The end `end` of `connectorId`: bound, free, or undefined when it can be placed from neither. */
-function pending(view: ReadView, ctx: RouteContext, { connectorId, end, free }: EndOf): Pending | undefined {
+function pending(view: ReadView, ctx: RouteContext, { connectorId, end, free }: EndOf, seen: Seen): Pending | undefined {
   const binding = view
     .members('bindingsByElement', connectorId)
     .map((id) => view.get(id) as BindingLike | undefined)
     .find((b) => b?.type === 'binding' && b.connectorId === connectorId && b.end === end);
   if (binding === undefined) return free === undefined ? undefined : { at: free };
   const bound = view.get(binding.elementId as RecordId) as Bound | undefined;
+  // a bound element that has a route is a connector: the end sits on its path
+  if (bound?.route !== undefined) return onHost(view, ctx, { id: binding.elementId as RecordId, anchor: binding.anchor }, seen);
   // bound to an element without a box (or a missing one): the end cannot be placed
   if (bound?.transform === undefined) return undefined;
   const t = bound.transform;
@@ -80,7 +106,8 @@ function pending(view: ReadView, ctx: RouteContext, { connectorId, end, free }: 
 }
 
 /** The end resolved, aiming at `toward`. */
-const resolved = (p: Pending, toward: Vec2): RouteEnd => ('target' in p ? resolveAnchor(p.target, p.anchor, toward) : { point: p.at });
+const resolved = (p: Pending, toward: Vec2): RouteEnd =>
+  'target' in p ? resolveAnchor(p.target, p.anchor, toward) : { point: p.at, ...(p.dir === undefined ? {} : { dir: p.dir }) };
 
 /** `router`'s path, or a straight line when it throws or does not run from the source point to the target point. */
 function pathOf(router: Router, source: RouteEnd, target: RouteEnd, route: Route): readonly PathCommand[] {
@@ -110,15 +137,21 @@ function pathOf(router: Router, source: RouteEnd, target: RouteEnd, route: Route
  * The route of connector `connectorId`: its ends resolved through their bindings and anchors (or its
  * free points), routed by the router registered for its route type. An unregistered type, or a
  * router that fails, draws straight. Undefined when an end can be placed neither from a binding nor
- * from a free point.
+ * from a free point. An end bound to another connector sits at a fraction of that connector's route (FR-CON-009).
  *
  * @public
  */
 export function routeConnector(view: ReadView, ctx: RouteContext, connectorId: RecordId): ConnectorRoute | undefined {
+  return routeOf(view, ctx, connectorId, new Set());
+}
+
+/** `routeConnector` knowing which connectors are already being routed above it. */
+function routeOf(view: ReadView, ctx: RouteContext, connectorId: RecordId, above: Seen): ConnectorRoute | undefined {
   const connector = view.get(connectorId) as ConnectorLike | undefined;
   if (connector === undefined) return undefined;
-  const from = pending(view, ctx, { connectorId, end: 'source', free: connector.freeSource });
-  const to = pending(view, ctx, { connectorId, end: 'target', free: connector.freeTarget });
+  const seen = new Set(above).add(connectorId);
+  const from = pending(view, ctx, { connectorId, end: 'source', free: connector.freeSource }, seen);
+  const to = pending(view, ctx, { connectorId, end: 'target', free: connector.freeTarget }, seen);
   if (from === undefined || to === undefined) return undefined;
   const route = connector.route ?? { type: 'straight' };
   const waypoints = route.waypoints ?? [];
