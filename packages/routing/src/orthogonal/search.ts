@@ -1,7 +1,8 @@
 // A* over the sparse grid (ADR-0042, FR-CON-004): the cheapest axis-aligned path from `start` to
 // `goal` that never enters an obstacle inflated by the margin. The cost of a path is its length plus
-// `bendCost` for each turn plus `crossingCost` for each crossing of a segment of an earlier route.
-// Ties are broken by a fixed order (cost, then node, then the order of discovery), so the same input
+// `bendCost` for each turn plus `crossingCost` for each crossing of a segment of an earlier route (a route
+// crosses where it arrives at a node that an earlier segment passes across).
+// Ties are broken by a fixed order (estimate, then the deeper path, then node, then the order of discovery), so the same input
 // always gives the same path (FR-RTE-004). The search is bounded: past `maxExpansions` it gives up.
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { Grid } from './grid.js';
@@ -57,7 +58,8 @@ const DIRS: readonly Vec2[] = [
 const dirIndex = (d: Vec2): number => DIRS.findIndex((e) => e.x === d.x && e.y === d.y);
 
 type Entry = { readonly f: number; readonly g: number; readonly key: number; readonly order: number };
-const before = (a: Entry, b: Entry): boolean => a.f < b.f || (a.f === b.f && (a.key < b.key || (a.key === b.key && a.order < b.order)));
+const before = (a: Entry, b: Entry): boolean =>
+  a.f < b.f || (a.f === b.f && (a.g > b.g || (a.g === b.g && (a.key < b.key || (a.key === b.key && a.order < b.order)))));
 
 /** A binary min-heap of entries ordered by `before`. */
 class Heap {
@@ -96,15 +98,73 @@ class Heap {
   }
 }
 
-const indexOfLine = (lines: readonly number[], v: number): number => lines.findIndex((l) => Math.abs(l - v) < 1e-9);
+/** First index of `a` (ascending) with a value at least `v`. */
+function lowerBound(a: readonly number[], v: number): number {
+  let [lo, hi] = [0, a.length];
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if ((a[mid] as number) < v) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
 
-/** Whether the open segment between `a` and `b` (axis-aligned) passes through the interior of `box`. */
-function crossesInterior(a: Vec2, b: Vec2, box: Box): boolean {
-  const x0 = Math.min(a.x, b.x);
-  const x1 = Math.max(a.x, b.x);
-  const y0 = Math.min(a.y, b.y);
-  const y1 = Math.max(a.y, b.y);
-  return x1 > box.x && x0 < box.x + box.w && y1 > box.y && y0 < box.y + box.h;
+/** First index of `a` (ascending) with a value above `v`. */
+function upperBound(a: readonly number[], v: number): number {
+  let [lo, hi] = [0, a.length];
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if ((a[mid] as number) <= v) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/** The index of the line within 1e-9 of `v` (the lines are ascending), or -1. */
+function indexOfLine(lines: readonly number[], v: number): number {
+  const k = lowerBound(lines, v - 1e-9);
+  return k < lines.length && Math.abs((lines[k] as number) - v) < 1e-9 ? k : -1;
+}
+
+/** The grid steps that enter an obstacle's interior: `h[j * nx + i]` is the step from (i, j) to (i + 1, j), `v[j * nx + i]` the step from (i, j) to (i, j + 1). */
+type Blocked = { readonly h: Uint8Array; readonly v: Uint8Array };
+
+/** Sets `mark` over the columns `cols` and rows `rows` (half-open), kept to the `nx` by `ny` cells that start a step. */
+function fill(mark: Uint8Array, nx: number, { cols, rows }: { readonly cols: readonly [number, number]; readonly rows: readonly [number, number] }): void {
+  for (let j = Math.max(rows[0], 0); j < rows[1]; j++) for (let i = Math.max(cols[0], 0); i < Math.min(cols[1], nx); i++) mark[j * nx + i] = 1;
+}
+
+function blockedSteps(grid: Grid, boxes: readonly Box[]): Blocked {
+  const [nx, ny] = [grid.xs.length, grid.ys.length];
+  const blocked: Blocked = { h: new Uint8Array(nx * ny), v: new Uint8Array(nx * ny) };
+  for (const box of boxes) {
+    // the lines strictly inside the box on each axis; a step overlaps it from one line before the first inside to the last
+    const [c0, c1] = [upperBound(grid.xs, box.x), lowerBound(grid.xs, box.x + box.w)];
+    const [r0, r1] = [upperBound(grid.ys, box.y), lowerBound(grid.ys, box.y + box.h)];
+    fill(blocked.h, nx, { cols: [c0 - 1, Math.min(c1, nx - 1)], rows: [r0, r1] });
+    fill(blocked.v, nx, { cols: [c0, c1], rows: [r0 - 1, Math.min(r1, ny - 1)] });
+  }
+  return blocked;
+}
+
+/** The nodes the segments of earlier routes pass through (not at their ends), by the axis they run along, and the segments that do not lie on the grid. */
+type Passes = { readonly h: Uint8Array; readonly v: Uint8Array; readonly loose: readonly RouteSegment[] };
+
+/** Marks the nodes strictly inside the on-grid segment `s` in `mark`; false when it does not lie on the grid. */
+function markSegment(grid: Grid, s: RouteSegment, passes: { readonly h: Uint8Array; readonly v: Uint8Array }): boolean {
+  const nx = grid.xs.length;
+  const [i0, i1, j0, j1] = [indexOfLine(grid.xs, s.from.x), indexOfLine(grid.xs, s.to.x), indexOfLine(grid.ys, s.from.y), indexOfLine(grid.ys, s.to.y)];
+  if (i0 < 0 || i1 < 0 || j0 < 0 || j1 < 0 || (i0 !== i1 && j0 !== j1)) return false;
+  if (i0 === i1) for (let j = Math.min(j0, j1) + 1; j < Math.max(j0, j1); j++) passes.v[j * nx + i0] = 1;
+  else for (let i = Math.min(i0, i1) + 1; i < Math.max(i0, i1); i++) passes.h[j0 * nx + i] = 1;
+  return true;
+}
+
+function passedNodes(grid: Grid, existing: readonly RouteSegment[]): Passes {
+  const size = grid.xs.length * grid.ys.length;
+  const passes = { h: new Uint8Array(size), v: new Uint8Array(size) };
+  const loose = existing.filter((s) => !markSegment(grid, s, passes));
+  return { ...passes, loose };
 }
 
 /** Whether the axis-aligned segment `a`-`b` properly crosses the axis-aligned `s` (a T or X, not a touch along it). */
@@ -137,24 +197,44 @@ type Context = {
   readonly arrive: number;
   readonly bendCost: number;
   readonly crossingCost: number;
-  readonly existing: readonly RouteSegment[];
-  readonly inflated: readonly Box[];
-  readonly best: Map<number, number>;
-  readonly from: Map<number, number>;
-  readonly heading: Map<number, number>;
+  readonly blocked: Blocked;
+  readonly passes: Passes;
+  /** The node the search starts from: the only one with no heading. */
+  readonly startKey: number;
+  /** Cheapest cost found to each node (Infinity: not reached), indexed by node. */
+  readonly best: Float64Array;
+  /** The node each node was reached from (-1: none), indexed by node. */
+  readonly from: Int32Array;
   readonly heap: Heap;
   order: number;
 };
 
 const at = (c: Context, i: number, j: number): Vec2 => ({ x: c.input.grid.xs[i] as number, y: c.input.grid.ys[j] as number });
 const node = (c: Context, i: number, j: number, d: number): number => (j * c.nx + i) * 4 + d;
+/** A lower bound on what is left: the distance to the goal, and a bend when the goal shares neither its row nor its column. */
 const heuristic = (c: Context, i: number, j: number): number =>
-  Math.abs((c.input.grid.xs[i] as number) - c.input.goal.x) + Math.abs((c.input.grid.ys[j] as number) - c.input.goal.y);
+  Math.abs((c.input.grid.xs[i] as number) - c.input.goal.x) +
+  Math.abs((c.input.grid.ys[j] as number) - c.input.goal.y) +
+  (i === c.gi || j === c.gj ? 0 : c.bendCost);
 
-/** The cost of the step `a`-`b`: its length, a bend when `turns`, and each crossing. */
-function stepCost(c: Context, a: Vec2, b: Vec2, turns: boolean): number {
-  const crossing = c.existing.reduce((n, s) => n + (crosses(a, b, s) ? c.crossingCost : 0), 0);
-  return Math.abs(b.x - a.x) + Math.abs(b.y - a.y) + (turns ? c.bendCost : 0) + crossing;
+/** The cost of the step `a`-`b`: its length, `extra` (a bend, a crossing at the node), and each off-grid segment it crosses. */
+function stepCost(c: Context, a: Vec2, b: Vec2, extra: number): number {
+  const loose = c.passes.loose.reduce((n, s) => n + (crosses(a, b, s) ? c.crossingCost : 0), 0);
+  return Math.abs(b.x - a.x) + Math.abs(b.y - a.y) + extra + loose;
+}
+
+/** Whether the step from (`i`, `j`) heading `nd` enters an obstacle. */
+function blockedStep(c: Context, { i, j }: { readonly i: number; readonly j: number }, nd: number): boolean {
+  const nx = c.nx;
+  if (nd === 0) return c.blocked.h[j * nx + i] === 1;
+  if (nd === 2) return c.blocked.h[j * nx + i - 1] === 1;
+  return nd === 1 ? c.blocked.v[j * nx + i] === 1 : c.blocked.v[(j - 1) * nx + i] === 1;
+}
+
+/** The extra cost of the step into node (`ni`, `nj`) heading `nd` after heading `d`: a bend, and a crossing when an earlier segment passes across the node. */
+function turnCost(c: Context, { ni, nj }: { readonly ni: number; readonly nj: number }, d: number, nd: number): number {
+  const across = nd % 2 === 0 ? c.passes.v : c.passes.h;
+  return (d >= 0 && nd !== d ? c.bendCost : 0) + (across[nj * c.nx + ni] === 1 ? c.crossingCost : 0);
 }
 
 /** Whether a node with heading `d` may turn to `nd`: the start obeys `startDir`, and nothing reverses. */
@@ -170,13 +250,12 @@ function expand(c: Context, cur: Entry, at0: { readonly i: number; readonly j: n
     if (!mayTurn(c, d, nd) || ni < 0 || nj < 0 || ni >= c.nx || nj >= c.ny) continue;
     const a = at(c, i, j);
     const b = at(c, ni, nj);
-    if (c.inflated.some((o) => crossesInterior(a, b, o))) continue;
-    const g = cur.g + stepCost(c, a, b, d >= 0 && nd !== d);
+    if (blockedStep(c, { i, j }, nd)) continue;
+    const g = cur.g + stepCost(c, a, b, turnCost(c, { ni, nj }, d, nd));
     const key = node(c, ni, nj, nd);
-    if (g >= (c.best.get(key) ?? Infinity)) continue;
-    c.best.set(key, g);
-    c.from.set(key, cur.key);
-    c.heading.set(key, nd);
+    if (g >= (c.best[key] as number)) continue;
+    c.best[key] = g;
+    c.from[key] = cur.key;
     c.heap.push({ f: g + heuristic(c, ni, nj), g, key, order: c.order++ });
   }
 }
@@ -184,7 +263,7 @@ function expand(c: Context, cur: Entry, at0: { readonly i: number; readonly j: n
 /** The corner points of the path that ends at node `end`. */
 function trace(c: Context, end: number): Vec2[] {
   const cells: Vec2[] = [];
-  for (let k: number | undefined = end; k !== undefined; k = c.from.get(k)) {
+  for (let k = end; k >= 0; k = c.from[k] as number) {
     const cell = k >> 2;
     cells.push(at(c, cell % c.nx, (cell - (cell % c.nx)) / c.nx));
   }
@@ -213,20 +292,38 @@ function begin(input: SearchInput): Context | undefined {
     arrive: input.goalDir === undefined ? -1 : dirIndex({ x: -input.goalDir.x, y: -input.goalDir.y }),
     bendCost: input.bendCost ?? 40,
     crossingCost: input.crossingCost ?? 20,
-    existing: input.existing ?? [],
-    inflated: input.obstacles.map((o): Box => ({ x: o.x - margin, y: o.y - margin, w: o.w + 2 * margin, h: o.h + 2 * margin })),
-    best: new Map(),
-    from: new Map(),
-    heading: new Map(),
+    blocked: blockedSteps(
+      grid,
+      input.obstacles.map((o): Box => ({ x: o.x - margin, y: o.y - margin, w: o.w + 2 * margin, h: o.h + 2 * margin })),
+    ),
+    passes: passedNodes(grid, input.existing ?? []),
+    startKey: (sj * grid.xs.length + si) * 4,
+    best: new Float64Array(grid.xs.length * grid.ys.length * 4).fill(Infinity),
+    from: new Int32Array(grid.xs.length * grid.ys.length * 4).fill(-1),
     heap: new Heap(),
     order: 0,
   };
   // the start has no heading yet: it leaves along each allowed direction
-  const startNode = node(c, si, sj, 0);
-  c.best.set(startNode, 0);
-  c.heading.set(startNode, -1);
+  const startNode = c.startKey;
+  c.best[startNode] = 0;
   c.heap.push({ f: heuristic(c, si, sj), g: 0, key: startNode, order: c.order++ });
   return c;
+}
+
+/** Expands nodes of `c` cheapest first until the goal is reached (its path) or the search bound `limit` or the open nodes run out. */
+function run(c: Context, limit: number): Vec2[] | undefined {
+  for (let expansions = 0; c.heap.size > 0; ) {
+    const cur = c.heap.pop() as Entry;
+    if (cur.g > (c.best[cur.key] as number)) continue;
+    const d = cur.key === c.startKey ? -1 : cur.key & 3;
+    const cell = cur.key >> 2;
+    const i = cell % c.nx;
+    const j = (cell - i) / c.nx;
+    if (reached(c, i, j, d)) return trace(c, cur.key);
+    if (++expansions > limit) return undefined;
+    expand(c, cur, { i, j, d });
+  }
+  return undefined;
 }
 
 /**
@@ -238,18 +335,5 @@ function begin(input: SearchInput): Context | undefined {
 export function searchRoute(input: SearchInput): Vec2[] | undefined {
   if (input.start.x === input.goal.x && input.start.y === input.goal.y) return [input.start];
   const c = begin(input);
-  if (c === undefined) return undefined;
-  const limit = input.maxExpansions ?? 20000;
-  for (let expansions = 0; c.heap.size > 0; ) {
-    const cur = c.heap.pop() as Entry;
-    if (cur.g > (c.best.get(cur.key) ?? Infinity)) continue;
-    const d = c.heading.get(cur.key) as number;
-    const cell = cur.key >> 2;
-    const i = cell % c.nx;
-    const j = (cell - i) / c.nx;
-    if (reached(c, i, j, d)) return trace(c, cur.key);
-    if (++expansions > limit) return undefined;
-    expand(c, cur, { i, j, d });
-  }
-  return undefined;
+  return c === undefined ? undefined : run(c, input.maxExpansions ?? 20000);
 }
