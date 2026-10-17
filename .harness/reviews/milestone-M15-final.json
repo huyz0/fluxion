@@ -1,6 +1,6 @@
 {
   "milestone": "M15",
-  "range": "3b194db..adcc028",
+  "range": "3b194db..88f30b3",
   "reviewer": "fresh milestone-reviewer subagent (not the driver)",
   "findings": [
     {
@@ -48,32 +48,37 @@
     {
       "finding": "F1",
       "disposition": "reopen",
-      "reason": "Add row M15.26: implement pnpm eval --live over the studio-independent LlmClient adapters (or move the adapters' fetch client to a shared module), writing source: live recordings, with a test using mocked fetch; fix eval/README.md and run.mjs messages. If the human decides it waits for a keyed environment, record it as a roadmap Deferred row instead and cite it in M15.14."
+      "reason": "Add row M15.26: implement pnpm eval --live over the studio-independent LlmClient adapters (or move the adapters' fetch client to a shared module), writing source: live recordings, with a test using mocked fetch; fix eval/README.md and run.mjs messages. If the human decides it waits for a keyed environment, record it as a roadmap Deferred row instead and cite it in M15.14.",
+      "target": "M15.26"
     },
     {
       "finding": "F2",
       "disposition": "reopen",
-      "reason": "Add row M15.27: label the scorecard source in scorecard.json/md ('scripted' vs 'live') and make the gate leg and exit rows 3 and 9 say the numbers are plumbing-only until a live run exists; add a Deferred roadmap row 'live eval baseline and live MCP transcripts (Claude Code and Codex)' with an owner milestone. Do not claim NFR-AI-001 satisfied against a model."
+      "reason": "Add row M15.27: label the scorecard source in scorecard.json/md ('scripted' vs 'live') and make the gate leg and exit rows 3 and 9 say the numbers are plumbing-only until a live run exists; add a Deferred roadmap row 'live eval baseline and live MCP transcripts (Claude Code and Codex)' with an owner milestone. Do not claim NFR-AI-001 satisfied against a model.",
+      "target": "M15.27"
     },
     {
       "finding": "F3",
-      "disposition": "hand off",
+      "disposition": "hand-off",
       "reason": "Key-entry UI, OpenAI-compatible base URL, embedExternalAssets toggle and i18n of the client.ts strings go to the next studio-settings milestone as a row plus a Deferred roadmap entry; until then the R2 exit must not be presented as end-user usable AI."
     },
     {
       "finding": "F4",
       "disposition": "reopen",
-      "reason": "Fold into M15.26: parse ci.yml as YAML in the leg and assert the cli-mcp job's matrix and run step; run actionlint when available (CI) or record that it was not run."
+      "reason": "Fold into M15.26: parse ci.yml as YAML in the leg and assert the cli-mcp job's matrix and run step; run actionlint when available (CI) or record that it was not run.",
+      "target": "M15.26"
     },
     {
       "finding": "F5",
       "disposition": "reopen",
-      "reason": "Fold into M15.27: correct the requirement IDs in rows 4 and 5, link tests in row 6, and make the gate check that each evidence link resolves to an existing file."
+      "reason": "Fold into M15.27: correct the requirement IDs in rows 4 and 5, link tests in row 6, and make the gate check that each evidence link resolves to an existing file.",
+      "target": "M15.27"
     },
     {
       "finding": "F6",
       "disposition": "reopen",
-      "reason": "Add row M15.28 for the M15.18 host check (reject numeric, trailing-dot and IPv6-mapped hosts; do not follow redirects without re-checking) since it is a security control that does not do what its test names claim; hand off the Mermaid '&' lists and numeric ids to M18 (import) and keep FR-MCP-003 in M25 with a Deferred row."
+      "reason": "Add row M15.28 for the M15.18 host check (reject numeric, trailing-dot and IPv6-mapped hosts; do not follow redirects without re-checking) since it is a security control that does not do what its test names claim; hand off the Mermaid '&' lists and numeric ids to M18 (import) and keep FR-MCP-003 in M25 with a Deferred row.",
+      "target": "M15.28"
     },
     {
       "finding": "F7",

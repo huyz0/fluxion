@@ -1,6 +1,6 @@
 # Backlog — M15 MCP server, AI assistant & evals (R2 exit)
 
-Planned: 25 rows; the final review (`.harness/reviews/milestone-M15-final.json`) reopened three (M15.26 to M15.28), 30 in all (1.5x of 20 planned tasks).
+Planned: 25 rows; the final review (`.harness/reviews/milestone-M15-final.json`) reopened three (M15.26 to M15.28), 31 in all (1.55x of 20 planned tasks).
 
 Only the current milestone lives here. Closed milestones move to `archive/M<n>.md`. M14 is built and finally reviewed but not closed (its `pnpm verify --all` and CI-evidence legs wait on the cold-setup budget record, a CI measurement, and a green three-OS run at the review range), so its rows are archived in `archive/M14.md`, as M12's and M13's are.
 States: `todo` · `doing` · `done` · `blocked (<reason>)` · `descoped (<reason>)` (human decision only; the reason must cite an ADR or a roadmap Deferred entry).
@@ -39,3 +39,4 @@ Reviews: isolated reviewer subagent only (ADR-0137). The row that writes a test 
 | M15.28 | Harden the external-asset host check (M15 final F6, M15.18 minors): numeric, trailing-dot and IPv6-mapped hosts are refused, and a redirect is not followed without the same check | FR-AST-006, NFR-SEC-001 | A test per bypass form shows the URL refused unread; a redirect to a private host is not fetched | M15.27 | done | |
 | M15.29 | Trace NFR-AI-004 (found by the first full m15-complete run): a test in `packages/dsl` names it and pins the lint mean over linted cases | NFR-AI-004 | `check-trace --milestone M15 --priority M,S` exits 0 | M15.28 | done | |
 | M15.30 | Delta-review minors (M15 final-delta D1, D2, D4): R2 exit's open section lists the real open legs and Deferred rows; the scorecard leg requires `source`; the host check's textual limit is documented | FR-AST-006, FR-AI-009 | `m15-complete`'s scorecard leg fails on a scorecard without `source`; R2.md names the open legs | M15.29 | done | |
+| M15.31 | M15 delta review, final range extended to the reviewed end, roadmap to M16 | HARNESS | `milestone-M15-final-delta.json` records dispositions; `check-ci-evidence` for `88f30b3` is recorded when CI is green (queued at the time) | M15.30 | done | |

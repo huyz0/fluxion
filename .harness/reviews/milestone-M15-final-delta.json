@@ -1,0 +1,63 @@
+{
+  "milestone": "M15",
+  "checkpoint": "final-delta",
+  "range": "3b194db..88f30b3",
+  "reviewer": "claude-subagent:milestone-reviewer",
+  "verdict": "approve",
+  "findings": [
+    {
+      "id": "D1",
+      "severity": "minor",
+      "file": "docs/milestones/exits/R2.md",
+      "summary": "The 'Open at the time of writing' section is stale: it says CI evidence and the review file are still to be satisfied by M15.25, which is now done and has been followed by M15.26 to M15.29. The roadmap 'Current milestone' paragraph and the M15.14 row also still read as before the review. The exit is honest about scripted numbers (rows 3 and 9) but its remaining open legs (three-OS CI evidence at the final range, pnpm verify, roadmap advance, cold-setup overrun) are not stated accurately.",
+      "suggestion": "Rewrite the section in the closing commit to list the actual open legs and the Deferred rows (live eval, end-user AI panel, FR-MCP-003)."
+    },
+    {
+      "id": "D2",
+      "severity": "minor",
+      "file": "scripts/gates/m15-complete.mjs",
+      "summary": "The 'source: scripted' label is written by scripts/eval/eval.test.ts as a side effect of the recorded run, and no test or gate leg asserts it is present or non-empty (the commit admits this). The exit-row check only greps the wording 'not a model' in rows 3 and 9, so the label can be dropped from scorecard.json while the gate stays green.",
+      "suggestion": "Add an assertion on the scorecard source (or have the scorecard leg require a source field) so the label is constrained."
+    },
+    {
+      "id": "D3",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "summary": "M15.14 stays 'done' although plan task 9 (--live) is not built; the row says 'a human decision to confirm', but the backlog rules say descoping is a human decision only and the roadmap Deferred row (owner M33) was added by the driver. NFR-AI-001 is still listed as covered by eval.test.ts in the traceability matrix, which is a scripted replay. The reopen is resolved honestly (run.mjs exits 2 with a message citing the Deferred row, eval/README fixed), but the descope needs the human's confirmation recorded.",
+      "suggestion": "Record the human's confirmation of the --live descope when closing, or note in the traceability row that NFR-AI-001 is verified against scripted recordings only."
+    },
+    {
+      "id": "D4",
+      "severity": "minor",
+      "file": "packages/format/src/embed-external.ts",
+      "summary": "The host check is now sound against numeric, hex, octal, short-form, trailing-dot, mapped-IPv6, CGNAT, benchmarking and multicast forms (checked the 14-URL test and the public-host counter-test, both pass), and the studio reader refuses redirects (redirect: 'error', tested via a stubbed fetch). It remains a textual check: a public DNS name that resolves to a private address is not caught, and every IPv6 literal is refused rather than judged. Acceptable for a browser-side fetch, but the limit is not stated.",
+      "suggestion": "Add one line to the FR-AST-006 doc or the function comment naming the DNS-resolution limit."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "D1",
+      "disposition": "reopen",
+      "target": "M15.30",
+      "note": "R2.md open section rewritten to list the closing legs, Deferred rows and the host-check limit"
+    },
+    {
+      "finding": "D2",
+      "disposition": "reopen",
+      "target": "M15.30",
+      "note": "the scorecard leg now requires source scripted or live"
+    },
+    {
+      "finding": "D3",
+      "disposition": "hand-off",
+      "note": "the --live descope to roadmap Deferred (owner M33) awaits the human's confirmation; reported in the M15 hand-back, NFR-AI-001 stays verified against scripted recordings only"
+    },
+    {
+      "finding": "D4",
+      "disposition": "reopen",
+      "target": "M15.30",
+      "note": "embed-external.ts documents that a public name resolving privately and DNS rebinding are not caught"
+    }
+  ],
+  "planDelta": "F1: resolved as a documented descope (run.mjs/README message, roadmap Deferred row to M33, M33 hand-off section); needs human confirmation (D3). F2: resolved by labelling (scorecard source, R2 rows 3 and 9, gate wording check) but the label itself is unasserted (D2). F3: handed off to M17 (section and Deferred row present). F4: resolved; ci-os-matrix.test.mjs parses ci.yml and passes (4 of 4), the gate leg runs it. F5: resolved; the gate now checks that evidence links resolve and rows 4 to 6 cite the right IDs. F6: resolved by M15.28 (host check and redirect refusal, targeted tests pass); Mermaid items handed to M18 and FR-MCP-003 to M25 row 14, both with Deferred rows. M15.29 adds the NFR-AI-004 trace (traceability row updated). Row count 29 of 20 planned (1.45x), under 1.5x. Hand-offs M17, M18, M25, M33 are coherent. Next: fix R2.md open section, record CI evidence at the final range, run pnpm verify, advance the roadmap, then archive M15 and plan M16."
+}
