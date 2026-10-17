@@ -117,6 +117,22 @@ describe('the eval harness (FR-AI-009, ADR-0039)', () => {
     expect(scorecardMarkdown(card)).toContain('Failing cases: e');
   });
 
+  it('NFR-AI-004: the scorecard lint mean averages the cases that were linted and skips those that never compiled', () => {
+    const r = (id: string, lint: number | null) => ({
+      id,
+      mode: 'generate' as const,
+      attempts: lint === null ? null : 1,
+      pass: lint !== null,
+      failures: [],
+      lint,
+      altCoveragePct: null,
+      dslTokenRatio: null,
+      tokensIn: 1,
+      tokensOut: 1,
+    });
+    expect(scorecard([r('a', 80), r('b', 100), r('c', null)]).lintMean).toBe(90);
+  });
+
   it('FR-AI-009: the scorecard JSON has sorted keys, rounds to one decimal and carries no timestamp', () => {
     const r = {
       id: 'a',
