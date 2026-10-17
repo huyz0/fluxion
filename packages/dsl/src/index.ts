@@ -10,6 +10,36 @@ export { DSL_CODES, type DslCode, type DslCodeEntry } from './diagnostics/codes.
 export { formatDiagnostics } from './diagnostics/format.js';
 export { type ExpandOptions, type ExpandResult, expandFlux } from './expand/expand.js';
 export { type MermaidExport, toMermaid } from './export/mermaid.js';
+export {
+  type AbortSignalLike,
+  type LlmCapabilities,
+  type LlmChunk,
+  type LlmClient,
+  type LlmDoneChunk,
+  LlmError,
+  type LlmErrorCode,
+  type LlmMessage,
+  type LlmRequest,
+  type LlmTextChunk,
+  type LlmUsageChunk,
+} from './generate/llm.js';
+export {
+  type GenerateEvent,
+  type GenerateOptions,
+  type GenerateResult,
+  generateDeck,
+  MAX_REPAIRS,
+  type OutlineEvent,
+  type OutlineScreen,
+  type ParsedOutline,
+  parseOutline,
+  type RepairEvent,
+  type ScreenDoneEvent,
+  type ScreenOutcome,
+  type ScreenTextEvent,
+  type TokenUsage,
+  unfence,
+} from './generate/orchestrate.js';
 export { type LaidOut, layoutDocument, type ScreenScore } from './layout-document.js';
 export { EDGE_OPS, type Edge, type EdgeEnd, type EdgeOp, type EdgeResult, edgeDiagnostic, parseEdge, parseEdgeObject } from './parse/edge.js';
 export { type ParseResult, parseFlux, type YEntry, type YMap, type YNode, type YScalar, type YSeq } from './parse/parse.js';

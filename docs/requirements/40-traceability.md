@@ -269,12 +269,12 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/catalog/format.test.ts` +3 |
 | FR-AI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/catalog.builtins.test.ts` +3 |
 | FR-AI-003 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/store.test.ts` +5 |
-| FR-AI-004 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/diagnostics-format.test.ts` |
-| FR-AI-005 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/lint/lint.test.ts` |
+| FR-AI-004 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/diagnostics-format.test.ts`, `packages/dsl/src/generate/orchestrate.test.ts` |
+| FR-AI-005 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/generate/orchestrate.test.ts`, `packages/dsl/src/lint/lint.test.ts` |
 | FR-AI-006 | S | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/studio/src/png-export.browser.test.ts` +2 |
 | FR-AI-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-008 | S | R4 | M23 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
+| FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/generate/orchestrate.test.ts` |
 | FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `e2e/dsl.streaming-render.spec.ts` +5 |
 | FR-AI-011 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/docs/src/guide-drift.test.ts`, `tests/harness/authoring-guide.test.mjs` |
 | FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.convert.test.ts` +6 |
@@ -330,7 +330,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +20 |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts`, `packages/format/src/flux-html.test.ts` |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/generate/orchestrate.test.ts` |
 | NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +3 |
 | NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/open-sources.test.ts`, `e2e/privacy.no-telemetry.spec.ts` |
 | NFR-SEC-007 | S | R6 | M28 | [30-non-functional.md](30-non-functional.md) | — |

@@ -19,6 +19,13 @@ import { Theme } from '@fluxion/theme';
 import { z } from 'zod';
 
 // @public
+export type AbortSignalLike = {
+    readonly aborted: boolean;
+    addEventListener(type: "abort", listener: () => void): void;
+    removeEventListener(type: "abort", listener: () => void): void;
+};
+
+// @public
 export type AiPatch = {
     readonly flux: 1;
     readonly baseRevision?: string | undefined;
@@ -287,6 +294,34 @@ export function formatDiagnostics(diagnostics: readonly DslDiagnostic[], input?:
 }): string[];
 
 // @public
+export function generateDeck(options: GenerateOptions): Promise<GenerateResult>;
+
+// @public
+export type GenerateEvent = OutlineEvent | ScreenTextEvent | RepairEvent | ScreenDoneEvent;
+
+// @public
+export type GenerateOptions = {
+    readonly client: LlmClient;
+    readonly system: string;
+    readonly compile: Omit<CompileOptions, "base" | "mode">;
+    readonly prompt: string;
+    readonly uses?: readonly string[];
+    readonly lintRegistry?: LintRegistry;
+    readonly lintContext?: LintContext;
+    readonly signal?: AbortSignalLike;
+    readonly onEvent?: (event: GenerateEvent) => void;
+};
+
+// @public
+export type GenerateResult = {
+    readonly doc?: DocumentFile;
+    readonly screens: readonly ScreenOutcome[];
+    readonly diagnostics: readonly DslDiagnostic[];
+    readonly lint?: LintReport;
+    readonly usage: TokenUsage;
+};
+
+// @public
 export type GroupAst = {
     readonly slug: Located<string>;
     readonly label?: Located<string>;
@@ -365,6 +400,64 @@ export type LintRule = {
 };
 
 // @public
+export type LlmCapabilities = {
+    readonly structuredOutput: boolean;
+    readonly vision: boolean;
+};
+
+// @public
+export type LlmChunk = LlmTextChunk | LlmUsageChunk | LlmDoneChunk;
+
+// @public
+export type LlmClient = {
+    readonly id: string;
+    readonly capabilities: LlmCapabilities;
+    stream(request: LlmRequest, signal: AbortSignalLike): AsyncIterable<LlmChunk>;
+};
+
+// @public
+export type LlmDoneChunk = {
+    readonly type: "done";
+};
+
+// @public
+export class LlmError extends Error {
+    constructor(code: LlmErrorCode, status?: number);
+    readonly code: LlmErrorCode;
+    readonly status: number | undefined;
+}
+
+// @public
+export type LlmErrorCode = "auth" | "rate-limit" | "network" | "aborted" | "bad-response";
+
+// @public
+export type LlmMessage = {
+    readonly role: "user" | "assistant";
+    readonly content: string;
+};
+
+// @public
+export type LlmRequest = {
+    readonly system: string;
+    readonly messages: readonly LlmMessage[];
+    readonly schema?: object;
+    readonly maxTokens?: number;
+};
+
+// @public
+export type LlmTextChunk = {
+    readonly type: "text";
+    readonly text: string;
+};
+
+// @public
+export type LlmUsageChunk = {
+    readonly type: "usage";
+    readonly tokensIn: number;
+    readonly tokensOut: number;
+};
+
+// @public
 export type Located<T> = {
     readonly value: T;
     readonly range: SourceRange;
@@ -399,6 +492,9 @@ export function lowerPatch(patch: ResolvedPatch, ctx: LowerContext): Lowered;
 
 // @public
 export const MAX_PATCH_OPS = 200;
+
+// @public
+export const MAX_REPAIRS = 2;
 
 // @public
 export type MeasureText = (text: string, font: {
@@ -456,6 +552,26 @@ export type NodeSpec = {
 };
 
 // @public
+export type OutlineEvent = {
+    readonly type: "outline";
+    readonly title: string;
+    readonly screens: readonly OutlineScreen[];
+};
+
+// @public
+export type OutlineScreen = {
+    readonly id: string;
+    readonly title: string;
+    readonly intent: string;
+};
+
+// @public
+export type ParsedOutline = {
+    readonly title: string;
+    readonly screens: readonly OutlineScreen[];
+};
+
+// @public
 export function parseEdge(text: string): EdgeResult;
 
 // @public
@@ -467,6 +583,9 @@ export function parseEdgeObject(value: {
 
 // @public
 export function parseFlux(text: string): ParseResult;
+
+// @public
+export function parseOutline(text: string): ParsedOutline | undefined;
 
 // @public
 export type ParseResult = {
@@ -618,6 +737,14 @@ export type Relayout = {
 };
 
 // @public
+export type RepairEvent = {
+    readonly type: "repair";
+    readonly screen: string;
+    readonly round: number;
+    readonly diagnostics: readonly string[];
+};
+
+// @public
 export type Resolution = {
     readonly theme: Theme;
     readonly themeId?: string;
@@ -716,8 +843,32 @@ export type ScreenBlock = {
 };
 
 // @public
+export type ScreenDoneEvent = {
+    readonly type: "screen-done";
+    readonly screen: string;
+    readonly rounds: number;
+    readonly lenient: boolean;
+    readonly ok: boolean;
+};
+
+// @public
+export type ScreenOutcome = {
+    readonly id: string;
+    readonly rounds: number;
+    readonly lenient: boolean;
+    readonly ok: boolean;
+};
+
+// @public
 export type ScreenScore = Scorecard & {
     readonly screen: string;
+};
+
+// @public
+export type ScreenTextEvent = {
+    readonly type: "screen-text";
+    readonly screen: string;
+    readonly text: string;
 };
 
 // @public
@@ -814,10 +965,19 @@ export type ThemeAst = {
 };
 
 // @public
+export type TokenUsage = {
+    readonly tokensIn: number;
+    readonly tokensOut: number;
+};
+
+// @public
 export function toMermaid(doc: DocumentFile, screenId?: string): MermaidExport;
 
 // @public
 export function toSlug(name: string): string | undefined;
+
+// @public
+export function unfence(text: string): string;
 
 // @public
 export function upsertScreens(base: DocumentFile, fresh: DocumentFile, named: NamedHeader): DocumentFile;
