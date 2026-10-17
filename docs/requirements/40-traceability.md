@@ -263,7 +263,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DSL-004 | M | R5 | M24 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-005 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/place/place.test.ts` +2 |
 | FR-DSL-006 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/compile.test.ts` +8 |
-| FR-DSL-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
+| FR-DSL-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/import/mermaid/mermaid.test.ts` |
 | FR-DSL-008 | S | R3 | M20 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-009 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/read/key-table.test.ts` +6 |
 | FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/catalog/format.test.ts` +3 |
@@ -285,7 +285,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-MCP-001 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/mcp/src/e2e/render-png.test.ts` +7 |
 | FR-MCP-002 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/mcp/src/inspector.test.ts` |
 | FR-MCP-003 | S | R5 | M25 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-IMP-001 | M | R2 | M15 | [21-import-export-publish.md](21-import-export-publish.md) | — |
+| FR-IMP-001 | M | R2 | M15 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/dsl/src/import/mermaid/mermaid.test.ts` |
 | FR-IMP-002 | M | R2 | M15 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-IMP-003 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-IMP-004 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |

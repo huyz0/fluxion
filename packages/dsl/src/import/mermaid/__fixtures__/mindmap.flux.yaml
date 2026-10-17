@@ -1,0 +1,20 @@
+flux: 1
+title: "Imported diagram"
+uses: [basic]
+screens:
+  - id: diagram
+    title: "Imported diagram"
+    layout: { type: layered, direction: right }
+    nodes:
+      plan: { shape: ellipse, label: "Plan" }
+      research: { shape: rounded-rect, label: "Research" }
+      interviews: { shape: rounded-rect, label: "Interviews" }
+      survey: { shape: rounded-rect, label: "Survey" }
+      build: { shape: rounded-rect, label: "Build" }
+      prototype: { shape: rounded-rect, label: "Prototype" }
+    edges:
+      - plan -- research
+      - research -- interviews
+      - research -- survey
+      - plan -- build
+      - build -- prototype

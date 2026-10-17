@@ -1,0 +1,14 @@
+flux: 1
+title: "Imported diagram"
+uses: [basic]
+screens:
+  - id: diagram
+    title: "Imported diagram"
+    layout: { type: layered, direction: down }
+    nodes:
+      animal: { shape: rect, label: "Animal\n+name\n+eat()" }
+      dog: { shape: rect, label: "Dog\n+bark()" }
+      toy: { shape: rect, label: "Toy" }
+    edges:
+      - dog -> animal
+      - { from: dog, to: toy, op: "->", label: "plays with 1 to *" }

@@ -1,0 +1,23 @@
+flux: 1
+title: "Imported diagram"
+uses: [basic]
+screens:
+  - id: diagram
+    title: "Imported diagram"
+    layout: { type: layered, direction: right }
+    nodes:
+      start: { shape: ellipse, label: "Order placed" }
+      check: { shape: diamond, label: "In stock?" }
+      pack: { shape: rect, label: "Pack it" }
+      wait: { shape: rounded-rect, label: "Wait for stock" }
+      ship: { shape: ellipse, label: "Ship" }
+      done: { shape: cylinder, label: "Archive" }
+    groups:
+      warehouse: { label: "Warehouse", contains: [pack, ship, wait], layout: { type: stack, direction: down, gap: 24 } }
+    edges:
+      - start -> check
+      - { from: check, to: pack, op: "->", label: "yes" }
+      - { from: check, to: wait, op: "->", label: "no" }
+      - pack -> ship
+      - wait ~> pack
+      - ship -> done

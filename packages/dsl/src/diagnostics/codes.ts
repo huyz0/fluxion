@@ -28,7 +28,10 @@ export type DslCode =
   | 'FLX_DSL_UNKNOWN_SHAPE'
   | 'FLX_DSL_AMBIGUOUS_SHAPE'
   | 'FLX_DSL_UNKNOWN_PACK'
-  | 'FLX_DSL_NOT_YET';
+  | 'FLX_DSL_NOT_YET'
+  | 'FLX_IMPORT_UNSUPPORTED'
+  | 'FLX_IMPORT_UNKNOWN_KIND'
+  | 'FLX_IMPORT_SYNTAX';
 
 /**
  * The FluxScript diagnostic codes of `flux: 1`.
@@ -46,4 +49,16 @@ export const DSL_CODES: { readonly [C in DslCode]: DslCodeEntry } = {
   FLX_DSL_AMBIGUOUS_SHAPE: { severity: 'error', description: 'A short shape name that more than one used pack defines.' },
   FLX_DSL_UNKNOWN_PACK: { severity: 'warning', description: 'A pack in `uses:` that is not registered; its shapes are then unknown.' },
   FLX_DSL_NOT_YET: { severity: 'warning', description: 'A v1 section this compiler keeps in `document.source` but does not compile yet.' },
+  FLX_IMPORT_UNSUPPORTED: {
+    severity: 'warning',
+    description: 'Mermaid or Markdown the importer does not support (styling, click, a block); it is skipped or flattened and the rest imports.',
+  },
+  FLX_IMPORT_UNKNOWN_KIND: {
+    severity: 'error',
+    description: 'A Mermaid source whose diagram kind is not flowchart, sequence, mindmap, timeline, class or ER.',
+  },
+  FLX_IMPORT_SYNTAX: {
+    severity: 'error',
+    description: 'Mermaid or Markdown the importer supports but cannot read: an unreadable statement, an unclosed subgraph, nothing to import.',
+  },
 };

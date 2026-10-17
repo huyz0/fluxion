@@ -174,7 +174,7 @@ export function decompileScreen(doc: DocumentFile, screenId: RecordId, options: 
 export const DSL_CODES: { readonly [C in DslCode]: DslCodeEntry; };
 
 // @public
-export type DslCode = "FLX_DSL_SYNTAX" | "FLX_DSL_VERSION" | "FLX_DSL_UNKNOWN_KEY" | "FLX_DSL_EDGE_SYNTAX" | "FLX_DSL_BAD_SLUG" | "FLX_DSL_DUP_SLUG" | "FLX_DSL_UNKNOWN_SHAPE" | "FLX_DSL_AMBIGUOUS_SHAPE" | "FLX_DSL_UNKNOWN_PACK" | "FLX_DSL_NOT_YET";
+export type DslCode = "FLX_DSL_SYNTAX" | "FLX_DSL_VERSION" | "FLX_DSL_UNKNOWN_KEY" | "FLX_DSL_EDGE_SYNTAX" | "FLX_DSL_BAD_SLUG" | "FLX_DSL_DUP_SLUG" | "FLX_DSL_UNKNOWN_SHAPE" | "FLX_DSL_AMBIGUOUS_SHAPE" | "FLX_DSL_UNKNOWN_PACK" | "FLX_DSL_NOT_YET" | "FLX_IMPORT_UNSUPPORTED" | "FLX_IMPORT_UNKNOWN_KIND" | "FLX_IMPORT_SYNTAX";
 
 // @public
 export type DslCodeEntry = {
@@ -376,6 +376,22 @@ export type GroupAst = {
     readonly contains: readonly Located<string>[];
     readonly style?: LocatedStyle;
     readonly layout?: LayoutAst;
+};
+
+// @public
+export function importMermaid(text: string, options?: ImportOptions): ImportResult;
+
+// @public
+export type ImportOptions = {
+    readonly title?: string;
+    readonly screenId?: string;
+};
+
+// @public
+export type ImportResult = {
+    readonly ok: boolean;
+    readonly flux?: string;
+    readonly diagnostics: readonly DslDiagnostic[];
 };
 
 // @public

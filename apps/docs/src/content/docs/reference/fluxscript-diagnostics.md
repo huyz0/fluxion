@@ -21,3 +21,6 @@ fix (`hint:`). Codes are stable: new ones are added, none is renamed. The compil
 | `FLX_DSL_UNKNOWN_PACK` | warning | A pack in `uses:` that is not registered; its shapes are then unknown. |
 | `FLX_DSL_UNKNOWN_SHAPE` | error | A shape not found through the packs in `uses:`. |
 | `FLX_DSL_VERSION` | error | `flux` is missing, or is not 1. |
+| `FLX_IMPORT_SYNTAX` | error | Mermaid or Markdown the importer supports but cannot read: an unreadable statement, an unclosed subgraph, nothing to import. |
+| `FLX_IMPORT_UNKNOWN_KIND` | error | A Mermaid source whose diagram kind is not flowchart, sequence, mindmap, timeline, class or ER. |
+| `FLX_IMPORT_UNSUPPORTED` | warning | Mermaid or Markdown the importer does not support (styling, click, a block); it is skipped or flattened and the rest imports. |

@@ -1,0 +1,25 @@
+flux: 1
+title: "Company history"
+uses: [basic]
+screens:
+  - id: diagram
+    title: "Company history"
+    layout: { type: layered, direction: right }
+    nodes:
+      n: { shape: rounded-rect, label: "2020" }
+      founded: { shape: rect, label: "Founded" }
+      n-2: { shape: rounded-rect, label: "2021" }
+      seed-round: { shape: rect, label: "Seed round" }
+      first-hire: { shape: rect, label: "First hire" }
+      n-3: { shape: rounded-rect, label: "2023" }
+      series-a: { shape: rect, label: "Series A" }
+    groups:
+      early: { label: "Early", contains: [n, founded, n-2, seed-round, first-hire], layout: { type: stack, direction: down, gap: 24 } }
+      growth: { label: "Growth", contains: [n-3, series-a], layout: { type: stack, direction: down, gap: 24 } }
+    edges:
+      - n -- founded
+      - n -> n-2
+      - n-2 -- seed-round
+      - n-2 -- first-hire
+      - n-2 -> n-3
+      - n-3 -- series-a

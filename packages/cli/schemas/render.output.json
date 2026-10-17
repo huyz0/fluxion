@@ -164,7 +164,10 @@
                   "FLX_DSL_UNKNOWN_SHAPE",
                   "FLX_DSL_AMBIGUOUS_SHAPE",
                   "FLX_DSL_UNKNOWN_PACK",
-                  "FLX_DSL_NOT_YET"
+                  "FLX_DSL_NOT_YET",
+                  "FLX_IMPORT_UNSUPPORTED",
+                  "FLX_IMPORT_UNKNOWN_KIND",
+                  "FLX_IMPORT_SYNTAX"
                 ]
               },
               "severity": {
@@ -334,7 +337,10 @@
                   "FLX_DSL_UNKNOWN_SHAPE",
                   "FLX_DSL_AMBIGUOUS_SHAPE",
                   "FLX_DSL_UNKNOWN_PACK",
-                  "FLX_DSL_NOT_YET"
+                  "FLX_DSL_NOT_YET",
+                  "FLX_IMPORT_UNSUPPORTED",
+                  "FLX_IMPORT_UNKNOWN_KIND",
+                  "FLX_IMPORT_SYNTAX"
                 ]
               },
               "severity": {

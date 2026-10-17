@@ -1,0 +1,14 @@
+flux: 1
+title: "Imported diagram"
+uses: [basic]
+screens:
+  - id: diagram
+    title: "Imported diagram"
+    layout: { type: layered, direction: right }
+    nodes:
+      customer: { shape: rect, label: "CUSTOMER" }
+      order: { shape: rect, label: "ORDER\nint id\ndate placed" }
+      product: { shape: rect, label: "PRODUCT" }
+    edges:
+      - { from: customer, to: order, op: "--", label: "places (1 to 0..*)" }
+      - { from: order, to: product, op: "--", label: "contains (1..* to 1)" }

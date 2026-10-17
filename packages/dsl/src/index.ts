@@ -76,6 +76,8 @@ export { type EvalCase, type EvalExpect, type EvalInputs, evalCaseSchema, type R
 export { type Replay, replayClient } from './eval/replay.js';
 export { type CaseDeps, type CaseResult, runCase } from './eval/run-case.js';
 export { type Scorecard, scorecard, scorecardJson, scorecardMarkdown } from './eval/scorecard.js';
+export { importMermaid } from './import/mermaid/mermaid.js';
+export type { ImportOptions, ImportResult } from './import/types.js';
 export { CORE_LINT_RULES, lint, registerLintRules } from './lint/lint.js';
 export type { LintContext, LintFinding, LintRegistry, LintReport, LintRule, MeasureText, TextSize } from './lint/types.js';
 export { APPLY_PATCH_COMMAND_ID, type AppliedPatch, applyPatchCommand, registerApplyPatchCommand } from './patch/apply.js';

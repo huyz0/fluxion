@@ -1,0 +1,16 @@
+flux: 1
+title: "Imported diagram"
+uses: [basic]
+screens:
+  - id: diagram
+    title: "Imported diagram"
+    layout: { type: stack, direction: right, gap: 80 }
+    nodes:
+      u: { shape: rounded-rect, label: "User" }
+      s: { shape: rounded-rect, label: "Server" }
+      note: { shape: rect, label: "Session starts" }
+    edges:
+      - { from: u, to: s, op: "->", label: "1. Sign in" }
+      - { from: s, to: u, op: "~>", label: "2. Token" }
+      - note -- u
+      - { from: u, to: s, op: "->", label: "3. Ping" }

@@ -15,7 +15,7 @@ const d = ({ code, severity, line, col, message, hint, path = '/screens/0' }: Sp
 });
 
 describe('diagnostics for people and models (FR-DSL-006, ADR-0030)', () => {
-  it('FR-DSL-006: the code registry holds the ten FluxScript codes of ADR-0030 with their severities', () => {
+  it('FR-DSL-006: the code registry holds the ten FluxScript codes of ADR-0030 and the three import codes of ADR-0040 with their severities', () => {
     expect(Object.keys(DSL_CODES).sort()).toEqual([
       'FLX_DSL_AMBIGUOUS_SHAPE',
       'FLX_DSL_BAD_SLUG',
@@ -27,7 +27,13 @@ describe('diagnostics for people and models (FR-DSL-006, ADR-0030)', () => {
       'FLX_DSL_UNKNOWN_PACK',
       'FLX_DSL_UNKNOWN_SHAPE',
       'FLX_DSL_VERSION',
+      'FLX_IMPORT_SYNTAX',
+      'FLX_IMPORT_UNKNOWN_KIND',
+      'FLX_IMPORT_UNSUPPORTED',
     ]);
+    expect(DSL_CODES.FLX_IMPORT_UNSUPPORTED.severity).toBe('warning');
+    expect(DSL_CODES.FLX_IMPORT_UNKNOWN_KIND.severity).toBe('error');
+    expect(DSL_CODES.FLX_IMPORT_SYNTAX.severity).toBe('error');
     expect(DSL_CODES.FLX_DSL_NOT_YET.severity).toBe('warning');
     expect(DSL_CODES.FLX_DSL_UNKNOWN_PACK.severity).toBe('warning');
     expect(DSL_CODES.FLX_DSL_SYNTAX.severity).toBe('error');
