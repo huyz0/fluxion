@@ -1,6 +1,8 @@
 // The studio's logger (NFR-OBS-001): the dev console, with the level and namespaces taken from the page's address (`?log=layout:*,render&level=debug`), so a problem can be
 // looked into without a build. Warnings and errors are always written; the default level is `warn`.
+
 import { type ConsoleLike, consoleSink, createLogger, type LogEntry, type LogLevel, type NamespacedLogger, namespaceEnabled } from '@fluxion/core';
+import { redactEntry, studioRedactor } from './ai/redactor.js';
 
 const LEVELS: readonly LogLevel[] = ['debug', 'info', 'warn', 'error'];
 
@@ -21,7 +23,9 @@ export function studioLogger(search: string, target: ConsoleLike): NamespacedLog
   const toConsole = consoleSink(target);
   return createLogger({
     level: 'debug',
-    sink: (entry) => {
+    sink: (raw) => {
+      // a key never reaches the console or the report (NFR-SEC-004)
+      const entry = redactEntry(raw, studioRedactor);
       if (ORDER[entry.level] >= ORDER.warn) {
         problems.push(entry);
         if (problems.length > KEPT) problems.shift();

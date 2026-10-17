@@ -1,5 +1,6 @@
 // Keeping keys out of every artifact (NFR-SEC-004, ADR-0041): the redactor replaces the exact values of the keys the studio holds, whatever
 // their shape, and a second layer catches key-shaped text that was never registered.
+import type { LogEntry } from '@fluxion/core';
 
 /** What a redacted key is replaced by. */
 export const REDACTED = '[redacted-key]';
@@ -48,4 +49,23 @@ export function createRedactor(): Redactor {
       return out;
     },
   };
+}
+
+/** The studio's redactor: the key store registers into it, the logger and the diagnostic report read from it. */
+export const studioRedactor: Redactor = createRedactor();
+
+const MAX_DEPTH = 4;
+
+/** `value` with every string redacted; an Error becomes its name and redacted message, and nesting past a few levels is dropped. */
+function redactValue(value: unknown, redactor: Redactor, depth: number): unknown {
+  if (typeof value === 'string') return redactor.redact(value);
+  if (value instanceof Error) return { name: value.name, message: redactor.redact(value.message) };
+  if (depth >= MAX_DEPTH || typeof value !== 'object' || value === null) return typeof value === 'object' && value !== null ? '[object]' : value;
+  if (Array.isArray(value)) return value.map((v) => redactValue(v, redactor, depth + 1));
+  return Object.fromEntries(Object.entries(value).map(([k, v]) => [redactor.redact(k), redactValue(v, redactor, depth + 1)]));
+}
+
+/** A log entry with no key in its message or fields. */
+export function redactEntry(entry: LogEntry, redactor: Redactor): LogEntry {
+  return { ...entry, message: redactor.redact(entry.message), fields: redactValue(entry.fields, redactor, 0) as LogEntry['fields'] };
 }

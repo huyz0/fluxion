@@ -1,7 +1,12 @@
 // Test hooks (FR-AI-010): a spec drives a fake text stream into the open document. Installed only when the page opts in before it loads
 // (`window.__FLUXION_TEST_HOOKS__ = true`, set by an init script), so a user's page has no handle on the document.
-import type { Core, CoreRegistries } from '@fluxion/core';
+import type { Core, CoreRegistries, LogLevel } from '@fluxion/core';
 import { type Session, type StreamFluxResult, streamFluxScript } from '@fluxion/editor';
+import { idbKeyRecords } from './ai/key-records.js';
+import { createKeyStore } from './ai/key-store.js';
+import { studioRedactor } from './ai/redactor.js';
+import { loggedProblems, studioLogger } from './dev-logger.js';
+import { diagnosticReport } from './diagnostic-report.js';
 
 /**
  * A fake stream a test holds open: `push` resolves once the studio has applied the chunk, `close` ends the stream.
@@ -27,6 +32,12 @@ export type StudioTestHooks = {
   records(): { readonly [id: string]: { readonly [field: string]: unknown } };
   /** Write records beside the source's (an element the grammar cannot say, a comment on one) as one undo step; the store's problem when it refuses, else `undefined`. */
   applyRecords(puts: readonly object[], deletes?: readonly string[]): string | undefined;
+  /** Put a provider key in the key store, as the settings would (NFR-SEC-004): it is kept in IndexedDB and registered with the redactor. */
+  holdKey(provider: string, value: string): Promise<void>;
+  /** Write a line through the studio logger (the console and the diagnostic report's source). */
+  log(level: LogLevel, message: string, fields?: { readonly [key: string]: unknown }): void;
+  /** The diagnostic report the Copy button would put on the clipboard. */
+  report(): string;
 };
 
 declare global {
@@ -98,6 +109,15 @@ export function installTestHooks(doc: {
       doc.store.history.seal();
       return result.ok ? undefined : result.error.message;
     },
+    holdKey: (provider, value) => createKeyStore({ records: idbKeyRecords(indexedDB), crypto, redactor: studioRedactor }).set(provider, value),
+    log: (level, message, fields = {}) => studioLogger(window.location.search, console).child('studio').log(level, message, fields),
+    report: () =>
+      diagnosticReport({
+        versions: { studio: 'test' },
+        records: doc.store.toDocument().records,
+        entries: loggedProblems(),
+        userAgent: navigator.userAgent,
+      }),
   };
   window.__fluxion = hooks;
   return () => {

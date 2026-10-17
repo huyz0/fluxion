@@ -3,6 +3,7 @@
 // document cannot reach the report (the test writes one into every free-text field).
 import type { LogEntry } from '@fluxion/core';
 import { ELEMENT_KINDS, RECORD_TYPES } from '@fluxion/schema';
+import { studioRedactor } from './ai/redactor.js';
 
 /** What the report is made from. */
 export type ReportInput = {
@@ -53,5 +54,6 @@ export function diagnosticReport(input: ReportInput): string {
       byNamespace: tally(input.entries, (e) => (e.namespace === '' ? 'root' : named(AREAS, e.namespace.split(':')[0]))),
     },
   };
-  return JSON.stringify(report, null, 2);
+  // the free-form parts (versions, user agent) are the only way a key could get in; none that is registered or key-shaped leaves (NFR-SEC-004)
+  return studioRedactor.redact(JSON.stringify(report, null, 2));
 }

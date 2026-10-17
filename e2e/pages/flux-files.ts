@@ -34,6 +34,7 @@ type FormatApi = {
       assets: ReadonlyMap<string, { bytes: Uint8Array }>;
     }>
   >;
+  readonly writeFluxJson: (input: { document: unknown; appVersion: string; hasher: Hasher }) => Promise<Result<{ text: string }>>;
   readonly sha256Hex: (bytes: Uint8Array) => string;
 };
 type SchemaApi = { readonly parseDocument: (text: string) => Result<{ document: unknown }> };
@@ -142,4 +143,11 @@ export function solidPng(w: number, h: number): Uint8Array {
     chunk('IDAT', deflateSync(raw)),
     chunk('IEND', new Uint8Array()),
   ]);
+}
+
+/** The text of the `.flux.json` of the document inside saved `.flux` bytes. */
+export async function fluxJsonOf(bytes: Uint8Array): Promise<string> {
+  const api = await format();
+  const loaded = value(await api.loadFlux(bytes, { hasher: hasherOf(api) }), 'loadFlux');
+  return value(await api.writeFluxJson({ document: loaded.document, appVersion: '1.0.0', hasher: hasherOf(api) }), 'writeFluxJson').text;
 }
