@@ -2,9 +2,11 @@
 // writes. The decisions are here, apart from the browser APIs that move the bytes (file-host.ts): a `.flux`, `.flux.html` or `.flux.json` opens
 // to a document and its assets; a file written by a newer major version (`readOnly`) or opened in part (`salvage`) is never saved over its
 // own file, only as a copy; and only a `.flux` is saved over, since the others are different formats.
+import type { FileIO } from '@fluxion/core';
 import {
   type ContentHasher,
   createMemoryAssetStore,
+  embedExternalAssets,
   type FluxAsset,
   type LoadNote,
   loadFlux,
@@ -174,6 +176,8 @@ export type SavedBytes = {
   readonly bytes: Uint8Array;
   /** Assets the document refers to whose bytes could not be found (the file is still written; the person is told). */
   readonly missing: number;
+  /** External images that could not be embedded (their fetch failed, or they are not images) and so still need the network; 0 when embedding is off. */
+  readonly external: number;
 };
 
 /**
@@ -192,6 +196,8 @@ export type SaveInput = {
   readonly hasher: ContentHasher;
   /** The version of the studio, for the manifest. */
   readonly appVersion: string;
+  /** Where to read external images from when the save embeds them (FR-AST-006); absent when embedding is off. */
+  readonly embedExternal?: Pick<FileIO, 'read'>;
   /** The font asset records and bytes to add to the saved document (the bundled fonts its text uses); the live document is not changed. */
   readonly fonts?: (document: DocumentFile) => Promise<{ readonly records: readonly AnyRecord[]; readonly assets: ReadonlyMap<string, FluxAsset> }>;
 };
@@ -222,10 +228,13 @@ export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, st
   for (const [hash, asset] of [...(await heldAssets(input)), ...extra.assets]) {
     if ((await input.hasher.sha256(asset.bytes)) === hash) await store.put(asset.bytes, asset.mime);
   }
-  const picked = await selectAssets(document, store);
+  const embedded = input.embedExternal
+    ? await embedExternalAssets({ document, store, io: input.embedExternal, hasher: input.hasher })
+    : { document, failures: [] };
+  const picked = await selectAssets(embedded.document, store);
   const { file } = input;
   const written = await writeFlux({
-    document,
+    document: embedded.document,
     assets: picked.assets,
     appVersion: input.appVersion,
     generator: 'fluxion studio',
@@ -233,7 +242,9 @@ export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, st
     ...(file === undefined ? {} : { extraEntries: file.extraEntries, manifestExtras: file.manifestExtras }),
     hasher: input.hasher,
   });
-  return written.ok ? ok({ bytes: written.value, missing: picked.missing.length }) : err(`The file could not be written: ${written.error.reason}`);
+  return written.ok
+    ? ok({ bytes: written.value, missing: picked.missing.length, external: embedded.failures.length })
+    : err(`The file could not be written: ${written.error.reason}`);
 }
 
 /** SubtleCrypto where the page has it, else the pure SHA-256 of `format`. */

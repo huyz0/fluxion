@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { deflateSync } from 'node:zlib';
 
 // `.flux` files for the open and save specs, made from the built packages (the specs are type-checked before the build, so the packages are
 // loaded by path at run time).
@@ -89,4 +90,56 @@ export async function documentRecordOf(bytes: Uint8Array): Promise<{
   const api = await format();
   const loaded = value(await api.loadFlux(bytes, { hasher: hasherOf(api) }), 'loadFlux');
   return Object.values(loaded.document.records).find((r) => r.type === 'document') ?? {};
+}
+
+/** The bytes of a `.flux` with one screen and one image element whose asset is the external `url` (hash unpinned, no bytes in the file). */
+export async function fluxWithExternalImage(url: string): Promise<Uint8Array> {
+  const api = await format();
+  const schema = await load<SchemaApi>('packages/schema/dist/index.js');
+  const records = {
+    docExt00000000a1: { id: 'docExt00000000a1', type: 'document', title: 'External image' },
+    scrExt00000000a1: { id: 'scrExt00000000a1', type: 'screen', index: 'a0', name: 'Main' },
+    astExt00000000a1: { id: 'astExt00000000a1', type: 'asset', hash: '0'.repeat(64), mime: 'image/png', size: 0, name: 'pic.png', source: url },
+    elExt000000000a1: {
+      id: 'elExt000000000a1',
+      type: 'element',
+      kind: 'image',
+      screenId: 'scrExt00000000a1',
+      index: 'a0',
+      assetId: 'astExt00000000a1',
+      transform: { x: 200, y: 200, w: 400, h: 300 },
+    },
+  };
+  const parsed = value(schema.parseDocument(JSON.stringify({ schemaVersion: '1.3', records })), 'parseDocument');
+  return value(await api.writeFlux({ document: parsed.document, appVersion: '1.0.0', hasher: hasherOf(api) }), 'writeFlux');
+}
+
+/** A valid PNG of a solid `w` x `h` colour, made here so a page can decode it. */
+export function solidPng(w: number, h: number): Uint8Array {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (b: Uint8Array): number => (b.reduce((c, byte) => (crcTable[(c ^ byte) & 255] as number) ^ (c >>> 8), 0xffffffff) ^ 0xffffffff) >>> 0;
+  const chunk = (type: string, data: Uint8Array): Uint8Array => {
+    const body = Buffer.concat([Buffer.from(type, 'latin1'), data]);
+    const out = Buffer.alloc(8 + data.length + 4);
+    out.writeUInt32BE(data.length, 0);
+    body.copy(out, 4);
+    out.writeUInt32BE(crc(body), 8 + data.length);
+    return out;
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(w, 0);
+  header.writeUInt32BE(h, 4);
+  header.set([8, 2, 0, 0, 0], 8);
+  const row = Buffer.concat([Buffer.from([0]), Buffer.from(Array.from({ length: w }, () => [200, 40, 40]).flat())]);
+  const raw = Buffer.concat(Array.from({ length: h }, () => row));
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', header),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', new Uint8Array()),
+  ]);
 }

@@ -15,6 +15,7 @@ import { embeddableFaces } from './fonts.js';
 import { heldBytes } from './held-bytes.js';
 import { assetUrls, type OpenedEntry, registerOpened } from './opened-files.js';
 import { cryptoRandom } from './random.js';
+import { embedExternalOn, urlReader } from './url-reader.js';
 
 /** The version the manifest of a saved file names. */
 const STUDIO_VERSION = '0.0.0';
@@ -54,9 +55,17 @@ export function currentFile(entry: OpenedEntry | undefined, store: Store, assets
     bytesOf: (id) => heldBytes(assets, id),
     hasher: webHasher,
     appVersion: STUDIO_VERSION,
+    ...(embedExternalOn() ? { embedExternal: urlReader } : {}),
     fonts: (document) =>
       bundledFontsFor(document, { faces: embeddableFaces(), newId: () => createId(cryptoRandom), sha256: (bytes) => webHasher.sha256(bytes) }),
   });
+}
+
+/** What a save tells the person beyond "Saved": assets it had no bytes for, and external images it could not embed. */
+function warningsOf(saved: SavedBytes): string {
+  const missing = saved.missing > 0 ? t` ${saved.missing} assets had no bytes to write.` : '';
+  const external = saved.external > 0 ? t` ${saved.external} external images could not be embedded and still need the network.` : '';
+  return `${missing}${external}`;
 }
 
 /** A failure as one line for the person. */
@@ -128,9 +137,8 @@ export function FileBar(props: FileBarProps): JSX.Element {
       try {
         const made = await currentFile(entry, store, assets);
         if (!made.ok) return setMessage(made.error);
-        const warning = made.value.missing > 0 ? t` ${made.value.missing} assets had no bytes to write.` : '';
         const said = !copy && target.current !== undefined ? await overwrite(target.current, made.value.bytes) : await saveAs(made.value.bytes);
-        setMessage(`${said}${warning}`);
+        setMessage(`${said}${warningsOf(made.value)}`);
       } catch (e) {
         setMessage(t`The file was not saved: ${lineOf(e)}`);
       } finally {

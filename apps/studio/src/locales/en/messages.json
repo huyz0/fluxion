@@ -53,6 +53,12 @@
       "apps/studio/src/file-bar.tsx"
     ]
   },
+  "GeimnS": {
+    "message": " {0} external images could not be embedded and still need the network.",
+    "origin": [
+      "apps/studio/src/file-bar.tsx"
+    ]
+  },
   "HAkEqR": {
     "message": "Recent files",
     "origin": [

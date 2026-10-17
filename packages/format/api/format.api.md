@@ -7,6 +7,7 @@
 import { AnyRecord } from '@fluxion/schema';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
+import { FileIO } from '@fluxion/core';
 import { Result } from '@fluxion/schema';
 import { safeLinkUrl } from '@fluxion/schema';
 import { sha256Hex } from '@fluxion/core';
@@ -43,6 +44,35 @@ export type DiffLike = {
 // @public
 export type DiffPut = {
     readonly after: AnyRecord;
+};
+
+// @public
+export function embedExternalAssets(input: EmbedInput): Promise<EmbedResult>;
+
+// @public
+export type EmbedFailure = {
+    readonly id: string;
+    readonly url: string;
+    readonly code: EmbedFailureCode;
+    readonly message: string;
+};
+
+// @public
+export type EmbedFailureCode = "EMBED_URL_REFUSED" | "EMBED_FETCH_FAILED" | "EMBED_TOO_LARGE" | "EMBED_NOT_AN_IMAGE" | "EMBED_INTEGRITY";
+
+// @public
+export type EmbedInput = {
+    readonly document: DocumentFile;
+    readonly store: AssetStore;
+    readonly io: Pick<FileIO, "read">;
+    readonly hasher: ContentHasher;
+};
+
+// @public
+export type EmbedResult = {
+    readonly document: DocumentFile;
+    readonly embedded: readonly string[];
+    readonly failures: readonly EmbedFailure[];
 };
 
 // @public
@@ -367,6 +397,9 @@ export type SvgInspection = {
     readonly svg: string;
     readonly removed: number;
 };
+
+// @public
+export const UNPINNED_HASH: string;
 
 // @public
 export function usedAssetIds(doc: DocumentFile): ReadonlySet<string>;
