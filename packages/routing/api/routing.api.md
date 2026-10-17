@@ -59,6 +59,15 @@ export type GridInput = {
 export function labelPosition(commands: readonly PathCommand[], t: number, offset?: Vec2): Vec2;
 
 // @public
+export function nudge(routes: readonly NudgeRoute[], spacing: number): Vec2[][];
+
+// @public
+export type NudgeRoute = {
+    readonly points: readonly Vec2[];
+    readonly avoid?: readonly Box[] | undefined;
+};
+
+// @public
 export const ORTHOGONAL_STUB = 20;
 
 // @public
@@ -147,6 +156,15 @@ export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefine
     } | undefined;
     readonly anchors?: readonly AnchorDef[] | undefined;
 }): AnchorTarget;
+
+// @public
+export function simplify(path: readonly Vec2[], options?: SimplifyOptions): Vec2[];
+
+// @public
+export type SimplifyOptions = {
+    readonly minJog?: number | undefined;
+    readonly minStub?: number | undefined;
+};
 
 // @public
 export const straightRouter: Router;
