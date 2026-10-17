@@ -147,6 +147,47 @@ describe('embedding external assets on save (FR-AST-006)', () => {
     expect(reads).toEqual([]);
   });
 
+  it('FR-AST-006: numeric, hex, trailing-dot, single-label, mapped-IPv6 and shared-range hosts are refused unread', async () => {
+    const bypasses = [
+      'https://2130706433/a.png',
+      'https://0x7f.1/a.png',
+      'https://0177.0.0.1/a.png',
+      'https://127.1/a.png',
+      'https://localhost./a.png',
+      'https://LOCALHOST/a.png',
+      'https://intranet/a.png',
+      'https://[::ffff:127.0.0.1]/a.png',
+      'https://[::ffff:7f00:1]/a.png',
+      'https://100.64.0.1/a.png',
+      'https://198.18.0.1/a.png',
+      'https://0.0.0.0/a.png',
+      'https://224.0.0.1/a.png',
+      'https://host.internal./a.png',
+    ];
+    const { io, reads } = serving({});
+    const r = await embedExternalAssets({
+      document: documentWith(Object.fromEntries(bypasses.map((u, i) => [`b${i}`, [u, UNPINNED_HASH] as const]))),
+      store: createMemoryAssetStore(hasher),
+      io,
+      hasher,
+    });
+    expect(r.failures.map((f) => f.code)).toEqual(bypasses.map(() => 'EMBED_URL_REFUSED'));
+    expect(reads).toEqual([]);
+  });
+
+  it('FR-AST-006: a public IPv4 address and a public name with a port are still fetched', async () => {
+    const bytes = png(3, 3);
+    const { io, reads } = serving({ 'https://93.184.216.34/a.png': bytes, 'https://cdn.example:8443/b.png': bytes });
+    const r = await embedExternalAssets({
+      document: documentWith({ a: ['https://93.184.216.34/a.png', UNPINNED_HASH], b: ['https://cdn.example:8443/b.png', UNPINNED_HASH] }),
+      store: createMemoryAssetStore(hasher),
+      io,
+      hasher,
+    });
+    expect(r.failures).toEqual([]);
+    expect(reads).toHaveLength(2);
+  });
+
   it('FR-AST-006: an SVG is sanitised before it is kept', async () => {
     const svg = encodeUtf8('<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><script>alert(1)</script><rect width="4" height="4"/></svg>');
     const { io } = serving({ 'https://cdn.example/a.svg': svg });

@@ -43,11 +43,11 @@ async function capped(url: string, response: Response): Promise<Result<Uint8Arra
   return ok(out);
 }
 
-/** The bytes at `url`, fetched without credentials, within the timeout and no more than the import cap (a larger body is refused unread). */
+/** The bytes at `url`, fetched without credentials and without following a redirect (a redirect could lead to a host the address check refused), within the timeout and no more than the import cap (a larger body is refused unread). */
 async function read(url: string): Promise<Result<Uint8Array, CoreError>> {
   try {
     const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
-    const response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer', signal });
+    const response = await fetch(url, { credentials: 'omit', redirect: 'error', referrerPolicy: 'no-referrer', signal });
     if (!response.ok) return failure(url, response.status);
     return await capped(url, response);
   } catch (cause) {

@@ -75,14 +75,47 @@ const fail = (e: External, code: EmbedFailureCode, message: string): { readonly 
   failure: { id: e.id, url: e.record.source, code, message },
 });
 
-/** Hosts that name this machine or a private network: a document must not make a save probe them. */
-const PRIVATE_HOST = /^(localhost|.*\.(local|localhost|internal)|\[.*\]|0\.0\.0\.0|127\..*|10\..*|192\.168\..*|169\.254\..*|172\.(1[6-9]|2\d|3[01])\..*)$/i;
+/** The WHATWG URL parser (pure: no I/O), named here because this package builds without DOM or Node types. */
+declare const URL: new (url: string) => { readonly protocol: string; readonly username: string; readonly password: string; readonly hostname: string };
 
-/** Whether `url` is one a save may fetch: an absolute https URL to a public host (no credentials, port allowed). */
+/** Host names that mean this machine or a private network. */
+const PRIVATE_NAME = /(^|\.)(localhost|local|internal|localdomain|home|lan|corp)$/;
+
+/** Whether the dotted IPv4 address `host` is loopback, private, link-local, shared (CGNAT), benchmarking, multicast or reserved. */
+function privateIPv4(host: string): boolean {
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host);
+  if (m === null) return false;
+  const a = Number(m[1]);
+  const b = Number(m[2]);
+  return (
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    a >= 224 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 198 && (b === 18 || b === 19))
+  );
+}
+
+/**
+ * Whether `url` is one a save may fetch: an absolute https URL to a public host, without credentials (a port is allowed). The URL is parsed
+ * first, so numeric forms (`2130706433`, `0x7f.1`), a trailing dot (`localhost.`) and IPv6 literals (including IPv4-mapped ones) are judged by
+ * the host they mean, not the text they were written with.
+ */
 function fetchable(url: string): boolean {
-  const m = /^https:\/\/([^\s/?#@]+)(?:[/?#]|$)/i.exec(url);
-  const host = (m?.[1] ?? '').replace(/:\d*$/, '');
-  return m !== null && host !== '' && !PRIVATE_HOST.test(host);
+  let u: InstanceType<typeof URL>;
+  try {
+    u = new URL(url);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== 'https:' || u.username !== '' || u.password !== '') return false;
+  const host = u.hostname.toLowerCase().replace(/\.+$/, '');
+  if (host === '' || host.startsWith('[') || !host.includes('.')) return false;
+  return !PRIVATE_NAME.test(host) && !privateIPv4(host);
 }
 
 /** The asset records that name a `source`. */
