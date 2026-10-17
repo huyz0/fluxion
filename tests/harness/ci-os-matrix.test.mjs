@@ -12,9 +12,9 @@ describe('CI OS matrix for the CLI and MCP (NFR-PORT-004)', () => {
   it('NFR-PORT-004: the cli-mcp job lists three operating systems and Node 22 and 24', () => {
     assert.notEqual(job, '', 'a cli-mcp job exists');
     assert.match(job, /os: \[ubuntu-latest, windows-latest, macos-latest\]/);
-    assert.match(job, /node: \[22, 24\]/);
+    assert.match(job, /node-version: \[22, 24\]/);
     assert.match(job, /runs-on: \$\{\{ matrix\.os \}\}/);
-    assert.match(job, /node-version: \$\{\{ matrix\.node \}\}/);
+    assert.match(job, /node-version: \$\{\{ matrix\.node-version \}\}/);
   });
 
   it('NFR-PORT-004: the job builds, then runs the CLI and MCP e2e tests', () => {

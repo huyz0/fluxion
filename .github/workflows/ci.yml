@@ -368,12 +368,12 @@ jobs:
 
   # NFR-PORT-004: the CLI and the MCP server run on Node 22 and 24 on Linux, Windows and macOS. They spawn the built bins, so this job builds first.
   cli-mcp:
-    name: cli-mcp (${{ matrix.os }}, node ${{ matrix.node }})
+    name: cli-mcp (${{ matrix.os }}, node ${{ matrix.node-version }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node: [22, 24]
+        node-version: [22, 24]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
@@ -383,13 +383,14 @@ jobs:
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
       - name: chromium for the PNG render tests
         run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm exec vitest run --project node packages/cli/src/e2e packages/mcp/src/e2e
+      - name: e2e of @fluxion/cli and @fluxion/mcp
+        run: pnpm exec vitest run --project node packages/cli/src/e2e packages/mcp/src/e2e
 
   ci-ok:
     if: always()
