@@ -379,6 +379,9 @@ export type GroupAst = {
 };
 
 // @public
+export function importMarkdown(text: string, options?: ImportOptions): ImportResult;
+
+// @public
 export function importMermaid(text: string, options?: ImportOptions): ImportResult;
 
 // @public

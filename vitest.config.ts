@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 import { t } from './scripts/gates/thresholds.mjs';
+import { domFreeAliases } from './tools/vite-dom-free/index.mjs';
 import { i18nCatalogs } from './tools/vite-lingui/catalogs.mjs';
 import { lingui } from './tools/vite-lingui/index.mjs';
 
@@ -44,7 +45,7 @@ export default defineConfig({
   // FLUXION_VITEST_CACHE moves it: a tzap run in this checkout (pnpm mutate, also from the harness
   // suite during the ladder) must not rewrite the optimized deps a browser run is serving (M5.29)
   cacheDir: process.env['FLUXION_VITEST_CACHE'] ?? '.vitest-cache',
-  resolve: { conditions: [...conditions, 'browser'] },
+  resolve: { conditions: [...conditions, 'browser'], alias: domFreeAliases },
   ssr: { resolve: { conditions: [...conditions, 'node'] } },
   test: {
     // the 5 s default is a laptop's: a macOS or Windows runner under coverage takes several times a laptop's time, and a test over the

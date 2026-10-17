@@ -286,7 +286,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-MCP-002 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/mcp/src/inspector.test.ts` |
 | FR-MCP-003 | S | R5 | M25 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-IMP-001 | M | R2 | M15 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/dsl/src/import/mermaid/mermaid.test.ts` |
-| FR-IMP-002 | M | R2 | M15 | [21-import-export-publish.md](21-import-export-publish.md) | — |
+| FR-IMP-002 | M | R2 | M15 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/dsl/src/import/markdown/markdown.browser.test.ts` +2 |
 | FR-IMP-003 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-IMP-004 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-IMP-005 | C | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |

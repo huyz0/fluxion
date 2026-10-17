@@ -36,7 +36,7 @@ function withoutFrontMatter(lines: readonly SourceLine[], report: Report): Sourc
 /** One diagram as a screen, for callers (the Markdown importer) that assemble several. */
 export function parseMermaid(text: string, ctx: ParseCtx): ScreenSpec | undefined {
   const { report } = ctx;
-  const lines = withoutFrontMatter(sourceLines(text), report);
+  const lines = withoutFrontMatter(sourceLines(text, ctx.at), report);
   const at = lines.findIndex((l) => l.text.trim() !== '' && !l.text.trim().startsWith('%%'));
   const header = lines[at];
   if (!header) {

@@ -12,6 +12,8 @@ const SHARED = [
   'tools/vitest',
   // the Lingui plugin the Vitest config imports (ADR-0023)
   'tools/vite-lingui',
+  // the DOM-free alias the Vitest config imports (ADR-0040)
+  'tools/vite-dom-free',
   'tools/gen/workspaces.json',
   'scripts/gates/thresholds.mjs',
   'package.json',

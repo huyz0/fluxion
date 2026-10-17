@@ -30,6 +30,7 @@
     "@fluxion/layout": "workspace:*",
     "@fluxion/schema": "workspace:*",
     "@fluxion/theme": "workspace:*",
+    "mdast-util-from-markdown": "catalog:",
     "yaml": "catalog:",
     "zod": "catalog:"
   },

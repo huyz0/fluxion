@@ -1,0 +1,45 @@
+flux: 1
+title: "Launch plan"
+uses: [basic]
+screens:
+  - id: launch-plan
+    title: "Launch plan"
+    layout: { type: stack, direction: down, gap: 24 }
+    nodes:
+      why-we-ship-in-march: { shape: rounded-rect, label: "Why we ship in March." }
+  - id: goals
+    title: "Goals"
+    layout: { type: layered, direction: down }
+    nodes:
+      grow-signups: { shape: rounded-rect, label: "Grow signups" }
+      referral-programme: { shape: rounded-rect, label: "Referral programme" }
+      pricing-page: { shape: rounded-rect, label: "Pricing page" }
+      cut-churn: { shape: rounded-rect, label: "Cut churn" }
+    edges:
+      - grow-signups -> referral-programme
+      - grow-signups -> pricing-page
+  - id: steps
+    title: "Steps"
+    layout: { type: layered, direction: down }
+    nodes:
+      build: { shape: rounded-rect, label: "Build" }
+      review: { shape: rounded-rect, label: "Review" }
+      ship: { shape: rounded-rect, label: "Ship" }
+    edges:
+      - build -> review
+      - review -> ship
+  - id: architecture
+    title: "Architecture"
+    layout: { type: layered, direction: right }
+    nodes:
+      web: { shape: rect, label: "Web" }
+      api: { shape: rect, label: "API" }
+      db: { shape: cylinder, label: "DB" }
+    edges:
+      - web -> api
+      - api -> db
+  - id: snippet
+    title: "Snippet"
+    layout: { type: stack, direction: down, gap: 24 }
+    nodes:
+      pnpm-build: { shape: document, label: "pnpm build" }

@@ -4,13 +4,16 @@ import type { DslDiagnostic } from '../types.js';
 /** One line of source with its 1-based number and the offset of its first character. */
 export type SourceLine = { readonly text: string; readonly line: number; readonly offset: number };
 
+/** Where an embedded source starts inside a larger file: the lines and characters before it. */
+export type SourceOrigin = { readonly line: number; readonly offset: number };
+
 /** The lines of `text`, comments (`%%`) and blank lines kept so numbers stay true. */
-export function sourceLines(text: string): SourceLine[] {
+export function sourceLines(text: string, at: SourceOrigin = { line: 0, offset: 0 }): SourceLine[] {
   const out: SourceLine[] = [];
-  let offset = 0;
+  let offset = at.offset;
   for (const [i, raw] of text.split('\n').entries()) {
     const clean = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
-    out.push({ text: clean, line: i + 1, offset });
+    out.push({ text: clean, line: at.line + i + 1, offset });
     offset += raw.length + 1;
   }
   return out;
@@ -19,10 +22,16 @@ export function sourceLines(text: string): SourceLine[] {
 /** A collector of import diagnostics. */
 export class Report {
   readonly items: DslDiagnostic[] = [];
+  private readonly subset: string;
+
+  /** A collector whose "outside the supported ... subset" warnings name `subset`. */
+  constructor(subset = 'Mermaid') {
+    this.subset = subset;
+  }
 
   /** A warning: the line is skipped or simplified, the rest imports. */
   unsupported(l: SourceLine, what: string): void {
-    this.add('FLX_IMPORT_UNSUPPORTED', 'warning', l, `${what} is outside the supported Mermaid subset and was skipped`);
+    this.add('FLX_IMPORT_UNSUPPORTED', 'warning', l, `${what} is outside the supported ${this.subset} subset and was skipped`);
   }
 
   /** An error: the line cannot be read. */
@@ -91,4 +100,11 @@ export function plain(raw: string): string {
 }
 
 /** What a parser needs besides its lines: where to report, where to get slugs, the screen id and title. */
-export type ParseCtx = { readonly report: Report; readonly slugs: Slugs; readonly id: string; readonly title: string };
+export type ParseCtx = {
+  readonly report: Report;
+  readonly slugs: Slugs;
+  readonly id: string;
+  readonly title: string;
+  /** Set when the diagram sits inside another file, so its diagnostics point into that file. */
+  readonly at?: SourceOrigin | undefined;
+};

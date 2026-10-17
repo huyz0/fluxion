@@ -126,6 +126,9 @@ catalogs:
     knip:
       specifier: 6.38.0
       version: 6.38.0
+    mdast-util-from-markdown:
+      specifier: 2.0.3
+      version: 2.0.3
     oxc-parser:
       specifier: 0.151.0
       version: 0.151.0
@@ -467,6 +470,9 @@ importers:
       '@fluxion/theme':
         specifier: workspace:*
         version: link:../theme
+      mdast-util-from-markdown:
+        specifier: 'catalog:'
+        version: 2.0.3(supports-color@8.1.1)
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
