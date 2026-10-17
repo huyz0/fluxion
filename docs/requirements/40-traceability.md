@@ -91,7 +91,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ANC-001 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/anchor.test.ts`, `packages/routing/src/connector-route.test.ts` |
 | FR-ANC-002 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/anchor.test.ts`, `packages/routing/src/connector-route.test.ts` |
 | FR-ANC-003 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/anchors.test.ts`, `packages/schema/src/schema-1-4.test.ts` |
-| FR-ANC-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
+| FR-ANC-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/auto-anchor.test.ts` |
 | FR-ANC-005 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-ANC-006 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-ANC-007 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |

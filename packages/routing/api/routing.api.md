@@ -26,7 +26,51 @@ export type AnchorTarget = {
 };
 
 // @public
+export const AUTO_WEIGHTS: AutoWeights;
+
+// @public
+export type AutoChoice = {
+    readonly source: Side;
+    readonly target: Side;
+};
+
+// @public
+export type AutoEdge = {
+    readonly source: AutoEnd;
+    readonly target: AutoEnd;
+};
+
+// @public
+export type AutoEnd = {
+    readonly key: string;
+    readonly box: Box;
+    readonly roleSides?: readonly Side[] | undefined;
+    readonly assigned?: Side | undefined;
+    readonly previous?: Side | undefined;
+};
+
+// @public
+export type AutoOptions = {
+    readonly weights?: Partial<AutoWeights> | undefined;
+    readonly frozen?: boolean | undefined;
+};
+
+// @public
+export type AutoWeights = {
+    readonly length: number;
+    readonly bend: number;
+    readonly away: number;
+    readonly crowding: number;
+    readonly role: number;
+    readonly assigned: number;
+    readonly hysteresis: number;
+};
+
+// @public
 export function buildGrid(input: GridInput): Grid;
+
+// @public
+export function chooseAutoSides(edges: readonly AutoEdge[], options?: AutoOptions): AutoChoice[];
 
 // @public
 export type ConnectorRoute = {
@@ -156,6 +200,9 @@ export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefine
     } | undefined;
     readonly anchors?: readonly AnchorDef[] | undefined;
 }): AnchorTarget;
+
+// @public
+export type Side = "n" | "e" | "s" | "w";
 
 // @public
 export function simplify(path: readonly Vec2[], options?: SimplifyOptions): Vec2[];
