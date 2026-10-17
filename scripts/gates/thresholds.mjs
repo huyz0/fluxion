@@ -56,6 +56,9 @@ export const THRESHOLDS = {
   LAYOUT_100_NODES_MS: { value: 200, weakens: 'up' },
   LAYOUT_500_NODES_MS: { value: 2_000, weakens: 'up' },
   ROUTE_200_ORTHO_MS: { value: 300, weakens: 'up' },
+  ROUTE_DRAG_200_MIN_FPS: { value: 50, weakens: 'down' }, // M16: drag a shape with 200 connectors (FR-RTE-002)
+  BIG_SCREEN_PANZOOM_MIN_FPS: { value: 50, weakens: 'down' }, // M16: pan and zoom a 2k-element, 1k-connector screen (NFR-PERF-002)
+  BIG_SCREEN_FIRST_RENDER_MS: { value: 1000, weakens: 'up' }, // M16: first render of that screen (NFR-PERF-002)
   UNDO_MAX_MS: { value: 16, weakens: 'up' },
   PERF_REGRESSION_TOLERANCE_PCT: { value: 15, weakens: 'up' },
 
