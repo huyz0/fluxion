@@ -33,7 +33,7 @@ const MEASURE: LintContext = {
 const THEMED: LintContext = { theme: LIGHT_THEME };
 
 describe('the quality linter (FR-AI-005)', () => {
-  it('FR-AI-005: the core registry holds the eight rules, each with a description and a weight', () => {
+  it('FR-AI-005: the core registry holds the ten rules, each with a description and a weight', () => {
     expect(CORE_LINT_RULES.map((r) => r.id)).toEqual([
       'OVERLAP',
       'OFFSCREEN',
@@ -43,6 +43,8 @@ describe('the quality linter (FR-AI-005)', () => {
       'CONTRAST',
       'STYLE_LITERAL',
       'STYLE_INCONSISTENT',
+      'ALT_MISSING',
+      'READING_ORDER',
     ]);
     for (const r of CORE_LINT_RULES) {
       expect(r.describe.length, r.id).toBeGreaterThan(10);
@@ -52,7 +54,7 @@ describe('the quality linter (FR-AI-005)', () => {
       registry()
         .list()
         .map(([key]) => key),
-    ).toHaveLength(8);
+    ).toHaveLength(10);
   });
 
   it('FR-AI-005: OVERLAP reports two boxes covering each other, not apart ones nor a child in its group', () => {
@@ -109,6 +111,30 @@ describe('the quality linter (FR-AI-005)', () => {
     const sized = (sizes: number[]) => docOf(...sizes.map((size, i) => el(`e${i}`, { transform: box(10 + i * 150, 10), style: { font: { size } } })));
     expect(only(run(sized([10, 12, 14, 16, 18])), 'STYLE_INCONSISTENT')).toHaveLength(1);
     expect(only(run(sized([12, 16, 24])), 'STYLE_INCONSISTENT')).toHaveLength(0);
+  });
+
+  it('NFR-A11Y-006: ALT_MISSING reports an unnamed image, icon or role-bearing group, not a named one nor a plain shape or group', () => {
+    const image = (id: string, fields: El = {}) => el(id, { kind: 'image', ...fields });
+    expect(only(run(docOf(image('a'), el('b', { kind: 'icon' }))), 'ALT_MISSING').map((f) => f.elements)).toEqual([['a'], ['b']]);
+    expect(only(run(docOf(image('a', { semantic: { label: 'Orders database' } }))), 'ALT_MISSING')).toHaveLength(0);
+    expect(only(run(docOf(image('a', { semantic: { label: '   ' } }))), 'ALT_MISSING')).toHaveLength(1);
+    expect(only(run(docOf(el('g', { kind: 'group', semantic: { role: 'service' } }))), 'ALT_MISSING')).toHaveLength(1);
+    expect(only(run(docOf(el('g', { kind: 'group', semantic: { role: 'service', label: 'Billing' } }))), 'ALT_MISSING')).toHaveLength(0);
+    expect(only(run(docOf(el('g', { kind: 'group' }), el('s', {}))), 'ALT_MISSING')).toHaveLength(0);
+  });
+
+  it('NFR-A11Y-006: READING_ORDER reports a screen written bottom to top, not one written top to bottom, nor a short one', () => {
+    const column = (order: readonly string[]) =>
+      docOf(...order.map((id, n) => el(id, { index: `a${n}`, transform: box(10, { a: 10, b: 100, c: 200, d: 300 }[id] ?? 0) })));
+    const upside = only(run(column(['d', 'c', 'b', 'a'])), 'READING_ORDER');
+    expect(upside).toHaveLength(1);
+    expect(upside[0]?.elements).toEqual(['s1']);
+    expect(only(run(column(['a', 'b', 'c', 'd'])), 'READING_ORDER')).toHaveLength(0);
+    expect(only(run(column(['c', 'b'])), 'READING_ORDER')).toHaveLength(0);
+    // a row read left to right is in order, and the same row written right to left is not
+    const row = (xs: readonly number[]) => docOf(...xs.map((x, n) => el(`e${n}`, { index: `a${n}`, transform: box(x, 10) })));
+    expect(only(run(row([10, 200, 400])), 'READING_ORDER')).toHaveLength(0);
+    expect(only(run(row([400, 200, 10])), 'READING_ORDER')).toHaveLength(1);
   });
 
   it('FR-AI-005: the score is 100 minus the weights of the findings, never below 0, and a clean document scores 100', () => {

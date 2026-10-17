@@ -176,7 +176,7 @@ const OUTLINE_ASK =
   'Reply with JSON only, no prose: {"title": string, "screens": [{"id": lower-case-slug, "title": string, "intent": string}]}. One item per screen, in story order.';
 
 const SCREEN_ASK = (s: OutlineScreen) =>
-  `Write the FluxScript for the screen "${s.id}" (${s.title}): ${s.intent}. Reply with that one \`- id: ${s.id}\` item of \`screens:\` only, no prose.`;
+  `Write the FluxScript for the screen "${s.id}" (${s.title}): ${s.intent}. Give every image, icon and role-bearing group an \`alt:\`, and write the nodes in reading order, top to bottom then left to right. Reply with that one \`- id: ${s.id}\` item of \`screens:\` only, no prose.`;
 
 const REPAIR_ASK = (screen: string, text: string, lines: readonly string[]) =>
   `The screen "${screen}" did not compile. Problems, most important first:\n${lines.join('\n')}\n\nYour text was:\n${text}\n\nReply with the corrected \`- id: ${screen}\` item only, no prose.`;

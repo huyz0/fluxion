@@ -147,6 +147,8 @@ the codes of shape definitions (`FLX_SHAPE_DEF_INVALID`, and `FLX_SHAPE_PATH`, `
 | `FLX_LINT_ORPHAN_CONNECTOR` | warning | A connector with neither end attached to an element. | Attach at least one end to an element, or delete it. |
 | `FLX_LINT_STYLE_LITERAL` | warning | A style that writes a colour literal where a theme token would do. | Use a token such as `{color.primary}`. |
 | `FLX_LINT_STYLE_INCONSISTENT` | warning | A screen that mixes more font sizes or families than a consistent design uses. | Use one size scale and at most two families. |
+| `FLX_LINT_ALT_MISSING` | warning | An image, an icon or a group with a role has no accessible name (NFR-A11Y-006). | Add `alt: <what it shows>` to the node. |
+| `FLX_LINT_READING_ORDER` | warning | A screen's element order, which a screen reader follows, disagrees with the visual order for more than half of the element pairs. | Write the nodes in reading order: top to bottom, left to right. |
 | `FLX_LINT_SCORE_BELOW_MIN` | error | The lint score is below the `--min-score` the command was given; the exit code is 1. | Fix the findings, or lower the minimum. |
 
 ## Command line

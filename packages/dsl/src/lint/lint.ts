@@ -1,15 +1,16 @@
 // The linter (06-ai-authoring.md §7, FR-AI-005): run the rules of the `lintRules` registry over a document and score the result.
 import type { DocumentFile } from '@fluxion/schema';
+import { A11Y_RULES } from './rules-a11y.js';
 import { LAYOUT_RULES } from './rules-layout.js';
 import { STYLE_RULES } from './rules-style.js';
 import type { LintContext, LintRegistry, LintReport, LintRule } from './types.js';
 
 /**
- * The core lint rules, in report order: OVERLAP, OFFSCREEN, TEXT_OVERFLOW, DENSITY, ORPHAN_CONNECTOR, CONTRAST, STYLE_LITERAL, STYLE_INCONSISTENT.
+ * The core lint rules, in report order: OVERLAP, OFFSCREEN, TEXT_OVERFLOW, DENSITY, ORPHAN_CONNECTOR, CONTRAST, STYLE_LITERAL, STYLE_INCONSISTENT, ALT_MISSING, READING_ORDER.
  *
  * @public
  */
-export const CORE_LINT_RULES: readonly LintRule[] = [...LAYOUT_RULES, ...STYLE_RULES];
+export const CORE_LINT_RULES: readonly LintRule[] = [...LAYOUT_RULES, ...STYLE_RULES, ...A11Y_RULES];
 
 const isRule = (v: unknown): v is LintRule =>
   typeof v === 'object' && v !== null && typeof (v as LintRule).check === 'function' && typeof (v as LintRule).weight === 'number';

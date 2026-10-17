@@ -339,7 +339,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-A11Y-003 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-004 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/examples.r1-offline.spec.ts`, `e2e/player.keyboard-only.spec.ts` |
 | NFR-A11Y-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-A11Y-006 | S | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-A11Y-006 | S | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/lint/lint.test.ts` |
 | NFR-I18N-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/i18n.studio-build.spec.ts` +5 |
 | NFR-I18N-002 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-I18N-003 | M | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |

@@ -86,6 +86,8 @@ export type DiagnosticCode =
   | 'FLX_LINT_ORPHAN_CONNECTOR'
   | 'FLX_LINT_STYLE_LITERAL'
   | 'FLX_LINT_STYLE_INCONSISTENT'
+  | 'FLX_LINT_ALT_MISSING'
+  | 'FLX_LINT_READING_ORDER'
   | 'FLX_LINT_SCORE_BELOW_MIN';
 
 /**
@@ -166,6 +168,8 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_LINT_ORPHAN_CONNECTOR: 'warning',
   FLX_LINT_STYLE_LITERAL: 'warning',
   FLX_LINT_STYLE_INCONSISTENT: 'warning',
+  FLX_LINT_ALT_MISSING: 'warning',
+  FLX_LINT_READING_ORDER: 'warning',
   FLX_LINT_SCORE_BELOW_MIN: 'error',
 };
 

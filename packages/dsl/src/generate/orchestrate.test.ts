@@ -57,6 +57,8 @@ describe('generateDeck (FR-AI-009, FR-AI-004, ADR-0041)', () => {
     expect(Object.values(r.doc?.records ?? {}).filter((x) => x.type === 'screen')).toHaveLength(2);
     expect(r.usage).toEqual({ tokensIn: 30, tokensOut: 15 });
     expect(requests[0]?.system).toBe('SYS');
+    // NFR-A11Y-006: the screen request asks for alt text and reading order
+    expect(requests[1]?.messages[0]?.content).toMatch(/alt:.*reading order/s);
   });
 
   it('FR-AI-004: a broken screen is sent back with the formatted diagnostics and repaired in round 1', async () => {
