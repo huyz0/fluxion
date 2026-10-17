@@ -117,6 +117,8 @@ leg('pnpm eval --recorded writes a deterministic scorecard of at least 30 cases 
 leg('the scorecard meets AI_ONE_SHOT_VALID_PCT, AI_AFTER_REPAIR_VALID_PCT and AI_LINT_SCORE_MIN and reports alt-text coverage (NFR-AI-001, NFR-AI-004)', () => {
   const sc = json('eval/out/scorecard.json');
   if (!sc) return 'missing eval/out/scorecard.json';
+  if (sc.source !== 'scripted' && sc.source !== 'live')
+    return `the scorecard must say where its replies came from (source: scripted or live), not ${JSON.stringify(sc.source)}`;
   const bad = [];
   if (!(sc.oneShotValidPct >= t('AI_ONE_SHOT_VALID_PCT'))) bad.push(`one-shot ${sc.oneShotValidPct}`);
   if (!(sc.afterRepairValidPct >= t('AI_AFTER_REPAIR_VALID_PCT'))) bad.push(`after-repair ${sc.afterRepairValidPct}`);

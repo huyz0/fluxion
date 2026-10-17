@@ -103,7 +103,8 @@ function privateIPv4(host: string): boolean {
 /**
  * Whether `url` is one a save may fetch: an absolute https URL to a public host, without credentials (a port is allowed). The URL is parsed
  * first, so numeric forms (`2130706433`, `0x7f.1`), a trailing dot (`localhost.`) and IPv6 literals (including IPv4-mapped ones) are judged by
- * the host they mean, not the text they were written with.
+ * the host they mean, not the text they were written with. The check is textual: a public name that resolves to a private address, and
+ * DNS rebinding, are not caught (the fetch runs in the person's browser, with credentials omitted and no redirects).
  */
 function fetchable(url: string): boolean {
   let u: InstanceType<typeof URL>;
