@@ -6,6 +6,8 @@
 
 import { AnchorDef } from '@fluxion/schema';
 import { AnchorRef } from '@fluxion/schema';
+import { Box } from '@fluxion/geometry';
+import { IndexedBox } from '@fluxion/geometry';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
 import { ReadView } from '@fluxion/core';
@@ -24,6 +26,9 @@ export type AnchorTarget = {
 };
 
 // @public
+export function buildGrid(input: GridInput): Grid;
+
+// @public
 export type ConnectorRoute = {
     readonly source: RouteEnd;
     readonly target: RouteEnd;
@@ -35,6 +40,20 @@ export const curvedRouter: Router;
 
 // @public
 export const DEFAULT_ANCHORS: readonly AnchorDef[];
+
+// @public
+export type Grid = {
+    readonly xs: readonly number[];
+    readonly ys: readonly number[];
+};
+
+// @public
+export type GridInput = {
+    readonly obstacles: readonly IndexedBox[];
+    readonly stubs: readonly Vec2[];
+    readonly margin: number;
+    readonly window?: Box | undefined;
+};
 
 // @public
 export function labelPosition(commands: readonly PathCommand[], t: number, offset?: Vec2): Vec2;
