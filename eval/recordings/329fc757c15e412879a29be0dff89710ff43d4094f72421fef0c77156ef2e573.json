@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Code review\",\"screens\":[{\"id\":\"review-",
+        "overview\",\"title\":\"Code review at a glance\",\"int",
+        "ent\":\"the steps in order\"},{\"id\":\"review-detail\"",
+        ",\"title\":\"Code review in two halves\",\"intent\":\"t",
+        "he first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 57
+    },
+    {
+      "chunks": [
+        "- id: review-overview\n  title: Code review at a ",
+        "glance\n  nodes:\n    pull-request: { shape: ellip",
+        "se, label: Pull request, tone: accent, alt: Pull",
+        " request step }\n    review: { shape: rounded-rec",
+        "t, label: Review, alt: Review step }\n    revise:",
+        " { shape: rounded-rect, label: Revise, alt: Revi",
+        "se step }\n    merge: { shape: ellipse, label: Me",
+        "rge, alt: Merge step }\n  edges:\n    - pull-reque",
+        "st -> review\n    - review -> revise\n    - revise",
+        " -> merge\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 111
+    },
+    {
+      "chunks": [
+        "- id: review-detail\n  title: Code review in two ",
+        "halves\n  nodes:\n    pull-request: { shape: ellip",
+        "se, label: Pull request, tone: accent, alt: Pull",
+        " request step }\n    merge: { shape: rounded-rect",
+        ", label: Merge, alt: Merge step }\n  edges:\n    -",
+        " pull-request -> merge\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 66
+    }
+  ]
+}

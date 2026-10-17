@@ -1,0 +1,12 @@
+{
+  "id": "edit-relayout-right",
+  "mode": "edit",
+  "prompt": "Lay the screen out left to right.",
+  "inputs": {
+    "document": "flux: 1\ntitle: Service\nuses: [basic]\nscreens:\n  - id: main\n    nodes:\n      api: { shape: rounded-rect, label: API }\n      db: { shape: rounded-rect, label: Database }\n    edges:\n      - api -> db\n"
+  },
+  "expect": {
+    "screens": [1, 1],
+    "mustContain": ["API"]
+  }
+}

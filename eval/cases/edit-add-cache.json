@@ -1,0 +1,12 @@
+{
+  "id": "edit-add-cache",
+  "mode": "edit",
+  "prompt": "Add a cache node.",
+  "inputs": {
+    "document": "flux: 1\ntitle: Service\nuses: [basic]\nscreens:\n  - id: main\n    nodes:\n      api: { shape: rounded-rect, label: API }\n      db: { shape: rounded-rect, label: Database }\n    edges:\n      - api -> db\n"
+  },
+  "expect": {
+    "screens": [1, 1],
+    "mustContain": ["Cache"]
+  }
+}

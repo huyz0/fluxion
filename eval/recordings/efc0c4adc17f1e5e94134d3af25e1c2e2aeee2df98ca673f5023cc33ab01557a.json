@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"flux\":1,\"ops\":[{\"op\":\"add\",\"screen\":\"main\",\"sl",
+        "ug\":\"cache\",\"node\":{\"shape\":\"rounded-rect\",\"labe",
+        "l\":\"Cache\"}}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 28
+    }
+  ]
+}

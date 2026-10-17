@@ -1,0 +1,11 @@
+{
+  "id": "gen-review",
+  "mode": "generate",
+  "prompt": "A two-screen deck about code review: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Pull request"],
+    "minLint": 80
+  }
+}

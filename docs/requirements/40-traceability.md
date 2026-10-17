@@ -274,7 +274,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-006 | S | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/studio/src/png-export.browser.test.ts` +2 |
 | FR-AI-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-AI-008 | S | R4 | M23 | [20-ai-authoring.md](20-ai-authoring.md) | — |
-| FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/generate/orchestrate.test.ts` |
+| FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/eval/eval.test.ts`, `packages/dsl/src/generate/orchestrate.test.ts` |
 | FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `e2e/dsl.streaming-render.spec.ts` +5 |
 | FR-AI-011 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/docs/src/guide-drift.test.ts`, `tests/harness/authoring-guide.test.mjs` |
 | FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.convert.test.ts` +6 |
@@ -351,7 +351,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-MNT-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/commands.test.ts` +5 |
 | NFR-MNT-007 | M | R0 | M1, M33 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/result-convention.test.ts` +2 |
 | NFR-MNT-008 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/api.test.mjs` +2 |
-| NFR-AI-001 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-AI-001 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/eval/eval.test.ts` |
 | NFR-AI-002 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/catalog/format.test.ts` +2 |
 | NFR-AI-003 | M | R2 | M14 | [30-non-functional.md](30-non-functional.md) | `packages/dsl/src/token-count.test.ts` |
 | NFR-AI-004 | S | R2 | M15 | [30-non-functional.md](30-non-functional.md) | — |

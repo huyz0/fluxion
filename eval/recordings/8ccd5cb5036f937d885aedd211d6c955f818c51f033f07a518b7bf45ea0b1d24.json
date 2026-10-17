@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Procurement\",\"screens\":[{\"id\":\"procure",
+        "ment-overview\",\"title\":\"Procurement at a glance\"",
+        ",\"intent\":\"the steps in order\"},{\"id\":\"procureme",
+        "nt-detail\",\"title\":\"Procurement in two halves\",\"",
+        "intent\":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 60
+    },
+    {
+      "chunks": [
+        "- id: procurement-overview\n  title: Procurement ",
+        "at a glance\n  nodes:\n    need-raised: { shape: e",
+        "llipse, label: Need raised, tone: accent, alt: N",
+        "eed raised step }\n    quotes: { shape: rounded-r",
+        "ect, label: Quotes, alt: Quotes step }\n    appro",
+        "val: { shape: rounded-rect, label: Approval, alt",
+        ": Approval step }\n    purchase-order: { shape: e",
+        "llipse, label: Purchase order, alt: Purchase ord",
+        "er step }\n  edges:\n    - need-raised -> quotes\n ",
+        "   - quotes -> approval\n    - approval -> purcha",
+        "se-order\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 123
+    },
+    {
+      "chunks": [
+        "- id: procurement-detail\n  title: Procurement in",
+        " two halves\n  nodes:\n    need-raised: { shape: e",
+        "llipse, label: Need raised, tone: accent, alt: N",
+        "eed raised step }\n    purchase-order: { shape: r",
+        "ounded-rect, label: Purchase order, alt: Purchas",
+        "e order step }\n  edges:\n    - need-raised -> pur",
+        "chase-order\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 75
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Backup plan\",\"screens\":[{\"id\":\"backup-",
+        "overview\",\"title\":\"Backup plan at a glance\",\"int",
+        "ent\":\"the steps in order\"},{\"id\":\"backup-detail\"",
+        ",\"title\":\"Backup plan in two halves\",\"intent\":\"t",
+        "he first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 57
+    },
+    {
+      "chunks": [
+        "- id: backup-overview\n  title: Backup plan at a ",
+        "glance\n  nodes:\n    snapshot: { shape: ellipse, ",
+        "label: Snapshot, tone: accent, alt: Snapshot ste",
+        "p }\n    encrypt: { shape: rounded-rect, label: E",
+        "ncrypt, alt: Encrypt step }\n    copy-offsite: { ",
+        "shape: rounded-rect, label: Copy offsite, alt: C",
+        "opy offsite step }\n    restore-test: { shape: el",
+        "lipse, label: Restore test, alt: Restore test st",
+        "ep }\n  edges:\n    - snapshot -> encrypt\n    - en",
+        "crypt -> copy-offsite\n    - copy-offsite -> rest",
+        "ore-test\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 123
+    },
+    {
+      "chunks": [
+        "- id: backup-detail\n  title: Backup plan in two ",
+        "halves\n  nodes:\n    snapshot: { shape: ellipse, ",
+        "label: Snapshot, tone: accent, alt: Snapshot ste",
+        "p }\n    restore-test: { shape: rounded-rect, lab",
+        "el: Restore test, alt: Restore test step }\n  edg",
+        "es:\n    - snapshot -> restore-test\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 69
+    }
+  ]
+}

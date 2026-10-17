@@ -1,0 +1,12 @@
+{
+  "id": "repair-unknown-edge-end",
+  "mode": "repair",
+  "prompt": "Fix the file so it compiles; change nothing else.",
+  "inputs": {
+    "document": "flux: 1\ntitle: Service\nuses: [basic]\nscreens:\n  - id: main\n    nodes:\n      api: { shape: rounded-rect, label: API }\n      db: { shape: rounded-rect, label: Database }\n    edges:\n      - api -> databse\n"
+  },
+  "expect": {
+    "screens": [1, 1],
+    "mustContain": ["Database"]
+  }
+}

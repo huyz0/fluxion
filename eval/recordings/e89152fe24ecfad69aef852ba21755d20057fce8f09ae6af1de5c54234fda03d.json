@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Content moderation\",\"screens\":[{\"id\":\"",
+        "moderation-overview\",\"title\":\"Content moderation",
+        " at a glance\",\"intent\":\"the steps in order\"},{\"i",
+        "d\":\"moderation-detail\",\"title\":\"Content moderati",
+        "on in two halves\",\"intent\":\"the first and the la",
+        "st two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 64
+    },
+    {
+      "chunks": [
+        "- id: moderation-overview\n  title: Content moder",
+        "ation at a glance\n  nodes:\n    report: { shape: ",
+        "ellipse, label: Report, tone: accent, alt: Repor",
+        "t step }\n    queue: { shape: rounded-rect, label",
+        ": Queue, alt: Queue step }\n    decision: { shape",
+        ": rounded-rect, label: Decision, alt: Decision s",
+        "tep }\n    appeal: { shape: ellipse, label: Appea",
+        "l, alt: Appeal step }\n  edges:\n    - report -> q",
+        "ueue\n    - queue -> decision\n    - decision -> a",
+        "ppeal\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 110
+    },
+    {
+      "chunks": [
+        "- id: moderation-detail\n  title: Content moderat",
+        "ion in two halves\n  nodes:\n    report: { shape: ",
+        "ellipse, label: Report, tone: accent, alt: Repor",
+        "t step }\n    appeal: { shape: rounded-rect, labe",
+        "l: Appeal, alt: Appeal step }\n  edges:\n    - rep",
+        "ort -> appeal\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 64
+    }
+  ]
+}

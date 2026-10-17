@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Staff onboarding\",\"screens\":[{\"id\":\"on",
+        "boarding-overview\",\"title\":\"Staff onboarding at ",
+        "a glance\",\"intent\":\"the steps in order\"},{\"id\":\"",
+        "onboarding-detail\",\"title\":\"Staff onboarding in ",
+        "two halves\",\"intent\":\"the first and the last two",
+        " steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 63
+    },
+    {
+      "chunks": [
+        "- id: onboarding-overview\n  title: Staff onboard",
+        "ing at a glance\n  nodes:\n    offer-signed: { sha",
+        "pe: ellipse, label: Offer signed, tone: accent, ",
+        "alt: Offer signed step }\n    laptop-ordered: { s",
+        "hape: rounded-rect, label: Laptop ordered, alt: ",
+        "Laptop ordered step }\n    accounts-created: { sh",
+        "ape: rounded-rect, label: Accounts created, alt:",
+        " Accounts created step }\n    first-day: { shape:",
+        " ellipse, label: First day, alt: First day step ",
+        "}\n  edges:\n    - offer-signed -> laptop-ordered\n",
+        "    - laptop-ordered -> accounts-created\n    - a",
+        "ccounts-created -> first-day\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 140
+    },
+    {
+      "chunks": [
+        "- id: onboarding-detail\n  title: Staff onboardin",
+        "g in two halves\n  nodes:\n    offer-signed: { sha",
+        "pe: ellipse, label: Offer signed, tone: accent, ",
+        "alt: Offer signed step }\n    first-day: { shape:",
+        " rounded-rect, label: First day, alt: First day ",
+        "step }\n  edges:\n    - offer-signed -> first-day\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 72
+    }
+  ]
+}

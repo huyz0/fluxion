@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "flux: 1\ntitle: Service\nuses: [basic]\nscreens:\n  ",
+        "- id: main\n    nodes:\n      api: { shape: rounde",
+        "d-rect, label: API }\n      db: { shape: rounded-",
+        "rect, label: Database }\n    edges:\n      - api -",
+        "> db\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 50
+    }
+  ]
+}

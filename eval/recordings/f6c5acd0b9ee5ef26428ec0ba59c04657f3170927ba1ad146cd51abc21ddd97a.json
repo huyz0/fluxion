@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Hiring loop\",\"screens\":[{\"id\":\"hiring-",
+        "overview\",\"title\":\"Hiring loop at a glance\",\"int",
+        "ent\":\"the steps in order\"},{\"id\":\"hiring-detail\"",
+        ",\"title\":\"Hiring loop in two halves\",\"intent\":\"t",
+        "he first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 57
+    },
+    {
+      "chunks": [
+        "- id: hiring-overview\n  title: Hiring loop at a ",
+        "glance\n  nodes:\n    application: { shape: ellips",
+        "e, label: Application, tone: accent, alt: Applic",
+        "ation step }\n    phone-screen: { shape: rounded-",
+        "rect, label: Phone screen, alt: Phone screen ste",
+        "p }\n    on-site: { shape: rounded-rect, label: O",
+        "n-site, alt: On-site step }\n    offer: { shape: ",
+        "ellipse, label: Offer, alt: Offer step }\n  edges",
+        ":\n    - application -> phone-screen\n    - phone-",
+        "screen -> on-site\n    - on-site -> offer\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 119
+    },
+    {
+      "chunks": [
+        "- id: hiring-detail\n  title: Hiring loop in two ",
+        "halves\n  nodes:\n    application: { shape: ellips",
+        "e, label: Application, tone: accent, alt: Applic",
+        "ation step }\n    offer: { shape: rounded-rect, l",
+        "abel: Offer, alt: Offer step }\n  edges:\n    - ap",
+        "plication -> offer\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 65
+    }
+  ]
+}

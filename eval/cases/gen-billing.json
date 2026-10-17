@@ -1,0 +1,11 @@
+{
+  "id": "gen-billing",
+  "mode": "generate",
+  "prompt": "A two-screen deck about billing run: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Usage metered"],
+    "minLint": 80
+  }
+}

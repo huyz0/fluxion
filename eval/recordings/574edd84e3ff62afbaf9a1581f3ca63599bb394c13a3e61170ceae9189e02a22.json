@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Billing run\",\"screens\":[{\"id\":\"billing",
+        "-overview\",\"title\":\"Billing run at a glance\",\"in",
+        "tent\":\"the steps in order\"},{\"id\":\"billing-detai",
+        "l\",\"title\":\"Billing run in two halves\",\"intent\":",
+        "\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 58
+    },
+    {
+      "chunks": [
+        "- id: billing-overview\n  title: Billing run at a",
+        " glance\n  nodes:\n    usage-metered: { shape: ell",
+        "ipse, label: Usage metered, tone: accent, alt: U",
+        "sage metered step }\n    invoice-built: { shape: ",
+        "rounded-rect, label: Invoice built, alt: Invoice",
+        " built step }\n    payment-taken: { shape: rounde",
+        "d-rect, label: Payment taken, alt: Payment taken",
+        " step }\n    receipt-sent: { shape: ellipse, labe",
+        "l: Receipt sent, alt: Receipt sent step }\n  edge",
+        "s:\n    - usage-metered -> invoice-built\n    - in",
+        "voice-built -> payment-taken\n    - payment-taken",
+        " -> receipt-sent\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 137
+    },
+    {
+      "chunks": [
+        "- id: billing-detail\n  title: Billing run in two",
+        " halves\n  nodes:\n    usage-metered: { shape: ell",
+        "ipse, label: Usage metered, tone: accent, alt: U",
+        "sage metered step }\n    receipt-sent: { shape: r",
+        "ounded-rect, label: Receipt sent, alt: Receipt s",
+        "ent step }\n  edges:\n    - usage-metered -> recei",
+        "pt-sent\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 74
+    }
+  ]
+}

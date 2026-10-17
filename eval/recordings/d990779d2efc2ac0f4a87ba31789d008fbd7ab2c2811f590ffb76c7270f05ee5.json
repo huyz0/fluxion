@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Deploy pipeline\",\"screens\":[{\"id\":\"dep",
+        "loy-overview\",\"title\":\"Deploy pipeline at a glan",
+        "ce\",\"intent\":\"the steps in order\"},{\"id\":\"deploy",
+        "-detail\",\"title\":\"Deploy pipeline in two halves\"",
+        ",\"intent\":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 60
+    },
+    {
+      "chunks": [
+        "- id: deploy-overview\n  title: Deploy pipeline a",
+        "t a glance\n  nodes:\n    commit: { shape: ellipse",
+        ", label: Commit, tone: accent, alt: Commit step ",
+        "}\n    build: { shape: rounded-rect, label: Build",
+        ", alt: Build step }\n    test: { shape: rounded-r",
+        "ect, label: Test, alt: Test step }\n    roll-out:",
+        " { shape: ellipse, label: Roll out, alt: Roll ou",
+        "t step }\n  edges:\n    - commit -> build\n    - bu",
+        "ild -> test\n    - test -> roll-out\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 105
+    },
+    {
+      "chunks": [
+        "- id: deploy-detail\n  title: Deploy pipeline in ",
+        "two halves\n  nodes:\n    commit: { shape: ellipse",
+        ", label: Commit, tone: accent, alt: Commit step ",
+        "}\n    roll-out: { shape: rounded-rect, label: Ro",
+        "ll out, alt: Roll out step }\n  edges:\n    - comm",
+        "it -> roll-out\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 64
+    }
+  ]
+}

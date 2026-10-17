@@ -1,0 +1,11 @@
+{
+  "id": "gen-procurement",
+  "mode": "generate",
+  "prompt": "A two-screen deck about procurement: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Need raised"],
+    "minLint": 80
+  }
+}

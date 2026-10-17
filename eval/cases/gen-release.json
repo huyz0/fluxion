@@ -1,0 +1,11 @@
+{
+  "id": "gen-release",
+  "mode": "generate",
+  "prompt": "A two-screen deck about release train: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Branch cut"],
+    "minLint": 80
+  }
+}

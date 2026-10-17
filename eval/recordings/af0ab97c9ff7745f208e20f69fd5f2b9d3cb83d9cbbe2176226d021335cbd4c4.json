@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Sign in flow\",\"screens\":[{\"id\":\"auth-o",
+        "verview\",\"title\":\"Sign in flow at a glance\",\"int",
+        "ent\":\"the steps in order\"},{\"id\":\"auth-detail\",\"",
+        "title\":\"Sign in flow in two halves\",\"intent\":\"th",
+        "e first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 57
+    },
+    {
+      "chunks": [
+        "- id: auth-overview\n  title: Sign in flow at a g",
+        "lance\n  nodes:\n    enter-email: { shape: ellipse",
+        ", label: Enter email, tone: accent, alt: Enter e",
+        "mail step }\n    send-code: { shape: rounded-rect",
+        ", label: Send code, alt: Send code step }\n    ve",
+        "rify-code: { shape: rounded-rect, label: Verify ",
+        "code, alt: Verify code step }\n    session-starts",
+        ": { shape: ellipse, label: Session starts, alt: ",
+        "Session starts step }\n  edges:\n    - enter-email",
+        " -> send-code\n    - send-code -> verify-code\n   ",
+        " - verify-code -> session-starts\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 129
+    },
+    {
+      "chunks": [
+        "- id: auth-detail\n  title: Sign in flow in two h",
+        "alves\n  nodes:\n    enter-email: { shape: ellipse",
+        ", label: Enter email, tone: accent, alt: Enter e",
+        "mail step }\n    session-starts: { shape: rounded",
+        "-rect, label: Session starts, alt: Session start",
+        "s step }\n  edges:\n    - enter-email -> session-s",
+        "tarts\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 74
+    }
+  ]
+}

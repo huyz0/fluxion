@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Research method\",\"screens\":[{\"id\":\"res",
+        "earch-overview\",\"title\":\"Research method at a gl",
+        "ance\",\"intent\":\"the steps in order\"},{\"id\":\"rese",
+        "arch-detail\",\"title\":\"Research method in two hal",
+        "ves\",\"intent\":\"the first and the last two steps\"",
+        "}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 61
+    },
+    {
+      "chunks": [
+        "- id: research-overview\n  title: Research method",
+        " at a glance\n  nodes:\n    question: { shape: ell",
+        "ipse, label: Question, tone: accent, alt: Questi",
+        "on step }\n    experiment: { shape: rounded-rect,",
+        " label: Experiment, alt: Experiment step }\n    a",
+        "nalysis: { shape: rounded-rect, label: Analysis,",
+        " alt: Analysis step }\n    paper: { shape: ellips",
+        "e, label: Paper, alt: Paper step }\n  edges:\n    ",
+        "- question -> experiment\n    - experiment -> ana",
+        "lysis\n    - analysis -> paper\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 116
+    },
+    {
+      "chunks": [
+        "- id: research-detail\n  title: Research method i",
+        "n two halves\n  nodes:\n    question: { shape: ell",
+        "ipse, label: Question, tone: accent, alt: Questi",
+        "on step }\n    paper: { shape: rounded-rect, labe",
+        "l: Paper, alt: Paper step }\n  edges:\n    - quest",
+        "ion -> paper\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 64
+    }
+  ]
+}

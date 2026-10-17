@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Training plan\",\"screens\":[{\"id\":\"train",
+        "ing-overview\",\"title\":\"Training plan at a glance",
+        "\",\"intent\":\"the steps in order\"},{\"id\":\"training",
+        "-detail\",\"title\":\"Training plan in two halves\",\"",
+        "intent\":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 60
+    },
+    {
+      "chunks": [
+        "- id: training-overview\n  title: Training plan a",
+        "t a glance\n  nodes:\n    assess: { shape: ellipse",
+        ", label: Assess, tone: accent, alt: Assess step ",
+        "}\n    teach: { shape: rounded-rect, label: Teach",
+        ", alt: Teach step }\n    practise: { shape: round",
+        "ed-rect, label: Practise, alt: Practise step }\n ",
+        "   certify: { shape: ellipse, label: Certify, al",
+        "t: Certify step }\n  edges:\n    - assess -> teach",
+        "\n    - teach -> practise\n    - practise -> certi",
+        "fy\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 109
+    },
+    {
+      "chunks": [
+        "- id: training-detail\n  title: Training plan in ",
+        "two halves\n  nodes:\n    assess: { shape: ellipse",
+        ", label: Assess, tone: accent, alt: Assess step ",
+        "}\n    certify: { shape: rounded-rect, label: Cer",
+        "tify, alt: Certify step }\n  edges:\n    - assess ",
+        "-> certify\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 63
+    }
+  ]
+}

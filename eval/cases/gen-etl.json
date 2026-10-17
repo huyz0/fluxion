@@ -1,0 +1,11 @@
+{
+  "id": "gen-etl",
+  "mode": "generate",
+  "prompt": "A two-screen deck about data pipeline: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Extract"],
+    "minLint": 80
+  }
+}

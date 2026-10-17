@@ -26,3 +26,4 @@ playwright-report/
 apps/docs/src/content/docs/api/
 .astro/
 .lighthouseci/
+eval/out/

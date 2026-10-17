@@ -1,0 +1,11 @@
+{
+  "id": "gen-launch",
+  "mode": "generate",
+  "prompt": "A two-screen deck about product launch: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Brief"],
+    "minLint": 80
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Release train\",\"screens\":[{\"id\":\"relea",
+        "se-overview\",\"title\":\"Release train at a glance\"",
+        ",\"intent\":\"the steps in order\"},{\"id\":\"release-d",
+        "etail\",\"title\":\"Release train in two halves\",\"in",
+        "tent\":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 59
+    },
+    {
+      "chunks": [
+        "- id: release-overview\n  title: Release train at",
+        " a glance\n  nodes:\n    branch-cut: { shape: rect",
+        "angle, label: Branch cut, tone: accent, alt: Bra",
+        "nch cut step }\n    stabilise: { shape: rounded-r",
+        "ect, label: Stabilise, alt: Stabilise step }\n   ",
+        " ship: { shape: rounded-rect, label: Ship, alt: ",
+        "Ship step }\n    announce: { shape: ellipse, labe",
+        "l: Announce, alt: Announce step }\n  edges:\n    -",
+        " branch-cut -> stabilise\n    - stabilise -> ship",
+        "\n    - ship -> announce\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 114
+    },
+    {
+      "chunks": [
+        "- id: release-overview\n  title: Release train at",
+        " a glance\n  nodes:\n    branch-cut: { shape: elli",
+        "pse, label: Branch cut, tone: accent, alt: Branc",
+        "h cut step }\n    stabilise: { shape: rounded-rec",
+        "t, label: Stabilise, alt: Stabilise step }\n    s",
+        "hip: { shape: rounded-rect, label: Ship, alt: Sh",
+        "ip step }\n    announce: { shape: ellipse, label:",
+        " Announce, alt: Announce step }\n  edges:\n    - b",
+        "ranch-cut -> stabilise\n    - stabilise -> ship\n ",
+        "   - ship -> announce\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 114
+    },
+    {
+      "chunks": [
+        "- id: release-detail\n  title: Release train in t",
+        "wo halves\n  nodes:\n    branch-cut: { shape: elli",
+        "pse, label: Branch cut, tone: accent, alt: Branc",
+        "h cut step }\n    announce: { shape: rounded-rect",
+        ", label: Announce, alt: Announce step }\n  edges:",
+        "\n    - branch-cut -> announce\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 68
+    }
+  ]
+}

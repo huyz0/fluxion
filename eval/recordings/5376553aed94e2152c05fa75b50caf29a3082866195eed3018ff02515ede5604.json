@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Travel approval\",\"screens\":[{\"id\":\"tra",
+        "vel-overview\",\"title\":\"Travel approval at a glan",
+        "ce\",\"intent\":\"the steps in order\"},{\"id\":\"travel",
+        "-detail\",\"title\":\"Travel approval in two halves\"",
+        ",\"intent\":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 60
+    },
+    {
+      "chunks": [
+        "- id: travel-overview\n  title: Travel approval a",
+        "t a glance\n  nodes:\n    request: { shape: ellips",
+        "e, label: Request, tone: accent, alt: Request st",
+        "ep }\n    manager: { shape: rounded-rect, label: ",
+        "Manager, alt: Manager step }\n    finance: { shap",
+        "e: rounded-rect, label: Finance, alt: Finance st",
+        "ep }\n    booked: { shape: ellipse, label: Booked",
+        ", alt: Booked step }\n  edges:\n    - request -> m",
+        "anager\n    - manager -> finance\n    - finance ->",
+        " booked\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 110
+    },
+    {
+      "chunks": [
+        "- id: travel-detail\n  title: Travel approval in ",
+        "two halves\n  nodes:\n    request: { shape: ellips",
+        "e, label: Request, tone: accent, alt: Request st",
+        "ep }\n    booked: { shape: rounded-rect, label: B",
+        "ooked, alt: Booked step }\n  edges:\n    - request",
+        " -> booked\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 63
+    }
+  ]
+}

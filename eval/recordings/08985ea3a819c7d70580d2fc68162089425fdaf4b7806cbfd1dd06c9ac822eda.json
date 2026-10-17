@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Incident response\",\"screens\":[{\"id\":\"i",
+        "ncident-overview\",\"title\":\"Incident response at ",
+        "a glance\",\"intent\":\"the steps in order\"},{\"id\":\"",
+        "incident-detail\",\"title\":\"Incident response in t",
+        "wo halves\",\"intent\":\"the first and the last two ",
+        "steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 63
+    },
+    {
+      "chunks": [
+        "- id: incident-overview\n  title: Incident respon",
+        "se at a glance\n  nodes:\n    alert-fires: { shape",
+        ": ellipse, label: Alert fires, tone: accent, alt",
+        ": Alert fires step }\n    triage: { shape: rounde",
+        "d-rect, label: Triage, alt: Triage step }\n    mi",
+        "tigate: { shape: rounded-rect, label: Mitigate, ",
+        "alt: Mitigate step }\n    postmortem: { shape: el",
+        "lipse, label: Postmortem, alt: Postmortem step }",
+        "\n  edges:\n    - alert-fires -> triage\n    - tria",
+        "ge -> mitigate\n    - mitigate -> postmortem\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 119
+    },
+    {
+      "chunks": [
+        "- id: incident-detail\n  title: Incident response",
+        " in two halves\n  nodes:\n    alert-fires: { shape",
+        ": ellipse, label: Alert fires, tone: accent, alt",
+        ": Alert fires step }\n    postmortem: { shape: ro",
+        "unded-rect, label: Postmortem, alt: Postmortem s",
+        "tep }\n  edges:\n    - alert-fires -> postmortem\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 72
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Checkout\",\"screens\":[{\"id\":\"checkout-o",
+        "verview\",\"title\":\"Checkout at a glance\",\"intent\"",
+        ":\"the steps in order\"},{\"id\":\"checkout-detail\",\"",
+        "title\":\"Checkout in two halves\",\"intent\":\"the fi",
+        "rst and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 56
+    },
+    {
+      "chunks": [
+        "- id: checkout-overview\n  title: Checkout at a g",
+        "lance\n  nodes:\n    cart: { shape: ellipse, label",
+        ": Cart, tone: accent, alt: Cart step }\n    addre",
+        "ss: { shape: rounded-rect, label: Address, alt: ",
+        "Address step }\n    payment: { shape: rounded-rec",
+        "t, label: Payment, alt: Payment step }\n    confi",
+        "rmation: { shape: ellipse, label: Confirmation, ",
+        "alt: Confirmation step }\n  edges:\n    - cart -> ",
+        "address\n    - address -> payment\n    - payment -",
+        "> confirmation\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 112
+    },
+    {
+      "chunks": [
+        "- id: checkout-detail\n  title: Checkout in two h",
+        "alves\n  nodes:\n    cart: { shape: ellipse, label",
+        ": Cart, tone: accent, alt: Cart step }\n    confi",
+        "rmation: { shape: rounded-rect, label: Confirmat",
+        "ion, alt: Confirmation step }\n  edges:\n    - car",
+        "t -> confirmation\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 65
+    }
+  ]
+}

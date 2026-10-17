@@ -72,6 +72,10 @@ export { buildCatalog, type Catalog, type CatalogEntry, type CatalogOptions, typ
 export { CHEAT_SHEET } from './catalog/cheatsheet.js';
 export { type CatalogFormat, formatCatalog } from './catalog/format.js';
 export { catalogJsonSchema } from './catalog/json-schema.js';
+export { type EvalCase, type EvalExpect, type EvalInputs, evalCaseSchema, type RecordedRequest, type Recording, recordingSchema } from './eval/case.js';
+export { type Replay, replayClient } from './eval/replay.js';
+export { type CaseDeps, type CaseResult, runCase } from './eval/run-case.js';
+export { type Scorecard, scorecard, scorecardJson, scorecardMarkdown } from './eval/scorecard.js';
 export { CORE_LINT_RULES, lint, registerLintRules } from './lint/lint.js';
 export type { LintContext, LintFinding, LintRegistry, LintReport, LintRule, MeasureText, TextSize } from './lint/types.js';
 export { APPLY_PATCH_COMMAND_ID, type AppliedPatch, applyPatchCommand, registerApplyPatchCommand } from './patch/apply.js';

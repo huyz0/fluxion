@@ -1,0 +1,11 @@
+{
+  "id": "gen-auth",
+  "mode": "generate",
+  "prompt": "A two-screen deck about sign in flow: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Enter email"],
+    "minLint": 80
+  }
+}

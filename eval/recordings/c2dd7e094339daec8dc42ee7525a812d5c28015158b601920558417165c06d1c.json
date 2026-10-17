@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Product launch\",\"screens\":[{\"id\":\"laun",
+        "ch-overview\",\"title\":\"Product launch at a glance",
+        "\",\"intent\":\"the steps in order\"},{\"id\":\"launch-d",
+        "etail\",\"title\":\"Product launch in two halves\",\"i",
+        "ntent\":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 59
+    },
+    {
+      "chunks": [
+        "- id: launch-overview\n  title: Product launch at",
+        " a glance\n  nodes:\n    brief: { shape: ellipse, ",
+        "label: Brief, tone: accent, alt: Brief step }\n  ",
+        "  build: { shape: rounded-rect, label: Build, al",
+        "t: Build step }\n    beta: { shape: rounded-rect,",
+        " label: Beta, alt: Beta step }\n    launch: { sha",
+        "pe: ellipse, label: Launch, alt: Launch step }\n ",
+        " edges:\n    - brief -> build\n    - build -> beta",
+        "\n    - beta -> launch\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 102
+    },
+    {
+      "chunks": [
+        "- id: launch-detail\n  title: Product launch in t",
+        "wo halves\n  nodes:\n    brief: { shape: ellipse, ",
+        "label: Brief, tone: accent, alt: Brief step }\n  ",
+        "  launch: { shape: rounded-rect, label: Launch, ",
+        "alt: Launch step }\n  edges:\n    - brief -> launc",
+        "h\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 61
+    }
+  ]
+}

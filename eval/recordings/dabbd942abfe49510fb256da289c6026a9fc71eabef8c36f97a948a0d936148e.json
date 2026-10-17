@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Order fulfilment\",\"screens\":[{\"id\":\"or",
+        "ders-overview\",\"title\":\"Order fulfilment at a gl",
+        "ance\",\"intent\":\"the steps in order\"},{\"id\":\"orde",
+        "rs-detail\",\"title\":\"Order fulfilment in two halv",
+        "es\",\"intent\":\"the first and the last two steps\"}",
+        "]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 61
+    },
+    {
+      "chunks": [
+        "- id: orders-overview\n  title: Order fulfilment ",
+        "at a glance\n  nodes:\n    order-placed: { shape: ",
+        "rectangle, label: Order placed, tone: accent, al",
+        "t: Order placed step }\n    picked: { shape: roun",
+        "ded-rect, label: Picked, alt: Picked step }\n    ",
+        "packed: { shape: rounded-rect, label: Packed, al",
+        "t: Packed step }\n    delivered: { shape: ellipse",
+        ", label: Delivered, alt: Delivered step }\n  edge",
+        "s:\n    - order-placed -> picked\n    - picked -> ",
+        "packed\n    - packed -> delivered\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 117
+    },
+    {
+      "chunks": [
+        "- id: orders-overview\n  title: Order fulfilment ",
+        "at a glance\n  nodes:\n    order-placed: { shape: ",
+        "ellipse, label: Order placed, tone: accent, alt:",
+        " Order placed step }\n    picked: { shape: rounde",
+        "d-rect, label: Picked, alt: Picked step }\n    pa",
+        "cked: { shape: rounded-rect, label: Packed, alt:",
+        " Packed step }\n    delivered: { shape: ellipse, ",
+        "label: Delivered, alt: Delivered step }\n  edges:",
+        "\n    - order-placed -> picked\n    - picked -> pa",
+        "cked\n    - packed -> delivered\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 116
+    },
+    {
+      "chunks": [
+        "- id: orders-detail\n  title: Order fulfilment in",
+        " two halves\n  nodes:\n    order-placed: { shape: ",
+        "ellipse, label: Order placed, tone: accent, alt:",
+        " Order placed step }\n    delivered: { shape: rou",
+        "nded-rect, label: Delivered, alt: Delivered step",
+        " }\n  edges:\n    - order-placed -> delivered\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 71
+    }
+  ]
+}

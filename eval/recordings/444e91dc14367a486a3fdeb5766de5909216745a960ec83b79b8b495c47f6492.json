@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Data pipeline\",\"screens\":[{\"id\":\"etl-o",
+        "verview\",\"title\":\"Data pipeline at a glance\",\"in",
+        "tent\":\"the steps in order\"},{\"id\":\"etl-detail\",\"",
+        "title\":\"Data pipeline in two halves\",\"intent\":\"t",
+        "he first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 57
+    },
+    {
+      "chunks": [
+        "- id: etl-overview\n  title: Data pipeline at a g",
+        "lance\n  nodes:\n    extract: { shape: ellipse, la",
+        "bel: Extract, tone: accent, alt: Extract step }\n",
+        "    clean: { shape: rounded-rect, label: Clean, ",
+        "alt: Clean step }\n    load: { shape: rounded-rec",
+        "t, label: Load, alt: Load step }\n    report: { s",
+        "hape: ellipse, label: Report, alt: Report step }",
+        "\n  edges:\n    - extract -> clean\n    - clean -> ",
+        "load\n    - load -> report\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 103
+    },
+    {
+      "chunks": [
+        "- id: etl-detail\n  title: Data pipeline in two h",
+        "alves\n  nodes:\n    extract: { shape: ellipse, la",
+        "bel: Extract, tone: accent, alt: Extract step }\n",
+        "    report: { shape: rounded-rect, label: Report",
+        ", alt: Report step }\n  edges:\n    - extract -> r",
+        "eport\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 62
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": ["{\"flux\":1,\"ops\":[{\"op\":\"setLayout\",\"scope\":\"main", "\",\"layout\":{\"type\":\"layered\",\"direction\":\"right\"", "}}]}"],
+      "tokensIn": 400,
+      "tokensOut": 25
+    }
+  ]
+}

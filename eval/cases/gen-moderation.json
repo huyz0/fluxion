@@ -1,0 +1,11 @@
+{
+  "id": "gen-moderation",
+  "mode": "generate",
+  "prompt": "A two-screen deck about content moderation: the steps, then the first and last.",
+  "expect": {
+    "screens": [2, 2],
+    "kinds": ["shape", "connector"],
+    "mustContain": ["Report"],
+    "minLint": 80
+  }
+}

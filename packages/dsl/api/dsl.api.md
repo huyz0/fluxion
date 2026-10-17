@@ -13,7 +13,7 @@ import { DiagnosticSeverity } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
-import { Scorecard } from '@fluxion/layout';
+import { Scorecard as Scorecard_2 } from '@fluxion/layout';
 import { SyncHash128 } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { z } from 'zod';
@@ -50,6 +50,29 @@ export function applyPatchCommand(registries: CoreRegistries): AnyCommand;
 
 // @public
 export function buildCatalog(registries: CoreRegistries, options?: CatalogOptions): CatalogResult;
+
+// @public
+export type CaseDeps = {
+    readonly registries: CoreRegistries;
+    readonly system: string;
+    readonly lintRegistry: LintRegistry;
+    readonly recording?: Recording | undefined;
+    readonly countTokens?: ((text: string) => number) | undefined;
+};
+
+// @public
+export type CaseResult = {
+    readonly id: string;
+    readonly mode: EvalCase["mode"];
+    readonly attempts: number | null;
+    readonly pass: boolean;
+    readonly failures: readonly string[];
+    readonly lint: number | null;
+    readonly altCoveragePct: number | null;
+    readonly dslTokenRatio: number | null;
+    readonly tokensIn: number;
+    readonly tokensOut: number;
+};
 
 // @public
 export type Catalog = {
@@ -225,6 +248,31 @@ export type EdgeSpec = {
 
 // @public
 export function editDistance(a: string, b: string): number;
+
+// @public
+export type EvalCase = {
+    readonly id: string;
+    readonly mode: "generate" | "edit" | "repair";
+    readonly prompt: string;
+    readonly inputs?: EvalInputs | undefined;
+    readonly expect: EvalExpect;
+};
+
+// @public
+export const evalCaseSchema: z.ZodType<EvalCase>;
+
+// @public
+export type EvalExpect = {
+    readonly screens?: readonly [number, number] | undefined;
+    readonly kinds?: readonly string[] | undefined;
+    readonly mustContain?: readonly string[] | undefined;
+    readonly minLint?: number | undefined;
+};
+
+// @public
+export type EvalInputs = {
+    readonly document: string;
+};
 
 // @public
 export function expandFlux(ast: FluxAst, resolution: Resolution, options?: ExpandOptions): ExpandResult;
@@ -722,6 +770,24 @@ export type ReadResult = {
 };
 
 // @public
+export type RecordedRequest = {
+    readonly chunks: readonly string[];
+    readonly tokensIn: number;
+    readonly tokensOut: number;
+};
+
+// @public
+export type Recording = {
+    readonly version: 1;
+    readonly source: "live" | "scripted";
+    readonly model: string;
+    readonly requests: readonly RecordedRequest[];
+};
+
+// @public
+export const recordingSchema: z.ZodType<Recording>;
+
+// @public
 export type RefKind = "screen" | "element" | "group" | "connector";
 
 // @public
@@ -743,6 +809,16 @@ export type RepairEvent = {
     readonly round: number;
     readonly diagnostics: readonly string[];
 };
+
+// @public
+export type Replay = {
+    readonly client: LlmClient;
+    readonly used: () => number;
+    readonly exhausted: () => boolean;
+};
+
+// @public
+export function replayClient(recording: Recording): Replay;
 
 // @public
 export type Resolution = {
@@ -823,6 +899,34 @@ export type ResolveResult = {
 };
 
 // @public
+export function runCase(c: EvalCase, deps: CaseDeps): Promise<CaseResult>;
+
+// @public
+export type Scorecard = {
+    readonly cases: number;
+    readonly oneShotValidPct: number;
+    readonly afterRepairValidPct: number;
+    readonly afterTwoRepairsValidPct: number;
+    readonly repairRounds: number;
+    readonly lintMean: number;
+    readonly expectPassPct: number;
+    readonly dslTokenRatio: number | null;
+    readonly altTextCoveragePct: number | null;
+    readonly tokensIn: number;
+    readonly tokensOut: number;
+    readonly failing: readonly string[];
+};
+
+// @public
+export function scorecard(results: readonly CaseResult[]): Scorecard;
+
+// @public
+export function scorecardJson(card: Scorecard, results: readonly CaseResult[]): string;
+
+// @public
+export function scorecardMarkdown(card: Scorecard): string;
+
+// @public
 export type ScreenAst = {
     readonly id: Located<string>;
     readonly title?: Located<string>;
@@ -860,7 +964,7 @@ export type ScreenOutcome = {
 };
 
 // @public
-export type ScreenScore = Scorecard & {
+export type ScreenScore = Scorecard_2 & {
     readonly screen: string;
 };
 

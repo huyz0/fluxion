@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Budget cycle\",\"screens\":[{\"id\":\"budget",
+        "-overview\",\"title\":\"Budget cycle at a glance\",\"i",
+        "ntent\":\"the steps in order\"},{\"id\":\"budget-detai",
+        "l\",\"title\":\"Budget cycle in two halves\",\"intent\"",
+        ":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 58
+    },
+    {
+      "chunks": [
+        "- id: budget-overview\n  title: Budget cycle at a",
+        " glance\n  nodes:\n    forecast: { shape: ellipse,",
+        " label: Forecast, tone: accent, alt: Forecast st",
+        "ep }\n    allocate: { shape: rounded-rect, label:",
+        " Allocate, alt: Allocate step }\n    spend: { sha",
+        "pe: rounded-rect, label: Spend, alt: Spend step ",
+        "}\n    audit: { shape: ellipse, label: Audit, alt",
+        ": Audit step }\n  edges:\n    - forecast -> alloca",
+        "te\n    - allocate -> spend\n    - spend -> audit\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 108
+    },
+    {
+      "chunks": [
+        "- id: budget-detail\n  title: Budget cycle in two",
+        " halves\n  nodes:\n    forecast: { shape: ellipse,",
+        " label: Forecast, tone: accent, alt: Forecast st",
+        "ep }\n    audit: { shape: rounded-rect, label: Au",
+        "dit, alt: Audit step }\n  edges:\n    - forecast -",
+        "> audit\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 62
+    }
+  ]
+}

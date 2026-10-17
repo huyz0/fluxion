@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source": "scripted",
+  "model": "scripted-v1",
+  "requests": [
+    {
+      "chunks": [
+        "{\"title\":\"Support desk\",\"screens\":[{\"id\":\"suppor",
+        "t-overview\",\"title\":\"Support desk at a glance\",\"",
+        "intent\":\"the steps in order\"},{\"id\":\"support-det",
+        "ail\",\"title\":\"Support desk in two halves\",\"inten",
+        "t\":\"the first and the last two steps\"}]}"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 58
+    },
+    {
+      "chunks": [
+        "- id: support-overview\n  title: Support desk at ",
+        "a glance\n  nodes:\n    ticket-opened: { shape: el",
+        "lipse, label: Ticket opened, tone: accent, alt: ",
+        "Ticket opened step }\n    categorise: { shape: ro",
+        "unded-rect, label: Categorise, alt: Categorise s",
+        "tep }\n    resolve: { shape: rounded-rect, label:",
+        " Resolve, alt: Resolve step }\n    survey: { shap",
+        "e: ellipse, label: Survey, alt: Survey step }\n  ",
+        "edges:\n    - ticket-opened -> categorise\n    - c",
+        "ategorise -> resolve\n    - resolve -> survey\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 120
+    },
+    {
+      "chunks": [
+        "- id: support-detail\n  title: Support desk in tw",
+        "o halves\n  nodes:\n    ticket-opened: { shape: el",
+        "lipse, label: Ticket opened, tone: accent, alt: ",
+        "Ticket opened step }\n    survey: { shape: rounde",
+        "d-rect, label: Survey, alt: Survey step }\n  edge",
+        "s:\n    - ticket-opened -> survey\n"
+      ],
+      "tokensIn": 400,
+      "tokensOut": 69
+    }
+  ]
+}
