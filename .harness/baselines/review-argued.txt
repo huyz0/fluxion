@@ -100,3 +100,5 @@ M13 cp1 F10: the checkpoint ran late (after 30 rows); a process lapse, corrected
 M14 final F1: the CLI-result leg checks test titles; the e2e helper validates replies against the Zod schemas that the snapshot tests pin to the committed JSON, so the chain holds; the leg label overstates what runs.
 M14 final F3: the `render` html path has no in-process test (the coverage sandbox lacks the built packages); the spawned e2e covers it.
 M14 final F4: bookkeeping, fixed in the closing commit (empty Commit cells, the Planned count).
+M15 final F7: process observations (no mid-milestone checkpoint across 25 rows); no gate can enforce checkpoint cadence, and the closing legs (CI evidence, verify, roadmap advance) run after the reopen rows.
+M15 final F8: the mutant spot check found no weak tests; no defect.

@@ -1,0 +1,90 @@
+{
+  "milestone": "M15",
+  "range": "3b194db..adcc028",
+  "reviewer": "fresh milestone-reviewer subagent (not the driver)",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "summary": "pnpm eval --live is not implemented: scripts/eval/run.mjs exits 1 with 'eval --live needs the provider adapters (M15.19)', and eval/README.md still says it 'arrives' with them, although M15.19 is done. Plan task 9 and row M15.14 both promise '--recorded / --live'. The row was marked done and no gate leg, Deferred row or backlog row records the drop. Without it, nothing can ever replace the scripted recordings with live ones."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "summary": "Gate honesty for NFR-AI-001/NFR-AI-004 and the R2 goal ('an LLM produces a valid 10-screen deck'): the scorecard leg reads eval/out/scorecard.json from 30 recordings written by scripts/eval/author.ts templates (source: scripted, model scripted-v1). One-shot 93.3 %, after-repair 100 %, lint mean 100 measure the pipeline's plumbing and the authored replies, not any model, so the thresholds can pass with no model evidence. author.ts says so itself; the exit checklist rows 3 and 9 and the gate leg labels do not. The only live-model evidence (nightly --live job, live-vs-recorded risk signal in the plan) does not exist because of F1."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "The AI panel cannot be used with a real provider: no key-entry UI exists (disclosed), so FR-AI-007's BYO key is reachable only through test hooks; the OpenAI-compatible adapter has no base-URL setting; the fluxion.embedExternalAssets toggle has no UI (disclosed). The panel's 'Add a provider key' problem strings in client.ts are hard-coded English, not in locales/en/messages.json like the rest of the panel. The e2e specs pass via useRecordedReply, so the gate cannot see any of this."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "summary": "Gate leg 'CI workflow runs the CLI and MCP e2e tests on three OSes with Node 22 and 24' is a set of regexes over the YAML text (any file mentioning @fluxion/mcp, three OS names and a node-version list with 22 and 24 satisfies it), so the leg passes without proving the cli-mcp job runs the e2e directories. ci.yml is correct (job cli-mcp runs packages/cli/src/e2e and packages/mcp/src/e2e), but actionlint was never run and the leg 'CI green on three OSes' is only satisfied by check-ci-evidence at the final range."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "summary": "Exit checklist R2.md has weak or mislabelled evidence: row 5 cites NFR-AI-001 for the key-leak criterion (it is NFR-SEC-004); row 4 cites FR-AI-009 for the panel (it is FR-EDT-014); row 6 links to importer source files, not tests; the gate only counts rows with a link (>= 8) and never checks the links exist or the boxes are true. Row 10 argues no schema bump so no migration fixture was due, which departs from plan task 19 ('schema v1.1 migration + round-trip present') but is defensible because the chain 1.0-1.1-1.2 already exists. Row 11 says the visual baselines were reviewed, but only asserts none changed."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "summary": "Carried minors accepted by the driver need homes: M15.18 numeric / trailing-dot hosts bypass the private-host check and fetch follows redirects (an SSRF-shaped hole in a security-labelled feature, FR-AST-006 / NFR-SEC); Mermaid '&' lists and numeric ids are unsupported; FR-MCP-003 live link is M25's per the plan. None has a row in a receiving milestone or a Deferred roadmap entry yet."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "summary": "Process: the M15 range is 25 rows with no mid-milestone checkpoint review (plan asks ~every 8 commits); two fix-up commits (M15.22 matrix key rename, M15.10 test move) show the gate named files or keys before the rows existed, which the backlog header says the M14 lesson was meant to prevent. Open items outside the milestone: m15-complete also needs the three-OS CI evidence at the review range, the pnpm verify leg, and the roadmap advance; the cold-setup job overran its 600 s budget by about 1 % (human decision). .harness/reviews/digest.log is modified in the working tree."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "summary": "Positive spot checks: lint.test alt/reading-order rules have positive and negative fixtures and the scorecard counts failing cases (a mutant that returns valid for a broken screen drops one-shot below 90 and fails the leg); the roots test asserts nothing is written outside the roots; the key-leak e2e saves real files and seeds prefixed and unprefixed keys, and adapters.test includes a 401 body echoing the key. Layering holds: generation, eval and import live in pure @fluxion/dsl with ports; the node-only code is in @fluxion/mcp and @fluxion/cli; the new runtime deps (MCP SDK, mdast-util-from-markdown) went through ADR-0038 / ADR-0040 and licence checks."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "reason": "Add row M15.26: implement pnpm eval --live over the studio-independent LlmClient adapters (or move the adapters' fetch client to a shared module), writing source: live recordings, with a test using mocked fetch; fix eval/README.md and run.mjs messages. If the human decides it waits for a keyed environment, record it as a roadmap Deferred row instead and cite it in M15.14."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "reason": "Add row M15.27: label the scorecard source in scorecard.json/md ('scripted' vs 'live') and make the gate leg and exit rows 3 and 9 say the numbers are plumbing-only until a live run exists; add a Deferred roadmap row 'live eval baseline and live MCP transcripts (Claude Code and Codex)' with an owner milestone. Do not claim NFR-AI-001 satisfied against a model."
+    },
+    {
+      "finding": "F3",
+      "disposition": "hand off",
+      "reason": "Key-entry UI, OpenAI-compatible base URL, embedExternalAssets toggle and i18n of the client.ts strings go to the next studio-settings milestone as a row plus a Deferred roadmap entry; until then the R2 exit must not be presented as end-user usable AI."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "reason": "Fold into M15.26: parse ci.yml as YAML in the leg and assert the cli-mcp job's matrix and run step; run actionlint when available (CI) or record that it was not run."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "reason": "Fold into M15.27: correct the requirement IDs in rows 4 and 5, link tests in row 6, and make the gate check that each evidence link resolves to an existing file."
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "reason": "Add row M15.28 for the M15.18 host check (reject numeric, trailing-dot and IPv6-mapped hosts; do not follow redirects without re-checking) since it is a security control that does not do what its test names claim; hand off the Mermaid '&' lists and numeric ids to M18 (import) and keep FR-MCP-003 in M25 with a Deferred row."
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "reason": "Process observations; no gate can enforce checkpoint cadence. The fix-up commits are green and small. Remaining closing legs are CI evidence, verify and the roadmap advance, to be satisfied after the rows above."
+    },
+    {
+      "finding": "F8",
+      "disposition": "argue",
+      "reason": "Positive result of the mutant spot check, no defect."
+    }
+  ],
+  "planDelta": "Q1 coherence: one design (cli/ops -> MCP tools with a shared reply envelope; dsl generate/eval/import behind ports; studio adapters behind LlmClient); no duplicate helpers found. Q2 spec fidelity: tasks 1-19 map to done rows, but --live eval (plan task 9) was dropped silently (F1), FR-MCP-003 is correctly out of scope, and the headline R2 goal (a real LLM builds a valid 10-screen deck over MCP) is evidenced only by scripted recordings (F2). Q3 standards: changesets, api reports, traceability and ADRs were kept to the end; the key-entry strings in client.ts skip i18n (F3). Q4 gate honesty: m15-complete can reach green on scripted numbers, a regex-only CI leg and link-count-only exit checklist while the milestone's live-model goal and --live are unmet; reopen rows M15.26 to M15.28 close that; the gate also still waits on verify, three-OS CI evidence and the roadmap advance. Q5 architecture: layering respected; new deps (MCP SDK, mdast) have ADRs; the M15.18 host check is the one security gap. Q6 plan health: 20 planned tasks became 25 rows (1.25x) via splits of read/write/render and ADR rows, within 1.5x; three reopen rows would make 28 (1.4x), still within bound."
+}
