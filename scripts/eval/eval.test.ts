@@ -12,6 +12,8 @@ import { authorAll } from './author.js';
 import { CASES, loadCases, loadRecording, OUT, RECORDINGS, recordingKey, SCRIPTED_MODEL, systemPrompt, writeCase } from './common.js';
 
 const system = systemPrompt();
+/** Who wrote the replies the last run replayed: `scripted` means the numbers test the pipeline, not a model. */
+const sources = new Set<string>();
 
 async function runAll(): Promise<CaseResult[]> {
   const r = registries();
@@ -19,6 +21,7 @@ async function runAll(): Promise<CaseResult[]> {
   const results: CaseResult[] = [];
   for (const c of loadCases()) {
     const recording = loadRecording(recordingKey(c, system, SCRIPTED_MODEL));
+    if (recording) sources.add(recording.source);
     results.push(await runCase(c, { registries: r, system, lintRegistry: r.lintRules, recording, countTokens }));
   }
   return results;
@@ -40,8 +43,12 @@ describe('the recorded eval (FR-AI-009, ADR-0039)', () => {
     const second = await runAll();
     expect(scorecardJson(scorecard(second), second)).toBe(json);
     mkdirSync(OUT, { recursive: true });
-    writeFileSync(join(OUT, 'scorecard.json'), json);
-    writeFileSync(join(OUT, 'scorecard.md'), scorecardMarkdown(card));
+    const source = [...sources].sort().join('+');
+    writeFileSync(join(OUT, 'scorecard.json'), `${JSON.stringify({ source, ...JSON.parse(json) }, null, 2)}\n`);
+    writeFileSync(
+      join(OUT, 'scorecard.md'),
+      `Source: ${source}${source === 'scripted' ? ' (replayed scripted recordings: this scores the pipeline, not a model)' : ''}\n\n${scorecardMarkdown(card)}`,
+    );
     expect(card.failing, `failing cases: ${JSON.stringify(first.filter((r) => !r.pass))}`).toEqual([]);
   }, 120_000);
 

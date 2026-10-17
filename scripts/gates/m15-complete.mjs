@@ -161,7 +161,13 @@ leg('the R2 exit checklist lists every criterion with evidence', () => {
   const rows = readFileSync(repoPath('docs/milestones/exits/R2.md'), 'utf8')
     .split(/\r?\n/)
     .filter((l) => /^\|.*\]\(.+\)/.test(l));
-  return rows.length >= 8 || `only ${rows.length} checklist rows with an evidence link (< 8)`;
+  if (rows.length < 8) return `only ${rows.length} checklist rows with an evidence link (< 8)`;
+  const dead = rows
+    .flatMap((l) => [...l.matchAll(/\]\(([^)#]+)\)/g)].map((m) => m[1]))
+    .filter((href) => !/^[a-z]+:/.test(href) && !exists(join('docs/milestones/exits', href)));
+  const unlabelled = rows.filter((l) => /^\| (3|9) /.test(l) && !/not a model|not from a live model/.test(l));
+  if (unlabelled.length > 0) return 'exit rows 3 and 9 must say the scripted numbers test the pipeline, not a model';
+  return dead.length === 0 || `evidence links that resolve to nothing: ${dead.join(', ')}`;
 });
 
 // ── coverage, changesets, quarantines ──────────────────────────────────────────────────────────────
