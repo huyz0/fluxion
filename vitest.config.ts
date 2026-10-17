@@ -57,7 +57,12 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: 'node', environment: 'node', include: [`${SRC}/*.test.{ts,tsx}`], exclude: [`${SRC}/*.browser.test.{ts,tsx}`] },
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: [`${SRC}/*.test.{ts,tsx}`, 'scripts/examples/*.test.ts'],
+          exclude: [`${SRC}/*.browser.test.{ts,tsx}`],
+        },
       },
       {
         extends: true,

@@ -103,6 +103,15 @@ jobs:
           path: shapes-gallery.html
           if-no-files-found: error
           retention-days: 14
+      # the R2 demo deck compiled from FluxScript and rendered by the built CLI (M15.23, FR-MCP-001)
+      - run: node packages/cli/dist/bin.js compile examples/r2-ai-deck.flux.yaml -o r2-ai-deck.flux.json
+      - run: node packages/cli/dist/bin.js render r2-ai-deck.flux.json -o r2-ai-deck.html
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: r2-ai-deck-demo
+          path: r2-ai-deck.html
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist

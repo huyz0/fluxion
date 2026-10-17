@@ -1,0 +1,113 @@
+flux: 1
+title: How an AI agent builds a Fluxion deck
+uses: [basic]
+screens:
+  - id: cover
+    title: An agent builds a deck
+    layout: { type: stack, direction: down, gap: 40, align: center }
+    nodes:
+      headline: { text: "Describe it in words.\nFluxion draws it.", style: { font.size: font.size.xl } }
+      sub: { shape: rounded-rect, label: One file you can open anywhere, tone: accent }
+  - id: loop
+    title: The authoring loop
+    layout: { type: layered, direction: right, spacing: comfortable }
+    nodes:
+      write: { shape: rounded-rect, label: Write FluxScript }
+      compile: { shape: rounded-rect, label: Compile }
+      lint: { shape: rounded-rect, label: Lint }
+      fix: { shape: rounded-rect, label: Patch the findings, tone: warning }
+      done: { shape: ellipse, label: Ship the deck, tone: success }
+    edges:
+      - write -> compile
+      - compile -> lint
+      - lint -> fix: findings
+      - fix -> lint
+      - lint -> done: clean
+    notes: Each step prints one JSON reply, and the exit code says what to do next.
+  - id: tools
+    title: Two ways in
+    layout: { type: stack, direction: right, gap: 56, align: center }
+    nodes:
+      cli: { shape: rounded-rect, label: "fluxion CLI\ncompile, lint, patch, render" }
+      mcp: { shape: rounded-rect, label: "MCP server\nthe same tools for an agent", tone: accent }
+    edges:
+      - cli -> mcp: same engine
+  - id: architecture
+    title: How the pieces fit
+    layout: { type: layered, direction: down, spacing: comfortable }
+    nodes:
+      agent: { shape: ellipse, label: Agent, tone: accent }
+      gateway: { shape: rounded-rect, label: MCP server }
+      dsl: { shape: rounded-rect, label: FluxScript compiler }
+      core: { shape: rounded-rect, label: Document store }
+      render: { shape: rounded-rect, label: Renderer }
+      page: { shape: document, label: .flux.html }
+    edges:
+      - agent -> gateway
+      - gateway -> dsl
+      - dsl -> core
+      - core -> render
+      - render -> page
+  - id: patch
+    title: Edits are patches
+    layout: { type: layered, direction: right, spacing: comfortable }
+    nodes:
+      ask: { shape: rounded-rect, label: Ask for a change }
+      patch: { shape: rounded-rect, label: AI patch }
+      fork: { shape: rounded-rect, label: Preview on a fork }
+      apply: { shape: rounded-rect, label: Apply, tone: success }
+      undo: { shape: ellipse, label: One undo }
+    edges:
+      - ask -> patch
+      - patch -> fork
+      - fork -> apply: accept
+      - apply -> undo
+  - id: lint-rules
+    title: What the linter checks
+    layout: { type: grid, columns: 3, gap: 40 }
+    nodes:
+      overlap: { shape: rounded-rect, label: Overlapping boxes }
+      overflow: { shape: rounded-rect, label: Text that overflows }
+      contrast: { shape: rounded-rect, label: Low contrast }
+      alt: { shape: rounded-rect, label: Missing alt text }
+      crossing: { shape: rounded-rect, label: Crossing connectors }
+      density: { shape: rounded-rect, label: Crowded screens }
+  - id: safety
+    title: Keys stay on your device
+    layout: { type: layered, direction: right, spacing: comfortable }
+    nodes:
+      key: { shape: ellipse, label: Provider key }
+      idb: { shape: cylinder, label: Browser storage }
+      call: { shape: rounded-rect, label: Request to the provider }
+      saved: { shape: document, label: Saved file, tone: warning }
+    edges:
+      - key -> idb: kept here
+      - idb -> call: read once
+      - key ~> saved: never
+  - id: import
+    title: Bring what you have
+    layout: { type: layered, direction: right, spacing: comfortable }
+    nodes:
+      mermaid: { shape: rounded-rect, label: Mermaid flowchart }
+      markdown: { shape: rounded-rect, label: Markdown outline }
+      flux: { shape: rounded-rect, label: FluxScript, tone: accent }
+      deck: { shape: document, label: Deck }
+    edges:
+      - mermaid -> flux
+      - markdown -> flux
+      - flux -> deck
+  - id: export
+    title: Take it anywhere
+    layout: { type: grid, columns: 2, gap: 48 }
+    nodes:
+      html: { shape: rounded-rect, label: ".flux.html\nopens offline" }
+      png: { shape: rounded-rect, label: "PNG per screen" }
+      json: { shape: rounded-rect, label: ".flux.json\nfor diffs" }
+      mmd: { shape: rounded-rect, label: Mermaid text }
+  - id: next
+    title: Try it
+    layout: { type: stack, direction: down, gap: 32, align: center }
+    nodes:
+      step1: { shape: rounded-rect, label: "1. Start the MCP server" }
+      step2: { shape: rounded-rect, label: "2. Ask your agent for a deck" }
+      step3: { shape: rounded-rect, label: "3. Open the .flux.html", tone: success }
