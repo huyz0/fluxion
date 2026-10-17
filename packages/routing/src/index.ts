@@ -6,6 +6,7 @@ export { type ConnectorRoute, type RouteContext, routeConnector } from './connec
 export { curvedRouter, polylineRouter } from './curved.js';
 export { labelPosition, type RoutePoint, routePoint } from './labels.js';
 export { buildGrid, type Grid, type GridInput } from './orthogonal/grid.js';
+export { type RouteSegment, type SearchInput, searchRoute } from './orthogonal/search.js';
 export { ORTHOGONAL_STUB, orthogonalRouter } from './orthogonal.js';
 export { type RouteEnd, type RouteRequest, type Router, straightRouter } from './router.js';
 export { type TrimmedRoute, trimRoute } from './trim.js';

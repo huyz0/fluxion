@@ -117,6 +117,30 @@ export type RouteRequest = {
 };
 
 // @public
+export type RouteSegment = {
+    readonly from: Vec2;
+    readonly to: Vec2;
+};
+
+// @public
+export type SearchInput = {
+    readonly grid: Grid;
+    readonly obstacles: readonly Box[];
+    readonly margin: number;
+    readonly start: Vec2;
+    readonly startDir?: Vec2 | undefined;
+    readonly goal: Vec2;
+    readonly goalDir?: Vec2 | undefined;
+    readonly bendCost?: number | undefined;
+    readonly crossingCost?: number | undefined;
+    readonly existing?: readonly RouteSegment[] | undefined;
+    readonly maxExpansions?: number | undefined;
+};
+
+// @public
+export function searchRoute(input: SearchInput): Vec2[] | undefined;
+
+// @public
 export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefined, element?: {
     readonly params?: {
         readonly [key: string]: unknown;
