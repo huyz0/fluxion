@@ -139,7 +139,30 @@ export type JumpRoute = {
 export type JumpStyle = "arc" | "gap" | "none";
 
 // @public
+export type LabelPlacement = {
+    readonly id: string;
+    readonly t: number;
+    readonly center: Vec2;
+    readonly box: Box;
+    readonly overlap: number;
+};
+
+// @public
 export function labelPosition(commands: readonly PathCommand[], t: number, offset?: Vec2): Vec2;
+
+// @public
+export type LabelRequest = {
+    readonly id: string;
+    readonly commands: readonly PathCommand[];
+    readonly size: LabelSize;
+    readonly preferred?: number | undefined;
+};
+
+// @public
+export type LabelSize = {
+    readonly w: number;
+    readonly h: number;
+};
 
 // @public
 export function nudge(routes: readonly NudgeRoute[], spacing: number): Vec2[][];
@@ -165,6 +188,9 @@ export type ParallelEdge = {
 
 // @public
 export function parallelOffsets(edges: readonly ParallelEdge[], spacing: number): Map<string, number>;
+
+// @public
+export function placeLabels(labels: readonly LabelRequest[], shapes: readonly Box[]): LabelPlacement[];
 
 // @public
 export const polylineRouter: Router;

@@ -7,6 +7,7 @@ export { type ConnectorRoute, type RouteContext, routeConnector } from './connec
 export { curvedRouter, polylineRouter } from './curved.js';
 export { distributeSlots, type Slot, type SlotEnd } from './distribution.js';
 export { createJumpCache, findJumps, hopPath, type Jump, type JumpMap, type JumpRoute, type JumpStyle } from './jumps.js';
+export { type LabelPlacement, type LabelRequest, type LabelSize, placeLabels } from './label-placement.js';
 export { labelPosition, type RoutePoint, routePoint } from './labels.js';
 export { buildGrid, type Grid, type GridInput } from './orthogonal/grid.js';
 export { type NudgeRoute, nudge } from './orthogonal/nudge.js';
