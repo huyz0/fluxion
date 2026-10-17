@@ -347,6 +347,9 @@ importers:
       '@fluxion/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@fluxion/dsl':
+        specifier: workspace:*
+        version: link:../../packages/dsl
       '@fluxion/editor':
         specifier: workspace:*
         version: link:../../packages/editor

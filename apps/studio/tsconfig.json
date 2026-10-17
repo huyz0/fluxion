@@ -27,6 +27,9 @@
       "path": "../../packages/layout"
     },
     {
+      "path": "../../packages/dsl"
+    },
+    {
       "path": "../../packages/schema"
     },
     {

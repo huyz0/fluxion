@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@fluxion/core": "workspace:*",
+    "@fluxion/dsl": "workspace:*",
     "@fluxion/editor": "workspace:*",
     "@fluxion/format": "workspace:*",
     "@fluxion/layout": "workspace:*",
