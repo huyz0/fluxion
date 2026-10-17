@@ -6,6 +6,8 @@ import { type CaseResult, registerLintRules, runCase, scorecard, scorecardJson, 
 import { describe, expect, it } from 'vitest';
 import { countTokens } from '../../packages/dsl/src/__fixtures__/token-count.js';
 import { registries } from '../dsl/host-registries.js';
+// @ts-expect-error the gate thresholds are plain JavaScript
+import { t } from '../gates/thresholds.mjs';
 import { authorAll } from './author.js';
 import { CASES, loadCases, loadRecording, OUT, RECORDINGS, recordingKey, SCRIPTED_MODEL, systemPrompt, writeCase } from './common.js';
 
@@ -41,5 +43,10 @@ describe('the recorded eval (FR-AI-009, ADR-0039)', () => {
     writeFileSync(join(OUT, 'scorecard.json'), json);
     writeFileSync(join(OUT, 'scorecard.md'), scorecardMarkdown(card));
     expect(card.failing, `failing cases: ${JSON.stringify(first.filter((r) => !r.pass))}`).toEqual([]);
+  }, 120_000);
+
+  it('NFR-AI-004: the mean lint score over the eval set is at least AI_LINT_SCORE_MIN', async () => {
+    const results = await runAll();
+    expect(scorecard(results).lintMean).toBeGreaterThanOrEqual(t('AI_LINT_SCORE_MIN'));
   }, 120_000);
 });

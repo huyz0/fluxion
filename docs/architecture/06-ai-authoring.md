@@ -274,7 +274,7 @@ Resources (FR-MCP-002): `fluxion://guide/authoring`, `fluxion://guide/cheatsheet
 `fluxion://schema/document`, `fluxion://schema/patch`, `fluxion://catalog`,
 `fluxion://examples/{name}`. Prompts: `generate_deck`, `diagram_from_description`, `animate_screen`.
 
-**Live link (FR-MCP-003):** the studio opens a local WebSocket bridge after the user approves a
+**Live link (FR-MCP-003; not built as of M15):** the studio opens a local WebSocket bridge after the user approves a
 one-time pairing code. MCP tools then target the live document. Patches arrive as `ai.applyPatch`
 commands, so they appear immediately and are undoable. The bridge binds to `127.0.0.1` only.
 
