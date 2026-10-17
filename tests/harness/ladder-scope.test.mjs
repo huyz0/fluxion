@@ -123,6 +123,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'docs-consistency',
       'architecture',
       'bench-leg',
+      'ci-os-matrix',
       'diagnostics-doc',
       'format-spec',
       'fluxscript-diagnostics',

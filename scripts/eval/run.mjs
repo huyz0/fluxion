@@ -1,11 +1,11 @@
 // `pnpm eval --recorded | --live | --author` (ADR-0039). Recorded replays eval/recordings through the real pipeline and writes eval/out/scorecard.{json,md};
-// `--author` first rewrites the scripted cases; `--live` calls a provider and arrives with the adapters (M15.19).
+// `--author` first rewrites the scripted cases; `--live` is not built: it needs a provider key (roadmap Deferred, owner M33).
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
 const mode = process.argv[2] ?? '--recorded';
 if (mode === '--live') {
-  console.error('eval --live needs the provider adapters (M15.19); use --recorded');
+  console.error('eval --live is not built: it needs a provider key (docs/milestones/roadmap.md Deferred, owner M33); use --recorded');
   process.exit(2);
 }
 if (mode !== '--recorded' && mode !== '--author') {

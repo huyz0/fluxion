@@ -145,14 +145,13 @@ leg(
 );
 
 // ── CI matrix, the demo, the exit ──────────────────────────────────────────────────────────────────
-leg('the CI workflow runs the CLI and MCP e2e tests on ubuntu, windows and macos with Node 22 and 24 (NFR-PORT-004)', () => {
-  const wf = ['.github/workflows/ci.yml', '.github/workflows/gates.yml']
-    .filter(exists)
-    .map((f) => readFileSync(repoPath(f), 'utf8'))
-    .join('\n');
-  const need = [/ubuntu-latest/, /windows-latest/, /macos-latest/, /node-version:\s*\[[^\]]*22[^\]]*24|node-version:\s*\[[^\]]*24[^\]]*22/, /@fluxion\/mcp/];
-  return need.every((re) => re.test(wf)) || 'no OS x Node 22/24 matrix running the CLI and MCP e2e tests';
-});
+leg(
+  'the CI workflow, parsed as YAML, runs the CLI and MCP e2e tests on ubuntu, windows and macos with Node 22 and 24 and ci-ok waits for it (NFR-PORT-004)',
+  () => {
+    const r = run(process.execPath, ['--test', 'tests/harness/ci-os-matrix.test.mjs']);
+    return r.status === 0 || `ci-os-matrix.test.mjs failed: ${ok(r)}`;
+  },
+);
 leg('the R2 demo compiles, builds a .flux.html, renders every screen and scores at least AI_LINT_SCORE_MIN', () => {
   for (const f of ['examples/r2-ai-deck.flux.yaml', 'examples/r2-ai-deck.transcript.md']) if (!exists(f)) return `missing ${f}`;
   return vitestFile('scripts/examples/r2-demo.test.ts');

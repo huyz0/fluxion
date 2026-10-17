@@ -22,6 +22,7 @@ const SOURCE = /^(packages|packs|apps)\/[^/]+\/(src|bench|schemas)\//;
 export const SOURCE_HARNESS = [
   'architecture',
   'bench-leg',
+  'ci-os-matrix',
   'diagnostics-doc',
   // the format specification states numbers the loader and the writer hold (limits, stored extensions) and the schema version
   'format-spec',
