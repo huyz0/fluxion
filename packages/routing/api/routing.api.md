@@ -89,6 +89,12 @@ export const DEFAULT_ANCHORS: readonly AnchorDef[];
 export function distributeSlots(ends: readonly SlotEnd[]): Slot[];
 
 // @public
+export function fanOrthogonal(points: readonly Vec2[], offset: number, stub?: number): Vec2[];
+
+// @public
+export function fanWaypoint(from: Vec2, to: Vec2, offset: number): Vec2;
+
+// @public
 export type Grid = {
     readonly xs: readonly number[];
     readonly ys: readonly number[];
@@ -119,6 +125,16 @@ export const ORTHOGONAL_STUB = 20;
 
 // @public
 export const orthogonalRouter: Router;
+
+// @public
+export type ParallelEdge = {
+    readonly id: string;
+    readonly a: string;
+    readonly b: string;
+};
+
+// @public
+export function parallelOffsets(edges: readonly ParallelEdge[], spacing: number): Map<string, number>;
 
 // @public
 export const polylineRouter: Router;
