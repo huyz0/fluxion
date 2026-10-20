@@ -1880,3 +1880,7 @@ M16.18 (ce89f454): measured first. Pan and zoom of 2k/1k already ran at 60 fps, 
 ## 2026-10-20 M16.30 (claude, local Windows)
 
 M16.30 (75866f74): `HitIndex.covers` hides an anchor a shape painted above covers (outline, 3 px around, connectors and hidden elements skipped). Review r1 failed the drag perf test as flaky (the window held the drop and the lazy index build); it now waits for idle and measures only the moves (8/8 runs). Added M16.31 for the cold-setup time flake.
+
+## 2026-10-20 M16.20 (claude, local Windows)
+
+M16.20 (e8011282): schema 1.5, `route.tangents` and `route.jumps` (ADR-0168), curved router tangents, a tangent handle per route point, e2e `connectors.tangent.spec.ts`. Review r1 minors (tangents not rounded on save; a segment-made waypoint did not shift tangents) fixed; passed. Then blocked: main CI red on cold-setup over 600 s (7 of 12 runs) and windows verify at its 20-minute timeout (5 of 12); see state.json blockedReason.

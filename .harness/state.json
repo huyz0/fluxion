@@ -1,9 +1,9 @@
 {
   "milestone": "M16",
-  "currentTask": null,
+  "currentTask": "M16.21",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": null,
-  "updated": "2026-10-20"
+  "blockedReason": "main CI red on infrastructure, not code: (1) cold-setup exceeds COLD_SETUP_MAX_MS 600 s in 7 of the last 12 runs (626-656 s; fast runs ~400 s), (2) verify (windows-latest) hits its 20-minute job timeout in 5 of 12 (passing runs 773-1168 s). The full ladder's critical path is harness-tests (467 s on ubuntu CI). Needs a human decision: raise the budget/timeout (ADR, NFR-DX-001), accept ADR-0167 (CPU-normalised budget), or fund a ladder speed-up task (M16.31) before more feature work.",
+  "updated": "2026-10-20T06:35:53Z"
 }
