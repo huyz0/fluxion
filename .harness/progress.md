@@ -1900,3 +1900,7 @@ M16.33 (241e7b2d): FluxScript `lineJumps` (top) and an edge's `jumps` (ADR-0169)
 ## 2026-10-20 M16.32 (claude, local Windows)
 
 M16.32 (8b77ee52): check-api fails on a committed report no entry produces (stale report, or an entry the gate stopped finding) and, in the whole-repo run, on a packages/ or packs/ folder with reports that is not a workspaces.json library. Three harness cases. Review r1 passed (the first record was refused for a missing reviewer field, so the digest shows round 2).
+
+## 2026-10-20 M16.35 (claude, local Windows)
+
+M16.35 (aa5f61ff): the patch language's connect takes `jumps`; update can target an edge (label, style, route, jumps; `jumps: default` clears, since a strict patch's null means absent). Review r1: an edge label update dropped the other labels and the first's offset (F1), and an unresolved edge key was checked as a node (F2); both fixed, r2 passed. M16.28 is paused: running the global pass in-thread puts the one-file player at 155.34 kB, over its 150 kB budget (WIP in git stash), so the user has to decide.
