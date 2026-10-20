@@ -59,26 +59,33 @@ function comparable(screen: Element): string {
   });
 }
 
+/** The screens of `file` in export order, each compared: SSR markup against the browser render. Returns how many. */
+async function compareScreens(name: string, file: DocumentFile): Promise<number> {
+  const { store } = createCore(file);
+  let compared = 0;
+  for (const id of store.query((view) => screensInOrder(view, modePolicy('export').showHidden))()) {
+    const parsed = document.createElement('div');
+    parsed.innerHTML = /<main class="fx-document">([\s\S]*)<\/main>/.exec(renderDocumentToHtml(file, { registries, screens: [id] }).html)?.[1] ?? '';
+    const area = screenArea((store.get(id) ?? {}) as Parameters<typeof screenArea>[0]);
+    await act(async () =>
+      root.render(<ScreenView registries={registries} store={store} screenId={id} mode="export" view={{ kind: 'fit', box: { w: area.w, h: area.h } }} />),
+    );
+    const [server, client] = [parsed.querySelector('.fx-screen'), host.querySelector('.fx-screen')];
+    expect(server, name).not.toBeNull();
+    expect(comparable(server as Element), name).toBe(comparable(client as Element));
+    compared++;
+  }
+  return compared;
+}
+
 describe('SSR parity (FR-SCR-001, ADR-0015)', () => {
-  it('FR-SCR-001: SSR markup equals the browser render for each fixture', async () => {
+  it('FR-SCR-001: there are at least 3 shared fixtures', () => {
     expect(FIXTURES.length).toBeGreaterThanOrEqual(3);
-    let compared = 0;
-    for (const [name, file] of FIXTURES) {
-      const { store } = createCore(file);
-      for (const id of store.query((view) => screensInOrder(view, modePolicy('export').showHidden))()) {
-        const parsed = document.createElement('div');
-        parsed.innerHTML = /<main class="fx-document">([\s\S]*)<\/main>/.exec(renderDocumentToHtml(file, { registries, screens: [id] }).html)?.[1] ?? '';
-        const area = screenArea((store.get(id) ?? {}) as Parameters<typeof screenArea>[0]);
-        await act(async () =>
-          root.render(<ScreenView registries={registries} store={store} screenId={id} mode="export" view={{ kind: 'fit', box: { w: area.w, h: area.h } }} />),
-        );
-        const [server, client] = [parsed.querySelector('.fx-screen'), host.querySelector('.fx-screen')];
-        expect(server, name).not.toBeNull();
-        expect(comparable(server as Element), name).toBe(comparable(client as Element));
-        compared++;
-      }
-    }
-    expect(compared).toBeGreaterThanOrEqual(3);
-    // every screen of every fixture, the 500-element one included: a loaded macOS runner needs more than the default 15 s
-  }, 90_000);
+  });
+
+  // one test per fixture, so a slow or failing one is reported by name, not as one bare timeout (M17.24)
+  for (const [name, file] of FIXTURES)
+    it(`FR-SCR-001: SSR markup equals the browser render for every screen of ${name}`, async () => {
+      expect(await compareScreens(name, file)).toBeGreaterThanOrEqual(1);
+    }, 30_000);
 });
