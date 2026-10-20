@@ -6,7 +6,7 @@ import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { registerBuiltinRouters } from './builtins.js';
 import { type RouteContext, routeConnector } from './connector-route.js';
-import { type GlobalRouteInput, globalRouteInput, globalRoutes } from './global.js';
+import { GLOBAL_ROUTE_MAX_CONNECTORS, type GlobalRouteInput, globalRouteInput, globalRoutes } from './global.js';
 import type { Router } from './router.js';
 
 const points = (commands: readonly PathCommand[]): Vec2[] => commands.map((c) => (c as { to: Vec2 }).to);
@@ -133,6 +133,23 @@ describe('the global routing pass (FR-RTE-003)', () => {
     expect(input.connectors[0]?.source.point.x).toBeGreaterThanOrEqual(0);
     // plain data (a worker message): it survives a JSON round trip unchanged
     expect(JSON.parse(JSON.stringify(input))).toEqual(input);
+  });
+
+  it('NFR-PERF-002: a screen with more orthogonal connectors than the cap gets no global input; one at the cap does (M16.38)', () => {
+    const build = (n: number) => {
+      const b = documentBuilder({ seed: 7 });
+      const screen = b.screen();
+      const a = b.rect(screen, { x: 0, y: 0, w: 100, h: 100 });
+      const c = b.rect(screen, { x: 400, y: 0, w: 100, h: 100 });
+      for (let k = 0; k < n; k++) b.connect(a, c, { route: 'orthogonal' });
+      const { store } = createCore(b.build());
+      const routers = createRegistry<string, Router>('routers');
+      registerBuiltinRouters(routers);
+      const ctx: RouteContext = { shapeDefs: createRegistry<string, ShapeDef>('shapeDefs'), routers };
+      return store.query((v) => globalRouteInput(v, ctx, screen))();
+    };
+    expect(build(GLOBAL_ROUTE_MAX_CONNECTORS).connectors).toHaveLength(GLOBAL_ROUTE_MAX_CONNECTORS);
+    expect(build(GLOBAL_ROUTE_MAX_CONNECTORS + 1)).toEqual({ obstacles: [], connectors: [] });
   });
 
   it('FR-RTE-003: a refined route is drawn only while it runs between the current ends; one that no longer does falls back to the router', () => {

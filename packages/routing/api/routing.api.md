@@ -105,6 +105,9 @@ export function fanWaypoint(from: Vec2, to: Vec2, offset: number): Vec2;
 export function findJumps(routes: readonly JumpRoute[], documentStyle?: JumpStyle): JumpMap;
 
 // @public
+export const GLOBAL_ROUTE_MAX_CONNECTORS = 400;
+
+// @public
 export type GlobalConnector = {
     readonly id: string;
     readonly source: RouteEnd;

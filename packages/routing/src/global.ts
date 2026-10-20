@@ -127,21 +127,32 @@ type ElementLike = {
 };
 
 /**
+ * The most connectors the global pass routes on one screen. A busier screen keeps the cheap routes, in every host alike (edit, present, the
+ * file, the CLI), so they still draw the same: the pass costs about 2 ms a connector and more as the screen fills, and the fluid
+ * 2k-element, 1k-connector screen (NFR-PERF-002) has no time for it. ADR-0044 amendment M16.28.
+ *
+ * @public
+ */
+export const GLOBAL_ROUTE_MAX_CONNECTORS = 400;
+
+/**
  * The global pass's input for screen `screenId`: its solid elements' bounds, and its orthogonal connectors without waypoints (waypoints are
- * the author's constraints) with the ends the cheap pass resolves. Sorted by id.
+ * the author's constraints) with the ends the cheap pass resolves. Sorted by id. A screen with more than `GLOBAL_ROUTE_MAX_CONNECTORS` such
+ * connectors has no input: its connectors keep the cheap routes.
  *
  * @public
  */
 export function globalRouteInput(view: ReadView, ctx: RouteContext, screenId: RecordId): GlobalRouteInput {
   const ids = [...view.members('byScreen', screenId)].sort() as RecordId[];
   const records = ids.map((id) => [id, view.get(id) as ElementLike | undefined] as const);
+  const routable = records.filter(([, r]) => r?.kind === 'connector' && r.route?.type === 'orthogonal' && (r.route.waypoints?.length ?? 0) === 0);
+  if (routable.length > GLOBAL_ROUTE_MAX_CONNECTORS) return { obstacles: [], connectors: [] };
   const obstacles = records.flatMap(([id, r]) =>
     r?.type === 'element' && SOLID.has(r.kind as string) && r.transform !== undefined
       ? [{ id, box: elementBounds({ ...r.transform, rot: transformRotation(r.transform) }) }]
       : [],
   );
-  const connectors = records.flatMap(([id, r]) => {
-    if (r?.kind !== 'connector' || r.route?.type !== 'orthogonal' || (r.route.waypoints?.length ?? 0) > 0) return [];
+  const connectors = routable.flatMap(([id]) => {
     const route = routeConnector(view, ctx, id);
     return route === undefined ? [] : [{ id, source: route.source, target: route.target }];
   });

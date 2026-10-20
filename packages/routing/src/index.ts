@@ -6,7 +6,15 @@ export { registerBuiltinRouters } from './builtins.js';
 export { type ConnectorRoute, type RouteContext, routeConnector } from './connector-route.js';
 export { curvedRouter, polylineRouter } from './curved.js';
 export { distributeSlots, type Slot, type SlotEnd } from './distribution.js';
-export { type GlobalConnector, type GlobalObstacle, type GlobalRoute, type GlobalRouteInput, globalRouteInput, globalRoutes } from './global.js';
+export {
+  GLOBAL_ROUTE_MAX_CONNECTORS,
+  type GlobalConnector,
+  type GlobalObstacle,
+  type GlobalRoute,
+  type GlobalRouteInput,
+  globalRouteInput,
+  globalRoutes,
+} from './global.js';
 export { affectedConnectors, rerouteAffected } from './incremental.js';
 export { createJumpCache, findJumps, hopPath, type Jump, type JumpMap, type JumpRoute, type JumpStyle } from './jumps.js';
 export { type LabelPlacement, type LabelRequest, type LabelSize, placeLabels } from './label-placement.js';
