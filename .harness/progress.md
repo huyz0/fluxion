@@ -1959,3 +1959,4 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 - M17.25 136565bc: nightly layout bench judged by the median p99 of 3 runs; row todo until 3 nightlies are within 15 %
 - M17.26 5b6ca65b: M16 closed (m16-complete 35/35, exit 0)
 - M17.3 98d01c02: tree and orgchart layouts, golden tree-org-40, registered as built-ins
+- M17.4 67a9f709: radial and mindmap layouts, goldens radial-30 and mindmap-25; review F1 (side balance) fixed
