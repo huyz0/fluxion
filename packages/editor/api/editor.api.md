@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AnchorRef } from '@fluxion/schema';
 import { AnyRecord } from '@fluxion/schema';
 import { AssetRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
@@ -42,6 +43,14 @@ import { WritableSignal } from '@fluxion/core';
 
 // @public
 export function addFont(deps: FontLibraryDeps, input: FontInput): Promise<Result<RecordId, ThemeError>>;
+
+// @public
+export type AnchorDot = {
+    readonly name: string;
+    readonly point: Vec2;
+    readonly full: boolean;
+    readonly snapped: boolean;
+};
 
 // @public
 export function applyField(view: ReadView, ids: readonly RecordId[], path: readonly string[], value: unknown): InspectorCommand | undefined;
@@ -412,6 +421,7 @@ export function endDrop(view: ReadView, shapeDefs: {
     readonly onto: RecordId | undefined;
     readonly at: Vec2;
     readonly newId: () => RecordId;
+    readonly tolerance?: number | undefined;
 }): readonly ParamCommand[];
 
 // @public
@@ -701,6 +711,10 @@ export type Link = {
     readonly source: RecordId | undefined;
     readonly target: RecordId | undefined;
     readonly curved: boolean;
+    readonly anchors?: {
+        readonly source?: AnchorRef | undefined;
+        readonly target?: AnchorRef | undefined;
+    } | undefined;
 };
 
 export { LoadableFace }
@@ -1073,6 +1087,7 @@ export type Session = {
     readonly marquee: WritableSignal<Box | undefined>;
     readonly draft: WritableSignal<Box | undefined>;
     readonly sketch: WritableSignal<readonly Vec2[] | undefined>;
+    readonly anchors: WritableSignal<readonly AnchorDot[]>;
     readonly mode: WritableSignal<"edit" | "present">;
     readonly laser: WritableSignal<readonly Vec2[]>;
     readonly imagePick: WritableSignal<Box | undefined>;

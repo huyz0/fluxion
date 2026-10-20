@@ -130,6 +130,9 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-keys .fx-chrome-cell { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--ui-border); font-weight: normal; }
 .fx-chrome-picker .fx-chrome-button { font: inherit; color: inherit; text-align: left; padding: 6px 8px; border: 1px solid var(--ui-border); border-radius: 4px; background: transparent; cursor: pointer; }
 .fx-chrome-overlay .fx-chrome-sketch { fill: none; stroke: var(--ui-accent); stroke-width: 1.5; }
+.fx-chrome-overlay .fx-chrome-anchor { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1.5; }
+.fx-chrome-overlay .fx-chrome-anchor[data-snapped] { fill: var(--ui-accent); }
+.fx-chrome-overlay .fx-chrome-anchor[data-full] { stroke-dasharray: 2 2; opacity: 0.5; }
 .fx-chrome-overlay .fx-chrome-draft { fill: none; stroke: var(--ui-accent); stroke-width: 1; stroke-dasharray: 4 3; }
 .fx-chrome-splitter { flex: none; background: var(--ui-border); touch-action: none; }
 .fx-chrome-splitter[aria-orientation="vertical"] { width: 4px; cursor: col-resize; }

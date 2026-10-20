@@ -4,6 +4,7 @@
 import { type WritableSignal, writable } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
+import type { AnchorDot } from './anchor-snap.js';
 import type { Camera } from './camera.js';
 import type { SnapGuide } from './snap/snap.js';
 
@@ -31,6 +32,8 @@ export type Session = {
   readonly draft: WritableSignal<Box | undefined>;
   /** The line a tool is drawing (a connector's, a path's), page points, if any. */
   readonly sketch: WritableSignal<readonly Vec2[] | undefined>;
+  /** The anchors of the element a connector end is over while connecting, page units (empty otherwise, FR-ANC-006). */
+  readonly anchors: WritableSignal<readonly AnchorDot[]>;
   /** Editing, or presenting in place (F5). */
   readonly mode: WritableSignal<'edit' | 'present'>;
   /** The laser's recent positions, page points, newest last (present mode). */
@@ -75,6 +78,7 @@ export function createSession(docId: string): Session {
     marquee: writable<Box | undefined>(undefined),
     draft: writable<Box | undefined>(undefined),
     sketch: writable<readonly Vec2[] | undefined>(undefined),
+    anchors: writable<readonly AnchorDot[]>([]),
     mode: writable<'edit' | 'present'>('edit'),
     laser: writable<readonly Vec2[]>([]),
     imagePick: writable<Box | undefined>(undefined),

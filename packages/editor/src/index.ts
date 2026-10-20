@@ -1,5 +1,6 @@
 // Public entry of @fluxion/editor; the package comment is the dts banner in tsdown.config.ts.
 
+export type { AnchorDot } from './anchor-snap.js';
 export { type AssetStore, createAssetStore } from './asset-store.js';
 export { handTool, registerBuiltinTools } from './builtin-tools.js';
 export {

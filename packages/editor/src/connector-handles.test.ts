@@ -208,9 +208,9 @@ describe('connector handles (FR-CON-007)', () => {
     // near the left side: the default anchor w
     const [west] = endDrop(core.store, defs, { connector: line, end: 'target', onto: d, at: { x: 380, y: 352 }, newId });
     expect(west?.args).toMatchObject({ anchor: { kind: 'named', name: 'w' } });
-    // near the middle: the centre
-    const [centre] = endDrop(core.store, defs, { connector: line, end: 'target', onto: c, at: { x: 450, y: 50 }, newId });
-    expect(centre?.args).toMatchObject({ elementId: c, anchor: { kind: 'named', name: 'center' } });
+    // on the middle, the snap tolerance given: the whole shape, auto (a centre anchor is no snap target, FR-ANC-006)
+    const [centre] = endDrop(core.store, defs, { connector: line, end: 'target', onto: c, at: { x: 450, y: 50 }, newId, tolerance: 8 });
+    expect(centre?.args).toMatchObject({ elementId: c, anchor: { kind: 'auto' } });
     // running it re-points the end: the connector has its two bindings still
     expect(core.execute(bind?.id as string, bind?.args).ok).toBe(true);
     expect(core.store.members('bindingsByElement', line).length).toBe(2);

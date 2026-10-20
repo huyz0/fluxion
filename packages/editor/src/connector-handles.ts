@@ -7,8 +7,8 @@
 // overlay only call these.
 import type { ReadView, ShapeDef } from '@fluxion/core';
 import type { PathCommand, Vec2 } from '@fluxion/geometry';
-import { DEFAULT_ANCHORS, resolveAnchor, shapeAnchorTarget } from '@fluxion/routing';
-import type { AnchorDef, ConnectorElement, RecordId, ShapeElement, Transform } from '@fluxion/schema';
+import type { ConnectorElement, RecordId, ShapeElement } from '@fluxion/schema';
+import { snapAnchor } from './anchor-snap.js';
 import type { ParamCommand } from './param-handles.js';
 
 /**
@@ -185,15 +185,10 @@ export function handleEdit(id: RecordId, original: ConnectorElement['route'], ha
   }
 }
 
-/** The names of the anchors an element offers: its own, its definition's, then the defaults. */
-function anchorNames(element: ShapeElement | undefined, def: ShapeDef | undefined): readonly string[] {
-  const own: readonly AnchorDef[] = [...(element?.anchors ?? []), ...(def?.anchors ?? [])];
-  return [...new Set([...own, ...DEFAULT_ANCHORS].map((a) => a.name))];
-}
-
 /**
  * The commands that drop the `end` of the connector `id` at page point `p` on the element `onto` (if any), in the
- * order to run them as one undo step: bind to `onto` at its anchor nearest `p`; with no element, move a free end to
+ * order to run them as one undo step: bind to `onto` at its anchor nearest `p` that is not full, within `tolerance`
+ * (page units; any distance when absent), else `auto` (FR-ANC-006, FR-ANC-003); with no element, move a free end to
  * `p`, and let a bound one go there (`connector.freeEnd`: dragged away from its shape).
  *
  * @public
@@ -207,6 +202,7 @@ export function endDrop(
     readonly onto: RecordId | undefined;
     readonly at: Vec2;
     readonly newId: () => RecordId;
+    readonly tolerance?: number | undefined;
   },
 ): readonly ParamCommand[] {
   const { connector, end, onto, at } = drop;
@@ -220,15 +216,6 @@ export function endDrop(
       ? [{ id: 'connector.freeEnd', args: { connectorId: connector, end, at } }]
       : [{ id: 'element.update', args: { id: connector, fields: { [end === 'source' ? 'freeSource' : 'freeTarget']: at } } }];
   }
-  // only a shape has a definition with anchors of its own
-  const shape = typeof (target as { defId?: unknown }).defId === 'string' ? target : undefined;
-  const def = shape === undefined ? undefined : shapeDefs.get(shape.defId);
-  const t: Transform = target.transform;
-  const anchorTarget = shapeAnchorTarget(t, def, target);
-  const names = anchorNames(shape, def);
-  const nearest = names
-    .map((name) => ({ name, point: resolveAnchor(anchorTarget, { kind: 'named', name }, at).point }))
-    .map(({ name, point }) => ({ name, d: Math.hypot(point.x - at.x, point.y - at.y) }))
-    .reduce((best, c) => (c.d < best.d ? c : best));
-  return [{ id: 'binding.set', args: { id: drop.newId(), connectorId: connector, end, elementId: onto, anchor: { kind: 'named', name: nearest.name } } }];
+  const anchor = snapAnchor(view, shapeDefs, { elementId: onto, at, tolerance: drop.tolerance ?? Number.POSITIVE_INFINITY, except: { connector, end } });
+  return [{ id: 'binding.set', args: { id: drop.newId(), connectorId: connector, end, elementId: onto, anchor } }];
 }

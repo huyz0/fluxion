@@ -80,6 +80,7 @@ export function Overlay(props: OverlayProps): ReactNode {
   const marquee = useValue(session.marquee.get);
   const draft = useValue(session.draft.get);
   const sketch = useValue(session.sketch.get);
+  const anchors = useValue(session.anchors.get);
   const entered = useValue(session.entered.get);
   const guides = useValue(session.guides.get);
   // the group entered to edit its members is outlined dashed (M8.5)
@@ -126,6 +127,23 @@ export function Overlay(props: OverlayProps): ReactNode {
       {band === undefined ? null : <rect className="fx-chrome-marquee" x={band.x} y={band.y} width={band.w} height={band.h} />}
       {drafted === undefined ? null : <rect className="fx-chrome-draft" x={drafted.x} y={drafted.y} width={drafted.w} height={drafted.h} />}
       {line === undefined ? null : <polyline className="fx-chrome-sketch" points={points(line)} />}
+      {anchors.map((a) => {
+        const at = pageToScreen(camera, a.point);
+        return (
+          <circle
+            key={a.name}
+            className="fx-chrome-anchor"
+            data-anchor-dot={a.name}
+            data-snapped={a.snapped ? 'true' : undefined}
+            data-full={a.full ? 'true' : undefined}
+            cx={at.x}
+            cy={at.y}
+            r={a.snapped ? half : half / 2 + 1}
+          >
+            <title>{a.name}</title>
+          </circle>
+        );
+      })}
     </svg>
   );
 }

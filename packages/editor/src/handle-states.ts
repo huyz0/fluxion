@@ -4,11 +4,12 @@
 import type { Vec2 } from '@fluxion/geometry';
 import type { ConnectorElement, RecordId } from '@fluxion/schema';
 import { type ConnectorHandle, connectorHandleAt, connectorHandlesOf, endDrop, handleEdit } from './connector-handles.js';
-import { bindable } from './connector-tool.js';
+import { endTarget, showAnchors } from './connector-tool.js';
 import { HANDLE_PX } from './overlay-geometry.js';
 import { paramEdit, paramHandleAt, paramHandlesOf } from './param-handles.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { DRAG_PX } from './selection.js';
+import { snapThreshold } from './snap/snap.js';
 import type { StateNode, ToolCtx } from './tools.js';
 import { TOUCH } from './touch.js';
 
@@ -90,13 +91,16 @@ export function ending(p: HandlePress): StateNode {
   const clear = (ctx: ToolCtx) => {
     ctx.session.sketch.set(undefined);
     ctx.session.hover.set(undefined);
+    ctx.session.anchors.set([]);
   };
   return {
     id: 'ending',
     onPointerMove: (ctx, e) => {
       const grab = p.connector as ConnectorGrab;
       ctx.session.sketch.set(grab.fixed === undefined ? undefined : [grab.fixed, e.page]);
-      ctx.session.hover.set(bindable(ctx, ctx.hitTest(e.page)));
+      const over = endTarget(ctx, e.page, { connector: grab.id, end: grab.handle.at as 'source' | 'target' });
+      ctx.session.hover.set(over);
+      showAnchors(ctx, over, e.page, { connector: grab.id, end: grab.handle.at as 'source' | 'target' });
       return undefined;
     },
     onPointerUp: (ctx, e) => {
@@ -108,7 +112,14 @@ export function ending(p: HandlePress): StateNode {
       const commands =
         ctx.shapeDefs === undefined || !moved
           ? []
-          : endDrop(ctx.view, ctx.shapeDefs, { connector: grab.id, end, onto: bindable(ctx, ctx.hitTest(e.page)), at: e.page, newId: ctx.newId });
+          : endDrop(ctx.view, ctx.shapeDefs, {
+              connector: grab.id,
+              end,
+              onto: endTarget(ctx, e.page, { connector: grab.id, end: grab.handle.at as 'source' | 'target' }),
+              at: e.page,
+              newId: ctx.newId,
+              tolerance: snapThreshold(ctx.session.camera.get().z),
+            });
       const gesture = beginGesture(ctx.execute, ctx.seal);
       for (const c of commands) {
         gesture.update(c.id, c.args);
