@@ -68,14 +68,36 @@ function expectRate(frames: number[], what: string): void {
 
 const FILE = asPicker('perf-2k-1k.flux.json', readFileSync(new URL('../fixtures/docs/perf-2k-1k.flux.json', import.meta.url)));
 
-/** Pick the big file in the studio's start page and wait until every shape and connector of its screen is drawn; the milliseconds from the click. */
+/**
+ * Watch the page for the frame that has drawn every shape and connector: the time from the pointer going down on a control to the frame
+ * after the one in which the canvas first holds them all (so that frame's paint is counted) lands in `window.drawnMs`.
+ */
+function watchDrawn({ connectors, elements }: { connectors: number; elements: number }): void {
+  const w = window as unknown as { drawnMs?: number };
+  let down: number | undefined;
+  document.addEventListener('pointerdown', () => (down ??= performance.now()), { capture: true });
+  const tick = () => {
+    const canvas = document.querySelector('main[aria-label="Canvas"]');
+    const all = canvas !== null && canvas.querySelectorAll('svg.fx-connector').length === connectors && canvas.querySelectorAll('.fx-el').length === elements;
+    if (down !== undefined && all) requestAnimationFrame(() => (w.drawnMs = performance.now() - (down as number)));
+    else requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+/**
+ * Pick the big file in the studio's start page and wait until every shape and connector of its screen is drawn; the milliseconds from the
+ * click to the painted frame, timed in the page: a wall clock around Playwright's waits would count its polling (100, 250, 500, 1000 ms
+ * apart) and not the drawing.
+ */
 async function open(page: Page, editor: EditorPage): Promise<number> {
   await page.goto('/');
-  const start = Date.now();
+  await page.evaluate(watchDrawn, { connectors: CONNECTORS, elements: SHAPES + CONNECTORS });
   await page.getByRole('button', { name: 'Open a file…' }).click();
   await expect(editor.canvas.locator('svg.fx-connector')).toHaveCount(CONNECTORS, { timeout: 20_000 });
   await expect(editor.elements).toHaveCount(SHAPES + CONNECTORS);
-  return Date.now() - start;
+  const drawn = await page.waitForFunction(() => (window as unknown as { drawnMs?: number }).drawnMs);
+  return Math.round((await drawn.jsonValue()) as number);
 }
 
 /** The first render, the best of three opens (the first pays for a cold page). */
