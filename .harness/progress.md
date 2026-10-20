@@ -1868,3 +1868,7 @@ CI green again at e21e895 after the M16.29 containment.
 ## 2026-10-20 M16.25 (claude, local Windows)
 
 M16.25 (78573a99): `anchor-inspector.ts` (rows, add/move/remove) and `anchor-section.tsx`; `commitKeys` moved to `inspector-keys.ts` to keep `inspector.tsx` under 400 lines. Review r1: x/y boxes collided on key when equal (Tab moved the wrong axis), fixed with a Tab-focus test; non-fixed custom anchors get no place boxes.
+
+## 2026-10-20 M16.27 (claude, local Windows)
+
+M16.27 (e035b036): the undo flake was CodeMirror's 500 ms history group delay splitting 'XY' under load (one Mod-z left 'X'); cases type one key. CI went red at a5ed640 on a WebKit flake: the completion list after typing `rect` covered the clicked line; the case closes it with Escape. Three consecutive full verifies pass.
