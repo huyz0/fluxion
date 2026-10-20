@@ -8,6 +8,7 @@ import {
   apiScope,
   DOCS_HARNESS,
   E2E_HARNESS,
+  evalNeeded,
   examplesNeeded,
   GATE_SCRIPT_HARNESS,
   harnessFiles,
@@ -354,6 +355,36 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.match(ladder, /\[\s*'examples',[\s\S]*?examplesNeeded\([\s\S]*?'test:examples'/);
     assert.match(JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts.verify, /precommit\.mjs --all$/);
     assert.match(readFileSync(join(REPO, '.github/workflows/ci.yml'), 'utf8'), /^\s+- run: pnpm verify$/m);
+  });
+
+  it('FR-AI-009: a staged change that can move the eval prompt, or its cases, recordings or runner, runs the recorded eval (M16.37)', () => {
+    // the cheat sheet and the pack catalogs build the system prompt that keys every recording (CI red at 981aa84e)
+    for (const p of [
+      'packages/dsl/src/catalog/cheatsheet.ts',
+      'packs/basic/src/index.ts',
+      'packages/schema/src/document.ts',
+      'eval/cases/gen-auth.json',
+      'eval/recordings/0a.json',
+      'scripts/eval/common.ts',
+      'scripts/eval/eval.config.ts',
+      'scripts/dsl/host-registries.ts',
+    ])
+      assert.equal(evalNeeded(['docs/a.md', p], workspaces), true, p);
+    // a doc, the scorecard it writes, a workspace the prompt does not reach, a test or a report replays nothing new
+    assert.equal(
+      evalNeeded(
+        ['docs/a.md', 'eval/out/scorecard.json', 'packages/editor/src/a.ts', 'packages/dsl/src/compile.test.ts', 'packages/dsl/api/dsl.api.md'],
+        workspaces,
+      ),
+      false,
+    );
+    // the ladder's own 'eval' entry (up to the next step) is scoped by evalNeeded and runs the recorded eval's config, the one
+    // `pnpm eval --recorded` runs
+    const ladder = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
+    const step = /\r?\n {2}\[\r?\n {4}'eval',\r?\n([\s\S]*?)\r?\n {2}\],\r?\n/.exec(ladder)?.[1] ?? '';
+    assert.match(step, /evalNeeded\(stagedPaths\(\), workspaces\(\)\)/);
+    assert.match(step, /'vitest', 'run', '--config', 'scripts\/eval\/eval\.config\.ts'/);
+    assert.match(readFileSync(join(REPO, 'scripts/eval/run.mjs'), 'utf8'), /'vitest', 'run', '--config', 'scripts\/eval\/eval\.config\.ts'/);
   });
 
   it('a workspace manifest or a workspace-only lockfile runs the manifest harness; an external lockfile change runs them all (M4.29)', () => {

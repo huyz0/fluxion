@@ -480,3 +480,15 @@ export function examplesNeeded(staged, workspaces) {
     return !WORKSPACE_NOTES.test(p) && !API_REPORT.test(p) && !TEST_FILE.test(p);
   });
 }
+
+/** What the recorded eval reads beyond what the examples read: its cases, recordings, runner and config. */
+const EVAL_GLOBAL = /^(eval\/(cases|recordings)\/|scripts\/eval\/)/;
+
+/**
+ * Whether the staged paths can change what `pnpm eval --recorded` replays (M16.37, FR-AI-009): its system prompt is built from the catalog of
+ * the packs the examples load and the dsl cheat sheet, and every recording is keyed by it, so whatever can change an example's compile can
+ * leave the recordings unkeyed; and its cases, recordings and runner. `pnpm verify` (--all) and CI always run it.
+ */
+export function evalNeeded(staged, workspaces) {
+  return examplesNeeded(staged, workspaces) || staged.some((p) => EVAL_GLOBAL.test(p));
+}

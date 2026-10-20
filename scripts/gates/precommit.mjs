@@ -14,6 +14,7 @@
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { readdirSync, readFileSync } from 'node:fs';
 import {
+  evalNeeded,
   examplesNeeded,
   harnessFiles,
   licensesNeeded,
@@ -176,6 +177,21 @@ const STEPS = [
     () =>
       runAsync('pnpm', ['--filter', '@fluxion/dsl', 'run', 'test:examples'], {
         env: { ...process.env, FLUXION_VITEST_CACHE: repoPath('.vitest-cache/dsl-examples') },
+      }),
+  ],
+  // the recorded eval replays its recordings, keyed by the system prompt the catalog and cheat sheet build, so a staged change that can move
+  // that prompt runs it here rather than leaving CI to find the recordings unkeyed (M16.37, FR-AI-009; CI red at 981aa84e)
+  [
+    'eval',
+    (m) => m !== 'quick',
+    () =>
+      !hasPkg
+        ? 'no workspace yet (M1)'
+        : mode !== 'staged' || evalNeeded(stagedPaths(), workspaces()) || 'no staged dsl, pack, eval case or workspace its prompt is built from (CI runs it)',
+    () =>
+      // what `pnpm eval --recorded` runs, through runAsync: it gives Windows the shell a pnpm .cmd shim needs (M16.37 review F1)
+      runAsync('pnpm', ['exec', 'vitest', 'run', '--config', 'scripts/eval/eval.config.ts'], {
+        env: { ...process.env, FLUXION_VITEST_CACHE: repoPath('.vitest-cache/eval') },
       }),
   ],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
