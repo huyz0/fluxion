@@ -1884,3 +1884,7 @@ M16.30 (75866f74): `HitIndex.covers` hides an anchor a shape painted above cover
 ## 2026-10-20 M16.20 (claude, local Windows)
 
 M16.20 (e8011282): schema 1.5, `route.tangents` and `route.jumps` (ADR-0168), curved router tangents, a tangent handle per route point, e2e `connectors.tangent.spec.ts`. Review r1 minors (tangents not rounded on save; a segment-made waypoint did not shift tangents) fixed; passed. Then blocked: main CI red on cold-setup over 600 s (7 of 12 runs) and windows verify at its 20-minute timeout (5 of 12); see state.json blockedReason.
+
+## 2026-10-20 M16.31 (claude, local Windows)
+
+M16.31 (8bd4f6dc): the harness suite takes 43 s wall instead of 105 s. The api cases run on a core-only sandbox, the coverage runs are scoped to the packages asserted on, the layering violations share one dependency-cruiser run, and the licenses copies are lean. The duplicate real-repo api case was removed (Removes-test). Review r1 minors fixed (report count asserted; layering path regex escaped); F2 became M16.32. r2 passed.
