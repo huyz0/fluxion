@@ -1,6 +1,6 @@
 # Backlog — M17 Layout suite v2 & smart templates (R3)
 
-Planned: 26 rows (22 from the plan's tasks; M17.23 to M17.25 are CI flakes met while closing M16; M17.26 is M16's handed-off geometry defect). The M16 backlog is archived in `archive/M16.md`; M16 is built and finally reviewed with its CI and perf evidence recorded, and closes when `m16-complete` exits 0 after M17.26.
+Planned: 26 rows (22 from the plan's tasks; M17.23 to M17.25 are CI flakes met while closing M16; M17.26 is M16's handed-off geometry defect). The M16 backlog is archived in `archive/M16.md`; M16 closed 2026-10-21 (`m16-complete` exits 0 after M17.26).
 
 Only the current milestone lives here. Closed milestones move to `archive/M<n>.md`.
 States: `todo` · `doing` · `done` · `blocked (<reason>)` · `descoped (<reason>)` (human decision only; the reason must cite an ADR or a roadmap Deferred entry).
