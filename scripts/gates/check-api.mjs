@@ -5,9 +5,10 @@
 //   check-api.mjs --update     rewrite the reports (a reviewed contract change; run after a build)
 //   check-api.mjs --dir <root> [--package <dir>]   another checkout / one library (tests; tools from FLUXION_TOOLS_ROOT)
 //   check-api.mjs --package <dir> --typedoc        one library's reports, and TypeDoc's completeness check over that library (the staged ladder; M11.39)
+// A committed report no entry produces, and a folder with reports that is not a library, fail the check: every report is compared (M16.32).
 // API Extractor reads the emitted declarations with its own bundled compiler (ADR-0011). Exports need
 // a release tag (ae-missing-release-tag is an error); any other warning fails the gate too.
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { REPO_ROOT, run } from './lib.mjs';
@@ -83,13 +84,40 @@ const configFor = (folder, entry) => ({
   },
 });
 
+/** The report files of `folder`'s api/ folder. */
+const committedReports = (folder) => (existsSync(join(folder, 'api')) ? readdirSync(join(folder, 'api')).filter((f) => f.endsWith('.api.md')) : []);
+
+/** The committed reports of a library that none of its entries produced: a stale report, or an entry the gate no longer finds (M16.32). */
+function unproduced(folder, entries) {
+  const name = JSON.parse(readFileSync(join(folder, 'package.json'), 'utf8')).name.replace(/^@[^/]+\//, '');
+  const produced = new Set(entries.map((e) => (e.name === undefined ? `${name}.api.md` : `${name}.${e.name}.api.md`)));
+  return committedReports(folder).filter((f) => !produced.has(f));
+}
+
+/** Folders under packages/ and packs/ with committed reports that are not libraries of workspaces.json: the whole-repo run would skip them. */
+function unlisted() {
+  const listed = new Set(libraries.map((w) => w.dir));
+  return ['packages', 'packs'].flatMap((d) =>
+    existsSync(join(root, d))
+      ? readdirSync(join(root, d))
+          .map((n) => `${d}/${n}`)
+          .filter((dir) => !listed.has(dir) && committedReports(join(root, dir)).length > 0)
+      : [],
+  );
+}
+
 const failures = [];
 let reports = 0;
+if (!only)
+  for (const dir of unlisted()) failures.push(`${dir}: has committed API reports but is not a library in tools/gen/workspaces.json, so they are not checked`);
 for (const w of libraries) {
   const folder = join(root, w.dir);
   mkdirSync(join(folder, 'api'), { recursive: true });
   const problems = [];
   const entries = entriesOf(folder, problems);
+  if (!update)
+    for (const f of unproduced(folder, entries))
+      problems.push(`api/${f} is committed but no entry of the package reports it: delete a stale report, or restore the entry it belongs to`);
   if (problems.length > 0) failures.push(`${w.dir}:\n  ${problems.join('\n  ')}`);
   for (const entry of entries) {
     reports += 1;

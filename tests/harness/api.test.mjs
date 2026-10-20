@@ -149,4 +149,33 @@ describe('check-api on a subpath entry (NFR-MNT-008)', () => {
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /the export "\.\/bare" has no "types" file/);
   });
+
+  it('NFR-MNT-007: an entry the gate no longer finds fails on its committed report instead of comparing fewer reports (M16.32)', () => {
+    sb.edit('packages/schema/package.json', (t) => {
+      const pkg = JSON.parse(t);
+      delete pkg.exports['./testing'];
+      return JSON.stringify(pkg, null, 2);
+    });
+    const r = schemaApi();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /api\/schema\.testing\.api\.md is committed but no entry of the package reports it/);
+  });
+
+  it('NFR-MNT-007: a stale committed report fails (M16.32)', () => {
+    sb.write('packages/schema/api/schema.ghost.api.md', '## API Report File for "@fluxion/schema/ghost"\n');
+    const r = schemaApi();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /api\/schema\.ghost\.api\.md is committed but no entry of the package reports it/);
+  });
+
+  it('NFR-MNT-007: the whole-repo run fails on a folder with reports that is not a library of workspaces.json (M16.32)', () => {
+    sb.edit('tools/gen/workspaces.json', (t) => {
+      const w = JSON.parse(t);
+      return JSON.stringify({ ...w, workspaces: w.workspaces.filter((x) => x.dir === 'packages/schema') }, null, 2);
+    });
+    sb.write('packages/ghost/api/ghost.api.md', '## API Report File for "@fluxion/ghost"\n');
+    const r = sb.node('scripts/gates/check-api.mjs', ['--dir', sb.dir], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /packages\/ghost: has committed API reports but is not a library in tools\/gen\/workspaces\.json/);
+  });
 });
