@@ -1940,3 +1940,4 @@ M16 final review (cp1, `.harness/reviews/milestone-M16-cp1.json`) reopened route
 - M16.43 306482fe: property time limit scales with FC_RUNS (nightly properties red since 10-16); nightly to confirm.
 - M16.41 d8f90f6d: global pass on idle, single validation on open, picker decodes on load (318 ms best); nightly perf --retries=0 checked at the run's commit (M16 final F12).
 - M16.44 3fdd7095: final review F13-F16; R3 leg fails on open boxes; anchors and tangent legs in the pinned image (9 + 3 passed).
+- M16.45 a6ed74b5: final review F17-F19; exit checklist ticks keep the range (AFTER_REVIEW_PATHS); R3 leg reads rows 1-11; one imageRunner.
