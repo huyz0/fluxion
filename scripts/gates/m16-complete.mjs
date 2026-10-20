@@ -4,6 +4,7 @@
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { runInImage } from '../e2e/image.mjs';
 import { currentMilestone, exists, leg, node, repoPath, run, runLegs } from './lib.mjs';
 import {
   backlogTextFor,
@@ -11,12 +12,16 @@ import {
   changesetsCoverRange,
   checkBacklogDone,
   checkFinalReview,
+  dockerAvailable,
   loadMilestoneReviews,
   playwrightSpecs,
   verifyLeg,
 } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
+/** Playwright in the pinned image where Docker answers (FLUXION_E2E=local keeps the host's browsers), else the default runner. */
+const imageRunner = () =>
+  process.env.FLUXION_E2E !== 'local' && dockerAvailable() ? (args, env) => runInImage(args, { report: env.PLAYWRIGHT_JSON_OUTPUT_NAME }) : undefined;
 const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`);
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
 
@@ -111,10 +116,11 @@ leg('a 2k-element, 1k-connector screen pans and zooms at BIG_SCREEN_PANZOOM_MIN_
 
 // ── the editor ─────────────────────────────────────────────────────────────────────────────────────
 leg('a drop near an anchor snaps and a custom anchor persists after save and reopen, on three browsers (FR-ANC-005, FR-ANC-006)', () =>
-  playwrightSpecs(['e2e/anchors.snap-and-custom.spec.ts'], ['chromium', 'firefox', 'webkit']),
+  // in the pinned image of ci.yml where Docker answers: this host cannot launch Firefox (M16 final F14), as m6-complete does
+  playwrightSpecs(['e2e/anchors.snap-and-custom.spec.ts'], ['chromium', 'firefox', 'webkit'], { runner: imageRunner() }),
 );
-leg('dragging a curve tangent handle changes the curve in one undo step; the migration fixture round-trips (FR-CON-007)', () =>
-  playwrightSpecs(['e2e/connectors.tangent.spec.ts'], ['chromium']),
+leg('dragging a curve tangent handle changes the curve in one undo step, on three browsers; the migration fixture round-trips (FR-CON-007)', () =>
+  playwrightSpecs(['e2e/connectors.tangent.spec.ts'], ['chromium', 'firefox', 'webkit'], { runner: imageRunner() }),
 );
 
 // ── the showcase and the exit ──────────────────────────────────────────────────────────────────────
@@ -131,7 +137,10 @@ leg('the R3 exit checklist lists every criterion with evidence', () => {
   const dead = rows
     .flatMap((l) => [...l.matchAll(/\]\(([^)#]+)\)/g)].map((m) => m[1]))
     .filter((href) => !/^[a-z]+:/.test(href) && !exists(join('docs/milestones/exits', href)));
-  return dead.length === 0 || `evidence links that resolve to nothing: ${dead.join(', ')}`;
+  if (dead.length) return `evidence links that resolve to nothing: ${dead.join(', ')}`;
+  // a box still open fails: the table can not go stale while the gate is green (M16 final F13)
+  const open = rows.filter((l) => /\[ \]/.test(l)).map((l) => l.split('|')[1].trim());
+  return open.length === 0 || `unticked rows: ${open.join(', ')}`;
 });
 
 // ── coverage, changesets, quarantines ──────────────────────────────────────────────────────────────

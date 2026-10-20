@@ -105,5 +105,5 @@ M15 final F8: the mutant spot check found no weak tests; no defect.
 M16.15 r1 F2: the synchronous route pipeline has no nudge or label-placement stage to skip (both run only in the global pass, M16.16, which asks for `full`); routers receive `quality` so a pack router can cut work, and the connector view asks for `cheap` (connector-view.browser.test).
 M16 final F8: R3 exits at M20 (roadmap); M20.md row 17 and its gate legs own R3.md completion and check-trace --increment R3; m16-complete traces M16's own plan IDs.
 M16 final F9: dd3aa134 (M16.15 WIP) reached main unreviewed; disclosed in progress.md and superseded by the reviewed 063a226c; history is not rewritten.
-M16 final F10: rows grew to 41 vs 22 planned through review reopens, CI and ladder fixes and the global-pass churn; the lessons are in M16.md Learned.
-M16 final F11: the three-browser anchors leg needs Firefox, which this host cannot launch (M13 precedent); M16.22 closes on the CI e2e shards at the final range.
+M16 final F10: rows grew to 44 vs 22 planned (2x) through review reopens, CI and ladder fixes and the global-pass churn; the lessons are in M16.md Learned.
+M16 final F11: the three-browser anchors leg runs in the pinned Playwright image of ci.yml where Docker answers (M16.44, as m6-complete), since this host cannot launch Firefox.
