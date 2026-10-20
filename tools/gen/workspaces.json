@@ -118,7 +118,7 @@
       "name": "@fluxion/player-inline",
       "layer": "L5",
       "runtime": "dom",
-      "dependsOn": ["player", "render", "core", "schema", "format", "sdk", "basic"],
+      "dependsOn": ["player", "render", "routing", "core", "schema", "format", "sdk", "basic"],
       "desc": "The host that builds the one-file player (player.inline.js): the player, format and the bundled packs as one classic script."
     },
     {

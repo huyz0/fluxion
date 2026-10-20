@@ -53,6 +53,8 @@ test.describe('the studio and the .flux.html draw the same screens', { tag: '@de
     await filePage.setViewportSize({ width: 1920, height: 1080 });
     await filePage.goto(pathToFileURL(file).href);
     await filePage.locator('.fx-screen').first().waitFor();
+    // the global routes, from the file's lazily loaded routing chunk, as the studio draws them (M16.28)
+    await expect(filePage.locator('#fluxion-root')).toHaveAttribute('data-routes', 'settled');
     const drawn = await everyScreen(filePage, SCREENS);
     for (const [i, theirs] of drawn.entries()) {
       const pct = diffPct(studio.screens[i] as Pixels, theirs);
@@ -72,6 +74,7 @@ test.describe('the studio and the .flux.html draw the same screens', { tag: '@de
       await filePage.setViewportSize({ width: 1920, height: 1080 });
       await filePage.goto(pathToFileURL(file).href);
       await filePage.locator('.fx-screen').first().waitFor();
+      await expect(filePage.locator('#fluxion-root')).toHaveAttribute('data-routes', 'settled');
       const drawn = await everyScreen(filePage, studio.screens.length);
       for (const [i, theirs] of drawn.entries()) {
         const pct = diffPct(studio.screens[i] as Pixels, theirs);

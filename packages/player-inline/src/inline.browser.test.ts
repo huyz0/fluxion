@@ -16,6 +16,8 @@ declare global {
 
 // the built one-file player (`pnpm build` writes it): a classic script, run here exactly as a `.flux.html` runs it
 const BUNDLE = Object.values(import.meta.glob('../dist/player.inline.js', { query: '?raw', import: 'default', eager: true }))[0];
+// its routing chunk (M16.28), which a `.flux.html` carries as an inert data block
+const ROUTING = Object.values(import.meta.glob('../dist/fluxion-routing.js', { query: '?raw', import: 'default', eager: true }))[0];
 
 const hasher: ContentHasher = {
   async sha256(bytes) {
@@ -130,6 +132,85 @@ const press = async (key: string) => {
   window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
   await frame();
 };
+
+/** One screen where an orthogonal connector's cheap route runs through a wall between its ends, which the global pass goes around. */
+async function walledFile(): Promise<Uint8Array> {
+  const b = documentBuilder({ seed: 68, title: 'Walled' });
+  const screen = b.screen({ name: 'walled', size: { w: 1600, h: 900 } });
+  const a = b.rect(screen, { x: 100, y: 400, w: 120, h: 80 });
+  b.rect(screen, { x: 600, y: 200, w: 60, h: 500 });
+  const c = b.rect(screen, { x: 1100, y: 400, w: 120, h: 80 });
+  b.connect(a, c, { route: 'orthogonal' });
+  const zip = await writeFlux({ document: b.build() as DocumentFile, appVersion: '0', hasher });
+  if (!zip.ok) throw new Error(zip.error.reason);
+  return zip.value;
+}
+
+describe('the routing chunk of the one-file player (FR-RTE-003, NFR-SIZE-001; M16.28)', () => {
+  const routes = () => root.getAttribute('data-routes');
+  const passes = () => [...root.querySelectorAll('svg.fx-connector')].map((c) => c.getAttribute('data-route-pass'));
+
+  /** Run `body` with the routing chunk's block in the page, recording the Blob URLs made and revoked meanwhile. */
+  async function withChunk(body: (urls: { readonly created: string[]; readonly revoked: string[] }) => Promise<void>) {
+    if (ROUTING === undefined) throw new Error('packages/player-inline/dist/fluxion-routing.js is missing: run `pnpm build` first');
+    const block = document.createElement('script');
+    block.type = 'text/plain';
+    block.dataset['fluxionChunk'] = 'routing';
+    block.textContent = ROUTING;
+    document.body.append(block);
+    const urls = { created: [] as string[], revoked: [] as string[] };
+    const [create, revoke] = [URL.createObjectURL.bind(URL), URL.revokeObjectURL.bind(URL)];
+    URL.createObjectURL = (o: Blob | MediaSource) => {
+      const url = create(o);
+      urls.created.push(url);
+      return url;
+    };
+    URL.revokeObjectURL = (url: string) => {
+      urls.revoked.push(url);
+      revoke(url);
+    };
+    try {
+      await body(urls);
+    } finally {
+      URL.createObjectURL = create;
+      URL.revokeObjectURL = revoke;
+      block.remove();
+    }
+  }
+
+  it('FR-RTE-003: with the chunk in the page, the player runs it as a worker from a Blob URL and draws the global pass routes', async () => {
+    await withChunk(async ({ created, revoked }) => {
+      const result = await window.Fluxion?.start(await walledFile(), root);
+      expect(result?.ok, result?.message).toBe(true);
+      await vi.waitFor(() => expect(routes()).toBe('settled'));
+      await vi.waitFor(() => expect(passes()).toEqual(['global']));
+      // the chunk ran from a Blob URL of its own text, as a worker: no script element runs it in the page
+      expect(created.length).toBeGreaterThan(0);
+      expect(document.querySelector('script[src^="blob:"]')).toBeNull();
+      // unmounting ends the worker and revokes its URL
+      result?.unmount?.();
+      expect(created.every((url) => revoked.includes(url))).toBe(true);
+    });
+  });
+
+  it('FR-RTE-003: a file that cannot be opened leaves no routing worker behind, and its routes are the cheap ones', async () => {
+    await withChunk(async ({ created, revoked }) => {
+      const result = await window.Fluxion?.start(new Uint8Array([1, 2, 3]), root);
+      expect(result?.ok).toBe(false);
+      expect(routes()).toBe('cheap');
+      expect(created.length).toBeGreaterThan(0);
+      expect(created.every((url) => revoked.includes(url))).toBe(true);
+    });
+  });
+
+  it('FR-RTE-003: a page without the chunk draws the cheap routes, and says so', async () => {
+    const result = await window.Fluxion?.start(await walledFile(), root);
+    expect(result?.ok, result?.message).toBe(true);
+    await vi.waitFor(() => expect(routes()).toBe('cheap'));
+    await vi.waitFor(() => expect(passes()).toEqual(['cheap']));
+    result?.unmount?.();
+  });
+});
 
 describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
   it('FR-FIL-002: the script defines Fluxion.start, which opens a .flux, draws its first screen with the bundled shapes, and the arrow keys move through the screens', async () => {

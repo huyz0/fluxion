@@ -23,6 +23,7 @@ if (!flux.ok) fail('writeFlux', flux.error);
 const html = await format.writeFluxHtml({
   flux: flux.value,
   playerScript: readFileSync(resolve('packages/player-inline/dist/player.inline.js'), 'utf8'),
+  routingScript: readFileSync(resolve('packages/player-inline/dist/fluxion-routing.js'), 'utf8'),
   title: 'Fluxion in five screens',
   hasher,
 });

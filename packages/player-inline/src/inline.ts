@@ -3,6 +3,7 @@
 // `dist/player.inline.js` (one classic script that defines the global `Fluxion`).
 import { mountPlayer } from '@fluxion/player/mount';
 import { openFlux } from './open-flux.js';
+import { embeddedRoutingWorker } from './routing-chunk-loader.js';
 
 /**
  * What `start` came to.
@@ -30,14 +31,19 @@ function show(root: HTMLElement, message: string): StartResult {
 }
 
 /**
- * Open the `.flux` file `bytes` and draw it into `root`: the screens in order, the arrow keys to move. Whatever goes wrong (a file that
+ * Open the `.flux` file `bytes` and draw it into `root`: the screens in order, the arrow keys to move. The routing chunk the page embeds
+ * routes the connectors in a worker: `root`'s `data-routes` is `pending` until then, `settled` once the global routes are drawn and `cheap` when the
+ * page has no chunk (M16.28). Whatever goes wrong (a file that
  * cannot be opened, a pack that fails to register, a document the engine cannot take, a page that refuses the mount) is a message written
  * into `root`, not an exception, and no image URL is left behind.
  *
  * @public
  */
 export async function start(bytes: Uint8Array, root: HTMLElement): Promise<StartResult> {
-  const opened = await openFlux(bytes);
+  // a root that is not an element is refused at the mount below, as a message: the routes' state is marked only on an element
+  const mark = (state: string) => (root instanceof Element ? root.setAttribute('data-routes', state) : undefined);
+  mark('pending');
+  const opened = await openFlux(bytes, embeddedRoutingWorker(root.ownerDocument ?? document), (ok) => mark(ok ? 'settled' : 'cheap'));
   if (!opened.ok) return show(root, opened.message);
   try {
     const mounted = mountPlayer(root, opened.value.store, opened.value.registries, {

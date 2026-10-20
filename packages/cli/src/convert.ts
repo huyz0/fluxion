@@ -20,10 +20,13 @@ const kindOf = (path: string): 'flux' | 'html' | 'json' | undefined => {
 };
 const DIRECTION = { html: 'to-html', flux: 'to-flux', json: 'to-json' } as const;
 
-/** The text of the one-file player next to the `@fluxion/player-inline` package's entry (its build output), or undefined when it is not built. */
-async function playerScript(): Promise<string | undefined> {
+/**
+ * The text of the build output `file` of the `@fluxion/player-inline` package next to its entry (`player.inline.js`, the one-file player;
+ * `fluxion-routing.js`, its routing chunk), or undefined when it is not built.
+ */
+async function playerScript(file = 'player.inline.js'): Promise<string | undefined> {
   const entry = import.meta.resolve('@fluxion/player-inline');
-  for (const candidate of ['./player.inline.js', '../dist/player.inline.js']) {
+  for (const candidate of [`./${file}`, `../dist/${file}`]) {
     try {
       return await readFile(fileURLToPath(new URL(candidate, entry)), 'utf8');
     } catch {
@@ -48,9 +51,12 @@ async function toHtml(flux: Uint8Array, fallbackTitle: string, input: string): P
   if (!loaded.ok) return io(`cannot convert ${input}: ${loaded.error.message}`, ['argv']);
   const player = await playerScript();
   if (player === undefined) return internal('the one-file player is not built: run the build of @fluxion/player-inline');
+  const routing = await playerScript('fluxion-routing.js');
+  if (routing === undefined) return internal('the routing chunk of the one-file player is not built: run the build of @fluxion/player-inline');
   const written = await writeFluxHtml({
     flux,
     playerScript: player,
+    routingScript: routing,
     title: titleOf(loaded.value.document.records) ?? fallbackTitle,
     generator: 'fluxion convert',
     hasher,

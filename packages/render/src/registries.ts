@@ -2,8 +2,8 @@
 // host's core `shapeDefs` registry (ADR-0016, ADR-0017), its `routers` (FR-RTE-001) and `markers`
 // (FR-CON-003), looked up here
 // and never switched on; built-ins register through the same API as plugins.
-import { createRegistry, type MarkerDef, type ReadView, type Registry, type ShapeDef, type Store } from '@fluxion/core';
-import type { RouteContext, Router } from '@fluxion/routing';
+import { createRegistry, type MarkerDef, type ReadSignal, type ReadView, type Registry, type ShapeDef, type Store } from '@fluxion/core';
+import type { GlobalRoute, GlobalRouteInput, RouteContext, Router } from '@fluxion/routing';
 import type { ElementRecord } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
 import type { ComponentType, ReactNode } from 'react';
@@ -64,9 +64,26 @@ export type RenderRegistries = {
   readonly routers: Registry<string, Router>;
   /** Connector end markers by id (`arrow`, `<plugin>:<name>`, …): a connector view draws its ends' markers. */
   readonly markers: Registry<string, MarkerDef>;
-  /** The global routing pass's routes while they are current (FR-RTE-003; routing's `RouteContext.refined`): none in the player. */
+  /**
+   * The global routing pass's routes while they are current (FR-RTE-003; routing's `RouteContext.refined`), from a host that runs the pass
+   * elsewhere (the studio's worker).
+   */
   readonly refined?: RouteContext['refined'];
+  /**
+   * The pure global routing pass (routing's `globalRoutes`) from a batch host (the CLI, the exporters), once it has it: the views then run it
+   * themselves, on the rendering thread (`withSettledRoutes`, M16.28). A page hands in `refined` from a worker instead (the studio, the
+   * one-file player): the pass would block it. Without either, the cheap routes are drawn.
+   */
+  readonly globalPass?: ReadSignal<GlobalPass | undefined>;
 };
+
+/**
+ * The global routing pass as a function of one screen's input (routing's `globalRoutes`): a host hands it to the views, which never import
+ * it (NFR-SIZE-001: the player's script would carry it).
+ *
+ * @public
+ */
+export type GlobalPass = (input: GlobalRouteInput) => readonly GlobalRoute[];
 
 /**
  * Render registries with no element views, reading shape definitions from `shapeDefs`, routers from

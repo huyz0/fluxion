@@ -71,6 +71,8 @@ async function bothModes(page: Page, name: string, index = 0) {
   // the pointer is off the canvas, nothing is selected: the overlay is not mounted
   await page.mouse.move(0, 0);
   await expect(page.locator('svg.fx-chrome-overlay')).toHaveCount(0);
+  // the global pass's routes, which present draws too (M16.28)
+  await expect(page.getByTestId('editor-root')).toHaveAttribute('data-routes', 'settled');
   const screen = editor.screens.first();
   // centred at whole pixels: 140 px in from the canvas (0, 40) each way
   expect(await screen.boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
@@ -78,6 +80,7 @@ async function bothModes(page: Page, name: string, index = 0) {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.keyboard.press(index === 0 ? 'F5' : 'Shift+F5');
   await expect(page.getByTestId('editor-root')).toHaveAttribute('data-mode', 'present');
+  await expect(page.getByTestId('editor-root')).toHaveAttribute('data-routes', 'settled');
   const presented = page.getByTestId('present-in-place').locator('.fx-screen');
   await expect(presented).toHaveCount(1);
   const present = { dom: await contentDom(page), png: await presented.screenshot({ animations: 'disabled' }) };
@@ -102,6 +105,8 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
   });
 
   test('FR-EDT-010: every screen of every example draws the same pixels in edit and present', async ({ page }) => {
+    // seven screens, each waiting for its settled global routes in both modes (M16.28): about 26 s alone, more under a loaded run
+    test.setTimeout(60_000);
     let screens = 0;
     for (const name of [...EXAMPLES, 'rich-text', 'arrange-demo']) {
       const count = await screenCount(page, name);

@@ -7,7 +7,14 @@ import { pathToFileURL } from 'node:url';
 // before the build.
 type FormatApi = {
   readonly writeFlux: (input: { document: unknown; appVersion: string; generator: string; hasher: Hasher }) => Promise<Result<Uint8Array>>;
-  readonly writeFluxHtml: (input: { flux: Uint8Array; playerScript: string; title: string; hasher: Hasher; noscriptSvg?: string }) => Promise<Result<string>>;
+  readonly writeFluxHtml: (input: {
+    flux: Uint8Array;
+    playerScript: string;
+    routingScript?: string;
+    title: string;
+    hasher: Hasher;
+    noscriptSvg?: string;
+  }) => Promise<Result<string>>;
   readonly sha256Hex: (bytes: Uint8Array) => string;
 };
 type SchemaApi = { readonly parseDocument: (text: string) => Result<{ document: unknown }> };
@@ -33,10 +40,12 @@ export async function fluxHtmlOf(
   const parsed = value(schema.parseDocument(JSON.stringify(json)), 'parseDocument');
   const flux = value(await format.writeFlux({ document: parsed.document, appVersion: '1.0.0', generator: 'e2e', hasher }), 'writeFlux');
   const playerScript = readFileSync(resolve('packages/player-inline/dist/player.inline.js'), 'utf8');
+  const routingScript = readFileSync(resolve('packages/player-inline/dist/fluxion-routing.js'), 'utf8');
   return value(
     await format.writeFluxHtml({
       flux,
       playerScript,
+      routingScript,
       title: extra.title ?? name,
       hasher,
       ...(extra.noscriptSvg === undefined ? {} : { noscriptSvg: extra.noscriptSvg }),
@@ -50,5 +59,6 @@ export async function fluxHtmlOfFlux(flux: Uint8Array, title: string): Promise<s
   const format = await load<FormatApi>('packages/format/dist/index.js');
   const hasher: Hasher = { sha256: (bytes) => Promise.resolve(format.sha256Hex(bytes)) };
   const playerScript = readFileSync(resolve('packages/player-inline/dist/player.inline.js'), 'utf8');
-  return value(await format.writeFluxHtml({ flux, playerScript, title, hasher }), 'writeFluxHtml');
+  const routingScript = readFileSync(resolve('packages/player-inline/dist/fluxion-routing.js'), 'utf8');
+  return value(await format.writeFluxHtml({ flux, playerScript, routingScript, title, hasher }), 'writeFluxHtml');
 }

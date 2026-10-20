@@ -28,6 +28,8 @@
     "@fluxion/format": "workspace:*",
     "@fluxion/pack-basic": "workspace:*",
     "@fluxion/player": "workspace:*",
+    "@fluxion/render": "workspace:*",
+    "@fluxion/routing": "workspace:*",
     "@fluxion/schema": "workspace:*"
   }
 }

@@ -4,6 +4,7 @@
 import { writeFile } from 'node:fs/promises';
 import { builtinRegistries } from '@fluxion/render';
 import { renderDocumentToHtml } from '@fluxion/render/ssr';
+import { globalRoutes } from '@fluxion/routing';
 import { type Diagnostic, type DocumentFile, parseDocument, type RecordId } from '@fluxion/schema';
 import { type Command, internal, io, type Outcome, unsupported, usage } from './command.js';
 import { hostRegistries } from './host.js';
@@ -67,8 +68,9 @@ export function staticPage(
   if (!parsed.ok) return { exitCode: 1, diagnostics: parsed.error.diagnostics };
   const problem = screenProblem(parsed.value.document, screens ?? [], label);
   if (problem !== undefined) return usage(problem);
-  // shapes and markers come from the bundled packs, registered in the host's core registries (ADR-0017)
-  const registries = builtinRegistries(host.registries.shapeDefs, undefined, host.registries.markers);
+  // shapes and markers come from the bundled packs, registered in the host's core registries (ADR-0017); the connectors draw the global
+  // routing pass's routes, as the studio and the .flux.html do (M16.28)
+  const registries = { ...builtinRegistries(host.registries.shapeDefs, undefined, host.registries.markers), globalPass: () => globalRoutes };
   const { html, screens: drawn } = renderDocumentToHtml(parsed.value.document, {
     registries,
     measurer: measurerFor(parsed.value.document),

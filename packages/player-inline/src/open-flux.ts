@@ -1,5 +1,6 @@
 // What opening a `.flux` for presenting comes to, for the one-file player (`start`) and the element (`defineFluxionPlayer`): the lean reader, a read-only store,
 // the bundled pack, the images of the file as blob URLs and its fonts. One path, so the two present the same file the same way.
+
 import { type CoreRegistries, createCoreRegistries, createStore, type Registry } from '@fluxion/core';
 import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
 import { basicPack } from '@fluxion/pack-basic';
@@ -7,6 +8,8 @@ import { renderRegistriesFor } from '@fluxion/player';
 import type { OpenedFlux } from '@fluxion/player/element';
 import type { AssetRecord, RecordId } from '@fluxion/schema';
 import { loadEmbeddedFonts } from './fonts.js';
+import type { RoutingWorker } from './routing-chunk-loader.js';
+import { workerRoutes } from './worker-routes.js';
 
 /** SubtleCrypto where the page has it (it needs a secure context), else the pure SHA-256 of `format`. */
 const hasher: ContentHasher = {
@@ -55,33 +58,54 @@ function registerBundled(registries: Pick<CoreRegistries, 'shapeDefs' | 'markers
 
 /**
  * Open the `.flux` file `bytes` for presenting: the document in a store that refuses every write (FR-PRS-004), the registries with the bundled shapes, the file's
- * images and fonts. Whatever goes wrong is a message, and nothing is left behind (no image URL, no font face).
+ * images and fonts. The connectors draw the cheap routes, then the global routing pass's routes as `routing` (the lazily loaded routing
+ * chunk's worker, M16.28) routes each screen; `settled` hears whether every screen was routed, and false at once without a worker. Whatever goes wrong is a message, and nothing is left behind (no image URL, no font face).
  *
  * @public
  */
 export async function openFlux(
   bytes: Uint8Array,
+  routing?: RoutingWorker,
+  settled: (ok: boolean) => void = () => undefined,
 ): Promise<{ readonly ok: true; readonly value: OpenedFlux } | { readonly ok: false; readonly message: string }> {
   const made: { release: () => void }[] = [];
   const release = () => {
     for (const m of made) m.release();
+    routing?.dispose();
+  };
+  // a file that cannot be shown leaves nothing behind, its routing worker included, and its routes are the cheap ones
+  const fail = (message: string) => {
+    release();
+    settled(false);
+    return { ok: false, message } as const;
   };
   try {
     const loaded = await loadFluxLean(bytes, { hasher });
-    if (!loaded.ok) return { ok: false, message: `This file cannot be opened: ${loaded.error.message}` };
+    if (!loaded.ok) return fail(`This file cannot be opened: ${loaded.error.message}`);
     // a player never writes: its store refuses every transaction (FR-PRS-004), so it is made without the editing commands and integrity
     // hooks createCore would register (they only act on writes), which keeps them out of the script
     const store = createStore(loaded.value.document, { policy: 'read-only' });
     const registries = createCoreRegistries();
     const refused = registerBundled(registries);
-    if (refused !== undefined) return { ok: false, message: `The built-in shapes could not be registered: ${refused}` };
+    if (refused !== undefined) return fail(`The built-in shapes could not be registered: ${refused}`);
     const images = imageUrls(loaded.value);
     made.push(images);
     // the file's own fonts first: the first paint is in them, measured with their recorded metrics
     made.push(await loadEmbeddedFonts(loaded.value));
-    return { ok: true, value: { store, registries: renderRegistriesFor(registries), assets: (id: RecordId) => images.urls.get(id), release } };
+    const render = renderRegistriesFor(registries);
+    if (routing === undefined) settled(false);
+    const routes = routing === undefined ? undefined : workerRoutes(store, render, routing);
+    void routes?.done.then(settled);
+    return {
+      ok: true,
+      value: {
+        store,
+        registries: routes === undefined ? render : { ...render, refined: routes.refined },
+        assets: (id: RecordId) => images.urls.get(id),
+        release,
+      },
+    };
   } catch (e) {
-    release();
-    return { ok: false, message: `This file cannot be shown: ${e instanceof Error ? e.message : String(e)}` };
+    return fail(`This file cannot be shown: ${e instanceof Error ? e.message : String(e)}`);
   }
 }

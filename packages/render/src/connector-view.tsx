@@ -21,6 +21,7 @@ import { pathData } from './path-data.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { RenderStatsContext } from './render-stats.js';
 import { RichText } from './rich-text.js';
+import { withSettledRoutes } from './settled-routes.js';
 import { useValue } from './use-value.js';
 
 /** Room around a route for its stroke and markers, px. */
@@ -42,6 +43,15 @@ function framed(held: Frame | undefined, need: Frame): Frame {
   if (held.x <= need.x && held.y <= need.y && held.x + held.w >= need.x + need.w && held.y + held.h >= need.y + need.h) return held;
   const [x, y] = [Math.min(held.x, need.x) - GROW_SLACK, Math.min(held.y, need.y) - GROW_SLACK];
   return { x, y, w: Math.max(held.x + held.w, need.x + need.w) + GROW_SLACK - x, h: Math.max(held.y + held.h, need.y + need.h) + GROW_SLACK - y };
+}
+
+/** The box drawn last, while it was drawn for this store and this pass (a drag changes the path alone; a pass change starts afresh). */
+function heldFrame(
+  last: { readonly store: unknown; readonly global: boolean; readonly frame: Frame } | undefined,
+  store: unknown,
+  global: boolean,
+): Frame | undefined {
+  return last !== undefined && last.store === store && last.global === global ? last.frame : undefined;
 }
 
 const round = (v: number) => Math.round(v * 1000) / 1000 || 0;
@@ -106,7 +116,8 @@ function styled(id: RecordId, own: ConnectorElement['style'], cornerRadius: numb
 }
 
 /**
- * The connector's route: the cheap pass (routeConnector's default, FR-RTE-002), or the global pass's route while it is current (FR-RTE-003),
+ * The connector's route: the cheap pass (routeConnector's default, FR-RTE-002), or the global pass's route while it is current (FR-RTE-003:
+ * the host's overlay, else the pass run in-thread, so every renderer draws the same routes),
  * with the hops it draws where it crosses connectors painted before it (FR-CON-008). The query re-runs only when something the route read
  * changes, so moving a shape reroutes the connectors bound to it and no others; its hops are a query of its own entry, and a hop over a
  * connector a build hides is left out.
@@ -116,12 +127,14 @@ function useRouted(store: ElementViewProps['store'], registries: RenderRegistrie
   const hidden = useContext(BuildHiddenContext);
   return useValue(
     useMemo(() => {
-      const hops = hopsOfConnector(store, registries, id);
+      // the global pass's routes once the document is still: the host's overlay, else the same pass run here (M16.28)
+      const ctx = withSettledRoutes(store, registries);
+      const hops = hopsOfConnector(store, ctx, id);
       return store.query((view) => {
         const t0 = record === undefined ? 0 : performance.now();
-        const route = routeConnector(view, registries, id);
+        const route = routeConnector(view, ctx, id);
         if (record !== undefined) record('route', performance.now() - t0);
-        const global = registries.refined?.()?.get(id) === route?.commands;
+        const global = ctx.refined?.()?.get(id) === route?.commands;
         return route === undefined ? undefined : { ...route, global, hops: visibleHops(view, hops(), hidden) };
       });
     }, [store, registries, id, record, hidden]),
@@ -140,7 +153,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const base = `fx-marker-${useId().replace(/[^\w-]/g, '')}`;
   const routed = useRouted(store, registries, id);
   // the box drawn in last render for this store, kept while the route fits it (another document starts afresh)
-  const frames = useRef<{ readonly store: unknown; readonly frame: Frame } | undefined>(undefined);
+  const frames = useRef<{ readonly store: unknown; readonly global: boolean; readonly frame: Frame } | undefined>(undefined);
   const { style, line, lengths } = useMemo(
     () => styled(id, element.style, element.route.cornerRadius, theme),
     [id, element.style, element.route.cornerRadius, theme],
@@ -159,15 +172,16 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const trimmed = trimRoute(stroked, markerTrim(start, width), markerTrim(end, width));
   // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
-  const held = frames.current?.store === store ? frames.current.frame : undefined;
+  // the box is held across a drag, not across passes: the settled route is framed as a renderer that drew it first frames it (FR-EDT-010)
+  const held = heldFrame(frames.current, store, routed.global);
   const { x, y, w, h } = framed(held, routeFrame(stroked));
-  frames.current = { store, frame: { x, y, w, h } };
+  frames.current = { store, global: routed.global, frame: { x, y, w, h } };
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
     <>
       <svg
         className="fx-connector"
-        data-route-pass={routed.global ? 'global' : undefined}
+        data-route-pass={routed.global ? 'global' : 'cheap'}
         aria-hidden="true"
         viewBox={`${round(x)} ${round(y)} ${round(w)} ${round(h)}`}
         style={box}

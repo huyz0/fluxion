@@ -4,7 +4,7 @@
 import type { CoreRegistries, ReadView, Registry, Store, WritableSignal } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import type { AssetUrls } from '@fluxion/render';
-import { type RenderRegistries, screenArea, useValue } from '@fluxion/render';
+import { type RenderRegistries, screenArea, useValue, withSettledRoutes } from '@fluxion/render';
 import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
@@ -236,10 +236,11 @@ function PresentShell(props: {
   readonly tools: ToolDispatcher;
   readonly assets: AssetUrls;
   readonly revision: number;
+  readonly routes: 'settled' | 'pending';
 }): ReactNode {
-  const { revision, ...rest } = props;
+  const { revision, routes, ...rest } = props;
   return (
-    <div data-testid="editor-root" data-mode="present" data-revision={revision}>
+    <div data-testid="editor-root" data-mode="present" data-revision={revision} data-routes={routes}>
       <PresentInPlace {...rest} />
     </div>
   );
@@ -270,11 +271,18 @@ export function EditorRoot(props: EditorRootProps): ReactNode {
     () => [...(props.commands ?? []), ...registeredLayoutCommands(layouts === '' ? [] : layouts.split('\n'))],
     [props.commands, layouts],
   );
+  // the routes drawn, hit-tested and handled are one set: the host's global pass overlay, else the pass run in-thread (M16.28)
+  const registries = useMemo(() => withSettledRoutes(props.store, props.registries), [props.store, props.registries]);
   return (
     <I18nProvider i18n={i18n}>
-      <EditorShell {...props} commands={commands} />
+      <EditorShell {...props} registries={registries} commands={commands} />
     </I18nProvider>
   );
+}
+
+/** Whether the global pass's routes are drawn (`settled`) or the cheap ones while it runs (`pending`): a test waits for `settled`. */
+function useRoutesState(store: Store, registries: RenderRegistries): 'settled' | 'pending' {
+  return useValue(useMemo(() => store.query(() => (registries.refined?.() === undefined ? 'pending' : 'settled')), [store, registries]));
 }
 
 /** What happens once a document is shown: the view is fitted, and an entered group that is gone is left. */
@@ -303,6 +311,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
   const { settings, layout, setLayout, session, screenId, execute, tools, present, switchMode } = basics;
   const mode = useValue(session.mode.get);
   const revision = useRevision(store);
+  const routes = useRoutesState(store, registries);
   const newId = useNewId(props.random);
   // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
   const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
@@ -313,10 +322,10 @@ function EditorShell(props: EditorRootProps): ReactNode {
   const { assets, url: assetUrl } = useEditorAssets(store, props.assets);
   const { run, system, notice, notify } = useRootKeys({ ...basics, box, area, overrides, assets, dialogs, from: props });
   useOnOpen(store, session, area, box);
-  const shell = { store, registries, screenId, area, session, tools: present, assets: assetUrl, revision };
+  const shell = { store, registries, screenId, area, session, tools: present, assets: assetUrl, revision, routes };
   if (mode === 'present') return <PresentShell {...shell} />;
   return (
-    <div className="fx-editor" data-testid="editor-root" data-mode="edit" data-revision={revision} data-focus={layout.focus || undefined}>
+    <div className="fx-editor" data-testid="editor-root" data-mode="edit" data-revision={revision} data-routes={routes} data-focus={layout.focus || undefined}>
       <EditToolbar
         layout={layout}
         onLayout={setLayout}

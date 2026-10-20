@@ -147,3 +147,22 @@ describe('writeFluxHtml', () => {
     expect(refused.ok).toBe(false);
   });
 });
+
+describe('the routing chunk in a .flux.html (FR-RTE-003, NFR-SEC-002; M16.28)', () => {
+  it('FR-RTE-003: the routing chunk is an inert data block before the player, made safe like a script, and the CSP still names two scripts', async () => {
+    const chunk = 'var FluxionRouting=(function(){var s="</script><!--";return{globalRoutes:function(){return[]}}})();';
+    const html = await write({ routingScript: chunk });
+    const block = /<script type="text\/plain" id="fluxion-routing" data-fluxion-chunk="routing">([\s\S]*?)<\/script>/.exec(html);
+    expect(block?.[1]).toBe(String.raw`var FluxionRouting=(function(){var s="<\/script><\!--";return{globalRoutes:function(){return[]}}})();`);
+    // in the body, before the player that imports it and the boot script that starts the player
+    expect(html.indexOf('id="fluxion-routing"')).toBeLessThan(html.indexOf('id="fluxion-player"'));
+    expect(html.indexOf('id="fluxion-routing"')).toBeGreaterThan(html.indexOf(FLUX_HTML_MARKER_COMMENT));
+    // run from a Blob URL, which `script-src blob:` allows: no hash of its own
+    const policy = /content="(default-src[^"]*)"/.exec(html)?.[1] ?? '';
+    expect(policy.match(/'sha256-/g)).toHaveLength(2);
+    expect(policy).toMatch(/script-src [^;]* blob:;/);
+    // without it, or with an empty one, there is no block
+    expect(await write()).not.toContain('fluxion-routing');
+    expect(await write({ routingScript: ' \n' })).not.toContain('fluxion-routing');
+  });
+});

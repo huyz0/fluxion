@@ -1,11 +1,12 @@
 import { createCore, writable } from '@fluxion/core';
 import type { PathCommand } from '@fluxion/geometry';
-import type { Router } from '@fluxion/routing';
+import { globalRoutes, type Router } from '@fluxion/routing';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { GlobalPass } from './registries.js';
 import { ScreenView } from './screen-view.js';
 import { testRegistries } from './test-registries.js';
 
@@ -222,7 +223,7 @@ describe('the global routing pass (FR-RTE-003)', () => {
     const route = () => host.querySelector<SVGPathElement>(`.fx-el[data-el-id="${link}"] path.fx-route`);
     const pass = () => route()?.ownerSVGElement?.dataset['routePass'];
     const cheap = route()?.getAttribute('d');
-    expect(pass()).toBeUndefined();
+    expect(pass()).toBe('cheap');
     const detour: PathCommand[] = [
       { kind: 'M', to: { x: 187.5, y: 150 } },
       { kind: 'L', to: { x: 187.5, y: 225 } },
@@ -234,10 +235,10 @@ describe('the global routing pass (FR-RTE-003)', () => {
     expect(route()?.getAttribute('d')).toBe('M187.5 150 L187.5 225 L412.5 225 L412.5 300');
     // a route that no longer runs between the ends is not drawn, nor marked as the global pass's
     await act(async () => refined.set(new Map([[link, [{ kind: 'M', to: { x: 0, y: 0 } }, ...detour.slice(1)]]])));
-    expect(pass()).toBeUndefined();
+    expect(pass()).toBe('cheap');
     expect(route()?.getAttribute('d')).toBe(cheap);
     await act(async () => refined.set(undefined));
-    expect(pass()).toBeUndefined();
+    expect(pass()).toBe('cheap');
     expect(route()?.getAttribute('d')).toBe(cheap);
   });
 });
@@ -319,5 +320,39 @@ describe('connector labels (FR-CON-006)', () => {
     });
     expect(centres().mid).not.toEqual(before);
     near(centres().label, centres().mid);
+  });
+});
+
+describe('settled routes in the connector view (FR-RTE-003, FR-EDT-010; M16.28)', () => {
+  /** An orthogonal connector with a wall between its ends, drawn with a global pass that `pass` holds; returns its SVG's box. */
+  async function walled(pass: ReturnType<typeof writable<GlobalPass | undefined>>) {
+    const b = documentBuilder({ seed: 2817 });
+    const screenId = b.screen({ size: { w: 800, h: 600 } });
+    const a = b.rect(screenId, { x: 40, y: 260, w: 100, h: 80 });
+    b.rect(screenId, { x: 350, y: 100, w: 40, h: 400 });
+    const c = b.rect(screenId, { x: 600, y: 260, w: 100, h: 80 });
+    const id = b.connect(a, c, { route: 'orthogonal', arrow: false });
+    const core = createCore(b.build());
+    const withPass = { ...registries, globalPass: pass.get };
+    await act(async () =>
+      root.render(<ScreenView registries={withPass} store={core.store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 800, h: 600 } }} />),
+    );
+    const svg = () => host.querySelector<SVGSVGElement>(`.fx-el[data-el-id="${id}"] svg.fx-connector`);
+    return () => ({ pass: svg()?.getAttribute('data-route-pass'), box: svg()?.getAttribute('style'), viewBox: svg()?.getAttribute('viewBox') });
+  }
+
+  it('FR-EDT-010: a view that draws the cheap route first frames the settled route as a view that drew it first does', async () => {
+    const late = writable<GlobalPass | undefined>(undefined);
+    const lateView = await walled(late);
+    const cheap = lateView();
+    expect(cheap.pass).toBe('cheap');
+    await act(async () => late.set(globalRoutes));
+    const settled = lateView();
+    expect(settled.pass).toBe('global');
+    expect(settled.viewBox).not.toBe(cheap.viewBox);
+    act(() => root.unmount());
+    root = createRoot(host);
+    const firstView = await walled(writable<GlobalPass | undefined>(globalRoutes));
+    expect(firstView()).toEqual(settled);
   });
 });

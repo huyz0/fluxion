@@ -17,7 +17,7 @@ export { plainParagraphs } from './label.js';
 export { BUILTIN_MARKERS, registerBuiltinMarkers } from './markers.js';
 export { type ModePolicy, modePolicy, type RenderMode } from './mode-policy.js';
 export { pathData } from './path-data.js';
-export { createRenderRegistries, type ElementView, type ElementViewProps, type RenderRegistries } from './registries.js';
+export { createRenderRegistries, type ElementView, type ElementViewProps, type GlobalPass, type RenderRegistries } from './registries.js';
 export { RenderStatsContext, type RenderStatsRecorder } from './render-stats.js';
 export { type BlockPlan, planBlock } from './rich-blocks.js';
 export { styledBlocks } from './rich-layout.js';
@@ -27,6 +27,7 @@ export { elementsInOrder, presentationOrder, screensInOrder } from './screen-ord
 export { useScreenTheme } from './screen-theme.js';
 export { ContentCssContext, ScreenView, type ScreenViewProps, type ScreenViewSpec, type ViewBox } from './screen-view.js';
 export { createFixedMeasurer, FIXED_ADVANCE_EM, serverMeasurer } from './server-measurer.js';
+export { withSettledRoutes } from './settled-routes.js';
 export { grownHeight, labelBox, ShapeView } from './shape-view.js';
 export { browserMeasurer, type CanvasTextMeasurer, createCanvasMeasurer, registerFontMetrics } from './text-measurer.js';
 export { TextView } from './text-view.js';

@@ -701,6 +701,12 @@ importers:
       '@fluxion/player':
         specifier: workspace:*
         version: link:../player
+      '@fluxion/render':
+        specifier: workspace:*
+        version: link:../render
+      '@fluxion/routing':
+        specifier: workspace:*
+        version: link:../routing
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema

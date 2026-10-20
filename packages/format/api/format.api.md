@@ -420,6 +420,7 @@ export function writeFluxHtml(input: WriteFluxHtmlInput): Promise<Result<string,
 export type WriteFluxHtmlInput = {
     readonly flux: Uint8Array;
     readonly playerScript: string;
+    readonly routingScript?: string;
     readonly title: string;
     readonly lang?: string;
     readonly generator?: string;

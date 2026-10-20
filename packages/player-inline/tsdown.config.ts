@@ -5,7 +5,7 @@ import { defineConfig } from 'tsdown';
 // otherwise keep all of Zod in the file. The library output below keeps its dependencies external like every package.
 const ZOD_STUB = fileURLToPath(new URL('./src/zod-stub.ts', import.meta.url));
 
-// Two outputs (ADR-0154): the package itself (ESM and types, like every library), and `dist/player.inline.js`, the one classic script a
+// The outputs (ADR-0154): the package itself (ESM and types, like every library), and `dist/player.inline.js`, the one classic script a
 // `.flux.html` embeds. The script bundles every dependency, targets the browser, is minified, and defines the global `Fluxion`.
 export default defineConfig([
   {
@@ -44,5 +44,21 @@ export default defineConfig([
     deps: { alwaysBundle: [/.*/] },
     define: { 'process.env.NODE_ENV': '"production"' },
     outputOptions: { entryFileNames: 'fluxion-player.js' },
+  },
+  {
+    // the routing chunk (M16.28, NFR-SIZE-001): the global routing pass alone, a classic script defining `FluxionRouting` that the two
+    // scripts above load once the deck is drawn
+    entry: { 'fluxion-routing': 'src/routing-chunk.ts' },
+    format: 'iife',
+    globalName: 'FluxionRouting',
+    platform: 'browser',
+    clean: false,
+    dts: false,
+    sourcemap: false,
+    minify: true,
+    alias: { zod: ZOD_STUB },
+    deps: { alwaysBundle: [/.*/] },
+    define: { 'process.env.NODE_ENV': '"production"' },
+    outputOptions: { entryFileNames: 'fluxion-routing.js' },
   },
 ]);

@@ -26,6 +26,8 @@ test.describe('a .flux.html from file://', () => {
     await page.goto(url);
     await expect(page.locator('.fx-screen').first()).toBeVisible();
     await expect(page.locator('#fluxion-root')).not.toHaveText(/cannot/);
+    // the routing chunk ran from its Blob URL under the file's CSP (M16.28)
+    await expect(page.locator('#fluxion-root')).toHaveAttribute('data-routes', 'settled');
     expect(await page.title()).toBe('Offline deck');
     expect(problems).toEqual([]);
     expect(blocked).toEqual([]);

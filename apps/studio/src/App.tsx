@@ -28,7 +28,7 @@ import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { registerOpenedFonts } from './opened-fonts.js';
 import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
-import { createRoutePort, globalRoutingAsked } from './route-port.js';
+import { createRoutePort } from './route-port.js';
 import { routeOf } from './routes.js';
 import { installTestHooks } from './test-hooks.js';
 
@@ -112,16 +112,15 @@ function useArrangeRunner(core: Core): ArrangePort {
 }
 
 /**
- * `registries` with the global routing pass's routes (FR-RTE-003) when `on`: once the document settles, a routing worker routes every
- * orthogonal connector as one batch and the editor draws those routes while the document is unchanged. The worker ends when the document
- * closes. When off, `registries` as they are.
+ * `registries` with the global routing pass's routes (FR-RTE-003): once the document settles, a routing worker routes every orthogonal
+ * connector as one batch and the editor draws those routes while the document is unchanged; they are the routes present mode and the
+ * `.flux.html` draw (M16.28). The worker ends when the document closes.
  */
-function useGlobalRouting(core: Core, registries: OpenDocument['registries'], on: boolean): OpenDocument['registries'] {
+function useGlobalRouting(core: Core, registries: OpenDocument['registries']): OpenDocument['registries'] {
   // the pass and its worker belong to the effect, so a remount (StrictMode) disposes one and starts the next; the registries read
   // whichever pass is live through `live`, which is stable for the document
   const live = useMemo(() => writable<{ readonly refined: GlobalRouting['refined'] } | undefined>(undefined), [core, registries]);
   useEffect(() => {
-    if (!on) return;
     const port = createRoutePort();
     const global = createGlobalRouting(core.store, registries, port);
     live.set({ refined: global.refined });
@@ -130,8 +129,8 @@ function useGlobalRouting(core: Core, registries: OpenDocument['registries'], on
       global.dispose();
       port.dispose();
     };
-  }, [core, registries, live, on]);
-  return useMemo(() => (on ? { ...registries, refined: () => live.get()?.refined() } : registries), [registries, live, on]);
+  }, [core, registries, live]);
+  return useMemo(() => ({ ...registries, refined: () => live.get()?.refined() }), [registries, live]);
 }
 
 /** The editor over an open document, with its autosave and the status line in the toolbar. */
@@ -144,11 +143,7 @@ function ProtectedEditor(props: {
 }): JSX.Element {
   const { opened, docId, entry, guard, instance } = props;
   const { core, themes, assets, fonts } = opened;
-  const registries = useGlobalRouting(
-    core,
-    opened.registries,
-    useMemo(() => globalRoutingAsked(window.location.search), []),
-  );
+  const registries = useGlobalRouting(core, opened.registries);
   const host = useMemo(() => browserFileHost(), []);
   const settings = useMemo(() => localSettings(), []);
   const session = useMemo(() => createSession(docId), [docId]);

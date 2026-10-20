@@ -111,7 +111,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-CON-013 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RTE-001 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/connector-view.browser.test.tsx` +2 |
 | FR-RTE-002 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/perf.route-drag-200.spec.ts` +4 |
-| FR-RTE-003 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `apps/studio/src/route-port.test.ts` +5 |
+| FR-RTE-003 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `apps/studio/src/route-port.test.ts` +9 |
 | FR-RTE-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/determinism.test.ts`, `packages/routing/src/orthogonal/grid.test.ts` |
 | FR-RDR-001 | M | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RDR-002 | M | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
@@ -168,7 +168,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/clipboard.chord-fallback.spec.ts` +11 |
 | FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/inspector.mixed-fill.spec.ts` +4 |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +3 |
-| FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `apps/studio/src/route-port.test.ts` +4 |
+| FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/parity.edit-vs-present.spec.ts` +4 |
 | FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/command-palette.browser.test.tsx` +2 |
 | FR-EDT-012 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/keymap.rebind.spec.ts` +6 |
 | FR-EDT-013 | S | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/context-menu.element.spec.ts` +2 |
@@ -311,7 +311,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PERF-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/bench/transact-5000.bench.ts` +3 |
 | NFR-PERF-007 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-008 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `packages/player-inline/src/zod-stub.test.ts`, `tests/harness/size-limit-config.test.mjs` |
+| NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `packages/player-inline/src/inline.browser.test.ts` +2 |
 | NFR-SIZE-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `tests/harness/editor-budget.test.mjs` |
 | NFR-SIZE-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.size.spec.ts`, `packages/format/src/size-budget.test.ts` |
 | NFR-SIZE-004 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` |

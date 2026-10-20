@@ -90,7 +90,11 @@ export function createGlobalRouting(store: Store, ctx: RouteContext, port: Globa
     const mine = ++job;
     const screens = [...(store.members('byType', 'screen') as RecordId[])].sort();
     const inputs = screens.map((s) => globalRouteInput(store, cheap, s)).filter((input) => input.connectors.length > 0);
-    if (inputs.length === 0) return;
+    // nothing to route: the routes drawn are already the pass's
+    if (inputs.length === 0) {
+      refined.set(new Map());
+      return;
+    }
     port.run(inputs).then(
       (routes) => {
         // a newer job, or a change that moved a route since (it bumps `job`), makes these routes stale: dropped

@@ -9,6 +9,8 @@ import { Context } from 'react';
 import { CSSProperties } from 'react';
 import { ElementRecord } from '@fluxion/schema';
 import { FaceMetrics } from '@fluxion/core';
+import { GlobalRoute } from '@fluxion/routing';
+import { GlobalRouteInput } from '@fluxion/routing';
 import { MarkerDef } from '@fluxion/core';
 import { NamedExoticComponent } from 'react';
 import { PathCommand } from '@fluxion/geometry';
@@ -155,6 +157,9 @@ export const FIXED_ADVANCE_EM: number;
 export function FrameView(props: ElementViewProps): ReactNode;
 
 // @public
+export type GlobalPass = (input: GlobalRouteInput) => readonly GlobalRoute[];
+
+// @public
 export function GroupView(props: ElementViewProps): ReactNode;
 
 // @public
@@ -266,6 +271,7 @@ export type RenderRegistries = {
     readonly routers: Registry<string, Router>;
     readonly markers: Registry<string, MarkerDef>;
     readonly refined?: RouteContext["refined"];
+    readonly globalPass?: ReadSignal<GlobalPass | undefined>;
 };
 
 // @public
@@ -343,5 +349,8 @@ export type ViewBox = {
     readonly w: number;
     readonly h: number;
 };
+
+// @public
+export function withSettledRoutes(store: Store, registries: RenderRegistries): RenderRegistries;
 
 ```

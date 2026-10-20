@@ -53,10 +53,3 @@ export function createRoutePort(spawn: () => WorkerLike = browserWorker): RouteP
     dispose: end,
   };
 }
-
-/**
- * Whether the page at `search` asks for the global routing pass's routes (`?routing=global`). Off by default: present mode and the
- * `.flux.html` draw the cheap routes, so drawing others in edit would break edit/present parity (FR-EDT-010) and the studio/file fidelity
- * (FR-FIL-001) until every renderer draws the same routes (backlog M16.28).
- */
-export const globalRoutingAsked = (search: string): boolean => new URLSearchParams(search).get('routing') === 'global';

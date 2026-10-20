@@ -31,6 +31,8 @@ export async function presented(page: Page, editor: EditorPage, index: number): 
   await editor.panel('Screens, library and layers').locator('.fx-chrome-screen-button').nth(index).click();
   await page.keyboard.press('Shift+F5');
   await expect(page.getByTestId('editor-root')).toHaveAttribute('data-mode', 'present');
+  // the global pass's routes, which the .flux.html draws too (M16.28)
+  await expect(page.getByTestId('editor-root')).toHaveAttribute('data-routes', 'settled');
   const stage = page.getByTestId('present-in-place').locator('.fx-screen');
   await expect(stage).toHaveCount(1);
   const drawn = await pixels(page, await stage.screenshot({ animations: 'disabled' }));

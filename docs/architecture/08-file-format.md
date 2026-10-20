@@ -82,6 +82,7 @@ Zip rules (implemented by our own codec in `format`, ADR-0153; the player inflat
   <noscript><!-- pre-rendered SVG of screen 1 + "enable JavaScript to present" --></noscript>
   <script type="application/octet-stream" id="fluxion-package"
           data-encoding="base64" data-sha256="…">UEsDBAoAAAAAAA…</script>
+  <script type="text/plain" id="fluxion-routing" data-fluxion-chunk="routing">/* optional: global routing pass, run as a worker (ADR-0044, M16.28) */</script>
   <script id="fluxion-player">/* player bundle (a classic script that defines the global Fluxion, ADR-0154), inline */</script>
   <script id="fluxion-boot">/* ≈ 1 kB bootstrap: Fluxion.start(bytes, #fluxion-root) */</script>
 </body>
@@ -94,6 +95,7 @@ written `<\/script` and `<\!--`. Bootstrap: read `#fluxion-package` → `Uint8Ar
 the player. The player reads the zip with fflate and inflates entries with native
 `DecompressionStream('deflate-raw')` where available. Plugin bundles are imported from Blob URLs
 (`blob:` in `script-src`), so they need no hash in the CSP. Their integrity is checked before import (§7).
+The optional `#fluxion-routing` block holds the global routing pass (ADR-0044 amendment M16.28). It is inert text, escaped as the player is. The player runs it as a worker from a Blob URL (`script-src blob:` covers workers) once it has drawn the cheap routes, then redraws with the settled routes the worker finds, so the pass never blocks the page. The mount root's `data-routes` says `pending`, `settled` or `cheap`. A file without the block draws the cheap routes.
 
 - The payload is base64 of the `.flux` zip. The zip is already compressed, so base64 adds 33 % to
   compressed bytes, not to raw JSON.

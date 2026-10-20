@@ -18,6 +18,11 @@ export type WriteFluxHtmlInput = {
   readonly flux: Uint8Array;
   /** The player: the classic script `@fluxion/player-inline` builds (`dist/player.inline.js`), which defines the global `Fluxion`. */
   readonly playerScript: string;
+  /**
+   * The routing chunk `@fluxion/player-inline` builds (`dist/fluxion-routing.js`): the global routing pass, written as an inert data block
+   * the player imports from a Blob URL once the deck is drawn (M16.28, ADR-0044 amendment). Without it the file draws the cheap routes.
+   */
+  readonly routingScript?: string;
   /** The document's title, for the page. */
   readonly title: string;
   /** The language of the page (a BCP 47 tag; default `en`). */
@@ -88,14 +93,15 @@ const csp = (boot: string, player: string): string =>
   `default-src 'none'; script-src ${boot} ${player} blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data: blob:; media-src data: blob:; connect-src 'none'; frame-src blob:; object-src 'none'; base-uri 'none'; form-action 'none'`;
 
 /**
- * Write `input` as a `.flux.html`: the archive as base64 in a data block, the player and the boot script inline, a CSP that names both
- * scripts, and both re-import markers in the first 4 kB. The same input gives the same text. A failure is a `reason`.
+ * Write `input` as a `.flux.html`: the archive as base64 in a data block, the routing chunk (when given) in another, the player and the
+ * boot script inline, a CSP that names both scripts, and both re-import markers in the first 4 kB. The same input gives the same text. A failure is a `reason`.
  *
  * @public
  */
 export async function writeFluxHtml(input: WriteFluxHtmlInput): Promise<Result<string, FluxWriteFailure>> {
   if (input.playerScript.trim() === '') return err({ reason: 'the player script is empty', kind: 'invalid' });
   const player = scriptSafe(input.playerScript);
+  const routing = input.routingScript === undefined || input.routingScript.trim() === '' ? undefined : scriptSafe(input.routingScript);
   const hashes = [await cspHash(input.hasher, FLUX_HTML_BOOT), await cspHash(input.hasher, player)] as const;
   const title = escapeHtml(input.title.slice(0, MAX_TITLE));
   const lang = input.lang !== undefined && input.lang.length <= MAX_LANG && LANG.test(input.lang) ? input.lang : 'en';
@@ -119,6 +125,8 @@ export async function writeFluxHtml(input: WriteFluxHtmlInput): Promise<Result<s
     '<div id="fluxion-root"></div>',
     noscript,
     `<script type="application/octet-stream" id="fluxion-package" data-encoding="base64" data-sha256="${archiveHash}">${encodeBase64(input.flux)}</script>`,
+    // inert (text/plain): the player runs it from a Blob URL, which the CSP's `blob:` allows, so it needs no hash
+    ...(routing === undefined ? [] : [`<script type="text/plain" id="fluxion-routing" data-fluxion-chunk="routing">${routing}</script>`]),
     `<script id="fluxion-player">${player}</script>`,
     `<script id="fluxion-boot">${FLUX_HTML_BOOT}</script>`,
     '</body>',
