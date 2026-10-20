@@ -1956,3 +1956,4 @@ M16 hand-off: the hit was right, nearestPoint missed a narrow dip; branch and bo
 ## M17.23
 Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 - M17.24 b334c586: SSR equality test split per fixture (30 s diagnostic bound each); review pass round 2
+- M17.25 136565bc: nightly layout bench judged by the median p99 of 3 runs; row todo until 3 nightlies are within 15 %
