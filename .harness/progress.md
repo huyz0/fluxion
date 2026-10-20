@@ -1864,3 +1864,7 @@ Flake: `source-view.undo.browser.test.tsx` times out under full `pnpm verify` lo
 
 M16.26 (275beaf1): `endTarget` pools the hit with nearby elements; the nearest snapped anchor wins. Five review rounds: a coverage rule (anchors hidden under another element) grew a per-move O(n) scan and was descoped to M16.30.
 CI green again at e21e895 after the M16.29 containment.
+
+## 2026-10-20 M16.25 (claude, local Windows)
+
+M16.25 (78573a99): `anchor-inspector.ts` (rows, add/move/remove) and `anchor-section.tsx`; `commitKeys` moved to `inspector-keys.ts` to keep `inspector.tsx` under 400 lines. Review r1: x/y boxes collided on key when equal (Tab moved the wrong axis), fixed with a Tab-focus test; non-fixed custom anchors get no place boxes.
