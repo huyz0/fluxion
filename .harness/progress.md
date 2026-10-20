@@ -1872,3 +1872,7 @@ M16.25 (78573a99): `anchor-inspector.ts` (rows, add/move/remove) and `anchor-sec
 ## 2026-10-20 M16.27 (claude, local Windows)
 
 M16.27 (e035b036): the undo flake was CodeMirror's 500 ms history group delay splitting 'XY' under load (one Mod-z left 'X'); cases type one key. CI went red at a5ed640 on a WebKit flake: the completion list after typing `rect` covered the clicked line; the case closes it with Escape. Three consecutive full verifies pass.
+
+## 2026-10-20 M16.18 (claude, local Windows)
+
+M16.18 (ce89f454): measured first. Pan and zoom of 2k/1k already ran at 60 fps, so no culling was built. First render went from 1.0-1.2 s to ~0.75 s via a lazy hit index, a template parse cache, a pruned `nearestPoint` and a cached token count. The fixture is opened as a file: bundling it as an example added 187 kB gzip to the studio. Review r1 minors (doc, pan/zoom transform asserted) fixed; r2 passed.
