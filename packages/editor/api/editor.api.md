@@ -422,6 +422,7 @@ export function endDrop(view: ReadView, shapeDefs: {
     readonly at: Vec2;
     readonly newId: () => RecordId;
     readonly tolerance?: number | undefined;
+    readonly covered?: ((p: Vec2) => boolean) | undefined;
 }): readonly ParamCommand[];
 
 // @public
@@ -569,6 +570,7 @@ export type HitIndex = {
     within(screenId: RecordId, box: Box, mode: "contain" | "intersect"): RecordId[];
     all(screenId: RecordId): RecordId[];
     selectableOf(id: RecordId, within?: RecordId): RecordId;
+    covers(screenId: RecordId, elementId: RecordId, p: Vec2, zoom: number): boolean;
     prepare(): void;
     dispose(): void;
 };
@@ -1298,6 +1300,7 @@ export type ToolCtx = {
     hitTest(p: Vec2): RecordId | undefined;
     elementsIn(box: Box, mode: MarqueeMode): readonly RecordId[];
     allElements(): readonly RecordId[];
+    covered?(elementId: RecordId, p: Vec2): boolean;
     readonly view: ReadView;
     readonly screen: RecordId | undefined;
     readonly shapeDefs?: ShapeDefs | undefined;

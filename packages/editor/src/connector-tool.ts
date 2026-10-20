@@ -47,10 +47,22 @@ export function bindable(ctx: ToolCtx, id: RecordId | undefined): RecordId | und
   return r === undefined || r.kind === 'connector' ? undefined : id;
 }
 
+/** Which page points another element covers over `elementId`, as the canvas's hit index says (FR-ANC-006). */
+export const coverOf =
+  (ctx: ToolCtx, elementId: RecordId) =>
+  (p: Vec2): boolean =>
+    ctx.covered?.(elementId, p) ?? false;
+
 /** The anchor a connector end at `p` on `elementId` binds: snapped within the tolerance at the current zoom, else `auto`; `except` is the connector end being re-pointed. */
 export function anchorAt(ctx: ToolCtx, elementId: RecordId, p: Vec2, except?: EndRef): AnchorRef {
   if (ctx.shapeDefs === undefined) return { kind: 'auto' };
-  return snapAnchor(ctx.view, ctx.shapeDefs, { elementId, at: p, tolerance: snapThreshold(ctx.session.camera.get().z), except });
+  return snapAnchor(ctx.view, ctx.shapeDefs, {
+    elementId,
+    at: p,
+    tolerance: snapThreshold(ctx.session.camera.get().z),
+    except,
+    covered: coverOf(ctx, elementId),
+  });
 }
 
 /**
@@ -65,7 +77,7 @@ export function endTarget(ctx: ToolCtx, p: Vec2, except?: EndRef): RecordId | un
   const near = ctx.elementsIn({ x: p.x - tolerance, y: p.y - tolerance, w: 2 * tolerance, h: 2 * tolerance }, 'intersect');
   const pool = [...new Set([...(hit === undefined ? [] : [hit]), ...near])].filter((id) => bindable(ctx, id) !== undefined);
   const snapped = pool.flatMap((id) => {
-    const dot = anchorDots(ctx.view, defs, { elementId: id, at: p, tolerance, except }).find((d) => d.snapped);
+    const dot = anchorDots(ctx.view, defs, { elementId: id, at: p, tolerance, except, covered: coverOf(ctx, id) }).find((d) => d.snapped);
     return dot === undefined ? [] : [{ id, d: Math.hypot(dot.point.x - p.x, dot.point.y - p.y) }];
   });
   // the nearest; on a tie the hit, which comes first
@@ -76,7 +88,9 @@ export function endTarget(ctx: ToolCtx, p: Vec2, except?: EndRef): RecordId | un
 export function showAnchors(ctx: ToolCtx, elementId: RecordId | undefined, p: Vec2, except?: EndRef): void {
   const tolerance = snapThreshold(ctx.session.camera.get().z);
   ctx.session.anchors.set(
-    elementId === undefined || ctx.shapeDefs === undefined ? [] : anchorDots(ctx.view, ctx.shapeDefs, { elementId, at: p, tolerance, except }),
+    elementId === undefined || ctx.shapeDefs === undefined
+      ? []
+      : anchorDots(ctx.view, ctx.shapeDefs, { elementId, at: p, tolerance, except, covered: coverOf(ctx, elementId) }),
   );
 }
 

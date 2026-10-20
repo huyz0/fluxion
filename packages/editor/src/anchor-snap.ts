@@ -1,7 +1,8 @@
 // Anchor snapping while connecting (FR-ANC-006, FR-ANC-003): the anchors an element offers as page points, which of them are full
 // (their `max` connections, ADR-0043's `maxConnections`, reached by other connectors), and the one a drop snaps to: the nearest that is
 // not full, within the tolerance. A drop farther than that from every free anchor binds `auto`, and so does one on the middle of a
-// shape: a centre anchor is neither shown nor snapped to, and neither is one that floats (placed toward the other end, not fixed).
+// shape: a centre anchor is neither shown nor snapped to, and neither is one that floats (placed toward the other end, not fixed), nor one
+// another element covers (M16.30).
 import type { ReadView, ShapeDef } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
 import { DEFAULT_ANCHORS, resolveAnchor, shapeAnchorTarget } from '@fluxion/routing';
@@ -61,15 +62,31 @@ function connections(view: ReadView, elementId: RecordId, name: string, except: 
 }
 
 /**
- * The anchors of `elementId` as dots for a pointer at `at`: each one's page point, whether it is full (connector ends other than `except`
- * fill its `max`), and the one a drop at `at` snaps to within `tolerance` (page units). Empty for an element without a box.
+ * Where a connector end is being placed: on `elementId`, the pointer at `at`, snapping within `tolerance` (page units); `except` is the end
+ * being re-pointed, and `covered` says which page points another element covers (none when absent).
+ *
+ * @public
  */
-export function anchorDots(
-  view: ReadView,
-  shapeDefs: Defs,
-  target: { readonly elementId: RecordId; readonly at: Vec2; readonly tolerance: number; readonly except?: EndRef | undefined },
-): readonly AnchorDot[] {
-  const { elementId, at, tolerance, except } = target;
+export type SnapTarget = {
+  /** The element the end is over. */
+  readonly elementId: RecordId;
+  /** The pointer, page units. */
+  readonly at: Vec2;
+  /** How far a snap reaches, page units. */
+  readonly tolerance: number;
+  /** The connector end being re-pointed: its own binding does not fill an anchor. */
+  readonly except?: EndRef | undefined;
+  /** Whether another element covers a page point: an anchor there is neither shown nor snapped to. */
+  readonly covered?: ((p: Vec2) => boolean) | undefined;
+};
+
+/**
+ * The anchors of `elementId` as dots for a pointer at `at`: each one's page point, whether it is full (connector ends other than `except`
+ * fill its `max`), and the one a drop at `at` snaps to within `tolerance` (page units). Empty for an element without a box; an anchor
+ * another element covers is left out.
+ */
+export function anchorDots(view: ReadView, shapeDefs: Defs, target: SnapTarget): readonly AnchorDot[] {
+  const { elementId, at, tolerance, except, covered } = target;
   const element = view.get(elementId) as (ShapeElement & { readonly transform?: Transform }) | undefined;
   if (element?.transform === undefined) return [];
   // only a shape has a definition with anchors of its own
@@ -88,10 +105,11 @@ export function anchorDots(
     const [p, q] = probes.map((toward) => resolveAnchor(anchorTarget, { kind: 'named', name: a.name }, toward).point);
     return p !== undefined && q !== undefined && Math.hypot(p.x - q.x, p.y - q.y) < 1e-6;
   });
-  const dots = fixed.map((a) => {
+  const dots = fixed.flatMap((a) => {
     const point = resolveAnchor(anchorTarget, { kind: 'named', name: a.name }, at).point;
+    if (covered?.(point) === true) return [];
     const full = a.max !== undefined && connections(view, elementId, a.name, except) >= a.max;
-    return { name: a.name, point, full, d: Math.hypot(point.x - at.x, point.y - at.y) };
+    return [{ name: a.name, point, full, d: Math.hypot(point.x - at.x, point.y - at.y) }];
   });
   const snap = dots
     .filter((d) => !d.full && d.d <= tolerance)
@@ -103,11 +121,7 @@ export function anchorDots(
  * The anchor a connector end dropped at `at` on `elementId` binds: the nearest anchor that is not full within `tolerance` (page units),
  * else `auto`.
  */
-export function snapAnchor(
-  view: ReadView,
-  shapeDefs: Defs,
-  target: { readonly elementId: RecordId; readonly at: Vec2; readonly tolerance: number; readonly except?: EndRef | undefined },
-): { readonly kind: 'named'; readonly name: string } | { readonly kind: 'auto' } {
+export function snapAnchor(view: ReadView, shapeDefs: Defs, target: SnapTarget): { readonly kind: 'named'; readonly name: string } | { readonly kind: 'auto' } {
   const snapped = anchorDots(view, shapeDefs, target).find((d) => d.snapped);
   return snapped === undefined ? { kind: 'auto' } : { kind: 'named', name: snapped.name };
 }

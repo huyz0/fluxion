@@ -203,6 +203,8 @@ export function endDrop(
     readonly at: Vec2;
     readonly newId: () => RecordId;
     readonly tolerance?: number | undefined;
+    /** Whether another element covers a page point over `onto` (none when absent): an anchor there is not snapped to. */
+    readonly covered?: ((p: Vec2) => boolean) | undefined;
   },
 ): readonly ParamCommand[] {
   const { connector, end, onto, at } = drop;
@@ -216,6 +218,12 @@ export function endDrop(
       ? [{ id: 'connector.freeEnd', args: { connectorId: connector, end, at } }]
       : [{ id: 'element.update', args: { id: connector, fields: { [end === 'source' ? 'freeSource' : 'freeTarget']: at } } }];
   }
-  const anchor = snapAnchor(view, shapeDefs, { elementId: onto, at, tolerance: drop.tolerance ?? Number.POSITIVE_INFINITY, except: { connector, end } });
+  const anchor = snapAnchor(view, shapeDefs, {
+    elementId: onto,
+    at,
+    tolerance: drop.tolerance ?? Number.POSITIVE_INFINITY,
+    except: { connector, end },
+    covered: drop.covered,
+  });
   return [{ id: 'binding.set', args: { id: drop.newId(), connectorId: connector, end, elementId: onto, anchor } }];
 }

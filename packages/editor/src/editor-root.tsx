@@ -132,6 +132,7 @@ function useTools(
       newId: () => createId(random),
       elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
       allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),
+      covered: (elementId, p) => screenId !== undefined && (hits.current?.covers(screenId, elementId, p, session.camera.get().z) ?? false),
       execute,
       seal: () => store.history.seal(),
     };

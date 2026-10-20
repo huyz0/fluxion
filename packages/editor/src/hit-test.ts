@@ -163,6 +163,11 @@ export type HitIndex = {
    * Inside the group `within` that has been entered, the outermost group below it (M8.5).
    */
   selectableOf(id: RecordId, within?: RecordId): RecordId;
+  /**
+   * Whether an element of `screenId` drawn above `elementId`, other than a connector, covers page point `p` at zoom `zoom`: it is hit
+   * at `p` and a screen pixel each way from it (an element whose edge only meets `p` does not cover it). A hidden element covers nothing.
+   */
+  covers(screenId: RecordId, elementId: RecordId, p: Vec2, zoom: number): boolean;
   /** Build now what the first query would build (the index is built lazily: opening a big screen does not wait for it, NFR-PERF-002). */
   prepare(): void;
   /** Stop following the store. */
@@ -326,10 +331,29 @@ class Index implements HitIndex {
     return best;
   }
 
+  covers(screenId: RecordId, elementId: RecordId, p: Vec2, zoom: number): boolean {
+    const rank = this.#ready();
+    const below = rank.get(elementId);
+    if (below === undefined) return false;
+    // the dot is hidden when the cover reaches COVER_PX around it: a neighbour's stroke along a shared edge does not
+    const d = COVER_PX / zoom;
+    const around = [p, { x: p.x - d, y: p.y }, { x: p.x + d, y: p.y }, { x: p.x, y: p.y - d }, { x: p.x, y: p.y + d }];
+    return (this.#index.search({ x: p.x - d, y: p.y - d, w: 2 * d, h: 2 * d }) as RecordId[]).some((id) => {
+      const h = this.#hittables.get(id) as Hittable;
+      // tzap disable next-line EqualityOperator: ranks are distinct
+      if (id === elementId || h.screenId !== screenId || (rank.get(id) as number) < below) return false;
+      if ((this.#store.get(id) as { kind?: unknown } | undefined)?.kind === 'connector') return false;
+      return around.every((q) => h.hits(q, 0));
+    });
+  }
+
   dispose(): void {
     for (const stop of this.#stop) stop();
   }
 }
+
+/** Screen pixels around an anchor a cover must reach (beyond a thin stroke's half width) to hide it. */
+const COVER_PX = 3;
 
 /**
  * A hit index over `store`, built by its first query or `prepare` (not now), then kept from its diffs until disposed.

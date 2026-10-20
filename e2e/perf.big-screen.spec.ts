@@ -16,6 +16,21 @@ function threshold(name: string): number {
 const FIRST_RENDER_MS = threshold('BIG_SCREEN_FIRST_RENDER_MS');
 const PANZOOM_MIN_FPS = threshold('BIG_SCREEN_PANZOOM_MIN_FPS');
 
+/** The tasks past 50 ms, in ms, reported while `during` runs (the browser reports no others). */
+async function longTasksDuring(page: Page, during: () => Promise<void>): Promise<number[]> {
+  await page.evaluate(() => {
+    const w = window as unknown as { longTasks: number[] };
+    w.longTasks = [];
+    new PerformanceObserver((list) => {
+      for (const e of list.getEntries()) w.longTasks.push(e.duration);
+    }).observe({ type: 'longtask' });
+  });
+  await during();
+  // the observer reports on the next turn of the event loop
+  await page.waitForTimeout(500);
+  return page.evaluate(() => (window as unknown as { longTasks: number[] }).longTasks);
+}
+
 const SHAPES = 2000;
 const CONNECTORS = 1000;
 
@@ -107,5 +122,30 @@ test.describe('big-screen performance', { tag: '@perf' }, () => {
     await page.keyboard.up('Control');
     expectRate(await stop(), 'zoom');
     expect(scale(await transform())).toBeGreaterThan(scale(panned));
+  });
+
+  test('FR-ANC-006: dragging a connector end across that screen, anchors shown and covered ones left out, leaves no main-thread task over 50 ms', async ({
+    page,
+  }) => {
+    const editor = new EditorPage(page);
+    await pickers(page, FILE);
+    await open(page, editor);
+    const screen = await editor.screenBox();
+    // a point of the 3840 × 2160 screen on the page; shape k (column k % 50, row k / 50) has its centre at (65 + 75 col, 56 + 52 row)
+    const on = (x: number, y: number) => ({ x: screen.x + (x * screen.width) / 3840, y: screen.y + (y * screen.height) / 2160 });
+    await editor.toolButton('Connector').click();
+    const from = on(65, 56);
+    const to = on(65 + 75 * 30, 56 + 52 * 20);
+    await page.mouse.move(from.x, from.y);
+    // the hit index is built when the page is first idle after the open (or by the first query): wait for an idle turn so its build is not the drag's
+    await page.evaluate(() => new Promise<void>((done) => requestIdleCallback(() => done(), { timeout: 2000 })));
+    await page.mouse.down();
+    // only the moves are measured: the press and the drop (which adds a connector to a 3,000-element screen) are one-off tasks of their own
+    const tasks = await longTasksDuring(page, () => page.mouse.move(to.x, to.y, { steps: 80 }));
+    await page.mouse.up();
+    test.info().annotations.push({ type: 'long tasks ms', description: JSON.stringify(tasks) });
+    // the drag made a connector, so it went through the tool and not past it
+    await expect(editor.canvas.locator('svg.fx-connector')).toHaveCount(CONNECTORS + 1);
+    expect(tasks, `long tasks while dragging: ${JSON.stringify(tasks)}`).toEqual([]);
   });
 });

@@ -46,6 +46,11 @@ export type ToolCtx = {
   elementsIn(box: Box, mode: MarqueeMode): readonly RecordId[];
   /** Every selectable element of the canvas's screen inside no other one, back to front. */
   allElements(): readonly RecordId[];
+  /**
+   * Whether an element drawn above `elementId` (not a connector, not hidden) covers page point `p` at the current zoom (absent: nothing
+   * is covered). A covered anchor is neither shown nor snapped to (FR-ANC-006).
+   */
+  covered?(elementId: RecordId, p: Vec2): boolean;
   /** The document, to read. */
   readonly view: ReadView;
   /** The canvas's screen, where creation tools add elements; undefined without one. */

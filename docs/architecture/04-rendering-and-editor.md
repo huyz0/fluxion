@@ -226,6 +226,8 @@ The lowest-distance candidate wins per axis, and Alt bypasses snapping.
 
 The connector tool and the end handle drag both use it. An end just outside every outline still binds to the nearby element whose anchor it is within the tolerance of (`endTarget`), because the anchors sit on the outline and the hit margin is narrower than the tolerance. From the press, and while a dragged end is over an element, the overlay draws that element's dots (`data-anchor-dot`), marks the snapped one (`data-snapped`) and dims the full ones (`data-full`).
 
+An anchor another element hides is left out (M16.30): no dot, no snap. `HitIndex.covers` asks the spatial index for the elements over a small box around the anchor, and the anchor is hidden when one painted above its element (not hidden, not a connector) holds the anchor and the points `3px / zoom` around it inside its outline (a neighbour's thin stroke along a shared edge does not hide it). The tools get it through `ToolCtx.covered`; an end over the covering shape then binds that shape `auto`.
+
 ### 3.4 Inspector, panels, palette, keymap
 
 - **Inspector generated from schemas** (FR-EDT-008). Zod schemas in `schema` carry UI metadata via

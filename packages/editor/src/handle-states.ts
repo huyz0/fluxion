@@ -4,7 +4,7 @@
 import type { Vec2 } from '@fluxion/geometry';
 import type { ConnectorElement, RecordId } from '@fluxion/schema';
 import { type ConnectorHandle, connectorHandleAt, connectorHandlesOf, endDrop, handleEdit } from './connector-handles.js';
-import { endTarget, showAnchors } from './connector-tool.js';
+import { coverOf, endTarget, showAnchors } from './connector-tool.js';
 import { HANDLE_PX } from './overlay-geometry.js';
 import { paramEdit, paramHandleAt, paramHandlesOf } from './param-handles.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
@@ -109,16 +109,18 @@ export function ending(p: HandlePress): StateNode {
       const end = grab.handle.at as 'source' | 'target';
       // a press that did not move is a click on the handle, not a drop: the end keeps its anchor
       const moved = Math.hypot(e.screen.x - grab.down.x, e.screen.y - grab.down.y) >= DRAG_PX;
+      const onto = endTarget(ctx, e.page, { connector: grab.id, end });
       const commands =
         ctx.shapeDefs === undefined || !moved
           ? []
           : endDrop(ctx.view, ctx.shapeDefs, {
               connector: grab.id,
               end,
-              onto: endTarget(ctx, e.page, { connector: grab.id, end: grab.handle.at as 'source' | 'target' }),
+              onto,
               at: e.page,
               newId: ctx.newId,
               tolerance: snapThreshold(ctx.session.camera.get().z),
+              covered: onto === undefined ? undefined : coverOf(ctx, onto),
             });
       const gesture = beginGesture(ctx.execute, ctx.seal);
       for (const c of commands) {
