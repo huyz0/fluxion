@@ -32,11 +32,10 @@ export function outlineDistance(path: Path, p: Vec2): number {
  * @public
  */
 export function projectToOutline(path: Path, from: Vec2, dir: Vec2): Vec2 | null {
-  const nearest = nearestPoint(path, from);
   const length = Math.hypot(dir.x, dir.y);
   // tzap disable next-line ConditionalExpression,EqualityOperator: a zero or NaN direction makes a NaN ray, which crosses nothing: the nearest point either way; the guard states it
-  if (nearest === null || !(length > 0)) return nearest?.point ?? null;
-  // a path with a nearest point has segments, so it has bounds
+  if (path.segments.length === 0 || !(length > 0)) return nearestPoint(path, from)?.point ?? null;
+  // a path with segments has bounds
   const box = pathBounds(path) as Box;
   // far enough to leave the outline's box from anywhere the ray starts
   const reach = Math.hypot(Math.abs(from.x - box.x) + box.w, Math.abs(from.y - box.y) + box.h) + 1;
@@ -55,5 +54,6 @@ export function projectToOutline(path: Path, from: Vec2, dir: Vec2): Vec2 | null
   const joints = [path.segments[0]?.p0 as Vec2, ...path.segments.map((seg) => seg.p3)].filter(onRay);
   // tzap disable next-line EqualityOperator: two points equally far along are the same point
   const last = [...intersectPaths(ray, path), ...joints].reduce<Vec2 | null>((best, q) => (best === null || along(q) > along(best) ? q : best), null);
-  return last === null ? nearest.point : (nearestPoint(path, last) as NearestPoint).point;
+  // the nearest outline point to the far crossing, or to `from` when the ray misses (the nearest search runs once, and only here)
+  return (nearestPoint(path, last ?? from) as NearestPoint).point;
 }

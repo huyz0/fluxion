@@ -1,6 +1,6 @@
 import type { ShapeDef } from '@fluxion/core';
 import { outlineDistance } from '@fluxion/core';
-import { apply, elementMatrix, invert, type Mat2d, type Ok, type Vec2 } from '@fluxion/geometry';
+import { apply, elementMatrix, invert, type Mat2d, type Ok, type Path, pathFromCommands, type Vec2 } from '@fluxion/geometry';
 import type { Transform } from '@fluxion/schema';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
@@ -143,5 +143,42 @@ describe('named, side and point anchors (FR-ANC-002)', () => {
     expect(resolveAnchor(target, { kind: 'side', side: 's', t: 1 }, toward)).toEqual({ point: { x: 110, y: 80 }, dir: { x: 0, y: 1 } });
     expect(resolveAnchor(target, { kind: 'side', side: 'w', t: 0 }, toward)).toEqual({ point: { x: 10, y: 20 }, dir: { x: -1, y: 0 } });
     expect(resolveAnchor(target, { kind: 'point', x: 0.1, y: 0.5 }, toward)).toEqual({ point: { x: 20, y: 50 }, dir: undefined });
+  });
+});
+
+/** The box `w` x `h` as an outline with a joint halfway along the top, which is not recognised as a plain box: the projection (not the closed form) resolves it. */
+function boxPath(w: number, h: number, joint = true): Path {
+  const r = pathFromCommands([
+    { kind: 'M', to: { x: 0, y: 0 } },
+    ...(joint ? [{ kind: 'L' as const, to: { x: w / 2, y: 0 } }] : []),
+    { kind: 'L', to: { x: w, y: 0 } },
+    { kind: 'L', to: { x: w, y: h } },
+    { kind: 'L', to: { x: 0, y: h } },
+    { kind: 'Z' },
+  ]);
+  if (!r.ok) throw new Error('the box is a valid path');
+  return r.value;
+}
+
+describe('floating anchor on a plain box (FR-ANC-001, FR-RTE-002)', () => {
+  it('FR-ANC-001: the closed-form exit of a box agrees with the outline projection for any placement and direction', () => {
+    const placement = fc.record({
+      x: fc.integer({ min: -500, max: 500 }),
+      y: fc.integer({ min: -500, max: 500 }),
+      w: fc.integer({ min: 4, max: 400 }),
+      h: fc.integer({ min: 4, max: 400 }),
+      rot: fc.integer({ min: -360, max: 360 }),
+    });
+    const toward = fc.record({ x: fc.integer({ min: -900, max: 900 }), y: fc.integer({ min: -900, max: 900 }) });
+    fc.assert(
+      fc.property(placement, toward, (t, to) => {
+        const plain = resolveAnchor(shapeAnchorTarget(t, undefined, {}), { kind: 'floating' }, to);
+        const outlined = resolveAnchor({ transform: t, outline: boxPath(t.w, t.h), anchors: [] }, { kind: 'floating' }, to);
+        near(plain.point, outlined.point);
+        // the plain four-sided outline of a rect shape takes the closed form too
+        near(resolveAnchor({ transform: t, outline: boxPath(t.w, t.h, false), anchors: [] }, { kind: 'floating' }, to).point, outlined.point);
+      }),
+      { numRuns: 300 },
+    );
   });
 });

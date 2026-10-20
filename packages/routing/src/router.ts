@@ -18,6 +18,13 @@ export type RouteEnd = {
 };
 
 /**
+ * How much work a route may take: `cheap` while a shape is dragged, `full` when it settles (FR-RTE-002).
+ *
+ * @public
+ */
+export type RouteQuality = 'cheap' | 'full';
+
+/**
  * What a router routes: the resolved ends and the connector's route intent (type, waypoints, …).
  *
  * @public
@@ -29,6 +36,8 @@ export type RouteRequest = {
   readonly target: RouteEnd;
   /** The connector's route. */
   readonly route: Route;
+  /** `cheap` during a drag (no nudging, no label work: FR-RTE-002); `full` otherwise. Absent: `full`. */
+  readonly quality?: RouteQuality | undefined;
 };
 
 /**

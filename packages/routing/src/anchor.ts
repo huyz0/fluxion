@@ -99,6 +99,41 @@ function atFraction(target: AnchorTarget, f: Vec2, dir: Vec2 | undefined): Resol
   return { point: apply(m, { x: f.x * t.w, y: f.y * t.h }), dir: dir === undefined ? undefined : screenDir(m, dir) };
 }
 
+/**
+ * Where the ray from the centre of the box `w` x `h` along `dir` leaves it, in closed form; undefined for a
+ * degenerate box or direction, which the outline projection decides (the hot path of a drag: no path is built).
+ */
+function boxExit(w: number, h: number, dir: Vec2): Vec2 | undefined {
+  const length = Math.hypot(dir.x, dir.y);
+  if (!(length > 0) || !(w > 0) || !(h > 0) || !Number.isFinite(length)) return undefined;
+  const reach = Math.min(dir.x === 0 ? Infinity : w / 2 / Math.abs(dir.x), dir.y === 0 ? Infinity : h / 2 / Math.abs(dir.y));
+  return { x: w / 2 + dir.x * reach, y: h / 2 + dir.y * reach };
+}
+
+/** Whether `a` and `b` are the same number to within rounding. */
+const same = (a: number, b: number): boolean => Math.abs(a - b) < 1e-9;
+
+/** Whether `outline` is exactly the rectangle `w` x `h` drawn with straight sides (a `rect` shape): its exit is then closed-form. */
+function isBox(outline: Path, w: number, h: number): boolean {
+  const corners = [
+    [0, 0],
+    [w, 0],
+    [w, h],
+    [0, h],
+  ] as const;
+  const { segments } = outline;
+  return (
+    outline.closed &&
+    segments.length === 4 &&
+    segments.every((seg) => {
+      const straight = (key: 'x' | 'y') => same(seg.p0[key], seg.p1[key]) && same(seg.p0[key], seg.p2[key]) && same(seg.p0[key], seg.p3[key]);
+      const onCorner = (p: Vec2) => corners.some(([cx, cy]) => same(p.x, cx) && same(p.y, cy));
+      // a side keeps one coordinate, so it runs along the box edge between two corners
+      return straight('x') !== straight('y') && onCorner(seg.p0) && onCorner(seg.p3);
+    })
+  );
+}
+
 /** The floating anchor: the outline point on the ray from the element's centre toward `toward`. */
 function floating(target: AnchorTarget, toward: Vec2): ResolvedAnchor {
   const { transform: t } = target;
@@ -107,7 +142,8 @@ function floating(target: AnchorTarget, toward: Vec2): ResolvedAnchor {
   const back = (invert(m) as Ok<Mat2d>).value;
   const centre = { x: t.w / 2, y: t.h / 2 };
   const dir = sub(apply(back, toward), centre);
-  const local = projectToOutline(target.outline ?? boxOutline(t.w, t.h), centre, dir) ?? centre;
+  const plain = target.outline === undefined || isBox(target.outline, t.w, t.h);
+  const local = (plain ? boxExit(t.w, t.h, dir) : undefined) ?? projectToOutline(target.outline ?? boxOutline(t.w, t.h), centre, dir) ?? centre;
   const point = apply(m, local);
   return { point, dir: screenDir(m, dir) };
 }
@@ -181,6 +217,25 @@ export function resolveAnchor(target: AnchorTarget, ref: AnchorRef, toward: Vec2
   }
 }
 
+/** Outlines evaluated for a definition, by size and params: a drag routes every connector of a shape against the same outline, and evaluating one parses its template. */
+const outlines = new WeakMap<ShapeDef, Map<string, Path | undefined>>();
+
+/** Most outlines kept per definition: a resize walks through many sizes, which would otherwise pile up. */
+const OUTLINES_PER_DEF = 64;
+
+/** The outline of `def` at `size` with `params` (undefined when it does not evaluate), evaluated once per distinct size and params. */
+function outlineOf(def: ShapeDef, size: { readonly w: number; readonly h: number }, params: { readonly [key: string]: unknown }): Path | undefined {
+  const kept = outlines.get(def) ?? new Map<string, Path | undefined>();
+  outlines.set(def, kept);
+  const key = `${size.w}x${size.h}:${JSON.stringify(params)}`;
+  if (kept.has(key)) return kept.get(key);
+  const evaluated = evaluateOutline(def, size, params);
+  const outline = evaluated.ok ? evaluated.value.path : undefined;
+  if (kept.size >= OUTLINES_PER_DEF) kept.clear();
+  kept.set(key, outline);
+  return outline;
+}
+
 /**
  * The anchor target of a shape of definition `def` (none: its box) placed at `transform` with
  * `params` and instance `anchors`: the definition's outline for its size, and the instance's anchors
@@ -193,10 +248,9 @@ export function shapeAnchorTarget(
   def: ShapeDef | undefined,
   element: { readonly params?: { readonly [key: string]: unknown } | undefined; readonly anchors?: readonly AnchorDef[] | undefined } = {},
 ): AnchorTarget {
-  const outline = def === undefined ? undefined : evaluateOutline(def, { w: transform.w, h: transform.h }, element.params ?? {});
   return {
     transform,
-    outline: outline?.ok === true ? outline.value.path : undefined,
+    outline: def === undefined ? undefined : outlineOf(def, { w: transform.w, h: transform.h }, element.params ?? {}),
     anchors: [...(element.anchors ?? []), ...(def?.anchors ?? [])],
   };
 }

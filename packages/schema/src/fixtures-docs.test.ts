@@ -39,6 +39,7 @@ describe('shared document fixtures (FR-DOC-001)', () => {
       'invalid-schema-invalid.flux.json',
       'minimal.flux.json',
       'perf-500.flux.json',
+      'perf-route-200.flux.json',
       'r1-mvp-deck.flux.json',
       'rich-text.flux.json',
       'shapes-gallery.flux.json',

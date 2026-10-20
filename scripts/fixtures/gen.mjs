@@ -150,6 +150,24 @@ function perf500() {
   return b.build();
 }
 
+/**
+ * The connector-drag benchmark's document (FR-RTE-002, M16.15): one hub slugged `drag-me` in the middle of a
+ * 1920 x 1080 screen and 200 satellites around it in 20 columns, the hub joined to each by an orthogonal connector.
+ */
+function perfRoute200() {
+  const b = documentBuilder({ title: 'Perf route 200', seed: 200 });
+  const s = b.screen({ name: 'Two hundred routes', size: { w: 1920, h: 1080 } });
+  const hub = b.rect(s, { x: 900, y: 500, w: 120, h: 80, defId: 'basic:rect', slug: 'drag-me' });
+  const satellites = Array.from({ length: 200 }, (_, k) => {
+    const [col, row] = [k % 20, Math.floor(k / 20)];
+    // rows above and below the hub's band, so the band between stays free for routes to cross
+    const y = row < 5 ? 20 + 48 * row : 640 + 48 * (row - 5);
+    return b.rect(s, { x: 20 + 94 * col, y, w: 60, h: 30, defId: 'basic:rect' });
+  });
+  for (const sat of satellites) b.connect(hub, sat, { route: 'orthogonal' });
+  return b.build();
+}
+
 /** A text node with `marks` (`[type, attrs?]` pairs). */
 const run = (text, ...marks) => ({
   type: 'text',
@@ -334,6 +352,7 @@ const FIXTURES = {
   },
   'shapes-gallery': shapesGallery,
   'perf-500': perf500,
+  'perf-route-200': perfRoute200,
   'rich-text': richText,
   doc20,
   doc50,
@@ -351,7 +370,7 @@ const FIXTURES = {
 };
 
 /** Examples that are copies of a fixture: `examples/<name>.flux.json`. */
-const EXAMPLES = ['shapes-gallery', 'perf-500', 'rich-text'];
+const EXAMPLES = ['shapes-gallery', 'perf-500', 'perf-route-200', 'rich-text'];
 const EXAMPLES_DIR = join(ROOT, 'examples');
 
 const wanted = new Map(Object.entries(FIXTURES).map(([name, build]) => [`${name}.flux.json`, serializeDocument(build())]));

@@ -7,7 +7,7 @@ import type { ReadView, Registry, ShapeDef } from '@fluxion/core';
 import { createPathSampler, type PathCommand, pathFromCommands, type Vec2 } from '@fluxion/geometry';
 import type { AnchorDef, AnchorRef, RecordId, Route, Transform } from '@fluxion/schema';
 import { type AnchorTarget, resolveAnchor, shapeAnchorTarget } from './anchor.js';
-import { type RouteEnd, type Router, straightRouter } from './router.js';
+import { type RouteEnd, type RouteQuality, type Router, straightRouter } from './router.js';
 
 /**
  * Where connectors look up what they route with: shape definitions (for outlines and anchors) and
@@ -20,6 +20,8 @@ export type RouteContext = {
   readonly shapeDefs: Registry<string, ShapeDef>;
   /** Routers by route type. */
   readonly routers: Registry<string, Router>;
+  /** How much work routes may take (FR-RTE-002); absent: full. */
+  readonly quality?: RouteQuality | undefined;
 };
 
 /**
@@ -110,9 +112,15 @@ const resolved = (p: Pending, toward: Vec2): RouteEnd =>
   'target' in p ? resolveAnchor(p.target, p.anchor, toward) : { point: p.at, ...(p.dir === undefined ? {} : { dir: p.dir }) };
 
 /** `router`'s path, or a straight line when it throws or does not run from the source point to the target point. */
-function pathOf(router: Router, source: RouteEnd, target: RouteEnd, route: Route): readonly PathCommand[] {
+function pathOf(
+  router: Router,
+  ends: { readonly source: RouteEnd; readonly target: RouteEnd },
+  route: Route,
+  quality: RouteQuality | undefined,
+): readonly PathCommand[] {
+  const { source, target } = ends;
   try {
-    const commands = router.route({ source, target, route });
+    const commands = router.route({ source, target, route, quality });
     const first = commands[0];
     // a path must start at the source point: one that starts elsewhere would look detached (M5.17 review F1)
     // and end at the target (the Router contract: source to target; M5 final F6), or it would stop short of the element
@@ -158,5 +166,5 @@ function routeOf(view: ReadView, ctx: RouteContext, connectorId: RecordId, above
   const source = resolved(from, waypoints[0] ?? to.at);
   const target = resolved(to, waypoints.at(-1) ?? from.at);
   const router = ctx.routers.get(route.type) ?? straightRouter;
-  return { source, target, commands: pathOf(router, source, target, route) };
+  return { source, target, commands: pathOf(router, { source, target }, route, ctx.quality) };
 }

@@ -177,6 +177,8 @@ class Index implements HitIndex {
   readonly #index: DynamicSpatialIndex = createDynamicIndex();
   readonly #hittables = new Map<RecordId, Hittable>();
   #order: Map<RecordId, number> | undefined;
+  /** Connectors whose route may have changed, refreshed by the next query: a drag reroutes hundreds and queries none (FR-RTE-002). */
+  readonly #dirty = new Set<RecordId>();
   // tzap disable next-line BooleanLiteral: a rebuild too many is only slower
   #stale = false;
   readonly #stop: readonly (() => void)[];
@@ -186,7 +188,11 @@ class Index implements HitIndex {
     this.#ctx = { ...context, vars: toCssVars(context.theme) as Resolving['vars'] };
     this.#build();
     const unsubscribe = store.subscribe((diff) => {
-      for (const id of affected(store, [...diff.puts.keys(), ...diff.deletes.keys()])) this.#refresh(id);
+      for (const id of affected(store, [...diff.puts.keys(), ...diff.deletes.keys()])) {
+        // a connector's hittable is its routed path: built when asked for, not at every step of a drag
+        if ((store.get(id) as { kind?: unknown } | undefined)?.kind === 'connector') this.#dirty.add(id);
+        else this.#refresh(id);
+      }
       this.#order = undefined;
     });
     // a shape definition or router registered, replaced or disposed changes how elements are drawn:
@@ -224,6 +230,8 @@ class Index implements HitIndex {
       this.#stale = false;
       this.#build();
     }
+    for (const id of this.#dirty) this.#refresh(id);
+    this.#dirty.clear();
     this.#order ??= paintOrder(this.#store);
     return this.#order;
   }

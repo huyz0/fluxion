@@ -10,9 +10,9 @@
 import { type MarkerDef, markerTrim } from '@fluxion/core';
 import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
 import { labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
-import type { ConnectorElement, Marker } from '@fluxion/schema';
+import type { ConnectorElement, Marker, RecordId } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
-import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
+import { type CSSProperties, type ReactNode, useContext, useId, useMemo, useRef } from 'react';
 import { concreteLength } from './css-values.js';
 import { labelStyle } from './label.js';
 import { MarkerView, MidMarker } from './markers.js';
@@ -25,11 +25,37 @@ import { useValue } from './use-value.js';
 /** Room around a route for its stroke and markers, px. */
 const ROUTE_MARGIN = 24;
 
+/** How far past a route a box that has to grow reaches: a connector being dragged then keeps its box for the next stretch of the drag. */
+const GROW_SLACK = 160;
+
+/** A box in screen coordinates. */
+type Frame = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
+
+/**
+ * The box to draw in: `held` while `need` fits inside it (a drag then changes the path alone, not the SVG's box and view box),
+ * else `need` and, once there was a box before, `GROW_SLACK` around the union of both. The first box is exactly the route's.
+ */
+function framed(held: Frame | undefined, need: Frame): Frame {
+  if (held === undefined) return need;
+  if (held.x <= need.x && held.y <= need.y && held.x + held.w >= need.x + need.w && held.y + held.h >= need.y + need.h) return held;
+  const [x, y] = [Math.min(held.x, need.x) - GROW_SLACK, Math.min(held.y, need.y) - GROW_SLACK];
+  return { x, y, w: Math.max(held.x + held.w, need.x + need.w) + GROW_SLACK - x, h: Math.max(held.y + held.h, need.y + need.h) + GROW_SLACK - y };
+}
+
 const round = (v: number) => Math.round(v * 1000) / 1000 || 0;
 
 /** Every point a path's commands name (ends and control points): its drawing lies within their box. */
 const pointsOf = (commands: readonly PathCommand[]): Vec2[] =>
   commands.flatMap((c) => [...('control1' in c ? [c.control1, c.control2] : []), ...('control' in c ? [c.control] : []), ...('to' in c ? [c.to] : [])]);
+
+/** The box of a route: its points' bounds plus room for the stroke and markers. */
+function routeFrame(commands: readonly PathCommand[]): Frame {
+  const points = pointsOf(commands);
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const [x, y] = [Math.min(...xs) - ROUTE_MARGIN, Math.min(...ys) - ROUTE_MARGIN];
+  return { x, y, w: Math.max(...xs) - Math.min(...xs) + 2 * ROUTE_MARGIN, h: Math.max(...ys) - Math.min(...ys) + 2 * ROUTE_MARGIN };
+}
 
 /** The registered marker `marker` names (none for `none`, an absent or an unregistered one). */
 const markerOf = (registries: RenderRegistries, marker: Marker | undefined): MarkerDef | undefined =>
@@ -46,6 +72,21 @@ function Labels(props: { readonly element: ConnectorElement; readonly route: rea
       </div>
     );
   });
+}
+
+/** The style of a connector with what is derived from it: its stroke as CSS, the corner radius and the stroke width in px. */
+function styled(id: RecordId, own: ConnectorElement['style'], cornerRadius: number | undefined, theme: ElementViewProps['theme']) {
+  const { style } = resolveStyle(own, 'connector', theme, ['records', id, 'style']);
+  const line: CSSProperties = {
+    fill: 'none',
+    stroke: style.stroke.color,
+    strokeWidth: style.stroke.width,
+    strokeLinecap: style.stroke.cap as CSSProperties['strokeLinecap'],
+    strokeLinejoin: style.stroke.join as CSSProperties['strokeLinejoin'],
+    ...(style.stroke.dash === undefined ? {} : { strokeDasharray: style.stroke.dash }),
+  };
+  const lengths = { radius: cornerRadius ?? concreteLength(style.radius, theme), width: concreteLength(style.stroke.width, theme) };
+  return { style, line, lengths };
 }
 
 /**
@@ -72,36 +113,27 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
       [store, registries, id, record],
     ),
   );
-  const { style } = useMemo(() => resolveStyle(element.style, 'connector', theme, ['records', id, 'style']), [element.style, theme, id]);
+  // the box drawn in last render, kept while the route fits it
+  const frames = useRef<Frame | undefined>(undefined);
+  const { style, line, lengths } = useMemo(
+    () => styled(id, element.style, element.route.cornerRadius, theme),
+    [id, element.style, element.route.cornerRadius, theme],
+  );
   if (routed === undefined) return null;
   const [start, end, mid] = [
     markerOf(registries, element.markers?.start),
     markerOf(registries, element.markers?.end),
     markerOf(registries, element.markers?.mid),
   ];
-  const line: CSSProperties = {
-    fill: 'none',
-    stroke: style.stroke.color,
-    strokeWidth: style.stroke.width,
-    strokeLinecap: style.stroke.cap as CSSProperties['strokeLinecap'],
-    strokeLinejoin: style.stroke.join as CSSProperties['strokeLinejoin'],
-    ...(style.stroke.dash === undefined ? {} : { strokeDasharray: style.stroke.dash }),
-  };
-  // bends round with the route's corner radius, else the style's (0: none); each fillet at most halfway along its segments
-  const radius = element.route.cornerRadius ?? concreteLength(style.radius, theme);
+  const { radius, width } = lengths;
   const drawn = roundCorners(routed.commands, radius);
   // the line stops under each marker, whose tip then lands on the route's end
-  const width = concreteLength(style.stroke.width, theme);
   const trimmed = trimRoute(drawn, markerTrim(start, width), markerTrim(end, width));
   // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
-  const points = pointsOf(drawn);
-  const xs = points.map((p) => p.x);
-  const ys = points.map((p) => p.y);
-  const x = Math.min(...xs) - ROUTE_MARGIN;
-  const y = Math.min(...ys) - ROUTE_MARGIN;
-  const w = Math.max(...xs) - Math.min(...xs) + 2 * ROUTE_MARGIN;
-  const h = Math.max(...ys) - Math.min(...ys) + 2 * ROUTE_MARGIN;
+  const held = frames.current;
+  const { x, y, w, h } = framed(held, routeFrame(drawn));
+  frames.current = { x, y, w, h };
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
     <>
