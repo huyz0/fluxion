@@ -1933,3 +1933,6 @@ WebKit sends a Blob worker's script through the browser context, where the e2e n
 
 ## M16.40 — fan-out lookup
 M16 final review (cp1, `.harness/reviews/milestone-M16-cp1.json`) reopened route-drag-200 and big-screen first render on the CI perf runner (nightly 39387799270: 27.9 fps, 1302 ms). A CDP profile of the drag put 2.4 of 2.9 s in `fan.ts` `joining`, which read every hub binding per spoke. It now reads the end with fewer bindings, and big-screen opens in 486 ms best locally. Proof is a dispatched nightly perf run; M16.41 closes on that same run.
+
+## M16.42 — gate honesty after the final review
+`check-ci-evidence --perf` and an m16 leg require nightly's perf job green at the final range. Legs and labels now match their files. R3.md rows 6 and 7 are unticked until CI evidence exists. Hand-offs went to M22 rows 18 and 19. Nightly 39413712595 is dispatched at d1c7ce86 for the perf evidence.
