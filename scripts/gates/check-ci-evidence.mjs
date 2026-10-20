@@ -12,6 +12,8 @@
 //                     cannot go stale behind later code (M2.20, M1 final F3)
 //   --perf            also require the record's nightly run (`perf`, recorded with --record <sha> --perf-run <id>): its perf job,
 //                     the @perf Playwright specs on the CI perf runner, passed on a commit at or after the same floor (M16 final F3)
+//                     The nightly's perf step, as the run's commit has it, must run with --retries=0, so that the job's success means every spec passed on its
+//                     first attempt, as a local leg demands (M16 final F12: a pass on retry hid a first render over its bound)
 //   --file <f>        another record (tests)
 //   --runs-file <f>   JSON array of `gh run view --json databaseId,workflowName,headSha,conclusion,jobs`
 //                     objects used instead of GitHub (tests)
@@ -101,10 +103,19 @@ function perfRunProblems(run, perf) {
   return out;
 }
 
+/** Problems with the nightly workflow's perf step: it must not retry a spec, or a flaky pass would read as a success (M16 final F12). */
+function perfStepProblems(workflow) {
+  const step = workflow.split(/\r?\n/).find((l) => /playwright test\b.*--project[= ]perf\b/.test(l));
+  if (step === undefined) return ['nightly.yml has no `playwright test --project=perf` step'];
+  return /--retries[= ]0\b/.test(step) ? [] : ['nightly.yml runs the perf project without --retries=0: a spec passing on retry would count as a pass'];
+}
+
 /** Problems with the recorded nightly perf run: its perf job passed on a commit at or after `base`; [] when it is the evidence. */
 async function perfProblems(perf, base, label) {
   if (!perf?.run || !perf.sha) return ['no nightly perf run recorded: check-ci-evidence.mjs --record <sha> --perf-run <id>'];
-  const out = [];
+  // the workflow the run ran, not today's: a run from before the perf step stopped retrying proves nothing about first attempts
+  const workflow = git(['show', `${perf.sha}:.github/workflows/nightly.yml`]);
+  const out = workflow.status === 0 ? perfStepProblems(workflow.stdout) : [`nightly.yml cannot be read at ${String(perf.sha).slice(0, 7)}`];
   if (base && git(['merge-base', '--is-ancestor', base, perf.sha]).status !== 0)
     out.push(`the perf run's ${String(perf.sha).slice(0, 7)} is not at or after ${label} (${base.slice(0, 7)})`);
   try {

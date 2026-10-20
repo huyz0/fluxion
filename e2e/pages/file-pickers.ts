@@ -28,12 +28,11 @@ export async function pickers(page: Page, file: Picker | undefined): Promise<voi
         };
       },
     });
-    w.showOpenFilePicker = async () => [
-      handle(
-        f.name,
-        Uint8Array.from(atob(f.b64), (c) => c.charCodeAt(0)),
-      ),
-    ];
+    // decoded once as the page loads, not on each pick: a real picker hands over the bytes, and a perf spec times from the click
+    const text = atob(f.b64);
+    const bytes = new Uint8Array(text.length);
+    for (let i = 0; i < text.length; i++) bytes[i] = text.charCodeAt(i);
+    w.showOpenFilePicker = async () => [handle(f.name, bytes)];
     w.showSaveFilePicker = async (options: { suggestedName: string }) => handle(options.suggestedName, new Uint8Array());
   }, file);
 }

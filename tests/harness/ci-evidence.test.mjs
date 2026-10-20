@@ -24,6 +24,9 @@ const run = (id, workflowName, headSha, job) => ({
 /** `r` with the job for `os` concluded `conclusion`. */
 const withJob = (r, os, conclusion) => ({ ...r, jobs: r.jobs.map((j) => (j.name.endsWith(`(${os})`) ? { ...j, conclusion } : j)) });
 
+/** A nightly workflow whose perf job runs `step`. */
+const workflow = (step) => ['jobs:', '  perf:', '    steps:', `      - run: ${step}`, ''].join('\n');
+
 let sb;
 const sha = {};
 const check = (record, runs, extra = []) => {
@@ -44,6 +47,9 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
       sha[key] = sb.git('rev-parse', 'HEAD').stdout.trim();
     }
     // M9: two code commits, then a bookkeeping-only one (the paths final-review range checks allow)
+    // the nightly whose perf step does not retry (M16 final F12), from M9.1 on
+    sb.write('.github/workflows/nightly.yml', workflow('pnpm exec playwright test --project=perf --workers=1 --retries=0'));
+    sb.git('add', '.github/workflows/nightly.yml');
     for (const [key, path, subject] of [
       ['code', 'packages/a.ts', 'M9.1: feat(core): a'],
       ['end', 'packages/b.ts', 'M9.2: feat(core): b'],
@@ -168,7 +174,7 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     }
   });
 
-  it('--perf needs a recorded nightly run whose perf job passed at or after the floor (M16 final F3)', () => {
+  it('--perf needs a recorded nightly run whose perf job passed at or after the floor, with no retry (M16 final F3, F12)', () => {
     const nightly = (id, s, conclusion) => ({
       databaseId: id,
       workflowName: 'nightly',
@@ -186,6 +192,15 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.match(red.stderr, /nightly: job perf failure/, out(red));
     const stale = check(withPerf(sha.end, sha.code), [...green(sha.end), nightly(9, sha.code, 'success')], ['--milestone', 'M9', '--perf']);
     assert.match(stale.stderr, /the perf run's \w{7} is not at or after the final review range end of M9/, out(stale));
+    // a perf step that retries could pass a spec on its second attempt and read as a success (M16 final F12)
+    // a run whose commit still retried: on a side branch after the floor, HEAD unchanged
+    sb.git('checkout', '-q', '-b', 'retrying');
+    sb.write('.github/workflows/nightly.yml', workflow('pnpm exec playwright test --project=perf --workers=1'));
+    sb.git('commit', '-q', '--no-verify', '-am', 'M9.4: ci(nightly): perf retries');
+    sha.retrying = sb.git('rev-parse', 'HEAD').stdout.trim();
+    sb.git('checkout', '-q', '-');
+    const retrying = check(withPerf(sha.end, sha.retrying), [...green(sha.end), nightly(9, sha.retrying, 'success')], ['--milestone', 'M9', '--perf']);
+    assert.match(retrying.stderr, /runs the perf project without --retries=0/, out(retrying));
     // without --perf the record's runs alone decide, as before
     assert.equal(check(record(sha.end), green(sha.end), ['--milestone', 'M9']).status, 0);
   });

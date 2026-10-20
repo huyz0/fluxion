@@ -160,4 +160,33 @@ describe('the global routing pass on drop (FR-RTE-003)', () => {
     await settle();
     expect(jobs).toHaveLength(1);
   });
+
+  it('FR-RTE-003, NFR-PERF-002: where the engine has idle callbacks the pass waits for one after settling, and a change before it makes it stale', async () => {
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (fn: () => void) => idle.push(fn));
+    try {
+      const { core, a, ctx } = scene();
+      const { port, jobs } = manualPort();
+      const routing = createGlobalRouting(core.store, ctx, port);
+      await settle();
+      // settled, but the frame that paints the screen comes first
+      expect(jobs).toHaveLength(0);
+      expect(idle).toHaveLength(1);
+      // a change before the idle callback: that callback starts nothing, the next settle asks again
+      core.store.transact('drag', (tx) => tx.patch(a, { transform: { x: 0, y: 40, w: 100, h: 100 } }));
+      idle.shift()?.();
+      expect(jobs).toHaveLength(0);
+      await settle();
+      idle.shift()?.();
+      expect(jobs).toHaveLength(1);
+      // after dispose a pending idle callback starts nothing
+      core.store.transact('drag', (tx) => tx.patch(a, { transform: { x: 0, y: 80, w: 100, h: 100 } }));
+      await settle();
+      routing.dispose();
+      idle.shift()?.();
+      expect(jobs).toHaveLength(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

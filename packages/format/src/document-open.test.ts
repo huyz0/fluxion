@@ -1,6 +1,6 @@
 import { type AnyRecord, parseDocument, type RecordId, serializeDocument } from '@fluxion/schema';
 import fc from 'fast-check';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { openDocumentText } from './document-open.js';
 
 declare global {
@@ -128,6 +128,16 @@ describe('openDocumentText', () => {
       const r = openDocumentText(text);
       expect(r.ok, text).toBe(false);
       if (!r.ok) expect(r.error.code).toBe('FILE_DOCUMENT_INVALID');
+    }
+  });
+
+  it('NFR-PERF-002: a valid document is parsed once for its version and once with validation, not validated twice', () => {
+    const parse = vi.spyOn(JSON, 'parse');
+    try {
+      expect(openDocumentText(galleryText).ok).toBe(true);
+      expect(parse.mock.calls.filter(([text]) => text === galleryText)).toHaveLength(2);
+    } finally {
+      parse.mockRestore();
     }
   });
 });

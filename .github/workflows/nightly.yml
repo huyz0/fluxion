@@ -75,7 +75,8 @@ jobs:
       # NFR-PERF-001: the hit-test-2000 bench (M6 final F4)
       - run: pnpm exec vitest bench --run --project "node (bench)" packages/editor/bench/hit-test-2000.bench.ts
       # the @perf Playwright specs: perf.drag-500, perf.layout-500 (no main-thread long task over 50 ms) and the rest, one worker
-      - run: pnpm exec playwright test --project=perf --workers=1
+      # no retry: a spec that passes only on its second attempt fails the job (M16 final F12)
+      - run: pnpm exec playwright test --project=perf --workers=1 --retries=0
 
   eval-live:
     runs-on: ubuntu-latest

@@ -86,7 +86,6 @@ export function createGlobalRouting(store: Store, ctx: RouteContext, port: Globa
   let timer: ReturnType<typeof setTimeout> | undefined;
   let job = 0;
   const start = () => {
-    timer = undefined;
     const mine = ++job;
     const screens = [...(store.members('byType', 'screen') as RecordId[])].sort();
     const inputs = screens.map((s) => globalRouteInput(store, cheap, s)).filter((input) => input.connectors.length > 0);
@@ -103,9 +102,20 @@ export function createGlobalRouting(store: Store, ctx: RouteContext, port: Globa
       () => undefined,
     );
   };
+  // the pass starts when the main thread is next idle after the settle time, so it never runs between a commit and the frame that paints
+  // it (a screen just opened: M16.41); an engine without idle callbacks starts it at once. A newer schedule or dispose makes it stale.
+  let idle = 0;
+  const startWhenIdle = () => {
+    timer = undefined;
+    const mine = ++idle;
+    const ric = (globalThis as { requestIdleCallback?: (fn: () => void, options: { timeout: number }) => number }).requestIdleCallback;
+    if (ric === undefined) start();
+    else ric(() => mine === idle && start(), { timeout: settleMs });
+  };
   const schedule = () => {
     if (timer !== undefined) clearTimeout(timer);
-    timer = setTimeout(start, settleMs);
+    idle++;
+    timer = setTimeout(startWhenIdle, settleMs);
   };
   const invalidate = () => {
     job++;
@@ -131,6 +141,7 @@ export function createGlobalRouting(store: Store, ctx: RouteContext, port: Globa
       stop();
       stopRegistries();
       if (timer !== undefined) clearTimeout(timer);
+      idle++;
       job++;
       port.cancel();
     },

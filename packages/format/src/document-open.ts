@@ -49,9 +49,15 @@ function droppedIds(raw: unknown, kept: DocumentFile): string[] {
   return Object.keys(records).filter((id) => !Object.hasOwn(kept.records, id));
 }
 
-/** `text` parsed, salvaging a document that fails validation: the valid records and the ids left out. */
-function parseOrSalvage(text: string, reason: Salvage['reason'], readOnly: boolean, extra: Partial<Salvage> = {}): Result<OpenedDocument, FormatError> {
-  const parsed = parseDocument(text);
+/**
+ * `text` as `parsed` read it (parseDocument's result for that text, so a big file is parsed and validated once: M16.41), salvaging a document
+ * that fails validation: the valid records and the ids left out.
+ */
+function openParsed(
+  text: string,
+  parsed: ReturnType<typeof parseDocument>,
+  { reason, readOnly, extra = {} }: { readonly reason: Salvage['reason']; readonly readOnly: boolean; readonly extra?: Partial<Salvage> },
+): Result<OpenedDocument, FormatError> {
   if (parsed.ok) {
     const salvage: Salvage | undefined = reason === 'invalid' ? undefined : { reason, dropped: [], ...extra };
     return ok({ document: parsed.value.document, diagnostics: parsed.value.diagnostics, readOnly, ...(salvage ? { salvage } : {}) });
@@ -66,6 +72,10 @@ function parseOrSalvage(text: string, reason: Salvage['reason'], readOnly: boole
   }
   return ok({ document: kept, diagnostics: parsed.error.diagnostics, readOnly, salvage: { reason, dropped: droppedIds(raw, kept), ...extra } });
 }
+
+/** `text` parsed and opened, salvaged when it fails validation. */
+const parseOrSalvage = (text: string, reason: Salvage['reason'], readOnly: boolean, extra: Partial<Salvage> = {}): Result<OpenedDocument, FormatError> =>
+  openParsed(text, parseDocument(text), { reason, readOnly, extra });
 
 /** The major version of `schemaVersion`, when it is a "MAJOR.MINOR" string. */
 const majorOf = (schemaVersion: unknown): number | undefined =>
@@ -95,7 +105,7 @@ export function openDocumentText(text: string, versionHint?: string): Result<Ope
   const newer = asCurrentVersion(text);
   if (newer !== undefined) return parseOrSalvage(newer, 'newer-major', true);
   const parsed = parseDocument(text);
-  if (parsed.ok || parsed.error.code !== 'DOCUMENT_JSON_INVALID') return parseOrSalvage(text, 'invalid', false);
+  if (parsed.ok || parsed.error.code !== 'DOCUMENT_JSON_INVALID') return openParsed(text, parsed, { reason: 'invalid', readOnly: false });
   const recovered = recoverTruncated(text);
   if (recovered === undefined) return fail(parsed.error.message);
   const version = recovered.schemaVersion ?? versionHint;
