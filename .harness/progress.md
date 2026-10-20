@@ -1896,3 +1896,7 @@ Main's CI green again at 1b9590b after M16.31 (blockedReason cleared). M16.21 (1
 ## 2026-10-20 M16.33 (claude, local Windows)
 
 M16.33 (241e7b2d): FluxScript `lineJumps` (top) and an edge's `jumps` (ADR-0169) compile to settings.lineJumps and route.jumps, and decompile writes them back. Key table, JSON schema, TextMate grammar, cheatsheet and guide updated. The routing showcase example has a golden (arc, gap, fans, spread ends). Review r1: the first spread layout exposed orthogonal routes running along shape sides (row M16.34), and the patch language lacks `jumps` (row M16.35); r2 passed.
+
+## 2026-10-20 M16.32 (claude, local Windows)
+
+M16.32 (8b77ee52): check-api fails on a committed report no entry produces (stale report, or an entry the gate stopped finding) and, in the whole-repo run, on a packages/ or packs/ folder with reports that is not a workspaces.json library. Three harness cases. Review r1 passed (the first record was refused for a missing reviewer field, so the digest shows round 2).
