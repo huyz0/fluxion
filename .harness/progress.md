@@ -1949,3 +1949,6 @@ M17 plan: 26 rows, red gate 5/38. Plan review 4 rounds (F1-F7 goldens/benches/de
 
 ## M17.2 (d7edd48b)
 ADR-0045/0046/0047 + LAYOUT_INCREMENTAL_MOVED_PCT. Review 5 rounds: 0005/0014 amendments, ELK names, reactor = microtask flush, ordered delivery, async-layout rule.
+
+## M17.26 (28661fe9)
+M16 hand-off: the hit was right, nearestPoint missed a narrow dip; branch and bound + chord bound. Review 2 rounds (far-query perf).
