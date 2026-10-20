@@ -1938,3 +1938,4 @@ M16 final review (cp1, `.harness/reviews/milestone-M16-cp1.json`) reopened route
 `check-ci-evidence --perf` and an m16 leg require nightly's perf job green at the final range. Legs and labels now match their files. R3.md rows 6 and 7 are unticked until CI evidence exists. Hand-offs went to M22 rows 18 and 19. Nightly 39413712595 is dispatched at d1c7ce86 for the perf evidence.
 - M16.41 599f36a2: big-screen first render timed in the page (Playwright poll gaps were the CI 1122-1282 ms); nightly to confirm.
 - M16.43 306482fe: property time limit scales with FC_RUNS (nightly properties red since 10-16); nightly to confirm.
+- M16.41 cb28e8ae: global pass on idle, single validation on open, picker decodes on load (318 ms best); nightly perf --retries=0 checked at the run's commit (M16 final F12).
