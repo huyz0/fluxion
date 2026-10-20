@@ -1946,3 +1946,6 @@ M16 final review (cp1, `.harness/reviews/milestone-M16-cp1.json`) reopened route
 
 ## M17.1 (db3fe7ed)
 M17 plan: 26 rows, red gate 5/38. Plan review 4 rounds (F1-F7 goldens/benches/deps/titles; R2-F1 matchesGolden; Req cells HARNESS).
+
+## M17.2 (d7edd48b)
+ADR-0045/0046/0047 + LAYOUT_INCREMENTAL_MOVED_PCT. Review 5 rounds: 0005/0014 amendments, ELK names, reactor = microtask flush, ordered delivery, async-layout rule.
