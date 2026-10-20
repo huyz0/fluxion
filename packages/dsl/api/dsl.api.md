@@ -241,10 +241,19 @@ export type EdgeResult = {
 };
 
 // @public
+export type EdgeSet = {
+    readonly label?: string | undefined;
+    readonly style?: StyleSpec | undefined;
+    readonly route?: "straight" | "curved" | "orthogonal" | "polyline" | undefined;
+    readonly jumps?: "arc" | "gap" | "none" | "default" | undefined;
+};
+
+// @public
 export type EdgeSpec = {
     readonly label?: string | undefined;
     readonly style?: StyleSpec | undefined;
     readonly route?: "straight" | "curved" | "orthogonal" | "polyline" | undefined;
+    readonly jumps?: "arc" | "gap" | "none" | undefined;
 };
 
 // @public
@@ -699,7 +708,7 @@ export type PatchOp = {
 } | {
     readonly op: "update";
     readonly target: string;
-    readonly set: NodeSpec;
+    readonly set: NodeSpec | EdgeSet;
 } | {
     readonly op: "remove";
     readonly target: string;
@@ -860,7 +869,8 @@ export type ResolvedOp = {
     readonly op: "update";
     readonly index: number;
     readonly target: ResolvedRef;
-    readonly set: NodeSpec;
+    readonly set: NodeSpec | EdgeSet;
+    readonly edge?: boolean;
 } | {
     readonly op: "remove";
     readonly index: number;

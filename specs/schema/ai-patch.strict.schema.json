@@ -209,143 +209,229 @@
                 "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
               },
               "set": {
-                "type": "object",
-                "properties": {
-                  "shape": {
-                    "anyOf": [
-                      {
-                        "description": "a shape id, short (rect) or qualified (basic:rect)",
-                        "type": "string"
+                "description": "node keys, or edge keys when the target is an edge",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "shape": {
+                        "anyOf": [
+                          {
+                            "description": "a shape id, short (rect) or qualified (basic:rect)",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "text": {
-                    "anyOf": [
-                      {
-                        "type": "string"
+                      "text": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "label": {
-                    "anyOf": [
-                      {
-                        "type": "string"
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "tone": {
-                    "anyOf": [
-                      {
-                        "description": "a theme variant, e.g. accent",
-                        "type": "string"
+                      "tone": {
+                        "anyOf": [
+                          {
+                            "description": "a theme variant, e.g. accent",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "style": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "key": {
-                              "type": "string"
-                            },
-                            "value": {
-                              "type": "string"
+                      "style": {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "value"
+                              ],
+                              "additionalProperties": false
                             }
                           },
-                          "required": [
-                            "key",
-                            "value"
-                          ],
-                          "additionalProperties": false
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "pin": {
-                    "anyOf": [
-                      {
-                        "description": "a box in screen units; the layout leaves it alone",
-                        "type": "object",
-                        "properties": {
-                          "x": {
-                            "type": "number"
-                          },
-                          "y": {
-                            "type": "number"
-                          },
-                          "w": {
-                            "anyOf": [
-                              {
-                                "type": "number"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "h": {
-                            "anyOf": [
-                              {
-                                "type": "number"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                          {
+                            "type": "null"
                           }
-                        },
-                        "required": [
-                          "x",
-                          "y",
-                          "w",
-                          "h"
-                        ],
-                        "additionalProperties": false
+                        ]
                       },
-                      {
-                        "type": "null"
+                      "pin": {
+                        "anyOf": [
+                          {
+                            "description": "a box in screen units; the layout leaves it alone",
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "w": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "h": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y",
+                              "w",
+                              "h"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "alt": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "shape",
+                      "text",
+                      "label",
+                      "tone",
+                      "style",
+                      "pin",
+                      "alt"
+                    ],
+                    "additionalProperties": false
                   },
-                  "alt": {
-                    "anyOf": [
-                      {
-                        "type": "string"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
-                      {
-                        "type": "null"
+                      "style": {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "route": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "straight",
+                              "curved",
+                              "orthogonal",
+                              "polyline"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "jumps": {
+                        "anyOf": [
+                          {
+                            "description": "line jumps where it crosses edges drawn before it; default: the document's setting",
+                            "type": "string",
+                            "enum": [
+                              "arc",
+                              "gap",
+                              "none",
+                              "default"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "label",
+                      "style",
+                      "route",
+                      "jumps"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "shape",
-                  "text",
-                  "label",
-                  "tone",
-                  "style",
-                  "pin",
-                  "alt"
-                ],
-                "additionalProperties": false
+                ]
               }
             },
             "required": [
@@ -451,12 +537,29 @@
                             "type": "null"
                           }
                         ]
+                      },
+                      "jumps": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "arc",
+                              "gap",
+                              "none"
+                            ],
+                            "description": "line jumps where it crosses edges drawn before it"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "required": [
                       "label",
                       "style",
-                      "route"
+                      "route",
+                      "jumps"
                     ],
                     "additionalProperties": false
                   },

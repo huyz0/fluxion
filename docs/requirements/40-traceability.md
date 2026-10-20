@@ -103,7 +103,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-CON-005 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/geometry/src/round.test.ts`, `packages/render/src/connector-view.test.tsx` |
 | FR-CON-006 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/connector-view.browser.test.tsx` +3 |
 | FR-CON-007 | M | R1 | M7 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/connectors.curve.spec.ts` +7 |
-| FR-CON-008 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/geometry/src/crossings.test.ts` +3 |
+| FR-CON-008 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/dsl/src/patch/jumps.test.ts` +4 |
 | FR-CON-009 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/host-binding.test.ts` |
 | FR-CON-010 | S | R3 | M18 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-CON-011 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/fan.test.ts`, `packages/routing/src/parallel.test.ts` |
@@ -257,7 +257,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-PKG-003 | M | R6 | M27 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-PKG-004 | S | R6 | M27 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-PKG-005 | S | R8 | M33 | [19-extensibility.md](19-extensibility.md) | — |
-| FR-DSL-001 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/compile.test.ts` +5 |
+| FR-DSL-001 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/compile.test.ts` +6 |
 | FR-DSL-002 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/hash/stable-id.test.ts` +6 |
 | FR-DSL-003 | M | R4 | M22 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-004 | M | R5 | M24 | [20-ai-authoring.md](20-ai-authoring.md) | — |

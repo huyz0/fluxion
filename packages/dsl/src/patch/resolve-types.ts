@@ -1,7 +1,7 @@
 // The shapes the patch resolver returns (ADR-0035): ops with every reference resolved.
 import type { CoreRegistries } from '@fluxion/core';
 import type { AnyRecord, Diagnostic } from '@fluxion/schema';
-import type { EdgeSpec, LayoutIntent, NodeSpec, StyleSpec } from './schema.js';
+import type { EdgeSet, EdgeSpec, LayoutIntent, NodeSpec, StyleSpec } from './schema.js';
 import type { RefKind } from './working-index.js';
 
 /**
@@ -57,10 +57,12 @@ export type ResolvedOp =
       readonly op: 'update';
       /** Position of the op in the patch. */
       readonly index: number;
-      /** The element to change. */
+      /** The element or edge to change. */
       readonly target: ResolvedRef;
-      /** The fields to set. */
-      readonly set: NodeSpec;
+      /** The fields to set: an edge's when `edge`, else a node's. */
+      readonly set: NodeSpec | EdgeSet;
+      /** Whether the target is an edge. */
+      readonly edge?: boolean;
     }
   | {
       /** Discriminator. */

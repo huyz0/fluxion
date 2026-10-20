@@ -30,10 +30,16 @@ Option 2.
 - **Edge:** `jumps: arc | gap | none` in the object form or after the shorthand's `:` sets that connector's `route.jumps`, which overrides the document's switch for it. Another value is `FLX_SCHEMA_INVALID` with the three named.
 - **Decompile** writes `lineJumps` when the document sets it, and an edge's `jumps` when its route has one; a route with any other field beyond `type` and `jumps` is still outside the subset.
 - The key table (`fluxScriptKeys`), the JSON schema, the cheatsheet and the authoring guide list both keys.
-- Not covered: the edit language's edge patch (`patch/schema.ts`) does not take `jumps`; an author sets it in the file or the editor (backlog M16.35).
+- Not covered: the edit language's edge patch (`patch/schema.ts`) does not take `jumps`; an author sets it in the file or the editor (backlog M16.35; done, see the amendment below).
 
 ## Consequences
 
 - Good: a FluxScript file can turn hops on, per document or per edge, and the routing showcase is written in FluxScript.
 - Neutral: `FluxAst` and `EdgeAst` gain optional fields, so the dsl API report changes.
 - Bad: none known.
+
+## Amendment (M16.35, 2026-10-20): the edit language takes `jumps`
+
+- **`connect`** takes `jumps: arc | gap | none` in its `spec`, as the file form does; it becomes the connector's `route.jumps`.
+- **`update` of an edge.** An `update` whose target is an edge (its key `a->b`, or a connector's `#<RecordId>`) sets edge keys: `label` (the first label's text, which keeps its place and offset; the other labels stay; an empty label removes the first), `style` (merged), `route` (the type) and `jumps`. `jumps: default` removes the connector's own value, so the document's switch applies again. A strict patch's `null` means "absent", so clearing needs a value of its own.
+- A node key on an edge, or an edge key (`route`, `jumps`) on a node, is `FLX_PATCH_OP_INVALID`, naming the key and the keys that target takes. The update's `set` is a union of the node payload and the edge keys in both generated patch schemas, and `EdgeSet` joins the dsl API.

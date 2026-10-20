@@ -57,9 +57,9 @@ screens:
 \`{ "flux": 1, "baseRevision": "r41", "ops": [ ... ] }\` applies all ops or none. Refs are slugs, #<RecordId>, or edge keys a->b.
 
 - add: { op, screen, slug, node, parent? }
-- update: { op, target, set }
+- update: { op, target, set } (an edge target sets label, style, route, jumps; jumps: default clears)
 - remove: { op, target, cascade? }
-- connect: { op, edge: "a -> b: label", spec? }
+- connect: { op, edge: "a -> b: label", spec?: { label?, style?, route?, jumps? } }
 - disconnect: { op, target }
 - setLayout: { op, scope, layout: { type, direction?, spacing?, gap?, columns?, ... }, relayout? }
 - restyle: { op, targets: [refs] or { select: { screen?, shape?, tone?, kind? } }, style }

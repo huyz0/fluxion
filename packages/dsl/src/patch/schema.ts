@@ -49,9 +49,23 @@ const layoutIntentSchema = z
   })
   .strict();
 
+const routeSchema = z.enum(['straight', 'curved', 'orthogonal', 'polyline']);
+/** How an edge draws its crossings over connectors painted before it (ADR-0169). */
+const jumpsSchema = z.enum(['arc', 'gap', 'none']).describe('line jumps where it crosses edges drawn before it');
+
 /** The edge options after the shorthand's `:`. */
 const edgeSpecSchema = z
-  .object({ label: z.string().optional(), style: styleSchema.optional(), route: z.enum(['straight', 'curved', 'orthogonal', 'polyline']).optional() })
+  .object({ label: z.string().optional(), style: styleSchema.optional(), route: routeSchema.optional(), jumps: jumpsSchema.optional() })
+  .strict();
+
+/** The keys an `update` of an edge sets; `jumps: default` clears the edge's own jumps, so the document's setting applies (a strict patch's null means absent). */
+const edgeSetSchema = z
+  .object({
+    label: z.string().optional(),
+    style: styleSchema.optional(),
+    route: routeSchema.optional(),
+    jumps: z.enum(['arc', 'gap', 'none', 'default']).optional().describe("line jumps where it crosses edges drawn before it; default: the document's setting"),
+  })
   .strict();
 
 /** Picks elements without naming them. */
@@ -69,7 +83,7 @@ const op = <K extends string, S extends z.ZodRawShape>(kind: K, shape: S) => z.o
 /** The nine ops of ADR-0035. */
 const patchOpSchema = z.discriminatedUnion('op', [
   op('add', { screen: refSchema, slug: slugSchema, node: nodeSpecSchema, parent: refSchema.optional() }),
-  op('update', { target: refSchema, set: nodeSpecSchema }),
+  op('update', { target: refSchema, set: z.union([nodeSpecSchema, edgeSetSchema]).describe('node keys, or edge keys when the target is an edge') }),
   op('remove', { target: refSchema, cascade: z.boolean().optional() }),
   op('connect', { edge: z.string().min(1).describe('the edge shorthand: a.e -> b: label'), spec: edgeSpecSchema.optional() }),
   op('disconnect', { target: refSchema }),
@@ -97,6 +111,9 @@ const patchSchema = z
  * @public
  */
 export const NODE_SPEC_KEYS: readonly string[] = Object.keys(nodeSpecSchema.shape);
+
+/** The keys an `update` of an edge takes. */
+export const EDGE_SET_KEYS: readonly string[] = Object.keys(edgeSetSchema.shape);
 
 /**
  * Token names by key.
@@ -150,6 +167,24 @@ export type EdgeSpec = {
   readonly style?: StyleSpec | undefined;
   /** Its route type. */
   readonly route?: 'straight' | 'curved' | 'orthogonal' | 'polyline' | undefined;
+  /** How it draws its crossings over edges drawn before it (ADR-0169); without it, the document's setting. */
+  readonly jumps?: 'arc' | 'gap' | 'none' | undefined;
+};
+
+/**
+ * The keys an `update` of an edge sets.
+ *
+ * @public
+ */
+export type EdgeSet = {
+  /** Its label. */
+  readonly label?: string | undefined;
+  /** Its style, merged into the one it has. */
+  readonly style?: StyleSpec | undefined;
+  /** Its route type. */
+  readonly route?: 'straight' | 'curved' | 'orthogonal' | 'polyline' | undefined;
+  /** How it draws its crossings; `default` clears its own, so the document's setting applies. */
+  readonly jumps?: 'arc' | 'gap' | 'none' | 'default' | undefined;
 };
 
 /**
@@ -217,10 +252,10 @@ export type PatchOp =
   | {
       /** Update a node. */
       readonly op: 'update';
-      /** The node. */
+      /** The node, or an edge (its key `a->b` or `#<RecordId>`). */
       readonly target: string;
-      /** The keys to set. */
-      readonly set: NodeSpec;
+      /** The keys to set: a node's, or an edge's when the target is an edge. */
+      readonly set: NodeSpec | EdgeSet;
     }
   | {
       /** Remove an element. */

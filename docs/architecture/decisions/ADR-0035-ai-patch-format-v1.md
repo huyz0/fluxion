@@ -88,3 +88,6 @@ M14.5 (schema generation and the provider-rules fixture), M14.9 (fixtures `packa
 - **Undo** restores every record exactly; the order records are listed in `toDocument()` may differ (a record put back is listed last), so equality is by record, not by file bytes.
 - **Style tokens** are the dotted names of the theme (`color.surface`); a bare word is not a colour and is rejected by document validation.
 
+## Amendment (M16.35, 2026-10-20): an `update` of an edge
+
+`update` targets an edge as well as a node: with an edge key or a connector's id it sets the edge keys `label`, `style`, `route` and `jumps` (ADR-0169's amendment), still one of the nine ops. `connect`'s spec takes `jumps`.

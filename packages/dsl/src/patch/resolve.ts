@@ -9,9 +9,11 @@ import type { PatchContext, PatchResolution, ResolvedOp, ResolvedPatch, Resolved
 import {
   type AiPatch,
   aiPatchSchema,
+  EDGE_SET_KEYS,
   type EdgeSpec,
   type LayoutIntent,
   MAX_PATCH_OPS,
+  NODE_SPEC_KEYS,
   type NodeSpec,
   type PatchOp,
   type Selector,
@@ -20,6 +22,9 @@ import {
 import { asRec, diagnostic, type Entry, indexOf, normalizeStrictPatch, type RefKind } from './working-index.js';
 
 export type { PatchContext, PatchResolution, ResolvedOp, ResolvedPatch, ResolvedRef } from './resolve-types.js';
+
+/** An edge key: `a->b` or `a~>b`. */
+const EDGE_KEY = /^[^\s.<>~-][^\s<>~]*?(->|~>)\S+$/;
 
 /** Whether an entry has the shape and the kind a selector names (a short shape name matches in any pack). */
 const matches = (e: Entry, { shape, kind }: Selector): boolean =>
@@ -156,9 +161,21 @@ class Resolver {
   }
 
   private update(op: Extract<PatchOp, { op: 'update' }>, i: number): ResolvedOp | undefined {
-    const target = this.lookup(op.target, ['ops', i, 'target'], ['element', 'group']);
-    this.node(op.set, ['ops', i, 'set']);
-    return target ? { op: 'update', index: i, target: ref(target), set: op.set } : undefined;
+    const at = ['ops', i, 'target'];
+    // an edge key or a connector's id names an edge; anything else a node
+    const target = EDGE_KEY.test(op.target) ? this.connector(op.target, at) : this.lookup(op.target, at, ['element', 'group', 'connector']);
+    // an edge key is checked as an edge's keys even when it names no connector (its own error says so)
+    const edge = EDGE_KEY.test(op.target) || target?.kind === 'connector';
+    const wrong = Object.keys(op.set).filter((k) => !(edge ? EDGE_SET_KEYS : NODE_SPEC_KEYS).includes(k));
+    for (const k of wrong)
+      void this.fail(
+        'FLX_PATCH_OP_INVALID',
+        ['ops', i, 'set', k],
+        `"${k}" is not a key of ${edge ? 'an edge' : 'a node'}`,
+        edge ? `an edge takes ${EDGE_SET_KEYS.join(', ')}` : `a node takes ${NODE_SPEC_KEYS.join(', ')}`,
+      );
+    if (!edge) this.node(op.set as NodeSpec, ['ops', i, 'set']);
+    return target && wrong.length === 0 ? { op: 'update', index: i, target: ref(target), set: op.set, ...(edge ? { edge } : {}) } : undefined;
   }
 
   /** The ids of everything inside the group `id`, at any depth. */

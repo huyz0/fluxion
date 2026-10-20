@@ -120,62 +120,105 @@
                 "description": "a slug, #<RecordId>, or an edge key a->b / a~>b"
               },
               "set": {
-                "type": "object",
-                "properties": {
-                  "shape": {
-                    "description": "a shape id, short (rect) or qualified (basic:rect)",
-                    "type": "string"
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "tone": {
-                    "description": "a theme variant, e.g. accent",
-                    "type": "string"
-                  },
-                  "style": {
-                    "type": "object",
-                    "propertyNames": {
-                      "type": "string"
-                    },
-                    "additionalProperties": {
-                      "type": "string"
-                    },
-                    "description": "token names by key, e.g. { fill: \"color.surface\" }"
-                  },
-                  "pin": {
-                    "description": "a box in screen units; the layout leaves it alone",
+                "anyOf": [
+                  {
                     "type": "object",
                     "properties": {
-                      "x": {
-                        "type": "number"
+                      "shape": {
+                        "description": "a shape id, short (rect) or qualified (basic:rect)",
+                        "type": "string"
                       },
-                      "y": {
-                        "type": "number"
+                      "text": {
+                        "type": "string"
                       },
-                      "w": {
-                        "type": "number",
-                        "exclusiveMinimum": 0
+                      "label": {
+                        "type": "string"
                       },
-                      "h": {
-                        "type": "number",
-                        "exclusiveMinimum": 0
+                      "tone": {
+                        "description": "a theme variant, e.g. accent",
+                        "type": "string"
+                      },
+                      "style": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "description": "token names by key, e.g. { fill: \"color.surface\" }"
+                      },
+                      "pin": {
+                        "description": "a box in screen units; the layout leaves it alone",
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          },
+                          "w": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "h": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "alt": {
+                        "type": "string"
                       }
                     },
-                    "required": [
-                      "x",
-                      "y"
-                    ],
                     "additionalProperties": false
                   },
-                  "alt": {
-                    "type": "string"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string"
+                      },
+                      "style": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "description": "token names by key, e.g. { fill: \"color.surface\" }"
+                      },
+                      "route": {
+                        "type": "string",
+                        "enum": [
+                          "straight",
+                          "curved",
+                          "orthogonal",
+                          "polyline"
+                        ]
+                      },
+                      "jumps": {
+                        "description": "line jumps where it crosses edges drawn before it; default: the document's setting",
+                        "type": "string",
+                        "enum": [
+                          "arc",
+                          "gap",
+                          "none",
+                          "default"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
                   }
-                },
-                "additionalProperties": false
+                ],
+                "description": "node keys, or edge keys when the target is an edge"
               }
             },
             "required": [
@@ -243,6 +286,15 @@
                       "orthogonal",
                       "polyline"
                     ]
+                  },
+                  "jumps": {
+                    "type": "string",
+                    "enum": [
+                      "arc",
+                      "gap",
+                      "none"
+                    ],
+                    "description": "line jumps where it crosses edges drawn before it"
                   }
                 },
                 "additionalProperties": false

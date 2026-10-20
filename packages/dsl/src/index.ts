@@ -89,6 +89,7 @@ export { type PatchContext, type PatchResolution, type ResolvedOp, type Resolved
 export {
   type AiPatch,
   aiPatchSchema,
+  type EdgeSet,
   type EdgeSpec,
   type LayoutIntent,
   MAX_PATCH_OPS,

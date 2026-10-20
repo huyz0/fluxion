@@ -7,7 +7,7 @@ import { type AnyRecord, keyBetween, type RecordId, type RichTextDoc, type Style
 import { anchorOf, opStyle, styleOf } from '../expand/style.js';
 import type { LocatedStyle } from '../read/ast.js';
 import type { ResolvedOp, ResolvedPatch, ResolvedRef } from './resolve-types.js';
-import type { LayoutIntent, NodeSpec } from './schema.js';
+import type { EdgeSet, LayoutIntent, NodeSpec } from './schema.js';
 
 /**
  * What lowering needs besides the patch.
@@ -76,6 +76,23 @@ function merge(base: Tree | undefined, over: Tree): Tree {
 
 const styled = (style: { readonly [key: string]: string } | undefined, tone?: string): Style | undefined =>
   styleOf({ ...(style ? { style: { value: style } as unknown as LocatedStyle } : {}), ...(tone !== undefined ? { tone } : {}) });
+
+/** An edge's labels with the first one's text set to `label` where it is (its place, its offset), the others kept; `''` removes the first. */
+function labelsAfter(labels: readonly Rec[] | undefined, label: string): Rec[] {
+  const [first, ...rest] = labels ?? [];
+  if (label === '') return rest;
+  const text = richText(label);
+  return [first ? { ...first, text } : { text, position: 0.5 }, ...rest];
+}
+
+/** An edge's route with the type and jumps of `set`: `jumps: default` removes its own, so the document's setting applies. */
+function routeAfter(current: Rec | undefined, set: EdgeSet): Rec {
+  const route: Rec = { ...current };
+  if (set.route !== undefined) route['type'] = set.route;
+  if (set.jumps === 'default') delete route['jumps'];
+  else if (set.jumps !== undefined) route['jumps'] = set.jumps;
+  return route;
+}
 
 class Lowering {
   readonly work = new Map<string, Rec>();
@@ -247,7 +264,17 @@ class Lowering {
 
   private update(op: Extract<ResolvedOp, { op: 'update' }>): void {
     const current = this.rec(op.target);
-    if (current) this.put({ ...current, ...this.changes(current, op.set) });
+    if (current) this.put({ ...current, ...(op.edge ? this.edgeChanges(current, op.set as EdgeSet) : this.changes(current, op.set as NodeSpec)) });
+  }
+
+  /** What an `update` of an edge changes: its label, style, route type and jumps (`default` clears them). */
+  private edgeChanges(current: Rec, set: EdgeSet): Rec {
+    const style = styled(set.style);
+    return {
+      ...(set.label === undefined ? {} : { labels: labelsAfter(current['labels'] as readonly Rec[] | undefined, set.label) }),
+      ...(style ? { style: merge(current['style'] as Tree | undefined, style as Tree) } : {}),
+      ...(set.route === undefined && set.jumps === undefined ? {} : { route: routeAfter(current['route'] as Rec | undefined, set) }),
+    };
   }
 
   /** The ids below `id` (children, recursively). */
@@ -310,7 +337,7 @@ class Lowering {
       screenId,
       kind: 'connector',
       index: this.indexAfterLast(screenId, undefined),
-      route: { type: op.spec.route ?? 'straight' },
+      route: { type: op.spec.route ?? 'straight', ...(op.spec.jumps ? { jumps: op.spec.jumps } : {}) },
       markers,
       ...(op.spec.label ? { labels: [{ text: richText(op.spec.label), position: 0.5 }] } : {}),
       ...(style ? { style } : {}),
