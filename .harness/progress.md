@@ -1908,3 +1908,7 @@ M16.35 (aa5f61ff): the patch language's connect takes `jumps`; update can target
 ## 2026-10-20 M16.34 (claude, local Windows)
 
 M16.34 (4d148258): a floating end carries `normal`, the outward normal of the box side its ray leaves by; the orthogonal router and the global pass leave and enter along it, so elbow routes no longer run along their sides. `dir` unchanged (curved tangents and goldens unaffected). ADR-0043 amended. Review r1 passed.
+
+## 2026-10-20 M16.36 (claude, local Windows)
+
+M16.36 (609bd3e3): CI's `eval-recorded` was red from 981aa84e: the cheat sheet edits of M16.33/M16.35 changed the system prompt that keys every scripted recording. `pnpm eval --author` re-keyed the 30 recordings (pure renames); `pnpm eval --recorded` passes. Row M16.37 adds a ladder guard. Review r1 passed.
