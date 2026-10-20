@@ -1927,3 +1927,6 @@ User decision for the budget conflict: "Lazy routing chunk".
 
 ## M16.38 — cap the global pass per screen
 `globalRouteInput` gives no input for a screen over `GLOBAL_ROUTE_MAX_CONNECTORS` (400), which keeps the cheap routes in every host. `perf.big-screen` passes again (it was 44 fps / 2.5 s after M16.28). `perf.route-drag-200` reads 35–42 fps on this machine at M16.28 and at the commit before it alike, so it is load here, not the change; CI decides.
+
+## M16.39 — webkit blob worker
+WebKit sends a Blob worker's script through the browser context, where the e2e network block aborted it, so `data-routes` stayed `cheap` (CI red at f7ad7524). The block now lets `blob:` and `data:` through.
