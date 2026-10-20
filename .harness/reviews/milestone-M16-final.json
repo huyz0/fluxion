@@ -1,0 +1,121 @@
+{
+  "milestone": "M16",
+  "checkpoint": "final",
+  "range": "aaff759c..a6ed74b5",
+  "reviewer": "subagent:milestone-reviewer",
+  "verdict": "approve",
+  "findings": [
+    {
+      "id": "F12",
+      "severity": "major",
+      "title": "CI big-screen first render passed only on retry; --perf accepted a flaky pass",
+      "evidence": "Discharged by d8f90f6d (global pass on idle with stale guard, single validation on open, picker decodes at load, nightly perf --retries=0, check-ci-evidence --perf reads nightly.yml at the run's commit). Nightly 39421926321 at 7af11aef: perf green on its first attempt (11 passed), properties green.",
+      "recommendation": "Record a nightly at or after a6ed74b5 with --perf-run, then close M16.41."
+    },
+    {
+      "id": "F13",
+      "severity": "minor",
+      "title": "The R3 leg checked links but not ticks",
+      "evidence": "Discharged: checkExitChecklist fails on an open box among M16's rows, with unit cases.",
+      "recommendation": "None."
+    },
+    {
+      "id": "F14",
+      "severity": "minor",
+      "title": "The three-browser anchors leg could not run on this host",
+      "evidence": "Discharged: anchors and tangent legs run in the pinned image where Docker answers; 9 and 3 tests pass on chromium, firefox and webkit.",
+      "recommendation": "None."
+    },
+    {
+      "id": "F15",
+      "severity": "minor",
+      "title": "M16.43 named two of the three timed-out properties",
+      "evidence": "Discharged: the row cites schema determinism and NFR-REL-005; properties green in nightlies 39420851680 and 39421926321, both after 306482fe.",
+      "recommendation": "Close M16.43 on one of those runs."
+    },
+    {
+      "id": "F16",
+      "severity": "minor",
+      "title": "Plan health and bookkeeping were out of date",
+      "evidence": "Discharged: roadmap, argued F10 and M16.md Learned give 45 rows against 22 planned and the nightly-reading lesson.",
+      "recommendation": "None."
+    },
+    {
+      "id": "F17",
+      "severity": "major",
+      "title": "Ticking R3 row 6 after the evidence would have moved the review range and the CI floors",
+      "evidence": "Discharged by a6ed74b5: AFTER_REVIEW_PATHS used by onlyBookkeepingAfter and lastCodeCommit; harness cases; 70 pass.",
+      "recommendation": "None; evidence must be at or after a6ed74b5."
+    },
+    {
+      "id": "F18",
+      "severity": "minor",
+      "title": "The open-box check would fail on M17-M20 rows",
+      "evidence": "Discharged: the R3 leg checks rows 1-11 only, with a unit case.",
+      "recommendation": "None."
+    },
+    {
+      "id": "F19",
+      "severity": "minor",
+      "title": "imageRunner was duplicated and M16.41's acceptance was stale",
+      "evidence": "Discharged: one exported imageRunner used by three gates; M16.41 acceptance reworded.",
+      "recommendation": "None."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F12",
+      "disposition": "reopen",
+      "target": "M16.41",
+      "note": "fixed in M16.41; confirmed discharged by the final delta review"
+    },
+    {
+      "finding": "F13",
+      "disposition": "reopen",
+      "target": "M16.44",
+      "note": "fixed in M16.44; confirmed discharged by the final delta review"
+    },
+    {
+      "finding": "F14",
+      "disposition": "reopen",
+      "target": "M16.44",
+      "note": "fixed in M16.44; confirmed discharged by the final delta review"
+    },
+    {
+      "finding": "F15",
+      "disposition": "reopen",
+      "target": "M16.44",
+      "note": "fixed in M16.44; confirmed discharged by the final delta review"
+    },
+    {
+      "finding": "F16",
+      "disposition": "reopen",
+      "target": "M16.44",
+      "note": "fixed in M16.44; confirmed discharged by the final delta review"
+    },
+    {
+      "finding": "F17",
+      "disposition": "reopen",
+      "target": "M16.45",
+      "note": "fixed in M16.45; confirmed discharged by the final delta review"
+    },
+    {
+      "finding": "F18",
+      "disposition": "reopen",
+      "target": "M16.45",
+      "note": "fixed in M16.45; confirmed discharged by the final delta review"
+    },
+    {
+      "finding": "F19",
+      "disposition": "reopen",
+      "target": "M16.45",
+      "note": "fixed in M16.45; confirmed discharged by the final delta review"
+    }
+  ],
+  "rounds": [
+    "68817a3a..cb28e8ae changes-requested (F12-F16)",
+    "a50ac65e..30c095aa changes-requested (F17-F19)",
+    "a50ac65e..a6ed74b5 approve"
+  ],
+  "planDelta": "45 rows against 22 planned (2x). Remaining: three-OS ci evidence and a nightly --perf-run at or after a6ed74b5; tick R3 row 6; close M16.41, M16.22; advance the roadmap; archive M16."
+}
