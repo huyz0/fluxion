@@ -47,6 +47,11 @@ export type ResolvedAnchor = {
   readonly point: Vec2;
   /** Unit direction a route leaves along; absent when the anchor has none (a centre). */
   readonly dir?: Vec2 | undefined;
+  /**
+   * A floating end's outward normal of the box side it leaves by, unit length: a router that turns at right angles leaves along it rather
+   * than along `dir`, which points at the other end (M16.34). Absent for every other anchor.
+   */
+  readonly normal?: Vec2 | undefined;
 };
 
 /**
@@ -134,7 +139,14 @@ function isBox(outline: Path, w: number, h: number): boolean {
   );
 }
 
-/** The floating anchor: the outline point on the ray from the element's centre toward `toward`. */
+/** The outward normal of the side of the box `w` x `h` that the ray from its centre along `dir` leaves by; undefined for no direction. */
+function sideOf(w: number, h: number, dir: Vec2): Vec2 | undefined {
+  if (dir.x === 0 && dir.y === 0) return undefined;
+  // the ray reaches a vertical side first when |dx| / (w/2) is the larger share
+  return Math.abs(dir.x) * h >= Math.abs(dir.y) * w ? { x: Math.sign(dir.x), y: 0 } : { x: 0, y: Math.sign(dir.y) };
+}
+
+/** The floating anchor: the outline point on the ray from the element's centre toward `toward`, with the normal of the box side it leaves by. */
 function floating(target: AnchorTarget, toward: Vec2): ResolvedAnchor {
   const { transform: t } = target;
   const m = matrixOf(t);
@@ -145,7 +157,8 @@ function floating(target: AnchorTarget, toward: Vec2): ResolvedAnchor {
   const plain = target.outline === undefined || isBox(target.outline, t.w, t.h);
   const local = (plain ? boxExit(t.w, t.h, dir) : undefined) ?? projectToOutline(target.outline ?? boxOutline(t.w, t.h), centre, dir) ?? centre;
   const point = apply(m, local);
-  return { point, dir: screenDir(m, dir) };
+  const side = sideOf(t.w, t.h, dir);
+  return { point, dir: screenDir(m, dir), ...(side === undefined ? {} : { normal: screenDir(m, side) }) };
 }
 
 /** The center anchor: the box centre, leaving toward `toward` (none when the other end is at the centre). */

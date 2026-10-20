@@ -71,9 +71,9 @@ export type GlobalRoute = {
 const SOLID = new Set(['shape', 'text', 'image', 'component']);
 
 const inside = (p: Vec2, b: Box, m: number) => p.x >= b.x - m && p.x <= b.x + b.w + m && p.y >= b.y - m && p.y <= b.y + b.h + m;
-/** The axis direction an end leaves along, as the orthogonal router snaps it: its anchor direction, else toward `other`. */
+/** The axis direction an end leaves along, as the orthogonal router snaps it: its side's normal or anchor direction, else toward `other`. */
 function axisOf(end: RouteEnd, other: Vec2): Vec2 {
-  const v = end.dir ?? { x: other.x - end.point.x, y: other.y - end.point.y };
+  const v = end.normal ?? end.dir ?? { x: other.x - end.point.x, y: other.y - end.point.y };
   if (v.x === 0 && v.y === 0) return { x: 1, y: 0 };
   return Math.abs(v.x) >= Math.abs(v.y) ? { x: Math.sign(v.x), y: 0 } : { x: 0, y: Math.sign(v.y) };
 }

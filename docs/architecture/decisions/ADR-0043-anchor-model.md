@@ -52,6 +52,10 @@ Option 2.
 
 M16.4 (`anchors.test.ts`, migration fixture), M16.8 (`auto-anchor.test.ts`, crossings metric 0 on the `auto-anchors` fixtures), M16.9 (distribution and spill), M16.17 (editor snap and custom anchors).
 
+### Amendment (M16.34, 2026-10-20): a floating end carries its side's normal
+
+A floating end's `dir` points from the element's centre at the other end, so the orthogonal routers, which snap it to the nearer axis, could leave a box by its bottom side horizontally and run along that side. A floating end now also carries `normal`, the outward normal of the box side the ray leaves by (the vertical sides when the ray's horizontal share of the half-width is the larger, mapped through the placement), on `ResolvedAnchor` and `RouteEnd`; the orthogonal router and the global pass leave and enter along it. It is additive: `dir` is unchanged, so curved routes keep their tangents, and a router that ignores `normal` routes as before. Other anchor kinds carry no `normal` (a side or fixed anchor's `dir` is already the side's).
+
 ## More Information
 
 05-layout-and-routing.md §8, FR-ANC-003 to FR-ANC-007, ADR-0042.

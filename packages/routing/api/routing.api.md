@@ -245,6 +245,7 @@ export function resolveAnchor(target: AnchorTarget, ref: AnchorRef, toward: Vec2
 export type ResolvedAnchor = {
     readonly point: Vec2;
     readonly dir?: Vec2 | undefined;
+    readonly normal?: Vec2 | undefined;
 };
 
 // @public
@@ -262,6 +263,7 @@ export type RouteContext = {
 export type RouteEnd = {
     readonly point: Vec2;
     readonly dir?: Vec2 | undefined;
+    readonly normal?: Vec2 | undefined;
 };
 
 // @public

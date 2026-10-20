@@ -1,9 +1,9 @@
 // The simple `orthogonal` (elbow) router (FR-CON-002; no obstacle avoidance, ADR-0005): axis-aligned
 // segments that leave the source along its anchor direction and arrive at the target against its
-// direction, each snapped to the nearer axis (an end without one faces the other end). Each end first
-// runs a short stub straight out; the stubs join with the first of a few candidate bends (a Z halfway
-// along or across, one corner, detours beyond both stubs) whose route never turns straight back on
-// itself. Waypoints are passed through with one corner each.
+// direction, each snapped to the nearer axis (a floating end leaves along its side's normal, M16.34; an
+// end without either faces the other end). Each end first runs a short stub straight out; the stubs
+// join with the first of a few candidate bends (a Z halfway along or across, one corner, detours beyond
+// both stubs) whose route never turns straight back on itself. Waypoints are passed through with one corner each.
 import type { PathCommand, Vec2 } from '@fluxion/geometry';
 import type { RouteEnd, Router } from './router.js';
 
@@ -20,8 +20,8 @@ function snap(v: Vec2, fallback: Vec2): Vec2 {
   return Math.abs(v.x) >= Math.abs(v.y) ? { x: Math.sign(v.x), y: 0 } : { x: 0, y: Math.sign(v.y) };
 }
 
-/** The axis direction an end leaves along: its anchor direction snapped, else toward `other`. */
-const facing = (end: RouteEnd, other: Vec2): Vec2 => snap(end.dir ?? { x: other.x - end.point.x, y: other.y - end.point.y }, { x: 1, y: 0 });
+/** The axis direction an end leaves along: its side's normal (a floating end) or anchor direction snapped, else toward `other`. */
+const facing = (end: RouteEnd, other: Vec2): Vec2 => snap(end.normal ?? end.dir ?? { x: other.x - end.point.x, y: other.y - end.point.y }, { x: 1, y: 0 });
 
 /** One stub out from `p` along `d`. */
 const out = (p: Vec2, d: Vec2): Vec2 => ({ x: p.x + d.x * ORTHOGONAL_STUB, y: p.y + d.y * ORTHOGONAL_STUB });

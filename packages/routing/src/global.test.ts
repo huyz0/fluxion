@@ -21,6 +21,28 @@ const east = (x: number, y: number) => ({ point: { x, y }, dir: { x: 1, y: 0 } }
 const west = (x: number, y: number) => ({ point: { x, y }, dir: { x: -1, y: 0 } });
 
 describe('the global routing pass (FR-RTE-003)', () => {
+  it('FR-RTE-003: a floating end leaves and enters along its side normal, not along its pull toward the other end (M16.34)', () => {
+    // A (160..320, 120..200) leaves by its bottom side toward the hub's top side, though its pull (dir) is more across than down
+    const pull = { x: 0.873, y: 0.487 };
+    const input: GlobalRouteInput = {
+      obstacles: [
+        { id: 'a', box: { x: 160, y: 120, w: 160, h: 80 } },
+        { id: 'hub', box: { x: 520, y: 400, w: 480, h: 100 } },
+      ],
+      connectors: [
+        {
+          id: 'c',
+          source: { point: { x: 311.7, y: 200 }, dir: pull, normal: { x: 0, y: 1 } },
+          target: { point: { x: 588.3, y: 400 }, dir: { x: -pull.x, y: -pull.y }, normal: { x: 0, y: -1 } },
+        },
+      ],
+    };
+    const path = points(globalRoutes(input)[0]?.commands ?? []);
+    const [first, second, beforeLast, last] = [0, 1, -2, -1].map((k) => path.at(k) as Vec2) as [Vec2, Vec2, Vec2, Vec2];
+    expect([second.x, second.y > first.y]).toEqual([first.x, true]);
+    expect([beforeLast.x, beforeLast.y < last.y]).toEqual([last.x, true]);
+  });
+
   it('FR-RTE-003: a route goes around a shape in its way, from end to end', () => {
     const wall: Box = { x: 150, y: 0, w: 60, h: 200 };
     const input: GlobalRouteInput = {

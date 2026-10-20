@@ -15,6 +15,8 @@ export type RouteEnd = {
   readonly point: Vec2;
   /** Unit direction the route leaves along; absent when the anchor has none. */
   readonly dir?: Vec2 | undefined;
+  /** A floating end's outward normal of the box side it sits on: a router that turns at right angles leaves along it (M16.34). */
+  readonly normal?: Vec2 | undefined;
 };
 
 /**

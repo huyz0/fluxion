@@ -3,6 +3,7 @@ import type { PathCommand } from '@fluxion/geometry';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
+import { resolveAnchor } from './anchor.js';
 import { registerBuiltinRouters } from './builtins.js';
 import { type RouteContext, routeConnector } from './connector-route.js';
 import { type Router, straightRouter } from './router.js';
@@ -149,7 +150,7 @@ describe('connector ends (FR-CON-001, FR-ANC-001, FR-ANC-002)', () => {
     const ctx = context();
     const plain = scene();
     const routed = plain.store.query((view) => routeConnector(view, ctx, plain.line))();
-    expect(r9(routed?.source)).toEqual({ point: { x: 100, y: 50 }, dir: { x: 1, y: 0 } });
+    expect(r9(routed?.source)).toEqual({ point: { x: 100, y: 50 }, dir: { x: 1, y: 0 }, normal: { x: 1, y: 0 } });
     expect(r9(routed?.target)).toEqual({ point: { x: 300, y: 50 } });
     // a named anchor
     const named = scene((records) => {
@@ -251,5 +252,49 @@ describe('connector ends (FR-CON-001, FR-ANC-001, FR-ANC-002)', () => {
     expect(r9(createCore(b.build()).store.query((view) => routeConnector(view, ctx, free))()?.source)).toEqual({ point: { x: 0, y: 0 } });
     // no such connector
     expect(scene().store.query((view) => routeConnector(view, ctx, 'nope' as RecordId))()).toBeUndefined();
+  });
+});
+
+describe('orthogonal routes from floating ends (FR-RTE-001, FR-ANC-007, M16.34)', () => {
+  /** A 160 x 80 box above-left of a wide hub, joined orthogonally by floating ends: the pull from A to the hub is more across than down, but
+   * the ray from A's centre leaves by its bottom side, and the one from the hub's centre by its top. */
+  function spread() {
+    const b = documentBuilder({ seed: 5173 });
+    const screenId = b.screen();
+    const a = b.rect(screenId, { x: 160, y: 120, w: 160, h: 80 });
+    const hub = b.rect(screenId, { x: 520, y: 400, w: 480, h: 100 });
+    const line = b.connect(a, hub, { route: 'orthogonal' });
+    return { store: createCore(b.build()).store, line };
+  }
+  const points = (commands: readonly PathCommand[] | undefined) => (commands ?? []).flatMap((c) => (c.kind === 'Z' ? [] : [c.to]));
+
+  it('FR-RTE-001: the first segment leaves its side along the side normal and the last enters along the target side normal', () => {
+    const { store, line } = spread();
+    const routed = r9(store.query((view) => routeConnector(view, context(), line))());
+    // A's centre (240, 160) toward the hub's (760, 450): the ray leaves A by its bottom side, the hub's toward A by its top side
+    expect(routed?.source.point.y).toBe(200);
+    expect(routed?.source.normal).toEqual({ x: 0, y: 1 });
+    expect(routed?.target.point.y).toBe(400);
+    expect(routed?.target.normal).toEqual({ x: 0, y: -1 });
+    const p = points(routed?.commands);
+    const [first, second, last, beforeLast] = [p[0], p[1], p.at(-1), p.at(-2)];
+    // down out of A's bottom side (x kept, y grows), and down into the hub's top side
+    expect([second?.x, (second?.y ?? 0) > (first?.y ?? 0)]).toEqual([first?.x, true]);
+    expect([beforeLast?.x, (beforeLast?.y ?? 0) < (last?.y ?? 0)]).toEqual([last?.x, true]);
+  });
+
+  it('FR-ANC-007: a floating end on a side carries that side normal, turned with the element; other anchors carry none', () => {
+    const target = { transform: { x: 0, y: 0, w: 160, h: 80 }, anchors: [] };
+    // toward (300, 120) from the centre (80, 40): more across (220) than down (80), yet the ray leaves by the right side, and toward
+    // (200, 160) by the bottom (dx 120 / 80 < dy 120 / 40)
+    expect(r9(resolveAnchor(target, { kind: 'floating' }, { x: 300, y: 120 }).normal)).toEqual({ x: 1, y: 0 });
+    expect(r9(resolveAnchor(target, { kind: 'floating' }, { x: 200, y: 160 }).normal)).toEqual({ x: 0, y: 1 });
+    // a quarter turn maps the box's bottom side to screen left
+    const turned = { transform: { x: 0, y: 0, w: 160, h: 80, rot: 90 }, anchors: [] };
+    const toward = resolveAnchor(turned, { kind: 'floating' }, { x: -400, y: 40 });
+    expect(r9(toward.normal)).toEqual({ x: -1, y: 0 });
+    // the other end on the centre: no direction, no normal; a named anchor carries none
+    expect(resolveAnchor(target, { kind: 'floating' }, { x: 80, y: 40 }).normal).toBeUndefined();
+    expect(resolveAnchor(target, { kind: 'named', name: 's' }, { x: 300, y: 120 }).normal).toBeUndefined();
   });
 });
