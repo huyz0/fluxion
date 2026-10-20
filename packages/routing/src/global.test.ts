@@ -65,6 +65,32 @@ describe('the global routing pass (FR-RTE-003)', () => {
     expect(Math.abs((y1 as number) - (y2 as number))).toBeGreaterThanOrEqual(6);
   });
 
+  it('FR-RTE-003: routes nudged apart keep the margin from the shapes they pass, as the search did', () => {
+    const wall: Box = { x: 150, y: 0, w: 60, h: 200 };
+    const margin = 8;
+    const input: GlobalRouteInput = {
+      obstacles: [
+        { id: 'a', box: { x: 0, y: 0, w: 50, h: 200 } },
+        { id: 'wall', box: wall },
+        { id: 'b', box: { x: 300, y: 0, w: 50, h: 200 } },
+      ],
+      // both go over the wall, one beside the other: the nudge spreads them, but not into the margin
+      connectors: [
+        { id: 'c1', source: east(50, 20), target: west(300, 20) },
+        { id: 'c2', source: east(50, 30), target: west(300, 30) },
+      ],
+      margin,
+      spacing: 6,
+    };
+    const routes = globalRoutes(input);
+    expect(routes).toHaveLength(2);
+    const clear: Box = { x: wall.x - margin + 1e-6, y: wall.y - margin + 1e-6, w: wall.w + 2 * margin - 2e-6, h: wall.h + 2 * margin - 2e-6 };
+    for (const route of routes) {
+      const path = points(route.commands);
+      expect(path.slice(1).some((p, k) => crosses(path[k] as Vec2, p, clear))).toBe(false);
+    }
+  });
+
   it('FR-RTE-003: the input names the solid elements and the orthogonal connectors without waypoints, with their resolved ends', () => {
     const b = documentBuilder({ seed: 7 });
     const screen = b.screen();

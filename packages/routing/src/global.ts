@@ -3,7 +3,7 @@
 // input is plain data (structured-clone), built on the page's thread by `globalRouteInput` from the cheap routes' resolved ends.
 
 import type { ReadView } from '@fluxion/core';
-import { type Box, elementBounds, type PathCommand, type Vec2 } from '@fluxion/geometry';
+import { type Box, boxInflate, elementBounds, type PathCommand, type Vec2 } from '@fluxion/geometry';
 import { type RecordId, type Transform, transformRotation } from '@fluxion/schema';
 import { type RouteContext, routeConnector } from './connector-route.js';
 import { buildGrid } from './orthogonal/grid.js';
@@ -110,7 +110,8 @@ export function globalRoutes(input: GlobalRouteInput): GlobalRoute[] {
     const path = searchRoute({ grid, obstacles: avoid, margin, start: e.from, startDir: e.ds, goal: e.to, goalDir: e.dt, existing: placed });
     if (path === undefined) continue;
     const points = simplify([e.source.point, ...path, e.target.point]);
-    routed.push({ id: e.id, points, avoid });
+    // nudge keeps a route out of boxes already inflated by the clearance: the margin the search kept stays kept
+    routed.push({ id: e.id, points, avoid: avoid.map((b) => boxInflate(b, margin)) });
     for (let k = 1; k < points.length; k++) placed.push({ from: points[k - 1] as Vec2, to: points[k] as Vec2 });
   }
   const spread = nudge(routed, input.spacing ?? 6);
