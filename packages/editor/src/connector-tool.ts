@@ -54,23 +54,22 @@ export function anchorAt(ctx: ToolCtx, elementId: RecordId, p: Vec2, except?: En
 }
 
 /**
- * The element a connector end at `p` binds: the one hit there, else (the end just outside every outline, where the anchors on it are
- * still within the snap tolerance) the element near `p` with an anchor `p` would snap to, nearest first. `except` is the connector
- * end being re-pointed.
+ * The element a connector end at `p` binds: of the one hit and the elements near `p`, the one with an anchor `p` snaps to, nearest
+ * first (the end just outside an outline: past every shape, or on a larger shape just past a smaller one on it). Else the one hit. `except` is the connector end being re-pointed.
  */
 export function endTarget(ctx: ToolCtx, p: Vec2, except?: EndRef): RecordId | undefined {
   const hit = bindable(ctx, ctx.hitTest(p));
-  if (hit !== undefined || ctx.shapeDefs === undefined) return hit;
+  if (ctx.shapeDefs === undefined) return hit;
   const defs = ctx.shapeDefs;
   const tolerance = snapThreshold(ctx.session.camera.get().z);
   const near = ctx.elementsIn({ x: p.x - tolerance, y: p.y - tolerance, w: 2 * tolerance, h: 2 * tolerance }, 'intersect');
-  const snapped = near
-    .filter((id) => bindable(ctx, id) !== undefined)
-    .flatMap((id) => {
-      const dot = anchorDots(ctx.view, defs, { elementId: id, at: p, tolerance, except }).find((d) => d.snapped);
-      return dot === undefined ? [] : [{ id, d: Math.hypot(dot.point.x - p.x, dot.point.y - p.y) }];
-    });
-  return snapped.reduce<(typeof snapped)[number] | undefined>((best, c) => (best === undefined || c.d < best.d ? c : best), undefined)?.id;
+  const pool = [...new Set([...(hit === undefined ? [] : [hit]), ...near])].filter((id) => bindable(ctx, id) !== undefined);
+  const snapped = pool.flatMap((id) => {
+    const dot = anchorDots(ctx.view, defs, { elementId: id, at: p, tolerance, except }).find((d) => d.snapped);
+    return dot === undefined ? [] : [{ id, d: Math.hypot(dot.point.x - p.x, dot.point.y - p.y) }];
+  });
+  // the nearest; on a tie the hit, which comes first
+  return snapped.reduce<(typeof snapped)[number] | undefined>((best, c) => (best === undefined || c.d < best.d ? c : best), undefined)?.id ?? hit;
 }
 
 /** Show the anchors of `elementId` (none when undefined) for a connector end at `p` (FR-ANC-006). */

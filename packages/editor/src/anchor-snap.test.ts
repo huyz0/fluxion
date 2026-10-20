@@ -42,6 +42,43 @@ const at = (phase: PointerPhase, x: number, y: number): PointerInfo => ({
   coalesced: [],
 });
 
+/** A connector tool over `core` whose hit test and box query see `order`'s boxes, front first; `extra` is hit before them (a connector, say). */
+function toolOver(core: ReturnType<typeof createCore>, screen: RecordId, order: RecordId[], extra?: (p: { x: number; y: number }) => RecordId | undefined) {
+  const session = createSession('doc');
+  const registry = createToolRegistry();
+  registerBuiltinTools(registry);
+  let n = 0;
+  const box = (id: RecordId) => (core.store.get(id) as unknown as { transform: { x: number; y: number; w: number; h: number } }).transform;
+  const tools = createToolDispatcher(registry, {
+    session,
+    view: core.store,
+    execute: core.execute,
+    seal: () => core.store.history.seal(),
+    newId: () => `snapsnapsnaps${String(++n).padStart(3, '0')}` as RecordId,
+    screen,
+    shapeDefs: defs,
+    hitTest: (p) =>
+      extra?.(p) ??
+      order.find((id) => {
+        const t = box(id);
+        return p.x >= t.x && p.x <= t.x + t.w && p.y >= t.y && p.y <= t.y + t.h;
+      }),
+    elementsIn: (q) =>
+      order.filter((id) => {
+        const t = box(id);
+        return q.x <= t.x + t.w && q.x + q.w >= t.x && q.y <= t.y + t.h && q.y + q.h >= t.y;
+      }),
+    allElements: () => [],
+  });
+  session.tool.set('connector');
+  const target = () =>
+    core.store
+      .members('byType', 'binding')
+      .map((id) => core.store.get(id) as unknown as { connectorId: string; end: string; elementId: string; anchor: unknown })
+      .find((x) => x.connectorId.startsWith('snapsnap') && x.end === 'target');
+  return { session, tools, target };
+}
+
 describe('anchor snapping (FR-ANC-006, FR-ANC-003)', () => {
   it('FR-ANC-006: the anchors of an element are dots, and a drop within the tolerance of one snaps to it; farther away it binds auto', () => {
     const { core, a } = setup();
@@ -208,5 +245,109 @@ describe('anchor snapping (FR-ANC-006, FR-ANC-003)', () => {
       .map((id) => core.store.get(id) as unknown as { connectorId: string; end: string; elementId: string; anchor: unknown })
       .find((b) => b.connectorId.startsWith('snapsnap') && b.end === 'target');
     expect(target).toMatchObject({ elementId: c, anchor: { kind: 'named', name: 'n' } });
+  });
+
+  it('FR-ANC-006: an end just outside a small shape that sits on a larger one snaps to an anchor of the small shape, not the larger shape it hits', () => {
+    const b = documentBuilder({ seed: 1626 });
+    const screen = b.screen();
+    const a = b.rect(screen, { x: 0, y: 0, w: 100, h: 100, defId: 'test:rect' });
+    const big = b.rect(screen, { x: 300, y: 0, w: 400, h: 400, defId: 'test:rect' });
+    const small = b.rect(screen, { x: 450, y: 150, w: 100, h: 100, defId: 'test:rect' });
+    const core = createCore(b.build());
+    const session = createSession('doc');
+    const registry = createToolRegistry();
+    registerBuiltinTools(registry);
+    let n = 0;
+    const box = (id: RecordId) => (core.store.get(id) as unknown as { transform: { x: number; y: number; w: number; h: number } }).transform;
+    // front first: the small shape is over the big one
+    const order = [small, big, a];
+    const tools = createToolDispatcher(registry, {
+      session,
+      view: core.store,
+      execute: core.execute,
+      seal: () => core.store.history.seal(),
+      newId: () => `snapsnapsnaps${String(++n).padStart(3, '0')}` as RecordId,
+      screen,
+      shapeDefs: defs,
+      hitTest: (p) =>
+        order.find((id) => {
+          const t = box(id);
+          return p.x >= t.x && p.x <= t.x + t.w && p.y >= t.y && p.y <= t.y + t.h;
+        }),
+      elementsIn: (q) =>
+        order.filter((id) => {
+          const t = box(id);
+          return q.x <= t.x + t.w && q.x + q.w >= t.x && q.y <= t.y + t.h && q.y + q.h >= t.y;
+        }),
+      allElements: () => [],
+    });
+    session.tool.set('connector');
+    tools.pointer(at('down', 98, 50));
+    // 5 left of the small shape's w anchor (450, 200): on the big shape, within the tolerance of w
+    tools.pointer(at('move', 445, 201));
+    expect(session.hover.get()).toBe(small);
+    expect(session.anchors.get().find((d) => d.snapped)?.name).toBe('w');
+    tools.pointer(at('up', 445, 201));
+    const target = core.store
+      .members('byType', 'binding')
+      .map((id) => core.store.get(id) as unknown as { connectorId: string; end: string; elementId: string; anchor: unknown })
+      .find((x) => x.connectorId.startsWith('snapsnap') && x.end === 'target');
+    expect(target).toMatchObject({ elementId: small, anchor: { kind: 'named', name: 'w' } });
+  });
+
+  it('FR-ANC-006: an anchor of the hit shape loses to a nearer anchor of a small shape on it', () => {
+    const b = documentBuilder({ seed: 1628 });
+    const screen = b.screen();
+    const a = b.rect(screen, { x: 0, y: 0, w: 100, h: 100, defId: 'test:rect' });
+    const big = b.rect(screen, { x: 300, y: 0, w: 400, h: 400, defId: 'test:rect' });
+    // a 10 x 10 shape over the big shape's anchor n (500, 0): its w anchor at (495, 0)
+    const small = b.rect(screen, { x: 495, y: -5, w: 10, h: 10, defId: 'test:rect' });
+    const core = createCore(b.build());
+    const { session, tools, target } = toolOver(core, screen, [small, big, a]);
+    tools.pointer(at('down', 98, 50));
+    // on the big shape, 7 from its n, 2 from the small shape's w
+    tools.pointer(at('move', 493, 1));
+    expect(session.hover.get()).toBe(small);
+    expect(session.anchors.get().find((d) => d.snapped)?.name).toBe('w');
+    tools.pointer(at('up', 493, 1));
+    expect(target()).toMatchObject({ elementId: small, anchor: { kind: 'named', name: 'w' } });
+  });
+
+  it('FR-ANC-006: an anchor with a connector already at it takes a second end dropped just outside the shape', () => {
+    const b = documentBuilder({ seed: 1629 });
+    const screen = b.screen();
+    const a = b.rect(screen, { x: 0, y: 0, w: 100, h: 100, defId: 'test:rect' });
+    const c = b.rect(screen, { x: 400, y: 0, w: 100, h: 100, defId: 'test:rect' });
+    const z = b.rect(screen, { x: 400, y: 300, w: 100, h: 100, defId: 'test:rect' });
+    const used = b.connect(z, c);
+    const core = createCore(b.build());
+    // the existing connector is hit near c's anchor n (450, 0), as the editor hits a route with a pick margin
+    const { session, tools, target } = toolOver(core, screen, [a, c, z], (p) => (Math.hypot(p.x - 450, p.y) <= 4 ? used : undefined));
+    tools.pointer(at('down', 98, 50));
+    tools.pointer(at('move', 451, -6));
+    expect(session.hover.get()).toBe(c);
+    expect(session.anchors.get().find((d) => d.snapped)?.name).toBe('n');
+    tools.pointer(at('up', 451, -6));
+    expect(target()).toMatchObject({ elementId: c, anchor: { kind: 'named', name: 'n' } });
+  });
+
+  it('FR-ANC-006: an end between two shapes, where a click with its pick margin hits the neighbour, snaps to the nearer anchor', () => {
+    const b = documentBuilder({ seed: 1630 });
+    const screen = b.screen();
+    const a = b.rect(screen, { x: 0, y: 0, w: 100, h: 100, defId: 'test:rect' });
+    const c = b.rect(screen, { x: 400, y: 0, w: 100, h: 100, defId: 'test:rect' });
+    // 10 to the right of c, painted above it
+    const d = b.rect(screen, { x: 510, y: 0, w: 100, h: 100, defId: 'test:rect' });
+    const core = createCore(b.build());
+    // a click picks d within 12 of its box, as the editor's hit test does at a low zoom
+    const near = (p: { x: number; y: number }) => (p.x >= 498 && p.x <= 622 && p.y >= -12 && p.y <= 112 ? d : undefined);
+    const { session, tools, target } = toolOver(core, screen, [d, c, a], near);
+    tools.pointer(at('down', 98, 50));
+    // 3 right of c's anchor e (500, 50), 7 left of d's w
+    tools.pointer(at('move', 503, 51));
+    expect(session.hover.get()).toBe(c);
+    expect(session.anchors.get().find((x) => x.snapped)?.name).toBe('e');
+    tools.pointer(at('up', 503, 51));
+    expect(target()).toMatchObject({ elementId: c, anchor: { kind: 'named', name: 'e' } });
   });
 });
