@@ -1952,3 +1952,6 @@ ADR-0045/0046/0047 + LAYOUT_INCREMENTAL_MOVED_PCT. Review 5 rounds: 0005/0014 am
 
 ## M17.26 (28661fe9)
 M16 hand-off: the hit was right, nearestPoint missed a narrow dip; branch and bound + chord bound. Review 2 rounds (far-query perf).
+
+## M17.23
+Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
