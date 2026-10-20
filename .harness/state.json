@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": null,
-  "updated": "2026-10-20T09:30:00Z"
+  "blockedReason": "M16.28: drawing global routes by default puts the one-file player at 155.34 kB, over the 150 kB NFR-SIZE-001 budget; needs the user to choose an approach (WIP in git stash)",
+  "updated": "2026-10-20T10:30:00Z"
 }

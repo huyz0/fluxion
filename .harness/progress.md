@@ -1904,3 +1904,7 @@ M16.32 (8b77ee52): check-api fails on a committed report no entry produces (stal
 ## 2026-10-20 M16.35 (claude, local Windows)
 
 M16.35 (aa5f61ff): the patch language's connect takes `jumps`; update can target an edge (label, style, route, jumps; `jumps: default` clears, since a strict patch's null means absent). Review r1: an edge label update dropped the other labels and the first's offset (F1), and an unresolved edge key was checked as a node (F2); both fixed, r2 passed. M16.28 is paused: running the global pass in-thread puts the one-file player at 155.34 kB, over its 150 kB budget (WIP in git stash), so the user has to decide.
+
+## 2026-10-20 M16.34 (claude, local Windows)
+
+M16.34 (4d148258): a floating end carries `normal`, the outward normal of the box side its ray leaves by; the orthogonal router and the global pass leave and enter along it, so elbow routes no longer run along their sides. `dir` unchanged (curved tangents and goldens unaffected). ADR-0043 amended. Review r1 passed.
