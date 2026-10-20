@@ -120,11 +120,34 @@ function checkStructure(cmds: readonly TemplateCommand[], fail: Fail): void {
   if (cmds.length - 1 > MAX_SEGMENTS) throw fail('FLX_SHAPE_LIMIT', `the template has ${cmds.length - 1} segments; at most ${MAX_SEGMENTS}`);
 }
 
+/** Templates already parsed, by place and text: every element of a shape evaluates its definition's templates (NFR-PERF-002). */
+const PARSED = new Map<string, readonly TemplateCommand[] | TemplateFailure>();
+/** Templates kept at most; past it the cache starts over (the shape packs in use hold far fewer). */
+const PARSED_MAX = 1024;
+
 /**
  * Parse the path template `src` found at `at`; throws a {@link TemplateFailure} (callers inside the
- * shape module catch it at their boundary).
+ * shape module catch it at their boundary). The same text at the same place is parsed once.
  */
 export function parseTemplate(src: string, at: ReadonlyArray<string | number>): readonly TemplateCommand[] {
+  const key = `${jsonPointer(at)}
+${src}`;
+  let parsed = PARSED.get(key);
+  if (parsed === undefined) {
+    try {
+      parsed = parseUncached(src, at);
+    } catch (e) {
+      if (!(e instanceof TemplateFailure)) throw e;
+      parsed = e;
+    }
+    if (PARSED.size >= PARSED_MAX) PARSED.clear();
+    PARSED.set(key, parsed);
+  }
+  if (parsed instanceof TemplateFailure) throw parsed;
+  return parsed;
+}
+
+function parseUncached(src: string, at: ReadonlyArray<string | number>): readonly TemplateCommand[] {
   const fail: Fail = (code, message) => new TemplateFailure({ code, severity: 'error', path: jsonPointer(at), message: `${message} in path template` });
   const reader = new Reader(src, at, fail);
   const tokens: Token[] = [];

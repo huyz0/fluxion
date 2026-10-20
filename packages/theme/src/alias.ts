@@ -150,13 +150,25 @@ export type ColorResolver = (path: string) => Result<string, ThemeError>;
 /** Links a resolver may follow per token of the theme (and at least 4096 in all). */
 const MAX_LINKS_PER_TOKEN = 16;
 
+/** How many tokens each theme's token tree holds, by tree: a style resolution makes a resolver per element (NFR-PERF-002), the tree does not change. */
+const TOKEN_COUNTS = new WeakMap<Theme['tokens'], number>();
+
+function tokenCount(theme: Theme): number {
+  let n = TOKEN_COUNTS.get(theme.tokens);
+  if (n === undefined) {
+    n = tokenEntries(theme.tokens).length;
+    TOKEN_COUNTS.set(theme.tokens, n);
+  }
+  return n;
+}
+
 /**
  * The colour resolver of `theme`: one per batch of lookups (a CSS-variable emission, a validation, a style resolution).
  *
  * @public
  */
 export function colorResolver(theme: Theme): ColorResolver {
-  const cx: Cx = { theme, memo: new Map(), left: Math.max(4096, MAX_LINKS_PER_TOKEN * tokenEntries(theme.tokens).length) };
+  const cx: Cx = { theme, memo: new Map(), left: Math.max(4096, MAX_LINKS_PER_TOKEN * tokenCount(theme)) };
   return (path) => {
     const r = resolve(cx, path, []);
     return r.ok ? ok(r.value.css) : r;

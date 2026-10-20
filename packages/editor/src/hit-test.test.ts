@@ -299,6 +299,9 @@ describe('hit-testing (FR-EDT-004)', () => {
     const link = b.connect(a, c, { route: 'test:count' });
     const core = createCore(b.build());
     const hits = createHitIndex(core.store, { registries: reg, theme: LIGHT_THEME });
+    // NFR-PERF-002: creating the index builds nothing; `prepare` (or the first query) does
+    expect(routed).toBe(0);
+    hits.prepare();
     const built = routed;
     expect(built).toBeGreaterThan(0);
     // ten steps of a drag of c downwards: no routing for the index while nothing asks it

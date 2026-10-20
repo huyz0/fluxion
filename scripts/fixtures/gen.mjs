@@ -168,6 +168,22 @@ function perfRoute200() {
   return b.build();
 }
 
+/**
+ * The big-screen benchmark's document (NFR-PERF-002, M16.18): 2,000 shapes of the basic pack on one 3840 x 2160 screen in a 50 x 40
+ * grid (a third labelled), and 1,000 orthogonal connectors, each joining a shape to its right-hand neighbour (columns 0-1, 2-3, ...).
+ */
+function perf2k1k() {
+  const b = documentBuilder({ title: 'Perf 2k 1k', seed: 2000 });
+  const s = b.screen({ name: 'Two thousand', size: { w: 3840, h: 2160 } });
+  const shapes = Array.from({ length: 2000 }, (_, k) => {
+    const [col, row] = [k % 50, Math.floor(k / 50)];
+    const label = k % 3 === 0 ? { label: `n${k}` } : {};
+    return b.rect(s, { x: 40 + 75 * col, y: 40 + 52 * row, w: 50, h: 32, defId: `basic:${GALLERY_SHAPES[k % GALLERY_SHAPES.length]}`, ...label });
+  });
+  for (let k = 0; k < 2000; k += 2) b.connect(shapes[k], shapes[k + 1], { route: 'orthogonal' });
+  return b.build();
+}
+
 /** A text node with `marks` (`[type, attrs?]` pairs). */
 const run = (text, ...marks) => ({
   type: 'text',
@@ -353,6 +369,7 @@ const FIXTURES = {
   'shapes-gallery': shapesGallery,
   'perf-500': perf500,
   'perf-route-200': perfRoute200,
+  'perf-2k-1k': perf2k1k,
   'rich-text': richText,
   doc20,
   doc50,

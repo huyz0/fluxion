@@ -163,6 +163,8 @@ export type HitIndex = {
    * Inside the group `within` that has been entered, the outermost group below it (M8.5).
    */
   selectableOf(id: RecordId, within?: RecordId): RecordId;
+  /** Build now what the first query would build (the index is built lazily: opening a big screen does not wait for it, NFR-PERF-002). */
+  prepare(): void;
   /** Stop following the store. */
   dispose(): void;
 };
@@ -188,7 +190,6 @@ class Index implements HitIndex {
   constructor(store: Store, context: HitContext) {
     this.#store = store;
     this.#ctx = { ...context, vars: toCssVars(context.theme) as Resolving['vars'] };
-    this.#build();
     const unsubscribe = store.subscribe((diff) => {
       for (const id of affected(store, [...diff.puts.keys(), ...diff.deletes.keys()])) {
         // a connector's hittable is its routed path: built when asked for, not at every step of a drag
@@ -216,6 +217,12 @@ class Index implements HitIndex {
       initial = false;
     });
     this.#stop = [unsubscribe, stopRegistries, stopRefined];
+    // built by the first query (or `prepare`), not here: a screen of thousands of elements is drawn without waiting for their hittables
+    this.#stale = true;
+  }
+
+  prepare(): void {
+    this.#ready();
   }
 
   #refresh(id: RecordId): void {
@@ -325,7 +332,7 @@ class Index implements HitIndex {
 }
 
 /**
- * A hit index over `store`, built now and kept from its diffs until disposed.
+ * A hit index over `store`, built by its first query or `prepare` (not now), then kept from its diffs until disposed.
  *
  * @public
  */

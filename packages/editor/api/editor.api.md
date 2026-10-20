@@ -569,6 +569,7 @@ export type HitIndex = {
     within(screenId: RecordId, box: Box, mode: "contain" | "intersect"): RecordId[];
     all(screenId: RecordId): RecordId[];
     selectableOf(id: RecordId, within?: RecordId): RecordId;
+    prepare(): void;
     dispose(): void;
 };
 

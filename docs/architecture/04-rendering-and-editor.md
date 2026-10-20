@@ -131,6 +131,16 @@ built once for player/export. `<ScreenView>` queries the visible page box (camer
 margin) each frame when the camera changes. Out-of-view wrappers get `content-visibility:hidden`
 (`cull:'hide'`) or unmount (`'unmount'`). Fit views that show the whole screen skip culling.
 
+M16.18 measured without culling first (`e2e/perf.big-screen.spec.ts`, 2,000 shapes and 1,000 orthogonal
+connectors): the camera is a transform on `.fx-screen` and no element view re-renders while panning or
+zooming, so both hold 60 fps. Culling is therefore not built; it waits for a measurement that needs it.
+The first render was over budget, and the fixes were on the open path:
+- the editor's hit index builds lazily (`prepare` runs when the page is idle);
+- shape path templates are parsed once per text;
+- the nearest-point search skips outline segments whose box is farther than the best point found.
+
+Together these bring the first render from about 1.0-1.2 s to about 0.75 s.
+
 ### 2.6 One renderer, two modes: parity
 
 Mode differences are an allow-list, enforced by a lint rule that permits reading `mode` only in
@@ -332,12 +342,12 @@ open a document read-only (the player).
 | **Transform-only drags**: while translating, only the wrapper `transform` changes; inner SVG/text depend on `w,h,style` and stay memoized | render/editor | No inner re-render during move |
 | rAF batching: pointermoves coalesce (`getCoalescedEvents`), one merged transaction per frame (`mergeKey`), and React commits once per frame | editor/core | ≤ 1 store diff and 1 commit per frame |
 | Affected-only re-route via the bindings index; the cheap router pass during drag, nudging on drop | routing (05 §9) | FR-RTE-002 |
-| Culling (§2.5), `content-visibility`, lazy panels | render/editor | NFR-PERF-002 |
+| Culling (§2.5, held until measured), `content-visibility`, lazy panels; a lazily built hit index, templates parsed once, a pruned nearest-point search (M16.18) | render/editor/core/geometry | NFR-PERF-002 |
 | Per-frame animation writes through `ElementHandle`, never React state | player | NFR-PERF-004 |
 | Debug overlay: FPS, render counts, route/layout timings (NFR-OBS-001) | editor | Regressions visible |
 
 Budgets: 500-element drag ≥ 55 fps (NFR-PERF-001), 2k elements + 1k connectors pan/zoom ≥ 50
-fps (NFR-PERF-002), and undo < 16 ms (NFR-PERF-006). Each has a benchmark in the CI perf job.
+fps (NFR-PERF-002), and undo < 16 ms (NFR-PERF-006). Each has a benchmark in the nightly perf job.
 The player core stays ≤ 150 kB gz because `render` + `player` never import editor-only
 dependencies (NFR-SIZE-001).
 

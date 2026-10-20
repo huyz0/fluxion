@@ -106,7 +106,16 @@ function useTools(
   useEffect(() => {
     const index = createHitIndex(store, { registries, theme: LIGHT_THEME });
     hits.current = index;
-    return () => index.dispose();
+    // built once the screen is drawn and the page is idle, so neither the first frame nor, mostly, the first pointer move waits for it
+    // (NFR-PERF-002); a browser without idle callbacks builds it a moment after
+    const prepare = () => index.prepare();
+    const idle = typeof requestIdleCallback === 'function' ? requestIdleCallback(prepare, { timeout: 1000 }) : undefined;
+    const timer = idle === undefined ? setTimeout(prepare, 200) : undefined;
+    return () => {
+      if (idle !== undefined) cancelIdleCallback(idle);
+      clearTimeout(timer);
+      index.dispose();
+    };
   }, [store, registries]);
   return useMemo(() => {
     const ctx: ToolCtx = {

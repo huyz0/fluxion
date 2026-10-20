@@ -253,4 +253,14 @@ describe('evaluateOutline (ADR-0016)', () => {
     // the size is part of the scope, checked like any value
     expect(evaluateOutline(def({ path: 'M {w} 0' }), { w: Number.NaN, h: 1 }).ok).toBe(false);
   });
+  it('NFR-PERF-002: a template evaluated again (its text parsed once) gives the same outline, at each size and with each parameter, and a broken one fails again', () => {
+    expect(ends(rounded)).toEqual(ends(rounded));
+    expect(ends(rounded, { r: 5 })).not.toEqual(ends(rounded));
+    expect(outline(rounded, {}, { w: 200, h: 80 }).path.segments.at(-1)?.p3).toEqual(outline(rounded, {}, { w: 200, h: 80 }).path.segments.at(-1)?.p3);
+    expect(pathBounds(outline(rounded, {}, { w: 200, h: 80 }).path)).not.toEqual(pathBounds(outline(rounded).path));
+    for (let k = 0; k < 2; k++)
+      expect(problem(def({ path: 'M 0 0 L 1' }))).toBe('FLX_SHAPE_PATH /outline/path "L" at 6 takes numbers in groups of 2, got 1 in path template');
+    // the same text at another place reports that place
+    expect(problem(def({ path: 'M 0 0' }, { decorations: [{ path: 'M 0 0 L 1' }] }))).toMatch(/^FLX_SHAPE_PATH \/decorations\/0\/path /);
+  });
 });

@@ -58,4 +58,33 @@ describe('nearestPoint', () => {
       }),
     );
   }, 120_000);
+  it('NFR-PERF-002: skipping segments whose box is farther than the best point gives what a search of every segment gives, the first of equals', () => {
+    fc.assert(
+      fc.property(pathCommands, point, (cmds, p) => {
+        const path = mustPath(pathFromCommands(cmds));
+        // every segment searched on its own, in order: the first nearest wins
+        let full: { segment: number; distance: number; t: number } | undefined;
+        for (const [segment, seg] of path.segments.entries()) {
+          const one = nearestPoint({ segments: [seg], closed: false }, p);
+          if (one !== null && (full === undefined || one.distance < full.distance)) full = { segment, distance: one.distance, t: one.t };
+        }
+        const hit = nearestPoint(path, p);
+        expect(hit === null ? undefined : { segment: hit.segment, distance: hit.distance, t: hit.t }).toEqual(full);
+      }),
+    );
+  }, 120_000);
+
+  it('NFR-PERF-002: a point at the joint of two segments is found on the first of them', () => {
+    const path = mustPath(
+      pathFromCommands([
+        { kind: 'M', to: { x: 0, y: 0 } },
+        { kind: 'L', to: { x: 10, y: 0 } },
+        { kind: 'L', to: { x: 10, y: 10 } },
+        { kind: 'L', to: { x: 0, y: 10 } },
+        { kind: 'Z' },
+      ]),
+    );
+    const hit = nearestPoint(path, { x: 10, y: 10 });
+    expect(hit).toMatchObject({ segment: 1, distance: 0 });
+  });
 });

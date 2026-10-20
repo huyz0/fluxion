@@ -52,16 +52,29 @@ function nearestOnSegment(seg: CubicSegment, p: Vec2): Candidate {
   return best;
 }
 
+/** The distance from `p` to the box around `seg`'s control points, which holds the whole segment: no point of it is nearer. */
+function hullDistance(seg: CubicSegment, p: Vec2): number {
+  const xs = [seg.p0.x, seg.p1.x, seg.p2.x, seg.p3.x];
+  const ys = [seg.p0.y, seg.p1.y, seg.p2.y, seg.p3.y];
+  const dx = Math.max(Math.min(...xs) - p.x, 0, p.x - Math.max(...xs));
+  const dy = Math.max(Math.min(...ys) - p.y, 0, p.y - Math.max(...ys));
+  return Math.hypot(dx, dy);
+}
+
 /**
- * Closest point of `path` to `p`, or `null` when the path has no segments.
+ * Closest point of `path` to `p`, or `null` when the path has no segments. Of segments equally near, the first. Segments are searched
+ * nearest box first, and one whose box is farther than the best point found is skipped (NFR-PERF-002: snapping a point on an outline back
+ * to it searches one segment, not all of them); the answer is the one a search of every segment gives.
  *
  * @public
  */
 export function nearestPoint(path: Path, p: Vec2): NearestPoint | null {
+  const order = path.segments.map((seg, index) => ({ seg, index, hull: hullDistance(seg, p) })).sort((a, b) => a.hull - b.hull || a.index - b.index);
   let result: NearestPoint | null = null;
-  for (const [index, seg] of path.segments.entries()) {
+  for (const { seg, index, hull } of order) {
+    if (result !== null && hull > result.distance) break;
     const c = nearestOnSegment(seg, p);
-    if (result === null || c.d < result.distance) {
+    if (result === null || c.d < result.distance || (c.d === result.distance && index < result.segment)) {
       result = { point: pointAt(seg, c.t), distance: c.d, segment: index, t: c.t };
     }
   }

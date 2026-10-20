@@ -27,8 +27,12 @@ function expectInvalid(name: string, text: string, code: string): void {
   expect(codes, name).toContain(`FLX_${code.toUpperCase().replaceAll('-', '_')}`);
 }
 
-/** The most a fixture may weigh: a benchmark (perf-*) is as large as what it measures (500 elements take ~210 KB), the 20-screen size fixture takes ~125 KB and the 50-screen open-time fixture ~305 KB. */
-const maxKiB = (name: string): number => (name.startsWith('perf-') ? 256 : name === 'doc20.flux.json' ? 160 : name === 'doc50.flux.json' ? 340 : 50);
+/**
+ * The most a fixture may weigh: a benchmark (perf-*) is as large as what it measures (500 elements take ~210 KB; the big screen's 2,000 elements and 1,000
+ * connectors ~1.5 MB), the 20-screen size fixture takes ~125 KB and the 50-screen open-time fixture ~305 KB.
+ */
+const SIZES: { readonly [name: string]: number } = { 'perf-2k-1k.flux.json': 1600, 'doc20.flux.json': 160, 'doc50.flux.json': 340 };
+const maxKiB = (name: string): number => SIZES[name] ?? (name.startsWith('perf-') ? 256 : 50);
 
 describe('shared document fixtures (FR-DOC-001)', () => {
   it('FR-DOC-001: fixtures/docs behave as named', () => {
@@ -38,6 +42,7 @@ describe('shared document fixtures (FR-DOC-001)', () => {
       'invalid-ref-missing.flux.json',
       'invalid-schema-invalid.flux.json',
       'minimal.flux.json',
+      'perf-2k-1k.flux.json',
       'perf-500.flux.json',
       'perf-route-200.flux.json',
       'r1-mvp-deck.flux.json',
@@ -63,5 +68,15 @@ describe('shared document fixtures (FR-DOC-001)', () => {
     const warnings = r.ok ? r.value.diagnostics.filter((d) => d.code === 'FLX_KIND_UNKNOWN') : [];
     expect(warnings.length).toBeGreaterThan(0);
     expect(warnings.every((d) => d.severity === 'warning')).toBe(true);
+  });
+  it('NFR-PERF-002: the big-screen fixture holds one screen of 2,000 shapes and 1,000 connectors', () => {
+    const text = entries.find(([name]) => name === 'perf-2k-1k.flux.json')?.[1];
+    const r = parseDocument(text ?? '');
+    expect(r.ok).toBe(true);
+    const records = r.ok ? Object.values(r.value.document.records) : [];
+    const kinds = (kind: string) => records.filter((x) => x.type === 'element' && (x as { kind?: string }).kind === kind).length;
+    expect(records.filter((x) => x.type === 'screen')).toHaveLength(1);
+    expect(kinds('shape')).toBe(2000);
+    expect(kinds('connector')).toBe(1000);
   });
 });
