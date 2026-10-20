@@ -11,7 +11,7 @@ function context(seen: Array<string | undefined> = []): RouteContext {
   const routers = createRegistry<string, Router>('routers');
   registerBuiltinRouters(routers);
   routers.register(
-    'spy',
+    'test:spy',
     {
       route: (r) => (
         seen.push(r.quality),
@@ -29,11 +29,12 @@ function context(seen: Array<string | undefined> = []): RouteContext {
 function scene() {
   const b = documentBuilder({ seed: 3 });
   const screen = b.screen();
-  const [a, c, d, e] = [0, 1, 2, 3].map((k) => b.rect(screen, { x: 200 * k, y: 0, w: 100, h: 100 }));
-  const ac = b.connect(a as never, c as never, { route: 'spy' });
-  const cd = b.connect(c as never, d as never, { route: 'spy' });
-  const de = b.connect(d as never, e as never, { route: 'spy' });
-  const onHost = b.connect(e as never, ac, { route: 'spy' });
+  const box = (k: number) => b.rect(screen, { x: 200 * k, y: 0, w: 100, h: 100 });
+  const [a, c, d, e] = [box(0), box(1), box(2), box(3)];
+  const ac = b.connect(a, c, { route: 'test:spy' });
+  const cd = b.connect(c, d, { route: 'test:spy' });
+  const de = b.connect(d, e, { route: 'test:spy' });
+  const onHost = b.connect(e as never, ac, { route: 'test:spy' });
   return { ...createCore(b.build()), a, c, e, ac, cd, de, onHost };
 }
 

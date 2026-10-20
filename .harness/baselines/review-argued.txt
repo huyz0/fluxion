@@ -102,3 +102,4 @@ M14 final F3: the `render` html path has no in-process test (the coverage sandbo
 M14 final F4: bookkeeping, fixed in the closing commit (empty Commit cells, the Planned count).
 M15 final F7: process observations (no mid-milestone checkpoint across 25 rows); no gate can enforce checkpoint cadence, and the closing legs (CI evidence, verify, roadmap advance) run after the reopen rows.
 M15 final F8: the mutant spot check found no weak tests; no defect.
+M16.15 r1 F2: the synchronous route pipeline has no nudge or label-placement stage to skip (both run only in the global pass, M16.16, which asks for `full`); routers receive `quality` so a pack router can cut work, and the connector view asks for `cheap` (connector-view.browser.test).

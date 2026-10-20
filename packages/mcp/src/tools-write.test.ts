@@ -92,9 +92,11 @@ describe('the MCP write tools over the in-memory transport (FR-MCP-001, ADR-0038
     const { client, handle } = await open();
     const target = mkdtempSync(join(tmpdir(), 'fluxion-target-'));
     try {
-      symlinkSync(target, join(dir, 'link'));
+      // a junction on Windows (no symlink privilege needed; the type is ignored elsewhere): the same escape
+      symlinkSync(target, join(dir, 'link'), 'junction');
       const r = await call(client, 'save_file', { docHandle: handle, path: join(dir, 'link', 'a.flux.json') });
       expect(r.isError).toBe(true);
+      expect(r.structuredContent?.['diagnostics']).toMatchObject([{ code: 'FLX_MCP_PATH_OUTSIDE_ROOTS' }]);
       expect(existsSync(join(target, 'a.flux.json'))).toBe(false);
     } finally {
       rmSync(target, { recursive: true, force: true });
@@ -104,9 +106,11 @@ describe('the MCP write tools over the in-memory transport (FR-MCP-001, ADR-0038
   it('FR-MCP-001: a dangling symlink inside the root that points outside it is refused and nothing is created', async () => {
     const { client, handle } = await open();
     const outside = join(tmpdir(), `fluxion-dangling-${process.pid}.flux.json`);
-    symlinkSync(outside, join(dir, 'dangling.flux.json'));
+    symlinkSync(outside, join(dir, 'dangling.flux.json'), 'junction');
     const r = await call(client, 'save_file', { docHandle: handle, path: join(dir, 'dangling.flux.json') });
     expect(r.isError).toBe(true);
+    // refused for where it points, not merely failing to write (a dangling junction cannot be written through)
+    expect(r.structuredContent?.['diagnostics']).toMatchObject([{ code: 'FLX_MCP_PATH_OUTSIDE_ROOTS' }]);
     expect(existsSync(outside)).toBe(false);
   });
 

@@ -150,6 +150,54 @@ describe('routers (FR-RTE-001)', () => {
   });
 });
 
+describe('incremental rerouting (FR-RTE-002)', () => {
+  it('FR-RTE-002: moving a shape reroutes only the connectors bound to it, by the cheap pass', async () => {
+    const calls: Array<{ readonly at: number; readonly quality: unknown }> = [];
+    const spy: Router = {
+      route: ({ source, target, quality }) => (
+        calls.push({ at: source.point.y, quality }),
+        [
+          { kind: 'M', to: source.point },
+          { kind: 'L', to: target.point },
+        ]
+      ),
+    };
+    const registered = registries.routers.register('test:spy', spy, 'test');
+    try {
+      let a = '' as RecordId;
+      const { core, connectorId } = await show((b, s) => {
+        a = b.rect(s, { x: 0, y: 0, w: 50, h: 50 });
+        const hub = b.rect(s, { x: 400, y: 0, w: 50, h: 50 });
+        const far = b.rect(s, { x: 0, y: 400, w: 50, h: 50 });
+        b.connect(far, hub, { route: 'test:spy', arrow: false });
+        return b.connect(a, hub, { route: 'test:spy', arrow: false });
+      });
+      expect(calls).toHaveLength(2);
+      expect(new Set(calls.map((c) => c.quality))).toEqual(new Set(['cheap']));
+      calls.length = 0;
+      for (const y of [10, 20, 30])
+        await act(async () => {
+          core.execute('element.update', { id: a, fields: { transform: { x: 0, y, w: 50, h: 50 } } });
+        });
+      // three steps of the drag: the connector on `a` rerouted once each, the one on `far` never
+      expect(calls).toHaveLength(3);
+      expect(calls.every((c) => c.quality === 'cheap' && c.at < 100)).toBe(true);
+      // the SVG box grew with slack for the drag; a route that shrinks back well inside it gets its own box again
+      const svg = () => host.querySelector<SVGSVGElement>(`.fx-el[data-el-id="${connectorId}"] svg.fx-connector`);
+      await act(async () => {
+        core.execute('element.update', { id: a, fields: { transform: { x: 0, y: 500, w: 50, h: 50 } } });
+      });
+      expect(Number.parseFloat(svg()?.style.height ?? '')).toBeGreaterThan(500);
+      await act(async () => {
+        core.execute('element.update', { id: a, fields: { transform: { x: 0, y: 0, w: 50, h: 50 } } });
+      });
+      expect(Number.parseFloat(svg()?.style.height ?? '')).toBeLessThan(150);
+    } finally {
+      if (registered.ok) registered.value.dispose();
+    }
+  });
+});
+
 describe('connector labels (FR-CON-006)', () => {
   it('FR-CON-006: a connector label renders its marks and links', async () => {
     const { core, connectorId } = await show((b, s) => {

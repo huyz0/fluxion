@@ -19,6 +19,9 @@ import { Transform } from '@fluxion/schema';
 import { Vec2 } from '@fluxion/geometry';
 
 // @public
+export function affectedConnectors(view: ReadView, moved: readonly RecordId[]): RecordId[];
+
+// @public
 export type AnchorTarget = {
     readonly transform: Transform;
     readonly outline?: Path | undefined;
@@ -199,6 +202,9 @@ export const polylineRouter: Router;
 export function registerBuiltinRouters(routers: Registry<string, Router>): ReturnType<Registry<string, Router>["register"]>;
 
 // @public
+export function rerouteAffected(view: ReadView, ctx: RouteContext, moved: readonly RecordId[], quality?: "cheap" | "full"): ReadonlyMap<RecordId, ConnectorRoute | undefined>;
+
+// @public
 export function resolveAnchor(target: AnchorTarget, ref: AnchorRef, toward: Vec2): ResolvedAnchor;
 
 // @public
@@ -214,6 +220,7 @@ export function routeConnector(view: ReadView, ctx: RouteContext, connectorId: R
 export type RouteContext = {
     readonly shapeDefs: Registry<string, ShapeDef>;
     readonly routers: Registry<string, Router>;
+    readonly quality?: RouteQuality | undefined;
 };
 
 // @public
@@ -232,6 +239,9 @@ export type RoutePoint = {
 export function routePoint(commands: readonly PathCommand[], t: number): RoutePoint;
 
 // @public
+export type RouteQuality = "cheap" | "full";
+
+// @public
 export type Router = {
     readonly describe?: string;
     route(request: RouteRequest): readonly PathCommand[];
@@ -242,6 +252,7 @@ export type RouteRequest = {
     readonly source: RouteEnd;
     readonly target: RouteEnd;
     readonly route: Route;
+    readonly quality?: RouteQuality | undefined;
 };
 
 // @public

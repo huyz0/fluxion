@@ -18,7 +18,9 @@ export type RouteEnd = {
 };
 
 /**
- * How much work a route may take: `cheap` while a shape is dragged, `full` when it settles (FR-RTE-002).
+ * How much work a route may take (FR-RTE-002, ADR-0044): `cheap` for the synchronous pass that runs on every
+ * change, drags included (`routeConnector`'s default, so the connector view, the editor's hit index, outline and handles draw one route);
+ * `full` for the global pass once a drag settles (M16.16), which may nudge and place labels.
  *
  * @public
  */
@@ -36,7 +38,7 @@ export type RouteRequest = {
   readonly target: RouteEnd;
   /** The connector's route. */
   readonly route: Route;
-  /** `cheap` during a drag (no nudging, no label work: FR-RTE-002); `full` otherwise. Absent: `full`. */
+  /** `cheap` in the synchronous per-change pass (no nudging, no label work: FR-RTE-002); `full` in the global pass. Absent: `full`. */
   readonly quality?: RouteQuality | undefined;
 };
 

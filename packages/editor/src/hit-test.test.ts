@@ -276,4 +276,41 @@ describe('hit-testing (FR-EDT-004)', () => {
     expect(hits.hitTest(screen, { x: 650, y: 650 }, 1)).toBeUndefined();
     expect(hits.hitTest(screen, { x: 50, y: 50 }, 1)).toBe(a);
   });
+
+  it('FR-RTE-002: a drag does not reroute connectors for hit-testing; the next query routes each once, where it now runs', () => {
+    let routed = 0;
+    const asked = new Set<unknown>();
+    const counting: Router = {
+      route: ({ source, target, quality }) => {
+        routed++;
+        asked.add(quality);
+        return [
+          { kind: 'M', to: source.point },
+          { kind: 'L', to: target.point },
+        ];
+      },
+    };
+    const reg = registries();
+    reg.routers.register('test:count', counting, 'test');
+    const b = documentBuilder({ seed: 113 });
+    const screen = b.screen({ size: { w: 1000, h: 1000 } });
+    const a = b.rect(screen, { x: 0, y: 0, w: 100, h: 100 });
+    const c = b.rect(screen, { x: 400, y: 0, w: 100, h: 100 });
+    const link = b.connect(a, c, { route: 'test:count' });
+    const core = createCore(b.build());
+    const hits = createHitIndex(core.store, { registries: reg, theme: LIGHT_THEME });
+    const built = routed;
+    expect(built).toBeGreaterThan(0);
+    // ten steps of a drag of c downwards: no routing for the index while nothing asks it
+    for (let step = 1; step <= 10; step++) core.store.transact('drag', (tx) => tx.patch(c, { transform: { x: 400, y: 40 * step, w: 100, h: 100 } }));
+    expect(routed).toBe(built);
+    // the next query routes the connector once and finds it where it runs now (down to c at y 400)
+    expect(hits.hitTest(screen, { x: 250, y: 50 }, 1)).toBeUndefined();
+    expect(routed).toBe(built + 1);
+    expect(hits.hitTest(screen, { x: 250, y: 250 }, 1)).toBe(link);
+    expect(routed).toBe(built + 1);
+    // the same pass as the connector view, so a click lands on the line drawn
+    expect([...asked]).toEqual(['cheap']);
+    hits.dispose();
+  });
 });

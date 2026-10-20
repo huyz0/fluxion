@@ -20,7 +20,7 @@ export type RouteContext = {
   readonly shapeDefs: Registry<string, ShapeDef>;
   /** Routers by route type. */
   readonly routers: Registry<string, Router>;
-  /** How much work routes may take (FR-RTE-002); absent: full. */
+  /** How much work routes may take (FR-RTE-002); absent: `cheap`, the synchronous pass every view, hit test and handle shares. */
   readonly quality?: RouteQuality | undefined;
 };
 
@@ -166,5 +166,5 @@ function routeOf(view: ReadView, ctx: RouteContext, connectorId: RecordId, above
   const source = resolved(from, waypoints[0] ?? to.at);
   const target = resolved(to, waypoints.at(-1) ?? from.at);
   const router = ctx.routers.get(route.type) ?? straightRouter;
-  return { source, target, commands: pathOf(router, { source, target }, route, ctx.quality) };
+  return { source, target, commands: pathOf(router, { source, target }, route, ctx.quality ?? 'cheap') };
 }

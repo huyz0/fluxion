@@ -33,10 +33,11 @@ type Frame = { readonly x: number; readonly y: number; readonly w: number; reado
 
 /**
  * The box to draw in: `held` while `need` fits inside it (a drag then changes the path alone, not the SVG's box and view box),
- * else `need` and, once there was a box before, `GROW_SLACK` around the union of both. The first box is exactly the route's.
+ * else `need` and, once there was a box before, `GROW_SLACK` around the union of both. The first box is exactly the route's,
+ * and so is one after the route shrank well inside the held box (more than two slacks spare on an axis).
  */
 function framed(held: Frame | undefined, need: Frame): Frame {
-  if (held === undefined) return need;
+  if (held === undefined || held.w > need.w + 4 * GROW_SLACK || held.h > need.h + 4 * GROW_SLACK) return need;
   if (held.x <= need.x && held.y <= need.y && held.x + held.w >= need.x + need.w && held.y + held.h >= need.y + need.h) return held;
   const [x, y] = [Math.min(held.x, need.x) - GROW_SLACK, Math.min(held.y, need.y) - GROW_SLACK];
   return { x, y, w: Math.max(held.x + held.w, need.x + need.w) + GROW_SLACK - x, h: Math.max(held.y + held.h, need.y + need.h) + GROW_SLACK - y };
@@ -102,6 +103,8 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const record = useContext(RenderStatsContext);
   const routed = useValue(
     useMemo(
+      // the cheap pass (routeConnector's default, FR-RTE-002); the query re-runs only when something the route
+      // read changes, so moving a shape reroutes the connectors bound to it and no others
       () =>
         store.query((view) => {
           if (record === undefined) return routeConnector(view, registries, id);
@@ -113,8 +116,8 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
       [store, registries, id, record],
     ),
   );
-  // the box drawn in last render, kept while the route fits it
-  const frames = useRef<Frame | undefined>(undefined);
+  // the box drawn in last render for this store, kept while the route fits it (another document starts afresh)
+  const frames = useRef<{ readonly store: unknown; readonly frame: Frame } | undefined>(undefined);
   const { style, line, lengths } = useMemo(
     () => styled(id, element.style, element.route.cornerRadius, theme),
     [id, element.style, element.route.cornerRadius, theme],
@@ -131,9 +134,9 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const trimmed = trimRoute(drawn, markerTrim(start, width), markerTrim(end, width));
   // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
-  const held = frames.current;
+  const held = frames.current?.store === store ? frames.current.frame : undefined;
   const { x, y, w, h } = framed(held, routeFrame(drawn));
-  frames.current = { x, y, w, h };
+  frames.current = { store, frame: { x, y, w, h } };
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
     <>

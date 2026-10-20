@@ -1,5 +1,6 @@
 // Incremental rerouting (FR-RTE-002): the bindings index (`bindingsByElement`) names the connectors a move
-// touches, so a drag reroutes those and nothing else, with the cheap pass; the full pass runs when it settles.
+// touches. In the editor and renderer each connector's route is a store query, which already re-runs only
+// for those; these helpers serve a pass outside a query (the global pass on drop, M16.16, asks for `full`).
 import type { ReadView } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { type ConnectorRoute, type RouteContext, routeConnector } from './connector-route.js';
