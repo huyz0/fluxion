@@ -1888,3 +1888,7 @@ M16.20 (e8011282): schema 1.5, `route.tangents` and `route.jumps` (ADR-0168), cu
 ## 2026-10-20 M16.31 (claude, local Windows)
 
 M16.31 (8bd4f6dc): the harness suite takes 43 s wall instead of 105 s. The api cases run on a core-only sandbox, the coverage runs are scoped to the packages asserted on, the layering violations share one dependency-cruiser run, and the licenses copies are lean. The duplicate real-repo api case was removed (Removes-test). Review r1 minors fixed (report count asserted; layering path regex escaped); F2 became M16.32. r2 passed.
+
+## 2026-10-20 M16.21 (claude, local Windows)
+
+Main's CI green again at 1b9590b after M16.31 (blockedReason cleared). M16.21 (1fbc0378): line jumps in render (arc/gap, per-connector route and hops queries with stable entries, no hop over a build-hidden connector) and parallel fan-out in routing (curved bow with tangents remapped, straight/polyline bent, orthogonal inner segment shifted). The player script went 254 B over its 150 kB budget. The one-file player now builds a bare read-only store instead of createCore, without commands or hooks, so it is 148.0 kB. Review r1 found two majors and a minor (fan tangents, drag re-render storm, build-hidden hops), all fixed; r2 passed. DSL `jumps` key and the showcase are row M16.33.
