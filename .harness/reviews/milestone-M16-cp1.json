@@ -1,0 +1,120 @@
+{
+  "milestone": "M16",
+  "range": "a50ac65e..68817a3a",
+  "reviewer": "subagent:milestone-reviewer",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocker",
+      "summary": "FR-RTE-002 unmet: nightly perf at ee4ddda1 (run 39387799270) measures route-drag-200 at 27.9/27.3 fps vs 50; locally 35-42. Last pass was local at M16.15; suspects M16.17-M16.21."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "summary": "NFR-PERF-002 first render 1302/1306 ms vs 1000 on the CI perf runner (same run); M16.18 and M16.38 measured only on the dev host."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "summary": "Gate honesty: perf legs run locally only; @perf runs only in nightly.yml and check-ci-evidence reads ci.yml, so m16-complete can go green while CI perf is red."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "summary": "Three leg labels overstate: FR-CON-009 runs parallel.test.ts (test in host-binding.test.ts); nudge spacing runs orthogonal.prop.test.ts (in orthogonal/post.test.ts); stale worker result runs incremental.test.ts (in editor global-routing.test.ts)."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "summary": "R3.md ticks rows 6 and 7 while their checks fail; rows 10/11 link weak evidence; the gate header calls M16 'the R3 exit'."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "summary": ".changeset/m16-mcp-catalog.md describes the wrong change: MCP resources now serve the patch schema and cheat sheet with `jumps`."
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "summary": "Two known defects only in R3.md Open: line-jump vertex-crossing case; global-pass give-ups (~10/200) and the 400 cap."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "summary": "Moving check-trace --increment R3 to m20-complete is honest (R3 exits at M20)."
+    },
+    {
+      "id": "F9",
+      "severity": "minor",
+      "summary": "dd3aa134 (M16.15 WIP) reached main unreviewed; disclosed, superseded by 063a226c."
+    },
+    {
+      "id": "F10",
+      "severity": "minor",
+      "summary": "Plan health: 39 rows vs 22 planned (1.77x)."
+    },
+    {
+      "id": "F11",
+      "severity": "minor",
+      "summary": "The anchors leg needs Firefox, which this host cannot launch; CI e2e covers it."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "action": "M16.40: restore route-drag-200 >= ROUTE_DRAG_200_MIN_FPS on the CI perf runner, proven by a perf run."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "action": "M16.41: perf-2k-1k first render under BIG_SCREEN_FIRST_RENDER_MS on the CI perf runner, proven by a perf run."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "action": "M16.22: a leg requiring a green CI perf run with both specs at or after the final review range."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "action": "M16.22: add legs for the real files and relabel."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "action": "M16.22: untick R3 rows 6/7 until evidence, better evidence for 10/11, reword the gate header."
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "action": "M16.22: rewrite the mcp changeset."
+    },
+    {
+      "finding": "F7",
+      "disposition": "hand off",
+      "action": "Roadmap Deferred entries for the line-jump vertex case and global-pass give-ups/cap."
+    },
+    {
+      "finding": "F8",
+      "disposition": "argue",
+      "action": "R3 exits at M20; M20 owns check-trace --increment R3."
+    },
+    {
+      "finding": "F9",
+      "disposition": "argue",
+      "action": "Disclosed in progress.md, superseded by a reviewed commit; history not rewritten."
+    },
+    {
+      "finding": "F10",
+      "disposition": "argue",
+      "action": "M16.md Learned: run every perf spec a default-on change can affect; perf rows close on a perf-runner run."
+    },
+    {
+      "finding": "F11",
+      "disposition": "argue",
+      "action": "The three-browser leg closes on CI e2e evidence (M13 precedent)."
+    }
+  ],
+  "planDelta": "+2 reopen rows (M16.40, M16.41); M16.22 grows (perf-runner evidence leg, legs and labels, R3.md ticks, mcp changeset); hand-offs for the line-jump vertex case and global-pass give-ups."
+}

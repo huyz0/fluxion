@@ -1930,3 +1930,6 @@ User decision for the budget conflict: "Lazy routing chunk".
 
 ## M16.39 — webkit blob worker
 WebKit sends a Blob worker's script through the browser context, where the e2e network block aborted it, so `data-routes` stayed `cheap` (CI red at f7ad7524). The block now lets `blob:` and `data:` through.
+
+## M16.40 — fan-out lookup
+M16 final review (cp1, `.harness/reviews/milestone-M16-cp1.json`) reopened route-drag-200 and big-screen first render on the CI perf runner (nightly 39387799270: 27.9 fps, 1302 ms). A CDP profile of the drag put 2.4 of 2.9 s in `fan.ts` `joining`, which read every hub binding per spoke. It now reads the end with fewer bindings, and big-screen opens in 486 ms best locally. Proof is a dispatched nightly perf run; M16.41 closes on that same run.
