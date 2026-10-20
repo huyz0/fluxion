@@ -68,3 +68,8 @@ ADR-0042, ADR-0043, 05-layout-and-routing.md §4 and §9, FR-RTE-002, FR-RTE-003
   - **Scope of the pass.** It routes orthogonal connectors without waypoints, because waypoints are the author's constraints. It uses one grid with the end points and stub tips on it, A* that pays to cross routes already placed, simplify, and one nudge. Label placement stays out of this pass, because a label's position is the author's fraction.
   - **A refined route is drawn only while it joins the current ends.** `routeConnector` uses it only if it starts at the source point and ends at the target point it resolves now. An end that has moved without a commit (one on a host connector whose own route was refined, say) gets the router's route rather than a detached one. A shape definition or router registered, replaced or disposed also clears the routes and asks again, like a commit that moves a route.
   - **A connector the bounded search gives up on keeps its cheap route.**
+- **Amendment 2026-10-20 (M16.29 containment).**
+  - **The overlay broke parity.** Present mode and the `.flux.html` player draw the cheap routes. Drawing the global routes in edit broke edit/present parity (FR-EDT-010, a Must) and studio/file fidelity (FR-FIL-001). CI caught both on the shapes gallery.
+  - **The studio draws the overlay only when asked.** It does so only on `?routing=global`, and never by default. The pass, its worker and the overlay stay as above.
+  - **Open decision (M16.28).** Every renderer must draw the same routes. Two ways to get there: persist the global result in the document (this ADR's first decision, a schema change), or have the player run the same pure pass.
+

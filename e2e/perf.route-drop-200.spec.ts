@@ -21,7 +21,9 @@ test.use({ trace: 'off' });
 test.describe('global routing performance', { tag: '@perf' }, () => {
   test('FR-RTE-003: after a drop the global routes of 200 connectors arrive with no main-thread task over 50 ms', async ({ page }) => {
     const editor = new EditorPage(page);
-    await editor.open('example-perf-route-200');
+    // the global routes are drawn only when asked for (off by default until every renderer draws them, M16.28)
+    await page.goto('/edit/example-perf-route-200?routing=global');
+    await editor.screens.first().waitFor();
     const passes = editor.canvas.locator('svg.fx-connector[data-route-pass="global"]');
     // the pass also runs once the opened document settles
     await expect.poll(() => passes.count()).toBeGreaterThanOrEqual(GLOBAL);

@@ -2,7 +2,7 @@
 import type { WorkerLike } from '@fluxion/layout/worker';
 import { type GlobalRouteInput, globalRoutes } from '@fluxion/routing';
 import { describe, expect, it } from 'vitest';
-import { createRoutePort } from './route-port.js';
+import { createRoutePort, globalRoutingAsked } from './route-port.js';
 
 const input: GlobalRouteInput = {
   obstacles: [],
@@ -49,5 +49,13 @@ describe('the routing worker port (FR-RTE-003)', () => {
     // nothing in flight: cancel ends nothing
     port.cancel();
     expect(log).toHaveLength(3);
+  });
+
+  it('FR-EDT-010: the global routes are drawn only when the page asks for them, so edit draws what present and the file draw by default', () => {
+    expect(globalRoutingAsked('')).toBe(false);
+    expect(globalRoutingAsked('?src=x.flux')).toBe(false);
+    expect(globalRoutingAsked('?routing=cheap')).toBe(false);
+    expect(globalRoutingAsked('?routing=global')).toBe(true);
+    expect(globalRoutingAsked('?log=*&routing=global')).toBe(true);
   });
 });
