@@ -1876,3 +1876,7 @@ M16.27 (e035b036): the undo flake was CodeMirror's 500 ms history group delay sp
 ## 2026-10-20 M16.18 (claude, local Windows)
 
 M16.18 (ce89f454): measured first. Pan and zoom of 2k/1k already ran at 60 fps, so no culling was built. First render went from 1.0-1.2 s to ~0.75 s via a lazy hit index, a template parse cache, a pruned `nearestPoint` and a cached token count. The fixture is opened as a file: bundling it as an example added 187 kB gzip to the studio. Review r1 minors (doc, pan/zoom transform asserted) fixed; r2 passed.
+
+## 2026-10-20 M16.30 (claude, local Windows)
+
+M16.30 (75866f74): `HitIndex.covers` hides an anchor a shape painted above covers (outline, 3 px around, connectors and hidden elements skipped). Review r1 failed the drag perf test as flaky (the window held the drop and the lazy index build); it now waits for idle and measures only the moves (8/8 runs). Added M16.31 for the cold-setup time flake.
