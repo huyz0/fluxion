@@ -63,32 +63,38 @@
     {
       "finding": "F1",
       "disposition": "reopen",
-      "action": "M16.40: restore route-drag-200 >= ROUTE_DRAG_200_MIN_FPS on the CI perf runner, proven by a perf run."
+      "action": "M16.40: restore route-drag-200 >= ROUTE_DRAG_200_MIN_FPS on the CI perf runner, proven by a perf run.",
+      "target": "M16.40"
     },
     {
       "finding": "F2",
       "disposition": "reopen",
-      "action": "M16.41: perf-2k-1k first render under BIG_SCREEN_FIRST_RENDER_MS on the CI perf runner, proven by a perf run."
+      "action": "M16.41: perf-2k-1k first render under BIG_SCREEN_FIRST_RENDER_MS on the CI perf runner, proven by a perf run.",
+      "target": "M16.41"
     },
     {
       "finding": "F3",
       "disposition": "reopen",
-      "action": "M16.22: a leg requiring a green CI perf run with both specs at or after the final review range."
+      "action": "M16.22: a leg requiring a green CI perf run with both specs at or after the final review range.",
+      "target": "M16.22"
     },
     {
       "finding": "F4",
       "disposition": "reopen",
-      "action": "M16.22: add legs for the real files and relabel."
+      "action": "M16.22: add legs for the real files and relabel.",
+      "target": "M16.22"
     },
     {
       "finding": "F5",
       "disposition": "reopen",
-      "action": "M16.22: untick R3 rows 6/7 until evidence, better evidence for 10/11, reword the gate header."
+      "action": "M16.22: untick R3 rows 6/7 until evidence, better evidence for 10/11, reword the gate header.",
+      "target": "M16.22"
     },
     {
       "finding": "F6",
       "disposition": "reopen",
-      "action": "M16.22: rewrite the mcp changeset."
+      "action": "M16.22: rewrite the mcp changeset.",
+      "target": "M16.22"
     },
     {
       "finding": "F7",
