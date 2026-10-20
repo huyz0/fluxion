@@ -35,6 +35,8 @@ const floors = Object.fromEntries(
 const SRC = '{packages,packs,apps}/*/src/**';
 // fast-check seed used in CI (tools/vitest/fast-check.setup.ts); FC_SEED overrides it
 const CI_SEED = 20_260_926;
+// fast-check runs per property, as the nightly sets it (FC_RUNS); 200, fast-check.setup.ts's default, when unset or not a number
+const fcRuns = Number.isFinite(Number(process.env.FC_RUNS || 'x')) ? Number(process.env.FC_RUNS) : 200;
 // workspace sources resolve to src/, never to a stale dist/ (ADR-0011)
 const conditions = ['@fluxion/source', 'module', 'development|production'];
 
@@ -50,7 +52,9 @@ export default defineConfig({
   test: {
     // the 5 s default is a laptop's: a macOS or Windows runner under coverage takes several times a laptop's time, and a test over the
     // limit there is a red main without a bug (M10.11: four CI runs lost to it). A genuine hang still fails, at 20 s.
-    testTimeout: 20_000,
+    // the nightly's FC_RUNS (10 000) runs each property 50 times the default 200, so the limit grows with it, to 3 min at most: three times
+    // the slowest property there (nightly 39387799270: 45 and 63 s against 20), and a hang still fails well inside the job's 30 min
+    testTimeout: Math.min(20_000 * Math.max(1, fcRuns / 200), 180_000),
     hookTimeout: 20_000,
     setupFiles: ['./tools/vitest/fast-check.setup.ts', './tools/vitest/i18n.setup.ts'],
     env: { FC_SEED: process.env.FC_SEED ?? (process.env.CI ? String(CI_SEED) : ''), FC_RUNS: process.env.FC_RUNS ?? '' },
