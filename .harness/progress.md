@@ -1912,3 +1912,7 @@ M16.34 (4d148258): a floating end carries `normal`, the outward normal of the bo
 ## 2026-10-20 M16.36 (claude, local Windows)
 
 M16.36 (609bd3e3): CI's `eval-recorded` was red from 981aa84e: the cheat sheet edits of M16.33/M16.35 changed the system prompt that keys every scripted recording. `pnpm eval --author` re-keyed the 30 recordings (pure renames); `pnpm eval --recorded` passes. Row M16.37 adds a ladder guard. Review r1 passed.
+
+## 2026-10-20 M16.37 (claude, local Windows)
+
+M16.37: the ladder's `eval` step runs the recorded eval when a staged change can move its prompt (evalNeeded = examplesNeeded, plus eval cases, recordings and scripts/eval); proven to FAIL with a stale cheat sheet and PASS otherwise. Review r1: F1 (Windows .cmd shim) and F2 (loose ladder regex) fixed; r2 passed.
