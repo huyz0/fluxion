@@ -10,6 +10,7 @@ import { Box } from '@fluxion/geometry';
 import { IndexedBox } from '@fluxion/geometry';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
+import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
@@ -102,6 +103,39 @@ export function fanWaypoint(from: Vec2, to: Vec2, offset: number): Vec2;
 
 // @public
 export function findJumps(routes: readonly JumpRoute[], documentStyle?: JumpStyle): JumpMap;
+
+// @public
+export type GlobalConnector = {
+    readonly id: string;
+    readonly source: RouteEnd;
+    readonly target: RouteEnd;
+};
+
+// @public
+export type GlobalObstacle = {
+    readonly id: string;
+    readonly box: Box;
+};
+
+// @public
+export type GlobalRoute = {
+    readonly id: string;
+    readonly commands: readonly PathCommand[];
+};
+
+// @public
+export type GlobalRouteInput = {
+    readonly obstacles: readonly GlobalObstacle[];
+    readonly connectors: readonly GlobalConnector[];
+    readonly margin?: number;
+    readonly spacing?: number;
+};
+
+// @public
+export function globalRouteInput(view: ReadView, ctx: RouteContext, screenId: RecordId): GlobalRouteInput;
+
+// @public
+export function globalRoutes(input: GlobalRouteInput): GlobalRoute[];
 
 // @public
 export type Grid = {
@@ -221,6 +255,7 @@ export type RouteContext = {
     readonly shapeDefs: Registry<string, ShapeDef>;
     readonly routers: Registry<string, Router>;
     readonly quality?: RouteQuality | undefined;
+    readonly refined?: ReadSignal<ReadonlyMap<string, readonly PathCommand[]> | undefined> | undefined;
 };
 
 // @public

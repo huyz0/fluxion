@@ -16,6 +16,8 @@ import { createCanvasMeasurer } from '@fluxion/render';
 import { DocumentFile } from '@fluxion/schema';
 import { DslDiagnostic } from '@fluxion/dsl';
 import { FieldDef } from '@fluxion/schema';
+import { GlobalRoute } from '@fluxion/routing';
+import { GlobalRouteInput } from '@fluxion/routing';
 import { ImageCodec } from '@fluxion/format';
 import { LoadableFace } from '@fluxion/render';
 import { loadFontFaces } from '@fluxion/render';
@@ -23,6 +25,7 @@ import { MarkerDef } from '@fluxion/core';
 import { PathCommand } from '@fluxion/geometry';
 import { Random } from '@fluxion/schema';
 import { ReactNode } from 'react';
+import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { registerFontMetrics } from '@fluxion/render';
@@ -264,6 +267,9 @@ export type CreateDeps = {
 
 // @public
 export function createElement(deps: CreateDeps, box: Box, make: ElementMaker): RecordId | undefined;
+
+// @public
+export function createGlobalRouting(store: Store, ctx: RouteContext, port: GlobalRoutePort, settleMs?: number): GlobalRouting;
 
 // @public
 export function createHitIndex(store: Store, context: HitContext): HitIndex;
@@ -508,6 +514,21 @@ export function freehandTool(): Tool;
 
 // @public
 export function fuzzyScore(query: string, text: string): number | undefined;
+
+// @public
+export const GLOBAL_ROUTE_SETTLE_MS = 200;
+
+// @public
+export type GlobalRoutePort = {
+    run(inputs: readonly GlobalRouteInput[]): Promise<readonly GlobalRoute[]>;
+    cancel(): void;
+};
+
+// @public
+export type GlobalRouting = {
+    readonly refined: ReadSignal<ReadonlyMap<string, readonly PathCommand[]> | undefined>;
+    dispose(): void;
+};
 
 // @public
 export const GRID_CELL = 24;

@@ -3,7 +3,7 @@
 // (FR-CON-003), looked up here
 // and never switched on; built-ins register through the same API as plugins.
 import { createRegistry, type MarkerDef, type ReadView, type Registry, type ShapeDef, type Store } from '@fluxion/core';
-import type { Router } from '@fluxion/routing';
+import type { RouteContext, Router } from '@fluxion/routing';
 import type { ElementRecord } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
 import type { ComponentType, ReactNode } from 'react';
@@ -64,6 +64,8 @@ export type RenderRegistries = {
   readonly routers: Registry<string, Router>;
   /** Connector end markers by id (`arrow`, `<plugin>:<name>`, …): a connector view draws its ends' markers. */
   readonly markers: Registry<string, MarkerDef>;
+  /** The global routing pass's routes while they are current (FR-RTE-003; routing's `RouteContext.refined`): none in the player. */
+  readonly refined?: RouteContext['refined'];
 };
 
 /**

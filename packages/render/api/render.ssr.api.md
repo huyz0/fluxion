@@ -12,6 +12,7 @@ import { ReactNode } from 'react';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
+import { RouteContext } from '@fluxion/routing';
 import { Router } from '@fluxion/routing';
 import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';

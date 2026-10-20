@@ -1,4 +1,5 @@
-import { createCore } from '@fluxion/core';
+import { createCore, writable } from '@fluxion/core';
+import type { PathCommand } from '@fluxion/geometry';
 import type { Router } from '@fluxion/routing';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
@@ -195,6 +196,49 @@ describe('incremental rerouting (FR-RTE-002)', () => {
     } finally {
       if (registered.ok) registered.value.dispose();
     }
+  });
+});
+
+describe('the global routing pass (FR-RTE-003)', () => {
+  it('FR-RTE-003: a connector draws the global pass route while one is set for it, else its router route', async () => {
+    const b = documentBuilder({ seed: 416 });
+    const screenId = b.screen({ size: { w: 800, h: 600 } });
+    const a = b.rect(screenId, { x: 100, y: 100, w: 100, h: 50 });
+    const c = b.rect(screenId, { x: 400, y: 300, w: 100, h: 50 });
+    const link = b.connect(a, c, { arrow: false });
+    const core = createCore(b.build());
+    const refined = writable<ReadonlyMap<string, readonly PathCommand[]> | undefined>(undefined);
+    await act(async () =>
+      root.render(
+        <ScreenView
+          registries={{ ...registries, refined: refined.get }}
+          store={core.store}
+          screenId={screenId}
+          mode="present"
+          view={{ kind: 'fit', box: { w: 800, h: 600 } }}
+        />,
+      ),
+    );
+    const route = () => host.querySelector<SVGPathElement>(`.fx-el[data-el-id="${link}"] path.fx-route`);
+    const pass = () => route()?.ownerSVGElement?.dataset['routePass'];
+    const cheap = route()?.getAttribute('d');
+    expect(pass()).toBeUndefined();
+    const detour: PathCommand[] = [
+      { kind: 'M', to: { x: 187.5, y: 150 } },
+      { kind: 'L', to: { x: 187.5, y: 225 } },
+      { kind: 'L', to: { x: 412.5, y: 225 } },
+      { kind: 'L', to: { x: 412.5, y: 300 } },
+    ];
+    await act(async () => refined.set(new Map([[link, detour]])));
+    expect(pass()).toBe('global');
+    expect(route()?.getAttribute('d')).toBe('M187.5 150 L187.5 225 L412.5 225 L412.5 300');
+    // a route that no longer runs between the ends is not drawn, nor marked as the global pass's
+    await act(async () => refined.set(new Map([[link, [{ kind: 'M', to: { x: 0, y: 0 } }, ...detour.slice(1)]]])));
+    expect(pass()).toBeUndefined();
+    expect(route()?.getAttribute('d')).toBe(cheap);
+    await act(async () => refined.set(undefined));
+    expect(pass()).toBeUndefined();
+    expect(route()?.getAttribute('d')).toBe(cheap);
   });
 });
 

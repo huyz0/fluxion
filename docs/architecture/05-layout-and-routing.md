@@ -273,6 +273,7 @@ fade out (07 §3, §4.4).
 | 500-node layered < 2 s, main-thread long tasks < 50 ms | FR-LAY-007 | worker, cancellation, progress |
 | 200 orthogonal routes < 300 ms | NFR-PERF-005 | sparse grid, shared spatial index, one grid per batch |
 | Drag with 200 connectors ≥ 50 fps | FR-RTE-002 | reroute only connectors bound to moved elements (bindings index); during drag skip nudge and labels; full global pass in the worker on drop |
+| Global pass on drop, main-thread long tasks ≤ 50 ms | FR-RTE-003 | input built on the page's thread from the cheap ends; grid + A* + simplify + nudge in the studio's routing worker; routes drawn as an overlay while no change that moves a route has committed (ADR-0044 amendment) |
 
 ## 10. Testing
 

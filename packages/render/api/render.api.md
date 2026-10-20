@@ -22,6 +22,7 @@ import { ResolvedPaint } from '@fluxion/theme';
 import { RichTextDoc } from '@fluxion/schema';
 import { RichTextMark } from '@fluxion/schema';
 import { RichTextNode } from '@fluxion/schema';
+import { RouteContext } from '@fluxion/routing';
 import { Router } from '@fluxion/routing';
 import { ScreenRecord } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
@@ -264,6 +265,7 @@ export type RenderRegistries = {
     readonly shapeDefs: Registry<string, ShapeDef>;
     readonly routers: Registry<string, Router>;
     readonly markers: Registry<string, MarkerDef>;
+    readonly refined?: RouteContext["refined"];
 };
 
 // @public

@@ -103,15 +103,14 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const record = useContext(RenderStatsContext);
   const routed = useValue(
     useMemo(
-      // the cheap pass (routeConnector's default, FR-RTE-002); the query re-runs only when something the route
-      // read changes, so moving a shape reroutes the connectors bound to it and no others
+      // the cheap pass (routeConnector's default, FR-RTE-002), or the global pass's route while it is current (FR-RTE-003); the query
+      // re-runs only when something the route read changes, so moving a shape reroutes the connectors bound to it and no others
       () =>
         store.query((view) => {
-          if (record === undefined) return routeConnector(view, registries, id);
-          const t0 = performance.now();
+          const t0 = record === undefined ? 0 : performance.now();
           const route = routeConnector(view, registries, id);
-          record('route', performance.now() - t0);
-          return route;
+          if (record !== undefined) record('route', performance.now() - t0);
+          return route === undefined ? undefined : { ...route, global: registries.refined?.()?.get(id) === route.commands };
         }),
       [store, registries, id, record],
     ),
@@ -140,7 +139,13 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
     <>
-      <svg className="fx-connector" aria-hidden="true" viewBox={`${round(x)} ${round(y)} ${round(w)} ${round(h)}`} style={box}>
+      <svg
+        className="fx-connector"
+        data-route-pass={routed.global ? 'global' : undefined}
+        aria-hidden="true"
+        viewBox={`${round(x)} ${round(y)} ${round(w)} ${round(h)}`}
+        style={box}
+      >
         {start === undefined && end === undefined ? null : (
           <defs>
             {start === undefined ? null : <MarkerView def={start} id={`${base}-start`} color={style.stroke.color} width={width} trim={trimmed.start} />}

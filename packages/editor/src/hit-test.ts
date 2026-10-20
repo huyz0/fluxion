@@ -181,6 +181,8 @@ class Index implements HitIndex {
   readonly #dirty = new Set<RecordId>();
   // tzap disable next-line BooleanLiteral: a rebuild too many is only slower
   #stale = false;
+  /** The global pass's routes changed since the last query: every connector is dirty. */
+  #rerouteAll = false;
   readonly #stop: readonly (() => void)[];
 
   constructor(store: Store, context: HitContext) {
@@ -206,7 +208,14 @@ class Index implements HitIndex {
       this.#stale = !first;
       first = false;
     });
-    this.#stop = [unsubscribe, stopRegistries];
+    // the global pass's routes arriving or cleared (FR-RTE-003) move connectors without a store change: the next query reroutes them all
+    let initial = true;
+    const stopRefined = effect(() => {
+      context.registries.refined?.();
+      this.#rerouteAll ||= !initial;
+      initial = false;
+    });
+    this.#stop = [unsubscribe, stopRegistries, stopRefined];
   }
 
   #refresh(id: RecordId): void {
@@ -229,6 +238,11 @@ class Index implements HitIndex {
       // tzap disable next-line BooleanLiteral: a rebuild too many is only slower
       this.#stale = false;
       this.#build();
+    }
+    if (this.#rerouteAll) {
+      this.#rerouteAll = false;
+      for (const id of this.#store.members('byType', 'element') as RecordId[])
+        if ((this.#store.get(id) as { kind?: unknown } | undefined)?.kind === 'connector') this.#dirty.add(id);
     }
     for (const id of this.#dirty) this.#refresh(id);
     this.#dirty.clear();

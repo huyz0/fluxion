@@ -371,6 +371,9 @@ importers:
       '@fluxion/player':
         specifier: workspace:*
         version: link:../../packages/player
+      '@fluxion/routing':
+        specifier: workspace:*
+        version: link:../../packages/routing
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../../packages/schema

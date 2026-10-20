@@ -31,6 +31,7 @@
     "@fluxion/pack-fonts-core": "workspace:*",
     "@fluxion/pack-themes-core": "workspace:*",
     "@fluxion/player": "workspace:*",
+    "@fluxion/routing": "workspace:*",
     "@fluxion/schema": "workspace:*",
     "@lingui/core": "catalog:",
     "@lingui/react": "catalog:",

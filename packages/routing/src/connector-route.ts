@@ -3,7 +3,7 @@
 // router registered for the route's type draws the path between them. A floating end aims at the
 // other end's reference point (a bound element's centre, a free point) or at the nearest waypoint.
 // Reads records through a ReadView, so a store query over it re-routes when a bound element changes.
-import type { ReadView, Registry, ShapeDef } from '@fluxion/core';
+import type { ReadSignal, ReadView, Registry, ShapeDef } from '@fluxion/core';
 import { createPathSampler, type PathCommand, pathFromCommands, type Vec2 } from '@fluxion/geometry';
 import type { AnchorDef, AnchorRef, RecordId, Route, Transform } from '@fluxion/schema';
 import { type AnchorTarget, resolveAnchor, shapeAnchorTarget } from './anchor.js';
@@ -22,6 +22,11 @@ export type RouteContext = {
   readonly routers: Registry<string, Router>;
   /** How much work routes may take (FR-RTE-002); absent: `cheap`, the synchronous pass every view, hit test and handle shares. */
   readonly quality?: RouteQuality | undefined;
+  /**
+   * The global pass's routes by connector id (FR-RTE-003), drawn instead of the router's while they are set. Whoever sets them clears
+   * them on any change that could move a route, so they always belong to the document's current geometry; a query reading routes follows the signal.
+   */
+  readonly refined?: ReadSignal<ReadonlyMap<string, readonly PathCommand[]> | undefined> | undefined;
 };
 
 /**
@@ -111,6 +116,13 @@ function pending(view: ReadView, ctx: RouteContext, { connectorId, end, free }: 
 const resolved = (p: Pending, toward: Vec2): RouteEnd =>
   'target' in p ? resolveAnchor(p.target, p.anchor, toward) : { point: p.at, ...(p.dir === undefined ? {} : { dir: p.dir }) };
 
+/** Whether `commands` start at `from` and end at `to`. */
+function joins(commands: readonly PathCommand[], from: Vec2, to: Vec2): boolean {
+  const first = commands[0];
+  const end = commands.at(-1);
+  return first?.kind === 'M' && first.to.x === from.x && first.to.y === from.y && end !== undefined && 'to' in end && end.to.x === to.x && end.to.y === to.y;
+}
+
 /** `router`'s path, or a straight line when it throws or does not run from the source point to the target point. */
 function pathOf(
   router: Router,
@@ -121,20 +133,9 @@ function pathOf(
   const { source, target } = ends;
   try {
     const commands = router.route({ source, target, route, quality });
-    const first = commands[0];
     // a path must start at the source point: one that starts elsewhere would look detached (M5.17 review F1)
     // and end at the target (the Router contract: source to target; M5 final F6), or it would stop short of the element
-    const end = commands.at(-1);
-    if (
-      first?.kind === 'M' &&
-      first.to.x === source.point.x &&
-      first.to.y === source.point.y &&
-      end !== undefined &&
-      'to' in end &&
-      end.to.x === target.point.x &&
-      end.to.y === target.point.y
-    )
-      return commands;
+    if (joins(commands, source.point, target.point)) return commands;
   } catch {
     // a plugin router's failure draws the connector straight rather than not at all
   }
@@ -165,6 +166,10 @@ function routeOf(view: ReadView, ctx: RouteContext, connectorId: RecordId, above
   const waypoints = route.waypoints ?? [];
   const source = resolved(from, waypoints[0] ?? to.at);
   const target = resolved(to, waypoints.at(-1) ?? from.at);
+  // the global pass's route, while it still runs from this source point to this target point: an end that has moved since (one on a
+  // host connector whose own route was refined, say) draws the router's route rather than a detached one
+  const refined = ctx.refined?.()?.get(connectorId);
+  if (refined !== undefined && joins(refined, source.point, target.point)) return { source, target, commands: refined };
   const router = ctx.routers.get(route.type) ?? straightRouter;
   return { source, target, commands: pathOf(router, { source, target }, route, ctx.quality ?? 'cheap') };
 }
