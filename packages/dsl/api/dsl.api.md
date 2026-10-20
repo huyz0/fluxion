@@ -209,6 +209,7 @@ export type EdgeAst = {
     readonly label?: Located<string>;
     readonly style?: LocatedStyle;
     readonly route?: Located<"straight" | "curved" | "orthogonal" | "polyline">;
+    readonly jumps?: Located<"arc" | "gap" | "none">;
 };
 
 // @public
@@ -299,6 +300,7 @@ export type FluxAst = {
     readonly title?: Located<string>;
     readonly theme?: ThemeAst;
     readonly uses: readonly Located<string>[];
+    readonly lineJumps?: Located<boolean>;
     readonly screens: readonly ScreenAst[];
     readonly deferred: {
         readonly [pointer: string]: string;

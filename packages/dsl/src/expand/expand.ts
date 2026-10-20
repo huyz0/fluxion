@@ -119,6 +119,7 @@ function meta(ctx: Ctx, ast: FluxAst, themeId: RecordId, salt: string): void {
     type: 'document',
     ...(ast.title ? { title: ast.title.value } : {}),
     themeId,
+    ...(ast.lineJumps ? { settings: { lineJumps: ast.lineJumps.value } } : {}),
     source: { flux: 1, salt, deferred: { ...ast.deferred } },
   };
   add(ctx, record, ast.title?.range);
@@ -223,7 +224,7 @@ function edge(ctx: Ctx, e: EdgeAst, key: EdgeKey, bySlug: ReadonlyMap<string, Pe
     type: 'element',
     screenId: ctx.id(idKeys.screen(key.screen)),
     kind: 'connector',
-    route: { type: e.route?.value ?? 'straight' },
+    route: { type: e.route?.value ?? 'straight', ...(e.jumps ? { jumps: e.jumps.value } : {}) },
     markers,
     ...(e.label ? { labels: [{ text: richText(e.label.value), position: 0.5 }] } : {}),
     ...(style ? { style } : {}),

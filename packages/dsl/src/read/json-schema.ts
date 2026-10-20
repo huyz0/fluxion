@@ -1,7 +1,7 @@
 // The JSON Schema of FluxScript `flux: 1` (FR-AI-001, M14.25): generated from the reader's key table (`KEYS`), which is the source of truth because
 // the reader is hand-written. Every compiled key needs a value schema below, so a key added to the table without one fails the generator (and its
 // drift test); a deferred key is accepted with any value, as the compiler keeps it and warns. The committed copy is specs/schema/fluxscript.schema.json.
-import { KEYS } from './fields.js';
+import { EDGE_DETAILS, KEYS } from './fields.js';
 
 /** A JSON Schema fragment. */
 type Schema = { readonly [keyword: string]: unknown };
@@ -42,6 +42,7 @@ const VALUES: { readonly [level in keyof typeof KEYS]: { readonly [key: string]:
     title: string,
     theme: { anyOf: [string, { $ref: '#/$defs/theme' }] },
     uses: { type: 'array', items: string },
+    lineJumps: { type: 'boolean', description: 'connectors hop where they cross, throughout the document' },
     screens: { type: 'array', items: { $ref: '#/$defs/screen' } },
   },
   theme: {
@@ -61,7 +62,7 @@ const VALUES: { readonly [level in keyof typeof KEYS]: { readonly [key: string]:
   },
   node: { shape: string, text: string, label: string, tone: string, style, pin, alt: string },
   group: { label: string, contains: { type: 'array', items: string }, style, layout },
-  edge: { from: string, to: string, op: string, label: string, style, route: { enum: ROUTES } },
+  edge: { from: string, to: string, op: string, label: string, style, route: { enum: ROUTES }, jumps: { enum: ['arc', 'gap', 'none'] } },
   pin: {},
 };
 
@@ -93,11 +94,10 @@ const closed = (level: keyof typeof KEYS, required: readonly string[], extra: Sc
  */
 export function fluxScriptJsonSchema(): FluxScriptJsonSchema {
   const compiledEdgeKeys = [...KEYS.edge.compiled];
-  const detailKeys = ['label', 'style', 'route'];
   const detail = {
     type: 'object',
     properties: {
-      ...Object.fromEntries(detailKeys.map((k) => [k, VALUES.edge[k]])),
+      ...Object.fromEntries(EDGE_DETAILS.map((k) => [k, VALUES.edge[k]])),
       ...Object.fromEntries(KEYS.edge.deferred.map((k) => [k, { description: 'kept but not compiled yet (FLX_DSL_NOT_YET)' }])),
     },
     additionalProperties: false,
@@ -119,7 +119,7 @@ export function fluxScriptJsonSchema(): FluxScriptJsonSchema {
       },
       group: closed('group', []),
       edge: {
-        description: 'a -> b, a -> b: label (as text), a one-entry mapping { "a -> b": label or details }, or { from, to, op, label, style, route }',
+        description: 'a -> b, a -> b: label (as text), a one-entry mapping { "a -> b": label or details }, or { from, to, op, label, style, route, jumps }',
         anyOf: [
           string,
           closed('edge', ['from', 'to']),

@@ -37,12 +37,12 @@ screens:
 
 ## Keys
 
-- top: flux, title, theme, uses, screens
+- top: flux, title, theme, uses, lineJumps (true: lines hop where they cross), screens
 - theme: preset, name, overrides
 - screen: id, title, layout, background, nodes, groups, edges, notes
 - node: shape, text, label, tone, style, pin, alt (node names are slugs: lowercase letters, digits, hyphens)
 - group: label, contains, style, layout
-- edge: "a -> b: label" or { from, to, op, label, style, route }; ops are -> <- <-> -- ~>; an end may name an anchor: a.e -> b.w
+- edge: "a -> b: label" or { from, to, op, label, style, route, jumps: arc|gap|none }; ops are -> <- <-> -- ~>; an end may name an anchor: a.e -> b.w
 - pin: { x, y, w?, h? } keeps a box where you put it
 
 ## Rules

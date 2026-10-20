@@ -6,7 +6,7 @@ import { isYMap, isYScalar, isYSeq, type YEntry, type YMap, type YNode } from '.
 import { nearest } from '../resolve/suggest.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
 import type { EdgeAst, FluxAst, GroupAst, Located, NodeAst, ScreenAst, ThemeAst } from './ast.js';
-import { asMap, type Ctx, entries, KEYS, layout, pin, report, slug, stringList, style, text, textOf } from './fields.js';
+import { asMap, type Ctx, EDGE_DETAILS, entries, KEYS, layout, pin, report, slug, stringList, style, text, textOf } from './fields.js';
 
 /** Content keys: a node that has none of them after deferral has nothing to draw and is deferred whole (ADR-0030 review r2 F1). */
 const CONTENT = ['shape', 'text', 'label'];
@@ -84,7 +84,7 @@ function group(ctx: Ctx, e: YEntry, path: string): GroupAst | undefined {
   return { slug: { value: e.key, range: e.keyRange }, contains, ...(label ? { label } : {}), ...(st ? { style: st } : {}), ...(lay ? { layout: lay } : {}) };
 }
 
-/** An edge entry: `- a -> b`, `- a -> b: label`, `- a -> b: { label, style, route }`, or the object form. */
+/** An edge entry: `- a -> b`, `- a -> b: label`, `- a -> b: { label, style, route, jumps }`, or the object form. */
 function edge(ctx: Ctx, item: YNode, path: string, pointer: string): EdgeAst | undefined {
   if (isYScalar(item) && typeof item.value === 'string') return fromShorthand(ctx, { key: item.value, range: item.range }, { path, pointer });
   if (!isYMap(item)) {
@@ -97,30 +97,41 @@ function edge(ctx: Ctx, item: YNode, path: string, pointer: string): EdgeAst | u
   return fromObject(ctx, item, path, pointer);
 }
 
-function details(ctx: Ctx, value: YNode | undefined, path: string, pointer: string): Pick<EdgeAst, 'label' | 'style' | 'route'> {
+type Attributes = Pick<EdgeAst, 'label' | 'style' | 'route' | 'jumps'>;
+
+function details(ctx: Ctx, value: YNode | undefined, path: string, pointer: string): Attributes {
   if (value === undefined || (isYScalar(value) && value.value === null)) return {};
   if (isYScalar(value)) return { label: { value: String(value.value), range: value.range } };
   const m = asMap(ctx, value, path, 'an edge value');
   if (!m) return {};
-  const f = entries(ctx, m, { compiled: ['label', 'style', 'route'], deferred: KEYS.edge.deferred }, { path: path, pointer: pointer });
+  const f = entries(ctx, m, { compiled: EDGE_DETAILS, deferred: KEYS.edge.deferred }, { path: path, pointer: pointer });
   return attributes(ctx, f, path);
 }
 
-function attributes(ctx: Ctx, f: Map<string, YEntry>, path: string): Pick<EdgeAst, 'label' | 'style' | 'route'> {
+/** The value of `key` when it is one of `allowed`; another value is reported. */
+function oneOf<T extends string>(ctx: Ctx, f: Map<string, YEntry>, { key, allowed, what }: { key: string; allowed: readonly T[]; what: string }, path: string) {
+  const v = text(ctx, f.get(key), path);
+  if (v === undefined) return undefined;
+  if (allowed.includes(v.value as T)) return v as Located<T>;
+  report(ctx, {
+    code: 'FLX_SCHEMA_INVALID',
+    range: v.range,
+    path: `${path}/${key}`,
+    message: `"${v.value}" is not ${what}`,
+    hint: `one of ${allowed.join(', ')}`,
+  });
+  return undefined;
+}
+
+const ROUTES = ['straight', 'curved', 'orthogonal', 'polyline'] as const;
+const JUMPS = ['arc', 'gap', 'none'] as const;
+
+function attributes(ctx: Ctx, f: Map<string, YEntry>, path: string): Attributes {
   const label = text(ctx, f.get('label'), path);
   const st = style(ctx, f.get('style'), path);
-  const r = text(ctx, f.get('route'), path);
-  const routes = ['straight', 'curved', 'orthogonal', 'polyline'];
-  if (r && !routes.includes(r.value))
-    report(ctx, {
-      code: 'FLX_SCHEMA_INVALID',
-      range: r.range,
-      path: `${path}/route`,
-      message: `"${r.value}" is not a route`,
-      hint: `one of ${routes.join(', ')}`,
-    });
-  const route = r && routes.includes(r.value) ? { route: r as EdgeAst['route'] & object } : {};
-  return { ...(label ? { label } : {}), ...(st ? { style: st } : {}), ...route };
+  const route = oneOf(ctx, f, { key: 'route', allowed: ROUTES, what: 'a route' }, path);
+  const jumps = oneOf(ctx, f, { key: 'jumps', allowed: JUMPS, what: 'a jump style' }, path);
+  return { ...(label ? { label } : {}), ...(st ? { style: st } : {}), ...(route ? { route } : {}), ...(jumps ? { jumps } : {}) };
 }
 
 type Shorthand = { readonly key: string; readonly range: YNode['range']; readonly value?: YNode | undefined };
@@ -316,6 +327,7 @@ export function readFlux(root: YNode, text: string): ReadResult {
     ...titleText(textField(ctx, f.get('title'))),
     ...themeField(theme(ctx, f.get('theme'))),
     uses: stringList(ctx, uses, '/uses', 'uses: [basic, flowchart]'),
+    ...lineJumpsField(ctx, f.get('lineJumps')),
     screens: isYSeq(screensNode) ? screensNode.items.flatMap((s, i) => screen(ctx, s, i) ?? []) : [],
     deferred: ctx.deferred,
   };
@@ -323,4 +335,12 @@ export function readFlux(root: YNode, text: string): ReadResult {
 }
 
 const textField = (ctx: Ctx, e: YEntry | undefined) => text(ctx, e, '');
+
+/** `lineJumps: true | false`, or a type error. */
+function lineJumpsField(ctx: Ctx, e: YEntry | undefined): Pick<FluxAst, 'lineJumps'> {
+  if (e === undefined) return {};
+  if (isYScalar(e.value) && typeof e.value.value === 'boolean') return { lineJumps: { value: e.value.value, range: e.value.range } };
+  report(ctx, { code: 'FLX_SCHEMA_INVALID', range: e.value.range, path: '/lineJumps', message: 'lineJumps is true or false', hint: 'lineJumps: true' });
+  return {};
+}
 const themeField = (t: FluxAst['theme']) => (t ? { theme: t } : {});

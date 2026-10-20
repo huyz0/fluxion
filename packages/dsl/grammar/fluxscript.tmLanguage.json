@@ -228,7 +228,7 @@
     },
     "key-compiled": {
       "name": "entity.name.tag.yaml support.type.property-name.fluxscript",
-      "match": "(?<![\\w.-])(background|overrides|contains|screens|groups|layout|preset|edges|label|nodes|notes|route|shape|style|theme|title|flux|from|name|text|tone|uses|alt|pin|id|op|to|h|w|x|y)(?=\\s*:(?:\\s|$))"
+      "match": "(?<![\\w.-])(background|lineJumps|overrides|contains|screens|groups|layout|preset|edges|jumps|label|nodes|notes|route|shape|style|theme|title|flux|from|name|text|tone|uses|alt|pin|id|op|to|h|w|x|y)(?=\\s*:(?:\\s|$))"
     },
     "key-deferred": {
       "name": "entity.name.tag.yaml support.type.property-name.deferred.fluxscript",

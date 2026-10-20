@@ -169,11 +169,15 @@ function edgeLabel(el: El): string | undefined {
   return plainText(only['text'] as never);
 }
 
-function routeOf(el: El): string {
+const JUMPS = new Set(['arc', 'gap', 'none']);
+
+/** An edge's route type and its jump style (ADR-0169); a route with any other field is outside the subset. */
+function routeOf(el: El): { readonly type: string; readonly jumps?: string } {
   const r = el['route'] as { readonly [k: string]: unknown } | undefined;
-  if (r === undefined) return 'straight';
-  if (Object.keys(r).some((k) => k !== 'type') || !ROUTES.has(String(r['type']))) fail('route');
-  return String(r['type']);
+  if (r === undefined) return { type: 'straight' };
+  if (Object.keys(r).some((k) => k !== 'type' && k !== 'jumps') || !ROUTES.has(String(r['type']))) fail('route');
+  if (r['jumps'] !== undefined && !JUMPS.has(String(r['jumps']))) fail('route');
+  return { type: String(r['type']), ...(r['jumps'] === undefined ? {} : { jumps: String(r['jumps']) }) };
 }
 
 /** One edge item: `a -> b`, `a -> b: label`, or `a -> b: { label, style, route, … }` with its deferred sections. */
@@ -189,7 +193,8 @@ function edgeItem(ctx: Ctx, el: El, at: EdgeAt): Out {
   const details: Entry[] = [
     ...(text !== undefined ? ([['label', text]] as const) : []),
     ...(style !== undefined ? ([['style', style]] as const) : []),
-    ...(route !== 'straight' ? ([['route', route]] as const) : []),
+    ...(route.type !== 'straight' ? ([['route', route.type]] as const) : []),
+    ...(route.jumps !== undefined ? ([['jumps', route.jumps]] as const) : []),
     ...at.extras,
   ];
   if (details.length === 0) return key;

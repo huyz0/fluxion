@@ -6,7 +6,7 @@ import type { LayoutAst, Located, LocatedStyle, NodeAst } from './ast.js';
 
 /** The `flux: 1` key table (ADR-0030): compiled keys and kept-but-deferred keys at each level. */
 export const KEYS = {
-  top: { compiled: ['flux', 'title', 'theme', 'uses', 'screens'], deferred: ['vars', 'settings'] },
+  top: { compiled: ['flux', 'title', 'theme', 'uses', 'lineJumps', 'screens'], deferred: ['vars', 'settings'] },
   theme: { compiled: ['preset', 'name', 'overrides'], deferred: ['mode', 'accent'] },
   screen: {
     compiled: ['id', 'title', 'layout', 'background', 'nodes', 'groups', 'edges', 'notes'],
@@ -14,9 +14,12 @@ export const KEYS = {
   },
   node: { compiled: ['shape', 'text', 'label', 'tone', 'style', 'pin', 'alt'], deferred: ['component', 'image', 'icon', 'badge', 'props', 'near'] },
   group: { compiled: ['label', 'contains', 'style', 'layout'], deferred: [] as string[] },
-  edge: { compiled: ['from', 'to', 'op', 'label', 'style', 'route'], deferred: ['flow', 'riders'] },
+  edge: { compiled: ['from', 'to', 'op', 'label', 'style', 'route', 'jumps'], deferred: ['flow', 'riders'] },
   pin: { compiled: ['x', 'y', 'w', 'h'], deferred: [] as string[] },
 } as const;
+
+/** The keys an edge takes after the shorthand's `:`: its compiled keys but the ends and the op. */
+export const EDGE_DETAILS: readonly string[] = ['label', 'style', 'route', 'jumps'];
 
 /**
  * The keys of one level of the `flux: 1` key table: those the compiler reads and those it keeps but defers.

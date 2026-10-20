@@ -106,7 +106,7 @@ An edge is one line, `<from> <op> <to>`, with an optional label after a colon.
 | `~>` | Async: dashed, arrow at the target |
 
 An end is a slug, or `slug.anchor` where the anchor is `n`, `e`, `s`, `w` or a named anchor of the shape. Anything else is
-`FLX_DSL_EDGE_SYNTAX`, reported at its column. For more than a label, use `: { label, style, route }` after the edge, or write the
+`FLX_DSL_EDGE_SYNTAX`, reported at its column. For more than a label, use `: { label, style, route, jumps }` after the edge, or write the
 object form with `from`, `to` and `op`.
 
 ```yaml flux
@@ -128,6 +128,10 @@ screens:
 ```
 
 `route` is `straight`, `curved`, `orthogonal` or `polyline`. Routes are not stored in the document; the renderer computes them.
+
+Where two connectors cross, the one drawn later can hop over the other. `lineJumps: true` at the top of the file turns arcs on for
+the whole document; an edge's `jumps: arc`, `gap` or `none` sets its own style and overrides the document's. Connectors between the
+same two nodes are drawn side by side, 16 px apart.
 
 ## Layouts and pins
 

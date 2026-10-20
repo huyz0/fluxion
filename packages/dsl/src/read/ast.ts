@@ -125,6 +125,8 @@ export type EdgeAst = {
   readonly style?: LocatedStyle;
   /** Its route type. */
   readonly route?: Located<'straight' | 'curved' | 'orthogonal' | 'polyline'>;
+  /** How it draws where it crosses an edge painted before it (ADR-0169); absent: as the document says. */
+  readonly jumps?: Located<'arc' | 'gap' | 'none'>;
 };
 
 /**
@@ -179,6 +181,8 @@ export type FluxAst = {
   readonly theme?: ThemeAst;
   /** The packs shapes are looked up in, in order. */
   readonly uses: readonly Located<string>[];
+  /** Whether connectors hop where they cross, throughout the document (ADR-0169). */
+  readonly lineJumps?: Located<boolean>;
   /** The screens, in order. */
   readonly screens: readonly ScreenAst[];
   /** The source text of each section kept but not compiled, by pointer (`/vars`, `/screens/arch/steps`). */

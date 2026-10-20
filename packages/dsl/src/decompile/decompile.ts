@@ -86,6 +86,12 @@ function keptRecords(ctx: Ctx): number {
 
 const keptComment = (n: number) => (n > 0 ? [`kept: ${n} records not shown`] : []);
 
+/** `lineJumps:` when the document sets it (ADR-0169). */
+function lineJumpsEntry(ctx: Ctx): Entry[] {
+  const on = (ctx.meta?.['settings'] as { readonly lineJumps?: unknown } | undefined)?.lineJumps;
+  return typeof on === 'boolean' ? [['lineJumps', on]] : [];
+}
+
 function header(ctx: Ctx): Entry[] {
   const title = ctx.meta?.['title'];
   const top: Entry[] = ctx.deferred.flatMap(([p, t]) => (/^\/[^/]+$/.test(p) ? [[p.slice(1), { raw: t }] as const] : []));
@@ -94,6 +100,7 @@ function header(ctx: Ctx): Entry[] {
     ['title', typeof title === 'string' ? title : ''],
     ...themeEntry(ctx),
     ...(ctx.uses.length > 0 ? ([['uses', { seq: ctx.uses, flow: true }]] as const) : []),
+    ...lineJumpsEntry(ctx),
     ...top,
   ];
 }

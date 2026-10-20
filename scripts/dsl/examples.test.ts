@@ -119,28 +119,52 @@ describe('guide: Writing FluxScript', () => {
   });
 });
 
-// The layered example (M13.21, FR-LAY-002, FR-LAY-008): a screen with no `layout:` is laid out by `layered`; its drawing is the golden, the same bytes
-// on every run. Update the golden only on purpose: `vitest -u` rewrites examples/dsl/__golden__/layered-flow.svg.
-const GOLDEN = join(DIR, '__golden__', 'layered-flow.svg');
+// The drawn examples, each the same bytes on every run: the layered example (M13.21, FR-LAY-002, FR-LAY-008), a screen with no `layout:` laid out
+// by `layered`; and the routing showcase (M16.33, FR-CON-008, FR-CON-011), hops where lines cross and parallel connectors fanned out. Update a
+// golden only on purpose: `vitest -u` rewrites examples/dsl/__golden__/<name>.svg.
+/** The SVG of the compiled example `name`, drawn with the server measurer. */
+function drawn(name: string): string {
+  const r = registries();
+  const done = compile(readFileSync(join(DIR, `${name}.flux.yaml`), 'utf8'), { registries: r });
+  if (!done.doc) throw new Error(shown(done));
+  const html = renderDocumentToHtml(done.doc, {
+    registries: builtinRegistries(r.shapeDefs, undefined, r.markers),
+    measurer: serverMeasurer([...FONT_METRICS]),
+  }).html;
+  return normalizeSvg(html);
+}
+
+/** The example `name` is drawn as its golden, twice to the same bytes. */
+async function matchesGolden(name: string): Promise<string> {
+  const golden = join(DIR, '__golden__', `${name}.svg`);
+  // outside CI a missing snapshot is written, not compared: the golden has to be there
+  expect(existsSync(golden), `examples/dsl/__golden__/${name}.svg is missing`).toBe(true);
+  const svg = drawn(name);
+  expect(drawn(name)).toBe(svg);
+  await expect(svg).toMatchFileSnapshot(golden);
+  return svg;
+}
 
 describe('examples/dsl/layered-flow.flux.yaml', () => {
-  const text = readFileSync(join(DIR, 'layered-flow.flux.yaml'), 'utf8');
-  const drawn = (): string => {
-    const r = registries();
-    const done = compile(text, { registries: r });
-    if (!done.doc) throw new Error(shown(done));
-    const html = renderDocumentToHtml(done.doc, {
-      registries: builtinRegistries(r.shapeDefs, undefined, r.markers),
-      measurer: serverMeasurer([...FONT_METRICS]),
-    }).html;
-    return normalizeSvg(html);
-  };
-
   it('FR-LAY-002: the example is drawn as its golden SVG, twice to the same bytes', async () => {
-    // outside CI a missing snapshot is written, not compared: the golden has to be there
-    expect(existsSync(GOLDEN), 'examples/dsl/__golden__/layered-flow.svg is missing').toBe(true);
-    const svg = drawn();
-    expect(drawn()).toBe(svg);
-    await expect(svg).toMatchFileSnapshot(GOLDEN);
+    await matchesGolden('layered-flow');
+  });
+});
+
+describe('examples/dsl/routing-showcase.flux.yaml', () => {
+  it('FR-CON-008, FR-CON-011: the showcase is drawn as its golden SVG, with a hop (an arc and a gap), fanned connectors and spread ends (FR-ANC-007)', async () => {
+    const svg = await matchesGolden('routing-showcase');
+    const routes = [...svg.matchAll(/<path class="fx-route" d="([^"]*)"/g)].map((m) => m[1] as string);
+    // an arc: a line, one cubic over the crossing, a line on; a gap: a line, then a new subpath
+    expect(routes.some((d) => /^M[^C]* L[^C]* C[^C]* L/.test(d))).toBe(true);
+    expect(routes.some((d) => /^M[^M]* M/.test(d))).toBe(true);
+    // the last screen: three ends spread along the hub's top, each arriving straight down into it
+    const ends = routes.slice(-3).map((d) => {
+      const points = [...d.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
+      const [p, q] = points.slice(-2) as [{ x: number; y: number }, { x: number; y: number }];
+      return { p, q };
+    });
+    for (const { p, q } of ends) expect([q.x - p.x, Math.sign(q.y - p.y)]).toEqual([0, 1]);
+    expect(new Set(ends.map(({ q }) => q.x)).size).toBe(3);
   });
 });

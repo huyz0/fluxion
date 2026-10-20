@@ -1,0 +1,42 @@
+flux: 1
+title: Routing showcase
+uses: [basic]
+lineJumps: true
+screens:
+  - id: hops
+    title: Hops where lines cross
+    nodes:
+      west:   { shape: rect, label: West, pin: { x: 80, y: 340, w: 180, h: 90 } }
+      east:   { shape: rect, label: East, pin: { x: 1100, y: 340, w: 180, h: 90 } }
+      north:  { shape: rect, label: North, pin: { x: 440, y: 60, w: 180, h: 90 } }
+      south:  { shape: rect, label: South, pin: { x: 440, y: 640, w: 180, h: 90 } }
+      top:    { shape: rect, label: Top, pin: { x: 760, y: 60, w: 180, h: 90 } }
+      bottom: { shape: rect, label: Bottom, pin: { x: 760, y: 640, w: 180, h: 90 } }
+    edges:
+      - west -> east: across
+      - north -> south: { label: arc, route: straight }
+      - top -> bottom: { label: gap, jumps: gap }
+  - id: fans
+    title: Parallel connectors fan out
+    nodes:
+      client: { shape: rounded-rect, label: Client, pin: { x: 120, y: 160, w: 200, h: 100 } }
+      server: { shape: rounded-rect, label: Server, pin: { x: 900, y: 160, w: 200, h: 100 } }
+      app:    { shape: rounded-rect, label: App, pin: { x: 120, y: 520, w: 200, h: 100 } }
+      store:  { shape: cylinder, label: Store, pin: { x: 900, y: 520, w: 200, h: 100 } }
+    edges:
+      - client -> server: request
+      - client <- server: response
+      - server -> client: { label: push, route: curved }
+      - app.e -> store.w: { route: orthogonal }
+      - app.e -> store.w: { route: orthogonal, style: dashed }
+  - id: spread
+    title: Ends spread along a side
+    nodes:
+      hub: { shape: rect, label: Hub, pin: { x: 400, y: 520, w: 480, h: 100 } }
+      a:   { shape: rect, label: A, pin: { x: 400, y: 120, w: 160, h: 80 } }
+      b:   { shape: rect, label: B, pin: { x: 560, y: 120, w: 160, h: 80 } }
+      c:   { shape: rect, label: C, pin: { x: 720, y: 120, w: 160, h: 80 } }
+    edges:
+      - a -> hub: { route: orthogonal }
+      - b -> hub: { route: orthogonal }
+      - c -> hub: { route: orthogonal }

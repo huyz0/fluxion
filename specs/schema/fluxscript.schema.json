@@ -26,6 +26,10 @@
         "type": "string"
       }
     },
+    "lineJumps": {
+      "type": "boolean",
+      "description": "connectors hop where they cross, throughout the document"
+    },
     "screens": {
       "type": "array",
       "items": {
@@ -357,7 +361,7 @@
       "additionalProperties": false
     },
     "edge": {
-      "description": "a -> b, a -> b: label (as text), a one-entry mapping { \"a -> b\": label or details }, or { from, to, op, label, style, route }",
+      "description": "a -> b, a -> b: label (as text), a one-entry mapping { \"a -> b\": label or details }, or { from, to, op, label, style, route, jumps }",
       "anyOf": [
         {
           "type": "string"
@@ -407,6 +411,13 @@
                 "polyline"
               ]
             },
+            "jumps": {
+              "enum": [
+                "arc",
+                "gap",
+                "none"
+              ]
+            },
             "flow": {
               "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
             },
@@ -432,7 +443,8 @@
                 "op",
                 "label",
                 "style",
-                "route"
+                "route",
+                "jumps"
               ]
             }
           },
@@ -478,6 +490,13 @@
                       "curved",
                       "orthogonal",
                       "polyline"
+                    ]
+                  },
+                  "jumps": {
+                    "enum": [
+                      "arc",
+                      "gap",
+                      "none"
                     ]
                   },
                   "flow": {
