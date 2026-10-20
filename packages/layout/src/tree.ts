@@ -32,8 +32,8 @@ export type TreeOptions = {
 const DIRECTIONS = ['down', 'right', 'up', 'left'] as const;
 const SPACINGS = ['compact', 'comfortable', 'spacious'] as const;
 /** The node gap and rank gap of each spacing preset, px (as `layered`'s). */
-const GAPS = { compact: [24, 48], comfortable: [40, 80], spacious: [64, 120] } as const;
-const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+export const GAPS = { compact: [24, 48], comfortable: [40, 80], spacious: [64, 120] } as const;
+export const compare = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 const schemaWith = (compactLeaves: boolean) =>
   z
@@ -48,9 +48,9 @@ const schemaWith = (compactLeaves: boolean) =>
     .default({ direction: 'down', spacing: 'comfortable', padding: 80, compactLeaves });
 
 /** A box in tree space: `x` across siblings (breadth), `y` away from the root (depth); `s` and `d` its sizes along them. */
-type Item = { readonly id: string; x: number; y: number; readonly s: number; readonly d: number };
-type Gaps = { readonly sibling: number; readonly level: number; readonly compactLeaves: boolean };
-type Forest = { readonly children: ReadonlyMap<string, readonly string[]>; readonly roots: readonly string[] };
+export type Item = { readonly id: string; x: number; y: number; readonly s: number; readonly d: number };
+export type Gaps = { readonly sibling: number; readonly level: number; readonly compactLeaves: boolean };
+export type Forest = { readonly children: ReadonlyMap<string, readonly string[]>; readonly roots: readonly string[] };
 
 /** Whether `ancestor` is `id` or above it in `parent`. */
 function above(parent: ReadonlyMap<string, string>, id: string, ancestor: string): boolean {
@@ -59,7 +59,7 @@ function above(parent: ReadonlyMap<string, string>, id: string, ancestor: string
 }
 
 /** The forest the edges give `nodes` (in canonical order): children by parent in edge order, and the roots. */
-function forestOf(nodes: readonly LayoutNode[], input: LayoutInput): Forest {
+export function forestOf(nodes: readonly LayoutNode[], input: LayoutInput): Forest {
   const known = new Set(nodes.map((n) => n.id));
   const parent = new Map<string, string>();
   const children = new Map<string, string[]>(nodes.map((n) => [n.id, []]));
@@ -80,7 +80,7 @@ function separation(left: readonly Item[], right: readonly Item[], gap: number):
 }
 
 /** `subtrees` packed side by side, each as close to the previous ones as `gap` allows; their items, moved. */
-function pack(subtrees: readonly Item[][], gap: number): Item[] {
+export function pack(subtrees: readonly Item[][], gap: number): Item[] {
   const placed: Item[] = [];
   let edge = 0;
   for (const items of subtrees) {
@@ -95,12 +95,12 @@ function pack(subtrees: readonly Item[][], gap: number): Item[] {
 }
 
 /** Breadth and depth sizes of a node for a direction. */
-const sizes = (n: LayoutNode, across: boolean) => (across ? { s: n.box.h, d: n.box.w } : { s: n.box.w, d: n.box.h });
+export const sizes = (n: LayoutNode, across: boolean): { s: number; d: number } => (across ? { s: n.box.h, d: n.box.w } : { s: n.box.w, d: n.box.h });
 
-type Ctx = { readonly forest: Forest; readonly byId: ReadonlyMap<string, LayoutNode>; readonly gaps: Gaps; readonly across: boolean };
+export type Ctx = { readonly forest: Forest; readonly byId: ReadonlyMap<string, LayoutNode>; readonly gaps: Gaps; readonly across: boolean };
 
 /** The subtree of `id` in tree space, its root's box at depth 0. */
-function subtree(id: string, c: Ctx): Item[] {
+export function subtree(id: string, c: Ctx): Item[] {
   const node = c.byId.get(id) as LayoutNode;
   const root: Item = { id, x: 0, y: 0, ...sizes(node, c.across) };
   const kids = c.forest.children.get(id) ?? [];
@@ -147,7 +147,11 @@ function run(input: LayoutInput, o: TreeOptions): LayoutOutput {
     c.forest.roots.map((r) => subtree(r, c)),
     c.gaps.sibling,
   );
-  const placed = new Map(items.map((i) => [i.id, toBox(i, o.direction)]));
+  return intoFrame(nodes, new Map(items.map((i) => [i.id, toBox(i, o.direction)])), input.frame, o.padding);
+}
+
+/** `placed` moved so that its unpinned boxes start `padding` inside the frame's top-left corner; pinned nodes keep their own box. */
+export function intoFrame(nodes: readonly LayoutNode[], placed: ReadonlyMap<string, Box>, frame: Box, padding: number): LayoutOutput {
   const loose = nodes.filter((n) => !n.pinned).map((n) => placed.get(n.id) as Box);
   const left = loose.length ? Math.min(...loose.map((b) => b.x)) : 0;
   const top = loose.length ? Math.min(...loose.map((b) => b.y)) : 0;
@@ -155,7 +159,7 @@ function run(input: LayoutInput, o: TreeOptions): LayoutOutput {
   const boxes = new Map<string, Box>();
   for (const n of nodes) {
     const b = placed.get(n.id) as Box;
-    boxes.set(n.id, n.pinned ? n.box : { x: b.x - left + input.frame.x + o.padding, y: b.y - top + input.frame.y + o.padding, w: b.w, h: b.h });
+    boxes.set(n.id, n.pinned ? n.box : { x: b.x - left + frame.x + padding, y: b.y - top + frame.y + padding, w: b.w, h: b.h });
   }
   return { boxes: Object.fromEntries(boxes) };
 }

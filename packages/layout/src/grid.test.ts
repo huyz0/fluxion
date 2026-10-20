@@ -144,11 +144,11 @@ describe('grid layout (FR-LAY-002)', () => {
   it('FR-LAY-001: the built-in layouts register under their names', () => {
     const layouts = createRegistry<string, unknown>('layouts');
     expect(registerBuiltInLayouts(layouts).ok).toBe(true);
-    expect(layouts.list().map(([id]) => id)).toEqual(['grid', 'layered', 'orgchart', 'stack', 'tree']);
+    expect(layouts.list().map(([id]) => id)).toEqual(['grid', 'layered', 'mindmap', 'orgchart', 'radial', 'stack', 'tree']);
     // a foreign layout already holds a name: that refusal comes back, and the other built-in is still registered
     const taken = createRegistry<string, unknown>('layouts');
     taken.register('stack', {}, 'someone');
     expect(registerBuiltInLayouts(taken).ok).toBe(false);
-    expect(taken.list().map(([id]) => id)).toEqual(['grid', 'layered', 'orgchart', 'stack', 'tree']);
+    expect(taken.list().map(([id]) => id)).toEqual(['grid', 'layered', 'mindmap', 'orgchart', 'radial', 'stack', 'tree']);
   });
 });

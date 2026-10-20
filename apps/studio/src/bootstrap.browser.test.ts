@@ -31,10 +31,10 @@ describe('studio bootstrap (FR-EDT-001, ADR-0017)', () => {
     const opened = openDocument(gallery.value);
     if (!opened.ok) throw new Error(opened.error);
     const { core } = opened.value;
-    expect(core.registries.layouts.list().map(([id]) => id)).toEqual(['grid', 'layered', 'orgchart', 'stack', 'tree']);
+    expect(core.registries.layouts.list().map(([id]) => id)).toEqual(['grid', 'layered', 'mindmap', 'orgchart', 'radial', 'stack', 'tree']);
     const screenId = Object.values(gallery.value.records).find((r) => r.type === 'screen')?.id;
     if (screenId === undefined) throw new Error('the example has no screen');
-    for (const algorithm of ['grid', 'layered', 'orgchart', 'stack', 'tree']) {
+    for (const algorithm of ['grid', 'layered', 'mindmap', 'orgchart', 'radial', 'stack', 'tree']) {
       const before = core.store.history.undoDepth;
       const r = core.execute('layout.arrange', { screenId, scope: 'screen', algorithm });
       expect(r.ok, algorithm).toBe(true);

@@ -106,7 +106,9 @@ screens:
 
 - `grid` (core): Boxes in rows and columns, in reading order.; options: columns, gap, align, padding
 - `layered` (core): Flow layout by layers along the edges, for diagrams with direction.; options: direction, spacing, nodeGap, rankGap, padding
+- `mindmap` (core): Mind map: the root in the middle and its branches on two balanced sides, right and left.; options: spacing, nodeGap, rankGap, padding
 - `orgchart` (core): Organisation chart: a tidy tree whose leaf siblings stack in one column under their manager.; options: direction, spacing, nodeGap, rankGap, padding, compactLeaves
+- `radial` (core): Tree on rings around its root, one ring per depth, for hierarchies seen from the centre.; options: spacing, nodeGap, rankGap, padding
 - `stack` (core): Boxes in one row or column, with an even gap.; options: direction, gap, align, padding, wrap
 - `tree` (core): Tidy tree along the edges, for hierarchies with boxes of any size.; options: direction, spacing, nodeGap, rankGap, padding, compactLeaves
 

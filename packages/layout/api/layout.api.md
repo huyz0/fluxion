@@ -284,6 +284,17 @@ export function layoutSync<O>(req: LayoutRequest<O>): Result<LaidOut>;
 export function listLayouts(layouts: Registry<string, unknown>): readonly LayoutAlgorithm<unknown>[];
 
 // @public
+export const mindmapLayout: LayoutAlgorithm<MindmapOptions>;
+
+// @public
+export type MindmapOptions = {
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
+    readonly padding: number;
+};
+
+// @public
 export type NestedOptions = {
     readonly inset?: number;
 };
@@ -323,6 +334,17 @@ export type OverlapOptions = {
 
 // @public
 export type PostPassId = "pins" | "overlap" | "snap";
+
+// @public
+export const radialLayout: LayoutAlgorithm<RadialOptions>;
+
+// @public
+export type RadialOptions = {
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
+    readonly padding: number;
+};
 
 // @public
 export type Reader = Pick<Store, "members" | "get" | "subscribe">;

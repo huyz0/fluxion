@@ -6,6 +6,8 @@
 import type { Registry } from '@fluxion/core';
 import { gridLayout } from './grid.js';
 import { layeredLayout } from './layered.js';
+import { mindmapLayout } from './mindmap.js';
+import { radialLayout } from './radial.js';
 import { stackLayout } from './stack.js';
 import { orgchartLayout, treeLayout } from './tree.js';
 
@@ -29,10 +31,12 @@ export {
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type GridOptions, gridLayout } from './grid.js';
 export { type LayeredOptions, layeredLayout } from './layered.js';
+export { type MindmapOptions, mindmapLayout } from './mindmap.js';
 export { layoutNested, type NestedOptions, type NestedRunner } from './nested.js';
 export { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
 export { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
 export { createLayoutCache, fingerprintOf, type LayoutCache, type LayoutRequest, layoutSync } from './pipeline.js';
+export { type RadialOptions, radialLayout } from './radial.js';
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
 export { createRng } from './rng.js';
 export { type Scorecard, scoreLayout } from './scorecard.js';
@@ -64,7 +68,9 @@ export type { LayoutJobMessage } from './worker/protocol.js';
  */
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>['register']> {
   // every built-in is tried; the first refusal is what comes back (the others stay registered), else the last success
-  const results = [stackLayout, gridLayout, layeredLayout, treeLayout, orgchartLayout].map((layout) => layouts.register(layout.id, layout, 'core'));
+  const results = [stackLayout, gridLayout, layeredLayout, treeLayout, orgchartLayout, radialLayout, mindmapLayout].map((layout) =>
+    layouts.register(layout.id, layout, 'core'),
+  );
   return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }
 
