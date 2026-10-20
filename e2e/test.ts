@@ -2,8 +2,9 @@ import { AxeBuilder } from '@axe-core/playwright';
 import { test as base, expect } from '@playwright/test';
 
 const LOCAL = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
-// a `file:` URL is the machine's own disk, not the network (the .flux.html specs open files); everything remote stays blocked
-const isLocal = (url: URL): boolean => url.protocol === 'file:' || LOCAL.has(url.hostname);
+// a `file:` URL is the machine's own disk, not the network (the .flux.html specs open files), and a `blob:` or `data:` URL is the page's
+// own memory (WebKit routes a Blob worker's script through the context: M16.28); everything remote stays blocked
+const isLocal = (url: URL): boolean => ['file:', 'blob:', 'data:'].includes(url.protocol) || LOCAL.has(url.hostname);
 
 interface Fixtures {
   /** URLs the network block stopped in this test (requests and WebSockets, every page). */
