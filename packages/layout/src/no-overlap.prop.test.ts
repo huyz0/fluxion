@@ -4,6 +4,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   applyPins,
+  forceLayout,
   gridLayout,
   layeredLayout,
   mindmapLayout,
@@ -53,6 +54,7 @@ const ALGORITHMS: ReadonlyArray<readonly [string, LayoutAlgorithm<never>, fc.Arb
   ],
   ['orgchart', orgchartLayout as never, fc.record({ direction: fc.constantFrom('down', 'right', 'up', 'left') })],
   ['radial', radialLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
+  ['force', forceLayout as never, fc.record({ iterations: fc.integer({ min: 1, max: 60 }), spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['mindmap', mindmapLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
 ];
 

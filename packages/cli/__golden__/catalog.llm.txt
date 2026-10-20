@@ -37,6 +37,7 @@ circle — A filled circle at the end of the connector.
 diamond — A filled diamond, for aggregation and composition ends.
 triangle — A filled triangle pointing along the connector.
 layouts:
+force — Force-directed (seeded): linked boxes pull together and all others push apart, for networks without a direction.; options: iterations, spacing, nodeGap, padding
 grid — Boxes in rows and columns, in reading order.; options: columns, gap, align, padding
 layered — Flow layout by layers along the edges, for diagrams with direction.; options: direction, spacing, nodeGap, rankGap, padding
 mindmap — Mind map: the root in the middle and its branches on two balanced sides, right and left.; options: spacing, nodeGap, rankGap, padding

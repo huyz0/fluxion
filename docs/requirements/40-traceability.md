@@ -118,14 +118,14 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-RDR-003 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RDR-004 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RDR-005 | M | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
-| FR-LAY-001 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/dsl/src/layout-document.test.ts` +11 |
+| FR-LAY-001 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/dsl/src/layout-document.test.ts` +12 |
 | FR-LAY-002 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/grid.test.ts` +2 |
-| FR-LAY-003 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/mindmap.test.ts` +2 |
+| FR-LAY-003 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/force.test.ts` +3 |
 | FR-LAY-004 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/cli/src/commands.test.ts` +7 |
 | FR-LAY-005 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/arrange-port.test.ts` +7 |
 | FR-LAY-006 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-007 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/arrange-port.test.ts` +5 |
-| FR-LAY-008 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/layered.test.ts` +6 |
+| FR-LAY-008 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/force.test.ts` +7 |
 | FR-LAY-009 | M | R4 | M22 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-010 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-011 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |

@@ -104,6 +104,7 @@ screens:
 
 ### Layouts
 
+- `force` (core): Force-directed (seeded): linked boxes pull together and all others push apart, for networks without a direction.; options: iterations, spacing, nodeGap, padding
 - `grid` (core): Boxes in rows and columns, in reading order.; options: columns, gap, align, padding
 - `layered` (core): Flow layout by layers along the edges, for diagrams with direction.; options: direction, spacing, nodeGap, rankGap, padding
 - `mindmap` (core): Mind map: the root in the middle and its branches on two balanced sides, right and left.; options: spacing, nodeGap, rankGap, padding

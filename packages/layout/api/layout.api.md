@@ -110,6 +110,17 @@ export const err: <E>(error: E) => Err<E>;
 export function fingerprintOf<O>(req: LayoutRequest<O>): Result<string>;
 
 // @public
+export const forceLayout: LayoutAlgorithm<ForceOptions>;
+
+// @public
+export type ForceOptions = {
+    readonly iterations: number;
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly padding: number;
+};
+
+// @public
 export const gridLayout: LayoutAlgorithm<GridOptions>;
 
 // @public
