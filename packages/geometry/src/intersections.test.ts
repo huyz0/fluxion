@@ -148,6 +148,29 @@ describe('intersectPaths', () => {
     );
   }, 120_000);
 
+  it('FR-CON-001: the M16 counterexample (seed 1847412959) gives points on both paths', () => {
+    // its first hit sits in a dip of the loop narrower than nearestPoint's coarse sampling: the point was right, the check was not
+    const a = mustPath(
+      pathFromCommands([
+        { kind: 'M', to: { x: -42.154, y: 0 } },
+        { kind: 'C', control1: { x: 0, y: 50.898 }, control2: { x: 0, y: 0 }, to: { x: 0, y: 0 } },
+      ]),
+    );
+    const b = mustPath(
+      pathFromCommands([
+        { kind: 'M', to: { x: 0, y: 0 } },
+        { kind: 'C', control1: { x: 62.599, y: 0 }, control2: { x: -42.658, y: 1.238 }, to: { x: -40.869, y: 1.645 } },
+        { kind: 'C', control1: { x: 0, y: 0 }, control2: { x: 0, y: 0 }, to: { x: 0, y: 0 } },
+      ]),
+    );
+    const hits = intersectPaths(a, b);
+    expect(hits).toHaveLength(4);
+    for (const p of hits) {
+      expect(nearestPoint(a, p)?.distance).toBeLessThan(1e-3);
+      expect(nearestPoint(b, p)?.distance).toBeLessThan(1e-3);
+    }
+  });
+
   it('FR-CON-001: a line built to cross a curve at a known point finds that point', () => {
     // random curves rarely cross, so symmetry alone could pass with no hits: construct one (M2.16)
     fc.assert(

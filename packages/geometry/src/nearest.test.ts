@@ -2,7 +2,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { pathCommands, point } from './__fixtures__/arbitraries.js';
 import { nearestPoint } from './nearest.js';
-import { type Path, pathFromCommands, pointAt } from './path.js';
+import { type CubicSegment, type Path, pathFromCommands, pointAt } from './path.js';
 import { distance, equalsApprox, type Vec2 } from './vec2.js';
 
 function mustPath(result: ReturnType<typeof pathFromCommands>): Path {
@@ -86,5 +86,32 @@ describe('nearestPoint', () => {
     );
     const hit = nearestPoint(path, { x: 10, y: 10 });
     expect(hit).toMatchObject({ segment: 1, distance: 0 });
+  });
+
+  it('FR-CON-001: a point in a dip narrower than the coarse sampling is found (M16 seed 1847412959)', () => {
+    // the curve's distance to this point falls to ~0 between two coarse samples, neither of which is a local minimum
+    const loop = mustPath(
+      pathFromCommands([
+        { kind: 'M', to: { x: 0, y: 0 } },
+        { kind: 'C', control1: { x: 62.599, y: 0 }, control2: { x: -42.658, y: 1.238 }, to: { x: -40.869, y: 1.645 } },
+      ]),
+    );
+    const on = pointAt(loop.segments[0] as CubicSegment, 0.9747155);
+    expect(nearestPoint(loop, on)?.distance).toBeLessThan(1e-6);
+    expect(nearestPoint(loop, { x: -40.80383830454244, y: 1.6125675787049103 })?.distance).toBeLessThan(1e-5);
+  });
+
+  it('FR-CON-001: no point of a segment, sampled finely, is nearer than nearestPoint (property)', () => {
+    fc.assert(
+      fc.property(pathCommands, fc.double({ min: 0, max: 1, noNaN: true }), point, (cmds, t, offset) => {
+        const path = mustPath(pathFromCommands(cmds));
+        const seg = path.segments[0];
+        if (seg === undefined) return;
+        const q = pointAt(seg, t);
+        const p = { x: q.x + offset.x * 1e-3, y: q.y + offset.y * 1e-3 };
+        const hit = nearestPoint(path, p);
+        expect(hit?.distance ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(distance(q, p) + 1e-9);
+      }),
+    );
   });
 });
