@@ -683,3 +683,4 @@ M16.15	01b9dae3d8379cd3d6953a7f02272fa83e4be318ca05489a622e438f6477182b	r3	chang
 M16.15	48878d036078b14e6d2e2b2cb14a3023d005792f4485ff3bb26448fc7471c8c3	r4	pass	claude:opus-5.5-subagent	0 findings
 M16.23	64d7cda8ccdc6ca257f99e9664ceb0273294bd8df2aa583f497f26d9f73377c8	r1	changes-requested	claude:opus-5.5-subagent	3 findings
 M16.15	ec83d44dce1d07624cb69db29aeaf33ec2fae92b3df4464b9641d8e1c7eabccf	r5	pass	claude:opus-5.5-subagent	0 findings
+M16.16	e0d46a20ad1fe9f1f71f8aaf10c14e1ea70e624d7f845986e51289bc5cf47915	r1	pass	claude:isolated-subagent	1 findings
