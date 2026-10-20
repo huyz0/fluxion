@@ -39,7 +39,10 @@ async function mount() {
     ),
   );
   const editor = EditorView.findFromDOM(host) as EditorView;
-  /** Type `typed` right after `after`, as a person at the keyboard would. */
+  /**
+   * Type `typed` right after `after`, as a person at the keyboard would. The cases type one key: the text history splits keys more than
+   * its group delay (500 ms) apart, which a loaded test machine reaches between two keys, so one Mod-z would undo only the last.
+   */
   const type = async (after: string, typed: string) => {
     editor.focus();
     editor.dispatch({ selection: { anchor: editor.state.doc.toString().indexOf(after) + after.length } });
@@ -69,8 +72,8 @@ describe('source view text history', () => {
   it('FR-EDT-022: Mod-z in the editor undoes the typing in the text and leaves the document and its undo stack alone', async () => {
     const { editor, store, type, text } = await mount();
     const before = text();
-    await type('label: Alpha', 'XY');
-    expect(text()).toContain('label: AlphaXY');
+    await type('label: Alpha', 'X');
+    expect(text()).toContain('label: AlphaX');
     const depth = store.history.undoDepth;
     const doc = store.toDocument();
     await act(async () => userEvent.keyboard(UNDO));
@@ -82,11 +85,11 @@ describe('source view text history', () => {
 
   it('FR-EDT-022: Mod-Shift-z and Mod-y redo what Mod-z undid, in the text only', async () => {
     const { store, type, text } = await mount();
-    await type('label: Alpha', 'XY');
+    await type('label: Alpha', 'X');
     const typed = text();
     const depth = store.history.undoDepth;
     await act(async () => userEvent.keyboard(UNDO));
-    expect(text()).not.toContain('AlphaXY');
+    expect(text()).not.toContain('AlphaX');
     await act(async () => userEvent.keyboard(REDO));
     expect(text()).toBe(typed);
     await act(async () => userEvent.keyboard(UNDO));
@@ -97,16 +100,16 @@ describe('source view text history', () => {
 
   it('FR-EDT-022: a text restored by Mod-z is an ordinary edit: it is applied after the pause, as one more document step', async () => {
     const { store, timer, type, text } = await mount();
-    await type('label: Alpha', 'XY');
+    await type('label: Alpha', 'X');
     await act(async () => timer.advance(300));
-    expect(has(store, 'AlphaXY')).toBe(true);
+    expect(has(store, 'AlphaX')).toBe(true);
     const depth = store.history.undoDepth;
     await act(async () => userEvent.keyboard(UNDO));
-    expect(text()).not.toContain('AlphaXY');
-    expect(has(store, 'AlphaXY')).toBe(true);
+    expect(text()).not.toContain('AlphaX');
+    expect(has(store, 'AlphaX')).toBe(true);
     expect(timer.count()).toBe(1);
     await act(async () => timer.advance(300));
-    expect(has(store, 'AlphaXY')).toBe(false);
+    expect(has(store, 'AlphaX')).toBe(false);
     expect(has(store, 'Alpha')).toBe(true);
     expect(store.history.undoDepth).toBe(depth + 1);
   });
@@ -115,7 +118,7 @@ describe('source view text history', () => {
     const fixture = await mount();
     const { store, timer, text, type } = fixture;
     // real input events: the typing is a user event of its own, and the Reload that follows must not join it
-    await type('label: Alpha', 'XY');
+    await type('label: Alpha', 'X');
     const typed = text();
     await act(async () => {
       moveOnCanvas(fixture, 'Beta');
@@ -131,7 +134,7 @@ describe('source view text history', () => {
     // the undo is an ordinary edit for the sync: it is scheduled, not skipped as a regeneration
     expect(timer.count()).toBe(1);
     await act(async () => timer.advance(300));
-    expect(has(store, 'AlphaXY')).toBe(true);
+    expect(has(store, 'AlphaX')).toBe(true);
     expect(host.querySelector('.fx-chrome-source-status')?.getAttribute('data-status')).toBe('applied');
     await act(async () => userEvent.keyboard(REDO));
     expect(text()).toContain('label: Beta, pin:');
@@ -180,7 +183,7 @@ describe('source view text history', () => {
     const fixture = await mount();
     const { editor, store, timer, text, type } = fixture;
     // typing applied before the drag: a history that a stale Mod-z could restore
-    await type('label: Alpha', 'XY');
+    await type('label: Alpha', 'X');
     await act(async () => timer.advance(300));
     editor.contentDOM.blur();
     const seen = spyOnHistory(editor);

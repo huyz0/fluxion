@@ -271,6 +271,12 @@ test.describe('source view', { tag: '@desktop' }, () => {
     // the author fixes the typo and edits a label, then leaves the view: both are applied at once
     await select(text.locator('.cm-line', { hasText: 'shape: rectt' }), 'rectt');
     await page.keyboard.type('rect');
+    // the shape names it completes cover the lines below: the author closes the list before reaching for the label (once it opened,
+    // so the Escape is the list's, not the view's)
+    const completions = page.locator('.cm-tooltip-autocomplete');
+    await expect(completions).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(completions).toHaveCount(0);
     await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'Alpha');
     await page.keyboard.type('Omega');
     await left.getByRole('tab', { name: 'Source' }).focus();
