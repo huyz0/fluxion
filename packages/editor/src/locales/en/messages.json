@@ -398,6 +398,12 @@
       "packages/editor/src/problems-tab.tsx"
     ]
   },
+  "Kim2m3": {
+    "message": "Remove anchor {0}",
+    "origin": [
+      "packages/editor/src/anchor-section.tsx"
+    ]
+  },
   "KwmOUj": {
     "message": "New screen",
     "origin": [
@@ -462,6 +468,12 @@
     "message": "The document holds no fonts of its own yet.",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "OXLS-y": {
+    "message": "Anchor {0} down",
+    "origin": [
+      "packages/editor/src/anchor-section.tsx"
     ]
   },
   "OXdGnd": {
@@ -961,6 +973,12 @@
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
+  "dZFQNZ": {
+    "message": "Add anchor",
+    "origin": [
+      "packages/editor/src/anchor-section.tsx"
+    ]
+  },
   "dpqPBg": {
     "message": "Authors",
     "origin": [
@@ -1001,6 +1019,12 @@
     "message": "Library",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "ffgKHK": {
+    "message": "Anchor {0} across",
+    "origin": [
+      "packages/editor/src/anchor-section.tsx"
     ]
   },
   "fqSfXY": {
@@ -1085,6 +1109,12 @@
     "message": "Add",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "n2VG3y": {
+    "message": "Anchors",
+    "origin": [
+      "packages/editor/src/anchor-section.tsx"
     ]
   },
   "n2ZXtR": {

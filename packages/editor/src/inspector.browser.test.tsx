@@ -248,4 +248,53 @@ describe('inspector widgets (FR-EDT-008)', { timeout: 60_000 }, () => {
     await act(frame);
     expect(box(core, ids[1] as RecordId)['w']).toBe(110);
   });
+
+  it('FR-ANC-005: one selected shape lists its anchors; one is added, typed to a new place and removed, each one undo step', async () => {
+    const { core, session, ids, inspector } = await open();
+    // three selected: no anchors section
+    expect(inspector.querySelector('[data-anchors]')).toBeNull();
+    const id = ids[0] as RecordId;
+    await act(async () => session.selection.set([id]));
+    await act(frame);
+    const names = () => [...inspector.querySelectorAll('[data-anchor-row]')].map((r) => r.getAttribute('data-anchor-row'));
+    expect(names()).toEqual(expect.arrayContaining(['n', 'e', 's', 'w']));
+    const add = [...inspector.querySelectorAll('[data-anchors] button')].find((b) => b.textContent === 'Add anchor') as HTMLButtonElement;
+    await userEvent.click(add);
+    await act(frame);
+    expect(names()[0]).toBe('a1');
+    const anchors = () => (core.store.get(id) as unknown as { anchors?: unknown }).anchors;
+    expect(anchors()).toEqual([{ name: 'a1', x: 1, y: 0.25 }]);
+    const down = input(inspector, 'Anchor a1 down');
+    expect(down.value).toBe('0.25');
+    await userEvent.fill(down, '0.75');
+    await userEvent.keyboard('{Enter}');
+    await act(frame);
+    expect(anchors()).toEqual([{ name: 'a1', x: 1, y: 0.75 }]);
+    // across and down equal: each box still moves its own axis
+    await userEvent.fill(input(inspector, 'Anchor a1 across'), '0.75');
+    await userEvent.keyboard('{Enter}');
+    await act(frame);
+    expect(anchors()).toEqual([{ name: 'a1', x: 0.75, y: 0.75 }]);
+    await userEvent.fill(input(inspector, 'Anchor a1 down'), '0.5');
+    await userEvent.keyboard('{Enter}');
+    await act(frame);
+    expect(anchors()).toEqual([{ name: 'a1', x: 0.75, y: 0.5 }]);
+    expect(input(inspector, 'Anchor a1 across').value).toBe('0.75');
+    // across typed to equal down and Tab to the down box: what is typed there next moves down, not across
+    await userEvent.fill(input(inspector, 'Anchor a1 across'), '0.5');
+    await userEvent.keyboard('{Tab}');
+    await act(frame);
+    expect(anchors()).toEqual([{ name: 'a1', x: 0.5, y: 0.5 }]);
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Anchor a1 down');
+    await userEvent.keyboard('{Control>}a{/Control}0.25{Enter}');
+    await act(frame);
+    expect(anchors()).toEqual([{ name: 'a1', x: 0.5, y: 0.25 }]);
+    await userEvent.click(inspector.querySelector('button[aria-label="Remove anchor a1"]') as HTMLButtonElement);
+    await act(frame);
+    expect(anchors()).toBeUndefined();
+    expect(names()).not.toContain('a1');
+    core.store.history.undo();
+    await act(frame);
+    expect(anchors()).toEqual([{ name: 'a1', x: 0.5, y: 0.25 }]);
+  });
 });

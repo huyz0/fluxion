@@ -10,6 +10,8 @@ import { LIGHT_THEME } from '@fluxion/theme';
 import { t } from '@lingui/core/macro';
 import './i18n.js';
 import { type KeyboardEvent, type PointerEvent, type ReactNode, useEffect, useId, useMemo, useRef } from 'react';
+import { AnchorsSection } from './anchor-section.js';
+import { commitKeys } from './inspector-keys.js';
 import { applyField, type InspectorField, type Inspectors, inspect } from './inspector-model.js';
 import { colorTokenRefs, gradientCss, isHex6, optionGlyph, paintKind, paintLabel, parseNumber, scrubbed, stepped } from './inspector-values.js';
 import type { ShapeDefs } from './param-handles.js';
@@ -93,6 +95,7 @@ export function InspectorFields(props: InspectorFieldsProps): ReactNode {
           ))}
         </fieldset>
       ))}
+      {model.ids.length === 1 ? <AnchorsSection store={store} id={model.ids[0] as RecordId} execute={execute} shapeDefs={shapeDefs} /> : null}
     </div>
   );
 }
@@ -121,15 +124,6 @@ function FieldRow(props: { readonly field: InspectorField; readonly apply: Apply
 
 /** How a stored value reads in a text box (a token reference or a number alike). */
 const shown = (field: InspectorField): string => (field.mixed || field.value === undefined ? '' : String(field.value));
-
-/** Enter commits what is typed, Escape gives it back. */
-function commitKeys(e: KeyboardEvent<HTMLInputElement>, original: string): void {
-  if (e.key === 'Enter') e.currentTarget.blur();
-  else if (e.key === 'Escape') {
-    e.currentTarget.value = original;
-    e.currentTarget.blur();
-  }
-}
 
 /**
  * The arrow keys step a number field (shift by ten, alt by a tenth); a box still showing a typed value steps from it.

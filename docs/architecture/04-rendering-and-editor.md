@@ -231,6 +231,7 @@ The connector tool and the end handle drag both use it. An end just outside ever
   from packs and user overrides from local settings (FR-EDT-012). The `?` key opens the
   generated cheat sheet.
 
+**Anchors in the inspector** (FR-ANC-006, FR-ANC-005; M16.25). With one shape selected, the inspector lists its anchors by name (`editor/src/anchor-inspector.ts`): its own, its definition's, then the defaults. Its own (custom) anchors show their place across and down the box (0 to 1) and can be moved or removed; "Add anchor" adds `a1`, `a2`... on the right side. Each change is one `element.updateMany` of the shape's `anchors`, so one undo step, and it is saved with the file. A connector end bound to a removed anchor floats on the outline.
 ### 3.4a Inline text editing (FR-TXT-003, ADR-0064)
 
 Double-click, Enter or F2 on the one selected element with text opens it in place (`session.editing`).
