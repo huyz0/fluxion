@@ -81,6 +81,9 @@ export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
     sb.git('config', 'user.email', 'test@example.invalid');
     sb.git('config', 'user.name', 'harness-test');
     sb.git('config', 'core.autocrlf', 'false');
+    // no background `git gc --auto` writing .git/objects while cleanup removes them (ENOTEMPTY on CI, M17.23)
+    sb.git('config', 'gc.auto', '0');
+    sb.git('config', 'maintenance.auto', 'false');
     sb.git('add', '-A');
     sb.git('commit', '-q', '-m', 'fixture baseline', '--no-verify');
   }
