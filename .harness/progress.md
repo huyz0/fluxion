@@ -1924,3 +1924,6 @@ player-inline: the pass is its own chunk, `fluxion-routing.js` (the `.flux.html`
 Review round 1 rejected running the pass on the main thread (about 350 ms for 200 connectors; performance.md rule 9). The worker design came out of that, with `e2e/perf.player-route-settle-200.spec.ts` (checked: it fails when the settle path stalls 120 ms). Rounds 2 and 3: a failed open now disposes the worker, and stale comments were corrected.
 The studio always draws its worker overlay, `?routing=global` and its test are gone (Removes-test), eight goldens and baselines were re-recorded (Threshold-change).
 User decision for the budget conflict: "Lazy routing chunk".
+
+## M16.38 — cap the global pass per screen
+`globalRouteInput` gives no input for a screen over `GLOBAL_ROUTE_MAX_CONNECTORS` (400), which keeps the cheap routes in every host. `perf.big-screen` passes again (it was 44 fps / 2.5 s after M16.28). `perf.route-drag-200` reads 35–42 fps on this machine at M16.28 and at the commit before it alike, so it is load here, not the change; CI decides.
