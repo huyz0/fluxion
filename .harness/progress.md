@@ -1892,3 +1892,7 @@ M16.31 (8bd4f6dc): the harness suite takes 43 s wall instead of 105 s. The api c
 ## 2026-10-20 M16.21 (claude, local Windows)
 
 Main's CI green again at 1b9590b after M16.31 (blockedReason cleared). M16.21 (1fbc0378): line jumps in render (arc/gap, per-connector route and hops queries with stable entries, no hop over a build-hidden connector) and parallel fan-out in routing (curved bow with tangents remapped, straight/polyline bent, orthogonal inner segment shifted). The player script went 254 B over its 150 kB budget. The one-file player now builds a bare read-only store instead of createCore, without commands or hooks, so it is 148.0 kB. Review r1 found two majors and a minor (fan tangents, drag re-render storm, build-hidden hops), all fixed; r2 passed. DSL `jumps` key and the showcase are row M16.33.
+
+## 2026-10-20 M16.33 (claude, local Windows)
+
+M16.33 (241e7b2d): FluxScript `lineJumps` (top) and an edge's `jumps` (ADR-0169) compile to settings.lineJumps and route.jumps, and decompile writes them back. Key table, JSON schema, TextMate grammar, cheatsheet and guide updated. The routing showcase example has a golden (arc, gap, fans, spread ends). Review r1: the first spread layout exposed orthogonal routes running along shape sides (row M16.34), and the patch language lacks `jumps` (row M16.35); r2 passed.
