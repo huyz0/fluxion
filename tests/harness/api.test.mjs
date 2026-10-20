@@ -11,56 +11,67 @@ let sb;
 const api = (...args) =>
   sb.node('scripts/gates/check-api.mjs', ['--dir', sb.dir, '--package', 'packages/core', ...args], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
 const DTS = 'packages/core/dist/index.d.ts';
-const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
-/** Every workspace plus the configs TypeDoc reads, with the repo's install linked in. */
-function fullCopy() {
-  const full = sandbox(['scripts', 'tools', 'docs/architecture', 'typedoc.json', 'tsconfig.base.json', 'tsconfig.json', ...workspaces.map((w) => w.dir)]);
-  linkInstalls(full);
-  // TypeDoc follows project references into each dependency's .tsbuild declarations, which the
-  // sandbox does not copy (TRANSIENT): build them here, as the ladder's typecheck does in the repo
-  // (the copied workspaces only: the root solution also references e2e/, which is not copied)
-  const tsc = [join(REPO, 'node_modules/typescript/bin/tsc'), '-b', ...workspaces.map((w) => w.dir)];
-  const built = spawnSync(process.execPath, tsc, { cwd: full.dir, encoding: 'utf8' });
+/**
+ * core and the libraries it depends on, with the configs TypeDoc reads and the repo's install linked in: TypeDoc follows project references
+ * into each dependency's .tsbuild declarations, which the sandbox does not copy (TRANSIENT), so they are built here (M16.31: three libraries,
+ * not every workspace; the ladder's own api step checks the whole repo).
+ */
+function coreCopy() {
+  const libs = ['packages/schema', 'packages/geometry', 'packages/core'];
+  // docs/architecture: the READMEs link into it, and TypeDoc warns (an error here) on a link to a missing file
+  const copy = sandbox(['scripts', 'tools', 'typedoc.json', 'tsconfig.base.json', 'docs/architecture', ...libs]);
+  linkInstalls(copy);
+  const built = spawnSync(process.execPath, [join(REPO, 'node_modules/typescript/bin/tsc'), '-b', ...libs], { cwd: copy.dir, encoding: 'utf8' });
   assert.equal(built.status, 0, out(built));
-  return full;
+  return copy;
 }
 
-// one copy of the repo, built once, for both full-repo cases (M4.28: a full copy and build of every
-// workspace is the costliest step of the harness); the passing case runs first, on the unedited copy
-describe('check-api on a copy of the repo (NFR-MNT-007)', () => {
-  let full;
-  before(() => {
-    full = fullCopy();
-  });
-  after(() => full?.cleanup());
-  const check = () => full.node('scripts/gates/check-api.mjs', ['--dir', full.dir], { env: { ...process.env, FLUXION_TOOLS_ROOT: REPO } });
+// every library entry has its committed report: the ladder's api step checks them all against the code on the real repo (M10.29: one report per
+// entry point, a library's main entry and each subpath its exports list)
+it('NFR-MNT-007: the libraries and their subpath entries have committed API reports', () => {
+  const reports = ['packages', 'packs'].flatMap((d) =>
+    readdirSync(join(REPO, d)).flatMap((n) =>
+      existsSync(join(REPO, d, n, 'api')) ? readdirSync(join(REPO, d, n, 'api')).filter((f) => f.endsWith('.api.md')) : [],
+    ),
+  );
+  assert.ok(reports.length >= 20);
+  assert.ok(reports.includes('player.mount.api.md') && reports.includes('schema.testing.api.md') && reports.includes('core.testing.api.md'));
+});
 
-  it('passes on the real repo: every library matches its committed report', () => {
-    // a copy of the repo: API Extractor writes temp reports and must not race the ladder's api step (M1.36)
+// one copy, built once, for both cases; the passing case runs first, on the unedited copy
+describe('check-api with TypeDoc on a copy of core (NFR-MNT-007)', () => {
+  let copy;
+  before(() => {
+    copy = coreCopy();
+  });
+  after(() => copy?.cleanup());
+  const check = () =>
+    copy.node('scripts/gates/check-api.mjs', ['--dir', copy.dir, '--package', 'packages/core', '--typedoc'], {
+      env: { ...process.env, FLUXION_TOOLS_ROOT: REPO },
+    });
+
+  it('passes on core as committed: its report matches and every export is documented', () => {
     const r = check();
     assert.equal(r.status, 0, out(r));
-    // one report per entry point (a library's main entry and each subpath its exports list, M10.29): the count follows the committed reports,
-    // so a new library or subpath does not edit this test
-    const reports = ['packages', 'packs'].flatMap((d) =>
-      readdirSync(join(REPO, d)).flatMap((n) =>
-        existsSync(join(REPO, d, n, 'api')) ? readdirSync(join(REPO, d, n, 'api')).filter((f) => f.endsWith('.api.md')) : [],
-      ),
-    );
-    assert.ok(reports.length >= 20);
-    assert.ok(reports.includes('player.mount.api.md') && reports.includes('schema.testing.api.md') && reports.includes('core.testing.api.md'));
-    assert.match(r.stdout, new RegExp(`${reports.length} API report\\(s\\) match`));
+    // both of core's entries were compared: its main entry and ./testing
+    assert.match(r.stdout, /^api: 2 API report\(s\) match$/m);
   });
 
   it('fails when a public export has no TSDoc (TypeDoc notDocumented, M1 cp3 F3)', () => {
     const index = 'packages/core/src/index.ts';
-    const original = full.read(index);
-    full.edit(index, (t) => `${t}\nexport const UNDOCUMENTED: number = 1;\n`);
+    const original = copy.read(index);
+    copy.edit(
+      index,
+      (t) => `${t}
+export const UNDOCUMENTED: number = 1;
+`,
+    );
     try {
       const r = check();
       assert.equal(r.status, 1, out(r));
       assert.match(r.stderr, /typedoc \(typedoc\.json\)[\s\S]*UNDOCUMENTED/);
     } finally {
-      full.write(index, original);
+      copy.write(index, original);
     }
   });
 });

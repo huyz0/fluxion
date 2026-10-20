@@ -44,24 +44,30 @@ const UNCOVERED = Array.from(
 let sb;
 const added = [];
 
-function coverage() {
+function coverage(tests, include) {
   // node project only: the sandbox has no browser tests, and a browser launch would add seconds.
   // Few property runs, fixed seed: these cases test the floor mechanics, not property depth (the
   // ladder's own test step runs the full count), and a fixed seed keeps the covered lines stable.
-  return sb.node('node_modules/vitest/vitest.mjs', ['run', '--coverage', '--project', 'node'], {
-    env: cleanEnv({ ...process.env, FC_RUNS: '10', FC_SEED: '1' }),
-  });
+  // Only the tests and coverage of the packages a run asserts on (M16.31): the ladder's test step
+  // runs every test with coverage, so a whole-suite run here repeated it twice per verify.
+  return sb.node(
+    'node_modules/vitest/vitest.mjs',
+    ['run', '--coverage', '--project', 'node', ...include.map((d) => `--coverage.include=${d}/src/**`), ...tests],
+    {
+      env: cleanEnv({ ...process.env, FC_RUNS: '10', FC_SEED: '1' }),
+    },
+  );
 }
 function addUncovered(dir) {
   const path = `${dir}/src/uncovered.ts`;
   sb.write(path, UNCOVERED);
   added.push(path);
 }
-/** One coverage run with uncovered code added to each of `dirs`, which is then removed again. */
-function withUncovered(dirs) {
+/** One coverage run of `tests`, covering `include`, with uncovered code added to each of `dirs`, which is then removed again. */
+function withUncovered(dirs, tests, include) {
   for (const dir of dirs) addUncovered(dir);
   try {
-    return coverage();
+    return coverage(tests, include);
   } finally {
     for (const p of added.splice(0)) sb.write(p, 'export {};\n');
   }
@@ -120,16 +126,18 @@ describe('coverage floors (NFR-MNT-004)', () => {
   });
 
   // Two coverage runs serve every case (each run takes seconds; one per case kept the ladder over
-  // budget): one where every floored package meets its floor while cli (no floor) is uncovered,
-  // and one where each floored package under test is uncovered at once. Every case asserts its
-  // own package's outcome from the shared run.
+  // budget): one where a floored package (geometry, with its tests) meets its floor while cli (no
+  // floor) is uncovered, and one where each floored package under test is uncovered at once (core
+  // with its own tests: below the floor all the same). Every case asserts its own package's outcome
+  // from the shared run.
   const runs = {};
   const passing = () => {
-    runs.passing ??= withUncovered(['packages/cli']);
+    runs.passing ??= withUncovered(['packages/cli'], ['packages/geometry/src'], ['packages/geometry', 'packages/cli']);
     return runs.passing;
   };
   const failing = () => {
-    runs.failing ??= withUncovered(['packages/core', 'packages/render', 'packages/player', 'packages/editor']);
+    const floored = ['packages/core', 'packages/render', 'packages/player', 'packages/editor'];
+    runs.failing ??= withUncovered(floored, ['packages/core/src'], floored);
     return runs.failing;
   };
 

@@ -40,7 +40,7 @@ describe('check-layering (NFR-MNT-001)', () => {
   });
 
   const violations = {
-    'core importing render (upward)': ['packages/core/src/bad.ts', "import { VERSION } from '@fluxion/render';\nexport const v = VERSION;\n", /layer-core/],
+    'core importing render (upward)': ['packages/core/src/upward.ts', "import { VERSION } from '@fluxion/render';\nexport const v = VERSION;\n", /layer-core/],
     'player importing editor': ['packages/player/src/bad.ts', "export { VERSION } from '@fluxion/editor';\n", /player-not-editor/],
     'schema importing node:fs': ['packages/schema/src/bad.ts', "import { readFileSync } from 'node:fs';\nexport const r = readFileSync;\n", /pure-no-node/],
     'a pure package importing React': ['packages/geometry/src/bad.ts', "import { useState } from 'react';\nexport const u = useState;\n", /pure-no-dom/],
@@ -50,9 +50,9 @@ describe('check-layering (NFR-MNT-001)', () => {
       /t0-tests-no-dom/,
     ],
     'a pack importing core': ['packs/basic/src/bad.ts', "export { VERSION } from '@fluxion/core';\n", /packs-sdk-only/],
-    'a deep import into another package': ['packages/render/src/bad.ts', "export { VERSION } from '@fluxion/core/src/index.ts';\n", /no-deep-import/],
+    'a deep import into another package': ['packages/render/src/deep.ts', "export { VERSION } from '@fluxion/core/src/index.ts';\n", /no-deep-import/],
     'a relative import into another workspace': [
-      'packages/render/src/bad.ts',
+      'packages/render/src/relative.ts',
       "export { VERSION } from '../../core/src/index.ts';\n",
       /no-relative-cross-workspace/,
     ],
@@ -62,20 +62,29 @@ describe('check-layering (NFR-MNT-001)', () => {
       /t0-tests-no-dom/,
     ],
     'shipped source importing an undeclared package': [
-      'packages/core/src/bad.ts',
+      'packages/core/src/undeclared.ts',
       "import { expect } from 'vitest';\nexport const e = expect;\n",
       /not-to-undeclared-dep/,
     ],
-    'an unresolvable relative import': ['packages/core/src/bad.ts', "export { x } from './missing.ts';\n", /not-to-unresolvable/],
+    'an unresolvable relative import': ['packages/core/src/unresolvable.ts', "export { x } from './missing.ts';\n", /not-to-unresolvable/],
     'a circular import': ['packages/core/src/a.ts', "import { b } from './b.ts';\nexport const a = (): number => b() + 1;\n", /no-circular/],
   };
-  for (const [name, [path, text, expected]] of Object.entries(violations)) {
+  // one run with every violation planted, each in its own file (M16.31: a dependency-cruiser run over the tree per case was most of this
+  // suite's time); every case asserts that its rule names its own file
+  let planted;
+  const plantedRun = () => {
+    if (planted === undefined) {
+      for (const [path, text] of Object.values(violations)) put(path, text);
+      put('packages/core/src/b.ts', "import { a } from './a.ts';\nexport const b = (): number => a() - 1;\n");
+      planted = layering();
+    }
+    return planted;
+  };
+  for (const [name, [path, , expected]] of Object.entries(violations)) {
     it(`fails on ${name}`, () => {
-      put(path, text);
-      if (name === 'a circular import') put('packages/core/src/b.ts', "import { a } from './a.ts';\nexport const b = (): number => a() - 1;\n");
-      const r = layering();
+      const r = plantedRun();
       assert.equal(r.status, 1, out(r));
-      assert.match(r.stderr, expected);
+      assert.match(r.stderr, new RegExp(`${expected.source}: ${path.replaceAll('.', '\\.')}(?![\\w.])`));
     });
   }
 

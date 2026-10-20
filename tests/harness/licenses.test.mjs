@@ -2,7 +2,7 @@
 // never GPL-family or watermark libraries, and every workspace is MIT.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync, rmSync } from 'node:fs';
+import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { out, REPO, sandbox } from './helpers.mjs';
@@ -23,7 +23,13 @@ function licenses(files = {}) {
 
 describe('check-licenses (NFR-LIC-001, NFR-LIC-002)', () => {
   beforeEach(() => {
-    sb = sandbox(['scripts', 'tools', 'LICENSE', 'NOTICE', ...workspaces.map((w) => w.dir)]);
+    sb = sandbox(['scripts', 'tools', 'LICENSE', 'NOTICE']);
+    // of each workspace only what the gate reads: its top-level files (package.json, LICENSE, fonts.json, catalog.json) and the font files
+    // fonts.json names (M16.31: a copy of every workspace's sources per case was most of this suite's time)
+    for (const { dir } of workspaces) {
+      for (const e of readdirSync(join(REPO, dir), { withFileTypes: true }))
+        if (e.isFile() || e.name === 'fonts') cpSync(join(REPO, dir, e.name), sb.path(`${dir}/${e.name}`), { recursive: true });
+    }
   });
   afterEach(() => sb.cleanup());
 
