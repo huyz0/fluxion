@@ -23,11 +23,21 @@ function boundEnds(view: ReadView, connectorId: RecordId): { source?: string; ta
   return ends;
 }
 
-/** The connectors without waypoints that join `a` and `b`, either way round. */
+/** The bindings of `a` or of `b`, whichever has fewer. */
+function fewerBindings(view: ReadView, a: string, b: string): readonly RecordId[] {
+  const ofA = view.members('bindingsByElement', a);
+  const ofB = view.members('bindingsByElement', b);
+  return ofB.length < ofA.length ? ofB : ofA;
+}
+
+/**
+ * The connectors without waypoints that join `a` and `b`, either way round. Each is bound to both, so the bindings of the end with fewer
+ * are read: a hub's 200 spokes each read their leaf's one binding, not the hub's 200 (NFR-PERF-005, M16.40).
+ */
 function joining(view: ReadView, a: string, b: string): ParallelEdge[] {
   const edges: ParallelEdge[] = [];
   const seen = new Set<string>();
-  for (const id of view.members('bindingsByElement', a)) {
+  for (const id of fewerBindings(view, a, b)) {
     const c = (view.get(id) as BindingLike | undefined)?.connectorId;
     if (typeof c !== 'string' || seen.has(c)) continue;
     seen.add(c);

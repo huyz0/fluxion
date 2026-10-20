@@ -95,6 +95,28 @@ describe('parallel connectors (FR-CON-011)', () => {
     expect(Math.abs(routed().y - before.y)).toBeCloseTo(FAN_SPACING / 2, 6);
   });
 
+  it('NFR-PERF-005: a spoke of a hub reads the bindings of its leaf, not of the hub: the offset of each of 200 spokes reads a few records (M16.40)', () => {
+    const b = documentBuilder({ seed: 7 });
+    const screen = b.screen();
+    const hub = b.rect(screen, { x: 0, y: 0, w: 100, h: 100 });
+    const spokes = Array.from({ length: 200 }, (_, k) => b.connect(hub, b.rect(screen, { x: 300, y: 10 * k, w: 20, h: 8 })));
+    const { store } = createCore(b.build());
+    let reads = 0;
+    const counted = new Proxy(store, {
+      get: (target, key) => {
+        const value = Reflect.get(target, key) as unknown;
+        if (key !== 'get') return typeof value === 'function' ? value.bind(target) : value;
+        return (...args: unknown[]) => {
+          reads++;
+          return (value as (...a: unknown[]) => unknown).apply(target, args);
+        };
+      },
+    });
+    for (const id of spokes) expect(fanOffsetOf(counted, id)).toBeUndefined();
+    // the records read: the hub's 200 bindings and their connectors read for every spoke would be over 80,000
+    expect(reads).toBeLessThan(200 * 20);
+  });
+
   it('FR-CON-011: a fanned curved connector keeps the tangent its author set at the target on the target', () => {
     const { core, ctx, ids } = scene('curved', 2);
     const id = ids[0] as RecordId;
