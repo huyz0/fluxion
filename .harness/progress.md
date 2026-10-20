@@ -1916,3 +1916,11 @@ M16.36 (609bd3e3): CI's `eval-recorded` was red from 981aa84e: the cheat sheet e
 ## 2026-10-20 M16.37 (claude, local Windows)
 
 M16.37: the ladder's `eval` step runs the recorded eval when a staged change can move its prompt (evalNeeded = examplesNeeded, plus eval cases, recordings and scripts/eval); proven to FAIL with a stale cheat sheet and PASS otherwise. Review r1: F1 (Windows .cmd shim) and F2 (loose ladder regex) fixed; r2 passed.
+
+## 2026-10-20 M16.28 (claude)
+Every renderer draws the global routes (67a0b921). ADR-0044 amendment M16.28 closes the open decision: the pure pass runs, nothing is persisted.
+render: `RenderRegistries.globalPass` and `withSettledRoutes` for batch hosts (the CLI and the exporters run the pass in thread); connectors carry `data-route-pass` `cheap` or `global`, and a connector view starts a new box when its pass changes (without that, edit and present framed one connector differently).
+player-inline: the pass is its own chunk, `fluxion-routing.js` (the `.flux.html` writer embeds it as an inert `#fluxion-routing` block, 08 §3), run as a Blob-URL worker after the first paint; the player root says `data-routes` pending, settled or cheap. Player 148.2 kB, element script 149.4 kB, both under 150.
+Review round 1 rejected running the pass on the main thread (about 350 ms for 200 connectors; performance.md rule 9). The worker design came out of that, with `e2e/perf.player-route-settle-200.spec.ts` (checked: it fails when the settle path stalls 120 ms). Rounds 2 and 3: a failed open now disposes the worker, and stale comments were corrected.
+The studio always draws its worker overlay, `?routing=global` and its test are gone (Removes-test), eight goldens and baselines were re-recorded (Threshold-change).
+User decision for the budget conflict: "Lazy routing chunk".
