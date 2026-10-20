@@ -39,6 +39,15 @@ registry. `registerBuiltinRouters` registers:
 | `polyline` | lines through the waypoints |
 | `orthogonal` | axis-aligned elbows from short stubs along the anchor directions, never doubling back; no obstacle avoidance |
 
+## Parallel connectors and hops
+
+Connectors between the same two elements, either way round and without waypoints, are moved aside
+`FAN_SPACING` (16 px) apart, numbered in id order (FR-CON-011, `fan.ts` over `parallel.ts`): a
+curved one bows through a waypoint beside the chord, a straight or polyline one bends once there,
+an orthogonal one shifts its longest inner segment. `routeConnector` applies it, so the editor's
+handles and hit tests see the drawn route. `findJumps` and `hopPath` (FR-CON-008) give the hops of
+the connector painted later where two cross; render's connector view draws them.
+
 ## Markers and labels
 
 `trimRoute(commands, start, end)` shortens a route under its end markers by a straight distance

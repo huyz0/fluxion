@@ -12,6 +12,7 @@ import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
 import { ElementList } from './elements.js';
 import { cameraTransform, fitTransform, screenArea } from './fit.js';
+import { BuildHiddenContext } from './line-jumps.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
 import type { RenderRegistries } from './registries.js';
 import { useScreenTheme } from './screen-theme.js';
@@ -150,7 +151,9 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
           <section className="fx-screen" data-screen-id={screenId} data-interactive={policy.interactive ? '' : undefined} style={style}>
             <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
             <div className="fx-layer fx-content" style={origin}>
-              <ElementList store={store} screenId={screenId} registries={registries} theme={styling} hidden={props.hidden} />
+              <BuildHiddenContext.Provider value={props.hidden}>
+                <ElementList store={store} screenId={screenId} registries={registries} theme={styling} hidden={props.hidden} />
+              </BuildHiddenContext.Provider>
               {children}
             </div>
             {policy.editOverlay && editOverlay !== undefined ? <div className="fx-layer fx-overlay">{editOverlay}</div> : null}

@@ -155,7 +155,7 @@ FR-LAY-004 guarantee; VPSC from WebCola joins with the constraints in M17), **sn
 | `straight` | Two points; floating anchors re-projected on the outline | Per frame |
 | `curved` | Cubic; controls from anchor normals, `k = clamp(d/2, 20, 150)` | Parallel edges fan out (FR-CON-011) |
 
-A `curved` route also takes `route.tangents` (schema 1.5, ADR-0168): an offset by route-point index that replaces that point's control point, which the editor edits with one handle per point. `route.jumps` (`arc` | `gap` | `none`) sets how this connector's crossings are drawn; the connector view reads it when it draws hops (M16.21).
+A `curved` route also takes `route.tangents` (schema 1.5, ADR-0168): an offset by route-point index that replaces that point's control point, which the editor edits with one handle per point. `route.jumps` (`arc` | `gap` | `none`) sets how this connector's crossings are drawn; the connector view reads it when it draws hops (M16.21: render's `line-jumps.ts`, one store query of every screen's crossings, which reads only the connectors' route fields while neither the document's `settings.lineJumps` nor any connector asks for hops; a route with curves is crossed but does not hop). Connectors between the same two elements fan out in `routeConnector` (routing's `fan.ts`, FR-CON-011), so the editor's handles and hit tests use the route that is drawn.
 | `polyline` | User waypoints | Waypoints are constraints |
 | `orthogonal` (**own**) | A* on a sparse non-uniform grid (obstacle edges ± margin, anchor stubs, midlines); cost = length + bend·B + crossing·C | Then nudge + simplify |
 | `routing-libavoid:orthogonal` (pack) | libavoid-js wasm, incremental, pins, built-in nudging | LGPL-2.1: separately loaded, replaceable module, notices shipped |

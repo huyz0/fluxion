@@ -1,6 +1,6 @@
 // What opening a `.flux` for presenting comes to, for the one-file player (`start`) and the element (`defineFluxionPlayer`): the lean reader, a read-only store,
 // the bundled pack, the images of the file as blob URLs and its fonts. One path, so the two present the same file the same way.
-import { type CoreRegistries, createCore, type Registry } from '@fluxion/core';
+import { type CoreRegistries, createCoreRegistries, createStore, type Registry } from '@fluxion/core';
 import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
 import { basicPack } from '@fluxion/pack-basic';
 import { renderRegistriesFor } from '@fluxion/player';
@@ -69,15 +69,17 @@ export async function openFlux(
   try {
     const loaded = await loadFluxLean(bytes, { hasher });
     if (!loaded.ok) return { ok: false, message: `This file cannot be opened: ${loaded.error.message}` };
-    // a player never writes: its store refuses every transaction (FR-PRS-004)
-    const core = createCore(loaded.value.document, { policy: 'read-only' });
-    const refused = registerBundled(core.registries);
+    // a player never writes: its store refuses every transaction (FR-PRS-004), so it is made without the editing commands and integrity
+    // hooks createCore would register (they only act on writes), which keeps them out of the script
+    const store = createStore(loaded.value.document, { policy: 'read-only' });
+    const registries = createCoreRegistries();
+    const refused = registerBundled(registries);
     if (refused !== undefined) return { ok: false, message: `The built-in shapes could not be registered: ${refused}` };
     const images = imageUrls(loaded.value);
     made.push(images);
     // the file's own fonts first: the first paint is in them, measured with their recorded metrics
     made.push(await loadEmbeddedFonts(loaded.value));
-    return { ok: true, value: { store: core.store, registries: renderRegistriesFor(core.registries), assets: (id: RecordId) => images.urls.get(id), release } };
+    return { ok: true, value: { store, registries: renderRegistriesFor(registries), assets: (id: RecordId) => images.urls.get(id), release } };
   } catch (e) {
     release();
     return { ok: false, message: `This file cannot be shown: ${e instanceof Error ? e.message : String(e)}` };

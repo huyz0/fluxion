@@ -9,12 +9,13 @@
 // bound shape redraws it.
 import { type MarkerDef, markerTrim } from '@fluxion/core';
 import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
-import { labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
+import { hopPath, labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
 import type { ConnectorElement, Marker, RecordId } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useContext, useId, useMemo, useRef } from 'react';
 import { concreteLength } from './css-values.js';
 import { labelStyle } from './label.js';
+import { BuildHiddenContext, type ConnectorHops, hopsOfConnector, visibleHops } from './line-jumps.js';
 import { MarkerView, MidMarker } from './markers.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
@@ -75,6 +76,20 @@ function Labels(props: { readonly element: ConnectorElement; readonly route: rea
   });
 }
 
+/**
+ * The stroke of a route: `drawn` (the route with its corners rounded), or with hops a route of straight segments (the only kind given
+ * hops) with a hop at each crossing that fits, its corners rounded to `radius`.
+ */
+function hopped(
+  routed: { readonly commands: readonly PathCommand[]; readonly hops: ConnectorHops | undefined },
+  drawn: readonly PathCommand[],
+  radius: number,
+): readonly PathCommand[] {
+  if (routed.hops === undefined) return drawn;
+  const points = routed.commands.map((c) => (c as { readonly to: Vec2 }).to);
+  return roundCorners(hopPath(points, routed.hops.jumps, routed.hops.style), radius);
+}
+
 /** The style of a connector with what is derived from it: its stroke as CSS, the corner radius and the stroke width in px. */
 function styled(id: RecordId, own: ConnectorElement['style'], cornerRadius: number | undefined, theme: ElementViewProps['theme']) {
   const { style } = resolveStyle(own, 'connector', theme, ['records', id, 'style']);
@@ -91,6 +106,29 @@ function styled(id: RecordId, own: ConnectorElement['style'], cornerRadius: numb
 }
 
 /**
+ * The connector's route: the cheap pass (routeConnector's default, FR-RTE-002), or the global pass's route while it is current (FR-RTE-003),
+ * with the hops it draws where it crosses connectors painted before it (FR-CON-008). The query re-runs only when something the route read
+ * changes, so moving a shape reroutes the connectors bound to it and no others; its hops are a query of its own entry, and a hop over a
+ * connector a build hides is left out.
+ */
+function useRouted(store: ElementViewProps['store'], registries: RenderRegistries, id: RecordId) {
+  const record = useContext(RenderStatsContext);
+  const hidden = useContext(BuildHiddenContext);
+  return useValue(
+    useMemo(() => {
+      const hops = hopsOfConnector(store, registries, id);
+      return store.query((view) => {
+        const t0 = record === undefined ? 0 : performance.now();
+        const route = routeConnector(view, registries, id);
+        if (record !== undefined) record('route', performance.now() - t0);
+        const global = registries.refined?.()?.get(id) === route?.commands;
+        return route === undefined ? undefined : { ...route, global, hops: visibleHops(view, hops(), hidden) };
+      });
+    }, [store, registries, id, record, hidden]),
+  );
+}
+
+/**
  * The view of `kind: 'connector'` elements.
  *
  * @public
@@ -100,21 +138,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const element = props.element as ConnectorElement;
   const { id } = element;
   const base = `fx-marker-${useId().replace(/[^\w-]/g, '')}`;
-  const record = useContext(RenderStatsContext);
-  const routed = useValue(
-    useMemo(
-      // the cheap pass (routeConnector's default, FR-RTE-002), or the global pass's route while it is current (FR-RTE-003); the query
-      // re-runs only when something the route read changes, so moving a shape reroutes the connectors bound to it and no others
-      () =>
-        store.query((view) => {
-          const t0 = record === undefined ? 0 : performance.now();
-          const route = routeConnector(view, registries, id);
-          if (record !== undefined) record('route', performance.now() - t0);
-          return route === undefined ? undefined : { ...route, global: registries.refined?.()?.get(id) === route.commands };
-        }),
-      [store, registries, id, record],
-    ),
-  );
+  const routed = useRouted(store, registries, id);
   // the box drawn in last render for this store, kept while the route fits it (another document starts afresh)
   const frames = useRef<{ readonly store: unknown; readonly frame: Frame } | undefined>(undefined);
   const { style, line, lengths } = useMemo(
@@ -128,13 +152,15 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
     markerOf(registries, element.markers?.mid),
   ];
   const { radius, width } = lengths;
+  // labels and the mid marker sit on the route; the stroke takes the hops as well
   const drawn = roundCorners(routed.commands, radius);
+  const stroked = hopped(routed, drawn, radius);
   // the line stops under each marker, whose tip then lands on the route's end
-  const trimmed = trimRoute(drawn, markerTrim(start, width), markerTrim(end, width));
+  const trimmed = trimRoute(stroked, markerTrim(start, width), markerTrim(end, width));
   // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
   const held = frames.current?.store === store ? frames.current.frame : undefined;
-  const { x, y, w, h } = framed(held, routeFrame(drawn));
+  const { x, y, w, h } = framed(held, routeFrame(stroked));
   frames.current = { store, frame: { x, y, w, h } };
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
