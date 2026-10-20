@@ -21,7 +21,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { runSource, transportHint } from './ci-runs.mjs';
 import { git, repoPath } from './lib.mjs';
-import { BOOKKEEPING_PATHS } from './milestone-checks.mjs';
+import { AFTER_REVIEW_PATHS } from './milestone-checks.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k) => {
@@ -73,13 +73,13 @@ function problems(run, workflow, sha) {
   return out;
 }
 
-/** HEAD's newest commit touching a path outside BOOKKEEPING_PATHS (the list the final-review range check uses). */
+/** HEAD's newest commit touching a path outside AFTER_REVIEW_PATHS (the list the final-review range check uses). */
 function lastCodeCommit() {
   // \x01 marks each commit: unlike '@', it cannot occur in a path
   const log = git(['log', '--format=%x01%H', '--name-only', 'HEAD']).stdout;
   for (const entry of log.split('\x01').filter(Boolean)) {
     const [sha, ...paths] = entry.split(/\r?\n/).filter(Boolean);
-    if (paths.some((p) => !BOOKKEEPING_PATHS.some((re) => re.test(p)))) return sha;
+    if (paths.some((p) => !AFTER_REVIEW_PATHS.some((re) => re.test(p)))) return sha;
   }
   return '';
 }

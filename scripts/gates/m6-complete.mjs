@@ -4,7 +4,6 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runInImage } from '../e2e/image.mjs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import * as checks from './milestone-checks.mjs';
 import {
@@ -14,7 +13,6 @@ import {
   checkPlaywrightReport,
   checkPlaywrightTitles,
   coverageGaps,
-  dockerAvailable,
   loadMilestoneReviews,
   namedCases,
   playwrightReport,
@@ -62,8 +60,7 @@ const GROUPS = {
   perf: { projects: PERF, specs: ['e2e/perf.drag-500.spec.ts'], workers: 1 },
 };
 const reports = new Map();
-const runner = () =>
-  process.env.FLUXION_E2E !== 'local' && dockerAvailable() ? (args, env) => runInImage(args, { report: env.PLAYWRIGHT_JSON_OUTPUT_NAME }) : undefined;
+const runner = checks.imageRunner;
 /** Whether `specs` pass on `projects` in their group's one run; a missing spec fails first. */
 function e2e(specs, projects) {
   const missing = specs.filter((s) => !exists(s));

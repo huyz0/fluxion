@@ -54,6 +54,8 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
       ['code', 'packages/a.ts', 'M9.1: feat(core): a'],
       ['end', 'packages/b.ts', 'M9.2: feat(core): b'],
       ['book', '.harness/progress.md', 'M9.3: chore(harness): progress'],
+      // an exit checklist tick after the range end does not move the floor (M16 final F17)
+      ['tick', 'docs/milestones/exits/R9.md', 'M9.4: docs(milestones): tick the perf row'],
     ]) {
       sb.write(path, `${key}\n`);
       sb.git('add', path);
@@ -196,7 +198,7 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     // a run whose commit still retried: on a side branch after the floor, HEAD unchanged
     sb.git('checkout', '-q', '-b', 'retrying');
     sb.write('.github/workflows/nightly.yml', workflow('pnpm exec playwright test --project=perf --workers=1'));
-    sb.git('commit', '-q', '--no-verify', '-am', 'M9.4: ci(nightly): perf retries');
+    sb.git('commit', '-q', '--no-verify', '-am', 'M9.5: ci(nightly): perf retries');
     sha.retrying = sb.git('rev-parse', 'HEAD').stdout.trim();
     sb.git('checkout', '-q', '-');
     const retrying = check(withPerf(sha.end, sha.retrying), [...green(sha.end), nightly(9, sha.retrying, 'success')], ['--milestone', 'M9', '--perf']);
@@ -211,7 +213,7 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.equal(early.status, 1, out(early));
     assert.match(early.stderr, /is not at or after HEAD's last non-bookkeeping commit \(no M8 final review yet\) \(\w{7}\)/);
     assert.match(early.stderr, new RegExp(sha.end.slice(0, 7)));
-    for (const s of [sha.end, sha.book]) assert.equal(check(record(s), green(s), ['--milestone', 'M8']).status, 0, s);
+    for (const s of [sha.end, sha.book, sha.tick]) assert.equal(check(record(s), green(s), ['--milestone', 'M8']).status, 0, s);
   });
 });
 

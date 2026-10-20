@@ -3,9 +3,8 @@
 // (the hit-test bench and the 500-element drag and resize), so a later milestone cannot slow them
 // unseen (M3 final F1, again in M6).
 import { existsSync, readFileSync } from 'node:fs';
-import { runInImage } from '../e2e/image.mjs';
 import { exists, readText, repoPath } from './lib.mjs';
-import { benchUnder, checkPlaywrightReport, checkPlaywrightTitles, dockerAvailable, playwrightReport } from './milestone-checks.mjs';
+import { benchUnder, checkPlaywrightReport, checkPlaywrightTitles, imageRunner, playwrightReport } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
 
 export const DESKTOP = ['chromium', 'firefox', 'webkit'];
@@ -24,8 +23,7 @@ const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(
  */
 export function createE2e(groups) {
   const reports = new Map();
-  const runner = () =>
-    process.env.FLUXION_E2E !== 'local' && dockerAvailable() ? (args, env) => runInImage(args, { report: env.PLAYWRIGHT_JSON_OUTPUT_NAME }) : undefined;
+  const runner = imageRunner;
   const groupOf = (projects) => Object.keys(groups).find((g) => groups[g].projects === projects) ?? 'desktop';
   const report = (projects) => {
     const group = groupOf(projects);

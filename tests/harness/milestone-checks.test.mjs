@@ -9,6 +9,7 @@ import {
   checkBacklogDone,
   checkDistArtifacts,
   checkDryRuns,
+  checkExitChecklist,
   checkReviewerSmoke,
   checkRowsDone,
   checkRowsTitled,
@@ -134,6 +135,18 @@ describe('checkFinalReview and checkHooksExecutable (NFR-DX-003)', () => {
     }
   });
 
+  it('accepts an exit checklist tick after the range end: its box waits for CI evidence at that end (M16 final F17)', () => {
+    const { sb, commit, baseline } = repo();
+    try {
+      commit('src/a.txt', 'M0.1: feat: a');
+      const end = commit('src/b.txt', 'M0.2: feat: b');
+      commit('docs/milestones/exits/R0.md', 'M0.3: docs(milestones): tick row 6 on the perf evidence');
+      assert.equal(check(sb, review(`${baseline}..${end}`)), true);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('rejects a review that does not cover later code commits', () => {
     const { sb, commit, baseline } = repo();
     try {
@@ -210,6 +223,22 @@ describe('checkFinalReview and checkHooksExecutable (NFR-DX-003)', () => {
     } finally {
       sb.cleanup();
     }
+  });
+});
+
+describe('checkExitChecklist (NFR-DX-003, M16 final F13, F18)', () => {
+  const row = (n, box, href = 'a.md') => `| ${n} | [${box}] criterion ${n}. | [evidence](${href}) |`;
+  const table = (...rows) => ['# R9 exit checklist', '', '| # | Criterion | Evidence |', '|---|---|---|', ...rows].join('\n');
+  const opts = { from: 1, to: 2, min: 2, resolves: (href) => href !== 'dead.md' };
+
+  it("passes when the milestone's rows are ticked with live links, whatever later rows say", () => {
+    assert.equal(checkExitChecklist(table(row(1, 'x'), row(2, 'x'), row(3, ' ', 'dead.md')), opts), true);
+  });
+
+  it('names an open box, a dead link and too few rows among its own rows', () => {
+    assert.equal(checkExitChecklist(table(row(1, 'x'), row(2, ' ')), opts), 'unticked rows: 2');
+    assert.match(String(checkExitChecklist(table(row(1, 'x'), row(2, 'x', 'dead.md')), opts)), /resolve to nothing: dead\.md/);
+    assert.match(String(checkExitChecklist(table(row(1, 'x'), row(3, 'x')), opts)), /only 1 checklist rows/);
   });
 });
 

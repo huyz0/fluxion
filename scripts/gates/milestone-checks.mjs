@@ -3,10 +3,16 @@
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, sep } from 'node:path';
+import { runInImage } from '../e2e/image.mjs';
 import { exists, git, repoPath, run } from './lib.mjs';
 
 /** Paths a commit may touch after the final review range without invalidating the review. */
 export const BOOKKEEPING_PATHS = [/^\.harness\//, /^docs\/backlog\//, /^docs\/milestones\/(roadmap|M\d+)\.md$/];
+/**
+ * What may follow the final review range end without moving it: bookkeeping and the exit checklists, whose boxes are ticked
+ * once CI evidence at that end arrives (M16 final F17). The ladder keeps BOOKKEEPING_PATHS: a checklist's links are still checked.
+ */
+export const AFTER_REVIEW_PATHS = [...BOOKKEEPING_PATHS, /^docs\/milestones\/exits\//];
 
 /**
  * A dry-runs record must have, per tool, a Success and an Impossible section, each with a
@@ -116,7 +122,7 @@ function onlyBookkeepingAfter(end, milestone) {
   if (list.status !== 0) return `git rev-list failed: ${list.stderr.trim()}`;
   for (const sha of list.stdout.split(/\r?\n/).filter(Boolean)) {
     const paths = git(['show', '--name-only', '--format=', sha]).stdout.split(/\r?\n/).filter(Boolean);
-    const code = paths.find((p) => !BOOKKEEPING_PATHS.some((re) => re.test(p)));
+    const code = paths.find((p) => !AFTER_REVIEW_PATHS.some((re) => re.test(p)));
     if (code) return `commit ${sha.slice(0, 8)} after the reviewed range changes ${code}`;
   }
   return true;
@@ -739,6 +745,33 @@ export function playwrightReport(specs, projects, { runner = runPlaywright, work
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+/**
+ * Playwright in ci.yml's pinned image through Docker where Docker answers, for a host whose own browsers cannot all launch;
+ * undefined (the local runner) otherwise or under FLUXION_E2E=local.
+ */
+export const imageRunner = () =>
+  process.env.FLUXION_E2E !== 'local' && dockerAvailable() ? (args, env) => runInImage(args, { report: env.PLAYWRIGHT_JSON_OUTPUT_NAME }) : undefined;
+
+/**
+ * Problems of an exit checklist `text` (docs/milestones/exits/R<n>.md) for the rows numbered `from`..`to`, the ones a milestone
+ * owns (a later milestone's rows open later, M16 final F18): fewer than `min` rows with an evidence link, a link `resolves(href)`
+ * says is dead, or a box still open (M16 final F13). Returns true or a reason.
+ */
+export function checkExitChecklist(text, { from, to, min, resolves }) {
+  const rows = text
+    .split(/\r?\n/)
+    .filter((l) => /^\|.*\]\(.+\)/.test(l))
+    .filter((l) => {
+      const n = Number(l.split('|')[1]);
+      return n >= from && n <= to;
+    });
+  if (rows.length < min) return `only ${rows.length} checklist rows with an evidence link (< ${min})`;
+  const dead = rows.flatMap((l) => [...l.matchAll(/\]\(([^)#]+)\)/g)].map((m) => m[1])).filter((href) => !/^[a-z]+:/.test(href) && !resolves(href));
+  if (dead.length) return `evidence links that resolve to nothing: ${dead.join(', ')}`;
+  const open = rows.filter((l) => /\[ \]/.test(l)).map((l) => l.split('|')[1].trim());
+  return open.length === 0 || `unticked rows: ${open.join(', ')}`;
 }
 
 /**
