@@ -23,14 +23,15 @@ function wellFormed(key: string, record: unknown): record is AnyRecord {
   return record['type'] !== 'element' || (typeof record['screenId'] === 'string' && typeof record['kind'] === 'string');
 }
 
-// The schema versions this reader opens without migrating: the current one, 1.3, whose step to 1.4 only adds optional anchor fields (ADR-0043:
+// The schema versions this reader opens without migrating: the current one, 1.4, whose step to 1.5 only adds optional route fields (ADR-0168:
+// tangents, jumps), 1.3, whose step to 1.4 only adds optional anchor fields (ADR-0043:
 // kind, side, t) that the routing resolves from the typed document, and 1.2, whose step to 1.3 only adds optional fields the player does not
 // read (ADR-0031: layouts and the FluxScript source). It reads them as the current version, as the validating loader would after migrating.
-const LEAN_READS: ReadonlySet<string> = new Set([SCHEMA_VERSION, '1.3', '1.2']);
+const LEAN_READS: ReadonlySet<string> = new Set([SCHEMA_VERSION, '1.4', '1.3', '1.2']);
 
 /**
  * Read the text of a `document.json` by structure: the records that are well formed, the ids of those that are not. Refuses a text that is not JSON, one that names
- * a schema version other than the current one, 1.3 or 1.2, and one with no readable record. Never throws.
+ * a schema version other than the current one, 1.4, 1.3 or 1.2, and one with no readable record. Never throws.
  *
  * @public
  */

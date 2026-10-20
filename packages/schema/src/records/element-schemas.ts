@@ -125,6 +125,8 @@ export const elementKindSchemas: {
           .meta({ ui: 'select', group: 'Route', order: 1, label: 'Route' }),
         waypoints: z.array(pointSchema).optional(),
         cornerRadius: z.number().min(0).optional(),
+        tangents: z.record(z.string().regex(/^(0|[1-9]\d*)$/), pointSchema).optional(),
+        jumps: z.enum(['arc', 'gap', 'none']).optional(),
       }),
       markers: z.looseObject({ start: markerSchema.optional(), end: markerSchema.optional(), mid: markerSchema.optional() }).optional(),
       labels: z.array(z.looseObject({ text: richTextSchema, position: unit, offset: pointSchema.optional() })).optional(),

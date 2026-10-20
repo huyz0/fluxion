@@ -99,6 +99,8 @@ length for `perimeter`, where an absent `t` floats). `x` and `y` are required fo
 `maxConnections`) keep their names and apply to every kind. The `1.3 → 1.4` migration removes a `kind`, `side` or `t` that a 1.3 file may
 carry and the typed fields refuse, and changes nothing else.
 
+Schema `1.5` (M16.20, ADR-0168) adds two optional fields to a connector's `route`: `tangents` (a record of offsets, `{x, y}`, by route-point index, the source `"0"`, then the waypoints, then the target: the control point of that point on a `curved` route) and `jumps` (`arc`, `gap` or `none`: how this connector's crossings are drawn, the document's setting when absent). The `1.4 → 1.5` migration removes a `tangents` or `jumps` that a 1.4 file may carry and the typed fields refuse, and changes nothing else.
+
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with
 only its envelope checked.
 

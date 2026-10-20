@@ -635,6 +635,8 @@ export type Route = Extensible<{
     readonly type: "straight" | "curved" | "orthogonal" | "polyline" | QualifiedName;
     readonly waypoints?: readonly Point[];
     readonly cornerRadius?: number;
+    readonly tangents?: Readonly<Record<string, Point>>;
+    readonly jumps?: "arc" | "gap" | "none";
 }>;
 
 // @public

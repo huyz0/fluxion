@@ -83,6 +83,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0164](ADR-0164-quick-budget-180s.md) | The quick-gate budget is 180 s | accepted | 2026-10-13 |
 | [0165](ADR-0165-precommit-budget-600s.md) | The pre-commit budget is 600 s | superseded by 0166 | 2026-10-15 |
 | [0166](ADR-0166-precommit-budget-900s.md) | The pre-commit budget is 900 s | accepted | 2026-10-15 |
+| [0168](ADR-0168-route-tangents-and-jumps.md) | Curve tangents and the jump style on a connector's route (schema 1.5) | accepted | 2026-10-20 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

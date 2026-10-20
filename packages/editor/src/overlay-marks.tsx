@@ -47,6 +47,7 @@ const HANDLE_CLASS = {
   way: 'fx-chrome-connector-way',
   mid: 'fx-chrome-connector-mid',
   seg: 'fx-chrome-connector-seg',
+  tan: 'fx-chrome-connector-tan',
 } as const;
 
 /** The parametric handles of the one selected shape. */

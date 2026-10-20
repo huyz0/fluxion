@@ -41,6 +41,53 @@ function setup(route?: object) {
 }
 
 describe('connector handles (FR-CON-007)', () => {
+  it('FR-CON-007: a curved connector has a tangent handle at each route point, at the control point of the curve there', () => {
+    const { core, line, read } = setup({ type: 'curved', waypoints: [{ x: 250, y: 200 }] });
+    const handles = connectorHandlesOf(core.store, read, line);
+    const tangents = handles.filter((h) => h.role === 'tan');
+    expect(tangents.map((h) => h.at)).toEqual([0, 1, 2]);
+    const routed = read(line);
+    const cubics = (routed?.commands ?? []).filter((c) => c.kind === 'C');
+    expect(tangents[0]?.page).toEqual((cubics[0] as { control1: Vec2 }).control1);
+    expect(tangents[1]?.page).toEqual((cubics[1] as { control1: Vec2 }).control1);
+    expect(tangents[2]?.page).toEqual((cubics[1] as { control2: Vec2 }).control2);
+    expect(tangents[1]?.from).toEqual({ x: 250, y: 200 });
+    const straight = setup();
+    expect(connectorHandlesOf(straight.core.store, straight.read, straight.line).some((h) => h.role === 'tan')).toBe(false);
+  });
+
+  it('FR-CON-007: dragging a tangent writes its offset from the route point and keeps the rest of the route', () => {
+    const original = { type: 'curved', waypoints: [{ x: 250, y: 200 }], tangents: { '2': { x: 1, y: 2 } } } as ConnectorElement['route'];
+    const handle: ConnectorHandle = { role: 'tan', at: 1, page: { x: 280, y: 200 }, from: { x: 250, y: 200 } };
+    expect(handleEdit('c' as RecordId, original, handle, { x: 270, y: 230 })?.args).toEqual({
+      id: 'c',
+      fields: { route: { type: 'curved', waypoints: [{ x: 250, y: 200 }], tangents: { '1': { x: 20, y: 30 }, '2': { x: 1, y: 2 } } } },
+    });
+  });
+
+  it('FR-CON-007: the first waypoint an orthogonal segment drag makes moves the target tangent up a place too', () => {
+    const original = { type: 'orthogonal', tangents: { '1': { x: 3, y: 3 } } } as ConnectorElement['route'];
+    const handle: ConnectorHandle = { role: 'seg', at: 1, page: { x: 50, y: 0 }, axis: 'x' };
+    const edit = handleEdit('c' as RecordId, original, handle, { x: 60, y: 0 });
+    const route = ((edit as ParamCommand).args as { fields: { route: ConnectorElement['route'] } }).fields.route;
+    expect(route.waypoints).toEqual([{ x: 60, y: 0 }]);
+    expect(route.tangents).toEqual({ '2': { x: 3, y: 3 } });
+  });
+
+  it('FR-CON-007: a waypoint made in a stretch moves the tangents of the points after it up one place', () => {
+    const original = {
+      type: 'curved',
+      waypoints: [{ x: 100, y: 100 }],
+      tangents: { '0': { x: 1, y: 1 }, '1': { x: 2, y: 2 }, '2': { x: 3, y: 3 } },
+    } as ConnectorElement['route'];
+    const route = (waypointEdit('c' as RecordId, original, 0, { x: 50, y: 50 }).args as { fields: { route: ConnectorElement['route'] } }).fields.route;
+    expect(route.waypoints).toEqual([
+      { x: 50, y: 50 },
+      { x: 100, y: 100 },
+    ]);
+    expect(route.tangents).toEqual({ '0': { x: 1, y: 1 }, '2': { x: 2, y: 2 }, '3': { x: 3, y: 3 } });
+  });
+
   it('FR-CON-007: a connector has a handle at each end and one in the middle of each stretch', () => {
     const { core, line, read, a } = setup();
     const handles = connectorHandlesOf(core.store, read, line);

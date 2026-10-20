@@ -11,7 +11,8 @@ const outward = (end: RouteEnd, next: Vec2): Vec2 => end.dir ?? normalize(sub(ne
 /**
  * The `curved` router: one cubic per leg between the ends and the waypoints. The first leg leaves the
  * source along its anchor direction and the last arrives at the target against its anchor direction,
- * their control points a third of the leg's length out; tangents at waypoints are Catmull-Rom's.
+ * their control points a third of the leg's length out; tangents at waypoints are Catmull-Rom's. A `route.tangents` entry replaces the control
+ * point of its route point (ADR-0168).
  *
  * @public
  */
@@ -26,10 +27,19 @@ export const curvedRouter: Router = {
       if (k === last) return scale(outward(target, points[last - 1] as Vec2), -1);
       return normalize(sub(points[k + 1] as Vec2, points[k - 1] as Vec2));
     };
+    // the author's offset from point k to its control point (ADR-0168): the source and a waypoint leave by it, the target arrives by it, and a waypoint is arrived at against it
+    const set = (k: number): Vec2 | undefined => route.tangents?.[String(k)];
     const legs = points.slice(1).map((to, k): PathCommand => {
       const from = points[k] as Vec2;
       const reach = Math.hypot(to.x - from.x, to.y - from.y) / 3;
-      return { kind: 'C', control1: add(from, scale(tangent(k), reach)), control2: add(to, scale(tangent(k + 1), -reach)), to };
+      const out = set(k);
+      const into = set(k + 1);
+      return {
+        kind: 'C',
+        control1: out === undefined ? add(from, scale(tangent(k), reach)) : add(from, out),
+        control2: into === undefined ? add(to, scale(tangent(k + 1), -reach)) : k + 1 === last ? add(to, into) : sub(to, into),
+        to,
+      };
     });
     return [{ kind: 'M', to: source.point }, ...legs];
   },

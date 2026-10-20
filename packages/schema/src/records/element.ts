@@ -55,6 +55,13 @@ export type Route = Extensible<{
   readonly waypoints?: readonly Point[];
   /** Corner rounding of orthogonal routes, px. */
   readonly cornerRadius?: number;
+  /**
+   * Tangent handles of a `curved` route, by the index of the route point they belong to (`"0"` the source, `"1"`... the waypoints, the
+   * last the target): the offset from the point to its control point on the curve. At a waypoint the curve arrives against it.
+   */
+  readonly tangents?: Readonly<Record<string, Point>>;
+  /** How this connector's crossings with others are drawn (the document's setting when absent): a hop `arc`, a `gap`, or `none`. */
+  readonly jumps?: 'arc' | 'gap' | 'none';
 }>;
 
 /**

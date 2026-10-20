@@ -48,6 +48,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-overlay .fx-chrome-connector-mid { fill: var(--ui-accent); stroke: var(--ui-panel); stroke-width: 1; opacity: 0.7; }
 .fx-chrome-overlay .fx-chrome-connector-way { fill: var(--ui-accent); stroke: var(--ui-panel); stroke-width: 2; }
 .fx-chrome-overlay .fx-chrome-connector-seg { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1; opacity: 0.8; }
+.fx-chrome-overlay .fx-chrome-connector-tan { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1.5; }
 .fx-chrome-overlay .fx-chrome-marquee { fill: var(--ui-marquee); stroke: var(--ui-accent); stroke-width: 1; }
 .fx-chrome-overlay .fx-chrome-guide-line { stroke: var(--ui-accent); stroke-width: 1; stroke-dasharray: 4 3; }
 .fx-chrome-overlay .fx-chrome-guide-label { fill: var(--ui-accent); font: 11px system-ui, sans-serif; }

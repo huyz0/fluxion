@@ -904,6 +904,24 @@
                   "cornerRadius": {
                     "type": "number",
                     "minimum": 0
+                  },
+                  "tangents": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9]\\d*)$"
+                    },
+                    "additionalProperties": {
+                      "$ref": "#/$defs/__schema60"
+                    }
+                  },
+                  "jumps": {
+                    "type": "string",
+                    "enum": [
+                      "arc",
+                      "gap",
+                      "none"
+                    ]
                   }
                 },
                 "required": [

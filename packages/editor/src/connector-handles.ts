@@ -19,15 +19,21 @@ import type { ParamCommand } from './param-handles.js';
 export type ConnectorHandle = {
   /**
    * `end`: an end of the route; `way`: a waypoint; `mid`: the middle of a stretch of it, which becomes a waypoint when
-   * dragged; `seg`: a segment of an orthogonal route, dragged across its direction.
+   * dragged; `seg`: a segment of an orthogonal route, dragged across its direction; `tan`: the control point of a route point
+   * of a curved route (ADR-0168).
    */
-  readonly role: 'end' | 'way' | 'mid' | 'seg';
-  /** For an end, which; for a waypoint, its index; for a middle, the index its waypoint would have; for a segment, its index in the route. */
+  readonly role: 'end' | 'way' | 'mid' | 'seg' | 'tan';
+  /**
+   * For an end, which; for a waypoint, its index; for a middle, the index its waypoint would have; for a segment, its index in the route;
+   * for a tangent, the index of its point in the list source, waypoints, target.
+   */
   readonly at: 'source' | 'target' | number;
   /** Where it is, page units. */
   readonly page: Vec2;
   /** For a segment, the coordinate a drag changes: `x` for a vertical segment, `y` for a horizontal one. */
   readonly axis?: 'x' | 'y';
+  /** For a tangent, the route point it belongs to, page units: the handle is dragged relative to it. */
+  readonly from?: Vec2;
 };
 
 /**
@@ -84,12 +90,26 @@ export function connectorHandlesOf(view: ReadView, route: RouteReader, id: Recor
   const mids = nodes.slice(1).map((to, k): ConnectorHandle => ({ role: 'mid', at: k, page: middle(nodes[k] as Vec2, to) }));
   const ways = waypoints.map((page, at): ConnectorHandle => ({ role: 'way', at, page }));
   return [
+    ...tangentsOf(connector, routed.commands),
     { role: 'end', at: 'source', page: routed.source.point },
     { role: 'end', at: 'target', page: routed.target.point },
     ...ways,
     // an orthogonal route is dragged by its segments, whose middles are not the stretches' middles
     ...(connector.route.type === 'orthogonal' ? segmentsOf(routed.commands) : mids),
   ];
+}
+
+/**
+ * The control point of each route point of a curved connector, from its path (a cubic per leg): where the first leg leaves the source, where a
+ * leg leaves each waypoint, and where the last arrives at the target.
+ */
+function tangentsOf(connector: ConnectorElement, commands: readonly PathCommand[]): readonly ConnectorHandle[] {
+  if (connector.route.type !== 'curved') return [];
+  const legs = commands.filter((c): c is Extract<PathCommand, { kind: 'C' }> => c.kind === 'C');
+  const points = commands.flatMap((c) => ('to' in c ? [c.to] : []));
+  return [...legs.map((c) => c.control1), legs.at(-1)?.control2].flatMap((page, at): ConnectorHandle[] =>
+    page === undefined || points[at] === undefined ? [] : [{ role: 'tan', at, page, from: points[at] }],
+  );
 }
 
 /** The segments of an orthogonal path between its first and last (the stubs out of the anchors), each with its middle. */
@@ -103,7 +123,7 @@ function segmentsOf(commands: readonly PathCommand[]): readonly ConnectorHandle[
 }
 
 /** How far ahead of the others a kind of handle is picked: ends, then waypoints, then the rest. */
-const RANK = { end: 0, way: 1, mid: 2, seg: 2 } as const;
+const RANK = { end: 0, way: 1, tan: 1, mid: 2, seg: 2 } as const;
 
 /**
  * The handle of `handles` nearest page point `p` within `reach` page units; an end wins a tie with a middle (a
@@ -135,6 +155,19 @@ const withWaypoints = (original: Original, waypoints: readonly Vec2[]): Original
   waypoints,
 });
 
+/** The route with the tangent of route point `index` set to `offset` (ADR-0168). */
+const withTangent = (original: Original, index: number, offset: Vec2): Original => ({
+  ...original,
+  tangents: { ...original.tangents, [String(index)]: offset },
+});
+
+/** The route with `waypoints`, one of them new at `index`: the tangents of the route points after it (it is point index + 1) move up one place with them. */
+function withNewWaypoint(original: Original, waypoints: readonly Vec2[], index: number): Original {
+  const route = withWaypoints(original, waypoints);
+  if (original.tangents === undefined) return route;
+  return { ...route, tangents: Object.fromEntries(Object.entries(original.tangents).map(([k, v]) => [Number(k) > index ? String(Number(k) + 1) : k, v])) };
+}
+
 const update = (id: RecordId, route: Original): ParamCommand => ({ id: 'element.update', args: { id, fields: { route } } });
 
 /**
@@ -147,7 +180,7 @@ const update = (id: RecordId, route: Original): ParamCommand => ({ id: 'element.
 export function waypointEdit(id: RecordId, original: ConnectorElement['route'], index: number, p: Vec2): ParamCommand {
   const waypoints = [...(original.waypoints ?? [])];
   waypoints.splice(index, 0, p);
-  return update(id, withWaypoints(original, waypoints));
+  return update(id, withNewWaypoint(original, waypoints, index));
 }
 
 /** The index of the point of `points` nearest `p` (0 for none). */
@@ -178,8 +211,10 @@ export function handleEdit(id: RecordId, original: ConnectorElement['route'], ha
       const at = waypoints.length === 0 ? 0 : nearestTo(waypoints, handle.page);
       const from = waypoints[at] ?? handle.page;
       waypoints[at] = handle.axis === 'x' ? { x: p.x, y: from.y } : { x: from.x, y: p.y };
-      return update(id, withWaypoints(original, waypoints));
+      return update(id, original.waypoints?.length ? withWaypoints(original, waypoints) : withNewWaypoint(original, waypoints, 0));
     }
+    case 'tan':
+      return handle.from === undefined ? undefined : update(id, withTangent(original, handle.at as number, { x: p.x - handle.from.x, y: p.y - handle.from.y }));
     default:
       return undefined;
   }

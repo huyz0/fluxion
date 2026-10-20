@@ -154,6 +154,8 @@ FR-LAY-004 guarantee; VPSC from WebCola joins with the constraints in M17), **sn
 |---|---|---|
 | `straight` | Two points; floating anchors re-projected on the outline | Per frame |
 | `curved` | Cubic; controls from anchor normals, `k = clamp(d/2, 20, 150)` | Parallel edges fan out (FR-CON-011) |
+
+A `curved` route also takes `route.tangents` (schema 1.5, ADR-0168): an offset by route-point index that replaces that point's control point, which the editor edits with one handle per point. `route.jumps` (`arc` | `gap` | `none`) sets how this connector's crossings are drawn; the connector view reads it when it draws hops (M16.21).
 | `polyline` | User waypoints | Waypoints are constraints |
 | `orthogonal` (**own**) | A* on a sparse non-uniform grid (obstacle edges ± margin, anchor stubs, midlines); cost = length + bend·B + crossing·C | Then nudge + simplify |
 | `routing-libavoid:orthogonal` (pack) | libavoid-js wasm, incremental, pins, built-in nudging | LGPL-2.1: separately loaded, replaceable module, notices shipped |

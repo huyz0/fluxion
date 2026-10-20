@@ -227,10 +227,11 @@ export const commandMap: (commands?: readonly EditorCommand[]) => ReadonlyMap<st
 
 // @public
 export type ConnectorHandle = {
-    readonly role: "end" | "way" | "mid" | "seg";
+    readonly role: "end" | "way" | "mid" | "seg" | "tan";
     readonly at: "source" | "target" | number;
     readonly page: Vec2;
     readonly axis?: "x" | "y";
+    readonly from?: Vec2;
 };
 
 // @public

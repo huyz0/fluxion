@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest';
 import nonconforming from './__fixtures__/migration/nonconforming-1.3.flux.json' with { type: 'json' };
 import v13 from './__fixtures__/v1.3/document.flux.json' with { type: 'json' };
-import v14 from './__fixtures__/v1.4/document.flux.json' with { type: 'json' };
+// the 1.4 anchors are unchanged in the current fixture
+import v14 from './__fixtures__/v1.5/document.flux.json' with { type: 'json' };
 import { migrate } from './migrate.js';
 import { anchorDefSchema } from './records/element-schemas.js';
 import { parseDocument, serializeDocument } from './serialize.js';
@@ -17,8 +18,8 @@ describe('schema 1.4 (FR-ANC-003)', () => {
   it('FR-ANC-003: a 1.3 document migrates to a valid 1.4 one with its records unchanged and round-trips', () => {
     const r = migrate(v13);
     if (!r.ok) throw new Error(r.error.message);
-    expect(r.value.applied).toEqual(['1.3→1.4']);
-    expect(r.value.document.schemaVersion).toBe('1.4');
+    expect(r.value.applied).toEqual(['1.3→1.4', '1.4→1.5']);
+    expect(r.value.document.schemaVersion).toBe('1.5');
     expect(r.value.document.records).toEqual(v13.records);
     expect(validate(r.value.document)).toEqual([]);
     const again = parseDocument(serializeDocument(r.value.document as never));

@@ -74,10 +74,16 @@ describe('the lean reader (ADR-0026, NFR-SEC-001, NFR-REL-002)', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.value.document.schemaVersion).toBe(SCHEMA_VERSION);
-    expect(SCHEMA_VERSION).toBe('1.4');
+    expect(SCHEMA_VERSION).toBe('1.5');
     expect(r.value.readOnly).toBe(false);
     const r13 = leanDocumentText(text.replace('"1.2"', '"1.3"'));
     expect(r13.ok && r13.value.document.schemaVersion).toBe(SCHEMA_VERSION);
+  });
+
+  it('FR-FIL-009: a 1.4 document, whose step to 1.5 only adds optional route fields, opens in the lean reader as the current version', () => {
+    const r = leanDocumentText('{"schemaVersion":"1.4","records":{"AAAAAAAAAAAAAAAA":{"id":"AAAAAAAAAAAAAAAA","type":"document"}}}');
+    expect(r.ok && r.value.document.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(r.ok && r.value.readOnly).toBe(false);
   });
 
   it('NFR-SEC-001: a record that is not well formed is left out and listed, the rest is shown, and the document is not saved over', () => {

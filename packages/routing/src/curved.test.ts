@@ -31,6 +31,41 @@ const close = (a: Vec2, b: Vec2) => {
 };
 
 describe('curved routes (FR-CON-002)', () => {
+  it('FR-CON-007: a route tangent replaces the control point of its route point; a point without one keeps the default', () => {
+    const [source, target] = [
+      { point: { x: 0, y: 0 }, dir: { x: 1, y: 0 } },
+      { point: { x: 300, y: 0 }, dir: { x: -1, y: 0 } },
+    ];
+    const base = curvedRouter.route({ source, target, route: { type: 'curved', waypoints: [{ x: 150, y: 100 }] } }) as readonly {
+      control1: Vec2;
+      control2: Vec2;
+    }[];
+    const shaped = curvedRouter.route({
+      source,
+      target,
+      route: { type: 'curved', waypoints: [{ x: 150, y: 100 }], tangents: { '0': { x: 10, y: 40 }, '1': { x: 30, y: 20 }, '2': { x: -25, y: 15 } } },
+    }) as readonly { control1: Vec2; control2: Vec2 }[];
+    // the source leaves by its offset; the first leg arrives at the waypoint against the waypoint's, the second leaves by it
+    expect(shaped[1]?.control1).toEqual({ x: 10, y: 40 });
+    expect(shaped[1]?.control2).toEqual({ x: 120, y: 80 });
+    expect(shaped[2]?.control1).toEqual({ x: 180, y: 120 });
+    // the target arrives by its offset from the target
+    expect(shaped[2]?.control2).toEqual({ x: 275, y: 15 });
+    // only the target's is set: the rest is the default curve
+    const one = curvedRouter.route({
+      source,
+      target,
+      route: { type: 'curved', waypoints: [{ x: 150, y: 100 }], tangents: { '2': { x: -25, y: 15 } } },
+    }) as readonly { control1: Vec2; control2: Vec2 }[];
+    expect(one[1]).toEqual(base[1]);
+    expect(one[2]?.control1).toEqual(base[2]?.control1);
+    expect(one[2]?.control2).toEqual({ x: 275, y: 15 });
+    // none set: the route is the one it was
+    expect(curvedRouter.route({ source, target, route: { type: 'curved', waypoints: [{ x: 150, y: 100 }], tangents: {} } })).toEqual(
+      curvedRouter.route({ source, target, route: { type: 'curved', waypoints: [{ x: 150, y: 100 }] } }),
+    );
+  });
+
   it('FR-CON-002: curved routes leave their anchors along the anchor normals', () => {
     fc.assert(
       fc.property(end, end, fc.array(point, { maxLength: 3 }), (source, target, waypoints) => {

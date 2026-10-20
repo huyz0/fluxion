@@ -90,7 +90,13 @@ function roundElement(record: Fields): Fields {
   if (record['transform'] !== undefined) r['transform'] = roundKeys(record['transform'], [...BOX, 'rot']);
   for (const end of ['freeSource', 'freeTarget']) if (record[end] !== undefined) r[end] = roundKeys(record[end], XY);
   const route = record['route'];
-  if (isObject(route) && Array.isArray(route['waypoints'])) r['route'] = { ...route, waypoints: route['waypoints'].map((p: unknown) => roundKeys(p, XY)) };
+  if (isObject(route)) {
+    const rounded: { [key: string]: unknown } = { ...route };
+    if (Array.isArray(route['waypoints'])) rounded['waypoints'] = route['waypoints'].map((p: unknown) => roundKeys(p, XY));
+    const tangents = route['tangents'];
+    if (isObject(tangents)) rounded['tangents'] = Object.fromEntries(Object.entries(tangents).map(([k, v]) => [k, roundKeys(v, XY)]));
+    r['route'] = rounded;
+  }
   const labels = record['labels'];
   if (Array.isArray(labels))
     r['labels'] = labels.map((l: unknown) => (isObject(l) && l['offset'] !== undefined ? { ...l, offset: roundKeys(l['offset'], XY) } : l));
