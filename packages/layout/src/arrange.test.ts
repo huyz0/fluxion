@@ -91,7 +91,7 @@ describe('arrange command (FR-LAY-005)', () => {
     const core = setup([shape('e1', [0, 0]), shape('e2', [10, 10])]);
     const snapshot = JSON.stringify(core.store.toDocument());
     for (const args of [
-      { screenId: 's1', algorithm: 'tree' },
+      { screenId: 's1', algorithm: 'no-such-layout' },
       { screenId: 's1', algorithm: 'grid', options: { columns: 0 } },
       { screenId: 'nowhere' },
       { screenId: 's1', scope: { containerId: 'ghost' } },

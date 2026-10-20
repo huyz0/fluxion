@@ -24,7 +24,9 @@ describe('the AI catalog (FR-AI-002)', () => {
     expect(catalog.layouts.map((l) => [l.id, l.source])).toEqual([
       ['grid', 'core'],
       ['layered', 'core'],
+      ['orgchart', 'core'],
       ['stack', 'core'],
+      ['tree', 'core'],
     ]);
     expect(catalog.layouts.every((l) => l.describe.length > 0)).toBe(true);
   });

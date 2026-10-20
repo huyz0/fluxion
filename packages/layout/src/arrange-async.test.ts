@@ -126,7 +126,12 @@ describe('async arrange (FR-LAY-007, FR-LAY-005)', () => {
     const c = core(three());
     const workers = heldWorkers();
     const run = arranger(c, workers);
-    for (const args of [{ screenId: 's1', algorithm: 'tree' }, { screenId: 'nowhere' }, { screenId: 7 }, { screenId: 's1', scope: { containerId: 's1' } }]) {
+    for (const args of [
+      { screenId: 's1', algorithm: 'no-such-layout' },
+      { screenId: 'nowhere' },
+      { screenId: 7 },
+      { screenId: 's1', scope: { containerId: 's1' } },
+    ]) {
       expect(await run(args)).toMatchObject({ ok: false, error: { code: 'LAYOUT_INPUT_INVALID' } });
     }
     expect(workers.spawned()).toBe(0);

@@ -32,7 +32,9 @@ describe('catalog formats (FR-AI-002)', () => {
         'markers:',
         'arrow — A filled arrowhead.',
         'layouts:',
-        ...['grid', 'layered', 'stack'].map((id) => `${id} — ${buildCatalog(registries()).catalog.layouts.find((l) => l.id === id)?.describe}`),
+        ...['grid', 'layered', 'orgchart', 'stack', 'tree'].map(
+          (id) => `${id} — ${buildCatalog(registries()).catalog.layouts.find((l) => l.id === id)?.describe}`,
+        ),
         '',
       ].join('\n'),
     );

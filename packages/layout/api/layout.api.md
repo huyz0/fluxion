@@ -310,6 +310,9 @@ export type OptionsResult<O> = {
 };
 
 // @public
+export const orgchartLayout: LayoutAlgorithm<TreeOptions>;
+
+// @public
 export function overlapCount(boxes: Boxes): number;
 
 // @public
@@ -403,6 +406,19 @@ export type StackOptions = {
     readonly align: "start" | "center" | "end";
     readonly padding: number;
     readonly wrap: number;
+};
+
+// @public
+export const treeLayout: LayoutAlgorithm<TreeOptions>;
+
+// @public
+export type TreeOptions = {
+    readonly direction: "down" | "right" | "up" | "left";
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
+    readonly padding: number;
+    readonly compactLeaves: boolean;
 };
 
 // @public

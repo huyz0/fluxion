@@ -2,7 +2,7 @@
 // overlapping another, leaves pinned boxes exactly where they were, keeps sizes, and gives the same boxes when run again.
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { applyPins, gridLayout, layeredLayout, removeOverlap, snapBoxes, stackLayout } from './index.js';
+import { applyPins, gridLayout, layeredLayout, orgchartLayout, removeOverlap, snapBoxes, stackLayout, treeLayout } from './index.js';
 import type { Boxes } from './passes.js';
 import type { LayoutAlgorithm, LayoutEdge, LayoutInput, LayoutNode } from './types.js';
 
@@ -31,6 +31,16 @@ const ALGORITHMS: ReadonlyArray<readonly [string, LayoutAlgorithm<never>, fc.Arb
     layeredLayout as never,
     fc.record({ direction: fc.constantFrom('down', 'right', 'up', 'left'), spacing: fc.constantFrom('compact', 'comfortable', 'spacious') }),
   ],
+  [
+    'tree',
+    treeLayout as never,
+    fc.record({
+      direction: fc.constantFrom('down', 'right', 'up', 'left'),
+      spacing: fc.constantFrom('compact', 'comfortable', 'spacious'),
+      compactLeaves: fc.boolean(),
+    }),
+  ],
+  ['orgchart', orgchartLayout as never, fc.record({ direction: fc.constantFrom('down', 'right', 'up', 'left') })],
 ];
 
 const graph = fc.integer({ min: 1, max: 14 }).chain((count) =>

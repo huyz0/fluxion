@@ -24,10 +24,12 @@ describe('layout registry (FR-LAY-001)', () => {
     expect(listLayouts(r).map((a) => [a.id, a.version])).toEqual([
       ['grid', '1'],
       ['layered', '1'],
+      ['orgchart', '1'],
       ['stack', '2'],
       ['test:ring', '2'],
+      ['tree', '1'],
     ]);
-    expect(listLayouts(r)[3]?.schema.safeParse({ radius: 0 }).success).toBe(false);
+    expect(listLayouts(r)[4]?.schema.safeParse({ radius: 0 }).success).toBe(false);
   });
 
   it('FR-LAY-001: a value without an options schema, capabilities, run or parseOptions is refused at registration', () => {

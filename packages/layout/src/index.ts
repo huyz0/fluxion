@@ -7,6 +7,7 @@ import type { Registry } from '@fluxion/core';
 import { gridLayout } from './grid.js';
 import { layeredLayout } from './layered.js';
 import { stackLayout } from './stack.js';
+import { orgchartLayout, treeLayout } from './tree.js';
 
 export {
   type AlgorithmByName,
@@ -37,6 +38,7 @@ export { createRng } from './rng.js';
 export { type Scorecard, scoreLayout } from './scorecard.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
+export { orgchartLayout, type TreeOptions, treeLayout } from './tree.js';
 export type {
   AbortSignalLike,
   ContainerScope,
@@ -62,7 +64,7 @@ export type { LayoutJobMessage } from './worker/protocol.js';
  */
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>['register']> {
   // every built-in is tried; the first refusal is what comes back (the others stay registered), else the last success
-  const results = [stackLayout, gridLayout, layeredLayout].map((layout) => layouts.register(layout.id, layout, 'core'));
+  const results = [stackLayout, gridLayout, layeredLayout, treeLayout, orgchartLayout].map((layout) => layouts.register(layout.id, layout, 'core'));
   return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }
 
