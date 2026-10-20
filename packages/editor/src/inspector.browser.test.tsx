@@ -286,7 +286,9 @@ describe('inspector widgets (FR-EDT-008)', { timeout: 60_000 }, () => {
     await act(frame);
     expect(anchors()).toEqual([{ name: 'a1', x: 0.5, y: 0.5 }]);
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Anchor a1 down');
-    await userEvent.keyboard('{Control>}a{/Control}0.25{Enter}');
+    // select all is Meta-a on macOS, Control-a elsewhere
+    const mod = /Mac|iPhone|iPad/.test(navigator.platform) ? 'Meta' : 'Control';
+    await userEvent.keyboard(`{${mod}>}a{/${mod}}0.25{Enter}`);
     await act(frame);
     expect(anchors()).toEqual([{ name: 'a1', x: 0.5, y: 0.25 }]);
     await userEvent.click(inspector.querySelector('button[aria-label="Remove anchor a1"]') as HTMLButtonElement);
