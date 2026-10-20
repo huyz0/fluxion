@@ -17,7 +17,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0002](ADR-0002-record-store-signals.md) | Normalized record store with signals and record-diff undo | accepted (editor UI state: superseded by 0028) | 2026-09-26 |
 | [0003](ADR-0003-file-format.md) | `.flux` zip + `.flux.html` self-contained player + `.flux.json` | accepted | 2026-09-26 |
 | [0004](ADR-0004-fluxscript-dsl.md) | FluxScript YAML-shaped DSL; AI never computes coordinates | accepted | 2026-09-26 |
-| [0005](ADR-0005-layout-routing-stack.md) | Pluggable layout/routing pipeline; permissive defaults; ELK/libavoid optional | accepted | 2026-09-26 |
+| [0005](ADR-0005-layout-routing-stack.md) | Pluggable layout/routing pipeline; permissive defaults; ELK/libavoid optional | accepted (layout libraries: amended by 0045) | 2026-09-26 |
 | [0006](ADR-0006-own-animation-model.md) | Own declarative animation model and scheduler | accepted | 2026-09-26 |
 | [0007](ADR-0007-plugin-trust-model.md) | Plugin manifest, import-map shared deps, iframe sandbox for untrusted code | accepted | 2026-09-26 |
 | [0008](ADR-0008-toolchain.md) | pnpm 11 / Turborepo / Vite 8 / tsdown / tsgo / Biome 2 / Vitest / Playwright / Storybook / Changesets | accepted | 2026-09-26 |
@@ -26,7 +26,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0011](ADR-0011-source-resolution-dual-compiler.md) | Workspace source resolution (`@fluxion/source` condition) and dual TypeScript compiler (TS 7 check, TS 6 for TypeDoc and dependency-cruiser) | accepted | 2026-09-26 |
 | [0012](ADR-0012-ids-and-fractional-indices.md) | Record IDs and fractional-index keys are own code in `@fluxion/schema` | accepted | 2026-09-27 |
 | [0013](ADR-0013-rich-text-subset.md) | Rich text is a ProseMirror-compatible JSON subset validated by Zod | accepted | 2026-09-27 |
-| [0014](ADR-0014-command-and-transaction-semantics.md) | Command and transaction semantics of the record store (Result-returning transactions, fixed-point hooks, merge adjacency, inverse-diff undo, snapshot forks) | accepted | 2026-09-28 |
+| [0014](ADR-0014-command-and-transaction-semantics.md) | Command and transaction semantics of the record store (Result-returning transactions, fixed-point hooks, merge adjacency, inverse-diff undo, snapshot forks) | accepted (§Merging: amended by 0046) | 2026-09-28 |
 | [0015](ADR-0015-static-render-path.md) | Static render path: `<ScreenView>` through `react-dom/server`, content CSS as an inlined string, styles resolved in `theme` | accepted | 2026-09-28 |
 | [0016](ADR-0016-shape-outlines-and-expressions.md) | Shape outlines as path templates, and a safe expression language | accepted | 2026-09-29 |
 | [0017](ADR-0017-hosts-bundle-first-party-packs.md) | Hosts bundle first-party packs as listed dependencies (packs at rank 5) | accepted | 2026-09-29 |
@@ -52,6 +52,9 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0039](ADR-0039-eval-harness.md) | Eval harness: case schema, recordings keyed by content, scorecard metrics, the alt-text metric | accepted | 2026-10-16 |
 | [0040](ADR-0040-mermaid-markdown-import.md) | Mermaid and Markdown import: hand-written subset parsers and `mdast`, both emitting FluxScript | accepted | 2026-10-16 |
 | [0041](ADR-0041-provider-adapters-key-storage.md) | Provider adapters and key storage: the `LlmClient` port, adapters in the studio, an IndexedDB key store | accepted | 2026-10-16 |
+| [0045](ADR-0045-layout-suite-v2-libraries.md) | Layout suite v2: own pure algorithms, ELK only as a pack | accepted | 2026-10-21 |
+| [0046](ADR-0046-live-layout-and-incremental-mode.md) | Live layout frames and incremental mode: a post-commit reactor that amends the edit it follows | accepted | 2026-10-21 |
+| [0047](ADR-0047-smart-template-format.md) | Smart templates: a `TemplateDef` that builds shapes from an items list | accepted | 2026-10-21 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |

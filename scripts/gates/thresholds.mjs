@@ -55,6 +55,7 @@ export const THRESHOLDS = {
   PRESENT_ANIM_MIN_FPS_MOBILE: { value: 55, weakens: 'down' },
   LAYOUT_100_NODES_MS: { value: 200, weakens: 'up' },
   LAYOUT_500_NODES_MS: { value: 2_000, weakens: 'up' },
+  LAYOUT_INCREMENTAL_MOVED_PCT: { value: 30, weakens: 'up' }, // M17: share of nodes adding one node may move (FR-LAY-006, ADR-0046)
   ROUTE_200_ORTHO_MS: { value: 300, weakens: 'up' },
   ROUTE_DRAG_200_MIN_FPS: { value: 50, weakens: 'down' }, // M16: drag a shape with 200 connectors (FR-RTE-002)
   BIG_SCREEN_PANZOOM_MIN_FPS: { value: 50, weakens: 'down' }, // M16: pan and zoom a 2k-element, 1k-connector screen (NFR-PERF-002)

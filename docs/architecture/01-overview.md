@@ -111,7 +111,7 @@ Details, versions and rationale: `docs/standards/tech-stack.md`. Summary:
 | Editor chrome UI | shadcn/ui on Base UI + Tailwind v4 (editor only; never in rendered content) |
 | Content styling | CSS custom properties from theme tokens + content CSS strings, `fx-` prefix, `@layer fx.content` (ADR-0015) |
 | Animation | Own scheduler + WAAPI for compositor properties; flubber (morph); d3-interpolate-path (routes); Motion for editor/overlay UI |
-| Layout | Own grid/stack/timeline/templates; @dagrejs/dagre (layered, default); d3-hierarchy + d3-flextree (tree/mindmap); d3-force (force); WebCola (constraints/overlap); elkjs (optional pack, lazy worker, EPL) |
+| Layout | Own grid/stack, tree/orgchart, radial, mindmap, force, circular, packing, timeline, swimlane, constraints and templates (ADR-0045); @dagrejs/dagre (layered, default); elkjs (optional pack `layouts-elk`, lazy worker, EPL) |
 | Routing | Own A* orthogonal sparse-grid router + nudging; libavoid-js (optional pack, LGPL, wasm) |
 | Text measurement | Port interface; one pure measurer adds up font metrics recorded from the DOM (ADR-0148), the same table in browser and Node; the canvas `measureText` is the fallback for a font with no recorded metrics |
 | File container | fflate (zip/deflate), SubtleCrypto SHA-256, `DecompressionStream` bootstrap in HTML |

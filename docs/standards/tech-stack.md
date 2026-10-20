@@ -48,7 +48,7 @@ research 05 (September 2026). **Check each one on npm before pinning**; the lock
 | Icons | Lucide (`lucide-react` in editor, raw SVG in player) | latest | ISC, tree-shakable |
 | i18n | Lingui (ICU) | latest | compile-time extraction, small runtime |
 | Zip / hashing | own zip codec in `format` (ADR-0153; fflate stays an option behind it), SubtleCrypto SHA-256 | — | small, no native deps, byte-identical output |
-| Layout | own grid/stack; @dagrejs/dagre; d3-hierarchy + d3-flextree; d3-force; WebCola | latest | permissive licences (ADR-0005) |
+| Layout | own grid/stack, tree, radial, mindmap, force, circular, packing, timeline, swimlane, constraints and templates; @dagrejs/dagre (layered) | latest | permissive licences, pure and seed-stable (ADR-0005, ADR-0045) |
 | Optional packs | elkjs (EPL-2.0), libavoid-js (LGPL, wasm) | latest | lazy, unmodified, separate chunk |
 | Animation helpers | WAAPI, flubber, d3-interpolate-path; Motion (editor UI only) | latest | own scheduler does the rest (ADR-0006) |
 | DSL parsing | `yaml` | 2.x | source ranges for diagnostics |
