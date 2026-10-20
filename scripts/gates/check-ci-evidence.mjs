@@ -10,6 +10,8 @@
 //   --milestone M<n>  instead of --after: <sha> must be at or after M<n>'s final review range end, or,
 //                     before that review exists, HEAD's last non-bookkeeping commit, so the evidence
 //                     cannot go stale behind later code (M2.20, M1 final F3)
+//   --perf            also require the record's nightly run (`perf`, recorded with --record <sha> --perf-run <id>): its perf job,
+//                     the @perf Playwright specs on the CI perf runner, passed on a commit at or after the same floor (M16 final F3)
 //   --file <f>        another record (tests)
 //   --runs-file <f>   JSON array of `gh run view --json databaseId,workflowName,headSha,conclusion,jobs`
 //                     objects used instead of GitHub (tests)
@@ -89,6 +91,30 @@ function floor() {
   return [`the final review range end of ${milestone}`, end];
 }
 
+/** Problems with nightly `run` as the evidence of `perf`: it is the nightly workflow, it ran `perf.sha`, and its perf job passed. */
+function perfRunProblems(run, perf) {
+  const out = [];
+  if (run.workflowName !== 'nightly') out.push(`run ${perf.run} is workflow ${run.workflowName}, not nightly`);
+  if (run.headSha !== perf.sha) out.push(`run ${perf.run} ran ${String(run.headSha).slice(0, 7)}, not ${String(perf.sha).slice(0, 7)}`);
+  const job = (run.jobs ?? []).find((j) => j.name === 'perf');
+  if (job?.conclusion !== 'success') out.push(`nightly: job perf ${job ? job.conclusion : 'missing'}`);
+  return out;
+}
+
+/** Problems with the recorded nightly perf run: its perf job passed on a commit at or after `base`; [] when it is the evidence. */
+async function perfProblems(perf, base, label) {
+  if (!perf?.run || !perf.sha) return ['no nightly perf run recorded: check-ci-evidence.mjs --record <sha> --perf-run <id>'];
+  const out = [];
+  if (base && git(['merge-base', '--is-ancestor', base, perf.sha]).status !== 0)
+    out.push(`the perf run's ${String(perf.sha).slice(0, 7)} is not at or after ${label} (${base.slice(0, 7)})`);
+  try {
+    out.push(...perfRunProblems(await view(perf.run), perf));
+  } catch (e) {
+    out.push(`reading nightly run ${perf.run} failed: ${e?.message ?? e}${fixture ? '' : transportHint()}`);
+  }
+  return out;
+}
+
 if (argv.includes('--record')) {
   const sha = git(['rev-parse', opt('record') ?? 'HEAD']).stdout.trim();
   const listed = await list(sha);
@@ -98,7 +124,9 @@ if (argv.includes('--record')) {
     if (!hit) fail(`no successful ${workflow} run for ${sha.slice(0, 7)} yet`);
     runs[workflow] = hit.databaseId;
   }
-  writeFileSync(file, `${JSON.stringify({ sha, recordedAt: new Date().toISOString(), runs }, null, 2)}\n`);
+  const perfRun = opt('perf-run');
+  const perf = perfRun === undefined ? {} : { perf: { run: Number(perfRun), sha: (await live(() => view(Number(perfRun)))).headSha } };
+  writeFileSync(file, `${JSON.stringify({ sha, recordedAt: new Date().toISOString(), runs, ...perf }, null, 2)}\n`);
   console.log(`ci-evidence: recorded ${sha.slice(0, 7)} ${JSON.stringify(runs)}`);
 }
 
@@ -120,5 +148,6 @@ for (const workflow of Object.keys(REQUIRED)) {
     }
   }
 }
+if (argv.includes('--perf')) errors.push(...(await perfProblems(record.perf, base, label)));
 if (errors.length) fail(errors.join('\n  '));
 console.log(`ci-evidence: ${String(record.sha).slice(0, 7)} green on ${OSES.join(', ')} (gates ${record.runs.gates}, ci ${record.runs.ci})`);

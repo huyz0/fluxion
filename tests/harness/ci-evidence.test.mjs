@@ -168,6 +168,28 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     }
   });
 
+  it('--perf needs a recorded nightly run whose perf job passed at or after the floor (M16 final F3)', () => {
+    const nightly = (id, s, conclusion) => ({
+      databaseId: id,
+      workflowName: 'nightly',
+      headSha: s,
+      conclusion: 'failure',
+      jobs: [{ name: 'perf', conclusion }],
+    });
+    const withPerf = (s, p) => ({ ...record(s), perf: { run: 9, sha: p } });
+    // the nightly run may fail elsewhere (mutation, visual): only its perf job counts
+    const ok = check(withPerf(sha.end, sha.book), [...green(sha.end), nightly(9, sha.book, 'success')], ['--milestone', 'M9', '--perf']);
+    assert.equal(ok.status, 0, out(ok));
+    const none = check(record(sha.end), green(sha.end), ['--milestone', 'M9', '--perf']);
+    assert.match(none.stderr, /no nightly perf run recorded/, out(none));
+    const red = check(withPerf(sha.end, sha.end), [...green(sha.end), nightly(9, sha.end, 'failure')], ['--milestone', 'M9', '--perf']);
+    assert.match(red.stderr, /nightly: job perf failure/, out(red));
+    const stale = check(withPerf(sha.end, sha.code), [...green(sha.end), nightly(9, sha.code, 'success')], ['--milestone', 'M9', '--perf']);
+    assert.match(stale.stderr, /the perf run's \w{7} is not at or after the final review range end of M9/, out(stale));
+    // without --perf the record's runs alone decide, as before
+    assert.equal(check(record(sha.end), green(sha.end), ['--milestone', 'M9']).status, 0);
+  });
+
   it('--milestone without a final review uses HEAD last non-bookkeeping commit', () => {
     // M8 has no review: the floor is sha.end (sha.book only touches .harness/)
     const early = check(record(sha.code), green(sha.code), ['--milestone', 'M8']);

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Completion gate for M16 — anchors & smart routing, the R3 exit (docs/milestones/M16.md). Written first and red (M16.1). Each leg runs the real test, bench,
+// Completion gate for M16 — anchors & smart routing, the routing part of R3 (R3 exits at M20; docs/milestones/M16.md). Written first and red (M16.1). Each leg runs the real test, bench,
 // spec or gate; a file a later row writes is named here from the start, so the leg fails as `missing <file>` until that row lands.
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -21,12 +21,20 @@ const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().spli
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
 
 /** A Vitest file that exists and whose tests all pass: none skipped or todo, at least one run. */
-function vitestFile(file, project = 'node') {
+function vitestFile(file, project = 'node', config = undefined) {
   if (!exists(file)) return `missing ${file}`;
   const dir = mkdtempSync(join(tmpdir(), 'm16-vt-'));
   try {
     const out = join(dir, 'report.json');
-    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', project, '--reporter=json', `--outputFile=${out}`, file]);
+    const r = run('pnpm', [
+      'exec',
+      'vitest',
+      'run',
+      ...(config === undefined ? ['--project', project] : ['--config', config]),
+      '--reporter=json',
+      `--outputFile=${out}`,
+      file,
+    ]);
     if (!existsSync(out)) return `vitest wrote no report: ${ok(r)}`;
     const rep = JSON.parse(readFileSync(out, 'utf8'));
     if (rep.numFailedTestSuites > 0) return `${file} failed to run`;
@@ -56,9 +64,7 @@ const threshold = (name, value) => {
 leg('check-trace --milestone M16 --priority M,S green: every requirement of the plan has a test naming it', () =>
   ok(node('scripts/gates/check-trace.mjs', ['--milestone', 'M16', '--priority', 'M,S'])),
 );
-leg('check-trace --increment R3 green: every Must requirement of R3 has a test naming it', () =>
-  ok(node('scripts/gates/check-trace.mjs', ['--increment', 'R3'])),
-);
+// R3's other Must requirements belong to M17-M20 (the roadmap puts the R3 exit at M20): `check-trace --increment R3` is m20-complete's leg, not this one's.
 for (const [n, what] of [
   ['0042', 'orthogonal router'],
   ['0043', 'anchor model and auto-selection'],
@@ -78,27 +84,29 @@ leg('every anchor kind resolves its point and normal; maxConnections spills (FR-
   vitestFile('packages/routing/src/anchors.test.ts'),
 );
 leg('the sparse grid matches its goldens (FR-CON-004)', () => vitestFile('packages/routing/src/orthogonal/grid.test.ts'));
-leg('orthogonal routes are axis-aligned and avoid obstacles; nudge keeps spacing (FR-CON-004, FR-RTE-003)', () =>
-  vitestFile('packages/routing/src/orthogonal/orthogonal.prop.test.ts'),
+leg('orthogonal routes are axis-aligned and avoid obstacles (FR-CON-004)', () => vitestFile('packages/routing/src/orthogonal/orthogonal.prop.test.ts'));
+leg('the nudge keeps side-by-side segments the spacing apart (FR-RTE-003)', () => vitestFile('packages/routing/src/orthogonal/post.test.ts'));
+leg('the global pass routes a screen as one batch, around the shapes, under its per-screen cap (FR-RTE-003)', () =>
+  vitestFile('packages/routing/src/global.test.ts'),
 );
 leg('auto anchors leave no avoidable crossings and do not flicker (FR-ANC-004)', () => vitestFile('packages/routing/src/auto-anchor.test.ts'));
-leg('parallel connectors fan out; a connector attaches to a connector (FR-CON-011, FR-CON-009)', () => vitestFile('packages/routing/src/parallel.test.ts'));
+leg('parallel connectors fan out (FR-CON-011)', () => vitestFile('packages/routing/src/parallel.test.ts'));
+leg('a connector attaches to a connector and follows it as it moves (FR-CON-009)', () => vitestFile('packages/routing/src/host-binding.test.ts'));
 leg('line jumps draw an arc at a crossing, cached per route revision (FR-CON-008)', () => vitestFile('packages/routing/src/jumps.test.ts'));
 leg('labels do not overlap shapes where the router supports labels (FR-LAY-004)', () => vitestFile('packages/routing/src/label-placement.test.ts'));
 leg('the routers are byte-deterministic: straight, curved, orthogonal, polyline (FR-RTE-004)', () => vitestFile('packages/routing/src/determinism.test.ts'));
-leg('a router path that misses the target is rejected (FR-RTE-001)', () => vitestFile('packages/routing/src/router.test.ts'));
-leg('incremental reroute touches only the affected connectors; a stale worker result is dropped (FR-RTE-002, FR-RTE-003)', () =>
-  vitestFile('packages/routing/src/incremental.test.ts'),
-);
+leg('a router path that misses the target is rejected (FR-RTE-001)', () => vitestFile('packages/routing/src/connector-route.test.ts'));
+leg('incremental reroute touches only the affected connectors (FR-RTE-002)', () => vitestFile('packages/routing/src/incremental.test.ts'));
+leg('a stale global-pass result from the worker is dropped (FR-RTE-003)', () => vitestFile('packages/editor/src/global-routing.test.ts'));
 
 // ── performance ────────────────────────────────────────────────────────────────────────────────────
 leg(`200 orthogonal routes within ROUTE_200_ORTHO_MS (${t('ROUTE_200_ORTHO_MS')} ms) (NFR-PERF-005)`, () =>
   benchUnder('packages/routing/bench/route-200.bench.ts', 'route-200', t('ROUTE_200_ORTHO_MS')),
 );
-leg('dragging a shape with 200 connectors holds ROUTE_DRAG_200_MIN_FPS (FR-RTE-002)', () => playwrightSpecs(['e2e/perf.route-drag-200.spec.ts'], ['chromium']));
+leg('dragging a shape with 200 connectors holds ROUTE_DRAG_200_MIN_FPS (FR-RTE-002)', () => playwrightSpecs(['e2e/perf.route-drag-200.spec.ts'], ['perf']));
 leg('a 2k-element, 1k-connector screen pans and zooms at BIG_SCREEN_PANZOOM_MIN_FPS and first-renders under BIG_SCREEN_FIRST_RENDER_MS (NFR-PERF-002)', () => {
-  if (!exists('examples/perf/2k-1k.flux.json')) return 'missing examples/perf/2k-1k.flux.json';
-  return playwrightSpecs(['e2e/perf.big-screen.spec.ts'], ['chromium']);
+  if (!exists('fixtures/docs/perf-2k-1k.flux.json')) return 'missing fixtures/docs/perf-2k-1k.flux.json';
+  return playwrightSpecs(['e2e/perf.big-screen.spec.ts'], ['perf']);
 });
 
 // ── the editor ─────────────────────────────────────────────────────────────────────────────────────
@@ -112,7 +120,7 @@ leg('dragging a curve tangent handle changes the curve in one undo step; the mig
 // ── the showcase and the exit ──────────────────────────────────────────────────────────────────────
 leg('the routing showcase compiles and renders to its golden with hops and fanned connectors', () => {
   if (!exists('examples/dsl/routing-showcase.flux.yaml')) return 'missing examples/dsl/routing-showcase.flux.yaml';
-  return vitestFile('scripts/examples/routing-showcase.test.ts');
+  return vitestFile('scripts/dsl/examples.test.ts', 'node', 'scripts/dsl/examples.config.ts');
 });
 leg('the R3 exit checklist lists every criterion with evidence', () => {
   if (!exists('docs/milestones/exits/R3.md')) return 'missing docs/milestones/exits/R3.md';
@@ -170,6 +178,11 @@ leg('pnpm verify exits 0 with every planned step PASS', () => verifyLeg(VERIFY_S
 leg('CI green on ubuntu, windows and macos at or after the M16 final review range', () => {
   if (!exists('.harness/reviews/milestone-M16-final.json')) return 'no M16 final review yet: its range end is what the evidence must cover';
   return ok(node('scripts/gates/check-ci-evidence.mjs', ['--milestone', 'M16']));
+});
+// the perf thresholds hold on the CI perf runner, not only on a fast dev box (M16 final F3): nightly's perf job runs every @perf spec
+leg('the nightly perf job (route-drag-200, big-screen and every @perf spec) green at or after the M16 final review range', () => {
+  if (!exists('.harness/reviews/milestone-M16-final.json')) return 'no M16 final review yet: its range end is what the evidence must cover';
+  return ok(node('scripts/gates/check-ci-evidence.mjs', ['--milestone', 'M16', '--perf']));
 });
 leg('every M16 backlog row done (reopened included)', () => checkBacklogDone(backlogTextFor('M16'), 'M16', loadMilestoneReviews('M16')));
 leg('final milestone review covers M16', () => {
