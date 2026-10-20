@@ -1859,3 +1859,8 @@ M16.24 (575d37dd): `globalRoutes` nudges around avoid boxes inflated by the marg
 M16.17 (0d51b491), anchor UX part 1: `anchor-snap.ts` snaps to the nearest free anchor within `8px / zoom`, not centre or floating ones; `session.anchors` dots in the overlay; tool and end drag snap. Part 2 is M16.25. Review r4 passed, its minor became M16.26. Firefox cannot launch here (`spawn UNKNOWN`).
 M16.29: main CI went red at 575d37d: the M16.16 global-route overlay was drawn in edit but not in present or the `.flux.html`, breaking FR-EDT-010 parity and studio/file fidelity. Contained: the overlay is off unless `?routing=global`; the persist-vs-player decision is M16.28.
 Flake: `source-view.undo.browser.test.tsx` times out under full `pnpm verify` load, passes on rerun (M16.27).
+
+## 2026-10-20 M16.26 (claude, local Windows)
+
+M16.26 (275beaf1): `endTarget` pools the hit with nearby elements; the nearest snapped anchor wins. Five review rounds: a coverage rule (anchors hidden under another element) grew a per-move O(n) scan and was descoped to M16.30.
+CI green again at e21e895 after the M16.29 containment.
