@@ -1998,3 +1998,7 @@ Schema 1.7: a `template` LayoutSpec requires `id` and `items` (TemplateItem, nes
 ## M17.33
 
 Main CI red at d7e520e (webkit e2e, Fit widths 73 vs 74): compare the fitted widths within 1 px (browser boxes of fractional positions). Review: round 1 F1 (comment blamed the snap pass, which never changes widths) fixed; round 2 pass. macOS verify player-inline timeout at d7e520e: one-off so far, watching.
+
+## M17.14
+
+Template registry (`templates` core registry, registerTemplate/listTemplates/buildTemplate) and built-ins process.basic, process.chevron, cycle.basic, hierarchy.org, pyramid with goldens and slot-role variants. Review: round 1 fail (overflow at 12 steps, half-pixel overlap at gap 0, unbounded breadth), fixed; round 2 pass.
