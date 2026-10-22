@@ -133,6 +133,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'milestone-checks',
       'mode-policy',
       'packages',
+      'perf-baseline',
       'schema-open-objects',
       'test-titles',
       'tsconfig-strict',

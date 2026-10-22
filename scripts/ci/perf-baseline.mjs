@@ -1,37 +1,109 @@
-// The nightly perf job's layout check (NFR-PERF-005, M17.38): run the layered, tree, radial and mindmap benches and hold each p99 to its threshold and to 15 % over
-// perf-baseline.json (p99 ms per bench; re-record it by hand after a deliberate change, with the reason in the commit).
-// Each bench runs RUNS times and is judged by the median of its p99s: one run's p99 of ~20 samples is its slowest sample, which a single
-// GC pause or runner hiccup sets (layered-500 read 145-248 ms on the same code, M17.25); the limit itself is unchanged.
-import { readFileSync } from 'node:fs';
-import { benchUnder } from '../gates/milestone-checks.mjs';
+// The nightly perf job's layout check (NFR-PERF-005, ADR-0170): run the layered, tree, radial and mindmap benches and hold each to its threshold
+// (p99 ms, the budget itself) and to PERF_REGRESSION_TOLERANCE_PCT over its calibrated baseline. A hosted runner is a different machine each night
+// (layered-500 read 238, 172 and 136 ms p99 on the same code, M17.25), so the regression is judged in calibration units: the bench's p50 over the
+// p50 of the frozen calibration workload (packages/layout/bench/calibration.bench.ts) run in the same Vitest process, the median of RUNS runs.
+// perf-baseline.calibrated.json holds those units per bench; re-record it from a nightly run only with a `Threshold-change:` trailer.
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { run } from '../gates/lib.mjs';
 import { t } from '../gates/thresholds.mjs';
 
-const BENCHES = [
+export const CALIBRATION = ['calibration', 'packages/layout/bench/calibration.bench.ts'];
+export const BENCHES = [
   ['layered-100', 'packages/layout/bench/layered-100.bench.ts', 'LAYOUT_100_NODES_MS'],
   ['layered-500', 'packages/layout/bench/layered-500.bench.ts', 'LAYOUT_500_NODES_MS'],
-  // the M17 layouts the plan holds to the same 500-node limit (M17.38): their baselines are the CI runner's, not a laptop's
+  // the M17 layouts the plan holds to the same 500-node limit (M17.38)
   ['tree-500', 'packages/layout/bench/tree-500.bench.ts', 'LAYOUT_500_NODES_MS'],
   ['radial-500', 'packages/layout/bench/radial-500.bench.ts', 'LAYOUT_500_NODES_MS'],
   ['mindmap-500', 'packages/layout/bench/mindmap-500.bench.ts', 'LAYOUT_500_NODES_MS'],
 ];
-const baseline = JSON.parse(readFileSync(new URL('../../perf-baseline.json', import.meta.url), 'utf8'));
-/** Runs per bench; the median p99 is judged. */
-const RUNS = 3;
+/** Runs per bench; the median of each reading is judged. */
+export const RUNS = 5;
+
 const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
-const problems = [];
-for (const [name, file, key] of BENCHES) {
-  const limit = Math.min(t(key), (baseline[name] ?? Number.NaN) * 1.15);
-  // a limit of -1 always fails with the measured p99 in its message, which is judged here and printed for the re-record
-  const verdicts = Array.from({ length: RUNS }, () => String(benchUnder(file, name, -1)));
-  const p99s = verdicts.map((v) => Number(v.match(/p99 ([\d.]+) ms/)?.[1]));
-  const p99 = p99s.some((x) => !Number.isFinite(x)) ? Number.NaN : median(p99s);
-  const verdict = verdicts.find((v) => !/p99 ([\d.]+) ms/.test(v)) ?? verdicts[0];
-  const pass = Number.isFinite(limit) && p99 <= limit;
-  // without a baseline the measured p99 is still printed, so the first run on the runner gives the number to record
-  const recorded = Number.isFinite(limit) ? '' : ` (perf-baseline.json has no "${name}" entry: record ${Math.ceil(p99)})`;
-  console.log(
-    `${pass ? 'PASS' : 'FAIL'} ${name} (limit ${Number.isFinite(limit) ? limit.toFixed(0) : '?'} ms): ${Number.isFinite(p99) ? `measured ${p99} ms p99 (median of ${p99s.join(', ')})${recorded}` : verdict}`,
-  );
-  if (!pass) problems.push(name);
+
+/** The latency of each task in a Vitest 5 JSON bench report, by task name. */
+export function latencies(report) {
+  const tasks = report.testResults.flatMap((f) => f.assertionResults).flatMap((a) => (a.benchmarks ?? []).flatMap((b) => b.tasks));
+  return Object.fromEntries(tasks.map((task) => [task.name, task.latency ?? {}]));
 }
-process.exit(problems.length === 0 ? 0 : 1);
+
+/**
+ * One run's reading of bench `name` from a report that holds it and the calibration task: its p99 in ms and its p50 in calibration units.
+ * A string names what is missing.
+ */
+export function readingOf(report, name) {
+  const failed = report.testResults.flatMap((f) => f.assertionResults).filter((a) => a.status !== 'passed');
+  if (failed.length) return `bench tests failed: ${failed.map((a) => a.title).join(', ')}`;
+  const by = latencies(report);
+  const [bench, cal] = [by[name], by[CALIBRATION[0]]];
+  if (!(bench?.p50 > 0 && bench?.p99 > 0)) return `no ${name} latency in the report`;
+  if (!(cal?.p50 > 0)) return 'no calibration latency in the report';
+  return { p99: bench.p99, units: bench.p50 / cal.p50 };
+}
+
+/**
+ * The verdict on bench `name` from its runs' readings: PASS when the median p99 is within `limitMs` and the median units within `tolerancePct`
+ * over `baseline` (calibration units). Without a baseline it fails and names the units to record.
+ */
+export function judge({ name, readings, limitMs, baseline, tolerancePct }) {
+  const p99 = median(readings.map((r) => r.p99));
+  const units = median(readings.map((r) => r.units));
+  const unitLimit = typeof baseline === 'number' ? baseline * (1 + tolerancePct / 100) : Number.NaN;
+  const pass = p99 <= limitMs && units <= unitLimit;
+  const shown = readings.map((r) => r.units.toFixed(3)).join(', ');
+  const record = Number.isFinite(unitLimit) ? '' : ` (perf-baseline.calibrated.json has no "${name}" entry: record ${units.toFixed(3)})`;
+  const against = Number.isFinite(unitLimit) ? `limit ${unitLimit.toFixed(3)} (baseline ${baseline} + ${tolerancePct} %)` : 'no baseline';
+  return {
+    pass,
+    line: `${pass ? 'PASS' : 'FAIL'} ${name}: ${units.toFixed(3)} calibration units, ${against}, median of ${shown}; p99 ${p99.toFixed(1)} ms, limit ${limitMs} ms${record}`,
+  };
+}
+
+/** Run the calibration workload and one bench file in one Vitest process, files one after the other; the parsed JSON report. */
+function runPair(file) {
+  const dir = mkdtempSync(join(tmpdir(), 'perf-'));
+  try {
+    const out = join(dir, 'bench.json');
+    const args = ['exec', 'vitest', 'bench', '--run', '--project', 'node (bench)', '--no-file-parallelism', '--reporter=json', `--outputFile=${out}`];
+    const r = run('pnpm', [...args, CALIBRATION[1], file]);
+    try {
+      return JSON.parse(readFileSync(out, 'utf8'));
+    } catch {
+      return `no bench output (exit ${r.status}): ${String(r.stderr ?? '').slice(-400)}`;
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/** RUNS readings of bench `name`, or the first problem as a string. */
+function readingsOf(name, file) {
+  const readings = [];
+  for (let i = 0; i < RUNS; i += 1) {
+    const report = runPair(file);
+    const reading = typeof report === 'string' ? report : readingOf(report, name);
+    if (typeof reading === 'string') return reading;
+    readings.push(reading);
+  }
+  return readings;
+}
+
+function main() {
+  const baselines = JSON.parse(readFileSync(new URL('../../perf-baseline.calibrated.json', import.meta.url), 'utf8'));
+  const tolerancePct = t('PERF_REGRESSION_TOLERANCE_PCT');
+  const problems = [];
+  for (const [name, file, key] of BENCHES) {
+    const readings = readingsOf(name, file);
+    const error = typeof readings === 'string' ? readings : '';
+    const verdict =
+      error === '' ? judge({ name, readings, limitMs: t(key), baseline: baselines[name], tolerancePct }) : { pass: false, line: `FAIL ${name}: ${error}` };
+    console.log(verdict.line);
+    if (!verdict.pass) problems.push(name);
+  }
+  process.exit(problems.length === 0 ? 0 : 1);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

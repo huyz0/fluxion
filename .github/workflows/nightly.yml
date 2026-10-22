@@ -70,7 +70,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm run build
-      # NFR-PERF-005: layered-100 and -500 (the layout worker path) and tree, radial and mindmap at 500 against their thresholds and perf-baseline.json
+      # NFR-PERF-005: layered-100 and -500 (the layout worker path) and tree, radial and mindmap at 500 against their thresholds (p99 ms) and, in
+      # calibration units beside a frozen workload, against perf-baseline.calibrated.json (ADR-0170)
       - run: node scripts/ci/perf-baseline.mjs
       # NFR-PERF-001: the hit-test-2000 bench (M6 final F4)
       - run: pnpm exec vitest bench --run --project "node (bench)" packages/editor/bench/hit-test-2000.bench.ts

@@ -32,6 +32,8 @@ export const SOURCE_HARNESS = [
   'google-fonts',
   'kind-switch',
   'mode-policy',
+  // the calibration workload must import nothing from the project, and every judged bench file exists (ADR-0170)
+  'perf-baseline',
   'schema-open-objects',
   'workspace-shape',
 ];

@@ -102,7 +102,9 @@ els.forEach((el, i) => { el.style.width = w(el, hs[i]) + "px"; });
 19. **Baselines are updated only by improvements** or with an ADR that justifies a new cost. →
     `check-drift`
 20. **Frame-rate and timing tests run in CI perf job on a fixed runner**; local numbers are for
-    investigation, not for arguing with the gate. → CI `perf` job
+    investigation, not for arguing with the gate. Until there is a fixed runner, the layout
+    benches' regression budget is judged in calibration units against a frozen workload run in
+    the same job (ADR-0170). → CI `perf` job, `scripts/ci/perf-baseline.mjs`
 21. **An optimisation lands with its numbers** (before/after in the PR description). → review
 
 ## 6. Profiling how-to

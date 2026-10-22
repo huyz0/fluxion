@@ -18,7 +18,7 @@ via 4× CPU throttling.
 | NFR-PERF-002 | M | R3 | Screen with 2,000 elements + 1,000 connectors: pan/zoom ≥ 50 fps, initial render < 1 s. | Perf benchmark fixture. |
 | NFR-PERF-003 | M | R1 | Open a 50-screen document (no photos) and show first screen < 1.5 s on reference desktop, < 3 s on reference mobile. | Lighthouse/Playwright timing. |
 | NFR-PERF-004 | M | R4 | Present-mode animations ≥ 58 fps desktop, ≥ 55 fps mobile for standard effects; no long task > 50 ms during transitions. | Perf trace on animation fixtures. |
-| NFR-PERF-005 | M | R2 | Layout: 100-node layered layout < 200 ms; 500-node < 2 s (worker); routing of 200 orthogonal connectors < 300 ms. | vitest bench with regression budget ±15 %. |
+| NFR-PERF-005 | M | R2 | Layout: 100-node layered layout < 200 ms; 500-node < 2 s (worker); routing of 200 orthogonal connectors < 300 ms. | vitest bench with regression budget ±15 %; in the nightly perf job the regression is judged in calibration units (ADR-0170). |
 | NFR-PERF-006 | M | R0 | Undo/redo of any single command < 16 ms for documents ≤ 5,000 records. | Benchmark. |
 | NFR-PERF-007 | S | R8 | Memory: 50-screen document in editor < 300 MB JS heap. | Heap snapshot in CI perf job. |
 | NFR-PERF-008 | M | R4 | Off-screen screens and hidden tabs consume ~0 CPU (ambient animations paused, rAF stopped). | Perf test: CPU time over 10 s hidden < 1 %. |
