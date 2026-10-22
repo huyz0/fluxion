@@ -2050,3 +2050,6 @@ Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-rec
 
 ## M17.22 (final review record)
 - 72d2135f: M17 final review recorded (changes-requested, F1-F10); reopen rows M17.39-41, M17.25/38/22 rows restated. Review: 2 rounds.
+
+## M17.39
+- Independent moved oracle (movedShare) in incremental.test.ts; movedPercent unit case; arrange.test.ts reads the threshold. Mutant return-0 fails 4 tests. Review: 1 round, pass.
