@@ -2008,3 +2008,6 @@ Templates matrix.2x2, venn, funnel, timeline.milestones, comparison; goldens, pr
 
 ## M17.16
 DSL template screens (`template:`/`items:`/`options:`), per-screen built slugs, marked template connectors, catalog templates section, patch setLayout templates, example + golden. Review: changes (4 findings: slug collisions x2, decompile edge loss, frame mismatch) -> fixed -> pass round 2. Note: schema preservation.test.ts fast-check flaked once (seed 1279221244); player-inline browser test flaked once.
+
+## M17.17
+Layout options form (inspector) from the host options schema; core screen.setLayout; templates rebuilt via ai.applyPatch. Review r1 fail (templates missing, test did not run layout) fixed; r2 pass. F2 -> M17.18, F4 -> M17.34, F5 (template spec on a group shows a refusing form) to fix next.
