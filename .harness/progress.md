@@ -2059,3 +2059,6 @@ Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-rec
 
 ## M17.40
 - templates-all example + golden for all 10 template ids; examples test checks ids vs registry, venn opacity, chevron arrows; m17 leg names each id. Review: 2 rounds (loose leg match, chevron unpinned).
+
+## M17.25 part 1
+- ADR-0170: calibration units in nightly perf job (frozen calibration bench, p50 ratio, median of 5, tolerance from thresholds). Calibrated baselines empty: nightly fails with record values until part 2. M17.42 added. Review: 2 rounds.
