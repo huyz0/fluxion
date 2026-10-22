@@ -138,17 +138,17 @@ stays as designed above for the milestones that add it (constraints and `increme
 | `timeline` | Horizontal/vertical with lanes (LAY-003) | own TS | main |
 | `template.*` | Smart templates (§7) | own TS | main |
 | `layered` (**default**) | Flow/hierarchical TB/LR/BT/RL (LAY-002); built in M13. dagre ranks with `network-simplex` up to 200 nodes and `tight-tree` above (a quarter of the time at 500 nodes) | `@dagrejs/dagre` | main / worker (the studio's Arrange uses the worker) |
-| `tree`, `orgchart`, `radial` | Tidy trees, variable node sizes | `d3-hierarchy` + `d3-flextree` | main |
-| `mindmap` | Two-sided balanced tree | `d3-flextree` ×2, mirrored | main |
+| `tree`, `orgchart`, `radial` | Tidy trees for variable node sizes (van der Ploeg 2014); `radial` puts the same breadth order on rings | own TS (ADR-0045: `d3-flextree` is WTFPL) | main |
+| `mindmap` | Two-sided balanced tree: the root's subtrees split by greedy balance of height, each side a tidy tree | own TS (the tree above, mirrored) | main |
 | `circular`, `packing` | Ring; rect packing (shelf/skyline) | own TS | main |
-| `force` | Organic networks, pin-friendly, seeded | `d3-force` (`randomSource(rng)`) + rect collide | worker if >200 nodes |
+| `force` | Organic networks, pin-friendly, seeded: Fruchterman–Reingold, fixed iteration count, start from `createRng(seed)`, coordinates quantized to 0.5 px, centre-to-centre repulsion (boxes may touch; the overlap post-pass separates them) | own TS (ADR-0045: `d3-force` imports `d3-timer`) | either (the studio's Arrange uses the worker) |
 | `tidy` | Minimal-movement cleanup (LAY-011, M17): align near-aligned runs (centres within `tolerance`), snap starts to the grid, the overlap pass with the runs as `align` constraints, each move pulled back to its bound where that leaves no overlap (a pile is pulled apart whatever the bound; the bound holds whenever no two boxes start on or against each other); the editor's "Tidy up" (selection, else the screen) | own TS (WebCola not needed) | either (the studio's Arrange uses the worker, which serves every built-in) |
 | `swimlane` | Lanes × phases, `layered` per lane + lane pass | dagre + own | main |
 | `layouts-elk:*` (pack) | `layered` with ports, compound, labels; `stress`; `rectpacking`; `mrtree` | `elkjs`, **unmodified**, lazy worker chunk (EPL-2.0) | worker |
 
 Post-passes: **pins** (least-squares fit to pins, then pinned nodes fixed), **constraints**
-(align/order/within; Cassowary via `@lume/kiwi` is reserved for R3+), **overlap** (M13: an own two-stage sweep, ADR-0034, the
-FR-LAY-004 guarantee; VPSC from WebCola joins with the constraints in M17), **snap** (0.5 px or grid), **fit** (FR-LAY-012, M17: opt-in, before snap; the unpinned boxes are scaled down together, never up, and moved the least amount into the safe area, the frame inset by `margin`, default 5% of its smaller side; pinned boxes stay, so a hand-placed shape is not fitted (M17.31); the `fit` layout separates overlaps with gaps wide enough to stay 1 px once scaled, then fits; it is what the editor's "Fit content to screen" runs on the whole screen).
+(align/sameRank/order/spacing by projection, ADR-0045; Cassowary via `@lume/kiwi` is reserved for R3+), **overlap** (M13: an own two-stage sweep, ADR-0034, the
+FR-LAY-004 guarantee; the M17 constraints and `tidy` run on this pass, not on WebCola's VPSC, ADR-0045), **snap** (0.5 px or grid), **fit** (FR-LAY-012, M17: opt-in, before snap; the unpinned boxes are scaled down together, never up, and moved the least amount into the safe area, the frame inset by `margin`, default 5% of its smaller side; pinned boxes stay, so a hand-placed shape is not fitted (M17.31); the `fit` layout separates overlaps with gaps wide enough to stay 1 px once scaled, then fits; it is what the editor's "Fit content to screen" runs on the whole screen).
 
 | Router id | Algorithm | Notes |
 |---|---|---|
@@ -170,7 +170,7 @@ router-free at view time. Both are listed as the only EPL/LGPL exceptions (NFR-L
 main thread                          layout worker (module worker; Blob URL in .flux.html)
 LayoutEngine.run(req, signal) ──post {id, revision, algId, input, seed}──▶ loader.import(algId)
    │ signal.abort() ──post {cancel,id}──▶ ctx.signal aborts → algorithm checks per iteration
-   ◀── {progress,id,partial} (force/cola) ── ◀── {done,id,output} | {error,id,diag}
+   ◀── {done,id,output} | {error,id,diag}   (no progress messages: the host ignores any other type)
    └ drops results whose revision < latest (last-write-wins)
 ```
 
@@ -193,7 +193,7 @@ LayoutEngine.run(req, signal) ──post {id, revision, algId, input, seed}─�
   Nested containers run bottom-up: child containers are sized first and become fixed nodes for
   the parent (FR-LAY-005). Positions are always stored (02 §6), so files open without layout.
 - **Incremental** (FR-LAY-006): `mode:'incremental'` passes the `changed` set. Algorithms with
-  native support warm-start from current boxes (force, cola). Others run full and then go
+  native support warm-start from current boxes (force). Others run full and then go
   through a displacement-minimizing reconciliation. The CI metric is ≤ 30 % of nodes moved on
   the fixture.
 - **Pinned** nodes are never moved (a property test asserts it).

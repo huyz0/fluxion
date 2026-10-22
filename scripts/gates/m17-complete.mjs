@@ -4,7 +4,7 @@
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { currentMilestone, exists, leg, node, repoPath, run, runLegs } from './lib.mjs';
+import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import {
   backlogTextFor,
   benchUnder,
@@ -14,6 +14,7 @@ import {
   imageRunner,
   loadMilestoneReviews,
   playwrightSpecs,
+  readmeGaps,
   verifyLeg,
   vitestNamed,
 } from './milestone-checks.mjs';
@@ -84,6 +85,18 @@ leg('LAYOUT_INCREMENTAL_MOVED_PCT (30, weakens up) is in thresholds.mjs', () => 
 
 // ── the algorithms ─────────────────────────────────────────────────────────────────────────────────
 // each test file names its fixture as `golden <id>` in a passing test (goldens are inline, as layered.test.ts has them)
+const TEMPLATE_IDS = [
+  'process.basic',
+  'process.chevron',
+  'cycle.basic',
+  'hierarchy.org',
+  'pyramid',
+  'matrix.2x2',
+  'venn',
+  'funnel',
+  'timeline.milestones',
+  'comparison',
+];
 const ALGORITHMS = [
   ['tree', 'tree and orgchart: no overlap, parents above children', 'tree-org-40'],
   ['radial', 'radial', 'radial-30'],
@@ -96,6 +109,16 @@ const ALGORITHMS = [
 ];
 for (const [file, what, golden] of ALGORITHMS)
   leg(`${what}${golden ? `, golden ${golden}` : ''} (FR-LAY-003)`, () => vitestGoldens(`packages/layout/src/${file}.test.ts`, golden ? [golden] : []));
+// the layout README names every M17 layout and template, so the gate cannot go green over a README that is silent on them (M17 final F7)
+leg('the layout README names every M17 layout, post-pass and smart template (M17 final F7)', () => {
+  // each id in backticks, as the README's tables and lists write it, so prose such as "tidy tree" or "fit when asked" does not stand in for one
+  const ids = [...ALGORITHMS.map(([name]) => name), 'orgchart', 'tidy', 'fit', 'align', 'sameRank', 'order', 'spacing', ...TEMPLATE_IDS];
+  return readmeGaps(
+    readText('packages/layout/README.md'),
+    ids.map((id) => `\`${id}\``),
+    { minLines: 20 },
+  );
+});
 leg('the constraints post-pass keeps pins fixed and aligned nodes on one coordinate (FR-LAY-006)', () => vitestFile('packages/layout/src/constraints.test.ts'));
 leg('adding one node moves at most LAYOUT_INCREMENTAL_MOVED_PCT % of the nodes (FR-LAY-006)', () => vitestFile('packages/layout/src/incremental.test.ts'));
 // handed off from M16 (roadmap Deferred): the counterexample its verify leg met, pinned by its seed
@@ -133,18 +156,7 @@ leg('every registered template is built on a screen of the templates-all example
   for (const f of ['examples/dsl/templates-all.flux.yaml', 'examples/dsl/__golden__/templates-all.svg']) if (!exists(f)) return `missing ${f}`;
   const text = readFileSync(repoPath('examples/dsl/templates-all.flux.yaml'), 'utf8');
   // every registered id, matched as a whole `template: <id>` line (so process.chevron does not stand in for process.basic)
-  const ids = [
-    'process.basic',
-    'process.chevron',
-    'cycle.basic',
-    'hierarchy.org',
-    'pyramid',
-    'matrix.2x2',
-    'venn',
-    'funnel',
-    'timeline.milestones',
-    'comparison',
-  ];
+  const ids = TEMPLATE_IDS;
   const lines = new Set(text.split(/\r?\n/).map((line) => line.trim()));
   const absent = ids.filter((id) => !lines.has(`template: ${id}`));
   return absent.length ? `templates-all.flux.yaml builds no screen of ${absent.join(', ')}` : true;
