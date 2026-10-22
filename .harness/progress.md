@@ -1980,3 +1980,8 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 
 ## M17.11
 - 4383c9a7 live layout reactor (startLiveLayout), amend joins a sealed last entry (ADR-0046 amended), paste/duplicate into the entered group; review 3 rounds (F1 own commits counted, F2/F5 stale deferred plans, F3 nudge wording, F4 M17.10 row). Async/incremental live: M17.30. E2E local: chromium only (firefox no launch, webkit clipboard broken locally for all specs).
+
+## M17.12
+- `tidy` layout + editor "Tidy up" (selection, else screen). Bound yields to no-overlap for piles; holds when no boxes start touching (property via layoutSync).
+- Studio layout worker served only grid/layered/stack; now `builtInLayouts` (all 13). Tree/radial/M17 layouts were refused in studio Arrange before.
+- Review: round 1 F1 (piles frozen by both-axis align, then pipeline moved them far) and F2 (property bypassed pipeline) fixed; round 2 pass.
