@@ -1990,3 +1990,7 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 - `fit` post-pass (opt-in, before snap) + `fit` layout + editor "Fit content to screen" (Arrange and screen menus; whole screen). Safe area = frame inset 5% of smaller side; scale down only.
 - Review r1: F1 dense row pushed out by overlap-pass nudges after scaling (fixed: separate with margin ceil(1/scale)+1); F3 zero-room collapse (guarded); F2 hand-placed pins stay (documented, backlog M17.31). r2 pass.
 - Also fixed context-menu e2e lists missing "Tidy up" since M17.12; screen menu gains Tidy up and Fit.
+
+## M17.32
+
+Schema 1.7: a `template` LayoutSpec requires `id` and `items` (TemplateItem, nested at most 64 deep, checked before parsing). 1.6 -> 1.7 migration, fixtures v1.7 and nonconforming-1.6. The player scripts mark `z`/`checkedSchema` calls pure (fluxion-player 150.04 -> 149.81 kB, under budget). Review: round 1 F1 (unbounded recursion overflowed validate) fixed; round 2 pass.
