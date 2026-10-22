@@ -2038,3 +2038,6 @@ Live layout: `changed` arg makes arrange incremental (previous = current boxes);
 
 ## M17.31
 Decided: keep pins (ADR-0031); Fit notice names pinned/locked visible top-level elements outside the safe area. Unit + e2e (chromium, webkit). Review round 1 pass with minors (hidden elements, wording) fixed; round 2 pass.
+
+## M17.34
+Layout options form arranges through the host ArrangePort (amend, one undo with the spec write); ArrangeRequest.options. Review: pass round 1.
