@@ -2086,3 +2086,5 @@ Three consecutive nightlies (39865270597, 39867513339, 39868647195): layered-500
 
 ## M17.43 (handed off)
 route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchanged at 50. Reviewer pass round 1.
+
+- M17.22: final-delta review recorded (D1-D3 to M18 row 1b, D4 argued); M17 final range now f321c33f..64907000.
