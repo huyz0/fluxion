@@ -172,6 +172,14 @@
       "desc": "First-party themes pack: eight built-in themes (FR-THM-003); imports only `@fluxion/sdk`."
     },
     {
+      "dir": "packs/layouts-elk",
+      "name": "@fluxion/pack-layouts-elk",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "Optional ELK layouts pack: elkjs (EPL-2.0) layered, stress and rectpacking as layouts-elk:*; registered only when installed (ADR-0045)."
+    },
+    {
       "dir": "packs/fonts-core",
       "name": "@fluxion/pack-fonts-core",
       "layer": "Pack",

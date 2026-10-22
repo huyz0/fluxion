@@ -1,0 +1,12 @@
+@fluxion/pack-layouts-elk
+Copyright (c) 2026 Fluxion contributors. The pack's own code is under the MIT licence (LICENSE).
+
+This pack loads, unmodified, the following third-party software, which is not
+covered by the MIT licence:
+
+elkjs 0.12.0 (https://github.com/kieler/elkjs)
+  Eclipse Layout Kernel (ELK) compiled to JavaScript.
+  Copyright (c) the ELK and elkjs contributors.
+  Licensed "EPL-2.0 OR GPL-3.0-or-later"; used under the Eclipse Public License 2.0
+  (https://www.eclipse.org/legal/epl-2.0/). Its source code is available at the
+  address above.

@@ -1,0 +1,31 @@
+{
+  "name": "@fluxion/pack-layouts-elk",
+  "version": "0.0.0",
+  "description": "Optional ELK layouts pack: elkjs (EPL-2.0) layered, stress and rectpacking as layouts-elk:*; registered only when installed (ADR-0045).",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "elkjs": "catalog:",
+    "zod": "catalog:"
+  }
+}

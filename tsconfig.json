@@ -67,6 +67,9 @@
       "path": "./packs/themes-core"
     },
     {
+      "path": "./packs/layouts-elk"
+    },
+    {
       "path": "./packs/fonts-core"
     },
     {
