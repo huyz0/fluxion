@@ -1958,9 +1958,14 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 - M17.24 b334c586: SSR equality test split per fixture (30 s diagnostic bound each); review pass round 2
 - M17.25 136565bc: nightly layout bench judged by the median p99 of 3 runs; row todo until 3 nightlies are within 15 %
 - M17.26 5b6ca65b: M16 closed (m16-complete 35/35, exit 0)
+
+## M17.3-M17.8
 - M17.3 98d01c02: tree and orgchart layouts, golden tree-org-40, registered as built-ins
 - M17.4 67a9f709: radial and mindmap layouts, goldens radial-30 and mindmap-25; review F1 (side balance) fixed
 - M17.5 b3264afe force layout (seeded FR, pins), review pass r2
 - M17.6 5742a5fc circular and packing layouts, goldens circular-12 and packing-50, review pass
 - M17.7 62ce6ef9 timeline and swimlane layouts, goldens timeline-lanes and swimlane-3x4; review F1 (cross-lane hand-overs ran backwards) and F2 (vertical lanes untested) fixed
 - M17.8 1c5fc229 constraints post-pass (align, sameRank, order, spacing; overlap keeps alignment); review F1 (bad axis crashed the pass), F2 (shared-member groups unmerged) and F3 (stale doc) fixed
+
+## M17.27
+- M17.27 5cbfd824 ci fix: context-menu spec lists every layout's Arrange entry; inline-player tests retry a lost arrow press; review pass
