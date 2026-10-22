@@ -2074,3 +2074,6 @@ Calibrated baselines recorded from nightly 39861908556 perf job (layered-100 1.4
 
 ## M17.22 (part 1)
 F7: 05-layout-and-routing.md §3/§4/§5 match ADR-0045 and the code (force centre repulsion, no worker progress msgs); layout README lists layouts, constraint kinds, templates; m17 README leg on backticked ids (red on old README, red when a row is removed). Reviewer pass round 2 (F1-F3 fixed).
+
+## M17.22 (part 2)
+F8 -> M18 row 1a (checkpoint harness check), F10 -> M26 row 16b (editor API shrink), roadmap Deferred; F9 argued; M17.md Learned. Reviewer pass round 2 (F1-F2 handoffs, F3 wording).
