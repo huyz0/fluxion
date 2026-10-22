@@ -4,6 +4,7 @@ import type { Core, CoreRegistries } from '@fluxion/core';
 import type { Session } from '@fluxion/editor';
 import { t } from '@lingui/core/macro';
 import { type JSX, useRef, useState } from 'react';
+import { AiSettingsSection } from './ai-settings-section.js';
 import { askForPatch } from './ask-patch.js';
 import { type ClientSource, keyedClient } from './client.js';
 import { type Preview, previewPatch } from './patch-preview.js';
@@ -87,6 +88,7 @@ export function AiPanel(props: AiPanelProps): JSX.Element {
 
   return (
     <aside aria-label={t`AI assistant`} className="fx-studio-ai" style={{ padding: 8, maxWidth: 360 }}>
+      <AiSettingsSection />
       <label>
         {t`What should change?`}
         <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={3} style={{ display: 'block', width: '100%' }} />
