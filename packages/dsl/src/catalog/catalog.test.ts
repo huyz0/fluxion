@@ -31,6 +31,8 @@ describe('the AI catalog (FR-AI-002)', () => {
       ['packing', 'core'],
       ['radial', 'core'],
       ['stack', 'core'],
+      ['swimlane', 'core'],
+      ['timeline', 'core'],
       ['tree', 'core'],
     ]);
     expect(catalog.layouts.every((l) => l.describe.length > 0)).toBe(true);

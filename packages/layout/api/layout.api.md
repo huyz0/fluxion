@@ -463,6 +463,30 @@ export type StackOptions = {
 };
 
 // @public
+export const swimlaneLayout: LayoutAlgorithm<SwimlaneOptions>;
+
+// @public
+export type SwimlaneOptions = {
+    readonly direction: "right" | "down";
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
+    readonly padding: number;
+};
+
+// @public
+export const timelineLayout: LayoutAlgorithm<TimelineOptions>;
+
+// @public
+export type TimelineOptions = {
+    readonly direction: "right" | "down";
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
+    readonly padding: number;
+};
+
+// @public
 export const treeLayout: LayoutAlgorithm<TreeOptions>;
 
 // @public

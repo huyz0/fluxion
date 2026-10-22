@@ -15,6 +15,8 @@ import {
   removeOverlap,
   snapBoxes,
   stackLayout,
+  swimlaneLayout,
+  timelineLayout,
   treeLayout,
 } from './index.js';
 import type { Boxes } from './passes.js';
@@ -60,6 +62,8 @@ const ALGORITHMS: ReadonlyArray<readonly [string, LayoutAlgorithm<never>, fc.Arb
   ['mindmap', mindmapLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['circular', circularLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['packing', packingLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
+  ['timeline', timelineLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
+  ['swimlane', swimlaneLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
 ];
 
 const graph = fc.integer({ min: 1, max: 14 }).chain((count) =>

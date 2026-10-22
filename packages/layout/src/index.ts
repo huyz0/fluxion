@@ -12,6 +12,8 @@ import { mindmapLayout } from './mindmap.js';
 import { packingLayout } from './packing.js';
 import { radialLayout } from './radial.js';
 import { stackLayout } from './stack.js';
+import { swimlaneLayout } from './swimlane.js';
+import { timelineLayout } from './timeline.js';
 import { orgchartLayout, treeLayout } from './tree.js';
 
 export {
@@ -48,6 +50,8 @@ export { createRng } from './rng.js';
 export { type Scorecard, scoreLayout } from './scorecard.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
+export { type SwimlaneOptions, swimlaneLayout } from './swimlane.js';
+export { type TimelineOptions, timelineLayout } from './timeline.js';
 export { orgchartLayout, type TreeOptions, treeLayout } from './tree.js';
 export type {
   AbortSignalLike,
@@ -85,6 +89,8 @@ export function registerBuiltInLayouts(layouts: Registry<string, unknown>): Retu
     forceLayout,
     circularLayout,
     packingLayout,
+    timelineLayout,
+    swimlaneLayout,
   ].map((layout) => layouts.register(layout.id, layout, 'core'));
   return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }

@@ -10,7 +10,20 @@ describe('the built-in catalog (FR-AI-002)', () => {
     expect(diagnostics).toEqual([]);
     expect(catalog.shapes.length).toBeGreaterThanOrEqual(21);
     expect(catalog.connectors.map((c) => c.id)).toEqual(['curved', 'orthogonal', 'polyline', 'straight']);
-    expect(catalog.layouts.map((l) => l.id)).toEqual(['circular', 'force', 'grid', 'layered', 'mindmap', 'orgchart', 'packing', 'radial', 'stack', 'tree']);
+    expect(catalog.layouts.map((l) => l.id)).toEqual([
+      'circular',
+      'force',
+      'grid',
+      'layered',
+      'mindmap',
+      'orgchart',
+      'packing',
+      'radial',
+      'stack',
+      'swimlane',
+      'timeline',
+      'tree',
+    ]);
     expect(catalog.markers.map((m) => m.id)).toEqual([
       'arrow',
       'bar',

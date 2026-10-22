@@ -31,10 +31,12 @@ describe('layout registry (FR-LAY-001)', () => {
       ['packing', '1'],
       ['radial', '1'],
       ['stack', '2'],
+      ['swimlane', '1'],
       ['test:ring', '2'],
+      ['timeline', '1'],
       ['tree', '1'],
     ]);
-    expect(listLayouts(r)[9]?.schema.safeParse({ radius: 0 }).success).toBe(false);
+    expect(listLayouts(r)[10]?.schema.safeParse({ radius: 0 }).success).toBe(false);
   });
 
   it('FR-LAY-001: a value without an options schema, capabilities, run or parseOptions is refused at registration', () => {

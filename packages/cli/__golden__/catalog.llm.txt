@@ -46,4 +46,6 @@ orgchart — Organisation chart: a tidy tree whose leaf siblings stack in one co
 packing — Packed: boxes fill the frame row by row on a skyline, largest first, for collections without links.; options: spacing, nodeGap, padding
 radial — Tree on rings around its root, one ring per depth, for hierarchies seen from the centre.; options: spacing, nodeGap, rankGap, padding
 stack — Boxes in one row or column, with an even gap.; options: direction, gap, align, padding, wrap
+swimlane — Swimlanes: a layered flow inside each lane hint, the lanes stacked as bands.; options: direction, spacing, nodeGap, rankGap, padding
+timeline — Timeline: events in date order along one axis, one band per lane hint.; options: direction, spacing, nodeGap, rankGap, padding
 tree — Tidy tree along the edges, for hierarchies with boxes of any size.; options: direction, spacing, nodeGap, rankGap, padding, compactLeaves

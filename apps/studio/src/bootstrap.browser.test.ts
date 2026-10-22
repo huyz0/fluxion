@@ -41,11 +41,13 @@ describe('studio bootstrap (FR-EDT-001, ADR-0017)', () => {
       'packing',
       'radial',
       'stack',
+      'swimlane',
+      'timeline',
       'tree',
     ]);
     const screenId = Object.values(gallery.value.records).find((r) => r.type === 'screen')?.id;
     if (screenId === undefined) throw new Error('the example has no screen');
-    for (const algorithm of ['circular', 'force', 'grid', 'layered', 'mindmap', 'orgchart', 'packing', 'radial', 'stack', 'tree']) {
+    for (const algorithm of ['circular', 'force', 'grid', 'layered', 'mindmap', 'orgchart', 'packing', 'radial', 'stack', 'swimlane', 'timeline', 'tree']) {
       const before = core.store.history.undoDepth;
       const r = core.execute('layout.arrange', { screenId, scope: 'screen', algorithm });
       expect(r.ok, algorithm).toBe(true);
