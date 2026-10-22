@@ -2044,3 +2044,6 @@ Layout options form arranges through the host ArrangePort (amend, one undo with 
 
 ## M17.37
 Templates are picker choices for the screen (template:<id>), built from shape labels in one patch replacing those shapes; picks go through the host port. Fixed template node slugs on screens without a slug (toSlug of the id). Review: fail round 1 (digit-leading ids), pass round 2.
+
+## M17.38 (part 1)
+Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-recorded from a runner run. Review: pass round 2.
