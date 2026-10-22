@@ -65,7 +65,22 @@ const outside = (boxes: Readonly<Record<string, Box>>): string[] =>
     return b.x < frame.x || b.y < frame.y || b.x + b.w > frame.x + frame.w || b.y + b.h > frame.y + frame.h;
   });
 
-/** The fixture laid out, then laid out again with one node added and `previous` set: the second run's `moved` metric. */
+/**
+ * The share of the nodes of `before` whose centre moved more than half a pixel in `after`, counted here rather than with `movedPercent`, so the
+ * test does not judge the metric with the function under test (M17 final F4).
+ */
+function movedShare(before: Readonly<Record<string, Box>>, after: Readonly<Record<string, Box>>): number {
+  const ids = Object.keys(before).filter((id) => after[id] !== undefined);
+  const centre = (b: Box): readonly [number, number] => [b.x + b.w / 2, b.y + b.h / 2];
+  let moved = 0;
+  for (const id of ids) {
+    const [[px, py], [nx, ny]] = [centre(before[id] as Box), centre(after[id] as Box)];
+    if (Math.abs(px - nx) > 0.5 || Math.abs(py - ny) > 0.5) moved += 1;
+  }
+  return ids.length === 0 ? 0 : (moved / ids.length) * 100;
+}
+
+/** The fixture laid out, then laid out again with one node added and `previous` set: the share of the first run's nodes that moved. */
 function movedAfterAdding(f: Fixture): number {
   const first = layoutSync({ input: f.before, algorithm: f.algorithm });
   if (!first.ok) throw new Error(first.error.message);
@@ -78,12 +93,13 @@ function movedAfterAdding(f: Fixture): number {
   };
   const second = layoutSync({ input: after, algorithm: f.algorithm });
   if (!second.ok) throw new Error(second.error.message);
-  expect(second.value.metrics.moved).toBe(movedPercent(first.value.boxes, second.value.boxes));
+  const moved = movedShare(first.value.boxes, second.value.boxes);
+  expect(second.value.metrics.moved).toBeCloseTo(moved, 9);
   expect(second.value.metrics.overlaps).toBe(0);
   // The tree and force fixtures overflow the frame even in a full run; when a full run fits, the incremental one must fit too.
   const full = layoutSync({ input: { frame, nodes: after.nodes, edges: after.edges ?? [] }, algorithm: f.algorithm });
   if (full.ok && outside(full.value.boxes).length === 0) expect(outside(second.value.boxes)).toEqual([]);
-  return second.value.metrics.moved as number;
+  return moved;
 }
 
 describe('incremental mode (FR-LAY-006, ADR-0046)', () => {
@@ -97,6 +113,15 @@ describe('incremental mode (FR-LAY-006, ADR-0046)', () => {
       expect(movedAfterAdding(f)).toBeLessThanOrEqual(LIMIT);
     });
   }
+
+  it('FR-LAY-006: movedPercent is the share of the boxes in both whose centre moved more than half a pixel', () => {
+    const box = (x: number, y: number): Box => ({ x, y, w: 10, h: 10 });
+    const previous = { a: box(0, 0), b: box(100, 0), c: box(200, 0), d: box(300, 0) };
+    // a moves 0.4 px (still), b moves 0.6 px in x, c moves 5 px in y, d stays; e is new and f is gone: neither counts
+    expect(movedPercent({ ...previous, f: box(9, 9) }, { a: box(0.4, 0), b: box(100.6, 0), c: box(200, 5), d: box(300, 0), e: box(1, 1) })).toBe(50);
+    expect(movedPercent(previous, previous)).toBe(0);
+    expect(movedPercent({}, previous)).toBe(0);
+  });
 
   it('FR-LAY-006: a full run without previous has no moved metric', () => {
     const r = layoutSync({ input: treeFixture().before, algorithm: treeLayout as never });

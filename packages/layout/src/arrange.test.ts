@@ -3,6 +3,20 @@ import { type Core, createCore } from '@fluxion/core';
 import { describe, expect, it } from 'vitest';
 import { layeredLayout, registerArrangeCommand, registerBuiltInLayouts, registerLayout, treeLayout } from './index.js';
 
+declare global {
+  interface ImportMeta {
+    /** Vite's build-time glob import (vitest runs this file through Vite). */
+    glob(pattern: string, options: { readonly query: '?raw'; readonly import: 'default'; readonly eager: true }): Record<string, string>;
+  }
+}
+
+/** LAYOUT_INCREMENTAL_MOVED_PCT, read from the thresholds (M17 final F4). */
+const MOVED_PCT = Number(
+  /LAYOUT_INCREMENTAL_MOVED_PCT: \{ value: ([0-9_]+)/.exec(
+    Object.values(import.meta.glob('../../../scripts/gates/thresholds.mjs', { query: '?raw', import: 'default', eager: true }))[0] ?? '',
+  )?.[1],
+);
+
 type Box = { x: number; y: number; w: number; h: number };
 const shape = (id: string, [x, y]: readonly [number, number], [w, h]: readonly [number, number] = [100, 50], extra: Record<string, unknown> = {}) => ({
   id,
@@ -147,7 +161,7 @@ describe('arrange command, incremental (FR-LAY-006)', () => {
     const next = build(9, (i) => (placed[i] ? [(placed[i] as Box).x, (placed[i] as Box).y] : [0, 0]));
     expect(next.execute('layout.arrange', { screenId: 's1', algorithm: 'tree', changed: ['e9'] }).ok).toBe(true);
     const moved = ids.filter((id, i) => Math.hypot(next.box(id).x - (placed[i] as Box).x, next.box(id).y - (placed[i] as Box).y) > 0.5).length;
-    expect(moved).toBeLessThanOrEqual(Math.floor((ids.length * 30) / 100));
+    expect(moved).toBeLessThanOrEqual(Math.floor((ids.length * MOVED_PCT) / 100));
   });
 
   it('FR-LAY-006: with `changed` the elements that did not change stay where they are and the changed one is laid out beside them', () => {
