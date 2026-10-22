@@ -2020,3 +2020,6 @@ layoutTarget skips a template spec on a group/frame. Review pass.
 
 ## M17.36
 player-inline browser test: all waits 15 s, describes 60 s (CI macOS/Windows timeouts at 8fd0788). Review r2 pass.
+
+## M17.18
+Layout picker in the inspector (select of layouts; group/frame, screen or selection; Make live). Reviewer round 2 pass (F1: template shows placeholder). e2e layout.picker chromium+webkit green.
