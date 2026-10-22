@@ -1976,3 +1976,4 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 
 ## M17.10
 - M17.10 e2bbb62e core transaction option amend (ADR-0046): joins the open undo entry whatever key/origin, else own system entry, never opens a window; API report; review pass
+- M17.29 f06a13b0 schema 1.6 LayoutSpec.live (split from M17.11): 1.5->1.6 drops non-boolean live, 1.2->1.3 ignores live; fixtures, JSON schema, lean reads 1.5; review round 2 pass (old step dropped whole layout)
