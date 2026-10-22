@@ -2077,3 +2077,6 @@ F7: 05-layout-and-routing.md §3/§4/§5 match ADR-0045 and the code (force cent
 
 ## M17.22 (part 2)
 F8 -> M18 row 1a (checkpoint harness check), F10 -> M26 row 16b (editor API shrink), roadmap Deferred; F9 argued; M17.md Learned. Reviewer pass round 2 (F1-F2 handoffs, F3 wording).
+
+## M17.43 (row)
+route-drag-200 47.0 fps on nightly 39865270597; local throttled A/B no regression (16.7 vs 16.7 mean fps). Row added (calibrate or fixed runner). M17.25 nightly 1/3: 7.576 units PASS. Reviewer pass round 2 (counting rule).
