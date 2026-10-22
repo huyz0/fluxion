@@ -113,8 +113,12 @@ function withDescendants(nodes: readonly LayoutNode[], roots: ReadonlySet<string
   return found;
 }
 
-/** The area of a screen: its size (1920 x 1080 when it has none), or the viewport of an infinite screen. */
-function screenFrame(screen: unknown): Box {
+/**
+ * The area of a screen record: its size (1920 x 1080 when it has none), or the viewport of an infinite screen. What `layout.arrange` lays out in.
+ *
+ * @public
+ */
+export function screenFrame(screen: unknown): Box {
   const s = (screen ?? {}) as { kind?: unknown; size?: { w?: unknown; h?: unknown }; viewport?: Box };
   if (s.kind === 'infinite' && s.viewport) return { x: s.viewport.x, y: s.viewport.y, w: s.viewport.w, h: s.viewport.h };
   const [w, h] = [s.size?.w, s.size?.h];

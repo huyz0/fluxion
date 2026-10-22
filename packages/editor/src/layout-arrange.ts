@@ -1,6 +1,8 @@
 // Arranging with a layout in the editor (FR-LAY-005, FR-LAY-001, M13.16): the screen, the selection or a selected container laid out by a
 // registered algorithm, each one `layout.arrange` command (registered by the host from `@fluxion/layout`) and so one undo step. The editor
-// does not depend on the layout package: it names the command and the algorithms and leaves a host without them with a refusal (false).
+// arranges only through that command: it names the command and the algorithms and leaves a host without them with a refusal (false). From
+// `@fluxion/layout` it takes only the pure `safeAreaOf` and `screenFrame`, so Fit's notice judges the area the fit uses (M17.41).
+import { safeAreaOf, screenFrame } from '@fluxion/layout';
 import type { RecordId } from '@fluxion/schema';
 import { shownScreen } from './screen-switch.js';
 import type { ToolCtx } from './tools.js';
@@ -195,9 +197,6 @@ export function tidyUp(ctx: ArrangeHost): boolean {
   return ctx.tools.ctx.session.selection.get().length > 1 ? arrangeSelected(ctx, TIDY) : arrangeScreen(ctx, TIDY);
 }
 
-/** The share of a screen's smaller side between its edge and its safe area: the `fit` layout's default margin (FR-LAY-012). */
-const SAFE_SHARE = 0.05;
-
 type Placed = {
   readonly type?: string;
   readonly name?: unknown;
@@ -207,18 +206,6 @@ type Placed = {
   readonly locks?: { readonly position?: unknown };
   readonly transform?: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
 };
-
-/** The area `fit` puts content in: the screen (1920 x 1080 when it has no size; an infinite screen's viewport) inset by its safe margin. */
-function safeAreaOf(screen: unknown): { x: number; y: number; w: number; h: number } {
-  const s = (screen ?? {}) as { kind?: unknown; size?: { w?: unknown; h?: unknown }; viewport?: { x: number; y: number; w: number; h: number } };
-  const [w, h] = [s.size?.w, s.size?.h];
-  const frame =
-    s.kind === 'infinite' && s.viewport
-      ? s.viewport
-      : { x: 0, y: 0, w: typeof w === 'number' && w > 0 ? w : 1920, h: typeof h === 'number' && h > 0 ? h : 1080 };
-  const margin = SAFE_SHARE * Math.min(frame.w, frame.h);
-  return { x: frame.x + margin, y: frame.y + margin, w: frame.w - 2 * margin, h: frame.h - 2 * margin };
-}
 
 /** Whether `r` is a top-level element `fit` leaves where it is (placed by hand, or locked in place) that is not wholly inside `area`. */
 function leftOutside(r: Placed | undefined, area: { x: number; y: number; w: number; h: number }): boolean {
@@ -234,7 +221,8 @@ function leftOutside(r: Placed | undefined, area: { x: number; y: number; w: num
  * are none.
  */
 function leftOutsideNotice(view: ToolCtx['view'], screenId: RecordId): string {
-  const area = safeAreaOf(view.get(screenId));
+  // the area `fit` itself puts content in: Fit sends no options, so the default margin (M17 final F6)
+  const area = safeAreaOf(screenFrame(view.get(screenId)));
   const left = view.members('byScreen', screenId).filter((id) => leftOutside(view.get(id) as Placed | undefined, area));
   if (left.length === 0) return '';
   const names = left.slice(0, 3).map((id) => {

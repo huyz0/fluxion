@@ -26,6 +26,7 @@ export {
   arrangeCommand,
   type Reader,
   registerArrangeCommand,
+  screenFrame,
 } from './arrange.js';
 export {
   type ArrangeCommandError,

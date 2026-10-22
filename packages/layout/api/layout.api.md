@@ -590,6 +590,9 @@ export type Scorecard = {
 export function scoreLayout(input: LayoutInput, boxes: Boxes): Scorecard;
 
 // @public
+export function screenFrame(screen: unknown): Box;
+
+// @public
 export function snapBoxes(input: LayoutInput, boxes: Boxes): Boxes;
 
 // @public

@@ -33,6 +33,7 @@
     "@fluxion/dsl": "workspace:*",
     "@fluxion/format": "workspace:*",
     "@fluxion/geometry": "workspace:*",
+    "@fluxion/layout": "workspace:*",
     "@fluxion/player": "workspace:*",
     "@fluxion/render": "workspace:*",
     "@fluxion/routing": "workspace:*",

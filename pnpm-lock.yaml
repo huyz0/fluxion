@@ -528,6 +528,9 @@ importers:
       '@fluxion/geometry':
         specifier: workspace:*
         version: link:../geometry
+      '@fluxion/layout':
+        specifier: workspace:*
+        version: link:../layout
       '@fluxion/player':
         specifier: workspace:*
         version: link:../player

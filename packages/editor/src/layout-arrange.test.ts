@@ -1,5 +1,6 @@
 // FR-LAY-005, FR-LAY-001: the editor's Arrange commands send the layout command the right scope; the layout itself is tested in @fluxion/layout and the studio.
 import { createCore } from '@fluxion/core';
+import { safeAreaOf, screenFrame } from '@fluxion/layout';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
@@ -169,6 +170,21 @@ describe('Fit with hand-placed shapes (FR-LAY-012, M17.31)', () => {
     expect(fitToScreen(inside.ctx)).toBe(true);
     expect(fitToScreen(setup(false).ctx)).toBe(false);
     expect([...inside.notices]).toEqual([]);
+  });
+
+  it('FR-LAY-012: the notice judges against the safe area the fit layout uses (one safeAreaOf, M17 final F6)', () => {
+    const t = setup();
+    t.core.execute('element.ungroup', { ids: [t.group] });
+    const area = safeAreaOf(screenFrame(t.core.store.get(t.screen)));
+    expect(area).toEqual({ x: 30, y: 30, w: 940, h: 540 });
+    // flush with the safe area's right edge: inside, no notice
+    pin(t, t.a, { x: area.x + area.w - 100, y: 100 });
+    expect(fitToScreen(t.ctx)).toBe(true);
+    expect(t.notices).toEqual([]);
+    // one pixel past it: named
+    pin(t, t.a, { x: area.x + area.w - 99, y: 100 }, { name: 'Edge' });
+    expect(fitToScreen(t.ctx)).toBe(true);
+    expect(t.notices).toEqual(['Left in place, outside the safe area: "Edge" (it is pinned or locked, so Fit does not move it).']);
   });
 
   it('FR-LAY-012: with a background runner the notice replaces "Arranging…" once the fit is done', async () => {
