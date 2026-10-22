@@ -16,6 +16,7 @@ import {
   snapBoxes,
   stackLayout,
   swimlaneLayout,
+  tidyLayout,
   timelineLayout,
   treeLayout,
 } from './index.js';
@@ -64,6 +65,7 @@ const ALGORITHMS: ReadonlyArray<readonly [string, LayoutAlgorithm<never>, fc.Arb
   ['packing', packingLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['timeline', timelineLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['swimlane', swimlaneLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
+  ['tidy', tidyLayout as never, fc.record({ grid: fc.constantFrom(0, 8), tolerance: fc.integer({ min: 0, max: 20 }) })],
 ];
 
 const graph = fc.integer({ min: 1, max: 14 }).chain((count) =>

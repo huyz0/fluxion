@@ -42,6 +42,7 @@ describe('studio bootstrap (FR-EDT-001, ADR-0017)', () => {
       'radial',
       'stack',
       'swimlane',
+      'tidy',
       'timeline',
       'tree',
     ]);

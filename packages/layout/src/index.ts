@@ -13,8 +13,10 @@ import { packingLayout } from './packing.js';
 import { radialLayout } from './radial.js';
 import { stackLayout } from './stack.js';
 import { swimlaneLayout } from './swimlane.js';
+import { tidyLayout } from './tidy.js';
 import { timelineLayout } from './timeline.js';
 import { orgchartLayout, treeLayout } from './tree.js';
+import type { LayoutAlgorithm } from './types.js';
 
 export {
   type AlgorithmByName,
@@ -53,6 +55,7 @@ export { type Scorecard, scoreLayout } from './scorecard.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
 export { type SwimlaneOptions, swimlaneLayout } from './swimlane.js';
+export { type TidyOptions, tidyLayout } from './tidy.js';
 export { type TimelineOptions, timelineLayout } from './timeline.js';
 export { orgchartLayout, type TreeOptions, treeLayout } from './tree.js';
 export type {
@@ -75,26 +78,34 @@ export type { AbortSignalWithEvents, HostJob, LayoutHost } from './worker/host.j
 export type { LayoutJobMessage } from './worker/protocol.js';
 
 /**
+ * The built-in layouts, in registration order: what `registerBuiltInLayouts` registers and what a layout worker serves.
+ *
+ * @public
+ */
+export const builtInLayouts: readonly LayoutAlgorithm<never>[] = [
+  stackLayout,
+  gridLayout,
+  layeredLayout,
+  treeLayout,
+  orgchartLayout,
+  radialLayout,
+  mindmapLayout,
+  forceLayout,
+  circularLayout,
+  packingLayout,
+  timelineLayout,
+  swimlaneLayout,
+  tidyLayout,
+] as unknown as readonly LayoutAlgorithm<never>[];
+
+/**
  * Register the built-in layouts in a host's `layouts` registry, as source `core` (built-ins use the plugin API, 03 §4).
  *
  * @public
  */
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>['register']> {
   // every built-in is tried; the first refusal is what comes back (the others stay registered), else the last success
-  const results = [
-    stackLayout,
-    gridLayout,
-    layeredLayout,
-    treeLayout,
-    orgchartLayout,
-    radialLayout,
-    mindmapLayout,
-    forceLayout,
-    circularLayout,
-    packingLayout,
-    timelineLayout,
-    swimlaneLayout,
-  ].map((layout) => layouts.register(layout.id, layout, 'core'));
+  const results = builtInLayouts.map((layout) => layouts.register(layout.id, layout, 'core'));
   return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }
 

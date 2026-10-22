@@ -29,4 +29,25 @@ test.describe('arranging a selection with a layout', { tag: '@desktop' }, () => 
     await editor.toolbarButton('Undo').click();
     expect((await boxes(editor)).map((b) => [Math.round(b.x), Math.round(b.y)])).toEqual(before.map((b) => [Math.round(b.x), Math.round(b.y)]));
   });
+
+  test('FR-LAY-011: Tidy up from the context menu pulls two overlapping shapes apart with a small move, and one undo brings them back', async ({ page }) => {
+    const editor = new EditorPage(page);
+    await editor.open('new');
+    // two shapes 12 % wide, 10 % apart: they overlap by a sliver
+    for (const [i, fx] of [0.1, 0.2].entries()) await shapeAt(page, editor, fx, i + 1);
+    const before = await boxes(editor);
+    expect(anyOverlap(before)).toBe(true);
+    await page.keyboard.press('ControlOrMeta+a');
+    const on = await onScreen(editor, 0.18, 0.4);
+    await page.mouse.click(on.x, on.y, { button: 'right' });
+    await page.getByRole('menuitem', { name: 'Tidy up' }).click();
+    await expect.poll(async () => anyOverlap(await boxes(editor)), { message: 'the tidied shapes no longer overlap' }).toBe(false);
+    // a cleanup, not a re-layout: each shape moved less than its own width
+    for (const [i, b] of (await boxes(editor)).entries()) {
+      const was = before[i] as Box;
+      expect(Math.hypot(b.x - was.x, b.y - was.y)).toBeLessThan(was.width);
+    }
+    await editor.toolbarButton('Undo').click();
+    expect((await boxes(editor)).map((b) => [Math.round(b.x), Math.round(b.y)])).toEqual(before.map((b) => [Math.round(b.x), Math.round(b.y)]));
+  });
 });

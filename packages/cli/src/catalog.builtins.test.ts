@@ -21,6 +21,7 @@ describe('the built-in catalog (FR-AI-002)', () => {
       'radial',
       'stack',
       'swimlane',
+      'tidy',
       'timeline',
       'tree',
     ]);

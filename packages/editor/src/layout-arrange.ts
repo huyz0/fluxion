@@ -18,10 +18,14 @@ export const LAYOUT_CHOICES = [
  * @public
  */
 export function registeredLayoutIds(entries: readonly (readonly [string, unknown])[]): readonly string[] {
-  const builtIn = new Set<string>(LAYOUT_CHOICES.map(([name]) => name));
+  // `tidy` has its own command, "Tidy up"
+  const builtIn = new Set<string>([...LAYOUT_CHOICES.map(([name]) => name), TIDY]);
   const ids = entries.flatMap(([key, value]) => (typeof (value as { id?: unknown } | null)?.id === 'string' && !builtIn.has(key) ? [key] : []));
   return [...new Set(ids)].sort();
 }
+
+/** The registered name of the minimal-movement cleanup (FR-LAY-011). */
+const TIDY = 'tidy';
 
 /** The kinds of element that hold others and may carry a layout of their own. */
 const CONTAINER_KINDS = new Set(['group', 'frame']);
@@ -166,4 +170,14 @@ export function arrangeContainer(ctx: ArrangeHost): boolean {
   const screenId = shownScreen(t.view, t.session.screen.get());
   const containerId = selectedContainer(t);
   return screenId !== undefined && containerId !== undefined && start(ctx, { screenId, scope: { containerId } });
+}
+
+/**
+ * Tidy up (FR-LAY-011): align near-aligned boxes, snap them to the grid and pull overlapping ones apart, each moved a bounded distance; the
+ * selected elements when two or more are selected, else the whole shown screen. False when there is nothing to tidy or the document refuses.
+ *
+ * @public
+ */
+export function tidyUp(ctx: ArrangeHost): boolean {
+  return ctx.tools.ctx.session.selection.get().length > 1 ? arrangeSelected(ctx, TIDY) : arrangeScreen(ctx, TIDY);
 }

@@ -87,6 +87,9 @@ export type Boxes = {
 export function buildSnapshot(records: readonly SnapshotRecord[], request: SnapshotRequest): SnapshotInput;
 
 // @public
+export const builtInLayouts: readonly LayoutAlgorithm<never>[];
+
+// @public
 export const circularLayout: LayoutAlgorithm<CircularOptions>;
 
 // @public
@@ -510,6 +513,16 @@ export type SwimlaneOptions = {
     readonly nodeGap?: number | undefined;
     readonly rankGap?: number | undefined;
     readonly padding: number;
+};
+
+// @public
+export const tidyLayout: LayoutAlgorithm<TidyOptions>;
+
+// @public
+export type TidyOptions = {
+    readonly grid: number;
+    readonly tolerance: number;
+    readonly maxMove?: number | undefined;
 };
 
 // @public

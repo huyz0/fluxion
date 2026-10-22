@@ -34,6 +34,7 @@ const ARRANGE = [
   // the layout lines (M13.16)
   ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.selection.${n}`),
   'layout.arrange.container',
+  'layout.tidy',
 ];
 
 /** The commands of each menu, in order. */

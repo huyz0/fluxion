@@ -816,6 +816,12 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.layout.tidy": {
+    "message": "Tidy up",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.mode.present": {
     "message": "Present from the first visible screen",
     "origin": [

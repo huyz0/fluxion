@@ -48,6 +48,7 @@ describe('context menu model (FR-EDT-013)', () => {
       'Arrange the selection (grid)',
       'Arrange the selection (stack)',
       'Arrange the container',
+      'Tidy up',
     ]);
     expect(titles('screen')).toEqual([
       'Paste',

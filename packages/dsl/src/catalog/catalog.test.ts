@@ -32,6 +32,7 @@ describe('the AI catalog (FR-AI-002)', () => {
       ['radial', 'core'],
       ['stack', 'core'],
       ['swimlane', 'core'],
+      ['tidy', 'core'],
       ['timeline', 'core'],
       ['tree', 'core'],
     ]);

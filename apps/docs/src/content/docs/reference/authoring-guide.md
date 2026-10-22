@@ -114,6 +114,7 @@ screens:
 - `radial` (core): Tree on rings around its root, one ring per depth, for hierarchies seen from the centre.; options: spacing, nodeGap, rankGap, padding
 - `stack` (core): Boxes in one row or column, with an even gap.; options: direction, gap, align, padding, wrap
 - `swimlane` (core): Swimlanes: a layered flow inside each lane hint, the lanes stacked as bands.; options: direction, spacing, nodeGap, rankGap, padding
+- `tidy` (core): Tidy up: keeps the boxes where they are, aligns near-aligned ones, snaps to the grid and removes overlaps with bounded moves.; options: grid, tolerance, maxMove
 - `timeline` (core): Timeline: events in date order along one axis, one band per lane hint.; options: direction, spacing, nodeGap, rankGap, padding
 - `tree` (core): Tidy tree along the edges, for hierarchies with boxes of any size.; options: direction, spacing, nodeGap, rankGap, padding, compactLeaves
 

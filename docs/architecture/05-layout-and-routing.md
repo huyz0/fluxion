@@ -142,7 +142,7 @@ stays as designed above for the milestones that add it (constraints and `increme
 | `mindmap` | Two-sided balanced tree | `d3-flextree` ×2, mirrored | main |
 | `circular`, `packing` | Ring; rect packing (shelf/skyline) | own TS | main |
 | `force` | Organic networks, pin-friendly, seeded | `d3-force` (`randomSource(rng)`) + rect collide | worker if >200 nodes |
-| `constrained` / tidy | Minimal-movement cleanup, align, non-overlap (LAY-011) | WebCola (VPSC, constraints) | worker |
+| `tidy` | Minimal-movement cleanup (LAY-011, M17): align near-aligned runs (centres within `tolerance`), snap starts to the grid, the overlap pass with the runs as `align` constraints, each move pulled back to its bound where that leaves no overlap (a pile is pulled apart whatever the bound; the bound holds whenever no two boxes start on or against each other); the editor's "Tidy up" (selection, else the screen) | own TS (WebCola not needed) | either (the studio's Arrange uses the worker, which serves every built-in) |
 | `swimlane` | Lanes × phases, `layered` per lane + lane pass | dagre + own | main |
 | `layouts-elk:*` (pack) | `layered` with ports, compound, labels; `stress`; `rectpacking`; `mrtree` | `elkjs`, **unmodified**, lazy worker chunk (EPL-2.0) | worker |
 

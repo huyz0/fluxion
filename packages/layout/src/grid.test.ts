@@ -155,6 +155,7 @@ describe('grid layout (FR-LAY-002)', () => {
       'radial',
       'stack',
       'swimlane',
+      'tidy',
       'timeline',
       'tree',
     ]);
@@ -173,6 +174,7 @@ describe('grid layout (FR-LAY-002)', () => {
       'radial',
       'stack',
       'swimlane',
+      'tidy',
       'timeline',
       'tree',
     ]);

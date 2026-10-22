@@ -33,6 +33,7 @@ describe('layout registry (FR-LAY-001)', () => {
       ['stack', '2'],
       ['swimlane', '1'],
       ['test:ring', '2'],
+      ['tidy', '1'],
       ['timeline', '1'],
       ['tree', '1'],
     ]);
