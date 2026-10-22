@@ -2005,3 +2005,6 @@ Template registry (`templates` core registry, registerTemplate/listTemplates/bui
 
 ## M17.15
 Templates matrix.2x2, venn, funnel, timeline.milestones, comparison; goldens, property tests, portrait adapt. Reviewer pass round 1 (2 minor findings fixed as doc/test wording).
+
+## M17.16
+DSL template screens (`template:`/`items:`/`options:`), per-screen built slugs, marked template connectors, catalog templates section, patch setLayout templates, example + golden. Review: changes (4 findings: slug collisions x2, decompile edge loss, frame mismatch) -> fixed -> pass round 2. Note: schema preservation.test.ts fast-check flaked once (seed 1279221244); player-inline browser test flaked once.
