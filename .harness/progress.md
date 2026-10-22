@@ -1969,3 +1969,4 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 
 ## M17.27
 - M17.27 5cbfd824 ci fix: context-menu spec lists every layout's Arrange entry; inline-player tests retry a lost arrow press; review pass
+- M17.28 6457281e osv advisories: vite 8.3.5, vitest 5.0.5, storybook 10.6.3, overrides markdown-it and launch-editor; budget cold setup pending CI
