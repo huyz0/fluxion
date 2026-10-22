@@ -1963,3 +1963,4 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 - M17.5 b3264afe force layout (seeded FR, pins), review pass r2
 - M17.6 5742a5fc circular and packing layouts, goldens circular-12 and packing-50, review pass
 - M17.7 62ce6ef9 timeline and swimlane layouts, goldens timeline-lanes and swimlane-3x4; review F1 (cross-lane hand-overs ran backwards) and F2 (vertical lanes untested) fixed
+- M17.8 1c5fc229 constraints post-pass (align, sameRank, order, spacing; overlap keeps alignment); review F1 (bad axis crashed the pass), F2 (shared-member groups unmerged) and F3 (stale doc) fixed
