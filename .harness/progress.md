@@ -2062,3 +2062,6 @@ Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-rec
 
 ## M17.25 part 1
 - ADR-0170: calibration units in nightly perf job (frozen calibration bench, p50 ratio, median of 5, tolerance from thresholds). Calibrated baselines empty: nightly fails with record values until part 2. M17.42 added. Review: 2 rounds.
+
+## M17.38 (part 2)
+9e4e4480. check-drift refuses a raised/removed/non-numeric entry in perf-baseline.json or perf-baseline.calibrated.json without a `Threshold-change:` trailer citing an ADR; lowered or new entries pass. Harness cases for both files; mutant (raise never flagged) fails 2. performance.md rules 18-19 name the root files and gates. Reviewer pass round 2 (round 1 used a wrong verdict word, re-issued by the reviewer). Left: record tree/radial/mindmap units from nightly 39861908556.
