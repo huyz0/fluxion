@@ -4,10 +4,12 @@
  * @packageDocumentation
  */
 import type { Registry } from '@fluxion/core';
+import { circularLayout } from './circular.js';
 import { forceLayout } from './force.js';
 import { gridLayout } from './grid.js';
 import { layeredLayout } from './layered.js';
 import { mindmapLayout } from './mindmap.js';
+import { packingLayout } from './packing.js';
 import { radialLayout } from './radial.js';
 import { stackLayout } from './stack.js';
 import { orgchartLayout, treeLayout } from './tree.js';
@@ -29,6 +31,7 @@ export {
   type AsyncArrangeResult,
   createAsyncArranger,
 } from './arrange-async.js';
+export { type CircularOptions, circularLayout } from './circular.js';
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type ForceOptions, forceLayout } from './force.js';
 export { type GridOptions, gridLayout } from './grid.js';
@@ -36,6 +39,7 @@ export { type LayeredOptions, layeredLayout } from './layered.js';
 export { type MindmapOptions, mindmapLayout } from './mindmap.js';
 export { layoutNested, type NestedOptions, type NestedRunner } from './nested.js';
 export { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
+export { type PackingOptions, packingLayout } from './packing.js';
 export { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
 export { createLayoutCache, fingerprintOf, type LayoutCache, type LayoutRequest, layoutSync } from './pipeline.js';
 export { type RadialOptions, radialLayout } from './radial.js';
@@ -70,9 +74,18 @@ export type { LayoutJobMessage } from './worker/protocol.js';
  */
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>['register']> {
   // every built-in is tried; the first refusal is what comes back (the others stay registered), else the last success
-  const results = [stackLayout, gridLayout, layeredLayout, treeLayout, orgchartLayout, radialLayout, mindmapLayout, forceLayout].map((layout) =>
-    layouts.register(layout.id, layout, 'core'),
-  );
+  const results = [
+    stackLayout,
+    gridLayout,
+    layeredLayout,
+    treeLayout,
+    orgchartLayout,
+    radialLayout,
+    mindmapLayout,
+    forceLayout,
+    circularLayout,
+    packingLayout,
+  ].map((layout) => layouts.register(layout.id, layout, 'core'));
   return results.find((r) => !r.ok) ?? (results[results.length - 1] as (typeof results)[number]);
 }
 

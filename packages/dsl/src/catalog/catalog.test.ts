@@ -22,11 +22,13 @@ describe('the AI catalog (FR-AI-002)', () => {
     expect(diagnostics).toEqual([]);
     expect(catalog.shapes).toEqual([{ id: 'basic:star', describe: 'A star with a chosen number of points.', source: 'basic' }]);
     expect(catalog.layouts.map((l) => [l.id, l.source])).toEqual([
+      ['circular', 'core'],
       ['force', 'core'],
       ['grid', 'core'],
       ['layered', 'core'],
       ['mindmap', 'core'],
       ['orgchart', 'core'],
+      ['packing', 'core'],
       ['radial', 'core'],
       ['stack', 'core'],
       ['tree', 'core'],

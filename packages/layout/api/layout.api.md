@@ -84,6 +84,17 @@ export type Boxes = {
 export function buildSnapshot(records: readonly SnapshotRecord[], request: SnapshotRequest): SnapshotInput;
 
 // @public
+export const circularLayout: LayoutAlgorithm<CircularOptions>;
+
+// @public
+export type CircularOptions = {
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly rankGap?: number | undefined;
+    readonly padding: number;
+};
+
+// @public
 export type ContainerScope = {
     readonly containerId: string;
 };
@@ -341,6 +352,16 @@ export function overlapCount(boxes: Boxes): number;
 export type OverlapOptions = {
     readonly margin?: number;
     readonly preferAxis?: "x" | "y";
+};
+
+// @public
+export const packingLayout: LayoutAlgorithm<PackingOptions>;
+
+// @public
+export type PackingOptions = {
+    readonly spacing: "compact" | "comfortable" | "spacious";
+    readonly nodeGap?: number | undefined;
+    readonly padding: number;
 };
 
 // @public

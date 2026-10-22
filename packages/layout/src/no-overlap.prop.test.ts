@@ -4,11 +4,13 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   applyPins,
+  circularLayout,
   forceLayout,
   gridLayout,
   layeredLayout,
   mindmapLayout,
   orgchartLayout,
+  packingLayout,
   radialLayout,
   removeOverlap,
   snapBoxes,
@@ -56,6 +58,8 @@ const ALGORITHMS: ReadonlyArray<readonly [string, LayoutAlgorithm<never>, fc.Arb
   ['radial', radialLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['force', forceLayout as never, fc.record({ iterations: fc.integer({ min: 1, max: 60 }), spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['mindmap', mindmapLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
+  ['circular', circularLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
+  ['packing', packingLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
 ];
 
 const graph = fc.integer({ min: 1, max: 14 }).chain((count) =>
