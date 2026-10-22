@@ -2026,3 +2026,6 @@ Layout picker in the inspector (select of layouts; group/frame, screen or select
 
 ## M17.19
 AI panel settings (key, base URL, model, embed toggle); client strings in the catalog. Reviewer round 2 pass (F1 key saved as openai with a base URL; F2 base URL validated). e2e ai.panel-settings chromium+webkit green.
+
+## M17.20
+packs/layouts-elk: elkjs 0.12.0 (EPL-2.0, NOTICE) lazy, once per realm, driven synchronously via its dispatcher; layouts-elk:layered/stress/rectpacking. Reviewer r1 F1 (second load in a worker threw) fixed by memoising; r2 pass. Lockfile changed: budget cold setup pending-ci, run check-budget --record --cold-from-ci 19880eec after CI.
