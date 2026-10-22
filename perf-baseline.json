@@ -1,4 +1,20 @@
 {
+  "circular-100": 2,
+  "circular-500": 19,
+  "force-100": 15,
+  "force-500": 237,
   "layered-100": 58,
-  "layered-500": 211
+  "layered-500": 211,
+  "mindmap-100": 2,
+  "mindmap-500": 14,
+  "packing-100": 3,
+  "packing-500": 23,
+  "radial-100": 2,
+  "radial-500": 17,
+  "swimlane-100": 31,
+  "swimlane-500": 124,
+  "timeline-100": 3,
+  "timeline-500": 20,
+  "tree-100": 2,
+  "tree-500": 16
 }
