@@ -127,7 +127,7 @@ beforeEach(() => {
 afterEach(() => root.remove());
 
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-/** A worker started from a Blob URL can take longer than vi.waitFor's 1 s on a loaded runner (CI macOS, the staged ladder in parallel). */
+/** A first draw, a worker started from a Blob URL or an image load can take longer than vi.waitFor's 1 s on a loaded runner (CI macOS, the ladder in parallel); the describes allow 60 s a test for the waits to chain. */
 const SLOW = { timeout: 15_000 };
 const shown = () => root.querySelector('.fx-screen')?.getAttribute('data-screen-id');
 const press = async (key: string) => {
@@ -144,7 +144,7 @@ const pressUntil = (key: string, reached: () => boolean) =>
       if (!reached()) await press(key);
       expect(reached()).toBe(true);
     },
-    { timeout: 5000, interval: 100 },
+    { timeout: 15_000, interval: 100 },
   );
 
 /** One screen where an orthogonal connector's cheap route runs through a wall between its ends, which the global pass goes around. */
@@ -160,7 +160,7 @@ async function walledFile(): Promise<Uint8Array> {
   return zip.value;
 }
 
-describe('the routing chunk of the one-file player (FR-RTE-003, NFR-SIZE-001; M16.28)', () => {
+describe('the routing chunk of the one-file player (FR-RTE-003, NFR-SIZE-001; M16.28)', { timeout: 60_000 }, () => {
   const routes = () => root.getAttribute('data-routes');
   const passes = () => [...root.querySelectorAll('svg.fx-connector')].map((c) => c.getAttribute('data-route-pass'));
 
@@ -226,14 +226,14 @@ describe('the routing chunk of the one-file player (FR-RTE-003, NFR-SIZE-001; M1
   });
 });
 
-describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
+describe('the one-file player script (FR-FIL-002, FR-EXP-001)', { timeout: 60_000 }, () => {
   it('FR-FIL-002: the script defines Fluxion.start, which opens a .flux, draws its first screen with the bundled shapes, and the arrow keys move through the screens', async () => {
     const { bytes, ids } = await deckFile();
     expect(typeof window.Fluxion?.start).toBe('function');
     const result = await window.Fluxion?.start(bytes, root);
     expect(result?.ok).toBe(true);
     // a slow runner draws later than two frames: wait for the screen rather than for a count of frames
-    await vi.waitFor(() => expect(shown()).toBe(ids[0]));
+    await vi.waitFor(() => expect(shown()).toBe(ids[0]), SLOW);
     // the rectangle is the basic pack's shape: drawn by the bundled registries
     expect(root.querySelector('.fx-screen svg, .fx-screen [data-element-id]')).not.toBeNull();
     await pressUntil('ArrowRight', () => shown() === ids[1]);
@@ -245,7 +245,7 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
   it('FR-FIL-002: an image of the file is drawn from a blob URL made from its own verified bytes, and is released on unmount', async () => {
     const { bytes } = await deckFile();
     const result = await window.Fluxion?.start(bytes, root);
-    await vi.waitFor(() => expect(shown()).not.toBeUndefined());
+    await vi.waitFor(() => expect(shown()).not.toBeUndefined(), SLOW);
     await pressUntil('ArrowRight', () => root.querySelector('image, img') !== null);
     const image = root.querySelector('image, img');
     const href = image?.getAttribute('href') ?? image?.getAttribute('src') ?? '';
@@ -259,8 +259,8 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
   it('NFR-SEC-001: the security corpus through the one-file player leaves no script, handler or unsafe URL in the DOM', async () => {
     const result = await window.Fluxion?.start(await hostileFile(), root);
     expect(result?.ok, result?.message).toBe(true);
-    await vi.waitFor(() => expect(shown()).not.toBeUndefined());
-    await vi.waitFor(() => expect(root.querySelectorAll('img, image').length).toBe(SVGS.length));
+    await vi.waitFor(() => expect(shown()).not.toBeUndefined(), SLOW);
+    await vi.waitFor(() => expect(root.querySelectorAll('img, image').length).toBe(SVGS.length), SLOW);
     expect(root.querySelector('script, iframe, object, embed, foreignObject, style')).toBeNull();
     const attributes = [...root.querySelectorAll('*')].flatMap((el) => [...el.attributes].map((a) => ({ tag: el.tagName, name: a.name, value: a.value })));
     // no event handler, no script URL anywhere
