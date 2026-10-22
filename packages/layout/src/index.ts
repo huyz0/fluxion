@@ -57,6 +57,29 @@ export { type Scorecard, scoreLayout } from './scorecard.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
 export { type SwimlaneOptions, swimlaneLayout } from './swimlane.js';
+export { type CycleOptions, cycleBasicTemplate } from './templates/cycle.js';
+export { hierarchyOrgTemplate, type OrgOptions } from './templates/hierarchy.js';
+export { type ChevronOptions, type ProcessOptions, processBasicTemplate, processChevronTemplate } from './templates/process.js';
+export { type PyramidOptions, pyramidTemplate } from './templates/pyramid.js';
+export {
+  type BuildTemplateResult,
+  buildTemplate,
+  builtInTemplates,
+  listTemplates,
+  registerBuiltInTemplates,
+  registerTemplate,
+  templateOptionsJsonSchema,
+} from './templates/registry.js';
+export type {
+  TemplateConnectorDraft,
+  TemplateContext,
+  TemplateDef,
+  TemplateItem,
+  TemplateResult,
+  TemplateShapeDraft,
+  TemplateSlot,
+  TemplateStyle,
+} from './templates/types.js';
 export { type TidyOptions, tidyLayout } from './tidy.js';
 export { type TimelineOptions, timelineLayout } from './timeline.js';
 export { orgchartLayout, type TreeOptions, treeLayout } from './tree.js';

@@ -6,6 +6,7 @@
 
 import { AnyCommand } from '@fluxion/core';
 import { Box } from '@fluxion/geometry';
+import { FontSpec } from '@fluxion/core';
 import { Registry } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { TextMeasurer } from '@fluxion/core';
@@ -87,7 +88,25 @@ export type Boxes = {
 export function buildSnapshot(records: readonly SnapshotRecord[], request: SnapshotRequest): SnapshotInput;
 
 // @public
+export function buildTemplate<O>(template: TemplateDef<O>, items: unknown, options: unknown, ctx: TemplateContext): BuildTemplateResult;
+
+// @public
+export type BuildTemplateResult = {
+    readonly ok: true;
+    readonly value: TemplateResult;
+} | {
+    readonly ok: false;
+    readonly message: string;
+};
+
+// @public
 export const builtInLayouts: readonly LayoutAlgorithm<never>[];
+
+// @public
+export const builtInTemplates: readonly TemplateDef<never>[];
+
+// @public
+export type ChevronOptions = Omit<ProcessOptions, "direction">;
 
 // @public
 export const circularLayout: LayoutAlgorithm<CircularOptions>;
@@ -113,6 +132,15 @@ export function createLayoutCache(limit?: number): LayoutCache;
 
 // @public
 export function createRng(seed: number): () => number;
+
+// @public
+export const cycleBasicTemplate: TemplateDef<CycleOptions>;
+
+// @public
+export type CycleOptions = {
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
 
 // @public
 export type Err<E> = {
@@ -163,6 +191,9 @@ export type GridOptions = {
     readonly align: "start" | "center" | "end";
     readonly padding: number;
 };
+
+// @public
+export const hierarchyOrgTemplate: TemplateDef<OrgOptions>;
 
 // @public
 export type HostJob = Omit<LayoutJobMessage, "type" | "id" | "revision" | "seed" | "fontHash" | "post"> & {
@@ -358,6 +389,9 @@ export function layoutSync<O>(req: LayoutRequest<O>): Result<LaidOut>;
 export function listLayouts(layouts: Registry<string, unknown>): readonly LayoutAlgorithm<unknown>[];
 
 // @public
+export function listTemplates(templates: Registry<string, unknown>): readonly TemplateDef<unknown>[];
+
+// @public
 export const mindmapLayout: LayoutAlgorithm<MindmapOptions>;
 
 // @public
@@ -401,6 +435,14 @@ export type OptionsResult<O> = {
 export const orgchartLayout: LayoutAlgorithm<TreeOptions>;
 
 // @public
+export type OrgOptions = {
+    readonly gap: number;
+    readonly levelGap: number;
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
+
+// @public
 export function overlapCount(boxes: Boxes): number;
 
 // @public
@@ -421,6 +463,30 @@ export type PackingOptions = {
 
 // @public
 export type PostPassId = "pins" | "constraints" | "overlap" | "fit" | "snap";
+
+// @public
+export const processBasicTemplate: TemplateDef<ProcessOptions>;
+
+// @public
+export const processChevronTemplate: TemplateDef<ChevronOptions>;
+
+// @public
+export type ProcessOptions = {
+    readonly direction: "right" | "down";
+    readonly gap: number;
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
+
+// @public
+export type PyramidOptions = {
+    readonly gap: number;
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
+
+// @public
+export const pyramidTemplate: TemplateDef<PyramidOptions>;
 
 // @public
 export const radialLayout: LayoutAlgorithm<RadialOptions>;
@@ -446,6 +512,9 @@ export function registerArrangeCommand(commands: Registry<string, AnyCommand>, l
 export function registerBuiltInLayouts(layouts: Registry<string, unknown>): ReturnType<Registry<string, unknown>["register"]>;
 
 // @public
+export function registerBuiltInTemplates(templates: Registry<string, unknown>): RegisterLayoutResult;
+
+// @public
 export function registerLayout<O>(layouts: Registry<string, unknown>, algorithm: LayoutAlgorithm<O>, source: string): RegisterLayoutResult;
 
 // @public
@@ -455,6 +524,9 @@ export type RegisterLayoutResult = {
     readonly ok: false;
     readonly message: string;
 };
+
+// @public
+export function registerTemplate<O>(templates: Registry<string, unknown>, template: TemplateDef<O>, source: string): RegisterLayoutResult;
 
 // @public
 export function removeOverlap(input: LayoutInput, boxes: Boxes, options?: OverlapOptions): Boxes;
@@ -533,6 +605,86 @@ export type SwimlaneOptions = {
     readonly nodeGap?: number | undefined;
     readonly rankGap?: number | undefined;
     readonly padding: number;
+};
+
+// @public
+export type TemplateConnectorDraft = {
+    readonly key: string;
+    readonly slot: string;
+    readonly from: string;
+    readonly to: string;
+    readonly style: TemplateStyle;
+};
+
+// @public
+export type TemplateContext = {
+    readonly frame: Box;
+    readonly measure: TextMeasurer;
+    readonly font?: FontSpec;
+};
+
+// @public
+export type TemplateDef<O> = {
+    readonly id: string;
+    readonly describe: string;
+    readonly version: string;
+    readonly items: ZodType<readonly TemplateItem[]>;
+    readonly schema: ZodType<O>;
+    readonly slots: {
+        readonly [slot: string]: TemplateSlot;
+    };
+    build(items: readonly TemplateItem[], options: O, ctx: TemplateContext): TemplateResult;
+    adapt?(frame: Box, options: O): O;
+};
+
+// @public
+export type TemplateItem = {
+    readonly label: string;
+    readonly detail?: string;
+    readonly children?: readonly TemplateItem[];
+};
+
+// @public
+export function templateOptionsJsonSchema(template: TemplateDef<unknown>): unknown;
+
+// @public
+export type TemplateResult = {
+    readonly shapes: readonly TemplateShapeDraft[];
+    readonly connectors: readonly TemplateConnectorDraft[];
+};
+
+// @public
+export type TemplateShapeDraft = {
+    readonly key: string;
+    readonly slot: string;
+    readonly index: number;
+    readonly shape: string;
+    readonly box: Box;
+    readonly params?: {
+        readonly [name: string]: number;
+    };
+    readonly label: string;
+    readonly detail?: string;
+    readonly style: TemplateStyle;
+};
+
+// @public
+export type TemplateSlot = {
+    readonly shape: string;
+    readonly role: string;
+};
+
+// @public
+export type TemplateStyle = {
+    readonly variant: string;
+    readonly fill?: string;
+    readonly stroke: {
+        readonly color: string;
+        readonly width: number;
+    };
+    readonly font?: {
+        readonly color: string;
+    };
 };
 
 // @public

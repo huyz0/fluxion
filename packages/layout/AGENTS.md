@@ -18,4 +18,5 @@ Layout interface (v1, ADR-0033), the built-in algorithms `grid`, `stack` and `la
 - Determinism is the contract (FR-LAY-008): canonical order (`order`, then id), the seeded `ctx.rng` only, fixed iteration counts, snap to 0.5 px on the way out. Ids such as `constructor` or `__proto__` must work: use `Map`, never plain objects, for ids.
 - Worker glue (`Worker`, `postMessage`, `self`) lives only under `src/worker`; the gate `m13-complete` checks it.
 - The overlap pass is our own sweep (ADR-0034); do not add a solver without an ADR.
+- Smart templates (ADR-0047) live in `src/templates/`: they return drafts, never records, and style only with theme tokens and the slot role as `variant`.
 - A change to a built-in's output needs a golden update with the reason in the commit (and a `version` bump once the algorithm has shipped).

@@ -55,6 +55,7 @@ runs the same schema.
 | player | `markers` | ✅ SVG path + refs | `core.markers` |
 | player | `routers` | — | `core.routers` |
 | player | `layouts` | — (usually `worker`) | `core.layouts` |
+| editor | `templates` (ADR-0047) | — | `core.templates` |
 | player | `effects`, `transitions` | ✅ presets over built-in primitives; code for new primitives | `core.effects`, `core.transitions` |
 | player | `themes`, `fonts` | ✅ DTCG tokens, WOFF2 assets | `core.themes`, `core.fonts` |
 | player | `components` | — | `render.components` |

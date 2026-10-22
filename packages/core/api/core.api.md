@@ -113,7 +113,7 @@ export const CORE_COMMANDS: readonly AnyCommand[];
 export const CORE_HOOKS: ReadonlyArray<readonly [string, IntegrityHook]>;
 
 // @public
-export const CORE_REGISTRY_NAMES: readonly ["elementKinds", "shapeDefs", "markers", "routers", "layouts", "effects", "transitions", "themes", "fonts", "commands", "integrityHooks", "importers", "exporters", "dslMacros", "lintRules"];
+export const CORE_REGISTRY_NAMES: readonly ["elementKinds", "shapeDefs", "markers", "routers", "layouts", "templates", "effects", "transitions", "themes", "fonts", "commands", "integrityHooks", "importers", "exporters", "dslMacros", "lintRules"];
 
 // @public
 export type CoreError = {

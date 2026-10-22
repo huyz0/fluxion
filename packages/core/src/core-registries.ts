@@ -18,6 +18,7 @@ export const CORE_REGISTRY_NAMES = [
   'markers',
   'routers',
   'layouts',
+  'templates',
   'effects',
   'transitions',
   'themes',
@@ -62,7 +63,7 @@ export type CoreRegistries = {
  *
  * @public
  */
-export const DESCRIBED_REGISTRY_NAMES: readonly CoreRegistryName[] = ['shapeDefs', 'markers', 'routers', 'layouts', 'effects', 'transitions'];
+export const DESCRIBED_REGISTRY_NAMES: readonly CoreRegistryName[] = ['shapeDefs', 'markers', 'routers', 'layouts', 'templates', 'effects', 'transitions'];
 
 /**
  * A fresh set of empty core registries; `requireDescribe` makes the catalog registries refuse an entry with no `describe` line (a dev

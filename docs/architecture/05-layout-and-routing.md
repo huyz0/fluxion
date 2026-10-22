@@ -218,20 +218,32 @@ LayoutEngine.run(req, signal) ──post {id, revision, algId, input, seed}─�
   columns, timeline horizontal→vertical, radial→list). Results are written as
   `element.overrides[bp]` and never over the base. They are cached per `(screenId, bp,
   fingerprint)`, so an orientation change animates between two cached layouts.
-- **Smart templates** (FR-LAY-014) are named presets that the DSL and AI call by id:
+- **Smart templates** (FR-LAY-014, ADR-0047) are named presets that the DSL and AI call by id. A
+  template builds shapes and connectors from an items list; the frame stores
+  `layout: { type: 'template', id, items, options }` (schema 1.7) so it can be built again.
 
 ```ts
-interface TemplateDef {
-  id: string;                               // 'process.chevron', 'cycle.basic', 'hierarchy.org', 'matrix.2x2',
-                                            // 'pyramid', 'funnel', 'venn', 'timeline.milestones', 'comparison'
-  items: ZodType<TemplateItem[]>;           // outline of labelled items (nested for hierarchy)
-  build(items: TemplateItem[], frame: Box, ctx): { nodes: ElementDraft[]; edges: ConnectorDraft[] };
-  algorithm: string; options: unknown;      // e.g. 'timeline' | 'tree' | own parametric geometry
-  shapes: Record<string, string>;           // slot → shape def ('item' → 'basic:chevron')
-  variants?: Record<string, string>;        // slot → theme variant (styling, FR-THM-006)
-  adapt?(frame: Box): Partial<TemplateDef>; // portrait form
-}
+type TemplateDef<O> = {
+  id: string;                               // 'process.basic', 'process.chevron', 'cycle.basic', 'hierarchy.org', 'pyramid'
+                                            // (M17.14); 'matrix.2x2', 'venn', 'funnel', 'timeline.milestones', 'comparison' (M17.15)
+  describe: string; version: string;
+  items: ZodType<readonly TemplateItem[]>;  // how many items: at most 64 levels deep, 256 in all
+  schema: ZodType<O>;                       // options, with defaults: gap, padding, direction, colors
+  slots: Record<string, { shape: string; role: string }>; // slot → shape def and theme variant
+  build(items, options: O, ctx: { frame: Box; measure: TextMeasurer; font? }): TemplateResult;
+  adapt?(frame: Box, options: O): O;        // a portrait frame turns process.basic down
+};
 ```
+
+`TemplateResult` is shape drafts (`key`, `slot`, `index`, shape id, box, `params`, label, detail,
+style) and connector drafts (`from` and `to` shape keys, slot, style). Templates live in
+`packages/layout/src/templates/` and register in the core `templates` registry
+(`registerTemplate`, `listTemplates`, `registerBuiltInTemplates`). `buildTemplate` checks the
+items and options, adapts and builds, and never throws on bad input. Labels are measured through
+the `TextMeasurer` port so slots grow to fit, then shrink (never below 120 × 64) to fit the frame;
+every box is on the half pixel and no two built shapes overlap. Styles are theme tokens only:
+`variant` is the slot role (a theme's `defaults[kind].variants[role]` restyles it) and the
+`colors` option picks `colorful` (accents 1–6 in turn), `primary` or `outline`.
 
 ## 8. Anchors, routing post-passes, render-time decoration
 

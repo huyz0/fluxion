@@ -56,10 +56,10 @@ describe('registries (03-core-engine §4)', () => {
     expect(fonts.list().map(([k]) => k)).toEqual(['alpha', 'mid', 'zeta']);
   });
 
-  it('FR-EXT-001: the core registries are the 15 named in 03-core-engine §4', () => {
+  it('FR-EXT-001: the core registries are the 16 named in 03-core-engine §4', () => {
     const regs = createCoreRegistries();
     expect(Object.keys(regs).sort()).toEqual([...CORE_REGISTRY_NAMES].sort());
-    expect(CORE_REGISTRY_NAMES).toHaveLength(15);
+    expect(CORE_REGISTRY_NAMES).toHaveLength(16);
     for (const name of CORE_REGISTRY_NAMES) expect(regs[name].name).toBe(name);
     // independent instances
     regs.effects.register('x', 1, 'core');

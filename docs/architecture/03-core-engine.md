@@ -126,8 +126,8 @@ interface Registry<K extends string, V> {
 ```
 
 `createRegistry` makes one registry, and `createCoreRegistries` makes the core set
-(`CORE_REGISTRY_NAMES`): `elementKinds`, `shapeDefs`, `markers`, `routers`, `layouts`, `effects`,
-`transitions`, `themes`, `fonts`, `commands`, `integrityHooks`, `importers`, `exporters`,
+(`CORE_REGISTRY_NAMES`): `elementKinds`, `shapeDefs`, `markers`, `routers`, `layouts`, `templates`,
+`effects`, `transitions`, `themes`, `fonts`, `commands`, `integrityHooks`, `importers`, `exporters`,
 `dslMacros` and `lintRules`. Render-level registries (element views, components) live in
 @fluxion/render, and editor-level ones (tools, panels, inspectors) live in @fluxion/editor. First-party
 packs register the built-ins through the same API (FR-EXT-001). The check-kind-switch gate
