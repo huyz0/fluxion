@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest';
 import nonconforming from './__fixtures__/migration/nonconforming-1.4.flux.json' with { type: 'json' };
 import v14 from './__fixtures__/v1.4/document.flux.json' with { type: 'json' };
-import v15 from './__fixtures__/v1.5/document.flux.json' with { type: 'json' };
+// the 1.5 routes are unchanged in the current fixture
+import v15 from './__fixtures__/v1.6/document.flux.json' with { type: 'json' };
 import { migrate } from './migrate.js';
 import { parseDocument, serializeDocument } from './serialize.js';
 import { validate } from './validate.js';
@@ -16,8 +17,8 @@ describe('schema 1.5 (FR-CON-007)', () => {
   it('FR-CON-007: a 1.4 document migrates to a valid 1.5 one with its records unchanged and round-trips', () => {
     const r = migrate(v14);
     if (!r.ok) throw new Error(r.error.message);
-    expect(r.value.applied).toEqual(['1.4→1.5']);
-    expect(r.value.document.schemaVersion).toBe('1.5');
+    expect(r.value.applied).toEqual(['1.4→1.5', '1.5→1.6']);
+    expect(r.value.document.schemaVersion).toBe('1.6');
     expect(r.value.document.records).toEqual(v14.records);
     expect(validate(r.value.document)).toEqual([]);
     const again = parseDocument(serializeDocument(r.value.document as never));
@@ -33,7 +34,7 @@ describe('schema 1.5 (FR-CON-007)', () => {
   });
 
   it('FR-CON-007: a 1.4 route with tangents or jumps the typed fields refuse migrates to a valid 1.5 one', () => {
-    expect(validate({ ...nonconforming, schemaVersion: '1.5' }).filter((d) => d.severity === 'error').length).toBeGreaterThan(0);
+    expect(validate({ ...nonconforming, schemaVersion: '1.6' }).filter((d) => d.severity === 'error').length).toBeGreaterThan(0);
     const r = migrate(nonconforming);
     if (!r.ok) throw new Error(r.error.message);
     expect(validate(r.value.document)).toEqual([]);

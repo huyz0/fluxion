@@ -21,9 +21,13 @@ Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema
 
 - `LayoutSpec` on `screen`, `group` and `frame` (`records/layout-spec.ts`) and `document.source` (FluxScript salt and deferred sections), ADR-0031. `migrations/1.2-to-1.3.ts` drops non-conforming values there.
 
+## Version 1.6 (M17)
+
+- A `LayoutSpec` gains an optional `live: boolean` (re-lay the container out after edits; stored only) (ADR-0046, FR-LAY-010). `migrations/1.5-to-1.6.ts` drops a non-boolean `live` from a screen's, group's or frame's `layout`. Fixtures: `v1.6/` (current), `migration/nonconforming-1.5`.
+
 ## Version 1.5 (M16)
 
-- A connector `route` gains `tangents` (offsets by route-point index; the `curved` router's control points) and `jumps` (`arc` | `gap` | `none`) (ADR-0168). `migrations/1.4-to-1.5.ts` drops a `tangents`/`jumps` the typed fields refuse. Fixtures: `v1.5/` (current), `migration/nonconforming-1.4`.
+- A connector `route` gains `tangents` (offsets by route-point index; the `curved` router's control points) and `jumps` (`arc` | `gap` | `none`) (ADR-0168). `migrations/1.4-to-1.5.ts` drops a `tangents`/`jumps` the typed fields refuse. Fixtures: `v1.5/`, `migration/nonconforming-1.4`.
 
 ## Version 1.4 (M16)
 

@@ -186,7 +186,7 @@ LayoutEngine.run(req, signal) ──post {id, revision, algId, input, seed}─�
 
 ## 5. Live containers, incremental & pinned layout
 
-- **Live container** (FR-LAY-010): a `frame` with `layout: { algorithm, options, live: true }`.
+- **Live container** (FR-LAY-010): a `screen`, `group` or `frame` with `layout: { type, options?, live: true }` (schema 1.6, ADR-0046).
   A post-commit reactor watches the container's children index (add/remove/resize/text-size
   change), debounces to one per frame, runs the layout, and commits the positions with the
   originating transaction's `mergeKey`. The user's edit and its re-layout undo as one step.

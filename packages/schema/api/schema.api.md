@@ -419,6 +419,7 @@ export type LayoutSpec = Extensible<{
     readonly options?: {
         readonly [key: string]: unknown;
     };
+    readonly live?: boolean;
 }>;
 
 // @public

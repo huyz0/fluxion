@@ -14,7 +14,8 @@ function keepIf(record: Fields, key: string, ok: (v: unknown) => boolean): Field
   return Object.fromEntries(Object.entries(record).filter(([k]) => k !== key));
 }
 
-const isLayout = (v: unknown) => layoutSpecSchema.safeParse(v).success;
+// checked as 1.3 read it: `live` was an untyped key then (typed in 1.6, whose own step removes a non-boolean one), so it never sinks a layout here
+const isLayout = (v: unknown) => layoutSpecSchema.safeParse(isObject(v) ? Object.fromEntries(Object.entries(v).filter(([k]) => k !== 'live')) : v).success;
 const isSource = (v: unknown) => documentRecordSchema.safeParse({ id: 'x', type: 'document', source: v }).success;
 
 /** The step. */

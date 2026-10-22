@@ -49,7 +49,7 @@ not in the current schema; until added (minor version) they are preserved but no
 | Record | Key fields | Notes |
 |---|---|---|
 | `document` (singleton) | `title?`, `description?`, `lang?`, `themeId?`, `settings?` (`responsive`, `reducedMotion`, `lineJumps`), `authors?`, `tags?` (strings), `custom?` (string key-values), `created?`, `modified?`, `source? {flux: 1, salt, deferred}` (the FluxScript it was compiled from, schema `1.3`, ADR-0031) | One per file; `description`, `tags` and `custom` arrive with schema `1.2` (ADR-0152) |
-| `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `themeId?` (a `theme` record: the screen's theme override, schema `1.2`, ADR-0152), `layout?` (a `LayoutSpec {type, options?}`, the screen as root container, schema `1.3`, ADR-0031), `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints` |
+| `screen` | `index`, `name?`, `kind?` (`fixed` default, or `infinite` + `viewport`), `size? {w,h}` (default 1920×1080 via `screenSize`), `viewport?`, `background?`, `masterId?`, `parentElementId?` (sub-screen), `sectionId?`, `themeId?` (a `theme` record: the screen's theme override, schema `1.2`, ADR-0152), `layout?` (a `LayoutSpec {type, options?, live?}`, the screen as root container, schema `1.3`, ADR-0031; `live` schema `1.6`, ADR-0046), `notes?` (rich text), `hidden?` | FR-SCR-*. Planned: `transition`, `states`, `breakpoints` |
 | `section` | `name`, `index`, `collapsed?` | A named group of screens (ADR-0021, schema `1.1`); `screen.sectionId` names it |
 | `element` | `screenId`, `parentId?` (group/frame/container), `index` (z), `kind`, `name?`, `style?`, `semantic?`, `locks?`, `matchKey?` (magic move), `placement?` (`'auto'` or `'pinned'`: auto = layout may move it; a human drag or explicit coordinates pin it — FR-DSL-005, FR-LAY-006), `hidden?` | Discriminated by `kind`; fields common to every core kind. Boxed kinds (all but connector) add transform {x,y,w,h,rot?,flipX?,flipY?} and text? (element kinds table). Planned: `overrides` (per state/breakpoint) |
 | `binding` | `connectorId`, `end: 'source'\|'target'`, `elementId`, `anchor: AnchorRef` | Separate record → moving/deleting shapes updates bindings cleanly (tldraw pattern) |
@@ -100,6 +100,8 @@ length for `perimeter`, where an absent `t` floats). `x` and `y` are required fo
 carry and the typed fields refuse, and changes nothing else.
 
 Schema `1.5` (M16.20, ADR-0168) adds two optional fields to a connector's `route`: `tangents` (a record of offsets, `{x, y}`, by route-point index, the source `"0"`, then the waypoints, then the target: the control point of that point on a `curved` route) and `jumps` (`arc`, `gap` or `none`: how this connector's crossings are drawn, the document's setting when absent). The `1.4 → 1.5` migration removes a `tangents` or `jumps` that a 1.4 file may carry and the typed fields refuse, and changes nothing else.
+
+Schema `1.6` (M17.29, ADR-0046) adds an optional `live` (boolean) to a `LayoutSpec`: re-lay this container out automatically after edits (FR-LAY-010); the schema only stores it. The `1.5 → 1.6` migration removes a `live` that is not a boolean from a screen's, group's or frame's `layout`, and changes nothing else.
 
 `table` (`rows`, `cols`, `cells`) is planned for R3; until then it is an unknown kind, kept with
 only its envelope checked.
