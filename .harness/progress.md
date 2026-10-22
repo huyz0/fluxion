@@ -2032,3 +2032,6 @@ packs/layouts-elk: elkjs 0.12.0 (EPL-2.0, NOTICE) lazy, once per realm, driven s
 
 ## M17.21
 Benches at 100 and 500 nodes for tree, radial, mindmap, force, circular, packing, timeline, swimlane; local p99 baselines in perf-baseline.json (tree/radial/mindmap-500 ~16 ms vs 2000). Review pass round 1. Follow-up M17.38 (CI-runner baselines).
+
+## M17.30
+Live layout: `changed` arg makes arrange incremental (previous = current boxes); ELK and force >200 frames go through the ArrangePort sequentially, amend only when no entry opened since, one retry as own entry; async arranger amends in a single write. Review: round 1 fail (F1 dropped worker jobs never retried, F2 sliced amend joining a later entry), round 2 pass.
