@@ -107,3 +107,6 @@ M16 final F8: R3 exits at M20 (roadmap); M20.md row 17 and its gate legs own R3.
 M16 final F9: dd3aa134 (M16.15 WIP) reached main unreviewed; disclosed in progress.md and superseded by the reviewed 063a226c; history is not rewritten.
 M16 final F10: rows grew to 45 vs 22 planned (2x) through review reopens, CI and ladder fixes and the global-pass churn; the lessons are in M16.md Learned.
 M16 final F11: the three-browser anchors leg runs in the pinned Playwright image of ci.yml where Docker answers (M16.44, as m6-complete), since this host cannot launch Firefox.
+M17 final F8: no checkpoint review ran across M17's task commits although drive asked for one every ~8; the final review stands in for them, and M18 row 1a (roadmap Deferred) makes a harness check refuse task commits past the count without one.
+M17 final F9: rows grew to 42 vs 26 planned (1.6x) through CI/dependency flake rows, two schema splits and review follow-ups; the lessons are in M17.md Learned.
+M17 final F10: the editor's public API grew by about 30 exports, helpers included; handed off to M26 row 16b (roadmap Deferred), which shrinks it before the first publish; check-api records every addition meanwhile.
