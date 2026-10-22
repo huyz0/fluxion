@@ -1994,3 +1994,7 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 ## M17.32
 
 Schema 1.7: a `template` LayoutSpec requires `id` and `items` (TemplateItem, nested at most 64 deep, checked before parsing). 1.6 -> 1.7 migration, fixtures v1.7 and nonconforming-1.6. The player scripts mark `z`/`checkedSchema` calls pure (fluxion-player 150.04 -> 149.81 kB, under budget). Review: round 1 F1 (unbounded recursion overflowed validate) fixed; round 2 pass.
+
+## M17.33
+
+Main CI red at d7e520e (webkit e2e, Fit widths 73 vs 74): compare the fitted widths within 1 px (browser boxes of fractional positions). Review: round 1 F1 (comment blamed the snap pass, which never changes widths) fixed; round 2 pass. macOS verify player-inline timeout at d7e520e: one-off so far, watching.
