@@ -60,6 +60,16 @@ describe('perf-baseline: calibration units (NFR-PERF-005, ADR-0170)', () => {
     assert.ok(RUNS >= 3);
   });
 
+  it('NFR-PERF-005: under CI the completion gates judge their layout bench legs in calibration units, through the same verdict (M17.42)', () => {
+    const m13 = readFileSync(join(REPO, 'scripts/gates/m13-complete.mjs'), 'utf8');
+    const leg = m13.match(/^function benchLeg\([\s\S]*?^\}/m)?.[0] ?? '';
+    assert.match(leg, /if \(process\.env\.CI\) \{\s*const verdict = calibratedVerdict\(name, file, limit\);/);
+    assert.doesNotMatch(m13, /1\.15|nightly perf job holds the runner/);
+    assert.match(m13, /^import \{ calibratedVerdict \} from '\.\.\/ci\/perf-baseline\.mjs';$/m);
+    // the M17 gate's 500-node legs hold the absolute limit only, so no ms baseline can flake them on a hosted runner
+    assert.doesNotMatch(readFileSync(join(REPO, 'scripts/gates/m17-complete.mjs'), 'utf8'), /perf-baseline/);
+  });
+
   it('NFR-PERF-005: the judge reads the tolerance from the thresholds, not a literal', () => {
     const src = readFileSync(join(REPO, 'scripts/ci/perf-baseline.mjs'), 'utf8');
     assert.match(src, /t\('PERF_REGRESSION_TOLERANCE_PCT'\)/);

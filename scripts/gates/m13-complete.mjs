@@ -5,6 +5,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { calibratedVerdict } from '../ci/perf-baseline.mjs';
 import { createE2e, DESKTOP } from './editor-gate.mjs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import {
@@ -283,18 +284,24 @@ leg('packages/layout has a ./worker entry and worker glue lives only under src/w
   const stray = r.stdout.split(/\r?\n/).filter((f) => f && !f.includes('/src/worker/') && !f.endsWith('.test.ts'));
   return stray.length === 0 || `worker glue outside src/worker: ${stray.join(', ')}`;
 });
-// the threshold and, on CI, no more than 15 % over the recorded baseline (perf-baseline.json: { "layered-100": p99 ms, ... }). The baseline
-// is the GitHub runner's p99 (M13 final F1), so another machine is held to the threshold only; the nightly perf job holds the runner to both.
+// Each layered bench leg holds the p99 to its threshold and, on CI, to no more than PERF_REGRESSION_TOLERANCE_PCT over the calibrated baseline. A hosted runner is a different machine
+// each run, so under CI the regression is judged in calibration units (ADR-0170, M17.42), as the nightly perf job judges it; a local run is
+// held to the threshold in ms only, and needs the bench recorded in perf-baseline.json.
 function benchLeg(file, name, limit) {
-  const baseline = json('perf-baseline.json')?.[name];
-  if (typeof baseline !== 'number') return `perf-baseline.json has no "${name}" entry`;
-  return benchUnder(file, name, process.env.CI ? Math.min(limit, baseline * 1.15) : limit);
+  if (process.env.CI) {
+    const verdict = calibratedVerdict(name, file, limit);
+    return verdict.pass || verdict.line;
+  }
+  if (typeof json('perf-baseline.json')?.[name] !== 'number') return `perf-baseline.json has no "${name}" entry`;
+  return benchUnder(file, name, limit);
 }
-leg(`layered 100 nodes within LAYOUT_100_NODES_MS (${t('LAYOUT_100_NODES_MS')} ms, p99) and 15 % of its baseline`, () =>
-  benchLeg('packages/layout/bench/layered-100.bench.ts', 'layered-100', t('LAYOUT_100_NODES_MS')),
+leg(
+  `layered 100 nodes within LAYOUT_100_NODES_MS (${t('LAYOUT_100_NODES_MS')} ms, p99) and, on CI, PERF_REGRESSION_TOLERANCE_PCT over its calibrated baseline`,
+  () => benchLeg('packages/layout/bench/layered-100.bench.ts', 'layered-100', t('LAYOUT_100_NODES_MS')),
 );
-leg(`layered 500 nodes in the worker within LAYOUT_500_NODES_MS (${t('LAYOUT_500_NODES_MS')} ms, p99) and 15 % of its baseline`, () =>
-  benchLeg('packages/layout/bench/layered-500.bench.ts', 'layered-500', t('LAYOUT_500_NODES_MS')),
+leg(
+  `layered 500 nodes in the worker within LAYOUT_500_NODES_MS (${t('LAYOUT_500_NODES_MS')} ms, p99) and, on CI, PERF_REGRESSION_TOLERANCE_PCT over its calibrated baseline`,
+  () => benchLeg('packages/layout/bench/layered-500.bench.ts', 'layered-500', t('LAYOUT_500_NODES_MS')),
 );
 leg('the nightly perf job runs the layout benches, perf.layout-500.spec.ts, perf.drag-500 and hit-test-2000 (not a SKIP echo)', () => {
   const text = exists('.github/workflows/nightly.yml') ? readText('.github/workflows/nightly.yml') : '';

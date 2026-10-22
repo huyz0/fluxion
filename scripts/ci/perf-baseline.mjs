@@ -91,15 +91,26 @@ function readingsOf(name, file) {
   return readings;
 }
 
+/** The calibrated baselines, by bench name. */
+export function calibratedBaselines() {
+  return JSON.parse(readFileSync(new URL('../../perf-baseline.calibrated.json', import.meta.url), 'utf8'));
+}
+
+/**
+ * Run bench `name` (in `file`) RUNS times beside the calibration workload and judge it against `limitMs` and its calibrated baseline. Shared by
+ * this job and the completion gates' bench legs under CI (M17.42).
+ */
+export function calibratedVerdict(name, file, limitMs, baselines = calibratedBaselines()) {
+  const readings = readingsOf(name, file);
+  if (typeof readings === 'string') return { pass: false, line: `FAIL ${name}: ${readings}` };
+  return judge({ name, readings, limitMs, baseline: baselines[name], tolerancePct: t('PERF_REGRESSION_TOLERANCE_PCT') });
+}
+
 function main() {
-  const baselines = JSON.parse(readFileSync(new URL('../../perf-baseline.calibrated.json', import.meta.url), 'utf8'));
-  const tolerancePct = t('PERF_REGRESSION_TOLERANCE_PCT');
+  const baselines = calibratedBaselines();
   const problems = [];
   for (const [name, file, key] of BENCHES) {
-    const readings = readingsOf(name, file);
-    const error = typeof readings === 'string' ? readings : '';
-    const verdict =
-      error === '' ? judge({ name, readings, limitMs: t(key), baseline: baselines[name], tolerancePct }) : { pass: false, line: `FAIL ${name}: ${error}` };
+    const verdict = calibratedVerdict(name, file, t(key), baselines);
     console.log(verdict.line);
     if (!verdict.pass) problems.push(name);
   }

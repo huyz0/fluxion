@@ -98,8 +98,9 @@ els.forEach((el, i) => { el.style.width = w(el, hs[i]) + "px"; });
 
 18. **Benchmarks may not regress more than `PERF_REGRESSION_TOLERANCE_PCT` (15 %)** against the
     stored baseline: the nightly perf job judges the layout benches in calibration units against
-    the root `perf-baseline.calibrated.json` (ADR-0170); the completion gates' bench legs read p99 ms
-    from the root `perf-baseline.json` (M17.42 moves them to units). Size-limit entries may not
+    the root `perf-baseline.calibrated.json` (ADR-0170), and so do the completion gates' bench legs
+    when `CI` is set (M17.42); run locally they hold the p99 to its threshold in ms and need the
+    bench recorded in the root `perf-baseline.json`. Size-limit entries may not
     exceed their budget at all. → CI `perf` job (`scripts/ci/perf-baseline.mjs`), `m<N>-complete`
     bench legs, size-limit
 19. **Baselines are updated only by improvements** or with an ADR that justifies a new cost: a
