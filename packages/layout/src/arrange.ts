@@ -37,6 +37,10 @@ export type Args = {
   readonly algorithm: string;
   readonly options?: unknown;
   readonly seed?: number | undefined;
+  /** Incremental mode (FR-LAY-006): the children added, removed or resized by the edit this layout follows; every other box is kept where it is as far as the layout can. */
+  readonly changed?: string[] | undefined;
+  /** The async arranger's writes join the last undo entry (they follow an edit); `layout.arrange` takes its options from its caller and ignores it. */
+  readonly amend?: boolean | undefined;
 };
 
 const scopeSchema = z.union([z.literal('screen'), z.literal('selection'), z.object({ containerId: z.string().min(1) })]);
@@ -47,6 +51,8 @@ const argsSchema: z.ZodType<Args> = z.object({
   algorithm: z.string().min(1).default('layered'),
   options: z.unknown().optional(),
   seed: z.number().finite().optional(),
+  changed: z.array(z.string().min(1)).optional(),
+  amend: z.boolean().optional(),
 });
 
 export type Rec = SnapshotRecord & {
@@ -190,7 +196,13 @@ export function prepare(store: Reader, args: Args): { ok: true; value: Prepared 
   if (!records.some((r) => r.type === 'element')) return refuse(`no elements on screen "${args.screenId}"`, ['screenId']);
   if (typeof args.scope === 'object' && byId.get(args.scope.containerId)?.type !== 'element')
     return refuse(`"${args.scope.containerId}" is not an element of the screen`, ['scope', 'containerId']);
-  return { ok: true, value: { byId, input: inputFor(records, args, screenFrame(store.get(args.screenId as StoreId))) } };
+  const input = inputFor(records, args, screenFrame(store.get(args.screenId as StoreId)));
+  return { ok: true, value: { byId, input: args.changed === undefined ? input : incremental(input, args.changed) } };
+}
+
+/** `input` as an incremental run: every node's current box is `previous`, so only the `changed` nodes are free to move (ADR-0046). */
+function incremental(input: LayoutInput, changed: readonly string[]): LayoutInput {
+  return { ...input, previous: Object.fromEntries(input.nodes.map((n) => [n.id, n.box])), changed };
 }
 
 /** The transaction body that writes the new `transform` of every element whose box differs; it returns `{ moved }`. */

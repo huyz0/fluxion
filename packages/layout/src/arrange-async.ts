@@ -81,6 +81,8 @@ export type AsyncArrangeDeps = {
 export type ArrangeWriteOptions = {
   /** Consecutive writes with the same key form one undo step. */
   readonly mergeKey?: string;
+  /** Join the last undo entry (a layout that follows an edit); each write of a sliced arrange joins it. */
+  readonly amend?: true;
 };
 
 /**
@@ -104,7 +106,7 @@ function movedResult(done: ArrangeCommandResult, failure: string): AsyncArrangeR
 /** Lay a flat plan out in a worker and write the boxes, unless the screen changed meanwhile. */
 async function arrangeFlat(
   deps: AsyncArrangeDeps,
-  job: { args: Args; prepared: Prepared; revision: number },
+  job: { args: Args; prepared: Prepared; revision: number; amend: boolean },
   signal?: AbortSignalWithEvents,
 ): Promise<AsyncArrangeResult> {
   const { args, prepared, revision } = job;
@@ -125,8 +127,12 @@ async function arrangeFlat(
     boxes: laid.value.boxes,
     before: prepared.byId,
     key: `${ARRANGE_COMMAND_ID}:${args.screenId}:${revision}`,
+    amend: job.amend,
   });
 }
+
+/** The write option of a layout that follows an edit. */
+const amendOf = (amend: boolean): ArrangeWriteOptions => (amend ? { amend: true } : {});
 
 /** A write of boxes in slices: the screen, the boxes, the records as they were read, and the merge key of the undo step. */
 type SlicedWrite = {
@@ -134,6 +140,7 @@ type SlicedWrite = {
   readonly boxes: Boxes;
   readonly before: ReadonlyMap<string, Rec>;
   readonly key: string;
+  readonly amend: boolean;
 };
 
 /**
@@ -142,9 +149,13 @@ type SlicedWrite = {
  */
 async function writeInSlices(deps: AsyncArrangeDeps, job: SlicedWrite): Promise<AsyncArrangeResult> {
   const entries = Object.entries(job.boxes);
-  const size = deps.pause !== undefined && deps.slice !== undefined && deps.slice > 0 ? Math.floor(deps.slice) : entries.length;
+  // an amend is written at once: a slice after a person's commit would join that commit's undo entry instead of the edit's
+  const size = !job.amend && deps.pause !== undefined && deps.slice !== undefined && deps.slice > 0 ? Math.floor(deps.slice) : entries.length;
   if (size >= entries.length)
-    return movedResult(deps.execute(APPLY_BOXES_COMMAND_ID, { screenId: job.screenId, boxes: job.boxes }), 'the layout could not be applied');
+    return movedResult(
+      deps.execute(APPLY_BOXES_COMMAND_ID, { screenId: job.screenId, boxes: job.boxes }, amendOf(job.amend)),
+      'the layout could not be applied',
+    );
   let moved = 0;
   for (let at = 0; at < entries.length; at += size) {
     const part = entries.slice(at, at + size);
@@ -153,7 +164,11 @@ async function writeInSlices(deps: AsyncArrangeDeps, job: SlicedWrite): Promise<
       if (part.some(([id]) => JSON.stringify(deps.store.get(id as StoreId)?.transform) !== JSON.stringify(job.before.get(id)?.transform)))
         return invalid(`the screen changed while it was being arranged; ${moved} of ${entries.length} elements were moved`);
     }
-    const done = deps.execute(APPLY_BOXES_COMMAND_ID, { screenId: job.screenId, boxes: Object.fromEntries(part) }, { mergeKey: job.key });
+    const done = deps.execute(
+      APPLY_BOXES_COMMAND_ID,
+      { screenId: job.screenId, boxes: Object.fromEntries(part) },
+      { mergeKey: job.key, ...amendOf(job.amend) },
+    );
     const result = movedResult(done, 'the layout could not be applied');
     if (!result.ok) return result;
     moved += result.value.moved;
@@ -176,14 +191,31 @@ export function createAsyncArranger(deps: AsyncArrangeDeps): (rawArgs: unknown, 
     const args = parseArgs(rawArgs);
     if (!args.ok) return args;
     // the caller's notice is drawn before the snapshot is read, so the two are not one long task
-    if (deps.pause !== undefined) await deps.pause();
+    const amend = deps.pause === undefined ? args.value.amend === true : await pauseFor(deps.store, deps.pause, args.value.amend === true);
     const prepared = prepare(deps.store, args.value);
     if (!prepared.ok) return invalid(prepared.error.message);
     if (prepared.value.input.nodes.some((n) => n.parentId !== undefined))
-      return movedResult(deps.execute(ARRANGE_COMMAND_ID, rawArgs), 'the arrange was refused');
+      return movedResult(deps.execute(ARRANGE_COMMAND_ID, rawArgs, amendOf(amend)), 'the arrange was refused');
     revision += 1;
-    return arrangeFlat(deps, { args: args.value, prepared: prepared.value, revision }, signal);
+    return arrangeFlat(deps, { args: args.value, prepared: prepared.value, revision, amend }, signal);
   };
+}
+
+/**
+ * The host's pause before the snapshot. A layout that asked to amend still amends after it only when nothing was committed meanwhile:
+ * else the last undo entry is no longer the edit's, and the layout is an entry of its own. (A commit while the worker runs drops the layout.)
+ */
+async function pauseFor(store: Reader, pause: () => Promise<void>, amend: boolean): Promise<boolean> {
+  let committed = false;
+  const stop = store.subscribe(() => {
+    committed = true;
+  });
+  try {
+    await pause();
+  } finally {
+    stop();
+  }
+  return amend && !committed;
 }
 
 /** The registered name and options the top level of a flat plan is laid out with. */

@@ -91,6 +91,8 @@ export type ArrangeRequest = {
     readonly scope: ArrangeScope;
     readonly selection?: readonly RecordId[];
     readonly algorithm?: string;
+    readonly changed?: readonly RecordId[];
+    readonly amend?: true;
 };
 
 // @public
@@ -773,13 +775,15 @@ export type Link = {
 export type LiveFrame = {
     readonly containerId: RecordId;
     readonly screenId: RecordId;
+    readonly changed: readonly RecordId[];
 };
 
 // @public
 export type LiveLayoutDeps = {
-    readonly store: Pick<Store, "subscribe" | "get">;
+    readonly store: Pick<Store, "subscribe" | "get" | "members">;
     readonly run?: LiveLayoutRun;
     readonly execute?: Execute;
+    readonly arrange?: ArrangePort;
     readonly schedule?: (task: () => void) => void;
 };
 

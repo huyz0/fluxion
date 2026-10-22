@@ -87,6 +87,10 @@ export type ArrangeRequest = {
   readonly selection?: readonly RecordId[];
   /** The layout to use (a container's own layout wins); `layered` when omitted. */
   readonly algorithm?: string;
+  /** Live layout (FR-LAY-006): the children the edit added, removed or resized; the others stay where they are as far as the layout can. */
+  readonly changed?: readonly RecordId[];
+  /** Live layout (FR-LAY-010): the boxes are written into the undo entry of the edit that asked, not an entry of their own. */
+  readonly amend?: true;
 };
 
 /**

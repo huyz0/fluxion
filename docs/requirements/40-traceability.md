@@ -123,11 +123,11 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LAY-003 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.picker.spec.ts` +11 |
 | FR-LAY-004 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/cli/src/commands.test.ts` +7 |
 | FR-LAY-005 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/arrange-port.test.ts` +7 |
-| FR-LAY-006 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/constraints.test.ts`, `packages/layout/src/incremental.test.ts` |
-| FR-LAY-007 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/arrange-port.test.ts` +5 |
+| FR-LAY-006 | M | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/editor/src/live-layout.test.ts` +3 |
+| FR-LAY-007 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/arrange-port.test.ts` +6 |
 | FR-LAY-008 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/circular.test.ts` +12 |
 | FR-LAY-009 | M | R4 | M22 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
-| FR-LAY-010 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.live-container.spec.ts` +6 |
+| FR-LAY-010 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.live-container.spec.ts` +7 |
 | FR-LAY-011 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.arrange-selection.spec.ts`, `packages/layout/src/tidy.test.ts` |
 | FR-LAY-012 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.arrange-selection.spec.ts`, `packages/layout/src/fit.test.ts` |
 | FR-LAY-013 | S | R7 | M29 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |

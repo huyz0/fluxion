@@ -137,7 +137,9 @@ export function layoutNested(input: LayoutInput, run: NestedRunner, options: Nes
   const levelNodes = roots.map((n) =>
     tree.anchored.has(n.id) ? { ...n, box: { ...n.box, x: (tree.byId.get(n.id) as LayoutNode).box.x, y: (tree.byId.get(n.id) as LayoutNode).box.y } } : n,
   );
-  const placed = run(undefined, { frame: input.frame, nodes: levelNodes, edges: edgesAmong(input.edges, new Set(roots.map((r) => r.id))) });
+  // an incremental run (ADR-0046) is incremental at the top level, where the boxes are the document's own; a container below is laid out afresh
+  const incremental = input.previous ? { previous: input.previous, ...(input.changed ? { changed: input.changed } : {}) } : {};
+  const placed = run(undefined, { frame: input.frame, nodes: levelNodes, edges: edgesAmong(input.edges, new Set(roots.map((r) => r.id))), ...incremental });
   const out = new Map<string, Box>();
   for (const n of levelNodes) {
     const box = placed[n.id] ?? n.box;

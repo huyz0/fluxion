@@ -1,7 +1,7 @@
 // FR-LAY-005 and FR-LAY-001: the arrange command lays a screen, a selection or a container out in one undoable transaction.
 import { type Core, createCore } from '@fluxion/core';
 import { describe, expect, it } from 'vitest';
-import { layeredLayout, registerArrangeCommand, registerBuiltInLayouts, registerLayout } from './index.js';
+import { layeredLayout, registerArrangeCommand, registerBuiltInLayouts, registerLayout, treeLayout } from './index.js';
 
 type Box = { x: number; y: number; w: number; h: number };
 const shape = (id: string, [x, y]: readonly [number, number], [w, h]: readonly [number, number] = [100, 50], extra: Record<string, unknown> = {}) => ({
@@ -119,5 +119,46 @@ describe('arrange command (FR-LAY-005)', () => {
     expect(mid.box('p')).toMatchObject({ x: 600, y: 400 });
     for (const id of ['q', 'r']) expect(mid.box(id).y).toBeGreaterThan(400);
     expect(mid.box('rest')).toEqual({ x: 100, y: 100, w: 100, h: 50 });
+  });
+});
+
+describe('arrange command, incremental (FR-LAY-006)', () => {
+  it('FR-LAY-006: adding one node to a laid-out tree moves at most LAYOUT_INCREMENTAL_MOVED_PCT % of the others', () => {
+    // the node e<n> hangs under e<floor(n / 2)>; each edge is a connector with two bindings
+    const nodes = (count: number, at: (i: number) => readonly [number, number]) => Array.from({ length: count }, (_, i) => shape(`e${i + 1}`, at(i)));
+    const links = (count: number) =>
+      Array.from({ length: count - 1 }, (_, k) => {
+        const [id, parent, child] = [`k${k + 1}`, `e${Math.floor(k / 2) + 1}`, `e${k + 2}`];
+        const connector = { id, type: 'element', screenId: 's1', index: `a${id}`, kind: 'connector' };
+        const end = (name: 'source' | 'target', elementId: string) => ({ id: `${id}${name}`, type: 'binding', connectorId: id, elementId, end: name });
+        return [connector, end('source', parent), end('target', child)];
+      }).flat();
+    const build = (count: number, at: (i: number) => readonly [number, number]) => {
+      const c = setup([...nodes(count, at), ...links(count)] as never);
+      c.registries.layouts.get('tree') ?? registerLayout(c.registries.layouts, treeLayout as never, 'core');
+      return c;
+    };
+    const first = build(8, (i) => [i * 5, i * 5]);
+    const r0 = first.execute('layout.arrange', { screenId: 's1', algorithm: 'tree' });
+    expect(r0.ok).toBe(true);
+    const ids = Array.from({ length: 8 }, (_, i) => `e${i + 1}`);
+    const placed = ids.map((id) => first.box(id));
+    // the same tree with a ninth node whose connector is new, the others where the first run put them
+    const next = build(9, (i) => (placed[i] ? [(placed[i] as Box).x, (placed[i] as Box).y] : [0, 0]));
+    expect(next.execute('layout.arrange', { screenId: 's1', algorithm: 'tree', changed: ['e9'] }).ok).toBe(true);
+    const moved = ids.filter((id, i) => Math.hypot(next.box(id).x - (placed[i] as Box).x, next.box(id).y - (placed[i] as Box).y) > 0.5).length;
+    expect(moved).toBeLessThanOrEqual(Math.floor((ids.length * 30) / 100));
+  });
+
+  it('FR-LAY-006: with `changed` the elements that did not change stay where they are and the changed one is laid out beside them', () => {
+    const grid = { algorithm: 'grid', options: { columns: 2, gap: 10, padding: 0 } };
+    const full = setup([shape('e1', [700, 400]), shape('e2', [20, 20])]);
+    expect(full.execute('layout.arrange', { screenId: 's1', ...grid }).ok).toBe(true);
+    // a full run puts the first element at the grid's corner
+    expect(full.box('e1')).toMatchObject({ x: 0, y: 0 });
+    const kept = setup([shape('e1', [700, 400]), shape('e2', [20, 20])]);
+    expect(kept.execute('layout.arrange', { screenId: 's1', ...grid, changed: ['e2'] }).ok).toBe(true);
+    expect(kept.box('e1')).toEqual({ x: 700, y: 400, w: 100, h: 50 });
+    expect(kept.box('e2')).toEqual({ x: 810, y: 400, w: 100, h: 50 });
   });
 });

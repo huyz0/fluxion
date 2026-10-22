@@ -97,7 +97,7 @@ function useTools(
   session: Session,
   screenId: RecordId | undefined,
 ): { readonly tools: ToolDispatcher; readonly present: ToolDispatcher } {
-  const { store, registries, execute } = props;
+  const { store, registries, execute, arrange } = props;
   const random = props.random ?? cryptoRandom;
   const registry = useMemo(() => {
     if (props.tools !== undefined) return props.tools;
@@ -106,7 +106,7 @@ function useTools(
     return builtins;
   }, [props.tools]);
   // live layout frames follow edits to their children for as long as the root is mounted (FR-LAY-010)
-  useEffect(() => startLiveLayout({ store, execute }), [store, execute]);
+  useEffect(() => startLiveLayout({ store, execute, ...(arrange ? { arrange } : {}) }), [store, execute, arrange]);
   // the index follows the store until the root unmounts or its inputs change
   const hits = useRef<HitIndex | undefined>(undefined);
   useEffect(() => {

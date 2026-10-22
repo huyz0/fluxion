@@ -260,3 +260,116 @@ function writeLayout(t: ReturnType<typeof setup>, amend: boolean, x = 500): void
     ...(amend ? { amend: true } : {}),
   });
 }
+
+describe('live layout frames, incremental and in the worker (FR-LAY-006, FR-LAY-010)', () => {
+  /** A reactor over `t`'s store that records what the default run does: the commands it executes and the requests it sends to the port. */
+  function defaults(
+    t: ReturnType<typeof setup>,
+    type: string,
+    children = 2,
+    answer: (request: unknown) => Promise<{ ok: boolean }> = () => Promise.resolve({ ok: true }),
+  ) {
+    t.core.store.transact('live', (tx) => tx.patch(GROUP, { layout: { type, live: true } } as never));
+    const store = {
+      subscribe: t.core.store.subscribe.bind(t.core.store),
+      get: t.core.store.get.bind(t.core.store),
+      members: () => Array.from({ length: children }, (_, i) => `m${i}` as RecordId),
+    };
+    const commands: unknown[][] = [];
+    const requests: unknown[] = [];
+    const execute = ((...args: unknown[]) => void commands.push(args)) as never;
+    const arrange = (request: unknown) => {
+      requests.push(request);
+      return answer(request);
+    };
+    startLiveLayout({ store, execute, arrange, schedule: (task) => void t.tasks.push(task) });
+    return { commands, requests };
+  }
+
+  it('FR-LAY-007: worker layouts are sent one at a time; one whose frame was dirtied again is not retried, and the newer one joins its own edit', async () => {
+    const t = setup();
+    const held: Array<(done: { ok: boolean }) => void> = [];
+    const { requests } = defaults(t, 'layouts-elk:layered', 2, () => new Promise((resolve) => void held.push(resolve)));
+    t.resize(120);
+    t.flush();
+    await settled();
+    t.resize(130);
+    t.flush();
+    await settled();
+    // the second waits for the first
+    expect(requests).toHaveLength(1);
+    held[0]?.({ ok: false });
+    await settled();
+    expect(requests).toEqual([
+      { screenId: t.screen, scope: { containerId: GROUP }, changed: [t.c], amend: true },
+      { screenId: t.screen, scope: { containerId: GROUP }, changed: [t.c], amend: true },
+    ]);
+  });
+
+  it('FR-LAY-010: a worker layout dropped by the arranger is sent once more as an entry of its own; a commit before it is sent stops the amend', async () => {
+    const t = setup();
+    let calls = 0;
+    const { requests } = defaults(t, 'layouts-elk:layered', 2, () => {
+      calls += 1;
+      return Promise.resolve({ ok: calls > 1 });
+    });
+    t.resize(120);
+    t.flush();
+    await settled();
+    expect(requests).toEqual([
+      { screenId: t.screen, scope: { containerId: GROUP }, changed: [t.c], amend: true },
+      { screenId: t.screen, scope: { containerId: GROUP }, changed: [t.c] },
+    ]);
+    const u = setup();
+    const late = defaults(u, 'layouts-elk:layered');
+    u.resize(120);
+    u.flush();
+    // a person's commit lands before the chain sends the frame: the layout no longer follows the edit directly
+    u.core.store.transact('other', (tx) => tx.patch(u.screen, { name: 'Renamed' } as never));
+    await settled();
+    expect(late.requests).toEqual([{ screenId: u.screen, scope: { containerId: GROUP }, changed: [u.c] }]);
+  });
+
+  it('FR-LAY-006: the frame handed to the layout names the children that changed, merged over the edits since the last layout', () => {
+    const t = setup();
+    const frames: LiveFrame[] = [];
+    t.make((frame) => (frames.push(frame), { apply: () => undefined }));
+    t.resize(120);
+    t.resize(130);
+    t.flush();
+    expect(frames).toEqual([{ containerId: GROUP, screenId: t.screen, changed: [t.c] }]);
+  });
+
+  it('FR-LAY-006: the default run tells layout.arrange which children changed, and joins the undo entry of the edit', () => {
+    const t = setup();
+    const { commands, requests } = defaults(t, 'stack');
+    t.resize(120);
+    t.flush();
+    expect(requests).toEqual([]);
+    expect(commands).toEqual([['layout.arrange', { screenId: t.screen, scope: { containerId: GROUP }, changed: [t.c] }, { origin: 'system', amend: true }]]);
+  });
+
+  it('FR-LAY-007: an ELK layout, or a force layout of more than 200 children, is laid out through the worker port; a small force layout is not', async () => {
+    const request = (t: ReturnType<typeof setup>) => ({ screenId: t.screen, scope: { containerId: GROUP }, changed: [t.c], amend: true });
+    for (const [type, children, worker] of [
+      ['layouts-elk:layered', 2, true],
+      ['force', 201, true],
+      ['force', 200, false],
+      ['tree', 500, false],
+    ] as const) {
+      const t = setup();
+      const { commands, requests } = defaults(t, type, children);
+      t.resize(120);
+      t.flush();
+      // the worker path sends its frames one at a time, from a promise chain
+      await settled();
+      expect(requests).toEqual(worker ? [request(t)] : []);
+      expect(commands).toHaveLength(worker ? 0 : 1);
+    }
+  });
+});
+
+/** A few turns of the microtask queue: the worker path's chain has sent what it holds. */
+async function settled(): Promise<void> {
+  for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();
+}

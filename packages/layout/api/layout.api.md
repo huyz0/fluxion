@@ -64,6 +64,7 @@ export type ArrangeMoved = {
 // @public
 export type ArrangeWriteOptions = {
     readonly mergeKey?: string;
+    readonly amend?: true;
 };
 
 // @public

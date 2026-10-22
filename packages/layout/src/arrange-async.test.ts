@@ -204,3 +204,54 @@ describe('async arrange (FR-LAY-007, FR-LAY-005)', () => {
     expect(boxesOf(d, ['u'])[0]).toEqual({ x: 900, y: 900, w: 100, h: 50 });
   });
 });
+
+describe('async arrange after an edit (FR-LAY-010)', () => {
+  it('FR-LAY-010: with `amend` the written boxes join the undo entry of the edit before them; without it they are an entry of their own', async () => {
+    for (const amend of [true, false]) {
+      const c = core(three());
+      const edit = () => c.execute('element.update', { id: 'a', fields: { transform: { x: 300, y: 300, w: 120, h: 50 } } });
+      edit();
+      c.store.history.seal();
+      const edited = c.store.toDocument();
+      const depth = c.store.history.undoDepth;
+      const workers = heldWorkers();
+      const pending = arranger(c, workers)({ screenId: 's1', algorithm: 'layered', ...(amend ? { amend: true } : {}) });
+      await later();
+      workers.release();
+      expect(await pending).toMatchObject({ ok: true });
+      expect(boxesOf(c, IDS)).not.toEqual(boxesOf(core(three()), IDS));
+      expect(c.store.history.undoDepth).toBe(amend ? depth : depth + 1);
+      expect(c.store.history.undo().ok).toBe(true);
+      // one undo takes back the layout and, when it joined the edit, the edit with it
+      expect(JSON.stringify(c.store.toDocument()) === JSON.stringify(edited)).toBe(!amend);
+    }
+  });
+
+  it('FR-LAY-010: an amend is written at once, not in slices; a commit during the pause before the snapshot makes it an entry of its own', async () => {
+    for (const commit of [false, true]) {
+      const c = core(three());
+      c.execute('element.update', { id: 'a', fields: { transform: { x: 300, y: 300, w: 120, h: 50 } } });
+      c.store.history.seal();
+      const workers = heldWorkers();
+      const writes: unknown[] = [];
+      const arrange = createAsyncArranger({
+        store: c.store,
+        execute: (id, args, options) => (writes.push(options), c.execute(id, args, options)),
+        host: createLayoutHost(workers.spawn),
+        lookup: lookupIn(c),
+        slice: 1,
+        pause: () => {
+          if (commit && writes.length === 0) c.store.transact('other', (tx) => tx.patch('s1' as never, { name: 'Renamed' } as never));
+          return Promise.resolve();
+        },
+      });
+      const depth = c.store.history.undoDepth + (commit ? 1 : 0);
+      const pending = arrange({ screenId: 's1', algorithm: 'layered', amend: true });
+      await later();
+      workers.release();
+      expect(await pending).toMatchObject({ ok: true });
+      expect(writes).toEqual(commit ? [{ mergeKey: expect.any(String) }, expect.anything(), expect.anything()] : [{ amend: true }]);
+      expect(c.store.history.undoDepth).toBe(commit ? depth + 1 : depth);
+    }
+  });
+});
