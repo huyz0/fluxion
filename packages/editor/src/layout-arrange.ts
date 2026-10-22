@@ -116,9 +116,14 @@ export type ArrangePort = (request: ArrangeRequest) => Promise<ArrangeOutcome>;
  * Start an Arrange. With a port in `ctx` it runs in the background: the notice says it is working, then clears or says why it failed, and the
  * command counts as taken. Without one the command runs at once, and its refusal is the result.
  */
-function start(ctx: ArrangeHost, request: ArrangeRequest): boolean {
+function start(ctx: ArrangeHost, request: ArrangeRequest, after: () => string = () => ''): boolean {
   const port = ctx.arrange;
-  if (port === undefined) return ctx.tools.ctx.execute('layout.arrange', request).ok;
+  if (port === undefined) {
+    const ok = ctx.tools.ctx.execute('layout.arrange', request).ok;
+    const message = ok ? after() : '';
+    if (message !== '') ctx.notify?.(message);
+    return ok;
+  }
   // only the newest request of a port speaks: an older one that ends after it (superseded) leaves the notice alone
   const mine = (newest.get(port) ?? 0) + 1;
   newest.set(port, mine);
@@ -127,7 +132,7 @@ function start(ctx: ArrangeHost, request: ArrangeRequest): boolean {
   };
   say('Arranging…');
   void port(request).then(
-    (done) => say(done.ok ? '' : `Could not arrange: ${done.message ?? 'the layout was refused'}`),
+    (done) => say(done.ok ? after() : `Could not arrange: ${done.message ?? 'the layout was refused'}`),
     (error: unknown) => say(`Could not arrange: ${error instanceof Error ? error.message : 'the layout was cancelled'}`),
   );
   return true;
@@ -188,13 +193,66 @@ export function tidyUp(ctx: ArrangeHost): boolean {
   return ctx.tools.ctx.session.selection.get().length > 1 ? arrangeSelected(ctx, TIDY) : arrangeScreen(ctx, TIDY);
 }
 
+/** The share of a screen's smaller side between its edge and its safe area: the `fit` layout's default margin (FR-LAY-012). */
+const SAFE_SHARE = 0.05;
+
+type Placed = {
+  readonly type?: string;
+  readonly name?: unknown;
+  readonly hidden?: unknown;
+  readonly parentId?: unknown;
+  readonly placement?: unknown;
+  readonly locks?: { readonly position?: unknown };
+  readonly transform?: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
+};
+
+/** The area `fit` puts content in: the screen (1920 x 1080 when it has no size; an infinite screen's viewport) inset by its safe margin. */
+function safeAreaOf(screen: unknown): { x: number; y: number; w: number; h: number } {
+  const s = (screen ?? {}) as { kind?: unknown; size?: { w?: unknown; h?: unknown }; viewport?: { x: number; y: number; w: number; h: number } };
+  const [w, h] = [s.size?.w, s.size?.h];
+  const frame =
+    s.kind === 'infinite' && s.viewport
+      ? s.viewport
+      : { x: 0, y: 0, w: typeof w === 'number' && w > 0 ? w : 1920, h: typeof h === 'number' && h > 0 ? h : 1080 };
+  const margin = SAFE_SHARE * Math.min(frame.w, frame.h);
+  return { x: frame.x + margin, y: frame.y + margin, w: frame.w - 2 * margin, h: frame.h - 2 * margin };
+}
+
+/** Whether `r` is a top-level element `fit` leaves where it is (placed by hand, or locked in place) that is not wholly inside `area`. */
+function leftOutside(r: Placed | undefined, area: { x: number; y: number; w: number; h: number }): boolean {
+  const b = r?.transform;
+  // a hidden element is not laid out, so it is not named either
+  if (r?.type !== 'element' || r.parentId !== undefined || r.hidden === true || b === undefined) return false;
+  if (r.placement !== 'pinned' && r.locks?.position !== true) return false;
+  return b.x < area.x || b.y < area.y || b.x + b.w > area.x + area.w || b.y + b.h > area.y + area.h;
+}
+
+/**
+ * The notice after a fit (M17.31): the pinned elements still outside the safe area, by name (else "a shape"), at most three named; empty when there
+ * are none.
+ */
+function leftOutsideNotice(view: ToolCtx['view'], screenId: RecordId): string {
+  const area = safeAreaOf(view.get(screenId));
+  const left = view.members('byScreen', screenId).filter((id) => leftOutside(view.get(id) as Placed | undefined, area));
+  if (left.length === 0) return '';
+  const names = left.slice(0, 3).map((id) => {
+    const name = (view.get(id) as Placed | undefined)?.name;
+    return typeof name === 'string' && name !== '' ? `"${name}"` : 'a shape';
+  });
+  const more = left.length > 3 ? ` and ${left.length - 3} more` : '';
+  const one = left.length === 1;
+  return `Left in place, outside the safe area: ${names.join(', ')}${more} (${one ? 'it is' : 'they are'} pinned or locked, so Fit does not move ${one ? 'it' : 'them'}).`;
+}
+
 /**
  * Fit to screen (FR-LAY-012): scale the shown screen's content down together and move it into the screen's safe area; content already inside
- * stays, and so does a pinned (hand-placed) shape (M17.31). Always the whole screen, whatever is selected. False when there is no screen or the
- * document refuses.
+ * stays, and so does a pinned (hand-placed or position-locked) shape (ADR-0031): a pinned shape left outside the safe area is named in a notice
+ * (M17.31). Always the whole screen, whatever is selected. False when there is no screen or the document refuses.
  *
  * @public
  */
 export function fitToScreen(ctx: ArrangeHost): boolean {
-  return arrangeScreen(ctx, FIT);
+  const t = ctx.tools.ctx;
+  const screenId = shownScreen(t.view, t.session.screen.get());
+  return screenId !== undefined && start(ctx, { screenId, scope: 'screen', algorithm: FIT }, () => leftOutsideNotice(t.view, screenId));
 }

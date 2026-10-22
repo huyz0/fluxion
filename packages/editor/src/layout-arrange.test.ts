@@ -11,6 +11,7 @@ import {
   arrangeContainer,
   arrangeScreen,
   arrangeSelected,
+  fitToScreen,
   LAYOUT_CHOICES,
   registeredLayoutIds,
 } from './layout-arrange.js';
@@ -39,7 +40,7 @@ function setup(accept = true, background?: (request: ArrangeRequest) => Promise<
     notify: (m: string) => void notices.push(m),
     ...(background ? { arrange: background } : {}),
   } as unknown as EditorCommandCtx;
-  return { screen, a, c, group, session, ctx, calls, notices };
+  return { core, screen, a, c, group, session, ctx, calls, notices };
 }
 
 describe('arranging with a layout in the editor (FR-LAY-005, FR-LAY-001)', () => {
@@ -128,5 +129,55 @@ describe('arranging with a layout in the editor (FR-LAY-005, FR-LAY-001)', () =>
     ).toBe('Arrange the screen (test:ring)');
     expect(menuItems('element', all).map((i) => i.title)).toContain('Arrange the selection (test:ring)');
     expect(menuItems('canvas', all).map((i) => i.command)).not.toContain('layout.arrange.screen.test:ring');
+  });
+});
+
+describe('Fit with hand-placed shapes (FR-LAY-012, M17.31)', () => {
+  /** `t`'s core with the rect `id` placed by hand (or locked in place) at `box`. */
+  function pin(
+    t: ReturnType<typeof setup>,
+    id: RecordId,
+    box: { x: number; y: number },
+    { how = 'pinned', name }: { how?: 'pinned' | 'locked'; name?: string } = {},
+  ) {
+    const extra = how === 'pinned' ? { placement: 'pinned' } : { locks: { position: true } };
+    t.core.store.transact('pin', (tx) => tx.patch(id, { transform: { ...box, w: 100, h: 50 }, ...extra, ...(name ? { name } : {}) } as never));
+  }
+
+  it('FR-LAY-012: WHEN a dragged shape partly off the screen is fitted THE SYSTEM SHALL say it was left in place, naming it', () => {
+    const t = setup();
+    t.core.execute('element.ungroup', { ids: [t.group] });
+    pin(t, t.a, { x: 950, y: 100 }, { name: 'Logo' });
+    expect(fitToScreen(t.ctx)).toBe(true);
+    expect(t.calls).toEqual([{ id: 'layout.arrange', args: { screenId: t.screen, scope: 'screen', algorithm: 'fit' } }]);
+    expect(t.notices).toEqual(['Left in place, outside the safe area: "Logo" (it is pinned or locked, so Fit does not move it).']);
+  });
+
+  it('FR-LAY-012: a locked shape in the margin counts; a pinned shape inside the safe area, a hidden one outside, or a refused fit say nothing', () => {
+    const t = setup();
+    t.core.execute('element.ungroup', { ids: [t.group] });
+    // the safe area of a 1000 x 600 screen is inset 30 px: x 30..970, y 30..570
+    pin(t, t.a, { x: 10, y: 100 }, { how: 'locked' });
+    expect(fitToScreen(t.ctx)).toBe(true);
+    expect(t.notices).toEqual(['Left in place, outside the safe area: a shape (it is pinned or locked, so Fit does not move it).']);
+    const inside = setup();
+    inside.core.execute('element.ungroup', { ids: [inside.group] });
+    pin(inside, inside.a, { x: 100, y: 100 });
+    inside.core.store.transact('off', (tx) => tx.patch(inside.c, { transform: { x: 990, y: 300, w: 100, h: 50 } } as never));
+    // a hidden shape is not laid out, so it is not named
+    inside.core.store.transact('hide', (tx) => tx.patch(inside.c, { hidden: true, placement: 'pinned' } as never));
+    expect(fitToScreen(inside.ctx)).toBe(true);
+    expect(fitToScreen(setup(false).ctx)).toBe(false);
+    expect([...inside.notices]).toEqual([]);
+  });
+
+  it('FR-LAY-012: with a background runner the notice replaces "Arranging…" once the fit is done', async () => {
+    const t = setup(true, () => Promise.resolve({ ok: true }));
+    t.core.execute('element.ungroup', { ids: [t.group] });
+    for (const [i, id] of [t.a, t.c].entries()) pin(t, id, { x: 980, y: 100 + i * 60 }, { name: `S${i}` });
+    expect(fitToScreen(t.ctx)).toBe(true);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(t.notices).toEqual(['Arranging…', 'Left in place, outside the safe area: "S0", "S1" (they are pinned or locked, so Fit does not move them).']);
   });
 });

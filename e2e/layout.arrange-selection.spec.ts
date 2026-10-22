@@ -1,4 +1,4 @@
-import { onScreen, shapeAt } from './pages/connectors.js';
+import { drag, onScreen, shapeAt } from './pages/connectors.js';
 import { EditorPage } from './pages/editor.js';
 import { expect, test } from './test.js';
 
@@ -76,5 +76,22 @@ test.describe('arranging a selection with a layout', { tag: '@desktop' }, () => 
     expect((after[0] as Box).width).toBeLessThan((before[0] as Box).width);
     await editor.toolbarButton('Undo').click();
     expect((await boxes(editor)).map((b) => [Math.round(b.x), Math.round(b.width)])).toEqual(before.map((b) => [Math.round(b.x), Math.round(b.width)]));
+  });
+
+  test('FR-LAY-012: Fit content to screen leaves a shape dragged partly off the screen where it is and says so', async ({ page }) => {
+    const editor = new EditorPage(page);
+    await editor.open('new');
+    await shapeAt(page, editor, 0.5, 1);
+    // a move pins the shape (placed by hand, ADR-0031): drag it until it crosses the right edge
+    await drag(page, await onScreen(editor, 0.56, 0.4), await onScreen(editor, 0.96, 0.4));
+    const dragged = (await boxes(editor))[0] as Box;
+    const screen = await editor.screenBox();
+    expect(dragged.x + dragged.width).toBeGreaterThan(screen.x + screen.width);
+    await page.keyboard.press('Escape');
+    const on = await onScreen(editor, 0.2, 0.8);
+    await page.mouse.click(on.x, on.y, { button: 'right' });
+    await page.getByRole('menuitem', { name: 'Fit content to screen' }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Left in place, outside the safe area' })).toBeVisible();
+    expect(Math.round(((await boxes(editor))[0] as Box).x)).toBe(Math.round(dragged.x));
   });
 });
