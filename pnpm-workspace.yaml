@@ -32,6 +32,8 @@ overrides:
   # GHSA-gfr2-rv44-r23c, GHSA-vfgh-jcmw-g37q (markdown-it, docs and API tooling) and GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw (launch-editor, via vite): M17.28
   markdown-it@<14.3.3: 14.3.3
   launch-editor@<2.14.2: 2.14.2
+  # GHSA-rxp7-6hxx-x8q5 (ip-address, via express-rate-limit in @modelcontextprotocol/sdk, the MCP server; and socks via @lhci/cli): M17.35
+  ip-address@<10.7.4: 10.7.4
 
 packageExtensions:
   dependency-cruiser:

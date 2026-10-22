@@ -127,6 +127,8 @@ beforeEach(() => {
 afterEach(() => root.remove());
 
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+/** A worker started from a Blob URL can take longer than vi.waitFor's 1 s on a loaded runner (CI macOS, the staged ladder in parallel). */
+const SLOW = { timeout: 15_000 };
 const shown = () => root.querySelector('.fx-screen')?.getAttribute('data-screen-id');
 const press = async (key: string) => {
   window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
@@ -194,8 +196,8 @@ describe('the routing chunk of the one-file player (FR-RTE-003, NFR-SIZE-001; M1
     await withChunk(async ({ created, revoked }) => {
       const result = await window.Fluxion?.start(await walledFile(), root);
       expect(result?.ok, result?.message).toBe(true);
-      await vi.waitFor(() => expect(routes()).toBe('settled'));
-      await vi.waitFor(() => expect(passes()).toEqual(['global']));
+      await vi.waitFor(() => expect(routes()).toBe('settled'), SLOW);
+      await vi.waitFor(() => expect(passes()).toEqual(['global']), SLOW);
       // the chunk ran from a Blob URL of its own text, as a worker: no script element runs it in the page
       expect(created.length).toBeGreaterThan(0);
       expect(document.querySelector('script[src^="blob:"]')).toBeNull();
@@ -218,8 +220,8 @@ describe('the routing chunk of the one-file player (FR-RTE-003, NFR-SIZE-001; M1
   it('FR-RTE-003: a page without the chunk draws the cheap routes, and says so', async () => {
     const result = await window.Fluxion?.start(await walledFile(), root);
     expect(result?.ok, result?.message).toBe(true);
-    await vi.waitFor(() => expect(routes()).toBe('cheap'));
-    await vi.waitFor(() => expect(passes()).toEqual(['cheap']));
+    await vi.waitFor(() => expect(routes()).toBe('cheap'), SLOW);
+    await vi.waitFor(() => expect(passes()).toEqual(['cheap']), SLOW);
     result?.unmount?.();
   });
 });
