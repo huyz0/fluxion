@@ -96,11 +96,15 @@ els.forEach((el, i) => { el.style.width = w(el, hs[i]) + "px"; });
 
 ## 5. Regression policy
 
-18. **Benchmarks may not regress more than 15 %** against the stored baseline
-    (`scripts/gates/perf-baseline.json`); size-limit entries may not exceed their budget at all. →
-    `pnpm verify` (bench compare) + size-limit
-19. **Baselines are updated only by improvements** or with an ADR that justifies a new cost. →
-    `check-drift`
+18. **Benchmarks may not regress more than `PERF_REGRESSION_TOLERANCE_PCT` (15 %)** against the
+    stored baseline: the nightly perf job judges the layout benches in calibration units against
+    the root `perf-baseline.calibrated.json` (ADR-0170); the completion gates' bench legs read p99 ms
+    from the root `perf-baseline.json` (M17.42 moves them to units). Size-limit entries may not
+    exceed their budget at all. → CI `perf` job (`scripts/ci/perf-baseline.mjs`), `m<N>-complete`
+    bench legs, size-limit
+19. **Baselines are updated only by improvements** or with an ADR that justifies a new cost: a
+    raised, removed or non-numeric entry in either baseline file needs a `Threshold-change:`
+    trailer citing an ADR; a lowered or newly recorded entry does not. → `check-drift`
 20. **Frame-rate and timing tests run in CI perf job on a fixed runner**; local numbers are for
     investigation, not for arguing with the gate. Until there is a fixed runner, the layout
     benches' regression budget is judged in calibration units against a frozen workload run in

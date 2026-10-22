@@ -127,6 +127,31 @@ describe('check-drift (NFR-DX-004)', () => {
     assert.equal(check('M4.8: chore(gates): floor\n\nThreshold-change: flaky mutant (ADR-0042)\n').status, 0);
   });
 
+  // performance.md rule 19, ADR-0170 (M17 final F2): a bench baseline only moves down without an ADR, in either baseline file
+  for (const file of ['perf-baseline.json', 'perf-baseline.calibrated.json']) {
+    it(`NFR-PERF-005: a raised or removed entry in ${file} fails without a justified trailer; a lowered or new one passes`, () => {
+      const put = (entries) => {
+        sb.write(file, `${JSON.stringify(entries)}\n`);
+        sb.git('add', file);
+      };
+      put({ 'layered-500': 6.1, 'tree-500': 0.57 });
+      sb.git('commit', '-q', '-m', 'baseline fixture', '--no-verify');
+      put({ 'layered-500': 7.5, 'tree-500': 0.57 });
+      const raised = check();
+      assert.equal(raised.status, 1, out(raised));
+      assert.ok(raised.stderr.includes(`${file} layered-500 6.1 → 7.5 (raised)`), out(raised));
+      put({ 'layered-500': 6.1 });
+      assert.ok(check().stderr.includes(`${file} tree-500 removed`));
+      put({ 'layered-500': 6.1, 'tree-500': 'fast' });
+      assert.ok(check().stderr.includes(`${file} tree-500 is not a finite number`));
+      put({ 'layered-500': 7.5, 'tree-500': 0.57 });
+      assert.equal(check('M17.38: chore(ci): re-record\n\nThreshold-change: new cost of a feature (ADR-0042)\n').status, 0);
+      put({ 'layered-500': 5.9, 'tree-500': 0.57, 'radial-500': 0.61 });
+      const lowered = check();
+      assert.equal(lowered.status, 0, out(lowered));
+    });
+  }
+
   it('passes when a mutation floor is raised or a package floor is added', () => {
     commitFloors({ 'packages/core': { score: 84 } });
     sb.write(FLOORS, floors({ 'packages/core': { score: 92 }, 'packages/schema': { score: 70 } }));

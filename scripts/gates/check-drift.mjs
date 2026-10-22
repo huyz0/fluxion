@@ -3,7 +3,8 @@
 //   check-drift.mjs --msg <commit-msg-file>   commit-msg hook: staged thresholds vs HEAD
 //   check-drift.mjs --commit <sha>            CI: <sha> vs its first parent, using its message
 // Weakening (a value moving in its `weakens` direction, a removed key, a changed `weakens`, or a
-// lowered or removed mutation floor in .harness/baselines/mutation.json)
+// lowered or removed mutation floor in .harness/baselines/mutation.json, a raised or removed bench
+// baseline in perf-baseline.json or perf-baseline.calibrated.json: performance.md rule 19, M17.38)
 // requires a `Threshold-change: <reason>` trailer that cites an ADR (ADR-NNNN). Re-recording or
 // deleting a golden (`__golden__/`) or a screenshot baseline (`-snapshots/*.png`) needs the trailer
 // too, naming the behaviour that changed, without an ADR (testing.md rule 8; M5 final F2).
@@ -92,6 +93,41 @@ function floorWeakening() {
   return weakened;
 }
 
+// bench baselines only move down (an improvement) without an ADR (performance.md rule 19, ADR-0170, M17 final F2)
+const PERF_BASELINES = ['perf-baseline.json', 'perf-baseline.calibrated.json'];
+
+/** A baseline file's entries; an unreadable file counts as empty. */
+function baselineEntries(text) {
+  try {
+    return JSON.parse(text ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+/** How entry `name` moved from `o` to `n`, when that is a weakening. */
+function entryWeakening(file, name, o, n) {
+  if (n === undefined) return `${file} ${name} removed`;
+  if (typeof n !== 'number' || !Number.isFinite(n)) return `${file} ${name} is not a finite number (${String(n)})`;
+  if (typeof o === 'number' && n > o) return `${file} ${name} ${o} → ${n} (raised)`;
+  return null;
+}
+
+/** Weakenings of the bench baselines: a raised, removed or non-numeric entry. Recording a new entry is not one. */
+function perfBaselineWeakening() {
+  const weakened = [];
+  for (const file of PERF_BASELINES) {
+    const [before, after] = versions(file);
+    if (before === null || before === after) continue;
+    const [old, cur] = [baselineEntries(before), baselineEntries(after)];
+    for (const [name, o] of Object.entries(old)) {
+      const w = entryWeakening(file, name, o, cur[name]);
+      if (w) weakened.push(w);
+    }
+  }
+  return weakened;
+}
+
 /**
  * A golden, a screenshot baseline or a Vitest snapshot: re-recording one (`-u`) moves what a test
  * accepts (testing.md rule 8; M5.40 review F3).
@@ -129,7 +165,7 @@ if (baselines.length > 0 && !/^Threshold-change:[ \t]*\S/m.test(msg)) {
   process.exit(1);
 }
 
-const weakened = [...(await thresholdWeakening()), ...floorWeakening()];
+const weakened = [...(await thresholdWeakening()), ...floorWeakening(), ...perfBaselineWeakening()];
 if (weakened.length === 0) {
   if (baselines.length > 0) console.log(`drift: ${baselines.length} re-recorded baseline(s) with a Threshold-change trailer`);
   process.exit(0);
