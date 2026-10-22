@@ -51,7 +51,7 @@ export type HostJob = Omit<LayoutJobMessage, 'type' | 'id' | 'revision' | 'seed'
   readonly seed?: number;
   /** A hash of the fonts the sizes were measured with (default empty). */
   readonly fontHash?: string;
-  /** The post-passes (default pins, overlap, snap). */
+  /** The post-passes (default pins, constraints, overlap, snap). */
   readonly post?: LayoutJobMessage['post'];
 };
 
@@ -125,7 +125,7 @@ function endJob(state: State, scope: string, job: Running, outcome: Outcome): vo
 /** The message that starts `job` as job number `id`. */
 function messageFor(job: HostJob, id: number): LayoutJobMessage {
   const { scope: _scope, revision, seed, fontHash, post, ...rest } = job;
-  return { ...rest, type: 'layout', id, revision, seed: seed ?? 0, fontHash: fontHash ?? '', post: post ?? ['pins', 'overlap', 'snap'] };
+  return { ...rest, type: 'layout', id, revision, seed: seed ?? 0, fontHash: fontHash ?? '', post: post ?? ['pins', 'constraints', 'overlap', 'snap'] };
 }
 
 /** Start `job` on a new worker; `resolve` and `reject` settle the caller's promise. */

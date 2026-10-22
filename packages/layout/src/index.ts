@@ -34,6 +34,7 @@ export {
   createAsyncArranger,
 } from './arrange-async.js';
 export { type CircularOptions, circularLayout } from './circular.js';
+export { applyConstraints } from './constraints.js';
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type ForceOptions, forceLayout } from './force.js';
 export { type GridOptions, gridLayout } from './grid.js';
@@ -59,6 +60,7 @@ export type {
   LaidOut,
   LayoutAlgorithm,
   LayoutCapabilities,
+  LayoutConstraint,
   LayoutCtx,
   LayoutEdge,
   LayoutInput,

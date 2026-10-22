@@ -1,9 +1,10 @@
 // The layout pipeline (ADR-0033, ADR-0034): validate and canonicalize the input, run the algorithm with a seeded stream, then the post-passes in
-// the fixed order pins, overlap, snap, and fill `metrics` and `fingerprint`. It is synchronous and pure, so the DSL compiler, the worker and the
+// the fixed order pins, constraints, overlap, snap, and fill `metrics` and `fingerprint`. It is synchronous and pure, so the DSL compiler, the worker and the
 // CLI run the same code and get the same bytes. The fingerprint is the first 128 bits of the SHA-256 of the canonical request (core's
 // synchronous hash), so equal requests have equal fingerprints and the engine can cache by it.
 import { sha256Hash128 } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
+import { applyConstraints, constraintProblem } from './constraints.js';
 import { err, type LayoutError, ok, type Result } from './errors.js';
 import { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
 import { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
@@ -27,7 +28,7 @@ export type LayoutRequest<O> = {
   readonly seed?: number;
   /** A hash of the fonts the sizes in `input` were measured with; part of the fingerprint (default empty: not measured). */
   readonly fontHash?: string;
-  /** The post-passes to run, always in the order pins, overlap, snap (default all three). */
+  /** The post-passes to run, always in the order pins, constraints, overlap, snap (default all four). */
   readonly post?: readonly PostPassId[];
   /** Options of the overlap pass. */
   readonly overlap?: OverlapOptions;
@@ -35,7 +36,7 @@ export type LayoutRequest<O> = {
   readonly measure?: LayoutCtx['measure'];
 };
 
-const ORDER: readonly PostPassId[] = ['pins', 'overlap', 'snap'];
+const ORDER: readonly PostPassId[] = ['pins', 'constraints', 'overlap', 'snap'];
 const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const fail = (code: LayoutError['code'], message: string) => err<LayoutError>({ code, message });
@@ -59,7 +60,7 @@ function inputProblem(input: LayoutInput): string | undefined {
     if (!finite(n.order)) return `the order of node "${n.id}" is not finite`;
   }
   const edge = (input.edges ?? []).find((e) => !finite(e.order));
-  return edge ? `the order of edge "${edge.id}" is not finite` : undefined;
+  return edge ? `the order of edge "${edge.id}" is not finite` : constraintProblem(input.constraints ?? []);
 }
 
 /** The input in canonical order: nodes and edges by (order, id). Values are untouched (ADR-0033). */
@@ -136,6 +137,7 @@ function prepare<O>(req: LayoutRequest<O>): Result<Prepared<O>> {
 function afterPasses(input: LayoutInput, boxes: Boxes, passes: readonly PostPassId[], overlap: OverlapOptions | undefined): Boxes {
   let out = boxes;
   if (passes.includes('pins')) out = applyPins(input, out);
+  if (passes.includes('constraints')) out = applyConstraints(input, out);
   if (passes.includes('overlap')) out = removeOverlap(input, out, overlap);
   if (passes.includes('snap')) out = snapBoxes(input, out);
   return out;
@@ -159,7 +161,7 @@ function complete(nodes: readonly LayoutNode[], boxes: Boxes): string | undefine
 }
 
 /**
- * Lay out a request: validate, run the algorithm, run the post-passes (pins, overlap, snap), and return the boxes with `metrics` and a
+ * Lay out a request: validate, run the algorithm, run the post-passes (pins, constraints, overlap, snap), and return the boxes with `metrics` and a
  * `fingerprint`. Expected failures (bad input, bad options, an algorithm that throws or returns a box that is not finite) are a `LayoutError`.
  *
  * @public

@@ -1,5 +1,5 @@
 // The `pins` and `snap` post-passes (ADR-0033, ADR-0034, FR-LAY-004, FR-LAY-008): pure functions over the boxes an algorithm returned. The
-// pipeline runs them in the fixed order pins, overlap, snap; `pins` first so that whatever an algorithm did to a pinned node is undone before
+// pipeline runs them in the fixed order pins, constraints, overlap, snap; `pins` first so that whatever an algorithm did to a pinned node is undone before
 // anything else looks at the boxes, `snap` last so that rounding is the final step and cannot be undone by another pass.
 import type { Box } from '@fluxion/geometry';
 import type { LayoutInput } from './types.js';
@@ -16,7 +16,7 @@ export type Boxes = { readonly [id: string]: Box };
  *
  * @public
  */
-export type PostPassId = 'pins' | 'overlap' | 'snap';
+export type PostPassId = 'pins' | 'constraints' | 'overlap' | 'snap';
 
 /** Rounds a coordinate to the half pixel, halves toward +infinity, `-0` as `0` (ADR-0034). */
 const quantize = (v: number): number => Math.round(v * 2) / 2 + 0;

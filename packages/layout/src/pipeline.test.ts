@@ -58,11 +58,12 @@ describe('layout pipeline (FR-LAY-008)', () => {
       key({ algorithm: { ...pileUp, version: '4' } }),
       key({}, input([node('a', 0), node('b', 1, [101, 50])])),
       key({}, input(nodes, { scope: 'selection' })),
+      key({}, input(nodes, { constraints: [{ type: 'align', axis: 'x', nodes: ['a', 'b'] }] })),
     ]);
-    expect(keys.size).toBe(9);
+    expect(keys.size).toBe(10);
     // the same request spelled another way has the same key: default options written out, passes in another order
     expect(key({ options: { jitter: 0 } })).toBe(key());
-    expect(key({ post: ['snap', 'overlap', 'pins'] })).toBe(key());
+    expect(key({ post: ['snap', 'overlap', 'constraints', 'pins'] })).toBe(key());
   });
 
   it('FR-LAY-004: the pipeline puts pinned nodes back, removes overlap, snaps, and counts overlapping pinned pairs', () => {

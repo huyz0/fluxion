@@ -71,7 +71,60 @@ export type LayoutInput = {
   readonly edges?: readonly LayoutEdge[];
   /** What the run covers (default `screen`). */
   readonly scope?: LayoutScope;
+  /** Relations the `constraints` post-pass keeps, applied in this order (ADR-0045); none when omitted. */
+  readonly constraints?: readonly LayoutConstraint[];
 };
+
+/**
+ * A relation between boxes that the `constraints` post-pass keeps whatever the algorithm did (FR-LAY-006, ADR-0045). Ids that are not
+ * nodes of the input are ignored.
+ *
+ * - `align`: the nodes share one coordinate on `axis`: their left or top edge (`start`), centre (`center`, the default) or far edge (`end`).
+ * - `sameRank`: the nodes are on one rank: `align` on `axis` (default `y`, the rows of a `down` flow) at the centre.
+ * - `order`: `after` starts at least `gap` px (default 0) past the end of `before` on `axis`.
+ * - `spacing`: the gap between neighbouring boxes in a row or column is at least `min` and at most `max` px.
+ *
+ * @public
+ */
+export type LayoutConstraint =
+  | {
+      /** Line the nodes up. */
+      readonly type: 'align';
+      /** The axis of the shared coordinate. */
+      readonly axis: 'x' | 'y';
+      /** The node ids. */
+      readonly nodes: readonly string[];
+      /** The point of each box on that coordinate (default `center`). */
+      readonly at?: 'start' | 'center' | 'end';
+    }
+  | {
+      /** Put the nodes on one rank. */
+      readonly type: 'sameRank';
+      /** The node ids. */
+      readonly nodes: readonly string[];
+      /** The axis of the shared centre (default `y`). */
+      readonly axis?: 'x' | 'y';
+    }
+  | {
+      /** Keep one node after another. */
+      readonly type: 'order';
+      /** The axis along which `after` follows `before`. */
+      readonly axis: 'x' | 'y';
+      /** The id of the node that comes first. */
+      readonly before: string;
+      /** The id of the node that comes after it. */
+      readonly after: string;
+      /** The least space between them, px (default 0). */
+      readonly gap?: number;
+    }
+  | {
+      /** Bound the gaps between neighbouring boxes. */
+      readonly type: 'spacing';
+      /** The least gap, px; it also raises the overlap pass's margin. */
+      readonly min?: number;
+      /** The largest gap, px. */
+      readonly max?: number;
+    };
 
 /**
  * What a layout gives back: a box for every node, pinned ones unchanged.
@@ -151,7 +204,7 @@ export type LayoutCapabilities = {
   readonly pins: boolean;
   /** Lays out nested containers itself. */
   readonly compound: boolean;
-  /** Constraint types it honours (`align`, `order`, ...); none until M17 adds constraints. */
+  /** Constraint types it honours itself (`align`, `order`, ...); the `constraints` post-pass applies them to every algorithm's result. */
   readonly constraints?: readonly string[];
   /** Where it may run: `main` thread only, `worker` only, or `either`. */
   readonly runsIn: 'main' | 'worker' | 'either';

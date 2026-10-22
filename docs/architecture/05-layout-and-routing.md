@@ -54,7 +54,7 @@ interface LayoutEdge { id: RecordId; source: RecordId; target: RecordId;
 type LayoutConstraint =
   | { type: 'align'; axis: 'x' | 'y'; nodes: RecordId[]; at?: 'start' | 'center' | 'end' }
   | { type: 'order'; axis: 'x' | 'y'; before: RecordId; after: RecordId; gap?: number }
-  | { type: 'sameRank'; nodes: RecordId[] }
+  | { type: 'sameRank'; nodes: RecordId[]; axis?: 'x' | 'y' }   // align at the centre, default y
   | { type: 'spacing'; min?: number; max?: number }
   | { type: 'within'; nodes: RecordId[] | '*'; bounds: Box };   // safe area (FR-LAY-012)
 

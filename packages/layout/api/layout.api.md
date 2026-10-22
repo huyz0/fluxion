@@ -32,6 +32,9 @@ export type AlgorithmByName = (name: string) => LayoutAlgorithm<never> | undefin
 export const APPLY_BOXES_COMMAND_ID = "layout.applyBoxes";
 
 // @public
+export function applyConstraints(input: LayoutInput, boxes: Boxes): Boxes;
+
+// @public
 export function applyPins(input: LayoutInput, boxes: Boxes): Boxes;
 
 // @public
@@ -198,6 +201,28 @@ export type LayoutCapabilities = {
 };
 
 // @public
+export type LayoutConstraint = {
+    readonly type: "align";
+    readonly axis: "x" | "y";
+    readonly nodes: readonly string[];
+    readonly at?: "start" | "center" | "end";
+} | {
+    readonly type: "sameRank";
+    readonly nodes: readonly string[];
+    readonly axis?: "x" | "y";
+} | {
+    readonly type: "order";
+    readonly axis: "x" | "y";
+    readonly before: string;
+    readonly after: string;
+    readonly gap?: number;
+} | {
+    readonly type: "spacing";
+    readonly min?: number;
+    readonly max?: number;
+};
+
+// @public
 export type LayoutCtx = {
     readonly rng: () => number;
     readonly measure: TextMeasurer;
@@ -233,6 +258,7 @@ export type LayoutInput = {
     readonly frame: Box;
     readonly edges?: readonly LayoutEdge[];
     readonly scope?: LayoutScope;
+    readonly constraints?: readonly LayoutConstraint[];
 };
 
 // @public
@@ -365,7 +391,7 @@ export type PackingOptions = {
 };
 
 // @public
-export type PostPassId = "pins" | "overlap" | "snap";
+export type PostPassId = "pins" | "constraints" | "overlap" | "snap";
 
 // @public
 export const radialLayout: LayoutAlgorithm<RadialOptions>;
