@@ -48,6 +48,15 @@ test.describe('context menus: mouse', { tag: '@desktop' }, () => {
       /Arrange the selection \(grid\)/,
       /Arrange the selection \(stack\)/,
       /Arrange the container/,
+      /Arrange the selection \(circular\)/,
+      /Arrange the selection \(force\)/,
+      /Arrange the selection \(mindmap\)/,
+      /Arrange the selection \(orgchart\)/,
+      /Arrange the selection \(packing\)/,
+      /Arrange the selection \(radial\)/,
+      /Arrange the selection \(swimlane\)/,
+      /Arrange the selection \(timeline\)/,
+      /Arrange the selection \(tree\)/,
     ]);
     await item(editor, /Select same type/).click();
     await expect(menu(editor)).toBeHidden();
@@ -76,6 +85,15 @@ test.describe('context menus: mouse', { tag: '@desktop' }, () => {
       /Arrange the screen \(layered\)/,
       /Arrange the screen \(grid\)/,
       /Arrange the screen \(stack\)/,
+      /Arrange the screen \(circular\)/,
+      /Arrange the screen \(force\)/,
+      /Arrange the screen \(mindmap\)/,
+      /Arrange the screen \(orgchart\)/,
+      /Arrange the screen \(packing\)/,
+      /Arrange the screen \(radial\)/,
+      /Arrange the screen \(swimlane\)/,
+      /Arrange the screen \(timeline\)/,
+      /Arrange the screen \(tree\)/,
     ]);
     await page.keyboard.press('Escape');
     await expect(menu(editor)).toBeHidden();

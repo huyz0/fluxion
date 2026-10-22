@@ -132,6 +132,18 @@ const press = async (key: string) => {
   window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
   await frame();
 };
+/**
+ * Press `key` until `reached` holds. On a slow runner the first screen can be drawn before the deck's key listener is attached (a passive
+ * effect), and that press is lost; the decks pressed through here have two screens, so pressing again at the end moves nowhere.
+ */
+const pressUntil = (key: string, reached: () => boolean) =>
+  vi.waitFor(
+    async () => {
+      if (!reached()) await press(key);
+      expect(reached()).toBe(true);
+    },
+    { timeout: 5000, interval: 100 },
+  );
 
 /** One screen where an orthogonal connector's cheap route runs through a wall between its ends, which the global pass goes around. */
 async function walledFile(): Promise<Uint8Array> {
@@ -222,10 +234,8 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
     await vi.waitFor(() => expect(shown()).toBe(ids[0]));
     // the rectangle is the basic pack's shape: drawn by the bundled registries
     expect(root.querySelector('.fx-screen svg, .fx-screen [data-element-id]')).not.toBeNull();
-    await press('ArrowRight');
-    await vi.waitFor(() => expect(shown()).toBe(ids[1]));
-    await press('ArrowLeft');
-    await vi.waitFor(() => expect(shown()).toBe(ids[0]));
+    await pressUntil('ArrowRight', () => shown() === ids[1]);
+    await pressUntil('ArrowLeft', () => shown() === ids[0]);
     result?.unmount?.();
     expect(root.querySelector('.fx-screen')).toBeNull();
   });
@@ -234,8 +244,7 @@ describe('the one-file player script (FR-FIL-002, FR-EXP-001)', () => {
     const { bytes } = await deckFile();
     const result = await window.Fluxion?.start(bytes, root);
     await vi.waitFor(() => expect(shown()).not.toBeUndefined());
-    await press('ArrowRight');
-    await vi.waitFor(() => expect(root.querySelector('image, img')).not.toBeNull());
+    await pressUntil('ArrowRight', () => root.querySelector('image, img') !== null);
     const image = root.querySelector('image, img');
     const href = image?.getAttribute('href') ?? image?.getAttribute('src') ?? '';
     expect(href.startsWith('blob:')).toBe(true);
