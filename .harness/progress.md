@@ -2041,3 +2041,6 @@ Decided: keep pins (ADR-0031); Fit notice names pinned/locked visible top-level 
 
 ## M17.34
 Layout options form arranges through the host ArrangePort (amend, one undo with the spec write); ArrangeRequest.options. Review: pass round 1.
+
+## M17.37
+Templates are picker choices for the screen (template:<id>), built from shape labels in one patch replacing those shapes; picks go through the host port. Fixed template node slugs on screens without a slug (toSlug of the id). Review: fail round 1 (digit-leading ids), pass round 2.
