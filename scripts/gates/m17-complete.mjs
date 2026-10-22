@@ -129,6 +129,26 @@ leg('the templates example compiles and renders to its golden (FR-LAY-014)', () 
     return "scripts/dsl/examples.test.ts draws no templates golden (matchesGolden('templates'))";
   return vitestFile('scripts/dsl/examples.test.ts', 'node', 'scripts/dsl/examples.config.ts');
 });
+leg('every registered template is built on a screen of the templates-all example and drawn as its golden (FR-LAY-014)', () => {
+  for (const f of ['examples/dsl/templates-all.flux.yaml', 'examples/dsl/__golden__/templates-all.svg']) if (!exists(f)) return `missing ${f}`;
+  const text = readFileSync(repoPath('examples/dsl/templates-all.flux.yaml'), 'utf8');
+  // every registered id, matched as a whole `template: <id>` line (so process.chevron does not stand in for process.basic)
+  const ids = [
+    'process.basic',
+    'process.chevron',
+    'cycle.basic',
+    'hierarchy.org',
+    'pyramid',
+    'matrix.2x2',
+    'venn',
+    'funnel',
+    'timeline.milestones',
+    'comparison',
+  ];
+  const lines = new Set(text.split(/\r?\n/).map((line) => line.trim()));
+  const absent = ids.filter((id) => !lines.has(`template: ${id}`));
+  return absent.length ? `templates-all.flux.yaml builds no screen of ${absent.join(', ')}` : true;
+});
 leg('the AI catalog lists every template within its token budget (FR-LAY-014)', () =>
   vitestNamed('FR-LAY-014: the catalog lists all 9 templates within AI_CATALOG_MAX_TOKENS', ['packages/dsl/src/catalog/token-budget.test.ts']),
 );

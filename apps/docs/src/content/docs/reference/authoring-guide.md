@@ -146,7 +146,7 @@ screens:
 
 ## Examples
 
-The corpus in `examples/dsl/`: `brand-theme.flux.yaml`, `checkout.flux.yaml`, `edge-ops.flux.yaml`, `layered-flow.flux.yaml`, `order-flowchart.flux.yaml`, `pinned-dashboard.flux.yaml`, `platform-architecture.flux.yaml`, `release-notes.flux.yaml`, `routing-showcase.flux.yaml`, `style-tokens.flux.yaml`, `templates.flux.yaml`. One in full:
+The corpus in `examples/dsl/`: `brand-theme.flux.yaml`, `checkout.flux.yaml`, `edge-ops.flux.yaml`, `layered-flow.flux.yaml`, `order-flowchart.flux.yaml`, `pinned-dashboard.flux.yaml`, `platform-architecture.flux.yaml`, `release-notes.flux.yaml`, `routing-showcase.flux.yaml`, `style-tokens.flux.yaml`, `templates-all.flux.yaml`, `templates.flux.yaml`. One in full:
 
 ```yaml flux
 flux: 1

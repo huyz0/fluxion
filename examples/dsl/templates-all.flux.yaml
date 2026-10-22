@@ -1,0 +1,56 @@
+flux: 1
+title: Every smart template
+theme: light
+uses: [basic]
+screens:
+  - id: process-basic
+    title: process.basic
+    template: process.basic
+    items:
+      - { label: Plan, detail: Scope and goals }
+      - Build
+      - Test
+      - Ship
+  - id: process-chevron
+    title: process.chevron
+    template: process.chevron
+    items: [Research, Design, Deliver]
+  - id: cycle-basic
+    title: cycle.basic
+    template: cycle.basic
+    items: [Plan, Do, Check, Act]
+  - id: hierarchy-org
+    title: hierarchy.org
+    template: hierarchy.org
+    items:
+      - label: CEO
+        children:
+          - { label: CTO, children: [Platform, Apps] }
+          - CFO
+          - COO
+  - id: pyramid
+    title: pyramid
+    template: pyramid
+    items: [Vision, Strategy, Tactics, Operations]
+  - id: matrix-2x2
+    title: matrix.2x2
+    template: matrix.2x2
+    items: [Do first, Schedule, Delegate, Drop]
+  - id: venn
+    title: venn
+    template: venn
+    items: [Desirable, Feasible, Viable]
+  - id: funnel
+    title: funnel
+    template: funnel
+    items: [Visitors, Leads, Trials, Customers]
+  - id: timeline-milestones
+    title: timeline.milestones
+    template: timeline.milestones
+    items: [Kickoff, Alpha, Beta, Launch]
+  - id: comparison
+    title: comparison
+    template: comparison
+    items:
+      - { label: Build, children: [Full control, Slower start] }
+      - { label: Buy, children: [Fast start, Licence cost, Lock-in] }

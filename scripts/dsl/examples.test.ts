@@ -158,6 +158,28 @@ describe('examples/dsl/templates.flux.yaml', () => {
   });
 });
 
+describe('examples/dsl/templates-all.flux.yaml', () => {
+  it('FR-LAY-014: every registered template is built on a screen of the example and drawn as its golden SVG (M17 final F5)', async () => {
+    const ids = registries()
+      .templates.list()
+      .map(([id]) => id)
+      .sort();
+    const done = run(readFileSync(join(DIR, 'templates-all.flux.yaml'), 'utf8'));
+    const built = Object.values((done.doc as DocumentFile).records)
+      .flatMap((r) => {
+        const layout = (r as { type?: string; layout?: { type?: string; id?: unknown } }).layout;
+        return r.type === 'screen' && layout?.type === 'template' && typeof layout.id === 'string' ? [layout.id] : [];
+      })
+      .sort();
+    expect(built).toEqual(ids);
+    const svg = await matchesGolden('templates-all');
+    // venn's circles are see-through; process.chevron draws one block arrow per item: seven straight sides, no curve
+    expect(svg).toMatch(/opacity="0\.7"|opacity:\s*0\.7/);
+    const arrows = [...svg.matchAll(/ d="(M[^"]*)"/g)].filter(([, d]) => /^M[\d. -]+( L[\d. -]+){6} Z$/.test(d as string));
+    expect(arrows.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe('examples/dsl/routing-showcase.flux.yaml', () => {
   it('FR-CON-008, FR-CON-011: the showcase is drawn as its golden SVG, with a hop (an arc and a gap), fanned connectors and spread ends (FR-ANC-007)', async () => {
     const svg = await matchesGolden('routing-showcase');

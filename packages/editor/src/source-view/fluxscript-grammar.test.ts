@@ -150,7 +150,7 @@ describe('FluxScript TextMate grammar (FR-DSL-009, ADR-0032)', () => {
 
 describe('FluxScript Lezer grammar (FR-DSL-009, ADR-0032)', () => {
   it('FR-DSL-009: the Lezer YAML tree of every example has no error node', () => {
-    expect(examples.length).toBe(11);
+    expect(examples.length).toBe(12);
     for (const { name, text } of examples) {
       const errors: string[] = [];
       yamlLanguage.parser.parse(text).iterate({
