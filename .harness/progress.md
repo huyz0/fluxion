@@ -2017,3 +2017,6 @@ CI fix: ip-address 10.7.4 override (GHSA-rxp7-6hxx-x8q5), budget re-recorded, pl
 
 ## M17.17 F5
 layoutTarget skips a template spec on a group/frame. Review pass.
+
+## M17.36
+player-inline browser test: all waits 15 s, describes 60 s (CI macOS/Windows timeouts at 8fd0788). Review r2 pass.
