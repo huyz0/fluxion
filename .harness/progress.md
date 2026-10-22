@@ -1961,3 +1961,4 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 - M17.3 98d01c02: tree and orgchart layouts, golden tree-org-40, registered as built-ins
 - M17.4 67a9f709: radial and mindmap layouts, goldens radial-30 and mindmap-25; review F1 (side balance) fixed
 - M17.5 b3264afe force layout (seeded FR, pins), review pass r2
+- M17.6 5742a5fc circular and packing layouts, goldens circular-12 and packing-50, review pass
