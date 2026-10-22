@@ -2035,3 +2035,6 @@ Benches at 100 and 500 nodes for tree, radial, mindmap, force, circular, packing
 
 ## M17.30
 Live layout: `changed` arg makes arrange incremental (previous = current boxes); ELK and force >200 frames go through the ArrangePort sequentially, amend only when no entry opened since, one retry as own entry; async arranger amends in a single write. Review: round 1 fail (F1 dropped worker jobs never retried, F2 sliced amend joining a later entry), round 2 pass.
+
+## M17.31
+Decided: keep pins (ADR-0031); Fit notice names pinned/locked visible top-level elements outside the safe area. Unit + e2e (chromium, webkit). Review round 1 pass with minors (hidden elements, wording) fixed; round 2 pass.
