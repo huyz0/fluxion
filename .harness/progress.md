@@ -2002,3 +2002,6 @@ Main CI red at d7e520e (webkit e2e, Fit widths 73 vs 74): compare the fitted wid
 ## M17.14
 
 Template registry (`templates` core registry, registerTemplate/listTemplates/buildTemplate) and built-ins process.basic, process.chevron, cycle.basic, hierarchy.org, pyramid with goldens and slot-role variants. Review: round 1 fail (overflow at 12 steps, half-pixel overlap at gap 0, unbounded breadth), fixed; round 2 pass.
+
+## M17.15
+Templates matrix.2x2, venn, funnel, timeline.milestones, comparison; goldens, property tests, portrait adapt. Reviewer pass round 1 (2 minor findings fixed as doc/test wording).
