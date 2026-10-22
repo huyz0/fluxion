@@ -2029,3 +2029,6 @@ AI panel settings (key, base URL, model, embed toggle); client strings in the ca
 
 ## M17.20
 packs/layouts-elk: elkjs 0.12.0 (EPL-2.0, NOTICE) lazy, once per realm, driven synchronously via its dispatcher; layouts-elk:layered/stress/rectpacking. Reviewer r1 F1 (second load in a worker threw) fixed by memoising; r2 pass. Lockfile changed: budget cold setup pending-ci, run check-budget --record --cold-from-ci 19880eec after CI.
+
+## M17.21
+Benches at 100 and 500 nodes for tree, radial, mindmap, force, circular, packing, timeline, swimlane; local p99 baselines in perf-baseline.json (tree/radial/mindmap-500 ~16 ms vs 2000). Review pass round 1. Follow-up M17.38 (CI-runner baselines).
