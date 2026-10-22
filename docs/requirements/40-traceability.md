@@ -127,7 +127,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LAY-007 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/arrange-port.test.ts` +5 |
 | FR-LAY-008 | M | R2 | M13 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/layout/src/circular.test.ts` +12 |
 | FR-LAY-009 | M | R4 | M22 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
-| FR-LAY-010 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
+| FR-LAY-010 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/merge.test.ts` |
 | FR-LAY-011 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-012 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-013 | S | R7 | M29 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |

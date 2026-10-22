@@ -132,7 +132,8 @@ export class StoreHistory implements History {
     }
     this.#redo.length = 0;
     const open = this.#open;
-    if (open && meta.mergeKey !== undefined && open.mergeKey === meta.mergeKey && open.origin === meta.origin && this.#undo.at(-1) === open) {
+    const joins = meta.amend === true || (meta.mergeKey !== undefined && open?.mergeKey === meta.mergeKey && open.origin === meta.origin);
+    if (open && joins && this.#undo.at(-1) === open) {
       this.#undo.pop();
       const merged = mergeDiffs(open.diff, diff);
       if (merged.puts.size === 0 && merged.deletes.size === 0) {
@@ -149,12 +150,13 @@ export class StoreHistory implements History {
       diff,
       metaBefore: meta.metaBefore,
       metaAfter: meta.metaAfter,
-      origin: meta.origin,
+      origin: meta.amend ? 'system' : meta.origin,
       // undefined never merges: a merge needs a defined key equal to it
       mergeKey: meta.mergeKey,
     };
     this.#undo.push(entry);
-    this.#open = entry;
+    // an amend never opens a merge window of its own (ADR-0046)
+    this.#open = meta.amend ? undefined : entry;
   }
 
   seal(): void {

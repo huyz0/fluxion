@@ -20,6 +20,12 @@ export type TxOptions = {
   readonly origin?: TxOrigin;
   /** Merge key: consecutive transactions with the same key and origin form one undo step. */
   readonly mergeKey?: string;
+  /**
+   * Join the open undo entry whatever its `mergeKey` and origin (ADR-0046): one undo then takes back both. The entry keeps its label, origin
+   * and `metaBefore` and takes this commit's `metaAfter`. With no entry open the commit is an entry of its own with origin `system`. An amend
+   * never opens a merge window of its own.
+   */
+  readonly amend?: true;
   /** Opaque state before the change (the editor's selection and view); core never reads it. */
   readonly metaBefore?: unknown;
   /** Opaque state after the change; core never reads it. */

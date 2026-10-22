@@ -97,3 +97,46 @@ describe('transaction merging (ADR-0014 §Merging)', () => {
     expect(store.toDocument()).toEqual(before);
   });
 });
+
+describe('amend (ADR-0046)', () => {
+  it('FR-LAY-010: WHEN a user edit is followed by an amend THE SYSTEM SHALL keep one undo entry that undoes both', () => {
+    const { store, run, move, a, c } = setup();
+    const before = store.toDocument();
+    move(10, { metaBefore: { at: 0 }, metaAfter: { at: 1 } });
+    // another key and origin: an amend joins whatever is open
+    expect(run('element.update', { id: c, fields: { name: 'laid out' } }, { amend: true, origin: 'system', mergeKey: 'layout', metaAfter: { at: 2 } }).ok).toBe(
+      true,
+    );
+    expect(store.history.undoDepth).toBe(1);
+    expect(store.history.undo()).toEqual({ ok: true, value: { at: 0 } });
+    expect(store.toDocument()).toEqual(before);
+    expect(store.history.redo()).toEqual({ ok: true, value: { at: 2 } });
+    expect(x(store, a)).toBe(10);
+    expect((store.get(c) as { name: string }).name).toBe('laid out');
+  });
+
+  it('FR-LAY-010: AFTER a sealed entry or an undo THE SYSTEM SHALL record the amend as an entry of its own with origin system', () => {
+    const { store, run, move, c } = setup();
+    move(10);
+    store.history.seal();
+    run('element.update', { id: c, fields: { name: 'one' } }, { amend: true });
+    expect(store.history.undoDepth).toBe(2);
+    // the amend opened no window: a second amend is its own entry too, and a move cannot merge into it
+    run('element.update', { id: c, fields: { name: 'two' } }, { amend: true });
+    expect(store.history.undoDepth).toBe(3);
+    store.history.undo();
+    store.history.undo();
+    expect(store.history.undoDepth).toBe(1);
+    expect(store.history.redoDepth).toBe(2);
+  });
+
+  it('FR-LAY-010: an amend after another commit joins the last entry only while it is still the open one', () => {
+    const { store, run, move, c } = setup();
+    move(10);
+    run('element.update', { id: c, fields: { name: 'c' } });
+    run('element.update', { id: c, fields: { name: 'd' } }, { amend: true });
+    expect(store.history.undoDepth).toBe(2);
+    run('element.update', { id: c, fields: { name: 'e' } }, { amend: true });
+    expect(store.history.undoDepth).toBe(2);
+  });
+});

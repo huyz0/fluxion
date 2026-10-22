@@ -740,6 +740,7 @@ export type TxMeta = TxOptions & {
 export type TxOptions = {
     readonly origin?: TxOrigin;
     readonly mergeKey?: string;
+    readonly amend?: true;
     readonly metaBefore?: unknown;
     readonly metaAfter?: unknown;
 };
