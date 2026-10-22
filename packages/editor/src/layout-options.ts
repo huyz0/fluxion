@@ -2,6 +2,8 @@
 // (`layoutOptionsJsonSchema` / `templateOptionsJsonSchema`, which the host gives the editor; the editor has no schema library of its own), and a
 // typed entry read back into a value. Pure: no DOM, no React.
 import { APPLY_PATCH_COMMAND_ID } from '@fluxion/dsl';
+import type { RecordId } from '@fluxion/schema';
+import type { ArrangePort, ArrangeRequest, ArrangeScope } from './layout-arrange.js';
 
 /**
  * One option as a form field.
@@ -196,8 +198,9 @@ function rebuildTemplate(execute: OptionWriter, target: LayoutTarget, options: O
 
 /**
  * Set one option of the target's layout and lay it out again with the new options: the spec is written (`element.update` or `screen.setLayout`),
- * then `layout.arrange` runs as an amend, so one undo takes back both. A template is built again instead, in one patch. False when the document
- * refused the spec; the arrange may refuse on its own (nothing to lay out) without undoing the spec.
+ * then `layout.arrange` runs as an amend, so one undo takes back both. With the host's `arrange` port (the studio's layout worker, M17.34) the
+ * arrange runs there, still as an amend of the spec's entry; it is dropped if the document changes meanwhile. A template is built again instead,
+ * in one patch. False when the document refused the spec; the arrange may refuse on its own (nothing to lay out) without undoing the spec.
  *
  * @public
  */
@@ -205,6 +208,7 @@ export function setLayoutOption(
   execute: OptionWriter,
   target: LayoutTarget,
   at: { readonly screenId: string; readonly key: string; readonly value: unknown },
+  arrange?: ArrangePort,
 ): boolean {
   const options = { ...(isObj(target.spec['options']) ? target.spec['options'] : {}), [at.key]: at.value };
   if (target.spec.type === TEMPLATE) return rebuildTemplate(execute, target, options);
@@ -212,7 +216,9 @@ export function setLayoutOption(
   const written =
     target.kind === 'container' ? execute('element.update', { id: target.id, fields: { layout } }) : execute('screen.setLayout', { id: target.id, layout });
   if (!written.ok) return false;
-  const scope = target.kind === 'container' ? { containerId: target.id } : 'screen'; // kind-switch-allow: a layout target is a container or the screen, a closed pair
-  execute('layout.arrange', { screenId: at.screenId, scope, algorithm: target.spec.type, options }, { amend: true });
+  const scope: ArrangeScope = target.kind === 'container' ? { containerId: target.id as RecordId } : 'screen'; // kind-switch-allow: a layout target is a container or the screen, a closed pair
+  const request: ArrangeRequest = { screenId: at.screenId as RecordId, scope, algorithm: target.spec.type, options };
+  if (arrange === undefined) execute('layout.arrange', request, { amend: true });
+  else void arrange({ ...request, amend: true }).catch(() => undefined);
   return true;
 }

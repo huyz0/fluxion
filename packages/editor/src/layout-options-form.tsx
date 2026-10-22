@@ -7,6 +7,7 @@ import { t } from '@lingui/core/macro';
 import './i18n.js';
 import { type ReactNode, useMemo } from 'react';
 import { commitKeys } from './inspector-keys.js';
+import type { ArrangePort } from './layout-arrange.js';
 import {
   type LayoutTarget,
   layoutTarget,
@@ -44,6 +45,8 @@ export type LayoutOptionsSectionProps = {
   readonly screenId: string | undefined;
   /** The options schema of a layout spec. */
   readonly schemaOf: OptionsSchemaOf;
+  /** Lays the target out in the host's layout worker (the studio's); without it the arrange runs on the page's thread. */
+  readonly arrange?: ArrangePort | undefined;
 };
 
 /** One field's props: the field, the value it shows, and what to do with a new entry (false when it is refused). */
@@ -141,7 +144,7 @@ export function LayoutOptionsForm(props: {
  * @public
  */
 export function LayoutOptionsSection(props: LayoutOptionsSectionProps): ReactNode {
-  const { store, session, execute, screenId, schemaOf } = props;
+  const { store, session, execute, screenId, schemaOf, arrange } = props;
   const selection = useValue(session.selection.get);
   const target = useValue(useMemo(() => store.query((view) => layoutTarget((id) => view.get(id as never), selection, screenId)), [store, selection, screenId]));
   // the schema depends on the layout's type and a template's id, not on its options: a changed option keeps the fields
@@ -157,7 +160,7 @@ export function LayoutOptionsSection(props: LayoutOptionsSectionProps): ReactNod
       target={target}
       fields={fields}
       set={(field, value) => {
-        const ok = setLayoutOption(execute, target, { screenId, key: field.key, value });
+        const ok = setLayoutOption(execute, target, { screenId, key: field.key, value }, arrange);
         store.history.seal();
         return ok;
       }}

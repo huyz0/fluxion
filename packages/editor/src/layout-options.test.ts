@@ -96,6 +96,31 @@ describe('the layout options form model (FR-LAY-001)', () => {
     expect(calls.map(([id]) => id)).toEqual(['element.update']);
   });
 
+  it('FR-LAY-001, FR-LAY-007: with the host arrange port, the arrange goes to the port as an amend with the new options, not to layout.arrange', async () => {
+    const calls: string[] = [];
+    const execute = (id: string) => {
+      calls.push(id);
+      return { ok: true };
+    };
+    const sent: unknown[] = [];
+    const port = async (request: unknown) => {
+      sent.push(request);
+      return { ok: true };
+    };
+    const group = { kind: 'container', id: 'G', spec: { type: 'stack', options: { gap: 8 } } } as const;
+    expect(setLayoutOption(execute, group, { screenId: 'S', key: 'gap', value: 16 }, port)).toBe(true);
+    expect(calls).toEqual(['element.update']);
+    expect(sent).toEqual([{ screenId: 'S', scope: { containerId: 'G' }, algorithm: 'stack', options: { gap: 16 }, amend: true }]);
+    // a port that fails leaves the spec written and throws nothing
+    const failing = () => Promise.reject(new Error('worker gone'));
+    expect(setLayoutOption(execute, group, { screenId: 'S', key: 'gap', value: 4 }, failing)).toBe(true);
+    await Promise.resolve();
+    // a refused spec sends nothing
+    sent.length = 0;
+    expect(setLayoutOption(() => ({ ok: false }), group, { screenId: 'S', key: 'gap', value: 4 }, port)).toBe(false);
+    expect(sent).toEqual([]);
+  });
+
   it('FR-LAY-001: a template option builds the template again, in one patch with its id, items and the new options', () => {
     const calls: Array<[string, unknown]> = [];
     const execute = (id: string, args: unknown) => {

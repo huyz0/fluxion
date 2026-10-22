@@ -55,6 +55,40 @@ describe('studio arrange runner (FR-LAY-007, FR-LAY-005)', () => {
     runner.dispose();
   });
 
+  it('FR-LAY-001, FR-LAY-007: an option of the screen layout set from the form arranges in the worker; one undo takes back the option and the boxes', async () => {
+    const core = open();
+    core.execute('screen.setLayout', { id: 's1', layout: { type: 'layered', options: { direction: 'down' } } });
+    core.store.history.seal();
+    const runner = createArrangeRunner(core, loopback);
+    let pending: Promise<unknown> = Promise.resolve();
+    const port: typeof runner.port = (request) => {
+      const done = runner.port(request);
+      pending = done;
+      return done;
+    };
+    const records = () => JSON.stringify(core.store.toDocument().records);
+    const before = records();
+    const target = layoutTarget((id) => core.store.get(id as never), [], 's1');
+    expect(target?.spec).toMatchObject({ type: 'layered' });
+    let ran = 0;
+    const stop = core.store.subscribe(() => {
+      ran += 1;
+    });
+    expect(setLayoutOption(core.execute, target as NonNullable<typeof target>, { screenId: 's1', key: 'direction', value: 'right' }, port)).toBe(true);
+    // the spec is written at once; the boxes come from the worker
+    expect(ran).toBe(1);
+    expect(await pending).toEqual({ ok: true });
+    stop();
+    expect(ran).toBeGreaterThan(1);
+    const boxes = ['a', 'b', 'c'].map((id) => (core.store.get(id as never) as unknown as { transform: { x: number; y: number } }).transform);
+    // unconnected, so one rank; laid out to the right, a rank is a column: one x, three ys
+    expect(new Set(boxes.map((b) => b.x)).size).toBe(1);
+    expect(new Set(boxes.map((b) => b.y)).size).toBe(3);
+    expect(core.store.history.undo().ok).toBe(true);
+    expect(records()).toBe(before);
+    runner.dispose();
+  });
+
   it('FR-LAY-001: the options schema of a registered layout or template is its JSON Schema, with defaults; none for an unknown one', () => {
     const core = open();
     registerBuiltInTemplates(core.registries.templates);

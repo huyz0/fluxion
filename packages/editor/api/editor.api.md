@@ -92,6 +92,7 @@ export type ArrangeRequest = {
     readonly selection?: readonly RecordId[];
     readonly algorithm?: string;
     readonly changed?: readonly RecordId[];
+    readonly options?: unknown;
     readonly amend?: true;
 };
 
@@ -710,6 +711,7 @@ export type LayoutOptionsSectionProps = {
     readonly execute: Execute;
     readonly screenId: string | undefined;
     readonly schemaOf: OptionsSchemaOf;
+    readonly arrange?: ArrangePort | undefined;
 };
 
 // @public
@@ -1248,7 +1250,7 @@ export function setLayoutOption(execute: OptionWriter, target: LayoutTarget, at:
     readonly screenId: string;
     readonly key: string;
     readonly value: unknown;
-}): boolean;
+}, arrange?: ArrangePort): boolean;
 
 // @public
 export function setLive(execute: OptionWriter, target: PickTarget, live: boolean): boolean;

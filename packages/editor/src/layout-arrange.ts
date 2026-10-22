@@ -89,6 +89,8 @@ export type ArrangeRequest = {
   readonly algorithm?: string;
   /** Live layout (FR-LAY-006): the children the edit added, removed or resized; the others stay where they are as far as the layout can. */
   readonly changed?: readonly RecordId[];
+  /** The options of the layout, for the `algorithm` when no layout spec of the target gives its own (the options form, M17.34). */
+  readonly options?: unknown;
   /** Live layout (FR-LAY-010): the boxes are written into the undo entry of the edit that asked, not an entry of their own. */
   readonly amend?: true;
 };

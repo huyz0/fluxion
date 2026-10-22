@@ -365,6 +365,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
           notify={notify}
           sourceRegistries={props.sourceRegistries}
           layoutOptionsSchema={props.layoutOptionsSchema}
+          arrange={props.arrange}
           screenId={screenId}
           area={area}
           newId={newId}
