@@ -8,7 +8,7 @@ import { anchorOf, opStyle, styleOf } from '../expand/style.js';
 import type { LocatedStyle } from '../read/ast.js';
 import type { ResolvedOp, ResolvedPatch, ResolvedRef } from './resolve-types.js';
 import type { EdgeSet, LayoutIntent, NodeSpec } from './schema.js';
-import { buildFor, builtBy, putTemplate, richText } from './template.js';
+import { buildFor, builtBy, putTemplate, richText, screenSlugOf } from './template.js';
 
 /**
  * What lowering needs besides the patch.
@@ -367,7 +367,7 @@ class Lowering {
     if (!made) return;
     const old = builtBy(this.work.values(), screenId);
     for (const x of old) this.drop(x);
-    const slug = ((screen['meta'] as { slug?: string } | undefined)?.slug ?? screenId) as string;
+    const slug = screenSlugOf(screen, screenId);
     const host = {
       id: (k: string) => this.id(k),
       put: (r: Rec) => this.put(r),

@@ -12,6 +12,7 @@ import { ImagePicker } from './image-picker.js';
 import type { EditorLayout } from './layout.js';
 import { type ArrangePort, LAYOUT_CHOICES, registeredLayoutIds } from './layout-arrange.js';
 import type { OptionsSchemaOf } from './layout-options-form.js';
+import { registeredTemplateIds } from './layout-picker.js';
 import { insertShape } from './library/library-insert.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
 import { placeImageFiles } from './place-images.js';
@@ -70,11 +71,12 @@ function leftTabsFor(props: EditBodyProps, insert: (defId: string) => void, onRe
 function inspectorFor(props: EditBodyProps): ReactNode {
   const { store, session, execute, screenId, registries, layoutOptionsSchema, sourceRegistries, arrange } = props;
   const choices = [...LAYOUT_CHOICES.map(([name]) => name), ...registeredLayoutIds(sourceRegistries?.layouts.list() ?? [])];
+  const templates = registeredTemplateIds(sourceRegistries?.templates.list() ?? []);
   return (
     <Inspector
       session={session}
       fields={{ store, execute, shapeDefs: registries.shapeDefs }}
-      layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema, choices, arrange }}
+      layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema, choices, templates, arrange }}
     />
   );
 }

@@ -1057,6 +1057,12 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "fDWx1s": {
+    "message": "Templates (from the shapes' labels)",
+    "origin": [
+      "packages/editor/src/layout-picker-section.tsx"
+    ]
+  },
   "ffgKHK": {
     "message": "Anchor {0} across",
     "origin": [

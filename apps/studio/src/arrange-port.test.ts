@@ -1,7 +1,7 @@
 // FR-LAY-007, FR-LAY-005: the studio's Arrange runner lays a document's screen out through a layout worker and writes the boxes as one undo step.
 import { createCore, createCoreRegistries, type ShapeDef } from '@fluxion/core';
 import { compile, registerApplyPatchCommand } from '@fluxion/dsl';
-import { layoutTarget, setLayoutOption } from '@fluxion/editor';
+import { layoutTarget, pickTarget, pickTemplate, screenItems, setLayoutOption } from '@fluxion/editor';
 import { layeredLayout, registerArrangeCommand, registerBuiltInLayouts, registerBuiltInTemplates } from '@fluxion/layout';
 import { serveLayoutWorker, type WorkerLike } from '@fluxion/layout/worker';
 import { describe, expect, it } from 'vitest';
@@ -87,6 +87,30 @@ describe('studio arrange runner (FR-LAY-007, FR-LAY-005)', () => {
     expect(core.store.history.undo().ok).toBe(true);
     expect(records()).toBe(before);
     runner.dispose();
+  });
+
+  it('FR-LAY-014: picking process.basic for a screen with three labelled shapes builds the template from their labels; one undo takes it back', () => {
+    const lines = ['flux: 1', 'title: T', 'uses: [basic]', 'screens:', '  - id: flow', '    nodes:'];
+    for (const label of ['Plan', 'Build', 'Ship']) lines.push(`      ${label.toLowerCase()}: { shape: rect, label: ${label} }`);
+    const compiled = compile(lines.join(String.fromCharCode(10)) + String.fromCharCode(10), { registries: templateRegistries() });
+    const core = createCore(compiled.doc as never);
+    for (const [id, def] of templateRegistries().shapeDefs.list()) core.registries.shapeDefs.register(id, def, 'basic');
+    registerBuiltInLayouts(core.registries.layouts);
+    registerBuiltInTemplates(core.registries.templates);
+    registerApplyPatchCommand(core.registries.commands, core.registries);
+    const screen = Object.values(core.store.toDocument().records).find((r) => r.type === 'screen')?.id as string;
+    const before = JSON.stringify(core.store.toDocument().records);
+    const items = screenItems((id) => core.store.get(id as never), core.store.members('byScreen', screen));
+    expect(items.map((i) => i.label)).toEqual(['Plan', 'Build', 'Ship']);
+    const target = pickTarget((id) => core.store.get(id as never), [], screen);
+    expect(target).toBeDefined();
+    expect(pickTemplate(core.execute, target as NonNullable<typeof target>, { templateId: 'process.basic', items })).toBe(true);
+    expect((core.store.get(screen as never) as unknown as { layout: unknown }).layout).toMatchObject({ type: 'template', id: 'process.basic' });
+    // the labelled shapes are replaced by the template's own, not drawn twice
+    const shapes = Object.values(core.store.toDocument().records).filter((r) => (r as { kind?: string }).kind === 'shape');
+    expect(shapes).toHaveLength(3);
+    expect(core.store.history.undo().ok).toBe(true);
+    expect(JSON.stringify(core.store.toDocument().records)).toBe(before);
   });
 
   it('FR-LAY-001: the options schema of a registered layout or template is its JSON Schema, with defaults; none for an unknown one', () => {

@@ -1,4 +1,4 @@
-import { shapeAt } from './pages/connectors.js';
+import { onScreen, shapeAt } from './pages/connectors.js';
 import { EditorPage } from './pages/editor.js';
 import { expect, test } from './test.js';
 
@@ -24,5 +24,28 @@ test.describe('the layout picker in the inspector', { tag: '@desktop' }, () => {
     await expect.poll(async () => JSON.stringify(await boxes(editor)), { message: 'radial moved them again' }).not.toBe(JSON.stringify(layered));
     await editor.toolbarButton('Undo').click();
     await expect.poll(async () => JSON.stringify(await boxes(editor)), { message: 'one undo takes back the radial layout' }).toBe(JSON.stringify(layered));
+  });
+
+  test('FR-LAY-014: picking a template for the screen builds it from the shapes labels; one undo brings the shapes back', async ({ page }) => {
+    const editor = new EditorPage(page);
+    await editor.open('new');
+    for (const [i, fx] of [0.1, 0.4, 0.7].entries()) {
+      await shapeAt(page, editor, fx, i + 1);
+      await page.keyboard.press('Enter');
+      await page.keyboard.type(['Plan', 'Build', 'Ship'][i] ?? '');
+      await page.keyboard.press('Escape');
+    }
+    // a click on the empty screen leaves nothing selected: the picker then lays the screen out
+    const empty = await onScreen(editor, 0.5, 0.9);
+    await page.mouse.click(empty.x, empty.y);
+    const picker = page.getByRole('combobox', { name: 'Layout algorithm' });
+    await expect(picker).toBeVisible();
+    await expect(editor.shapes).toHaveText(['Plan', 'Build', 'Ship']);
+    const start = await boxes(editor);
+    await picker.selectOption('template:process.basic');
+    await expect.poll(async () => JSON.stringify(await boxes(editor)), { message: 'the template moved the shapes' }).not.toBe(JSON.stringify(start));
+    await expect(editor.shapes).toHaveCount(3);
+    await editor.toolbarButton('Undo').click();
+    await expect.poll(async () => JSON.stringify(await boxes(editor)), { message: 'one undo brings the shapes back' }).toBe(JSON.stringify(start));
   });
 });

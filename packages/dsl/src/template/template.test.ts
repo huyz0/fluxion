@@ -98,6 +98,30 @@ describe('patch setLayout with a template (FR-LAY-014, FR-AI-001)', () => {
     expect(built(store).some((s) => s.semantic.slug === 'web')).toBe(true);
   });
 
+  it('FR-LAY-014: WHEN a template is built into a screen with no slug and a mixed-case id THE SYSTEM SHALL name its nodes with valid slugs', () => {
+    const screen = { id: 'ScrAb1', type: 'screen', index: 'a1', name: 'Made in the editor' };
+    const store = createStore({ schemaVersion: '1.7', records: { doc: { id: 'doc', type: 'document', title: 'T' }, ScrAb1: screen } } as never);
+    const done = command.run(
+      { store },
+      { patch: { flux: 1, ops: [{ op: 'setLayout', scope: '#ScrAb1', layout: { type: 'template', id: 'process.basic', items: ['Plan', 'Build'] } }] } },
+    );
+    expect(done).toMatchObject({ ok: true });
+    const slugs = built(store).map((s) => s.semantic.slug);
+    expect(slugs).toEqual(['scrab1-step-0', 'scrab1-step-1']);
+    // an id that starts with a digit, '_' or '-' (a fifth of the generated ones) gives a slug that starts with a letter
+    const odd = createStore({
+      schemaVersion: '1.7',
+      records: { doc: { id: 'doc', type: 'document', title: 'T' }, '3fA_xY': { ...screen, id: '3fA_xY' } },
+    } as never);
+    expect(
+      command.run(
+        { store: odd },
+        { patch: { flux: 1, ops: [{ op: 'setLayout', scope: '#3fA_xY', layout: { type: 'template', id: 'process.basic', items: ['Plan'] } }] } },
+      ),
+    ).toMatchObject({ ok: true });
+    expect(built(odd).map((s) => s.semantic.slug)).toEqual(['fa-xy-step-0']);
+  });
+
   it('FR-LAY-014: WHEN the template id or items are wrong THE SYSTEM SHALL refuse the patch whole', () => {
     const store = base();
     const unknown = command.run({ store }, { patch: patch({ type: 'template', id: 'funnl', items: ['A', 'B'] }) });

@@ -180,6 +180,9 @@ export type CatalogEntry = {
 export function chordOf(k: KeyPress): string;
 
 // @public
+export function chosenChoice(target: PickTarget): string;
+
+// @public
 export function chosenLayout(target: PickTarget): string;
 
 // @public
@@ -724,6 +727,8 @@ export type LayoutPickerSectionProps = {
     readonly execute: Execute;
     readonly screenId: string | undefined;
     readonly choices: readonly string[];
+    readonly templates?: readonly string[] | undefined;
+    readonly arrange?: ArrangePort | undefined;
 };
 
 // @public
@@ -1056,7 +1061,7 @@ export const PICK_PX = 4;
 export function pickLayout(execute: OptionWriter, target: PickTarget, at: {
     readonly screenId: string;
     readonly algorithm: string;
-}): boolean;
+}, arrange?: ArrangePort): boolean;
 
 // @public
 export type PickTarget = {
@@ -1074,6 +1079,12 @@ export type PickTarget = {
 
 // @public
 export function pickTarget(get: (id: string) => unknown, selection: readonly string[], screenId: string | undefined): PickTarget | undefined;
+
+// @public
+export function pickTemplate(execute: OptionWriter, target: PickTarget, at: {
+    readonly templateId: string;
+    readonly items: readonly ScreenItem[];
+}): boolean;
 
 // @public
 export function pinchCamera(start: Camera, from: readonly [Vec2, Vec2], to: readonly [Vec2, Vec2]): Camera;
@@ -1163,6 +1174,9 @@ export function registeredLayoutCommands(ids: readonly string[]): readonly Edito
 // @public
 export function registeredLayoutIds(entries: readonly (readonly [string, unknown])[]): readonly string[];
 
+// @public
+export function registeredTemplateIds(entries: readonly (readonly [string, unknown])[]): readonly string[];
+
 export { registerFontMetrics }
 
 // @public
@@ -1197,6 +1211,15 @@ export function sameStyle(view: ReadView, selected: readonly RecordId[], pool: r
 
 // @public
 export function sameType(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
+
+// @public
+export type ScreenItem = {
+    readonly id: string;
+    readonly label: string;
+};
+
+// @public
+export function screenItems(get: (id: string) => unknown, ids: readonly string[]): readonly ScreenItem[];
 
 // @public
 export const screenLabel: (name: string | undefined, index: number) => string;
@@ -1400,6 +1423,9 @@ export type SystemItem = {
 export type SystemPasteDeps = PasteDeps & {
     readonly assets: AssetStore;
 };
+
+// @public
+export const TEMPLATE_CHOICE = "template:";
 
 // @public
 export const textMaker: ElementMaker;

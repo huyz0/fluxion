@@ -203,7 +203,7 @@ export type InspectorProps = {
   /** The document store and the command runner: with them the selection's properties are editable here. */
   readonly fields?: Omit<InspectorFieldsProps, 'session'> | undefined;
   /** The layout picker and the layout options form of the selected group or frame, the shown screen or the selection; none without it. */
-  readonly layout?: (Omit<LayoutOptionsSectionProps, 'session'> & { readonly choices: readonly string[] }) | undefined;
+  readonly layout?: (Omit<LayoutOptionsSectionProps, 'session'> & { readonly choices: readonly string[]; readonly templates?: readonly string[] }) | undefined;
 };
 
 /** The inspector: how much is selected, and the properties the selection has in common. */

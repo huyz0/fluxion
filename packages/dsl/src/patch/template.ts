@@ -1,10 +1,12 @@
 // Putting what a template built (FR-LAY-014, ADR-0047) into a patch's working records: each shape pinned where the template placed it, each
 // connector straight between its shapes, with the ids a compile of the same screen would make (a node by its slug, an edge by its key).
+
 import { type CoreRegistries, idKeys } from '@fluxion/core';
 import { buildTemplate, type TemplateDef, type TemplateResult } from '@fluxion/layout';
 import { DEFAULT_SCREEN_SIZE, type RecordId, type RichTextDoc } from '@fluxion/schema';
 import { anchorOf, opStyle, styleOf } from '../expand/style.js';
 import type { LocatedStyle } from '../read/ast.js';
+import { toSlug } from '../resolve/suggest.js';
 import { builtSlug, draftStyle, ESTIMATE, isTemplate, itemsOfSpec, roleOf } from '../template/lower.js';
 import type { LayoutIntent } from './schema.js';
 
@@ -118,4 +120,13 @@ export function builtBy(records: Iterable<Rec>, screenId: string): Set<string> {
   );
   for (const r of all) if (r['type'] === 'binding' && made.has(r['connectorId'] as string)) made.add(r['id'] as string);
   return made;
+}
+
+/**
+ * The slug a template built on a screen is named under: the screen's own, else its id made into one (a slug is lower case, digits and hyphens, and
+ * starts with a letter), so a screen made in the editor, which has no slug and a random id, still gets valid node slugs.
+ */
+export function screenSlugOf(screen: Rec, screenId: string): string {
+  const own = (screen['meta'] as { slug?: string } | undefined)?.slug;
+  return own ?? toSlug(screenId) ?? 'screen';
 }
