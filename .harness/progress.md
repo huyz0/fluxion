@@ -2047,3 +2047,6 @@ Templates are picker choices for the screen (template:<id>), built from shape la
 
 ## M17.38 (part 1)
 Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-recorded from a runner run. Review: pass round 2.
+
+## M17.22 (final review record)
+- 72d2135f: M17 final review recorded (changes-requested, F1-F10); reopen rows M17.39-41, M17.25/38/22 rows restated. Review: 2 rounds.
