@@ -419,6 +419,7 @@ export const BENCH_COMMANDS = [
   'screen.rename',
   'screen.setFormat',
   'screen.setHidden',
+  'screen.setLayout',
   'screen.setNotes',
   'screen.setSection',
   'screen.move',

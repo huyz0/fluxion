@@ -65,6 +65,12 @@
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
+  "2ebxwM": {
+    "message": "Layout: {type}",
+    "origin": [
+      "packages/editor/src/layout-options-form.tsx"
+    ]
+  },
   "2tU1mc": {
     "message": "The layers of this screen will be listed here.",
     "origin": [
@@ -310,6 +316,12 @@
     "message": "Zoom out",
     "origin": [
       "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "GQDSBN": {
+    "message": "Layout options",
+    "origin": [
+      "packages/editor/src/layout-options-form.tsx"
     ]
   },
   "GX8GKD": {

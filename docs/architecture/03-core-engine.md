@@ -91,6 +91,7 @@ type CommandDef<A> = {
   screen.rename / screen.setHidden (the hidden mark is removed, not written false) / screen.duplicate (a copy just after the original: its elements and the bindings between them under caller-supplied ids, slugs dropped; timelines and interactions are copied by the animation milestone; M8.11),
   section.create / rename / setCollapsed / reorder / delete screen.setSection and screen.move (a drop's place and section in one step) (sections are records ordered by index; deleting one lets its screens go in the same transaction; M8.15),
   screen.setNotes (the speaker notes, a rich-text document; absent removes the field; M8.16),
+  screen.setLayout (the screen's layout spec, as the inspector's options form writes it; absent removes it; M17.17),
   document.update, asset.create (an asset record, beside the element that uses it: a pasted image, M7.23).
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through
   commands: one audit path, one undo semantics, one AI surface. The architecture test allows

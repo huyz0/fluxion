@@ -10,6 +10,7 @@ import { Canvas } from './canvas.js';
 import { type CanvasMenuInput, useCanvasMenu } from './canvas-menu.js';
 import { ImagePicker } from './image-picker.js';
 import type { EditorLayout } from './layout.js';
+import type { OptionsSchemaOf } from './layout-options-form.js';
 import { insertShape } from './library/library-insert.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
 import { placeImageFiles } from './place-images.js';
@@ -44,12 +45,39 @@ export type EditBodyProps = {
   readonly notify: (message: string) => void;
   /** The core registries the Source tab compiles against; without them the tab is a placeholder. */
   readonly sourceRegistries?: CoreRegistries | undefined;
+  /** The options schema of a layout id, for the inspector's layout options form; no form without it. */
+  readonly layoutOptionsSchema?: OptionsSchemaOf | undefined;
 };
+
+/** The left tabs: screens, problems, notes, the library (a pick inserts) and the Source tab when the host gives the core registries. */
+function leftTabsFor(props: EditBodyProps, insert: (defId: string) => void, onRemap: (remap: ReadonlyMap<RecordId, RecordId>) => void): ReactNode {
+  const { store, session, screenId, registries, execute, newId, sourceRegistries } = props;
+  return (
+    <LeftTabs
+      screens={{ store, session, shown: screenId, registries, execute, newId }}
+      problems={{ store, session, execute }}
+      notes={{ store, execute, screenId }}
+      library={{ shapeDefs: registries.shapeDefs, onPick: (id) => insert(id) }}
+      source={sourceRegistries === undefined ? undefined : { store, execute, registries: sourceRegistries, screenId, onRemap }}
+    />
+  );
+}
+
+/** The inspector: the selection's fields, and the layout options form when the host gives the layouts' options schemas. */
+function inspectorFor(props: EditBodyProps): ReactNode {
+  const { store, session, execute, screenId, registries, layoutOptionsSchema } = props;
+  return (
+    <Inspector
+      session={session}
+      fields={{ store, execute, shapeDefs: registries.shapeDefs }}
+      layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema }}
+    />
+  );
+}
 
 /** The panels around the canvas. */
 export function EditBody(props: EditBodyProps): ReactNode {
-  const { store, registries, session, tools, execute, screenId, area, newId, onBox, box, layout, onLayout, menus, assetStore, notify, sourceRegistries } =
-    props;
+  const { store, registries, session, tools, execute, screenId, area, newId, onBox, box, layout, onLayout, menus, assetStore, notify } = props;
   const { panel, splitter } = usePanels(layout, onLayout);
   const { onMenu, menu } = useCanvasMenu({ ...menus, tools, area });
   // a library item put on the canvas: at the drop point, or at the middle of the view for a click
@@ -78,16 +106,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
   const onRemap = useCallback((remap: ReadonlyMap<RecordId, RecordId>) => followRemap(session, remap), [session]);
   return (
     <div className="fx-chrome-body">
-      {panel(
-        'left',
-        <LeftTabs
-          screens={{ store, session, shown: screenId, registries, execute, newId }}
-          problems={{ store, session, execute }}
-          notes={{ store, execute, screenId }}
-          library={{ shapeDefs: registries.shapeDefs, onPick: (id) => insert(id) }}
-          source={sourceRegistries === undefined ? undefined : { store, execute, registries: sourceRegistries, screenId, onRemap }}
-        />,
-      )}
+      {panel('left', leftTabsFor(props, insert, onRemap))}
       {splitter('left')}
       <div className="fx-chrome-center">
         <Canvas
@@ -110,7 +129,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
       {menu}
       <ImagePicker store={store} session={session} execute={execute} screenId={screenId} newId={newId} onImport={importFiles} />
       {splitter('right')}
-      {panel('right', <Inspector session={session} fields={{ store, execute, shapeDefs: registries.shapeDefs }} />)}
+      {panel('right', inspectorFor(props))}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 // one transaction: a new screen just after the original with a copy of every element and binding on it, under ids the
 // caller supplies (core draws no randomness), the bindings pointing at the copies. Timelines, steps and interactions
 // are the animation milestone's to copy; they name their targets inside open payloads.
-import type { AnyRecord, RecordId } from '@fluxion/schema';
+import { type AnyRecord, layoutSpecSchema, type RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
@@ -62,6 +62,15 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
     run: (ctx, args) =>
       checkIds(ctx, 'screen.setNotes', 'screen', [[['id'], args.id]]) ??
       write(ctx, 'screen.setNotes', (tx) => tx.patch(args.id as RecordId, { notes: args.notes })),
+  }),
+  defineCommand({
+    id: 'screen.setLayout',
+    title: title('screen.setLayout', 'Set screen layout'),
+    // the screen's layout spec (the algorithm and its options, FR-LAY-001); absent removes it. Boxes move only when the layout is run.
+    args: z.object({ id, layout: layoutSpecSchema.optional() }),
+    run: (ctx, args) =>
+      checkIds(ctx, 'screen.setLayout', 'screen', [[['id'], args.id]]) ??
+      write(ctx, 'screen.setLayout', (tx) => tx.patch(args.id as RecordId, { layout: args.layout })),
   }),
   defineCommand({
     id: 'screen.setFormat',

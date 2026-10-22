@@ -141,6 +141,17 @@ const applyArgs = (screen: RecordId) => ({
   },
 });
 
+/** Arguments of the commands that set one field of a screen: its section, place, notes, hidden flag and layout. */
+function screenFieldArgs(screens: readonly RecordId[]): Record<string, unknown> {
+  return {
+    'screen.setSection': { id: screens[3], sectionId: BENCH_SECTIONS[1] },
+    'screen.move': { id: screens[2], after: screens[8], sectionId: BENCH_SECTIONS[1] },
+    'screen.setNotes': { id: screens[1], notes: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'notes' }] }] } },
+    'screen.setHidden': { id: screens[1], hidden: true },
+    'screen.setLayout': { id: screens[1], layout: { type: 'stack', options: { gap: 40 } } },
+  };
+}
+
 /** Arguments that succeed against the fixture document (and again after the command is undone). */
 function benchArgs(
   screens: readonly RecordId[],
@@ -193,10 +204,7 @@ function benchArgs(
     'section.reorder': { id: BENCH_SECTIONS[0], after: BENCH_SECTIONS[1] },
     // the first screen goes with it: it names the section
     'section.delete': { id: BENCH_SECTIONS[0] },
-    'screen.setSection': { id: screens[3], sectionId: BENCH_SECTIONS[1] },
-    'screen.move': { id: screens[2], after: screens[8], sectionId: BENCH_SECTIONS[1] },
-    'screen.setNotes': { id: screens[1], notes: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'notes' }] }] } },
-    'screen.setHidden': { id: screens[1], hidden: true },
+    ...screenFieldArgs(screens),
     // a copy of screen 4: its 250 shapes and the bindings of its 83 connectors
     'screen.duplicate': { id: screens[4], newId: 'BenchNewScreen002', ids: copies },
     'binding.set': { id: 'BenchNewBinding01', connectorId: lines[500], end: 'target', elementId: shapes[2400], anchor: { kind: 'auto' } },
@@ -246,6 +254,7 @@ export const COMMANDS = [
   'screen.setFormat',
   'screen.setHidden',
   'screen.setNotes',
+  'screen.setLayout',
   'screen.setSection',
   'screen.move',
   'section.create',

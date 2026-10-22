@@ -9,7 +9,7 @@ import { t } from '@lingui/core/macro';
 import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { AiPanel } from './ai/ai-panel.js';
 import { registerStoredKeys } from './ai/client.js';
-import { createArrangeRunner } from './arrange-port.js';
+import { createArrangeRunner, layoutOptionsSchemaOf } from './arrange-port.js';
 import { AutosaveBar } from './autosave/autosave-bar.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
 import { studioLogger } from './dev-logger.js';
@@ -149,6 +149,7 @@ function ProtectedEditor(props: {
   const session = useMemo(() => createSession(docId), [docId]);
   const title = useCallback(() => titleOf(core.store), [core]);
   const arrange = useArrangeRunner(core);
+  const layoutOptionsSchema = useMemo(() => layoutOptionsSchemaOf(core), [core]);
   const [aiOpen, setAiOpen] = useState(false);
   useEffect(() => {
     void registerStoredKeys();
@@ -162,6 +163,7 @@ function ProtectedEditor(props: {
         execute={core.execute}
         registries={registries}
         sourceRegistries={core.registries}
+        layoutOptionsSchema={layoutOptionsSchema}
         settings={settings}
         session={session}
         themes={themes}

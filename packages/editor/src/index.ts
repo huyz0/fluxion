@@ -128,6 +128,19 @@ export { LASER_TRAIL, laserTool } from './laser-tool.js';
 export { LAYOUT_KEY } from './layout.js';
 export type { ArrangeContainer, ArrangeHost, ArrangeOutcome, ArrangePort, ArrangeRequest, ArrangeScope, ArrangeTools } from './layout-arrange.js';
 export { registeredLayoutIds } from './layout-arrange.js';
+export {
+  type LayoutTarget,
+  layoutTarget,
+  type OptionEntry,
+  type OptionField,
+  type OptionWriter,
+  optionFields,
+  readOption,
+  setLayoutOption,
+  shownOption,
+  type WrittenLayoutSpec,
+} from './layout-options.js';
+export { LayoutOptionsForm, LayoutOptionsSection, type LayoutOptionsSectionProps, type OptionsSchemaOf } from './layout-options-form.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
 export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';

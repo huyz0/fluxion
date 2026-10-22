@@ -8,6 +8,7 @@ import './i18n.js';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { InspectorFields, type InspectorFieldsProps } from './inspector.js';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
+import { LayoutOptionsSection, type LayoutOptionsSectionProps } from './layout-options-form.js';
 import { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 import { NotesPanel, type NotesPanelProps } from './notes-panel.js';
 import { ProblemsTab, type ProblemsTabProps } from './problems-tab.js';
@@ -200,6 +201,8 @@ export type InspectorProps = {
   readonly session: Session;
   /** The document store and the command runner: with them the selection's properties are editable here. */
   readonly fields?: Omit<InspectorFieldsProps, 'session'> | undefined;
+  /** The layout options form of the selected group or frame, or the shown screen; none without it. */
+  readonly layout?: Omit<LayoutOptionsSectionProps, 'session'> | undefined;
 };
 
 /** The inspector: how much is selected, and the properties the selection has in common. */
@@ -212,6 +215,7 @@ export function Inspector(props: InspectorProps): ReactNode {
         {count === 0 ? t`Select an element to see its properties.` : count === 1 ? t`${count} element selected` : t`${count} elements selected`}
       </p>
       {props.fields === undefined ? null : <InspectorFields {...props.fields} session={props.session} />}
+      {props.layout === undefined ? null : <LayoutOptionsSection {...props.layout} session={props.session} />}
     </>
   );
 }

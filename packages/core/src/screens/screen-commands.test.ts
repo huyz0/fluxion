@@ -47,6 +47,7 @@ describe('screen commands (FR-SCR-002)', () => {
       ['screen.setNotes', { id: t.second, notes: NOTES }],
       ['screen.setFormat', { id: t.second, format: { kind: 'fixed', size: { w: 1600, h: 1200 } } }],
       ['screen.setHidden', { id: t.second, hidden: true }],
+      ['screen.setLayout', { id: t.second, layout: { type: 'grid', options: { columns: 2 } } }],
       ['screen.reorder', { id: t.third, after: t.first }],
       ['screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: copies }],
       ['screen.delete', { id: t.second }],
@@ -171,6 +172,17 @@ describe('screen commands (FR-SCR-002)', () => {
     // a size must be positive, and only a screen has a format
     expect(t.run('screen.setFormat', { id: t.first, format: { kind: 'fixed', size: { w: 0, h: 10 } } }).ok).toBe(false);
     expect(t.run('screen.setFormat', { id: t.left, format: { kind: 'fixed', size: { w: 10, h: 10 } } }).ok).toBe(false);
+  });
+
+  it('FR-LAY-001: a screen layout spec is set with its options and removed again, and only a screen takes it here', () => {
+    const t = setup();
+    const layout = { type: 'stack', options: { gap: 40 } };
+    expect(t.run('screen.setLayout', { id: t.first, layout }).ok).toBe(true);
+    expect(t.get(t.first)['layout']).toEqual(layout);
+    expect(t.run('screen.setLayout', { id: t.first }).ok).toBe(true);
+    expect('layout' in t.get(t.first)).toBe(false);
+    expect(t.run('screen.setLayout', { id: t.left, layout }).ok).toBe(false);
+    expect(t.run('screen.setLayout', { id: t.first, layout: { options: {} } }).ok).toBe(false);
   });
 
   it('FR-SCR-006: speaker notes are set on a screen and removed again, and only a screen has them', () => {

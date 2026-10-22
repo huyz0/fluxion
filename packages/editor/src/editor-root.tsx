@@ -32,6 +32,7 @@ import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { type ArrangePort, registeredLayoutIds } from './layout-arrange.js';
+import type { OptionsSchemaOf } from './layout-options-form.js';
 import { startLiveLayout } from './live-layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
@@ -83,6 +84,8 @@ export type EditorRootProps = {
   readonly fonts?: FontSources;
   /** The core registries (shapes, layouts, themes) the Source tab compiles the author's FluxScript against; no Source tab content without them. */
   readonly sourceRegistries?: CoreRegistries;
+  /** The JSON Schema of a layout's options by its id (the host's `layoutOptionsJsonSchema`), for the inspector's layout options form; no form without it. */
+  readonly layoutOptionsSchema?: OptionsSchemaOf;
 };
 
 /** Randomness from the browser's crypto. */
@@ -361,6 +364,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
           assetStore={assets}
           notify={notify}
           sourceRegistries={props.sourceRegistries}
+          layoutOptionsSchema={props.layoutOptionsSchema}
           screenId={screenId}
           area={area}
           newId={newId}

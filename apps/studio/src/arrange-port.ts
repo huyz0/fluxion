@@ -2,8 +2,8 @@
 // page. One worker host per open document; each arrange reads the snapshot on the page's thread, lays it out in the worker and writes the boxes as one
 // undo step (`createAsyncArranger`).
 import type { Core } from '@fluxion/core';
-import type { ArrangePort } from '@fluxion/editor';
-import { createAsyncArranger, type LayoutAlgorithm } from '@fluxion/layout';
+import type { ArrangePort, OptionsSchemaOf } from '@fluxion/editor';
+import { createAsyncArranger, type LayoutAlgorithm, layoutOptionsJsonSchema, type TemplateDef, templateOptionsJsonSchema } from '@fluxion/layout';
 import { createLayoutHost, type WorkerLike } from '@fluxion/layout/worker';
 
 /**
@@ -47,5 +47,21 @@ export function createArrangeRunner(core: Core, spawn: () => WorkerLike = browse
       return done.ok ? { ok: true } : { ok: false, message: done.error.message };
     },
     dispose: () => host.dispose(),
+  };
+}
+
+/**
+ * The JSON Schema of the options of each layout and template registered with `core`, for the inspector's layout options form (FR-LAY-001, M17.17).
+ *
+ * @public
+ */
+export function layoutOptionsSchemaOf(core: Core): OptionsSchemaOf {
+  return (layout) => {
+    if (layout.type === 'template') {
+      const template = typeof layout['id'] === 'string' ? (core.registries.templates.get(layout['id']) as TemplateDef<unknown> | undefined) : undefined;
+      return template === undefined ? undefined : templateOptionsJsonSchema(template);
+    }
+    const algorithm = core.registries.layouts.get(layout.type) as LayoutAlgorithm<unknown> | undefined;
+    return algorithm === undefined ? undefined : layoutOptionsJsonSchema(algorithm);
   };
 }

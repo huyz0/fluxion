@@ -408,6 +408,7 @@ export type EditorRootProps = {
     readonly themes?: readonly ThemeChoice[];
     readonly fonts?: FontSources;
     readonly sourceRegistries?: CoreRegistries;
+    readonly layoutOptionsSchema?: OptionsSchemaOf;
 };
 
 // @public
@@ -685,6 +686,35 @@ export function laserTool(): Tool;
 export const LAYOUT_KEY = "fluxion.editor.layout.v1";
 
 // @public
+export function LayoutOptionsForm(props: {
+    readonly target: LayoutTarget;
+    readonly fields: readonly OptionField[];
+    readonly set: (field: OptionField, value: unknown) => boolean;
+}): ReactNode;
+
+// @public
+export function LayoutOptionsSection(props: LayoutOptionsSectionProps): ReactNode;
+
+// @public
+export type LayoutOptionsSectionProps = {
+    readonly store: Store;
+    readonly session: Session;
+    readonly execute: Execute;
+    readonly screenId: string | undefined;
+    readonly schemaOf: OptionsSchemaOf;
+};
+
+// @public
+export type LayoutTarget = {
+    readonly kind: "container" | "screen";
+    readonly id: string;
+    readonly spec: WrittenLayoutSpec;
+};
+
+// @public
+export function layoutTarget(get: (id: string) => unknown, selection: readonly string[], screenId: string | undefined): LayoutTarget | undefined;
+
+// @public
 export type LibraryEntry = {
     readonly id: string;
     readonly name: string;
@@ -849,6 +879,38 @@ export function normalizeChord(chord: string): string;
 
 // @public
 export function nudgeSelection(ctx: ToolCtx, d: Vec2): boolean;
+
+// @public
+export type OptionEntry = {
+    readonly ok: true;
+    readonly value: unknown;
+} | {
+    readonly ok: false;
+    readonly message: string;
+};
+
+// @public
+export type OptionField = {
+    readonly key: string;
+    readonly kind: "number" | "integer" | "boolean" | "choice" | "text";
+    readonly default?: unknown;
+    readonly minimum?: number;
+    readonly maximum?: number;
+    readonly choices?: readonly string[];
+};
+
+// @public
+export function optionFields(schema: unknown): readonly OptionField[];
+
+// @public
+export type OptionsSchemaOf = (layout: WrittenLayoutSpec) => unknown;
+
+// @public
+export type OptionWriter = (id: string, args: unknown, options?: {
+    readonly amend?: true;
+}) => {
+    readonly ok: boolean;
+};
 
 // @public
 export function pageToScreen(camera: Camera, p: Vec2): Vec2;
@@ -1037,6 +1099,9 @@ export type ProblemFix = {
 export function problemsOf(doc: DocumentFile): readonly Problem[];
 
 // @public
+export function readOption(field: OptionField, entry: string | boolean): OptionEntry;
+
+// @public
 export function readOverrides(value: unknown): KeyOverrides;
 
 // @public
@@ -1134,6 +1199,13 @@ export type Sessions = {
 };
 
 // @public
+export function setLayoutOption(execute: OptionWriter, target: LayoutTarget, at: {
+    readonly screenId: string;
+    readonly key: string;
+    readonly value: unknown;
+}): boolean;
+
+// @public
 export type SettingsStore = {
     get(key: string): unknown;
     set(key: string, value: unknown): void;
@@ -1152,6 +1224,9 @@ export const shapeTool: (defId?: string) => Tool;
 
 // @public
 export function shortcutsOf(base: readonly KeyBinding[], overrides: KeyOverrides, action: PaletteAction, mac?: boolean): readonly string[];
+
+// @public
+export function shownOption(field: OptionField, options: unknown): unknown;
 
 // @public
 export function shownScreen(view: ReadView, wanted: RecordId | undefined): RecordId | undefined;
@@ -1396,6 +1471,12 @@ export function whenHolds(when: string | undefined, flags: ReadonlySet<string>):
 
 // @public
 export function withViewMeta(execute: Execute, session: Session, shown: () => RecordId | undefined): Execute;
+
+// @public
+export type WrittenLayoutSpec = {
+    readonly type: string;
+    readonly [key: string]: unknown;
+};
 
 // @public
 export const ZOOM_LIMITS: {
