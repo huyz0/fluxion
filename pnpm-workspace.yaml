@@ -29,6 +29,9 @@ overrides:
   # GHSA-wq5f-xc86-pv6w (sharp, via astro: the docs build) and GHSA-pqg4-j6r4-53mv (shell-quote, via @changesets/cli and launch-editor): M11.84
   sharp@<0.35.5: 0.35.5
   shell-quote@<1.11.0: 1.11.0
+  # GHSA-gfr2-rv44-r23c, GHSA-vfgh-jcmw-g37q (markdown-it, docs and API tooling) and GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw (launch-editor, via vite): M17.28
+  markdown-it@<14.3.3: 14.3.3
+  launch-editor@<2.14.2: 2.14.2
 
 packageExtensions:
   dependency-cruiser:
@@ -51,21 +54,21 @@ catalog:
   "@size-limit/preset-small-lib": 14.0.1
   "@biomejs/biome": 2.5.14
   dependency-cruiser: 18.4.0
-  vitest: 5.0.2
-  "@vitest/browser-playwright": 5.0.2
-  "@vitest/coverage-v8": 5.0.2
+  vitest: 5.0.5
+  "@vitest/browser-playwright": 5.0.5
+  "@vitest/coverage-v8": 5.0.5
   playwright: 1.63.0
   fast-check: 4.10.2
   "@huyz0/tzap": 0.1.1 # mutation testing (ADR-0146), M4.3
-  vite: 8.3.1
+  vite: 8.3.5
   "@microsoft/api-extractor": 7.59.2
   typedoc: 0.28.20
   "@playwright/test": 1.63.0
   "@axe-core/playwright": 4.13.0
   axe-core: 4.13.0
-  storybook: 10.6.0
-  "@storybook/react-vite": 10.6.0
-  "@storybook/addon-a11y": 10.6.0
+  storybook: 10.6.3
+  "@storybook/react-vite": 10.6.3
+  "@storybook/addon-a11y": 10.6.3
   astro: 7.3.5
   "@astrojs/starlight": 0.42.4
   "@astrojs/markdown-remark": 7.3.1
