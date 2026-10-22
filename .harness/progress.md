@@ -2053,3 +2053,6 @@ Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-rec
 
 ## M17.39
 - Independent moved oracle (movedShare) in incremental.test.ts; movedPercent unit case; arrange.test.ts reads the threshold. Mutant return-0 fails 4 tests. Review: 1 round, pass.
+
+## M17.41
+- Editor Fit notice uses layout safeAreaOf over exported screenFrame; layout dep added to editor. Review: 2 rounds (stale header comment).
