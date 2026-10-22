@@ -2023,3 +2023,6 @@ player-inline browser test: all waits 15 s, describes 60 s (CI macOS/Windows tim
 
 ## M17.18
 Layout picker in the inspector (select of layouts; group/frame, screen or selection; Make live). Reviewer round 2 pass (F1: template shows placeholder). e2e layout.picker chromium+webkit green.
+
+## M17.19
+AI panel settings (key, base URL, model, embed toggle); client strings in the catalog. Reviewer round 2 pass (F1 key saved as openai with a base URL; F2 base URL validated). e2e ai.panel-settings chromium+webkit green.
