@@ -57,8 +57,11 @@ export { type Scorecard, scoreLayout } from './scorecard.js';
 export { buildSnapshot, type SnapshotInput, type SnapshotRecord, type SnapshotRequest } from './snapshot.js';
 export { type StackOptions, stackLayout } from './stack.js';
 export { type SwimlaneOptions, swimlaneLayout } from './swimlane.js';
+export { type ComparisonOptions, comparisonTemplate } from './templates/comparison.js';
 export { type CycleOptions, cycleBasicTemplate } from './templates/cycle.js';
+export { type FunnelOptions, funnelTemplate } from './templates/funnel.js';
 export { hierarchyOrgTemplate, type OrgOptions } from './templates/hierarchy.js';
+export { type MatrixOptions, matrix2x2Template } from './templates/matrix.js';
 export { type ChevronOptions, type ProcessOptions, processBasicTemplate, processChevronTemplate } from './templates/process.js';
 export { type PyramidOptions, pyramidTemplate } from './templates/pyramid.js';
 export {
@@ -70,6 +73,7 @@ export {
   registerTemplate,
   templateOptionsJsonSchema,
 } from './templates/registry.js';
+export { type MilestonesOptions, timelineMilestonesTemplate } from './templates/timeline.js';
 export type {
   TemplateConnectorDraft,
   TemplateContext,
@@ -80,6 +84,7 @@ export type {
   TemplateSlot,
   TemplateStyle,
 } from './templates/types.js';
+export { type VennOptions, vennTemplate } from './templates/venn.js';
 export { type TidyOptions, tidyLayout } from './tidy.js';
 export { type TimelineOptions, timelineLayout } from './timeline.js';
 export { orgchartLayout, type TreeOptions, treeLayout } from './tree.js';

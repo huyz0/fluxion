@@ -231,7 +231,8 @@ type TemplateDef<O> = {
   schema: ZodType<O>;                       // options, with defaults: gap, padding, direction, colors
   slots: Record<string, { shape: string; role: string }>; // slot → shape def and theme variant
   build(items, options: O, ctx: { frame: Box; measure: TextMeasurer; font? }): TemplateResult;
-  adapt?(frame: Box, options: O): O;        // a portrait frame turns process.basic down
+  adapt?(frame: Box, options: O): O;        // a portrait frame turns process.basic and timeline.milestones
+                                            // down, comparison into rows
 };
 ```
 
@@ -241,7 +242,8 @@ style) and connector drafts (`from` and `to` shape keys, slot, style). Templates
 (`registerTemplate`, `listTemplates`, `registerBuiltInTemplates`). `buildTemplate` checks the
 items and options, adapts and builds, and never throws on bad input. Labels are measured through
 the `TextMeasurer` port so slots grow to fit, then shrink (never below 120 × 64) to fit the frame;
-every box is on the half pixel and no two built shapes overlap. Styles are theme tokens only:
+every box is on the half pixel and no two built shapes overlap, except `venn`'s sets, drawn see-through
+(`style.opacity`, default 0.7) with each label centred where no other circle reaches (a long label may still run into a lens). Styles are theme tokens only:
 `variant` is the slot role (a theme's `defaults[kind].variants[role]` restyles it) and the
 `colors` option picks `colorful` (accents 1–6 in turn), `primary` or `outline`.
 

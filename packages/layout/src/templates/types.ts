@@ -63,6 +63,8 @@ export type TemplateStyle = {
     /** Its width, px (0: none). */
     readonly width: number;
   };
+  /** The shape's opacity, 0 to 1, where shapes are meant to show through each other (`venn`); absent for opaque. */
+  readonly opacity?: number;
   /** The label's font; absent for a connector. */
   readonly font?: {
     /** The label colour token. */

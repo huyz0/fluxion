@@ -3,11 +3,16 @@
 import type { Registry } from '@fluxion/core';
 import { z } from 'zod';
 import type { RegisterLayoutResult } from '../registry.js';
+import { comparisonTemplate } from './comparison.js';
 import { cycleBasicTemplate } from './cycle.js';
+import { funnelTemplate } from './funnel.js';
 import { hierarchyOrgTemplate } from './hierarchy.js';
+import { matrix2x2Template } from './matrix.js';
 import { processBasicTemplate, processChevronTemplate } from './process.js';
 import { pyramidTemplate } from './pyramid.js';
+import { timelineMilestonesTemplate } from './timeline.js';
 import type { TemplateContext, TemplateDef, TemplateResult } from './types.js';
+import { vennTemplate } from './venn.js';
 
 const isSchema = (s: unknown): boolean => typeof s === 'object' && s !== null && typeof (s as { safeParse?: unknown }).safeParse === 'function';
 
@@ -109,6 +114,11 @@ export const builtInTemplates: readonly TemplateDef<never>[] = [
   cycleBasicTemplate,
   hierarchyOrgTemplate,
   pyramidTemplate,
+  matrix2x2Template,
+  vennTemplate,
+  funnelTemplate,
+  timelineMilestonesTemplate,
+  comparisonTemplate,
 ] as readonly unknown[] as readonly TemplateDef<never>[];
 
 /**

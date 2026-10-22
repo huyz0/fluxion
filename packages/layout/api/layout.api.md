@@ -120,6 +120,18 @@ export type CircularOptions = {
 };
 
 // @public
+export type ComparisonOptions = {
+    readonly direction: "columns" | "rows";
+    readonly gap: number;
+    readonly spacing: number;
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
+
+// @public
+export const comparisonTemplate: TemplateDef<ComparisonOptions>;
+
+// @public
 export type ContainerScope = {
     readonly containerId: string;
 };
@@ -180,6 +192,17 @@ export type ForceOptions = {
     readonly nodeGap?: number | undefined;
     readonly padding: number;
 };
+
+// @public
+export type FunnelOptions = {
+    readonly gap: number;
+    readonly narrowest: number;
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
+
+// @public
+export const funnelTemplate: TemplateDef<FunnelOptions>;
 
 // @public
 export const gridLayout: LayoutAlgorithm<GridOptions>;
@@ -390,6 +413,23 @@ export function listLayouts(layouts: Registry<string, unknown>): readonly Layout
 
 // @public
 export function listTemplates(templates: Registry<string, unknown>): readonly TemplateDef<unknown>[];
+
+// @public
+export const matrix2x2Template: TemplateDef<MatrixOptions>;
+
+// @public
+export type MatrixOptions = {
+    readonly gap: number;
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
+
+// @public
+export type MilestonesOptions = {
+    readonly direction: "right" | "down";
+    readonly padding: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
 
 // @public
 export const mindmapLayout: LayoutAlgorithm<MindmapOptions>;
@@ -682,6 +722,7 @@ export type TemplateStyle = {
         readonly color: string;
         readonly width: number;
     };
+    readonly opacity?: number;
     readonly font?: {
         readonly color: string;
     };
@@ -699,6 +740,9 @@ export type TidyOptions = {
 
 // @public
 export const timelineLayout: LayoutAlgorithm<TimelineOptions>;
+
+// @public
+export const timelineMilestonesTemplate: TemplateDef<MilestonesOptions>;
 
 // @public
 export type TimelineOptions = {
@@ -721,6 +765,16 @@ export type TreeOptions = {
     readonly padding: number;
     readonly compactLeaves: boolean;
 };
+
+// @public
+export type VennOptions = {
+    readonly padding: number;
+    readonly opacity: number;
+    readonly colors: "colorful" | "primary" | "outline";
+};
+
+// @public
+export const vennTemplate: TemplateDef<VennOptions>;
 
 // @public
 export const VERSION: string;
