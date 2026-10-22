@@ -1973,3 +1973,6 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 
 ## M17.9
 - M17.9 d4f4ca8a layout incremental mode: previous/changed inputs, force warm start, reconcile per component (edgeless as one block), moved metric <= LAYOUT_INCREMENTAL_MOVED_PCT; review round 2 pass
+
+## M17.10
+- M17.10 e2bbb62e core transaction option amend (ADR-0046): joins the open undo entry whatever key/origin, else own system entry, never opens a window; API report; review pass
