@@ -169,7 +169,8 @@ export function layoutTarget(get: (id: string) => unknown, selection: readonly s
   const record = get(only);
   const kind = isObj(record) ? record['kind'] : undefined;
   const spec = kind === 'group' || kind === 'frame' ? specOf(record) : undefined; // kind-switch-allow: only a group or frame holds a layout spec (schema)
-  return spec ? { kind: 'container', id: only, spec } : undefined;
+  // a template is built into a screen, not a group (the patch refuses it): a container's form would only refuse every edit
+  return spec && spec.type !== TEMPLATE ? { kind: 'container', id: only, spec } : undefined;
 }
 
 /**

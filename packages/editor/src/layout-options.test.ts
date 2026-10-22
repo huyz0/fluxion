@@ -63,6 +63,9 @@ describe('the layout options form model (FR-LAY-001)', () => {
     expect(layoutTarget(get, ['F'], 'S')).toBeUndefined();
     expect(layoutTarget(get, ['R'], 'S')).toBeUndefined();
     expect(layoutTarget(get, ['G', 'F'], 'S')).toBeUndefined();
+    // a template spec on a group is not edited here: the patch builds a template into a screen only
+    records['T'] = { id: 'T', kind: 'group', layout: { type: 'template', id: 'process.basic', items: [] } };
+    expect(layoutTarget(get, ['T'], 'S')).toBeUndefined();
   });
 
   it('FR-LAY-001: setting an option writes the spec and lays the target out again as an amend; a refused spec stops there', () => {
