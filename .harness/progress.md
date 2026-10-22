@@ -2071,3 +2071,6 @@ Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-rec
 
 ## M17.25 (part 2)
 Calibrated baselines recorded from nightly 39861908556 perf job (layered-100 1.436, layered-500 6.924, tree-500 0.910, radial-500 0.969, mindmap-500 0.845). M17.38 done. Next: dispatch nightlies; three consecutive layered-500 readings within 15 % close M17.25.
+
+## M17.22 (part 1)
+F7: 05-layout-and-routing.md §3/§4/§5 match ADR-0045 and the code (force centre repulsion, no worker progress msgs); layout README lists layouts, constraint kinds, templates; m17 README leg on backticked ids (red on old README, red when a row is removed). Reviewer pass round 2 (F1-F3 fixed).
