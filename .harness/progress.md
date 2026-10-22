@@ -1985,3 +1985,8 @@ Sandbox repos: gc.auto 0, maintenance.auto false. Review 1 round.
 - `tidy` layout + editor "Tidy up" (selection, else screen). Bound yields to no-overlap for piles; holds when no boxes start touching (property via layoutSync).
 - Studio layout worker served only grid/layered/stack; now `builtInLayouts` (all 13). Tree/radial/M17 layouts were refused in studio Arrange before.
 - Review: round 1 F1 (piles frozen by both-axis align, then pipeline moved them far) and F2 (property bypassed pipeline) fixed; round 2 pass.
+
+## M17.13
+- `fit` post-pass (opt-in, before snap) + `fit` layout + editor "Fit content to screen" (Arrange and screen menus; whole screen). Safe area = frame inset 5% of smaller side; scale down only.
+- Review r1: F1 dense row pushed out by overlap-pass nudges after scaling (fixed: separate with margin ceil(1/scale)+1); F3 zero-room collapse (guarded); F2 hand-placed pins stay (documented, backlog M17.31). r2 pass.
+- Also fixed context-menu e2e lists missing "Tidy up" since M17.12; screen menu gains Tidy up and Fit.
