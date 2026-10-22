@@ -2056,3 +2056,6 @@ Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-rec
 
 ## M17.41
 - Editor Fit notice uses layout safeAreaOf over exported screenFrame; layout dep added to editor. Review: 2 rounds (stale header comment).
+
+## M17.40
+- templates-all example + golden for all 10 template ids; examples test checks ids vs registry, venn opacity, chevron arrows; m17 leg names each id. Review: 2 rounds (loose leg match, chevron unpinned).
