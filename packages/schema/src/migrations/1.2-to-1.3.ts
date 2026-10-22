@@ -3,7 +3,7 @@
 // typed fields refuse, and the step removes them (as 1.1 -> 1.2 did) rather than make the migrated file invalid.
 import type { Migration, RawDocument } from '../migration-types.js';
 import { documentRecordSchema } from '../records/document.js';
-import { layoutSpecSchema } from '../records/layout-spec.js';
+import { layoutSpecShapeSchema } from '../records/layout-spec.js';
 
 type Fields = { readonly [key: string]: unknown };
 const isObject = (v: unknown): v is Fields => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -14,8 +14,9 @@ function keepIf(record: Fields, key: string, ok: (v: unknown) => boolean): Field
   return Object.fromEntries(Object.entries(record).filter(([k]) => k !== key));
 }
 
-// checked as 1.3 read it: `live` was an untyped key then (typed in 1.6, whose own step removes a non-boolean one), so it never sinks a layout here
-const isLayout = (v: unknown) => layoutSpecSchema.safeParse(isObject(v) ? Object.fromEntries(Object.entries(v).filter(([k]) => k !== 'live')) : v).success;
+// checked as 1.3 read it: a type and options, every other key untyped (`live` is typed in 1.6, a template's `id` and `items` in 1.7, and their own
+// steps remove what does not conform), so a key typed later never sinks a layout here
+const isLayout = (v: unknown) => layoutSpecShapeSchema.safeParse(v).success;
 const isSource = (v: unknown) => documentRecordSchema.safeParse({ id: 'x', type: 'document', source: v }).success;
 
 /** The step. */

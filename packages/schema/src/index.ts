@@ -67,7 +67,7 @@ export {
 export type { AnchorDef, BoxedBase, ElementBase, Locks, Point, QualifiedName, Semantic } from './records/element-base.js';
 export { qualifiedNameSchema } from './records/element-base.js';
 export { anchorDefSchema } from './records/element-schemas.js';
-export { type LayoutSpec, layoutSpecSchema } from './records/layout-spec.js';
+export { type LayoutSpec, layoutSpecSchema, MAX_TEMPLATE_DEPTH, type TemplateItem, templateItemSchema } from './records/layout-spec.js';
 export type { AssetRecord, PluginRefRecord, ResourceRecord, ThemeRecord } from './records/resources.js';
 export {
   DEFAULT_SCREEN_SIZE,

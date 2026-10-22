@@ -10,17 +10,18 @@ import { migrate12to13 } from './migrations/1.2-to-1.3.js';
 import { migrate13to14 } from './migrations/1.3-to-1.4.js';
 import { migrate14to15 } from './migrations/1.4-to-1.5.js';
 import { migrate15to16 } from './migrations/1.5-to-1.6.js';
+import { migrate16to17 } from './migrations/1.6-to-1.7.js';
 import { err, ok, type Result } from './result.js';
 
 export type { Migration, RawDocument } from './migration-types.js';
 
 /**
- * The released migration chain: 1.0 → 1.1 (sections, ADR-0021), 1.1 → 1.2 (metadata fields and a screen's theme, ADR-0152), 1.2 → 1.3 (layout specs, ADR-0031), 1.3 → 1.4 (anchor kinds, ADR-0043), 1.4 → 1.5 (curve tangents and jump style, ADR-0168), 1.5 → 1.6 (a layout spec's `live`, ADR-0046). The next schema change appends a step
+ * The released migration chain: 1.0 → 1.1 (sections, ADR-0021), 1.1 → 1.2 (metadata fields and a screen's theme, ADR-0152), 1.2 → 1.3 (layout specs, ADR-0031), 1.3 → 1.4 (anchor kinds, ADR-0043), 1.4 → 1.5 (curve tangents and jump style, ADR-0168), 1.5 → 1.6 (a layout spec's `live`, ADR-0046), 1.6 → 1.7 (template layout specs, ADR-0047). The next schema change appends a step
  * here with a fixture of the version it leaves (contracts.md rule 8).
  *
  * @public
  */
-export const MIGRATIONS: readonly Migration[] = [migrate10to11, migrate11to12, migrate12to13, migrate13to14, migrate14to15, migrate15to16];
+export const MIGRATIONS: readonly Migration[] = [migrate10to11, migrate11to12, migrate12to13, migrate13to14, migrate14to15, migrate15to16, migrate16to17];
 
 /**
  * Result of {@link migrate}: the document at the current version and the steps applied.

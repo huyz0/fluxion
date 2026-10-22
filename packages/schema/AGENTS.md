@@ -21,9 +21,13 @@ Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema
 
 - `LayoutSpec` on `screen`, `group` and `frame` (`records/layout-spec.ts`) and `document.source` (FluxScript salt and deferred sections), ADR-0031. `migrations/1.2-to-1.3.ts` drops non-conforming values there.
 
+## Version 1.7 (M17)
+
+- A `LayoutSpec` of type `template` requires `id` (a `templates` registry id) and `items` (`TemplateItem`s: `label`, `detail?`, `children?`); both are typed on any spec (ADR-0047, FR-LAY-014). `migrations/1.6-to-1.7.ts` removes a template spec without them and a non-conforming `id`/`items` from any spec. The 1.2 → 1.3 step checks layouts with `layoutSpecShapeSchema` (type and options only). Fixtures: `v1.7/` (current), `migration/nonconforming-1.6`.
+
 ## Version 1.6 (M17)
 
-- A `LayoutSpec` gains an optional `live: boolean` (re-lay the container out after edits; stored only) (ADR-0046, FR-LAY-010). `migrations/1.5-to-1.6.ts` drops a non-boolean `live` from a screen's, group's or frame's `layout`. Fixtures: `v1.6/` (current), `migration/nonconforming-1.5`.
+- A `LayoutSpec` gains an optional `live: boolean` (re-lay the container out after edits; stored only) (ADR-0046, FR-LAY-010). `migrations/1.5-to-1.6.ts` drops a non-boolean `live` from a screen's, group's or frame's `layout`. Fixtures: `v1.6/`, `migration/nonconforming-1.5`.
 
 ## Version 1.5 (M16)
 

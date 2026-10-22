@@ -4,6 +4,7 @@ import nonconforming from './__fixtures__/migration/nonconforming-1.5.flux.json'
 import v12 from './__fixtures__/v1.2/document.flux.json' with { type: 'json' };
 import v15 from './__fixtures__/v1.5/document.flux.json' with { type: 'json' };
 import v16 from './__fixtures__/v1.6/document.flux.json' with { type: 'json' };
+import v17 from './__fixtures__/v1.7/document.flux.json' with { type: 'json' };
 import { migrate } from './migrate.js';
 import { layoutSpecSchema } from './records/layout-spec.js';
 import { parseDocument, serializeDocument } from './serialize.js';
@@ -11,7 +12,8 @@ import { validate } from './validate.js';
 
 type Fields = { readonly [key: string]: unknown };
 const records = (doc: { records: object }) => doc.records as { readonly [id: string]: Fields };
-const withLayout = (id: string, layout: unknown) => ({ ...v16, records: { ...v16.records, [id]: { ...records(v16)[id], layout } } });
+// on the current fixture, so only the layout is under test
+const withLayout = (id: string, layout: unknown) => ({ ...v17, records: { ...v17.records, [id]: { ...records(v17)[id], layout } } });
 const codes = (doc: unknown) => validate(doc).map((d) => `${d.code} ${d.path}`);
 
 describe('schema 1.6 (FR-LAY-010)', () => {
@@ -27,20 +29,22 @@ describe('schema 1.6 (FR-LAY-010)', () => {
   it('FR-LAY-010: a 1.5 document migrates to a valid 1.6 one with its records unchanged and round-trips', () => {
     const r = migrate(v15);
     if (!r.ok) throw new Error(r.error.message);
-    expect(r.value.applied).toEqual(['1.5→1.6']);
-    expect(r.value.document.schemaVersion).toBe('1.6');
+    expect(r.value.applied).toEqual(['1.5→1.6', '1.6→1.7']);
+    expect(r.value.document.schemaVersion).toBe('1.7');
     expect(r.value.document.records).toEqual(v15.records);
     expect(validate(r.value.document)).toEqual([]);
     const again = parseDocument(serializeDocument(r.value.document as never));
     expect(again.ok && again.value.document).toEqual(r.value.document);
   });
 
-  it('FR-LAY-010: the 1.6 fixture holds a live layout spec, validates and round-trips', () => {
-    expect(validate(v16)).toEqual([]);
+  it('FR-LAY-010: the 1.6 fixture holds a live layout spec, validates once migrated and round-trips', () => {
+    const m = migrate(v16);
+    if (!m.ok) throw new Error(m.error.message);
+    expect(validate(m.value.document)).toEqual([]);
     expect(records(v16)['s2']?.['layout']).toEqual({ type: 'layouts-core:layered', live: true });
     const r = parseDocument(JSON.stringify(v16));
     if (!r.ok) throw new Error(r.error.message);
-    expect(JSON.parse(serializeDocument(r.value.document))).toEqual(v16);
+    expect(JSON.parse(serializeDocument(r.value.document))).toEqual({ ...v16, schemaVersion: '1.7' });
   });
 
   it('FR-LAY-010: a 1.5 layout spec whose live is not a boolean migrates to a valid 1.6 one without it, keeping a boolean live', () => {

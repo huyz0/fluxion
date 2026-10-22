@@ -420,6 +420,8 @@ export type LayoutSpec = Extensible<{
         readonly [key: string]: unknown;
     };
     readonly live?: boolean;
+    readonly id?: string;
+    readonly items?: readonly TemplateItem[];
 }>;
 
 // @public
@@ -449,6 +451,9 @@ export const MAX_JSON_DEPTH: number;
 
 // @public
 export const MAX_RICH_TEXT_DEPTH: number;
+
+// @public
+export const MAX_TEMPLATE_DEPTH: number;
 
 // @public
 export type Meta = {
@@ -798,6 +803,16 @@ export type StyleValue<T> = T | TokenRef;
 export type Tagged = Extensible<{
     readonly kind: string;
 }>;
+
+// @public
+export type TemplateItem = Extensible<{
+    readonly label: string;
+    readonly detail?: string;
+    readonly children?: readonly TemplateItem[];
+}>;
+
+// @public
+export const templateItemSchema: z.ZodType<TemplateItem>;
 
 // @public
 export type TextElement = Extensible<BoxedBase & {

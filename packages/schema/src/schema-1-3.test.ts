@@ -4,7 +4,7 @@ import mixed from './__fixtures__/migration/mixed-1.2.flux.json' with { type: 'j
 import nonconforming from './__fixtures__/migration/nonconforming-1.2.flux.json' with { type: 'json' };
 import v12 from './__fixtures__/v1.2/document.flux.json' with { type: 'json' };
 // the 1.3 fixture is no longer current; the layout fields it holds are unchanged in the current one
-import v13 from './__fixtures__/v1.6/document.flux.json' with { type: 'json' };
+import v13 from './__fixtures__/v1.7/document.flux.json' with { type: 'json' };
 import { migrate } from './migrate.js';
 import { parseDocument, serializeDocument } from './serialize.js';
 import { validate } from './validate.js';
@@ -18,8 +18,8 @@ describe('schema 1.3 (FR-DSL-005, FR-DSL-002)', () => {
   it('FR-DSL-005: a 1.2 document migrates to a valid 1.3 one and round-trips', () => {
     const r = migrate(v12);
     if (!r.ok) throw new Error(r.error.message);
-    expect(r.value.applied).toEqual(['1.2→1.3', '1.3→1.4', '1.4→1.5', '1.5→1.6']);
-    expect(r.value.document.schemaVersion).toBe('1.6');
+    expect(r.value.applied).toEqual(['1.2→1.3', '1.3→1.4', '1.4→1.5', '1.5→1.6', '1.6→1.7']);
+    expect(r.value.document.schemaVersion).toBe('1.7');
     // nothing to add: every new field is optional
     expect(r.value.document.records).toEqual(v12.records);
     expect(validate(r.value.document)).toEqual([]);
