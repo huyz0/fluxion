@@ -102,11 +102,10 @@ export function dragBox(from: Vec2, to: Vec2, size: { readonly w: number; readon
 }
 
 /** The index in front of every element at the root of `screen`; undefined for a malformed sibling index. */
-export function frontIndex(view: ReadView, screen: RecordId): string | undefined {
-  const indexes = view
-    .members('byScreen', screen)
+export function frontIndex(view: ReadView, screen: RecordId, parent?: RecordId): string | undefined {
+  const indexes = (parent === undefined ? view.members('byScreen', screen) : view.members('byParent', parent))
     .map((id) => view.get(id) as { readonly parentId?: unknown; readonly index?: unknown })
-    .filter((r) => r.parentId === undefined)
+    .filter((r) => r.parentId === parent)
     .map((r) => String(r.index))
     .sort();
   const next = keyBetween(indexes.at(-1) ?? null, null);

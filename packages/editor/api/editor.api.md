@@ -721,6 +721,28 @@ export type Link = {
     } | undefined;
 };
 
+// @public
+export type LiveFrame = {
+    readonly containerId: RecordId;
+    readonly screenId: RecordId;
+};
+
+// @public
+export type LiveLayoutDeps = {
+    readonly store: Pick<Store, "subscribe" | "get">;
+    readonly run?: LiveLayoutRun;
+    readonly execute?: Execute;
+    readonly schedule?: (task: () => void) => void;
+};
+
+// @public
+export type LiveLayoutRun = (frame: LiveFrame) => LivePlan | Promise<LivePlan>;
+
+// @public
+export type LivePlan = {
+    readonly apply: (amend: boolean) => void;
+};
+
 export { LoadableFace }
 
 export { loadFontFaces }
@@ -904,6 +926,7 @@ export type PasteDeps = {
     seal(): void;
     readonly screen: RecordId | undefined;
     newId(): RecordId;
+    readonly into?: RecordId | undefined;
     readonly assets?: AssetStore | undefined;
 };
 
@@ -969,6 +992,7 @@ export function planPaste(payload: ClipboardPayload, target: {
     readonly by: Vec2;
     readonly newId: () => RecordId;
     readonly assets?: ReadonlyMap<string, RecordId>;
+    readonly parentId?: RecordId | undefined;
 }): PastePlan;
 
 // @public
@@ -1189,6 +1213,9 @@ export const snapshotView: (session: Session, shown: RecordId | undefined) => Vi
 
 // @public
 export const snapThreshold: (zoom: number) => number;
+
+// @public
+export function startLiveLayout(deps: LiveLayoutDeps): () => void;
 
 // @public
 export type StateNode = {

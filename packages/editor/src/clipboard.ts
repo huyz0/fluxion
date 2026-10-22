@@ -199,6 +199,8 @@ export function planPaste(
     readonly newId: () => RecordId;
     /** For a source asset id, the target document's asset with the same bytes, where it holds one. */
     readonly assets?: ReadonlyMap<string, RecordId>;
+    /** The group the pasted roots become members of (absent: the screen's top level). */
+    readonly parentId?: RecordId | undefined;
   },
 ): PastePlan {
   const { screen, indexes, by, newId } = target;
@@ -214,7 +216,9 @@ export function planPaste(
       ...rest,
       id: renamed.get(e.id as RecordId),
       screenId: screen,
-      ...(root ? { index: rootIndex.get(e.id as RecordId) } : { parentId: renamed.get(e.parentId as RecordId) }),
+      ...(root
+        ? { index: rootIndex.get(e.id as RecordId), ...(target.parentId === undefined ? {} : { parentId: target.parentId }) }
+        : { parentId: renamed.get(e.parentId as RecordId) }),
     } as unknown as AnyRecord;
   });
   const bindings = (payload.records.filter((r) => r.type === 'binding') as Rec[]).map(
@@ -240,6 +244,8 @@ export type PasteDeps = {
   readonly screen: RecordId | undefined;
   /** A fresh record id. */
   newId(): RecordId;
+  /** The entered group (FR-LAY-010): what is pasted becomes its members, else it lands on the screen's top level. */
+  readonly into?: RecordId | undefined;
   /** Where the bytes of the document's assets are held: a pasted asset with bytes is held here under its new id. */
   readonly assets?: AssetStore | undefined;
 };
@@ -281,13 +287,14 @@ export function pasteInto(deps: PasteDeps, payload: ClipboardPayload, by: Vec2):
   const rootCount = (pasting.records.filter((r) => r.type === 'element') as Rec[]).filter(
     (e, _k, all) => e.parentId === undefined || !all.some((o) => o.id === e.parentId),
   ).length;
-  const front = frontIndex(view, screen);
+  const into = deps.into !== undefined && (view.get(deps.into) as { readonly screenId?: unknown } | undefined)?.screenId === screen ? deps.into : undefined;
+  const front = frontIndex(view, screen, into);
   const more = front === undefined || rootCount === 0 ? undefined : nKeysBetween(front, null, rootCount - 1);
   if (front === undefined || more === undefined || !more.ok) return undefined;
   // only now that something will be pasted: the assets it names are made, and their bytes held
   const mergeKey = `paste:${deps.newId()}`;
   makeAssets(deps, assetPlan, mergeKey);
-  const plan = planPaste(pasting, { screen, indexes: [front, ...more.value], by, newId: deps.newId, assets });
+  const plan = planPaste(pasting, { screen, indexes: [front, ...more.value], by, newId: deps.newId, assets, parentId: into });
   const made = execute('element.createMany', { elements: plan.elements }, { mergeKey });
   if (made.ok)
     // a binding the document refuses leaves that end where it was copied

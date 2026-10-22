@@ -41,6 +41,7 @@ describe('shared document fixtures (FR-DOC-001)', () => {
       'doc50.flux.json',
       'invalid-ref-missing.flux.json',
       'invalid-schema-invalid.flux.json',
+      'live-tree.flux.json',
       'minimal.flux.json',
       'perf-2k-1k.flux.json',
       'perf-500.flux.json',

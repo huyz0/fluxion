@@ -1,0 +1,195 @@
+{
+  "records": {
+    "-6nXQZXCeCKIjUf0": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "KBq7B2gpC6HXkaiH",
+      "elementId": "OzG9UGtMZuFwPz7W",
+      "end": "source",
+      "id": "-6nXQZXCeCKIjUf0",
+      "type": "binding"
+    },
+    "4j2EkS6FrgPOcHDN": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "KBq7B2gpC6HXkaiH",
+      "elementId": "JWwqjq0vbDqgoC8D",
+      "end": "target",
+      "id": "4j2EkS6FrgPOcHDN",
+      "type": "binding"
+    },
+    "JWwqjq0vbDqgoC8D": {
+      "defId": "basic:rect",
+      "id": "JWwqjq0vbDqgoC8D",
+      "index": "a2",
+      "kind": "shape",
+      "parentId": "LiveTreeGroup001",
+      "screenId": "SesqjmkZEE4UbomC",
+      "semantic": {
+        "slug": "right"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Right",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 80,
+        "w": 160,
+        "x": 540,
+        "y": 400
+      },
+      "type": "element"
+    },
+    "KBq7B2gpC6HXkaiH": {
+      "id": "KBq7B2gpC6HXkaiH",
+      "index": "a4",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "SesqjmkZEE4UbomC",
+      "type": "element"
+    },
+    "LOzjsIe6l1Fx8REr": {
+      "defId": "basic:rect",
+      "id": "LOzjsIe6l1Fx8REr",
+      "index": "a1",
+      "kind": "shape",
+      "parentId": "LiveTreeGroup001",
+      "screenId": "SesqjmkZEE4UbomC",
+      "semantic": {
+        "slug": "left"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Left",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 80,
+        "w": 160,
+        "x": 260,
+        "y": 400
+      },
+      "type": "element"
+    },
+    "LiveTreeGroup001": {
+      "id": "LiveTreeGroup001",
+      "index": "a9",
+      "kind": "group",
+      "layout": {
+        "live": true,
+        "type": "tree"
+      },
+      "screenId": "SesqjmkZEE4UbomC",
+      "transform": {
+        "h": 280,
+        "w": 440,
+        "x": 260,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "OzG9UGtMZuFwPz7W": {
+      "defId": "basic:rect",
+      "id": "OzG9UGtMZuFwPz7W",
+      "index": "a0",
+      "kind": "shape",
+      "parentId": "LiveTreeGroup001",
+      "screenId": "SesqjmkZEE4UbomC",
+      "semantic": {
+        "slug": "root"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Root",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 80,
+        "w": 160,
+        "x": 400,
+        "y": 200
+      },
+      "type": "element"
+    },
+    "SesqjmkZEE4UbomC": {
+      "id": "SesqjmkZEE4UbomC",
+      "index": "a0",
+      "name": "Main",
+      "type": "screen"
+    },
+    "UHmyXiknQ7b7ljqS": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "jHUejJeyBx7a5TSj",
+      "elementId": "OzG9UGtMZuFwPz7W",
+      "end": "source",
+      "id": "UHmyXiknQ7b7ljqS",
+      "type": "binding"
+    },
+    "jHUejJeyBx7a5TSj": {
+      "id": "jHUejJeyBx7a5TSj",
+      "index": "a3",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "SesqjmkZEE4UbomC",
+      "type": "element"
+    },
+    "rMiKFwSiQryTPMov": {
+      "id": "rMiKFwSiQryTPMov",
+      "title": "Live tree",
+      "type": "document"
+    },
+    "zZZZHHVrDmEOJhkr": {
+      "anchor": {
+        "kind": "floating"
+      },
+      "connectorId": "jHUejJeyBx7a5TSj",
+      "elementId": "LOzjsIe6l1Fx8REr",
+      "end": "target",
+      "id": "zZZZHHVrDmEOJhkr",
+      "type": "binding"
+    }
+  },
+  "schemaVersion": "1.6"
+}

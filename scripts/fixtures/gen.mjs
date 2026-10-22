@@ -334,6 +334,22 @@ function r1MvpDeck() {
   return b.build();
 }
 
+/** A group whose live tree layout holds a root and two children, already laid out (FR-LAY-010, M17.11): an added member is laid out with them. */
+function liveTree() {
+  const b = documentBuilder({ title: 'Live tree', seed: 17 });
+  const s = b.screen({ name: 'Main' });
+  const root = b.rect(s, { x: 400, y: 200, label: 'Root', slug: 'root' });
+  const left = b.rect(s, { x: 260, y: 400, label: 'Left', slug: 'left' });
+  const right = b.rect(s, { x: 540, y: 400, label: 'Right', slug: 'right' });
+  b.connect(root, left);
+  b.connect(root, right);
+  const doc = b.build();
+  const group = 'LiveTreeGroup001';
+  const members = [root, left, right].map((id) => [id, { ...doc.records[id], parentId: group }]);
+  const box = { type: 'element', kind: 'group', id: group, screenId: s, index: 'a9', transform: { x: 260, y: 200, w: 440, h: 280 } };
+  return { ...doc, records: { ...doc.records, ...Object.fromEntries(members), [group]: { ...box, layout: { type: 'tree', live: true } } } };
+}
+
 const FIXTURES = {
   minimal: () => {
     const b = documentBuilder({ title: 'Minimal', seed: 1 });
@@ -341,6 +357,7 @@ const FIXTURES = {
     return b.build();
   },
   'two-rects-line': () => twoRectsLine('Two rects and a line').doc,
+  'live-tree': liveTree,
   // a plugin element kind, a core kind from a newer version (FLX_KIND_UNKNOWN warning, M2 final F7)
   // and unknown fields are all kept verbatim (FR-DOC-005)
   'unknown-kind': () => {

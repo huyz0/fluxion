@@ -43,6 +43,21 @@ const rec = (core: ReturnType<typeof setup>['core'], id: RecordId) => core.store
 const endPoint = (route: ReturnType<typeof setup>['route']) => (id: RecordId, end: 'source' | 'target') => route(id)?.[end].point;
 
 describe('clipboard (FR-EDT-007)', () => {
+  it('FR-LAY-010: pasted into an entered group, the roots become its members in front of them; a group on another screen is ignored', () => {
+    const { core, s, a, c, newId } = setup();
+    const group = 'PasteGroup000001' as RecordId;
+    expect(core.execute('element.group', { ids: [a, c], groupId: group }).ok).toBe(true);
+    const payload = copyPayload(core.store, [c], { docId: 'doc', screen: s });
+    const deps = { view: core.store, execute: core.execute, seal: () => core.store.history.seal(), screen: s, newId };
+    const [pasted] = pasteInto({ ...deps, into: group }, payload as never, { x: 16, y: 16 }) ?? [];
+    const member = rec(core, pasted as RecordId) as unknown as { parentId?: RecordId; index: string };
+    expect(member.parentId).toBe(group);
+    const siblings = core.store.members('byParent', group).map((id) => String((core.store.get(id) as unknown as { index: string }).index));
+    expect(member.index).toBe([...siblings].sort().at(-1));
+    const [loose] = pasteInto({ ...deps, into: 'Nowhere000000001' as RecordId }, payload as never, { x: 32, y: 32 }) ?? [];
+    expect((rec(core, loose as RecordId) as unknown as { parentId?: RecordId }).parentId).toBeUndefined();
+  });
+
   it('FR-EDT-007: a pasted connector stays bound to the pasted shapes, all with fresh ids', () => {
     const { core, s, a, c, joined, route, newId } = setup();
     const before = new Set(core.store.ids());

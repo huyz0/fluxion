@@ -32,9 +32,10 @@ after an edit would be a second undo step.
 Option 3.
 
 **Transaction option `amend`.** `TxOptions.amend?: true` (core, a contract addition): the commit's diff merges into the last undo
-entry when that entry is still open (not sealed, nothing committed since it but other amends), whatever its `mergeKey` and origin; the
-entry keeps its label, origin and `metaBefore`, and takes the amend's `metaAfter`. When no entry is open, the amend is recorded as an
-entry of its own with origin `system`. An amend never opens a merge window of its own. This **amends ADR-0014 §Merging**: besides the same-`mergeKey`-and-origin rule, an
+entry while nothing has been committed since it but other amends, whatever its `mergeKey` and origin, and whether or not it was sealed
+(a tool writes and seals in one task, before the reactor's microtask; the seal still closes the merge window for later edits). The
+entry keeps its label, origin and `metaBefore`, and takes the amend's `metaAfter`. After an undo, a redo or a remote commit, the amend is
+recorded as an entry of its own with origin `system`. An amend never opens a merge window of its own. This **amends ADR-0014 §Merging**: besides the same-`mergeKey`-and-origin rule, an
 amend joins the open entry.
 
 **Reactor.** The editor's live-layout reactor subscribes to commits. It ignores commits with origin `undo`, `redo` or `remote` and
@@ -42,8 +43,9 @@ its own (label `layout.live`). For a commit that adds, removes or resizes a chil
 frame dirty and schedules one flush with `queueMicrotask` (through the editor's scheduler port). The flush re-lays out the dirty
 frames, innermost first, in one transaction with `amend: true`.
 - **Undo.** `Store.#commit` records history before it calls subscribers, and a microtask runs before the next input event, so the
-  entry the edit opened is still the last open one when the amend arrives: one Ctrl+Z takes back the edit and its re-layout. A paste
-  then a nudge are separate input events, each followed by its own flush, so they undo in two steps, each with its re-layout. Several
+  entry the edit opened is still the last one when the amend arrives: one Ctrl+Z takes back the edit and its re-layout. A paste
+  then a nudge are separate input events, so they undo in two steps, the paste with its re-layout (a move without a resize does not
+  wake the reactor, so the nudge has none). Several
   commits in one task (a scripted or AI batch) share one flush, which amends the batch's last entry.
 - **Delivery order.** The re-layout commits after the store's listener loop for the edit has finished, never re-entrantly inside it,
   so every subscriber (autosave's journal, source sync) receives the edit's diff before the re-layout's.
@@ -75,9 +77,9 @@ fixture and tests in the commit that adds it, M17.11; AGENTS.md rule 6).
 
 ### Confirmation
 
-Core tests: an amend after a user edit gives one undo entry, after a sealed entry its own. Layout test `incremental.test.ts` against
+Core tests: an amend after a user edit gives one undo entry, sealed or not; after an undo its own. Layout test `incremental.test.ts` against
 `LAYOUT_INCREMENTAL_MOVED_PCT`. E2E `layout.live-container.spec.ts`: adding a node to a live tree frame re-lays it out and one Ctrl+Z
-removes both; a paste then a nudge inside one frame are undone in two steps, each with its re-layout.
+removes both; a paste then a nudge inside one frame are undone in two steps, the paste with its re-layout.
 
 ## More Information
 

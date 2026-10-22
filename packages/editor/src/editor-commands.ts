@@ -136,10 +136,14 @@ function pasteOnce(ctx: EditorCommandCtx, payload: NonNullable<ReturnType<Clipbo
   const t = ctx.tools.ctx;
   // pasted onto the screen it came from, the first paste is offset already (it would lie on its originals); onto another, the first lies where it was
   const steps = payload.sourceScreen === t.screen ? n : n - 1;
-  const ids = pasteInto({ view: t.view, execute: t.execute, seal: t.seal, screen: t.screen, newId: t.newId, assets: ctx.assets }, payload, {
-    x: steps * PASTE_OFFSET,
-    y: steps * PASTE_OFFSET,
-  });
+  const ids = pasteInto(
+    { view: t.view, execute: t.execute, seal: t.seal, screen: t.screen, newId: t.newId, assets: ctx.assets, into: t.session.entered.get() },
+    payload,
+    {
+      x: steps * PASTE_OFFSET,
+      y: steps * PASTE_OFFSET,
+    },
+  );
   if (ids === undefined) return false;
   t.session.selection.set(ids);
   return true;

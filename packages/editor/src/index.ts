@@ -130,6 +130,8 @@ export type { ArrangeContainer, ArrangeHost, ArrangeOutcome, ArrangePort, Arrang
 export { registeredLayoutIds } from './layout-arrange.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
+export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';
+export { startLiveLayout } from './live-layout.js';
 export { newDocument } from './new-document.js';
 export {
   ariaShortcuts,

@@ -98,6 +98,8 @@ export class StoreHistory implements History {
   readonly #replay: Transact;
   // the entry the next transaction may merge into: the latest one, until another commit or seal()
   #open: Entry | undefined;
+  // the entry an amend joins: the latest one, until another commit, an undo or a redo; seal() does not close it (ADR-0046)
+  #last: Entry | undefined;
 
   constructor(store: { readonly transact: Transact }, replayTransact: Transact) {
     this.#store = store;
@@ -123,26 +125,19 @@ export class StoreHistory implements History {
   /**
    * A committed transaction (non-empty diff; an empty one is never recorded and so never breaks a
    * merge). User and system ones become entries, or merge into the open entry when it has the same
-   * mergeKey and origin (ADR-0014 §Merging); any other commit closes the open entry.
+   * mergeKey and origin (ADR-0014 §Merging); an amend joins the last entry while nothing else was
+   * committed after it, sealed or not (ADR-0046); any other commit closes the open entry.
    */
   record(diff: Diff, meta: TxMeta): void {
     if (meta.origin !== 'user' && meta.origin !== 'system') {
       this.#open = undefined;
+      this.#last = undefined;
       return;
     }
     this.#redo.length = 0;
-    const open = this.#open;
-    const joins = meta.amend === true || (meta.mergeKey !== undefined && open?.mergeKey === meta.mergeKey && open.origin === meta.origin);
-    if (open && joins && this.#undo.at(-1) === open) {
-      this.#undo.pop();
-      const merged = mergeDiffs(open.diff, diff);
-      if (merged.puts.size === 0 && merged.deletes.size === 0) {
-        // the gesture ended where it started: no step to undo
-        this.#open = undefined;
-        return;
-      }
-      this.#open = { ...open, diff: merged, metaAfter: meta.metaAfter };
-      this.#undo.push(this.#open);
+    const target = this.#joinTarget(meta);
+    if (target) {
+      this.#join(target, diff, meta);
       return;
     }
     const entry: Entry = {
@@ -155,8 +150,33 @@ export class StoreHistory implements History {
       mergeKey: meta.mergeKey,
     };
     this.#undo.push(entry);
-    // an amend never opens a merge window of its own (ADR-0046)
+    // an amend never opens a merge window or an amend target of its own (ADR-0046)
     this.#open = meta.amend ? undefined : entry;
+    this.#last = meta.amend ? undefined : entry;
+  }
+
+  /** The entry this commit merges into: the last one for an amend, the open one with the same key and origin otherwise. */
+  #joinTarget(meta: TxMeta): Entry | undefined {
+    const open = meta.amend === true ? this.#last : this.#open;
+    const joins = meta.amend === true || (meta.mergeKey !== undefined && open?.mergeKey === meta.mergeKey && open.origin === meta.origin);
+    return open && joins && this.#undo.at(-1) === open ? open : undefined;
+  }
+
+  /** Merge the commit into `open`, the last entry; a merge that cancels out removes the entry. */
+  #join(open: Entry, diff: Diff, meta: TxMeta): void {
+    this.#undo.pop();
+    const merged = mergeDiffs(open.diff, diff);
+    if (merged.puts.size === 0 && merged.deletes.size === 0) {
+      // the gesture ended where it started: no step to undo
+      this.#open = undefined;
+      this.#last = undefined;
+      return;
+    }
+    const joined: Entry = { ...open, diff: merged, metaAfter: meta.metaAfter };
+    // an amend into a sealed entry does not reopen its merge window
+    if (this.#open === open) this.#open = joined;
+    this.#last = joined;
+    this.#undo.push(joined);
   }
 
   seal(): void {

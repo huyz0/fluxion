@@ -115,19 +115,38 @@ describe('amend (ADR-0046)', () => {
     expect((store.get(c) as { name: string }).name).toBe('laid out');
   });
 
-  it('FR-LAY-010: AFTER a sealed entry or an undo THE SYSTEM SHALL record the amend as an entry of its own with origin system', () => {
+  it('FR-LAY-010: AFTER an undo THE SYSTEM SHALL record the amend as an entry of its own with origin system', () => {
     const { store, run, move, c } = setup();
     move(10);
     store.history.seal();
+    move(20);
+    store.history.undo();
     run('element.update', { id: c, fields: { name: 'one' } }, { amend: true });
     expect(store.history.undoDepth).toBe(2);
-    // the amend opened no window: a second amend is its own entry too, and a move cannot merge into it
+    // the amend opened no window and no amend target: a second amend is its own entry too
     run('element.update', { id: c, fields: { name: 'two' } }, { amend: true });
     expect(store.history.undoDepth).toBe(3);
     store.history.undo();
     store.history.undo();
     expect(store.history.undoDepth).toBe(1);
     expect(store.history.redoDepth).toBe(2);
+  });
+
+  it('FR-LAY-010: an amend joins a sealed last entry, which stays sealed', () => {
+    const { store, run, move, a, c } = setup();
+    const before = store.toDocument();
+    // a tool writes and seals in one task; the re-layout's amend comes after the seal
+    move(10);
+    store.history.seal();
+    run('element.update', { id: c, fields: { name: 'laid out' } }, { amend: true });
+    expect(store.history.undoDepth).toBe(1);
+    // the seal still holds: a move with the same key is a step of its own
+    move(30);
+    expect(store.history.undoDepth).toBe(2);
+    store.history.undo();
+    expect(x(store, a)).toBe(10);
+    store.history.undo();
+    expect(store.toDocument()).toEqual(before);
   });
 
   it('FR-LAY-010: an amend after another commit joins the last entry only while it is still the open one', () => {

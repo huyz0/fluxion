@@ -32,6 +32,7 @@ import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides.js';
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { type ArrangePort, registeredLayoutIds } from './layout-arrange.js';
+import { startLiveLayout } from './live-layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
 import { PresentInPlace, useModeSwitch, useRevision } from './present.js';
@@ -101,6 +102,8 @@ function useTools(
     registerBuiltinTools(builtins);
     return builtins;
   }, [props.tools]);
+  // live layout frames follow edits to their children for as long as the root is mounted (FR-LAY-010)
+  useEffect(() => startLiveLayout({ store, execute }), [store, execute]);
   // the index follows the store until the root unmounts or its inputs change
   const hits = useRef<HitIndex | undefined>(undefined);
   useEffect(() => {
