@@ -127,6 +127,22 @@ export const err: <E>(error: E) => Err<E>;
 export function fingerprintOf<O>(req: LayoutRequest<O>): Result<string>;
 
 // @public
+export function fitBoxes(input: LayoutInput, boxes: Boxes, options?: FitOptions): Boxes;
+
+// @public
+export const fitLayout: LayoutAlgorithm<FitLayoutOptions>;
+
+// @public
+export type FitLayoutOptions = {
+    readonly margin?: number | undefined;
+};
+
+// @public
+export type FitOptions = {
+    readonly margin?: number | undefined;
+};
+
+// @public
 export const forceLayout: LayoutAlgorithm<ForceOptions>;
 
 // @public
@@ -327,6 +343,7 @@ export type LayoutRequest<O> = {
     readonly seed?: number;
     readonly fontHash?: string;
     readonly post?: readonly PostPassId[];
+    readonly fit?: FitOptions;
     readonly overlap?: OverlapOptions;
     readonly measure?: LayoutCtx["measure"];
 };
@@ -403,7 +420,7 @@ export type PackingOptions = {
 };
 
 // @public
-export type PostPassId = "pins" | "constraints" | "overlap" | "snap";
+export type PostPassId = "pins" | "constraints" | "overlap" | "fit" | "snap";
 
 // @public
 export const radialLayout: LayoutAlgorithm<RadialOptions>;
@@ -444,6 +461,9 @@ export function removeOverlap(input: LayoutInput, boxes: Boxes, options?: Overla
 
 // @public
 export type Result<T, E = LayoutError> = Ok<T> | Err<E>;
+
+// @public
+export function safeAreaOf(frame: Box, options?: FitOptions): Box;
 
 // @public
 export type Scorecard = {

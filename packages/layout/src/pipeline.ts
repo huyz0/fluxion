@@ -8,7 +8,7 @@ import { applyConstraints, constraintProblem } from './constraints.js';
 import { err, type LayoutError, ok, type Result } from './errors.js';
 import { movedPercent, reconcile } from './incremental.js';
 import { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
-import { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
+import { applyPins, type Boxes, type FitOptions, fitBoxes, type PostPassId, snapBoxes } from './passes.js';
 import { createRng } from './rng.js';
 import { bendCount, crossingCount } from './scorecard.js';
 import type { LaidOut, LayoutAlgorithm, LayoutCtx, LayoutInput, LayoutNode } from './types.js';
@@ -29,15 +29,19 @@ export type LayoutRequest<O> = {
   readonly seed?: number;
   /** A hash of the fonts the sizes in `input` were measured with; part of the fingerprint (default empty: not measured). */
   readonly fontHash?: string;
-  /** The post-passes to run, always in the order pins, constraints, overlap, snap (default all four). */
+  /** The post-passes to run, always in the order pins, constraints, overlap, fit, snap (default pins, constraints, overlap and snap). */
   readonly post?: readonly PostPassId[];
+  /** Options of the fit pass. */
+  readonly fit?: FitOptions;
   /** Options of the overlap pass. */
   readonly overlap?: OverlapOptions;
   /** Sizes text for algorithms that need it; without it a call to `measure` throws, which the pipeline reports as `LAYOUT_FAILED`. */
   readonly measure?: LayoutCtx['measure'];
 };
 
-const ORDER: readonly PostPassId[] = ['pins', 'constraints', 'overlap', 'snap'];
+const ORDER: readonly PostPassId[] = ['pins', 'constraints', 'overlap', 'fit', 'snap'];
+/** The post-passes of a request that names none: all but `fit`, which only a caller that asks for it wants. */
+const DEFAULT_POST: readonly PostPassId[] = ['pins', 'constraints', 'overlap', 'snap'];
 const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const fail = (code: LayoutError['code'], message: string) => err<LayoutError>({ code, message });
@@ -105,7 +109,7 @@ function canonicalJson(value: unknown): string {
 const hex = (bytes: Uint8Array): string => Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 
 /** The post-passes to run, in pipeline order. */
-const passesOf = (post: readonly PostPassId[] | undefined): PostPassId[] => ORDER.filter((p) => (post ?? ORDER).includes(p));
+const passesOf = (post: readonly PostPassId[] | undefined): PostPassId[] => ORDER.filter((p) => (post ?? DEFAULT_POST).includes(p));
 
 const NO_MEASURER: LayoutCtx['measure'] = {
   measure: () => {
@@ -139,7 +143,7 @@ function prepare<O>(req: LayoutRequest<O>): Result<Prepared<O>> {
       options: options.value,
       seed: req.seed ?? 0,
       input,
-      post: passes.map((p) => (p === 'overlap' ? { pass: p, ...req.overlap } : { pass: p })),
+      post: passes.map((p) => (p === 'overlap' ? { pass: p, ...req.overlap } : p === 'fit' ? { pass: p, ...req.fit } : { pass: p })),
       fontHash: req.fontHash ?? '',
     };
     return ok({ input, options: options.value, passes, fingerprint: hex(sha256Hash128.hash128(canonicalJson(request))) });
@@ -149,11 +153,12 @@ function prepare<O>(req: LayoutRequest<O>): Result<Prepared<O>> {
 }
 
 /** The boxes after the post-passes. */
-function afterPasses(input: LayoutInput, boxes: Boxes, passes: readonly PostPassId[], overlap: OverlapOptions | undefined): Boxes {
+function afterPasses(input: LayoutInput, boxes: Boxes, passes: readonly PostPassId[], req: Pick<LayoutRequest<unknown>, 'overlap' | 'fit'>): Boxes {
   let out = boxes;
   if (passes.includes('pins')) out = applyPins(input, out);
   if (passes.includes('constraints')) out = applyConstraints(input, out);
-  if (passes.includes('overlap')) out = removeOverlap(input, out, overlap);
+  if (passes.includes('overlap')) out = removeOverlap(input, out, req.overlap);
+  if (passes.includes('fit')) out = fitBoxes(input, out, req.fit);
   if (passes.includes('snap')) out = snapBoxes(input, out);
   return out;
 }
@@ -200,7 +205,7 @@ function execute<O>(req: LayoutRequest<O>, prepared: Prepared<O>): Result<LaidOu
   if (missing) return fail('LAYOUT_FAILED', missing);
   // a full run is moved back to where the unchanged nodes were; an algorithm that warm-starts has done that itself (ADR-0046)
   const kept = req.algorithm.capabilities.incremental ? boxes : reconcile(input, boxes);
-  const laid = afterPasses(input, kept, passes, req.overlap);
+  const laid = afterPasses(input, kept, passes, req);
   return ok(
     frozen({
       boxes: laid,

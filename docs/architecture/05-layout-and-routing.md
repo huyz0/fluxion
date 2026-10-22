@@ -148,7 +148,7 @@ stays as designed above for the milestones that add it (constraints and `increme
 
 Post-passes: **pins** (least-squares fit to pins, then pinned nodes fixed), **constraints**
 (align/order/within; Cassowary via `@lume/kiwi` is reserved for R3+), **overlap** (M13: an own two-stage sweep, ADR-0034, the
-FR-LAY-004 guarantee; VPSC from WebCola joins with the constraints in M17), **snap** (0.5 px or grid), **fit** (FR-LAY-012).
+FR-LAY-004 guarantee; VPSC from WebCola joins with the constraints in M17), **snap** (0.5 px or grid), **fit** (FR-LAY-012, M17: opt-in, before snap; the unpinned boxes are scaled down together, never up, and moved the least amount into the safe area, the frame inset by `margin`, default 5% of its smaller side; pinned boxes stay, so a hand-placed shape is not fitted (M17.31); the `fit` layout separates overlaps with gaps wide enough to stay 1 px once scaled, then fits; it is what the editor's "Fit content to screen" runs on the whole screen).
 
 | Router id | Algorithm | Notes |
 |---|---|---|

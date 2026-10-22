@@ -33,6 +33,7 @@ describe('studio bootstrap (FR-EDT-001, ADR-0017)', () => {
     const { core } = opened.value;
     expect(core.registries.layouts.list().map(([id]) => id)).toEqual([
       'circular',
+      'fit',
       'force',
       'grid',
       'layered',

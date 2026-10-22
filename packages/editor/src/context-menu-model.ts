@@ -35,6 +35,7 @@ const ARRANGE = [
   ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.selection.${n}`),
   'layout.arrange.container',
   'layout.tidy',
+  'layout.fit',
 ];
 
 /** The commands of each menu, in order. */
@@ -51,7 +52,7 @@ const MENUS: { readonly [T in MenuTarget]: readonly string[] } = {
     // the Arrange lines (M8.26)
     ...ARRANGE,
   ],
-  screen: ['clipboard.paste', 'selection.all', 'camera.fitScreen', ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.screen.${n}`)],
+  screen: ['clipboard.paste', 'selection.all', 'camera.fitScreen', ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.screen.${n}`), 'layout.tidy', 'layout.fit'],
   canvas: ['clipboard.paste', 'camera.fitScreen', 'camera.zoom100'],
 };
 

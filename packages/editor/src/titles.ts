@@ -27,6 +27,7 @@ export const COMMAND_MESSAGES: Readonly<Record<string, MessageDescriptor>> = {
   'layout.arrange.selection.stack': msg({ id: 'command.layout.arrange.selection.stack', message: 'Arrange the selection (stack)' }),
   'layout.arrange.container': msg({ id: 'command.layout.arrange.container', message: 'Arrange the container' }),
   'layout.tidy': msg({ id: 'command.layout.tidy', message: 'Tidy up' }),
+  'layout.fit': msg({ id: 'command.layout.fit', message: 'Fit content to screen' }),
   'selection.align.left': msg({ id: 'command.selection.align.left', message: 'Align left' }),
   'selection.align.center': msg({ id: 'command.selection.align.center', message: 'Align centre' }),
   'selection.align.right': msg({ id: 'command.selection.align.right', message: 'Align right' }),

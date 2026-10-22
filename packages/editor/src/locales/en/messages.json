@@ -816,6 +816,12 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.layout.fit": {
+    "message": "Fit content to screen",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.layout.tidy": {
     "message": "Tidy up",
     "origin": [

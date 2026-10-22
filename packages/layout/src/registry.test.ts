@@ -23,6 +23,7 @@ describe('layout registry (FR-LAY-001)', () => {
     expect(registerLayout(r, ring, 'test')).toEqual({ ok: true });
     expect(listLayouts(r).map((a) => [a.id, a.version])).toEqual([
       ['circular', '1'],
+      ['fit', '1'],
       ['force', '1'],
       ['grid', '1'],
       ['layered', '1'],
@@ -37,7 +38,7 @@ describe('layout registry (FR-LAY-001)', () => {
       ['timeline', '1'],
       ['tree', '1'],
     ]);
-    expect(listLayouts(r)[10]?.schema.safeParse({ radius: 0 }).success).toBe(false);
+    expect(listLayouts(r)[11]?.schema.safeParse({ radius: 0 }).success).toBe(false);
   });
 
   it('FR-LAY-001: a value without an options schema, capabilities, run or parseOptions is refused at registration', () => {

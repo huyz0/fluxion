@@ -50,4 +50,31 @@ test.describe('arranging a selection with a layout', { tag: '@desktop' }, () => 
     await editor.toolbarButton('Undo').click();
     expect((await boxes(editor)).map((b) => [Math.round(b.x), Math.round(b.y)])).toEqual(before.map((b) => [Math.round(b.x), Math.round(b.y)]));
   });
+  test('FR-LAY-012: Fit content to screen from the context menu puts shapes that reach the screen edges inside its safe area, and one undo brings them back', async ({
+    page,
+  }) => {
+    const editor = new EditorPage(page);
+    await editor.open('new');
+    // one shape at the left edge, one reaching the right edge: both in the 5 % margin, too far apart to fit without scaling
+    for (const [i, fx] of [0.005, 0.875].entries()) await shapeAt(page, editor, fx, i + 1);
+    const before = await boxes(editor);
+    const on = await onScreen(editor, 0.5, 0.8);
+    await page.mouse.click(on.x, on.y, { button: 'right' });
+    await page.getByRole('menuitem', { name: 'Fit content to screen' }).click();
+    // the safe area: the screen inset by 5 % of its smaller side (the height of the 16:9 screen)
+    const screen = await editor.screenBox();
+    const margin = screen.height * 0.05;
+    const inside = (b: Box): boolean =>
+      b.x >= screen.x + margin - 1 &&
+      b.y >= screen.y + margin - 1 &&
+      b.x + b.width <= screen.x + screen.width - margin + 1 &&
+      b.y + b.height <= screen.y + screen.height - margin + 1;
+    await expect.poll(async () => (await boxes(editor)).every(inside), { message: 'the fitted shapes are inside the safe area' }).toBe(true);
+    // scaled down together: both shapes keep one size
+    const after = await boxes(editor);
+    expect(Math.round((after[0] as Box).width)).toBe(Math.round((after[1] as Box).width));
+    expect((after[0] as Box).width).toBeLessThan((before[0] as Box).width);
+    await editor.toolbarButton('Undo').click();
+    expect((await boxes(editor)).map((b) => [Math.round(b.x), Math.round(b.width)])).toEqual(before.map((b) => [Math.round(b.x), Math.round(b.width)]));
+  });
 });

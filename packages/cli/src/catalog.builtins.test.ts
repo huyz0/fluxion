@@ -12,6 +12,7 @@ describe('the built-in catalog (FR-AI-002)', () => {
     expect(catalog.connectors.map((c) => c.id)).toEqual(['curved', 'orthogonal', 'polyline', 'straight']);
     expect(catalog.layouts.map((l) => l.id)).toEqual([
       'circular',
+      'fit',
       'force',
       'grid',
       'layered',

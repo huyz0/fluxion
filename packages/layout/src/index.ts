@@ -5,6 +5,7 @@
  */
 import type { Registry } from '@fluxion/core';
 import { circularLayout } from './circular.js';
+import { fitLayout } from './fit.js';
 import { forceLayout } from './force.js';
 import { gridLayout } from './grid.js';
 import { layeredLayout } from './layered.js';
@@ -38,6 +39,7 @@ export {
 export { type CircularOptions, circularLayout } from './circular.js';
 export { applyConstraints } from './constraints.js';
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
+export { type FitLayoutOptions, fitLayout } from './fit.js';
 export { type ForceOptions, forceLayout } from './force.js';
 export { type GridOptions, gridLayout } from './grid.js';
 export { movedPercent, reconcile } from './incremental.js';
@@ -46,7 +48,7 @@ export { type MindmapOptions, mindmapLayout } from './mindmap.js';
 export { layoutNested, type NestedOptions, type NestedRunner } from './nested.js';
 export { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
 export { type PackingOptions, packingLayout } from './packing.js';
-export { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
+export { applyPins, type Boxes, type FitOptions, fitBoxes, type PostPassId, safeAreaOf, snapBoxes } from './passes.js';
 export { createLayoutCache, fingerprintOf, type LayoutCache, type LayoutRequest, layoutSync } from './pipeline.js';
 export { type RadialOptions, radialLayout } from './radial.js';
 export { layoutOptionsJsonSchema, listLayouts, type RegisterLayoutResult, registerLayout } from './registry.js';
@@ -96,6 +98,7 @@ export const builtInLayouts: readonly LayoutAlgorithm<never>[] = [
   timelineLayout,
   swimlaneLayout,
   tidyLayout,
+  fitLayout,
 ] as unknown as readonly LayoutAlgorithm<never>[];
 
 /**

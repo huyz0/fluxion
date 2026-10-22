@@ -18,14 +18,16 @@ export const LAYOUT_CHOICES = [
  * @public
  */
 export function registeredLayoutIds(entries: readonly (readonly [string, unknown])[]): readonly string[] {
-  // `tidy` has its own command, "Tidy up"
-  const builtIn = new Set<string>([...LAYOUT_CHOICES.map(([name]) => name), TIDY]);
+  // `tidy` and `fit` have commands of their own, "Tidy up" and "Fit to screen"
+  const builtIn = new Set<string>([...LAYOUT_CHOICES.map(([name]) => name), TIDY, FIT]);
   const ids = entries.flatMap(([key, value]) => (typeof (value as { id?: unknown } | null)?.id === 'string' && !builtIn.has(key) ? [key] : []));
   return [...new Set(ids)].sort();
 }
 
 /** The registered name of the minimal-movement cleanup (FR-LAY-011). */
 const TIDY = 'tidy';
+/** The registered name of the fit into the safe area (FR-LAY-012). */
+const FIT = 'fit';
 
 /** The kinds of element that hold others and may carry a layout of their own. */
 const CONTAINER_KINDS = new Set(['group', 'frame']);
@@ -180,4 +182,15 @@ export function arrangeContainer(ctx: ArrangeHost): boolean {
  */
 export function tidyUp(ctx: ArrangeHost): boolean {
   return ctx.tools.ctx.session.selection.get().length > 1 ? arrangeSelected(ctx, TIDY) : arrangeScreen(ctx, TIDY);
+}
+
+/**
+ * Fit to screen (FR-LAY-012): scale the shown screen's content down together and move it into the screen's safe area; content already inside
+ * stays, and so does a pinned (hand-placed) shape (M17.31). Always the whole screen, whatever is selected. False when there is no screen or the
+ * document refuses.
+ *
+ * @public
+ */
+export function fitToScreen(ctx: ArrangeHost): boolean {
+  return arrangeScreen(ctx, FIT);
 }

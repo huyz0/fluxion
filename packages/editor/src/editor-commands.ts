@@ -11,7 +11,7 @@ import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js'
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
 import { exitGroup, groupSelection, ungroupSelection } from './group-edit.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
-import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, LAYOUT_CHOICES, tidyUp } from './layout-arrange.js';
+import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, fitToScreen, LAYOUT_CHOICES, tidyUp } from './layout-arrange.js';
 import { selectSame } from './select-same.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-tool.js';
 import { editSelectedText } from './text-edit.js';
@@ -242,6 +242,7 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   ]),
   { id: 'layout.arrange.container', title: 'Arrange the container', run: (ctx) => selectIdle(ctx) && arrangeContainer(ctx) },
   { id: 'layout.tidy', title: 'Tidy up', run: (ctx) => selectIdle(ctx) && tidyUp(ctx) },
+  { id: 'layout.fit', title: 'Fit content to screen', run: (ctx) => selectIdle(ctx) && fitToScreen(ctx) },
   {
     id: 'tool.use',
     title: 'Use a tool',

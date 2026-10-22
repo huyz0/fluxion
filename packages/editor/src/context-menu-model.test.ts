@@ -49,6 +49,7 @@ describe('context menu model (FR-EDT-013)', () => {
       'Arrange the selection (stack)',
       'Arrange the container',
       'Tidy up',
+      'Fit content to screen',
     ]);
     expect(titles('screen')).toEqual([
       'Paste',
@@ -57,6 +58,8 @@ describe('context menu model (FR-EDT-013)', () => {
       'Arrange the screen (layered)',
       'Arrange the screen (grid)',
       'Arrange the screen (stack)',
+      'Tidy up',
+      'Fit content to screen',
     ]);
     expect(titles('canvas')).toEqual(['Paste', 'Zoom to fit the screen', 'Zoom to 100 %']);
     expect(menuItems('screen', EDITOR_COMMANDS).map((i) => i.command)).toEqual([
@@ -66,6 +69,8 @@ describe('context menu model (FR-EDT-013)', () => {
       'layout.arrange.screen.layered',
       'layout.arrange.screen.grid',
       'layout.arrange.screen.stack',
+      'layout.tidy',
+      'layout.fit',
     ]);
     expect(
       titles(

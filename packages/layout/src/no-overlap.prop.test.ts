@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyPins,
   circularLayout,
+  fitLayout,
   forceLayout,
   gridLayout,
   layeredLayout,
@@ -66,6 +67,7 @@ const ALGORITHMS: ReadonlyArray<readonly [string, LayoutAlgorithm<never>, fc.Arb
   ['timeline', timelineLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['swimlane', swimlaneLayout as never, fc.record({ spacing: fc.constantFrom('compact', 'comfortable', 'spacious') })],
   ['tidy', tidyLayout as never, fc.record({ grid: fc.constantFrom(0, 8), tolerance: fc.integer({ min: 0, max: 20 }) })],
+  ['fit', fitLayout as never, fc.record({ margin: fc.integer({ min: 0, max: 60 }) })],
 ];
 
 const graph = fc.integer({ min: 1, max: 14 }).chain((count) =>

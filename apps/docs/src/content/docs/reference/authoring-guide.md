@@ -105,6 +105,7 @@ screens:
 ### Layouts
 
 - `circular` (core): Nodes evenly spaced on a circle, one circle per partition hint, for cycles and peer groups.; options: spacing, nodeGap, rankGap, padding
+- `fit` (core): Fit to screen: keeps the arrangement, scaling it down and moving it into the safe area inside the screen edge.; options: margin
 - `force` (core): Force-directed (seeded): linked boxes pull together and all others push apart, for networks without a direction.; options: iterations, spacing, nodeGap, padding
 - `grid` (core): Boxes in rows and columns, in reading order.; options: columns, gap, align, padding
 - `layered` (core): Flow layout by layers along the edges, for diagrams with direction.; options: direction, spacing, nodeGap, rankGap, padding

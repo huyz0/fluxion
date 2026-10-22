@@ -146,6 +146,7 @@ describe('grid layout (FR-LAY-002)', () => {
     expect(registerBuiltInLayouts(layouts).ok).toBe(true);
     expect(layouts.list().map(([id]) => id)).toEqual([
       'circular',
+      'fit',
       'force',
       'grid',
       'layered',
@@ -165,6 +166,7 @@ describe('grid layout (FR-LAY-002)', () => {
     expect(registerBuiltInLayouts(taken).ok).toBe(false);
     expect(taken.list().map(([id]) => id)).toEqual([
       'circular',
+      'fit',
       'force',
       'grid',
       'layered',

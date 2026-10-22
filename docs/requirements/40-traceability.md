@@ -129,7 +129,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LAY-009 | M | R4 | M22 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-010 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.live-container.spec.ts` +5 |
 | FR-LAY-011 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.arrange-selection.spec.ts`, `packages/layout/src/tidy.test.ts` |
-| FR-LAY-012 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
+| FR-LAY-012 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.arrange-selection.spec.ts`, `packages/layout/src/fit.test.ts` |
 | FR-LAY-013 | S | R7 | M29 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-014 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-ARR-001 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.group-edit.spec.ts` +6 |
