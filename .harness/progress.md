@@ -2068,3 +2068,6 @@ Nightly perf judges tree/radial/mindmap-500; baselines still local, to be re-rec
 
 ## M17.42
 00a7d698. m13 benchLeg under CI calls `calibratedVerdict` (shared with scripts/ci/perf-baseline.mjs) against perf-baseline.calibrated.json; local run unchanged; m17 500-node legs read no baseline. Harness case + mutant (CI branch disabled) fails it. Reviewer pass round 2 (nit on comment fixed).
+
+## M17.25 (part 2)
+Calibrated baselines recorded from nightly 39861908556 perf job (layered-100 1.436, layered-500 6.924, tree-500 0.910, radial-500 0.969, mindmap-500 0.845). M17.38 done. Next: dispatch nightlies; three consecutive layered-500 readings within 15 % close M17.25.
