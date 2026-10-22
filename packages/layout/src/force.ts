@@ -5,7 +5,9 @@
 // (no `Math.hypot`, `sin` or `cos`, which engines may round differently), so the same graph and seed give the same boxes on every host;
 // positions are rounded to 0.5 px after every step. Pinned nodes push and pull but never move: when there are any, the loose nodes start in
 // a square around the pins' middle and the result is not moved into the frame, so links to a pin stay short (review M17.5 F1); without
-// pins the result is moved to start `padding` inside the frame. Boxes may still touch: the pipeline's overlap pass separates
+// pins the result is moved to start `padding` inside the frame. Given `previous` (incremental mode, ADR-0046), it warm-starts: every node
+// starts where it was (a new one at the mean of its placed neighbours), only the changed nodes and their neighbours move, for a third of
+// the iterations at a quarter of the ideal edge length, and the result stays in the previous space. Boxes may still touch: the pipeline's overlap pass separates
 // them. All arranges in the studio already run in a worker (arrange-port.ts), which covers large graphs; the layout itself runs in either.
 import type { Box } from '@fluxion/geometry';
 import { z } from 'zod';
@@ -107,15 +109,69 @@ function linksOf(input: LayoutInput, index: ReadonlyMap<string, number>): (reado
     });
 }
 
-/** Each loose node moved along its displacement by at most `temperature`, onto the 0.5 px grid; pinned nodes stay. */
-function move(nodes: readonly LayoutNode[], [x, y]: [Float64Array, Float64Array], [dx, dy]: [Float64Array, Float64Array], temperature: number): void {
-  for (const [i, n] of nodes.entries()) {
+/** Each node not `held` moved along its displacement by at most `temperature`, onto the 0.5 px grid. */
+function move(held: readonly boolean[], [x, y]: [Float64Array, Float64Array], [dx, dy]: [Float64Array, Float64Array], temperature: number): void {
+  for (const [i, still] of held.entries()) {
     const d = length(dx[i] as number, dy[i] as number);
-    if (n.pinned || d === 0) continue;
+    if (still || d === 0) continue;
     const by = Math.min(d, temperature) / d;
     x[i] = quantize((x[i] as number) + (dx[i] as number) * by);
     y[i] = quantize((y[i] as number) + (dy[i] as number) * by);
   }
+}
+
+/** The warm start (ADR-0046): previous centres, a new node at the mean of its placed neighbours (else of every placed node). */
+function warmStart(
+  nodes: readonly LayoutNode[],
+  previous: { readonly [id: string]: Box },
+  links: readonly (readonly [number, number])[],
+): [Float64Array, Float64Array] {
+  const at = nodes.map((n) => {
+    const p = n.pinned ? n.box : Object.hasOwn(previous, n.id) ? previous[n.id] : undefined;
+    return p ? ([p.x + p.w / 2, p.y + p.h / 2] as const) : undefined;
+  });
+  const mean = (points: ReadonlyArray<readonly [number, number] | undefined>): readonly [number, number] => {
+    const known = points.filter((p): p is readonly [number, number] => p !== undefined);
+    const n = Math.max(1, known.length);
+    return [known.reduce((s, p) => s + p[0], 0) / n, known.reduce((s, p) => s + p[1], 0) / n];
+  };
+  const everywhere = mean(at);
+  const placed = at.map((p, i) => {
+    if (p) return p;
+    const near = links.flatMap(([a, b]) => (a === i ? [at[b]] : b === i ? [at[a]] : [])).filter((q) => q !== undefined);
+    return near.length ? mean(near) : everywhere;
+  });
+  return [new Float64Array(placed.map((p) => quantize(p[0]))), new Float64Array(placed.map((p) => quantize(p[1])))];
+}
+
+/** Which nodes may not move in a warm start: pinned ones, and unchanged ones with no changed or new neighbour. */
+function heldWarm(nodes: readonly LayoutNode[], input: LayoutInput, links: readonly (readonly [number, number])[]): boolean[] {
+  const previous = input.previous ?? {};
+  const changed = new Set(input.changed ?? []);
+  const loose = nodes.map((n) => !n.pinned && (changed.has(n.id) || !Object.hasOwn(previous, n.id)));
+  const free = [...loose];
+  for (const [a, b] of links) {
+    if (loose[a]) free[b] = !(nodes[b] as LayoutNode).pinned;
+    if (loose[b]) free[a] = !(nodes[a] as LayoutNode).pinned;
+  }
+  return free.map((f) => !f);
+}
+
+/** An incremental run: warm start, a third of the iterations, cooler, in the previous space. */
+function runWarm(
+  nodes: readonly LayoutNode[],
+  input: LayoutInput,
+  links: readonly (readonly [number, number])[],
+  [k, steps]: readonly [number, number],
+): LayoutOutput {
+  const [x, y] = warmStart(nodes, input.previous ?? {}, links);
+  const held = heldWarm(nodes, input, links);
+  for (let step = 0; step < steps; step++) move(held, [x, y], forces(x, y, links, k), (k / 4) * (1 - step / steps));
+  return {
+    boxes: Object.fromEntries(
+      nodes.map((n, i) => [n.id, n.pinned ? n.box : { x: (x[i] as number) - n.box.w / 2, y: (y[i] as number) - n.box.h / 2, w: n.box.w, h: n.box.h }]),
+    ),
+  };
 }
 
 function run(input: LayoutInput, o: ForceOptions, ctx?: LayoutCtx): LayoutOutput {
@@ -126,10 +182,12 @@ function run(input: LayoutInput, o: ForceOptions, ctx?: LayoutCtx): LayoutOutput
   const links = linksOf(input, index);
   // at least 1 px: boxes of no size with no gap would make it 0 and the attraction 0 / 0 (review M17.5 F2)
   const k = Math.max(1, nodes.reduce((sum, n) => sum + length(n.box.w, n.box.h), 0) / nodes.length + (o.nodeGap ?? GAPS[o.spacing][0]));
+  if (input.previous) return runWarm(nodes, input, links, [k, Math.ceil(o.iterations / 3)]);
   const side = k * Math.sqrt(nodes.length);
   const pins = nodes.filter((n) => n.pinned);
   const [x, y] = start(nodes, pins, side, rng);
-  for (let step = 0; step < o.iterations; step++) move(nodes, [x, y], forces(x, y, links, k), (side / 10) * (1 - step / o.iterations));
+  const held = nodes.map((n) => n.pinned === true);
+  for (let step = 0; step < o.iterations; step++) move(held, [x, y], forces(x, y, links, k), (side / 10) * (1 - step / o.iterations));
   const placed = new Map<string, Box>(
     nodes.map((n, i) => [n.id, { x: (x[i] as number) - n.box.w / 2, y: (y[i] as number) - n.box.h / 2, w: n.box.w, h: n.box.h }]),
   );
@@ -149,7 +207,7 @@ export const forceLayout: LayoutAlgorithm<ForceOptions> = {
   describe: 'Force-directed (seeded): linked boxes pull together and all others push apart, for networks without a direction.',
   version: '1',
   schema,
-  capabilities: { pins: true, compound: false, runsIn: 'either' },
+  capabilities: { pins: true, compound: false, incremental: true, runsIn: 'either' },
   parseOptions(raw: unknown): OptionsResult<ForceOptions> {
     const r = schema.safeParse(raw);
     if (r.success) return { ok: true, value: r.data };

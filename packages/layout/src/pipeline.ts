@@ -6,6 +6,7 @@ import { sha256Hash128 } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { applyConstraints, constraintProblem } from './constraints.js';
 import { err, type LayoutError, ok, type Result } from './errors.js';
+import { movedPercent, reconcile } from './incremental.js';
 import { type OverlapOptions, overlapCount, removeOverlap } from './overlap.js';
 import { applyPins, type Boxes, type PostPassId, snapBoxes } from './passes.js';
 import { createRng } from './rng.js';
@@ -60,7 +61,21 @@ function inputProblem(input: LayoutInput): string | undefined {
     if (!finite(n.order)) return `the order of node "${n.id}" is not finite`;
   }
   const edge = (input.edges ?? []).find((e) => !finite(e.order));
-  return edge ? `the order of edge "${edge.id}" is not finite` : constraintProblem(input.constraints ?? []);
+  if (edge) return `the order of edge "${edge.id}" is not finite`;
+  return incrementalProblem(input) ?? constraintProblem(input.constraints ?? []);
+}
+
+/** Why `previous` or `changed` cannot be read, or undefined (ADR-0046). */
+function incrementalProblem(input: LayoutInput): string | undefined {
+  if (input.changed !== undefined && !(Array.isArray(input.changed) && input.changed.every((id) => typeof id === 'string')))
+    return 'changed is not a list of node ids';
+  if (input.previous === undefined) return undefined;
+  if (typeof input.previous !== 'object' || input.previous === null) return 'previous is not a map of boxes';
+  for (const [id, box] of Object.entries(input.previous)) {
+    const problem = typeof box === 'object' && box !== null ? boxProblem(box) : 'is not a box';
+    if (problem) return `the previous box of node "${id}" ${problem}`;
+  }
+  return undefined;
 }
 
 /** The input in canonical order: nodes and edges by (order, id). Values are untouched (ADR-0033). */
@@ -183,11 +198,19 @@ function execute<O>(req: LayoutRequest<O>, prepared: Prepared<O>): Result<LaidOu
   }
   const missing = complete(input.nodes, boxes);
   if (missing) return fail('LAYOUT_FAILED', missing);
-  const laid = afterPasses(input, boxes, passes, req.overlap);
+  // a full run is moved back to where the unchanged nodes were; an algorithm that warm-starts has done that itself (ADR-0046)
+  const kept = req.algorithm.capabilities.incremental ? boxes : reconcile(input, boxes);
+  const laid = afterPasses(input, kept, passes, req.overlap);
   return ok(
     frozen({
       boxes: laid,
-      metrics: { overlaps: overlapCount(laid), crossings: crossingCount(input.edges ?? [], laid), bends: bendCount(input.edges ?? [], laid), ms: 0 },
+      metrics: {
+        overlaps: overlapCount(laid),
+        crossings: crossingCount(input.edges ?? [], laid),
+        bends: bendCount(input.edges ?? [], laid),
+        ms: 0,
+        ...(input.previous ? { moved: movedPercent(input.previous, laid) } : {}),
+      },
       fingerprint,
     }),
   );

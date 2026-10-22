@@ -73,6 +73,10 @@ export type LayoutInput = {
   readonly scope?: LayoutScope;
   /** Relations the `constraints` post-pass keeps, applied in this order (ADR-0045); none when omitted. */
   readonly constraints?: readonly LayoutConstraint[];
+  /** Incremental mode (ADR-0046): the result of the last run, by node id; the run keeps the unchanged nodes where they were as far as it can. */
+  readonly previous?: { readonly [id: string]: Box };
+  /** Incremental mode: the nodes added, removed or resized since `previous` was laid out. */
+  readonly changed?: readonly string[];
 };
 
 /**
@@ -154,6 +158,8 @@ export type LayoutMetrics = {
   readonly bends: number;
   /** Milliseconds the run took, 0 when no clock is injected. */
   readonly ms: number;
+  /** Incremental runs only: the share of the nodes in both `previous` and the result whose centre moved by more than 0.5 px, in percent. */
+  readonly moved?: number;
 };
 
 /**
@@ -204,6 +210,8 @@ export type LayoutCapabilities = {
   readonly pins: boolean;
   /** Lays out nested containers itself. */
   readonly compound: boolean;
+  /** Warm-starts from `previous` itself (ADR-0046), so the pipeline does not reconcile its result. */
+  readonly incremental?: boolean;
   /** Constraint types it honours itself (`align`, `order`, ...); the `constraints` post-pass applies them to every algorithm's result. */
   readonly constraints?: readonly string[];
   /** Where it may run: `main` thread only, `worker` only, or `either`. */

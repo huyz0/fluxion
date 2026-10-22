@@ -196,6 +196,7 @@ export type LayoutCache = {
 export type LayoutCapabilities = {
     readonly pins: boolean;
     readonly compound: boolean;
+    readonly incremental?: boolean;
     readonly constraints?: readonly string[];
     readonly runsIn: "main" | "worker" | "either";
 };
@@ -259,6 +260,10 @@ export type LayoutInput = {
     readonly edges?: readonly LayoutEdge[];
     readonly scope?: LayoutScope;
     readonly constraints?: readonly LayoutConstraint[];
+    readonly previous?: {
+        readonly [id: string]: Box;
+    };
+    readonly changed?: readonly string[];
 };
 
 // @public
@@ -281,6 +286,7 @@ export type LayoutMetrics = {
     readonly crossings: number;
     readonly bends: number;
     readonly ms: number;
+    readonly moved?: number;
 };
 
 // @public
@@ -341,6 +347,9 @@ export type MindmapOptions = {
     readonly rankGap?: number | undefined;
     readonly padding: number;
 };
+
+// @public
+export function movedPercent(previous: Boxes, boxes: Boxes): number;
 
 // @public
 export type NestedOptions = {
@@ -406,6 +415,9 @@ export type RadialOptions = {
 
 // @public
 export type Reader = Pick<Store, "members" | "get" | "subscribe">;
+
+// @public
+export function reconcile(input: LayoutInput, boxes: Boxes): Boxes;
 
 // @public
 export function registerArrangeCommand(commands: Registry<string, AnyCommand>, layouts: Registry<string, unknown>): ReturnType<Registry<string, AnyCommand>["register"]>;

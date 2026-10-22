@@ -38,6 +38,7 @@ export { applyConstraints } from './constraints.js';
 export { type Err, err, type LayoutError, type LayoutErrorCode, type Ok, ok, type Result } from './errors.js';
 export { type ForceOptions, forceLayout } from './force.js';
 export { type GridOptions, gridLayout } from './grid.js';
+export { movedPercent, reconcile } from './incremental.js';
 export { type LayeredOptions, layeredLayout } from './layered.js';
 export { type MindmapOptions, mindmapLayout } from './mindmap.js';
 export { layoutNested, type NestedOptions, type NestedRunner } from './nested.js';
