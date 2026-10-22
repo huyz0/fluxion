@@ -70,9 +70,9 @@ test.describe('arranging a selection with a layout', { tag: '@desktop' }, () => 
       b.x + b.width <= screen.x + screen.width - margin + 1 &&
       b.y + b.height <= screen.y + screen.height - margin + 1;
     await expect.poll(async () => (await boxes(editor)).every(inside), { message: 'the fitted shapes are inside the safe area' }).toBe(true);
-    // scaled down together: both shapes keep one size
+    // scaled down together: both shapes keep one size (fit scales every box by one factor), measured as the browser lays out fractional positions (1 px)
     const after = await boxes(editor);
-    expect(Math.round((after[0] as Box).width)).toBe(Math.round((after[1] as Box).width));
+    expect(Math.abs((after[0] as Box).width - (after[1] as Box).width)).toBeLessThanOrEqual(1);
     expect((after[0] as Box).width).toBeLessThan((before[0] as Box).width);
     await editor.toolbarButton('Undo').click();
     expect((await boxes(editor)).map((b) => [Math.round(b.x), Math.round(b.width)])).toEqual(before.map((b) => [Math.round(b.x), Math.round(b.width)]));
