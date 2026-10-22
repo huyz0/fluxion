@@ -159,6 +159,9 @@ export type Camera = {
 };
 
 // @public
+export function canBeLive(target: PickTarget): boolean;
+
+// @public
 export type CanvasSize = {
     readonly w: number;
     readonly h: number;
@@ -172,6 +175,9 @@ export type CatalogEntry = {
 
 // @public
 export function chordOf(k: KeyPress): string;
+
+// @public
+export function chosenLayout(target: PickTarget): string;
 
 // @public
 export function clampZoom(z: number): number;
@@ -705,6 +711,18 @@ export type LayoutOptionsSectionProps = {
 };
 
 // @public
+export function LayoutPickerSection(props: LayoutPickerSectionProps): ReactNode;
+
+// @public
+export type LayoutPickerSectionProps = {
+    readonly store: Store;
+    readonly session: Session;
+    readonly execute: Execute;
+    readonly screenId: string | undefined;
+    readonly choices: readonly string[];
+};
+
+// @public
 export type LayoutTarget = {
     readonly kind: "container" | "screen";
     readonly id: string;
@@ -1029,6 +1047,29 @@ export function penTool(): Tool;
 export const PICK_PX = 4;
 
 // @public
+export function pickLayout(execute: OptionWriter, target: PickTarget, at: {
+    readonly screenId: string;
+    readonly algorithm: string;
+}): boolean;
+
+// @public
+export type PickTarget = {
+    readonly kind: "container";
+    readonly id: string;
+    readonly spec?: WrittenLayoutSpec;
+} | {
+    readonly kind: "screen";
+    readonly id: string;
+    readonly spec?: WrittenLayoutSpec;
+} | {
+    readonly kind: "selection";
+    readonly ids: readonly string[];
+};
+
+// @public
+export function pickTarget(get: (id: string) => unknown, selection: readonly string[], screenId: string | undefined): PickTarget | undefined;
+
+// @public
 export function pinchCamera(start: Camera, from: readonly [Vec2, Vec2], to: readonly [Vec2, Vec2]): Camera;
 
 // @public
@@ -1204,6 +1245,9 @@ export function setLayoutOption(execute: OptionWriter, target: LayoutTarget, at:
     readonly key: string;
     readonly value: unknown;
 }): boolean;
+
+// @public
+export function setLive(execute: OptionWriter, target: PickTarget, live: boolean): boolean;
 
 // @public
 export type SettingsStore = {

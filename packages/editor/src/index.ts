@@ -141,6 +141,8 @@ export {
   type WrittenLayoutSpec,
 } from './layout-options.js';
 export { LayoutOptionsForm, LayoutOptionsSection, type LayoutOptionsSectionProps, type OptionsSchemaOf } from './layout-options-form.js';
+export { canBeLive, chosenLayout, type PickTarget, pickLayout, pickTarget, setLive } from './layout-picker.js';
+export { LayoutPickerSection, type LayoutPickerSectionProps } from './layout-picker-section.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
 export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';

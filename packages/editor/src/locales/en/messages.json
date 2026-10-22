@@ -264,6 +264,12 @@
       "packages/editor/src/navigator/rename-field.tsx"
     ]
   },
+  "E9xZK3": {
+    "message": "Screen layout",
+    "origin": [
+      "packages/editor/src/layout-picker-section.tsx"
+    ]
+  },
   "EGEvKg": {
     "message": "1 error: the canvas keeps its last good state.",
     "origin": [
@@ -316,6 +322,12 @@
     "message": "Zoom out",
     "origin": [
       "packages/editor/src/canvas.tsx"
+    ]
+  },
+  "GIofCc": {
+    "message": "Layout algorithm",
+    "origin": [
+      "packages/editor/src/layout-picker-section.tsx"
     ]
   },
   "GQDSBN": {
@@ -1262,10 +1274,22 @@
       "packages/editor/src/inspector.tsx"
     ]
   },
+  "rdU729": {
+    "message": "Layout",
+    "origin": [
+      "packages/editor/src/layout-picker-section.tsx"
+    ]
+  },
   "rvRcE_": {
     "message": "Use {family}",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "rwW2sS": {
+    "message": "Make live",
+    "origin": [
+      "packages/editor/src/layout-picker-section.tsx"
     ]
   },
   "s0fNwJ": {
@@ -1461,6 +1485,12 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "xynpjC": {
+    "message": "Arrange the selection",
+    "origin": [
+      "packages/editor/src/layout-picker-section.tsx"
+    ]
+  },
   "yTqatN": {
     "message": "Size of {0}",
     "origin": [
@@ -1485,6 +1515,12 @@
       "packages/editor/src/asset-dialog.tsx",
       "packages/editor/src/font-picker.tsx",
       "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "zMnKbN": {
+    "message": "Layout picker",
+    "origin": [
+      "packages/editor/src/layout-picker-section.tsx"
     ]
   }
 }

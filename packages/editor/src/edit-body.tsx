@@ -10,6 +10,7 @@ import { Canvas } from './canvas.js';
 import { type CanvasMenuInput, useCanvasMenu } from './canvas-menu.js';
 import { ImagePicker } from './image-picker.js';
 import type { EditorLayout } from './layout.js';
+import { LAYOUT_CHOICES, registeredLayoutIds } from './layout-arrange.js';
 import type { OptionsSchemaOf } from './layout-options-form.js';
 import { insertShape } from './library/library-insert.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
@@ -65,12 +66,13 @@ function leftTabsFor(props: EditBodyProps, insert: (defId: string) => void, onRe
 
 /** The inspector: the selection's fields, and the layout options form when the host gives the layouts' options schemas. */
 function inspectorFor(props: EditBodyProps): ReactNode {
-  const { store, session, execute, screenId, registries, layoutOptionsSchema } = props;
+  const { store, session, execute, screenId, registries, layoutOptionsSchema, sourceRegistries } = props;
+  const choices = [...LAYOUT_CHOICES.map(([name]) => name), ...registeredLayoutIds(sourceRegistries?.layouts.list() ?? [])];
   return (
     <Inspector
       session={session}
       fields={{ store, execute, shapeDefs: registries.shapeDefs }}
-      layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema }}
+      layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema, choices }}
     />
   );
 }
