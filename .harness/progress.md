@@ -2011,3 +2011,6 @@ DSL template screens (`template:`/`items:`/`options:`), per-screen built slugs, 
 
 ## M17.17
 Layout options form (inspector) from the host options schema; core screen.setLayout; templates rebuilt via ai.applyPatch. Review r1 fail (templates missing, test did not run layout) fixed; r2 pass. F2 -> M17.18, F4 -> M17.34, F5 (template spec on a group shows a refusing form) to fix next.
+
+## M17.35
+CI fix: ip-address 10.7.4 override (GHSA-rxp7-6hxx-x8q5), budget re-recorded, player-inline routing-chunk waits 15 s (macOS CI + parallel ladder flake). Review r1 pass.
