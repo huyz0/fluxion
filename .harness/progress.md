@@ -2080,3 +2080,6 @@ F8 -> M18 row 1a (checkpoint harness check), F10 -> M26 row 16b (editor API shri
 
 ## M17.43 (row)
 route-drag-200 47.0 fps on nightly 39865270597; local throttled A/B no regression (16.7 vs 16.7 mean fps). Row added (calibrate or fixed runner). M17.25 nightly 1/3: 7.576 units PASS. Reviewer pass round 2 (counting rule).
+
+## M17.25 (closed)
+Three consecutive nightlies (39865270597, 39867513339, 39868647195): layered-500 7.576 / 7.385 / 7.487 calibration units, spread 2.6 %, limit 7.963. Reviewer pass round 3 (run heads corrected).
