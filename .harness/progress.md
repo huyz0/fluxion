@@ -2083,3 +2083,6 @@ route-drag-200 47.0 fps on nightly 39865270597; local throttled A/B no regressio
 
 ## M17.25 (closed)
 Three consecutive nightlies (39865270597, 39867513339, 39868647195): layered-500 7.576 / 7.385 / 7.487 calibration units, spread 2.6 %, limit 7.963. Reviewer pass round 3 (run heads corrected).
+
+## M17.43 (handed off)
+route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchanged at 50. Reviewer pass round 1.
