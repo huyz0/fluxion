@@ -1,0 +1,28 @@
+flux: 1
+title: Smart templates
+theme: light
+uses: [basic]
+screens:
+  - id: delivery
+    title: Delivery as a process
+    template: process.basic
+    items: [Plan, Build, Review, Ship]
+    notes: |
+      Four steps in a row: the template builds the shapes and the arrows between them.
+  - id: balance
+    title: Where we stand
+    template: matrix.2x2
+    items:
+      - { label: Do first, detail: Urgent and important }
+      - Schedule
+      - Delegate
+      - Drop
+  - id: org
+    title: Who does what
+    template: hierarchy.org
+    items:
+      - label: Product
+        children:
+          - { label: Design, children: [Research, Visual] }
+          - Engineering
+    options: { colors: outline }

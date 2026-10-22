@@ -41,7 +41,7 @@ screens:
 
 - top: flux, title, theme, uses, lineJumps (true: lines hop where they cross), screens
 - theme: preset, name, overrides
-- screen: id, title, layout, background, nodes, groups, edges, notes
+- screen: id, title, layout, template, items, options, background, nodes, groups, edges, notes
 - node: shape, text, label, tone, style, pin, alt (node names are slugs: lowercase letters, digits, hyphens)
 - group: label, contains, style, layout
 - edge: "a -> b: label" or { from, to, op, label, style, route, jumps: arc|gap|none }; ops are -> <- <-> -- ~>; an end may name an anchor: a.e -> b.w
@@ -52,6 +52,7 @@ screens:
 - Shape names resolve through uses: (rounded-rect for basic:rounded-rect when unique); use the catalog's ids.
 - Style by token name (tone: accent), not by colour.
 - Each screen compiles on its own. Omit layout to get layered.
+- For a process, cycle, hierarchy, pyramid, matrix, venn, funnel, timeline or comparison, give a screen `template: <id>` and `items: [Plan, Build]` (strings, or { label, detail, children }), `options:` optional; the catalog lists the templates.
 - Fix diagnostics by their hint; the path is a JSON pointer into the file.
 
 ### Edit with a patch (JSON)
@@ -63,7 +64,7 @@ screens:
 - remove: { op, target, cascade? }
 - connect: { op, edge: "a -> b: label", spec?: { label?, style?, route?, jumps? } }
 - disconnect: { op, target }
-- setLayout: { op, scope, layout: { type, direction?, spacing?, gap?, columns?, ... }, relayout? }
+- setLayout: { op, scope, layout: { type, direction?, spacing?, gap?, columns?, ... }, relayout? }; a template: layout: { type: template, id, items, options? } on a screen
 - restyle: { op, targets: [refs] or { select: { screen?, shape?, tone?, kind? } }, style }
 - addStep: { op, screen, at?, step }
 - addInteraction: { op, owner, rule }
@@ -119,6 +120,19 @@ screens:
 - `timeline` (core): Timeline: events in date order along one axis, one band per lane hint.; options: direction, spacing, nodeGap, rankGap, padding
 - `tree` (core): Tidy tree along the edges, for hierarchies with boxes of any size.; options: direction, spacing, nodeGap, rankGap, padding, compactLeaves
 
+### Templates
+
+- `comparison` (core): A comparison of two options: each a header over its points, side by side (stacked in a portrait frame).; options: direction, gap, spacing, padding, colors
+- `cycle.basic` (core): A repeating cycle: items on a circle, clockwise from the top, each arrow leading to the next.; options: padding, colors
+- `funnel` (core): A funnel: stages as bars narrowing from top to bottom, for conversion or filtering steps.; options: gap, narrowest, padding, colors
+- `hierarchy.org` (core): An org chart or tree: each item above its children, joined to each of them.; options: gap, levelGap, padding, colors
+- `matrix.2x2` (core): A 2 x 2 matrix: exactly four items as quadrants, top left, top right, bottom left, bottom right.; options: gap, padding, colors
+- `process.basic` (core): Steps in order joined by arrows, left to right or top to bottom.; options: direction, gap, padding, colors
+- `process.chevron` (core): Steps in order as chevron arrows pointing to the next, left to right.; options: gap, padding, colors
+- `pyramid` (core): A pyramid of layers, the first item at the apex: foundations at the base, the few at the top.; options: gap, padding, colors
+- `timeline.milestones` (core): A timeline: milestones in order along a line, labels alternating sides, left to right or top to bottom.; options: direction, padding, colors
+- `venn` (core): A Venn diagram: two or three overlapping, see-through circles, for what sets share.; options: padding, opacity, colors
+
 ### Themes
 
 - `themes-core:blueprint` (themes-core): 
@@ -132,7 +146,7 @@ screens:
 
 ## Examples
 
-The corpus in `examples/dsl/`: `brand-theme.flux.yaml`, `checkout.flux.yaml`, `edge-ops.flux.yaml`, `layered-flow.flux.yaml`, `order-flowchart.flux.yaml`, `pinned-dashboard.flux.yaml`, `platform-architecture.flux.yaml`, `release-notes.flux.yaml`, `routing-showcase.flux.yaml`, `style-tokens.flux.yaml`. One in full:
+The corpus in `examples/dsl/`: `brand-theme.flux.yaml`, `checkout.flux.yaml`, `edge-ops.flux.yaml`, `layered-flow.flux.yaml`, `order-flowchart.flux.yaml`, `pinned-dashboard.flux.yaml`, `platform-architecture.flux.yaml`, `release-notes.flux.yaml`, `routing-showcase.flux.yaml`, `style-tokens.flux.yaml`, `templates.flux.yaml`. One in full:
 
 ```yaml flux
 flux: 1

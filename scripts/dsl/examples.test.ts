@@ -151,6 +151,13 @@ describe('examples/dsl/layered-flow.flux.yaml', () => {
   });
 });
 
+describe('examples/dsl/templates.flux.yaml', () => {
+  it('FR-LAY-014: the example is drawn as its golden SVG, twice to the same bytes, with the shapes its templates build', async () => {
+    const svg = await matchesGolden('templates');
+    expect(svg.length).toBeGreaterThan(0);
+  });
+});
+
 describe('examples/dsl/routing-showcase.flux.yaml', () => {
   it('FR-CON-008, FR-CON-011: the showcase is drawn as its golden SVG, with a hop (an arc and a gap), fanned connectors and spread ends (FR-ANC-007)', async () => {
     const svg = await matchesGolden('routing-showcase');

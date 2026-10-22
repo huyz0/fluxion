@@ -33,6 +33,18 @@ const nodeSpecSchema = z
   })
   .strict();
 
+/** How many levels of children a patch's template items nest (a provider allows objects nested only so deep, and has no recursion): deeper trees go in FluxScript. */
+const ITEM_LEVELS = 1;
+
+/** One item of a template, nested `levels` deep at most: a label alone, or a label with a detail line and nested items. */
+function templateItemOf(levels: number): z.ZodType<Mutable<TemplateItemSpec>, Mutable<TemplateItemSpec>> {
+  const fields = { label: z.string(), detail: z.string().optional() };
+  const item = levels === 0 ? z.strictObject(fields) : z.strictObject({ ...fields, children: z.array(templateItemOf(levels - 1)).optional() });
+  return z.union([z.string(), item]) as unknown as z.ZodType<Mutable<TemplateItemSpec>, Mutable<TemplateItemSpec>>;
+}
+
+const templateItemSchema = templateItemOf(ITEM_LEVELS);
+
 /** The layout intents of the built-in layouts (`layered`, `grid`, `stack`); a plugin layout's own options travel in the plain schema and the CLI only. */
 const layoutIntentSchema = z
   .object({
@@ -46,6 +58,9 @@ const layoutIntentSchema = z
     align: z.enum(['start', 'center', 'end']).optional().describe('grid and stack: alignment in the cell or the line'),
     padding: z.number().min(0).optional().describe('the space around the laid-out boxes, px'),
     wrap: z.number().min(0).optional().describe('stack: length after which a box starts a new line, px (0: never)'),
+    id: z.string().optional().describe('template: a templates registry id (process.basic, matrix.2x2, ...); with type "template"'),
+    items: z.array(templateItemSchema).optional().describe('template: the items it is built from, a label or { label, detail?, children? } each'),
+    options: z.record(z.string(), z.unknown()).optional().describe("template: the template's own options"),
   })
   .strict();
 
@@ -213,7 +228,29 @@ export type LayoutIntent = {
   readonly padding?: number | undefined;
   /** Stack: length after which a box starts a new line, px. */
   readonly wrap?: number | undefined;
+  /** Template (`type` is `template`): the templates registry id. */
+  readonly id?: string | undefined;
+  /** Template: the items it is built from. */
+  readonly items?: readonly TemplateItemSpec[] | undefined;
+  /** Template: the template's own options. */
+  readonly options?: { readonly [key: string]: unknown } | undefined;
 };
+
+/**
+ * An item of a template in a patch: a label, or a label with a detail line and nested items.
+ *
+ * @public
+ */
+export type TemplateItemSpec =
+  | string
+  | {
+      /** The item's text. */
+      readonly label: string;
+      /** A second, smaller line. */
+      readonly detail?: string | undefined;
+      /** Nested items. */
+      readonly children?: readonly TemplateItemSpec[] | undefined;
+    };
 
 /**
  * A selector of elements.

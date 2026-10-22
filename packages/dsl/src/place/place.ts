@@ -145,7 +145,8 @@ function unknownType(ctx: Ctx, c: Container, type: string): void {
 /** The algorithm and options a container is laid out with, reporting what keeps it from its own. */
 function layoutFor(ctx: Ctx, c: Container): Chosen {
   const spec = c.record.layout;
-  if (!spec) return fallback(ctx);
+  // a template's shapes were built pinned (lowering): nothing is left to lay out
+  if (!spec || spec.type === 'template') return fallback(ctx);
   const algorithm = ctx.registries.layouts.get(spec.type);
   if (!isAlgorithm(algorithm)) {
     unknownType(ctx, c, spec.type);

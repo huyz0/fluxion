@@ -80,6 +80,7 @@ export type Catalog = {
     readonly connectors: readonly CatalogEntry[];
     readonly markers: readonly CatalogEntry[];
     readonly layouts: readonly CatalogEntry[];
+    readonly templates: readonly CatalogEntry[];
     readonly themes: readonly CatalogEntry[];
     readonly effects: readonly CatalogEntry[];
     readonly transitions: readonly CatalogEntry[];
@@ -210,6 +211,7 @@ export type EdgeAst = {
     readonly style?: LocatedStyle;
     readonly route?: Located<"straight" | "curved" | "orthogonal" | "polyline">;
     readonly jumps?: Located<"arc" | "gap" | "none">;
+    readonly template?: string;
 };
 
 // @public
@@ -425,6 +427,8 @@ export type LayoutAst = {
     readonly options: {
         readonly [key: string]: unknown;
     };
+    readonly id?: Located<string>;
+    readonly items?: readonly TemplateItemAst[];
 };
 
 // @public
@@ -442,6 +446,11 @@ export type LayoutIntent = {
     readonly align?: "start" | "center" | "end" | undefined;
     readonly padding?: number | undefined;
     readonly wrap?: number | undefined;
+    readonly id?: string | undefined;
+    readonly items?: readonly TemplateItemSpec[] | undefined;
+    readonly options?: {
+        readonly [key: string]: unknown;
+    } | undefined;
 };
 
 // @public
@@ -611,6 +620,10 @@ export type NodeAst = {
     readonly style?: LocatedStyle;
     readonly pin?: Located<PinAst>;
     readonly alt?: Located<string>;
+    readonly template?: TemplateRef;
+    readonly params?: {
+        readonly [key: string]: number;
+    };
 };
 
 // @public
@@ -1080,6 +1093,27 @@ export type StyleAst = {
 // @public
 export type StyleSpec = {
     readonly [key: string]: string;
+};
+
+// @public
+export type TemplateItemAst = {
+    readonly label: string;
+    readonly detail?: string;
+    readonly children?: readonly TemplateItemAst[];
+};
+
+// @public
+export type TemplateItemSpec = string | {
+    readonly label: string;
+    readonly detail?: string | undefined;
+    readonly children?: readonly TemplateItemSpec[] | undefined;
+};
+
+// @public
+export type TemplateRef = {
+    readonly id: string;
+    readonly slot: string;
+    readonly index: number;
 };
 
 // @public

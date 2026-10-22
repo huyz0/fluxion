@@ -192,6 +192,15 @@ before anything is written. Any error rejects the whole patch, with diagnostics 
 unless `relayout: false`. The patch JSON Schema is generated from Zod in the provider-strict subset
 (`additionalProperties: false`, flat unions).
 
+**Templates** (FR-LAY-014, ADR-0047). A screen may say `template: process.chevron` with `items:` (a label,
+or `{ label, detail, children }`) and `options:` instead of `nodes:`; the compile builds the template's
+shapes pinned at their boxes, with `semantic.template { id, slot, index }`, and the connectors between them
+(text is measured by a fixed estimate, so the result never depends on the host), and stores
+`layout: { type: template, id, items, options }` on the screen. `decompile` writes it back and leaves the built
+shapes out. The patch op `setLayout` takes the same on a screen, `layout: { type: template, id, items, options? }`,
+and replaces what an earlier build made; its items nest two levels (a provider's object-depth limit), deeper
+trees go in FluxScript. The catalog lists the registered templates with their options.
+
 ## 6. AI catalog (FR-AI-002, NFR-AI-002)
 
 `buildCatalog(registries, { pack?, detail })` (M14.6) walks `shapeDefs`, `routers` (connector types), `markers`, `layouts`, `themes`, `effects` and `transitions`

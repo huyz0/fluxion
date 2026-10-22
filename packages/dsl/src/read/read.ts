@@ -5,8 +5,8 @@ import { type EdgeEnd, edgeDiagnostic, parseEdge, parseEdgeObject } from '../par
 import { isYMap, isYScalar, isYSeq, type YEntry, type YMap, type YNode } from '../parse/parse.js';
 import { nearest } from '../resolve/suggest.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
-import type { EdgeAst, FluxAst, GroupAst, Located, NodeAst, ScreenAst, ThemeAst } from './ast.js';
-import { asMap, type Ctx, EDGE_DETAILS, entries, KEYS, layout, pin, report, slug, stringList, style, text, textOf } from './fields.js';
+import type { EdgeAst, FluxAst, GroupAst, LayoutAst, Located, NodeAst, ScreenAst, ThemeAst } from './ast.js';
+import { asMap, type Ctx, EDGE_DETAILS, entries, KEYS, layout, pin, report, slug, stringList, style, templateLayout, text, textOf } from './fields.js';
 
 /** Content keys: a node that has none of them after deferral has nothing to draw and is deferred whole (ADR-0030 review r2 F1). */
 const CONTENT = ['shape', 'text', 'label'];
@@ -191,6 +191,21 @@ function screenId(ctx: Ctx, m: YMap, path: string): Located<string> | undefined 
   return id && slug(ctx, id.value, id.range, `${path}/id`) ? id : undefined;
 }
 
+/** A screen's layout: its `layout:`, or its `template:` (with `items:` and `options:`); both is an error and the template wins. */
+function screenLayout(ctx: Ctx, f: Map<string, YEntry>, path: string): LayoutAst | undefined {
+  const written = layout(ctx, f.get('layout'), path);
+  const templated = templateLayout(ctx, f, path);
+  if (written && templated)
+    report(ctx, {
+      code: 'FLX_SCHEMA_INVALID',
+      range: written.type.range,
+      path: `${path}/layout`,
+      message: 'a screen takes a layout or a template, not both',
+      hint: 'drop one of them',
+    });
+  return templated ?? written;
+}
+
 function screen(ctx: Ctx, item: YNode, index: number): ScreenAst | undefined {
   const path = `/screens/${index}`;
   const m = asMap(ctx, item, path, 'a screen');
@@ -215,7 +230,7 @@ function screen(ctx: Ctx, item: YNode, index: number): ScreenAst | undefined {
   const title = text(ctx, f.get('title'), path);
   const background = text(ctx, f.get('background'), path);
   const notes = text(ctx, f.get('notes'), path);
-  const lay = layout(ctx, f.get('layout'), path);
+  const lay = screenLayout(ctx, f, path);
   const edgesNode = f.get('edges')?.value;
   if (edgesNode && !isYSeq(edgesNode))
     report(ctx, { code: 'FLX_SCHEMA_INVALID', range: edgesNode.range, path: `${path}/edges`, message: 'edges is a list', hint: '- web -> api' });

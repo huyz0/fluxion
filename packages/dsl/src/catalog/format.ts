@@ -14,6 +14,7 @@ const KINDS = [
   ['connectors', 'Connector routes'],
   ['markers', 'Connector end markers'],
   ['layouts', 'Layouts'],
+  ['templates', 'Templates'],
   ['themes', 'Themes'],
   ['effects', 'Effects'],
   ['transitions', 'Transitions'],

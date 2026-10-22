@@ -44,7 +44,21 @@ export { type LaidOut, layoutDocument, type ScreenScore } from './layout-documen
 export { EDGE_OPS, type Edge, type EdgeEnd, type EdgeOp, type EdgeResult, edgeDiagnostic, parseEdge, parseEdgeObject } from './parse/edge.js';
 export { type ParseResult, parseFlux, type YEntry, type YMap, type YNode, type YScalar, type YSeq } from './parse/parse.js';
 export { type PlaceInput, type PlaceOptions, type PlaceResult, placeFlux } from './place/place.js';
-export type { EdgeAst, FluxAst, GroupAst, LayoutAst, Located, LocatedStyle, NodeAst, PinAst, ScreenAst, StyleAst, ThemeAst } from './read/ast.js';
+export type {
+  EdgeAst,
+  FluxAst,
+  GroupAst,
+  LayoutAst,
+  Located,
+  LocatedStyle,
+  NodeAst,
+  PinAst,
+  ScreenAst,
+  StyleAst,
+  TemplateItemAst,
+  TemplateRef,
+  ThemeAst,
+} from './read/ast.js';
 export { type FluxScriptKeyLevel, type FluxScriptKeyTable, fluxScriptKeys } from './read/fields.js';
 export { type FluxScriptJsonSchema, fluxScriptJsonSchema } from './read/json-schema.js';
 export { type ReadResult, readFlux } from './read/read.js';
@@ -98,5 +112,6 @@ export {
   type PatchOp,
   type Selector,
   type StyleSpec,
+  type TemplateItemSpec,
 } from './patch/schema.js';
 export type { RefKind } from './patch/working-index.js';

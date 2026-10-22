@@ -3,11 +3,12 @@
 // inside one transaction. Ids are the stable ids of ADR-0031 (a node by its slug, an edge by its key), so a patch and a compile of the
 // same text make the same records.
 import { type CoreRegistries, idKeys, type SyncHash128, stableId } from '@fluxion/core';
-import { type AnyRecord, keyBetween, type RecordId, type RichTextDoc, type Style } from '@fluxion/schema';
+import { type AnyRecord, keyBetween, type RecordId, type RichTextDoc, type Style, screenSize } from '@fluxion/schema';
 import { anchorOf, opStyle, styleOf } from '../expand/style.js';
 import type { LocatedStyle } from '../read/ast.js';
 import type { ResolvedOp, ResolvedPatch, ResolvedRef } from './resolve-types.js';
 import type { EdgeSet, LayoutIntent, NodeSpec } from './schema.js';
+import { buildFor, builtBy, putTemplate, richText } from './template.js';
 
 /**
  * What lowering needs besides the patch.
@@ -56,12 +57,6 @@ type Tree = { [key: string]: unknown };
 
 const DEFAULT_SIZE = { w: 160, h: 80 } as const;
 const NO_BOX = { x: 0, y: 0, w: 0, h: 0 } as const;
-
-/** Text as a rich-text document: one paragraph per line. */
-function richText(text: string): RichTextDoc {
-  const paragraph = (line: string) => (line === '' ? { type: 'paragraph' } : { type: 'paragraph', content: [{ type: 'text', text: line }] });
-  return { type: 'doc', content: text.split(/\r?\n/).map(paragraph) };
-}
 
 /** `over` merged into `base`, objects deeply, anything else replaced. */
 function merge(base: Tree | undefined, over: Tree): Tree {
@@ -355,11 +350,33 @@ class Lowering {
     const id = this.idOf(op.scope);
     const current = this.work.get(id);
     if (!current) return;
+    if (op.layout.type === 'template') {
+      this.template(op, id, current);
+      return;
+    }
     const { type, ...options } = op.layout as LayoutIntent & { [key: string]: unknown };
     this.put({ ...current, layout: { type, ...(Object.keys(options).length > 0 ? { options } : {}) } });
     if (!op.relayout) return;
     const isScreen = current['type'] === 'screen';
     this.ask(isScreen ? id : (current['screenId'] as string), isScreen ? undefined : id);
+  }
+
+  /** A `setLayout` of a template: what an earlier build of the screen made goes, and this one's shapes and connectors come, all pinned. */
+  private template(op: Extract<ResolvedOp, { op: 'setLayout' }>, screenId: string, screen: Rec): void {
+    const made = buildFor(this.ctx.registries, op.layout);
+    if (!made) return;
+    const old = builtBy(this.work.values(), screenId);
+    for (const x of old) this.drop(x);
+    const slug = ((screen['meta'] as { slug?: string } | undefined)?.slug ?? screenId) as string;
+    const host = {
+      id: (k: string) => this.id(k),
+      put: (r: Rec) => this.put(r),
+      indexAfterLast: () => this.indexAfterLast(screenId, undefined),
+      shapeId: (n: string) => this.shapeId(n),
+    };
+    putTemplate(host, { ...made, screenId, slug });
+    for (const x of this.attached(new Set([...old].filter((x) => !this.work.has(x))))) this.drop(x); // an author's edge to a shape now gone
+    this.put({ ...(this.work.get(screenId) as Rec), layout: made.layout });
   }
 
   private restyle(op: Extract<ResolvedOp, { op: 'restyle' }>): void {

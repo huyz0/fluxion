@@ -15,6 +15,7 @@ const catalogSchema = z.strictObject({
   connectors: list,
   markers: list,
   layouts: list,
+  templates: list,
   themes: list,
   effects: list,
   transitions: list,

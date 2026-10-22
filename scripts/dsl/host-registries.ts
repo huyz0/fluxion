@@ -1,10 +1,10 @@
-// The registries of a host for the example corpus runners (scripts/dsl): the bundled packs, then the built-in layouts.
-import { registerBuiltInLayouts } from '@fluxion/layout';
+// The registries of a host for the example corpus runners (scripts/dsl): the bundled packs, then the built-in layouts and templates.
+import { registerBuiltInLayouts, registerBuiltInTemplates } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
 import { themesCorePack } from '@fluxion/pack-themes-core';
 import { type CoreRegistries, createCoreRegistries } from '@fluxion/sdk';
 
-/** Fresh registries as a host has them: the bundled packs, then the built-in layouts. */
+/** Fresh registries as a host has them: the bundled packs, then the built-in layouts and templates. */
 export function registries(): CoreRegistries {
   const r = createCoreRegistries();
   for (const pack of [basicPack, themesCorePack]) {
@@ -13,5 +13,7 @@ export function registries(): CoreRegistries {
   }
   const layouts = registerBuiltInLayouts(r.layouts);
   if (!layouts.ok) throw new Error('the built-in layouts failed to register');
+  const templates = registerBuiltInTemplates(r.templates);
+  if (!templates.ok) throw new Error('the built-in templates failed to register');
   return r;
 }

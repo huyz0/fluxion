@@ -50,6 +50,33 @@
   ],
   "additionalProperties": false,
   "$defs": {
+    "templateItem": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/templateItem"
+              }
+            }
+          },
+          "required": [
+            "label"
+          ]
+        }
+      ]
+    },
     "theme": {
       "type": "object",
       "properties": {
@@ -103,6 +130,21 @@
                 "type"
               ],
               "description": "a layout algorithm by name; the other keys are its options"
+            },
+            "template": {
+              "type": "string",
+              "description": "a smart template by id (process.basic, matrix.2x2, ...); builds the screen from items"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/templateItem"
+              },
+              "description": "what the template is built from: a label, or { label, detail, children }"
+            },
+            "options": {
+              "type": "object",
+              "description": "the template's own options"
             },
             "background": {
               "type": "string"

@@ -72,7 +72,8 @@ function richText(text: string): RichTextDoc {
 }
 
 function layoutOf(l: LayoutAst): LayoutSpec {
-  return { type: l.type.value, ...(Object.keys(l.options).length > 0 ? { options: l.options } : {}) };
+  const template = l.id ? { id: l.id.value, items: l.items ?? [] } : {};
+  return { type: l.type.value, ...(Object.keys(l.options).length > 0 ? { options: l.options } : {}), ...template };
 }
 
 /** An override's value as the token's type wants it: a number, or `<n>px` and `<n>ms` text, for a dimension or a duration. */
@@ -132,6 +133,14 @@ function transformOf(ctx: Ctx, n: NodeAst, defId: string | undefined): Transform
   return { x: pin?.x ?? 0, y: pin?.y ?? 0, w: pin?.w ?? size.w, h: pin?.h ?? size.h };
 }
 
+/** The semantic fields of a node: its slug, its accessible name, and for a node a template built the template, slot and index. */
+function semanticOf(n: NodeAst, name: string | undefined): Rec {
+  return { slug: n.slug.value, ...(name === undefined ? {} : { label: name }), ...(n.template ? { template: n.template } : {}) };
+}
+
+/** A shape's parameters (what a template gave it); a text element has none. */
+const paramsOf = (n: NodeAst, defId: unknown): Rec => (defId && n.params ? { params: n.params } : {});
+
 /** A node as a shape element (with a resolved shape) or a text element (text, or a label alone); an unresolved shape gives nothing. */
 function node(ctx: Ctx, n: NodeAst, screenId: RecordId): Pending | undefined {
   const defId = ctx.resolution.shapes.get(n.slug.value);
@@ -146,8 +155,9 @@ function node(ctx: Ctx, n: NodeAst, screenId: RecordId): Pending | undefined {
     kind: defId ? 'shape' : 'text',
     ...(defId ? { defId } : {}),
     // alt is the accessible name; the label is the shown text
-    semantic: { slug: n.slug.value, ...(name !== undefined ? { label: name } : {}) },
-    ...(content !== undefined ? { text: richText(content) } : {}),
+    semantic: semanticOf(n, name),
+    ...paramsOf(n, defId),
+    ...(content === undefined ? {} : { text: richText(content) }),
     ...(style ? { style } : {}),
     placement: n.pin ? 'pinned' : 'auto',
     transform: transformOf(ctx, n, defId),
@@ -226,6 +236,7 @@ function edge(ctx: Ctx, e: EdgeAst, key: EdgeKey, bySlug: ReadonlyMap<string, Pe
     kind: 'connector',
     route: { type: e.route?.value ?? 'straight', ...(e.jumps ? { jumps: e.jumps.value } : {}) },
     markers,
+    ...(e.template ? { semantic: { template: { id: e.template } } } : {}),
     ...(e.label ? { labels: [{ text: richText(e.label.value), position: 0.5 }] } : {}),
     ...(style ? { style } : {}),
   };

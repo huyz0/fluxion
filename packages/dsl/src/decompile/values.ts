@@ -1,7 +1,7 @@
 // Document values back to FluxScript values (FR-DSL-002): the inverse of the style stage (expand/style.ts) and of the rich text expand
 // writes. A value the grammar cannot write so that it compiles back to itself throws `Inexpressible`; the element holding it is then kept
 // out of the block (ADR-0032).
-import type { AnchorRef, LayoutSpec, RichTextDoc, Style } from '@fluxion/schema';
+import type { AnchorRef, LayoutSpec, RichTextDoc, Style, TemplateItem } from '@fluxion/schema';
 import type { StyleAst } from '../read/ast.js';
 import type { Out, OutMap } from './emit.js';
 
@@ -129,6 +129,27 @@ export function jsonOut(v: unknown): Out {
 /** A layout spec as `{ type, ...options }`. */
 export function layoutOut(l: LayoutSpec): OutMap {
   return { map: [['type', l.type], ...Object.entries(l.options ?? {}).map(([k, v]) => [k, jsonOut(v)] as const)], flow: true };
+}
+
+/** A template spec as the entries `template`, `items` and, when it has any, `options`. */
+export function templateOut(l: LayoutSpec): readonly (readonly [string, Out])[] {
+  const item = (i: TemplateItem): Out => {
+    if (i.detail === undefined && i.children === undefined) return i.label;
+    return {
+      map: [
+        ['label', i.label],
+        ...(i.detail === undefined ? [] : ([['detail', i.detail]] as const)),
+        ...(i.children === undefined ? [] : ([['children', { seq: i.children.map(item), flow: true }]] as const)),
+      ],
+      flow: true,
+    };
+  };
+  const options = Object.entries(l.options ?? {});
+  return [
+    ['template', l.id as string],
+    ['items', { seq: (l.items ?? []).map(item), flow: true }],
+    ...(options.length > 0 ? ([['options', { map: options.map(([k, v]) => [k, jsonOut(v)] as const), flow: true }]] as const) : []),
+  ];
 }
 
 /** A background: a token reference as its name, a colour as written; anything else (a gradient, an image) cannot be written. */

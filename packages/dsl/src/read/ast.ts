@@ -16,6 +16,20 @@ export type Located<T> = {
 };
 
 /**
+ * Where a built node came from: the template, the slot it fills and its index among the template's shapes.
+ *
+ * @public
+ */
+export type TemplateRef = {
+  /** The template's id. */
+  readonly id: string;
+  /** The slot the node fills. */
+  readonly slot: string;
+  /** The node's index among the template's shapes. */
+  readonly index: number;
+};
+
+/**
  * A node: a shape or text element named by its slug.
  *
  * @public
@@ -37,6 +51,10 @@ export type NodeAst = {
   readonly pin?: Located<PinAst>;
   /** Alternative text. */
   readonly alt?: Located<string>;
+  /** Set on a node a template built: the template, slot and index (`semantic.template`). */
+  readonly template?: TemplateRef;
+  /** Set on a node a template built: the shape's parameters. */
+  readonly params?: { readonly [key: string]: number };
 };
 
 /**
@@ -82,6 +100,24 @@ export type LayoutAst = {
   readonly type: Located<string>;
   /** The layout's own options (every key of the spec but `type`). */
   readonly options: { readonly [key: string]: unknown };
+  /** For a template (`type` is `template`): the template's id. */
+  readonly id?: Located<string>;
+  /** For a template: the items it is built from. */
+  readonly items?: readonly TemplateItemAst[];
+};
+
+/**
+ * One item of a template, as written: a string is a label alone.
+ *
+ * @public
+ */
+export type TemplateItemAst = {
+  /** The item's text. */
+  readonly label: string;
+  /** A second, smaller line. */
+  readonly detail?: string;
+  /** Nested items. */
+  readonly children?: readonly TemplateItemAst[];
 };
 
 /**
@@ -127,6 +163,8 @@ export type EdgeAst = {
   readonly route?: Located<'straight' | 'curved' | 'orthogonal' | 'polyline'>;
   /** How it draws where it crosses an edge painted before it (ADR-0169); absent: as the document says. */
   readonly jumps?: Located<'arc' | 'gap' | 'none'>;
+  /** Set on an edge a template built: the template's id (`semantic.template` of the connector). */
+  readonly template?: string;
 };
 
 /**

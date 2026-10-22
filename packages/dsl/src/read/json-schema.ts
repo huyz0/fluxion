@@ -28,6 +28,16 @@ const layout: Schema = {
   required: ['type'],
   description: 'a layout algorithm by name; the other keys are its options',
 };
+const item: Schema = {
+  anyOf: [
+    string,
+    {
+      type: 'object',
+      properties: { label: string, detail: string, children: { type: 'array', items: { $ref: '#/$defs/templateItem' } } },
+      required: ['label'],
+    },
+  ],
+};
 const pin: Schema = {
   type: 'object',
   properties: { x: { type: 'number' }, y: { type: 'number' }, w: { type: 'number' }, h: { type: 'number' } },
@@ -54,6 +64,9 @@ const VALUES: { readonly [level in keyof typeof KEYS]: { readonly [key: string]:
     id: { type: 'string', pattern: SLUG },
     title: string,
     layout,
+    template: { type: 'string', description: 'a smart template by id (process.basic, matrix.2x2, ...); builds the screen from items' },
+    items: { type: 'array', items: { $ref: '#/$defs/templateItem' }, description: 'what the template is built from: a label, or { label, detail, children }' },
+    options: { type: 'object', description: "the template's own options" },
     background: string,
     nodes: { type: 'object', propertyNames: { pattern: SLUG }, additionalProperties: { $ref: '#/$defs/node' } },
     groups: { type: 'object', propertyNames: { pattern: SLUG }, additionalProperties: { $ref: '#/$defs/group' } },
@@ -108,6 +121,7 @@ export function fluxScriptJsonSchema(): FluxScriptJsonSchema {
     title: 'FluxScript flux: 1',
     ...closed('top', ['flux', 'title', 'screens']),
     $defs: {
+      templateItem: item,
       theme: closed('theme', []),
       screen: {
         description: 'a screen; one with a kind is an archetype, kept whole with any other keys',

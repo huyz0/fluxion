@@ -2,9 +2,11 @@
 // in order (an `add` is visible to the ops after it), and nothing is written. Any problem rejects the whole patch with pointer diagnostics
 // (`/ops/3/target`); `ai.applyPatch` (M14.10) lowers the resolved ops to commands inside one transaction.
 import type { CoreRegistries } from '@fluxion/core';
-import type { AnyRecord, Diagnostic, DiagnosticCode } from '@fluxion/schema';
+import { buildTemplate } from '@fluxion/layout';
+import { type AnyRecord, DEFAULT_SCREEN_SIZE, type Diagnostic, type DiagnosticCode } from '@fluxion/schema';
 import { parseEdge } from '../parse/edge.js';
 import { nearest } from '../resolve/suggest.js';
+import { ESTIMATE, isTemplate, itemsOfSpec } from '../template/lower.js';
 import type { PatchContext, PatchResolution, ResolvedOp, ResolvedPatch, ResolvedRef } from './resolve-types.js';
 import {
   type AiPatch,
@@ -231,6 +233,7 @@ class Resolver {
   private setLayout(op: Extract<PatchOp, { op: 'setLayout' }>, i: number): ResolvedOp | undefined {
     const scope = this.lookup(op.scope, ['ops', i, 'scope'], ['screen', 'group']);
     const reg = this.ctx.registries;
+    if (op.layout.type === 'template') return this.template(op, i, scope);
     if (reg && !reg.layouts.get(op.layout.type)) {
       const near = nearest(
         op.layout.type,
@@ -244,6 +247,29 @@ class Resolver {
       );
     }
     return scope ? { op: 'setLayout', index: i, scope: ref(scope), layout: op.layout, relayout: op.relayout !== false } : undefined;
+  }
+
+  /** A `setLayout` of a template: a screen, a template the registry has, items and options it accepts. */
+  private template(op: Extract<PatchOp, { op: 'setLayout' }>, i: number, scope: Entry | undefined): ResolvedOp | undefined {
+    const at = ['ops', i, 'layout'];
+    const bad = (path: string, message: string, hint?: string) => this.fail('FLX_PATCH_OP_INVALID', [...at, path], message, hint);
+    if (scope && scope.kind !== 'screen') return bad('type', 'a template is built into a screen, not a group', 'name the screen as the scope');
+    const { id, items, options } = op.layout;
+    if (id === undefined || items === undefined)
+      return bad('id', 'a template layout needs an id and items', '{ type: "template", id: "process.basic", items: ["Plan", "Build"] }');
+    const reg = this.ctx.registries;
+    if (!reg) return scope ? { op: 'setLayout', index: i, scope: ref(scope), layout: op.layout, relayout: false } : undefined;
+    const def = reg.templates.get(id);
+    if (!isTemplate(def)) {
+      const near = nearest(
+        id,
+        reg.templates.list().map(([key]) => key),
+      );
+      return bad('id', `no template "${id}" is registered`, near ? `did you mean "${near}"?` : 'see the catalog for template ids');
+    }
+    const built = buildTemplate(def, itemsOfSpec(items), options, { frame: { x: 0, y: 0, ...DEFAULT_SCREEN_SIZE }, measure: ESTIMATE });
+    if (!built.ok) return bad('items', built.message);
+    return scope ? { op: 'setLayout', index: i, scope: ref(scope), layout: op.layout, relayout: false } : undefined;
   }
 
   /** The elements a selector picks, in the working copy. */

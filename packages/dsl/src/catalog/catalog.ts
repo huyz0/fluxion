@@ -35,6 +35,8 @@ export type Catalog = {
   readonly markers: readonly CatalogEntry[];
   /** Layouts (`layouts`). */
   readonly layouts: readonly CatalogEntry[];
+  /** Smart templates (`templates`), named by a screen's `template:`. */
+  readonly templates: readonly CatalogEntry[];
   /** Themes (`themes`). */
   readonly themes: readonly CatalogEntry[];
   /** Effects (`effects`). */
@@ -75,7 +77,7 @@ const shapeDetail: Details = (value) => {
   return params === undefined ? undefined : { params };
 };
 
-/** The options schema of a layout, as JSON Schema. */
+/** The options schema of a layout or template, as JSON Schema. */
 const layoutDetail: Details = (value) => {
   const schema = (value as { readonly schema?: unknown }).schema;
   if (!(schema instanceof z.ZodType)) return undefined;
@@ -105,11 +107,12 @@ export function buildCatalog(registries: CoreRegistries, options: CatalogOptions
     connectors: entries(registries.routers, options),
     markers: entries(registries.markers, options),
     layouts: entries(registries.layouts, options, layoutDetail),
+    templates: entries(registries.templates, options, layoutDetail),
     themes: entries(registries.themes, options),
     effects: entries(registries.effects, options),
     transitions: entries(registries.transitions, options),
   };
-  const described = ['shapes', 'connectors', 'markers', 'layouts', 'effects', 'transitions'] as const;
+  const described = ['shapes', 'connectors', 'markers', 'layouts', 'templates', 'effects', 'transitions'] as const;
   const diagnostics = described.flatMap((kind) =>
     catalog[kind]
       .filter((entry) => entry.describe === '')

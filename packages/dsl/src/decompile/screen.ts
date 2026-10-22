@@ -8,7 +8,7 @@ import { DEFAULT_SIZE } from '../expand/expand.js';
 import type { EdgeOp } from '../parse/edge.js';
 import { type Ctx, type El, type Rec, SLUGGED } from './context.js';
 import type { Out, OutMap } from './emit.js';
-import { anchorSuffix, fail, Inexpressible, layoutOut, paintOut, plainText, styleOut } from './values.js';
+import { anchorSuffix, fail, Inexpressible, layoutOut, paintOut, plainText, styleOut, templateOut } from './values.js';
 
 type Entry = readonly [string, Out];
 
@@ -250,7 +250,14 @@ function body(ctx: Ctx, els: readonly El[], sid: string, d: ScreenDeferred): { r
   const inOrder = [...nodeEls.filter((el) => el.parentId === undefined), ...groupEls.flatMap((g) => nodeEls.filter((el) => el.parentId === g.id))];
   const nodes = [...inOrder.map(nodeEntry), ...raws(d.nodes)];
   const groups = groupEls.map(groupEntry);
-  const slugs = new Map([...ctx.slugs].filter(([id]) => fields.has(id)));
+  // an edge may end on a node a template built: that node is not written, but its slug is
+  const built = new Set(
+    [...ctx.elements.values()]
+      .flat()
+      .filter(isTemplateMade)
+      .map((el) => el.id),
+  );
+  const slugs = new Map([...ctx.slugs].filter(([id]) => fields.has(id) || built.has(id)));
   const connectors = els.filter((el) => CONNECTORS.has(el.kind));
   // a repeat number counts the edges between the same two ends, so an edge's key is searched only up to that count (M12.16 review F1)
   const pair = (el: El) => {
@@ -270,25 +277,38 @@ function body(ctx: Ctx, els: readonly El[], sid: string, d: ScreenDeferred): { r
   return { entries, kept: els.length - shown.length - edges.length };
 }
 
+/** Whether a template built `el`: a shape or connector it made carries `semantic.template`; one the author wrote does not. */
+const isTemplateMade = (el: El): boolean => (el['semantic'] as { template?: unknown } | undefined)?.template !== undefined;
+
 /** A screen field the subset may not write: undefined then. */
 const optional = <T>(read: () => T): T | undefined => attempt(read);
+
+/** A screen's layout as entries: `layout`, or for a template its `template`, `items` and `options`. */
+function layoutEntries(spec: LayoutSpec | undefined, templated: boolean): readonly Entry[] {
+  if (spec === undefined) return [];
+  if (templated) return optional(() => templateOut(spec)) ?? [];
+  const layout = optional(() => layoutOut(spec));
+  return layout ? [['layout', layout]] : [];
+}
 
 /** One screen as a block (a map item of `screens:`), or its archetype section as written (ADR-0030 `kind`). */
 export function screenOut(ctx: Ctx, s: Rec): ScreenOut {
   const sid = ctx.screenIds.get(s.id) as string;
-  const els = ctx.elements.get(s.id) ?? [];
+  const spec = s['layout'] as LayoutSpec | undefined;
+  const templated = spec?.type === 'template' && spec.id !== undefined;
+  const els = (ctx.elements.get(s.id) ?? []).filter((el) => !(templated && isTemplateMade(el)));
   const archetype = ctx.deferred.find(([p]) => p === `/screens/${sid}/kind`);
   if (archetype) return { out: { raw: archetype[1] }, kept: els.length };
   const d = deferredOf(ctx, sid);
   const { entries, kept } = body(ctx, els, sid, d);
   const name = s['name'];
-  const layout = s['layout'] === undefined ? undefined : optional(() => layoutOut(s['layout'] as LayoutSpec));
+  const layout = layoutEntries(spec, templated);
   const background = s['background'] === undefined ? undefined : optional(() => paintOut(s['background']));
   const notes = optional(() => plainText(s['notes'] as never));
   const map: Entry[] = [
     ['id', sid],
     ...(typeof name === 'string' ? ([['title', name]] as const) : []),
-    ...(layout ? ([['layout', layout]] as const) : []),
+    ...layout,
     ...(background !== undefined ? ([['background', background]] as const) : []),
     ...entries,
     ...(notes !== undefined ? ([['notes', notes]] as const) : []),

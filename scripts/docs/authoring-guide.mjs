@@ -88,6 +88,7 @@ export async function generate() {
     if (!done.ok) throw new Error(`pack ${pack.id} failed to register`);
   }
   layout.registerBuiltInLayouts(registries.layouts);
+  layout.registerBuiltInTemplates(registries.templates);
   const built = dsl.buildCatalog(registries, { detail: 'full' });
   const examples = readdirSync(join(ROOT, 'examples', 'dsl'))
     .filter((f) => f.endsWith('.flux.yaml'))

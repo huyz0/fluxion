@@ -131,6 +131,38 @@
         "additionalProperties": false
       }
     },
+    "templates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "describe": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "detail": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "id",
+          "describe",
+          "source"
+        ],
+        "additionalProperties": false
+      }
+    },
     "themes": {
       "type": "array",
       "items": {
@@ -233,6 +265,7 @@
     "connectors",
     "markers",
     "layouts",
+    "templates",
     "themes",
     "effects",
     "transitions"

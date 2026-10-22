@@ -11,6 +11,7 @@ import { placeFlux } from './place/place.js';
 import { readFlux } from './read/read.js';
 import { resolveFlux } from './resolve/resolve.js';
 import { type NamedHeader, upsertScreens } from './stream/upsert.js';
+import { lowerTemplates } from './template/lower.js';
 import type { CompileOptions, CompileResult, DslDiagnostic, SourceRange } from './types.js';
 import { validateFlux } from './validate/validate.js';
 
@@ -73,9 +74,10 @@ function compileFresh(text: string, options: CompileOptions): Fresh {
   const read = readFlux(parsed.root, text);
   if (!read.ast) return { fresh: stopped([...parsed.diagnostics, ...read.diagnostics]), screens: [], named: NOTHING };
   const { registries } = options;
-  const resolved = resolveFlux(read.ast, registries);
+  const lowered = lowerTemplates(read.ast, registries);
+  const resolved = resolveFlux(lowered.ast, registries);
   const salt = resolveSalt(documentOf(options.base), options.salt);
-  const expanded = expandFlux(read.ast, resolved.resolution, { salt, registries, ...(options.hasher ? { hasher: options.hasher } : {}) });
+  const expanded = expandFlux(lowered.ast, resolved.resolution, { salt, registries, ...(options.hasher ? { hasher: options.hasher } : {}) });
   const placed = placeFlux(expanded, { registries });
   const whole: SourceRange = parsed.root.range;
   const sourceMap = new Map<RecordId, SourceRange>();
@@ -87,6 +89,7 @@ function compileFresh(text: string, options: CompileOptions): Fresh {
       diagnostics: [
         ...parsed.diagnostics,
         ...read.diagnostics,
+        ...lowered.diagnostics,
         ...resolved.diagnostics,
         ...expanded.diagnostics,
         ...placed.diagnostics,

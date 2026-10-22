@@ -39,7 +39,7 @@ screens:
 
 - top: flux, title, theme, uses, lineJumps (true: lines hop where they cross), screens
 - theme: preset, name, overrides
-- screen: id, title, layout, background, nodes, groups, edges, notes
+- screen: id, title, layout, template, items, options, background, nodes, groups, edges, notes
 - node: shape, text, label, tone, style, pin, alt (node names are slugs: lowercase letters, digits, hyphens)
 - group: label, contains, style, layout
 - edge: "a -> b: label" or { from, to, op, label, style, route, jumps: arc|gap|none }; ops are -> <- <-> -- ~>; an end may name an anchor: a.e -> b.w
@@ -50,6 +50,7 @@ screens:
 - Shape names resolve through uses: (rounded-rect for basic:rounded-rect when unique); use the catalog's ids.
 - Style by token name (tone: accent), not by colour.
 - Each screen compiles on its own. Omit layout to get layered.
+- For a process, cycle, hierarchy, pyramid, matrix, venn, funnel, timeline or comparison, give a screen \`template: <id>\` and \`items: [Plan, Build]\` (strings, or { label, detail, children }), \`options:\` optional; the catalog lists the templates.
 - Fix diagnostics by their hint; the path is a JSON pointer into the file.
 
 ## Edit with a patch (JSON)
@@ -61,7 +62,7 @@ screens:
 - remove: { op, target, cascade? }
 - connect: { op, edge: "a -> b: label", spec?: { label?, style?, route?, jumps? } }
 - disconnect: { op, target }
-- setLayout: { op, scope, layout: { type, direction?, spacing?, gap?, columns?, ... }, relayout? }
+- setLayout: { op, scope, layout: { type, direction?, spacing?, gap?, columns?, ... }, relayout? }; a template: layout: { type: template, id, items, options? } on a screen
 - restyle: { op, targets: [refs] or { select: { screen?, shape?, tone?, kind? } }, style }
 - addStep: { op, screen, at?, step }
 - addInteraction: { op, owner, rule }

@@ -131,7 +131,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LAY-011 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.arrange-selection.spec.ts`, `packages/layout/src/tidy.test.ts` |
 | FR-LAY-012 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layout.arrange-selection.spec.ts`, `packages/layout/src/fit.test.ts` |
 | FR-LAY-013 | S | R7 | M29 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
-| FR-LAY-014 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/format/src/lean.test.ts` +2 |
+| FR-LAY-014 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/dsl/src/catalog/token-budget.test.ts` +4 |
 | FR-ARR-001 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.group-edit.spec.ts` +6 |
 | FR-ARR-002 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +2 |
 | FR-ARR-003 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +2 |
@@ -266,7 +266,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DSL-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/import/mermaid/mermaid.test.ts` |
 | FR-DSL-008 | S | R3 | M20 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-009 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/read/key-table.test.ts` +6 |
-| FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/catalog/format.test.ts` +3 |
+| FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/catalog/format.test.ts` +4 |
 | FR-AI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/catalog.builtins.test.ts` +3 |
 | FR-AI-003 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/store.test.ts` +5 |
 | FR-AI-004 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/diagnostics-format.test.ts`, `packages/dsl/src/generate/orchestrate.test.ts` |

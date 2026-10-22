@@ -51,3 +51,14 @@ swimlane — Swimlanes: a layered flow inside each lane hint, the lanes stacked 
 tidy — Tidy up: keeps the boxes where they are, aligns near-aligned ones, snaps to the grid and removes overlaps with bounded moves.; options: grid, tolerance, maxMove
 timeline — Timeline: events in date order along one axis, one band per lane hint.; options: direction, spacing, nodeGap, rankGap, padding
 tree — Tidy tree along the edges, for hierarchies with boxes of any size.; options: direction, spacing, nodeGap, rankGap, padding, compactLeaves
+templates:
+comparison — A comparison of two options: each a header over its points, side by side (stacked in a portrait frame).; options: direction, gap, spacing, padding, colors
+cycle.basic — A repeating cycle: items on a circle, clockwise from the top, each arrow leading to the next.; options: padding, colors
+funnel — A funnel: stages as bars narrowing from top to bottom, for conversion or filtering steps.; options: gap, narrowest, padding, colors
+hierarchy.org — An org chart or tree: each item above its children, joined to each of them.; options: gap, levelGap, padding, colors
+matrix.2x2 — A 2 x 2 matrix: exactly four items as quadrants, top left, top right, bottom left, bottom right.; options: gap, padding, colors
+process.basic — Steps in order joined by arrows, left to right or top to bottom.; options: direction, gap, padding, colors
+process.chevron — Steps in order as chevron arrows pointing to the next, left to right.; options: gap, padding, colors
+pyramid — A pyramid of layers, the first item at the apex: foundations at the base, the few at the top.; options: gap, padding, colors
+timeline.milestones — A timeline: milestones in order along a line, labels alternating sides, left to right or top to bottom.; options: direction, padding, colors
+venn — A Venn diagram: two or three overlapping, see-through circles, for what sets share.; options: padding, opacity, colors

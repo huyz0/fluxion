@@ -2,14 +2,14 @@
 import { isYMap, isYScalar, isYSeq, type YEntry, type YMap, type YNode } from '../parse/parse.js';
 import { nearest } from '../resolve/suggest.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
-import type { LayoutAst, Located, LocatedStyle, NodeAst } from './ast.js';
+import type { LayoutAst, Located, LocatedStyle, NodeAst, TemplateItemAst } from './ast.js';
 
 /** The `flux: 1` key table (ADR-0030): compiled keys and kept-but-deferred keys at each level. */
 export const KEYS = {
   top: { compiled: ['flux', 'title', 'theme', 'uses', 'lineJumps', 'screens'], deferred: ['vars', 'settings'] },
   theme: { compiled: ['preset', 'name', 'overrides'], deferred: ['mode', 'accent'] },
   screen: {
-    compiled: ['id', 'title', 'layout', 'background', 'nodes', 'groups', 'edges', 'notes'],
+    compiled: ['id', 'title', 'layout', 'template', 'items', 'options', 'background', 'nodes', 'groups', 'edges', 'notes'],
     deferred: ['kind', 'steps', 'interactions', 'breakpoints', 'markdown', 'mermaid', 'raw'],
   },
   node: { compiled: ['shape', 'text', 'label', 'tone', 'style', 'pin', 'alt'], deferred: ['component', 'image', 'icon', 'badge', 'props', 'near'] },
@@ -197,6 +197,48 @@ export function layout(ctx: Ctx, e: YEntry | undefined, path: string): LayoutAst
   const options: { [key: string]: unknown } = {};
   for (const x of m.entries) if (x.key !== 'type') options[x.key] = plain(x.value);
   return { type: typeText, options };
+}
+
+/** How deep an item's children are followed; deeper is left for the template's own check to refuse. */
+const ITEM_DEPTH = 80;
+
+/** One written item (a string, or a map of label, detail and children) as an item; anything else is undefined. */
+function itemOf(value: unknown, depth: number): TemplateItemAst | undefined {
+  if (typeof value === 'string') return { label: value };
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  const { label, detail, children } = value as { label?: unknown; detail?: unknown; children?: unknown };
+  if (typeof label !== 'string') return undefined;
+  const kids = Array.isArray(children) && depth < ITEM_DEPTH ? children.flatMap((c) => itemOf(c, depth + 1) ?? []) : undefined;
+  return { label, ...(typeof detail === 'string' ? { detail } : {}), ...(kids ? { children: kids } : {}) };
+}
+
+/**
+ * A screen's `template:` with its `items:` and `options:` as a layout intent of type `template`; undefined (and a diagnostic) when the
+ * template is not a name, or an item is neither a string nor a map with a label.
+ */
+export function templateLayout(ctx: Ctx, f: ReadonlyMap<string, YEntry>, path: string): LayoutAst | undefined {
+  const entry = f.get('template');
+  const id = text(ctx, entry, path);
+  if (!entry || !id) return undefined;
+  const list = f.get('items')?.value;
+  const written = list === undefined ? [] : isYSeq(list) ? list.items.map(plain) : undefined;
+  const items = (written ?? []).map((w) => itemOf(w, 0));
+  if (written === undefined || items.some((i) => i === undefined))
+    report(ctx, {
+      code: 'FLX_SCHEMA_INVALID',
+      range: (list ?? entry.value).range,
+      path: `${path}/items`,
+      message: 'items is a list of labels, or of maps with a label',
+      hint: 'items: [Plan, Build, Ship]',
+    });
+  const opts = f.get('options')?.value;
+  const options = opts === undefined ? {} : plain(opts);
+  return {
+    type: { value: 'template', range: entry.keyRange },
+    id,
+    items: items.flatMap((i) => i ?? []),
+    options: typeof options === 'object' && options !== null && !Array.isArray(options) ? (options as { [key: string]: unknown }) : {},
+  };
 }
 
 /** A YNode as a plain value (for layout options). */

@@ -1,6 +1,6 @@
 // The CLI as a host (ADR-0017): core registries with the first-party packs it bundles, registered
 // through the SDK like any plugin. The renderer draws shapes from them (M5.9).
-import { registerBuiltInLayouts } from '@fluxion/layout';
+import { registerBuiltInLayouts, registerBuiltInTemplates } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
 import { registerBuiltinMarkers } from '@fluxion/render';
 import { registerBuiltinRouters } from '@fluxion/routing';
@@ -32,8 +32,10 @@ export function hostRegistries(
     registerBuiltinRouters(registries.routers as unknown as Parameters<typeof registerBuiltinRouters>[0]),
     registerBuiltinMarkers(registries.markers as unknown as Parameters<typeof registerBuiltinMarkers>[0]),
   ];
-  const problems = [
+  const templates = registerBuiltInTemplates(registries.templates);
+  const problems: Diagnostic[] = [
     ...builtIns.flatMap((r) => (r.ok ? [] : [r.error])),
+    ...(templates.ok ? [] : [{ code: 'FLX_PACK_INVALID' as const, severity: 'error' as const, path: '/templates', message: templates.message }]),
     ...packs.flatMap((pack) => {
       const r = pack.register(registries);
       return r.ok ? [] : r.error.map((d) => ({ ...d, message: `pack "${pack.id}": ${d.message}` }));
