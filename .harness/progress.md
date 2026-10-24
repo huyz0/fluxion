@@ -2132,3 +2132,10 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Scoped routing mutation93.3%:14killed,1survived,0uncovered; surviving fast-path mutant requires independent review.
 - CI96f915ac is green and recorded; nightly40130717946 perf failed, mutation still active. Perf log download denied by Azure Blob; no retry or bypass.
 - No thresholds, fixtures or golden baselines changed; further publication remains unapproved.
+
+## 2026-10-24 M17.47 nightly failure annotations
+- Perf step now adds the built-in GitHub reporter and explicitly preserves test-results/e2e.json; workers1/retries0 unchanged.
+- Structural regression RED before change; workflow suite24/24 PASS. Temporary expected-failure probe emits error annotation and JSON unexpected=1.
+- M17.46 committed8dd2e84d after independent review/no findings and normal hooks PASS163.9s; post-commit pinned-container milestone gate running.
+- Main remains96f915ac; CI40130707543 and gates40130707486 PASS; nightly40130717946 mutation active with perf/visual/previous-WebKit failures.
+- Azure Blob perf-log denial retained, no retry/bypass. Both follow-up tasks remain local; further publication requires approval.

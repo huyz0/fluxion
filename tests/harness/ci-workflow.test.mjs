@@ -252,6 +252,14 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(report, /issues: write/);
   });
 
+  it('HARNESS: nightly perf exposes failure annotations and preserves the JSON report without retries', () => {
+    const perf = /^ {2}perf:[\s\S]*?(?=^ {2}\S)/m.exec(workflow('nightly.yml'))[0];
+    assert.match(
+      perf,
+      /^ {6}- run: pnpm exec playwright test --project=perf --workers=1 --retries=0 --reporter=list,json,github\n {8}env:\n {10}PLAYWRIGHT_JSON_OUTPUT_NAME: test-results\/e2e\.json$/m,
+    );
+  });
+
   it('renovate waits a day like pnpm, pins digests and opens nothing without approval (NFR-SEC-005)', () => {
     const r = JSON.parse(readFileSync(join(REPO, 'renovate.json'), 'utf8'));
     const pnpmAge = Number(/^minimumReleaseAge:\s*(\d+)/m.exec(readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8'))[1]);
