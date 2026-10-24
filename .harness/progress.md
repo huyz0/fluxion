@@ -2139,3 +2139,23 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - M17.46 committed8dd2e84d after independent review/no findings and normal hooks PASS163.9s; post-commit pinned-container milestone gate running.
 - Main remains96f915ac; CI40130707543 and gates40130707486 PASS; nightly40130717946 mutation active with perf/visual/previous-WebKit failures.
 - Azure Blob perf-log denial retained, no retry/bypass. Both follow-up tasks remain local; further publication requires approval.
+
+## 2026-10-24 M17 follow-up verification
+- M17.47 committed8c2bfa8b: independent review0findings, normal hooks PASS24.6s.
+- Pinned-container gate at8c2bfa8b:36/40; all local legs incl full verify and three-browser checks PASS; live CI passed for prior reviewed96f915ac.
+- Fresh final8c2 review approves implementation with0findings; independently32tests pass; final coverage checker=true.
+- Updated final range now8c2bfa8b: CI evidence correctly rejects96f915ac as older. No completion or publication claim for the follow-ups.
+- Approved nightly40130717946 still running mutation; perf, three visual-xos and previous-WebKit failed. No duplicate dispatch or log-denial retry.
+
+## 2026-10-24 approved follow-up publication
+- User approved8dd2e84d+8c2bfa8b and nightly. Fetched main96f915ac; normal fast-forward push succeeded; remote8c2bfa8b13c369bccec7d4592e16491dcd9f075f verified.
+- CI40136168025,gates40136168035,nightly40136174340 all confirmed at approvedSHA; nightly dispatched once. Release workflow skipped.
+- Uncommitted final-review/closeout metadata preserved separately and not pushed; no further publication authorized.
+- Previous nightly40130717946 terminalfailure:5success,5failure,mutationcancelled; report succeeded. Cancellation cause not independently confirmed; no agent cancellation.
+
+## 2026-10-24 M17.48 benchmark failure annotations
+- Nightly40136174340 at8c2bfa8b failed perf-baseline before browser performance ran; exact benchmark assertion unavailable.
+- New job120998050370 log download denied at productionresultssa0.blob.core.windows.net; no retry/bypass; annotations only exit1.
+- Failed calibrated verdicts now emit escaped GitHub error annotations; local/passing output, verdict calculations, thresholds and exit status unchanged.
+- Regression RED then11/11PASS, including CLI failed-runner diagnostics and percent/CR/LF escaping. Synthetic CLI test is diagnostic coverage, not performance evidence.
+- Gates40136168035 PASS; CI40136168025 and nightly mutation remain active. Further publication requires approval.

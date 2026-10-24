@@ -106,12 +106,19 @@ export function calibratedVerdict(name, file, limitMs, baselines = calibratedBas
   return judge({ name, readings, limitMs, baseline: baselines[name], tolerancePct: t('PERF_REGRESSION_TOLERANCE_PCT') });
 }
 
+/** Preserve the verdict details, using an escaped error annotation for failures on GitHub Actions. */
+export function verdictOutput(verdict, githubActions) {
+  if (!githubActions || verdict.pass) return [verdict.line];
+  const data = verdict.line.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A');
+  return [`::error::${data}`];
+}
+
 function main() {
   const baselines = calibratedBaselines();
   const problems = [];
   for (const [name, file, key] of BENCHES) {
     const verdict = calibratedVerdict(name, file, t(key), baselines);
-    console.log(verdict.line);
+    for (const line of verdictOutput(verdict, process.env.GITHUB_ACTIONS === 'true')) console.log(line);
     if (!verdict.pass) problems.push(name);
   }
   process.exit(problems.length === 0 ? 0 : 1);
