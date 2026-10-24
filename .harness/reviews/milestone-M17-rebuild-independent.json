@@ -1,0 +1,23 @@
+{
+  "milestone": "M17",
+  "checkpoint": "rebuild-independent",
+  "range": "f321c33f..85445a56",
+  "reviewer": "independent Codex subagent /root/m17_review",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "major",
+      "file": "scripts/gates/check-drift.mjs",
+      "summary": "Changing the frozen calibration workload lowers measured layout/calibration ratios and can hide a regression without triggering the baseline drift guard."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "R1",
+      "disposition": "reopen",
+      "target": "M17.44"
+    }
+  ],
+  "planDelta": "Fresh review requires reopening prior D1 in M17 instead of deferring a gate-honesty defect. Reviewer independently ran 34 harness and 29 layout tests; full gate and three-browser results pending."
+}

@@ -128,6 +128,13 @@ function perfBaselineWeakening() {
   return weakened;
 }
 
+/** Changing the frozen calibration workload re-scales every calibrated baseline (ADR-0170). */
+function calibrationChanges() {
+  const file = 'packages/layout/bench/calibration.bench.ts';
+  const [before, after] = versions(file);
+  return before !== null && before !== after ? [`${file} changed (frozen calibration workload)`] : [];
+}
+
 /**
  * A golden, a screenshot baseline or a Vitest snapshot: re-recording one (`-u`) moves what a test
  * accepts (testing.md rule 8; M5.40 review F3).
@@ -165,7 +172,7 @@ if (baselines.length > 0 && !/^Threshold-change:[ \t]*\S/m.test(msg)) {
   process.exit(1);
 }
 
-const weakened = [...(await thresholdWeakening()), ...floorWeakening(), ...perfBaselineWeakening()];
+const weakened = [...(await thresholdWeakening()), ...floorWeakening(), ...perfBaselineWeakening(), ...calibrationChanges()];
 if (weakened.length === 0) {
   if (baselines.length > 0) console.log(`drift: ${baselines.length} re-recorded baseline(s) with a Threshold-change trailer`);
   process.exit(0);

@@ -36,6 +36,29 @@ describe('check-drift (NFR-DX-004)', () => {
   });
   after(() => sb.cleanup());
 
+  it('NFR-PERF-005: frozen calibration edits and deletion require an ADR trailer in staged and committed checks', () => {
+    const file = 'packages/layout/bench/calibration.bench.ts';
+    sb.write(file, 'const iterations = 100;\n');
+    sb.git('add', file);
+    sb.git('commit', '-q', '-m', 'calibration fixture', '--no-verify');
+    assert.equal(check().status, 0);
+    sb.write(file, 'const iterations = 200;\n');
+    sb.git('add', file);
+    const changed = check();
+    assert.equal(changed.status, 1, out(changed));
+    assert.match(changed.stderr, /calibration.*changed/);
+    assert.equal(check('M17.44: fix(gates): calibration\n\nThreshold-change: recalibrate\n').status, 1);
+    assert.equal(check('M17.44: fix(gates): calibration\n\nThreshold-change: recalibrate (ADR-9999)\n').status, 1);
+    assert.equal(check('M17.44: fix(gates): calibration\n\nThreshold-change: recalibrate (ADR-0042)\n').status, 0);
+    sb.git('commit', '-q', '-m', 'calibration changed', '--no-verify');
+    assert.equal(sb.node('scripts/gates/check-drift.mjs', ['--commit', 'HEAD']).status, 1);
+    sb.git('commit', '-q', '--amend', '--no-verify', '-m', 'calibration changed', '-m', 'Threshold-change: recalibrate (ADR-0042)');
+    assert.equal(sb.node('scripts/gates/check-drift.mjs', ['--commit', 'HEAD']).status, 0);
+    sb.git('rm', '-q', file);
+    assert.equal(check().status, 1);
+    assert.equal(check('M17.44: fix(gates): calibration\n\nThreshold-change: replace workload (ADR-0042)\n').status, 0);
+  });
+
   it('passes when thresholds are untouched', () => {
     assert.equal(check().status, 0);
   });

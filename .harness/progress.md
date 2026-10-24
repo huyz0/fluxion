@@ -2088,3 +2088,9 @@ Three consecutive nightlies (39865270597, 39867513339, 39868647195): layered-500
 route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchanged at 50. Reviewer pass round 1.
 
 - M17.22: final-delta review recorded (D1-D3 to M18 row 1b, D4 argued); M17 final range now f321c33f..64907000.
+
+## 2026-10-24 M17 rebuild (authorized fresh implementation)
+- Old task changes were not recovered; user authorized rebuilding from 85445a56.
+- Independent review reopened calibration guard D1 as M17.44; no threshold or workload changed.
+- Regression RED: drift 26/27; GREEN: 27/27 (staged/committed edit, deletion, ADR checks).
+- M17 closeout and full verification remain pending; circular performance alone is authorized advisory in M18.
