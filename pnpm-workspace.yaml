@@ -34,6 +34,14 @@ overrides:
   launch-editor@<2.14.2: 2.14.2
   # GHSA-rxp7-6hxx-x8q5 (ip-address, via express-rate-limit in @modelcontextprotocol/sdk, the MCP server; and socks via @lhci/cli): M17.35
   ip-address@<10.7.4: 10.7.4
+  # M17.45: security advisories confirmed by the 2026-10-24 local audit; retain all existing scanner policies.
+  "zod@>=4 <4.6.6": 4.6.6
+  "body-parser@>=1 <1.20.9": 1.20.9
+  "body-parser@>=2 <2.4.0": 2.4.0
+  "undici@>=8 <8.12.2": 8.12.2
+  "fast-uri@>=3 <3.1.9": 3.1.9
+  # Lighthouse's old Puppeteer pulls Zod 3. Use a Puppeteer that declares Zod 4 through Chromium BiDi.
+  lighthouse>puppeteer-core: 25.16.0
 
 packageExtensions:
   dependency-cruiser:
@@ -94,7 +102,7 @@ catalog:
   yaml: 2.9.1 # FluxScript parsing with source ranges (tech-stack.md "DSL parsing", ADR-0030), ISC, M12.8
   "@dagrejs/dagre": 3.1.1 # `layered` layout (ADR-0034), MIT, M13.8
   mdast-util-from-markdown: 2.0.3 # Markdown outline import (ADR-0040), MIT; @fluxion/dsl only, M15.17
-  zod: 4.6.5 # schema runtime (tech-stack.md "Schema"), MIT; bundled by the player through @fluxion/schema
+  zod: 4.6.6 # schema runtime (tech-stack.md "Schema"), MIT; bundled by the player through @fluxion/schema
   elkjs: 0.12.0 # optional ELK layouts (ADR-0045), EPL-2.0 OR GPL-3.0-or-later used under EPL-2.0; only in packs/layouts-elk, M17.20
   "@modelcontextprotocol/sdk": 1.32.1 # MCP server and client (ADR-0038), MIT; @fluxion/mcp only
   rbush: 4.0.1 # dynamic spatial index (ADR-0141), MIT; bundled by the player through @fluxion/geometry

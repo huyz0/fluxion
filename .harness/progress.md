@@ -2094,3 +2094,11 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Independent review reopened calibration guard D1 as M17.44; no threshold or workload changed.
 - Regression RED: drift 26/27; GREEN: 27/27 (staged/committed edit, deletion, ADR checks).
 - M17 closeout and full verification remain pending; circular performance alone is authorized advisory in M18.
+
+## 2026-10-24 M17.45 dependency scan repair
+- Main 675059fa pushed with explicit approval; gates 40125431869 passed; ci 40125431881 failed only OSV (ci-ok consequence).
+- Updated Zod, body-parser, Undici, fast-uri; Lighthouse Puppeteer now declares a Zod 4 dependency tree.
+- Local OSV 2.6.0: no issues outside two existing exceptions; audit agrees; scanner policy unchanged.
+- Build passed; Lighthouse three runs and unchanged assertions passed; interactive median 725.97 ms.
+- Quick budget 18.56 s; worst-case staged ladder 270.53 s passed. Cold setup remains pending-ci (ADR-0145).
+- Follow-up publication and manual nightly dispatch require separate approval; M17 remains open.
