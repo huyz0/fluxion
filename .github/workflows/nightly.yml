@@ -80,6 +80,13 @@ jobs:
       - run: pnpm exec playwright test --project=perf --workers=1 --retries=0 --reporter=list,json,github
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/e2e.json
+      - if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nightly-perf-results
+          path: test-results
+          retention-days: 14
+          if-no-files-found: ignore
 
   eval-live:
     runs-on: ubuntu-latest
@@ -109,7 +116,16 @@ jobs:
       # the specs render through the built packages (the CLI), so the build comes first
       - run: pnpm run build
       # NFR-PORT-006: the visual suite on every OS, Chromium only
-      - run: pnpm exec playwright test --grep "@visual" --project=chromium
+      - run: pnpm exec playwright test --grep "@visual" --project=chromium --retries=0 --reporter=list,json,github
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/e2e.json
+      - if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: visual-xos-${{ matrix.os }}-results
+          path: test-results
+          retention-days: 14
+          if-no-files-found: ignore
 
   # NFR-PORT-001: the whole e2e suite on the Playwright release before the pinned one (scripts/ci/previous-playwright.mjs sets the catalog's pins for this run only)
   previous-playwright:
@@ -141,11 +157,12 @@ jobs:
       - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
       - run: pnpm run build
       # the visual baselines are the pinned image's pixels (ci.yml's visual job): they say nothing about another Playwright release
-      - run: pnpm exec playwright test --grep-invert "@perf|@visual" --project="$BROWSER" --project="$MOBILE"
+      - run: pnpm exec playwright test --grep-invert "@perf|@visual" --project="$BROWSER" --project="$MOBILE" --retries=0 --reporter=list,json,github
         env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/e2e.json
           BROWSER: ${{ matrix.browser }}
           MOBILE: ${{ matrix.mobile }}
-      # the traces of a failing spec (playwright.config.ts: retain-on-failure) are the only way to see why it failed on the older release
+      # Preserve JSON, traces and screenshots alongside the failure annotations.
       - if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

@@ -2159,3 +2159,25 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Failed calibrated verdicts now emit escaped GitHub error annotations; local/passing output, verdict calculations, thresholds and exit status unchanged.
 - Regression RED then11/11PASS, including CLI failed-runner diagnostics and percent/CR/LF escaping. Synthetic CLI test is diagnostic coverage, not performance evidence.
 - Gates40136168035 PASS; CI40136168025 and nightly mutation remain active. Further publication requires approval.
+
+## 2026-10-24 M17.48 qualification
+- Local099fc2c4: independent code review0findings, normal hooks PASS98.9s; pinned-container full milestone gate35/40, all local legsPASS.
+- Exact calibrated benchmark command run alone:all5PASS, limits/baselines unchanged; remote failure did not reproduce locally.
+- Fresh final099 review approves implementation0findings; independently35harness testsPASS. Completion not approved.
+- Published8c2 CI40136168025 PASS36jobs and gates40136168035PASS, recorded. New099 review range requires newer qualifying CI/perf evidence.
+- Nightly40136174340 still running mutation; perf/three visual/previous-WebKit failed. No extra publication authorized.
+
+## 2026-10-24 nightly browser annotation assessment
+- Read permitted annotations and check metadata for visual macOS/Windows/Ubuntu and previous-WebKit on40136174340; all reads succeeded.
+- Every failure annotation only says exit1; summary/text null. No assertion, test name or screenshot diff exposed; runner notices do not identify failure causes.
+- Published GitHub browser reporter is perf-only and that step was skipped. Other browser jobs retain list/JSON reporters.
+- No actionable current failure identified; historical handoffs retained without claiming identical causes. No download retry, code fix, threshold change or new publication.
+- Full assessment saved at/workspace/fluxion8c2-publication-evidence/browser-annotation-assessment.json; mutation monitoring continues.
+
+## 2026-10-24 M17.49 complete nightly diagnostics
+- Added GitHub reporters and explicit JSON output to visual/previous-browser commands; selectors unchanged. Set retries0 as requested (these paths previously inherited1).
+- Preserved previous-browser artifacts; added failure uploads for visual/perf JSON, traces and screenshots with14-day retention. Missing results before browser startup are ignored without masking prior failure.
+- Actual workflow-command probes RED1/5 before fix, GREEN5/5; each verifies assertion details, JSON, exit1 and exactly one attempt. No browser correctness claim from synthetic reporter probes.
+- Current focused suite42/42PASS includes a calibrated-threshold CLI probe; actual previous Playwright1.62.1 probes5/5PASS from isolated install, project lockfile unchanged.
+- Nightly40136174340 terminalfailure at8c2bfa8b:5success,5failure,mutationcancelled; annotation confirms1-hour timeout. CI36/36 and gatesPASS. Monitor exited after finalreport success.
+- No additional push, dispatch, release or deployment; diagnostics remain local for review and qualification.

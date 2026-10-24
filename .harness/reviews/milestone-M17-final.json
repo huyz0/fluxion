@@ -1,7 +1,7 @@
 {
   "milestone": "M17",
   "checkpoint": "final",
-  "range": "f321c33f..8c2bfa8b13c369bccec7d4592e16491dcd9f075f",
+  "range": "f321c33f..099fc2c40c2e8f0fd080bf837dec7dc82e3af054",
   "reviewer": "subagent:milestone-reviewer",
   "verdict": "changes-requested",
   "findings": [

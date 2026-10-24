@@ -260,6 +260,20 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     );
   });
 
+  it('HARNESS: every nightly Playwright path keeps failure artifacts and explicit JSON output', () => {
+    const nightly = workflow('nightly.yml');
+    for (const name of ['perf', 'visual-xos', 'previous-playwright']) {
+      const job = new RegExp(`^ {2}${name}:[\\s\\S]*?(?=^ {2}\\S)`, 'm').exec(nightly)[0];
+      assert.match(job, /PLAYWRIGHT_JSON_OUTPUT_NAME: test-results\/e2e\.json/, name);
+      assert.match(job, /playwright test[^\n]*--retries=0[^\n]*--reporter=list,json,github/, name);
+      assert.match(
+        job,
+        /if: \$\{\{ failure\(\) \}\}[\s\S]*?uses: actions\/upload-artifact@[0-9a-f]{40}[\s\S]*?path: test-results\n[\s\S]*?retention-days: 14/,
+        name,
+      );
+    }
+  });
+
   it('renovate waits a day like pnpm, pins digests and opens nothing without approval (NFR-SEC-005)', () => {
     const r = JSON.parse(readFileSync(join(REPO, 'renovate.json'), 'utf8'));
     const pnpmAge = Number(/^minimumReleaseAge:\s*(\d+)/m.exec(readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8'))[1]);
