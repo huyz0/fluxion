@@ -33,6 +33,13 @@ const file = (n) => `tests/harness/${n}.test.mjs`;
 const ALL = [...new Set(['api', 'drift', 'trace', ...MANIFEST_HARNESS])].map(file);
 
 describe('staged ladder scope (NFR-DX-002)', () => {
+  it('HARNESS NFR-DX-002: nightly-only workflow edits run the actual reporter probes', () => {
+    const files = ['ci-workflow', 'nightly-diagnostics', 'api'].map(file);
+    assert.deepEqual(harnessFiles(['.github/workflows/nightly.yml'], files), files.slice(0, 2));
+    assert.deepEqual(harnessFiles(['.github/workflows/ci.yml'], files), [file('ci-workflow')]);
+    assert.deepEqual(harnessFiles(['tests/harness/nightly-diagnostics.test.mjs'], files), [file('nightly-diagnostics')]);
+  });
+
   it('a staged change outside the browser packages runs no browser tests', () => {
     // cli is no dependency of render or editor: the node project only, coverage without the browser packages
     const cli = testScope(['packages/cli/src/main.ts', 'docs/backlog/current.md'], workspaces, BROWSER);
@@ -131,6 +138,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'google-fonts',
       'kind-switch',
       'milestone-checks',
+      'nightly-diagnostics',
       'mode-policy',
       'packages',
       'perf-baseline',

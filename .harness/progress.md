@@ -2181,3 +2181,8 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Current focused suite42/42PASS includes a calibrated-threshold CLI probe; actual previous Playwright1.62.1 probes5/5PASS from isolated install, project lockfile unchanged.
 - Nightly40136174340 terminalfailure at8c2bfa8b:5success,5failure,mutationcancelled; annotation confirms1-hour timeout. CI36/36 and gatesPASS. Monitor exited after finalreport success.
 - No additional push, dispatch, release or deployment; diagnostics remain local for review and qualification.
+
+## 2026-10-24 M17.50 diagnostic test registration
+- Post-commit4dd full verification failed only the manifest-test registry invariant; all other executable legs passed. Captured direct ladder273.2s confirms the cause.
+- Registered reporter probes for manifest and nightly-workflow changes; unrelated workflows retain their prior scope. No gates or thresholds weakened.
+- Nightly-only regression RED, corrected scope suite15/15PASS. Independent review and post-commit full qualification pending.

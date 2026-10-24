@@ -64,6 +64,7 @@ export const MANIFEST_HARNESS = [
   'layering',
   'licenses',
   'milestone-checks',
+  'nightly-diagnostics',
   'packages',
   'test-titles',
   'turbo',
@@ -148,6 +149,8 @@ export const NAMED_PATH_HARNESS = [
   [/^biome\.json$/, ['biome', 'workspace-shape']],
   // the scanner's list of accepted advisories: read by the security workflow alone
   [/^osv-scanner\.toml$/, []],
+  // The nightly reporter probes execute the command selectors read from this workflow.
+  [/^\.github\/workflows\/nightly\.yml$/, ['ci-workflow', 'nightly-diagnostics']],
   // a workflow: the tests that read the workflows (pins, permissions, triggers)
   [/^\.github\/workflows\/[^/]+\.ya?ml$/, ['ci-workflow']],
   // the harness files that read the limits; the whole-repo coverage run (also reading them) is CI's, as for sources
