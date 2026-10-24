@@ -1,0 +1,24 @@
+{
+  "milestone": "M17",
+  "checkpoint": "final96",
+  "range": "f321c33f..96f915ac",
+  "reviewer": "independent Codex subagent /root/m17_final96_review",
+  "verdict": "approve",
+  "findings": [],
+  "dispositions": [{"finding":"R1","disposition":"reopen","target":"M17.44","note":"Resolved: calibration workload edits and deletion require an ADR-citing trailer in staged and committed checks."}],
+  "validation": [
+    "Independently ran drift and perf-baseline harness suites: 35 passed, 0 failed.",
+    "Independently ran incremental layout suite: 10 passed, 0 failed.",
+    "Spot-checked three mutant scenarios: removing the calibration guard fails its edit/deletion assertions; accepting nonexistent ADRs fails the trailer assertion; returning zero from movedPercent fails the numeric 50-percent assertion.",
+    "Reviewed dependency overrides and lockfile changes. Scanner policy and performance thresholds remain unchanged. Existing progress evidence records OSV, audit, build and Lighthouse validation; these were not independently rerun."
+  ],
+  "assessment": {
+    "coherence":"The delta preserves the existing layout design and shared calibrated performance judge.",
+    "specFidelity":"No new requirement omissions identified. Previous D2/D3 handoffs remain recorded for M18.",
+    "standardsDrift":"The previously unguarded frozen workload is now protected.",
+    "gateHonesty":"Completion checks remain red for outstanding evidence and closeout work; implementation approval does not establish milestone completion.",
+    "architecture":"No new application architecture changes. Dependency updates include a scoped Lighthouse Puppeteer major-version override, with recorded integration validation.",
+    "planHealth":"45 rows versus 26 planned, about 1.73 times growth, primarily review repairs and CI/dependency work. Existing Learned entries address the causes."
+  },
+  "planDelta":"Approve implementation through 96f915ac. Remaining closeout blockers are fresh qualifying CI/performance evidence, cold-setup evidence and full verification, final record integration, backlog closure and roadmap advancement. The supplied gate packet reports 34/40 green. No denied or uncertain action occurred during this review. Return this verdict to the driver for recording; no shared files were modified."
+}

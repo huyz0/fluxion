@@ -2102,3 +2102,33 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Build passed; Lighthouse three runs and unchanged assertions passed; interactive median 725.97 ms.
 - Quick budget 18.56 s; worst-case staged ladder 270.53 s passed. Cold setup remains pending-ci (ADR-0145).
 - Follow-up publication and manual nightly dispatch require separate approval; M17 remains open.
+
+## 2026-10-24 M17.45 verification handoff
+- Local commit 96f915ac: independent review pass/no findings; normal staged hooks PASS269.5s.
+- Sequential full verification:24 checks PASS, only cold-pending budget FAIL (ADR-0145),264.9s.
+- Post-commit host M17 gate32/40: two Firefox/WebKit legs, full verify, CI/perf evidence, M17.22, final-review range, roadmap remain red.
+- Original worktree closeout edits and prior archives untouched; isolated branch intentionally lacks those uncommitted records.
+- Stop: follow-up main push and manual nightly require separate approval; no remote writes after675059fa.
+
+## 2026-10-24 M17.45 local verification completed
+- Pinned offline container at96f915ac:15/15 Chromium/Firefox/WebKit tests PASS22.6s,retries0; report checker=true.
+- Direct container full ladder:23PASS,workflow lint tolerated SKIP(no nested Docker),only then-pending budget FAIL; host workflow lint passed.
+- Genuine uncached local setup then PASS365857ms including fresh Chromium and full pnpm verify; quick8515ms/staged264149ms; budget source now local, validator PASS.
+- Independent final96 review approves f321c33f..96f915ac with zero findings;45focused tests pass; final coverage checker=true.
+- Original closeout records copied for reconciliation; original worktree untouched. Last aggregate container gate34/40 predates final96 review and local cold record.
+- No gate/threshold/fixture edits. Await separately approved push96f915ac and nightly; qualifying remote evidence and milestone closeout remain.
+
+## 2026-10-24 approved96f915ac publication
+- User approved push/nightly; main fast-forward675059fa..96f915ac verified, uncommitted evidence preserved.
+- Nightly40130717946 dispatched on main; head_sha=96f915ac verified. No release/deployment.
+- Gates40130707486 PASS;CI40130707543 and nightly remain active.
+- Nightly visual-xos ubuntu/macOS failed screenshot step; annotations only exit1,current cause not yet proved. Existing M32 handoff retained.
+
+## 2026-10-24 M17.46 connector drag work
+- Local unchanged perf suite RED:route-drag45.85FPS vs50; other10 passed. Initial allocation-only fix48.59FPS remained red.
+- Fan membership regression RED41000 entries vs2000; fast path avoids copying hub lists, then avoids joins that cannot be parallel. Empty connector labels no longer render.
+- Routing133/133 and render17/17 pass; unchanged full perf11/11 passes, retries0.
+- Edit/present parity and axe PASS1/1; screenshot inspected at.harness/artifacts/M17.46/connector-presentation.png.
+- Scoped routing mutation93.3%:14killed,1survived,0uncovered; surviving fast-path mutant requires independent review.
+- CI96f915ac is green and recorded; nightly40130717946 perf failed, mutation still active. Perf log download denied by Azure Blob; no retry or bypass.
+- No thresholds, fixtures or golden baselines changed; further publication remains unapproved.

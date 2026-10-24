@@ -1,0 +1,42 @@
+{
+  "task": "M17.46",
+  "base": "96f915ac6549e69a9f4ab529b59a725f43abc915",
+  "command": "pnpm mutate --package packages/routing --from HEAD --check --out-dir reports/tzap-M17.46-final",
+  "score": {
+    "total": 15,
+    "killed": 13,
+    "survived": 1,
+    "noCoverage": 0,
+    "timeout": 1,
+    "compileError": 0,
+    "runtimeError": 0,
+    "ignored": 0,
+    "pending": 0,
+    "detected": 14,
+    "undetected": 1,
+    "covered": 15,
+    "valid": 15,
+    "invalid": 0,
+    "mutationScore": 93.33333333333333,
+    "mutationScoreBasedOnCoveredCode": 93.33333333333333
+  },
+  "survivors": [
+    {
+      "id": "37d1f8b519788696",
+      "file": "packages/routing/src/fan.ts",
+      "location": {
+        "start": {
+          "line": 67,
+          "column": 7
+        },
+        "end": {
+          "line": 67,
+          "column": 23
+        }
+      },
+      "original": "edges.length < 2",
+      "replacement": "false",
+      "status": "Survived"
+    }
+  ]
+}

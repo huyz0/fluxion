@@ -130,6 +130,17 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
       expect(edit.dom.match(/class="fx-el"/g)?.length ?? 0, name).toBeGreaterThan(5);
     }
   });
+  test('FR-EDT-010 NFR-A11Y-001: the 200 unlabeled connector fixture keeps edit/present parity and accessible presentation', async ({
+    page,
+    expectAccessible,
+  }) => {
+    const { edit, present } = await bothModes(page, 'perf-route-200');
+    expect(present.dom).toBe(edit.dom);
+    expect(diffPct(await pixels(page, edit.png), await pixels(page, present.png))).toBeLessThanOrEqual(PARITY_MAX_DIFF_PCT);
+    await expectAccessible();
+    await test.info().attach('connector-presentation', { body: present.png, contentType: 'image/png' });
+  });
+
   test('FR-TXT-001: the rich-text fixture draws the same pixels in edit and present', async ({ page }) => {
     const { edit, present } = await bothModes(page, 'rich-text');
     const pct = diffPct(await pixels(page, edit.png), await pixels(page, present.png));

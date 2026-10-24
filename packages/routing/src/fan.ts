@@ -25,8 +25,10 @@ function boundEnds(view: ReadView, connectorId: RecordId): { source?: string; ta
 
 /** The bindings of `a` or of `b`, whichever has fewer. */
 function fewerBindings(view: ReadView, a: string, b: string): readonly RecordId[] {
-  const ofA = view.members('bindingsByElement', a);
   const ofB = view.members('bindingsByElement', b);
+  // A lone target binding cannot have a parallel connector; avoid copying a hub's list to compare lengths.
+  if (ofB.length <= 1) return ofB;
+  const ofA = view.members('bindingsByElement', a);
   return ofB.length < ofA.length ? ofB : ofA;
 }
 
@@ -37,7 +39,9 @@ function fewerBindings(view: ReadView, a: string, b: string): readonly RecordId[
 function joining(view: ReadView, a: string, b: string): ParallelEdge[] {
   const edges: ParallelEdge[] = [];
   const seen = new Set<string>();
-  for (const id of fewerBindings(view, a, b)) {
+  const bindings = fewerBindings(view, a, b);
+  if (bindings.length < 2) return edges;
+  for (const id of bindings) {
     const c = (view.get(id) as BindingLike | undefined)?.connectorId;
     if (typeof c !== 'string' || seen.has(c)) continue;
     seen.add(c);
@@ -60,6 +64,7 @@ export function fanOffsetOf(view: ReadView, connectorId: RecordId, spacing: numb
   const { source: a, target: b } = boundEnds(view, connectorId);
   if (a === undefined || b === undefined || a === b) return undefined;
   const edges = joining(view, a, b);
+  if (edges.length < 2) return undefined;
   // id order: the same numbering on every machine and whichever connector asks
   edges.sort((u, v) => (u.id < v.id ? -1 : u.id > v.id ? 1 : 0));
   return parallelOffsets(edges, spacing).get(connectorId);

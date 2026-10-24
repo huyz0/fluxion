@@ -201,7 +201,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
         />
         {mid === undefined ? null : <MidMarker def={mid} at={routePoint(drawn, 0.5)} color={style.stroke.color} width={width} />}
       </svg>
-      <Labels element={element} route={drawn} style={labelStyle(style.font, style.opacity)} />
+      {element.labels?.length ? <Labels element={element} route={drawn} style={labelStyle(style.font, style.opacity)} /> : null}
     </>
   );
 }

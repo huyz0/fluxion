@@ -102,6 +102,37 @@ describe('parallel connectors (FR-CON-011)', () => {
     const spokes = Array.from({ length: 200 }, (_, k) => b.connect(hub, b.rect(screen, { x: 300, y: 10 * k, w: 20, h: 8 })));
     const { store } = createCore(b.build());
     let reads = 0;
+    let bindingEntries = 0;
+    const counted = new Proxy(store, {
+      get: (target, key) => {
+        const value = Reflect.get(target, key) as unknown;
+        if (key === 'members')
+          return (...args: unknown[]) => {
+            const entries = (value as (...a: unknown[]) => RecordId[]).apply(target, args);
+            bindingEntries += entries.length;
+            return entries;
+          };
+        if (key !== 'get') return typeof value === 'function' ? value.bind(target) : value;
+        return (...args: unknown[]) => {
+          reads++;
+          return (value as (...a: unknown[]) => unknown).apply(target, args);
+        };
+      },
+    });
+    for (const id of spokes) expect(fanOffsetOf(counted, id)).toBeUndefined();
+    // the records read: the hub's 200 bindings and their connectors read for every spoke would be over 80,000
+    expect(reads).toBeLessThan(200 * 8);
+    // Materializing the hub membership for every spoke is quadratic even without reading its records.
+    expect(bindingEntries).toBeLessThan(200 * 10);
+  });
+
+  it('NFR-PERF-005: reversed hub spokes inspect leaf records rather than every connector on their target hub', () => {
+    const b = documentBuilder({ seed: 7 });
+    const screen = b.screen();
+    const hub = b.rect(screen, { x: 0, y: 0, w: 100, h: 100 });
+    const spokes = Array.from({ length: 200 }, (_, k) => b.connect(b.rect(screen, { x: 300, y: 10 * k, w: 20, h: 8 }), hub));
+    const { store } = createCore(b.build());
+    let reads = 0;
     const counted = new Proxy(store, {
       get: (target, key) => {
         const value = Reflect.get(target, key) as unknown;
@@ -113,8 +144,7 @@ describe('parallel connectors (FR-CON-011)', () => {
       },
     });
     for (const id of spokes) expect(fanOffsetOf(counted, id)).toBeUndefined();
-    // the records read: the hub's 200 bindings and their connectors read for every spoke would be over 80,000
-    expect(reads).toBeLessThan(200 * 20);
+    expect(reads).toBeLessThan(200 * 8);
   });
 
   it('FR-CON-011: a fanned curved connector keeps the tangent its author set at the target on the target', () => {

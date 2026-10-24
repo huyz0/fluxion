@@ -1,0 +1,21 @@
+{
+  "milestone": "M17",
+  "checkpoint": "final-rebuild-delta",
+  "range": "f321c33f..675059fa8439681b0d544f0a20453584928194ad",
+  "reviewer": "independent Codex subagent /root/m17_review",
+  "verdict": "approve",
+  "findings": [],
+  "dispositions": [
+    {
+      "finding": "R1",
+      "disposition": "reopen",
+      "target": "M17.44",
+      "note": "Resolved. Workload edits/deletion require an ADR-citing trailer in staged and committed checks."
+    }
+  ],
+  "validation": [
+    "Independent drift suite: 27 passed, 0 failed.",
+    "Reviewed unchanged, edited, deleted and committed workloads; missing/nonexistent/existing ADR cases."
+  ],
+  "planDelta": "M17.44 resolves R1 without changing the workload or thresholds. Prior D2/D3 remain in M18. Approval is for implementation, not milestone completion; fresh CI evidence and browser/full gates remain required."
+}
