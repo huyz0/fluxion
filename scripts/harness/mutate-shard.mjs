@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { failureLines } from '../gates/failure-report.mjs';
 import { REPO_ROOT, run } from '../gates/lib.mjs';
 import { emitMutationDiagnostic } from './mutation-diagnostics.mjs';
-import { partitionManifest, validatePartition } from './mutation-partitions.mjs';
+import { DEFAULT_PARTITION_TARGET, partitionManifest, validatePartition } from './mutation-partitions.mjs';
 import { buildPlan, samePlan } from './mutation-plan.mjs';
 import { aggregateShards } from './mutation-shards.mjs';
 
@@ -38,7 +38,7 @@ function validateExecution(plan, execution, shard) {
 }
 
 /** Preserve raw engine evidence and emit a failing envelope whenever execution or validation fails. */
-export function runPackage({ manifestPath, packageName, partitionId, target = 800, outDir, root = REPO_ROOT }) {
+export function runPackage({ manifestPath, packageName, partitionId, target = DEFAULT_PARTITION_TARGET, outDir, root = REPO_ROOT }) {
   const started = performance.now();
   mkdirSync(outDir, { recursive: true });
   const output = join(outDir, 'shard.json');
@@ -89,7 +89,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const manifestPath = value('--manifest'),
     packageName = value('--package'),
     partitionId = value('--partition'),
-    target = value('--target-mutants') === undefined ? 800 : Number(value('--target-mutants')),
+    target = value('--target-mutants') === undefined ? DEFAULT_PARTITION_TARGET : Number(value('--target-mutants')),
     outDir = value('--out-dir');
   if (!manifestPath || (!packageName && !partitionId) || !outDir) {
     const usage = 'usage: mutate-shard.mjs --manifest FILE (--package DIR | --partition ID) --out-dir DIR';

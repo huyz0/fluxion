@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0174 (partition sizing only)
 date: 2026-10-25
 decision-makers: harness (M18.52, independent plan review)
 ---

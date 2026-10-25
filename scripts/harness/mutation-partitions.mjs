@@ -1,8 +1,10 @@
 // NFR-MNT-005: partition expected sources; derive scores only from complete package unions.
 import { checkManifest, hasValidMutants, scoreMutants, validateShard } from './mutation-shards.mjs';
 
+export const DEFAULT_PARTITION_TARGET = 50;
+
 /** The target schedules whole files; it never drops mutants from an oversized file. */
-export function partitionManifest(manifest, target = 800) {
+export function partitionManifest(manifest, target = DEFAULT_PARTITION_TARGET) {
   const plan = checkManifest(manifest);
   if (!Number.isSafeInteger(target) || target < 1) throw new Error('invalid partition target');
   const counts = new Map();
@@ -37,7 +39,7 @@ export function validatePartition(plan, partition, shard) {
 }
 
 /** This is a derived summary; the input engine reports remain separate raw artifacts. */
-export function aggregatePartitions(manifest, shards, target = 800) {
+export function aggregatePartitions(manifest, shards, target = DEFAULT_PARTITION_TARGET) {
   const errors = [],
     scores = [];
   try {

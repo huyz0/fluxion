@@ -1,6 +1,6 @@
 // NFR-MNT-005: exercise real orchestration commands with an explicitly synthetic mutation engine.
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { out } from './helpers.mjs';
 import { mutationFixture } from './mutation-fixture.mjs';
@@ -41,6 +41,51 @@ describe('nightly mutation orchestration (NFR-MNT-005)', () => {
       const receipt = JSON.parse(sb.read('reports/evidence.json'));
       assert.equal(receipt.scores.length, 2);
       assert.ok(existsSync(sb.path('reports/parts/core-1/tzap.json')));
+    } finally {
+      sb.cleanup();
+    }
+  });
+  it('NFR-MNT-005: default matrix, CLI, programmatic runner and aggregate retain exhaustive 50/1 groups', () => {
+    const sb = mutationFixture();
+    try {
+      for (let i = 0; i < 50; i++) sb.write(`packages/core/src/extra${i}.ts`, 'export const value = true;\n');
+      sb.git('add', '.');
+      assert.equal(sb.git('commit', '-qm', '51 core sources').status, 0);
+      const collected = collect(sb);
+      assert.equal(collected.status, 0, out(collected));
+      const matrix = JSON.parse(sb.read('reports/outputs').trim().slice('matrix='.length));
+      assert.deepEqual(
+        matrix.include.map((x) => x.id),
+        ['anim-1', 'core-1', 'core-2'],
+      );
+      execute(sb);
+      const plan = JSON.parse(sb.read('reports/mutation-plan.json'));
+      const ids = [];
+      for (const { id } of matrix.include) {
+        const report = JSON.parse(sb.read(`reports/parts/${id}/tzap.json`));
+        assert.equal(report.mutants.length, id === 'core-1' ? 50 : 1);
+        assert.deepEqual(report.tests, [{ id: 'node' }, { id: 'browser' }]);
+        ids.push(...report.mutants.map((m) => m.id));
+      }
+      assert.deepEqual(ids.sort(), plan.mutants.map((m) => m.id).sort());
+      assert.equal(new Set(ids).size, ids.length);
+      sb.write(
+        'reports/programmatic.mjs',
+        `import {runPackage} from '../scripts/harness/mutate-shard.mjs';
+process.exitCode = runPackage({manifestPath:'reports/mutation-plan.json',partitionId:'core-2',outDir:'reports/programmatic'});`,
+      );
+      const programmatic = sb.node('reports/programmatic.mjs');
+      assert.equal(programmatic.status, 0, out(programmatic));
+      assert.deepEqual(JSON.parse(sb.read('reports/programmatic/tzap.json')), JSON.parse(sb.read('reports/parts/core-2/tzap.json')));
+      const done = aggregate(sb);
+      assert.equal(done.status, 0, out(done));
+      const shardPath = 'reports/parts/core-2/shard.json',
+        good = sb.read(shardPath);
+      sb.write(shardPath, good.replace('"partition": "core-2"', '"partition": "core-1"'));
+      assert.notEqual(aggregate(sb).status, 0);
+      sb.write(shardPath, good);
+      rmSync(sb.path('reports/parts/core-2'), { recursive: true });
+      assert.notEqual(aggregate(sb).status, 0);
     } finally {
       sb.cleanup();
     }

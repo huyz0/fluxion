@@ -2420,3 +2420,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - All 301 core tests pass; existing tests, production behavior, ignore directives, scope and floors stay unchanged.
 - Original nightly 40193583176 finished: 37 mutation partitions passed, 14 confirmed one-hour timeouts; aggregation failed.
 - Full affected-source and current-revision whole-package qualification remain M18.10; partial reports do not close it.
+
+## M18.58 — Resize complete mutation partitions (2026-10-25)
+
+- Original nightly finished with 14 confirmed one-hour mutation timeouts; no partial result qualifies M18.10.
+- ADR-0174 replaces only ADR-0173 sizing; one shared default target is 50 across all consumers.
+- All 36193 real mutant descriptors and floors remain unchanged; 569 source inputs partition exactly once into 236 groups.
+- Default matrix, CLI/programmatic execution and aggregation exercise exhaustive 50/1 groups with retained test projects/raw reports.
+- Missing/mismatched groups fail; all four deliberate default-drift probes fail intended assertions.
+- Focused orchestration/evidence tests pass; explicit-target behavior and existing tests remain.
+- Timeouts, matrix cap, concurrency, mutators, exclusions, score floors and zero retries are unchanged.
+- Complete current-revision nightly runtime and package scores remain M18.10.
