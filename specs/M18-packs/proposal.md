@@ -7,5 +7,6 @@ prior interrupted-session tests are not evidence for this checkout.
 Deliver twelve licensed declarative packs, safe import, lazy loading, used-definition
 persistence, reusable custom shapes, replacement, connector types and optional font
 subsets. Remote registries, executable pack plugins and document import remain outside M18.
-The circular-only timing exception is already authorized; its requirement/ADR change is
-M18.6, not a general relaxation of performance or correctness.
+ADR-0171 records the authorized circular-only timing exception: retain the 2000 ms target
+and report valid overruns as advisory. Invalid evidence and correctness remain blocking;
+no other performance or quality requirement is relaxed.

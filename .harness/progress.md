@@ -2287,3 +2287,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - This is architecture evidence, not full-font size, fidelity or all-browser qualification.
 - M18.48 adds reproducible assets/security probes before feature integration.
 - Original bytes/notices, RFN fallback, closure and cache/layout identity are explicit contracts.
+
+## M18.6 — circular-only timing exception (2026-10-25)
+
+- ADR-0171 records the user's narrow exception; the 2000 ms target remains measured.
+- Only valid circular timing overruns are advisory; missing/failed/malformed evidence fails.
+- Nine focused tests cover CLI exits, invalid samples, unchanged budgets and visible gate advisories.
+- Existing calibration/trace tests pass 30/30; circular correctness passes 5/5.
+- Unchanged force/packing/timeline/swimlane 500-node benchmarks all pass their blocking limit.
+- Required font/import constants are 60000 bytes, 4 anchors and 90 percent; none advisory.
+- Review caught discarded successful stdout; the real completion-leg integration now retains measurements.

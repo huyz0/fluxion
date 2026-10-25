@@ -93,6 +93,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0168](ADR-0168-route-tangents-and-jumps.md) | Curve tangents and the jump style on a connector's route (schema 1.5) | accepted | 2026-10-20 |
 | [0169](ADR-0169-fluxscript-jumps.md) | FluxScript keys for line jumps (`lineJumps`, an edge's `jumps`) | accepted | 2026-10-20 |
 | [0170](ADR-0170-perf-calibration-units.md) | Judge the layout regression budget in calibration units (same-job frozen workload) | accepted | 2026-10-23 |
+| [0171](ADR-0171-circular-timing-advisory.md) | Only valid circular-500 timing overruns are advisory; all other budgets and correctness remain blocking | accepted | 2026-10-25 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

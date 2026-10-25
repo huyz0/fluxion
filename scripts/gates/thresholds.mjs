@@ -63,6 +63,11 @@ export const THRESHOLDS = {
   UNDO_MAX_MS: { value: 16, weakens: 'up' },
   PERF_REGRESSION_TOLERANCE_PCT: { value: 15, weakens: 'up' },
 
+  // M18 required asset/import acceptance criteria (ADR-0171)
+  FONT_SUBSET_LATIN_MAX_BYTES: { value: 60_000, weakens: 'up' },
+  SVG_IMPORT_MIN_ANCHORS: { value: 4, weakens: 'down' },
+  DRAWIO_LIB_IMPORT_MIN_PCT: { value: 90, weakens: 'down' },
+
   // visual
   PARITY_MAX_DIFF_PCT: { value: 0.1, weakens: 'up' },
   // a parity pixel differs when a channel is off by more than this (of 255)...

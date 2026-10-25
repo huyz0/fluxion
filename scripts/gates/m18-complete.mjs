@@ -54,7 +54,7 @@ function accepted(number) {
 }
 
 leg('M18 M/S requirements traced to tests', () => command('scripts/gates/check-trace.mjs', ['--milestone', 'M18', '--priority', 'M,S']));
-for (const number of ['0048', '0049', '0050', '0051']) leg(`ADR-${number} accepted before feature contracts`, () => accepted(number));
+for (const number of ['0048', '0049', '0050', '0051', '0171']) leg(`ADR-${number} accepted before feature contracts`, () => accepted(number));
 for (const [name, expected] of [
   ['FONT_SUBSET_LATIN_MAX_BYTES', 60_000],
   ['DRAWIO_LIB_IMPORT_MIN_PCT', 90],
@@ -78,7 +78,11 @@ leg('retained millisecond baselines have real gate readers', () =>
 );
 for (const name of ['force', 'packing', 'timeline', 'swimlane'])
   leg(`${name}-500 within LAYOUT_500_NODES_MS`, () => benchUnder(`packages/layout/bench/${name}-500.bench.ts`, `${name}-500`, t('LAYOUT_500_NODES_MS')));
-leg('circular-500 measured against advisory target; invalid or missing samples still fail', () => command('scripts/gates/check-circular-advisory.mjs'));
+leg('circular-500 measured against advisory target; invalid or missing samples still fail', () => {
+  const r = node('scripts/gates/check-circular-advisory.mjs');
+  const measurement = r.stdout.trim();
+  return { ok: r.status === 0 && measurement.length > 0, detail: measurement || r.stderr.trim() || 'missing circular measurement' };
+});
 leg('circular layout correctness remains blocking', () => tests('packages/layout/src/circular.test.ts'));
 leg('circular exception changes only timing enforcement', () =>
   namedCases('tests/harness/circular-advisory.test.mjs', [

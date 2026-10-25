@@ -57,7 +57,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-011 | C | R8 | M32 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.import-image.spec.ts` +6 |
 | FR-AST-002 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/image-codec.browser.test.ts` +3 |
-| FR-AST-003 | S | R3 | M18 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-AST-003 | S | R3 | M18 | [10-document-and-file.md](10-document-and-file.md) | `tests/harness/circular-advisory.test.mjs` |
 | FR-AST-004 | S | R4 | M23 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-005 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.remove-unused.spec.ts` +3 |
 | FR-AST-006 | S | R2 | M15 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +3 |
@@ -80,9 +80,9 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.panel.spec.ts` +3 |
 | FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.drag-insert.spec.ts`, `packages/editor/src/library/library-insert.test.ts` |
 | FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `tests/harness/circular-advisory.test.mjs` |
 | FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `tests/harness/circular-advisory.test.mjs` |
 | FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-008 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
@@ -307,7 +307,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PERF-002 | M | R3 | M16 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.big-screen.spec.ts` +6 |
 | NFR-PERF-003 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.open-50.spec.ts` |
 | NFR-PERF-004 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-PERF-005 | M | R2 | M13 | [30-non-functional.md](30-non-functional.md) | `packages/layout/bench/calibration.bench.ts` +6 |
+| NFR-PERF-005 | M | R2 | M13 | [30-non-functional.md](30-non-functional.md) | `packages/layout/bench/calibration.bench.ts` +7 |
 | NFR-PERF-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/bench/transact-5000.bench.ts` +3 |
 | NFR-PERF-007 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-008 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |

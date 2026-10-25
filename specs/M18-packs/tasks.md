@@ -16,3 +16,6 @@ Rows may split when tests reveal a larger commit; record the cause and preserve 
 No feature row is complete merely because its files exist: the completion gate runs tests.
 
 M18.48 qualifies pinned bounded font binaries and worker CSP before M18.39/40.
+
+M18.6 records ADR-0171 and tests circular-only advisory exit status, evidence validation
+and unchanged non-circular limits before its real benchmark/correctness qualification.

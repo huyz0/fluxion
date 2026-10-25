@@ -35,3 +35,8 @@ license cannot erase source rights. Existing code-only license checks are insuff
 ADR-0051 selects direct HarfBuzz subset WASM and bounded standalone Google WOFF2.
 M18.48 qualifies reproducible assets/CSP before M18.39 integrates them; source notices,
 RFN fallback, deterministic output, closure and offline save behavior remain mandatory.
+
+ADR-0171 keeps the unchanged circular-500 fixture and 2000 ms target, accepting only a
+valid measured timing overrun as advisory. Process/report failures still fail. Other
+layout limits and circular correctness remain blocking; required M18 constants are
+60000 font bytes, 4 SVG anchors and 90 percent draw.io import, without exceptions.
