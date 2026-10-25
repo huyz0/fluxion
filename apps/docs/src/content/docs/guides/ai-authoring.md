@@ -24,3 +24,10 @@ Provider keys are kept in your browser's IndexedDB and are never written to a fi
 ## Importing
 
 Mermaid diagrams and Markdown outlines become FluxScript. Syntax the importers do not read is reported, not dropped without a word.
+
+Flowcharts support node lists and numeric IDs. For example, `1 & 2 --> 3 & 4` creates four
+connections, one from each source to each target. Lists can be chained. Labels such as
+`a[Salt & Pepper]` keep their ampersand as text, and repeated IDs still refer to the same node.
+
+A flowchart can contain up to 20,000 expanded connections. Larger expansions report an error
+without producing a partial file.

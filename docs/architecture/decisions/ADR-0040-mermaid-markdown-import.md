@@ -61,3 +61,17 @@ M15.16 (Mermaid fixtures per kind compile, validate and render; a golden pins th
 ## More Information
 
 FR-DSL-007, FR-IMP-001, 06-ai-authoring.md §3 (the DSL), docs/standards diagnostics, AGENTS.md rule 5 and 8.
+
+## M18.11 amendment — Flowchart node lists and numeric IDs (2026-10-25)
+
+The existing flowchart subset now accepts ampersand-separated node lists on either side of a
+link and in chains. Each adjacent pair expands to its Cartesian product in source order,
+retaining link labels/operators and node labels/shapes/group membership. Ampersands inside
+node or link labels are text. A missing list member is a positioned syntax error.
+To bound compact-input amplification, a flowchart may produce at most 20,000 edges (the same
+order as the SVG importer's 20,000-node safety budget). Excess is a positioned syntax error
+before allocating the excess links; no partial file is emitted and no edge is silently truncated.
+Numeric source IDs use the existing deterministic collision-safe slug allocator; leading zeros
+remain distinct source identities. No new parser dependency or public API is introduced.
+This closes M15.16 F1/F2 via M18.11. Existing unsupported-directive diagnostics remain.
+Reference: [Mermaid flowchart chaining](https://mermaid.ai/open-source/syntax/flowchart.html#chaining-of-links).

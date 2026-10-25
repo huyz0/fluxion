@@ -2,6 +2,9 @@
 import { type EdgeSpec, type GroupSpec, layered, type NodeSpec, type ScreenSpec } from '../emit.js';
 import { type ParseCtx, plain, type Report, type Slugs, type SourceLine } from '../source.js';
 
+// Bound compact list expansion to the same order as the SVG import node budget.
+const MAX_FLOWCHART_EDGES = 20_000;
+
 const DIRECTIONS: Readonly<Record<string, 'down' | 'right' | 'up' | 'left'>> = { TD: 'down', TB: 'down', LR: 'right', RL: 'left', BT: 'up' };
 
 /** Opening and closing text of a node, and the shape it means; longer openers first. */
@@ -23,7 +26,7 @@ type Read = { readonly id: string; readonly shape?: string; readonly label?: str
 
 /** A node at `at` in `s`: its id and, when written, its brackets and text. */
 function readNode(s: string, at: number): Read | undefined {
-  const id = /^[A-Za-z_][\w]*/.exec(s.slice(at))?.[0];
+  const id = /^\w+/.exec(s.slice(at))?.[0];
   if (id === undefined) return undefined;
   const p = at + id.length;
   for (const [open, close, shape] of BRACKETS) {
@@ -95,6 +98,13 @@ class Chart {
     return def.slug;
   }
 
+  /** Every source connects to every target, retaining link direction and label. */
+  connect(sources: readonly string[], targets: readonly string[], link: Link): boolean {
+    if (sources.length * targets.length > MAX_FLOWCHART_EDGES - this.edges.length) return false;
+    for (const from of sources) for (const to of targets) this.edges.push({ from, to, op: link.op, ...(link.label ? { label: link.label } : {}) });
+    return true;
+  }
+
   open(id: string, label: string): void {
     this.stack.push({ slug: this.slugs.slug(`group:${id}`, id), label, contains: [] });
   }
@@ -111,32 +121,43 @@ class Chart {
   }
 }
 
-/** The link and the node after position `at`, or undefined when what follows is not `link node`. */
-function readStep(s: string, at: number): { link: Link; node: Read } | undefined {
-  const link = readLink(s, at);
-  if (!link) return undefined;
-  let p = link.end;
-  while (s[p] === ' ') p++;
-  const node = readNode(s, p);
-  return node ? { link, node } : undefined;
+function skipSpace(s: string, at: number): number {
+  while (s[at] === ' ' || s[at] === '\t') at++;
+  return at;
 }
 
-/** One statement (`a --> b --> c`): false when it cannot be read. */
-function statement(chart: Chart, s: string): boolean {
-  const first = readNode(s, 0);
-  if (!first) return false;
-  let prev = chart.node(first);
-  let at = first.end;
+type NodeList = { readonly nodes: readonly Read[]; readonly end: number };
+
+/** Read separators only outside node brackets; an ampersand inside a label stays text. */
+function readNodes(s: string, at: number): NodeList | undefined {
+  const nodes: Read[] = [];
   for (;;) {
-    while (s[at] === ' ') at++;
-    if (at >= s.length) return true;
-    const step = readStep(s, at);
-    if (!step) return false;
-    const next = chart.node(step.node);
-    chart.edges.push({ from: prev, to: next, op: step.link.op, ...(step.link.label ? { label: step.link.label } : {}) });
-    prev = next;
-    at = step.node.end;
+    const node = readNode(s, skipSpace(s, at));
+    if (!node) return undefined;
+    nodes.push(node);
+    at = skipSpace(s, node.end);
+    if (s[at] !== '&') return { nodes, end: at };
+    at++;
   }
+}
+
+/** One statement, expanding each adjacent pair of node lists into all their links. */
+function statement(chart: Chart, s: string): boolean | 'edge-limit' {
+  const first = readNodes(s, 0);
+  if (!first) return false;
+  let prev = first.nodes.map((node) => chart.node(node));
+  let at = first.end;
+  while (at < s.length) {
+    const link = readLink(s, at);
+    if (!link) return false;
+    const list = readNodes(s, link.end);
+    if (!list) return false;
+    const next = list.nodes.map((node) => chart.node(node));
+    if (!chart.connect(prev, next, link)) return 'edge-limit';
+    prev = next;
+    at = list.end;
+  }
+  return true;
 }
 
 /** The `;`-separated statements of a line. */
@@ -145,8 +166,9 @@ function statements(chart: Chart, text: string, l: SourceLine, report: Report): 
     .split(';')
     .map((p) => p.trim())
     .filter(Boolean)) {
-    if (part.includes('&')) report.unsupported(l, 'a `&` list of nodes');
-    else if (!statement(chart, part)) report.syntax(l, `cannot read the flowchart statement "${part}"`);
+    const result = statement(chart, part);
+    if (result === 'edge-limit') report.syntax(l, `flowchart exceeds the ${MAX_FLOWCHART_EDGES} expanded-edge limit`);
+    else if (!result) report.syntax(l, `cannot read the flowchart statement "${part}"`);
   }
 }
 

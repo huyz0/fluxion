@@ -2512,3 +2512,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Applied preserved source unchanged onto the policy revision; original worktree and archived patches remain intact.
 - ADR-0175 contract merged into architecture, spec archived, core/editor changesets included.
 - Complete current-revision mutation qualification remains open under M18.10 and the reviewed floors.
+
+## M18.11 — Import Mermaid node lists and numeric IDs (2026-10-25)
+
+- cp4 independently passed with no findings; full pinned verification passed, milestone remains 23/71 before this feature.
+- Expand adjacent node lists into every edge, retaining labels, operators, groups and standalone declarations.
+- Numeric identities remain distinct through the existing slug allocator, including leading-zero and name collisions.
+- Malformed lists retain positioned errors; unsupported directives retain warnings.
+- Five syntax tests and an expansion-boundary probe failed before their implementation; final DSL suite 290/290 passed.
+- Bound each flowchart to 20,000 expanded edges; report positioned errors before excess allocation, never truncate output.
+- ADR-0040 amendment and user/architecture docs describe the additive subset; no dependency, public API or threshold change.
+- Original nightly format-1 exceeded its 1-hour job limit; complete mutation qualification stays open under M18.10.

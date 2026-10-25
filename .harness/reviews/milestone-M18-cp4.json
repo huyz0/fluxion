@@ -1,0 +1,37 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp4",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..fd89d426216016b14e2178dab6440d27262f79b5",
+  "reviewer": "independent-subagent:m18_cp4_review",
+  "verdict": "pass",
+  "findings": [],
+  "dispositions": [],
+  "planDelta": "No new backlog rows required. Preserve M18.10 as final qualification and proceed with independent feature implementation.",
+  "assessment": {
+    "coherence": "The screen-copy refactor, diagnostic regressions and external-endpoint fix form a consistent design. Routing resolves endpoint geometry in the editor; core validates plain finite points and performs one atomic transaction.",
+    "specFidelity": "ADR-0175's additive command contract preserves internal bindings, existing free endpoints, source records and exact undo. ADR-0176 explicitly documents the revised bundle and mutation policies; incomplete execution and correctness failures remain blocking.",
+    "standardsDrift": "No substantive unexplained drift found. Policy changes are recorded in an accepted ADR, requirements, standards and workflow instructions. The new core helper remains internal and pure.",
+    "gateHonesty": "The bundle judge validates complete measurements and tool status before allowing embedding overruns as advisories. Core/editor overruns still fail. The supplied completion report remains red at 23/71 legs, including missing current-revision mutation qualification and unfinished features.",
+    "architecture": "No new runtime dependency or public export expansion was introduced. Caller-supplied endpoint geometry avoids a core-to-routing dependency cycle. Missing or malformed geometry refuses before any write.",
+    "planHealth": "66 rows versus 43 planned is approximately 1.53x, exceeding the review trigger. Growth is explicitly accounted for by mutation recovery, diagnostic regressions, the discovered duplication defect and reviewed gate-policy work. Future milestone estimates should separate feature delivery from inherited qualification recovery."
+  },
+  "evidence": {
+    "executed": [
+      {"command": "node --test tests/harness/bundle-policy.test.mjs tests/harness/ladder.test.mjs", "result": "19 tests passed; zero failures, skips or cancellations."},
+      {"command": "pnpm exec vitest run --project node packages/core/src/screens/screen-duplicate.test.ts packages/core/src/screens/screen-duplicate-ends.test.ts packages/core/src/screens/screen-commands.test.ts packages/core/src/arrange/align.test.ts packages/core/src/shape/template-cache.test.ts packages/editor/src/navigator/navigator-model.test.ts", "result": "6 files and 31 tests passed."}
+    ],
+    "mutationSpotChecks": [
+      "Making player core advisory would fail the one-byte hard-overrun case, including when an embedding overrun is also present.",
+      "Dropping a copied connector's supplied external endpoint would fail exact freeSource/freeTarget assertions; accepting missing geometry would fail atomic refusal and unchanged-store assertions.",
+      "Removing cache eviction or changing its capacity would fail identity assertions at the 1024-entry boundary while structural equality checks constrain reparsing."
+    ],
+    "completionGate": "Reviewed supplied exact-HEAD completion output; did not rerun the full completion gate.",
+    "browserValidation": "Inspected the navigator browser regression; did not independently rerun Playwright.",
+    "hostedExecution": "Not independently executed or qualified by this review."
+  },
+  "learned": [
+    "Keep resolved geometry at the editor boundary and validate required plain-data inputs before atomic core writes.",
+    "Budget inherited qualification recovery separately from feature delivery; this checkpoint reached 66 rows against 43 planned."
+  ],
+  "remaining": "No review blocker identified. Driver should save and stage this verdict and update Learned. No repository files were edited by this review."
+}

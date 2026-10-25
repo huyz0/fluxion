@@ -263,7 +263,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DSL-004 | M | R5 | M24 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-005 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/place/place.test.ts` +2 |
 | FR-DSL-006 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/compile.test.ts` +8 |
-| FR-DSL-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/import/mermaid/mermaid.test.ts` |
+| FR-DSL-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/import/mermaid-lists.test.ts`, `packages/dsl/src/import/mermaid/mermaid.test.ts` |
 | FR-DSL-008 | S | R3 | M20 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-009 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/read/key-table.test.ts` +6 |
 | FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/catalog/format.test.ts` +4 |

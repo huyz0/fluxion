@@ -130,6 +130,11 @@ that is not a `flux: 1` mapping, stops with no `doc`. Diagnostics come in stage 
 measured text come in M13 (a *layout* stage replacing place's stack), lint in M14, archetypes (`kind:`), `dslMacros`, and the Mermaid and Markdown importers in
 later milestones; until then ADR-0030 keeps their sections in `document.source` with `FLX_DSL_NOT_YET`. ADR-0030 freezes the grammar and lists the diagnostic codes.
 
+**Mermaid flowchart import (ADR-0040, M18.11):** ampersand node lists expand each adjacent
+source/target list pair into all edges, preserving labels, operators and groups. Numeric IDs
+use deterministic collision-safe slugs; malformed lists report positioned syntax errors.
+Unsupported directives still report warnings. The output uses the normal FluxScript compiler.
+
 Stages are pure functions `(input, options) → { output, diagnostics }` and deterministic (NFR-REL-005): same source + options +
 registries → byte-identical `.flux.json`. Routes are not stored (02 §6); `render`/exporters compute them.
 
