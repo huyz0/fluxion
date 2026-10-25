@@ -47,7 +47,20 @@ export const SOURCE_HARNESS = [
  * path runs the whole harness (adapters, licenses, turbo). --all runs them all.
  */
 // mutation-runner constructs miniature workspaces; it does not copy real package sources.
-export const SAMPLE_HARNESS = ['adapters', 'api', 'coverage', 'ladder', 'layering', 'licenses', 'mutate', 'mutation-runner', 'packages', 'turbo'];
+export const SAMPLE_HARNESS = [
+  'adapters',
+  'api',
+  'coverage',
+  'ladder',
+  'layering',
+  'licenses',
+  'mutate',
+  'mutation-runner',
+  'mutation-nightly',
+  'mutation-evidence-gate',
+  'packages',
+  'turbo',
+];
 
 /**
  * Harness files that read a workspace manifest or the lockfile of the real repo (every harness file
@@ -66,6 +79,8 @@ export const MANIFEST_HARNESS = [
   'licenses',
   'milestone-checks',
   'mutation-runner',
+  'mutation-nightly',
+  'mutation-evidence-gate',
   'nightly-diagnostics',
   'packages',
   'test-titles',

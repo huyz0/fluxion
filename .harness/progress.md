@@ -2368,3 +2368,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Keep whole-package behavior; partial execution cannot claim package-floor enforcement.
 - Review F1 rejects runtime-error-only or ignored-only groups; compile-only groups remain allowed.
 - Nightly wiring and hosted current-revision timing qualification remain M18.10.
+
+## M18.53 — complete nightly mutation orchestration (2026-10-25)
+
+- Plan every source partition, execute with unchanged 60-minute timeout and zero retries.
+- Retain each raw partition artifact; aggregate only complete matching reports and unchanged floors.
+- Publish a derived check notice; the gate re-reads live jobs and annotations for its exact revision.
+- Reject missing, failed, stale, retried, partial or duplicate evidence and dirty code inputs.
+- Preserve final-review ancestry and require evidence to cover the latest code commit.
+- Deliberate failures exercise real CLI control flow; synthetic reports are not qualification.
+- Hosted score/timing qualification remains M18.10; no qualifying nightly is recorded yet.

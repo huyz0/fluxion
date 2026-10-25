@@ -49,3 +49,23 @@ and raw engine reports, and derives package scores only after every group valida
 duplicate, failed or incomplete evidence fails; no test, mutator, floor or timeout is relaxed.
 M18.10 wires and qualifies the existing nightly workflow. Diagnostic timings are not hosted
 qualification, and a partial-source score is not a whole-package score.
+
+### Nightly orchestration and evidence
+
+M18.53 implements the orchestration portion of ADR-0173; M18.10 remains the actual
+qualification task. A plan job collects the full clean-checkout inventory and a deterministic
+matrix. Partition jobs retain all test projects, fail-fast=false, the existing 60-minute
+timeout and zero retries. An always-running aggregate job validates the complete artifact
+set and fresh checkout manifest before deriving package scores. Existing raw reports and
+failure artifacts remain available; no workflow permissions are expanded.
+
+The aggregate emits a bounded, escaped derived evidence notice through normal check
+annotations, containing its revision, runner/manifest identity, complete partition IDs and
+package counts/scores/floors. A read-only gate validates live terminal plan, partition and
+aggregate jobs, exact head SHA, expected partition set, complete scores and current code/final
+review ancestry. Failed, skipped, stale, missing or malformed evidence fails closed. Tests
+use explicit fixtures and deliberate failures; they cannot qualify nightly execution.
+
+Only new same-run mutation artifacts are downloaded inside the workflow for aggregation.
+This does not retrieve previously denied logs. Current-revision qualification is recorded
+only after a real successful execution; existing report/issue behavior is retained.

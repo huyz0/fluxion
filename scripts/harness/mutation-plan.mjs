@@ -39,9 +39,11 @@ function discover(root, packages) {
   }
 }
 
-/** Inventory all pure packages at a clean revision, retaining the discovered test configuration. */
-export function buildPlan(root = REPO_ROOT) {
-  const inputs = trackedInputs(root);
+/** Read current scope for evidence inspection; this does not authorize execution on a dirty tree. */
+export function inspectPlan(root = REPO_ROOT) {
+  const inputs = command(root, 'git', ['ls-files', '-z'])
+    .split('\0')
+    .filter((p) => p && p !== '.harness/reviews/digest.log');
   const revision = command(root, 'git', ['rev-parse', 'HEAD']).trim();
   const json = (file) => JSON.parse(readFileSync(join(root, file), 'utf8'));
   const packages = json('tools/gen/workspaces.json')
@@ -61,7 +63,6 @@ export function buildPlan(root = REPO_ROOT) {
     .digest('hex');
   const files = Object.fromEntries(hashes.filter(([file]) => packages.some((pkg) => file.startsWith(`${pkg}/src/`))));
   const mutants = discover(root, packages);
-  trackedInputs(root);
   if (command(root, 'git', ['rev-parse', 'HEAD']).trim() !== revision) throw new Error('revision changed during inventory collection');
   return createManifest({
     revision,
@@ -72,6 +73,15 @@ export function buildPlan(root = REPO_ROOT) {
     mutants,
     floors: json('.harness/baselines/mutation.json').packages,
   });
+}
+
+/** Execution always requires clean inputs both before and after inventory discovery. */
+export function buildPlan(root = REPO_ROOT) {
+  trackedInputs(root);
+  const plan = inspectPlan(root);
+  trackedInputs(root);
+  if (command(root, 'git', ['rev-parse', 'HEAD']).trim() !== plan.revision) throw new Error('revision changed during inventory collection');
+  return plan;
 }
 
 /** Compare complete plans without relying on engine enumeration order. */

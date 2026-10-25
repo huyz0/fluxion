@@ -139,6 +139,8 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'kind-switch',
       'milestone-checks',
       'mutation-runner',
+      'mutation-nightly',
+      'mutation-evidence-gate',
       'nightly-diagnostics',
       'mode-policy',
       'packages',

@@ -234,8 +234,32 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
 
   it('nightly.yml has the planned jobs and reports failures as one issue (NFR-SEC-005)', () => {
     const nightly = workflow('nightly.yml');
-    assert.deepEqual(jobsOf(nightly), ['mutation', 'properties', 'perf', 'eval-live', 'visual-xos', 'previous-playwright', 'report']);
+    assert.deepEqual(jobsOf(nightly), [
+      'mutation-plan',
+      'mutation-partitions',
+      'mutation',
+      'properties',
+      'perf',
+      'eval-live',
+      'visual-xos',
+      'previous-playwright',
+      'report',
+    ]);
     assert.match(nightly, /FC_RUNS: '10000'/);
+    const partitions = /^ {2}mutation-partitions:[\s\S]*?(?=^ {2}mutation:)/m.exec(nightly)?.[0] ?? '';
+    assert.match(partitions, /fail-fast: false/);
+    assert.match(partitions, /timeout-minutes: 60/);
+    assert.match(partitions, /Execute complete mutation partition/);
+    assert.match(partitions, /node scripts\/harness\/mutate-shard\.mjs --manifest reports\/mutation-plan\.json --partition/);
+    assert.match(partitions, /mutation-partition-\$\{\{ matrix.id \}\}/);
+    assert.doesNotMatch(partitions, /continue-on-error|--from|--dedup|--retries [1-9]/);
+    const aggregate = /^ {2}mutation:[\s\S]*?(?=^ {2}properties:)/m.exec(nightly)?.[0] ?? '';
+    assert.match(aggregate, /needs: \[mutation-plan, mutation-partitions\]/);
+    assert.match(aggregate, /if: always\(\)/);
+    assert.match(aggregate, /Validate complete mutation reports/);
+    assert.match(aggregate, /node scripts\/ci\/mutation-nightly\.mjs aggregate/);
+    assert.match(aggregate, /merge-multiple: false/);
+
     const report = /^ {2}report:[\s\S]*/m.exec(nightly)[0];
     assert.match(report, /needs: \[mutation, properties, perf, eval-live, visual-xos, previous-playwright\]/);
     // NFR-PORT-001 (M11.23): the previous-major job points the catalog at the older Playwright, runs all five projects (three engines and their mobile presets), and commits nothing

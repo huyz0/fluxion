@@ -1,13 +1,13 @@
 # Executable tasks
 
-Authoritative rows and EARS criteria: `docs/backlog/current.md`, M18.1–M18.52.
+Authoritative rows and EARS criteria: `docs/backlog/current.md`, M18.1–M18.53.
 
 - M18.1: initially red gate and reviewed plan.
 - M18.2–6: decisions and authorized requirement reconciliation before feature contracts.
 - M18.7–11: checkpoint, calibration, mutation and Mermaid handoffs.
-- M18.49–50 and M18.52 precede M18.10: complete mutation manifests/aggregation, then isolated
-  package execution metadata and exhaustive whole-source partitions (ADR-0173). M18.10 wires the existing nightly matrix and current-revision
-  evidence, preserving all nine pure packages, tests, mutants and score floors.
+- M18.49–50 and M18.52–53 precede M18.10: complete mutation manifests/aggregation, then isolated
+  package execution metadata and exhaustive whole-source partitions (ADR-0173). M18.53 wires the existing nightly matrix and live evidence validation. M18.10 qualifies
+  actual current-revision execution, preserving all nine pure packages, tests, mutants and floors.
 - M18.44: CI recovery, browser scheduling and complete failure evidence.
 - M18.45–47: pinned import corpora, shared SVG policy refactor and checked artwork contract.
 - M18.12–19: schema, lazy persistence and safe import pipelines/UI.
