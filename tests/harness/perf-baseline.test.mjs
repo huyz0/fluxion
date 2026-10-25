@@ -203,6 +203,47 @@ export function run(_command,args) {
     assert.doesNotMatch(readFileSync(join(REPO, 'scripts/gates/m17-complete.mjs'), 'utf8'), /perf-baseline/);
   });
 
+  it('NFR-PERF-005: every retained millisecond baseline has a gate reader', () => {
+    const sb = sandbox(['scripts', 'perf-baseline.json', 'packages/layout/bench']);
+    try {
+      sb.write('scripts/gates/real-lib.mjs', sb.read('scripts/gates/lib.mjs'));
+      // Execute the actual M13 local legs, replacing only their benchmark process.
+      // Removing each baseline must prevent its leg from measuring anything.
+      sb.write(
+        'scripts/gates/lib.mjs',
+        `export * from './real-lib.mjs';
+import {leg as register} from './real-lib.mjs';
+import {writeFileSync} from 'node:fs';
+export function leg(name,fn) { if(/^layered (100|500) nodes/.test(name)) register(name,fn); }
+export function run(_cmd,args) {
+ const file=args.at(-1), name=file.split('/').at(-1).replace('.bench.ts','');
+ const tasks=[{name,latency:{p99:1}}];
+ writeFileSync(args.find(a=>a.startsWith('--outputFile=')).slice(13),JSON.stringify({testResults:[{assertionResults:[{status:'passed',benchmarks:[{tasks}]}]}]}));
+ console.log('MEASURED '+name);
+ return {status:0,stdout:'',stderr:''};
+}\n`,
+      );
+      const baselines = JSON.parse(sb.read('perf-baseline.json'));
+      const local = () => sb.node('scripts/gates/m13-complete.mjs', [], { env: { ...process.env, CI: '' } });
+      const initial = local();
+      assert.equal(initial.status, 0, out(initial));
+      const measured = [...initial.stdout.matchAll(/^MEASURED (.+)$/gm)].map((m) => m[1]).sort();
+      assert.deepEqual(Object.keys(baselines).sort(), measured);
+      assert.equal(measured.length, 2);
+      for (const name of measured) {
+        const missing = { ...baselines };
+        delete missing[name];
+        sb.write('perf-baseline.json', JSON.stringify(missing));
+        const result = local();
+        assert.equal(result.status, 1, out(result));
+        assert.ok(result.stdout.includes(`perf-baseline.json has no "${name}" entry`), out(result));
+        assert.ok(!result.stdout.includes(`MEASURED ${name}`), out(result));
+      }
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('NFR-PERF-005: the judge reads the tolerance from the thresholds, not a literal', () => {
     const src = readFileSync(join(REPO, 'scripts/ci/perf-baseline.mjs'), 'utf8');
     assert.match(src, /t\('PERF_REGRESSION_TOLERANCE_PCT'\)/);

@@ -2319,3 +2319,12 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - M18.6 supplies the four blocking extra layouts and circular-only advisory path.
 - Fresh eight-task checkpoint cp1 found no defects; its 56 focused tests passed.
 - All five real calibrated benchmarks pass with five samples each; no retries.
+
+## M18.9 — consumed baseline inventory (2026-10-25)
+
+- ADR-0172 supplements ADR-0170 without rewriting its accepted historical rationale.
+- Retain layered-100=58 and layered-500=211; remove sixteen unread millisecond entries.
+- Calibrated baselines, frozen workload, limits and sample count are unchanged.
+- Actual M13 local legs prove every retained entry has a reader and missing entries fail.
+- The test failed on the sixteen unused entries before cleanup; 45 focused tests pass.
+- Synthetic benchmark reports test reader wiring only, not performance qualification.

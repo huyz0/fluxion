@@ -792,3 +792,4 @@ M18.5	cee6f36f409a74c377cfa3aeb506df9b2f1b4e171339dd1abfdee44dbd110056	r1	pass	c
 M18.6	60fa2001d688e937230ca27f1d92925d82c5c9ad3b4f0832ed1f753e962a8c3f	r1	changes-requested	codex:gpt-6 /root/m18_circular_review	1 findings
 M18.6	2bf2ec6a267c4672aedf9ec947043c03e4b1f2fb86f720b41d054e53b58b5b79	r2	pass	codex:gpt-6 /root/m18_circular_r2_review	0 findings
 M18.7	57479162b99c8894bda034bc4fb4c17068d6120eb244e8bf5d105927fbca02fe	r1	pass	codex:gpt-6 /root/m18_checkpoint_review	0 findings
+M18.8	ca141cac801832f7974bb4ceea56ae73e5c2b82f92d6698ea695eb36542c2c9d	r1	pass	codex:gpt-6 /root/m18_median_review	0 findings
