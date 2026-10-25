@@ -2205,3 +2205,34 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Deterministic stale-directory regression RED with identical ENOENT; existing TRANSIENT filter fixes setup. License suite18/18PASS, including required-input failures; policies unchanged.
 - Nightly40157370471 perf,properties,previousChromium/FirefoxPASS; visual3OS and previousWebKit match recordedM32/M11 handoffs. Mutation active; prior one-hour timeout assignedM18row1c without weakening scope/floors/timeouts.
 - No further publication authorized; local follow-up requires independent review and full qualification.
+
+## 2026-10-25 M17.51 qualification
+- Localfe5687c3 normal hooksPASS13.2s; pinned-container fullgate35/40, alllocallegsPASS including pnpm verify and three-browser checks.
+- Fresh finalfe reviewAPPROVE0findings; independently18/18license testsPASS using supported environment. Earlier reviewer pnpm store-path failure resolved by environment setup, not repository changes.
+- Canonical final review advanced tofe5687c3; currentmain256b CIWindowsrace remains red until a separately approved publication. No additional push/dispatch performed.
+- Originalnightly40157370471 mutation stillactive; all other outcomes captured. M17 remains open; M18-M33 blocked by sequencing.
+
+## 2026-10-25 terminal publication checkpoint
+- Published256b5245: gates40157364180PASS; CI40157364227 terminal34PASS/2FAIL (Windowsverify fixture race;ci-ok consequence).
+- Nightly40157370471 completed04:13:17UTC at exact256bSHA:6SUCCESS,4FAILURE,1CANCELLED. Perf/calibrated+hit-test+browser(retries0),properties,previousChromium/Firefox,evalplaceholder,reportPASS.
+- VisualUbuntu12190-pixel mismatch; macOS/Windowsmissingbothbaselines; previousWebKitcross-tabpaste0vs3. ExistingM32/M11handoffs retain these exact failures.
+- Mutationannotation confirms1h timeout; M18row1c owns unchanged-scope/floor/timeout resolution. OriginalmonitorPID528489/session28295 exitednormally; no duplicate/cancel/retry.
+- Localfe5687c3 fullyqualified and finallyreviewed,unpublished. Separateapproval needed for mainpush256b..fe5687c3 and a nightly atthatrevision. M17open; M18-M33blockedbysequencing.
+
+## 2026-10-25 standing push authorization
+- User explicitly authorized ordinary reviewed, locally verified Fluxion pushes to main without repeated confirmation. No force/protection bypass/release/deploy; manual nightly still requires separate authorization.
+- Fast-forward256b5245..fe5687c3 pushed with normal hooks; exactremoteSHA verified. Existing uncommitted evidence preserved.
+- AutomaticCI40162839783/gates40162839699 confirmed atfe5687c3; monitoring terminaloutcomes. No nightly dispatched.
+- M17 needs newer nightlyperf evidence afterfe5687c3; priorgreen256b run does not cover finalreview range.
+- Additional explicit user instruction: when CI fails, investigate, fix, verify/review, push and recheck without routine push approval. Existing thresholds/policies and publication limits remain.
+- Clarified authorization includes existing verification workflows needed for CI fixes. No priornightly atfe; dispatchednightly40163185594 once onmain, verifiedheadfe5687c3. No permissions/services/release changes.
+
+## 2026-10-25 M17.22 closeout verification
+- CI40162839783PASS36/36 and gates40162839699PASS atfe5687c3; Windowsfix verified remotely.
+- Nightly40163185594 perfPASS (calibrated,hit-test,browserperformance,retries0) atsameSHA; live check-ci-evidence record/validationPASS. Nightlymutation remains monitored separately.
+- Finalfe review covers all implementation; backlog/roadmap closeout metadata prepared. Full unchanged M17 completion gate pending; no completion claim yet.
+
+## 2026-10-25 M17 completion gate
+- Fresh clean pinned-container run with current closeout metadata: GATE m17 40/40 legs green; full pnpm verify and three-browser checksPASS. No gate/threshold/test changes.
+- Currentfe5687c3 liveCI36/36,gates and nightlyperfPASS; finalfe review approves all implementation. Backlog/roadmap closeout records now reflect observed gate success.
+- Independent closeout review and normal commit pending; nightly40163185594 mutation remains monitored. M18planning follows after closure.

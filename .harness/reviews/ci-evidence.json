@@ -1,8 +1,12 @@
 {
-  "sha": "8c2bfa8b13c369bccec7d4592e16491dcd9f075f",
-  "recordedAt": "2026-10-24T22:10:27.718Z",
+  "sha": "fe5687c376fdd61ad42cfbadaaa162f93f523865",
+  "recordedAt": "2026-10-25T04:54:55.729Z",
   "runs": {
-    "gates": 40136168035,
-    "ci": 40136168025
+    "gates": 40162839699,
+    "ci": 40162839783
+  },
+  "perf": {
+    "run": 40163185594,
+    "sha": "fe5687c376fdd61ad42cfbadaaa162f93f523865"
   }
 }
