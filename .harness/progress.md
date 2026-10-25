@@ -2338,3 +2338,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Ten focused tests pass; malformed floor and executed-test probes were observed red first.
 - A real complete anim report matches all 78 expected mutants: 74 killed, 4 compile errors.
 - No retry, scope reduction, timeout increase or workflow change is included.
+
+## M18.51 — verification failure annotations (2026-10-25)
+
+- Main3963fb16 macOS verification failed; permitted check annotations had no cause.
+- Its log download was denied; no alternate retrieval path was attempted.
+- Emit immediate escaped, bounded error details from the existing failing-step reporter.
+- Keep complete normal logs/artifacts, failure exit codes, checks and thresholds unchanged.
+- Deliberate failing-step probes cover normal/summary output and workflow-command escaping.
+- This restores observability; it does not claim to fix the unknown macOS failure.
+- M18.50 remains isolated in its original worktree with passing review preserved.

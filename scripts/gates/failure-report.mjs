@@ -25,3 +25,11 @@ export function writeFailureLog(name, { stdout, stderr }, runId) {
     return `unavailable (${error.message})`;
   }
 }
+
+/** GitHub command data is escaped so a failing test cannot emit another workflow command. */
+export function failureAnnotation(name, details, log) {
+  const body = stripVTControlCharacters(details.join('\n'));
+  const excerpt = body.length > 16000 ? `${body.slice(0, 16000)}\n[excerpt truncated]` : body;
+  const text = `Verification failed: ${name}\n${excerpt}${log ? `\nFull failure output: ${log}` : ''}`;
+  return `::error::${text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`;
+}

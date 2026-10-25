@@ -13,7 +13,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { failureLines, writeFailureLog } from './failure-report.mjs';
+import { failureAnnotation, failureLines, writeFailureLog } from './failure-report.mjs';
 import {
   evalNeeded,
   examplesNeeded,
@@ -286,7 +286,10 @@ async function runStep([name, , available, exec]) {
   if (nested) return { lines: [`SKIP ${name} — ${nested}`], ok: true };
   if (r.status === 0) return { lines: [`PASS ${name} (${ms}ms)`], ok: true };
   const log = writeFailureLog(name, r, `${started}-${process.pid}`);
-  const shown = [...failureLines(r.stdout, r.stderr), `Full failure output: ${log}`];
+  const failure = failureLines(r.stdout, r.stderr);
+  // Emit immediately: later steps may fail or time out; keep normal output and artifacts intact.
+  if (process.env.GITHUB_ACTIONS === 'true') console.log(failureAnnotation(name, failure, log));
+  const shown = [...failure, `Full failure output: ${log}`];
   const detail = argv.has('--summary') ? [] : shown.map((line) => `    ${line}`);
   return { lines: [`FAIL ${name} (${ms}ms)`, ...detail], ok: false };
 }
@@ -304,7 +307,9 @@ const total = Date.now() - started;
 const budget = mode === 'quick' ? t('QUICK_GATE_BUDGET_MS') : t('PRECOMMIT_BUDGET_MS');
 if (mode !== 'all' && total > budget) {
   failed = true;
-  lines.push(`FAIL budget — ${total}ms > ${budget}ms (NFR-DX-002)`);
+  const detail = `FAIL budget — ${total}ms > ${budget}ms (NFR-DX-002)`;
+  lines.push(detail);
+  if (process.env.GITHUB_ACTIONS === 'true') console.log(failureAnnotation('budget', [detail]));
 }
 for (const l of lines) console.log(l);
 console.log(`VERIFY ${mode}: ${failed ? 'FAIL' : 'PASS'} (${(total / 1000).toFixed(1)}s)`);

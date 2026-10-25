@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
+import { failureAnnotation } from '../../scripts/gates/failure-report.mjs';
 import { nestedSkip, run, runAsync } from '../../scripts/gates/lib.mjs';
 import { out, sandbox, TRANSIENT } from './helpers.mjs';
 
@@ -60,6 +61,47 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
     }
   });
 
+  it('NFR-DX-003: CI failures expose escaped diagnostics without changing exit status or full logs', () => {
+    for (const summary of [false, true]) {
+      const sb = sandbox();
+      try {
+        sb.write('.github/workflows/ci.yml', 'name: ci\n');
+        const stdout = '\u001b[31m FAIL browser sample.test.ts > deliberate probe\u001b[0m\nExpected: 100%\nReceived: 0%\n';
+        const stderr = 'Error: deliberate failure\r\n::warning::must remain data';
+        sb.write(
+          'scripts/gates/check-workflows.mjs',
+          `process.stdout.write(${JSON.stringify(stdout)}); process.stderr.write(${JSON.stringify(stderr)}); process.exit(7);`,
+        );
+        const result = sb.node('scripts/gates/precommit.mjs', ['--all', ...(summary ? ['--summary'] : [])], {
+          env: { ...process.env, GITHUB_ACTIONS: 'true' },
+        });
+        assert.equal(result.status, 1, out(result));
+        const annotations = result.stdout.split('\n').filter((line) => line.startsWith('::error::'));
+        assert.equal(annotations.length, 1, out(result));
+        assert.match(annotations[0], /workflows.*deliberate probe.*Expected: 100%25.*Received: 0%25.*Error: deliberate failure/);
+        assert.ok(annotations[0].includes('%0A::warning::must remain data'));
+        assert.ok(!annotations[0].includes('\u001b'));
+        assert.doesNotMatch(result.stdout, /^::warning::/m);
+        assert.match(result.stdout, /^FAIL workflows/m);
+        const escapedPath = /Full failure output: ([^%]+)/.exec(annotations[0])?.[1];
+        assert.ok(escapedPath, out(result));
+        const complete = sb.read(escapedPath);
+        assert.ok(complete.includes(stdout));
+        assert.ok(complete.includes(stderr));
+      } finally {
+        sb.cleanup();
+      }
+    }
+  });
+
+  it('NFR-DX-003: large annotations stay bounded and retain the complete-log pointer', () => {
+    const annotation = failureAnnotation('test', ['x'.repeat(100000)], 'reports/complete.log');
+    assert.ok(annotation.length < 17000);
+    assert.match(annotation, /excerpt truncated/);
+    assert.ok(annotation.endsWith('Full failure output: reports/complete.log'));
+    assert.match(failureAnnotation('budget', ['FAIL budget']), /^::error::Verification failed: budget%0AFAIL budget$/);
+  });
+
   it('Vitest failures retain every test heading and complete output (NFR-DX-003)', () => {
     const sb = sandbox();
     try {
@@ -73,6 +115,7 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
       );
       const r = sb.node('scripts/gates/precommit.mjs', ['--all']);
       assert.notEqual(r.status, 0, out(r));
+      if (process.env.GITHUB_ACTIONS !== 'true') assert.doesNotMatch(r.stdout, /^::error::/m);
       for (let i = 0; i < 4; i++) {
         assert.ok(r.stdout.includes(`file-${i}.test.ts > case-${i}`), out(r));
         assert.ok(r.stdout.includes(`Error: failure-${i}`), out(r));
