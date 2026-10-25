@@ -18,3 +18,10 @@ Risks: malformed input, incompatible definition IDs, font shaping closure, archi
 large pack catalogs and visual baseline portability. Use real fixture round-trips,
 all-definition goldens, three current browsers and independent reviews. Thresholds and
 zero retries remain unchanged except the explicitly authorized circular timing target.
+
+## Recorded decisions
+
+ADR-0048 selects a metadata index plus hashed category files, reusing core validation
+and SDK registration. Used-only canonical bundles have a data-only manifest-lock variant;
+M18.14 must prove offline rendering and old-reader preservation before shipping it.
+Remaining ADR-0049–0051 decisions still precede their implementations.

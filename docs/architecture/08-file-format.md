@@ -259,3 +259,13 @@ Policy (NFR-PORT-003): minor = additive. Older readers preserve unknown fields a
 converter + ADR; older readers open newer-major files read-only. Every released `formatVersion`
 keeps golden `.flux`, `.flux.html` and `.flux.json` fixtures in `packages/format/__fixtures__/`,
 and CI loads, migrates and round-trips all of them.
+
+## M18 declarative definition extension (implementation pending)
+
+[ADR-0048](decisions/ADR-0048-shape-pack-format-v1.md) selects
+`plugins/<id>@<version>/defs.json` plus a `kind: declarative-shapes` variant of
+`manifest.plugins` for validated, used-only shape data and attribution. It is not a
+code-plugin entry and grants no execution permission. Document records remain at 1.7;
+container 1.0's extension preservation remains in force. M18.14 must add typed contracts,
+legacy/unknown-entry round-trip fixtures, integrity checks and offline render tests
+before this extension is implemented.

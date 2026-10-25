@@ -55,6 +55,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0045](ADR-0045-layout-suite-v2-libraries.md) | Layout suite v2: own pure algorithms, ELK only as a pack | accepted | 2026-10-21 |
 | [0046](ADR-0046-live-layout-and-incremental-mode.md) | Live layout frames and incremental mode: a post-commit reactor that amends the edit it follows | accepted | 2026-10-21 |
 | [0047](ADR-0047-smart-template-format.md) | Smart templates: a `TemplateDef` that builds shapes from an items list | accepted | 2026-10-21 |
+| [0048](ADR-0048-shape-pack-format-v1.md) | Declarative shape packs: indexed categories and portable used definitions | accepted | 2026-10-25 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |

@@ -252,3 +252,12 @@ Target: from scaffold to running in the dev studio in under 1 minute.
 | `effects-core` | entrance/exit/emphasis presets, riders (dot, electron, packet), flows | R4 |
 | `layouts-elk` (optional) | elkjs layered/stress/rectpacking in a worker; EPL-2.0, unmodified, lazy | R3 |
 | `routing-libavoid` (optional) | libavoid-js wasm router; LGPL-2.1, separate chunk | R3 |
+
+### M18 declarative shape-pack decision (implementation pending)
+
+[ADR-0048](decisions/ADR-0048-shape-pack-format-v1.md) defines the data boundary beside
+the existing SDK runtime `PackSpec`: a licensed `index.json`, hashed per-category
+`ShapeDef` files, metadata-only search and atomic category registration. Saved files
+carry only used definitions and attribution, pinned by a data-only manifest lock.
+The loader must never execute that data; code-plugin activation remains M27.
+M18.12–14 implement and test this decision before it is a supported authoring format.

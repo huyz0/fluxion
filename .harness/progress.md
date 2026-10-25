@@ -2244,3 +2244,10 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - New gate runs explicit future tests and existing blocking layout limits; absent features fail.
 - Circular-only advisory decision is scheduled for formal ADR/spec/requirement reconciliation.
 - No old interrupted-session changes were recovered; qualification is fresh.
+
+## M18.2 — declarative pack decision (2026-10-25)
+
+- ADR-0048 specifies metadata/category integrity, version identity and SDK registration reuse.
+- Used-only bundles carry attribution and a data-only lock; no executable JSON or trust grant.
+- Document records stay unchanged; implementation must prove legacy preservation and offline rendering.
+- Architecture notes explicitly label this decision as pending implementation (M18.12–14).
