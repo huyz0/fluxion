@@ -2410,3 +2410,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - All 347 builtin operations remain: 346 token-equivalent operations plus the whole-composition deletion.
 - Source inventories are 218/129; ignore directive unchanged. Named definitions retain the 150kB bundle gate (149.91kB).
 - No scheduling, test-project, mutator, timeout or score-floor change; runtime/package qualification remains M18.10.
+
+## M18.57 — Constrain prepared-record diagnostics (2026-10-25)
+
+- Builtin diagnostic at b950f13d completed in 30m39s: all 218 identities validated, with 19 survivors.
+- Assert command identity, nonempty diagnostic detail and exact nonzero-index argument paths for every applyRecords guard.
+- Verify refused batches leave all records and notifications unchanged; successful commits retain their command label.
+- All 19 observed mutations fail the intended assertions; restore the production source after each probe.
+- All 301 core tests pass; existing tests, production behavior, ignore directives, scope and floors stay unchanged.
+- Original nightly 40193583176 finished: 37 mutation partitions passed, 14 confirmed one-hour timeouts; aggregation failed.
+- Full affected-source and current-revision whole-package qualification remain M18.10; partial reports do not close it.

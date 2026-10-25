@@ -80,12 +80,15 @@ describe('built-in commands on several elements (FR-EDT-005)', () => {
 describe('document.applyRecords (FR-AI-010)', () => {
   it('FR-AI-010: puts and deletes a prepared record set in one transaction', () => {
     const { store, run, diffs, s1, a, c, line } = setup();
+    const labels: string[] = [];
+    store.subscribe((_diff, meta) => labels.push(meta.label));
     const kept = store.get(c) as { id: string };
     const moved = { ...(store.get(a) as { id: string; type: string }), name: 'renamed' };
     const before = diffs.length;
     // delete the connector with its end and a binding-free shape; replace another record whole
     expect(run('document.applyRecords', { puts: [moved], deletes: [line] }).ok).toBe(true);
     expect(diffs.length).toBe(before + 1);
+    expect(labels).toEqual(['document.applyRecords']);
     expect(store.has(line as RecordId)).toBe(false);
     expect((store.get(a) as { name?: string }).name).toBe('renamed');
     expect(store.get(c)).toEqual(kept);
@@ -119,5 +122,33 @@ describe('document.applyRecords (FR-AI-010)', () => {
     expect(refused({ puts: [], deletes: [line, line] })).toBe('COMMAND_ARGS');
     expect(store.size).toBe(size);
     expect(store.has(s1 as RecordId)).toBe(true);
+  });
+
+  it('FR-AI-010: refused record sets identify the command and offending argument without committing', () => {
+    const { store, run, diffs, a, c, line } = setup();
+    const rec = store.get(a) as { id: string; type: string };
+    const other = store.get(c) as { id: string; type: string };
+    const doc = store.members('byType', 'document')[0] as string;
+    const snapshot = store.toDocument();
+    const cases = [
+      [{ puts: [other, { ...rec, type: 'screen' }], deletes: [] }, '/args/puts/1/type'],
+      [{ puts: [rec, rec], deletes: [] }, '/args/puts/1/id'],
+      [{ puts: [], deletes: [line, 'Nope000000000000'] }, '/args/deletes/1'],
+      [{ puts: [], deletes: [line, doc] }, '/args/deletes/1'],
+      [{ puts: [rec], deletes: [line, a] }, '/args/deletes/1'],
+      [{ puts: [], deletes: [line, line] }, '/args/deletes/1'],
+    ] as const;
+    for (const [args, path] of cases) {
+      expect(run('document.applyRecords', args)).toMatchObject({
+        ok: false,
+        error: {
+          code: 'COMMAND_ARGS',
+          message: expect.stringMatching(/^document\.applyRecords: \S/),
+          diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path, message: expect.stringMatching(/\S/) }],
+        },
+      });
+      expect(store.toDocument()).toEqual(snapshot);
+      expect(diffs).toEqual([]);
+    }
   });
 });
