@@ -2236,3 +2236,11 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Fresh clean pinned-container run with current closeout metadata: GATE m17 40/40 legs green; full pnpm verify and three-browser checksPASS. No gate/threshold/test changes.
 - Currentfe5687c3 liveCI36/36,gates and nightlyperfPASS; finalfe review approves all implementation. Backlog/roadmap closeout records now reflect observed gate success.
 - Independent closeout review and normal commit pending; nightly40163185594 mutation remains monitored. M18planning follows after closure.
+
+## M18.1 — executable plan (2026-10-25)
+
+- M17 postcommit gate passed 40/40 at 7545e708; final independent review recorded.
+- Archived M17; decomposed M18 into 43 decision, handoff, pack and integration rows.
+- New gate runs explicit future tests and existing blocking layout limits; absent features fail.
+- Circular-only advisory decision is scheduled for formal ADR/spec/requirement reconciliation.
+- No old interrupted-session changes were recovered; qualification is fresh.
