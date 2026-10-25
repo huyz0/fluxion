@@ -95,7 +95,17 @@ leg('mutation aggregation rejects incomplete and failing shards', () =>
 );
 leg('Mermaid ampersand lists and numeric IDs retain nodes and edges', () => tests('packages/dsl/src/import/mermaid-lists.test.ts'));
 
+leg('licensed import corpora are pinned before converter implementation', () =>
+  namedCases('tests/harness/import-corpus.test.mjs', [
+    'SVG corpus pins 50 distinct inputs and feature coverage',
+    'draw.io library denominators include every entry',
+    'fixture provenance and checksums are valid',
+  ]),
+);
+
 const featureTests = [
+  ['direct-pack artwork rejects unsafe nodes, references and excessive resources', 'packages/core/src/shape/artwork.test.ts'],
+  ['checked artwork preserves paint and scopes references without changing legacy rendering', 'packages/render/src/shape-artwork.test.tsx'],
   ['pack schema rejects invalid definitions and missing license', 'packages/core/src/shape/pack-schema.test.ts'],
   ['lazy index and geometry loading', 'packages/editor/src/library/pack-loader.test.ts'],
   ['3 of 5000 definitions embedded and render after offline reopen', 'packages/format/src/embed-used.test.ts'],

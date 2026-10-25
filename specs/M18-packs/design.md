@@ -24,4 +24,9 @@ zero retries remain unchanged except the explicitly authorized circular timing t
 ADR-0048 selects a metadata index plus hashed category files, reusing core validation
 and SDK registration. Used-only canonical bundles have a data-only manifest-lock variant;
 M18.14 must prove offline rendering and old-reader preservation before shipping it.
-Remaining ADR-0049–0051 decisions still precede their implementations.
+ADR-0049 selects checked inert paint separate from the routing outline, shared sanitizer
+policy and bounded existing ZIP/DEFLATE decoding. Direct pack input receives the same
+paint validation. Fixture sources/counts are pinned before converter implementation;
+unsupported entries remain in each draw.io library's denominator. M18.45–47 isolate
+fixture qualification, the behavior-preserving refactor and the artwork API/renderer.
+Remaining ADR-0050–0051 decisions still precede their implementations.

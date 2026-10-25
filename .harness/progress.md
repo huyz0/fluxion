@@ -2260,3 +2260,12 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Full browser suite passed 393/393; local timeout reproduction is not claimed.
 - Failed ladder steps preserve every Vitest heading and complete streams in per-run logs/artifacts.
 - Deliberately failing four-heading probe went red→green; all eight ladder harness tests passed.
+
+## M18.3 — checked import design (2026-10-25)
+
+- Resumed the preserved draft after CI recovery3444fc39 passed all36 jobs and gates.
+- ADR-0049 separates inert visible artwork from the routing outline and shares SVG policy.
+- Existing bounded ZIP/raw-DEFLATE codecs replace the old fflate hypothesis; no new dependency.
+- Pinned corpora, sanitizer refactor and artwork contract now have separate rows M18.45–47.
+- Three additional completion legs require fixture integrity, direct-pack safety and renderer goldens.
+- Original stash and backups remain intact; both pending review-digest records were reconciled.
