@@ -1,12 +1,12 @@
 {
-  "sha": "fe5687c376fdd61ad42cfbadaaa162f93f523865",
-  "recordedAt": "2026-10-25T04:54:55.729Z",
+  "sha": "88965d825b676d268e93baaaf04a5df0ab05d4c7",
+  "recordedAt": "2026-10-25T12:59:00.499Z",
   "runs": {
-    "gates": 40162839699,
-    "ci": 40162839783
+    "gates": 40193567447,
+    "ci": 40193567457
   },
   "perf": {
-    "run": 40163185594,
-    "sha": "fe5687c376fdd61ad42cfbadaaa162f93f523865"
+    "run": 40193583176,
+    "sha": "88965d825b676d268e93baaaf04a5df0ab05d4c7"
   }
 }

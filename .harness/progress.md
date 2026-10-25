@@ -2378,3 +2378,15 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Preserve final-review ancestry and require evidence to cover the latest code commit.
 - Deliberate failures exercise real CLI control flow; synthetic reports are not qualification.
 - Hosted score/timing qualification remains M18.10; no qualifying nightly is recorded yet.
+
+## M18.54 — Constrain evidenced core mutation gaps (2026-10-25)
+
+- Sibling tests constrain loaded parent/index filtering and exact fractional-key counts.
+- SHA-256 encodes its length through a pure internal helper and consumes schedule words in each round.
+- Retain FIPS vectors, million-byte input and stable-ID properties; eight deliberate mutants fail assertions.
+- Core: 299 tests pass; typecheck passes. Complete affected-source mutation: 92/92 inventory parity,
+  87 killed, 2 timeouts, 3 compile errors, zero survivors/uncovered/ignored/runtime errors.
+- This is affected-file qualification, not a whole-package score; M18.10 remains open.
+- Hosted 88965d82 CI: 36/36 pass; gates/perf pass. Nightly remains active with four core job timeouts.
+- Fresh cumulative checkpoint review passes with zero findings; preserve unchanged floors and timeouts.
+- Include the core patch changeset required for the changed package.

@@ -13,7 +13,7 @@ describe('stable ids (ADR-0031, FR-DSL-002, NFR-REL-005)', () => {
     expect(sha256Hex(utf8('abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq'))).toBe(
       '248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1',
     );
-    // a million a's crosses many blocks and the 2^32-bit length word stays right
+    // A million a's exercises repeated compression across many blocks.
     expect(sha256Hex(new Uint8Array(1_000_000).fill(0x61))).toBe('cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0');
     expect(hex(sha256Bytes(utf8('abc')))).toBe(sha256Hex(utf8('abc')));
   });

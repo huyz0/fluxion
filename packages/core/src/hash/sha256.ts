@@ -1,6 +1,8 @@
 // A pure SHA-256 (FIPS 180-4), moved here from `format` (ADR-0031) so the pure compiler can derive stable ids synchronously: `core` has no
 // `node:crypto`, and hosts hash file bytes with SubtleCrypto where they have it. A page opened from `file://` in an engine without
 // SubtleCrypto (the one-file player, ADR-0154) and the tests use this one; `format` re-exports `sha256Hex`.
+import { writeSha256Length } from './sha256-length.js';
+
 const K = Uint32Array.from([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74,
   0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d,
@@ -19,19 +21,19 @@ export function sha256Bytes(data: Uint8Array): Uint8Array {
   padded.set(data);
   padded[data.length] = 0x80;
   const view = new DataView(padded.buffer);
-  view.setUint32(padded.length - 8, Math.floor((data.length * 8) / 2 ** 32));
-  view.setUint32(padded.length - 4, (data.length * 8) >>> 0);
+  writeSha256Length(view, data.length);
   const h = Uint32Array.from([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
   const w = new Uint32Array(64);
   for (let off = 0; off < padded.length; off += 64) {
-    for (let i = 0; i < 16; i++) w[i] = view.getUint32(off + i * 4);
-    for (let i = 16; i < 64; i++) {
-      const a = w[i - 15] as number;
-      const b = w[i - 2] as number;
-      w[i] = ((w[i - 16] as number) + (rotr(a, 7) ^ rotr(a, 18) ^ (a >>> 3)) + (w[i - 7] as number) + (rotr(b, 17) ^ rotr(b, 19) ^ (b >>> 10))) >>> 0;
-    }
     let [a, b, c, d, e, f, g, hh] = h as unknown as number[] as [number, number, number, number, number, number, number, number];
     for (let i = 0; i < 64; i++) {
+      // FIPS 180-4 §6.2.2: generate each schedule word in the round that consumes it.
+      if (i < 16) w[i] = view.getUint32(off + i * 4);
+      else {
+        const x = w[i - 15] as number;
+        const y = w[i - 2] as number;
+        w[i] = ((w[i - 16] as number) + (rotr(x, 7) ^ rotr(x, 18) ^ (x >>> 3)) + (w[i - 7] as number) + (rotr(y, 17) ^ rotr(y, 19) ^ (y >>> 10))) >>> 0;
+      }
       const t1 = (hh + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + (K[i] as number) + (w[i] as number)) >>> 0;
       const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
       hh = g;

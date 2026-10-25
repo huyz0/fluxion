@@ -69,3 +69,22 @@ use explicit fixtures and deliberate failures; they cannot qualify nightly execu
 Only new same-run mutation artifacts are downloaded inside the workflow for aggregation.
 This does not retrieve previously denied logs. Current-revision qualification is recorded
 only after a real successful execution; existing report/issue behavior is retained.
+
+### Evidenced core mutation gaps
+
+M18.54 follows a complete local core-7 run at 88965d82: 346 mutants, eight survivors,
+97.4% partial score. It does not infer a hosted or whole-package result. The core floor
+remains 100%; existing ignored mutants and all mutators/test projects remain unchanged.
+Test sibling selection with mixed parents and non-orderable records, and exact fractional
+key counts including zero. Use deliberate reproductions of the evidenced mutations.
+For SHA-256, factor the existing 64-bit length suffix into a pure internal helper so tests
+can exercise the 2^32-bit boundary without allocating hundreds of megabytes. Preserve
+all existing digest vectors and stable-ID tests; correct the million-byte test comment,
+which incorrectly claims to exercise that boundary. Compute each schedule word in the
+compression round that consumes it, eliminating the separate pass whose extra typed-array
+write has no observable effect. Preserve the existing word equations, storage and 64 rounds.
+Verify padding bytes against independent integer expectations and retain multi-block vectors.
+Run complete affected-source mutation with the existing test projects, not a reduced fixture
+or mutator set; require no surviving/uncovered mutants before qualification of this change.
+No public API, dependency, hash contract, floor, timeout, retry or baseline change is planned.
+Source: [FIPS 180-4 sections 5.1.1 and 6.2.2](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf).
