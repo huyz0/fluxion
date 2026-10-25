@@ -49,7 +49,10 @@ Codex only: trust the project `.codex/` layer when prompted (hooks re-prompt whe
 
 ## 4. Stop, unblock, resume
 
-- The loop stops itself on the conditions in AGENTS.md ("Stop and hand back") and writes the
+- A technical three-attempt stop triggers independent diagnostic review and an explicit in-scope
+  replan (ADR-0176), not automatic human approval. Preserve failed attempts and review evidence;
+  clear that technical stop only after the independent replan is accepted. No unreviewed repeats.
+- For a stop needing a human decision or authorization, the loop writes the
   reason to `state.json` → `blockedReason`. Read the last progress entry, decide, then clear
   `blockedReason` and delete `.harness/tmp/stop-blocks` (the Stop-hook counter persists until the
   gate goes green, so a stale count would end the resumed loop early).

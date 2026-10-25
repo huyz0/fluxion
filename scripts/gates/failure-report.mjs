@@ -33,3 +33,16 @@ export function failureAnnotation(name, details, log) {
   const text = `Verification failed: ${name}\n${excerpt}${log ? `\nFull failure output: ${log}` : ''}`;
   return `::error::${text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`;
 }
+
+/** Successful gates may still report target overruns; never hide them behind a PASS line. */
+export function advisoryLines(stdout) {
+  return stripVTControlCharacters(stdout)
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith('ADVISORY '));
+}
+
+/** Escape advisory data just like errors so it cannot inject a workflow command. */
+export function advisoryAnnotation(name, details) {
+  const text = `Advisory target exceeded: ${name}\n${details.join('\n')}`.slice(0, 16000);
+  return `::warning::${text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`;
+}

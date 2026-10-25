@@ -9,7 +9,8 @@ Standard: `docs/standards/review.md`.
 
 ## As the author
 
-1. Stage exactly what will be committed. Run `verify`.
+1. Stage exactly what will be committed. The context command below runs `verify`; do not
+   separately repeat the same staged ladder immediately before it (ADR-0176).
 2. Build the packet: `node scripts/harness/review.mjs context --task <ID> > .harness/tmp/packet.md`
    (task row, staged diff or delta since last round, standards selected from paths, gates passed).
    The packet never contains your reasoning — do not add any.

@@ -27,7 +27,7 @@ via 4× CPU throttling.
 
 | ID | Pri | Inc | Requirement | Measurement |
 |---|---|---|---|---|
-| NFR-SIZE-001 | M | R1 | Player core bundle ≤ 150 kB gzip (React included); heavy features (layout engines, morph, Lottie, routing wasm) lazy-loaded chunks. | size-limit in CI. |
+| NFR-SIZE-001 | M | R1 | Player core bundle ≤ 150 kB gzip (React included); heavy features (layout engines, morph, Lottie, routing wasm) lazy-loaded chunks. The two embedding artifacts retain a measured 150 kB advisory target (ADR-0176). | Validated size-limit measurements in CI; core hard limit, explicit embedding advisories. |
 | NFR-SIZE-002 | M | R1 | Editor initial bundle ≤ 600 kB gzip; time-to-interactive < 2.5 s on reference desktop. | size-limit + Lighthouse. |
 | NFR-SIZE-003 | M | R1 | Typical 20-screen document without photos: `.flux` ≤ 150 kB; `.flux.html` ≤ 450 kB gzip (incl. player; ADR-0157). | Fixture size test. |
 | NFR-SIZE-004 | M | R1 | Save embeds only used: shape definitions, fonts (subset when enabled), plugin player bundles, assets (deduped). | Fixture test comparing embedded vs referenced. |

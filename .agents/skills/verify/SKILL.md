@@ -15,7 +15,7 @@ Standard: `docs/standards/testing.md` §gates, `docs/standards/ci-cd.md`.
 | pre-commit | `node scripts/gates/precommit.mjs --staged` | before review and commit (the hook runs it too) |
 | full | `pnpm verify` (== `precommit.mjs --all`, same as CI) | after rebase, before milestone checkpoint |
 | E2E | `pnpm e2e` (Playwright, chromium) / `pnpm e2e:all` | UI-affecting tasks (`ui-check`) |
-| milestone | `node scripts/gates/m<N>-complete.mjs` | after every commit in `drive` |
+| milestone | `node scripts/gates/m<N>-complete.mjs` | checkpoints/final closeout, after evidence-affecting rebase, or changed-leg investigation |
 
 `precommit.mjs` runs, in order, only the steps that exist at the current milestone and prints
 one line per step: `PASS|FAIL|SKIP <step> (<ms>)`. SKIP must state why (e.g. "no packages yet").
@@ -28,7 +28,7 @@ one line per step: `PASS|FAIL|SKIP <step> (<ms>)`. SKIP must state why (e.g. "no
 3. Never bypass (`--no-verify`, `SKIP=`, editing thresholds). If a gate is wrong, that is its
    own task with its own review.
 4. Staged vs working tree: `--staged` checks what will be committed. Stage first
-   (`git add -A` on intended files only), then verify, then review, then commit **without
+   (`git add -A` on intended files only), then verify through the review packet, review, and commit **without
    restaging** — the review verdict is bound to the staged diff hash.
 
 ## Output block
@@ -37,3 +37,7 @@ one line per step: `PASS|FAIL|SKIP <step> (<ms>)`. SKIP must state why (e.g. "no
 VERIFY precommit: PASS (41.2s) — typecheck PASS, lint PASS, test PASS (412), layering PASS,
 size PASS, trace PASS, portability PASS, reviewed SKIP(before review); commit-msg hook: tests-kept, drift
 ```
+
+ADR-0176: `review.mjs context` runs the staged ladder itself. Do not run an identical
+staged ladder immediately beforehand. Normal commit hooks and full automatic CI still run.
+Embedding bundle advisories retain measured failures; hard budgets and correctness still fail.

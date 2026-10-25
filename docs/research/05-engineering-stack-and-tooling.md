@@ -444,3 +444,63 @@ Sources: [React 19.3 release](https://github.com/react/react/releases/tag/v19.3.
 | moon v2 | 2026-02-18 | [moonrepo.dev](https://moonrepo.dev/blog/moon-v2.0) |
 | Vite+ beta | Aug 2026 | [VoidZero](https://voidzero.dev/posts/announcing-vite-plus-beta) |
 | Knip v6 | 2026 (6.37.x in Sep) | [knip.dev](https://knip.dev/blog/knip-v6) |
+
+## 2026-10-25 — Native TypeScript, provisional tsrs, and Bun
+
+The user's “typers” name is not yet confirmed; tsrs is the provisional comparison, not an
+assumed package choice. No runtime/compiler dependency was changed for this investigation.
+
+| Candidate | Relevant capability | Fluxion constraint |
+|---|---|---|
+| TypeScript 7.0.2 | Native Go compiler; already drives `tsc -b` | Keep declaration generation and the TS6 compiler-API compatibility pins |
+| tsrs | Rust port of the TS7 checker, not a runtime | Experimental compatibility; fast mode can change diagnostics and exit status in known cases |
+| Bun 1.4 | Runtime/tool suite with `bun check`; can host the existing Playwright runner | `bun check` writes no declarations or persistent build-info cache; hosting Playwright is distinct from replacing tests with `bun test` |
+
+Sources checked on 2026-10-25: [TypeScript 7 announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/),
+[tsrs compatibility/fast-mode notes](https://github.com/oxc-project/tsrs),
+[Bun check differences](https://bun.com/docs/runtime/check#differences-from-tsc), and
+[Bun 1.4 announcement](https://bun.com/blog/bun-v1.4). Claims here summarize upstream
+capabilities; none is a Fluxion speed comparison.
+
+Measured at main 7a0803cd in an isolated worktree, Node22.19.0/pnpm11.28.0, TS7.0.2:
+one forced `tsc -b --force` 4.820 s; three unchanged warm `tsc -b` runs 0.577/0.545/0.511 s
+(median0.545, range0.066). Each exited0. This is a local timing sample, not a cross-machine
+benchmark or a comparison with tsrs/Bun. Bun was not installed. The M18.64 staged ladder
+took316 s: tests308 s, harness185 s, typecheck0.817 s; these concurrent steps must not be summed.
+
+Recommendation: retain the already-native compiler and authoritative Node/Vitest/Playwright
+configuration. Apply ADR-0176's redundant full-gate reduction first. If a later isolated Bun
+or tsrs experiment is justified, pin versions and exact source/config, equalize CPU limits,
+run cold/warm/incremental samples with median/spread/peak RSS, and compare deliberate-error
+diagnostics/exit codes and emitted declarations. Include package aliases, conditional exports,
+browser provider/coverage and child-process behavior. Never use tsrs fast mode as an authoritative
+checker merely because an upstream benchmark is faster; do not silently substitute `bun test`.
+
+### Isolated Bun 1.4.4 probe (same date)
+
+Installed the MIT-licensed `@oven/bun-linux-x64@1.4.4` outside the repo with install scripts
+disabled; package integrity is recorded with the experiment. Bun reports TypeScript7.0.2,
+matching the repo. Same four-CPU affinity, existing configs, three samples each; local shared
+host, not an isolated performance lab. One small harness probe overlapped the last Bun test
+sample, so treat timing as preliminary. All commands and raw reports are retained externally.
+
+| Operation | Median seconds | Range seconds | Peak RSS range (KiB) |
+|---|---:|---:|---:|
+| Native TS7 forced build | 4.348 | 4.304–4.434 | 735392–947404 |
+| Bun full check | 1.014 | 0.956–1.141 | 389512–395748 |
+| Native TS7 warm build | 0.115 | 0.114–0.119 | 30176–30716 |
+| Existing core Vitest suite under Node | 10.480 | 10.414–12.185 | 181708–278644 |
+| Same Vitest suite under Bun | 8.853 | 8.513–9.559 | 209076–306996 |
+
+All six test runs passed the same306 tests with no skips/failures. Both checkers returned
+exit1 and TS2322 for the same deliberate number/string assignment error. This single error
+is a parity probe, not proof of full compiler compatibility. RSS is fresh child-wrapper
+RUSAGE_CHILDREN maximum, not aggregate concurrent RAM. Forced TS builds emit declarations;
+Bun's check does not, so their full-run times are not equivalent build measurements.
+
+Keep native TS7 for its incremental/declaration path and Node for authoritative gates. Bun
+hosting the existing core test runner is a useful optional inner-loop experiment (about15.5%
+lower median here, with higher test RSS): `bun node_modules/vitest/vitest.mjs run packages/core/src --project=node --maxWorkers=2`.
+Browser coverage, all-platform semantics and complete gate parity are unmeasured; do not
+change default CI or install a repository runtime dependency based on this sample. tsrs
+remains research-only until the user's name is confirmed and a pinned compatible build is evaluated.

@@ -18,7 +18,9 @@ milestone's completion command exiting 0 — never by your opinion.
 3. Run `node scripts/harness/last-ci.mjs` (main's newest completed `ci` and `gates` runs). If it
    exits 1, main's CI is red: fixing it is the first task, before any row (M4 final F3). Exit 2
    means a newer run (the fix) is still pending: wait for it and run last-ci again; do not fix twice.
-4. If `state.json.blockedReason` is set, report it and stop — a human must clear it.
+4. If `state.json.blockedReason` needs a human decision or denied authorization, report and stop.
+   A technical three-attempt stop instead requires independent diagnostic review and an explicit
+   in-scope replan before clearing it (ADR-0176); preserve the failed attempts and review evidence.
 
 ## 2. Preconditions
 
@@ -30,7 +32,7 @@ milestone's completion command exiting 0 — never by your opinion.
 ## 3. The loop
 
 ```
-until node scripts/gates/m<N>-complete.mjs exits 0:
+while the milestone is not qualified complete:
   1  next-task          top unblocked row → state.json.currentTask, row state=doing
   2  spec check         EARS acceptance criteria present & checkable? else `spec`
   3  tdd                failing test (named with FR/NFR id) → watch fail → implement → pass
@@ -42,7 +44,9 @@ until node scripts/gates/m<N>-complete.mjs exits 0:
   8  fix or argue       blocking/major fixed (then back to 6); minors → rows/argued
   9  commit             "<ID>: <type>(<scope>): <summary>" + Co-Authored-By trailer,
                         without restaging (verdict is bound to the staged hash)
- 10  gate               run the completion command; print its summary lines
+ 10  gate               at checkpoints/final closeout (or a changed leg needing investigation),
+                        run the completion command and print its summary; otherwise report
+                        scoped verification and automatic CI, without claiming a full-gate pass
 ```
 
 The commit for a row is found with `git log --grep "^<ID>:"`; the backlog's Commit column is
@@ -60,12 +64,15 @@ The milestone ends by disposition, not by an empty backlog.
 
 ## 5. Stop conditions — stop, record `blockedReason`, report
 
-- A gate still fails after 3 genuine fix attempts on the same cause.
+- After 3 genuine failed attempts, stop the approach and obtain independent diagnostic review
+  and a concrete in-scope replan. Preserve evidence/counters; no unreviewed fourth repeat.
+  Ask the human only if that replan needs unresolved scope, security/license policy, destructive
+  action, denied access or authorization beyond the session.
 - A decision is needed: ambiguous requirement, conflicting standards, unplanned contract change.
 - The spec is wrong and correcting it changes scope or a requirement (write it up via `spec`/`adr`).
 - The top 3 unblocked rows are all blocked.
 - The completion gate is green but the milestone is obviously not done (gate bug = finding).
-- The next step is destructive or outward-facing (push, publish, delete data, external calls).
+- The next step is destructive or outward-facing without applicable standing authorization.
 - Goal turn budget nearly spent: leave the tree green and the progress log current.
 
 ## 6. Evidence rule

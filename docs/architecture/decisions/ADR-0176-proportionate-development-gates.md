@@ -99,7 +99,7 @@ No runtime migration is authorized by a timing claim alone. Bun is not installed
 
 ## Links
 
-- [Implementation spec](../../../specs/M18-gate-policy/proposal.md)
+- [Implementation spec](../../../specs/archive/M18-gate-policy/proposal.md)
 - [NFR-SIZE and NFR-MNT](../../requirements/30-non-functional.md)
 - [Mutation tool and original floor policy](ADR-0146-mutation-testing-tzap.md)
 - [Player packaging](ADR-0026-player-packaging.md)

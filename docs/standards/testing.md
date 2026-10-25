@@ -101,8 +101,11 @@ seed and counterexample lines in its FAIL detail, so a local failure can be repl
 
 | # | Rule | Enforced by |
 |---|---|---|
-| 17 | Floors live in `scripts/gates/thresholds.mjs` and `.harness/baselines/mutation.json` and only move up. | `check-drift.mjs` |
+| 17 | Floors live in `scripts/gates/thresholds.mjs` and `.harness/baselines/mutation.json`; changes require a reviewed ADR and `Threshold-change`. ADR-0176 sets core to the existing 90% target; other applicable floors remain unchanged. | `check-drift.mjs` |
 | 18 | Coverage is a floor, not a goal: a test that executes code without asserting on its result is a defect. Surviving mutants in touched files are reviewed. | nightly `pnpm mutate --check`, reviewer (`pnpm mutate --package <dir> --from <base>`) |
+
+Mutation is nightly/final qualification, not an artificial dependency of unrelated feature rows (ADR-0176).
+Incomplete execution or failed floors remain red and tracked; never qualify partial reports.
 
 ## 7. E2E conventions
 

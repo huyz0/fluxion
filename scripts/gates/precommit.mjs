@@ -13,7 +13,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { failureAnnotation, failureLines, writeFailureLog } from './failure-report.mjs';
+import { advisoryAnnotation, advisoryLines, failureAnnotation, failureLines, writeFailureLog } from './failure-report.mjs';
 import {
   evalNeeded,
   examplesNeeded,
@@ -210,7 +210,12 @@ const STEPS = [
     () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'),
     () => node('scripts/gates/check-packages.mjs', ['--tool', 'attw', ...packagingArgs()]),
   ],
-  ['size-limit', (m) => m !== 'quick', () => (hasPkg && exists('.size-limit.js')) || 'size-limit not configured', () => pnpm('exec', 'size-limit')],
+  [
+    'size-limit',
+    (m) => m !== 'quick',
+    () => (hasPkg && exists('.size-limit.js')) || 'size-limit not configured',
+    () => node('scripts/gates/check-bundle-size.mjs'),
+  ],
   [
     'layering',
     (m) => m !== 'quick',
@@ -284,7 +289,11 @@ async function runStep([name, , available, exec]) {
   // a tool that exits 0 but reports "<tool>: SKIP — <why>" did not run its check (M1 cp1 F3)
   const nested = r.status === 0 ? nestedSkip(r.stdout) : null;
   if (nested) return { lines: [`SKIP ${name} — ${nested}`], ok: true };
-  if (r.status === 0) return { lines: [`PASS ${name} (${ms}ms)`], ok: true };
+  if (r.status === 0) {
+    const advisories = advisoryLines(r.stdout);
+    if (advisories.length && process.env.GITHUB_ACTIONS === 'true') console.log(advisoryAnnotation(name, advisories));
+    return { lines: [`PASS ${name} (${ms}ms)`, ...advisories], ok: true };
+  }
   const log = writeFailureLog(name, r, `${started}-${process.pid}`);
   const failure = failureLines(r.stdout, r.stderr);
   // Emit immediately: later steps may fail or time out; keep normal output and artifacts intact.

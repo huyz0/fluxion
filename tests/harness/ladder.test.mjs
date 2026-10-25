@@ -47,6 +47,24 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
     }
   });
 
+  it('NFR-DX-003: successful gates retain advisory lines and escaped warnings even in summaries', () => {
+    for (const summary of [false, true]) {
+      const sb = sandbox();
+      try {
+        sb.write('.github/workflows/ci.yml', 'name: ci\n');
+        sb.write('scripts/gates/check-workflows.mjs', "console.log('ADVISORY embedding target 150112 > 150000 %0A::error::inert');\n");
+        const args = ['--all', ...(summary ? ['--summary'] : [])];
+        const result = sb.node('scripts/gates/precommit.mjs', args, { env: { ...process.env, GITHUB_ACTIONS: 'true' } });
+        assert.match(result.stdout, /^PASS workflows/m, out(result));
+        assert.match(result.stdout, /^ADVISORY embedding target 150112 > 150000 %0A::error::inert$/m);
+        assert.match(result.stdout, /::warning::Advisory target exceeded: workflows%0AADVISORY.*%250A::error::inert/);
+        assert.doesNotMatch(result.stdout, /^::error::/m);
+      } finally {
+        sb.cleanup();
+      }
+    }
+  });
+
   it('a failing step shows its "failing tests" list even when the report is long (M1.39)', () => {
     const sb = sandbox();
     try {

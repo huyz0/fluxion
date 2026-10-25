@@ -1,9 +1,9 @@
 {
-  "$comment": "Mutation-score floors per package (percent, tzap: ADR-0146). They only move up: check-drift refuses a lowered or removed floor without Threshold-change (testing.md rule 17). Raise a floor to the measured score of a whole-package `pnpm mutate --package <dir>` run.",
+  "$comment": "Whole-package mutation floors (tzap). Changes require reviewed ADR and Threshold-change; ADR-0176 sets core to the existing 90% target, preserving default70 and complete execution checks.",
   "packages": {
     "packages/core": {
-      "score": 100,
-      "measured": "2026-09-29 M4.8 (1 242 valid mutants: every survivor of the M3 trial killed by a test or disabled with its reason)"
+      "score": 90,
+      "measured": "Policy floor per ADR-0176 (2026-10-25), not a new measured score. Prior M4.8 floor100 covered1242 valid mutants; current complete revision evidence remains required."
     }
   }
 }

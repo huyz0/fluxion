@@ -311,7 +311,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PERF-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/bench/transact-5000.bench.ts` +3 |
 | NFR-PERF-007 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-008 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `packages/player-inline/src/inline.browser.test.ts` +2 |
+| NFR-SIZE-001 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `packages/player-inline/src/inline.browser.test.ts` +3 |
 | NFR-SIZE-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `tests/harness/editor-budget.test.mjs` |
 | NFR-SIZE-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.size.spec.ts`, `packages/format/src/size-budget.test.ts` |
 | NFR-SIZE-004 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` |
@@ -347,7 +347,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-MNT-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/biome.test.mjs` +2 |
 | NFR-MNT-003 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/biome.test.mjs`, `tests/harness/size.test.mjs` |
 | NFR-MNT-004 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `apps/docs/src/index.test.ts` +21 |
-| NFR-MNT-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | `tests/harness/mutate.test.mjs` +8 |
+| NFR-MNT-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | `tests/harness/bundle-policy.test.mjs` +9 |
 | NFR-MNT-006 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/commands.test.ts` +5 |
 | NFR-MNT-007 | M | R0 | M1, M33 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/result-convention.test.ts` +2 |
 | NFR-MNT-008 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/api.test.mjs` +2 |
@@ -359,7 +359,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-OBS-002 | S | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/diagnostic-button.browser.test.tsx`, `apps/studio/src/diagnostic-report.test.ts` |
 | NFR-DX-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/budget.test.mjs` +2 |
 | NFR-DX-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/budget.test.mjs` +6 |
-| NFR-DX-003 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/adapters.test.mjs` +12 |
+| NFR-DX-003 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/adapters.test.mjs` +13 |
 | NFR-DX-004 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` +3 |
 | NFR-LIC-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/licenses.test.mjs`, `tests/harness/workspace-shape.test.mjs` |
 | NFR-LIC-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/drift.test.mjs` +2 |

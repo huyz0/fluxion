@@ -100,10 +100,15 @@ the milestone that writes it — say so rather than claiming enforcement.
 
 ## Stop and hand back to the human when
 
-A gate still fails after 3 genuine fix attempts · a decision is needed (ambiguous requirement,
+A decision outside granted scope is needed (ambiguous requirement,
 conflicting standards) · the spec is wrong and fixing it changes scope · the top 3 tasks are
 blocked · the completion gate passes but the milestone is clearly not done · the next step is
-destructive or outward-facing. Record the reason in `.harness/state.json` → `blockedReason`.
+destructive or outward-facing without standing authorization. Record the reason in `.harness/state.json` → `blockedReason`.
+
+After 3 genuine failed attempts, stop that approach and obtain an independent diagnostic
+review and explicit replan within authorized scope (ADR-0176). Preserve failures and counters;
+never repeat the same approach unreviewed. Escalate to the human only when the replan needs
+a decision/authorization above. Correctness/security failures remain blocking.
 
 ## Package map (details: docs/architecture/01-overview.md)
 

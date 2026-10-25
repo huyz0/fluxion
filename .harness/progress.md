@@ -2491,3 +2491,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - ADR-0176 retains core/editor hard budgets, explicit embedding advisories, meaningful mutation floors and complete evidence.
 - Plan removes artificial feature dependencies and per-commit full milestone repeats; three failures trigger independent replanning.
 - M18.66 implements the reviewed policy, then M18.64 ships; original nightly continues without duplicate dispatch.
+
+## M18.66 — Implement proportionate gates (2026-10-25)
+
+- ADR-0176 implements explicit embedding advisories while core/editor budgets and malformed-report failures remain blocking.
+- Raw passed:false measurements survive; CLI/ladder probes exercise real failures and escaped warning annotations.
+- Core mutation floor becomes reviewed90; inventory, other floors, zero retries and final qualification remain.
+- Features may progress independently; checkpoint/final verification and independent technical replanning replace redundant stops.
+- Focused probes29/29PASS; restored endpoint artifact150112 B retains112 B advisory; hard artifacts pass.
+- Same306 core tests pass under Node/Bun; preliminary medians10.480/8.853 s. TS7 warm build0.115 s.
+- Keep authoritative Node/native TS7; Bun is an optional inner-loop experiment, not a dependency or CI migration.

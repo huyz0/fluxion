@@ -14,9 +14,23 @@ that exists only in YAML is a bug.
 |---|---|---|---|
 | quick | PostToolUse hook, on demand | `pnpm verify:fast` = `precommit.mjs --quick` (incremental `tsc -b`, `biome ci .`, `vitest run --changed`, harness checks) | < 180 s (ADR-0164) |
 | pre-commit | `.githooks/pre-commit` | `node scripts/gates/precommit.mjs --staged` (runs what the staged paths can affect: `ladder-scope.mjs`; the rest runs in CI) | ≤ 900 s (`check-budget.mjs`, ADR-0166) |
-| milestone | drive loop | `node scripts/gates/m<n>-complete.mjs` | per milestone |
+| milestone | checkpoints and final closeout | `node scripts/gates/m<n>-complete.mjs` | per milestone |
 | CI | PR, merge queue, push to `main` | `pnpm verify` (= `precommit.mjs --all`) + E2E, visual, a11y, size, API, license, security | ≤ 15 min wall |
 | nightly | cron | mutation, long property runs, perf benchmarks, live AI eval, cross-OS visual | ≤ 90 min |
+
+### Proportionate development policy (ADR-0176)
+
+Each task retains scoped review-packet verification, independent review, normal hooks and
+full automatic CI. Do not separately repeat the staged ladder immediately before generating
+its review packet: the packet runs it. Run the full milestone command at checkpoints/final
+closeout, after a rebase affecting its evidence, or when a changed leg needs investigation;
+intermediate commits do not each repeat the entire milestone suite. Report unrun checks honestly.
+
+`check-bundle-size.mjs` retains all four raw size-limit measurements. Player core 150000 and
+editor initial 600000 bytes are blocking; player-inline and the embedding script keep 150000-byte
+advisory targets. Overruns print ADVISORY with actual bytes, never a fabricated passing target.
+Missing/duplicate/unknown/invalid reports and tool failures fail closed. Document size, loading
+performance, lazy-loading, correctness, coverage, security and license gates remain blocking.
 
 ## 2. Rules
 
