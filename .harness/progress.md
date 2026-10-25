@@ -2348,3 +2348,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Deliberate failing-step probes cover normal/summary output and workflow-command escaping.
 - This restores observability; it does not claim to fix the unknown macOS failure.
 - M18.50 remains isolated in its original worktree with passing review preserved.
+
+## M18.50 — isolated mutation report production (2026-10-25)
+
+- Collect every pure package/source/mutant at a clean revision before execution.
+- Fingerprint tracked inputs, engine/Node versions and relevant test settings.
+- Wrap the unchanged full-package mutation command; preserve raw reports and timings.
+- Revalidate inputs after execution; failed/partial evidence never becomes a passing envelope.
+- Seventeen focused tests pass, including stale output, input-race and environment regressions.
+- Synthetic engine fixtures exercise control flow only, not mutation qualification.
+- Nightly matrix wiring and current-revision qualification remain M18.10.

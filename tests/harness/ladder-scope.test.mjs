@@ -138,6 +138,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'google-fonts',
       'kind-switch',
       'milestone-checks',
+      'mutation-runner',
       'nightly-diagnostics',
       'mode-policy',
       'packages',

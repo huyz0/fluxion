@@ -46,7 +46,8 @@ export const SOURCE_HARNESS = [
  * configs, licences): a manifest change runs them through MANIFEST_HARNESS, any other non-source
  * path runs the whole harness (adapters, licenses, turbo). --all runs them all.
  */
-export const SAMPLE_HARNESS = ['adapters', 'api', 'coverage', 'ladder', 'layering', 'licenses', 'mutate', 'packages', 'turbo'];
+// mutation-runner constructs miniature workspaces; it does not copy real package sources.
+export const SAMPLE_HARNESS = ['adapters', 'api', 'coverage', 'ladder', 'layering', 'licenses', 'mutate', 'mutation-runner', 'packages', 'turbo'];
 
 /**
  * Harness files that read a workspace manifest or the lockfile of the real repo (every harness file
@@ -64,6 +65,7 @@ export const MANIFEST_HARNESS = [
   'layering',
   'licenses',
   'milestone-checks',
+  'mutation-runner',
   'nightly-diagnostics',
   'packages',
   'test-titles',
