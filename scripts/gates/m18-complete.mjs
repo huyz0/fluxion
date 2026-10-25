@@ -136,7 +136,15 @@ const PACKS = [
 ];
 for (const pack of PACKS) leg(`${pack}: every definition validates and has a nonempty passing visual golden`, () => tests(`packs/${pack}/src/pack.test.ts`));
 leg('all first-party packs searchable within library search budget', () => tests('packages/editor/src/library/first-party-packs.test.ts'));
-leg('pack licenses and attribution policy enforced', () => command('scripts/gates/check-licenses.mjs', ['--packs']));
+leg('pack licenses and attribution policy enforced', () => {
+  const checked = command('scripts/gates/check-licenses.mjs', ['--packs']);
+  return checked === true
+    ? namedCases('tests/harness/licenses.test.mjs', [
+        'asset-only licenses do not authorize code dependencies',
+        'missing pack notices and forbidden asset licenses fail',
+      ])
+    : checked;
+});
 // This probe prevents a currently ignored --packs option from standing in for the policy.
 leg('pack license gate rejects missing and forbidden licenses', () =>
   namedCases('tests/harness/licenses.test.mjs', ['pack missing license fails', 'pack forbidden license fails']),

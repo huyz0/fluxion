@@ -261,3 +261,8 @@ the existing SDK runtime `PackSpec`: a licensed `index.json`, hashed per-categor
 carry only used definitions and attribution, pinned by a data-only manifest lock.
 The loader must never execute that data; code-plugin activation remains M27.
 M18.12–14 implement and test this decision before it is a supported authoring format.
+
+[ADR-0050](decisions/ADR-0050-pack-license-attribution.md) supplements that pending format
+with source credits and used-subset attribution. Content-asset permissions never authorize
+code dependencies; current code/font policy stays unchanged. M18.12/14/33 implement
+validation, portable credits and the license gate/player UI before these are supported.

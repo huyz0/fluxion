@@ -2269,3 +2269,11 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Pinned corpora, sanitizer refactor and artwork contract now have separate rows M18.45–47.
 - Three additional completion legs require fixture integrity, direct-pack safety and renderer goldens.
 - Original stash and backups remain intact; both pending review-digest records were reconciled.
+
+## M18.4 — source credits and license boundaries (2026-10-25)
+
+- ADR-0050 preserves existing code/content/font allowlists and named exceptions.
+- Pack and scoped source credits retain notices/provenance; used subsets remain offline-readable.
+- Generic first-party cloud symbols remain the rule; no vendor rights are inferred.
+- Strengthened the completion leg to require negative asset/code policy and missing-notice cases.
+- Schema, persistence and credits UI remain implementation tasks M18.12/14/33.

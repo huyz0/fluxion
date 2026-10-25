@@ -29,4 +29,7 @@ policy and bounded existing ZIP/DEFLATE decoding. Direct pack input receives the
 paint validation. Fixture sources/counts are pinned before converter implementation;
 unsupported entries remain in each draw.io library's denominator. M18.45–47 isolate
 fixture qualification, the behavior-preserving refactor and the artwork API/renderer.
-Remaining ADR-0050–0051 decisions still precede their implementations.
+ADR-0050 preserves code/content/font policy boundaries and adds source-scoped credits.
+Every used subset retains applicable notices, with offline player rendering; a wrapper's
+license cannot erase source rights. Existing code-only license checks are insufficient.
+ADR-0051 still precedes font implementation.
