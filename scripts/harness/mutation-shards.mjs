@@ -71,7 +71,7 @@ export function createManifest({ revision, runner, version, packages, files, mut
   return { schemaVersion: 1, revision, runner, version, packages: names, files: sources, mutants, floors: Object.fromEntries(limits) };
 }
 
-function checkManifest(manifest) {
+export function checkManifest(manifest) {
   requireValue(manifest?.schemaVersion === 1 && object(manifest.floors), 'invalid manifest');
   const floors = Object.fromEntries(Object.entries(manifest.floors).map(([pkg, score]) => [pkg, { score }]));
   const checked = createManifest({ ...manifest, floors });
@@ -105,16 +105,23 @@ function checkReport(manifest, shard) {
   return actual;
 }
 
-function checkShard(manifest, shard) {
+export function validateShard(manifest, shard) {
   requireValue(shard?.schemaVersion === 1 && shard.exitCode === 0, 'failed or malformed shard');
   requireValue(shard.revision === manifest.revision && shard.runner === manifest.runner, 'revision or runner mismatch');
   const files = sorted(Object.entries(manifest.files).filter(([file]) => under(file, shard.package)));
   requireValue(equal(checkedFiles(shard.files, [shard.package]), files), 'source inventory mismatch');
-  const mutants = checkReport(manifest, shard);
+  return checkReport(manifest, shard);
+}
+
+export function hasValidMutants(mutants) {
+  return mutants.some((mutant) => valid.has(mutant.status));
+}
+
+export function scoreMutants(manifest, packageName, mutants) {
   const count = mutants.filter((m) => valid.has(m.status)).length;
   requireValue(count > 0, 'no valid mutants to score');
   const killed = mutants.filter((m) => m.status === 'Killed' || m.status === 'Timeout').length;
-  return { package: shard.package, valid: count, total: mutants.length, score: (100 * killed) / count, floor: manifest.floors[shard.package] };
+  return { package: packageName, valid: count, total: mutants.length, score: (100 * killed) / count, floor: manifest.floors[packageName] };
 }
 
 /** Reject incomplete/failed shards and recompute each package score against the expected floors. */
@@ -128,7 +135,7 @@ export function aggregateShards(manifest, shards) {
     for (const shard of shards) {
       requireValue(expected.packages.includes(shard?.package) && !seen.has(shard.package), 'unexpected or duplicate shard');
       seen.add(shard.package);
-      const score = checkShard(expected, shard);
+      const score = scoreMutants(expected, shard.package, validateShard(expected, shard));
       scores.push(score);
       if (score.score < score.floor) errors.push(`${score.package}: ${score.score.toFixed(1)} % < ${score.floor} %`);
     }

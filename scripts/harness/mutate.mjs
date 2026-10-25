@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Mutation testing with tzap (ADR-0146, NFR-MNT-005).
 //   pnpm mutate [--package <dir>]... [--from <ref>] [--out-dir <dir>] [--check]
+//   --sources-file FILE selects explicit source paths for a diagnostic partition; no --from/--check.
 // Mutates the sources of the chosen packages (default: every pure package) and runs the repo's own
 // Vitest through tzap; writes <out-dir>/tzap.json (default reports/tzap) and prints each package's
 // score. --from <ref> mutates only lines changed since <ref> (working tree included). --check fails
@@ -23,6 +24,32 @@ const pure = () =>
 const packages = values('--package').length ? values('--package').map((p) => p.replace(/\\/g, '/').replace(/\/$/, '')) : pure();
 const outDir = resolve(REPO_ROOT, values('--out-dir')[0] ?? 'reports/tzap');
 const from = values('--from')[0];
+const sourcesFile = values('--sources-file')[0];
+let sourceFiles;
+if (sourcesFile) {
+  try {
+    if (from || argv.includes('--check')) throw new Error('partial sources cannot use diff scope or claim a package floor');
+    sourceFiles = JSON.parse(readFileSync(resolve(REPO_ROOT, sourcesFile), 'utf8'));
+    if (
+      !Array.isArray(sourceFiles) ||
+      sourceFiles.length === 0 ||
+      new Set(sourceFiles).size !== sourceFiles.length ||
+      !sourceFiles.every(
+        (file) =>
+          typeof file === 'string' &&
+          /\.tsx?$/.test(file) &&
+          !/[\\*?[\]{}]/.test(file) &&
+          !file.split('/').some((part) => part === '.' || part === '..') &&
+          packages.some((pkg) => file.startsWith(`${pkg}/src/`)) &&
+          existsSync(repoPath(file)),
+      )
+    )
+      throw new Error('invalid explicit mutation sources');
+  } catch (error) {
+    console.error(`mutate: ${error.message}`);
+    process.exit(2);
+  }
+}
 
 if (!existsSync(TZAP)) {
   console.error('mutate: @huyz0/tzap is not installed (pnpm install)');
@@ -54,7 +81,7 @@ if (model.packages.length !== 1) {
   console.error(`mutate: expected one root package from tzap discovery, got ${model.packages.length}`);
   process.exit(3);
 }
-model.packages[0].sources = packages.map((p) => `${p}/${SOURCES}`);
+model.packages[0].sources = sourceFiles ?? packages.map((p) => `${p}/${SOURCES}`);
 // a model's root resolves against the model file's folder: pin it to the repo
 model.root = REPO_ROOT;
 mkdirSync(outDir, { recursive: true });
@@ -87,9 +114,9 @@ const floors = existsSync(repoPath(FLOORS)) ? (JSON.parse(readFileSync(repoPath(
 const below = [];
 for (const p of packages) {
   const s = scoreOf(mutants, p);
-  const floor = floors[p]?.score;
+  const floor = sourceFiles ? undefined : floors[p]?.score;
   console.log(
-    `mutate: ${p}: ${s.score.toFixed(1)} % of ${s.valid} valid mutants (${s.noCoverage} uncovered)${floor === undefined ? '' : `, floor ${floor} %`}`,
+    `mutate: ${p}: ${s.score.toFixed(1)} % of ${s.valid} valid mutants (${s.noCoverage} uncovered)${floor === undefined ? '' : `, floor ${floor} %`}${sourceFiles ? ' (partial sources; not a package floor)' : ''}`,
   );
   // a diff-scoped run scores only the changed lines: floors judge whole-package runs
   if (!from && floor !== undefined && s.score < floor) below.push(`${p} ${s.score.toFixed(1)} % < ${floor} %`);

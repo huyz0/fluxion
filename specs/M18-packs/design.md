@@ -40,3 +40,12 @@ ADR-0171 keeps the unchanged circular-500 fixture and 2000 ms target, accepting 
 valid measured timing overrun as advisory. Process/report failures still fail. Other
 layout limits and circular correctness remain blocking; required M18 constants are
 60000 font bytes, 4 SVG anchors and 90 percent draw.io import, without exceptions.
+
+## Mutation execution completeness
+
+ADR-0173 adds whole-source-file groups after the package-only DSL diagnostic exceeded the
+existing timeout. M18.52 partitions the independent complete inventory, preserves all tests
+and raw engine reports, and derives package scores only after every group validates. Missing,
+duplicate, failed or incomplete evidence fails; no test, mutator, floor or timeout is relaxed.
+M18.10 wires and qualifies the existing nightly workflow. Diagnostic timings are not hosted
+qualification, and a partial-source score is not a whole-package score.

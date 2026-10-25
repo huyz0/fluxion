@@ -2358,3 +2358,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Seventeen focused tests pass, including stale output, input-race and environment regressions.
 - Synthetic engine fixtures exercise control flow only, not mutation qualification.
 - Nightly matrix wiring and current-revision qualification remain M18.10.
+
+## M18.52 — complete mutation source partitions (2026-10-25)
+
+- ADR-0173 supplements package splitting after the complete DSL diagnostic timed out.
+- A full-test source-file diagnostic completed 688 exact mutants in 486.2 seconds.
+- Partition whole sources deterministically, retaining zero-mutant inputs and oversized files.
+- Validate every raw group before deriving package scores with unchanged floors.
+- Keep whole-package behavior; partial execution cannot claim package-floor enforcement.
+- Review F1 rejects runtime-error-only or ignored-only groups; compile-only groups remain allowed.
+- Nightly wiring and hosted current-revision timing qualification remain M18.10.

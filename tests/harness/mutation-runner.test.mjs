@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { out, sandbox } from './helpers.mjs';
 
-const engine = `import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+const engine = `import {readFileSync,writeFileSync,mkdirSync,readdirSync} from 'node:fs';
 import {join} from 'node:path';
 const args=process.argv.slice(2), mode=process.env.FIXTURE_MUTATION_MODE;
 const at=f=>args[args.indexOf(f)+1];
@@ -12,7 +12,8 @@ if(args[0]==='model') { console.log(JSON.stringify({packages:[{testProjects:['no
 const model=JSON.parse(readFileSync(at('-m'),'utf8'));
 if(JSON.stringify(model.packages[0].testProjects)!==JSON.stringify(['node','browser'])) process.exit(3);
 const packages=model.packages[0].sources.map(s=>s.split('/src/')[0]);
-const mutants=packages.map(p=>({id:p,file:p+'/src/value.ts',mutatorName:'BooleanLiteral',location:{start:{line:1,column:1},end:{line:1,column:5}},original:'true',replacement:'false'}));
+const files=model.packages[0].sources.flatMap(s=>s.includes('*')?readdirSync(join(s.split('/src/')[0],'src')).filter(f=>f.endsWith('.ts')).map(f=>s.split('/src/')[0]+'/src/'+f):[s]);
+const mutants=files.map(file=>({id:file,file,mutatorName:'BooleanLiteral',location:{start:{line:1,column:1},end:{line:1,column:5}},original:'true',replacement:'false'}));
 if(args[0]==='list-mutants') { if(mode==='change-during-inventory') writeFileSync('packages/core/src/value.ts','export const value = false;'); console.log(JSON.stringify(mutants)); process.exit(mode==='inventory-failed'?3:0); }
 console.log('FIXTURE_EXECUTED');
 const dir=at('-o'); mkdirSync(dir,{recursive:true});
@@ -40,6 +41,61 @@ const execute = (sb, mode = '') =>
   });
 
 describe('isolated mutation execution (NFR-MNT-005)', () => {
+  it('runs one complete source partition while preserving test projects and raw evidence', () => {
+    const sb = fixture();
+    try {
+      sb.write('packages/core/src/other.ts', 'export const other = true;');
+      sb.git('add', '.');
+      assert.equal(sb.git('commit', '-qm', 'second source').status, 0);
+      assert.equal(plan(sb).status, 0);
+      const result = sb.node('scripts/harness/mutate-shard.mjs', [
+        '--manifest',
+        'reports/plan.json',
+        '--partition',
+        'core-1',
+        '--target-mutants',
+        '1',
+        '--out-dir',
+        'reports/part',
+      ]);
+      assert.equal(result.status, 0, out(result));
+      const report = JSON.parse(sb.read('reports/part/shard.json'));
+      assert.equal(report.partition, 'core-1');
+      assert.equal(report.package, 'packages/core');
+      assert.equal(report.report.mutants.length, 1);
+      assert.deepEqual(report.report.tests, [{ id: 'node' }, { id: 'browser' }]);
+      const model = JSON.parse(sb.read('reports/part/model.json'));
+      assert.deepEqual(model.packages[0].sources, ['packages/core/src/other.ts']);
+      const rejected = sb.node('scripts/harness/mutate.mjs', ['--package', 'packages/core', '--sources-file', 'reports/part/sources.json', '--check']);
+      assert.notEqual(rejected.status, 0, out(rejected));
+      assert.doesNotMatch(rejected.stdout, /FIXTURE_EXECUTED/);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
+  it('rejects invalid explicit sources before invoking the mutation engine', () => {
+    const sb = fixture();
+    try {
+      for (const sources of [
+        [],
+        ['packages/anim/src/value.ts'],
+        ['packages/core/src/../src/value.ts'],
+        ['packages/core/src/*.ts'],
+        ['packages/core/src/missing.ts'],
+        ['packages/core/src/value.ts', 'packages/core/src/value.ts'],
+        null,
+      ]) {
+        sb.write('reports/sources.json', JSON.stringify(sources));
+        const result = sb.node('scripts/harness/mutate.mjs', ['--package', 'packages/core', '--sources-file', 'reports/sources.json']);
+        assert.equal(result.status, 2, out(result));
+        assert.doesNotMatch(result.stdout, /FIXTURE_EXECUTED/);
+      }
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('collects every pure package and retains full test scope in a fresh report', () => {
     const sb = fixture();
     try {
