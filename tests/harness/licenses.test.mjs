@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import { out, REPO, sandbox } from './helpers.mjs';
+import { out, REPO, sandbox, TRANSIENT } from './helpers.mjs';
 
 const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
 let sb;
@@ -21,14 +21,44 @@ function licenses(files = {}) {
   return sb.node('scripts/gates/check-licenses.mjs', ['--dir', sb.dir, '--json-dir', sb.path('listings')]);
 }
 
+function copyWorkspaceFiles(source, destination, entries = readdirSync(source, { withFileTypes: true })) {
+  for (const e of entries)
+    if ((e.isFile() || e.name === 'fonts') && !TRANSIENT.test(join(source, e.name)))
+      cpSync(join(source, e.name), join(destination, e.name), { recursive: true });
+}
+
+it('HARNESS NFR-LIC-001: license fixtures ignore a package archive removed after directory listing', () => {
+  const fixture = sandbox([]);
+  try {
+    fixture.write('source/package.json', '{"license":"MIT"}');
+    fixture.write('source/LICENSE', 'MIT License');
+    fixture.write('source/fonts.json', '{"fonts":[]}');
+    fixture.write('source/fonts/a.woff2', 'font bytes');
+    fixture.write('source/pack-0.0.0.tgz', 'temporary npm pack output');
+    const entries = readdirSync(fixture.path('source'), { withFileTypes: true });
+    // attw removes its tarball between the license suite's directory read and copy.
+    rmSync(fixture.path('source/pack-0.0.0.tgz'));
+    copyWorkspaceFiles(fixture.path('source'), fixture.path('copied'), entries);
+    for (const name of ['package.json', 'LICENSE', 'fonts.json', 'fonts/a.woff2']) assert.equal(fixture.read(`copied/${name}`), fixture.read(`source/${name}`));
+    assert.equal(
+      readdirSync(fixture.path('copied')).some((name) => name.endsWith('.tgz')),
+      false,
+    );
+    // Missing required inputs must still fail rather than silently weakening license checks.
+    rmSync(fixture.path('source/LICENSE'));
+    assert.throws(() => copyWorkspaceFiles(fixture.path('source'), fixture.path('missing'), entries), { code: 'ENOENT' });
+  } finally {
+    fixture.cleanup();
+  }
+});
+
 describe('check-licenses (NFR-LIC-001, NFR-LIC-002)', () => {
   beforeEach(() => {
     sb = sandbox(['scripts', 'tools', 'LICENSE', 'NOTICE']);
     // of each workspace only what the gate reads: its top-level files (package.json, LICENSE, fonts.json, catalog.json) and the font files
     // fonts.json names (M16.31: a copy of every workspace's sources per case was most of this suite's time)
     for (const { dir } of workspaces) {
-      for (const e of readdirSync(join(REPO, dir), { withFileTypes: true }))
-        if (e.isFile() || e.name === 'fonts') cpSync(join(REPO, dir, e.name), sb.path(`${dir}/${e.name}`), { recursive: true });
+      copyWorkspaceFiles(join(REPO, dir), sb.path(dir));
     }
   });
   afterEach(() => sb.cleanup());

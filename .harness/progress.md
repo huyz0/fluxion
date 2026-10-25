@@ -2186,3 +2186,22 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Post-commit4dd full verification failed only the manifest-test registry invariant; all other executable legs passed. Captured direct ladder273.2s confirms the cause.
 - Registered reporter probes for manifest and nightly-workflow changes; unrelated workflows retain their prior scope. No gates or thresholds weakened.
 - Nightly-only regression RED, corrected scope suite15/15PASS. Independent review and post-commit full qualification pending.
+
+## 2026-10-24 complete diagnostics qualification
+- Local256b5245: normal hooksPASS25.4s, independent code review0findings. Pinned-container milestone gate35/40, all local legsPASS including full pnpm verify and three-browser checks.
+- Fresh final256 review approves implementation with0findings; independently57/57 harness testsPASS. Canonical range advanced, preserving prior findings/dispositions.
+- Unpublished099fc2c4+4dd6df0a+256b5245 cover calibrated, visual and previous-browser diagnostics, JSON/artifacts and test registration.
+- CI36/36 and gatesPASS only at published8c2; nightly40136174340 terminalFAILURE22:54:05UTC. Mutation1h timeout confirmed by API; monitor exited naturally.
+- M17.22 remains blocked on current-range CI/perf evidence; roadmap remainsM17. No additional remote writes; no denied log download retry.
+
+## 2026-10-25 approved diagnostics publication
+- Explicit user approval: fast-forward main8c2bfa8b..256b5245; remote exactSHA verified, only099fc2c4+4dd6df0a+256b5245 pushed. Uncommitted closeout evidence preserved separately.
+- Nightly40157370471 dispatched once at256b5245. CI40157364227 active; gates40157364180PASS. Automatic release skipped; no release/deployment.
+- Monitoring terminal outcomes and new failure annotations; no publication approval for later follow-ups.
+
+## 2026-10-25 M17.51 Windows fixture-copy race
+- CI40157364227 terminalFAILURE:34jobsPASS,Windowsverify+ci-okFAIL. New job log retrieved through supported gh; no denied-download retry/bypass.
+- Full ladder failed only license fixture copy: attw removed packs/basic/fluxion-pack-basic-0.0.0.tgz between readdir and cpSync. Existing diagnostic rerun593PASS,4SKIP,0FAIL; no retries added.
+- Deterministic stale-directory regression RED with identical ENOENT; existing TRANSIENT filter fixes setup. License suite18/18PASS, including required-input failures; policies unchanged.
+- Nightly40157370471 perf,properties,previousChromium/FirefoxPASS; visual3OS and previousWebKit match recordedM32/M11 handoffs. Mutation active; prior one-hour timeout assignedM18row1c without weakening scope/floors/timeouts.
+- No further publication authorized; local follow-up requires independent review and full qualification.
