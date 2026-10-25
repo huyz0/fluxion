@@ -2451,3 +2451,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - All 19 observed mutations fail intended assertions; production source restored, all 302 core tests pass.
 - No production, public API, ignore directive, mutation inventory, timeout or floor changed.
 - Existing nightly continues on 25a0e6cb; M18.10 remains open until complete current-revision qualification.
+
+## M18.61 — Screen-command refusal diagnostics (2026-10-25)
+
+- Validated nightly core-5 raw report identifies complete 209-mutant scope; 53 surviving/uncovered operations remain diagnostic evidence.
+- Strengthen setter and duplication refusals with exact command/code/path, nonempty detail and no writes or notifications.
+- Successful screen operations assert their transaction labels; invalid notes fail argument validation.
+- Equal neighbouring order keys retain the registered warning diagnostic and refuse duplication atomically.
+- All 39 observed diagnostic/label counterexamples fail assertions; production source restored unchanged.
+- Duplication-copy gaps remain explicitly open in M18.10; no exclusions, scope, timeout or floor changes.
+- M18.60 published f2df026c after full verification; the existing nightly continues on 25a0e6cb.

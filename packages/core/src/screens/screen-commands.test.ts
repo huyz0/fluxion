@@ -1,4 +1,4 @@
-import type { RecordId } from '@fluxion/schema';
+import type { AnyRecord, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { registerCoreCommands } from '../builtin-commands.js';
@@ -13,7 +13,7 @@ type Rec = Record<string, unknown>;
 const NOTES = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Say hello' }] }] };
 
 /** Three screens; the first holds two shapes joined by a connector (a binding at each end) and a slugged shape. */
-function setup() {
+function setup(equalOrder = false) {
   const b = documentBuilder({ seed: 211 });
   const first = b.screen({ name: 'one' });
   const second = b.screen({ name: 'two' });
@@ -24,7 +24,11 @@ function setup() {
   const other = b.rect(second, { x: 0, y: 0 });
   const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
   registerCoreHooks(hooks);
-  const store = new RecordStore(b.build(), { hooks });
+  const file = b.build();
+  const records = equalOrder
+    ? { ...file.records, [second]: { ...(file.records[second] as AnyRecord), index: (file.records[first] as { index: string }).index } }
+    : file.records;
+  const store = new RecordStore({ ...file, records } as typeof file, { hooks });
   const commands = createRegistry<string, AnyCommand>('commands');
   registerCoreCommands(commands);
   const run = (id: string, args: unknown) => executeCommand(commands, { store }, id, args);
@@ -32,6 +36,26 @@ function setup() {
   const idsOn = (screen: string) => store.members('byScreen', screen as RecordId);
   const bindings = () => store.members('byType', 'binding');
   return { store, run, get, idsOn, bindings, first, second, third, left, right, link, other };
+}
+
+/** Refused commands report their exact argument and cannot publish a transaction. */
+function refuses(t: ReturnType<typeof setup>, command: string, args: unknown, path: string) {
+  const before = t.store.toDocument();
+  const labels: string[] = [];
+  const unsubscribe = t.store.subscribe((_diff, meta) => labels.push(meta.label));
+  const result = t.run(command, args);
+  unsubscribe();
+  expect(result).toMatchObject({
+    ok: false,
+    error: {
+      code: 'COMMAND_ARGS',
+      message: expect.stringContaining(`${command}: `),
+      diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path, message: expect.stringMatching(/\S/) }],
+    },
+  });
+  if (!result.ok) expect(result.error.message.slice(command.length + 2)).toMatch(/\S/);
+  expect(t.store.toDocument()).toEqual(before);
+  expect(labels).toEqual([]);
 }
 
 /** A new id for each of `old`, by old id. */
@@ -55,7 +79,11 @@ describe('screen commands (FR-SCR-002)', () => {
     for (const [command, args] of steps) {
       const before = JSON.parse(JSON.stringify(t.store.toDocument())) as unknown;
       const depth = t.store.history.undoDepth;
+      const labels: string[] = [];
+      const unsubscribe = t.store.subscribe((_diff, meta) => labels.push(meta.label));
       expect(t.run(command, args).ok, command).toBe(true);
+      unsubscribe();
+      expect(labels).toEqual([command]);
       expect(t.store.history.undoDepth, command).toBe(depth + 1);
       expect(t.store.toDocument()).not.toEqual(before);
       t.store.history.undo();
@@ -122,14 +150,33 @@ describe('screen commands (FR-SCR-002)', () => {
     const dropped = old[0] as string;
     const kept = old.slice(1);
     const without = Object.fromEntries(kept.map((k) => [k, ids[k] as string]));
-    expect(t.run('screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: without }).ok).toBe(false);
+    refuses(t, 'screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: without }, '/args/ids');
     const twice = { ...ids, [dropped]: ids[kept[0] as string] as string };
-    expect(t.run('screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: twice }).ok).toBe(false);
+    refuses(t, 'screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: twice }, '/args/ids');
     const used = { ...ids, [dropped]: t.other };
-    expect(t.run('screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: used }).ok).toBe(false);
-    expect(t.run('screen.duplicate', { id: t.first, newId: t.second, ids }).ok).toBe(false);
-    expect(t.run('screen.duplicate', { id: t.left, newId: 'DupScreenAAAA0001', ids }).ok).toBe(false);
+    refuses(t, 'screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids: used }, `/args/ids/${dropped}`);
+    refuses(t, 'screen.duplicate', { id: t.first, newId: t.second, ids }, '/args/newId');
+    refuses(t, 'screen.duplicate', { id: t.left, newId: 'DupScreenAAAA0001', ids }, '/args/id');
     expect(JSON.stringify(t.store.toDocument())).toBe(before);
+  });
+
+  it('FR-SCR-002: duplication reports equal neighbouring order keys without changing records', () => {
+    const t = setup(true);
+    const before = t.store.toDocument();
+    const labels: string[] = [];
+    t.store.subscribe((_diff, meta) => labels.push(meta.label));
+    const ids = fresh([...t.idsOn(t.first), ...t.bindings()], 'Dup');
+    const result = t.run('screen.duplicate', { id: t.first, newId: 'DupScreenAAAA0001', ids });
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        code: 'TX_INVALID',
+        message: expect.stringMatching(/^screen\.duplicate: \S/),
+        diagnostics: [{ code: 'FLX_INDEX_DUPLICATE', severity: 'warning', path: `/records/${t.second}/index`, message: expect.stringMatching(/\S/) }],
+      },
+    });
+    expect(t.store.toDocument()).toEqual(before);
+    expect(labels).toEqual([]);
   });
 
   it('FR-SCR-002: a hidden screen is marked and skipped by the next visible screen lookup', () => {
@@ -154,8 +201,8 @@ describe('screen commands (FR-SCR-002)', () => {
     const t = setup();
     expect(t.run('screen.rename', { id: t.first, name: 'Intro' }).ok).toBe(true);
     expect(t.get(t.first)['name']).toBe('Intro');
-    expect(t.run('screen.rename', { id: t.left, name: 'x' }).ok).toBe(false);
-    expect(t.run('screen.setHidden', { id: t.left, hidden: true }).ok).toBe(false);
+    refuses(t, 'screen.rename', { id: t.left, name: 'x' }, '/args/id');
+    refuses(t, 'screen.setHidden', { id: t.left, hidden: true }, '/args/id');
   });
 
   it('FR-SCR-003: a screen takes a fixed size or an infinite viewport, and loses the fields of the format it leaves', () => {
@@ -171,7 +218,7 @@ describe('screen commands (FR-SCR-002)', () => {
     expect((t.get(t.right)['transform'] as { x: number }).x).toBe(300);
     // a size must be positive, and only a screen has a format
     expect(t.run('screen.setFormat', { id: t.first, format: { kind: 'fixed', size: { w: 0, h: 10 } } }).ok).toBe(false);
-    expect(t.run('screen.setFormat', { id: t.left, format: { kind: 'fixed', size: { w: 10, h: 10 } } }).ok).toBe(false);
+    refuses(t, 'screen.setFormat', { id: t.left, format: { kind: 'fixed', size: { w: 10, h: 10 } } }, '/args/id');
   });
 
   it('FR-LAY-001: a screen layout spec is set with its options and removed again, and only a screen takes it here', () => {
@@ -181,7 +228,7 @@ describe('screen commands (FR-SCR-002)', () => {
     expect(t.get(t.first)['layout']).toEqual(layout);
     expect(t.run('screen.setLayout', { id: t.first }).ok).toBe(true);
     expect('layout' in t.get(t.first)).toBe(false);
-    expect(t.run('screen.setLayout', { id: t.left, layout }).ok).toBe(false);
+    refuses(t, 'screen.setLayout', { id: t.left, layout }, '/args/id');
     expect(t.run('screen.setLayout', { id: t.first, layout: { options: {} } }).ok).toBe(false);
   });
 
@@ -193,9 +240,9 @@ describe('screen commands (FR-SCR-002)', () => {
     expect('notes' in t.get(t.first)).toBe(false);
     t.store.history.undo();
     expect(t.get(t.first)['notes']).toEqual(NOTES);
-    expect(t.run('screen.setNotes', { id: t.left, notes: NOTES }).ok).toBe(false);
+    refuses(t, 'screen.setNotes', { id: t.left, notes: NOTES }, '/args/id');
     // something that is not a rich-text document is refused whole
-    expect(t.run('screen.setNotes', { id: t.first, notes: { type: 'paragraph', content: [] } }).ok).toBe(false);
+    refuses(t, 'screen.setNotes', { id: t.first, notes: { type: 'paragraph', content: [] } }, '/args/notes/type');
     expect(t.run('screen.setNotes', { id: t.first, notes: 'text' }).ok).toBe(false);
     expect(t.get(t.first)['notes']).toEqual(NOTES);
   });
