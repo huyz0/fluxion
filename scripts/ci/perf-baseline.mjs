@@ -24,24 +24,44 @@ export const RUNS = 5;
 
 const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
 
-/** The latency of each task in a Vitest 5 JSON bench report, by task name. */
-export function latencies(report) {
-  const tasks = report.testResults.flatMap((f) => f.assertionResults).flatMap((a) => (a.benchmarks ?? []).flatMap((b) => b.tasks));
-  return Object.fromEntries(tasks.map((task) => [task.name, task.latency ?? {}]));
+const positiveFinite = (value) => typeof value === 'number' && Number.isFinite(value) && value > 0;
+
+function arrayOf(value, label, nonempty = false) {
+  if (!Array.isArray(value) || (nonempty && !value.length)) throw new Error(`malformed ${label}`);
+  return value;
 }
 
-/**
- * One run's reading of bench `name` from a report that holds it and the calibration task: its p99 in ms and its p50 in calibration units.
- * A string names what is missing.
- */
+function tasksOf(assertion) {
+  if (assertion?.status !== 'passed') throw new Error(`bench tests failed: ${assertion?.title ?? 'unknown'}`);
+  return arrayOf(assertion.benchmarks, 'benchmarks').flatMap((b) => arrayOf(b?.tasks, 'bench tasks'));
+}
+
+/** The latency of each unique task in a Vitest 5 JSON bench report, by task name. */
+export function latencies(report) {
+  const by = Object.create(null);
+  const assertions = arrayOf(report?.testResults, 'bench report', true).flatMap((f) => arrayOf(f?.assertionResults, 'bench assertions', true));
+  for (const task of assertions.flatMap(tasksOf)) {
+    if (typeof task?.name !== 'string' || !task.name) throw new Error('malformed bench task');
+    if (Object.hasOwn(by, task.name)) throw new Error(`duplicate bench task: ${task.name}`);
+    by[task.name] = task.latency;
+  }
+  return by;
+}
+
+/** One run's finite positive p99 and calibration ratio, or a string naming invalid evidence. */
 export function readingOf(report, name) {
-  const failed = report.testResults.flatMap((f) => f.assertionResults).filter((a) => a.status !== 'passed');
-  if (failed.length) return `bench tests failed: ${failed.map((a) => a.title).join(', ')}`;
-  const by = latencies(report);
+  let by;
+  try {
+    by = latencies(report);
+  } catch (error) {
+    return error.message;
+  }
   const [bench, cal] = [by[name], by[CALIBRATION[0]]];
-  if (!(bench?.p50 > 0 && bench?.p99 > 0)) return `no ${name} latency in the report`;
-  if (!(cal?.p50 > 0)) return 'no calibration latency in the report';
-  return { p99: bench.p99, units: bench.p50 / cal.p50 };
+  if (!(positiveFinite(bench?.p50) && positiveFinite(bench?.p99))) return `no ${name} latency in the report`;
+  if (!positiveFinite(cal?.p50)) return 'no calibration latency in the report';
+  const units = bench.p50 / cal.p50;
+  if (!positiveFinite(units)) return 'invalid calibration ratio';
+  return { p99: bench.p99, units };
 }
 
 /**
@@ -49,6 +69,9 @@ export function readingOf(report, name) {
  * over `baseline` (calibration units). Without a baseline it fails and names the units to record.
  */
 export function judge({ name, readings, limitMs, baseline, tolerancePct }) {
+  if (!Array.isArray(readings) || !readings.length || readings.some((r) => !positiveFinite(r?.p99) || !positiveFinite(r?.units))) {
+    return { pass: false, line: `FAIL ${name}: missing or malformed readings` };
+  }
   const p99 = median(readings.map((r) => r.p99));
   const units = median(readings.map((r) => r.units));
   const unitLimit = typeof baseline === 'number' ? baseline * (1 + tolerancePct / 100) : Number.NaN;
@@ -69,6 +92,7 @@ function runPair(file) {
     const out = join(dir, 'bench.json');
     const args = ['exec', 'vitest', 'bench', '--run', '--project', 'node (bench)', '--no-file-parallelism', '--reporter=json', `--outputFile=${out}`];
     const r = run('pnpm', [...args, CALIBRATION[1], file]);
+    if (r.status !== 0) return `no bench output (exit ${r.status}): ${String(r.stderr ?? '').slice(-400)}`;
     try {
       return JSON.parse(readFileSync(out, 'utf8'));
     } catch {

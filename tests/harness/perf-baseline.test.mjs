@@ -115,6 +115,74 @@ export function run(_command,args) {
     }
   });
 
+  it('NFR-PERF-005: first sample is an outlier; all five units determine the median', () => {
+    const base = { name: 'layered-500', limitMs: 2000, baseline: 7, tolerancePct: 15 };
+    const readings = [20, 7, 7.1, 6.9, 7].map((units) => ({ units, p99: 200 }));
+    const verdict = judge({ ...base, readings });
+    assert.equal(verdict.pass, true);
+    assert.match(verdict.line, /7\.000 calibration units/);
+    assert.match(verdict.line, /median of 20\.000, 7\.000, 7\.100, 6\.900, 7\.000/);
+  });
+
+  it('NFR-PERF-005: varied p99 samples use the median independently of units', () => {
+    const base = { name: 'layered-500', limitMs: 2000, baseline: 7, tolerancePct: 15 };
+    for (const [values, pass, median] of [
+      [[2100, 1800, 1900, 1850, 1950], true, 1900],
+      [[1900, 2100, 2200, 2300, 2400], false, 2200],
+    ]) {
+      const verdict = judge({ ...base, readings: values.map((p99) => ({ p99, units: 7 })) });
+      assert.equal(verdict.pass, pass);
+      assert.ok(verdict.line.includes(`p99 ${median.toFixed(1)} ms`), verdict.line);
+    }
+  });
+
+  it('NFR-PERF-005: malformed or ambiguous reports never become readings', () => {
+    for (const value of [Infinity, NaN, '30', 0, -1, null]) {
+      for (const field of ['p50', 'p99']) {
+        assert.equal(typeof readingOf(report('layered-500', { p50: 30, p99: 40, [field]: value }), 'layered-500'), 'string');
+      }
+      assert.equal(typeof readingOf(report('layered-500', { p50: 30, p99: 40 }, { p50: value }), 'layered-500'), 'string');
+    }
+    for (const invalid of [null, {}, { testResults: [] }, { testResults: [null] }]) {
+      assert.equal(typeof readingOf(invalid, 'layered-500'), 'string');
+    }
+    const duplicate = report('layered-500', { p50: 30, p99: 40 });
+    duplicate.testResults.push(duplicate.testResults[1]);
+    assert.match(readingOf(duplicate, 'layered-500'), /duplicate/);
+    assert.equal(typeof readingOf(report('layered-500', { p50: Number.MAX_VALUE, p99: 40 }, { p50: Number.MIN_VALUE }), 'layered-500'), 'string');
+  });
+
+  it('NFR-PERF-005: the judge rejects every malformed reading instead of hiding it in a median', () => {
+    const base = { name: 'layered-500', limitMs: 2000, baseline: 7, tolerancePct: 15 };
+    for (const invalid of [null, {}, { p99: Infinity, units: 7 }, { p99: 200, units: NaN }, { p99: '200', units: 7 }]) {
+      const readings = [{ p99: 200, units: 7 }, invalid, { p99: 200, units: 7 }];
+      assert.equal(judge({ ...base, readings }).pass, false);
+    }
+    assert.equal(judge({ ...base, readings: [] }).pass, false);
+  });
+
+  it('NFR-PERF-005: a nonzero benchmark process fails even with a passing JSON report', () => {
+    const sb = sandbox(['scripts/ci/perf-baseline.mjs', 'scripts/gates/thresholds.mjs', 'perf-baseline.calibrated.json']);
+    try {
+      // Synthetic reports test failed-process handling, never qualify performance.
+      sb.write(
+        'scripts/gates/lib.mjs',
+        `import {writeFileSync} from 'node:fs';
+export function run(_command,args) {
+  const name=args.at(-1).split('/').at(-1).replace('.bench.ts','');
+  const tasks=[{name,latency:{p50:1,p99:1}},{name:'calibration',latency:{p50:100,p99:100}}];
+  writeFileSync(args.find(arg=>arg.startsWith('--outputFile=')).slice('--outputFile='.length),JSON.stringify({testResults:[{assertionResults:[{status:'passed',benchmarks:[{tasks}]}]}]}));
+  return {status:1,stderr:'fixture process failed after writing'};
+}\n`,
+      );
+      const result = sb.node('scripts/ci/perf-baseline.mjs');
+      assert.equal(result.status, 1, out(result));
+      assert.match(result.stdout, /exit 1.*fixture process failed after writing/);
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('NFR-PERF-005: the calibration workload imports nothing from the project, and every judged bench file exists', () => {
     const cal = readFileSync(join(REPO, CALIBRATION[1]), 'utf8');
     assert.deepEqual(

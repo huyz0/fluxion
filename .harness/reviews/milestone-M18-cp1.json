@@ -1,0 +1,32 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp1",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..26f31d7494d832b9ce61970106351d5ce9b8f05e",
+  "reviewer": "independent-subagent:m18_cp1_review",
+  "findings": [],
+  "dispositions": [],
+  "planDelta": "No new rows required. Continue existing M18.8\u2013M18.48 work.",
+  "assessment": {
+    "coherence": "ADR-0048\u20130051 form a consistent design: validated declarative data, shared import boundaries, used-only portable definitions and credits, and host-owned bounded font workers.",
+    "specFidelity": "No silently dropped requirement found. Calibration, mutation execution, Mermaid handoffs and feature implementation remain explicit unfinished backlog rows.",
+    "standardsDrift": "No drift found. Circular timing is the documented exception; correctness, malformed evidence, other layout limits and retries retain blocking behavior.",
+    "gateHonesty": "Packet reports 20/71 legs green and explicit failures for unfinished work. Checkpoint enforcement reads staged or exact historical evidence. Future feature tests still require implementation review to verify their assertions substantiate the gate labels.",
+    "architecture": "No production dependency or public API addition in this range. Decisions preserve pure-package boundaries and require implementation ADRs, compatibility fixtures and API reports for later contract additions.",
+    "planHealth": "48 rows versus 43 planned, approximately 1.12x. Added CI recovery, import prerequisites and font asset qualification have explicit scope and dependencies."
+  },
+  "evidence": {
+    "executed": "node --test tests/harness/checkpoint.test.mjs tests/harness/circular-advisory.test.mjs tests/harness/ladder.test.mjs tests/harness/ci-workflow.test.mjs",
+    "result": "56 passed; 0 failed, skipped or cancelled.",
+    "mutationSpotChecks": [
+      "Accepting unstaged or later checkpoint evidence would fail the staged-review and exact historical-tree cases.",
+      "Treating missing, invalid or failed circular measurements as advisory success would fail negative judge, runner and CLI cases.",
+      "Retaining only the last failure heading or truncating saved streams would fail the multi-heading complete-output ladder case."
+    ],
+    "completionGate": "Reviewed supplied packet output; did not independently rerun the full completion gate."
+  },
+  "learned": [
+    "Pin import corpora and bounded font assets before converter integration so acceptance cannot drift toward easier fixtures.",
+    "Checkpoint cadence now has local-hook and exact-commit CI coverage; record reviews before the ninth task."
+  ],
+  "remaining": "Driver should save and stage this verdict as .harness/reviews/milestone-M18-cp1.json and add the Learned lines to docs/milestones/M18.md. Review made no shared-index changes."
+}

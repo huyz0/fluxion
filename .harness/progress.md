@@ -2308,3 +2308,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Related fixtures now include their required roadmap without changing assertions.
 - An unstaged-limit bypass went red→green; all 51 related tests pass.
 - The eighth task commit is followed by a fresh milestone checkpoint before further work.
+
+## M18.8 — calibration evidence and median regressions (2026-10-25)
+
+- First-reading outlier and varied-p99 tests constrain both independent medians.
+- An isolated first-reading mutant fails both cases; unmodified control passes both.
+- Malformed, nonfinite, duplicate or failed-process evidence now fails closed.
+- Three new evidence regressions failed before implementation; focused suite passes 26/26.
+- Five measurements, calibrated baselines, all limits and zero retries remain unchanged.
+- M18.6 supplies the four blocking extra layouts and circular-only advisory path.
+- Fresh eight-task checkpoint cp1 found no defects; its 56 focused tests passed.
+- All five real calibrated benchmarks pass with five samples each; no retries.
