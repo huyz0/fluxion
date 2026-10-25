@@ -2431,3 +2431,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Focused orchestration/evidence tests pass; explicit-target behavior and existing tests remain.
 - Timeouts, matrix cap, concurrency, mutators, exclusions, score floors and zero retries are unchanged.
 - Complete current-revision nightly runtime and package scores remain M18.10.
+
+## M18.59 — Constrain bounded path-template caching (2026-10-25)
+
+- Nightly 40220828558 core-6 exposed two survivors in the existing 1024-entry cache eviction guard.
+- Assert successful parses and failures retain identity up to capacity, then reparse after the next insertion.
+- Reparsing preserves command values and diagnostic content; tests use the real parser with fresh module state.
+- Both observed guard mutations fail intended assertions; production source is restored unchanged.
+- All 302 core tests pass; no API, source inventory, ignore directive, timeout or floor changed.
+- Cumulative cp3 review passed with zero findings; its reviewer ran 18 harness and 19 core tests successfully.
+- Main 25a0e6cb CI passed 36/36 and gates passed; the same nightly continues, with M18.10 still open.
