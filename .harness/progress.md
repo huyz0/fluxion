@@ -2390,3 +2390,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Hosted 88965d82 CI: 36/36 pass; gates/perf pass. Nightly remains active with four core job timeouts.
 - Fresh cumulative checkpoint review passes with zero findings; preserve unchanged floors and timeouts.
 - Include the core patch changeset required for the changed package.
+
+## M18.55 — Mutation partition check diagnostics (2026-10-25)
+
+- Emit bounded escaped status counts and survivor/uncovered identities only after exact partition validation.
+- Preserve raw reports, full normal output and existing exit codes; annotate execution/validation/CLI errors.
+- Label notices partial and reject them as whole-run qualification; no floors, retries or scheduling changes.
+- Real-wrapper failure probes and hostile/oversized payload tests pass; focused mutation harness 49/49.
+- Historical real-report formatting preserves 92 expected IDs and counts; it is not new qualification.
+- Builtin diagnostic at 86b4d74b timed out under unchanged 3600s budget: exit124, no report; evidence archived, no retry.
+- M18.10 remains open for timeout recovery and complete current-revision hosted qualification.

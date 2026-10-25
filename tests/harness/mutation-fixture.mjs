@@ -11,11 +11,12 @@ const model=JSON.parse(readFileSync(at('-m'),'utf8'));
 if(JSON.stringify(model.packages[0].testProjects)!==JSON.stringify(['node','browser'])) process.exit(3);
 const packages=model.packages[0].sources.map(s=>s.split('/src/')[0]);
 const files=model.packages[0].sources.flatMap(s=>s.includes('*')?readdirSync(join(s.split('/src/')[0],'src')).filter(f=>f.endsWith('.ts')).map(f=>s.split('/src/')[0]+'/src/'+f):[s]);
-const mutants=files.map(file=>({id:file,file,mutatorName:'BooleanLiteral',location:{start:{line:1,column:1},end:{line:1,column:5}},original:'true',replacement:'false'}));
+const mutants=files.map(file=>({id:(process.env.FIXTURE_MUTATION_ID??'')+file,file,mutatorName:'BooleanLiteral',location:{start:{line:1,column:1},end:{line:1,column:5}},original:'true',replacement:'false'}));
 if(args[0]==='list-mutants') { if(mode==='change-during-inventory') writeFileSync('packages/core/src/value.ts','export const value = false;'); console.log(JSON.stringify(mutants)); process.exit(mode==='inventory-failed'?3:0); }
 console.log('FIXTURE_EXECUTED');
+if(mode==='execution-failed') console.error('fixture mutation execution failed');
 const dir=at('-o'); mkdirSync(dir,{recursive:true});
-writeFileSync(join(dir,'tzap.json'),JSON.stringify({schemaVersion:1,tzapVersion:'0.1.1',config:{scope:'full',mutators:['all']},redTests:[],tests:[{id:'node'},{id:'browser'}],timings:{coverage:1,execute:2},mutants:mode==='partial'?[]:mutants.map(m=>({...m,status:'Killed'}))}));
+writeFileSync(join(dir,'tzap.json'),mode==='malformed'?'invalid JSON':JSON.stringify({schemaVersion:1,tzapVersion:'0.1.1',config:{scope:'full',mutators:['all']},redTests:[],tests:[{id:'node'},{id:'browser'}],timings:{coverage:1,execute:2},mutants:mode==='partial'?[]:mutants.map(m=>({...m,status:mode==='survived'?'Survived':mode==='uncovered'?'NoCoverage':'Killed'}))}));
 process.exit(mode==='execution-failed'?3:0);
 `;
 

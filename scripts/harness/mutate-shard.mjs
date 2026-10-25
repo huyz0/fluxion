@@ -2,7 +2,9 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { failureLines } from '../gates/failure-report.mjs';
 import { REPO_ROOT, run } from '../gates/lib.mjs';
+import { emitMutationDiagnostic } from './mutation-diagnostics.mjs';
 import { partitionManifest, validatePartition } from './mutation-partitions.mjs';
 import { buildPlan, samePlan } from './mutation-plan.mjs';
 import { aggregateShards } from './mutation-shards.mjs';
@@ -42,6 +44,8 @@ export function runPackage({ manifestPath, packageName, partitionId, target = 80
   const output = join(outDir, 'shard.json');
   rmSync(output, { force: true });
   const shard = { schemaVersion: 1, package: packageName, partition: partitionId, exitCode: 1 };
+  let details = [],
+    mutants;
   try {
     const plan = JSON.parse(readFileSync(manifestPath, 'utf8'));
     if (!samePlan(plan, buildPlan(root))) throw new Error('manifest does not match the current checkout inventory');
@@ -57,12 +61,14 @@ export function runPackage({ manifestPath, packageName, partitionId, target = 80
     });
     process.stdout.write(result.stdout);
     process.stderr.write(result.stderr);
+    details = failureLines(result.stdout, result.stderr);
     shard.exitCode = result.status;
     const report = join(outDir, 'tzap.json');
     if (existsSync(report)) shard.report = JSON.parse(readFileSync(report, 'utf8'));
     if (result.status !== 0) throw new Error(`package execution exited ${result.status}`);
     if (!samePlan(plan, buildPlan(root))) throw new Error('checkout changed during mutation execution');
     validateExecution(plan, execution, shard);
+    mutants = shard.report.mutants;
   } catch (error) {
     shard.exitCode ||= 1;
     shard.error = error.message;
@@ -71,6 +77,7 @@ export function runPackage({ manifestPath, packageName, partitionId, target = 80
   shard.elapsedMs = performance.now() - started;
   writeFileSync(output, `${JSON.stringify(shard, null, 2)}\n`);
   console.log(`mutation shard: ${packageName}, exit ${shard.exitCode}, ${shard.elapsedMs.toFixed(0)} ms`);
+  emitMutationDiagnostic({ label: partitionId ?? packageName, mutants, error: shard.error, details });
   return shard.exitCode;
 }
 
@@ -85,9 +92,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     target = value('--target-mutants') === undefined ? 800 : Number(value('--target-mutants')),
     outDir = value('--out-dir');
   if (!manifestPath || (!packageName && !partitionId) || !outDir) {
-    console.error('usage: mutate-shard.mjs --manifest FILE (--package DIR | --partition ID) --out-dir DIR');
+    const usage = 'usage: mutate-shard.mjs --manifest FILE (--package DIR | --partition ID) --out-dir DIR';
+    console.error(usage);
+    emitMutationDiagnostic({ label: 'CLI', error: usage });
     process.exitCode = 2;
   } else {
-    process.exitCode = runPackage({ manifestPath: resolve(manifestPath), packageName, partitionId, target, outDir: resolve(outDir) });
+    try {
+      process.exitCode = runPackage({ manifestPath: resolve(manifestPath), packageName, partitionId, target, outDir: resolve(outDir) });
+    } catch (error) {
+      console.error(error);
+      emitMutationDiagnostic({ label: partitionId ?? packageName, error: error.message });
+      process.exitCode = 1;
+    }
   }
 }
