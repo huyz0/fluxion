@@ -31,6 +31,25 @@ function setup() {
   return { store, run, ids, screen, bounds };
 }
 
+/** A refusal identifies the command and argument while leaving the real store untouched. */
+function refusesAt(store: RecordStore, call: () => ReturnType<typeof executeCommand>, path: string): void {
+  const before = store.toDocument();
+  const labels: string[] = [];
+  const unsubscribe = store.subscribe((_diff, meta) => labels.push(meta.label));
+  const result = call();
+  unsubscribe();
+  expect(result).toMatchObject({
+    ok: false,
+    error: {
+      code: 'COMMAND_ARGS',
+      message: expect.stringMatching(/^element\.align: \S/),
+      diagnostics: [{ code: 'FLX_COMMAND_ARGS', severity: 'error', path, message: expect.stringMatching(/\S/) }],
+    },
+  });
+  expect(store.toDocument()).toEqual(before);
+  expect(labels).toEqual([]);
+}
+
 /** The coordinate a mode lines up: the left edge, the centre, ... of a box. */
 const edge = (b: { x: number; y: number; w: number; h: number }, mode: AlignMode) =>
   ({ left: b.x, center: b.x + b.w / 2, right: b.x + b.w, top: b.y, middle: b.y + b.h / 2, bottom: b.y + b.h })[mode];
@@ -47,11 +66,14 @@ function referenceOf(to: 'selection' | 'screen' | 'key', boxes: readonly Bx[]): 
 
 /** Align the three shapes by `mode` against `to`: each one's drawn edge (centre) lands on the reference's, the other axis untouched. */
 function alignsAgainst(mode: AlignMode, to: 'selection' | 'screen' | 'key'): void {
-  const { run, ids, bounds } = setup();
+  const { run, ids, bounds, store } = setup();
+  const labels: string[] = [];
+  store.subscribe((_diff, meta) => labels.push(meta.label));
   const before = ids.map(bounds);
   const reference = referenceOf(to, before);
   const r = run('element.align', { ids, mode, to: to === 'key' ? { key: ids[1] } : to });
   expect(r.ok, `${mode} ${to}`).toBe(true);
+  expect(labels).toEqual(['element.align']);
   const other = mode === 'left' || mode === 'center' || mode === 'right' ? 'y' : 'x';
   for (const [i, b] of ids.map(bounds).entries()) {
     expect(edge(b, mode), `${mode} ${to} #${i}`).toBeCloseTo(edge(reference, mode), 6);
@@ -106,6 +128,12 @@ describe('align (FR-ARR-002)', () => {
     expect(code(run('element.align', { ids: [ids[0], ids[1]], mode: 'left', to: { key: ids[2] } }))).toBe('COMMAND_ARGS');
     expect(code(run('element.align', { ids: ['nope'], mode: 'left', to: 'screen' }))).toBe('COMMAND_ARGS');
     expect(code(run('element.align', { ids: [screen], mode: 'left', to: 'screen' }))).toBe('COMMAND_ARGS');
+    for (const [args, path] of [
+      [{ ids: [ids[0], ids[1]], mode: 'left', to: { key: ids[2] } }, '/args/to/key'],
+      [{ ids: [ids[0], 'nope'], mode: 'left', to: 'screen' }, '/args/ids/1'],
+      [{ ids: [ids[0], screen], mode: 'left', to: 'screen' }, '/args/ids/1'],
+    ] as const)
+      refusesAt(store, () => run('element.align', args), path);
     // a connector has no box: nothing to place
     const b = documentBuilder({ seed: 87 });
     const s = b.screen();
@@ -120,6 +148,7 @@ describe('align (FR-ARR-002)', () => {
     const commands = createRegistry<string, AnyCommand>('commands');
     registerCoreCommands(commands);
     expect(code(executeCommand(commands, { store: lone }, 'element.align', { ids: [line], mode: 'left', to: 'screen' }))).toBe('COMMAND_ARGS');
+    refusesAt(lone, () => executeCommand(commands, { store: lone }, 'element.align', { ids: [line], mode: 'left', to: 'screen' }), '/args/ids');
     expect(s).toBeDefined();
   });
 
@@ -136,6 +165,7 @@ describe('align (FR-ARR-002)', () => {
     registerCoreCommands(commands);
     const run = (id: string, args: unknown) => executeCommand(commands, { store }, id, args);
     expect(run('element.align', { ids: [r], mode: 'left', to: 'screen' }).ok).toBe(false);
+    refusesAt(store, () => run('element.align', { ids: [r], mode: 'left', to: 'screen' }), '/args/to');
     expect(run('element.align', { ids: [r], mode: 'left', to: 'selection' }).ok).toBe(true);
   });
 
@@ -164,6 +194,7 @@ describe('align (FR-ARR-002)', () => {
     const refused = run('element.align', { ids: [shape, other], mode: 'left', to: 'screen' });
     expect(refused.ok).toBe(false);
     expect(!refused.ok && refused.error.code).toBe('COMMAND_ARGS');
+    refusesAt(store, () => run('element.align', { ids: [shape, other], mode: 'left', to: 'screen' }), '/args/ids');
     // but the selection's own bounds are a reference anywhere
     expect(run('element.align', { ids: [shape, other], mode: 'left', to: 'selection' }).ok).toBe(true);
   });

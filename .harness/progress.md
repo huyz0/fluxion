@@ -2441,3 +2441,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - All 302 core tests pass; no API, source inventory, ignore directive, timeout or floor changed.
 - Cumulative cp3 review passed with zero findings; its reviewer ran 18 harness and 19 core tests successfully.
 - Main 25a0e6cb CI passed 36/36 and gates passed; the same nightly continues, with M18.10 still open.
+
+## M18.60 — Constrain alignment diagnostics (2026-10-25)
+
+- Nightly core-15 exposed 19 survivors in alignment refusal identities, paths/details and the transaction label.
+- Real-store refusals now assert exact paths, nonempty diagnostics, unchanged documents and zero notifications.
+- Cover nonzero invalid-ID indices, unboxed selections, mixed screens, infinite screens and absent boxed keys.
+- Existing geometry checks also assert the successful transaction label; no existing test or assertion is removed.
+- All 19 observed mutations fail intended assertions; production source restored, all 302 core tests pass.
+- No production, public API, ignore directive, mutation inventory, timeout or floor changed.
+- Existing nightly continues on 25a0e6cb; M18.10 remains open until complete current-revision qualification.
