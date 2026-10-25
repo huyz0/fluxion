@@ -2297,3 +2297,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Unchanged force/packing/timeline/swimlane 500-node benchmarks all pass their blocking limit.
 - Required font/import constants are 60000 bytes, 4 anchors and 90 percent; none advisory.
 - Review caught discarded successful stdout; the real completion-leg integration now retains measurements.
+
+## M18.7 — enforced checkpoint boundary (2026-10-25)
+
+- Commit-msg and per-commit CI refuse another task after eight unreviewed task commits.
+- Parent history determines the active milestone; changing task IDs/roadmap cannot reset it.
+- Reviews and limits come from the index or exact historical tree, never unstaged files.
+- Covering ancestry/range, milestone and finding dispositions are required; old history is exempt.
+- Fourteen real-history cases cover the boundary, hook, CI, stale records and policy removal.
+- Related fixtures now include their required roadmap without changing assertions.
+- An unstaged-limit bypass went red→green; all 51 related tests pass.
+- The eighth task commit is followed by a fresh milestone checkpoint before further work.

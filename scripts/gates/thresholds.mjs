@@ -12,6 +12,7 @@ export const THRESHOLDS = {
   BACKLOG_MAX_LINES: { value: 400, weakens: 'up' },
   PROGRESS_ENTRY_MAX_LINES: { value: 10, weakens: 'up' },
   REVIEW_ROUND_CAP: { value: 3, weakens: 'up' },
+  CHECKPOINT_EVERY_TASK_COMMITS: { value: 8, weakens: 'up' }, // M18.7: existing independent review cadence
 
   // code structure (NFR-MNT-003)
   FILE_MAX_LINES: { value: 400, weakens: 'up' },

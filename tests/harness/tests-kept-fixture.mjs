@@ -25,7 +25,7 @@ export function keptSandbox() {
     },
   };
   before(() => {
-    ctx.sb = sandbox(['scripts'], { git: true });
+    ctx.sb = sandbox(['scripts', 'docs/milestones/roadmap.md'], { git: true });
     ctx.sb.write('packages/core/src/a.test.ts', SUITE);
     ctx.sb.write('packages/core/src/a.ts', 'export const a = 1;\n');
     ctx.sb.git('add', '-A');

@@ -4,7 +4,7 @@
 //   check-commits.mjs --range <base>..<head>
 //   --baseline <sha>   the base used when <base> is empty or all zeros (default: the pre-harness
 //                      baseline e4273a6; tests pass their own)
-// Per commit: check-commit-msg (subject/task id), check-tests-kept --commit, check-drift --commit.
+// Per commit: message/task id, prospective checkpoint cadence, tests kept and drift.
 // Merge commits are skipped (their parents are checked individually). gates.yml passes the event's
 // base as is: a branch's first push has an all-zero `before`, and commits up to the pre-harness
 // baseline are exempt, so both fall back to it here instead of in workflow shell (M1 final F5).
@@ -41,6 +41,7 @@ for (const sha of shas) {
   const subject = git(['log', '-1', '--format=%s', sha]).stdout.trim();
   const results = [
     ['commit-msg', node('scripts/gates/check-commit-msg.mjs', [msgFile])],
+    ['checkpoint', node('scripts/gates/check-checkpoint.mjs', ['--commit', sha])],
     ['tests-kept', node('scripts/gates/check-tests-kept.mjs', ['--commit', sha])],
     ['drift', node('scripts/gates/check-drift.mjs', ['--commit', sha])],
   ];

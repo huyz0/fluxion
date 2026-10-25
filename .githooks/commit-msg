@@ -1,5 +1,6 @@
 #!/bin/sh
-# Message-level gates: subject format; test removals and threshold weakening need trailers.
+# Task boundary: subject format, checkpoint cadence, test-removal and threshold trailers.
 node scripts/gates/check-commit-msg.mjs "$1" || exit 1
+node scripts/gates/check-checkpoint.mjs --message "$1" || exit 1
 node scripts/gates/check-tests-kept.mjs --msg "$1" || exit 1
 exec node scripts/gates/check-drift.mjs --msg "$1"

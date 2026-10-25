@@ -1,7 +1,7 @@
 # Harness gates on every push and PR (docs/standards/ci-cd.md). The same scripts the local hooks
 # run, so hook and CI cannot drift. The full ladder (`pnpm verify` = precommit.mjs --all) runs once
 # per OS in ci.yml's verify matrix (M2.22); this workflow keeps the ubuntu-only gates: workflow lint
-# with Docker, and every commit's message-level gates (task id, Removes-test, Threshold-change) via
+# with Docker, and every commit's task/checkpoint/trailer gates via
 # check-commits.mjs. check-reviewed is local-only: per-commit verdicts are bound to local staged
 # bytes (.harness/review is gitignored). Both scripts use only Node built-ins: nothing is installed.
 name: gates

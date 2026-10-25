@@ -66,7 +66,7 @@ describe('gates workflow (NFR-PORT-005)', () => {
 
 describe('check-commits (NFR-DX-004)', () => {
   it('fails a commit that bypassed the commit-msg hook, passes a justified one', () => {
-    const sb = sandbox(['scripts', 'docs/backlog'], { git: true });
+    const sb = sandbox(['scripts', 'docs/backlog', 'docs/milestones/roadmap.md'], { git: true });
     try {
       const base = sb.git('rev-parse', 'HEAD').stdout.trim();
       sb.write('tests/harness/x.test.mjs', "it('a', () => {});\n");
@@ -86,7 +86,7 @@ describe('check-commits (NFR-DX-004)', () => {
   });
 
   it('an empty or all-zero base (first push of a branch) falls back to the baseline (M1 final F5)', () => {
-    const sb = sandbox(['scripts', 'docs/backlog'], { git: true });
+    const sb = sandbox(['scripts', 'docs/backlog', 'docs/milestones/roadmap.md'], { git: true });
     try {
       const baseline = sb.git('rev-parse', 'HEAD').stdout.trim();
       for (const n of [1, 2]) {

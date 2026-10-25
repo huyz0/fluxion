@@ -19,3 +19,7 @@ M18.48 qualifies pinned bounded font binaries and worker CSP before M18.39/40.
 
 M18.6 records ADR-0171 and tests circular-only advisory exit status, evidence validation
 and unchanged non-circular limits before its real benchmark/correctness qualification.
+
+M18.7 enforces eight-task checkpoint cadence in the local commit hook and exact-commit
+CI. It uses parent history and staged/committed reviews; historical pre-adoption commits
+are exempt, while removal after adoption fails. A fresh milestone review follows task 8.

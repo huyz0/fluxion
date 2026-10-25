@@ -63,7 +63,7 @@ threshold change: the reason line says which intended behaviour changed the outp
 |---|---|---|
 | 14 | **Trunk-based.** `main` is protected: linear history, no direct pushes, required check `ci-ok`, merge queue. | GitHub ruleset |
 | 15 | **One worktree per agent session**, on branch `agent/M<n>-<slug>` (e.g. `agent/M3-orthogonal-routing`). Two sessions never share an index. Create with `node scripts/harness/worktree.mjs add M3 orthogonal-routing`. | no gate — `worktree.mjs` convention |
-| 16 | A branch lives for one milestone checkpoint: ~5–10 task commits, then a PR. Rebase onto `main` before opening it; never merge `main` into the branch. | `check-commit-msg.mjs` (rejects merge commits) |
+| 16 | A checkpoint review is required before another task after 8 unreviewed task commits. Rebase onto `main` before opening a checkpoint PR; never merge `main` into the branch. | `check-checkpoint.mjs` in commit-msg and per-commit CI |
 | 17 | PRs are merged by **rebase** so per-task commits survive on `main`. No squash (it destroys the task↔commit map), no merge commits. | Repo setting (rebase only) |
 | 18 | PR title: `M3 checkpoint: <what the commits deliver>`. Body lists task IDs, the milestone gate output, and links to milestone review verdicts. | no gate — judgement |
 

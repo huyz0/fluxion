@@ -5,8 +5,8 @@ UI and per-pack commits; M15/M17 handoffs precede feature implementation. M17 ar
 in `archive/M17.md` after its independent final review and postcommit 40/40 gate at
 7545e708 (2026-10-25). No old interrupted-session work was recovered.
 
-One task per reviewed commit. Checkpoint reviews every ~8 task commits; M18.7 enforces
-this existing rule. Until then it remains a manual requirement. IDs stay stable.
+One task per reviewed commit. M18.7 enforces the existing 8-task checkpoint boundary
+in local commit-msg and exact-commit CI, using staged/committed review evidence. IDs stay stable.
 Decisions M18.2–M18.6 precede feature contracts; implementation must not infer their outcomes.
 Circular timing is the sole user-authorized advisory exception (2026-10-24); M18.6 records
 it formally before wiring it. All other limits, correctness and zero retries remain.
@@ -19,8 +19,8 @@ it formally before wiring it. All other limits, correctness and zero retries rem
 | M18.3 | ADR-0049 SVG, Iconify and draw.io import pipeline | FR-LIB-004, FR-LIB-005, FR-LIB-006, NFR-SEC-001 | THE SYSTEM SHALL define sanitization, outline fallback diagnostics, bounded archive/XML decoding and color mapping with fixture contracts | M18.2 | done | 1f8bc4f1 |
 | M18.4 | ADR-0050 pack license and attribution policy | NFR-LIC-003 | THE SYSTEM SHALL retain existing license posture and define required provenance, used-pack credits and generic cloud/icon redistribution checks | M18.2 | done | 3b7f0a2e |
 | M18.5 | ADR-0051 font subset engine, dependency evidence and save contract | FR-AST-003 | THE SYSTEM SHALL choose a licensed engine using primary-source evidence and define WOFF2 output, glyph closure, hash/layout fingerprint and failure behavior | M18.2 | done | 1a30584d |
-| M18.6 | Record authorized circular-only advisory exception in ADR/spec/requirement/matrix; add required M18 thresholds | NFR-PERF-005, FR-AST-003, FR-LIB-004, FR-LIB-006 | THE SYSTEM SHALL make only circular-500 timing advisory while retaining its 2000 ms measurement and correctness; font/SVG/draw.io limits SHALL be 60000 bytes/4 anchors/90 percent | M18.5 | done | |
-| M18.7 | Enforce checkpoint cadence at the task commit boundary | HARNESS | WHEN CHECKPOINT_EVERY_TASK_COMMITS (8, the existing review cadence) is reached THE SYSTEM SHALL refuse another task commit until a covering checkpoint is recorded; stale or wrong-milestone reviews SHALL not clear it | M18.6 | todo | |
+| M18.6 | Record authorized circular-only advisory exception in ADR/spec/requirement/matrix; add required M18 thresholds | NFR-PERF-005, FR-AST-003, FR-LIB-004, FR-LIB-006 | THE SYSTEM SHALL make only circular-500 timing advisory while retaining its 2000 ms measurement and correctness; font/SVG/draw.io limits SHALL be 60000 bytes/4 anchors/90 percent | M18.5 | done | 26579eb9 |
+| M18.7 | Enforce checkpoint cadence at the task commit boundary | HARNESS | WHEN CHECKPOINT_EVERY_TASK_COMMITS (8, the existing review cadence) is reached THE SYSTEM SHALL refuse another task commit until a covering checkpoint is recorded; stale or wrong-milestone reviews SHALL not clear it | M18.6 | done | |
 | M18.8 | Calibration judge outlier and varied-p99 regressions; measured extra layout limits | NFR-PERF-005, HARNESS | WHEN the first sample is an outlier THE SYSTEM SHALL judge the median; force/packing/timeline/swimlane-500 overruns SHALL fail, circular timing alone SHALL warn, missing or malformed samples SHALL fail | M18.7 | todo | |
 | M18.9 | Remove unread millisecond baselines and correct ADR-0170 reader inventory | NFR-PERF-005, HARNESS | THE SYSTEM SHALL retain every baseline actually consumed by a gate and remove only unread millisecond entries with a Threshold-change trailer citing ADR-0170 | M18.8 | todo | |
 | M18.10 | Diagnose and partition full mutation execution within unchanged nightly timeout | NFR-MNT-005, HARNESS | WHEN nightly runs THE SYSTEM SHALL retain every pure-package source/test/mutant and score floor; missing/failed shards SHALL fail aggregation and complete reports SHALL fit the existing timeout | M18.9 | todo | |

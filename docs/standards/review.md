@@ -83,7 +83,7 @@ blocking findings, or findings without `failure_scenario`.
 
 | # | Rule | Enforced by |
 |---|---|---|
-| M1 | Run at a checkpoint (~8 commits since the last one) and before `m<n>-complete.mjs` may pass. | `m<n>-complete.mjs` requires a verdict covering every milestone commit |
+| M1 | Review every 8 task commits and before completion. After 8 unreviewed tasks, a covering checkpoint is required before another task commit. | `check-checkpoint.mjs` in commit-msg and per-commit CI; `m<n>-complete.mjs` requires a final covering verdict |
 | M2 | The reviewer is fresh (no drive transcript) and reads files as they now stand, plus `git log` for the milestone. | no gate — harness |
 | M3 | Look for what per-commit review cannot see: drift between packages, contradictions between individually-approved changes, abstractions to extract or collapse, standards no longer followed, gates passing for the wrong reason, docs claiming what code no longer does, the plan or spec itself being wrong. | reviewer prompt |
 | M4 | Each finding gets a **disposition** when filed: `reopen` (new row in this milestone), `handoff` (row in the next milestone plan's Deferred table), or `argue`. | `check-milestone-handoff.mjs` |
@@ -94,3 +94,22 @@ blocking findings, or findings without `failure_scenario`.
 The hash proves the verdict matches the diff; it cannot prove the reviewer was not the author.
 Isolation comes from the reviewer subagent definitions (fresh context, packet only), and a human spot-checks
 `reviewer` fields at milestone boundaries.
+
+## Checkpoint boundary (M18.7)
+
+`CHECKPOINT_EVERY_TASK_COMMITS` is 8. The pending task may be the eighth; a ninth needs
+a covering review. Count task-subject commits in the active milestone's history, including
+archived-ID follow-ups. Changing an unstaged/staged roadmap does not reset the count: the
+parent commit's active milestone determines the boundary. Non-task commits do not count.
+
+A checkpoint's range starts at or before the milestone introduction and ends on the
+parent's actual ancestry. The refusal prints a suitable cumulative range. Records need
+the matching milestone, checkpoint name, nonempty reviewer, findings and dispositions;
+every finding needs its disposition. A checkpoint may identify follow-up work: it proves
+review occurred, not that those fixes or the milestone are complete. Reviewer independence
+still requires the fresh-agent procedure above; a string field cannot prove it.
+
+Local hooks read the index, including the limit; CI checks each commit's own tree and parent. Unstaged records,
+wrong milestones, partial/nonancestor ranges and malformed records cannot reset cadence.
+A prior covering review does not excuse eight subsequent task commits. The policy applies
+prospectively from its adoption; removing it later fails closed. Keep full Git history.

@@ -44,6 +44,7 @@ Codex only: trust the project `.codex/` layer when prompted (hooks re-prompt whe
 | `.harness/state.json` | current task, attempts, `loopActive`, `blockedReason` |
 | `.harness/reviews/digest.log` | every recorded review verdict (task, diff hash, round, verdict, reviewer) |
 | `.harness/reviews/milestone-*.json` | checkpoint and final milestone reviews with dispositions |
+| `node scripts/gates/check-checkpoint.mjs --commit HEAD` | checkpoint cadence at that exact commit; local commit-msg checks staged review evidence |
 | `git log --oneline` | one commit per task, subject `<TaskID>: <type>(<scope>): …` |
 
 ## 4. Stop, unblock, resume
