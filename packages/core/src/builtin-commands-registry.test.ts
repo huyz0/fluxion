@@ -5,6 +5,51 @@ import { type IntegrityHook, registerCoreHooks } from './hooks.js';
 import { createRegistry } from './registry.js';
 
 describe('built-in record commands (FR-EXT-001)', () => {
+  it('FR-EXT-001: public command composition preserves registration order and translatable labels', () => {
+    expect(CORE_COMMANDS.map((command) => command.id)).toEqual([
+      'element.group',
+      'element.ungroup',
+      'element.align',
+      'element.distribute',
+      'element.zOrder',
+      'screen.rename',
+      'screen.setHidden',
+      'screen.setNotes',
+      'screen.setLayout',
+      'screen.setFormat',
+      'screen.duplicate',
+      'section.create',
+      'section.rename',
+      'section.setCollapsed',
+      'section.reorder',
+      'section.delete',
+      'screen.setSection',
+      'screen.move',
+      'document.setTheme',
+      'screen.setThemeOverride',
+      'document.updateMeta',
+      'element.create',
+      'element.update',
+      'asset.create',
+      'asset.update',
+      'asset.delete',
+      'element.delete',
+      'element.createMany',
+      'element.updateMany',
+      'screen.create',
+      'screen.delete',
+      'screen.reorder',
+      'binding.set',
+      'connector.freeEnd',
+      'document.applyRecords',
+      'document.update',
+    ]);
+    for (const command of CORE_COMMANDS) {
+      expect(command.title.id).toBe(`command.${command.id}`);
+      expect(command.title.defaultMessage.trim().length).toBeGreaterThan(0);
+    }
+  });
+
   it('FR-EXT-001: the built-ins are registered through the registry as source core', () => {
     const commands = createRegistry<string, AnyCommand>('commands');
     expect(registerCoreCommands(commands)).toEqual([]);

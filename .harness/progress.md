@@ -2400,3 +2400,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Historical real-report formatting preserves 92 expected IDs and counts; it is not new qualification.
 - Builtin diagnostic at 86b4d74b timed out under unchanged 3600s budget: exit124, no report; evidence archived, no retry.
 - M18.10 remains open for timeout recovery and complete current-revision hosted qualification.
+
+## M18.56 — Split builtin record-command source (2026-10-25)
+
+- Extract eight element/asset definitions; preserve public command composition and original bodies/guards.
+- All 36 ordered metadata/argument-schema entries match the pre-refactor baseline; 300 core tests and typecheck pass.
+- Reversed composition, missing family and empty label probes fail the regression; original code restored.
+- Final prospective inventory retains all 36193 mutants; every other source mutant identity is unchanged.
+- All 347 builtin operations remain: 346 token-equivalent operations plus the whole-composition deletion.
+- Source inventories are 218/129; ignore directive unchanged. Named definitions retain the 150kB bundle gate (149.91kB).
+- No scheduling, test-project, mutator, timeout or score-floor change; runtime/package qualification remains M18.10.
