@@ -2534,3 +2534,15 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Four missing-corpus tests failed first, then 4/4 passed; all 50 SVGs decoded/rendered and the contact sheet was inspected.
 - Conversion counts, fidelity, anchors and security remain future tasks; this commit does not claim those features complete.
 - Two staged lint failures retained: raw SVG/JSON fixture classification and manifest formatting; final lint and checksum probes pass.
+
+## M18.46 — Share decoded SVG policy below core/format (2026-10-25)
+
+- Independent implementation-plan review passed with no findings (ADR-0177 supplements ADR-0049).
+- Move existing allowlists, value/style checks and fixed limits into schema; keep XML parsing, decoding, escaping and counting in format.
+- Expose immutable limits and pure element/attribute checks; explicitly require later full paint-graph validation.
+- Freeze 67 pre-refactor text/removal-count outputs: all 50 import SVGs and 17 hostile SVGs remain exactly compatible.
+- Four public-API tests failed before implementation; final targeted tests 10/10 and full schema/format suites 322/322 passed.
+- Full build 26/26 passed; schema API reports regenerated; additive schema/minor and compatible format/patch changesets included.
+- No document record/version, security permission, resource bound or threshold changed; M18.47 owns validated paint trees.
+- Initial staged coverage passed; composite-project JSON fixture import failed type/API/harness checks, corrected to the existing raw-glob pattern.
+- Second staged coverage passed; TypeDoc required five exported field descriptions. Added them; focused API/TypeDoc validation passed.

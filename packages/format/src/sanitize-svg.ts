@@ -1,3 +1,5 @@
+import { checkedSvgAttribute, isSvgElement, isSvgTextElement, SVG_POLICY_LIMITS } from '@fluxion/schema';
+
 // sanitizeSvg (NFR-SEC-001, ADR-0150, M7.23): untrusted SVG text in, SVG text that can do nothing out. Not a
 // denylist over a parsed DOM: the text is tokenised by a small tolerant XML reader, and a new document is built from
 // the tokens that an allowlist names (elements, attributes, style properties) with every value checked, so what the
@@ -10,83 +12,13 @@
  *
  * @public
  */
-export const MAX_SVG_CHARS: number = 2 * 1024 * 1024;
+export const MAX_SVG_CHARS: number = SVG_POLICY_LIMITS.maxChars;
 
 /** The deepest element nesting that is kept (and the most elements read). */
-const MAX_DEPTH = 64;
-const MAX_NODES = 20_000;
+const MAX_DEPTH = SVG_POLICY_LIMITS.maxDepth;
+const MAX_NODES = SVG_POLICY_LIMITS.maxNodes;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-
-/** The elements that are kept, with the attributes each may carry (besides the presentation attributes). */
-const ELEMENTS: { readonly [name: string]: readonly string[] } = {
-  svg: ['viewBox', 'width', 'height', 'preserveAspectRatio', 'x', 'y'],
-  g: ['transform'],
-  defs: [],
-  symbol: ['viewBox', 'preserveAspectRatio'],
-  use: ['href', 'xlink:href', 'x', 'y', 'width', 'height', 'transform'],
-  path: ['d', 'transform', 'pathLength'],
-  rect: ['x', 'y', 'width', 'height', 'rx', 'ry', 'transform'],
-  circle: ['cx', 'cy', 'r', 'transform'],
-  ellipse: ['cx', 'cy', 'rx', 'ry', 'transform'],
-  line: ['x1', 'y1', 'x2', 'y2', 'transform'],
-  polyline: ['points', 'transform'],
-  polygon: ['points', 'transform'],
-  text: ['x', 'y', 'dx', 'dy', 'transform', 'text-anchor', 'textLength'],
-  tspan: ['x', 'y', 'dx', 'dy', 'text-anchor'],
-  title: [],
-  desc: [],
-  linearGradient: ['x1', 'y1', 'x2', 'y2', 'gradientUnits', 'gradientTransform', 'spreadMethod', 'href', 'xlink:href'],
-  radialGradient: ['cx', 'cy', 'r', 'fx', 'fy', 'gradientUnits', 'gradientTransform', 'spreadMethod', 'href', 'xlink:href'],
-  stop: ['offset', 'stop-color', 'stop-opacity'],
-  clipPath: ['clipPathUnits', 'transform'],
-  mask: ['maskUnits', 'maskContentUnits', 'x', 'y', 'width', 'height'],
-  marker: ['markerWidth', 'markerHeight', 'refX', 'refY', 'orient', 'markerUnits', 'viewBox', 'preserveAspectRatio'],
-};
-
-/** The elements whose text is kept. */
-const TEXTUAL = new Set(['text', 'tspan', 'title', 'desc']);
-
-/** The presentation attributes any kept element may carry, which a `style` may set too. */
-const PRESENTATION = [
-  'fill',
-  'fill-opacity',
-  'fill-rule',
-  'stroke',
-  'stroke-width',
-  'stroke-opacity',
-  'stroke-linecap',
-  'stroke-linejoin',
-  'stroke-miterlimit',
-  'stroke-dasharray',
-  'stroke-dashoffset',
-  'opacity',
-  'clip-path',
-  'clip-rule',
-  'mask',
-  'marker-start',
-  'marker-mid',
-  'marker-end',
-  'font-family',
-  'font-size',
-  'font-weight',
-  'font-style',
-  'letter-spacing',
-  'text-decoration',
-  'visibility',
-  'display',
-  'stop-color',
-  'stop-opacity',
-];
-
-/** The attributes any kept element may carry. */
-const COMMON = new Set([...PRESENTATION, 'id', 'class', 'style']);
-
-/** The CSS properties a `style` attribute may set. */
-const STYLE_PROPERTIES = new Set(PRESENTATION);
-
-/** The attributes that name another element (only `#id` of this file) rather than carry a value. */
-const REFERENCES = new Set(['href', 'xlink:href']);
 
 const ENTITIES: { readonly [name: string]: string } = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
 
@@ -104,74 +36,10 @@ function decode(text: string): string {
 /** `text` made safe to put between tags or inside a double-quoted attribute. */
 const escapeText = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/** Whether `c` is a control character or white space (what a browser ignores inside a scheme like `java\tscript:`). */
-const ignorable = (c: string): boolean => {
-  const code = c.charCodeAt(0);
-  return code <= 32 || (code >= 0x7f && code <= 0x9f);
-};
-
-/** Whether every `url(` in `flat` names an id of this file. */
-const FUNCTIONS = new Set([
-  'url',
-  'rgb',
-  'rgba',
-  'hsl',
-  'hsla',
-  'translate',
-  'translatex',
-  'translatey',
-  'rotate',
-  'scale',
-  'scalex',
-  'scaley',
-  'matrix',
-  'skewx',
-  'skewy',
-]);
-
-/**
- * Whether every function a value calls is on the list (colours and transforms, and `url()` of an id of this file); anything
- * else (`image-set`, `image`, `src`, `var`, `calc`, …) may load or leak.
- */
-const callsAreSafe = (flat: string): boolean =>
-  [...flat.matchAll(/([a-z][a-z0-9-]*)\(/g)].every(
-    (m) => FUNCTIONS.has(m[1] as string) && (m[1] !== 'url' || /^['"]?#/.test(flat.slice((m.index ?? 0) + (m[0] as string).length))),
-  );
-
-/** A value that carries nothing executable or external: no script scheme, no data, no markup, no CSS escape, no protocol-relative URL, only the listed functions, `url(#id)` only. */
-function safeValue(value: string): boolean {
-  const flat = [...value]
-    .filter((c) => !ignorable(c))
-    .join('')
-    .toLowerCase();
-  if (/(javascript|vbscript|data|file|https?|ftp|blob):/.test(flat) || /@import|<|\\|\/\*|\/\//.test(flat)) return false;
-  return callsAreSafe(flat);
-}
-
-/** `style` filtered to the allowed properties with safe values; empty when nothing is left. */
-function safeStyle(style: string): string {
-  return style
-    .split(';')
-    .flatMap((declaration) => {
-      const at = declaration.indexOf(':');
-      if (at < 0) return [];
-      const property = declaration.slice(0, at).trim().toLowerCase();
-      const value = declaration.slice(at + 1).trim();
-      return STYLE_PROPERTIES.has(property) && value !== '' && safeValue(value) ? [`${property}:${value}`] : [];
-    })
-    .join(';');
-}
-
-/** One attribute kept as `name="value"` text, or nothing. */
+/** One decoded attribute checked by schema and escaped for markup, or nothing. */
 function keepAttribute(element: string, name: string, raw: string): string | undefined {
-  if (!(COMMON.has(name) || (ELEMENTS[element] ?? []).includes(name))) return undefined;
-  const value = decode(raw).trim();
-  if (REFERENCES.has(name)) return /^#[A-Za-z_][\w.:-]*$/.test(value) ? `href="${escapeText(value)}"` : undefined;
-  if (name === 'style') {
-    const style = safeStyle(value);
-    return style === '' ? undefined : `style="${escapeText(style)}"`;
-  }
-  return safeValue(value) ? `${name}="${escapeText(value)}"` : undefined;
+  const checked = checkedSvgAttribute(element, name, decode(raw));
+  return checked === undefined ? undefined : `${checked.name}="${escapeText(checked.value)}"`;
 }
 
 /** A node of the tree the reader builds. */
@@ -301,12 +169,12 @@ function keptAttributes(node: Node, removed: Removed): string[] {
 /** The kept markup of `node` (an element on the allowlist; its text only where text is kept), or nothing; `removed` counts what was dropped. */
 function write(node: Node | string, textual: boolean, removed: Removed): string {
   if (typeof node === 'string') return textual ? escapeText(node) : '';
-  if (!Object.hasOwn(ELEMENTS, node.name)) {
+  if (!isSvgElement(node.name)) {
     removed.count++;
     return '';
   }
   const attributes = keptAttributes(node, removed);
-  const inside = node.children.map((c) => write(c, TEXTUAL.has(node.name), removed)).join('');
+  const inside = node.children.map((c) => write(c, isSvgTextElement(node.name), removed)).join('');
   return `<${node.name}${attributes.length > 0 ? ` ${attributes.join(' ')}` : ''}>${inside}</${node.name}>`;
 }
 

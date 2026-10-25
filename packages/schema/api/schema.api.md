@@ -76,6 +76,15 @@ export const checkedSchema: <T>() => <S extends z.ZodType>(schema: S & (SameType
 })) => z.ZodType<T>;
 
 // @public
+export type CheckedSvgAttribute = {
+    readonly name: string;
+    readonly value: string;
+};
+
+// @public
+export function checkedSvgAttribute(element: string, name: string, decodedValue: string): CheckedSvgAttribute | undefined;
+
+// @public
 export function checkRichText(value: unknown): RichTextIssue[];
 
 // @public
@@ -403,6 +412,12 @@ export function isIndexKey(key: unknown): key is IndexKey;
 
 // @public
 export function isRecordId(value: unknown): value is RecordId;
+
+// @public
+export function isSvgElement(name: string): boolean;
+
+// @public
+export function isSvgTextElement(name: string): boolean;
 
 // @public
 export function isValid(diagnostics: readonly Diagnostic[]): boolean;
@@ -798,6 +813,13 @@ export const styleSchema: z.ZodType<Style>;
 
 // @public
 export type StyleValue<T> = T | TokenRef;
+
+// @public
+export const SVG_POLICY_LIMITS: Readonly<{
+    maxChars: number;
+    maxDepth: number;
+    maxNodes: number;
+}>;
 
 // @public
 export type Tagged = Extensible<{
