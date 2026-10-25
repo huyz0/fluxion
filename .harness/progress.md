@@ -2277,3 +2277,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Generic first-party cloud symbols remain the rule; no vendor rights are inferred.
 - Strengthened the completion leg to require negative asset/code policy and missing-notice cases.
 - Schema, persistence and credits UI remain implementation tasks M18.12/14/33.
+
+## M18.5 — bounded font engine decision (2026-10-25)
+
+- ADR-0051 selects direct HarfBuzz subset and standalone Google WOFF2 WASM.
+- Two convenient encoder wrappers failed the native no-string-codegen probe.
+- Zeroed codec output fixes three unwritten padding bytes exposed by repeated encoding.
+- Node and Chromium worker probes produce deterministic, loadable WOFF2; CSP negatives pass.
+- This is architecture evidence, not full-font size, fidelity or all-browser qualification.
+- M18.48 adds reproducible assets/security probes before feature integration.
+- Original bytes/notices, RFN fallback, closure and cache/layout identity are explicit contracts.

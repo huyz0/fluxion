@@ -32,4 +32,6 @@ fixture qualification, the behavior-preserving refactor and the artwork API/rend
 ADR-0050 preserves code/content/font policy boundaries and adds source-scoped credits.
 Every used subset retains applicable notices, with offline player rendering; a wrapper's
 license cannot erase source rights. Existing code-only license checks are insufficient.
-ADR-0051 still precedes font implementation.
+ADR-0051 selects direct HarfBuzz subset WASM and bounded standalone Google WOFF2.
+M18.48 qualifies reproducible assets/CSP before M18.39 integrates them; source notices,
+RFN fallback, deterministic output, closure and offline save behavior remain mandatory.

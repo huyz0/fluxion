@@ -103,6 +103,14 @@ leg('licensed import corpora are pinned before converter implementation', () =>
   ]),
 );
 
+leg('pinned font engines preserve bounds, padding and CSP', () =>
+  namedCases('tests/harness/font-engine.test.mjs', [
+    'pinned font binaries rebuild identically and retain notices',
+    'malformed fonts and dirty output buffers remain bounded and deterministic',
+    'font workers allow WASM while blocking JavaScript evaluation',
+  ]),
+);
+
 const featureTests = [
   ['direct-pack artwork rejects unsafe nodes, references and excessive resources', 'packages/core/src/shape/artwork.test.ts'],
   ['checked artwork preserves paint and scopes references without changing legacy rendering', 'packages/render/src/shape-artwork.test.tsx'],

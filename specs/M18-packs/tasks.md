@@ -1,6 +1,6 @@
 # Executable tasks
 
-Authoritative rows and EARS criteria: `docs/backlog/current.md`, M18.1–M18.47.
+Authoritative rows and EARS criteria: `docs/backlog/current.md`, M18.1–M18.48.
 
 - M18.1: initially red gate and reviewed plan.
 - M18.2–6: decisions and authorized requirement reconciliation before feature contracts.
@@ -14,3 +14,5 @@ Authoritative rows and EARS criteria: `docs/backlog/current.md`, M18.1–M18.47.
 
 Rows may split when tests reveal a larger commit; record the cause and preserve IDs.
 No feature row is complete merely because its files exist: the completion gate runs tests.
+
+M18.48 qualifies pinned bounded font binaries and worker CSP before M18.39/40.
