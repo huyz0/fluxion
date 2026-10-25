@@ -2461,3 +2461,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - All 39 observed diagnostic/label counterexamples fail assertions; production source restored unchanged.
 - Duplication-copy gaps remain explicitly open in M18.10; no exclusions, scope, timeout or floor changes.
 - M18.60 published f2df026c after full verification; the existing nightly continues on 25a0e6cb.
+
+## M18.62 — Preserve screen duplicate records (2026-10-25)
+
+- Add real-store semantic metadata, slug-only omission, nameless screen, nested parent and internal binding regressions.
+- Assert transaction record order and exact undo/redo; public copy selection rejects bindings crossing either screen boundary.
+- All 12 observed copy-behavior counterexamples fail; both refactored type-branch probes fail intended assertions.
+- Replace two classification filters and copy loops with one ordered type-specific pass; no ignore/config exclusions added.
+- Inventory changes only this source: 209 to 201 mutants; all 35,984 other descriptors and package floors unchanged.
+- Existing cross-screen duplicate missing-end refusal reproduced; M18.63 tracks its contract decision, not hidden as fixed.
+- M18.10 remains open for complete current-revision mutation execution and scores; individual probes do not qualify it.

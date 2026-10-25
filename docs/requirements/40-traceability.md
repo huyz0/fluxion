@@ -32,12 +32,12 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
 | FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/pm-json.test.ts` +14 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | `e2e/document.metadata.spec.ts` +5 |
-| FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/semantic.test.ts`, `packages/schema/src/serialize.test.ts` |
+| FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/screens/screen-duplicate.test.ts` +2 |
 | FR-DOC-008 | S | R5 | M24 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-009 | C | R6 | M28 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-DOC-010 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/builtin-commands.test.ts` +3 |
 | FR-SCR-001 | M | R0 | M2, M4 | [10-document-and-file.md](10-document-and-file.md) | `e2e/render.static-html.spec.ts` +9 |
-| FR-SCR-002 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/player.keyboard-nav.spec.ts` +4 |
+| FR-SCR-002 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/player.keyboard-nav.spec.ts` +5 |
 | FR-SCR-003 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.navigator.spec.ts` +3 |
 | FR-SCR-004 | S | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.sections.spec.ts` +4 |
 | FR-SCR-005 | S | R3 | M19 | [10-document-and-file.md](10-document-and-file.md) | — |

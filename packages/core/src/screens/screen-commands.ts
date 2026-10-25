@@ -107,8 +107,6 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
       const bad = checkIds(ctx, 'screen.duplicate', 'screen', [[['id'], args.id]]) ?? checkIds(ctx, 'screen.duplicate', 'new', [[['newId'], args.newId]]);
       if (bad) return bad;
       const copied = screenRecordsToCopy(ctx.store, args.id as RecordId);
-      const elements = copied.filter((x) => ctx.store.get(x)?.type === 'element');
-      const bindings = copied.filter((x) => ctx.store.get(x)?.type === 'binding');
       const missing = copied.find((x) => args.ids[x] === undefined);
       if (missing !== undefined) return refuse('screen.duplicate', ['ids'], `no new id for "${missing}"`);
       const fresh = [args.newId, ...copied.map((x) => args.ids[x] as string)];
@@ -127,14 +125,14 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
       const to = (x: unknown): string => args.ids[String(x)] ?? String(x);
       return write(ctx, 'screen.duplicate', (tx) => {
         tx.put({ ...original, ...name, id: args.newId, index: index.value } as unknown as AnyRecord);
-        for (const e of elements) {
-          const r = ctx.store.get(e) as unknown as Rec;
-          const parent = r['parentId'] === undefined ? {} : { parentId: to(r['parentId']) };
-          tx.put({ ...withoutSlug(r), id: to(e), screenId: args.newId, ...parent } as unknown as AnyRecord);
-        }
-        for (const b of bindings) {
-          const r = ctx.store.get(b) as unknown as Rec;
-          tx.put({ ...r, id: to(b), connectorId: to(r['connectorId']), elementId: to(r['elementId']) } as unknown as AnyRecord);
+        for (const id of copied) {
+          const r = ctx.store.get(id) as unknown as Rec;
+          if (r['type'] === 'element') {
+            const parent = r['parentId'] === undefined ? {} : { parentId: to(r['parentId']) };
+            tx.put({ ...withoutSlug(r), id: to(id), screenId: args.newId, ...parent } as unknown as AnyRecord);
+          } else {
+            tx.put({ ...r, id: to(id), connectorId: to(r['connectorId']), elementId: to(r['elementId']) } as unknown as AnyRecord);
+          }
         }
       });
     },
