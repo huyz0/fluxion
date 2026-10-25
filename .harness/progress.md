@@ -2251,3 +2251,12 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Used-only bundles carry attribution and a data-only lock; no executable JSON or trust grant.
 - Document records stay unchanged; implementation must prove legacy preservation and offline rendering.
 - Architecture notes explicitly label this decision as pending implementation (M18.12–14).
+
+## M18.44 — browser scheduling and failure evidence (2026-10-25)
+
+- CI40166573611 failed macOS verification; captured log exposes four failures but truncates two.
+- Browser files now run serially; every assertion, timeout and retry setting is unchanged.
+- Actual two-file scheduling probe changed peak concurrency 2→1; all 11 assertions passed both runs.
+- Full browser suite passed 393/393; local timeout reproduction is not claimed.
+- Failed ladder steps preserve every Vitest heading and complete streams in per-run logs/artifacts.
+- Deliberately failing four-heading probe went red→green; all eight ladder harness tests passed.

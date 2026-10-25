@@ -72,6 +72,9 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'browser',
+          // Keep RAF-driven UI files from competing for browser pages during the full ladder
+          // (M18.44: macOS CI timed out under the unchanged 20 s limit). Node files stay parallel.
+          fileParallelism: false,
           include: [`${SRC}/*.browser.test.{ts,tsx}`],
           browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] },
         },

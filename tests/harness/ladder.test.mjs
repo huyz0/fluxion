@@ -60,6 +60,33 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
     }
   });
 
+  it('Vitest failures retain every test heading and complete output (NFR-DX-003)', () => {
+    const sb = sandbox();
+    try {
+      sb.write('.github/workflows/ci.yml', 'name: ci\n');
+      const chunks = Array.from({ length: 4 }, (_, i) =>
+        [`\u001b[31m FAIL browser file-${i}.test.ts > case-${i}\u001b[0m`, `Error: failure-${i}`, ...Array(80).fill(`detail-${i}`)].join('\n'),
+      );
+      sb.write(
+        'scripts/gates/check-workflows.mjs',
+        `process.stdout.write(${JSON.stringify(chunks.join('\n'))}); process.stderr.write('stderr preserved'); process.exit(1);\n`,
+      );
+      const r = sb.node('scripts/gates/precommit.mjs', ['--all']);
+      assert.notEqual(r.status, 0, out(r));
+      for (let i = 0; i < 4; i++) {
+        assert.ok(r.stdout.includes(`file-${i}.test.ts > case-${i}`), out(r));
+        assert.ok(r.stdout.includes(`Error: failure-${i}`), out(r));
+      }
+      const log = /Full failure output: (.+)/.exec(r.stdout)?.[1];
+      assert.ok(log, out(r));
+      const complete = sb.read(log);
+      for (let i = 0; i < 4; i++) assert.ok(complete.includes(`detail-${i}`));
+      assert.ok(complete.includes('stderr preserved'));
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('a failed fast-check property keeps its seed and counterexample in the FAIL detail (M4.31)', () => {
     const sb = sandbox();
     try {

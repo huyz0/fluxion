@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readdirSync, readFileSync } from 'node:fs';
 // The single definition of the pre-commit ladder. Used by .githooks/pre-commit (--staged),
 // by `pnpm verify` / CI (--all), and by agents (--quick while iterating).
 //   --staged     check what is staged (default when run from the hook); the harness tests and the
@@ -12,7 +13,7 @@
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { readdirSync, readFileSync } from 'node:fs';
+import { failureLines, writeFailureLog } from './failure-report.mjs';
 import {
   evalNeeded,
   examplesNeeded,
@@ -284,16 +285,9 @@ async function runStep([name, , available, exec]) {
   const nested = r.status === 0 ? nestedSkip(r.stdout) : null;
   if (nested) return { lines: [`SKIP ${name} — ${nested}`], ok: true };
   if (r.status === 0) return { lines: [`PASS ${name} (${ms}ms)`], ok: true };
-  const all = `${r.stdout}\n${r.stderr}`.trim().split(/\r?\n/);
-  // a node:test spec report ends with a "failing tests" list, but one long assertion message pushes
-  // the test names out of a plain tail: start at that list when there is one (M1.39)
-  const failing = all.findIndex((l) => l.startsWith('✖ failing tests:'));
-  const tail = failing >= 0 ? all.slice(failing, failing + 40) : all.slice(-40);
-  // a failed fast-check property names its seed and counterexample near the top of the report, above
-  // the tail: keep those lines, so an intermittent property failure can be replayed (M4.31)
-  const replay = all.filter((l) => /Property failed after|Counterexample:|\{ seed: -?\d+/.test(l) && !tail.includes(l)).slice(0, 6);
-  const shown = [...replay, ...tail];
-  const detail = argv.has('--summary') ? [] : shown.map((l) => `    ${l}`);
+  const log = writeFailureLog(name, r, `${started}-${process.pid}`);
+  const shown = [...failureLines(r.stdout, r.stderr), `Full failure output: ${log}`];
+  const detail = argv.has('--summary') ? [] : shown.map((line) => `    ${line}`);
   return { lines: [`FAIL ${name} (${ms}ms)`, ...detail], ok: false };
 }
 

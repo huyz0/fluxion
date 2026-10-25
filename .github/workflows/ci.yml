@@ -50,6 +50,14 @@ jobs:
       - name: harness tests
         if: failure()
         run: node --test "tests/harness/*.test.mjs"
+      - name: verification failure reports
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: verify-failures-${{ matrix.os }}
+          path: .harness/tmp/verify-logs
+          include-hidden-files: true
+          retention-days: 14
 
   # NFR-DX-001: a fresh clone set up from nothing (pnpm i --frozen-lockfile, pnpm run setup, pnpm verify
   # into an empty pnpm store and browser cache) within COLD_SETUP_MAX_MS; check-budget --cold measures
