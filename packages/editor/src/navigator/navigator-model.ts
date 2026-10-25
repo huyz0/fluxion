@@ -2,7 +2,18 @@
 // duplicate commands are given. Pure; the panel (screens-tab.tsx) shows it.
 import { type ReadView, screenRecordsToCopy } from '@fluxion/core';
 import { screensInOrder } from '@fluxion/render';
-import { keyBetween, presetOf, type RecordId, SCREEN_PRESETS, type ScreenRecord, type Size, screenKind, screenSize } from '@fluxion/schema';
+import {
+  type BindingRecord,
+  keyBetween,
+  type Point,
+  presetOf,
+  type RecordId,
+  SCREEN_PRESETS,
+  type ScreenRecord,
+  type Size,
+  screenKind,
+  screenSize,
+} from '@fluxion/schema';
 
 /**
  * The screen a dragged screen should follow when dropped on `target` (above it, or below with `below`): undefined
@@ -46,8 +57,27 @@ export function newScreen(view: ReadView, id: RecordId): { id: RecordId; type: '
 }
 
 /** The arguments that duplicate `screen`: a new screen id, and a new id for each record it copies. */
-export function duplicateArgs(view: ReadView, screen: RecordId, newId: () => RecordId): { id: RecordId; newId: RecordId; ids: Record<string, RecordId> } {
-  return { id: screen, newId: newId(), ids: Object.fromEntries(screenRecordsToCopy(view, screen).map((r) => [r, newId()])) };
+type EndPoints = { readonly source?: Point; readonly target?: Point };
+export function duplicateArgs(
+  view: ReadView,
+  screen: RecordId,
+  newId: () => RecordId,
+  endPoint?: (id: RecordId, end: 'source' | 'target') => Point | undefined,
+): { id: RecordId; newId: RecordId; ids: Record<string, RecordId>; freeEnds?: Record<string, EndPoints> } {
+  const copied = screenRecordsToCopy(view, screen);
+  const args = { id: screen, newId: newId(), ids: Object.fromEntries(copied.map((r) => [r, newId()])) };
+  if (endPoint === undefined) return args;
+  const selected = new Set(copied);
+  const freeEnds = new Map<RecordId, EndPoints>();
+  for (const id of view.members('byScreen', screen)) {
+    for (const bindingId of view.members('bindingsByElement', id)) {
+      const binding = view.get(bindingId) as BindingRecord;
+      if (binding.connectorId !== id || selected.has(bindingId)) continue;
+      const at = endPoint(id, binding.end);
+      if (at !== undefined) freeEnds.set(id, { ...freeEnds.get(id), [binding.end]: at });
+    }
+  }
+  return freeEnds.size === 0 ? args : { ...args, freeEnds: Object.fromEntries(freeEnds) };
 }
 
 /** The menu command that sets a preset's format, or the infinite or custom one. */

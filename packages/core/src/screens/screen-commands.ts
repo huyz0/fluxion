@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
 import type { ReadView } from '../store.js';
+import { duplicateEndsSchema, duplicateFreeEnds } from './screen-duplicate-ends.js';
 import { screenIndexAfter } from './screen-order.js';
 
 type Rec = { readonly [field: string]: unknown };
@@ -102,7 +103,7 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
     id: 'screen.duplicate',
     title: title('screen.duplicate', 'Duplicate screen'),
     // `ids`: a new id for every element and binding of the screen, by old id
-    args: z.object({ id, newId: id, ids: z.record(z.string(), id) }),
+    args: z.object({ id, newId: id, ids: z.record(z.string(), id), freeEnds: duplicateEndsSchema.optional() }),
     run: (ctx, args) => {
       const bad = checkIds(ctx, 'screen.duplicate', 'screen', [[['id'], args.id]]) ?? checkIds(ctx, 'screen.duplicate', 'new', [[['newId'], args.newId]]);
       if (bad) return bad;
@@ -118,6 +119,8 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
         copied.map((x) => [['ids', x], args.ids[x] as string] as const),
       );
       if (taken) return taken;
+      const freeEnds = duplicateFreeEnds(ctx.store, args.id as RecordId, copied, args.freeEnds);
+      if (!freeEnds.ok) return freeEnds;
       const index = screenIndexAfter(ctx, 'screen.duplicate', args.newId, args.id);
       if (!index.ok) return index;
       const original = ctx.store.get(args.id as RecordId) as unknown as Rec;
@@ -129,7 +132,7 @@ export const SCREEN_COMMANDS: readonly AnyCommand[] = [
           const r = ctx.store.get(id) as unknown as Rec;
           if (r['type'] === 'element') {
             const parent = r['parentId'] === undefined ? {} : { parentId: to(r['parentId']) };
-            tx.put({ ...withoutSlug(r), id: to(id), screenId: args.newId, ...parent } as unknown as AnyRecord);
+            tx.put({ ...withoutSlug(r), id: to(id), screenId: args.newId, ...parent, ...freeEnds.value.get(id) } as unknown as AnyRecord);
           } else {
             tx.put({ ...r, id: to(id), connectorId: to(r['connectorId']), elementId: to(r['elementId']) } as unknown as AnyRecord);
           }

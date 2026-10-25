@@ -5,7 +5,7 @@ A real-store cross-screen fixture loads successfully but its duplicate fails wit
 `FLX_CONNECTOR_END_MISSING` after the outside binding is excluded. M18.62 preserves that
 failure as a separate finding; it did not claim to fix it.
 
-[ADR-0175](../../docs/architecture/decisions/ADR-0175-screen-duplicate-external-ends.md)
+[ADR-0175](../../../docs/architecture/decisions/ADR-0175-screen-duplicate-external-ends.md)
 chooses caller-resolved free points, following existing clipboard behavior and core purity.
 No requirement, file format, dependency, license policy, threshold or retry limit changes.
 

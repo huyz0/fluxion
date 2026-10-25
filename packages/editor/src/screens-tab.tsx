@@ -3,6 +3,7 @@
 // and a right click opens the screen's menu (rename, hide, duplicate, delete). The screen the canvas shows is marked.
 import type { Store } from '@fluxion/core';
 import { type RenderRegistries, screensInOrder, useValue } from '@fluxion/render';
+import { routeConnector } from '@fluxion/routing';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
 import './i18n.js';
@@ -77,7 +78,11 @@ export function ScreensTab(props: ScreensTabProps): ReactNode {
   const { store, session, shown, registries, execute, newId } = props;
   const rows = useValue(useMemo(() => rowsOf(store), [store]));
   const sections = useValue(useMemo(() => sectionsOf(store), [store]));
-  const nav = useNavigator({ store, session, rows, execute, newId });
+  const endPoint = useMemo(
+    () => (registries === undefined ? undefined : (id: RecordId, end: 'source' | 'target') => routeConnector(store, registries, id)?.[end].point),
+    [store, registries],
+  );
+  const nav = useNavigator({ store, session, rows, execute, newId, endPoint });
   const sec = useSections({ sections, execute, newId, dragging: nav.dragging });
   const editable = nav.actions !== undefined && newId !== undefined;
   return (

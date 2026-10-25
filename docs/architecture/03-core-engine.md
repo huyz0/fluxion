@@ -89,6 +89,7 @@ type CommandDef<A> = {
   element.zOrder (front, forward, backward, back among siblings by fractional index: only the moved elements are written; M8.8),
   document.applyRecords (a prepared record set, puts and deletes, in one transaction: a streamed source's screen, FR-AI-010; guards: a put keeps the type of the record it replaces and ids are put once, a delete names an existing record once and never the document record, and no id is both put and deleted),
   screen.rename / screen.setHidden (the hidden mark is removed, not written false) / screen.duplicate (a copy just after the original: its elements and the bindings between them under caller-supplied ids, slugs dropped; timelines and interactions are copied by the animation milestone; M8.11),
+
   section.create / rename / setCollapsed / reorder / delete screen.setSection and screen.move (a drop's place and section in one step) (sections are records ordered by index; deleting one lets its screens go in the same transaction; M8.15),
   screen.setNotes (the speaker notes, a rich-text document; absent removes the field; M8.16),
   screen.setLayout (the screen's layout spec, as the inspector's options form writes it; absent removes it; M17.17),
@@ -96,6 +97,14 @@ type CommandDef<A> = {
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through
   commands: one audit path, one undo semantics, one AI surface. The architecture test allows
   `transact` only in a command's `run`, the history module and the fork module.
+
+screen.duplicate also accepts optional freeEnds, keyed by original connector ID with finite
+source/target points (ADR-0175). An omitted outside binding requires its caller-resolved
+screen-local point; core preflights missing points before any writes and returns
+`FLX_COMMAND_ARGS` at `/args/freeEnds/<connector>/<end>`. Malformed coordinates fail the
+argument schema. Internal bindings and existing free ends retain their semantics; unused valid
+entries have no effect. Original records, copy order and exact undo/redo are preserved.
+Core does not resolve routing geometry; legacy internal-only arguments remain supported.
 
 ## 3. Undo / redo
 

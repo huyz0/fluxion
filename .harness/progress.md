@@ -2501,3 +2501,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Focused probes29/29PASS; restored endpoint artifact150112 B retains112 B advisory; hard artifacts pass.
 - Same306 core tests pass under Node/Bun; preliminary medians10.480/8.853 s. TS7 warm build0.115 s.
 - Keep authoritative Node/native TS7; Bun is an optional inner-loop experiment, not a dependency or CI migration.
+
+## M18.64 — Preserve external duplicate endpoints (2026-10-25)
+
+- Core preflights omitted binding points and copies caller geometry; internal bindings/free ends and exact undo remain intact.
+- Navigator supplies routed endpoints, including non-centre anchors; missing/nonfinite input refuses atomically.
+- Original316 core/model tests and final13 focused tests passed; original pinned browser21/21 plus final3/3 passed, zero retries.
+- Preserved the tested implementation and all three size attempts; user explicitly cleared the technical stop.
+- ADR-0176 policy is reviewed/published as M18.66; restored artifact150112 B retains112 B advisory, hard budgets pass.
+- Applied preserved source unchanged onto the policy revision; original worktree and archived patches remain intact.
+- ADR-0175 contract merged into architecture, spec archived, core/editor changesets included.
+- Complete current-revision mutation qualification remains open under M18.10 and the reviewed floors.

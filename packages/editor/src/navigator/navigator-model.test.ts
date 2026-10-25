@@ -58,6 +58,41 @@ describe('the navigator model (FR-SCR-002)', () => {
     expect(new Set([args.newId, ...Object.values(args.ids)]).size).toBe(6);
   });
 
+  it('FR-SCR-002, FR-CON-001: duplicate arguments ask only for omitted bound ends and preserve exact route points', () => {
+    const b = documentBuilder({ seed: 641 });
+    const screen = b.screen();
+    const outside = b.screen();
+    const a = b.rect(screen);
+    const bInside = b.rect(screen, { x: 100 });
+    const bOutside = b.rect(outside);
+    b.connect(a, bInside);
+    const outgoing = b.connect(a, bOutside);
+    b.connect(bOutside, a);
+    b.connect(a, { x: 80, y: 40 });
+    const { store } = createCore(b.build());
+    const calls: string[] = [];
+    let n = 0;
+    const args = duplicateArgs(
+      store,
+      screen,
+      () => `Copy${++n}` as RecordId,
+      (id, end) => {
+        calls.push(`${id}/${end}`);
+        return { x: 315.5, y: -42.25 };
+      },
+    );
+    expect(calls).toEqual([`${outgoing}/target`]);
+    expect(args.freeEnds).toEqual({ [outgoing]: { target: { x: 315.5, y: -42.25 } } });
+    const absent = duplicateArgs(
+      store,
+      screen,
+      () => `Copy${++n}` as RecordId,
+      () => undefined,
+    );
+    expect(absent).not.toHaveProperty('freeEnds');
+    expect(duplicateArgs(store, screen, () => `Copy${++n}` as RecordId)).not.toHaveProperty('freeEnds');
+  });
+
   it('FR-SCR-003: formats are named, parsed and turned into screen.setFormat arguments', () => {
     expect([formatLabel({}), formatLabel({ size: { w: 1600, h: 1200 } }), formatLabel({ size: { w: 1280, h: 720 } })]).toEqual(['16:9', '4:3', '1280×720']);
     expect(formatLabel({ kind: 'infinite' })).toBe('Infinite');

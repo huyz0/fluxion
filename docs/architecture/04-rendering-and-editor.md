@@ -258,6 +258,15 @@ focus leaving, commits: one `element.update` with the text and, for a `grow` sha
 `grownHeight` says it needs — one transaction, so one undo step; an edit with no change writes
 nothing. Until then ProseMirror's own history undoes the typing; the document's history sees one step.
 
+### Screen duplication (FR-SCR-002, ADR-0175)
+
+The screens navigator passes an optional endpoint reader to `duplicateArgs`. For copied
+connectors whose outside bindings are omitted, `screens-tab.tsx` resolves the existing route
+through its store and render registries and supplies the exact source/target point, including
+non-centre anchors. Missing geometry is left absent so core refuses atomically; no centre is
+invented. Internal bindings and already-free ends need no supplied point. The screen switches
+only after command success; one undo step restores the original records and screen.
+
 ### 3.5 Clipboard (FR-EDT-007, ADR-0020)
 
 ```ts

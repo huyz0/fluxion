@@ -17,6 +17,7 @@ export type NavigatorInput = {
   readonly rows: readonly Row[];
   readonly execute: Execute | undefined;
   readonly newId: (() => RecordId) | undefined;
+  readonly endPoint?: ((id: RecordId, end: 'source' | 'target') => Point | undefined) | undefined;
 };
 
 type Point = { readonly x: number; readonly y: number };
@@ -41,7 +42,7 @@ function runMenuItem(command: string, target: RecordId, ctx: MenuCtx): void {
   const { store, session, rows, execute, newId } = ctx;
   if (command === 'screen.setHidden') execute(command, { id: target, hidden: !(rows.find((r) => r.id === target)?.hidden ?? false) });
   else if (command === 'screen.duplicate') {
-    const args = duplicateArgs(store, target, newId);
+    const args = duplicateArgs(store, target, newId, ctx.endPoint);
     if (execute(command, args).ok) switchScreen(session, args.newId);
   } else if (command === 'screen.delete' && rows.length > 1) execute(command, { id: target });
   else if (command.startsWith(SECTION_PREFIX) || command.startsWith(FORMAT_PREFIX)) runPlacement(command, target, ctx);

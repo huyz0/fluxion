@@ -67,7 +67,7 @@ archive the spec into living docs after implementation. Mutation qualification r
 
 ## Links
 
-- [Spec](../../../specs/M18-screen-duplicate-ends/proposal.md)
+- [Spec](../../../specs/archive/M18-screen-duplicate-ends/proposal.md)
 - [Core architecture](../03-core-engine.md)
 - [Connector requirements](../../requirements/12-connectors-anchors-routing.md)
 - Existing precedent: `packages/editor/src/clipboard.ts` and `clipboard.test.ts`.
