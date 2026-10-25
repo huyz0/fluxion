@@ -1,0 +1,38 @@
+{
+  "prefix": "fluxion-corpus",
+  "width": 32,
+  "height": 32,
+  "icons": {
+    "root": {
+      "body": "<path d=\"M4 4h24v24H4z\" fill=\"currentColor\"/>"
+    },
+    "hidden": {
+      "body": "<circle cx=\"16\" cy=\"16\" r=\"8\"/>",
+      "hidden": true
+    }
+  },
+  "aliases": {
+    "mirrored": {
+      "parent": "root",
+      "hFlip": true
+    },
+    "turned": {
+      "parent": "root",
+      "rotate": 1
+    },
+    "nested": {
+      "parent": "mirrored",
+      "vFlip": true
+    }
+  },
+  "categories": {
+    "Geometry": [
+      "root",
+      "mirrored",
+      "turned"
+    ]
+  },
+  "chars": {
+    "e001": "root"
+  }
+}

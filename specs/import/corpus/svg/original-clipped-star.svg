@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="star"><path d="M50 5 61 37 95 37 67 58 78 91 50 70 22 91 33 58 5 37 39 37Z"/></clipPath></defs><g clip-path="url(#star)"><rect width="100" height="50" fill="#ffa030"/><rect y="50" width="100" height="50" fill="#e05020"/></g></svg>

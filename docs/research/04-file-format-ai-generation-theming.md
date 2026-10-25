@@ -429,3 +429,24 @@ DTCG 2025.10 token files; three tiers (primitive 12-step OKLCH ramps à la Radix
 - Design tokens (DTCG 2025.10): https://www.w3.org/community/design-tokens/2025/10/28/design-tokens-specification-reaches-first-stable-version/ · https://www.designtokens.org/tr/drafts/format/ · https://www.designtokens.org/
 - WCAG 3 / APCA status: http://adrianroselli.com/2026/04/wcag3-contrast-as-of-april-2026.html · https://yatil.net/blog/wcag-3-is-not-ready-yet
 - Also relevant (not fetched this session, from general knowledge — verify when implementing): fflate (https://github.com/101arrowz/fflate), culori (https://culorijs.org), Material Color Utilities (https://github.com/material-foundation/material-color-utilities), Radix Colors (https://www.radix-ui.com/colors), Adobe Leonardo (https://leonardocolor.io), Fontsource (https://fontsource.org), SVGO (https://github.com/svg/svgo), SES/Hardened JS (https://github.com/endojs/endo), TypeBox (https://github.com/sinclairzx81/typebox), Zod 4 JSON Schema (https://zod.dev), pptxgenjs (https://gitbrent.github.io/PptxGenJS/), llms.txt (https://llmstxt.org), MCP (https://modelcontextprotocol.io), browser-fs-access (https://github.com/GoogleChromeLabs/browser-fs-access).
+
+## Import corpus provenance — 2026-10-25 (M18.45)
+
+ADR-0049 requires frozen representative inputs before converters. The pinned corpus at
+`specs/import/corpus/manifest.json` combines 32 unmodified Lucide SVGs with 18 original
+format-stress illustrations, complete drawio-libs templates, original stencil/mixed libraries,
+and the complete Lucide Iconify collection (1,978 icons and 220 aliases). Actual counts differ
+from the collection's preserved advertised total; use actual entries for coverage.
+
+Primary sources: [Lucide notices](https://github.com/lucide-icons/lucide/blob/7faf87628a1ad6175975bc595344337ce14a7db4/LICENSE),
+[drawio-libs](https://github.com/jgraph/drawio-libs/tree/4fa9df33a4bdb0a81496a494ff0d180f8847473c),
+[Iconify collection](https://github.com/iconify/icon-sets/blob/db4c0e1c75f933ae45c4484cd02ee3781a789363/json/lucide.json).
+Keep full ISC/MIT and Apache-2.0 notices. Current drawio application stencil assets have an
+additional usage restriction; none are copied. Noto and Material Design Light candidates
+were rejected during selection because current README/collection license metadata disagreed
+with upstream notices. No converter metrics existed or were used to choose easier fixtures.
+
+All 50 SVGs decoded and visibly rendered in Chromium 153.0.8010.12. All 12 upstream compressed
+models and the original mixed encodings decode successfully. This confirms fixture integrity,
+not conversion fidelity or import-rate qualification. Future converters must retain every
+entry in each denominator and compare artwork as well as counts/anchors.

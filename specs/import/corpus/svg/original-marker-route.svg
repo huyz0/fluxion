@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><marker id="tip" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#804010"/></marker></defs><path d="M10 80C10 10 70 10 85 50" fill="none" stroke="#804010" stroke-width="4" marker-end="url(#tip)"/></svg>

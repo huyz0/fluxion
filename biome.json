@@ -25,6 +25,8 @@
       "!examples/**/*.flux.json",
       "!examples/**/*.flux.html",
       "!specs/security/corpus",
+      "!specs/import/corpus/svg",
+      "!specs/import/corpus/iconify/*.json",
       "!**/locales/*/messages.json"
     ]
   },

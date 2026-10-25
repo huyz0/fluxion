@@ -1,0 +1,479 @@
+{
+  "version": 1,
+  "frozenBeforeConverters": true,
+  "sources": [
+    {
+      "id": "lucide",
+      "repository": "lucide-icons/lucide",
+      "commit": "7faf87628a1ad6175975bc595344337ce14a7db4",
+      "license": "ISC AND MIT",
+      "attribution": "Lucide Icons and Contributors; Feather-derived icons copyright Cole Bemis. Complete upstream notice retained.",
+      "notice": "licenses/lucide.txt",
+      "noticeSha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
+      "noticeSource": {
+        "repository": "lucide-icons/lucide",
+        "commit": "7faf87628a1ad6175975bc595344337ce14a7db4",
+        "path": "LICENSE",
+        "blob": "718bb3f0e44153809972abed31839375804bf652"
+      }
+    },
+    {
+      "id": "drawio-libs",
+      "repository": "jgraph/drawio-libs",
+      "commit": "4fa9df33a4bdb0a81496a494ff0d180f8847473c",
+      "license": "Apache-2.0",
+      "attribution": "drawio-libs contributors; upstream templates.xml retained without modification. No current drawio stencil assets copied.",
+      "notice": "licenses/drawio-libs.txt",
+      "noticeSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "noticeSource": {
+        "repository": "jgraph/drawio-libs",
+        "commit": "4fa9df33a4bdb0a81496a494ff0d180f8847473c",
+        "path": "LICENSE",
+        "blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+      }
+    },
+    {
+      "id": "iconify-lucide",
+      "repository": "iconify/icon-sets",
+      "commit": "db4c0e1c75f933ae45c4484cd02ee3781a789363",
+      "license": "ISC AND MIT",
+      "attribution": "Lucide Contributors; Cole Bemis for Feather-derived icons; Iconify conversion contributors. Original collection metadata retained.",
+      "notice": "licenses/lucide.txt",
+      "noticeSha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
+      "noticeSource": {
+        "repository": "lucide-icons/lucide",
+        "commit": "7faf87628a1ad6175975bc595344337ce14a7db4",
+        "path": "LICENSE",
+        "blob": "718bb3f0e44153809972abed31839375804bf652"
+      }
+    },
+    {
+      "id": "fluxion-original",
+      "license": "MIT",
+      "attribution": "Copyright 2026 Fluxion contributors. Original format-stress test artwork and libraries.",
+      "notice": "licenses/fluxion.txt",
+      "originalStatement": "Original Fluxion test fixtures authored for M18.45, not traced from vendor artwork; distributed under the repository MIT license.",
+      "noticeSha256": "a941f22048ae8eb6bdb50848c48830e2eefc96d4627b1e32c8aba9d3aacd1b5f"
+    }
+  ],
+  "svg": [
+    {
+      "path": "svg/lucide-accessibility.svg",
+      "source": "lucide",
+      "sha256": "114a9b6983ee20c43d76556bbb5633085a0e082b19464dfa36f1e27768c8f3ea",
+      "upstreamPath": "icons/accessibility.svg",
+      "upstreamBlob": "48ba9be2a0f393abac5b0b411f323e7615f81201",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-activity.svg",
+      "source": "lucide",
+      "sha256": "050fbcda05e13c2051cf857683645e19c6b180861ef4d0cc28a6f09ba1ea1666",
+      "upstreamPath": "icons/activity.svg",
+      "upstreamBlob": "629b81c9fd020f3afec659daa5c9c7e5a1d07445",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-airplay.svg",
+      "source": "lucide",
+      "sha256": "fcae9f4e9e60375550af1a96fcd21590a7e33276c6d787792e2ce554575aa58a",
+      "upstreamPath": "icons/airplay.svg",
+      "upstreamBlob": "03ad3669d3a2022e9cbfef2f1dbdcdb982a67e44",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-alarm-clock.svg",
+      "source": "lucide",
+      "sha256": "28b99c01c718b004fbeb35afd06a7deb5d854ae81d4dc31fe043c8074353d45d",
+      "upstreamPath": "icons/alarm-clock.svg",
+      "upstreamBlob": "0f99686aa9c49e45baf26b417989cb56422e4652",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-archive.svg",
+      "source": "lucide",
+      "sha256": "78c732e34e232db63af06a2330b4448045cfdf49b48b59f2d31922df54c7bb17",
+      "upstreamPath": "icons/archive.svg",
+      "upstreamBlob": "4c5ae8e33b565fa5edc5ea5fba50a860c4b9abcf",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-atom.svg",
+      "source": "lucide",
+      "sha256": "9ac2f48402368cb4e4db5c59371698a86f35598c8b8076411bfdfdd63550ffd8",
+      "upstreamPath": "icons/atom.svg",
+      "upstreamBlob": "9579a0eaafa396eb6b9702ee507726f7768bce4a",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-bike.svg",
+      "source": "lucide",
+      "sha256": "eb129250bb946117fce7ecb22f33f89dcb64c6d69a4b86724f6f75b363c91e76",
+      "upstreamPath": "icons/bike.svg",
+      "upstreamBlob": "403139a8e92019cca4f1bf31fc3f1ca7ce324432",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-book-open.svg",
+      "source": "lucide",
+      "sha256": "9b9bed0ff057283d5c5c5a1c71f8d3e927db26a56639603a92fdf7b25961510e",
+      "upstreamPath": "icons/book-open.svg",
+      "upstreamBlob": "9e0ace59b788e2b45fc35d9fbf68c2a80bd518bc",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-brain.svg",
+      "source": "lucide",
+      "sha256": "91830115f859daa12e7f2f63fc072311329e363bb8b0b4707f510bcb60c2ab18",
+      "upstreamPath": "icons/brain.svg",
+      "upstreamBlob": "03d54dbda5ddffc34a6575a387583cca1100b73d",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-camera.svg",
+      "source": "lucide",
+      "sha256": "ebbb3178dd80dfd942770a2237fe7bfc3515c55c7daa9d3666933a656d2790e3",
+      "upstreamPath": "icons/camera.svg",
+      "upstreamBlob": "1e82bf45f3c522db0e22f16e0a5fc8fd00b79b7e",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-cloud-sun.svg",
+      "source": "lucide",
+      "sha256": "d3d0b5519e3e9e6073bc6d875fcb2b8d0a0c0d0062602490d444ef6a08bb2ab0",
+      "upstreamPath": "icons/cloud-sun.svg",
+      "upstreamBlob": "8d7705d8b707c515673bd4ea75fa19bf1d26c543",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-compass.svg",
+      "source": "lucide",
+      "sha256": "c5a4d147bf48424f48b514712dd61c1b07cb689612a7baef87c88870092c1659",
+      "upstreamPath": "icons/compass.svg",
+      "upstreamBlob": "1a4e8c7dc5558c600d69d679d2112db50112e1be",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-database.svg",
+      "source": "lucide",
+      "sha256": "471eb14bc8d144896a82dfc4aa9daf350f769f0896f4bef33e50aabdbb51130d",
+      "upstreamPath": "icons/database.svg",
+      "upstreamBlob": "f95db0e3f40633742b292b2f64f5d9c37e3eb157",
+      "features": ["stroke"]
+    },
+    {
+      "path": "svg/lucide-dna.svg",
+      "source": "lucide",
+      "sha256": "fb1e39ad72394a4090aaaeb620fc8057d72e3df9497cbbbd26247ba57e747431",
+      "upstreamPath": "icons/dna.svg",
+      "upstreamBlob": "f2e63c023a05eaea3429068c3b95e26774cfbbbf",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-earth.svg",
+      "source": "lucide",
+      "sha256": "72ca6996d7032013268f46e9bcf360652136eb0f75465e3c98687fef784bbd41",
+      "upstreamPath": "icons/earth.svg",
+      "upstreamBlob": "b682a309ae1d33705723f14688bc2004aaf9f7b7",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-factory.svg",
+      "source": "lucide",
+      "sha256": "5482b8d73276e072a951f4c1be530d31efa584c8d1a7affbeec22a560f0d5cc0",
+      "upstreamPath": "icons/factory.svg",
+      "upstreamBlob": "73b00ad57916950abe3bcd65dc2546a02871fdd1",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-fish.svg",
+      "source": "lucide",
+      "sha256": "b192b77edc25b1f952bca580d8ffa976258cf2d3127dd2c7040803b388bdd3db",
+      "upstreamPath": "icons/fish.svg",
+      "upstreamBlob": "1111ab2ef0b4b5d9dfaf71379e01a7760385fdaf",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-flame.svg",
+      "source": "lucide",
+      "sha256": "cede1462a46a7a3b3daf9d101f0b59484b1d882a4c42a75670810a6d4f8d42fb",
+      "upstreamPath": "icons/flame.svg",
+      "upstreamBlob": "9a774916838c22983fc1db6a055612c907c953d5",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-flower.svg",
+      "source": "lucide",
+      "sha256": "52d9db5e1448d213e81954d8fbd331ca2bb8849a4be5adf9426e5683e7ee8b85",
+      "upstreamPath": "icons/flower.svg",
+      "upstreamBlob": "9d22e323ddbc167415949f501d874f8ca1df01a8",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-guitar.svg",
+      "source": "lucide",
+      "sha256": "ca2026598763ff4c8991912524f8050326e24307ea241ea2a0735af529f7e67f",
+      "upstreamPath": "icons/guitar.svg",
+      "upstreamBlob": "9be79a2dadfd2542af64a8e8552f5812b2c52a40",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-heart-pulse.svg",
+      "source": "lucide",
+      "sha256": "103d6b99ac9ab53c5861317673880ae5d6e2491efa7a40e8b89ecac449842df2",
+      "upstreamPath": "icons/heart-pulse.svg",
+      "upstreamBlob": "f1e4ec81f808208f9f5f999898aa007401c144b7",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-house.svg",
+      "source": "lucide",
+      "sha256": "28216c479005731ef5e382e7d8627eda2b129b019eb1f3d9de9f5915576d448e",
+      "upstreamPath": "icons/house.svg",
+      "upstreamBlob": "10e4097e290fdb2f1f919b264bf4e3095348de7c",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-key-round.svg",
+      "source": "lucide",
+      "sha256": "f8cdea843754ed360e36b04bf6aa2c2b3610935dd39ffc685a36c4d0a05be248",
+      "upstreamPath": "icons/key-round.svg",
+      "upstreamBlob": "c8f0e66556d9f12c4f22ef571902e4272bcbe0d4",
+      "features": ["filled", "stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-leaf.svg",
+      "source": "lucide",
+      "sha256": "ac2b65d8d35b5038c9388cd1f161e74570fce6ef6a4c3d99a6b0c2bd68e0cb28",
+      "upstreamPath": "icons/leaf.svg",
+      "upstreamBlob": "8012589aac0717db8ca46c02ab7b387ddae8040e",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-map.svg",
+      "source": "lucide",
+      "sha256": "41300a8ef2c2a4cf36ec3f8a730bcb4754543889eb23b98e7435de7a0757752d",
+      "upstreamPath": "icons/map.svg",
+      "upstreamBlob": "8a8525602d77ba562b8cf57adbd3fb0403133fdb",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-microscope.svg",
+      "source": "lucide",
+      "sha256": "72fab65c4fdd0a7d784485dc7aaa8bf8c4fba9a4dc9ae38a6538e58bdd8b5f42",
+      "upstreamPath": "icons/microscope.svg",
+      "upstreamBlob": "d843a7e7efff86d506de68ece341fc7075f2a6f7",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-rocket.svg",
+      "source": "lucide",
+      "sha256": "2b7887d9a5623f2e5e4a5d32716f93829d61b458e03b6eae33a6df648b9eb855",
+      "upstreamPath": "icons/rocket.svg",
+      "upstreamBlob": "6c006f11b49bf5e1ae3035303b3b1fef7cf609af",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-sailboat.svg",
+      "source": "lucide",
+      "sha256": "5e772794ba3157558622aae62e808bf95a29a5f507e8a625f7df35736cb01f40",
+      "upstreamPath": "icons/sailboat.svg",
+      "upstreamBlob": "91a838c3563c54b5a5fcbe26545fcfc8fe3944a4",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-shield-check.svg",
+      "source": "lucide",
+      "sha256": "8d4fcdbde5bba4abb1a2f6fe53e37ceb6343a1d5449a9d88f6f97c1971d26c4e",
+      "upstreamPath": "icons/shield-check.svg",
+      "upstreamBlob": "da48f664e51be4ceb800dbe4f6c10c5e7cfa800e",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-snowflake.svg",
+      "source": "lucide",
+      "sha256": "9b77c3f6fbd49a7669cc530f8e9d6216ff652457c16e27b2c4eb4d81ac7c4bdd",
+      "upstreamPath": "icons/snowflake.svg",
+      "upstreamBlob": "2d3f15f4571a1398b8ceab3b1f5891702be25c68",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-tree-pine.svg",
+      "source": "lucide",
+      "sha256": "dc753fcbe03ca676163795fa5d62243fe0d66b44b6cab44350ae2eb144c38478",
+      "upstreamPath": "icons/tree-pine.svg",
+      "upstreamBlob": "2dbd307ddcf3bdfda21f7f3259489e53f6916213",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/lucide-trophy.svg",
+      "source": "lucide",
+      "sha256": "c641553befdb899b2eb01075c0962c73b4b0e0d1835d9d407f5d5d4d70f77d03",
+      "upstreamPath": "icons/trophy.svg",
+      "upstreamBlob": "8e97a429e047c98ad8ae35eab93dc9935c841334",
+      "features": ["stroke", "relative"]
+    },
+    {
+      "path": "svg/original-donut.svg",
+      "source": "fluxion-original",
+      "sha256": "94fa0ea48202629ef971e5817cf5f9c4b1f8c9c229ccc0c68eafa7a817ab01a6",
+      "features": ["filled", "holes", "colors"]
+    },
+    {
+      "path": "svg/original-notched-ticket.svg",
+      "source": "fluxion-original",
+      "sha256": "5b5e0dc61f582dd773ce25400688492acabf6c7e7302d76ac01e568caf24c675",
+      "features": ["filled", "relative", "holes", "colors"]
+    },
+    {
+      "path": "svg/original-label-badge.svg",
+      "source": "fluxion-original",
+      "sha256": "d6af281f481175958c1d5900a6a8705ea51966f3d938d9de696870cf2e333838",
+      "features": ["filled", "colors"]
+    },
+    {
+      "path": "svg/original-linear-meter.svg",
+      "source": "fluxion-original",
+      "sha256": "92d1fa17007364fb4c6a00c16bf95b4ce1885972bd8cfdd59bc5721be45f4bf2",
+      "features": ["filled", "references", "gradients", "colors"]
+    },
+    {
+      "path": "svg/original-radial-orb.svg",
+      "source": "fluxion-original",
+      "sha256": "229e4c39e51246c1cce5b49025e2ff2d48d064565ab46a59319596e1c9941299",
+      "features": ["filled", "references", "gradients", "colors"]
+    },
+    {
+      "path": "svg/original-clipped-wave.svg",
+      "source": "fluxion-original",
+      "sha256": "6d962c6b30ff329489fbbac785a713b93bb9589f6f0972f5fda9b99f91301835",
+      "features": ["filled", "relative", "references", "clipping", "colors"]
+    },
+    {
+      "path": "svg/original-symbol-grid.svg",
+      "source": "fluxion-original",
+      "sha256": "074a11ae2aaa653dc5d38173edbec0565f3e57444259b787fa1edeaaf081c5b1",
+      "features": ["filled", "references", "colors"]
+    },
+    {
+      "path": "svg/original-rotated-leaves.svg",
+      "source": "fluxion-original",
+      "sha256": "b82c3d015d3bcf05f9a742893c2366c5d16e067c8216845da2b69cd69dacf5b1",
+      "features": ["filled", "stroke", "relative", "transforms", "colors"]
+    },
+    {
+      "path": "svg/original-compound-cloud.svg",
+      "source": "fluxion-original",
+      "sha256": "3459534e29fa7b69bf6a70cb0f12b17f68a2c54ed111b8bae4166ba204304cac",
+      "features": ["filled", "stroke", "relative", "colors"]
+    },
+    {
+      "path": "svg/original-arc-gauge.svg",
+      "source": "fluxion-original",
+      "sha256": "752aba4046843293c1ae5f7fbbd5c7dd96884e2cfa6e5c31103e1d24a6b2f663",
+      "features": ["filled", "stroke", "colors"]
+    },
+    {
+      "path": "svg/original-double-ring.svg",
+      "source": "fluxion-original",
+      "sha256": "6e1df1e9ce7ecb922a3fc480cd66840d01c3d3c61670e66de0b762be5853e397",
+      "features": ["stroke", "colors"]
+    },
+    {
+      "path": "svg/original-stacked-panels.svg",
+      "source": "fluxion-original",
+      "sha256": "cf72cb7284107df76dfcb49109bc6da7d05b716ec0747619aa3f1d946e49f245",
+      "features": ["filled", "relative", "transforms", "colors"]
+    },
+    {
+      "path": "svg/original-heart-cutout.svg",
+      "source": "fluxion-original",
+      "sha256": "d5cf40d9d368de7997400e9db68e07a38193142ec341a1e4b62f93ffbf3221d8",
+      "features": ["filled", "holes", "colors"]
+    },
+    {
+      "path": "svg/original-angled-gradient.svg",
+      "source": "fluxion-original",
+      "sha256": "91e290a54cd8d2821a40f4ec2fd27afeba5076bfb739c04a9750d492a505062d",
+      "features": ["filled", "references", "gradients", "colors"]
+    },
+    {
+      "path": "svg/original-clipped-star.svg",
+      "source": "fluxion-original",
+      "sha256": "d6382dce4484b18d1b6c6a466ccab5ad68446609b682848b924b42099043ca3c",
+      "features": ["filled", "references", "clipping", "colors"]
+    },
+    {
+      "path": "svg/original-masked-spotlight.svg",
+      "source": "fluxion-original",
+      "sha256": "b4922c5454d493a6055170fe6212eecfc5cdbde3d3d0d27a355810036a273695",
+      "features": ["filled", "references", "colors"]
+    },
+    {
+      "path": "svg/original-marker-route.svg",
+      "source": "fluxion-original",
+      "sha256": "1bb2311f2c98133629adf87b0c9f74a5d7f15072f95680463ad0bb3f384da7be",
+      "features": ["filled", "stroke", "references", "colors"]
+    },
+    {
+      "path": "svg/original-gradient-chain.svg",
+      "source": "fluxion-original",
+      "sha256": "7925f3ac617b280d6e4618ffcf14614e7fafd044cac38f3d1ccc7793c37e6906",
+      "features": ["filled", "stroke", "relative", "references", "gradients", "colors"]
+    }
+  ],
+  "drawio": [
+    {
+      "path": "drawio/upstream-templates.xml",
+      "source": "drawio-libs",
+      "sha256": "753eba0a35400b7a7709529a3c037d9d9aeb070039f8b2c96e638f4f5da49251",
+      "upstreamPath": "libs/templates.xml",
+      "upstreamBlob": "bee1ff1959d06c2188975b755ebf172fe537d209",
+      "kind": "mxlibrary",
+      "entries": 12,
+      "denominator": 12
+    },
+    {
+      "path": "drawio/original-stencils.xml",
+      "source": "fluxion-original",
+      "sha256": "c791f17129446cbfe3e3e3a9ab444e9c74e90c83a6bbe319802e53612bfcf04d",
+      "kind": "stencil",
+      "entries": 12,
+      "denominator": 12
+    },
+    {
+      "path": "drawio/original-mixed.xml",
+      "source": "fluxion-original",
+      "sha256": "f57dea12b40dd5d433bc985a8145e2f6a83ea44fd40072b5202a729c6864a85b",
+      "kind": "mxlibrary",
+      "entries": 10,
+      "denominator": 10,
+      "encodings": {
+        "uncompressed": 4,
+        "compressed": 4,
+        "svg": 2
+      }
+    }
+  ],
+  "iconify": [
+    {
+      "path": "iconify/lucide.json",
+      "source": "iconify-lucide",
+      "sha256": "bcf5691ce5db582f7810db9009d5821050c67dbab78f126e92de218732fb8863",
+      "upstreamPath": "json/lucide.json",
+      "upstreamBlob": "352c514e25ce43905da7c142f13521d028afa194",
+      "icons": 1978,
+      "aliases": 220
+    },
+    {
+      "path": "iconify/original-aliases.json",
+      "source": "fluxion-original",
+      "sha256": "5e977a856967838eef52fe7fc8698f9c40f5b315b3e6fca46febc03d3ecfc2e6"
+    },
+    {
+      "path": "iconify/original-cycle.json",
+      "source": "fluxion-original",
+      "sha256": "2eda909ef8970a6bf7b365a764e74de94495ed8acb0d27dba08a933e8b5baa81"
+    }
+  ]
+}

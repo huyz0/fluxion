@@ -2523,3 +2523,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Bound each flowchart to 20,000 expanded edges; report positioned errors before excess allocation, never truncate output.
 - ADR-0040 amendment and user/architecture docs describe the additive subset; no dependency, public API or threshold change.
 - Original nightly format-1 exceeded its 1-hour job limit; complete mutation qualification stays open under M18.10.
+
+## M18.45 — Freeze licensed import corpora (2026-10-25)
+
+- Pin 50 distinct SVGs: 32 unchanged Lucide illustrations and 18 original format-stress drawings with the ADR-0049 feature matrix.
+- Freeze complete draw.io libraries at 12/12/10 entries; verify all compressed/uncompressed model and embedded-SVG encodings.
+- Retain the complete Iconify Lucide collection: 1,978 icons/220 aliases, plus original transform/hidden/search/cycle fixtures.
+- Preserve immutable source commits, original Git blobs, full notices and SHA-256 checksums; seal the whole manifest.
+- Reject ambiguous license candidates during selection; no converter existed and no failed entry was excluded from a denominator.
+- Four missing-corpus tests failed first, then 4/4 passed; all 50 SVGs decoded/rendered and the contact sheet was inspected.
+- Conversion counts, fidelity, anchors and security remain future tasks; this commit does not claim those features complete.
+- Two staged lint failures retained: raw SVG/JSON fixture classification and manifest formatting; final lint and checksum probes pass.
