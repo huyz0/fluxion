@@ -2481,3 +2481,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - No requirement, document format, dependency, threshold, license policy or retry change.
 - M18.64 tracks implementation, real-store/compatibility/browser tests and spec archival; no endpoint code changed here.
 - M18.10 remains open for complete current-revision mutation evidence and unchanged package floors.
+
+## M18.65 — Review proportionate gate policy (2026-10-25)
+
+- User cleared the technical stop and explicitly authorized reasonable gates and tooling research.
+- Preserve M18.64's tested endpoint implementation and all failed size attempts in its original worktree/archive.
+- Baseline core 88,958 B; embedding script 149,877 B; tested fix adds 235 B, exceeding its target by 112 B.
+- Native TS7.0.2 is already active: forced typecheck 4.82 s; warm 0.511–0.577 s; browser/harness checks dominate.
+- ADR-0176 retains core/editor hard budgets, explicit embedding advisories, meaningful mutation floors and complete evidence.
+- Plan removes artificial feature dependencies and per-commit full milestone repeats; three failures trigger independent replanning.
+- M18.66 implements the reviewed policy, then M18.64 ships; original nightly continues without duplicate dispatch.
