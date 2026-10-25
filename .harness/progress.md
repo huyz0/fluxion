@@ -2328,3 +2328,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Actual M13 local legs prove every retained entry has a reader and missing entries fail.
 - The test failed on the sixteen unused entries before cleanup; 45 focused tests pass.
 - Synthetic benchmark reports test reader wiring only, not performance qualification.
+
+## M18.49 — complete mutation aggregation (2026-10-25)
+
+- Fresh plan review splits report validation and isolated execution before nightly wiring.
+- Manifest binds revision, runner, package/source hashes, exact mutant identities and floors.
+- Aggregation rejects absent/duplicate/failed/stale/partial/malformed evidence.
+- Scores are recomputed per package; core's recorded 100 and the existing pure 70 floor hold.
+- Ten focused tests pass; malformed floor and executed-test probes were observed red first.
+- A real complete anim report matches all 78 expected mutants: 74 killed, 4 compile errors.
+- No retry, scope reduction, timeout increase or workflow change is included.

@@ -5,6 +5,9 @@ Authoritative rows and EARS criteria: `docs/backlog/current.md`, M18.1–M18.48.
 - M18.1: initially red gate and reviewed plan.
 - M18.2–6: decisions and authorized requirement reconciliation before feature contracts.
 - M18.7–11: checkpoint, calibration, mutation and Mermaid handoffs.
+- M18.49–50 precede M18.10: complete mutation manifests/aggregation, then isolated
+  package execution metadata. M18.10 wires the existing nightly matrix and current-revision
+  evidence, preserving all nine pure packages, tests, mutants and score floors.
 - M18.44: CI recovery, browser scheduling and complete failure evidence.
 - M18.45–47: pinned import corpora, shared SVG policy refactor and checked artwork contract.
 - M18.12–19: schema, lazy persistence and safe import pipelines/UI.
