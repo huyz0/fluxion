@@ -2471,3 +2471,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Inventory changes only this source: 209 to 201 mutants; all 35,984 other descriptors and package floors unchanged.
 - Existing cross-screen duplicate missing-end refusal reproduced; M18.63 tracks its contract decision, not hidden as fixed.
 - M18.10 remains open for complete current-revision mutation execution and scores; individual probes do not qualify it.
+
+## M18.63 — Specify external duplicate endpoints (2026-10-25)
+
+- Real-store cross-screen duplication exposed FLX_CONNECTOR_END_MISSING after excluding the outside binding.
+- ADR-0175 follows clipboard precedent: optional caller-resolved free points preserve exact endpoint geometry.
+- Core stays pure; navigator obtains points from its existing routing/store/registry context.
+- Missing/malformed geometry refuses atomically with precise paths; legacy supported arguments remain valid.
+- No requirement, document format, dependency, threshold, license policy or retry change.
+- M18.64 tracks implementation, real-store/compatibility/browser tests and spec archival; no endpoint code changed here.
+- M18.10 remains open for complete current-revision mutation evidence and unchanged package floors.
