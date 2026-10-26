@@ -72,6 +72,7 @@ export const VERSION: string = '0.0.0';
 export type { SvgArtwork, SvgArtworkNode } from '@fluxion/schema';
 export { parseSvgArtwork } from './shape/artwork.js';
 export { allowsShapePackContentLicense, shapePackContentLicenses } from './shape/content-license-policy.js';
+export { registerShapePackSubsets } from './shape/pack-registration.js';
 export { shapePackCategorySchema, shapePackIndexSchema, shapePackSubsetSchema } from './shape/pack-schema.js';
 export type {
   ShapePackCategory,

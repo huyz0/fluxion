@@ -1,7 +1,9 @@
 // One open document's protection (FR-FIL-007, NFR-REL-001, ADR-0024): takes the document's lock so a second tab opens it read-only, asks the
 // browser to keep the storage, journals each committed change, and writes a version snapshot every 10 minutes of editing and on each explicit save.
+
 import type { Store } from '@fluxion/core';
 import type { AnyRecord } from '@fluxion/schema';
+import type { FileRecoveryState } from '../file-recovery.js';
 import { putAssetBytes } from './asset-bytes.js';
 import { type Autosave, type AutosaveStatus, createAutosave, type Timers } from './autosave.js';
 import type { BlobStore } from './blobs.js';
@@ -69,6 +71,8 @@ export type AutosaveState = {
  * @public
  */
 export type DocumentAutosaveOptions = {
+  /** Original opened-file state, never inferred from edited records. */
+  readonly fileState?: FileRecoveryState;
   /** The document's id in the studio. */
   readonly docId: string;
   /** Its records. */
@@ -186,6 +190,7 @@ export async function startDocumentAutosave(o: DocumentAutosaveOptions): Promise
   if (release === undefined) return { kind: 'read-only' };
   let rev = o.stored?.meta.headRev ?? 0;
   const autosave: Autosave = createAutosave({
+    ...(o.fileState === undefined ? {} : { fileState: o.fileState }),
     docId: o.docId,
     store: o.journal,
     timers: o.timers,

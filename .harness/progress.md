@@ -2672,3 +2672,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Fresh budget measurement passed: quick163.7s, worst-case385.2s, genuine cold483.975s; exact-candidate staged verification and independent code review follow. Host integration M18.76, offline acceptance M18.14 and credit UI M18.33 remain open.
 - First budget run exposes shared-type cycles, missing public property docs and twelve stale generated CLI schemas; failed candidate/logs preserved. Extracted shared writer types, documented fields and regenerated diagnostic unions; corrected focused35PASS and layering0violations. No threshold/test changes.
 - Corrected second run: quick162.3sPASS and genuine cold488.9sPASS; worst-case369.9s fails only harness budget test reading prior null record (709/710). Independent diagnostic approves restoring authentic baseline and separate-output fresh measurement; no timings combined or invented.
+
+## M18.76 — document-scoped portable shape hosts (2026-10-26)
+- M18.75 published1b0d3004; CI40288848778 passes36/36 and gates40288848826 passes.
+- Independent plan round2 and built-validation clarification pass. Host/core RED tests observed before implementation; namespace conflicts roll back without replacing existing geometry.
+- Studio retains saved subsets/opaque data and accepts explicit new distribution sources; loaded missing geometry saves with visible warnings, newly missing references fail.
+- Core/Studio/inline Node suites479PASS; focused browser3PASS; TS7PASS. Additional differing-version/disjoint-ID save conflict probe passes.
+- Built inline/element security probes reject rehashed malicious artwork. Pinned five-project browser run20/20PASS45.1s, zero retries; offline screenshot inspected; parity and accessibility checks pass.
+- Standalone builds retain real Zod (ADR0185, amends ADR0026 packaging policy); routing-only chunk retains refusing stub. Hard core96525/150000 and editor443513/600000 pass; inline184228 and element185463 remain explicit150000-byte advisories.
+- First staged266.9sPASS; review F1 found crash journals dropped file geometry/provenance. Fixed atomic metadata retention with original-ID ownership; Chromium recovery2PASS and recovery/autosave45PASS. Complete3-of5000 offline acceptance M18.14 and attribution UI M18.33 remain open; revised qualification follows.
+- Recovery candidate staged318.9s: all steps except new-test cognitive complexity pass; extracted assertion helper. Pinned29/30 exposed stale canvas size during capture; await resize commits and assert centered Fit before 100%, with unchanged pixel limit and no repeated actions. Failed evidence retained; focused capture2PASS.

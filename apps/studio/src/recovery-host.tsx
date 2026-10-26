@@ -23,6 +23,7 @@ export async function recoveredEntry(item: Recoverable, env: Pick<BrowserAutosav
     notes: [],
     extraEntries: new Map(),
     manifestExtras: {},
+    ...item.recovery.fileState,
   };
   return { identity: `recovered:${item.id}`, resume: item.id, file, urls: await assetUrls(file) };
 }

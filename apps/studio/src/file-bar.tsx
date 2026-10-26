@@ -4,7 +4,7 @@
 
 import type { Store } from '@fluxion/core';
 import type { AssetStore } from '@fluxion/editor';
-import type { FluxAsset } from '@fluxion/format';
+import type { ShapePackSourceData } from '@fluxion/format';
 import { createId, type RecordId, type Result } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
 import { type JSX, useCallback, useEffect, useRef, useState } from 'react';
@@ -30,6 +30,8 @@ export type FileBarProps = {
   readonly assets: AssetStore;
   /** The file this document was opened from, if it was opened from one. */
   readonly entry: OpenedEntry | undefined;
+  /** Explicit SDK sources for new namespaces; loaded embedded sources remain authoritative. */
+  readonly shapePackSources?: readonly ShapePackSourceData[];
   /** Go to the editor of the document `docId`. */
   readonly onOpened: (docId: string) => void;
   /** Called after the file was written, with its name and bytes (autosave marks the journal saved; the library keeps a copy). */
@@ -48,13 +50,19 @@ function suggestedName(entry: OpenedEntry | undefined, store: Store): string {
  *
  * @public
  */
-export function currentFile(entry: OpenedEntry | undefined, store: Store, assets: AssetStore): Promise<Result<SavedBytes, string>> {
+export function currentFile(
+  entry: OpenedEntry | undefined,
+  store: Store,
+  assets: AssetStore,
+  shapePackSources: readonly ShapePackSourceData[] = [],
+): Promise<Result<SavedBytes, string>> {
   return fileBytes({
     file: entry?.file,
     document: store.toDocument(),
     bytesOf: (id) => heldBytes(assets, id),
     hasher: webHasher,
     appVersion: STUDIO_VERSION,
+    shapePackSources,
     ...(embedExternalOn() ? { embedExternal: urlReader } : {}),
     fonts: (document) =>
       bundledFontsFor(document, { faces: embeddableFaces(), newId: () => createId(cryptoRandom), sha256: (bytes) => webHasher.sha256(bytes) }),
@@ -65,7 +73,8 @@ export function currentFile(entry: OpenedEntry | undefined, store: Store, assets
 function warningsOf(saved: SavedBytes): string {
   const missing = saved.missing > 0 ? t` ${saved.missing} assets had no bytes to write.` : '';
   const external = saved.external > 0 ? t` ${saved.external} external images could not be embedded and still need the network.` : '';
-  return `${missing}${external}`;
+  const shapes = saved.diagnostics.map((d) => d.message).join(' ');
+  return `${missing}${external}${shapes ? ` ${shapes}` : ''}`;
 }
 
 /** A failure as one line for the person. */
@@ -106,7 +115,7 @@ export async function openWithHost(host: FileHost, onOpened: (docId: string) => 
  * @public
  */
 export function FileBar(props: FileBarProps): JSX.Element {
-  const { host, store, assets, entry, onOpened, onSaved } = props;
+  const { host, store, assets, entry, onOpened, onSaved, shapePackSources } = props;
   const [message, setMessage] = useState('');
   // the handle the next Save writes through: the file's own when it may be written over, else the copy that was saved last
   const target = useRef<unknown>(entry !== undefined && mayOverwrite(entry.file) ? entry.handle : undefined);
@@ -135,7 +144,7 @@ export function FileBar(props: FileBarProps): JSX.Element {
       if (saving.current) return;
       saving.current = true;
       try {
-        const made = await currentFile(entry, store, assets);
+        const made = await currentFile(entry, store, assets, shapePackSources);
         if (!made.ok) return setMessage(made.error);
         const said = !copy && target.current !== undefined ? await overwrite(target.current, made.value.bytes) : await saveAs(made.value.bytes);
         setMessage(`${said}${warningsOf(made.value)}`);
@@ -145,7 +154,7 @@ export function FileBar(props: FileBarProps): JSX.Element {
         saving.current = false;
       }
     },
-    [entry, store, assets, saveAs, overwrite],
+    [entry, store, assets, shapePackSources, saveAs, overwrite],
   );
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

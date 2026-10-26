@@ -1,8 +1,10 @@
 // The autosave scheduler (FR-FIL-007, NFR-REL-001, ADR-0024): turns the store's committed changes into journal entries and writes them in one
 // transaction after a short debounce, never later than the budget allows, folds a long journal into a checkpoint, and keeps trying when storage
 // fails. The clock and the timers are parameters, so the 5 s budget is a test on a fake clock, not a hope.
+
 import { type DiffLike, encodeDiff, needsCompaction, type Replayed, readEntry, replay, serializeEntry } from '@fluxion/format';
 import type { AnyRecord } from '@fluxion/schema';
+import type { FileRecoveryState } from '../file-recovery.js';
 import type { AutosaveStore, Checkpoint, StoredEntry, StoredJournal } from './store.js';
 
 /**
@@ -64,6 +66,8 @@ export type AutosaveStatus =
  * @public
  */
 export type AutosaveOptions = {
+  /** Original file data kept with every atomic journal commit. */
+  readonly fileState?: FileRecoveryState;
   /** The document's id. */
   readonly docId: string;
   /** Where the journal goes. */
@@ -171,7 +175,8 @@ class Scheduler implements Autosave {
   private readonly o: AutosaveOptions;
 
   constructor(options: AutosaveOptions) {
-    this.o = options;
+    const fileState = options.stored?.meta.fileState ?? options.fileState;
+    this.o = { ...options, ...(fileState === undefined ? {} : { fileState: structuredClone(fileState) }) };
     const { stored, base } = options;
     const good = stored === undefined ? undefined : intact(stored);
     this.seq = good?.last.seq ?? base?.seq ?? 0;
@@ -257,6 +262,7 @@ class Scheduler implements Autosave {
     try {
       const fold = this.checkpointFor(batch);
       const meta = {
+        ...(this.o.fileState === undefined ? {} : { fileState: this.o.fileState }),
         docId: this.o.docId,
         title: this.o.title(),
         savedRev: this.savedRev,
@@ -314,6 +320,8 @@ export const createAutosave = (options: AutosaveOptions): Autosave => new Schedu
  * @public
  */
 export type Recovery = {
+  /** Original file data retained separately from replayed edits. */
+  readonly fileState?: FileRecoveryState;
   /** The records after the last entry that replayed. */
   readonly records: Replayed['records'];
   /** The store revision they stand at. */
@@ -347,6 +355,7 @@ export function recover(stored: StoredJournal): Recovery | undefined {
     }),
   );
   return {
+    ...(stored.meta.fileState === undefined ? {} : { fileState: structuredClone(stored.meta.fileState) }),
     records: replayed.records,
     rev: replayed.last.rev,
     unsaved: replayed.last.rev > stored.meta.savedRev,

@@ -317,5 +317,7 @@ The explicit `allowsShapePackContentLicense` adapter follows the existing conten
 and AND/OR/WITH policy, with input/token/depth bounds; it does not establish ownership.
 The generated structural schema alone does not establish semantic validity. This boundary
 adds no registration or I/O. M18.74/75 prepare canonical locks and validate known data in
-format readers/writers (ADR-0183/0184). Actual host restore/save remains M18.76; complete
-offline portability remains M18.14, and credit-display UI remains M18.33.
+format readers/writers (ADR-0183/0184). M18.76 restores subsets before host rendering and preserves their provenance through Studio
+saves (ADR-0185). Registration refuses existing namespaces transactionally, even with disjoint
+IDs or matching source ownership. Complete offline portability remains M18.14, and
+credit-display UI remains M18.33.

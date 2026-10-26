@@ -1,14 +1,15 @@
 // Autosave for the document open in the editor (FR-FIL-007, NFR-REL-001): the lock is taken before the editor opens, so a second tab is built
 // read-only, and the journal starts once the document exists.
+
 import type { Store } from '@fluxion/core';
 import type { AssetStore } from '@fluxion/editor';
-import type { RecordId } from '@fluxion/schema';
 import { useEffect, useState } from 'react';
 import { type BrowserAutosave, browserAutosave } from './autosave/browser.js';
 import { type AutosaveState, type DocumentAutosave, type Started, startDocumentAutosave } from './autosave/document-autosave.js';
 import { currentFile } from './file-bar.js';
+import { fileRecoveryState } from './file-recovery.js';
 import type { OpenedEntry } from './opened-files.js';
-import { journalId, keepAssets } from './protection-logic.js';
+import { keepAssets } from './protection-logic.js';
 
 /**
  * Whether this tab may edit the document.
@@ -85,6 +86,7 @@ async function begin(input: ProtectionInput, env: BrowserAutosave): Promise<Star
   const { id, store, assets, entry, title } = input;
   const stored = entry?.resume === undefined ? undefined : await env.journal.load(entry.resume).catch(() => undefined);
   return startDocumentAutosave({
+    ...(entry === undefined ? {} : { fileState: fileRecoveryState(entry.file) }),
     docId: id,
     store,
     title,

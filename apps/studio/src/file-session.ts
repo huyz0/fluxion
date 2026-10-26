@@ -2,7 +2,7 @@
 // writes. The decisions are here, apart from the browser APIs that move the bytes (file-host.ts): a `.flux`, `.flux.html` or `.flux.json` opens
 // to a document and its assets; a file written by a newer major version (`readOnly`) or opened in part (`salvage`) is never saved over its
 // own file, only as a copy; and only a `.flux` is saved over, since the others are different formats.
-import type { FileIO } from '@fluxion/core';
+import { allowsShapePackContentLicense, type FileIO, type ShapePackSubset } from '@fluxion/core';
 import {
   type ContentHasher,
   createMemoryAssetStore,
@@ -13,11 +13,14 @@ import {
   openDocumentText,
   readFluxHtml,
   type Salvage,
+  type ShapePackSourceData,
   selectAssets,
   sha256Hex,
-  writeFlux,
+  writePortableFlux,
 } from '@fluxion/format';
-import { type AnyRecord, type DocumentFile, err, ok, type Result } from '@fluxion/schema';
+import { type AnyRecord, type Diagnostic, type DocumentFile, err, ok, type Result } from '@fluxion/schema';
+
+import { shapeSaveOptions, unresolvedShapeIds } from './file-shapes.js';
 
 /**
  * The kinds of file the studio opens.
@@ -52,6 +55,12 @@ export type OpenedFile = {
   readonly extraEntries: ReadonlyMap<string, Uint8Array>;
   /** Manifest fields the studio does not know, handed back on a save. */
   readonly manifestExtras: { readonly [key: string]: unknown };
+  /** Original opaque plugin locks, retained through saves. */
+  readonly plugins?: readonly unknown[];
+  /** Validated embedded geometry and complete source credits. */
+  readonly shapePacks?: readonly ShapePackSubset[];
+  /** References unresolved at open time; never inferred from later edits. */
+  readonly unresolvedShapeIds?: ReadonlySet<string>;
 };
 
 /** The text of `bytes` as UTF-8 (the studio runs in a browser, which has TextDecoder). */
@@ -69,7 +78,7 @@ export function kindOf(bytes: Uint8Array): FileKind {
 
 /** A `.flux` archive opened. */
 async function openArchive(name: string, bytes: Uint8Array, kind: FileKind, hasher: ContentHasher): Promise<Result<OpenedFile, string>> {
-  const loaded = await loadFlux(bytes, { hasher });
+  const loaded = await loadFlux(bytes, { hasher, shapePackLicensePolicy: allowsShapePackContentLicense });
   if (!loaded.ok) return err(`${name} cannot be opened: ${loaded.error.message}`);
   const f = loaded.value;
   return ok({
@@ -83,6 +92,9 @@ async function openArchive(name: string, bytes: Uint8Array, kind: FileKind, hash
     ...(f.source === undefined ? {} : { source: f.source }),
     extraEntries: f.extraEntries,
     manifestExtras: f.manifestExtras,
+    plugins: f.manifest?.plugins ?? [],
+    shapePacks: f.shapePacks,
+    unresolvedShapeIds: unresolvedShapeIds(f.document, f.shapePacks),
   });
 }
 
@@ -108,6 +120,9 @@ function openJson(name: string, bytes: Uint8Array): Promise<Result<OpenedFile, s
       notes: [],
       extraEntries: new Map(),
       manifestExtras: {},
+      plugins: [],
+      shapePacks: [],
+      unresolvedShapeIds: unresolvedShapeIds(document, []),
     }),
   );
 }
@@ -178,6 +193,8 @@ export type SavedBytes = {
   readonly missing: number;
   /** External images that could not be embedded (their fetch failed, or they are not images) and so still need the network; 0 when embedding is off. */
   readonly external: number;
+  /** Portable-save warnings that the host must display before claiming success. */
+  readonly diagnostics: readonly Diagnostic[];
 };
 
 /**
@@ -188,6 +205,8 @@ export type SavedBytes = {
 export type SaveInput = {
   /** The file the document was opened from, if any (its source, entries and manifest fields come back). */
   readonly file: OpenedFile | undefined;
+  /** Explicit SDK-resolved geometry and provenance for new namespaces; loaded namespaces cannot be replaced. */
+  readonly shapePackSources?: readonly ShapePackSourceData[];
   /** The document to write. */
   readonly document: DocumentFile;
   /** The bytes the editor holds for an asset record (pasted, replaced or added images and fonts), by the record's id. */
@@ -233,7 +252,7 @@ export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, st
     : { document, failures: [] };
   const picked = await selectAssets(embedded.document, store);
   const { file } = input;
-  const written = await writeFlux({
+  const written = await writePortableFlux({
     document: embedded.document,
     assets: picked.assets,
     appVersion: input.appVersion,
@@ -241,9 +260,11 @@ export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, st
     ...(file?.source === undefined ? {} : { source: file.source }),
     ...(file === undefined ? {} : { extraEntries: file.extraEntries, manifestExtras: file.manifestExtras }),
     hasher: input.hasher,
+    plugins: file?.plugins ?? [],
+    shapePacks: shapeSaveOptions(file?.shapePacks ?? [], input.shapePackSources ?? [], file?.unresolvedShapeIds ?? new Set()),
   });
   return written.ok
-    ? ok({ bytes: written.value, missing: picked.missing.length, external: embedded.failures.length })
+    ? ok({ bytes: written.value.bytes, missing: picked.missing.length, external: embedded.failures.length, diagnostics: written.value.diagnostics })
     : err(`The file could not be written: ${written.error.reason}`);
 }
 

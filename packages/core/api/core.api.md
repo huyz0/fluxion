@@ -546,6 +546,9 @@ export function registerCoreCommands(registry: Registry<string, AnyCommand>): Di
 export function registerCoreHooks(registry: Registry<string, IntegrityHook>): Diagnostic[];
 
 // @public
+export function registerShapePackSubsets(registry: Registry<string, ShapeDef>, inputs: readonly unknown[], policy: ShapePackLicensePolicy): Result<Disposable, readonly Diagnostic[]>;
+
+// @public
 export interface Registry<K extends string, V> {
     readonly changes$: ReadSignal<number>;
     get(key: K): V | undefined;

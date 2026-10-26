@@ -104,3 +104,10 @@ ADR-0154 (the one-file player). Rows: M11.5 (the first cuts), M11.14 (the elemen
   measured at 109.5 kB and not taken: a new dependency changes the lockfile, which needs a `check-budget` record from a machine on which the worst-case staged
   commit fits 120 s; it stays the fallback for a human to take.
 
+
+- 2026-10-26 (M18.76, ADR-0185): the two standalone host scripts now validate known
+  declarative shape locks, geometry and credits. They retain real Zod and no longer use
+  the inert alias or manual schema-purity configuration. The routing-only chunk retains
+  its existing stand-in because it does not perform this file/pack validation. Built-script
+  valid and rehashed-malformed input tests constrain both host variants. Document lean
+  loading remains separate; embedding size is measured under ADR-0176, not hidden.

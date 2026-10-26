@@ -267,8 +267,8 @@ and CI loads, migrates and round-trips all of them.
 `manifest.plugins` for validated, used-only shape data and attribution. It is not a
 code-plugin entry and grants no execution permission. Document records remain at 1.7;
 container 1.0's extension preservation remains in force. M18.73–75 implement the typed
-contracts, unknown-entry roundtrips and integrity checks. Host registration and offline
-render acceptance remain M18.76 and M18.14.
+contracts, unknown-entry roundtrips and integrity checks. M18.76 restores saved geometry in document-scoped Studio and standalone player registries
+(ADR-0185). The complete 3-of-5000 offline acceptance remains M18.14.
 
 ### Used-shape preparation (ADR-0183)
 
@@ -277,8 +277,13 @@ selects only referenced non-builtin geometry, including group children. It retai
 credits and intersects scoped credits with used IDs, then emits canonical `defs.json`
 bytes and deterministic SHA-256 data locks. Inputs are captured before asynchronous hashing.
 The caller supplies builtin IDs, content policy and the hasher; no registry or I/O occurs.
-Writer/loader integration is described below; M18.76 host restoration and M18.14 offline acceptance remain pending.
-The preparation API alone does not make existing host saves portable.
+Studio retains loaded subsets and opaque locks through save/open, and accepts explicit distribution
+sources for newly used geometry. A loaded namespace cannot be replaced by an installed source.
+Only missing references captured at open may be resaved with visible warnings; new unresolved
+references fail. Both standalone hosts retain real validators for untrusted saved geometry.
+Crash journals retain original file geometry/provenance atomically with record edits, so recovery
+can render and save without the original file. They never infer missing-reference permission
+from later edits. The complete M18.14 offline acceptance remains pending.
 
 ### Known shape data I/O (ADR-0184)
 

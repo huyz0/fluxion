@@ -147,6 +147,10 @@ pass changes nothing. The built-ins (`CORE_HOOKS`, registered by `registerCoreHo
 screen and subtree deletes, keep connector ends either bound or free, and refit a group's box to the bounds of
 its members when one of them changes (`core:5-group-bounds`, M8.5; members keep screen coordinates).
 
+`registerShapePackSubsets` validates saved geometry under an explicit content policy and registers
+it atomically in a document-scoped registry. Existing namespaces are refused, including disjoint
+IDs owned by the same source; failures dispose only new entries (ADR-0185).
+
 Declarative packs enter through `parseShapePackIndex` and `parseShapePackCategory` (ADR-0178),
 with an explicit `ShapePackLicensePolicy`; validation never registers a partial category.
 `ShapePackIndex`, `ShapePackCategory`, `ShapePackCredit`, `ShapePackSource`,

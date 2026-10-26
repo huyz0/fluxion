@@ -1,7 +1,7 @@
 // What opening a `.flux` for presenting comes to, for the one-file player (`start`) and the element (`defineFluxionPlayer`): the lean reader, a read-only store,
 // the bundled pack, the images of the file as blob URLs and its fonts. One path, so the two present the same file the same way.
 
-import { type CoreRegistries, createCoreRegistries, createStore, type Registry } from '@fluxion/core';
+import { allowsShapePackContentLicense, type CoreRegistries, createCoreRegistries, createStore, type Registry, registerShapePackSubsets } from '@fluxion/core';
 import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
 import { basicPack } from '@fluxion/pack-basic';
 import { renderRegistriesFor } from '@fluxion/player';
@@ -41,7 +41,7 @@ function imageUrls(loaded: LoadedFlux): { readonly urls: Map<string, string>; re
 
 /**
  * Register the bundled pack's shapes and markers. The pack is this script's own code, checked when it is built, so its definitions go into the registries
- * as they are (`basicPack.register` would validate each with Zod, which the script does not carry). Returns why one was refused, or nothing.
+ * as they are; saved external data uses the separate validated registration path. Returns why one was refused, or nothing.
  */
 function registerBundled(registries: Pick<CoreRegistries, 'shapeDefs' | 'markers'>): string | undefined {
   for (const [registry, items] of [
@@ -80,7 +80,7 @@ export async function openFlux(
     return { ok: false, message } as const;
   };
   try {
-    const loaded = await loadFluxLean(bytes, { hasher });
+    const loaded = await loadFluxLean(bytes, { hasher, shapePackLicensePolicy: allowsShapePackContentLicense });
     if (!loaded.ok) return fail(`This file cannot be opened: ${loaded.error.message}`);
     // a player never writes: its store refuses every transaction (FR-PRS-004), so it is made without the editing commands and integrity
     // hooks createCore would register (they only act on writes), which keeps them out of the script
@@ -88,6 +88,9 @@ export async function openFlux(
     const registries = createCoreRegistries();
     const refused = registerBundled(registries);
     if (refused !== undefined) return fail(`The built-in shapes could not be registered: ${refused}`);
+    const embedded = registerShapePackSubsets(registries.shapeDefs, loaded.value.shapePacks, allowsShapePackContentLicense);
+    if (!embedded.ok) return fail(`The saved shapes could not be registered: ${embedded.error.map((d) => d.message).join('; ')}`);
+    made.push({ release: () => embedded.value.dispose() });
     const images = imageUrls(loaded.value);
     made.push(images);
     // the file's own fonts first: the first paint is in them, measured with their recorded metrics

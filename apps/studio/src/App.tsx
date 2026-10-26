@@ -207,7 +207,9 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   const readOnly = guard.phase === 'read-only';
   const opened = useMemo(() => {
     const file = entry === undefined ? loadDocument(docId, cryptoRandom) : ok(entry.file.document);
-    const doc = file.ok ? openDocument(file.value, { readOnly, logger: studioLogger(window.location.search, console).child('studio') }) : file;
+    const doc = file.ok
+      ? openDocument(file.value, { readOnly, logger: studioLogger(window.location.search, console).child('studio'), shapePacks: entry?.file.shapePacks ?? [] })
+      : file;
     if (!doc.ok) return doc;
     // the bytes of the document's assets (images, fonts) and the font picker's sources live as long as the document is open here
     const assets = createAssetStore();

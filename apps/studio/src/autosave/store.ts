@@ -1,7 +1,9 @@
 // The autosave store (FR-FIL-007, ADR-0024): where the journal, its checkpoint and each document's bookkeeping live. A port, so the scheduler is
 // tested with an in-memory store and the studio runs on IndexedDB (idb-store.ts). Every write is one transaction: the new entries, the document's
 // record and, when the journal is folded, the checkpoint and the removal of the entries it replaces either all happen or none do.
+
 import type { AnyRecord } from '@fluxion/schema';
+import type { FileRecoveryState } from '../file-recovery.js';
 
 /**
  * What the store keeps about one document.
@@ -9,6 +11,8 @@ import type { AnyRecord } from '@fluxion/schema';
  * @public
  */
 export type DocMeta = {
+  /** Original file geometry/provenance; absent in older journals. */
+  readonly fileState?: FileRecoveryState;
   /** The document's id in the studio. */
   readonly docId: string;
   /** Its title, for the recovery prompt. */

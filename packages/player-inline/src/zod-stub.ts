@@ -1,8 +1,6 @@
-// What `zod` is in the one-file player's script (ADR-0026 amendment, M11.42). The packages the player bundles build their Zod schemas when they load (a record
-// schema, a command's argument schema, a theme token schema) and ship as single files, so a bundler cannot prove those statements unused and keeps all of Zod
-// (25 kB gzip of the file) for schemas nothing in the player calls: it reads a document with the lean reader (`@fluxion/format/player`) and writes none. This
-// stand-in lets those statements run and build nothing: every property is the same inert value, which can be called, constructed and chained. The calls that
-// would check a value (`parse` and its kin) throw, so a use that was missed fails a test and never lets a value through unchecked.
+// Routing-only chunk stand-in (ADR-0026/0185). Standalone hosts retain real Zod validators.
+// Routing imports schema declarations but never validates data; inert builders remove that
+// unused runtime cost. Every validation entry point refuses instead of accepting unchecked input.
 const CHECKS = new Set([
   'parse',
   'safeParse',
