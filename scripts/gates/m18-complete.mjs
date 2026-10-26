@@ -115,11 +115,15 @@ leg('pinned font engines preserve bounds, padding and CSP', () =>
   ]),
 );
 
+leg('checked artwork preserves paint and scopes references without changing legacy rendering', () => {
+  const artwork = tests('packages/render/src/artwork-view.browser.test.tsx', { project: 'browser' });
+  return artwork === true ? tests('packages/render/src/shape-view.browser.test.tsx', { project: 'browser' }) : artwork;
+});
+
 const featureTests = [
   ['direct-pack artwork rejects unsafe nodes, references and excessive resources', 'packages/core/src/shape/artwork.test.ts'],
-  ['checked artwork preserves paint and scopes references without changing legacy rendering', 'packages/render/src/shape-artwork.test.tsx'],
   ['pack schema rejects invalid definitions and missing license', 'packages/core/src/shape/pack-schema.test.ts'],
-  ['lazy index and geometry loading', 'packages/editor/src/library/pack-loader.test.ts'],
+  ['lazy index and geometry loading', 'packages/sdk/src/pack-loader.test.ts'],
   ['3 of 5000 definitions embedded and render after offline reopen', 'packages/format/src/embed-used.test.ts'],
   ['SVG sanitizer, outlines, color mapping and >=4 anchors', 'packages/editor/src/library/import-svg.test.ts'],
   ['50 SVG batch imports, bounded ZIP and traversal rejection', 'packages/editor/src/library/import-svg-batch.test.ts'],

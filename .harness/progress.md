@@ -2611,3 +2611,12 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Four deliberately failing probes reproduced missing diagnostics; all29 new/existing script tests pass after implementation.
 - Plan round1 caught missing merged JSON retention; corrected plan round2 passed. Full staged verification and code review follow.
 - This improves evidence access; the underlying hosted E2E failure is still unknown and is not claimed fixed.
+
+## M18.70 — publication (2026-10-26)
+- Published8255d8c6; staged116.4s/reviewPASS0/hooks123.8s. Automatic CI40267471979 active; gates40267471930PASS.
+- Previousfa9d CI terminal34success2failure(e2e-report,aggregate); allOS verification passed. No retry/bypass of denied job-log read.
+
+## M18.71 — cp5 F1 completion-leg bindings (2026-10-26)
+- Artwork leg executes actual artwork and legacy renderer suites under browser; loader leg executes SDK suite under node.
+- Regression probes failed before correction;3/3 pass after it, including missing/empty/skipped/failing/malformed report rejection for all3 suites.
+- Real browser+node suites27/27PASS. Full staged verification and independent review follow; historicalcp5 remains26/71, not a new full-gate result.
