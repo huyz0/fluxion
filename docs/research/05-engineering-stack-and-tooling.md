@@ -504,3 +504,39 @@ lower median here, with higher test RSS): `bun node_modules/vitest/vitest.mjs ru
 Browser coverage, all-platform semantics and complete gate parity are unmeasured; do not
 change default CI or install a repository runtime dependency based on this sample. tsrs
 remains research-only until the user's name is confirmed and a pinned compatible build is evaluated.
+
+
+### 8.3 Pinned Rust compiler and native Bun follow-up (2026-10-26)
+
+User approval now permits tsrs adoption alongside TS7 (ADR-0179). The pin is official
+`tsrs@0.18.0-ts7.1.0-dev.20260929`, reporting compiler 7.1.0-dev.20260930.4. On isolated
+df3dd17a, three forced builds measured TS7 7.0.2 median 4.261s (4.256–4.384) and tsrs
+1.118s (1.091–1.121); warm medians were 0.130s and 0.059s. This is forced recompilation,
+not a cold OS cache. All 1,161 declarations in that earlier sample matched.
+
+The broader M18.12-tree comparison includes all 1,276 declarations and 1,276 declaration
+maps, full solution/e2e diagnostics and independent incremental caches. All declarations
+match, but eight editor-story maps differ. Both compilers reject the API mutation with
+1,975 equal error locations/codes; four diagnostic renderings differ. All four project-type
+probes reject assignment, exact-optional-property and missing-import errors; restoration
+passes. Strict comparison reports FAIL and preserves these differences. This is not a
+qualified default replacement; the pin also lacks Windows and macOS x64 binaries.
+
+Use `pnpm typecheck:tsrs` explicitly on supported platforms, `pnpm typecheck:ts7` for the
+reference and `pnpm typecheck:compare` for isolated compatibility evidence. The comparison
+retains logs, source inventories and emitted hashes in `.harness/tmp/compiler-parity-*`.
+It exits nonzero on mismatches, including the currently observed ones. Stage new source
+files first: the comparison snapshots tracked working bytes, not untracked experiments.
+The default `pnpm typecheck`, bundler, Vitest and compiler-API compatibility pins remain.
+
+Separately, three runs each of the same 78 geometry tests (15 files, identical names, no
+skips) measured Node22.19.0/Vitest5.0.5 median2.534s (2.397–2.687), Bun1.4.4 hosting
+Vitest median2.378s (2.136–2.406), and native bun test median0.673s (0.623–0.732).
+All used four-CPU affinity and equal property seeds/counts; Vitest used two workers,
+native Bun one process. Three mock/timer probes passed and deliberate timeouts failed
+under all runners. Native Bun cannot run the full existing core setup: Vite's virtual
+i18n module is unresolved. Its statement-only coverage threshold probe also accepted
+uncovered code. Full coverage/mutation/browser parity is unqualified: retain Vitest.
+
+Sources: [official tsrs](https://github.com/oxc-project/tsrs),
+[Bun testing](https://bun.com/docs/test), [Bun coverage](https://bun.com/docs/test/code-coverage).

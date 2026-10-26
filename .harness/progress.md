@@ -2558,3 +2558,16 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Generated structural schemas retain branded string constraints and reject unmapped custom predicates; three harness probes pass.
 - Full TS7 typecheck, core/SDK builds and API/TypeDoc checks passed; schema generation's initial custom-type failure is preserved.
 - First staged run: coverage/build/API/packaging pass; corrected SDK-only name in core docs and registered schema test for manifest changes.
+
+## M18.67 — Pinned opt-in tsrs and complete compatibility evidence (2026-10-26)
+
+- Independent plan review required incremental invalidation probes; revised plan passed with no findings (ADR-0179).
+- Pin official tsrs beside TS7; keep default typecheck, TS6 API pins, bundler, Vitest and Playwright unchanged.
+- Compare all tracked project/e2e sources in isolated copies with independent caches, complete output hashes and preserved diagnostics.
+- Full comparison rejects eight differing declaration maps and four diagnostic renderings; all 1,276 declarations match.
+- Both compilers reject intended assignment/optional/import errors in pure/browser/app/e2e and restore cleanly; no default promotion claimed.
+- Five harness probes pass, including output/crash rejection, isolated snapshots and diagnostic-literal preservation (the latter failed before its fix).
+- Native Bun remains an experiment: 78-test parity does not cover the incompatible full core setup or statement coverage floor.
+- Existing docs transitives patched after audit findings; fresh audit reports zero vulnerabilities and all 162 docs pages build.
+- Default promotion remains conditional in roadmap Deferred (reserved M18.68); no scanner/threshold exemptions or new feature blocker.
+- Author follow-up isolated inherited Git hook variables; the foreign-index regression failed before the fix and all five probes now pass.

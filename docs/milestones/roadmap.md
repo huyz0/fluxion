@@ -86,6 +86,7 @@ receiving milestone's plan.
 
 | Item | From | To | Reason |
 |---|---|---|---|
+| Conditional tsrs default promotion (reserved M18.68 follow-up): review diagnostic/map differences and supported binaries before changing the portable default; M18.67 provides pinned opt-in commands and complete comparison evidence | M18 | unscheduled, when a supported release qualifies | User approved adoption alongside TS7, default only after compatibility; missing Windows/macOS x64 binaries must not block unrelated feature delivery |
 | `pnpm eval --live` and the live eval baseline (NFR-AI-001, NFR-AI-004 against a model), plus the Claude Code and Codex MCP transcripts: M15's recordings and the R2 demo transcript are scripted, so its scorecard tests the pipeline, not a model (M15 final F1, F2) | M15 | M33 (1.0 needs a live baseline; the run needs provider keys) | needs provider keys and network that the build container lacks |
 | The global routing pass's give-ups and screens over `GLOBAL_ROUTE_MAX_CONNECTORS` (400), which keep the cheap routes; the line-jump finder's curve sample landing exactly on a vertex (M16 final F7) | M16 | M22 rows 18 and 19 (route morph works over the same routes) | known bounds of the M16 design, not regressions; the cap restored NFR-PERF-002 |
 | AI panel for end users: key-entry UI, OpenAI-compatible base URL, the `fluxion.embedExternalAssets` toggle, and the `client.ts` strings in the message catalog (M15 final F3) | M15 | M17 (first studio milestone after M15) | until then the R2 exit is not end-user usable AI |

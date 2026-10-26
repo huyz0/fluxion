@@ -20,6 +20,9 @@ allowBuilds:
 # pnpm allows no catalog: specifier in packageExtensions). ADR-0011. The repo's tsc stays on TS 7.
 # GHSA-68fv-2mgg-jv7q (CVSS 8.7): source-map-js 1.2.1 arrives through astro's svgo (docs build) and postcss; 1.2.2 is the fix (M11.73).
 overrides:
+  # M18.67 dependency qualification: GHSA-ch52-4w7c-c8xp and GHSA-rj75-hqrm-r3gf in the existing docs toolchain.
+  "http-cache-semantics@<4.3.0": 4.3.0
+  "postcss-selector-parser@<7.1.6": 7.1.6
   source-map-js: 1.2.2
   # GHSA-c475-qrg2-pj4r, GHSA-pxg6-pf52-xh8x, GHSA-52f5-9888-hmc6, GHSA-ph9p-34f9-6g65, GHSA-w5hq-g745-h8pq, GHSA-7c78-jf6q-g5cm: all reached only through @lhci/cli (M11.54, M11.77)
   basic-ftp: 6.2.1
@@ -53,6 +56,7 @@ packageExtensions:
 # installs, checked against minimumReleaseAge; knip fails on unused catalog entries.
 catalog:
   typescript: 7.0.2
+  tsrs: 0.18.0-ts7.1.0-dev.20260929 # opt-in Rust compiler; TS7 remains authoritative (ADR-0179)
   alien-signals: 3.2.1 # document reactivity (ADR-0002), M3.10
   turbo: 2.11.4
   "@types/node": 22.20.4 # types for the engines.node floor (22.x)

@@ -28,7 +28,10 @@
     "release": "turbo run build --filter=./packages/* --filter=./packs/* && changeset publish",
     "eval": "node scripts/eval/run.mjs",
     "mutate": "node scripts/harness/mutate.mjs",
-    "i18n:extract": "node scripts/i18n/extract.mjs"
+    "i18n:extract": "node scripts/i18n/extract.mjs",
+    "typecheck:ts7": "tsc -b",
+    "typecheck:tsrs": "tsrs -b",
+    "typecheck:compare": "node scripts/tooling/compare-compilers.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
@@ -54,6 +57,7 @@
     "publint": "catalog:",
     "size-limit": "catalog:",
     "tsdown": "catalog:",
+    "tsrs": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
