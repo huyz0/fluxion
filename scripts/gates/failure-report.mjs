@@ -4,13 +4,37 @@ import { dirname } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { repoPath } from './lib.mjs';
 
+const TAP_FIELD = /^\s*(?:location|failureType|error|code|expected|actual|operator|stack):/;
+function tapField(lines, index) {
+  const indent = lines[index].search(/\S/);
+  const parts = [lines[index]];
+  for (let next = index + 1; next < Math.min(index + 5, lines.length) && lines[next].search(/\S/) > indent; next++) parts.push(lines[next]);
+  const text = parts.join('\n');
+  return text.length > 750 ? `${text.slice(0, 750)} [field excerpt; see full log]` : text;
+}
+function tapBoundary(line, headingIndent) {
+  const indent = line.search(/\S/);
+  const text = line.trim();
+  return (indent === headingIndent + 2 && text === '...') || (indent <= headingIndent && /^(?:not )?ok \d+\b|^# Subtest:/.test(text));
+}
+function tapFailure(lines, start) {
+  let end = start + 1;
+  while (end < lines.length && !tapBoundary(lines[end], lines[start].search(/\S/))) end++;
+
+  const block = lines.slice(start + 1, end);
+  return [lines[start], ...block.flatMap((line, index) => (TAP_FIELD.test(line) ? [tapField(block, index)] : []))];
+}
+
 export function failureLines(stdout, stderr) {
   const all = stripVTControlCharacters(`${stdout}\n${stderr}`).trim().split(/\r?\n/);
   const failing = all.findIndex((line) => line.startsWith('✖ failing tests:'));
   const tail = failing >= 0 ? all.slice(failing, failing + 40) : all.slice(-40);
   const headings = all.flatMap((line, i) => (/^\s*FAIL\s/.test(line) ? all.slice(i, i + 3) : []));
   const replay = all.filter((line) => /Property failed after|Counterexample:|\{ seed: -?\d+/.test(line) && !tail.includes(line)).slice(0, 6);
-  return [...replay, ...headings, ...tail.filter((line) => !headings.includes(line))];
+  // Nested node:test output can sit inside a Vitest assertion, far before the
+  // passing tail. Retain every failing subtest's diagnostic fields first.
+  const tap = all.flatMap((line, index) => (/^\s*not ok \d+\b/.test(line) ? [tapFailure(all, index).join('\n')] : []));
+  return [...replay, ...tap, ...headings, ...tail.filter((line) => !headings.includes(line))];
 }
 
 export function writeFailureLog(name, { stdout, stderr }, runId) {
@@ -26,12 +50,31 @@ export function writeFailureLog(name, { stdout, stderr }, runId) {
   }
 }
 
-/** GitHub command data is escaped so a failing test cannot emit another workflow command. */
+function annotationBodies(details) {
+  const bodies = [];
+  let body = '';
+  for (const detail of details) {
+    const clean = stripVTControlCharacters(detail);
+    // Leave room for a preceding failure heading in the same annotation.
+    const excerpt = clean.length > 12000 ? `${clean.slice(0, 11950)}\n[excerpt truncated]` : clean;
+    if (body && body.length + excerpt.length + 1 > 14000) {
+      bodies.push(body);
+      body = '';
+    }
+    body += `${body ? '\n' : ''}${excerpt}`;
+  }
+  if (body || !bodies.length) bodies.push(body);
+  return bodies;
+}
+
+/** Each bounded command preserves complete-log access; failing input cannot inject commands. */
 export function failureAnnotation(name, details, log) {
-  const body = stripVTControlCharacters(details.join('\n'));
-  const excerpt = body.length > 16000 ? `${body.slice(0, 16000)}\n[excerpt truncated]` : body;
-  const text = `Verification failed: ${name}\n${excerpt}${log ? `\nFull failure output: ${log}` : ''}`;
-  return `::error::${text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`;
+  return annotationBodies(details)
+    .map((body) => {
+      const text = `Verification failed: ${name}\n${body}${log ? `\nFull failure output: ${log}` : ''}`;
+      return `::error::${text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`;
+    })
+    .join('\n');
 }
 
 /** Successful gates may still report target overruns; never hide them behind a PASS line. */
