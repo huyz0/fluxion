@@ -2631,3 +2631,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Hosttarget1PASS, existingundo browser8PASS; pinnedFirefox11/WebKit11PASS, thenChromium11PASS after correcting owned scratch/tmp permissions.
 - BothChromiumstartup-crash reports retained; final33browser assertions are qualified across the documented runs, not a fabricated all-green initialrun.
 - Full staged verification and independent code review follow; detailed evidence /workspace/fluxion-M18.72-browser-summary.json.
+
+## M18.72 — publication (2026-10-26)
+- Publisheddb3d1938; staged21.2s/reviewPASS0/hooks21.9s; gatesPASS. CI exposed a different artwork WebKit flake; captured annotations, no denied-download retry.
+
+## M18.77 — artwork capture preconditions (2026-10-26)
+- Independent diagnostic/plan reviewPASS0; waits for focus canvas and exact edit/present screen geometry, retains artwork-only pixel tolerance and zero retries.
+- Adds PNG-dimension assertion and both image/bounds attachments; original hosted100% cause remains unproven, not mislabeled as a confirmed renderer defect.
+- Pinned five-project run5/5PASS22.0s. Isolated geometry/dimensions/paint probes reject140.5px position,86vs85px capture and alteredsolidfill; all exit1.
+- First SVG-transform dimension probe had no effect and passed; evidence retained, corrected wrong-capture probe fails. Candidate unchanged throughout.
+- Screenshot inspected; complete evidence /workspace/fluxion-M18.77-recovery-evidence.json. Staged verification and fresh exact-diff review follow.

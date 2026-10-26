@@ -60,25 +60,40 @@ test('FR-LIB-004 FR-EDT-010 NFR-A11Y-001: imported artwork draws equally in stud
   if (!mobile) await page.setViewportSize({ width: 2200, height: 1400 });
   const editor = await prepare(page);
   if (!mobile) {
-    await editor.toolbarButton('Focus mode').click();
+    const focus = editor.toolbarButton('Focus mode');
+    if ((await focus.getAttribute('aria-pressed')) !== 'true') await focus.click();
+    await expect.poll(async () => (await editor.canvas.boundingBox())?.width).toBe(2200);
     await page.keyboard.press('Shift+Digit1');
     await page.keyboard.press('Shift+Digit0');
     await expect(editor.zoomValue).toHaveText('100 %');
     await page.mouse.move(0, 0);
+    await expect.poll(() => editor.screens.first().boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
   }
   const markup = await paintMarkup(page);
   expect(markup).toContain('linearGradient');
   expect(markup).toContain('clipPath');
   expect(markup).toContain('>A</text>');
+  const editBounds = await page.locator('.fx-artwork').first().boundingBox();
   const edit = await page.locator('.fx-artwork').first().screenshot({ animations: 'disabled' });
+  await info.attach('artwork-edit', { body: edit, contentType: 'image/png' });
   await expectAccessible();
   if (!mobile) await page.setViewportSize({ width: 1920, height: 1080 });
   await page.keyboard.press('F5');
   await expect(page.getByTestId('editor-root')).toHaveAttribute('data-mode', 'present');
   await expect(page.getByTestId('present-in-place').locator('.fx-artwork')).toHaveCount(1);
+  if (!mobile) {
+    await expect.poll(() => page.getByTestId('present-in-place').locator('.fx-screen').boundingBox()).toEqual({ x: 0, y: 0, width: 1920, height: 1080 });
+  }
   expect(await paintMarkup(page)).toBe(markup);
+  const presentBounds = await page.locator('.fx-artwork').first().boundingBox();
+  await info.attach('artwork-bounds', { body: JSON.stringify({ edit: editBounds, present: presentBounds }), contentType: 'application/json' });
   const presented = await page.locator('.fx-artwork').first().screenshot({ animations: 'disabled' });
-  if (!mobile) expect(diffPct(await pixels(page, edit), await pixels(page, presented))).toBeLessThanOrEqual(PARITY_MAX_DIFF_PCT);
+  await info.attach('artwork-present', { body: presented, contentType: 'image/png' });
+  if (!mobile) {
+    const [before, after] = [await pixels(page, edit), await pixels(page, presented)];
+    expect({ width: after.w, height: after.h }, 'artwork PNG dimensions: presentation versus edit').toEqual({ width: before.w, height: before.h });
+    expect(diffPct(before, after), `artwork paint difference at ${before.w}×${before.h} pixels`).toBeLessThanOrEqual(PARITY_MAX_DIFF_PCT);
+  }
   await expectAccessible();
   expect(blocked).toEqual([]);
   await page.screenshot({ path: `.harness/artifacts/M18.47/${info.project.name}-artwork.png` });
