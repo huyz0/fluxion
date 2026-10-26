@@ -7,9 +7,10 @@ const USED = 'packages/format/src/svg-import.test.ts';
 const CREDITS = 'packages/format/src/sanitize-svg.test.ts';
 const BROWSER = 'e2e/svg-import.spec.ts';
 const CLIPPING = 'e2e/artwork.viewport.spec.ts';
+const HOSTS = 'e2e/svg-witness-corpus.spec.ts';
 function fixture() {
   const sb = sandbox(['scripts/gates/m18-complete.mjs']);
-  for (const file of [USED, CREDITS, BROWSER, CLIPPING]) sb.write(file, '// Runner-port probe; real suites execute separately.');
+  for (const file of [USED, CREDITS, BROWSER, CLIPPING, HOSTS]) sb.write(file, '// Runner-port probe; real suites execute separately.');
   sb.write('scripts/gates/thresholds.mjs', 'export const t=()=>1;');
   sb.write(
     'scripts/gates/milestone-checks.mjs',
@@ -63,7 +64,7 @@ describe('SVG converter completion acceptance (HARNESS, FR-LIB-004, NFR-SEC-001)
         ].sort(),
       );
       assert.deepEqual(JSON.parse(readFileSync(sb.path('browser.json'), 'utf8')), {
-        specs: [BROWSER, CLIPPING],
+        specs: [BROWSER, CLIPPING, HOSTS],
         projects: ['chromium', 'firefox', 'webkit'],
       });
     } finally {
@@ -79,7 +80,7 @@ describe('SVG converter completion acceptance (HARNESS, FR-LIB-004, NFR-SEC-001)
     }
   });
   it('refuses missing acceptance files and skipped format assertions', () => {
-    for (const file of [USED, CREDITS, BROWSER, CLIPPING]) {
+    for (const file of [USED, CREDITS, BROWSER, CLIPPING, HOSTS]) {
       const sb = fixture();
       try {
         rmSync(sb.path(file));

@@ -132,7 +132,9 @@ leg('SVG sanitizer, outlines, color mapping and >=4 anchors', () => {
   if (sanitizer !== true) return sanitizer;
   const converter = tests('packages/format/src/svg-import.test.ts');
   return converter === true
-    ? playwrightSpecs(['e2e/svg-import.spec.ts', 'e2e/artwork.viewport.spec.ts'], ['chromium', 'firefox', 'webkit'], { runner: imageRunner() })
+    ? playwrightSpecs(['e2e/svg-import.spec.ts', 'e2e/artwork.viewport.spec.ts', 'e2e/svg-witness-corpus.spec.ts'], ['chromium', 'firefox', 'webkit'], {
+        runner: imageRunner(),
+      })
     : converter;
 });
 
