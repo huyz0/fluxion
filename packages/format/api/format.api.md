@@ -43,6 +43,9 @@ export type ContentHasher = {
 export function createMemoryAssetStore(hasher: ContentHasher): AssetStore;
 
 // @public
+export function createSvgPaintRequest(artwork: SvgArtwork, fonts: readonly SvgImportFont[]): Result<SvgPaintRequest, readonly Diagnostic[]>;
+
+// @public
 export type DiffLike = {
     readonly puts: ReadonlyMap<string, DiffPut>;
     readonly deletes: ReadonlyMap<string, unknown>;
@@ -313,6 +316,9 @@ export type OpenedDocument = {
     readonly readOnly: boolean;
     readonly salvage?: Salvage;
 };
+
+// @public
+export function parseSvgPaintRequest(input: unknown): Result<SvgPaintRequest, readonly Diagnostic[]>;
 
 // @public
 export type PixelSize = {

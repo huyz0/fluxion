@@ -59,8 +59,8 @@ function catalog(fonts: readonly SvgImportFont[]): Map<string, SvgImportFont> | 
   const hashes = new Set<string>();
   for (const f of fonts) {
     if (
-      !f.family.trim() ||
       f.family.length > 256 ||
+      !f.family.trim() ||
       !Number.isInteger(f.weight) ||
       f.weight < 100 ||
       f.weight > 900 ||
@@ -90,7 +90,10 @@ function referencedText(root: SvgArtworkNode): boolean {
     return target !== undefined && descendants(target).some((child) => child.name === 'text' || child.name === 'tspan');
   });
 }
-export function importFonts(root: SvgArtworkNode, options: SvgImportOptions): { root: SvgArtworkNode; fonts: readonly SvgImportFont[]; error?: string } {
+export function importFonts(
+  root: SvgArtworkNode,
+  options: Pick<SvgImportOptions, 'fonts' | 'defaultFont'>,
+): { root: SvgArtworkNode; fonts: readonly SvgImportFont[]; error?: string } {
   if (referencedText(root)) return { root, fonts: [], error: 'unsupported-text-reference-inheritance' };
   const available = catalog(options.fonts ?? []);
   if (!available) return { root, fonts: [], error: 'invalid-font-catalog' };

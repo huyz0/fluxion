@@ -1,0 +1,233 @@
+[
+  {
+    "name": "rect",
+    "source": "<svg viewBox=\"0 0 100 100\"><rect width=\"100\" height=\"100\" fill=\"red\"/></svg>",
+    "request": {
+      "artwork": {
+        "root": {
+          "name": "svg",
+          "attributes": {
+            "viewBox": "0 0 100 100"
+          },
+          "children": [
+            {
+              "name": "rect",
+              "attributes": {
+                "width": "100",
+                "height": "100",
+                "fill": "red"
+              },
+              "children": []
+            }
+          ]
+        },
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 100,
+          "height": 100
+        }
+      },
+      "fonts": [],
+      "width": 1024,
+      "height": 1024,
+      "identity": "5c6d5a312496472c1f2dfa775280083c0c4ecced36b3a0a68d2675e11c199531"
+    }
+  },
+  {
+    "name": "aspect",
+    "source": "<svg viewBox=\"0 0 300 200\"><rect width=\"100\" height=\"100\"/></svg>",
+    "request": {
+      "artwork": {
+        "root": {
+          "name": "svg",
+          "attributes": {
+            "viewBox": "0 0 300 200"
+          },
+          "children": [
+            {
+              "name": "rect",
+              "attributes": {
+                "width": "100",
+                "height": "100"
+              },
+              "children": []
+            }
+          ]
+        },
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 300,
+          "height": 200
+        }
+      },
+      "fonts": [],
+      "width": 1024,
+      "height": 683,
+      "identity": "b0b1671fd4c66a839b5758053fa7f47306c40b312cd957e6b8c943afab89ffdd"
+    }
+  },
+  {
+    "name": "offset",
+    "source": "<svg viewBox=\"20 30 100 50\"><rect x=\"20\" y=\"30\" width=\"100\" height=\"50\"/></svg>",
+    "request": {
+      "artwork": {
+        "root": {
+          "name": "svg",
+          "attributes": {
+            "viewBox": "20 30 100 50"
+          },
+          "children": [
+            {
+              "name": "rect",
+              "attributes": {
+                "x": "20",
+                "y": "30",
+                "width": "100",
+                "height": "50"
+              },
+              "children": []
+            }
+          ]
+        },
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 100,
+          "height": 50
+        }
+      },
+      "fonts": [],
+      "width": 1024,
+      "height": 512,
+      "identity": "c8623f24748006a8016e7bc55c0411af3223718c6ad99df0700815be3170af54"
+    }
+  },
+  {
+    "name": "badge",
+    "source": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><rect x=\"5\" y=\"20\" width=\"90\" height=\"60\" rx=\"15\" fill=\"#184080\"/><text x=\"50\" y=\"57\" text-anchor=\"middle\" fill=\"#ffffff\" font-size=\"20\">API</text></svg>\n",
+    "request": {
+      "artwork": {
+        "root": {
+          "name": "svg",
+          "attributes": {
+            "font-family": "FluxionImportPinnedInter",
+            "font-weight": "400",
+            "font-style": "normal",
+            "viewBox": "0 0 100 100"
+          },
+          "children": [
+            {
+              "name": "rect",
+              "attributes": {
+                "x": "5",
+                "y": "20",
+                "width": "90",
+                "height": "60",
+                "rx": "15",
+                "fill": "#184080"
+              },
+              "children": []
+            },
+            {
+              "name": "text",
+              "attributes": {
+                "x": "50",
+                "y": "57",
+                "text-anchor": "middle",
+                "fill": "#ffffff",
+                "font-size": "20",
+                "font-family": "FluxionImportPinnedInter",
+                "font-weight": "400",
+                "font-style": "normal"
+              },
+              "children": ["API"]
+            }
+          ]
+        },
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 100,
+          "height": 100
+        }
+      },
+      "fonts": [
+        {
+          "family": "FluxionImportPinnedInter",
+          "weight": 400,
+          "style": "normal",
+          "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc"
+        }
+      ],
+      "width": 1024,
+      "height": 1024,
+      "identity": "9c4e56fb18c4d5d1dd8ac8824c92761b4bccb0d01d34b6f199338497e52bcd34"
+    }
+  },
+  {
+    "name": "marker",
+    "source": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><marker id=\"tip\" markerWidth=\"8\" markerHeight=\"8\" refX=\"7\" refY=\"4\" orient=\"auto\"><path d=\"M0 0 8 4 0 8Z\" fill=\"#804010\"/></marker></defs><path d=\"M10 80C10 10 70 10 85 50\" fill=\"none\" stroke=\"#804010\" stroke-width=\"4\" marker-end=\"url(#tip)\"/></svg>\n",
+    "request": {
+      "artwork": {
+        "root": {
+          "name": "svg",
+          "attributes": {
+            "viewBox": "0 0 100 100"
+          },
+          "children": [
+            {
+              "name": "defs",
+              "attributes": {},
+              "children": [
+                {
+                  "name": "marker",
+                  "attributes": {
+                    "id": "tip",
+                    "markerWidth": "8",
+                    "markerHeight": "8",
+                    "refX": "7",
+                    "refY": "4",
+                    "orient": "auto"
+                  },
+                  "children": [
+                    {
+                      "name": "path",
+                      "attributes": {
+                        "d": "M0 0 8 4 0 8Z",
+                        "fill": "#804010"
+                      },
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "path",
+              "attributes": {
+                "d": "M10 80C10 10 70 10 85 50",
+                "fill": "none",
+                "stroke": "#804010",
+                "stroke-width": "4",
+                "marker-end": "url(#tip)"
+              },
+              "children": []
+            }
+          ]
+        },
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 100,
+          "height": 100
+        }
+      },
+      "fonts": [],
+      "width": 1024,
+      "height": 1024,
+      "identity": "be5faeef23ef0578eac8724fa0b66db21e149d5d296f1ea428f6fa453e2ae225"
+    }
+  }
+]

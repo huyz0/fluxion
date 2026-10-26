@@ -111,6 +111,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0186](ADR-0186-checked-svg-tree.md) | Reuse checked SVG data before serialization | accepted | 2026-10-26 |
 | [0187](ADR-0187-svg-import-routing.md) | Preserve SVG paint with diagnosed viewport routing fallback | accepted | 2026-10-26 |
 | [0188](ADR-0188-svg-batch-boundary.md) | Shared bounded SVG batch reports before host distribution | accepted | 2026-10-26 |
+| [0189](ADR-0189-bounded-svg-witness.md) | Canonical requests and bounded shared SVG witnesses | accepted | 2026-10-26 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

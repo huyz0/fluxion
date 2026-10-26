@@ -109,3 +109,5 @@ export {
   type SvgPaintRequest,
   type SvgPaintWitness,
 } from './svg-import.js';
+
+export { createSvgPaintRequest, parseSvgPaintRequest } from './svg-paint-request.js';

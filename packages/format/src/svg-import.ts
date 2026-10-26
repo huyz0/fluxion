@@ -1,12 +1,10 @@
 import { parseShapeDef, parseSvgArtwork } from '@fluxion/core';
-import { type Diagnostic, err, ok, type Result, type SvgArtwork } from '@fluxion/schema';
-import { canonicalJson } from './canonical-json.js';
+import { type Diagnostic, err, ok, type Result } from '@fluxion/schema';
 import { inspectSvgTree } from './sanitize-svg.js';
-import { sha256Hex } from './sha256.js';
 import { importFonts } from './svg-import-fonts.js';
 import { importRouting, importViewport } from './svg-import-geometry.js';
 import type { SvgImportOptions, SvgImportResult, SvgPaintReceipt, SvgPaintRequest } from './svg-import-types.js';
-import { encodeUtf8 } from './utf8.js';
+import { createSvgPaintRequest } from './svg-paint-request.js';
 
 export type { SvgImportFont, SvgImportOptions, SvgImportResult, SvgPaintReceipt, SvgPaintRequest, SvgPaintWitness } from './svg-import-types.js';
 
@@ -14,13 +12,6 @@ const unsupported = (message: string): Result<never, readonly Diagnostic[]> =>
   err([{ code: 'FLX_SVG_IMPORT_UNSUPPORTED', severity: 'error', path: '', message }]);
 function colorContext(options: SvgImportOptions): boolean {
   return Object.values(options.colors ?? {}).every((ref) => options.tokenRefs?.has(ref));
-}
-function requestFor(artwork: SvgArtwork, fonts: SvgPaintRequest['fonts']): SvgPaintRequest {
-  const v = artwork.viewBox;
-  const longest = Math.max(v.width, v.height);
-  const raster = (length: number) => Math.max(1, Math.min(1024, Math.ceil((length / longest) * 1024)));
-  const payload = { artwork, fonts, width: raster(v.width), height: raster(v.height) };
-  return { ...payload, identity: sha256Hex(encodeUtf8(canonicalJson(payload))) };
 }
 function matches(receipt: SvgPaintReceipt, request: SvgPaintRequest): boolean {
   const hashes = receipt?.fontHashes;
@@ -32,6 +23,18 @@ function matches(receipt: SvgPaintReceipt, request: SvgPaintRequest): boolean {
     new Set(hashes).size === hashes.length &&
     request.fonts.every((f) => hashes.includes(f.sha256))
   );
+}
+function outlineDiagnostics(exact: boolean): readonly Diagnostic[] {
+  return exact
+    ? []
+    : [
+        {
+          code: 'FLX_SVG_OUTLINE_FALLBACK',
+          severity: 'warning',
+          path: '/outline',
+          message: 'viewport-clipped: conservative routing rectangle, not a tight paint silhouette',
+        },
+      ];
 }
 /**
  * Convert a single SVG using core validation and an explicit bounded real-renderer witness.
@@ -61,7 +64,9 @@ export async function importSvgShape(input: string, options: SvgImportOptions): 
     defaultSize: { w: viewBox.width, h: viewBox.height },
   });
   if (!definition.ok) return definition;
-  const request = requestFor(paint.value, resolved.fonts);
+  const made = createSvgPaintRequest(paint.value, resolved.fonts);
+  if (!made.ok) return made;
+  const request = made.value;
   let receipt: SvgPaintReceipt;
   try {
     // The port gets an isolated copy; accidental mutations cannot alter the private candidate.
@@ -70,15 +75,5 @@ export async function importSvgShape(input: string, options: SvgImportOptions): 
     return unsupported('paint-witness-unavailable');
   }
   if (!matches(receipt, request)) return unsupported('no-visible-witness-or-font-identity-mismatch');
-  const diagnostics: readonly Diagnostic[] = routing.exact
-    ? []
-    : [
-        {
-          code: 'FLX_SVG_OUTLINE_FALLBACK',
-          severity: 'warning',
-          path: '/outline',
-          message: 'viewport-clipped: conservative routing rectangle, not a tight paint silhouette',
-        },
-      ];
-  return ok({ definition: definition.value, diagnostics, fonts: resolved.fonts });
+  return ok({ definition: definition.value, diagnostics: outlineDiagnostics(routing.exact), fonts: resolved.fonts });
 }
