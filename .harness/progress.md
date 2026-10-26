@@ -2620,3 +2620,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Artwork leg executes actual artwork and legacy renderer suites under browser; loader leg executes SDK suite under node.
 - Regression probes failed before correction;3/3 pass after it, including missing/empty/skipped/failing/malformed report rejection for all3 suites.
 - Real browser+node suites27/27PASS. Full staged verification and independent review follow; historicalcp5 remains26/71, not a new full-gate result.
+
+## M18.71 — publication (2026-10-26)
+- Published7544f6e6; staged11.5s/reviewPASS0/hooks12.9s. GatesPASS; CI40267846865 terminal34success2failure from source-view E2E flake plusaggregate.
+- M18.70 annotations exposed the precise premature-pin baseline; diagnostics revision8255 itself finished36/36PASS.
+
+## M18.72 — deterministic source-view undo baseline (2026-10-26)
+- Controlled real8-stepdrag reproduces the hosted95,90→200,160 stale-pin failure with retries0; source now awaits final document position beforefocus/undo.
+- Originalsource equality checks and600ms observation retained; documentposition equality added afterundo andblur. No productionbehavior/timeouts/retrypolicy changed.
+- Hosttarget1PASS, existingundo browser8PASS; pinnedFirefox11/WebKit11PASS, thenChromium11PASS after correcting owned scratch/tmp permissions.
+- BothChromiumstartup-crash reports retained; final33browser assertions are qualified across the documented runs, not a fabricated all-green initialrun.
+- Full staged verification and independent code review follow; detailed evidence /workspace/fluxion-M18.72-browser-summary.json.

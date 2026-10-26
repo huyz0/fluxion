@@ -85,7 +85,7 @@ async function placeOf(editor: EditorPage, label: string): Promise<{ x: number; 
  * A canvas edit by a real drag: the shape that shows `label` is pressed at its centre and moved by (`dx`, `dy`) screen units with snapping off, so the
  * pointer's own distance is the move. Returns where the shape was drawn before and the distance it was dragged.
  */
-async function dragShape(editor: EditorPage, label: string, dx: number, dy: number) {
+async function dragShape(editor: EditorPage, label: string, { dx, dy }: { dx: number; dy: number }, afterFirstStep?: () => Promise<void>) {
   const { page } = editor;
   const before = await placeOf(editor, label);
   const from = { x: before.x + before.w / 2, y: before.y + before.h / 2 };
@@ -93,7 +93,13 @@ async function dragShape(editor: EditorPage, label: string, dx: number, dy: numb
   const at = (p: { x: number; y: number }) => ({ x: screen.x + p.x * before.scale, y: screen.y + p.y * before.scale });
   await page.mouse.move(at(from).x, at(from).y);
   await page.mouse.down();
-  await page.mouse.move(at({ x: from.x + dx, y: from.y + dy }).x, at({ x: from.x + dx, y: from.y + dy }).y, { steps: 8 });
+  if (afterFirstStep !== undefined) {
+    const first = at({ x: from.x + dx / 8, y: from.y + dy / 8 });
+    await page.mouse.move(first.x, first.y);
+    await afterFirstStep();
+  }
+  const end = at({ x: from.x + dx, y: from.y + dy });
+  await page.mouse.move(end.x, end.y, { steps: afterFirstStep === undefined ? 8 : 7 });
   await page.mouse.up();
   return { before, dx, dy };
 }
@@ -177,7 +183,7 @@ test.describe('source view', { tag: '@desktop' }, () => {
         if (w.__texts.at(-1) !== now) w.__texts.push(now);
       }).observe(document.body, { subtree: true, childList: true, characterData: true });
     });
-    const { before, dx, dy } = await dragShape(editor, 'Alpha', 120, 80);
+    const { before, dx, dy } = await dragShape(editor, 'Alpha', { dx: 120, dy: 80 });
     const alpha = text.locator('.cm-line', { hasText: 'label: Alpha' });
     await expect(alpha).toContainText('pin: { x: ');
     const pin = await pinOf(text, 'Alpha');
@@ -207,7 +213,7 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await page.keyboard.type('t');
     await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(1);
     await editor.toolbarButton('Snapping').click();
-    await dragShape(editor, 'Beta', 120, 80);
+    await dragShape(editor, 'Beta', { dx: 120, dy: 80 });
     const banner = left.getByText('Canvas changed — reload');
     await expect(banner).toBeVisible();
     await expect(text).toContainText('shape: rectt');
@@ -265,7 +271,7 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await page.keyboard.press('ArrowRight');
     await page.keyboard.type('t');
     await editor.toolbarButton('Snapping').click();
-    await dragShape(editor, 'Beta', 120, 80);
+    await dragShape(editor, 'Beta', { dx: 120, dy: 80 });
     await expect(left.getByText('Canvas changed — reload')).toBeVisible();
     const dragged = await placeOf(editor, 'Beta');
     // the author fixes the typo and edits a label, then leaves the view: both are applied at once
@@ -403,7 +409,7 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await page.keyboard.type('t');
     await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(1);
     await editor.toolbarButton('Snapping').click();
-    await dragShape(editor, 'Beta', 120, 80);
+    await dragShape(editor, 'Beta', { dx: 120, dy: 80 });
     await left.getByRole('button', { name: 'Reload' }).click();
     await expect(text).toContainText('pin: { x: ');
     await expect(text).not.toContainText('shape: rectt');
@@ -415,17 +421,28 @@ test.describe('source view', { tag: '@desktop' }, () => {
   test('FR-EDT-022: after a canvas drag regenerated the text, Mod-z in the editor leaves the drag and the text as they are (M12.60)', async ({ page }) => {
     const { editor, text } = await openSource(page);
     await editor.toolbarButton('Snapping').click();
-    await dragShape(editor, 'Alpha', 120, 80);
     const alpha = text.locator('.cm-line', { hasText: 'label: Alpha' });
+    // Expose an intermediate pin before the remaining pointer steps, as a loaded CI runner can.
+    await dragShape(editor, 'Alpha', { dx: 120, dy: 80 }, () => expect(alpha).toContainText('pin: { x: '));
     await expect(alpha).toContainText('pin: { x: ');
-    const pinned = await pinOf(text, 'Alpha');
+    const documentPin = async () => {
+      const records = await recordsOf(page);
+      const shape = records[idOfSlug(records, 'a') ?? ''];
+      const transform = shape?.['transform'] as { x: number; y: number };
+      return { x: transform.x, y: transform.y };
+    };
+    const pinned = await documentPin();
+    // A pin may already exist from an intermediate step; await the final document position before focus/undo.
+    await expect.poll(() => pinOf(text, 'Alpha')).toEqual(pinned);
     await alpha.click();
     await page.keyboard.press('Control+z');
     // the pause would have applied a restored pre-drag text by now
     await page.waitForTimeout(600);
     await expect(alpha).toContainText('pin: { x: ');
     expect(await pinOf(text, 'Alpha')).toEqual(pinned);
+    expect(await documentPin()).toEqual(pinned);
     await text.press('Escape');
     expect(await pinOf(text, 'Alpha')).toEqual(pinned);
+    expect(await documentPin()).toEqual(pinned);
   });
 });
