@@ -269,3 +269,13 @@ code-plugin entry and grants no execution permission. Document records remain at
 container 1.0's extension preservation remains in force. M18.14 must add typed contracts,
 legacy/unknown-entry round-trip fixtures, integrity checks and offline render tests
 before this extension is implemented.
+
+### Used-shape preparation (ADR-0183)
+
+`prepareUsedShapePacks` validates explicit distribution or embedded-subset sources and
+selects only referenced non-builtin geometry, including group children. It retains global
+credits and intersects scoped credits with used IDs, then emits canonical `defs.json`
+bytes and deterministic SHA-256 data locks. Inputs are captured before asynchronous hashing.
+The caller supplies builtin IDs, content policy and the hasher; no registry or I/O occurs.
+M18.75 adds writer/loader integration, M18.76 host restoration, and M18.14 offline acceptance.
+The preparation API alone does not make existing host saves portable.

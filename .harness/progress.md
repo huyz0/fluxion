@@ -2653,3 +2653,11 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - TS7 checks and generated schema/core+SDK APIs pass. ADR0182, fixture, SDK/architecture documentation and minor changeset included.
 - M18.74–76 format/host integration and M18.14 offline acceptance remain open. Staged verification and independent exact-diff review follow.
 - First staged run344.4s: tests/coverage/types/build/API/hard-sizePASS; fixtureformat and generatedtraceindex failed. Corrected JSON formatting and regenerated only Tests links; failed packet retained.
+
+## M18.74 — deterministic used-shape preparation (2026-10-26)
+- M18.73 published a3eb842d; CI40275010724 passes36/36 and gates40275010761 passes.
+- Independently approved plan: explicit distribution/embedded sources, used-only geometry, source credits and canonical integrity locks.
+- Six initial tests failed before implementation; nine focused cases now pass, including exactly3of5000, grouped references and asynchronous ownership.
+- Full format suite169PASS across24files; TS7 and scoped lint pass. API report, ADR0183 and format changeset included.
+- Writer/loader and host integration remain M18.75/76; M18.14 offline acceptance stays open. Staged verification and fresh code review follow.
+- First staged242.0s: tests/coverage/types/build/API/hard-sizePASS; kind-switch misidentified the closed source union. Added its documented closed-union annotation; no runtime or gate change.

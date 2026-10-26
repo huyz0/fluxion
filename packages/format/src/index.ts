@@ -74,6 +74,13 @@ export { safeLinkUrl } from './safe-url.js';
 export { type AssetCheck, checkAsset, sanitizeAsset } from './sanitize-asset.js';
 export { inspectSvg, MAX_SVG_CHARS, type SvgInspection, sanitizeSvg } from './sanitize-svg.js';
 export { sha256Hex } from './sha256.js';
+export {
+  type PreparedShapePacks,
+  type PrepareShapePacksOptions,
+  prepareUsedShapePacks,
+  type ShapePackDataLock,
+  type ShapePackSourceData,
+} from './shape-pack-prepare.js';
 export { usedFontFamilies } from './used-fonts.js';
 export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
 

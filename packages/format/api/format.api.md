@@ -11,6 +11,10 @@ import { FileIO } from '@fluxion/core';
 import { Result } from '@fluxion/schema';
 import { safeLinkUrl } from '@fluxion/schema';
 import { sha256Hex } from '@fluxion/core';
+import { ShapeDef } from '@fluxion/core';
+import { ShapePackIndex } from '@fluxion/core';
+import { ShapePackLicensePolicy } from '@fluxion/core';
+import { ShapePackSubset } from '@fluxion/core';
 
 // @public
 export type AssetCheck = "clean" | "changed" | "refused";
@@ -302,6 +306,22 @@ export type PixelSize = {
 };
 
 // @public
+export type PreparedShapePacks = {
+    readonly locks: readonly ShapePackDataLock[];
+    readonly extraEntries: ReadonlyMap<string, Uint8Array>;
+};
+
+// @public
+export type PrepareShapePacksOptions = {
+    readonly builtinIds: ReadonlySet<string>;
+    readonly licensePolicy: ShapePackLicensePolicy;
+    readonly hasher: ContentHasher;
+};
+
+// @public
+export function prepareUsedShapePacks(document: DocumentFile, sources: readonly ShapePackSourceData[], options: PrepareShapePacksOptions): Promise<Result<PreparedShapePacks, readonly Diagnostic[]>>;
+
+// @public
 export function readEntry(text: string): EntryRead | EntryRefused;
 
 // @public
@@ -388,6 +408,26 @@ export type SelectedAssets = {
 export const serializeEntry: (entry: JournalEntry) => string;
 
 export { sha256Hex }
+
+// @public
+export type ShapePackDataLock = {
+    readonly kind: "declarative-shapes";
+    readonly id: string;
+    readonly version: string;
+    readonly packFormat: "1.0";
+    readonly entry: string;
+    readonly integrity: string;
+};
+
+// @public
+export type ShapePackSourceData = {
+    readonly kind: "distribution";
+    readonly index: ShapePackIndex;
+    readonly definitions: readonly ShapeDef[];
+} | {
+    readonly kind: "embedded";
+    readonly subset: ShapePackSubset;
+};
 
 // @public
 export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
