@@ -2781,3 +2781,9 @@ checks: coordinator/adapter tests RED then47/47unitPASS; CLI122/122PASS; TS7/bui
 diagnostics: deliberate dual-failure probe rejected and retained both primary/cleanup markers; corrected native fixture includes exact taskkill matching and version/timing evidence.
 verification: first staged238.8s failed layering plus its harness checks on a type-only cleanup/process import cycle; original logs retained, shared ports moved to a separate module without behavior changes.
 next: corrected staged verification/fresh review, normal push, then native Windows CI; no native Windows or milestone closure claimed. M18.80 local1781 remains preserved.
+
+## 2026-10-26 M18.90 native Windows diagnostic follow-up
+- M18.89 independently reviewedPASS0, staged230.9s/hooks243.2sPASS and safeFF29376820; CI40403620693 terminal34PASS2FAIL (Windowsverify/aggregate), Gates40403620785PASS. Existing monitor23355 finished; denied reads unchanged.
+- New annotations prove helper exit286/350ms after disposal begins but owned-child exit absent at2014/2015ms. Helper outcome/output missing; primary abort/deadline assertion values also truncated. No native root cause or runtime fix claimed.
+- Independent diagnostic review requires smallest changed-input fixture-only capture of matched helper outcome and bounded drained streams, compact primary/cleanup summary. Runtime source,2sdeadline,assertions and retries unchanged; first missing-module RED retained.
+- Focused subprocess probes cover nonzero exit,large dual streams,spawn refusal,signal and deliberately failing TAP annotation with primary actual/expected/helper denial. Native fixture and exact staged verification/fresh review pending; M18.80 remains preserved/unpublished and M18 open.

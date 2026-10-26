@@ -10,6 +10,7 @@ it('FR-LIB-004 NFR-SEC-001: built Node witness preserves native paint, containme
   const dir = mkdtempSync(join(tmpdir(), 'fluxion-witness-e2e-'));
   try {
     copyFileSync(new URL('./fixtures/svg-witness-installed.mjs', import.meta.url), join(dir, 'probe.mjs'));
+    copyFileSync(new URL('./fixtures/witness-diagnostics.mjs', import.meta.url), join(dir, 'witness-diagnostics.mjs'));
     copyFileSync(new URL('../../../format/src/__fixtures__/svg-paint-requests.json', import.meta.url), join(dir, 'requests.json'));
     copyFileSync(new URL('../../../../packs/fonts-core/fonts/inter-latin-400-normal.woff2', import.meta.url), join(dir, 'font.woff2'));
     const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', join(dir, 'probe.mjs')], {

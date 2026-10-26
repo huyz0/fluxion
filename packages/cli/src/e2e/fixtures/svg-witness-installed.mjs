@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { join, win32 } from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { cleanupSummary, traceTermination } from './witness-diagnostics.mjs';
 
 const { createNodeSvgPaintWitness } = await import(process.env.FLUXION_WITNESS_MODULE ?? '@fluxion/cli/svg-witness');
 const { LIGHT_THEME } = await import(process.env.FLUXION_WITNESS_THEME_MODULE ?? '@fluxion/theme');
@@ -43,7 +44,10 @@ childProcess.spawn = function (file, args, ...rest) {
       throw Error('injected owned termination failure');
     }
   }
-  const helper = nativeSpawn.call(this, file, args, ...rest);
+  if (record) record.termination = {};
+  const helper = record
+    ? traceTermination(nativeSpawn.bind(this), { file, args, options: rest[0] }, record.termination)
+    : nativeSpawn.call(this, file, args, ...rest);
   if (record) {
     mark(record, 'taskkill-return');
     helper.once('exit', () => mark(record, 'taskkill-exit'));
@@ -85,20 +89,16 @@ async function disposeChecked(session, record, primary) {
       pid: record.child.pid,
       exitCode: record.child.exitCode,
       signalCode: record.child.signalCode,
+      termination: record.termination,
       events: record.events,
     };
     console.log(`WITNESS_CLEANUP ${JSON.stringify(trace)}`);
-    assert.equal(result.ok, true, JSON.stringify(trace));
+    assert.equal(result.ok, true, cleanupSummary(record, primary));
     exited(record);
   } catch (error) {
     failure = error;
   }
-  if (primary && failure)
-    throw new AggregateError(
-      [primary, failure],
-      `Primary: ${primary}
-Cleanup: ${failure}`,
-    );
+  if (primary && failure) throw new AggregateError([primary, failure], cleanupSummary(record, primary));
   if (primary) throw primary;
   if (failure) throw failure;
 }
