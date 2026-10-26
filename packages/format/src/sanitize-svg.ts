@@ -1,4 +1,4 @@
-import { checkedSvgAttribute, isSvgElement, isSvgTextElement, SVG_POLICY_LIMITS } from '@fluxion/schema';
+import { checkedSvgAttribute, isSvgElement, isSvgTextElement, SVG_POLICY_LIMITS, type SvgArtworkNode } from '@fluxion/schema';
 
 // sanitizeSvg (NFR-SEC-001, ADR-0150, M7.23): untrusted SVG text in, SVG text that can do nothing out. Not a
 // denylist over a parsed DOM: the text is tokenised by a small tolerant XML reader, and a new document is built from
@@ -35,12 +35,6 @@ function decode(text: string): string {
 
 /** `text` made safe to put between tags or inside a double-quoted attribute. */
 const escapeText = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-/** One decoded attribute checked by schema and escaped for markup, or nothing. */
-function keepAttribute(element: string, name: string, raw: string): string | undefined {
-  const checked = checkedSvgAttribute(element, name, decode(raw));
-  return checked === undefined ? undefined : `${checked.name}="${escapeText(checked.value)}"`;
-}
 
 /** A node of the tree the reader builds. */
 type Node = { readonly name: string; readonly attributes: ReadonlyMap<string, string>; readonly children: (Node | string)[] };
@@ -153,29 +147,45 @@ const declarations = (style: string): number => style.split(';').filter((d) => d
 const lostAttribute = (name: string, written: string | undefined, keptText: string | undefined): boolean =>
   !isNamespaceDeclaration(name) && (written === undefined || keptText !== written);
 
-/** The attributes of `node` that stay, as written text: `href` and `xlink:href` are both written `href` (the first kept stays); `removed` counts the rest. */
-function keptAttributes(node: Node, removed: Removed): string[] {
+/** The original markup spelling used when counting removed or competing attributes. */
+const attributeText = (name: string | undefined, value: string | undefined): string | undefined =>
+  name === undefined || value === undefined ? undefined : `${name}="${escapeText(value)}"`;
+
+/** Decoded attributes that stay; reference aliases share one key and the first safe value wins. */
+function keptAttributes(node: Node, removed: Removed): Readonly<Record<string, string>> {
   const kept = new Map<string, string>();
   for (const [name, value] of node.attributes) {
-    const written = keepAttribute(node.name, name, value);
+    const checked = checkedSvgAttribute(node.name, name, decode(value));
+    const written = attributeText(checked?.name, checked?.value);
     const as = name === 'xlink:href' ? 'href' : name;
-    if (written !== undefined && !kept.has(as)) kept.set(as, written);
-    if (lostAttribute(name, written, kept.get(as))) removed.count++;
+    if (checked !== undefined && !kept.has(as)) kept.set(as, checked.value);
+    const keptText = attributeText(as, kept.get(as));
+    if (lostAttribute(name, written, keptText)) removed.count++;
     if (written !== undefined && name === 'style' && declarations(decode(value)) > declarations(written)) removed.count++;
   }
-  return [...kept.values()];
+  return Object.fromEntries(kept);
 }
 
-/** The kept markup of `node` (an element on the allowlist; its text only where text is kept), or nothing; `removed` counts what was dropped. */
-function write(node: Node | string, textual: boolean, removed: Removed): string {
-  if (typeof node === 'string') return textual ? escapeText(node) : '';
+/** Rebuild data from the shared allowlist; never expose the unchecked reader's nodes. */
+function checkedNode(node: Node, removed: Removed): SvgArtworkNode | undefined {
   if (!isSvgElement(node.name)) {
     removed.count++;
-    return '';
+    return undefined;
   }
   const attributes = keptAttributes(node, removed);
-  const inside = node.children.map((c) => write(c, isSvgTextElement(node.name), removed)).join('');
-  return `<${node.name}${attributes.length > 0 ? ` ${attributes.join(' ')}` : ''}>${inside}</${node.name}>`;
+  const children: (SvgArtworkNode | string)[] = [];
+  for (const child of node.children) {
+    const kept = typeof child === 'string' ? (isSvgTextElement(node.name) ? child : undefined) : checkedNode(child, removed);
+    if (kept !== undefined) children.push(kept);
+  }
+  return { name: node.name, attributes, children };
+}
+
+/** Serialize already checked data, escaping literal text and attribute values exactly once. */
+function write(node: SvgArtworkNode | string): string {
+  if (typeof node === 'string') return escapeText(node);
+  const attributes = Object.entries(node.attributes).map(([name, value]) => `${name}="${escapeText(value)}"`);
+  return `<${node.name}${attributes.length ? ` ${attributes.join(' ')}` : ''}>${node.children.map(write).join('')}</${node.name}>`;
 }
 
 /**
@@ -209,6 +219,28 @@ export type SvgInspection = {
  * @public
  */
 export function inspectSvg(input: string): SvgInspection | undefined {
+  const inspected = inspectSvgTree(input);
+  if (inspected === undefined) return undefined;
+  const svg = write(inspected.root).replace('<svg', `<svg xmlns="${SVG_NS}"`);
+  return { svg, removed: inspected.removed };
+}
+
+/** Allowlisted SVG syntax; geometry and local-reference semantics still require core validation. @public */
+export type SvgTreeInspection = {
+  /** Decoded inert nodes, without serializer namespace injection. */
+  readonly root: SvgArtworkNode;
+  /** The same removal count reported by inspectSvg. */
+  readonly removed: number;
+};
+
+/**
+ * Inspect SVG through the sanitizer's bounded reader and allowlist, returning decoded data.
+ * This preserves unresolved local references and does not establish renderability or valid geometry.
+ * Importers must validate the resulting artwork through core before constructing a shape definition.
+ * Undefined for oversized input or a missing SVG root. No external resources are resolved.
+ * @public
+ */
+export function inspectSvgTree(input: string): SvgTreeInspection | undefined {
   if (input.length > MAX_SVG_CHARS) return undefined;
   const reading = read(input);
   const roots = reading.node.children.filter((c): c is Node => typeof c !== 'string');
@@ -216,7 +248,6 @@ export function inspectSvg(input: string): SvgInspection | undefined {
   if (root === undefined) return undefined;
   // elements outside the one `svg` root (before it, after it, a second root) are dropped with everything in them
   const removed: Removed = { count: reading.lost + roots.length - 1 };
-  // the namespace is ours: the file's own xmlns declarations are not on the allowlist, and the root gets the SVG one
-  const svg = write(root, false, removed).replace('<svg', `<svg xmlns="${SVG_NS}"`);
-  return { svg, removed: removed.count };
+  const checked = checkedNode(root, removed);
+  return checked === undefined ? undefined : { root: checked, removed: removed.count };
 }

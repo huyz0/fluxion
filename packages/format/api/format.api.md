@@ -15,6 +15,7 @@ import { ShapeDef } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSubset } from '@fluxion/core';
+import { SvgArtworkNode } from '@fluxion/schema';
 
 // @public
 export type AssetCheck = "clean" | "changed" | "refused";
@@ -203,6 +204,9 @@ export function importImage(bytes: Uint8Array, codec: ImageCodec, maxSide?: numb
 
 // @public
 export function inspectSvg(input: string): SvgInspection | undefined;
+
+// @public
+export function inspectSvgTree(input: string): SvgTreeInspection | undefined;
 
 // @public
 export const JOURNAL_MAX_BYTES: number;
@@ -452,6 +456,12 @@ export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
 // @public
 export type SvgInspection = {
     readonly svg: string;
+    readonly removed: number;
+};
+
+// @public
+export type SvgTreeInspection = {
+    readonly root: SvgArtworkNode;
     readonly removed: number;
 };
 

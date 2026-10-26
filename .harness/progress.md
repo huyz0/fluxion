@@ -2691,3 +2691,11 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Pinned five-project offline browser acceptance5/5PASS38.5s, zero retries; actual Studio5000 → Save3 → built offline reopen, desktop pixel/DOM parity and accessibility, mobile DOM parity. Screenshot inspected.
 - Completion leg now requires format tests and all five browser projects; new gate probes3RED then existing/new harness6PASS. A passing unit suite cannot substitute for browser rendering.
 - Architecture docs and trace updated; attribution display remains M18.33. Staged253.6sPASS; review F1 found offline pixels were recorded but not asserted. Added five-project comparison at matching viewports; first run2PASS/3FAIL identified overlapping desktop navigation chrome. Capture excludes only that host chrome; revised pinned5/5PASS40.4s includes offline pixels on every project. Failed evidence retained; unchanged tolerance/retries.
+
+## M18.78 — shared checked SVG tree (2026-10-26)
+- M18.14 published1b0f38e7 after staged243.3sPASS, hooks246.5sPASS and fresh round2reviewPASS0. Offline pixels now asserted on all five projects: pinned5/5PASS40.4s; original failed captures retained. CI40301505547/gates40301505314 pending.
+- Independent planPASS0 splits parser reuse from M18.15 converter behavior; ADR0186 supplements ADR0049 without weakening its security or licensing requirements.
+- inspectSvgTree exposes decoded allowlisted nodes/removal count using the existing bounded reader; markup APIs serialize the same checked tree. Semantic geometry/reference validation remains explicitly required downstream.
+- New tests5RED before implementation; six new assertions plus existing sanitizer/frozen67-input corpus pass. Full format190PASS; build26PASS and public API report updated.
+- Input/depth/node bounds, first-safe-reference aliases, text escaping and exact legacy output/counts retained; no parser dependency or runtime/compiler migration.
+- Lint complexity15/12 corrected by extracting attribute spelling helper; no limit change. Staged qualification and fresh code review follow. M18.15 conversion and later host workflows remain open.

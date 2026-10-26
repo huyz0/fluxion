@@ -322,3 +322,7 @@ saves (ADR-0185). Registration refuses existing namespaces transactionally, even
 IDs or matching source ownership. M18.14 verifies a real 5000-definition source shrinks to exactly three referenced shapes,
 including a grouped child, with all applicable notices and identical offline rendering.
 Credit-display UI remains M18.33.
+
+SVG import reuses `inspectSvgTree` from format (ADR-0186): bounded, allowlisted decoded
+data with removal diagnostics. This is not semantic artwork validation; M18.15 must
+validate viewport, geometry and local references through core before registration.

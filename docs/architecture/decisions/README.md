@@ -108,6 +108,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0183](ADR-0183-used-shape-preparation.md) | Prepare deterministic used-shape entries from explicit sources | accepted | 2026-10-26 |
 | [0184](ADR-0184-portable-shape-io.md) | Validate portable shape data and retain save diagnostics | accepted | 2026-10-26 |
 | [0185](ADR-0185-portable-shape-hosts.md) | Restore portable shapes in document-scoped hosts | accepted | 2026-10-26 |
+| [0186](ADR-0186-checked-svg-tree.md) | Reuse checked SVG data before serialization | accepted | 2026-10-26 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 
