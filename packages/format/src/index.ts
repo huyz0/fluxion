@@ -70,6 +70,14 @@ export {
 } from './journal.js';
 export { type LoadedFlux, type LoadedManifest, type LoadOptions, loadFlux } from './loader.js';
 export { minifySvg } from './minify-svg.js';
+export {
+  type PortableFluxHtmlOutput,
+  type PortableFluxOutput,
+  type WritePortableFluxHtmlInput,
+  type WritePortableFluxInput,
+  writePortableFlux,
+  writePortableFluxHtml,
+} from './portable-writer.js';
 export { safeLinkUrl } from './safe-url.js';
 export { type AssetCheck, checkAsset, sanitizeAsset } from './sanitize-asset.js';
 export { inspectSvg, MAX_SVG_CHARS, type SvgInspection, sanitizeSvg } from './sanitize-svg.js';

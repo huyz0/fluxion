@@ -1,3 +1,4 @@
+import type { ShapePackLicensePolicy, ShapePackSubset } from '@fluxion/core';
 // The `.flux` loader's container half (FR-FIL-009, NFR-REL-002; architecture/08 §2): sniff, unpack under limits, check paths, verify against the manifest,
 // open the document with the reader it is given, collect the assets. It never throws: a file that cannot open is a `FormatError`,
 // a file that opens with damage carries `notes` and the reader's `diagnostics`. The validating reader (`document-open.ts`, M10.7: it salvages a cut-off or
@@ -8,6 +9,7 @@ import type { FormatError, LoadNote } from './errors.js';
 import { type ContentHasher, FLUX_MIMETYPE, type FluxAsset, type FluxBakes } from './flux-writer.js';
 import { KNOWN_MANIFEST_KEYS, namesProblem } from './paths.js';
 import { checkAsset } from './sanitize-asset.js';
+import { validateShapePackEntries } from './shape-pack-lock.js';
 import { decodeUtf8 } from './utf8.js';
 import { readZip, type ZipEntry, type ZipLimits } from './zip.js';
 
@@ -17,6 +19,8 @@ import { readZip, type ZipEntry, type ZipLimits } from './zip.js';
  * @public
  */
 export type LoadOptions = {
+  /** Explicit content policy required by known declarative shape locks. */
+  readonly shapePackLicensePolicy?: ShapePackLicensePolicy;
   /** Hashes entries to verify the manifest and the assets. */
   readonly hasher: ContentHasher;
   /** Caps on the archive (defaults: 4096 entries, 128 MB an entry, 256 MB in all). */
@@ -29,6 +33,8 @@ export type LoadOptions = {
  * @public
  */
 export type LoadedFlux = {
+  /** Known saved geometry validated atomically; no definitions are registered by loading. */
+  readonly shapePacks: readonly ShapePackSubset[];
   /** The document, migrated, repaired and validated. */
   readonly document: DocumentFile;
   /** What validation and repair found: warnings and info. */
@@ -248,8 +254,21 @@ function restOf(
  */
 export type DocumentReader = (text: string, versionHint?: string) => Result<OpenedDocument, FormatError>;
 
+/** Retain declared known locks even when the general manifest table is malformed. */
+function declaredPlugins(entries: readonly ZipEntry[]): unknown {
+  const entry = entries.find((item) => item.name === 'manifest.json');
+  if (!entry) return undefined;
+  try {
+    const raw: unknown = JSON.parse(decodeUtf8(entry.bytes));
+    return typeof raw === 'object' && raw !== null && 'plugins' in raw ? raw.plugins : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The unpacked `entries`, opened as a document by `read`. */
-async function openEntries(entries: readonly ZipEntry[], hasher: ContentHasher, read: DocumentReader): Promise<Result<LoadedFlux, FormatError>> {
+async function openEntries(entries: readonly ZipEntry[], options: LoadOptions, read: DocumentReader): Promise<Result<LoadedFlux, FormatError>> {
+  const { hasher, shapePackLicensePolicy } = options;
   const problem = pathProblem(entries);
   if (problem !== undefined) return fail('FILE_PATH_UNSAFE', problem);
   const mime = entries.find((e) => e.name === 'mimetype');
@@ -261,13 +280,28 @@ async function openEntries(entries: readonly ZipEntry[], hasher: ContentHasher, 
     entries[0]?.name === 'mimetype' ? [] : [{ code: 'MIMETYPE_NOT_FIRST', entry: 'mimetype', message: 'mimetype is not the first entry' }];
   const manifest = manifestOf(entries, notes);
   const listed = manifest?.entries;
+  const shapes = await validateShapePackEntries(declaredPlugins(entries), new Map(entries.map((e) => [e.name, e.bytes])), {
+    policy: shapePackLicensePolicy,
+    hasher,
+    manifest: { entries: listed },
+  });
+  if (!shapes.ok) return shapes;
   const hashOf = cachedHash(hasher);
   if (listed !== undefined) notes.push(...(await verifyEntries(entries, listed, hashOf)));
   const opened = read(decodeUtf8(document.bytes), manifest?.schemaVersion);
   if (!opened.ok) return opened;
   const { document: doc, diagnostics, readOnly, salvage } = opened.value;
   const assets = await collectAssets(entries, hashOf, notes);
-  return ok({ document: doc, diagnostics, notes, readOnly, ...(salvage ? { salvage } : {}), assets, ...restOf(entries, manifest) });
+  return ok({
+    shapePacks: shapes.value.subsets,
+    document: doc,
+    diagnostics,
+    notes,
+    readOnly,
+    ...(salvage ? { salvage } : {}),
+    assets,
+    ...restOf(entries, manifest),
+  });
 }
 
 /**
@@ -281,7 +315,7 @@ export async function loadFluxWith(bytes: Uint8Array, options: LoadOptions, read
     if (!ZIP_MAGIC.every((b, i) => bytes[i] === b)) return fail('FILE_NOT_FLUX', 'the file is not a zip archive');
     const zip = readZip(bytes, { ...DEFAULT_LIMITS, ...options.limits });
     if (!zip.ok) return fail(zip.error.kind === 'limit' ? 'FILE_TOO_LARGE' : 'FILE_ZIP_INVALID', zip.error.reason);
-    return await openEntries(zip.value, options.hasher, read);
+    return await openEntries(zip.value, options, read);
   } catch (e) {
     return fail('FILE_INTERNAL', `the loader failed on this file: ${e instanceof Error ? e.message : String(e)}`);
   }

@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@fluxion/core": "workspace:*",
-    "@fluxion/schema": "workspace:*"
+    "@fluxion/schema": "workspace:*",
+    "zod": "catalog:"
   }
 }

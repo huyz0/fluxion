@@ -266,9 +266,9 @@ and CI loads, migrates and round-trips all of them.
 `plugins/<id>@<version>/defs.json` plus a `kind: declarative-shapes` variant of
 `manifest.plugins` for validated, used-only shape data and attribution. It is not a
 code-plugin entry and grants no execution permission. Document records remain at 1.7;
-container 1.0's extension preservation remains in force. M18.14 must add typed contracts,
-legacy/unknown-entry round-trip fixtures, integrity checks and offline render tests
-before this extension is implemented.
+container 1.0's extension preservation remains in force. M18.73–75 implement the typed
+contracts, unknown-entry roundtrips and integrity checks. Host registration and offline
+render acceptance remain M18.76 and M18.14.
 
 ### Used-shape preparation (ADR-0183)
 
@@ -277,5 +277,19 @@ selects only referenced non-builtin geometry, including group children. It retai
 credits and intersects scoped credits with used IDs, then emits canonical `defs.json`
 bytes and deterministic SHA-256 data locks. Inputs are captured before asynchronous hashing.
 The caller supplies builtin IDs, content policy and the hasher; no registry or I/O occurs.
-M18.75 adds writer/loader integration, M18.76 host restoration, and M18.14 offline acceptance.
+Writer/loader integration is described below; M18.76 host restoration and M18.14 offline acceptance remain pending.
 The preparation API alone does not make existing host saves portable.
+
+### Known shape data I/O (ADR-0184)
+
+Both loaders validate known locks and saved geometry before returning `LoadedFlux.shapePacks`.
+An explicit `shapePackLicensePolicy` is required for known data; legacy and opaque code
+locks retain their behavior. Wrong identity, integrity, manifest size or malformed UTF-8
+returns `FILE_SHAPE_PACK_INVALID`, including diagnostic paths, without partial accepted packs.
+
+`writePortableFlux` and `writePortableFluxHtml` compose used-only preparation with existing
+writers and return output plus diagnostics. Hosts must show preserved-unresolved warnings.
+Resave accepts loaded embedded subsets, removes only validated old known entries, and
+retains opaque plugin data without overwriting collisions. Snapshots own their bytes across
+hashing; save refuses silent migration/repair. Existing writer return types are unchanged.
+The document-only `.flux.json` API still does not carry external shape geometry.

@@ -316,5 +316,6 @@ all geometry and source coverage without inventing distribution category metadat
 The explicit `allowsShapePackContentLicense` adapter follows the existing content allowlist
 and AND/OR/WITH policy, with input/token/depth bounds; it does not establish ownership.
 The generated structural schema alone does not establish semantic validity. This boundary
-adds no registration or I/O. Format locks and host restore/save remain M18.74–76; complete
+adds no registration or I/O. M18.74/75 prepare canonical locks and validate known data in
+format readers/writers (ADR-0183/0184). Actual host restore/save remains M18.76; complete
 offline portability remains M18.14, and credit-display UI remains M18.33.

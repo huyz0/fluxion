@@ -1,5 +1,5 @@
-// The entry the one-file player imports (ADR-0026): the lean reader and what the player needs of the container, without the validating loader, the writer or
-// the migrations. A subpath of `@fluxion/format`, so a bundler that follows exports reaches no validator through it.
+// The one-file player entry (ADR-0026): lean document loading without writers or document
+// migrations. Known declarative shape data still uses the shared strict validation boundary.
 export type { FormatError } from './errors.js';
 export type { ContentHasher } from './flux-writer.js';
 export { leanDocumentText, loadFluxLean } from './lean.js';

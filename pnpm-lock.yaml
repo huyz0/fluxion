@@ -635,6 +635,9 @@ importers:
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../schema
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.6
 
   packages/geometry:
     dependencies:

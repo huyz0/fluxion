@@ -139,6 +139,7 @@ the codes of shape definitions (`FLX_SHAPE_DEF_INVALID`, and `FLX_SHAPE_PATH`, `
 | Code | Severity | Meaning | Typical fix |
 |---|---|---|---|
 | `FLX_PACK_INVALID` | error | The pack id is not lower-case letters, digits and `-`, or a definition's id is outside the pack's namespace (`<pack>:<name>`). | Rename the pack or the definition. |
+| `FLX_PACK_UNRESOLVED_PRESERVED` | warning | An explicitly identified unresolved reference from the loaded file was retained without invented geometry. | Restore a validated shape source or replace the unresolved shape; the host must display this warning on portable save. |
 | `FLX_LINT_OVERLAP` | warning | Two elements of one screen, neither inside the other, whose boxes cover a large part of the smaller one. | Move or resize one of them. |
 | `FLX_LINT_OFFSCREEN` | warning | An element whose box reaches past the edge of its fixed screen. | Move it inside the screen or shrink it. |
 | `FLX_LINT_TEXT_OVERFLOW` | warning | Measured text that does not fit the box of its element. | Enlarge the box, shorten the text or lower the font size. |

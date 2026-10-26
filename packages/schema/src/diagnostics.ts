@@ -77,6 +77,7 @@ export type DiagnosticCode =
   | 'FLX_SHAPE_DEF_INVALID'
   | 'FLX_SHAPE_PATH'
   | 'FLX_SHAPE_LIMIT'
+  | 'FLX_PACK_UNRESOLVED_PRESERVED'
   | 'FLX_PACK_INVALID'
   | 'FLX_LINT_OVERLAP'
   | 'FLX_LINT_OFFSCREEN'
@@ -160,6 +161,7 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_SHAPE_PATH: 'error',
   FLX_SHAPE_LIMIT: 'error',
   FLX_PACK_INVALID: 'error',
+  FLX_PACK_UNRESOLVED_PRESERVED: 'warning',
   FLX_LINT_OVERLAP: 'warning',
   FLX_LINT_OFFSCREEN: 'warning',
   FLX_LINT_TEXT_OVERFLOW: 'warning',

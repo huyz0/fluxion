@@ -1,3 +1,4 @@
+import type { Diagnostic } from '@fluxion/schema';
 // Stable codes of the file loader's expected failures and notes (coding-typescript rule 12, ADR-0144). Codes are public API: add, never rename.
 
 /**
@@ -12,6 +13,7 @@ export type FormatErrorCode =
   | 'FILE_DOCUMENT_MISSING'
   | 'FILE_DOCUMENT_INVALID'
   | 'FILE_TOO_LARGE'
+  | 'FILE_SHAPE_PACK_INVALID'
   | 'FILE_INTERNAL';
 
 /**
@@ -24,6 +26,8 @@ export type FormatError = {
   readonly code: FormatErrorCode;
   /** One-line developer message. */
   readonly message: string;
+  /** Detailed known-data validation paths when available. */
+  readonly diagnostics?: readonly Diagnostic[];
 };
 
 /**

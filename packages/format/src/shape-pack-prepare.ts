@@ -12,7 +12,7 @@ import {
 import { type Diagnostic, type DocumentFile, err, ok, type Result } from '@fluxion/schema';
 import { encodeBase64 } from './base64.js';
 import { canonicalJson } from './canonical-json.js';
-import type { ContentHasher } from './flux-writer.js';
+import type { ContentHasher } from './flux-write-types.js';
 import { encodeUtf8 } from './utf8.js';
 
 /** Explicit provenance for used geometry; embedded sources need no reconstructed index. @public */
@@ -56,10 +56,14 @@ export type PrepareShapePacksOptions = {
   readonly licensePolicy: ShapePackLicensePolicy;
   /** Trusted SHA-256 port; receives a copy of each canonical entry. */
   readonly hasher: ContentHasher;
+  /** IDs unresolved in the loaded document; new unresolved IDs still fail. */
+  readonly preservedUnresolvedIds?: ReadonlySet<string>;
 };
 
 /** Atomic prepared data; writer/loader integration is a separate boundary. @public */
 export type PreparedShapePacks = {
+  /** Warnings the host must show when preserving explicitly loaded unresolved references. */
+  readonly diagnostics: readonly Diagnostic[];
   /** Deterministically ordered locks for only used namespaces. */
   readonly locks: readonly ShapePackDataLock[];
   /** Canonical saved subset bytes, keyed by the corresponding lock entry. */
@@ -147,9 +151,14 @@ function usedIds(document: DocumentFile, builtinIds: ReadonlySet<string>): Resul
 function pendingEntries(
   document: DocumentFile,
   inputs: readonly ShapePackSourceData[],
-  builtinIds: ReadonlySet<string>,
-  policy: ShapePackLicensePolicy,
+  options: {
+    readonly builtinIds: ReadonlySet<string>;
+    readonly policy: ShapePackLicensePolicy;
+    readonly preserved: ReadonlySet<string>;
+    readonly diagnostics: Diagnostic[];
+  },
 ): Result<Pending[], readonly Diagnostic[]> {
+  const { builtinIds, policy, preserved, diagnostics } = options;
   const parsed = collectSources(inputs, policy);
   if (!parsed.ok) return parsed;
   const selected = usedIds(document, builtinIds);
@@ -157,7 +166,16 @@ function pendingEntries(
   const sources = parsed.value;
   const used = selected.value;
   const available = new Set<string>([...sources.values()].flatMap((source) => source.definitions.map((def) => def.id)));
-  for (const id of used) if (!available.has(id)) return err([problem('/document/records', `unresolved definition ${id}`)]);
+  for (const id of [...used].sort()) {
+    if (available.has(id)) continue;
+    if (!preserved.has(id)) return err([problem('/document/records', `unresolved definition ${id}`)]);
+    diagnostics.push({
+      code: 'FLX_PACK_UNRESOLVED_PRESERVED',
+      severity: 'warning',
+      path: '/document/records',
+      message: `preserved loaded unresolved definition ${id}; no geometry is available`,
+    });
+  }
   const entries: Pending[] = [];
   for (const source of [...sources.values()].sort(byId)) {
     const definitions = source.definitions.filter((d) => used.has(d.id)).sort(byId);
@@ -189,7 +207,13 @@ export async function prepareUsedShapePacks(
     const policy = options.licensePolicy;
     if (typeof policy !== 'function') return err([problem('/licensePolicy', 'an explicit content policy is required')]);
     const hash = options.hasher.sha256.bind(options.hasher);
-    const pending = pendingEntries(document, sources, new Set(options.builtinIds), policy);
+    const diagnostics: Diagnostic[] = [];
+    const pending = pendingEntries(document, sources, {
+      builtinIds: new Set(options.builtinIds),
+      policy,
+      preserved: new Set(options.preservedUnresolvedIds),
+      diagnostics,
+    });
     if (!pending.ok) return pending;
     const locks: ShapePackDataLock[] = [];
     const extraEntries = new Map<string, Uint8Array>();
@@ -207,7 +231,7 @@ export async function prepareUsedShapePacks(
       });
       extraEntries.set(entry.entry, entry.bytes);
     }
-    return ok({ locks, extraEntries });
+    return ok({ locks, extraEntries, diagnostics });
   } catch {
     return err([problem('', 'shape-pack preparation failed; check the source, policy and hash port')]);
   }

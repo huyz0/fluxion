@@ -158,10 +158,11 @@ export type FluxWriteFailure = ZipFailure;
 export type FormatError = {
     readonly code: FormatErrorCode;
     readonly message: string;
+    readonly diagnostics?: readonly Diagnostic[];
 };
 
 // @public
-export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_INTERNAL";
+export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_SHAPE_PACK_INVALID" | "FILE_INTERNAL";
 
 // @public
 export interface ImageCodec {
@@ -226,6 +227,7 @@ export type JournalPut = {
 
 // @public
 export type LoadedFlux = {
+    readonly shapePacks: readonly ShapePackSubset[];
     readonly document: DocumentFile;
     readonly diagnostics: readonly Diagnostic[];
     readonly notes: readonly LoadNote[];
@@ -266,6 +268,7 @@ export type LoadNoteCode = "MANIFEST_MISSING" | "MANIFEST_INVALID" | "MIMETYPE_N
 
 // @public
 export type LoadOptions = {
+    readonly shapePackLicensePolicy?: ShapePackLicensePolicy;
     readonly hasher: ContentHasher;
     readonly limits?: ZipLimits;
 };
@@ -306,7 +309,20 @@ export type PixelSize = {
 };
 
 // @public
+export type PortableFluxHtmlOutput = {
+    readonly html: string;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
+export type PortableFluxOutput = {
+    readonly bytes: Uint8Array;
+    readonly diagnostics: readonly Diagnostic[];
+};
+
+// @public
 export type PreparedShapePacks = {
+    readonly diagnostics: readonly Diagnostic[];
     readonly locks: readonly ShapePackDataLock[];
     readonly extraEntries: ReadonlyMap<string, Uint8Array>;
 };
@@ -316,6 +332,7 @@ export type PrepareShapePacksOptions = {
     readonly builtinIds: ReadonlySet<string>;
     readonly licensePolicy: ShapePackLicensePolicy;
     readonly hasher: ContentHasher;
+    readonly preservedUnresolvedIds?: ReadonlySet<string>;
 };
 
 // @public
@@ -451,7 +468,7 @@ export function usedFontFamilies(doc: DocumentFile): ReadonlySet<string> | undef
 export const VERSION: string;
 
 // @public
-export function writeFlux(input: WriteFluxInput): Promise<Result<Uint8Array, FluxWriteFailure>>;
+export function writeFlux(original: WriteFluxInput): Promise<Result<Uint8Array, FluxWriteFailure>>;
 
 // @public
 export function writeFluxHtml(input: WriteFluxHtmlInput): Promise<Result<string, FluxWriteFailure>>;
@@ -470,6 +487,7 @@ export type WriteFluxHtmlInput = {
 
 // @public
 export type WriteFluxInput = {
+    readonly shapePackLicensePolicy?: ShapePackLicensePolicy;
     readonly document: DocumentFile;
     readonly assets?: ReadonlyMap<string, FluxAsset>;
     readonly appVersion: string;
@@ -498,6 +516,24 @@ export type WriteFluxJsonInput = {
     readonly assetsMode?: "inline" | "external";
     readonly name?: string;
     readonly hasher: ContentHasher;
+};
+
+// @public
+export function writePortableFlux(input: WritePortableFluxInput): Promise<Result<PortableFluxOutput, FluxWriteFailure>>;
+
+// @public
+export function writePortableFluxHtml(input: WritePortableFluxHtmlInput): Promise<Result<PortableFluxHtmlOutput, FluxWriteFailure>>;
+
+// @public
+export type WritePortableFluxHtmlInput = Omit<WriteFluxHtmlInput, "flux"> & {
+    readonly archive: WritePortableFluxInput;
+};
+
+// @public
+export type WritePortableFluxInput = WriteFluxInput & {
+    readonly shapePacks: Omit<PrepareShapePacksOptions, "hasher"> & {
+        readonly sources: readonly ShapePackSourceData[];
+    };
 };
 
 // @public

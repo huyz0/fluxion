@@ -1,0 +1,8 @@
+{
+  "kind": "declarative-shapes",
+  "id": "sample",
+  "version": "1.0.0",
+  "packFormat": "1.0",
+  "entry": "plugins/sample@1.0.0/defs.json",
+  "integrity": "sha256-bvOa5OfE2wZqG7x/HpFPcEgYid7iHqbP0Z2t3UdMSio="
+}

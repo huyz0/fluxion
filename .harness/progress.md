@@ -2661,3 +2661,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Full format suite169PASS across24files; TS7 and scoped lint pass. API report, ADR0183 and format changeset included.
 - Writer/loader and host integration remain M18.75/76; M18.14 offline acceptance stays open. Staged verification and fresh code review follow.
 - First staged242.0s: tests/coverage/types/build/API/hard-sizePASS; kind-switch misidentified the closed source union. Added its documented closed-union annotation; no runtime or gate change.
+
+## M18.75 — portable shape data I/O (2026-10-26)
+- M18.74 published93598b60; CI40277975454 passes36/36 and gates40277975346 passes.
+- Independent plan round2 and schema clarification pass; ZIP/HTML outputs carry preserved-reference warnings and known data validates atomically in full/lean readers.
+- Initial6RED; hash-port and silent-repair regressions also observedRED then fixed. Focused21PASS; broader format/schema344PASS; generated lock fixture8PASS.
+- TS7, scoped lint, kind/size checks and license scan1105dependencies/23MITworkspaces pass; all26workspace builds pass.
+- Hard bundles pass: core96525/150000, editor443513/600000; embedding advisories157058 and158306 bytes remain measured against150000.
+- ADR0184, schema/format APIs, diagnostics docs and minor changesets included. Existing pinnedZod4.6.6 is now a direct format dependency for strict lock parsing.
+- Fresh budget measurement passed: quick163.7s, worst-case385.2s, genuine cold483.975s; exact-candidate staged verification and independent code review follow. Host integration M18.76, offline acceptance M18.14 and credit UI M18.33 remain open.
+- First budget run exposes shared-type cycles, missing public property docs and twelve stale generated CLI schemas; failed candidate/logs preserved. Extracted shared writer types, documented fields and regenerated diagnostic unions; corrected focused35PASS and layering0violations. No threshold/test changes.
+- Corrected second run: quick162.3sPASS and genuine cold488.9sPASS; worst-case369.9s fails only harness budget test reading prior null record (709/710). Independent diagnostic approves restoring authentic baseline and separate-output fresh measurement; no timings combined or invented.

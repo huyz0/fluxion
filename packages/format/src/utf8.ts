@@ -41,13 +41,14 @@ function sequenceAt(bytes: Uint8Array, i: number): { readonly code: number; read
 }
 
 /** The text of the UTF-8 `bytes`; each byte that does not start or continue a valid sequence is one U+FFFD. */
-export function decodeUtf8(bytes: Uint8Array): string {
+function decode(bytes: Uint8Array, strict: boolean): string | undefined {
   const parts: string[] = [];
   let run: number[] = [];
   let i = 0;
   while (i < bytes.length) {
     const b = bytes[i] as number;
     const seq = b < 0x80 ? { code: b, length: 1 } : sequenceAt(bytes, i);
+    if (strict && seq === undefined) return undefined;
     run.push(seq?.code ?? REPLACEMENT);
     i += seq?.length ?? 1;
     if (run.length >= 4096) {
@@ -57,4 +58,14 @@ export function decodeUtf8(bytes: Uint8Array): string {
   }
   parts.push(String.fromCodePoint(...run));
   return parts.join('');
+}
+
+/** Decode with the established replacement behavior. */
+export function decodeUtf8(bytes: Uint8Array): string {
+  return decode(bytes, false) ?? '';
+}
+
+/** Refuse malformed byte sequences instead of silently replacing them. */
+export function decodeUtf8Strict(bytes: Uint8Array): string | undefined {
+  return decode(bytes, true);
 }
