@@ -1,0 +1,130 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp7",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..702a905bd73bc9138b29895aa7e799c15bd30e26",
+  "reviewer": "independent-subagent:m18_cp7_review",
+  "verdict": "approve",
+  "findings": [],
+  "dispositions": [],
+  "planDelta": "No new implementation reopen rows. Correct the stale backlog header from current 76 to actual 85 (85/43 = 1.98x); do not rebaseline planned count. Preserve M18.85 installed Node bridge, M18.80 full production corpus/host qualification, M18.81 font transport, M18.16/17 batch CLI/UI, M18.33 attribution UI, M18.10 hosted mutation qualification and all other unfinished rows.",
+  "assessment": {
+    "coherence": "Cumulative cp1-cp6 recorded design and conclusions are retained, including cp5 F1 resolution confirmed in cp6 and still present at cp7. The eight commits since cp6 form explicit boundaries: portable acceptance; checked SVG tree; pure single and batch conversion; canonical paint requests; isolated browser witness; and separately documented quick-latency policy. The importer and host share canonical dimensions, font closure and identity instead of parallel implementations. The sanitizer preserves its checked markup path; strict ZIP names are opt-in for batch conversion.",
+    "specFidelity": "M18.14 now asserts exact three-of-5000 persistence, applicable credits, migration/refusal behavior and offline pixel parity. ADR-0187 explicitly revises routing to exact simple rectangles or diagnosed conservative viewport outlines while retaining source paint. ADR-0189 preserves original full-corpus production qualification as M18.80, with font distribution separately owned by M18.81. No silently dropped user-facing integration requirement found.",
+    "standardsDrift": "ADRs 0186-0190, API reports, changesets and fixtures accompany contract and policy changes. Render-to-format dependency is deliberate and reflected in the layer map and package metadata. ADR-0190 and the threshold-change trailer explicitly classify quick latency as advisory without lowering test scope, altering numeric targets or relaxing staged/cold limits. Initial failures are preserved in progress evidence.",
+    "gateHonesty": "Supplied exact-HEAD gate is correctly red at 29/71. Portable acceptance binds actual node tests and all five offline browser projects; SVG acceptance binds sanitizer/converter tests and three-engine corpus/clipping specs. Independently executed harness probes reject missing files, skipped assertions and failed browser reports. The current SVG leg qualifies conversion with the test witness; it does not qualify the production adapter, whose integration and full original corpus remain open under M18.80. No full-milestone success is claimed.",
+    "architecture": "Pure format conversion uses a host port and owns snapshots before asynchronous witnesses. Canonical request validation rejects changed identities, noncanonical rasters and inconsistent exact font closure. The browser entry uses the existing ArtworkView, owned iframe CSP/resources, bounded inputs, real two-backdrop pixel observations and explicit cancellation/deadlines. Main and SSR imports remain effect-free. Initial pinned-font capability is narrow and explicit, with unsupported inputs refused.",
+    "planHealth": "Actual backlog is 85 rows versus 43 planned (1.98x), not the stale header value of 76. Growth reflects inherited qualification, parser/import decomposition, browser lifecycle and installed-host prerequisites, font transport and evidenced gate-policy work. Later plans should budget these boundaries and cross-engine qualification explicitly; prerequisite completion must not stand in for feature acceptance."
+  },
+  "evidence": {
+    "snapshot": "HEAD independently verified as 702a905bd73bc9138b29895aa7e799c15bd30e26. The only tracked working-tree change before and after checks was a pre-existing one-line addition to .harness/reviews/digest.log. No repository edits made.",
+    "executed": [
+      {
+        "command": "node --test tests/harness/gate-latency.test.mjs tests/harness/m0-latency.test.mjs tests/harness/budget.test.mjs tests/harness/m18-portable-legs.test.mjs tests/harness/m18-svg-import-leg.test.mjs",
+        "exitCode": 0,
+        "result": "29/29 tests passed; zero skipped/cancelled."
+      },
+      {
+        "command": "FLUXION_VITEST_CACHE=/tmp/m18-cp7-review-vitest pnpm exec vitest run --project node packages/format/src/{svg-import,svg-paint-request,svg-batch,svg-tree,embed-used,pack-attribution,zip}.test.ts packages/render/src/{svg-witness-input,svg-witness-lifecycle,svg-witness-import}.test.ts",
+        "exitCode": 0,
+        "result": "10 files, 81/81 tests passed."
+      },
+      {
+        "command": "FLUXION_VITEST_CACHE=/tmp/m18-cp7-review-vitest pnpm exec vitest run --project node packages/format/src/sanitize-svg.test.ts",
+        "exitCode": 0,
+        "result": "1 file, 5/5 tests passed."
+      },
+      {
+        "command": "FLUXION_VITEST_CACHE=/tmp/m18-cp7-review-browser pnpm exec vitest run --project browser (six svg-witness browser suites)",
+        "exitCode": 1,
+        "result": "Initial run could not launch: default /home/agent/.cache/ms-playwright/chromium_headless_shell-1243 executable missing; no tests executed."
+      },
+      {
+        "command": "source /workspace/fluxion-environment.sh; FLUXION_VITEST_CACHE=/tmp/m18-cp7-review-browser pnpm exec vitest run --project browser packages/render/src/svg-witness.browser.test.tsx packages/render/src/svg-witness-continuation.browser.test.ts packages/render/src/svg-witness-frame.browser.test.ts packages/render/src/svg-witness-lifecycle.browser.test.ts packages/render/src/svg-witness-mapping.browser.test.tsx packages/render/src/svg-witness-serialize.browser.test.ts",
+        "exitCode": 0,
+        "result": "Using the provided installed browser cache, 6 files and 16/16 tests passed. No install, browser substitution, assertion change or retry setting used."
+      }
+    ],
+    "mutationSpotChecks": [
+      {
+        "test": "packages/format/src/svg-paint-request.test.ts: stale identities/noncanonical rasters and exact font closure",
+        "mutant": "Accept caller dimensions/identity without recomputing the canonical request, or permit unused fonts.",
+        "constraint": "Explicit width=1/height=1/stale identity/changed artwork and missing/duplicate/unused-face refusal assertions fail."
+      },
+      {
+        "test": "packages/render/src/svg-witness-lifecycle.test.ts: abort, active deadline and lifetime expiry",
+        "mutant": "Publish late success after abort, skip cleanup, or leave session reusable after deadline.",
+        "constraint": "Unsupported receipt, exactly-once cleanup, zero timer and post-expiry refusal assertions fail."
+      },
+      {
+        "test": "e2e/file.used-shapes.spec.ts: offline three-of-5000 rendering",
+        "mutant": "Save all definitions, lose scoped credits, or change offline rendered geometry.",
+        "constraint": "Exact three-ID/scoped-credit assertions, normalized content equality and offline-versus-present pixel comparison fail."
+      }
+    ],
+    "limitations": [
+      "Mutation spot checks are imagined source-level mutants, not executed mutation campaigns.",
+      "Full completion gate, full verification, five-project portable E2E and three-engine corpus E2E were not independently rerun. Their packet/progress evidence is supplied evidence, not this reviewer execution.",
+      "Approval is for cp7 progress delta, not final milestone closure or production SVG integration qualification.",
+      "External verdict only; repository staging, backlog header correction and Learned update are left to the driver under the read-only assignment.",
+      "Cumulative coverage before 1f01ef50 relies on explicitly retained cp1-cp6 independent review records, not a fresh line-by-line review or re-execution of their earlier checks."
+    ],
+    "priorCheckpoints": [
+      {
+        "path": ".harness/reviews/milestone-M18-cp1.json",
+        "sha256": "67c323b1957edea45629a47d4517cf6abca6ace9d3095ea023d8406c589ca0e3",
+        "checkpoint": "cp1",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..26f31d7494d832b9ce61970106351d5ce9b8f05e",
+        "reviewer": "independent-subagent:m18_cp1_review",
+        "basis": "Existing recorded review; evidence and limitations retained, not re-executed."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp2.json",
+        "sha256": "d3022bff5de0deb571d0fa57799064e381789ab8f9ab592b4c8df5a4425ca161",
+        "checkpoint": "cp2",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..88965d825b676d268e93baaaf04a5df0ab05d4c7",
+        "reviewer": "independent-subagent:m18_cp2_review",
+        "basis": "Existing recorded review; evidence and limitations retained, not re-executed."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp3.json",
+        "sha256": "4a3263342c86adaf913f435413684f9dfb6ff835abf24e31567e48d43ddd5a1d",
+        "checkpoint": "cp3",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..25a0e6cbed7f25235bf388aebad8a91e7fdeb373",
+        "reviewer": "independent-subagent:m18_cp3_review",
+        "basis": "Existing recorded review; evidence and limitations retained, not re-executed."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp4.json",
+        "sha256": "3b554e67258840a7a09ddac7b46dc25ab99dfc2713cf71734a993a3ec8e965ad",
+        "checkpoint": "cp4",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..fd89d426216016b14e2178dab6440d27262f79b5",
+        "reviewer": "independent-subagent:m18_cp4_review",
+        "basis": "Existing recorded review; evidence and limitations retained, not re-executed."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp5.json",
+        "sha256": "06bab7f197e630f0037e89fd4988f62a3f240c862d285bbf0da1cded0b23f755",
+        "checkpoint": "cp5",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..fa9d64af4baab3c927bf3a3845c9ae6cd2019f4e",
+        "reviewer": "independent-subagent:m18_cp5_review",
+        "basis": "Existing recorded review; evidence and limitations retained, not re-executed."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp6.json",
+        "sha256": "09075a6113f8b1228f74b39d360c403d07daba23df64f74bcdda128a53acecaa",
+        "checkpoint": "cp6",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..1f01ef506bff8edd849cf8f283c81207e11a15cc",
+        "reviewer": "independent-subagent:m18_cp6_review",
+        "basis": "Existing recorded review; evidence and limitations retained, not re-executed."
+      }
+    ],
+    "priorFindingResolution": "cp5 F1 was reopened as M18.71 and resolved in cp6. Independently inspected current gate: artwork-view and legacy shape-view remain bound to browser project, and lazy loading remains bound to SDK pack-loader. M18.71 remains done at 7544f6e6. cp1-cp4 and cp6 carry no findings. cp6 pending M18.14 is addressed by the reviewed cp7 delta; M18.10 and M18.33 remain todo."
+  },
+  "learned": [
+    "Keep canonical request validation, browser observation, installed-host transport and full production corpus qualification as separate explicit boundaries.",
+    "Retain failed environment/policy evidence; use the documented workspace browser setup and do not mistake an unlaunched suite for a test failure or pass.",
+    "Update actual backlog counts at checkpoints and budget cross-engine lifecycle/font/packaging qualification separately from converter implementation."
+  ],
+  "independentlyReviewedDelta": "1f01ef506bff8edd849cf8f283c81207e11a15cc..702a905bd73bc9138b29895aa7e799c15bd30e26",
+  "reviewBasis": "Cumulative checkpoint: retain cp1-cp6 assessments, dispositions, execution evidence and limitations by reference, and combine them with the independently reviewed cp6-to-cp7 delta. Read all six records and verified their cumulative starts, ordered ancestry and endpoints before issuing this revision. Earlier checks were not re-executed by this reviewer."
+}

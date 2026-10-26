@@ -1,0 +1,65 @@
+import { EventEmitter } from 'node:events';
+import { expect, it, vi } from 'vitest';
+import type { Browser, BrowserServer } from './svg-witness-driver.js';
+import { connectWitnessBrowser, type WitnessBrowserDriver } from './svg-witness-launch.js';
+
+function fixture() {
+  const events = new EventEmitter();
+  const process = Object.assign(events, { exitCode: null as number | null, signalCode: null });
+  const server = {
+    wsEndpoint: () => 'ws://127.0.0.1:12345/generated-secret',
+    process: () => process,
+    close: vi.fn(async () => {
+      process.exitCode = 0;
+      events.emit('exit', 0);
+    }),
+    kill: vi.fn(async () => {
+      process.exitCode = 1;
+      events.emit('exit', 1);
+    }),
+  } as unknown as BrowserServer;
+  const browser = {} as Browser;
+  const driver: WitnessBrowserDriver = {
+    launchServer: vi.fn(async () => server),
+    connect: vi.fn(async () => browser),
+  };
+  return { driver, server, browser };
+}
+it('NFR-SEC-001: Node witness launches only loopback ephemeral server and connects its exact generated endpoint', async () => {
+  const f = fixture();
+  const owned = vi.fn();
+  const result = await connectWitnessBrowser(f.driver, { alive: () => true, own: owned });
+  expect(f.driver.launchServer).toHaveBeenCalledWith({ host: '127.0.0.1', port: 0, headless: true, timeout: 10000 });
+  expect(f.driver.connect).toHaveBeenCalledWith(f.server.wsEndpoint(), { timeout: 10000 });
+  expect(owned).toHaveBeenCalledTimes(1);
+  expect(result.browser).toBe(f.browser);
+  expect(await result.close()).toBe(true);
+  expect(f.server.kill).not.toHaveBeenCalled();
+});
+it('NFR-SEC-001: rejected non-loopback endpoint is never connected and its owned server closes', async () => {
+  const f = fixture();
+  vi.spyOn(f.server, 'wsEndpoint').mockReturnValue('ws://example.com:12345/token');
+  await expect(connectWitnessBrowser(f.driver, { alive: () => true, own: vi.fn() })).rejects.toThrow('endpoint');
+  expect(f.driver.connect).not.toHaveBeenCalled();
+  expect(f.server.close).toHaveBeenCalledTimes(1);
+});
+it('NFR-SEC-001: cancellation after server launch prevents late connection and closes the server', async () => {
+  const f = fixture();
+  let alive = true;
+  await expect(
+    connectWitnessBrowser(f.driver, {
+      alive: () => alive,
+      own: () => {
+        alive = false;
+      },
+    }),
+  ).rejects.toThrow('cancelled');
+  expect(f.driver.connect).not.toHaveBeenCalled();
+  expect(f.server.close).toHaveBeenCalledTimes(1);
+});
+it('NFR-SEC-001: connection failure observes owned-process exit before propagating failure', async () => {
+  const f = fixture();
+  vi.mocked(f.driver.connect).mockRejectedValue(Error('connection failed'));
+  await expect(connectWitnessBrowser(f.driver, { alive: () => true, own: vi.fn() })).rejects.toThrow('connection failed');
+  expect(f.server.close).toHaveBeenCalledTimes(1);
+});

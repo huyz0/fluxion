@@ -25,3 +25,24 @@ reply schemas are generated to `schemas/<command>.output.json` (ADR-0147, docs/s
 Quickstart: `apps/docs` → Guides → CLI quickstart.
 
 A scripted session is in `examples/cli/`.
+
+### Owned SVG paint witness
+
+`@fluxion/cli/svg-witness` exposes `createNodeSvgPaintWitness({ theme, fonts, browser?, signal? })`.
+It needs the optional Playwright peer and the explicitly selected installed engine (Chromium by
+default). It loads its shipped browser artifact relative to the installed package, launches one
+loopback-only browser server and blocks context network requests before creating a page.
+
+The returned `Result` contains `{ witness, observe, dispose }`. Use `witness` with the SVG importer;
+use `observe` when the caller needs typed failures such as `invalid-input`, `unsupported`,
+`peer-missing`, `deadline`, `cancelled`, `transport` or `cleanup`. Always await `dispose()` in
+`finally`: a successful close requires observed exit of the owned browser process. A cleanup
+failure is never reported as successful shutdown. Check the disposal Result before committing
+imported output; an earlier paint receipt does not establish that later cleanup succeeded.
+
+The context and exact font profile match `@fluxion/render/svg-witness`. Node transport checks
+bounded plain data, at most eight faces/8 MiB of font bytes and a conservative 32 MiB encoded
+payload ceiling before transport. One session admits at most 128 requests, one active at a time,
+with ten-second observation deadlines. Its 120-second lifetime reserves the final two seconds
+for cleanup, including a one-second graceful-close window before killing only its owned server.
+No alternate-browser fallback, remote renderer, output-file write or pack-import command is added.

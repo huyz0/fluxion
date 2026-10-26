@@ -18,6 +18,11 @@
       "@fluxion/source": "./src/ops/index.ts",
       "types": "./dist/ops/index.d.ts",
       "default": "./dist/ops/index.js"
+    },
+    "./svg-witness": {
+      "@fluxion/source": "./src/svg-witness.ts",
+      "types": "./dist/svg-witness.d.ts",
+      "default": "./dist/svg-witness.js"
     }
   },
   "files": [
@@ -53,5 +58,8 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "devDependencies": {
+    "playwright": "catalog:"
   }
 }
