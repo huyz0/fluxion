@@ -30,3 +30,24 @@ const { html, screens } = renderDocumentToHtml(file, { registries }); // screens
 registries (`createRenderRegistries`, `registerBuiltinViews`), never switched on by kind.
 Architecture: [docs/architecture/04-rendering-and-editor.md](../../docs/architecture/04-rendering-and-editor.md) §2,
 ADR-0015 (static render path).
+
+### Bounded SVG paint witness
+
+`@fluxion/render/svg-witness` exports `createSvgPaintWitness({ document, theme, fonts, signal? })`.
+It returns a `Result` containing an owned `{ witness, dispose }` session. Pass `witness` to
+format's SVG importer and always call `dispose` in `finally`. Construction snapshots the
+validated theme, exact font bytes and the host body's inherited color/typography; rendering
+initializes lazily in a same-origin, script-disabled frame with a restrictive resource policy.
+
+The initial font profile is `inter-latin-400-ascii`: the pinned Inter normal-400 bytes and
+ASCII 32–126. Font metadata includes family, weight, style, SHA256, bytes and profile. Missing
+faces, wrong bytes, unsupported glyphs or CSS family interpretation mismatches refuse rather
+than attest fallback text. Hosts retain the font's license and portable assets separately.
+
+One session admits at most 128 requests, one at a time, with a ten-second request deadline
+inside a 120-second lifetime. Invalid, concurrent, cancelled or unsupported requests do not
+produce positive evidence. Limits include eight faces/8 MiB total font bytes, bounded theme
+input, canonical 1024-side rasters and a conservative 16 MiB serialization cap. The host CSP
+must permit the documented same-origin frame/styles/data resources; there is no permissive
+fallback. This entry has no import-time DOM effects and does not add witness code to the
+main renderer entry. The Node bridge and full importer-host corpus qualification are separate.

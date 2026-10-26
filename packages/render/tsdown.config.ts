@@ -11,7 +11,7 @@ const PACKAGE_DOC = `/**
 export default defineConfig({
   // the static render path (react-dom/server) is its own entry, `@fluxion/render/ssr`: the main entry, and the one-file player built from it, stay free of the
   // server renderers (ADR-0026)
-  entry: ['src/index.ts', 'src/ssr.ts'],
+  entry: ['src/index.ts', 'src/ssr.ts', 'src/svg-witness.ts'],
   format: 'esm',
   dts: true,
   clean: true,

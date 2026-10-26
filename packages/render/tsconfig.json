@@ -28,6 +28,9 @@
     },
     {
       "path": "../../packages/routing"
+    },
+    {
+      "path": "../../packages/format"
     }
   ]
 }

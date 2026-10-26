@@ -114,7 +114,7 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
   });
 
   it('tsc -b type-checks every workspace (a type error in any project fails it)', () => {
-    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', ...workspaces.map((w) => w.dir)]);
+    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', 'tools/vite-dom-free', ...workspaces.map((w) => w.dir)]);
     try {
       // node-runtime workspaces resolve @types/node from the repo's install
       linkInstalls(sb);
@@ -131,7 +131,7 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
   });
 
   it('pure packages type-check without DOM; dom and node runtimes get their globals (M1 cp1 F5)', () => {
-    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', ...workspaces.map((w) => w.dir)]);
+    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', 'tools/vite-dom-free', ...workspaces.map((w) => w.dir)]);
     try {
       linkInstalls(sb);
       const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');

@@ -15,6 +15,11 @@
       "@fluxion/source": "./src/ssr.ts",
       "types": "./dist/ssr.d.ts",
       "default": "./dist/ssr.js"
+    },
+    "./svg-witness": {
+      "@fluxion/source": "./src/svg-witness.ts",
+      "types": "./dist/svg-witness.d.ts",
+      "default": "./dist/svg-witness.js"
     }
   },
   "files": [
@@ -29,7 +34,8 @@
     "@fluxion/geometry": "workspace:*",
     "@fluxion/routing": "workspace:*",
     "@fluxion/schema": "workspace:*",
-    "@fluxion/theme": "workspace:*"
+    "@fluxion/theme": "workspace:*",
+    "@fluxion/format": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0",

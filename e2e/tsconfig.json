@@ -13,6 +13,12 @@
   "references": [
     {
       "path": "../packages/format"
+    },
+    {
+      "path": "../packages/theme"
+    },
+    {
+      "path": "../packages/render"
     }
   ]
 }
