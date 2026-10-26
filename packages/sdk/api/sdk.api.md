@@ -17,6 +17,7 @@ import { FaceMetrics } from '@fluxion/core';
 import { FontFaceDef } from '@fluxion/theme';
 import { FontRegistry } from '@fluxion/theme';
 import { HandleDef } from '@fluxion/core';
+import { Hasher } from '@fluxion/core';
 import { hitTestShape } from '@fluxion/core';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { MARKER_SIZE } from '@fluxion/core';
@@ -60,6 +61,9 @@ export { CoreRegistries }
 export { createCoreRegistries }
 
 export { createFontRegistry }
+
+// @public
+export function createShapePackLoader(indexBytes: Uint8Array, options: ShapePackLoaderOptions): Promise<Result<ShapePackLoader, readonly Diagnostic[]>>;
 
 // @public
 export function definePack(spec: PackSpec): Pack;
@@ -156,6 +160,22 @@ export { ShapePackIndex }
 export { shapePackIndexSchema }
 
 export { ShapePackLicensePolicy }
+
+// @public
+export interface ShapePackLoader {
+    readonly identity: string;
+    readonly index: ShapePackIndex;
+    load(id: string): Promise<Result<ShapeDef, readonly Diagnostic[]>>;
+    search(query: string): readonly ShapePackDefinitionEntry[];
+}
+
+// @public
+export type ShapePackLoaderOptions = {
+    readonly maxBytes: number;
+    readonly read: (path: string, maxBytes: number) => Promise<Uint8Array>;
+    readonly hasher: Hasher;
+    readonly licensePolicy: ShapePackLicensePolicy;
+};
 
 export { ShapePackSource }
 

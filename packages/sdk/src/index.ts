@@ -58,3 +58,5 @@ export {
   validateTheme,
 } from '@fluxion/theme';
 export { definePack, type Pack, type PackRegistries, type PackSpec, registerShapeDef, type ThemeDef } from './pack.js';
+
+export { createShapePackLoader, type ShapePackLoader, type ShapePackLoaderOptions } from './pack-loader.js';

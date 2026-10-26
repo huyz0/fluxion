@@ -2581,3 +2581,22 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Focused CI-seeded run: 17/17 before, 25/25 after; all original test titles retained and eight individual campaigns added.
 - Locally the original campaign block took 704.52ms; individual campaign times now range 15.21–223.56ms (single samples, not macOS proof).
 - Preserve incomplete M18.47 artwork work in its original worktree and recovery archive; remote recovery requires new CI evidence.
+
+## M18.47 — Validated shape artwork (2026-10-26)
+
+- Published ee0f9ddc with optional inert paint independent of routing outlines; legacy rendering remains.
+- Bounded lightweight validation keeps Zod out of the player; core owns the closed declarative schema.
+- SDK/API reports, ADR-0180 and original MIT fixtures accompany the contract.
+- Independent review found implicit use/SVG translation overflow; RED regression then fix, round-two PASS0.
+- Full staged verification PASS299.9s and normal commit hooks PASS309.3s; pinned desktop/mobile UI5/5.
+- CI40264455455 and gates40264455502 are pending; do not claim milestone qualification.
+- Original nightly remains terminal/incomplete; changed-input recovery plan is preserved outside the checkout.
+
+## M18.13 — Lazy category geometry loader (2026-10-26)
+
+- Metadata-only search covers 5000 indexed definitions with no geometry reads.
+- Explicit read/hash ports and byte caps verify original category bytes before any definitions are exposed.
+- Concurrent IDs share category I/O; successful data is frozen, failed loads retry only on explicit later calls.
+- Options are captured before async hashing; the ownership-race regression failed before its fix.
+- SDK tests23/23 and typecheck pass; ADR-0181, API report and minor changeset accompany the public adapter.
+- Independent plan review passed; implementation verification and exact-diff review remain mandatory before commit.

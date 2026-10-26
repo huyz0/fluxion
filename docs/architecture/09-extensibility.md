@@ -292,3 +292,18 @@ validates geometry, local reference graphs and resource limits before rendering.
 pack parsers apply the same validation. The renderer scopes IDs per instance and preserves
 literal colors unless an explicit theme-color mapping resolves. Legacy definitions retain
 outline rendering. Portable storage of used definitions remains the separate M18.14 task.
+
+### Lazy declarative loading
+
+`createShapePackLoader(indexBytes, options)` (ADR-0181) validates original index bytes
+without reading geometry. Supply an explicit content license policy, `Hasher`, a relative
+path reader and a positive safe-integer `maxBytes` cap. Readers enforce that cap during I/O;
+the adapter also checks size before copying, hashing and parsing. Ordinary failures return
+`FLX_PACK_INVALID` diagnostics rather than partial definitions.
+
+`ShapePackLoader.search(query)` searches frozen metadata only. `load(id)` reads and verifies
+only the indexed category; concurrent IDs in that category share one pending operation.
+Successful categories are cached within the immutable namespace/version/index-hash identity.
+A failed load is retried only on a subsequent explicit call. The adapter never registers a
+partial pack, chooses a network endpoint or loads executable code. `ShapePackLoaderOptions`
+captures host capabilities at creation; embedding used definitions remains M18.14.
