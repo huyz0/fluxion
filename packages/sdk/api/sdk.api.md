@@ -29,6 +29,7 @@ import { ParamSpec } from '@fluxion/core';
 import { parseMarkerDef } from '@fluxion/core';
 import { parseShapePackCategory } from '@fluxion/core';
 import { parseShapePackIndex } from '@fluxion/core';
+import { parseSvgArtwork } from '@fluxion/core';
 import { PluginId } from '@fluxion/core';
 import { PointsParam } from '@fluxion/core';
 import { projectToOutline } from '@fluxion/core';
@@ -45,6 +46,8 @@ import { ShapePackIndex } from '@fluxion/core';
 import { shapePackIndexSchema } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSource } from '@fluxion/core';
+import { SvgArtwork } from '@fluxion/core';
+import { SvgArtworkNode } from '@fluxion/core';
 import { TextRegionDef } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { ThemeProblem } from '@fluxion/theme';
@@ -121,6 +124,8 @@ export { parseShapePackCategory }
 
 export { parseShapePackIndex }
 
+export { parseSvgArtwork }
+
 export { PluginId }
 
 export { PointsParam }
@@ -153,6 +158,10 @@ export { shapePackIndexSchema }
 export { ShapePackLicensePolicy }
 
 export { ShapePackSource }
+
+export { SvgArtwork }
+
+export { SvgArtworkNode }
 
 export { TextRegionDef }
 

@@ -414,6 +414,9 @@ export function isIndexKey(key: unknown): key is IndexKey;
 export function isRecordId(value: unknown): value is RecordId;
 
 // @public
+export function isSvgArtworkData(input: unknown): input is SvgArtwork;
+
+// @public
 export function isSvgElement(name: string): boolean;
 
 // @public
@@ -822,6 +825,25 @@ export const SVG_POLICY_LIMITS: Readonly<{
 }>;
 
 // @public
+export type SvgArtwork = {
+    readonly viewBox: {
+        readonly x: number;
+        readonly y: number;
+        readonly width: number;
+        readonly height: number;
+    };
+    readonly root: SvgArtworkNode;
+    readonly colors?: Readonly<Record<string, TokenRef>>;
+};
+
+// @public
+export type SvgArtworkNode = {
+    readonly name: string;
+    readonly attributes: Readonly<Record<string, string>>;
+    readonly children: readonly (SvgArtworkNode | string)[];
+};
+
+// @public
 export type Tagged = Extensible<{
     readonly kind: string;
 }>;
@@ -878,6 +900,9 @@ export type TimelineRecord = Extensible<{
 
 // @public
 export type TokenRef = `{${string}}`;
+
+// @public
+export const tokenRefSchema: z.ZodType<TokenRef>;
 
 // @public
 export type Transform = Extensible<{

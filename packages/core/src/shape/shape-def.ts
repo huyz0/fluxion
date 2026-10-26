@@ -13,9 +13,11 @@ import {
   qualifiedNameSchema,
   type Result,
   type Style,
+  type SvgArtwork,
   styleSchema,
 } from '@fluxion/schema';
 import { z } from 'zod';
+import { checkedArtworkSchema } from './artwork-schema.js';
 import { definitionIssues } from './check.js';
 
 /**
@@ -141,6 +143,8 @@ export type HandleDef = {
  * @public
  */
 export type ShapeDef = {
+  /** Optional validated imported paint; routing continues to use outline. */
+  readonly artwork?: SvgArtwork;
   /** `<namespace>:<name>`, e.g. `basic:star`. */
   readonly id: QualifiedName;
   /** Parameters by name; number, int and enum params are identifiers of the expressions. */
@@ -232,6 +236,7 @@ const paramsSchema = z
   .pipe(z.record(z.string(), z.union([numberParam, enumParam, pointsParam])));
 
 const shapeDefObject = z.strictObject({
+  artwork: checkedArtworkSchema.optional(),
   id: qualifiedNameSchema,
   params: paramsSchema.optional(),
   outline: outlineSchema,

@@ -1,0 +1,121 @@
+{
+  "id": "test:artwork",
+  "outline": {
+    "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+  },
+  "defaultSize": {
+    "w": 100,
+    "h": 100
+  },
+  "artwork": {
+    "viewBox": {
+      "x": 0,
+      "y": 0,
+      "width": 100,
+      "height": 100
+    },
+    "root": {
+      "name": "g",
+      "attributes": {},
+      "children": [
+        {
+          "name": "defs",
+          "attributes": {},
+          "children": [
+            {
+              "name": "linearGradient",
+              "attributes": {
+                "id": "paint",
+                "x1": "0%",
+                "x2": "100%",
+                "y1": "0%",
+                "y2": "0%"
+              },
+              "children": [
+                {
+                  "name": "stop",
+                  "attributes": {
+                    "offset": "0%",
+                    "stop-color": "blue"
+                  },
+                  "children": []
+                },
+                {
+                  "name": "stop",
+                  "attributes": {
+                    "offset": "100%",
+                    "stop-color": "green"
+                  },
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "clipPath",
+              "attributes": {
+                "id": "clip"
+              },
+              "children": [
+                {
+                  "name": "circle",
+                  "attributes": {
+                    "cx": "70",
+                    "cy": "20",
+                    "r": "15"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "path",
+          "attributes": {
+            "class": "hole",
+            "d": "M0 0H40V40H0Z M10 10H30V30H10Z",
+            "fill": "red",
+            "fill-rule": "evenodd"
+          },
+          "children": []
+        },
+        {
+          "name": "rect",
+          "attributes": {
+            "class": "gradient",
+            "x": "50",
+            "y": "0",
+            "width": "40",
+            "height": "40",
+            "fill": "url(#paint)",
+            "clip-path": "url(#clip)"
+          },
+          "children": []
+        },
+        {
+          "name": "rect",
+          "attributes": {
+            "class": "moved",
+            "x": "0",
+            "y": "50",
+            "width": "10",
+            "height": "10",
+            "fill": "blue",
+            "transform": "translate(10 0)"
+          },
+          "children": []
+        },
+        {
+          "name": "text",
+          "attributes": {
+            "x": "50",
+            "y": "75",
+            "font-size": "20",
+            "fill": "black"
+          },
+          "children": ["A"]
+        }
+      ]
+    }
+  }
+}

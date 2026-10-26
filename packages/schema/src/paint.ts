@@ -16,7 +16,7 @@ export type TokenRef = `{${string}}`;
 
 const TOKEN = /^\{[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*\}$/;
 
-/** A token reference field. */
+/** A token reference field, shared by declarative contracts. @public */
 export const tokenRefSchema: z.ZodType<TokenRef> = z.custom<TokenRef>((v) => typeof v === 'string' && TOKEN.test(v), {
   message: 'expected a token reference such as "{color.primary}"',
 });

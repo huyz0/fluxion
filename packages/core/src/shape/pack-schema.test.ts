@@ -144,3 +144,13 @@ describe('declarative shape-pack validation', () => {
     }
   });
 });
+
+it('FR-LIB-003 FR-LIB-004 NFR-SEC-001: direct category artwork round-trips and malicious paint is rejected atomically', () => {
+  const c = category();
+  const paint = { viewBox: { x: 0, y: 0, width: 10, height: 10 }, root: { name: 'path', attributes: { d: 'M0 0H10V10Z', fill: 'red' }, children: [] } };
+  c.definitions[0].artwork = paint;
+  const parsed = parseShapePackCategory(JSON.parse(JSON.stringify(c)), index(), 'basic', policy);
+  expect(parsed).toEqual({ ok: true, value: c });
+  c.definitions[0].artwork.root.attributes.onload = 'alert(1)';
+  expect(parseShapePackCategory(c, index(), 'basic', policy).ok).toBe(false);
+});

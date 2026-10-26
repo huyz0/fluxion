@@ -79,8 +79,8 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-016 | C | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.panel.spec.ts` +3 |
 | FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.drag-insert.spec.ts`, `packages/editor/src/library/library-insert.test.ts` |
-| FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/pack-schema.test.ts` +2 |
-| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/format/src/svg-policy-compatibility.test.ts` +3 |
+| FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/artwork.test.ts` +3 |
+| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/artwork.spec.ts` +8 |
 | FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `tests/harness/import-corpus.test.mjs` |
 | FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `tests/harness/circular-advisory.test.mjs`, `tests/harness/import-corpus.test.mjs` |
 | FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
@@ -168,7 +168,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/clipboard.chord-fallback.spec.ts` +11 |
 | FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/inspector.mixed-fill.spec.ts` +4 |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +3 |
-| FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/parity.edit-vs-present.spec.ts` +4 |
+| FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/artwork.spec.ts` +5 |
 | FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/command-palette.browser.test.tsx` +2 |
 | FR-EDT-012 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/keymap.rebind.spec.ts` +6 |
 | FR-EDT-013 | S | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/context-menu.element.spec.ts` +2 |
@@ -327,14 +327,14 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +12 |
-| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +22 |
+| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +27 |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts`, `packages/format/src/flux-html.test.ts` |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/ai/adapters.test.ts` +5 |
 | NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +3 |
 | NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/open-sources.test.ts`, `e2e/privacy.no-telemetry.spec.ts` |
 | NFR-SEC-007 | S | R6 | M28 | [30-non-functional.md](30-non-functional.md) | — |
-| NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.editor.spec.ts`, `e2e/parity.edit-vs-present.spec.ts` |
+| NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.editor.spec.ts` +2 |
 | NFR-A11Y-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.player.spec.ts` +2 |
 | NFR-A11Y-003 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-004 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/examples.r1-offline.spec.ts`, `e2e/player.keyboard-only.spec.ts` |

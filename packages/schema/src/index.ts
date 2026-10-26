@@ -29,6 +29,7 @@ export {
   type Paint,
   type TokenRef,
   type TransformedToken,
+  tokenRefSchema,
 } from './paint.js';
 export type { Extensible, Meta } from './primitives.js';
 export type {
@@ -107,5 +108,5 @@ export { isValid, validate, validateRecord, validateReferences } from './validat
  */
 export const VERSION: string = '0.0.0';
 export { documentJsonSchema } from './json-schema.js';
-
+export { isSvgArtworkData, type SvgArtwork, type SvgArtworkNode } from './svg-artwork-data.js';
 export { type CheckedSvgAttribute, checkedSvgAttribute, isSvgElement, isSvgTextElement, SVG_POLICY_LIMITS } from './svg-policy.js';

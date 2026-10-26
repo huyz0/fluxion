@@ -17,7 +17,8 @@ import {
 import { roundCorners } from '@fluxion/geometry';
 import type { ShapeElement, TextElement } from '@fluxion/schema';
 import { type ResolvedFont, type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
-import { type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
+import { type ComponentProps, type CSSProperties, type ReactNode, useContext, useId, useMemo } from 'react';
+import { useArtwork } from './artwork-view.js';
 import { type ImageSource, useImage } from './assets.js';
 import { concreteLength } from './css-values.js';
 import { EffectsFilter } from './effects.js';
@@ -208,6 +209,23 @@ function Outline(props: {
   );
 }
 
+/** Imported paint replaces the legacy outline and decorations, retaining outer effects. */
+function ShapePaint(
+  props: ComponentProps<typeof Outline> & { readonly artwork: ReactNode; readonly decorations: readonly Parameters<typeof segmentsData>[0][] },
+): ReactNode {
+  return (
+    props.artwork ?? (
+      <>
+        <Outline {...props} />
+        {props.decorations.map((d, k) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: decorations have stable definition order
+          <path key={k} className="fx-decoration" d={segmentsData(d)} style={{ fill: 'none', ...props.stroke }} />
+        ))}
+      </>
+    )
+  );
+}
+
 /** The style of a shape: the definition's defaults sit under the element's own (02 §2). */
 function shapeStyle(element: ShapeElement, def: ShapeDef | undefined, theme: Theme): ReturnType<typeof resolveStyle> {
   const defaults = def?.defaultStyle;
@@ -296,6 +314,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const measurer = useContext(MeasurerContext) ?? browserMeasurer();
   const fonts = useFontGeneration();
   const { w, h } = element.transform;
+  const artwork = useArtwork(def, { w, h }, `fx-art-${ids}`, theme);
   const outlined = useMemo(() => (def === undefined ? undefined : evaluateOutline(def, { w, h }, element.params)), [def, w, h, element.params]);
   const paragraphs = useMemo(() => plainParagraphs(element.text), [element.text]);
   // the text as it is drawn (sizes, headings, spacing, indents), which the fit measures
@@ -308,6 +327,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
     // tzap disable next-line ArrayDeclaration: the list only re-runs the memo
     [element, def, paragraphs, blocks, style.font, theme, measurer, fonts],
   );
+  if (artwork === false) return <PlaceholderView {...props} />;
   if (outlined === undefined || !outlined.ok) return <PlaceholderView {...props} />;
   // an open outline is a stroke: it has no inside to fill (ADR-0016 item 2)
   const { fill, defs } = outlined.value.path.closed ? svgFill(style.fill, fillId, { w, h }, image) : { fill: 'none', defs: undefined };
@@ -337,12 +357,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
           margin={strokeReach(concreteLength(style.stroke.width, theme), align, style.stroke.join)}
         />
         <Effected on={style.shadows.length + style.effects.length > 0} id={`fx-effects-${ids}`}>
-          <Outline d={pathData(drawn)} fill={fill} stroke={stroke} align={align} ids={ids} />
-          {outlined.value.decorations.map((d, k) => (
-            // decorations are strokes over the outline (ADR-0016 item 3), in definition order
-            // biome-ignore lint/suspicious/noArrayIndexKey: a definition's decorations have no identity but their order
-            <path key={k} className="fx-decoration" d={segmentsData(d)} style={{ fill: 'none', ...stroke }} />
-          ))}
+          <ShapePaint artwork={artwork} d={pathData(drawn)} fill={fill} stroke={stroke} align={align} ids={ids} decorations={outlined.value.decorations} />
         </Effected>
       </svg>
       {paragraphs.length === 0 ? null : (

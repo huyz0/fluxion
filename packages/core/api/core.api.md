@@ -17,6 +17,8 @@ import { RecordId } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { Size } from '@fluxion/schema';
 import { Style } from '@fluxion/schema';
+import { SvgArtwork } from '@fluxion/schema';
+import { SvgArtworkNode } from '@fluxion/schema';
 import { TextFit } from '@fluxion/schema';
 import { Vec2 } from '@fluxion/geometry';
 import { z } from 'zod';
@@ -492,6 +494,9 @@ export function parseShapePackCategory(input: unknown, index: unknown, category:
 export function parseShapePackIndex(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<ShapePackIndex, readonly Diagnostic[]>;
 
 // @public
+export function parseSvgArtwork(input: unknown): Result<SvgArtwork, readonly Diagnostic[]>;
+
+// @public
 export type PluginId = string;
 
 // @public
@@ -573,6 +578,7 @@ export function sha256Hex(data: Uint8Array): string;
 
 // @public
 export type ShapeDef = {
+    readonly artwork?: SvgArtwork;
     readonly id: QualifiedName;
     readonly params?: {
         readonly [name: string]: ParamSpec;
@@ -744,6 +750,10 @@ export type StyledRun = {
     readonly style?: string;
     readonly family?: string;
 };
+
+export { SvgArtwork }
+
+export { SvgArtworkNode }
 
 // @public
 export interface SyncHash128 {

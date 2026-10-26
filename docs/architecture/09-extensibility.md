@@ -285,3 +285,10 @@ The structural JSON Schemas in `packages/core/generated/` support tooling, but d
 replace semantic/license validation. Regenerate with `node scripts/core/pack-schemas.mjs --write`
 after building core; omit `--write` to check snapshots. Category byte-hash verification
 and lazy loading remain M18.13, and imported paint-tree validation remains M18.47.
+
+Optional `ShapeDef.artwork` carries inert imported paint independently of the routing outline
+(ADR-0180). `SvgArtwork` and `SvgArtworkNode` describe the bounded tree; `parseSvgArtwork`
+validates geometry, local reference graphs and resource limits before rendering. Shape and
+pack parsers apply the same validation. The renderer scopes IDs per instance and preserves
+literal colors unless an explicit theme-color mapping resolves. Legacy definitions retain
+outline rendering. Portable storage of used definitions remains the separate M18.14 task.

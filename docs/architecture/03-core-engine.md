@@ -205,3 +205,14 @@ for bindings (no `eval`).
 
 Editor/session state (selection, camera, active tool, hover, preview clock) lives in a
 separate **session store** (core signals, ADR-0028) keyed by document ID, never serialized into the file.
+
+Optional `ShapeDef.artwork` carries inert imported paint independently of the routing outline
+(ADR-0180). `SvgArtwork` and `SvgArtworkNode` describe the bounded tree; `parseSvgArtwork`
+validates geometry, local reference graphs and resource limits before rendering. Shape and
+pack parsers apply the same validation. The renderer scopes IDs per instance and preserves
+literal colors unless an explicit theme-color mapping resolves. Legacy definitions retain
+outline rendering. Portable storage of used definitions remains the separate M18.14 task.
+
+`isSvgArtworkData` provides the schema package's bounded structural predicate without
+a schema runtime in the player. `tokenRefSchema` is shared by the closed declarative
+ShapeDef contract. Document record schemas retain their existing unknown-field policy.

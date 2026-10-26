@@ -1,6 +1,6 @@
 // Test hooks (FR-AI-010): a spec drives a fake text stream into the open document. Installed only when the page opts in before it loads
 // (`window.__FLUXION_TEST_HOOKS__ = true`, set by an init script), so a user's page has no handle on the document.
-import type { Core, CoreRegistries, LogLevel } from '@fluxion/core';
+import { type Core, type CoreRegistries, type LogLevel, parseShapeDef } from '@fluxion/core';
 import { type Session, type StreamFluxResult, streamFluxScript } from '@fluxion/editor';
 import { useRecordedReply } from './ai/client.js';
 import { idbKeyRecords } from './ai/key-records.js';
@@ -29,6 +29,8 @@ export type FakeStream = {
 export type StudioTestHooks = {
   /** Open a stream that replaces the document's screens with the streamed source's. */
   streamFlux(): FakeStream;
+  /** Register a validated definition for render integration tests, without document persistence. */
+  registerShape(input: unknown): string | undefined;
   /** Every record of the open document, by id (a test reads what an apply of the Source view left). */
   records(): { readonly [id: string]: { readonly [field: string]: unknown } };
   /** Write records beside the source's (an element the grammar cannot say, a comment on one) as one undo step; the store's problem when it refuses, else `undefined`. */
@@ -104,6 +106,12 @@ export function installTestHooks(doc: {
 }): () => void {
   if (window.__FLUXION_TEST_HOOKS__ !== true) return () => undefined;
   const hooks: StudioTestHooks = {
+    registerShape: (input) => {
+      const parsed = parseShapeDef(input);
+      if (!parsed.ok) return JSON.stringify(parsed.error);
+      doc.registries.shapeDefs.register(parsed.value.id, parsed.value, 'test');
+      return undefined;
+    },
     streamFlux: () => fakeStream((source) => streamFluxScript(source, { ...doc, replace: true })),
     records: () => doc.store.toDocument().records as unknown as ReturnType<StudioTestHooks['records']>,
     applyRecords: (puts, deletes = []) => {

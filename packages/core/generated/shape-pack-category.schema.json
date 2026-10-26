@@ -14,6 +14,47 @@
       "items": {
         "type": "object",
         "properties": {
+          "artwork": {
+            "type": "object",
+            "properties": {
+              "viewBox": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["x", "y", "width", "height"],
+                "additionalProperties": false
+              },
+              "root": {
+                "$ref": "#/$defs/__schema0"
+              },
+              "colors": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^\\{[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*\\}$"
+                }
+              }
+            },
+            "required": ["viewBox", "root"],
+            "additionalProperties": false
+          },
           "id": {
             "type": "string",
             "pattern": "^[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9.-]*$"
@@ -891,5 +932,39 @@
     }
   },
   "required": ["formatVersion", "definitions"],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ]
+          }
+        }
+      },
+      "required": ["name", "attributes", "children"],
+      "additionalProperties": false
+    }
+  }
 }
