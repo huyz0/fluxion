@@ -253,6 +253,15 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.equal(rec.lockfile, lock);
     assert.deepEqual(pnpmCalls(sb), [], 'no local cold clone');
 
+    for (const invalid of [undefined, 'not-a-date', step.startedAt, '2026-09-27T23:12:23Z']) {
+      const runs = ciRun('success');
+      runs[0].jobs[0].steps = [{ ...step, completedAt: invalid }];
+      const refused = record(runs);
+      assert.equal(refused.status, 1, out(refused));
+      assert.match(refused.stderr, /cold-setup step has invalid timestamps/);
+      assert.equal(JSON.parse(sb.read('budget.json')).coldSetupMs, null);
+    }
+
     const red = record(ciRun('failure'));
     assert.equal(red.status, 1, out(red));
     assert.match(red.stderr, /no green ci run of [0-9a-f]{7}/);

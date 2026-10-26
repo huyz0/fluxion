@@ -134,7 +134,11 @@ async function coldStep(source, commit) {
   for (const { databaseId } of green) {
     const job = (await source.view(databaseId))?.jobs?.find((j) => j.name === 'cold-setup' && j.conclusion === 'success');
     const step = job?.steps?.find((s) => s.name === COLD_STEP && s.conclusion === 'success');
-    if (step) return { runId: databaseId, ms: Date.parse(step.completedAt) - Date.parse(step.startedAt) };
+    if (step) {
+      const ms = Date.parse(step.completedAt) - Date.parse(step.startedAt);
+      if (!validLatency(ms)) throw new Error(`CI run ${databaseId} cold-setup step has invalid timestamps`);
+      return { runId: databaseId, ms };
+    }
   }
   return null;
 }

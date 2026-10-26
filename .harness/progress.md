@@ -2808,3 +2808,9 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 
 - Recovery complete at e3974f8b: CI40412783409 all36PASS, Gates40412783318PASS; Windows full verify865s within existing900s step after scheduling-only change. Runtime2scontract unchanged. OriginalM18.80commit1781 and reviewedbundle retained; new integration worktree resolves metadata histories without overwriting either source branch.
 - Fresh recovered-runtime corpus qualification174/174PASS697.8s across Chromium/Firefox/WebKit, zero retries/skips/flaky/unexpected; both public production hosts and all source-fidelity/viewport cases included. Full verification383.1sFAIL only pending-CI budget bookkeeping; all executed correctness/build/security/API legs passed. Original failure retained. Official recorder measured quick15.240s/staged375.715sPASS but gh view omitted step timestamps, yielding null cold time. Direct successful job121887446886 API supplied22:29:26–22:36:50UTC (444.000s); record reconciled from those actual timestamps, no substitute run or fixture. M18.92 tracks transport timestamp repair; fresh staged verification/review pending.
+
+## M18.92 — truthful cold-step timing acquisition (2026-10-26)
+
+- M18.80 integratedce9a0148 published after174/174browserPASS, staged22.9s/hooks23.8sPASS and freshreviewr3PASS0. CI40419317881/Gates40419317239 pending; original1781branch/bundle and failed evidence preserved.
+- Reproduced gh view timestamp omission: actual successful job exists but Date.parse(undefined) yielded NaN/null. Reader hydrates only the selected successful cold job through supported API and verifies job/run identity; denied reads stop without retry/fallback. Recorder rejects missing/malformed/nonpositive times explicitly.
+- Focused37/37PASS, initial three-probeRED and first complexity violation retained/fixed; live exacte397job API returns444000ms. No timing limit/test-scope changes. Fresh staged verification/independent review pending.

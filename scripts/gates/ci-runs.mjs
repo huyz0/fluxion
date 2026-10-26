@@ -61,6 +61,21 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
   };
 }
 
+/** Older gh versions omit step times; request only the exact successful cold job. */
+function hydrateColdStepTimes(job, runId, gh) {
+  if (job.name !== 'cold-setup' || job.conclusion !== 'success') return;
+  if (!(job.steps ?? []).some((step) => !step.startedAt || !step.completedAt)) return;
+  if (!Number.isSafeInteger(job.databaseId) || job.databaseId <= 0) throw new Error('cold-setup job identity missing');
+  const detail = gh(['api', `repos/${REPO}/actions/jobs/${job.databaseId}`]);
+  if (detail.id !== job.databaseId || detail.run_id !== Number(runId) || detail.name !== job.name) throw new Error('cold-setup job identity mismatch');
+  job.steps = (detail.steps ?? []).map((step) => ({
+    name: step.name,
+    conclusion: step.conclusion,
+    startedAt: step.started_at,
+    completedAt: step.completed_at,
+  }));
+}
+
 /** `gh` reader with the same interface; throws with gh's stderr when a call fails. */
 export function ghSource(spawn = spawnSync) {
   const gh = (args) => {
@@ -69,7 +84,11 @@ export function ghSource(spawn = spawnSync) {
     return JSON.parse(r.stdout);
   };
   return {
-    view: async (id) => gh(['run', 'view', String(id), '--json', FIELDS]),
+    view: async (id) => {
+      const run = gh(['run', 'view', String(id), '--json', FIELDS]);
+      for (const job of run.jobs ?? []) hydrateColdStepTimes(job, id, gh);
+      return run;
+    },
     list: async (sha) => gh(['run', 'list', '--commit', sha, '--limit', '50', '--json', 'databaseId,workflowName,conclusion']),
     branch: async (name) =>
       gh(['run', 'list', '--branch', name, '--event', 'push', '--limit', '30', '--json', 'databaseId,workflowName,headSha,status,conclusion,createdAt']),
