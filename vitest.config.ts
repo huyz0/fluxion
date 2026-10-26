@@ -63,6 +63,8 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'node',
+          // Native browser-owning E2E files share this project; preserve every --project node selector.
+          ...(process.platform === 'win32' ? { fileParallelism: false, sequence: { groupOrder: 0 } } : {}),
           environment: 'node',
           include: [`${SRC}/*.test.{ts,tsx}`, 'scripts/examples/*.test.ts'],
           exclude: [`${SRC}/*.browser.test.{ts,tsx}`],
@@ -73,8 +75,9 @@ export default defineConfig({
         test: {
           name: 'browser',
           // Keep RAF-driven UI files from competing for browser pages during the full ladder
-          // (M18.44: macOS CI timed out under the unchanged 20 s limit). Node files stay parallel.
+          // (M18.44: macOS CI timed out under the unchanged 20 s limit). Windows also separates projects.
           fileParallelism: false,
+          ...(process.platform === 'win32' ? { sequence: { groupOrder: 1 } } : {}),
           include: [`${SRC}/*.browser.test.{ts,tsx}`],
           browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] },
         },
