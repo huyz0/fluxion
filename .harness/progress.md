@@ -2571,3 +2571,13 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Existing docs transitives patched after audit findings; fresh audit reports zero vulnerabilities and all 162 docs pages build.
 - Default promotion remains conditional in roadmap Deferred (reserved M18.68); no scanner/threshold exemptions or new feature blocker.
 - Author follow-up isolated inherited Git hook variables; the foreign-index regression failed before the fix and all five probes now pass.
+
+## M18.69 — Independent template property campaigns (2026-10-26)
+
+- CI 40254841464 at 154f7c13 finished 34/36 green; macOS verification timed out one nine-campaign property test and failed the aggregate.
+- Permitted annotations expose the 20-second timeout; no assertion failure was reported and no denied log download was retried.
+- Independent plan review passed; separate the same nine campaigns into individually reported tests without changing their generators or assertions.
+- Preserve seed 20260926, configured cases, timeouts and zero retries; no production output or threshold change.
+- Focused CI-seeded run: 17/17 before, 25/25 after; all original test titles retained and eight individual campaigns added.
+- Locally the original campaign block took 704.52ms; individual campaign times now range 15.21–223.56ms (single samples, not macOS proof).
+- Preserve incomplete M18.47 artwork work in its original worktree and recovery archive; remote recovery requires new CI evidence.

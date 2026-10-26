@@ -276,7 +276,7 @@ describe('smart templates (FR-LAY-014, ADR-0047)', () => {
     expect(refused(hierarchyOrgTemplate as never, [{ label: 'r', children: Array.from({ length: 255 }, (_, i) => ({ label: `c${i}` })) }])).toBe('built');
   });
 
-  it('FR-LAY-014: built shapes never overlap; within a frame that holds them, they stay inside it', () => {
+  describe('template non-overlap properties (FR-LAY-014)', () => {
     const label = fc.string({ minLength: 1, maxLength: 30 });
     const flat = (min: number, max: number) =>
       fc.array(
@@ -301,21 +301,30 @@ describe('smart templates (FR-LAY-014, ADR-0047)', () => {
     ];
     // every count the items schema takes, with any gap down to touching (rounding must not push a box onto the next)
     const gap = fc.oneof(fc.constant(0), fc.integer({ min: 0, max: 64 }));
+    // Each unchanged property campaign gets its own result and timeout, including under coverage.
     for (const [template, arbitrary] of cases)
+      it(`FR-LAY-014: ${template.id} shapes never overlap and remain within their frame`, () => {
+        fc.assert(
+          fc.property(arbitrary, gap, (list, g) => {
+            expectApart(
+              template.id,
+              build(template, list, ['cycle.basic', 'timeline.milestones'].includes(template.id) ? undefined : { gap: g }).shapes,
+              frame,
+            );
+          }),
+        );
+      });
+    it('FR-LAY-014: built shapes never overlap; within a frame that holds them, they stay inside it', () => {
+      // org charts of any shape: no two boxes overlap, however many leaves
+      const treeOf = (depth: number): fc.Arbitrary<TemplateItem> =>
+        depth === 0 ? label.map((l) => ({ label: l })) : fc.record({ label, children: fc.array(treeOf(depth - 1), { maxLength: 3 }) });
+      const tree = treeOf(3);
       fc.assert(
-        fc.property(arbitrary, gap, (list, g) => {
-          expectApart(template.id, build(template, list, ['cycle.basic', 'timeline.milestones'].includes(template.id) ? undefined : { gap: g }).shapes, frame);
+        fc.property(fc.array(tree, { minLength: 1, maxLength: 3 }), gap, gap, (roots, g, levelGap) => {
+          expectApart('hierarchy.org', build(hierarchyOrgTemplate as never, roots, { gap: g, levelGap }).shapes);
         }),
       );
-    // org charts of any shape: no two boxes overlap, however many leaves
-    const treeOf = (depth: number): fc.Arbitrary<TemplateItem> =>
-      depth === 0 ? label.map((l) => ({ label: l })) : fc.record({ label, children: fc.array(treeOf(depth - 1), { maxLength: 3 }) });
-    const tree = treeOf(3);
-    fc.assert(
-      fc.property(fc.array(tree, { minLength: 1, maxLength: 3 }), gap, gap, (roots, g, levelGap) => {
-        expectApart('hierarchy.org', build(hierarchyOrgTemplate as never, roots, { gap: g, levelGap }).shapes);
-      }),
-    );
+    });
   });
 
   it('FR-LAY-014: the built-ins register and list by id; a malformed or taken template is refused with its reason', () => {
