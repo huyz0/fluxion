@@ -486,6 +486,12 @@ export function parseMarkerDef(input: unknown, at?: ReadonlyArray<string | numbe
 export function parseShapeDef(input: unknown, at?: ReadonlyArray<string | number>): Result<ShapeDef, readonly Diagnostic[]>;
 
 // @public
+export function parseShapePackCategory(input: unknown, index: unknown, category: string, licensePolicy: ShapePackLicensePolicy): Result<ShapePackCategory, readonly Diagnostic[]>;
+
+// @public
+export function parseShapePackIndex(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<ShapePackIndex, readonly Diagnostic[]>;
+
+// @public
 export type PluginId = string;
 
 // @public
@@ -594,6 +600,72 @@ export const shapeDefSchema: z.ZodType<ShapeDef>;
 
 // @public
 export function shapeHandles(subject: HandleSubject): readonly ParamHandle[];
+
+// @public
+export type ShapePackCategory = {
+    readonly formatVersion: "1.0";
+    readonly definitions: readonly ShapeDef[];
+};
+
+// @public
+export type ShapePackCategoryEntry = {
+    readonly path: string;
+    readonly sha256: string;
+};
+
+// @public
+export const shapePackCategorySchema: z.ZodType<ShapePackCategory>;
+
+// @public
+export type ShapePackCredit = {
+    readonly id: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly notice: string;
+    readonly source: ShapePackSource;
+    readonly definitionIds?: readonly QualifiedName[];
+};
+
+// @public
+export type ShapePackDefinitionEntry = {
+    readonly id: QualifiedName;
+    readonly name: string;
+    readonly keywords: readonly string[];
+    readonly category: string;
+};
+
+// @public
+export type ShapePackIndex = {
+    readonly format: "fluxion-shape-pack";
+    readonly formatVersion: "1.0";
+    readonly id: string;
+    readonly version: string;
+    readonly name: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly categories: Readonly<Record<string, ShapePackCategoryEntry>>;
+    readonly definitions: readonly ShapePackDefinitionEntry[];
+    readonly credits: readonly ShapePackCredit[];
+};
+
+// @public
+export const shapePackIndexSchema: z.ZodType<ShapePackIndex>;
+
+// @public
+export type ShapePackLicensePolicy = (expression: string) => boolean;
+
+// @public
+export type ShapePackSource = {
+    readonly kind: "original";
+    readonly author: string;
+    readonly statement: string;
+} | {
+    readonly kind: "upstream";
+    readonly reference: string;
+    readonly sha256: string;
+    readonly revision?: string;
+    readonly modifications?: string;
+};
 
 // @public
 export type ShapeText = FittedText & {

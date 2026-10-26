@@ -1,0 +1,175 @@
+{
+  "$id": "urn:fluxion:shape-pack-index:1.0",
+  "$comment": "Structural schema only; membership, geometry and license policy require the pack parser.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "fluxion-shape-pack"
+    },
+    "formatVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*))*)?(?:\\+[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)?$"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "license": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "attribution": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "categories": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": ["path", "sha256"],
+        "additionalProperties": false
+      }
+    },
+    "definitions": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9.-]*$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "\\S"
+            }
+          },
+          "category": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          }
+        },
+        "required": ["id", "name", "keywords", "category"],
+        "additionalProperties": false
+      }
+    },
+    "credits": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "license": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "attribution": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "notice": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "source": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "original"
+                  },
+                  "author": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  },
+                  "statement": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  }
+                },
+                "required": ["kind", "author", "statement"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "upstream"
+                  },
+                  "reference": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "revision": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  },
+                  "modifications": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  }
+                },
+                "required": ["kind", "reference", "sha256"],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "definitionIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9.-]*$"
+            }
+          }
+        },
+        "required": ["id", "license", "attribution", "notice", "source"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["format", "formatVersion", "id", "version", "name", "license", "attribution", "categories", "definitions", "credits"],
+  "additionalProperties": false
+}

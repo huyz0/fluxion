@@ -124,6 +124,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(harnessFiles(['scripts/gates/check-drift.mjs'], ALL), only(['drift']));
     // what a new workspace adds beside its manifest runs the manifest harness and the formatter and tsconfig tests, not every file
     const workspaceFiles = only([
+      'pack-schemas',
       'adapters',
       'biome',
       'budget',

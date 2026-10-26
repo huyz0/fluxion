@@ -2546,3 +2546,15 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - No document record/version, security permission, resource bound or threshold changed; M18.47 owns validated paint trees.
 - Initial staged coverage passed; composite-project JSON fixture import failed type/API/harness checks, corrected to the existing raw-glob pattern.
 - Second staged coverage passed; TypeDoc required five exported field descriptions. Added them; focused API/TypeDoc validation passed.
+
+## M18.12 — Declarative pack schema and validator (2026-10-26)
+
+- Independent implementation-plan review passed with no findings (ADR-0178).
+- Add strict index/category types, schemas and Result parsers; SDK re-exports preserve runtime PackSpec behavior.
+- Require explicit content policy for pack/source/override licenses, complete source credits and exact category membership.
+- Validate definitions through existing geometry parsers; reject malformed categories atomically, without registration or I/O.
+- Valid original wire fixtures retain full MIT notice and nonempty outlines; lazy byte hashing remains M18.13.
+- Initial eight missing-API tests failed; final core/SDK suites passed 326/326 tests across 53 files.
+- Generated structural schemas retain branded string constraints and reject unmapped custom predicates; three harness probes pass.
+- Full TS7 typecheck, core/SDK builds and API/TypeDoc checks passed; schema generation's initial custom-type failure is preserved.
+- First staged run: coverage/build/API/packaging pass; corrected SDK-only name in core docs and registered schema test for manifest changes.

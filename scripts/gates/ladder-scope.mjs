@@ -20,6 +20,7 @@ const SOURCE = /^(packages|packs|apps)\/[^/]+\/(src|bench|schemas)\//;
  * SAMPLE_HARNESS (M4.26 review F1, round 2 F1-F2).
  */
 export const SOURCE_HARNESS = [
+  'pack-schemas',
   'architecture',
   'bench-leg',
   'ci-os-matrix',

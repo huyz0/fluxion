@@ -9,6 +9,14 @@
       "notExported": true,
       "invalidLink": true,
       "notDocumented": true
+    },
+    "externalSymbolLinkMappings": {
+      "@fluxion/theme": {
+        "parseColor": "https://github.com/huyz0/fluxion/blob/main/packages/theme/src/oklch.ts"
+      },
+      "@fluxion/core": {
+        "DEFAULT_OUTLINE_BUDGET": "https://github.com/huyz0/fluxion/blob/main/packages/core/src/shape/outline.ts"
+      }
     }
   },
   "treatWarningsAsErrors": true,

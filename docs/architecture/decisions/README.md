@@ -100,6 +100,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0175](ADR-0175-screen-duplicate-external-ends.md) | Caller-resolved free endpoints for screen duplication | accepted | 2026-10-25 |
 | [0176](ADR-0176-proportionate-development-gates.md) | Proportionate development gates | accepted | 2026-10-25 |
 | [0177](ADR-0177-shared-svg-policy.md) | Shared decoded SVG attribute policy | accepted | 2026-10-25 |
+| [0178](ADR-0178-pack-validation-boundary.md) | Declarative pack validation and explicit license policy | accepted | 2026-10-25 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

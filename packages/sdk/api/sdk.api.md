@@ -27,6 +27,8 @@ import { outlineDistance } from '@fluxion/core';
 import { OutlineSpec } from '@fluxion/core';
 import { ParamSpec } from '@fluxion/core';
 import { parseMarkerDef } from '@fluxion/core';
+import { parseShapePackCategory } from '@fluxion/core';
+import { parseShapePackIndex } from '@fluxion/core';
 import { PluginId } from '@fluxion/core';
 import { PointsParam } from '@fluxion/core';
 import { projectToOutline } from '@fluxion/core';
@@ -34,6 +36,15 @@ import { readFontMetrics } from '@fluxion/core';
 import { REQUIRED_COLOR_ROLES } from '@fluxion/theme';
 import { Result } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
+import { ShapePackCategory } from '@fluxion/core';
+import { ShapePackCategoryEntry } from '@fluxion/core';
+import { shapePackCategorySchema } from '@fluxion/core';
+import { ShapePackCredit } from '@fluxion/core';
+import { ShapePackDefinitionEntry } from '@fluxion/core';
+import { ShapePackIndex } from '@fluxion/core';
+import { shapePackIndexSchema } from '@fluxion/core';
+import { ShapePackLicensePolicy } from '@fluxion/core';
+import { ShapePackSource } from '@fluxion/core';
 import { TextRegionDef } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { ThemeProblem } from '@fluxion/theme';
@@ -106,6 +117,10 @@ export { ParamSpec }
 
 export { parseMarkerDef }
 
+export { parseShapePackCategory }
+
+export { parseShapePackIndex }
+
 export { PluginId }
 
 export { PointsParam }
@@ -120,6 +135,24 @@ export function registerShapeDef(registries: Pick<PackRegistries, "shapeDefs">, 
 export { REQUIRED_COLOR_ROLES }
 
 export { ShapeDef }
+
+export { ShapePackCategory }
+
+export { ShapePackCategoryEntry }
+
+export { shapePackCategorySchema }
+
+export { ShapePackCredit }
+
+export { ShapePackDefinitionEntry }
+
+export { ShapePackIndex }
+
+export { shapePackIndexSchema }
+
+export { ShapePackLicensePolicy }
+
+export { ShapePackSource }
 
 export { TextRegionDef }
 

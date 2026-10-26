@@ -1,0 +1,29 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "sample:box",
+      "outline": {
+        "path": "M0 0H{w}V{h}H0Z"
+      },
+      "defaultSize": {
+        "w": 80,
+        "h": 40
+      },
+      "category": "basic",
+      "keywords": ["box"]
+    },
+    {
+      "id": "sample:triangle",
+      "outline": {
+        "path": "M0 {h}L{w/2} 0L{w} {h}Z"
+      },
+      "defaultSize": {
+        "w": 60,
+        "h": 50
+      },
+      "category": "basic",
+      "keywords": ["triangle"]
+    }
+  ]
+}

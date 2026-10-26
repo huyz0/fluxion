@@ -69,3 +69,14 @@ export type { Diff, PutChange, Tx, TxFailure, TxMeta, TxOptions, TxOrigin } from
  * @public
  */
 export const VERSION: string = '0.0.0';
+export { shapePackCategorySchema, shapePackIndexSchema } from './shape/pack-schema.js';
+export type {
+  ShapePackCategory,
+  ShapePackCategoryEntry,
+  ShapePackCredit,
+  ShapePackDefinitionEntry,
+  ShapePackIndex,
+  ShapePackLicensePolicy,
+  ShapePackSource,
+} from './shape/pack-types.js';
+export { parseShapePackCategory, parseShapePackIndex } from './shape/pack-validation.js';

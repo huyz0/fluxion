@@ -266,3 +266,22 @@ M18.12–14 implement and test this decision before it is a supported authoring 
 with source credits and used-subset attribution. Content-asset permissions never authorize
 code dependencies; current code/font policy stays unchanged. M18.12/14/33 implement
 validation, portable credits and the license gate/player UI before these are supported.
+
+## Declarative shape-pack validation (ADR-0178)
+
+`@fluxion/sdk` exports `parseShapePackIndex(input, licensePolicy)` and
+`parseShapePackCategory(input, index, category, licensePolicy)`. Supply a content-policy
+function that accepts only approved SPDX expressions; no default permission is inferred.
+Both return Results with path-specific diagnostics, and a failed category returns no subset.
+Successful definitions can be passed to the existing atomic `definePack` registration.
+
+`fixtures/shape-pack/` is a valid version-1.0 wire example, including original source
+statements and complete notices. Index definitions must be unique, namespace-bound and
+covered by credits; category definitions must match the index exactly. Upstream source
+records require a byte hash and reference. Original records require an author and explicit
+statement. The validators preserve notices and do not fetch source references.
+
+The structural JSON Schemas in `packages/core/generated/` support tooling, but do not
+replace semantic/license validation. Regenerate with `node scripts/core/pack-schemas.mjs --write`
+after building core; omit `--write` to check snapshots. Category byte-hash verification
+and lazy loading remain M18.13, and imported paint-tree validation remains M18.47.
