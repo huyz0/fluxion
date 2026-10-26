@@ -138,6 +138,13 @@ leg('SVG sanitizer, outlines, color mapping and >=4 anchors', () => {
     : converter;
 });
 
+leg('imported artwork retains exact licensed fonts offline', () => {
+  const retained = tests('packages/format/src/artwork-font-retention.test.ts');
+  if (retained !== true) return retained;
+  const installed = tests('packages/cli/src/e2e/artwork-fonts.test.ts');
+  return installed === true ? playwrightSpecs(['e2e/artwork.font-retention.spec.ts'], ['chromium', 'firefox', 'webkit'], { runner: imageRunner() }) : installed;
+});
+
 const featureTests = [
   ['direct-pack artwork rejects unsafe nodes, references and excessive resources', 'packages/core/src/shape/artwork.test.ts'],
   ['pack schema rejects invalid definitions and missing license', 'packages/core/src/shape/pack-schema.test.ts'],

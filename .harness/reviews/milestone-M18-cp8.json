@@ -1,0 +1,134 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp8",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..2aa23c9d1fbc000fb8556954f2c21dfdf118887d",
+  "independentlyReviewedDelta": "702a905bd73bc9138b29895aa7e799c15bd30e26..2aa23c9d1fbc000fb8556954f2c21dfdf118887d",
+  "reviewer": "independent-subagent:m18_cp8_review",
+  "verdict": "approve",
+  "findings": [],
+  "dispositions": [],
+  "planDelta": "No new reopen rows. Preserve all remaining feature and qualification rows, including M18.81 font transport, M18.16/17 CLI/UI integration, M18.33 license/credits, M18.10 hosted mutation and M18.42/43 documentation/closeout. Preserve the outstanding layout changeset reported by the completion gate. Actual backlog count is 91 versus 43 planned; do not rebaseline planned count.",
+  "reviewBasis": "Cumulative checkpoint retaining cp1-cp7 records and limitations, combined with independent code/plan/test review of the eight commits after cp7. Terminal exact-commit gate inspected after completion; no remote evidence fetched and no duplicate milestone gate run.",
+  "assessment": {
+    "coherence": "Canonical request validation, pure conversion, shared shipped browser renderer and optional Node host remain one design. Cleanup now has one owned-process exit verdict and deadline, including cancelled startup and late ownership. Diagnostic and scheduling changes address native qualification without changing paint semantics.",
+    "specFidelity": "Production qualification now exercises all original 50 SVGs through both shipped browser and Node adapters in three engines, alongside original conversion/viewport acceptance. Hidden and zero-opacity controls refuse positive paint. Font distribution, full import commands/UI, packs and remaining user-facing requirements remain explicit unfinished rows. No silent scope removal found.",
+    "standardsDrift": "Public host API has ADR-0189, API report, changeset, bounded input tests and shipped notices. ADR-0191 records the larger provisioning envelope while retaining the 900-second verification and cold limits. Windows scheduling preserves projects, test inventory, assertions and zero retries. Failed and interrupted evidence is retained, and denied job API access is not retried through another route.",
+    "gateHonesty": "Actual terminal exact-HEAD gate exits 1 at 31/71. Full verification, portable persistence, artwork/loader and the sanitizer/converter plus production three-engine SVG corpus leg pass. Missing features, trace, mutation evidence, licenses, layout changeset, documentation, final review and roadmap remain red. Remote qualification fails in the explicitly no-network environment and stale perf provenance is independently rejected; this does not authorize another network attempt. Focused harness tests reject absent/skipped/failed acceptance reports. No milestone-completion claim is supported.",
+    "architecture": "Pure packages remain free of host effects. The optional Playwright peer and browser artifact live in CLI, with lazy import and explicit public entry. Browser creation uses owned loopback transport, request blocking before page creation, CSP, structured data and canonical receipts. Windows termination targets the captured owned process tree; helper completion alone cannot stand in for browser exit. Public API growth is deliberate and documented.",
+    "planHealth": "91/43 = 2.12x, exceeding the 1.5x trigger. Header now matches actual rows. Growth since cp7 is six added recovery rows; the eight reviewed commits also deliver already-planned M18.85 and M18.80. Later estimates should separately budget native process lifecycle, installed host packaging, cross-engine/OS qualification, CI diagnostics and inherited mutation recovery. Intermediate adapter completion must not stand in for import UX or font portability."
+  },
+  "evidence": {
+    "snapshot": "HEAD independently verified as 2aa23c9d1fbc000fb8556954f2c21dfdf118887d. Only tracked worktree change before/after review was the pre-existing one-line digest.log addition. No repository files edited.",
+    "terminalGate": {
+      "path": "/workspace/fluxion-m18-cp8-evidence/gate.txt",
+      "sha256": "f94b0a482ea572dbfe3a41d0508bf3980672dbc12ba8818b0b5cf5602b1170b8",
+      "exitCodePath": "/workspace/fluxion-m18-cp8-evidence/exit-code.txt",
+      "exitCode": 1,
+      "green": 31,
+      "total": 71,
+      "basis": "Actual terminal output independently read; gate execution supplied by driver in pinned no-network environment."
+    },
+    "executed": [
+      {
+        "command": "node --test tests/harness/ci-step-times.test.mjs tests/harness/live-step-log.test.mjs tests/harness/failure-report-tap.test.mjs tests/harness/m18-svg-import-leg.test.mjs tests/harness/windows-test-scheduling.test.mjs tests/harness/witness-termination-diagnostics.test.mjs",
+        "exitCode": 0,
+        "result": "18/18 passed, zero skipped/cancelled."
+      },
+      {
+        "command": "FLUXION_VITEST_CACHE=/tmp/m18-cp8-review-vitest pnpm exec vitest run --project node packages/cli/src/svg-witness-cleanup.test.ts packages/cli/src/svg-witness-control.test.ts packages/cli/src/svg-witness-limit.test.ts packages/cli/src/svg-witness-launch.test.ts packages/cli/src/svg-witness-windows.test.ts",
+        "exitCode": 0,
+        "result": "5 files, 23/23 tests passed."
+      }
+    ],
+    "mutationSpotChecks": [
+      {
+        "test": "packages/cli/src/svg-witness-cleanup.test.ts",
+        "mutant": "Resolve success from close/helper completion or reset cleanup deadline when late ownership arrives.",
+        "constraint": "Actual-exit, shared-promise, 2000ms cutoff and immutable failed-verdict assertions fail."
+      },
+      {
+        "test": "tests/harness/ci-step-times.test.mjs",
+        "mutant": "Accept timestamps from a different job/run or retry denied access via another route.",
+        "constraint": "Wrong run identity must reject; denied access must reject after exactly two calls."
+      },
+      {
+        "test": "e2e/svg-witness-corpus.spec.ts and e2e/pages/svg-witness-node-corpus.mjs",
+        "mutant": "Return painted for every canonical request without observing pixels.",
+        "constraint": "Both hidden and zero-opacity inputs require no-witness and acceptedCount zero for shipped browser and Node paths."
+      },
+      {
+        "test": "packages/cli/src/svg-witness-limit.test.ts",
+        "mutant": "Admit request 129 during the idle transition before automatic disposal.",
+        "constraint": "Deterministic injected concurrent request must fail with exactly 128 transport calls and one close."
+      }
+    ],
+    "suppliedCorpus": {
+      "path": "/workspace/fluxion-m18-witness80-integration-evidence/results.json",
+      "independentlyReadStats": {
+        "expected": 174,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      }
+    },
+    "publicationStatus": "Driver terminal update: ce9a CI40419317881 succeeded 36/36 and Gates passed. Exact HEAD 2aa2 CI40420160744 still pending (33 passed, 2 running); Gates40420160683 passed. These are supplied statuses, not independent remote fetches or a claim of exact-HEAD completed CI.",
+    "priorCheckpoints": [
+      {
+        "path": ".harness/reviews/milestone-M18-cp1.json",
+        "sha256": "67c323b1957edea45629a47d4517cf6abca6ace9d3095ea023d8406c589ca0e3",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..26f31d7494d832b9ce61970106351d5ce9b8f05e",
+        "basis": "Existing independent assessment, dispositions and evidence limitations retained; earlier execution not repeated."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp2.json",
+        "sha256": "d3022bff5de0deb571d0fa57799064e381789ab8f9ab592b4c8df5a4425ca161",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..88965d825b676d268e93baaaf04a5df0ab05d4c7",
+        "basis": "Existing independent assessment, dispositions and evidence limitations retained; earlier execution not repeated."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp3.json",
+        "sha256": "4a3263342c86adaf913f435413684f9dfb6ff835abf24e31567e48d43ddd5a1d",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..25a0e6cbed7f25235bf388aebad8a91e7fdeb373",
+        "basis": "Existing independent assessment, dispositions and evidence limitations retained; earlier execution not repeated."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp4.json",
+        "sha256": "3b554e67258840a7a09ddac7b46dc25ab99dfc2713cf71734a993a3ec8e965ad",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..fd89d426216016b14e2178dab6440d27262f79b5",
+        "basis": "Existing independent assessment, dispositions and evidence limitations retained; earlier execution not repeated."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp5.json",
+        "sha256": "06bab7f197e630f0037e89fd4988f62a3f240c862d285bbf0da1cded0b23f755",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..fa9d64af4baab3c927bf3a3845c9ae6cd2019f4e",
+        "basis": "Existing independent assessment, dispositions and evidence limitations retained; earlier execution not repeated."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp6.json",
+        "sha256": "09075a6113f8b1228f74b39d360c403d07daba23df64f74bcdda128a53acecaa",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..1f01ef506bff8edd849cf8f283c81207e11a15cc",
+        "basis": "Existing independent assessment, dispositions and evidence limitations retained; earlier execution not repeated."
+      },
+      {
+        "path": ".harness/reviews/milestone-M18-cp7.json",
+        "sha256": "5946b8b2c41e134efc16dcfa417f46be9c7800aca5b056d271ce377f9c102143",
+        "range": "7545e708f15f184487b905dbc329378547dfa705..702a905bd73bc9138b29895aa7e799c15bd30e26",
+        "basis": "Existing independent assessment, dispositions and evidence limitations retained; earlier execution not repeated."
+      }
+    ],
+    "priorFindingResolution": "cp5 F1 remains resolved: current gate invokes artwork-view and legacy shape-view in browser project and SDK pack-loader in node project. No new M18 argued findings were introduced in this delta.",
+    "limitations": [
+      "Checkpoint approval only; milestone remains incomplete at 31/71.",
+      "Prior checkpoint execution was not repeated; cumulative earlier assessment relies on retained independent records.",
+      "Spot mutants are source-level thought experiments, not an executed mutation campaign.",
+      "No independent browser/native-OS/full-verification rerun. Terminal full gate and corpus results are supplied execution evidence independently inspected.",
+      "Exact-HEAD CI is still pending; no remote retry or alternate-route evidence access performed.",
+      "External review JSON only; staging the repository checkpoint and Learned update remain the driver responsibility."
+    ]
+  },
+  "learned": [
+    "Budget native host lifecycle and cross-OS scheduling qualification separately from pure converter and browser-renderer work.",
+    "Preserve one exit-based cleanup outcome across startup cancellation and late process ownership; helper success is insufficient evidence.",
+    "Treat terminal gate output, supplied CI status and independently executed tests as distinct evidence; preserve incomplete milestone obligations."
+  ]
+}

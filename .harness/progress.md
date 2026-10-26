@@ -2814,3 +2814,9 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - M18.80 integratedce9a0148 published after174/174browserPASS, staged22.9s/hooks23.8sPASS and freshreviewr3PASS0. CI40419317881/Gates40419317239 pending; original1781branch/bundle and failed evidence preserved.
 - Reproduced gh view timestamp omission: actual successful job exists but Date.parse(undefined) yielded NaN/null. Reader hydrates only the selected successful cold job through supported API and verifies job/run identity; denied reads stop without retry/fallback. Recorder rejects missing/malformed/nonpositive times explicitly.
 - Focused37/37PASS, initial three-probeRED and first complexity violation retained/fixed; live exacte397job API returns444000ms. No timing limit/test-scope changes. Fresh staged verification/independent review pending.
+
+## M18.93 — exact artwork-font retention plan (2026-10-26)
+
+- M18.92 published2aa23c9d after focused37/live444000msPASS, staged120.4s/hooks118.5sPASS, freshreviewPASS0. M18.80ce9a CI36/36/GatesPASS, Windowsverify824s. Current2aaCI pending; GatesPASS.
+- cp8 cumulative review approves with0findings; independent18harness/23NodePASS. Exact2aa pinned stock gate31/71exit1; fullverify and productioncorpusPASS. Remaining features, mutation/perf, layout changeset and closeout retained. No-network remote-evidence failures are not passes or permission to retry denied reads.
+- ADR0192 and94–97 slices keep1.0files, exact profile/rights, atomic acquisition and offline used closure; M18.81 remains the integration acceptance. New completion-leg omission probe observedRED; real future suites remain absent/red, not fabricated acceptance. Plan review pending before implementation.
