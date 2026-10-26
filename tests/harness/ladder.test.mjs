@@ -131,6 +131,8 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
         const complete = sb.read(escapedPath);
         assert.ok(complete.includes(stdout));
         assert.ok(complete.includes(stderr));
+        assert.equal(sb.read(escapedPath.replace(/\.log$/, '.stdout.partial.log')), stdout);
+        assert.equal(sb.read(escapedPath.replace(/\.log$/, '.stderr.partial.log')), stderr);
       } finally {
         sb.cleanup();
       }

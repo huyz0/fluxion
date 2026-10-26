@@ -850,3 +850,6 @@ M18.86	ea9c38d2f285ce83a74ca35862f8252f6067c491dd3570e3568822bcd35f77a3	r2	pass	
 M18.85	e89656106be99045f9ee2f016a33f56f710be57852cf657fe66043ef27255ea6	r1	changes-requested	codex:gpt-6	1 findings
 M18.85	594f16f7a8f8aa3b8899645ec2e72d6ba15d19d538744ad44ab999ecbd4099dd	r2	pass	codex:gpt-6	0 findings
 M18.87	701b45e2a68fa4b1e93ffc12b3ae4960fcd2ba04ffc6d7884a05d06243ac7fa3	r1	changes-requested	codex:gpt-6	2 findings
+M18.87	672c78aa541b4f58adede0e25b7bc605617eaa5f0819cccdb2c216988c8834e9	r2	pass	codex:gpt-6	0 findings
+M18.88	bdbca569297a659141fcadb6caf4e6f3133303d1c1f8b32ea8a6a8c890bcea17	r1	changes-requested	codex:gpt-6.1	1 findings
+M18.88	b11c47ee4f408a7c1b546aa6ff87151a2b7b18843e36f4bfc8bf76c2725a632e	r2	pass	codex:gpt-6.1	0 findings

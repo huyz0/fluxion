@@ -113,6 +113,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0188](ADR-0188-svg-batch-boundary.md) | Shared bounded SVG batch reports before host distribution | accepted | 2026-10-26 |
 | [0189](ADR-0189-bounded-svg-witness.md) | Canonical requests and bounded shared SVG witnesses | accepted | 2026-10-26 |
 | [0190](ADR-0190-quick-latency-advisory.md) | Quick latency advisory with unchanged verification | accepted | 2026-10-26 |
+| [0191](ADR-0191-ci-provisioning-envelope.md) | Reserve verification separately from provisioning; retain interrupted streams without reruns | accepted | 2026-10-26 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 
@@ -135,6 +136,7 @@ A change needs a new ADR, or a superseding one, in the **same commit** when it:
 8. Edits `docs/requirements/` acceptance criteria (the harness forbids this without an ADR).
 9. Weakens a threshold in `scripts/gates/thresholds.mjs` (normally forbidden; an ADR is the only
    route).
+
 
 ## Lifecycle
 

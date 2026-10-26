@@ -29,6 +29,7 @@ import {
   workspaceCatalogOnly,
 } from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
+import { withLiveStepLog } from './live-step-log.mjs';
 
 const argv = new Set(process.argv.slice(2));
 const mode = argv.has('--all') ? 'all' : argv.has('--quick') ? 'quick' : 'staged';
@@ -284,7 +285,9 @@ async function runStep([name, , available, exec]) {
   const avail = available();
   if (avail !== true) return { lines: [`SKIP ${name} — ${avail}`], ok: true };
   const t0 = Date.now();
-  const r = await exec();
+  const r = await (process.env.GITHUB_ACTIONS === 'true'
+    ? withLiveStepLog(repoPath('.harness/tmp/verify-logs', `${started}-${process.pid}`), name, exec)
+    : exec());
   const ms = Date.now() - t0;
   // a tool that exits 0 but reports "<tool>: SKIP — <why>" did not run its check (M1 cp1 F3)
   const nested = r.status === 0 ? nestedSkip(r.stdout) : null;

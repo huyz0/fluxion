@@ -2766,3 +2766,10 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Isolated worktree preserves M18.80 staged work/review. Real four-failure TAP subprocess reproduces missing fields; initial inherited NODE_TEST_CONTEXT setup failure retained, corrected independent child observed true reporting RED. Preserve nested failure names/location/assertion/stack excerpts before passing tails, full logs unchanged and command escaping retained. No test/exit/threshold change; diagnostic publication obtains evidence, not a claimed Windows fix.
 - Review r1 requested structural TAP delimiters and aggregate overflow protection. Both observed RED in probes; indentation-aware exact delimiters and multiple bounded escaped annotations fix them. Focused18/18PASS retains legacy single-field truncation/full-log pointers and every failure across ten large subtests. Fresh exact staged/r2 review pending.
 - StagedFAIL132.1s preserved: existing E2E annotation test required the short failure heading and long error excerpt together. Reserve room for the heading without dropping later annotation chunks; unchanged consumer regressions plus TAP/ladder22/22PASS. This is reporting-only; Windows runtime cause remains unknown.
+
+## 2026-10-26 M18.88 CI scheduling recovery
+done: ADR0191 plan r1F1 recorded; r2PASS0 after adding live-stream persistence. Measured install821s exhausted prior20min job; Windows cleanup failures remain separate.
+checks: new live-log test RED missing module; workflow guards RED; corrected focused46/46PASS, actual supervisor interruption retained original stderr; all3 deliberate workflow regressions rejected.
+change: verify35min envelope with browser15min/verify15min/report2min; one harness execution; live per-step streams plus original completed logs; no retry, threshold, correctness or exit-status changes.
+verification: first staged152.6s failed only stale generated trace index; original packet retained; index regenerated before rerun.
+next: exact staged verification, fresh code review, normal hooks/push; then Windows cleanup repair/native qualification. M18.80 qualified local1781 remains preserved.

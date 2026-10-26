@@ -25,7 +25,7 @@ describe('gates workflow (NFR-PORT-005)', () => {
     // `pnpm verify` is the ladder itself (precommit.mjs --all), run by ci.yml since M2.22
     assert.equal(JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts.verify, 'node scripts/gates/precommit.mjs --all');
     assert.match(ci, /- run: pnpm verify\n/);
-    assert.match(ci, /node --test "tests\/harness\/\*\.test\.mjs"/);
+    assert.doesNotMatch(ci, /node --test "tests\/harness\/\*\.test\.mjs"/, 'full ladder runs the harness once');
     assert.match(wf, /node scripts\/gates\/check-workflows\.mjs --require-docker/);
     assert.match(wf, /node scripts\/gates\/check-commits\.mjs --range/);
   });
@@ -211,9 +211,13 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     const pre = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
     assert.match(pre, /'--test-reporter=spec', '--test', \.\.\.harnessToRun\(\)/);
     assert.match(pre, /mode === 'staged' \? harnessFiles\(stagedPaths\(\), HARNESS\(\), scopeOptions\(\)\) : HARNESS\(\)/);
-    // after a ladder failure only: a green ladder already ran the suite (M1.42: windows timeout);
-    // in ci.yml's verify job since M2.22
-    assert.match(ci, /- run: pnpm verify\n(?:\s+#.*\n)*\s+- name: harness tests\n\s+if: failure\(\)\n/);
+    const verify = /^ {2}verify:[\s\S]*?(?=^ {2}\S)/m.exec(ci)?.[0] ?? '';
+    assert.match(verify, /timeout-minutes: 35/);
+    assert.match(verify, /- run: pnpm verify\n\s+timeout-minutes: 15/);
+    assert.match(verify, /chromium for the Vitest browser project \(T1\)\n\s+timeout-minutes: 15/);
+    assert.doesNotMatch(verify, /name: harness tests|continue-on-error|retry/);
+    assert.match(verify, /name: verification failure reports\n\s+if: always\(\) && \(failure\(\) \|\| cancelled\(\)\)\n\s+timeout-minutes: 2/);
+    assert.match(pre, /withLiveStepLog\(repoPath\(/);
     const dist = /name: dist\n\s+path: \|\n((?:\s+\S+\/\*\/dist\n)+)/.exec(ci)?.[1] ?? '';
     const workspaces = /^packages:\n((?:\s+- \S+\n)+)/m.exec(readFileSync(join(REPO, 'pnpm-workspace.yaml'), 'utf8'))[1];
     for (const [, glob] of workspaces.matchAll(/- (\S+)/g)) assert.ok(dist.includes(`${glob}/dist`), `build artifact misses ${glob}/dist`);

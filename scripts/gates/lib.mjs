@@ -1,4 +1,5 @@
 // Shared helpers for gate and harness scripts. Node >= 22, no dependencies.
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -33,6 +34,9 @@ export function run(cmd, args = [], opts = {}) {
 
 export const node = (script, args = [], opts) => run(process.execPath, [repoPath(script), ...args], opts);
 
+const processOutput = new AsyncLocalStorage();
+export const withProcessOutput = (sink, work) => processOutput.run(sink, work);
+
 /** `run` without blocking, so independent gate steps can overlap. Same result shape. */
 export function runAsync(cmd, args = [], opts = {}) {
   const needsShell = process.platform === 'win32' && !cmd.endsWith('.exe') && cmd !== process.execPath && cmd !== 'git';
@@ -45,9 +49,11 @@ export function runAsync(cmd, args = [], opts = {}) {
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', (d) => {
       out.stdout += d;
+      processOutput.getStore()?.('stdout', d);
     });
     child.stderr?.on('data', (d) => {
       out.stderr += d;
+      processOutput.getStore()?.('stderr', d);
     });
     child.on('error', (e) => resolve({ status: 1, stdout: out.stdout, stderr: `${out.stderr}${e.message}` }));
     child.on('close', (code) => resolve({ status: code ?? 1, ...out }));

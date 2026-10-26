@@ -26,7 +26,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -38,6 +38,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: chromium for the Vitest browser project (T1)
+        timeout-minutes: 15
         run: pnpm exec playwright install --with-deps chromium
       - name: git identity for sandbox tests
         run: |
@@ -45,13 +46,11 @@ jobs:
           git config --global user.email "ci@example.invalid"
       # the only three-OS run of the full ladder (M2.22); gates.yml keeps the ubuntu-only harness gates
       - run: pnpm verify
-      # only after a ladder failure, to name every failing test in full (the ladder shows a tail, M1.39);
-      # a green ladder already ran the suite, and a second run pushed windows past its timeout (M1.42)
-      - name: harness tests
-        if: failure()
-        run: node --test "tests/harness/*.test.mjs"
+        timeout-minutes: 15
+      # The ladder persists live streams and completed failures; do not rerun failed checks.
       - name: verification failure reports
-        if: failure()
+        if: always() && (failure() || cancelled())
+        timeout-minutes: 2
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: verify-failures-${{ matrix.os }}
