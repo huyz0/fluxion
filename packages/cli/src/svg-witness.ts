@@ -1,13 +1,13 @@
 import { readFile, stat } from 'node:fs/promises';
 import { parseSvgPaintRequest, type SvgPaintRequest } from '@fluxion/format';
 import { ok, type Result } from '@fluxion/schema';
+import { createWitnessCleanup } from './svg-witness-cleanup.js';
 import { controlWitness, type WitnessControl } from './svg-witness-control.js';
 import type { Page } from './svg-witness-driver.js';
 import { prepareWitnessInput } from './svg-witness-input.js';
 import { connectWitnessBrowser, loadWitnessDriver, type WitnessBrowserConnection } from './svg-witness-launch.js';
 import { fitsWitnessRequest, observeWitnessPage } from './svg-witness-observe.js';
 import { prepareWitnessPage } from './svg-witness-page.js';
-import type { BrowserProcessOwner } from './svg-witness-process.js';
 import {
   type NodeSvgWitnessFailure,
   type NodeSvgWitnessFailureKind,
@@ -68,18 +68,8 @@ export async function createNodeSvgPaintWitness(options: NodeSvgWitnessOptions):
   const kind = options.browser ?? 'chromium';
   if (!input || !['chromium', 'firefox', 'webkit'].includes(kind)) return nodeWitnessFailure('invalid-input');
   if (options.signal?.aborted) return nodeWitnessFailure('cancelled');
-  let owner: BrowserProcessOwner | undefined;
-  let started = false,
-    finished = false;
-  let settle = () => {};
-  const launched = new Promise<void>((resolve) => {
-    settle = resolve;
-  });
-  const closeOwned = () => owner?.close() ?? Promise.resolve(true);
-  const control = controlWitness(async () => {
-    if (!owner && started && !finished) await launched;
-    return closeOwned();
-  }, options.signal);
+  const cleanup = createWitnessCleanup();
+  const control = controlWitness(cleanup, options.signal);
   let startupKind: NodeSvgWitnessFailureKind = 'peer-missing';
   const setup = await control.run(async () => {
     const driver = await loadWitnessDriver(kind);
@@ -87,13 +77,13 @@ export async function createNodeSvgPaintWitness(options: NodeSvgWitnessOptions):
     const bundle = await artifact();
     if (!control.alive()) throw Error('cancelled setup');
     startupKind = 'peer-missing';
-    started = true;
+    cleanup.launchStarted();
     let connection: WitnessBrowserConnection;
     try {
       connection = await connectWitnessBrowser(driver, {
         alive: control.alive,
+        cleanup,
         own: (owned) => {
-          owner = owned;
           if (!control.alive()) void owned.close();
         },
       });
@@ -101,8 +91,7 @@ export async function createNodeSvgPaintWitness(options: NodeSvgWitnessOptions):
       startupKind = startupFailure(cause);
       throw cause;
     } finally {
-      finished = true;
-      settle();
+      cleanup.launchFinished();
     }
     startupKind = 'transport';
     return prepareWitnessPage(connection.browser, input, bundle, control);

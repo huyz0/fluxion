@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { createWitnessCleanup } from './svg-witness-cleanup.js';
 import { controlWitness } from './svg-witness-control.js';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 it('NFR-SEC-001: Node lifetime reserves its final two seconds for owned-process cleanup', async () => {
   const cleanup = vi.fn(async () => true);
-  const control = controlWitness(cleanup);
+  const control = controlWitness({ close: cleanup });
   await vi.advanceTimersByTimeAsync(117999);
   expect(cleanup).not.toHaveBeenCalled();
   await vi.advanceTimersByTimeAsync(1);
@@ -16,7 +17,7 @@ it('NFR-SEC-001: Node lifetime reserves its final two seconds for owned-process 
 });
 it('NFR-SEC-001: a bounded request cannot publish a late result after its deadline', async () => {
   let finish: ((value: string) => void) | undefined;
-  const control = controlWitness(async () => true);
+  const control = controlWitness({ close: async () => true });
   const pending = control.run(
     () =>
       new Promise<string>((resolve) => {
@@ -32,7 +33,7 @@ it('NFR-SEC-001: a bounded request cannot publish a late result after its deadli
 it('NFR-SEC-001: concurrent refusal preserves the first operation and does not close its process', async () => {
   let finish: ((value: string) => void) | undefined;
   const cleanup = vi.fn(async () => true);
-  const control = controlWitness(cleanup);
+  const control = controlWitness({ close: cleanup });
   const first = control.run(
     () =>
       new Promise<string>((resolve) => {
@@ -47,7 +48,9 @@ it('NFR-SEC-001: concurrent refusal preserves the first operation and does not c
 });
 it('NFR-SEC-001: abort waits for cleanup and surfaces a bounded cleanup failure', async () => {
   const signal = new AbortController();
-  const control = controlWitness(() => new Promise(() => {}), signal.signal);
+  const cleanup = createWitnessCleanup();
+  cleanup.launchStarted();
+  const control = controlWitness(cleanup, signal.signal);
   const pending = control.run(() => new Promise(() => {}));
   signal.abort();
   await vi.advanceTimersByTimeAsync(2000);
@@ -57,7 +60,7 @@ it('NFR-SEC-001: abort waits for cleanup and surfaces a bounded cleanup failure'
 });
 it('NFR-SEC-001: native operation failure closes the process and remains distinct from cleanup failure', async () => {
   const cleanup = vi.fn(async () => true);
-  const control = controlWitness(cleanup);
+  const control = controlWitness({ close: cleanup });
   expect(
     await control.run(async () => {
       throw Error('transport');
@@ -69,7 +72,7 @@ it('NFR-SEC-001: native operation failure closes the process and remains distinc
 it('NFR-SEC-001: immediate cancellation prevents queued resource initialization', async () => {
   const signal = new AbortController();
   const work = vi.fn(async () => 'resource');
-  const control = controlWitness(async () => true, signal.signal);
+  const control = controlWitness({ close: async () => true }, signal.signal);
   const pending = control.run(work);
   signal.abort();
   expect(await pending).toEqual({ ok: false, kind: 'cancelled' });

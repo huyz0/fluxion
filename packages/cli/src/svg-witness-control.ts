@@ -5,25 +5,8 @@ export type WitnessControl = {
   readonly run: <T>(work: () => Promise<T>, budget?: number) => Promise<ControlledResult<T>>;
   readonly dispose: () => Promise<boolean>;
 };
-function boundedCleanup(cleanup: () => Promise<boolean>): Promise<boolean> {
-  return new Promise<boolean>((resolve) => {
-    const limit = setTimeout(() => resolve(false), 2000);
-    void Promise.resolve()
-      .then(cleanup)
-      .then(
-        (success) => {
-          clearTimeout(limit);
-          resolve(success);
-        },
-        () => {
-          clearTimeout(limit);
-          resolve(false);
-        },
-      );
-  });
-}
 /** Native host lifetime includes a two-second cleanup reserve; all continuations consult alive. */
-export function controlWitness(cleanup: () => Promise<boolean>, signal?: AbortSignal): WitnessControl {
+export function controlWitness(cleanup: { readonly close: () => Promise<boolean> }, signal?: AbortSignal): WitnessControl {
   let reason: WitnessFailureKind | undefined;
   let closing: Promise<boolean> | undefined;
   let busy = false;
@@ -36,7 +19,7 @@ export function controlWitness(cleanup: () => Promise<boolean>, signal?: AbortSi
     reason = kind;
     clearTimeout(lifetime);
     signal?.removeEventListener('abort', abort);
-    closing = boundedCleanup(cleanup);
+    closing = cleanup.close();
     stop();
     return closing;
   };

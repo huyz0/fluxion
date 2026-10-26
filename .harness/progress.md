@@ -2773,3 +2773,11 @@ checks: new live-log test RED missing module; workflow guards RED; corrected foc
 change: verify35min envelope with browser15min/verify15min/report2min; one harness execution; live per-step streams plus original completed logs; no retry, threshold, correctness or exit-status changes.
 verification: first staged152.6s failed only stale generated trace index; original packet retained; index regenerated before rerun.
 next: exact staged verification, fresh code review, normal hooks/push; then Windows cleanup repair/native qualification. M18.80 qualified local1781 remains preserved.
+
+## 2026-10-26 M18.89 Windows witness recovery in progress
+evidence:2780Windows annotations identify3dispose failures/4passes; independent diagnostic proved competing timer outcomes and pinned Playwright synchronous Windows taskkill. Native causality remains unproven.
+replan: one shared2000ms coordinator covers late ownership without resetting reserve; Windows immediate async exact-PID taskkill bypasses both synchronous dependency paths, actual exit remains authoritative. No threshold/retry changes.
+checks: coordinator/adapter tests RED then47/47unitPASS; CLI122/122PASS; TS7/build PASS; final pinned installed21/21PASS, zero retries/skips, identical built/installed SHA5062d92f; initial type/lint failures preserved and corrected.
+diagnostics: deliberate dual-failure probe rejected and retained both primary/cleanup markers; corrected native fixture includes exact taskkill matching and version/timing evidence.
+verification: first staged238.8s failed layering plus its harness checks on a type-only cleanup/process import cycle; original logs retained, shared ports moved to a separate module without behavior changes.
+next: corrected staged verification/fresh review, normal push, then native Windows CI; no native Windows or milestone closure claimed. M18.80 local1781 remains preserved.

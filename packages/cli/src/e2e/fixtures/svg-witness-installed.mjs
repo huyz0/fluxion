@@ -1,17 +1,20 @@
 // Copy beside requests.json/font.woff2 in an isolated installed consumer; run with node --test.
 // Native paint/exit evidence is separate from the explicitly held-reply fault-injection test.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import childProcess, { spawnSync } from 'node:child_process';
 import { once } from 'node:events';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const { createNodeSvgPaintWitness } = await import(process.env.FLUXION_WITNESS_MODULE ?? '@fluxion/cli/svg-witness');
 const { LIGHT_THEME } = await import(process.env.FLUXION_WITNESS_THEME_MODULE ?? '@fluxion/theme');
-const playwright = await import(process.env.FLUXION_WITNESS_PLAYWRIGHT_MODULE ?? 'playwright');
+const peerModule = process.env.FLUXION_WITNESS_PLAYWRIGHT_MODULE ?? import.meta.resolve('playwright');
+const playwright = await import(peerModule);
+const playwrightVersion = JSON.parse(await readFile(new URL('./package.json', peerModule), 'utf8')).version;
 
 const engine = process.env.FLUXION_WITNESS_ENGINE ?? 'chromium';
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine));
@@ -24,6 +27,81 @@ const owned = [];
 let mode = 'normal';
 let observationStarted = () => {};
 let releaseReply = () => {};
+let failedTerminations = 0;
+const nativeSpawn = childProcess.spawn;
+function mark(record, event) {
+  if (record.events.length < 24) record.events.push({ event, ms: Math.round(performance.now() - record.started) });
+}
+childProcess.spawn = function (file, args, ...rest) {
+  const record = owned.find(
+    (r) => win32.basename(String(file)).toLowerCase() === 'taskkill.exe' && JSON.stringify(args) === JSON.stringify(['/PID', String(r.child.pid), '/T', '/F']),
+  );
+  if (record) {
+    mark(record, 'taskkill-start');
+    if (mode === 'fail-termination') {
+      failedTerminations++;
+      throw Error('injected owned termination failure');
+    }
+  }
+  const helper = nativeSpawn.call(this, file, args, ...rest);
+  if (record) {
+    mark(record, 'taskkill-return');
+    helper.once('exit', () => mark(record, 'taskkill-exit'));
+    helper.once('error', () => mark(record, 'taskkill-error'));
+  }
+  return helper;
+};
+syncBuiltinESMExports();
+function watchServer(server) {
+  const record = { server, child: server.process(), blocked: [], started: performance.now(), events: [] };
+  owned.push(record);
+  record.child.once('exit', () => mark(record, 'browser-exit'));
+  record.child.once('close', () => mark(record, 'browser-close'));
+  for (const method of ['close', 'kill']) {
+    const original = server[method];
+    server[method] = function (...args) {
+      mark(record, `${method}-start`);
+      const result = original.apply(this, args);
+      mark(record, `${method}-return`);
+      result.then(
+        () => mark(record, `${method}-settled`),
+        () => mark(record, `${method}-rejected`),
+      );
+      return result;
+    };
+  }
+}
+async function disposeChecked(session, record, primary) {
+  let failure;
+  mark(record, 'dispose-start');
+  try {
+    const result = await session.dispose();
+    mark(record, 'dispose-finished');
+    const trace = {
+      platform: process.platform,
+      node: process.version,
+      playwright: playwrightVersion,
+      engine,
+      pid: record.child.pid,
+      exitCode: record.child.exitCode,
+      signalCode: record.child.signalCode,
+      events: record.events,
+    };
+    console.log(`WITNESS_CLEANUP ${JSON.stringify(trace)}`);
+    assert.equal(result.ok, true, JSON.stringify(trace));
+    exited(record);
+  } catch (error) {
+    failure = error;
+  }
+  if (primary && failure)
+    throw new AggregateError(
+      [primary, failure],
+      `Primary: ${primary}
+Cleanup: ${failure}`,
+    );
+  if (primary) throw primary;
+  if (failure) throw failure;
+}
 const launch = driver.launchServer;
 const connect = driver.connect;
 function watchPage(page) {
@@ -64,10 +142,7 @@ function watchContext(context, record) {
 }
 driver.launchServer = function (...args) {
   const native = launch.apply(this, args);
-  native.then(
-    (server) => owned.push({ server, child: server.process(), blocked: [] }),
-    () => {},
-  );
+  native.then(watchServer, () => {});
   return native;
 };
 driver.connect = function (endpoint, ...args) {
@@ -91,6 +166,8 @@ driver.connect = function (endpoint, ...args) {
   return native;
 };
 after(async () => {
+  childProcess.spawn = nativeSpawn;
+  syncBuiltinESMExports();
   driver.launchServer = launch;
   driver.connect = connect;
   for (const record of owned) {
@@ -109,6 +186,7 @@ const settings = { timeout: 40000 };
 test(`FR-LIB-004: installed ${engine} witness paints canonical fixtures and observes owned-process exit`, settings, async () => {
   const session = await create();
   const record = owned.at(-1);
+  let primary;
   try {
     for (const { request } of samples) {
       assert.deepEqual(await session.observe(request), {
@@ -117,19 +195,24 @@ test(`FR-LIB-004: installed ${engine} witness paints canonical fixtures and obse
       });
     }
     assert.deepEqual(record.blocked, []);
+  } catch (error) {
+    primary = error;
   } finally {
-    assert.equal((await session.dispose()).ok, true);
+    await disposeChecked(session, record, primary);
   }
   exited(record);
 });
 test(`NFR-SEC-001: installed ${engine} context aborts network requests before dispatch`, settings, async () => {
   const session = await create();
   const record = owned.at(-1);
+  let primary;
   try {
     await assert.rejects(record.context.pages()[0].goto('https://fluxion-network.invalid/probe', { timeout: 10000 }));
     assert.deepEqual(record.blocked, ['https://fluxion-network.invalid/probe']);
+  } catch (error) {
+    primary = error;
   } finally {
-    assert.equal((await session.dispose()).ok, true);
+    await disposeChecked(session, record, primary);
   }
   exited(record);
 });
@@ -141,6 +224,7 @@ test(`NFR-SEC-001: installed ${engine} abort cancels a started native observatio
     observationStarted = resolve;
   });
   mode = 'observe-started';
+  let primary;
   try {
     const pending = session.observe(samples[0].request);
     await started;
@@ -148,9 +232,11 @@ test(`NFR-SEC-001: installed ${engine} abort cancels a started native observatio
     const result = await pending;
     assert.equal(result.ok, false);
     assert.equal(result.error.kind, 'cancelled');
+  } catch (error) {
+    primary = error;
   } finally {
     mode = 'normal';
-    assert.equal((await session.dispose()).ok, true);
+    await disposeChecked(session, record, primary);
   }
   exited(record);
 });
@@ -158,23 +244,28 @@ test(`NFR-SEC-001: installed ${engine} deadline rejects an explicitly held nativ
   const session = await create();
   const record = owned.at(-1);
   mode = 'hold-reply';
+  let primary;
   try {
     const result = await session.observe(samples[0].request);
     assert.equal(result.ok, false);
     assert.equal(result.error.kind, 'deadline');
     releaseReply();
+  } catch (error) {
+    primary = error;
   } finally {
     mode = 'normal';
-    assert.equal((await session.dispose()).ok, true);
+    await disposeChecked(session, record, primary);
   }
   exited(record);
 });
-test(`NFR-SEC-001: installed ${engine} reports cleanup failure when injected close/kill failures prevent exit`, settings, async () => {
+test(`NFR-SEC-001: installed ${engine} reports cleanup failure when injected owned termination failures prevent exit`, settings, async () => {
   const session = await create();
   const record = owned.at(-1);
   const close = record.server.close,
     kill = record.server.kill;
   record.server.close = () => new Promise(() => {});
+  mode = 'fail-termination';
+  const before = failedTerminations;
   record.server.kill = async () => {
     throw Error('injected kill failure');
   };
@@ -182,7 +273,13 @@ test(`NFR-SEC-001: installed ${engine} reports cleanup failure when injected clo
     const result = await session.dispose();
     assert.equal(result.ok, false);
     assert.equal(result.error.kind, 'cleanup');
+    if (process.platform === 'win32') {
+      assert.equal(failedTerminations - before, 1, 'installed Windows adapter must reach the exact owned spawn');
+      assert.equal(record.child.exitCode, null);
+      assert.equal(record.child.signalCode, null);
+    }
   } finally {
+    mode = 'normal';
     record.server.close = close;
     record.server.kill = kill;
     const exit = record.child.exitCode === null && record.child.signalCode === null ? once(record.child, 'exit') : Promise.resolve();
@@ -213,6 +310,7 @@ test(`FR-LIB-004: installed ${engine} missing executable reports peer-missing wi
 test(`NFR-SEC-001: installed ${engine} admits 128 observations then closes without a 129th browser call`, { timeout: 125000 }, async () => {
   const session = await create();
   const record = owned.at(-1);
+  let primary;
   try {
     for (let i = 0; i < 128; i++) {
       const result = await session.observe(samples[0].request);
@@ -223,7 +321,9 @@ test(`NFR-SEC-001: installed ${engine} admits 128 observations then closes witho
     const refused = await session.observe(samples[0].request);
     assert.equal(refused.ok, false);
     assert.equal(refused.error.kind, 'disposed');
+  } catch (error) {
+    primary = error;
   } finally {
-    assert.equal((await session.dispose()).ok, true);
+    await disposeChecked(session, record, primary);
   }
 });

@@ -1,7 +1,19 @@
 import { EventEmitter } from 'node:events';
 import { expect, it, vi } from 'vitest';
+import { createWitnessCleanup } from './svg-witness-cleanup.js';
 import type { Browser, BrowserServer } from './svg-witness-driver.js';
-import { connectWitnessBrowser, type WitnessBrowserDriver } from './svg-witness-launch.js';
+import { connectWitnessBrowser, processOwner, type WitnessBrowserDriver } from './svg-witness-launch.js';
+import { createWindowsTermination } from './svg-witness-windows.js';
+
+vi.mock('./svg-witness-windows.js', () => ({
+  createWindowsTermination: vi.fn((child: EventEmitter & { exitCode: number | null }) => ({
+    kill: vi.fn(async () => {
+      child.exitCode = 0;
+      child.emit('exit', 0);
+    }),
+    stop: vi.fn(),
+  })),
+}));
 
 function fixture() {
   const events = new EventEmitter();
@@ -23,7 +35,7 @@ function fixture() {
     launchServer: vi.fn(async () => server),
     connect: vi.fn(async () => browser),
   };
-  return { driver, server, browser };
+  return { driver, server, browser, process };
 }
 it('NFR-SEC-001: Node witness launches only loopback ephemeral server and connects its exact generated endpoint', async () => {
   const f = fixture();
@@ -41,7 +53,8 @@ it('NFR-SEC-001: rejected non-loopback endpoint is never connected and its owned
   vi.spyOn(f.server, 'wsEndpoint').mockReturnValue('ws://example.com:12345/token');
   await expect(connectWitnessBrowser(f.driver, { alive: () => true, own: vi.fn() })).rejects.toThrow('endpoint');
   expect(f.driver.connect).not.toHaveBeenCalled();
-  expect(f.server.close).toHaveBeenCalledTimes(1);
+  expect(f.process.exitCode).toBe(0);
+  expect(f.server.close).toHaveBeenCalledTimes(process.platform === 'win32' ? 0 : 1);
 });
 it('NFR-SEC-001: cancellation after server launch prevents late connection and closes the server', async () => {
   const f = fixture();
@@ -55,11 +68,24 @@ it('NFR-SEC-001: cancellation after server launch prevents late connection and c
     }),
   ).rejects.toThrow('cancelled');
   expect(f.driver.connect).not.toHaveBeenCalled();
-  expect(f.server.close).toHaveBeenCalledTimes(1);
+  expect(f.process.exitCode).toBe(0);
+  expect(f.server.close).toHaveBeenCalledTimes(process.platform === 'win32' ? 0 : 1);
 });
 it('NFR-SEC-001: connection failure observes owned-process exit before propagating failure', async () => {
   const f = fixture();
   vi.mocked(f.driver.connect).mockRejectedValue(Error('connection failed'));
   await expect(connectWitnessBrowser(f.driver, { alive: () => true, own: vi.fn() })).rejects.toThrow('connection failed');
-  expect(f.server.close).toHaveBeenCalledTimes(1);
+  expect(f.process.exitCode).toBe(0);
+  expect(f.server.close).toHaveBeenCalledTimes(process.platform === 'win32' ? 0 : 1);
+});
+
+it('NFR-SEC-001: Windows ownership bypasses both synchronous Playwright shutdown paths', async () => {
+  const f = fixture();
+  const cleanup = createWitnessCleanup();
+  const owner = processOwner(f.server, cleanup, 'win32');
+  expect(await owner.close()).toBe(true);
+  expect(createWindowsTermination).toHaveBeenCalledWith(f.process);
+  expect(f.server.close).not.toHaveBeenCalled();
+  expect(f.server.kill).not.toHaveBeenCalled();
+  expect(f.process.exitCode).toBe(0);
 });

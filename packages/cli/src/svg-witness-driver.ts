@@ -14,6 +14,7 @@ export type Browser = {
 export type BrowserServer = {
   readonly wsEndpoint: () => string;
   readonly process: () => {
+    readonly pid?: number;
     readonly exitCode: number | null;
     readonly signalCode: string | null;
     readonly once: (event: 'exit', listener: () => void) => unknown;

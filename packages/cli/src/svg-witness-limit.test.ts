@@ -39,10 +39,31 @@ it('NFR-SEC-001: request 129 cannot enter transport between request 128 completi
   const request = samples[0]?.request;
   if (!request) throw Error('missing canonical fixture');
   const evaluate = vi.fn(async () => ({ identity: request.identity, status: 'painted', fontHashes: request.fonts.map((f) => f.sha256) }));
-  const close = vi.fn(async () => true);
+  let exited = false;
+  let onExit = () => {};
+  const close = vi.fn(async () => {
+    exited = true;
+    onExit();
+    return true;
+  });
   vi.mocked(loadWitnessDriver).mockResolvedValue({} as WitnessBrowserDriver);
   vi.mocked(connectWitnessBrowser).mockImplementation(async (_driver, scope) => {
-    scope.own({ close });
+    scope.cleanup?.own({
+      hasExited: () => exited,
+      onExit: (listener) => {
+        onExit = listener;
+        return () => {
+          onExit = () => {};
+        };
+      },
+      close: async () => {
+        await close();
+      },
+      kill: async () => {
+        await close();
+      },
+    });
+    scope.own({ close: scope.cleanup?.close ?? close });
     return { browser: {} as Browser, close };
   });
   vi.mocked(prepareWitnessPage).mockResolvedValue({ page: { evaluate } as unknown as Page, accepted: true });
