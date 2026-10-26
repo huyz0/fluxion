@@ -2708,3 +2708,10 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Failed corpus147/15 and focused14/18,16/18,17/18,18/24 retained; a stale-input setup aborted137 is not qualification. Fixes address native SVG namespace, isolated font alias, capture ancestry and actual frame movement; no easier fixtures or tolerance changes.
 - CLI diagnostic schemas12RED→14PASS; gate wiring1RED→9PASS, requiring sanitizer/converter plus real three-engine corpus/clipping. Source hashes match qualified production/E2E snapshot. Batch/CLI/UI adapters remain M18.16/17.
 - Concurrent quick190.0sFAILbudget only; isolated quick144.6sPASS under unchanged180s. Full staged verification and fresh independent code review follow; M18 remains open, last cumulative gate28/71.
+
+## M18.82 — viewport capture device-scale recovery (2026-10-26)
+- M18.15 b9ac9756 gatesPASS; CI40318959890 Chromium shard4 failed. Annotations only exit1; completed-job log redirected to artifact host and returned Forbidden, so no retry or alternate download. Old40296051434 HTTP401 remains stopped.
+- Independent local mobile-chrome reproduction2/2FAIL at red-pixel assertions: CSS sample coordinates read physical-device screenshot pixels. This establishes a local cause without claiming inaccessible CI logs confirm it.
+- Capture scale now explicitly CSS, with1920x1080 decoded-size assertion. Exact red/white samples and live clipping-off negative controls unchanged; no test skips, tolerance changes or production rendering changes.
+- Pinned image10/10PASS41.4s: two origins across Chromium/Firefox/WebKit/mobile-chrome/mobile-safari, workers1 retries0. Source/evidence and failed reproduction preserved under /workspace/fluxion-m18-viewport82-* and import15-mobile1-evidence.
+- M18.79 batch work stays isolated/unpublished in its original worktree; blocking Buffer snapshot review recorded and regression repair underway. Recovery staged verification/review follow; M18 remains open.
