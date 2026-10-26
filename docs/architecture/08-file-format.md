@@ -268,7 +268,8 @@ and CI loads, migrates and round-trips all of them.
 code-plugin entry and grants no execution permission. Document records remain at 1.7;
 container 1.0's extension preservation remains in force. M18.73–75 implement the typed
 contracts, unknown-entry roundtrips and integrity checks. M18.76 restores saved geometry in document-scoped Studio and standalone player registries
-(ADR-0185). The complete 3-of-5000 offline acceptance remains M18.14.
+(ADR-0185). M18.14 acceptance saves exactly three used definitions from a full 5000-definition source,
+then reopens the saved file without that source.
 
 ### Used-shape preparation (ADR-0183)
 
@@ -283,7 +284,8 @@ Only missing references captured at open may be resaved with visible warnings; n
 references fail. Both standalone hosts retain real validators for untrusted saved geometry.
 Crash journals retain original file geometry/provenance atomically with record edits, so recovery
 can render and save without the original file. They never infer missing-reference permission
-from later edits. The complete M18.14 offline acceptance remains pending.
+from later edits. M18.14 exercises actual Studio save and built standalone offline reopen across all five
+browser projects, with format-level migration, invalid-reference and credit-preservation checks.
 
 ### Known shape data I/O (ADR-0184)
 

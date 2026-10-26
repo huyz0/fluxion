@@ -91,3 +91,35 @@ export async function malformedShapeFile(): Promise<Uint8Array> {
   entries.set('manifest.json', new TextEncoder().encode(JSON.stringify(manifest)));
   return value(api.writeZip([...entries].map(([name, data]) => ({ name, bytes: data }))));
 }
+
+/** A real full 5000-definition pack file; Studio's actual Save must reduce it to three. */
+export async function fullDistributionFile(): Promise<Uint8Array> {
+  type Source = { index: { id: string; version: string; license: string; attribution: string; credits: unknown[] }; definitions: unknown[] };
+  const fixtures = await load<{ portableDistribution(): Source; portableDocument(): unknown }>('packages/format/src/portable-shape-fixture.ts');
+  const { api, hasher } = await format();
+  const core = await load<CoreApi>('packages/core/dist/index.js');
+  const source = fixtures.portableDistribution();
+  if (source.definitions.length !== 5000) throw new Error('full distribution fixture must contain 5000 definitions');
+  const { id, version, license, attribution, credits } = source.index;
+  const subset = { format: 'fluxion-shape-pack', formatVersion: '1.0', id, version, license, attribution, credits, definitions: source.definitions };
+  const bytes = new TextEncoder().encode(JSON.stringify(subset));
+  const entry = `plugins/${id}@${version}/defs.json`;
+  const lock = {
+    kind: 'declarative-shapes',
+    id,
+    version,
+    packFormat: '1.0',
+    entry,
+    integrity: `sha256-${Buffer.from(api.sha256Hex(bytes), 'hex').toString('base64')}`,
+  };
+  return value(
+    await api.writeFlux({
+      document: fixtures.portableDocument(),
+      hasher,
+      appVersion: '0',
+      plugins: [lock],
+      extraEntries: new Map([[entry, bytes]]),
+      shapePackLicensePolicy: core.allowsShapePackContentLicense,
+    }),
+  );
+}

@@ -291,7 +291,7 @@ Optional `ShapeDef.artwork` carries inert imported paint independently of the ro
 validates geometry, local reference graphs and resource limits before rendering. Shape and
 pack parsers apply the same validation. The renderer scopes IDs per instance and preserves
 literal colors unless an explicit theme-color mapping resolves. Legacy definitions retain
-outline rendering. Portable storage of used definitions remains the separate M18.14 task.
+outline rendering. Portable storage retains used definitions and their source credits (M18.14).
 
 ### Lazy declarative loading
 
@@ -306,7 +306,7 @@ only the indexed category; concurrent IDs in that category share one pending ope
 Successful categories are cached within the immutable namespace/version/index-hash identity.
 A failed load is retried only on a subsequent explicit call. The adapter never registers a
 partial pack, chooses a network endpoint or loads executable code. `ShapePackLoaderOptions`
-captures host capabilities at creation; embedding used definitions remains M18.14.
+captures host capabilities at creation; used-definition embedding and offline resave are exercised by M18.14.
 
 ### Saved shape subset validation (ADR-0182)
 
@@ -319,5 +319,6 @@ The generated structural schema alone does not establish semantic validity. This
 adds no registration or I/O. M18.74/75 prepare canonical locks and validate known data in
 format readers/writers (ADR-0183/0184). M18.76 restores subsets before host rendering and preserves their provenance through Studio
 saves (ADR-0185). Registration refuses existing namespaces transactionally, even with disjoint
-IDs or matching source ownership. Complete offline portability remains M18.14, and
-credit-display UI remains M18.33.
+IDs or matching source ownership. M18.14 verifies a real 5000-definition source shrinks to exactly three referenced shapes,
+including a grouped child, with all applicable notices and identical offline rendering.
+Credit-display UI remains M18.33.

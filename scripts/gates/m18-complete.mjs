@@ -120,11 +120,17 @@ leg('checked artwork preserves paint and scopes references without changing lega
   return artwork === true ? tests('packages/render/src/shape-view.browser.test.tsx', { project: 'browser' }) : artwork;
 });
 
+leg('3 of 5000 definitions embedded and render after offline reopen', () => {
+  const archive = tests('packages/format/src/embed-used.test.ts');
+  return archive === true
+    ? playwrightSpecs(['e2e/file.used-shapes.spec.ts'], ['chromium', 'firefox', 'webkit', 'mobile-chrome', 'mobile-safari'], { runner: imageRunner() })
+    : archive;
+});
+
 const featureTests = [
   ['direct-pack artwork rejects unsafe nodes, references and excessive resources', 'packages/core/src/shape/artwork.test.ts'],
   ['pack schema rejects invalid definitions and missing license', 'packages/core/src/shape/pack-schema.test.ts'],
   ['lazy index and geometry loading', 'packages/sdk/src/pack-loader.test.ts'],
-  ['3 of 5000 definitions embedded and render after offline reopen', 'packages/format/src/embed-used.test.ts'],
   ['SVG sanitizer, outlines, color mapping and >=4 anchors', 'packages/editor/src/library/import-svg.test.ts'],
   ['50 SVG batch imports, bounded ZIP and traversal rejection', 'packages/editor/src/library/import-svg-batch.test.ts'],
   ['Iconify complete collection with searchable names and aliases', 'packages/editor/src/library/import-iconify.test.ts'],

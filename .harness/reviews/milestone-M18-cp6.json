@@ -1,0 +1,56 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp6",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..1f01ef506bff8edd849cf8f283c81207e11a15cc",
+  "reviewer": "independent-subagent:m18_cp6_review",
+  "verdict": "approve",
+  "findings": [],
+  "dispositions": [],
+  "planDelta": "No new reopen rows. Preserve M18.14 offline three-of-5000/render parity and completion-leg qualification, M18.33 attribution UI, M18.10 hosted mutation qualification, and all other unfinished rows. Current backlog has 76 rows versus 43 planned (1.77x); no rebaseline.",
+  "assessment": {
+    "coherence": "Reviewed the eight commits after cp5 (fa9d64af): M18.70,71,72,77,73,74,75,76. Earlier ranges remain covered by cp1-cp5. Core subset validation, deterministic format preparation, shared full/lean lock validation and document-local host registration form one design. Embedded-source provenance avoids reconstructing an unavailable distribution index. Original opaque entries and locks survive resave and recovery.",
+    "specFidelity": "FR-LIB-009 and NFR-LIC-003 are served by exact used-definition selection, scoped credit filtering, complete source declarations, offline subset resave and explicit unresolved-reference warnings. Integrity and semantic validation precede exposure. M18.73-76 are explicitly intermediate delivery boundaries; M18.14 remains open for full offline three-of-5000 equivalence and migration/gate integration. Attribution display remains M18.33; no silent removal of those requirements found.",
+    "standardsDrift": "ADRs 0182-0185 accompany the contract additions, schema/API reports, fixtures and changesets. Format directly uses the existing catalog Zod version with recorded rationale. Real Zod is intentionally retained in both standalone host builds for untrusted data; routing retains its former stub under the amended ADR-0026. E2E stabilization adds settled-geometry/final-source assertions without widening visual tolerance or adding retries. No abandoned convention found in the reviewed delta.",
+    "gateHonesty": "The supplied exact-HEAD packet reports 28/71, correctly red on missing features, current-revision mutation/CI evidence and final review. M18.71 resolves cp5 F1 by binding real artwork and legacy browser suites and SDK loader node suite. Independently executed harness probes reject absent suites, empty/skipped/failing assertions, missing/malformed reports and nonzero runner exits. The portable end-to-end leg remains red while M18.14 is open. Three source-level mutant spot-checks below constrain meaningful behavior; they were imagined, not executed mutants.",
+    "architecture": "Core and format remain pure, with injected hashing and explicit content policy. Loader validation does not mutate registries. Host registration preflights every subset and namespace conflict and rolls back inserted definitions on refusal. Portable saving snapshots document and bytes before asynchronous hashing. Public API expansion is purposeful (subset/source/lock/result types, portable writer APIs and shared registration), documented and covered by API reports; no new dependency version or executable pack activation found.",
+    "planHealth": "76/43 = 1.77x exceeds 1.5x. Growth is visible: inherited mutation qualification, CI/review follow-ups, import/font prerequisites and decomposition of cross-layer persistence. cp5 had 68 rows; this checkpoint adds eight reviewed task commits. Later milestones should estimate inherited qualification separately and budget explicit schema, format, host and end-to-end integration rows. Do not treat intermediate implementation completion as milestone acceptance."
+  },
+  "evidence": {
+    "snapshot": "git rev-parse HEAD returned 1f01ef506bff8edd849cf8f283c81207e11a15cc; git status --short was empty after read-only checks.",
+    "executed": [
+      {
+        "command": "node --test tests/harness/m18-feature-legs.test.mjs tests/harness/e2e-report-annotations.test.mjs tests/harness/content-license-policy.test.mjs tests/harness/ci-workflow.test.mjs",
+        "exitCode": 1,
+        "result": "33 tests: 31 passed, 2 failed, 0 skipped/cancelled. Both failures were unavailable environment inputs: content-license-policy could not import packages/core/dist/index.js; one ci-workflow case could not read node_modules/@playwright/test/package.json. All three M18 feature-leg probes and all four merged E2E diagnostic probes passed."
+      }
+    ],
+    "mutationSpotChecks": [
+      {
+        "test": "packages/format/src/shape-pack-prepare.test.ts: three of 5000 supplied definitions",
+        "mutant": "Serialize all definitions, omit a grouped child, or retain unrelated scoped credits.",
+        "constraint": "Exact three-ID list, global/scoped credit IDs, exact scoped definitionIds and independently recomputed entry SHA-256 would fail."
+      },
+      {
+        "test": "packages/format/src/shape-pack-integrity.test.ts: recomputed valid hashes cannot authorize malicious geometry",
+        "mutant": "Trust matching hashes and omit semantic artwork/license validation.",
+        "constraint": "Both full and lean loaders must reject rehashed onload artwork, denied credits, duplicate definitions and mismatched subset identity without returning accepted data."
+      },
+      {
+        "test": "packages/core/src/shape/pack-registration.test.ts: registry refusal after first insertion",
+        "mutant": "Remove rollback after a later register refusal.",
+        "constraint": "Injected refusal of sample:triangle follows successful sample:box insertion; exact empty registry assertion would fail."
+      }
+    ],
+    "limitations": [
+      "No package dependencies or built core output are installed in the reviewed snapshot. Vitest, browser/E2E, build and full completion gate were not independently rerun. No implementation changes or dependency installation performed.",
+      "28/71 completion output is supplied packet evidence, not an independently executed result.",
+      "This is checkpoint approval of the reviewed delta, not final milestone qualification or a passing full-verification claim.",
+      "Verdict is saved at the requested external path. Repository review staging and Learned updates are left to the driver under the read-only assignment."
+    ]
+  },
+  "learned": [
+    "Keep subset integrity, provenance and host registration as separate explicit boundaries, including recovery.",
+    "Built standalone-host tests are necessary when bundler aliases can differ from source-module validation.",
+    "Keep inherited qualification estimates separate from feature delivery and retain final integration rows after decomposition."
+  ]
+}
