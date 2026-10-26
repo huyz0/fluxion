@@ -360,7 +360,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-DX-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/budget.test.mjs` +2 |
 | NFR-DX-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/budget.test.mjs` +6 |
 | NFR-DX-003 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/adapters.test.mjs` +13 |
-| NFR-DX-004 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` +3 |
+| NFR-DX-004 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` +4 |
 | NFR-LIC-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/licenses.test.mjs`, `tests/harness/workspace-shape.test.mjs` |
 | NFR-LIC-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/drift.test.mjs` +2 |
 | NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` +6 |

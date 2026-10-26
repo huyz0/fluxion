@@ -1,0 +1,61 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp5",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..fa9d64af4baab3c927bf3a3845c9ae6cd2019f4e",
+  "reviewer": "independent-subagent:m18_cp5_review",
+  "verdict": "request_changes",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "file": "scripts/gates/m18-complete.mjs",
+      "line": 120,
+      "title": "Completed artwork and loader tasks are not connected to their completion legs",
+      "detail": "Artwork leg names missing packages/render/src/shape-artwork.test.tsx instead of artwork-view.browser.test.tsx; loader leg names missing packages/editor/src/library/pack-loader.test.ts instead of packages/sdk/src/pack-loader.test.ts. The default node project also omits browser tests.",
+      "requiredChange": "Bind both legs to implemented suites; run artwork under browser project; retain refusal of empty/skipped/failing results and legacy rendering coverage."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.71",
+      "action": "Correct completion-gate paths/projects and verify intended assertions execute."
+    }
+  ],
+  "planDelta": "One gate-integration follow-up. Keep M18.10 and unfinished feature/final-qualification rows open.",
+  "assessment": {
+    "coherence": "Shared SVG policy, pure artwork validation, render boundary, declarative pack schema and capability-injected SDK loader form one coherent design; cp1-cp4 cover prior work.",
+    "specFidelity": "Metadata-only search, lazy category reads, original-byte integrity, explicit license policy, source credits and bounded inert artwork are implemented. Importers, persistence, packs and fonts remain pending.",
+    "standardsDrift": "Contracts have ADRs/API/schema/fixtures. Completion gate retains planned paths after ownership moved.",
+    "gateHonesty": "26/71 remains fail-closed; no false completion. F1 prevents two implemented features qualifying. Three mutation spot-checks constrain behavior.",
+    "architecture": "Core/schema remain pure; loader injects capabilities and verifies before publication; renderer validates manually registered artwork.",
+    "planHealth": "68 versus43 planned, about1.58x; inherited mutation recovery, prerequisites, tooling and CI follow-ups. Separate qualification/tooling estimates from features."
+  },
+  "evidence": {
+    "executed": [
+      {
+        "command": "pnpm exec vitest run --project node packages/core/src/shape/artwork.test.ts packages/core/src/shape/artwork-schema.test.ts packages/core/src/shape/pack-schema.test.ts packages/sdk/src/pack-loader.test.ts packages/dsl/src/import/mermaid-lists.test.ts packages/format/src/svg-policy-compatibility.test.ts",
+        "result": "6 files,56 tests passed"
+      },
+      {
+        "command": "node --test tests/harness/compiler-parity.test.mjs tests/harness/import-corpus.test.mjs tests/harness/pack-schemas.test.mjs",
+        "result": "12 tests passed; no failures/skips/cancellations"
+      }
+    ],
+    "mutationSpotChecks": [
+      "Eager loading or missing deduplication fails no-read/exact-read-count assertions.",
+      "Removing artwork cycle/expansion guards fails reference-cycle/repeated-use tests.",
+      "Removing ID scoping fails uniqueness/local-reference assertions; dropping paint fails raster assertions."
+    ],
+    "limitations": [
+      "Supplied gate reviewed, not independently rerun.",
+      "Browser tests inspected, not independently executed.",
+      "Hosted mutation and full compiler comparison not executed."
+    ]
+  },
+  "learned": [
+    "Update completion paths/projects when implementation ownership moves.",
+    "Separate inherited qualification recovery from feature estimates."
+  ]
+}

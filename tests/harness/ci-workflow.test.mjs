@@ -318,7 +318,7 @@ describe('ci scripts (NFR-DX-004)', () => {
   };
 
   it('flake-report fails a test that passed only on retry, names it and asks for quarantine (NFR-DX-004)', () => {
-    const sb = sandbox(['scripts/ci']);
+    const sb = sandbox(['scripts/ci', 'scripts/gates/failure-report.mjs', 'scripts/gates/lib.mjs']);
     try {
       const ok = flake(sb, report([{ projectName: 'chromium', status: 'expected' }]));
       assert.equal(ok.status, 0, out(ok));
@@ -338,7 +338,7 @@ describe('ci scripts (NFR-DX-004)', () => {
   });
 
   it('flake-report fails a failed test and an empty or all-skipped report (NFR-DX-004)', () => {
-    const sb = sandbox(['scripts/ci']);
+    const sb = sandbox(['scripts/ci', 'scripts/gates/failure-report.mjs', 'scripts/gates/lib.mjs']);
     try {
       const failed = flake(sb, report([{ projectName: 'firefox', status: 'unexpected' }]));
       assert.equal(failed.status, 1, out(failed));

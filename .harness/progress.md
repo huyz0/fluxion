@@ -2600,3 +2600,14 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Options are captured before async hashing; the ownership-race regression failed before its fix.
 - SDK tests23/23 and typecheck pass; ADR-0181, API report and minor changeset accompany the public adapter.
 - Independent plan review passed; implementation verification and exact-diff review remain mandatory before commit.
+
+## M18.13 — lazy shape-pack loader (2026-10-26)
+- Published fa9d64af; focused SDK23/23, staged225.7s, independent reviewPASS0, normal hooks223.5s.
+- CI40265926872 has an e2e-report failure with opaque annotations; detailed job log download denied. Do not claim hosted qualification.
+- cp5 full verification passed; milestone26/71. Independent cumulative review reopened completion-path drift as M18.71.
+
+## M18.70 — merged E2E failure diagnostics (2026-10-26)
+- Adds escaped test/project/attempt-error annotations, preserving failure codes and zero-flake policy; retains full merged JSON alongside HTML.
+- Four deliberately failing probes reproduced missing diagnostics; all29 new/existing script tests pass after implementation.
+- Plan round1 caught missing merged JSON retention; corrected plan round2 passed. Full staged verification and code review follow.
+- This improves evidence access; the underlying hosted E2E failure is still unknown and is not claimed fixed.
