@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted (SVG-conversion perimeter/fallback-bounds clauses superseded by ADR-0187)
 date: 2026-10-25
 decision-makers: harness (M18.3; existing FR-LIB-004/005/006 and NFR-SEC-001, subject to independent review)
 ---

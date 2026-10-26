@@ -169,3 +169,11 @@ whole (an option parse error, a file that cannot be read); an internal error has
 | `FLX_MCP_DOC_EVICTED` | error | The `docHandle` named a document the server dropped to stay within its 32 open documents. | Create the document again from its text or file. |
 | `FLX_MCP_STALE_REVISION` | error | `apply_patch` named a `baseRevision` older than the document's current revision, so another change landed first. | Read the document again, rebase the patch on the new revision and retry. |
 | `FLX_MCP_PATH_OUTSIDE_ROOTS` | error | A path argument resolves outside the roots the server was started with (`--root`); nothing was read or written. | Use a path inside an allowed root, or start the server with the folder as a root. |
+
+## Single-SVG conversion (ADR-0187)
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_SVG_IMPORT_INVALID` | error | Missing, oversized or unsafe SVG requiring sanitizer removals. | Supply a bounded standalone SVG without executable or external content. |
+| `FLX_SVG_IMPORT_UNSUPPORTED` | error | Unsupported viewport/text/font context, unknown token, or unavailable/mismatched positive paint witness. | Supply supported absolute dimensions, exact font capabilities and a bounded renderer witness; inspect the message. |
+| `FLX_SVG_OUTLINE_FALLBACK` | warning | Preserved artwork uses a conservative clipped-viewport routing rectangle instead of a tight silhouette. | Keep the diagnosed fallback or author a precise native definition. |

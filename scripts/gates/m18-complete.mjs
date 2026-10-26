@@ -127,11 +127,19 @@ leg('3 of 5000 definitions embedded and render after offline reopen', () => {
     : archive;
 });
 
+leg('SVG sanitizer, outlines, color mapping and >=4 anchors', () => {
+  const sanitizer = tests('packages/format/src/sanitize-svg.test.ts');
+  if (sanitizer !== true) return sanitizer;
+  const converter = tests('packages/format/src/svg-import.test.ts');
+  return converter === true
+    ? playwrightSpecs(['e2e/svg-import.spec.ts', 'e2e/artwork.viewport.spec.ts'], ['chromium', 'firefox', 'webkit'], { runner: imageRunner() })
+    : converter;
+});
+
 const featureTests = [
   ['direct-pack artwork rejects unsafe nodes, references and excessive resources', 'packages/core/src/shape/artwork.test.ts'],
   ['pack schema rejects invalid definitions and missing license', 'packages/core/src/shape/pack-schema.test.ts'],
   ['lazy index and geometry loading', 'packages/sdk/src/pack-loader.test.ts'],
-  ['SVG sanitizer, outlines, color mapping and >=4 anchors', 'packages/editor/src/library/import-svg.test.ts'],
   ['50 SVG batch imports, bounded ZIP and traversal rejection', 'packages/editor/src/library/import-svg-batch.test.ts'],
   ['Iconify complete collection with searchable names and aliases', 'packages/editor/src/library/import-iconify.test.ts'],
   ['draw.io fixture metric >=90 percent and safe XML', 'packages/editor/src/library/import-drawio.test.ts'],

@@ -9,5 +9,10 @@
     "types": ["node"],
     "isolatedDeclarations": false
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "references": [
+    {
+      "path": "../packages/format"
+    }
+  ]
 }

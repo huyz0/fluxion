@@ -2699,3 +2699,12 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - New tests5RED before implementation; six new assertions plus existing sanitizer/frozen67-input corpus pass. Full format190PASS; build26PASS and public API report updated.
 - Input/depth/node bounds, first-safe-reference aliases, text escaping and exact legacy output/counts retained; no parser dependency or runtime/compiler migration.
 - Lint complexity15/12 corrected by extracting attribute spelling helper; no limit change. Staged qualification and fresh code review follow. M18.15 conversion and later host workflows remain open.
+
+## M18.15 — preserved SVG conversion (2026-10-26)
+- M18.78 f10bcd44 and M18.14 1b0f38e7 CI each36/36PASS, gatesPASS; exact-revision evidence retained. Old40296051434 retryHTTP401 remains stopped; no recovery claim.
+- Independent plans/diagnostic replans accepted ADR0187: retain source SVG, exact simple rectangles or explicit clipped-viewport routing warnings, four anchors, checked token mappings and exact-font obligations.
+- Initial moduleRED, finite-raster-overflowRED and referenced-text inheritanceRED observed before fixes. Whole format206PASS; all50 frozen inputs additionally assert >=4 anchors; new-module coverage100%lines/91.08%branches before this extra routing assertion.
+- Pinned Chromium/Firefox/WebKit168/168PASS12.0m, retries0: frozen50 plus viewport, clipping and no-paint controls. Ordered source/reference geometry, dual-backdrop pixels at unchanged0.1%, exact occupied bounds and translation/interior/stroke/text negativecontrols pass. WebKit badge/mask/marker screenshots inspected.
+- Failed corpus147/15 and focused14/18,16/18,17/18,18/24 retained; a stale-input setup aborted137 is not qualification. Fixes address native SVG namespace, isolated font alias, capture ancestry and actual frame movement; no easier fixtures or tolerance changes.
+- CLI diagnostic schemas12RED→14PASS; gate wiring1RED→9PASS, requiring sanitizer/converter plus real three-engine corpus/clipping. Source hashes match qualified production/E2E snapshot. Batch/CLI/UI adapters remain M18.16/17.
+- Concurrent quick190.0sFAILbudget only; isolated quick144.6sPASS under unchanged180s. Full staged verification and fresh independent code review follow; M18 remains open, last cumulative gate28/71.

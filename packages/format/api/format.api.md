@@ -15,7 +15,9 @@ import { ShapeDef } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSubset } from '@fluxion/core';
+import { SvgArtwork } from '@fluxion/schema';
 import { SvgArtworkNode } from '@fluxion/schema';
+import { TokenRef } from '@fluxion/schema';
 
 // @public
 export type AssetCheck = "clean" | "changed" | "refused";
@@ -201,6 +203,9 @@ export type ImportedImage = {
 
 // @public
 export function importImage(bytes: Uint8Array, codec: ImageCodec, maxSide?: number): Promise<Result<ImportedImage, ImageImportFailure>>;
+
+// @public
+export function importSvgShape(input: string, options: SvgImportOptions): Promise<Result<SvgImportResult, readonly Diagnostic[]>>;
 
 // @public
 export function inspectSvg(input: string): SvgInspection | undefined;
@@ -454,10 +459,54 @@ export type ShapePackSourceData = {
 export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
 
 // @public
+export type SvgImportFont = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly sha256: string;
+};
+
+// @public
+export type SvgImportOptions = {
+    readonly id: string;
+    readonly witness: SvgPaintWitness;
+    readonly colors?: Readonly<Record<string, TokenRef>>;
+    readonly tokenRefs?: ReadonlySet<string>;
+    readonly fonts?: readonly SvgImportFont[];
+    readonly defaultFont?: string;
+};
+
+// @public
+export type SvgImportResult = {
+    readonly definition: ShapeDef;
+    readonly diagnostics: readonly Diagnostic[];
+    readonly fonts: readonly SvgImportFont[];
+};
+
+// @public
 export type SvgInspection = {
     readonly svg: string;
     readonly removed: number;
 };
+
+// @public
+export type SvgPaintReceipt = {
+    readonly identity: string;
+    readonly status: "painted" | "no-witness" | "unsupported";
+    readonly fontHashes: readonly string[];
+};
+
+// @public
+export type SvgPaintRequest = {
+    readonly identity: string;
+    readonly artwork: SvgArtwork;
+    readonly width: number;
+    readonly height: number;
+    readonly fonts: readonly SvgImportFont[];
+};
+
+// @public
+export type SvgPaintWitness = (request: SvgPaintRequest) => Promise<SvgPaintReceipt>;
 
 // @public
 export type SvgTreeInspection = {

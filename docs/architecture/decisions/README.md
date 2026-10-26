@@ -56,7 +56,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0046](ADR-0046-live-layout-and-incremental-mode.md) | Live layout frames and incremental mode: a post-commit reactor that amends the edit it follows | accepted | 2026-10-21 |
 | [0047](ADR-0047-smart-template-format.md) | Smart templates: a `TemplateDef` that builds shapes from an items list | accepted | 2026-10-21 |
 | [0048](ADR-0048-shape-pack-format-v1.md) | Declarative shape packs: indexed categories and portable used definitions | accepted | 2026-10-25 |
-| [0049](ADR-0049-shape-import-pipeline.md) | Shared sanitized paint and bounded SVG/Iconify/draw.io import | accepted | 2026-10-25 |
+| [0049](ADR-0049-shape-import-pipeline.md) | Shared sanitized paint and bounded SVG/Iconify/draw.io import | accepted (SVG routing clauses superseded by0187) | 2026-10-25 |
 | [0050](ADR-0050-pack-license-attribution.md) | Preserve pack rights and used-definition credits offline | accepted | 2026-10-25 |
 | [0051](ADR-0051-bounded-font-subsetting.md) | Bounded HarfBuzz/WOFF2 workers, deterministic subsets and lossless font fallback | accepted | 2026-10-25 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
@@ -109,6 +109,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0184](ADR-0184-portable-shape-io.md) | Validate portable shape data and retain save diagnostics | accepted | 2026-10-26 |
 | [0185](ADR-0185-portable-shape-hosts.md) | Restore portable shapes in document-scoped hosts | accepted | 2026-10-26 |
 | [0186](ADR-0186-checked-svg-tree.md) | Reuse checked SVG data before serialization | accepted | 2026-10-26 |
+| [0187](ADR-0187-svg-import-routing.md) | Preserve SVG paint with diagnosed viewport routing fallback | accepted | 2026-10-26 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

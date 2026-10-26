@@ -98,3 +98,13 @@ export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type 
  * @public
  */
 export const VERSION: string = '0.0.0';
+
+export {
+  importSvgShape,
+  type SvgImportFont,
+  type SvgImportOptions,
+  type SvgImportResult,
+  type SvgPaintReceipt,
+  type SvgPaintRequest,
+  type SvgPaintWitness,
+} from './svg-import.js';

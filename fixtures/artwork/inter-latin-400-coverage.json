@@ -1,0 +1,7 @@
+{
+  "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
+  "source": "packs/fonts-core/fonts/inter-latin-400-normal.woff2",
+  "method": "fc-query --format=%{charset} (FreeType font charmap), 2026-10-26",
+  "charset": "20-7e a0-ac ae-ff 131 152-153 2bb-2bc 2c6 2da 2dc 300-301 303-304 308-309 323 2002 2009 200b 2013-2014 2018-201a 201c-201e 2022 2026 2032-2033 2039-203a 2044 20ac 2122 2191 2193 2212 feff",
+  "qualifiedRange": [32, 126]
+}

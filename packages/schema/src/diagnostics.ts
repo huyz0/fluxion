@@ -74,6 +74,9 @@ export type DiagnosticCode =
   | 'FLX_EXPR_UNKNOWN'
   | 'FLX_EXPR_DOMAIN'
   | 'FLX_EXPR_BUDGET'
+  | 'FLX_SVG_IMPORT_INVALID'
+  | 'FLX_SVG_IMPORT_UNSUPPORTED'
+  | 'FLX_SVG_OUTLINE_FALLBACK'
   | 'FLX_SHAPE_DEF_INVALID'
   | 'FLX_SHAPE_PATH'
   | 'FLX_SHAPE_LIMIT'
@@ -157,6 +160,9 @@ export const DIAGNOSTIC_CODES: { readonly [C in DiagnosticCode]: DiagnosticSever
   FLX_EXPR_UNKNOWN: 'error',
   FLX_EXPR_DOMAIN: 'error',
   FLX_EXPR_BUDGET: 'error',
+  FLX_SVG_IMPORT_INVALID: 'error',
+  FLX_SVG_IMPORT_UNSUPPORTED: 'error',
+  FLX_SVG_OUTLINE_FALLBACK: 'warning',
   FLX_SHAPE_DEF_INVALID: 'error',
   FLX_SHAPE_PATH: 'error',
   FLX_SHAPE_LIMIT: 'error',
