@@ -65,6 +65,31 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
     }
   });
 
+  for (const { summary, fail, status, label } of [
+    { summary: false, fail: false, status: 0, label: 'PASS' },
+    { summary: false, fail: true, status: 1, label: 'FAIL' },
+    { summary: true, fail: false, status: 0, label: 'PASS' },
+    { summary: true, fail: true, status: 1, label: 'FAIL' },
+  ]) {
+    it(`NFR-DX-002 NFR-DX-003: quick overrun preserves status and warnings (summary=${summary}, fail=${fail})`, () => {
+      const sb = sandbox();
+      try {
+        sb.write('clock.mjs', "let calls = 0; Date.now = () => calls++ === 0 ? 0 : 180001; await import('./scripts/gates/precommit.mjs');");
+        sb.write(
+          'scripts/gates/check-portability.mjs',
+          fail ? "console.error('deliberate correctness failure'); process.exit(1);" : "console.log('portability ok');",
+        );
+        const r = sb.node('clock.mjs', ['--quick', '--no-budget', ...(summary ? ['--summary'] : [])], { env: { ...process.env, GITHUB_ACTIONS: 'true' } });
+        assert.equal(r.status, status, out(r));
+        assert.match(r.stdout, /^ADVISORY quick latency: 180001ms; target 180000ms; overrun 1ms/m);
+        assert.match(r.stdout, /::warning::Advisory target exceeded: quick latency%0AADVISORY/);
+        assert.match(r.stdout, new RegExp(`VERIFY quick: ${label}`));
+      } finally {
+        sb.cleanup();
+      }
+    });
+  }
+
   it('a failing step shows its "failing tests" list even when the report is long (M1.39)', () => {
     const sb = sandbox();
     try {

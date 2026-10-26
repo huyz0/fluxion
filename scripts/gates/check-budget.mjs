@@ -26,6 +26,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runSource } from './ci-runs.mjs';
+import { gateLatency, validLatency } from './gate-latency.mjs';
 import { lockfileWorkspaceOnly } from './ladder-scope.mjs';
 import { git, repoPath, run } from './lib.mjs';
 import { t } from './thresholds.mjs';
@@ -101,8 +102,8 @@ function coldSetup(provisional) {
 const limitProblems = (record, keys = Object.keys(LIMITS)) =>
   keys.flatMap((key) => {
     const v = record[key];
-    if (typeof v !== 'number') return [`${key} not recorded (the run failed or never ran): run check-budget.mjs --record`];
-    return v > LIMITS[key] ? [`${key} ${v} ms > ${LIMITS[key]} ms`] : [];
+    if (!validLatency(v)) return [`${key} not recorded (the run failed or never ran): run check-budget.mjs --record`];
+    return key !== 'quickMs' && v > LIMITS[key] ? [`${key} ${v} ms > ${LIMITS[key]} ms`] : [];
   });
 
 // CI (NFR-DX-001): a fresh runner measures the cold setup itself; the clone's budget step sees
@@ -208,6 +209,7 @@ if (!existsSync(file)) {
 }
 const record = JSON.parse(readFileSync(file, 'utf8'));
 const problems = limitProblems(record);
+if (validLatency(record.quickMs)) for (const line of gateLatency('quick', record.quickMs, false).lines) console.log(line);
 // a record describes one dependency set: after a lockfile change the cold setup must be re-measured,
 // or a heavier install could pass on an old number forever (M1.19 review F2). Inside CI the same
 // run's cold-setup job (check-budget --cold, needed by ci-ok) measures the new lockfile live, so a

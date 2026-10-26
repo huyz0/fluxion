@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readdirSync, readFileSync } from 'node:fs';
+import { advisoryAnnotation, advisoryLines, failureAnnotation, failureLines, writeFailureLog } from './failure-report.mjs';
 // The single definition of the pre-commit ladder. Used by .githooks/pre-commit (--staged),
 // by `pnpm verify` / CI (--all), and by agents (--quick while iterating).
 //   --staged     check what is staged (default when run from the hook); the harness tests and the
@@ -13,7 +14,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
-import { advisoryAnnotation, advisoryLines, failureAnnotation, failureLines, writeFailureLog } from './failure-report.mjs';
+import { gateLatency } from './gate-latency.mjs';
 import {
   evalNeeded,
   examplesNeeded,
@@ -28,7 +29,6 @@ import {
   workspaceCatalogOnly,
 } from './ladder-scope.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
-import { t } from './thresholds.mjs';
 
 const argv = new Set(process.argv.slice(2));
 const mode = argv.has('--all') ? 'all' : argv.has('--quick') ? 'quick' : 'staged';
@@ -311,14 +311,16 @@ const results = [];
 for (const step of applicable.slice(0, cut)) results.push(await runStep(step));
 results.push(...(await Promise.all(applicable.slice(cut).map(runStep))));
 const lines = results.flatMap((r) => r.lines);
-let failed = results.some((r) => !r.ok);
 const total = Date.now() - started;
-const budget = mode === 'quick' ? t('QUICK_GATE_BUDGET_MS') : t('PRECOMMIT_BUDGET_MS');
-if (mode !== 'all' && total > budget) {
-  failed = true;
-  const detail = `FAIL budget — ${total}ms > ${budget}ms (NFR-DX-002)`;
-  lines.push(detail);
-  if (process.env.GITHUB_ACTIONS === 'true') console.log(failureAnnotation('budget', [detail]));
+const timing = gateLatency(
+  mode,
+  total,
+  results.some((r) => !r.ok),
+);
+const failed = timing.failed;
+lines.push(...timing.lines);
+if (process.env.GITHUB_ACTIONS === 'true' && timing.lines.length) {
+  console.log(mode === 'quick' ? advisoryAnnotation('quick latency', timing.lines) : failureAnnotation('budget', timing.lines));
 }
 for (const l of lines) console.log(l);
 console.log(`VERIFY ${mode}: ${failed ? 'FAIL' : 'PASS'} (${(total / 1000).toFixed(1)}s)`);

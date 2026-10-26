@@ -119,7 +119,7 @@ via 4× CPU throttling.
 | ID | Pri | Inc | Requirement | Measurement |
 |---|---|---|---|---|
 | NFR-DX-001 | M | R0 | Fresh clone → `pnpm i && pnpm run setup && pnpm verify` green in < 10 min (`pnpm setup` is a pnpm built-in, hence `run`: ADR-0138) on reference machine. | CI job measuring cold setup. |
-| NFR-DX-002 | M | R0 | Quick gate (typecheck changed + lint changed + related tests) < 180 s (ADR-0164; was 120 s, ADR-0161; 30 s before); full pre-commit gate < 900 s (ADR-0166; was 600 s, ADR-0165; 480 s, ADR-0163; 360 s, ADR-0158; 120 s before). | check-budget gate. |
+| NFR-DX-002 | M | R0 | Quick gate (unchanged typecheck, lint and related-test checks) targets 180 s as a visible latency advisory (ADR-0190 supersedes ADR-0164 enforcement); failed checks and missing/invalid measurements remain blocking; full pre-commit gate < 900 s (ADR-0166; was 600 s, ADR-0165; 480 s, ADR-0163; 360 s, ADR-0158; 120 s before). | check-budget gate. |
 | NFR-DX-003 | M | R0 | AI harness works identically from Claude Code and Codex (same skills, same scripts). | check-portability gate + adapter tests + harness test suite (dry-run doc optional, ADR-0137). |
 | NFR-DX-004 | M | R0 | Zero flaky tests policy: a flaky test is quarantined within 24 h with a backlog row; CI retries disabled for unit tests. | CI config + flake tracker. |
 

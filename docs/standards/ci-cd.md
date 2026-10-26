@@ -12,7 +12,7 @@ that exists only in YAML is a bug.
 
 | Rung | Where | Command | Budget |
 |---|---|---|---|
-| quick | PostToolUse hook, on demand | `pnpm verify:fast` = `precommit.mjs --quick` (incremental `tsc -b`, `biome ci .`, `vitest run --changed`, harness checks) | < 180 s (ADR-0164) |
+| quick | PostToolUse hook, on demand | `pnpm verify:fast` = `precommit.mjs --quick` (incremental `tsc -b`, `biome ci .`, `vitest run --changed`, harness checks) | 180 s latency target, visible advisory (ADR-0190); failed checks remain blocking |
 | pre-commit | `.githooks/pre-commit` | `node scripts/gates/precommit.mjs --staged` (runs what the staged paths can affect: `ladder-scope.mjs`; the rest runs in CI) | ≤ 900 s (`check-budget.mjs`, ADR-0166) |
 | milestone | checkpoints and final closeout | `node scripts/gates/m<n>-complete.mjs` | per milestone |
 | CI | PR, merge queue, push to `main` | `pnpm verify` (= `precommit.mjs --all`) + E2E, visual, a11y, size, API, license, security | ≤ 15 min wall |

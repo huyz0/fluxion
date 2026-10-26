@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0190 (enforcement only; numeric target retained)
 date: 2026-10-13
 decision-makers: the human (answer to the quick-budget question, 2026-10-13: "Raise quick to 180 s"), recorded by harness (M13.25; amends NFR-DX-002, weakens `QUICK_GATE_BUDGET_MS`; supersedes ADR-0161)
 ---

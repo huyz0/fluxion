@@ -41,3 +41,7 @@ size PASS, trace PASS, portability PASS, reviewed SKIP(before review); commit-ms
 ADR-0176: `review.mjs context` runs the staged ladder itself. Do not run an identical
 staged ladder immediately beforehand. Normal commit hooks and full automatic CI still run.
 Embedding bundle advisories retain measured failures; hard budgets and correctness still fail.
+
+ADR-0190: quick elapsed latency above 180 s is a visible advisory; every quick subcheck still
+blocks on failure. Staged/cold timing limits and positive finite measurement requirements remain
+blocking. Never convert historical failed measurements into successful records.

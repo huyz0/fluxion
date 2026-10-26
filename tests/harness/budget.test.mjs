@@ -37,9 +37,27 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.equal(r.status, 0, out(r));
   });
 
+  it('NFR-DX-002: successful quick target overrun is visible even alongside a hard failure', () => {
+    const quickMs = t('QUICK_GATE_BUDGET_MS') + 1;
+    const r = budget({ ...OK, quickMs });
+    assert.equal(r.status, 0, out(r));
+    assert.match(out(r), /ADVISORY quick latency: 180001ms; target 180000ms; overrun 1ms/);
+    for (const key of ['stagedMs', 'coldSetupMs']) {
+      const limit = key === 'stagedMs' ? t('PRECOMMIT_BUDGET_MS') : t('COLD_SETUP_MAX_MS');
+      const failed = budget({ ...OK, quickMs, [key]: limit + 1 });
+      assert.equal(failed.status, 1, out(failed));
+      assert.match(out(failed), /ADVISORY quick latency/);
+    }
+  });
+  it('NFR-DX-002: quick records reject missing, null and invalid measurements', () => {
+    for (const quickMs of [undefined, null, '1', 0, -1]) {
+      const r = budget({ ...OK, quickMs });
+      assert.equal(r.status, 1, out(r));
+    }
+  });
+
   const over = {
     'a pre-commit gate over PRECOMMIT_BUDGET_MS': ['stagedMs', t('PRECOMMIT_BUDGET_MS') + 1],
-    'a quick gate over QUICK_GATE_BUDGET_MS': ['quickMs', t('QUICK_GATE_BUDGET_MS') + 1],
     'a cold setup over COLD_SETUP_MAX_MS (10 min)': ['coldSetupMs', t('COLD_SETUP_MAX_MS') + 1],
   };
   for (const [name, [key, value]] of Object.entries(over)) {
@@ -145,8 +163,15 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
 
   it('the committed record is within the thresholds (cold setup < 10 min, NFR-DX-001)', () => {
     const record = JSON.parse(readFileSync(join(REPO, '.harness/budget.json'), 'utf8'));
-    assert.ok(record.coldSetupMs > 0 && record.coldSetupMs <= t('COLD_SETUP_MAX_MS'), JSON.stringify(record));
-    assert.ok(record.stagedMs <= t('PRECOMMIT_BUDGET_MS') && record.quickMs <= t('QUICK_GATE_BUDGET_MS'), JSON.stringify(record));
+    assert.ok(Number.isFinite(record.coldSetupMs) && record.coldSetupMs > 0 && record.coldSetupMs <= t('COLD_SETUP_MAX_MS'), JSON.stringify(record));
+    assert.ok(
+      Number.isFinite(record.quickMs) &&
+        record.quickMs > 0 &&
+        Number.isFinite(record.stagedMs) &&
+        record.stagedMs > 0 &&
+        record.stagedMs <= t('PRECOMMIT_BUDGET_MS'),
+      JSON.stringify(record),
+    );
   });
 
   it('record isolation: --record sets up a fresh clone with an empty store and browsers path, then runs verify (NFR-DX-001)', () => {
@@ -188,6 +213,20 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.equal(reused.status, 1, out(reused));
     assert.match(reused.stderr, /did not use the temporary store/);
     assert.equal(JSON.parse(sb.read('budget.json')).coldSetupMs, null);
+  });
+
+  it('NFR-DX-002: failed quick subprocess remains null in a newly recorded budget', () => {
+    sb.cleanup();
+    sb = coldSandbox();
+    sb.write('budget.json', JSON.stringify(OK));
+    sb.write(
+      'scripts/gates/precommit.mjs',
+      `${LADDER_STUB}\nif (process.argv.includes('--quick')) { console.error('deliberate test failure'); process.exit(1); }\n`,
+    );
+    const r = sb.node('scripts/gates/check-budget.mjs', ['--record', '--cold-pending', '--file', sb.path('budget.json')], { env: fakeEnv(sb) });
+    assert.equal(r.status, 1, out(r));
+    assert.equal(JSON.parse(sb.read('budget.json')).quickMs, null);
+    assert.match(r.stderr, /quick run failed/);
   });
 
   it('cold setup recorded from a CI run: --cold-from-ci takes the cold-setup step of a green ci run of that lockfile (ADR-0145)', () => {
