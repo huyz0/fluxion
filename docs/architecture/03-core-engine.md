@@ -153,6 +153,11 @@ with an explicit `ShapePackLicensePolicy`; validation never registers a partial 
 `ShapePackCategoryEntry` and `ShapePackDefinitionEntry` describe the wire metadata.
 `shapePackIndexSchema` and `shapePackCategorySchema` expose structural checks only; complete
 validation also checks source-credit coverage, membership and existing shape geometry.
+`ShapePackSubset`, `shapePackSubsetSchema` and `parseShapePackSubset` validate used geometry
+and credits without a distribution index (ADR-0182). The parser shares the same geometry,
+license and credit obligations and returns no partial subset. Hosts can explicitly pass
+`allowsShapePackContentLicense`, the bounded repository content-policy adapter;
+`shapePackContentLicenses` exposes its frozen ID list. Neither API verifies ownership.
 The SDK re-exports these APIs and preserves its existing atomic pack registration.
 
 ## 5. Shape definitions

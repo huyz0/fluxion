@@ -8,6 +8,7 @@
 export const VERSION: string = '0.0.0';
 
 export {
+  allowsShapePackContentLicense,
   type CoreRegistries,
   createCoreRegistries,
   type Disposable,
@@ -29,6 +30,7 @@ export {
   parseMarkerDef,
   parseShapePackCategory,
   parseShapePackIndex,
+  parseShapePackSubset,
   parseSvgArtwork,
   projectToOutline,
   readFontMetrics,
@@ -40,10 +42,13 @@ export {
   type ShapePackIndex,
   type ShapePackLicensePolicy,
   type ShapePackSource,
+  type ShapePackSubset,
   type SvgArtwork,
   type SvgArtworkNode,
   shapePackCategorySchema,
+  shapePackContentLicenses,
   shapePackIndexSchema,
+  shapePackSubsetSchema,
   type TextRegionDef,
 } from '@fluxion/core';
 export {

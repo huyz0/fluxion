@@ -1,6 +1,6 @@
 import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
-import { categoryEnvelopeSchema, shapePackIndexSchema } from './pack-schema.js';
-import type { ShapePackCategory, ShapePackDefinitionEntry, ShapePackIndex, ShapePackLicensePolicy } from './pack-types.js';
+import { categoryEnvelopeSchema, shapePackIndexSchema, subsetEnvelopeSchema } from './pack-schema.js';
+import type { ShapePackCategory, ShapePackDefinitionEntry, ShapePackIndex, ShapePackLicensePolicy, ShapePackSubset } from './pack-types.js';
 import { parseShapeDef, type ShapeDef } from './shape-def.js';
 
 type At = readonly (string | number)[];
@@ -35,7 +35,7 @@ function categoryProblems(index: ShapePackIndex): Diagnostic[] {
   });
   return out;
 }
-function creditProblems(index: ShapePackIndex, policy: ShapePackLicensePolicy): Diagnostic[] {
+function creditProblems(index: Pick<ShapePackSubset, 'license' | 'definitions' | 'credits'> | ShapePackIndex, policy: ShapePackLicensePolicy): Diagnostic[] {
   const out = licenseProblem(index.license, policy, ['license']);
   const ids = new Set(index.definitions.map((d) => d.id));
   const credits = new Set<string>();
@@ -119,4 +119,34 @@ export function parseShapePackCategory(
     if (entry.category === category && !seen.has(entry.id)) errors.push(problem(['definitions'], `missing indexed definition ${entry.id}`));
   }
   return errors.length ? err(errors) : ok({ formatVersion: '1.0', definitions });
+}
+
+/**
+ * Validate saved geometry and all applicable credits atomically, without an index, I/O or registration.
+ * Every definition uses the existing geometry/artwork parser; every license uses the explicit policy.
+ * @public
+ */
+export function parseShapePackSubset(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<ShapePackSubset, readonly Diagnostic[]> {
+  const parsed = subsetEnvelopeSchema.safeParse(input);
+  if (!parsed.success) return err(issues(parsed.error.issues));
+  const definitions: ShapeDef[] = [];
+  const errors: Diagnostic[] = [];
+  const seen = new Set<string>();
+  parsed.data.definitions.forEach((raw, i) => {
+    const at = ['definitions', i];
+    const def = parseShapeDef(raw, at);
+    if (!def.ok) {
+      errors.push(...def.error);
+      return;
+    }
+    if (seen.has(def.value.id)) errors.push(problem([...at, 'id'], 'duplicate saved definition'));
+    seen.add(def.value.id);
+    if (!def.value.id.startsWith(`${parsed.data.id}:`)) errors.push(problem([...at, 'id'], 'definition belongs to another namespace'));
+    if (def.value.license !== undefined) errors.push(...licenseProblem(def.value.license, licensePolicy, [...at, 'license']));
+    definitions.push(def.value);
+  });
+  if (errors.length) return err(errors);
+  const value: ShapePackSubset = { ...parsed.data, definitions };
+  const credits = creditProblems(value, licensePolicy);
+  return credits.length ? err(credits) : ok(value);
 }

@@ -24,6 +24,9 @@ import { Vec2 } from '@fluxion/geometry';
 import { z } from 'zod';
 
 // @public
+export function allowsShapePackContentLicense(expression: string): boolean;
+
+// @public
 export type AnyCommand = CommandDef<unknown>;
 
 // @public
@@ -494,6 +497,9 @@ export function parseShapePackCategory(input: unknown, index: unknown, category:
 export function parseShapePackIndex(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<ShapePackIndex, readonly Diagnostic[]>;
 
 // @public
+export function parseShapePackSubset(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<ShapePackSubset, readonly Diagnostic[]>;
+
+// @public
 export function parseSvgArtwork(input: unknown): Result<SvgArtwork, readonly Diagnostic[]>;
 
 // @public
@@ -623,6 +629,9 @@ export type ShapePackCategoryEntry = {
 export const shapePackCategorySchema: z.ZodType<ShapePackCategory>;
 
 // @public
+export const shapePackContentLicenses: readonly string[];
+
+// @public
 export type ShapePackCredit = {
     readonly id: string;
     readonly license: string;
@@ -672,6 +681,21 @@ export type ShapePackSource = {
     readonly revision?: string;
     readonly modifications?: string;
 };
+
+// @public
+export type ShapePackSubset = {
+    readonly format: "fluxion-shape-pack";
+    readonly formatVersion: "1.0";
+    readonly id: string;
+    readonly version: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly definitions: readonly ShapeDef[];
+    readonly credits: readonly ShapePackCredit[];
+};
+
+// @public
+export const shapePackSubsetSchema: z.ZodType<ShapePackSubset>;
 
 // @public
 export type ShapeText = FittedText & {

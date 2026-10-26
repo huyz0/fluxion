@@ -1,6 +1,6 @@
 import { checkedSchema, qualifiedNameSchema } from '@fluxion/schema';
 import { z } from 'zod';
-import type { ShapePackCategory, ShapePackIndex } from './pack-types.js';
+import type { ShapePackCategory, ShapePackIndex, ShapePackSubset } from './pack-types.js';
 import { shapeDefSchema } from './shape-def.js';
 
 const text = z.string().regex(/\S/);
@@ -59,3 +59,24 @@ export const categoryEnvelopeSchema: z.ZodType<{ formatVersion: '1.0'; definitio
   formatVersion: z.literal('1.0'),
   definitions: z.array(z.unknown()).min(1),
 });
+
+const subsetHeader = {
+  format: z.literal('fluxion-shape-pack'),
+  formatVersion: z.literal('1.0'),
+  id: slug,
+  version,
+  license: text,
+  attribution: text,
+  credits: z.array(credit).min(1),
+};
+
+/** Structural saved-subset schema; geometry and credit semantics require parseShapePackSubset. @public */
+export const shapePackSubsetSchema: z.ZodType<ShapePackSubset> = checkedSchema<ShapePackSubset>()(
+  z.strictObject({ ...subsetHeader, definitions: z.array(shapeDefSchema).min(1) }),
+);
+
+type SubsetEnvelope = Omit<ShapePackSubset, 'definitions'> & { definitions: unknown[] };
+/** Parse saved metadata before validating individual geometry with indexed diagnostics. @internal */
+export const subsetEnvelopeSchema: z.ZodType<SubsetEnvelope> = checkedSchema<SubsetEnvelope>()(
+  z.strictObject({ ...subsetHeader, definitions: z.array(z.unknown()).min(1) }),
+);

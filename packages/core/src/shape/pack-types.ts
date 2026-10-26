@@ -92,6 +92,26 @@ export type ShapePackCategory = {
   readonly definitions: readonly ShapeDef[];
 };
 
+/** Validated used geometry and credits saved without a distribution index (ADR-0182). @public */
+export type ShapePackSubset = {
+  /** Data-only envelope discriminator. */
+  readonly format: 'fluxion-shape-pack';
+  /** Saved pack format, independent of document schemaVersion. */
+  readonly formatVersion: '1.0';
+  /** Namespace shared by every definition. */
+  readonly id: string;
+  /** Exact pack version. */
+  readonly version: string;
+  /** Default SPDX expression, checked by the explicit policy. */
+  readonly license: string;
+  /** Pack attribution retained with source credits. */
+  readonly attribution: string;
+  /** Nonempty used geometry; no category metadata is invented. */
+  readonly definitions: readonly ShapeDef[];
+  /** Complete applicable source credits. */
+  readonly credits: readonly ShapePackCredit[];
+};
+
 /**
  * Pure host-supplied content license policy. Return true only for a permitted, recognized SPDX expression.
  * Distribution/import adapters must supply the repository content policy, including AND/OR obligations;

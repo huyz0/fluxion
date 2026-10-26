@@ -4,6 +4,7 @@
 
 ```ts
 
+import { allowsShapePackContentLicense } from '@fluxion/core';
 import { contrastRatio } from '@fluxion/theme';
 import { CoreRegistries } from '@fluxion/core';
 import { createCoreRegistries } from '@fluxion/core';
@@ -30,6 +31,7 @@ import { ParamSpec } from '@fluxion/core';
 import { parseMarkerDef } from '@fluxion/core';
 import { parseShapePackCategory } from '@fluxion/core';
 import { parseShapePackIndex } from '@fluxion/core';
+import { parseShapePackSubset } from '@fluxion/core';
 import { parseSvgArtwork } from '@fluxion/core';
 import { PluginId } from '@fluxion/core';
 import { PointsParam } from '@fluxion/core';
@@ -41,18 +43,23 @@ import { ShapeDef } from '@fluxion/core';
 import { ShapePackCategory } from '@fluxion/core';
 import { ShapePackCategoryEntry } from '@fluxion/core';
 import { shapePackCategorySchema } from '@fluxion/core';
+import { shapePackContentLicenses } from '@fluxion/core';
 import { ShapePackCredit } from '@fluxion/core';
 import { ShapePackDefinitionEntry } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { shapePackIndexSchema } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSource } from '@fluxion/core';
+import { ShapePackSubset } from '@fluxion/core';
+import { shapePackSubsetSchema } from '@fluxion/core';
 import { SvgArtwork } from '@fluxion/core';
 import { SvgArtworkNode } from '@fluxion/core';
 import { TextRegionDef } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { ThemeProblem } from '@fluxion/theme';
 import { validateTheme } from '@fluxion/theme';
+
+export { allowsShapePackContentLicense }
 
 export { contrastRatio }
 
@@ -128,6 +135,8 @@ export { parseShapePackCategory }
 
 export { parseShapePackIndex }
 
+export { parseShapePackSubset }
+
 export { parseSvgArtwork }
 
 export { PluginId }
@@ -150,6 +159,8 @@ export { ShapePackCategory }
 export { ShapePackCategoryEntry }
 
 export { shapePackCategorySchema }
+
+export { shapePackContentLicenses }
 
 export { ShapePackCredit }
 
@@ -178,6 +189,10 @@ export type ShapePackLoaderOptions = {
 };
 
 export { ShapePackSource }
+
+export { ShapePackSubset }
+
+export { shapePackSubsetSchema }
 
 export { SvgArtwork }
 

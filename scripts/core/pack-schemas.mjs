@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const { z } = createRequire(new URL('../../packages/core/package.json', import.meta.url))('zod');
 
-import { shapePackCategorySchema, shapePackIndexSchema } from '../../packages/core/dist/index.js';
+import { shapePackCategorySchema, shapePackIndexSchema, shapePackSubsetSchema } from '../../packages/core/dist/index.js';
 
 // These three branded strings are custom predicates in @fluxion/schema. Keep their
 // wire constraints explicit; any new custom predicate must receive a reviewed mapping.
@@ -31,6 +31,7 @@ export function generatedPackSchemas() {
   return [
     ['index', shapePackIndexSchema],
     ['category', shapePackCategorySchema],
+    ['subset', shapePackSubsetSchema],
   ].map(([name, schema]) => [
     name,
     {

@@ -307,3 +307,14 @@ Successful categories are cached within the immutable namespace/version/index-ha
 A failed load is retried only on a subsequent explicit call. The adapter never registers a
 partial pack, chooses a network endpoint or loads executable code. `ShapePackLoaderOptions`
 captures host capabilities at creation; embedding used definitions remains M18.14.
+
+### Saved shape subset validation (ADR-0182)
+
+`ShapePackSubset` is the strict saved envelope: format, formatVersion, id, version, license,
+attribution, definitions and credits. `parseShapePackSubset(input, licensePolicy)` validates
+all geometry and source coverage without inventing distribution category metadata.
+The explicit `allowsShapePackContentLicense` adapter follows the existing content allowlist
+and AND/OR/WITH policy, with input/token/depth bounds; it does not establish ownership.
+The generated structural schema alone does not establish semantic validity. This boundary
+adds no registration or I/O. Format locks and host restore/save remain M18.74–76; complete
+offline portability remains M18.14, and credit-display UI remains M18.33.

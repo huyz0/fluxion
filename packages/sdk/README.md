@@ -27,6 +27,18 @@ const registered = acmePack.register(registries); // Result: a Disposable, or di
 
 `registerShapeDef(registries, def, source)` validates and registers one definition of unknown shape.
 
+## Saved shape subsets
+
+`parseShapePackSubset(value, allowsShapePackContentLicense)` validates a data-only subset
+without its original distribution index. It returns all validated geometry and source
+credits, or diagnostics with no partial accepted subset. `shapePackContentLicenses` lists
+the frozen policy IDs; the explicit adapter preserves AND/OR/WITH semantics and rejects
+malformed or oversized expressions. License checks do not establish ownership.
+
+The structural `shapePackSubsetSchema` alone does not check geometry semantics or credit
+coverage. Validation performs no registration or I/O; portable file and host integration
+remain separate tasks (ADR-0182).
+
 ## Shape geometry
 
 `evaluateOutline(def, size, params)` evaluates a definition's outline and decorations to a cubic

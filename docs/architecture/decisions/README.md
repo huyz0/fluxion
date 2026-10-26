@@ -104,6 +104,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0179](ADR-0179-tsrs-adoption.md) | Pinned tsrs alongside TypeScript 7 | accepted | 2026-10-26 |
 | [0180](ADR-0180-bounded-shape-artwork.md) | Bounded artwork on shape definitions | accepted | 2026-10-26 |
 | [0181](ADR-0181-lazy-shape-pack-loader.md) | Lazy shape-pack loading through explicit host ports | accepted | 2026-10-26 |
+| [0182](ADR-0182-portable-shape-subsets.md) | Portable shape subsets and explicit content policy | accepted | 2026-10-26 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

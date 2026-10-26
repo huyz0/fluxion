@@ -1,0 +1,47 @@
+{
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "sample",
+  "version": "1.0.0",
+  "license": "MIT",
+  "attribution": "Fluxion contributors",
+  "definitions": [
+    {
+      "id": "sample:box",
+      "outline": {
+        "path": "M0 0H{w}V{h}H0Z"
+      },
+      "defaultSize": {
+        "w": 80,
+        "h": 40
+      },
+      "category": "basic",
+      "keywords": ["box"]
+    },
+    {
+      "id": "sample:triangle",
+      "outline": {
+        "path": "M0 {h}L{w/2} 0L{w} {h}Z"
+      },
+      "defaultSize": {
+        "w": 60,
+        "h": 50
+      },
+      "category": "basic",
+      "keywords": ["triangle"]
+    }
+  ],
+  "credits": [
+    {
+      "id": "original",
+      "license": "MIT",
+      "attribution": "Fluxion contributors",
+      "notice": "MIT License\n\nCopyright (c) 2026 Fluxion contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n",
+      "source": {
+        "kind": "original",
+        "author": "Fluxion contributors",
+        "statement": "Original geometric test fixtures authored for Fluxion."
+      }
+    }
+  ]
+}

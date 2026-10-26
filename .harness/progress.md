@@ -2641,3 +2641,15 @@ route-drag-200 flake handed to M20 row 15a (roadmap Deferred); threshold unchang
 - Pinned five-project run5/5PASS22.0s. Isolated geometry/dimensions/paint probes reject140.5px position,86vs85px capture and alteredsolidfill; all exit1.
 - First SVG-transform dimension probe had no effect and passed; evidence retained, corrected wrong-capture probe fails. Candidate unchanged throughout.
 - Screenshot inspected; complete evidence /workspace/fluxion-M18.77-recovery-evidence.json. Staged verification and fresh exact-diff review follow.
+
+## M18.77 — qualified publication (2026-10-26)
+- Published29727e44; staged22.4s/reviewPASS0/hooks20.2s. CI40271062829 terminal36/36PASS; gates40271062734PASS; last-ci confirmsgreen.
+- Earlierdb3d CI terminal34success2failure; allOSverify passed, artwork-report/aggregate failed. Both monitors closed; evidence retained.
+
+## M18.73 — saved subset validation and content policy (2026-10-26)
+- Strict saved envelope reuses ShapeDef/artwork and shared credit validation; no invented distribution metadata, I/O or partial accepted subset.
+- Explicit bounded SPDX content adapter retains existing allowlist/AND/OR/WITH policy; harness compares all ID pairs and authoritative content additions.
+- Initial8testsRED, focused19PASS; broadercore/schema/SDK537PASS, finalfocused9PASS and contract/parity5PASS; exact boundary assertions added and passing.
+- TS7 checks and generated schema/core+SDK APIs pass. ADR0182, fixture, SDK/architecture documentation and minor changeset included.
+- M18.74–76 format/host integration and M18.14 offline acceptance remain open. Staged verification and independent exact-diff review follow.
+- First staged run344.4s: tests/coverage/types/build/API/hard-sizePASS; fixtureformat and generatedtraceindex failed. Corrected JSON formatting and regenerated only Tests links; failed packet retained.
