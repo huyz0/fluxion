@@ -89,7 +89,7 @@ export type LoadedManifest = {
 /** The entries the loader reads itself: they are not extras. */
 const KNOWN_ENTRIES = new Set(['mimetype', 'manifest.json', 'document.json', 'theme/tokens.json', 'source/document.flux.yaml', 'preview.webp']);
 
-const DEFAULT_LIMITS: Required<ZipLimits> = { maxEntries: 4096, maxEntryBytes: 128 * 1024 * 1024, maxTotalBytes: 256 * 1024 * 1024 };
+const DEFAULT_LIMITS: Required<ZipLimits> = { maxEntries: 4096, maxEntryBytes: 128 * 1024 * 1024, maxTotalBytes: 256 * 1024 * 1024, strictNames: false };
 const ZIP_MAGIC = [0x50, 0x4b, 0x03, 0x04];
 const ASSET_PATH = /^assets\/([0-9a-f]{64})\.([a-z0-9]+)$/;
 const MIME_OF: { readonly [ext: string]: string } = {

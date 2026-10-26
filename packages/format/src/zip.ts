@@ -5,7 +5,7 @@ import { err, ok, type Result } from '@fluxion/schema';
 import { crc32 } from './crc32.js';
 import { deflateRaw } from './deflate.js';
 import { inflateRaw } from './inflate.js';
-import { decodeUtf8, encodeUtf8 } from './utf8.js';
+import { decodeUtf8, decodeUtf8Strict, encodeUtf8 } from './utf8.js';
 
 /**
  * How an entry is stored: deflated, or as it is.
@@ -60,6 +60,8 @@ export type ZipFailure = {
  * @public
  */
 export type ZipLimits = {
+  /** Refuse malformed UTF8 in both filename headers; replacement decoding remains the default. */
+  readonly strictNames?: boolean;
   /** The most entries (default 4096). */
   readonly maxEntries?: number;
   /** The most bytes of any one entry once inflated (default 256 MB). */
@@ -204,12 +206,15 @@ type Listing = {
 };
 
 /** The central directory record at `at`, or why it is damaged. */
-function listingAt(bytes: Uint8Array, view: DataView, at: number): Result<Listing, ZipFailure> {
+function listingAt(bytes: Uint8Array, view: DataView, at: number, strict: boolean): Result<Listing, ZipFailure> {
   if (at + 46 > bytes.length || view.getUint32(at, true) !== SIG_CENTRAL) return failure('the central directory is damaged');
   const nameLength = view.getUint16(at + 28, true);
   if (at + 46 + nameLength > bytes.length) return failure('the central directory is damaged');
+  const rawName = bytes.subarray(at + 46, at + 46 + nameLength);
+  const name = strict ? decodeUtf8Strict(rawName) : decodeUtf8(rawName);
+  if (name === undefined) return failure('the central filename is not valid UTF8');
   return ok({
-    name: decodeUtf8(bytes.subarray(at + 46, at + 46 + nameLength)),
+    name,
     method: view.getUint16(at + 10, true),
     crc: view.getUint32(at + 16, true),
     packed: view.getUint32(at + 20, true),
@@ -220,12 +225,14 @@ function listingAt(bytes: Uint8Array, view: DataView, at: number): Result<Listin
 }
 
 /** The stored bytes of the entry `item` describes, found through its local header, which must agree with the central directory. */
-function locate(bytes: Uint8Array, view: DataView, item: Listing): Result<Uint8Array, ZipFailure> {
+function locate(bytes: Uint8Array, view: DataView, item: Listing, strict: boolean): Result<Uint8Array, ZipFailure> {
   const { name, method, packed, local } = item;
   if (method !== 0 && method !== 8) return failure(`${name}: compression method ${method} is not supported`);
   if (local + 30 > bytes.length || view.getUint32(local, true) !== SIG_LOCAL) return failure(`${name}: its local header is missing`);
   // the local header must say what the central directory says, or two readers see two archives
-  const localName = decodeUtf8(bytes.subarray(local + 30, local + 30 + view.getUint16(local + 26, true)));
+  const rawName = bytes.subarray(local + 30, local + 30 + view.getUint16(local + 26, true));
+  const localName = strict ? decodeUtf8Strict(rawName) : decodeUtf8(rawName);
+  if (localName === undefined) return failure('the local filename is not valid UTF8');
   if (localName !== name || view.getUint16(local + 8, true) !== method) return failure(`${name}: its local header names another entry or method`);
   const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
   if (start + packed > bytes.length) return failure(`${name}: its data runs past the end of the file`);
@@ -233,9 +240,9 @@ function locate(bytes: Uint8Array, view: DataView, item: Listing): Result<Uint8A
 }
 
 /** The entry `item` describes: its bytes located, inflated and checked. */
-function entryOf(bytes: Uint8Array, view: DataView, item: Listing): Result<ZipEntry, ZipFailure> {
+function entryOf(bytes: Uint8Array, view: DataView, item: Listing, strict: boolean): Result<ZipEntry, ZipFailure> {
   const { name, method, packed, size } = item;
-  const body = locate(bytes, view, item);
+  const body = locate(bytes, view, item, strict);
   if (!body.ok) return body;
   if (method === 0 && packed !== size) return failure(`${name}: a stored entry whose sizes differ`);
   const inflated = method === 0 ? ok(body.value) : inflateRaw(body.value, size);
@@ -246,9 +253,9 @@ function entryOf(bytes: Uint8Array, view: DataView, item: Listing): Result<ZipEn
 }
 
 /** `entryOf`, with an allocation the host refuses (a very large declared size) as a failure, not a throw. */
-function entryOrFailure(bytes: Uint8Array, view: DataView, item: Listing): Result<ZipEntry, ZipFailure> {
+function entryOrFailure(bytes: Uint8Array, view: DataView, item: Listing, strict: boolean): Result<ZipEntry, ZipFailure> {
   try {
-    return entryOf(bytes, view, item);
+    return entryOf(bytes, view, item, strict);
   } catch (e) {
     if (e instanceof RangeError) return failure(`${item.name}: the host cannot hold ${item.size} bytes`, 'limit');
     throw e;
@@ -271,12 +278,12 @@ export function readZip(bytes: Uint8Array, limits: ZipLimits = {}): Result<ZipEn
   let at = view.getUint32(end + 16, true);
   let total = 0;
   for (let i = 0; i < count; i++) {
-    const item = listingAt(bytes, view, at);
+    const item = listingAt(bytes, view, at, limits.strictNames === true);
     if (!item.ok) return item;
     if (item.value.size > maxEntryBytes) return failure(`${item.value.name}: ${item.value.size} bytes inflated (more than ${maxEntryBytes})`, 'limit');
     total += item.value.size;
     if (total > maxTotalBytes) return failure(`the entries inflate to more than ${maxTotalBytes} bytes`, 'limit');
-    const entry = entryOrFailure(bytes, view, item.value);
+    const entry = entryOrFailure(bytes, view, item.value, limits.strictNames === true);
     if (!entry.ok) return entry;
     entries.push(entry.value);
     at = item.value.next;

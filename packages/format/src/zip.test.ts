@@ -311,3 +311,21 @@ describe('crc32', () => {
     expect(crc32(new Uint8Array(0))).toBe(0);
   });
 });
+
+it('NFR-SEC-001: strict filename decoding refuses malformed local and central names without changing legacy reads', () => {
+  const archive = writeZip([{ name: 'x.svg', bytes: new Uint8Array([1]), method: 'store' }]);
+  if (!archive.ok) throw new Error('fixture ZIP');
+  const corrupt = archive.value.slice();
+  const view = new DataView(corrupt.buffer);
+  const central = view.getUint32(corrupt.length - 6, true);
+  corrupt[30] = 0xff;
+  corrupt[central + 46] = 0xff;
+  expect(readZip(corrupt).ok).toBe(true);
+  expect(readZip(corrupt, { strictNames: true })).toMatchObject({ ok: false });
+  const localOnly = archive.value.slice();
+  localOnly[30] = 0xff;
+  expect(readZip(localOnly, { strictNames: true })).toMatchObject({ ok: false, error: { reason: 'the local filename is not valid UTF8' } });
+  const replacement = writeZip([{ name: '\uFFFD.svg', bytes: new Uint8Array([1]) }]);
+  if (!replacement.ok) throw new Error('fixture ZIP');
+  expect(readZip(replacement.value, { strictNames: true }).ok).toBe(true);
+});

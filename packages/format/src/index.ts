@@ -99,6 +99,7 @@ export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type 
  */
 export const VERSION: string = '0.0.0';
 
+export { importSvgBatch, type SvgBatchFile, type SvgBatchInput, type SvgBatchOptions, type SvgBatchOutcome, type SvgBatchReport } from './svg-batch.js';
 export {
   importSvgShape,
   type SvgImportFont,

@@ -205,6 +205,9 @@ export type ImportedImage = {
 export function importImage(bytes: Uint8Array, codec: ImageCodec, maxSide?: number): Promise<Result<ImportedImage, ImageImportFailure>>;
 
 // @public
+export function importSvgBatch(input: SvgBatchInput, options: SvgBatchOptions): Promise<SvgBatchReport>;
+
+// @public
 export function importSvgShape(input: string, options: SvgImportOptions): Promise<Result<SvgImportResult, readonly Diagnostic[]>>;
 
 // @public
@@ -459,6 +462,55 @@ export type ShapePackSourceData = {
 export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
 
 // @public
+export type SvgBatchFile = {
+    readonly path: string;
+    readonly bytes: Uint8Array;
+};
+
+// @public
+export type SvgBatchInput = {
+    readonly kind: "files";
+    readonly files: readonly SvgBatchFile[];
+} | {
+    readonly kind: "zip";
+    readonly bytes: Uint8Array;
+};
+
+// @public
+export type SvgBatchOptions = Omit<SvgImportOptions, "id"> & {
+    readonly ids: Readonly<Record<string, string>>;
+};
+
+// @public
+export type SvgBatchOutcome = {
+    readonly path: string;
+    readonly sourceSha256: string;
+} & ({
+    readonly status: "accepted";
+    readonly value: SvgImportResult;
+} | {
+    readonly status: "refused";
+    readonly diagnostics: readonly Diagnostic[];
+});
+
+// @public
+export type SvgBatchReport = {
+    readonly status: "preflight-failed";
+    readonly enumerationComplete: boolean;
+    readonly diagnostics: readonly Diagnostic[];
+    readonly inputs: readonly {
+        readonly path: string;
+        readonly status: "not-attempted";
+    }[];
+} | {
+    readonly status: "processed";
+    readonly inputCount: number;
+    readonly svgCount: number;
+    readonly acceptedCount: number;
+    readonly inputs: readonly SvgBatchOutcome[];
+};
+
+// @public
 export type SvgImportFont = {
     readonly family: string;
     readonly weight: number;
@@ -620,6 +672,7 @@ export type ZipInput = {
 
 // @public
 export type ZipLimits = {
+    readonly strictNames?: boolean;
     readonly maxEntries?: number;
     readonly maxEntryBytes?: number;
     readonly maxTotalBytes?: number;
