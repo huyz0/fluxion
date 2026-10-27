@@ -115,6 +115,13 @@ export const FONT_LICENSES = {
   allow: ['OFL-1.1', 'Apache-2.0'],
 };
 
+// Shape-pack content licence policy (NFR-LIC-003, ADR-0050, ADR-0182), read by check-licenses.mjs --packs: a pack's artwork is content, so
+// the code allowlist above plus the content-asset licences of tech-stack.md §3 rule 1. It is core's `shapePackContentLicenses`, which a
+// harness test keeps equal; it never authorizes a code dependency. check-drift treats a new allowed licence as weakening.
+export const SHAPE_CONTENT_LICENSES = {
+  allow: [...LICENSES.allow, 'OFL-1.1', 'CC0-1.0', 'CC-BY-4.0'],
+};
+
 export const t = (key) => {
   const entry = THRESHOLDS[key];
   if (!entry) throw new Error(`Unknown threshold ${key}`);

@@ -2,7 +2,7 @@
 // never GPL-family or watermark libraries, and every workspace is MIT.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { out, REPO, sandbox, TRANSIENT } from './helpers.mjs';
@@ -52,7 +52,7 @@ it('HARNESS NFR-LIC-001: license fixtures ignore a package archive removed after
   }
 });
 
-describe('check-licenses (NFR-LIC-001, NFR-LIC-002)', () => {
+describe('check-licenses (NFR-LIC-001, NFR-LIC-002, NFR-LIC-003)', () => {
   beforeEach(() => {
     sb = sandbox(['scripts', 'tools', 'LICENSE', 'NOTICE']);
     // of each workspace only what the gate reads: its top-level files (package.json, LICENSE, fonts.json, catalog.json) and the font files
@@ -173,6 +173,82 @@ describe('check-licenses (NFR-LIC-001, NFR-LIC-002)', () => {
     manifest([ok]);
     sb.write('packs/basic/catalog.json', JSON.stringify({ families: [{ name: 'Ubuntu', license: 'LicenseRef-UFL' }] }));
     assert.match(out(licenses()), /Ubuntu: font licence LicenseRef-UFL is not on the font allowlist/);
+  });
+
+  // a pack's built index as check-licenses reads it, valid until a case changes it (NFR-LIC-003, ADR-0050)
+  const credit = { id: 'fluxion', license: 'MIT', attribution: 'Fluxion contributors', notice: 'MIT License', source: { kind: 'original' } };
+  const packIndex = (change = (index) => index) =>
+    sb.write(
+      'packs/basic/pack/index.json',
+      JSON.stringify(change({ id: 'basic', license: 'MIT', attribution: 'Fluxion contributors', credits: [credit], categories: {} })),
+    );
+  const packs = (files = {}) => {
+    for (const [key, entries] of Object.entries(files)) sb.write(`listings/${key}.json`, listing(entries));
+    return sb.node('scripts/gates/check-licenses.mjs', ['--packs', '--dir', sb.dir, '--json-dir', sb.path('listings')]);
+  };
+
+  it('NFR-LIC-003: --packs checks the real packs, their dependencies and content declarations', () => {
+    const real = sb.node('scripts/gates/check-licenses.mjs', ['--packs', '--dir', REPO]);
+    assert.equal(real.status, 0, out(real));
+    const built = workspaces.filter(({ dir }) => existsSync(join(REPO, dir, 'pack/index.json'))).length;
+    assert.ok(built > 0);
+    assert.match(real.stdout, new RegExp(`; ${built} pack indexes declare allowed content licences and credits`));
+  });
+
+  it('NFR-LIC-003: asset-only licenses do not authorize code dependencies', () => {
+    // CC-BY-4.0 artwork is allowed in a pack, and the same licence on the pack's code dependency still fails
+    packIndex((index) => ({ ...index, license: 'CC-BY-4.0', credits: [{ ...credit, license: 'CC-BY-4.0' }] }));
+    assert.equal(packs().status, 0, out(packs()));
+    for (const r of [packs({ 'pack-basic': [['art-lib', 'CC-BY-4.0']] }), licenses({ prod: [['font-lib', 'OFL-1.1']] })]) {
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /(art-lib|font-lib)@1\.0\.0 \((CC-BY-4\.0|OFL-1\.1)\) is not an allowed licence for shipped code/);
+    }
+  });
+
+  it('NFR-LIC-003: missing pack notices and forbidden asset licenses fail', () => {
+    const fails = (change, expected) => {
+      packIndex(change);
+      for (const r of [packs(), licenses()]) {
+        assert.equal(r.status, 1, out(r));
+        assert.match(r.stderr, expected);
+      }
+    };
+    fails((index) => ({ ...index, credits: [{ ...credit, notice: ' ' }] }), /packs\/basic\/pack\/index\.json credit fluxion: no notice/);
+    fails((index) => ({ ...index, credits: [{ ...credit, attribution: undefined }] }), /credit fluxion: no attribution/);
+    fails((index) => ({ ...index, credits: [] }), /packs\/basic\/pack\/index\.json: no credits/);
+    fails((index) => ({ ...index, attribution: '' }), /packs\/basic\/pack\/index\.json: no attribution/);
+    fails(
+      (index) => ({ ...index, credits: [credit, { ...credit, id: 'nc', license: 'CC-BY-NC-4.0' }] }),
+      /credit nc: content licence CC-BY-NC-4\.0 is not allowed for pack artwork/,
+    );
+    // an MIT wrapper cannot hide a forbidden licence in an AND expression
+    fails((index) => ({ ...index, license: 'MIT AND CC-BY-NC-4.0' }), /index\.json: content licence MIT AND CC-BY-NC-4\.0 is not allowed/);
+    // a definition's own licence is checked too
+    sb.write('packs/basic/pack/categories/a.json', JSON.stringify({ definitions: [{ id: 'basic:a', license: 'CC-BY-SA-4.0' }] }));
+    fails((index) => ({ ...index, categories: { a: { path: 'categories/a.json' } } }), /categories\/a\.json basic:a: content licence CC-BY-SA-4\.0/);
+  });
+
+  it('NFR-LIC-003: pack missing license fails', () => {
+    packIndex(({ license, ...index }) => index);
+    const r = packs();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /packs\/basic\/pack\/index\.json: no licence/);
+  });
+
+  it('NFR-LIC-003: pack forbidden license fails', () => {
+    for (const license of ['GPL-3.0-only', 'LicenseRef-Proprietary', 'All rights reserved']) {
+      packIndex((index) => ({ ...index, license }));
+      const r = packs();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /packs\/basic\/pack\/index\.json: content licence .* is not allowed for pack artwork/);
+    }
+  });
+
+  it("NFR-LIC-003: the gate's content licences are core's shapePackContentLicenses", async () => {
+    const { SHAPE_CONTENT_LICENSES } = await import(join(REPO, 'scripts/gates/thresholds.mjs'));
+    const source = readFileSync(join(REPO, 'packages/core/src/shape/content-license-policy.ts'), 'utf8');
+    const list = /shapePackContentLicenses: readonly string\[\] = Object\.freeze\(\[([^\]]*)\]\)/.exec(source)?.[1] ?? '';
+    assert.deepEqual([...SHAPE_CONTENT_LICENSES.allow].sort(), [...list.matchAll(/'([^']+)'/g)].map((m) => m[1]).sort());
   });
 
   it('fails when a package LICENSE is missing, a package is not MIT, or NOTICE is missing (NFR-LIC-001)', () => {

@@ -59,8 +59,14 @@ async function thresholdWeakening() {
   const [oldMod, curMod] = [await load(before), after === null ? {} : await load(after)];
   const [old, cur] = [oldMod.THRESHOLDS ?? {}, curMod.THRESHOLDS ?? {}];
   const keys = Object.entries(old).map(([key, o]) => keyWeakening(key, o, cur[key]));
-  const fonts = (oldMod.FONT_LICENSES?.allow ? (curMod.FONT_LICENSES?.allow ?? []) : []).filter((l) => !oldMod.FONT_LICENSES.allow.includes(l));
-  return [...licenceWeakening(oldMod.LICENSES, curMod.LICENSES), ...fonts.map((l) => `FONT_LICENSES.allow gained ${l}`), ...keys.filter((w) => w !== null)];
+  const gainedBy = (name) =>
+    (oldMod[name]?.allow ? (curMod[name]?.allow ?? []) : []).filter((l) => !oldMod[name].allow.includes(l)).map((l) => `${name}.allow gained ${l}`);
+  return [
+    ...licenceWeakening(oldMod.LICENSES, curMod.LICENSES),
+    ...gainedBy('FONT_LICENSES'),
+    ...gainedBy('SHAPE_CONTENT_LICENSES'),
+    ...keys.filter((w) => w !== null),
+  ];
 }
 
 /** How threshold `key` weakened from `o` to `n`, or null. */

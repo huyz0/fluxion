@@ -6,12 +6,14 @@
 // Shipped (production) dependencies must use an allowed licence; EPL/LGPL only in the named packs.
 // Every dependency, dev tools of every workspace included, is checked against the deny list.
 // Every workspace ships the MIT LICENSE and declares "license": "MIT"; the root has NOTICE.
+// Every pack's built index declares an allowed content licence, an attribution and complete credits (NFR-LIC-003, ADR-0050).
+//   check-licenses.mjs --packs          only the packs: their dependencies and their content declarations (M18.33)
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { REPO_ROOT, run } from './lib.mjs';
 import { parseSpdx, satisfiable } from './spdx.mjs';
-import { FONT_LICENSES, LICENSES } from './thresholds.mjs';
+import { FONT_LICENSES, LICENSES, SHAPE_CONTENT_LICENSES } from './thresholds.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k) => {
@@ -20,6 +22,7 @@ const opt = (k) => {
 };
 const root = opt('dir') ? resolve(opt('dir')) : REPO_ROOT;
 const jsonDir = opt('json-dir');
+const packsOnly = argv.includes('--packs');
 const errors = [];
 
 // tests put <key>.json (a listing) or <key>.fail (a failed pnpm run, its text) in --json-dir
@@ -88,10 +91,11 @@ function checkShipped(pkgs, allow, where) {
 
 const { workspaces } = JSON.parse(readFileSync(join(root, 'tools/gen/workspaces.json'), 'utf8'));
 const packs = workspaces.filter((w) => w.dir.startsWith('packs/'));
-const shippedCore = listing('prod', ['--prod', '--filter', './packages/**', '--filter', './apps/**']);
+const shippedCore = packsOnly ? [] : listing('prod', ['--prod', '--filter', './packages/**', '--filter', './apps/**']);
 checkShipped(shippedCore, LICENSES.allow, 'packages/apps');
 // -r: every workspace's devDependencies, not only the root's (M1.15 review F2)
-const everything = [...shippedCore, ...listing('dev', ['--dev', '--recursive'])];
+const everything = packsOnly ? [] : [...shippedCore, ...listing('dev', ['--dev', '--recursive'])];
+// a pack's code dependencies take the code allowlist and its named exception only: the content licences below never authorize code
 for (const w of packs) {
   const pkgs = listing(`pack-${w.dir.split('/')[1]}`, ['--prod', '--filter', `./${w.dir}`]);
   checkShipped(pkgs, [...LICENSES.allow, ...(LICENSES.packExceptions[w.dir] ?? [])], w.dir);
@@ -141,11 +145,44 @@ for (const w of packs) {
   for (const f of existsSync(catalog) ? (readJson(catalog)?.families ?? []) : []) fontOk(`${w.dir}/catalog.json ${f.name ?? '(no name)'}`, f.license);
 }
 
+// shape-pack content (NFR-LIC-003, ADR-0050): a pack's built index declares an allowed content licence and an attribution, and every
+// credit (and a definition's own licence, if any) an allowed licence, an attribution and its notice text; nothing is repaired
+const text = (v) => typeof v === 'string' && v.trim() !== '';
+const contentOk = (where, license) => {
+  if (!text(license)) errors.push(`${where}: no licence`);
+  else if (!allowedBy(license, SHAPE_CONTENT_LICENSES.allow))
+    errors.push(`${where}: content licence ${license} is not allowed for pack artwork (${SHAPE_CONTENT_LICENSES.allow.join(', ')})`);
+};
+let packIndexes = 0;
+for (const w of packs) {
+  const file = join(root, w.dir, 'pack', 'index.json');
+  if (!existsSync(file)) continue;
+  const index = readJson(file);
+  if (index === null) continue;
+  packIndexes++;
+  const where = `${w.dir}/pack/index.json`;
+  contentOk(where, index.license);
+  if (!text(index.attribution)) errors.push(`${where}: no attribution`);
+  const credits = Array.isArray(index.credits) ? index.credits : [];
+  if (credits.length === 0) errors.push(`${where}: no credits`);
+  for (const c of credits) {
+    const at = `${where} credit ${c?.id ?? '(no id)'}`;
+    contentOk(at, c?.license);
+    if (!text(c?.attribution)) errors.push(`${at}: no attribution`);
+    if (!text(c?.notice)) errors.push(`${at}: no notice`);
+  }
+  for (const category of Object.values(index.categories ?? {})) {
+    const path = join(root, w.dir, 'pack', String(category?.path));
+    if (!inside(join(root, w.dir, 'pack'), String(category?.path)) || !existsSync(path)) continue;
+    for (const d of readJson(path)?.definitions ?? []) if (d?.license !== undefined) contentOk(`${w.dir}/pack/${category.path} ${d.id}`, d.license);
+  }
+}
+
 // our own licence files (NFR-LIC-001)
 const mit = (file) => existsSync(file) && /^MIT License/m.test(readFileSync(file, 'utf8'));
-if (!mit(join(root, 'LICENSE'))) errors.push('LICENSE at the repo root is missing or not MIT');
-if (!existsSync(join(root, 'NOTICE'))) errors.push('NOTICE at the repo root is missing');
-for (const w of workspaces) {
+if (!packsOnly && !mit(join(root, 'LICENSE'))) errors.push('LICENSE at the repo root is missing or not MIT');
+if (!packsOnly && !existsSync(join(root, 'NOTICE'))) errors.push('NOTICE at the repo root is missing');
+for (const w of packsOnly ? packs : workspaces) {
   if (!mit(join(root, w.dir, 'LICENSE'))) errors.push(`${w.dir}/LICENSE is missing or not MIT`);
   const license = JSON.parse(readFileSync(join(root, w.dir, 'package.json'), 'utf8')).license;
   if (license !== 'MIT') errors.push(`${w.dir}/package.json license is ${license ?? 'missing'}, not MIT`);
@@ -155,4 +192,8 @@ if (errors.length) {
   for (const e of errors) console.error(`licenses: ${e}`);
   process.exit(1);
 }
-console.log(`licenses: ${everything.length} dependencies checked; ${workspaces.length} workspaces MIT`);
+console.log(
+  packsOnly
+    ? `licenses: ${everything.length} pack dependencies checked; ${packIndexes} pack indexes declare allowed content licences and credits`
+    : `licenses: ${everything.length} dependencies checked; ${workspaces.length} workspaces MIT; ${packIndexes} pack indexes credited`,
+);

@@ -3280,3 +3280,6 @@ Renamed packs/bpmn to packs/bpmn-lite and the package to @fluxion/pack-bpmn-lite
 ## M18.129 — One shared pack test for every first-party pack (2026-10-27)
 
 Every pack.test.ts now calls testShapePack from @fluxion/sdk/testing with only its source and globs; a harness check refuses a pack test that compares or writes by itself (ADR-0199).
+## M18.33 — Pack license gate (2026-10-27)
+
+check-licenses refuses a first-party pack index, credit or definition whose content licence is missing or outside SHAPE_CONTENT_LICENSES (core's list, kept equal by a harness test), and missing attributions or notices; --packs runs the pack checks alone; content licences never authorize code dependencies; check-drift treats a new content licence as weakening. The credits views move to M18.143.

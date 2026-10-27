@@ -113,6 +113,11 @@ describe('check-drift (NFR-DX-004)', () => {
       /packageExceptions\[caniuse-lite\] gained GPL-3\.0-only/,
     ],
     'a font licence added': ["allow: ['OFL-1.1', 'Apache-2.0']", "allow: ['OFL-1.1', 'Apache-2.0', 'UFL-1.0']", /FONT_LICENSES\.allow gained UFL-1\.0/],
+    'a shape content licence added': [
+      "'OFL-1.1', 'CC0-1.0', 'CC-BY-4.0']",
+      "'OFL-1.1', 'CC0-1.0', 'CC-BY-4.0', 'CC-BY-NC-4.0']",
+      /SHAPE_CONTENT_LICENSES\.allow gained CC-BY-NC-4\.0/,
+    ],
     'a denied package dropped': ["'bpmn-js', ", '', /LICENSES\.denyPackages lost bpmn-js/],
   };
   for (const [name, [from, to, expected]] of Object.entries(licenceWeakenings)) {
