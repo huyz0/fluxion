@@ -169,6 +169,16 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.match(r.stderr, /is not at or after the final review range end of M9/);
   });
 
+  it('--since needs the recorded sha at or after the given commit (M18.135)', () => {
+    const before = check(record(sha.m121), green(sha.m121), ['--since', sha.new]);
+    assert.equal(before.status, 1, out(before));
+    assert.match(before.stderr, /is not at or after [0-9a-f]{7}/);
+    for (const s of [sha.new, sha.end]) assert.equal(check(record(s), green(s), ['--since', sha.new]).status, 0, s);
+    const unknown = check(record(sha.new), green(sha.new), ['--since', '0'.repeat(40)]);
+    assert.equal(unknown.status, 1, out(unknown));
+    assert.match(unknown.stderr, /no such commit/);
+  });
+
   it('--milestone passes a sha at or after the final review range end', () => {
     for (const s of [sha.end, sha.book]) {
       const r = check(record(s), green(s), ['--milestone', 'M9']);

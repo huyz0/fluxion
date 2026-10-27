@@ -40,6 +40,10 @@ describe('gates workflow (NFR-PORT-005)', () => {
     const runs = [...step.matchAll(/^ {8}run: (.*)$/gm)].map((m) => m[1]);
     assert.deepEqual(runs, ['node scripts/gates/check-commits.mjs --range "$BASE..$HEAD_SHA"'], 'one single-line call, no inline shell');
     assert.doesNotMatch(step, /shell:|0000000000|e4273a6/, 'the base fallback lives in check-commits.mjs');
+    // a commit closing a blocking row has its CI evidence read live, with a read-only actions token (M18.135)
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal GitHub Actions expression, not a JS template
+    assert.ok(step.includes('GH_TOKEN: ${{ github.token }}'), 'check-commits can read CI runs');
+    assert.match(wf, /^permissions:\n {2}contents: read\n(?: {2}#.*\n)* {2}actions: read$/m);
     // the full ladder runs once per OS: exactly one workflow has a three-OS matrix running it
     const threeOs = WORKFLOWS.filter((name) => {
       const text = workflow(name);

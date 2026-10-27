@@ -61,9 +61,11 @@ describe('land (M18.106)', () => {
     ok(git(other, 'push', '-q', 'origin', 'HEAD:main'));
   }
   /** A reviewed task commit made through the real hooks. */
-  function reviewed(task, file, text) {
-    sb.write(file, text);
-    ok(sb.git('add', file));
+  function reviewed(task, file, text, extra = {}) {
+    for (const [path, body] of [[file, text], ...Object.entries(extra)]) {
+      sb.write(path, body);
+      ok(sb.git('add', path));
+    }
     const hash = ok(sb.node('scripts/harness/review.mjs', ['hash']));
     sb.write('.harness/tmp/v.json', JSON.stringify({ task, kind: 'code', diff_sha256: hash, reviewer: 'test:unit', verdict: 'pass', findings: [] }));
     ok(sb.node('scripts/harness/review.mjs', ['record', '--file', sb.path('.harness/tmp/v.json'), '--task', task]));
@@ -245,11 +247,14 @@ describe('land (M18.106)', () => {
     const before = remoteHead();
     const refused = land('--push');
     assert.equal(refused.status, 1, out(refused));
-    assert.match(refused.stderr, /\(M0\.14: test: src\/feature\.txt\) may not land: M0\.14 is not a harness row and M0\.13 blocks landing/);
+    assert.match(
+      refused.stderr,
+      /\(M0\.14: test: src\/feature\.txt\) may not land: M0\.14 changes src\/feature\.txt, which is not a harness path, and M0\.13 blocks landing/,
+    );
     assert.equal(head(), start);
     assert.equal(remoteHead(), before);
     reset();
-    reviewed('M0.15', 'src/gate.txt', 'gate\n');
+    reviewed('M0.15', 'scripts/gates/gate.txt', 'gate\n');
     const landed = land('--push');
     assert.equal(landed.status, 0, out(landed));
     assert.equal(remoteHead(), head());
@@ -258,6 +263,71 @@ describe('land (M18.106)', () => {
     reviewed('M0.16', 'docs/backlog/current.md', backlog);
     const own = land('--push');
     assert.equal(own.status, 0, out(own));
+    assert.equal(remoteHead(), head());
+  });
+
+  it('while a row blocks landing, lands only harness-path commits and closes the row only with CI evidence for the tip (M18.135)', () => {
+    reset();
+    const BACKLOG = 'docs/backlog/current.md';
+    upstream(BACKLOG, '| M0.13 | CI green `blocks-landing` | HARNESS | acceptance | | todo | |\n');
+    reset();
+    const runsFile = `${sb.dir}-runs.json`;
+    // what GitHub reports for runs 1 (gates) and 2 (ci) of `sha`
+    const runs = (sha) => {
+      const job = (name) => ({ name, conclusion: 'success' });
+      const ci = ['verify (ubuntu-latest)', 'verify (windows-latest)', 'verify (macos-latest)', 'visual', 'lighthouse'].map(job);
+      writeFileSync(
+        runsFile,
+        JSON.stringify([
+          { databaseId: 1, workflowName: 'gates', headSha: sha, conclusion: 'success', jobs: [job('gates')] },
+          { databaseId: 2, workflowName: 'ci', headSha: sha, conclusion: 'success', jobs: ci },
+        ]),
+      );
+    };
+    const refusedBy = (why, pattern) => {
+      const start = head();
+      const before = remoteHead();
+      const r = land('--push', '--ci-runs-file', runsFile);
+      assert.equal(r.status, 1, `${why}: ${out(r)}`);
+      assert.match(r.stderr, pattern);
+      assert.equal(head(), start, why);
+      assert.equal(remoteHead(), before, why);
+      reset();
+    };
+    // a row added as HARNESS by an earlier harness-path commit does not let a later commit touching packages/ land
+    reviewed('M0.17', BACKLOG, `${sb.read(BACKLOG)}| M0.17 | gate | HARNESS | acceptance | | todo | |\n`);
+    const added = land('--push');
+    assert.equal(added.status, 0, out(added));
+    reviewed('M0.17', 'packages/core/src/x.ts', 'export {};\n');
+    refusedBy('packages', /M0\.17 changes packages\/core\/src\/x\.ts, which is not a harness path/);
+    // a commit under its own HARNESS row touching product or contract sources under scripts/ or docs/
+    reviewed('M0.17', 'scripts/fonts/subset.mjs', 'x\n');
+    refusedBy('scripts/fonts', /M0\.17 changes scripts\/fonts\/subset\.mjs, which is not a harness path/);
+    // (docs/requirements/ would trip this sandbox's trace gate first; check-checkpoint's test covers it)
+    reviewed('M0.17', 'docs/architecture/notes.md', 'x\n');
+    refusedBy('docs/architecture', /M0\.17 changes docs\/architecture\/notes\.md, which is not a harness path/);
+    // closing the blocking row needs a green three-OS record for the tip it lands on
+    const done = () => sb.read(BACKLOG).replace('| todo |', '| done |');
+    reviewed('M0.13', 'scripts/gates/close.txt', 'close\n', { [BACKLOG]: done() });
+    refusedBy('no record', /M0\.13: it closes M0\.13 \(done, removed or unmarked\) without a green three-OS CI record/);
+    const record = (sha) => `${JSON.stringify({ sha, runs: { gates: 1, ci: 2 } })}\n`;
+    const close = () => {
+      const tip = head();
+      reviewed('M0.13', 'scripts/gates/close.txt', 'close\n', { [BACKLOG]: done(), '.harness/reviews/ci-evidence.json': record(tip) });
+      return tip;
+    };
+    // another commit lands first, so the record, green for its own sha, no longer covers the tip
+    runs(close());
+    upstream('src/moved.txt', 'moved\n');
+    refusedBy('a stale record', /without a green three-OS CI record for its parent or later/);
+    // a record GitHub does not hold as green on that sha is not evidence (r1 F2)
+    const tip = close();
+    runs(ok(sb.git('rev-parse', `${tip}~1`)));
+    refusedBy('a forged record', /without a green three-OS CI record/);
+    runs(close());
+    const closed = land('--push', '--ci-runs-file', runsFile);
+    rmSync(runsFile, { force: true });
+    assert.equal(closed.status, 0, out(closed));
     assert.equal(remoteHead(), head());
   });
 });

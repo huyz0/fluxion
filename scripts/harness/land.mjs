@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 // Land reviewed local task commits on a moving remote branch (M18.106, ADR-0195):
-//   land.mjs [--remote origin] [--branch main] [--push] [--attempts 3]
+//   land.mjs [--remote origin] [--branch main] [--push] [--attempts 3] [--ci-runs-file f (tests)]
 // Each attempt fetches, re-applies the local commits onto the remote branch one by one,
 // regenerates the API reports and traceability, and commits each through the real hooks, so
 // commit-msg, checkpoint, the precommit ladder and the content-bound review check run on the tree
 // that will land. Missing Commit cells of done rows are filled and cells naming a rewritten commit
 // follow it (bookkeeping). A conflict or any refused gate stops the run with the local branch back
-// where it started; nothing is pushed. While a `blocks-landing` row is open, only harness rows and
-// that row land (M18.123). With --push, the result is pushed as a fast-forward, retried when the branch moved.
+// where it started; nothing is pushed. While a `blocks-landing` row is open, only that row's commits
+// and commits confined to harness paths land, and closing it needs CI evidence (M18.123, M18.135). With --push, the result is pushed as a fast-forward, retried when the branch moved.
 // Pushing still needs a human's request (skill ship).
 import { existsSync, realpathSync, statSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { landingBlock } from '../gates/landing-block.mjs';
+import { ciEvidenceHolds, landingBlock } from '../gates/landing-block.mjs';
 import { exists, git, node, repoPath, run } from '../gates/lib.mjs';
 
 const argv = process.argv.slice(2);
@@ -20,6 +20,7 @@ const opt = (name, fallback) => {
   return i >= 0 ? argv[i + 1] : fallback;
 };
 const BACKLOG = 'docs/backlog/current.md';
+const CI_EVIDENCE = '.harness/reviews/ci-evidence.json';
 const lines = (r) => r.stdout.split(/\r?\n/).filter(Boolean);
 const fail = (message) => ({ ok: false, message });
 
@@ -101,7 +102,17 @@ function recommit(upstream, start) {
   for (const sha of commits) {
     const subject = must(['log', '-1', '--format=%s', sha], 'read the subject');
     const paths = lines(git(['diff', '--name-only', '--no-renames', `${sha}^`, sha]));
-    const blocked = landingBlock(git(['show', `HEAD:${BACKLOG}`]).stdout, subject, git(['show', `${sha}:${BACKLOG}`]).stdout, paths);
+    const blocked = landingBlock({
+      backlog: git(['show', `HEAD:${BACKLOG}`]).stdout,
+      subject,
+      // the commit's own change decides whether it closes a row; it may predate the mark
+      before: git(['show', `${sha}^:${BACKLOG}`]).stdout,
+      proposed: git(['show', `${sha}:${BACKLOG}`]).stdout,
+      paths,
+      evidence: git(['show', `${sha}:${CI_EVIDENCE}`]).stdout,
+      // the re-applied commit's parent is the remote tip it lands on
+      evidenceOk: (record) => ciEvidenceHolds(record, must(['rev-parse', 'HEAD'], 'read the tip'), { runsFile: opt('ci-runs-file') }),
+    });
     if (blocked) return fail(`${sha.slice(0, 7)} (${subject}) may not land: ${blocked}`);
     const picked = git(['cherry-pick', '-n', sha]);
     if (picked.status !== 0)

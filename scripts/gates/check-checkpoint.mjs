@@ -2,12 +2,13 @@
 // Check the pending index or one exact CI commit, never unstaged checkpoint files.
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { landingBlock } from './landing-block.mjs';
+import { ciEvidenceHolds, landingBlock } from './landing-block.mjs';
 import { git } from './lib.mjs';
 
 const POLICY = 'scripts/gates/check-checkpoint.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
 const BACKLOG = 'docs/backlog/current.md';
+const CI_EVIDENCE = '.harness/reviews/ci-evidence.json';
 const taskSubject = /^M\d+\.\d+:/;
 const result = (ok, detail) => ({ ok, detail: `checkpoint: ${detail}` });
 const readAt = (tree, path) => {
@@ -104,30 +105,34 @@ async function limitAt(tree) {
 
 /**
  * Blocking rows are judged on exact commits only (CI): local commits stay allowed while a row blocks
- * landing (M18.123 r1 F1). The parent backlog decides, so a feature commit cannot clear the mark itself.
+ * landing (M18.123 r1 F1). The parent backlog decides, so a feature commit cannot clear the mark itself;
+ * closing the row needs a CI record at or after the parent that check-ci-evidence holds live (M18.135).
  */
-const blockedAt = (commit, base, subject) =>
-  commit
-    ? landingBlock(
-        readAt(base, BACKLOG),
+const blockedAt = (commit, base, subject, runsFile) =>
+  commit && base
+    ? landingBlock({
+        backlog: readAt(base, BACKLOG),
         subject,
-        readAt(commit, BACKLOG),
-        checkedGit(['diff', '--name-only', '--no-renames', base, commit]).split(/\r?\n/).filter(Boolean),
-      )
+        proposed: readAt(commit, BACKLOG),
+        paths: checkedGit(['diff', '--name-only', '--no-renames', base, commit]).split(/\r?\n/).filter(Boolean),
+        evidence: readAt(commit, CI_EVIDENCE),
+        evidenceOk: (record) => ciEvidenceHolds(record, base, { runsFile }),
+      })
     : null;
 
 /** Enforce prospectively; historical commits without the policy are exempt, deletion is not. */
-export async function checkCheckpoint({ message, commit } = {}) {
+export async function checkCheckpoint({ message, commit, runsFile } = {}) {
   const tree = commit ? resolve(commit) : 'index';
   if (!tree) return result(false, 'invalid commit');
   const subject = commit ? checkedGit(['log', '-1', '--format=%s', tree]) : String(message ?? '').split(/\r?\n/)[0];
+  const base = commit ? resolve(`${tree}^`) : resolve('HEAD');
+  // a blocking row judges every exact commit, task or not (M18.135 r1 F1)
+  const blocked = blockedAt(commit, base, subject, runsFile);
+  if (blocked) return result(false, blocked);
   if (!taskSubject.test(subject)) return result(true, 'not a task commit');
   const policy = policyStatus(tree, Boolean(commit));
   if (policy) return policy;
-  const base = commit ? resolve(`${tree}^`) : resolve('HEAD');
   if (!base) return result(true, 'first commit has no preceding tasks');
-  const blocked = blockedAt(commit, base, subject);
-  if (blocked) return result(false, blocked);
   const milestone = milestoneAt(base);
   if (!milestone) return result(false, 'parent roadmap has no current milestone');
   const context = { base, milestone, ...milestoneStart(base, milestone) };
@@ -147,14 +152,15 @@ async function main() {
     return i < 0 ? undefined : process.argv[i + 1];
   };
   const commit = arg('--commit'),
-    messageFile = arg('--message');
+    messageFile = arg('--message'),
+    runsFile = arg('--ci-runs-file'); // stands in for GitHub when a commit closes a blocking row (tests)
   if (Boolean(commit) === Boolean(messageFile)) {
-    console.error('usage: check-checkpoint.mjs --message <file> | --commit <sha>');
+    console.error('usage: check-checkpoint.mjs --message <file> | --commit <sha> [--ci-runs-file <f>]');
     process.exitCode = 2;
     return;
   }
   try {
-    const verdict = await checkCheckpoint({ commit, message: messageFile ? readFileSync(messageFile, 'utf8') : undefined });
+    const verdict = await checkCheckpoint({ commit, runsFile, message: messageFile ? readFileSync(messageFile, 'utf8') : undefined });
     console.log(verdict.detail);
     process.exitCode = verdict.ok ? 0 : 1;
   } catch (error) {

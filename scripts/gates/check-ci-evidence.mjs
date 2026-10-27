@@ -14,6 +14,8 @@
 //                     the @perf Playwright specs on the CI perf runner, passed on a commit at or after the same floor (M16 final F3)
 //                     The nightly's perf step, as the run's commit has it, must run with --retries=0, so that the job's success means every spec passed on its
 //                     first attempt, as a local leg demands (M16 final F12: a pass on retry hid a first render over its bound)
+//   --since <sha>     instead of --after: <sha> must be at or after this commit (land.mjs and
+//                     check-checkpoint closing a `blocks-landing` row, M18.135)
 //   --file <f>        another record (tests)
 //   --runs-file <f>   JSON array of `gh run view --json databaseId,workflowName,headSha,conclusion,jobs`
 //                     objects used instead of GitHub (tests)
@@ -86,6 +88,8 @@ function lastCodeCommit() {
 
 /** [label, sha] the recorded sha must be at or after; sha is '' when it cannot be found. */
 function floor() {
+  const since = opt('since');
+  if (since) return [since.slice(0, 7), git(['rev-parse', '--verify', '--quiet', `${since}^{commit}`]).stdout.trim()];
   if (!milestone) return [after, git(['log', '-1', '--format=%H', '--grep', `^${after.replace('.', '\\.')}:`]).stdout.trim()];
   const review = repoPath('.harness', 'reviews', `milestone-${milestone}-final.json`);
   if (!existsSync(review)) return [`HEAD's last non-bookkeeping commit (no ${milestone} final review yet)`, lastCodeCommit()];

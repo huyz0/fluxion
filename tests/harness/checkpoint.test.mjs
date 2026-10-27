@@ -268,15 +268,17 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
       git(f.sb, 'commit', '-qam', 'mark the blocking row');
       const feature = exact('M18.31: feat(packs): a feature', 'feature.txt');
       assert.equal(feature.status, 1, out(feature));
-      assert.match(out(feature), /M18\.31 is not a harness row and M18\.30 blocks landing/);
-      assert.equal(exact('M18.32: fix(harness): a gate', 'gate.txt').status, 0);
+      assert.match(out(feature), /M18\.31 changes feature\.txt, which is not a harness path, and M18\.30 blocks landing/);
+      assert.equal(exact('M18.32: fix(harness): a gate', 'scripts/gates/gate.txt').status, 0);
       assert.equal(exact('M18.30: fix(ci): the blocking row', 'ci.txt').status, 0);
       // work continues locally: the commit-msg hook does not refuse the feature (r1 F1)
       const local = pending(f.sb, 'M18.31: feat(packs): a feature');
       assert.equal(local.status, 0, out(local));
-      // a feature commit cannot clear the mark itself: the parent backlog decides
+      // a feature commit cannot clear the mark itself: closing it needs CI evidence (M18.135)
       f.sb.write('docs/backlog/current.md', f.sb.read('docs/backlog/current.md').replace('| todo | |\n| M18.31', '| done | |\n| M18.31'));
-      assert.equal(exact('M18.31: feat(packs): a feature', 'docs/backlog/current.md').status, 1);
+      const clear = exact('M18.31: feat(packs): a feature', 'docs/backlog/current.md');
+      assert.equal(clear.status, 1, out(clear));
+      assert.match(out(clear), /closes M18\.30 \(done, removed or unmarked\) without a green three-OS CI record/);
       f.sb.write('docs/backlog/current.md', f.sb.read('docs/backlog/current.md').replace('| todo | |\n| M18.31', '| done | |\n| M18.31'));
       git(f.sb, 'commit', '-qam', 'M18.30: fix(ci): the blocking row');
       const after = exact('M18.31: feat(packs): a feature', 'feature.txt');
@@ -286,7 +288,7 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
     }
   });
 
-  it('a harness commit may bring its own row while a row blocks landing, but no commit can relabel its parent row (M18.139)', () => {
+  it('a commit confined to harness paths may bring its own row while a row blocks landing; a label exempts nothing (M18.139, M18.135)', () => {
     const f = history(2);
     const exact = (subject, edit) => {
       f.sb.write('docs/backlog/current.md', edit(f.sb.read('docs/backlog/current.md')));
@@ -301,17 +303,98 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
       git(f.sb, 'commit', '-qam', 'mark the blocking row');
       const own = exact('M18.40: fix(harness): new gate', (b) => `${b}| M18.40 | gate | HARNESS | acceptance | | done | |\n`);
       assert.equal(own.status, 0, out(own));
+      // the paths decide, whatever the Req cell says (M18.135)
       const newFeature = exact('M18.41: feat(packs): new feature', (b) => `${b}| M18.41 | feature | FR-LIB-007 | acceptance | | done | |\n`);
-      assert.equal(newFeature.status, 1, out(newFeature));
+      assert.equal(newFeature.status, 0, out(newFeature));
       // a self-labelled HARNESS row does not exempt a commit outside harness paths (r1 F1)
       f.sb.write('packages/x.ts', 'export {};\n');
       git(f.sb, 'add', 'packages/x.ts');
       const sneaky = exact('M18.42: feat(packs): sneaky', (b) => `${b}| M18.42 | sneaky | HARNESS | acceptance | | done | |\n`);
       assert.equal(sneaky.status, 1, out(sneaky));
-      assert.match(out(sneaky), /M18\.42 is not a harness row/);
-      const relabel = exact('M18.31: feat(packs): a feature', (b) => b.replace('| M18.31 | feature | FR-LIB-007 |', '| M18.31 | feature | HARNESS |'));
-      assert.equal(relabel.status, 1, out(relabel));
-      assert.match(out(relabel), /M18\.31 is not a harness row and M18\.30 blocks landing/);
+      assert.match(out(sneaky), /M18\.42 changes packages\/x\.ts, which is not a harness path/);
+    } finally {
+      f.sb.cleanup();
+    }
+  });
+
+  it('while a row blocks landing, harness paths are one positive list and closing the row needs CI evidence for its parent (M18.135)', () => {
+    const f = history(2);
+    const BACKLOG = 'docs/backlog/current.md';
+    /** Commit `files` with `subject`, judge the exact commit, and keep it only when `keep`. */
+    const exact = (subject, files, keep = false) => {
+      for (const [path, text] of Object.entries(files)) {
+        f.sb.write(path, typeof text === 'function' ? text(f.sb.read(path)) : text);
+        git(f.sb, 'add', path);
+      }
+      git(f.sb, 'commit', '-qm', subject);
+      const sha = git(f.sb, 'rev-parse', 'HEAD');
+      const r = f.sb.node(POLICY, ['--commit', sha, '--ci-runs-file', f.sb.path('.harness/tmp/runs.json')]);
+      if (!keep) git(f.sb, 'reset', '-q', '--hard', 'HEAD~1');
+      return r;
+    };
+    try {
+      f.sb.write(BACKLOG, `${f.sb.read(BACKLOG)}\n| M18.30 | CI green \`blocks-landing\` | HARNESS | acceptance | | todo | |\n`);
+      git(f.sb, 'commit', '-qam', 'mark the blocking row');
+      // a row added as HARNESS by an earlier harness-path commit does not let a later commit touching packages/ land
+      const added = exact('M18.50: chore(harness): add a row', { [BACKLOG]: (b) => `${b}| M18.50 | gate | HARNESS | acceptance | | todo | |\n` }, true);
+      assert.equal(added.status, 0, out(added));
+      const later = exact('M18.50: feat(harness): the row', { 'packages/core/src/x.ts': 'export {};\n' });
+      assert.equal(later.status, 1, out(later));
+      assert.match(out(later), /M18\.50 changes packages\/core\/src\/x\.ts, which is not a harness path/);
+      // product and contract sources under scripts/ and docs/ are not harness paths
+      for (const path of ['scripts/fonts/subset.mjs', 'docs/requirements/10-functional.md']) {
+        const r = exact('M18.50: fix(harness): the row', { [path]: 'x\n' });
+        assert.equal(r.status, 1, `${path}: ${out(r)}`);
+        assert.match(out(r), /which is not a harness path/);
+      }
+      for (const path of ['scripts/gates/g.mjs', 'scripts/ci/c.mjs', 'scripts/tooling/t.mjs', 'docs/harness/h.md', 'docs/milestones/m.md', '.github/x.yml'])
+        assert.equal(exact('M18.50: fix(harness): the row', { [path]: 'x\n' }).status, 0, path);
+      // closing the blocking row, by any commit, needs a record at or after its parent
+      const parent = git(f.sb, 'rev-parse', 'HEAD');
+      const older = git(f.sb, 'rev-parse', 'HEAD~1');
+      const record = (sha) => `${JSON.stringify({ sha, runs: { gates: 1, ci: 2 } })}\n`;
+      // what GitHub reports for runs 1 (gates) and 2 (ci) of `sha`
+      const runs = (sha) => {
+        const job = (name) => ({ name, conclusion: 'success' });
+        const ci = ['verify (ubuntu-latest)', 'verify (windows-latest)', 'verify (macos-latest)', 'visual', 'lighthouse'].map(job);
+        f.sb.write(
+          '.harness/tmp/runs.json',
+          JSON.stringify([
+            { databaseId: 1, workflowName: 'gates', headSha: sha, conclusion: 'success', jobs: [job('gates')] },
+            { databaseId: 2, workflowName: 'ci', headSha: sha, conclusion: 'success', jobs: ci },
+          ]),
+        );
+      };
+      runs(parent);
+      const done = (b) => b.replace('blocks-landing` | HARNESS | acceptance | | todo |', 'blocks-landing` | HARNESS | acceptance | | done |');
+      for (const [why, files] of [
+        ['no record', { [BACKLOG]: done }],
+        ['a record before the parent', { [BACKLOG]: done, '.harness/reviews/ci-evidence.json': record(older) }],
+        ['a record without both workflows', { [BACKLOG]: done, '.harness/reviews/ci-evidence.json': `${JSON.stringify({ sha: parent, runs: { ci: 2 } })}\n` }],
+        ['an unmarked row', { [BACKLOG]: (b) => b.replace(' `blocks-landing`', '') }],
+      ]) {
+        const r = exact('M18.30: fix(ci): close', files);
+        assert.equal(r.status, 1, `${why}: ${out(r)}`);
+        assert.match(out(r), /M18\.30: it closes M18\.30 \(done, removed or unmarked\) without a green three-OS CI record for its parent or later/);
+      }
+      // a hand-written record whose runs GitHub does not hold as green on that sha is not evidence (r1 F2)
+      runs(older);
+      const forged = exact('M18.30: fix(ci): close', { [BACKLOG]: done, '.harness/reviews/ci-evidence.json': record(parent) });
+      assert.equal(forged.status, 1, out(forged));
+      assert.match(out(forged), /ran [0-9a-f]{7}, not [0-9a-f]{7}/);
+      runs(parent);
+      // a commit that is not a task commit (a Revert, a fixup) is judged too (r1 F1)
+      for (const [why, files] of [
+        ['a revert closing the row', { [BACKLOG]: done }],
+        ['a revert touching packages/', { 'packages/core/src/x.ts': 'export {};\n' }],
+      ]) {
+        const r = exact('Revert "M18.30: mark the blocking row"', files);
+        assert.equal(r.status, 1, `${why}: ${out(r)}`);
+        assert.match(out(r), /"Revert "M18\.30: mark the blocking row""(: it closes| changes packages)/);
+      }
+      assert.equal(exact('fixup! M18.50: gate', { 'scripts/gates/g.mjs': 'y\n' }).status, 0, 'a harness-path fixup lands');
+      const closed = exact('M18.30: fix(ci): close', { [BACKLOG]: done, '.harness/reviews/ci-evidence.json': record(parent) });
+      assert.equal(closed.status, 0, out(closed));
     } finally {
       f.sb.cleanup();
     }
