@@ -2839,3 +2839,8 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - Synced with origin/main 099b3ee first. Core adds versioned index/category/subset parsers; 1.0 input dispatches to the unchanged 1.0 parsers, and the 1.0 parsers refuse 1.1 fixtures.
 - 1.1 checks: profile-exact resources (pinned Inter 400 ASCII hash/size/WOFF2, canonical `fonts/<sha>.woff2`, one resource per hash), reachable faces/resources, single bindings, OFL-1.1/Apache-2.0 font credits covering every bound definition/resource pair. Category/subset closure uses the shared normalizer with bound faces only.
 - Focused 11/11 PASS; four removal probes (closure, credits, bindings, path) each turned tests RED. Lock 1.1 variant, acquisition and retention remain M18.95–97.
+
+## M18 checkpoint cp9 (2026-10-27)
+
+- M18.94 abe812d pushed to main (staged 364.0s PASS, review pass). Root cause of the apparent checkpoint block was a shallow clone, not rewritten history; unshallowed, and core.abbrev=7 keeps staged-diff hashes stable.
+- Fresh cp9 review over 17e4478..099b3ee: changes-requested. F1 (no digest lines for M18.57–63) reopened as M18.99; F2 Commit cells filled; F3 batch-leg ownership folded into M18.16. Work continues in four parallel streams.
