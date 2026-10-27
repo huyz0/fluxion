@@ -3133,3 +3133,8 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - mutation-nightly.test runs the real plan step on a clean clone of HEAD (sharing node_modules): the repository's plan has 276 partitions, and the step writes exactly `matrix`, `matrix_2` and `chains=2`, each matrix within 256 jobs, together listing every partition id of the plan once. The test asserts the over-256 premise, so a shrinking plan fails it loudly rather than passing vacuously.
 - last-ci's unreadable-nightly line is tested (a run-source `queryFails` nightly entry): printed, verdict unchanged.
 - The third clause (M18.10's evidence cites a completed two-chain nightly run) is carried into M18.10's acceptance, and M18.10 depends on M18.137.
+
+## M18.117 — qs override clears a new osv-scanner advisory (2026-10-27)
+
+- main's ci queue drained ~20:20Z; tip dfc4849's run was red on security/osv-scanner: GHSA-6pq8-jhm2-2vcw (CVSS 6.3) on qs 6.16.0, reached through body-parser 1 (express 4 in @lhci/cli) and express 5 (@modelcontextprotocol/sdk, the MCP server). A new `"qs@<6.16.1": 6.16.1` override in pnpm-workspace.yaml, with the advisory named as the other overrides are; `pnpm why qs -r` now shows only 6.16.1. Budget re-recorded with --cold-pending (ADR-0145).
+- The same run's cold-setup took 615 s against the 600 s budget, the first over-budget cold run, at the end of a 21-run backlog; the budget is not loosened, and the next run measures it again. M18.117 stays open: this is one of its task commits, allowed while it blocks landing.

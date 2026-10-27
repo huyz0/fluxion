@@ -1,9 +1,9 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.137",
+  "currentTask": "M18.117",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M18.117 (blocks-landing) cannot close by code: at ~18:30Z 21 ci runs on main are queued; fd6b38a's run finished red at 15:53Z on M18.117's known causes from before its fix 14d7ea0, and aggregator jobs wait hours for a runner. Under M18.135 closing M18.117 needs a green ci run for the exact tip, so stream 1 stops pushing after this landing (cp16 F3). Runner capacity / queue policy is Huy's call.",
-  "updated": "2026-10-27T18:14:00Z"
+  "blockedReason": "M18.117 (blocks-landing): main's ci queue drained ~20:20Z. Tip dfc4849 is red on two jobs: security/osv-scanner (new advisory GHSA-6pq8-jhm2-2vcw on qs 6.16.0, fixed by the M18.117 qs override) and cold-setup (615 s > 600 s budget after the 21-run backlog; re-measured on the next run, not loosened). Closing M18.117 needs a green ci run for the exact tip.",
+  "updated": "2026-10-27T21:01:49Z"
 }
