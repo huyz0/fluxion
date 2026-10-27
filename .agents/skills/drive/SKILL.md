@@ -43,14 +43,16 @@ while the milestone is not qualified complete:
   7  code-review        independent reviewer; record verdict (max 3 rounds)
   8  fix or argue       blocking/major fixed (then back to 6); minors → rows/argued
   9  commit             "<ID>: <type>(<scope>): <summary>" + Co-Authored-By trailer,
-                        without restaging (verdict is bound to the staged hash)
+                        after staging the digest line `record` appended (the verdict is
+                        bound to the content identity, which bookkeeping does not change;
+                        ADR-0195)
  10  gate               at checkpoints/final closeout (or a changed leg needing investigation),
                         run the completion command and print its summary; otherwise report
                         scoped verification and automatic CI, without claiming a full-gate pass
 ```
 
 The commit for a row is found with `git log --grep "^<ID>:"`; the backlog's Commit column is
-filled in by the next task's bookkeeping (or left blank — it is derivable).
+filled in by the next task's bookkeeping, which `check-digest` requires (M18.99).
 
 One row per commit. If a row turns out to be two commits, split the row first.
 

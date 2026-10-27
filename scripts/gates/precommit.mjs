@@ -273,6 +273,13 @@ const STEPS = [
     () => (exists('scripts/gates/check-budget.mjs') ? hasPkg || 'no workspace yet (M1)' : 'not written yet (M1)'),
     () => node('scripts/gates/check-budget.mjs', mode === 'staged' ? ['--staged'] : []),
   ],
+  // every committed task of the active milestone keeps content-bound review evidence and its Commit cell (M18.99, ADR-0195)
+  [
+    'digest',
+    (m) => m !== 'quick',
+    () => (exists('scripts/gates/check-digest.mjs') ? true : 'not written yet (M18)'),
+    () => node('scripts/gates/check-digest.mjs', mode === 'staged' ? [] : ['--head']),
+  ],
   ['reviewed', (m) => m === 'staged' && !argv.has('--no-review'), () => true, () => node('scripts/gates/check-reviewed.mjs')],
 ];
 

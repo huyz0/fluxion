@@ -1,7 +1,7 @@
-// NFR-DX-003 / non-negotiable 4: a commit needs a pass verdict bound to the exact staged bytes.
+// NFR-DX-003 / non-negotiable 4: a commit needs a pass verdict bound to its reviewed content (ADR-0195).
 import assert from 'node:assert/strict';
 import { chmodSync } from 'node:fs';
-import { after, before, describe, it } from 'node:test';
+import { after, afterEach, before, describe, it } from 'node:test';
 import { out, sandbox } from './helpers.mjs';
 
 const TASK = 'M0.5';
@@ -14,6 +14,8 @@ function record(v) {
   return sb.node('scripts/harness/review.mjs', ['record', '--file', sb.path('.harness/tmp/v.json'), '--task', TASK]);
 }
 const checkReviewed = () => sb.node('scripts/gates/check-reviewed.mjs');
+const content = (commit) => sb.node('scripts/harness/review.mjs', commit ? ['content', '--commit', commit] : ['content']).stdout.trim();
+const stageDigest = () => sb.git('add', '.harness/reviews/digest.log');
 function stage(file, text) {
   sb.write(file, text);
   sb.git('add', file);
@@ -36,9 +38,13 @@ describe('review binding (NFR-DX-003)', () => {
     assert.match(r.stderr, /no pass verdict/);
   });
 
-  it('accepts after a pass verdict for this exact diff is recorded', () => {
+  it('accepts after a pass verdict for this exact diff is recorded and its digest line is staged', () => {
     const r = record(verdict());
     assert.equal(r.status, 0, out(r));
+    const unstaged = checkReviewed();
+    assert.equal(unstaged.status, 1, out(unstaged));
+    assert.match(unstaged.stderr, /digest\.log is not staged/);
+    stageDigest();
     assert.equal(checkReviewed().status, 0);
   });
 
@@ -127,7 +133,7 @@ describe('review binding (NFR-DX-003)', () => {
     stage('src/c.txt', 'digest\n');
     assert.equal(record(verdict()).status, 0);
     const digest = sb.read('.harness/reviews/digest.log').trim().split('\n').at(-1).split('\t');
-    assert.deepEqual([digest[0], digest[1], digest[3]], [TASK, hash(), 'pass']);
+    assert.deepEqual([digest[0], digest[1], digest[3], digest[6]], [TASK, hash(), 'pass', `content:${content()}`]);
     sb.git('reset', '-q');
   });
 
@@ -140,7 +146,129 @@ describe('review binding (NFR-DX-003)', () => {
     const refused = sb.git('commit', '-q', '-m', 'M0.5: test: unreviewed');
     assert.notEqual(refused.status, 0, out(refused));
     record(verdict());
+    stageDigest();
     const ok = sb.git('commit', '-q', '-m', 'M0.5: test: reviewed');
     assert.equal(ok.status, 0, out(ok));
+  });
+});
+
+describe('rebase-stable content binding (ADR-0195, M18.99)', () => {
+  let sbx;
+  const run = (...args) => {
+    const r = sbx.git(...args);
+    assert.equal(r.status, 0, out(r));
+    return r.stdout.trim();
+  };
+  const id = (commit) => sbx.node('scripts/harness/review.mjs', commit ? ['content', '--commit', commit] : ['content']).stdout.trim();
+  const put = (file, text) => {
+    sbx.write(file, text);
+    run('add', file);
+  };
+  const ROW = (id, text, state = 'todo', commit = '') => `| ${id} | ${text} | HARNESS | WHEN x THE SYSTEM SHALL y | — | ${state} | ${commit} |`;
+  const backlog = (rows) => `# Backlog\n\n| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`;
+  before(() => {
+    sbx = sandbox(undefined, { git: true });
+    put('src/a.txt', 'one\ntwo\nthree\n');
+    put('src/b.txt', 'b\n');
+    put('docs/backlog/current.md', backlog([ROW('M0.5', 'first'), ROW('M0.6', 'second')]));
+    run('commit', '-q', '--no-verify', '-m', 'fixture: content base');
+  });
+  after(() => sbx.cleanup());
+  afterEach(() => {
+    sbx.git('reset', '-q', '--hard');
+  });
+
+  it('ignores loop bookkeeping, argued lines and generated reports', () => {
+    put('src/a.txt', 'one\nTWO\nthree\n');
+    const reviewed = id();
+    assert.match(reviewed, /^[0-9a-f]{64}$/);
+    put('.harness/progress.md', '# log\n');
+    put('.harness/reviews/digest.log', 'M0.5\tx\tr1\tpass\tt\t0 findings\n');
+    put('.harness/baselines/review-argued.txt', 'M0.5 F1 reason\n');
+    put('packages/demo/api/demo.api.md', '# report\n');
+    assert.equal(id(), reviewed);
+  });
+
+  it('changes when reviewed content changes, including a new file', () => {
+    put('src/a.txt', 'one\nTWO\nthree\n');
+    const reviewed = id();
+    put('src/a.txt', 'one\nTWO!\nthree\n');
+    assert.notEqual(id(), reviewed);
+    put('src/a.txt', 'one\nTWO\nthree\n');
+    put('src/new.txt', 'new\n');
+    assert.notEqual(id(), reviewed);
+  });
+
+  it('binds whitespace, which git patch-id would ignore (M18.99 r1 F1)', () => {
+    put('src/a.txt', "one\nrm -rf '/tmp/x'\nthree\n");
+    const reviewed = id();
+    put('src/a.txt', "one\nrm -rf '/ tmp/x'\nthree\n");
+    assert.notEqual(id(), reviewed);
+    put('src/a.txt', "one\n  rm -rf '/tmp/x'\nthree\n");
+    assert.notEqual(id(), reviewed, 're-indentation is content');
+  });
+
+  it('binds hand-written traceability cells but not the generated Tests column (M18.99 r1 F3)', () => {
+    const TRACE = 'docs/requirements/40-traceability.md';
+    const row = (milestone, tests) => `| FR-LIB-003 | M | R3 | ${milestone} | [11](11.md) | ${tests} |`;
+    put(TRACE, `# 40\n\n${row('M18', '`a.test.ts`')}\n`);
+    run('commit', '-q', '--no-verify', '-m', 'fixture: trace');
+    put('src/a.txt', 'one\nTWO\nthree\n');
+    const reviewed = id();
+    put(TRACE, `# 40\n\n${row('M18', '`a.test.ts` +3')}\n`);
+    assert.equal(id(), reviewed, 'the Tests column is regenerated');
+    put(TRACE, `# 40\n\n${row('M19', '`a.test.ts`')}\n`);
+    assert.notEqual(id(), reviewed, 'the Milestone(s) column is written by hand');
+    run('reset', '-q', '--hard', 'HEAD~1');
+  });
+
+  it('binds backlog spec cells but not State or Commit cells', () => {
+    put('src/a.txt', 'one\nTWO\nthree\n');
+    const reviewed = id();
+    put('docs/backlog/current.md', backlog([ROW('M0.5', 'first', 'done', 'abc1234'), ROW('M0.6', 'second')]));
+    assert.equal(id(), reviewed, 'state and commit cells are bookkeeping');
+    put('docs/backlog/current.md', backlog([ROW('M0.5', 'first'), ROW('M0.6', 'second, changed')]));
+    assert.notEqual(id(), reviewed, 'task text is spec');
+    put('docs/backlog/current.md', backlog([ROW('M0.5', 'first', 'descoped (decision)'), ROW('M0.6', 'second')]));
+    assert.notEqual(id(), reviewed, 'descoping is a scope decision');
+    put('docs/backlog/current.md', backlog([ROW('M0.5', 'first'), ROW('M0.6', 'second'), ROW('M0.7', 'added')]));
+    assert.notEqual(id(), reviewed, 'a new row is spec');
+  });
+
+  it('survives a rebase onto unrelated work, and the commit then passes the gate', () => {
+    put('src/a.txt', 'one\nTWO\nthree\n');
+    const reviewed = id();
+    const recordedAt = sbx.node('scripts/harness/review.mjs', ['hash']).stdout.trim();
+    sbx.write('.harness/tmp/v.json', JSON.stringify({ task: TASK, diff_sha256: recordedAt, reviewer: 't', verdict: 'pass', findings: [] }));
+    assert.equal(sbx.node('scripts/harness/review.mjs', ['record', '--file', sbx.path('.harness/tmp/v.json'), '--task', TASK]).status, 0);
+    run('stash', '-q');
+    put('src/b.txt', 'b changed on main\n');
+    put('docs/backlog/current.md', backlog([ROW('M0.5', 'first'), ROW('M0.6', 'second'), ROW('M0.8', 'main row')]));
+    run('commit', '-q', '--no-verify', '-m', 'fixture: main moved');
+    run('stash', 'pop', '-q', '--index');
+    run('add', '.harness/reviews/digest.log');
+    assert.notEqual(sbx.node('scripts/harness/review.mjs', ['hash']).stdout.trim(), recordedAt, 'the byte hash moved');
+    assert.equal(id(), reviewed);
+    const r = sbx.node('scripts/gates/check-reviewed.mjs');
+    assert.equal(r.status, 0, out(r));
+  });
+
+  it('records an after-the-fact review of a landed commit only with its content identity', () => {
+    put('src/a.txt', 'landed\n');
+    run('commit', '-q', '--no-verify', '-m', 'M0.5: test: landed');
+    const sha = run('rev-parse', 'HEAD');
+    const packet = sbx.node('scripts/harness/review.mjs', ['context', '--task', TASK, '--commit', sha]);
+    assert.equal(packet.status, 0, out(packet));
+    assert.match(packet.stdout, new RegExp(`content_id: ${id(sha)}`));
+    assert.match(packet.stdout, /\+landed/);
+    const v = (content_id) => {
+      sbx.write('.harness/tmp/p.json', JSON.stringify({ task: TASK, content_id, reviewer: 't', verdict: 'pass', findings: [] }));
+      return sbx.node('scripts/harness/review.mjs', ['record', '--file', sbx.path('.harness/tmp/p.json'), '--task', TASK, '--commit', sha]);
+    };
+    const wrong = v('0'.repeat(64));
+    assert.equal(wrong.status, 1, out(wrong));
+    assert.match(wrong.stderr, /content_id does not match commit/);
+    assert.equal(v(id(sha)).status, 0);
+    assert.match(sbx.read('.harness/reviews/digest.log'), new RegExp(`^M0\\.5\\t-\\tr\\d+\\tpass\\tt\\t0 findings\\tcontent:${id(sha)}$`, 'm'));
   });
 });

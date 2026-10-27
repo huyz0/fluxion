@@ -60,7 +60,7 @@ node scripts/gates/check-ci-evidence.mjs --record <sha>  record a green three-OS
 node scripts/harness/last-ci.mjs                      main's last completed CI; 1 = red: fix first, 2 = fix pending: wait
 node scripts/harness/review.mjs context --task M3.4     reviewer packet
 node scripts/harness/run-reviewer.mjs --task M3.4       optional cross-vendor reviewer (default: isolated subagent)
-node scripts/harness/review.mjs record --file v.json    store verdict (bound to staged diff hash)
+node scripts/harness/review.mjs record --file v.json    store verdict (bound to content id; stage digest.log)
 node scripts/harness/sync-skills.mjs [--check]          regenerate/check .claude/skills adapters
 ```
 
@@ -78,7 +78,7 @@ the milestone that writes it — say so rather than claiming enforcement.
 3. **Never claim a check passed without running it and showing its output.** No gate can
    enforce this; everything else rests on it.
 4. **Every commit is reviewed by an agent that did not write it**, given task + diff, never the
-   author's reasoning; verdict bound to the staged-diff hash. → `check-reviewed.mjs`
+   author's reasoning; verdict bound to the change's content id (ADR-0195). → `check-reviewed.mjs`, `check-digest.mjs`
 5. **Pure core**: `schema, geometry, core, theme, layout, routing, anim, format, dsl` never touch
    DOM, timers, clock, randomness, network or `node:*` — inject ports. → `check-layering.mjs`
 6. **Contracts change deliberately**: file format/schema, public SDK API, FluxScript grammar,

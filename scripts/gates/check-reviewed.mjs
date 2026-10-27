@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Pre-commit gate: the staged diff must have a recorded `pass` verdict bound to its sha256.
+// Pre-commit gate: the staged change must have a recorded `pass` verdict bound to its content identity.
 // Bypass is impossible by design except through an explicit, reviewed exemption list below.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { git, repoPath, stagedHash } from './lib.mjs';
+import { git, repoPath } from './lib.mjs';
+import { contentId, parseDigest } from './review-content.mjs';
 
 const diff = git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).filter(Boolean);
 if (diff.length === 0) process.exit(0);
@@ -36,18 +37,31 @@ if (diff.every((p) => BOOKKEEPING.some((re) => re.test(p))) && backlogOnlyStateC
   process.exit(0);
 }
 
-const hash = stagedHash();
+// Bound to the rebase-stable content identity (ADR-0195), and the commit must carry its own
+// tracked pass line: the digest is bookkeeping, so staging it leaves the identity unchanged.
+const content = contentId();
+if (!content) {
+  console.log('reviewed: bookkeeping and generated reports only (exempt; check-api and check-trace verify reports)');
+  process.exit(0);
+}
 const dir = repoPath('.harness', 'review');
 const verdicts = existsSync(dir)
   ? readdirSync(dir)
-      .filter((f) => f.startsWith(hash))
+      .filter((f) => f.endsWith('.json'))
       .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')))
   : [];
-if (verdicts.some((v) => v.verdict === 'pass' && v.diff_sha256 === hash)) {
-  console.log(`reviewed: pass verdict found (${hash.slice(0, 12)})`);
+const local = verdicts.find((v) => v.verdict === 'pass' && v.content_id === content);
+const staged = git(['show', ':.harness/reviews/digest.log']);
+const tracked = parseDigest(staged.status === 0 ? staged.stdout : '').some((l) => l.verdict === 'pass' && l.content === content);
+if (local && tracked) {
+  console.log(`reviewed: pass verdict for ${local.task} bound to content ${content.slice(0, 12)}`);
   process.exit(0);
 }
-console.error(`reviewed: no pass verdict for staged diff ${hash.slice(0, 12)}.
+if (local)
+  console.error(`reviewed: pass verdict found for content ${content.slice(0, 12)}, but .harness/reviews/digest.log is not staged with its line.
+Stage it (git add .harness/reviews/digest.log): each commit carries its own review evidence (ADR-0195).`);
+else
+  console.error(`reviewed: no pass verdict for staged content ${content.slice(0, 12)}.
 Run the code-review skill: node scripts/harness/review.mjs context --task <ID> …
-(Restaging after review changes the hash — review what you commit.)`);
+(Changing reviewed content after review changes the identity — review what you commit.)`);
 process.exit(1);

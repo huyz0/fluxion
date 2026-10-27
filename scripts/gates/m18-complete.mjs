@@ -63,6 +63,14 @@ for (const [name, expected] of [
   leg(`${name} equals required ${expected}`, () => t(name) === expected || `${name} differs from requirement`);
 
 // Earlier-milestone handoffs retain explicit executable checks.
+leg('every M18 task commit keeps tracked review evidence and its Commit cell', () => command('scripts/gates/check-digest.mjs', ['--head']));
+leg('review binding survives rebases and digest coverage refuses missing evidence', () =>
+  namedCases('tests/harness/digest.test.mjs', [
+    'before adoption, a task commit needs a tracked pass line for its task or a reviewed exemption',
+    'after adoption, each task commit carries a pass line bound to its own content',
+    'a done row needs its Commit cell once a later commit exists',
+  ]),
+);
 leg('checkpoint cadence refuses absent/stale reviews and accepts covering reviews', () =>
   namedCases('tests/harness/checkpoint.test.mjs', [
     'refuses a task after the checkpoint limit',

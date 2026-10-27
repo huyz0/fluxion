@@ -2960,3 +2960,11 @@ checkShapePack now evaluates each definition at every number param's min, max an
 - Format: 1.1 sources (distribution or embedded, with verified `fonts`) save used-only 1.1 subsets (pruned bindings/faces/resources/credit scopes), 1.1 locks and one `assets/<sha>.woff2` per hash. Loaders (full and lean, archive and inline) rehash font assets; missing/changed refuses. 1.0 lock schema kept as `shapePackLock10Schema`; lock/entry format must agree. Font-retaining saves reopen under `destinationLimits`.
 - Review r1 (changes requested): F1 partial/omitted destination limits fell back to zip defaults, not the loader's; now merged over loader DEFAULT_LIMITS with a 128 MiB+1 test (size-keyed fast hash port; the pure port timed out under a loaded suite). F2 limits captured before the first await.
 - New suite artwork-font-retention 9/9; format 249/249. Seven removal probes each turned tests RED. Public widening documented with migration in changeset and 08-file-format.
+
+## M18.99 — content-bound review evidence and digest coverage (2026-10-27)
+
+- ADR-0195: verdicts bind to a rebase-stable content identity (diff without bookkeeping and generated reports, with only blob ids and hunk line numbers dropped, whitespace kept; plus backlog spec cells and hand-written traceability cells). The digest line is staged with the commit it reviews. `review.mjs content|context|record --commit` reviews landed commits after the fact.
+- check-reviewed needs the local pass verdict and its staged digest line; new check-digest (ladder step `digest`, M18 leg) requires own-tree content-bound lines from adoption on, task-level lines or exemptions before, and Commit cells once a later commit exists (index mode: no HEAD exception). Shallow clones skip.
+- Recovered evidence: content-bound post-hoc reviews of M18.58–63 (pass, 0 findings) and M18.38/M18.48 (pass, 2 minors each → M18.113, M18.114). `check-digest`: 85 M18 task commits covered.
+- Tests: review + digest 28/28; mutants (no exclusions, no own-content check, no cell check, whitespace stripped, trace cells dropped) each turn them RED.
+- Review: r1 changes requested (F1–F7 fixed); r2 pass, minors F1–F3 handed off to M18.106 (argued); r3 pass (lint-only import reorder; this entry refreshed per r3 F1).

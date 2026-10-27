@@ -21,7 +21,8 @@ check everything a script can; the reviewer spends attention only on what they c
 git add -p                                            # stage exactly the task
 node scripts/harness/review.mjs context --task M3.4   # → .harness/review/packet.md
 # an isolated reviewer subagent reads only the packet and returns verdict JSON
-node scripts/harness/review.mjs record --file v.json  # validate + store by diff hash
+node scripts/harness/review.mjs record --file v.json  # validate + store by diff hash and content id
+git add .harness/reviews/digest.log                   # the commit carries its own evidence (ADR-0195)
 git commit                                            # check-reviewed.mjs finds the verdict
 ```
 
@@ -37,7 +38,7 @@ used when a human asks for it; M0.13 showed both directions catch seeded defects
 | R1 | **Allocation:** anything a script can decide (format, types, tests, coverage, layering, size, message shape) is never delegated to review. The packet lists gates already passed so the reviewer does not redo them. | `review.mjs context` |
 | R2 | **The packet contains:** the backlog row verbatim (ID, Req IDs, EARS acceptance), the staged diff (or the delta since the previous round), the standards selected from staged paths, the passed-gate list, and linked spec folder if any. | `review.mjs context` |
 | R3 | **The packet never contains** the author's reasoning, plan, transcript, or summary of the change. Rationale persuades; the reviewer grades code, not arguments. Commit body drafts are excluded too. | `review.mjs context` (fixed template) |
-| R4 | The verdict is bound to `sha256(git diff --cached)`. Any restage invalidates it. | `check-reviewed.mjs` |
+| R4 | The verdict is bound to the change's **content identity**: a hash of the diff without loop bookkeeping and generated API reports, with only blob ids and hunk line numbers dropped (whitespace kept), plus the spec cells of changed backlog rows and the hand-written traceability cells (ADR-0195). Staging bookkeeping or rebasing onto unrelated work keeps it; any change to reviewed content invalidates it. The commit carries its own pass digest line. | `check-reviewed.mjs`, `check-digest.mjs` |
 | R5 | No commit without a matching verdict of `pass`, or of `changes-requested` whose blocking and major findings are all fixed or argued. | `check-reviewed.mjs` |
 | R6 | Every finding has `file`, `line`, `severity`, and a concrete **failure scenario** (input → wrong outcome). "Could be cleaner" without a scenario is not a finding. | `review.mjs record` (schema) |
 | R7 | The reviewer works adversarially: assume the diff is wrong and try to show how. Check acceptance criteria one by one against tests, not against the diff's comments. | no gate — reviewer prompt |
@@ -62,6 +63,7 @@ used when a human asks for it; M0.13 showed both directions catch seeded defects
 {
   "task": "M3.4",
   "diff_sha256": "9f2c…e1",
+  "content_id": "4b1d…07",
   "verdict": "changes-requested",
   "findings": [
     {
@@ -91,7 +93,7 @@ blocking findings, or findings without `failure_scenario`.
 
 ## 7. What review cannot prove
 
-The hash proves the verdict matches the diff; it cannot prove the reviewer was not the author.
+The content identity proves the verdict matches the reviewed change; it cannot prove the reviewer was not the author.
 Isolation comes from the reviewer subagent definitions (fresh context, packet only), and a human spot-checks
 `reviewer` fields at milestone boundaries.
 

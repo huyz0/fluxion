@@ -42,7 +42,7 @@ Codex only: trust the project `.codex/` layer when prompted (hooks re-prompt whe
 | `node scripts/gates/m<N>-complete.mjs` | the only definition of "done" (one line per leg) |
 | `.harness/progress.md` | ≤ 10-line entry per task/session |
 | `.harness/state.json` | current task, attempts, `loopActive`, `blockedReason` |
-| `.harness/reviews/digest.log` | every recorded review verdict (task, diff hash, round, verdict, reviewer) |
+| `.harness/reviews/digest.log` | every recorded review verdict (task, diff hash, round, verdict, reviewer, findings, content id); each task commit carries its own pass line (ADR-0195) |
 | `.harness/reviews/milestone-*.json` | checkpoint and final milestone reviews with dispositions |
 | `node scripts/gates/check-checkpoint.mjs --commit HEAD` | checkpoint cadence at that exact commit; local commit-msg checks staged review evidence |
 | `git log --oneline` | one commit per task, subject `<TaskID>: <type>(<scope>): …` |
@@ -74,7 +74,7 @@ recorded. Then merge the worktree branch (rebase, keep one commit per task), mov
 |---|---|
 | `git commit` fails with `node: not found` | Node not on PATH for git hooks (Windows: restart the shell after installing Node) |
 | Hooks silently don't run on macOS/Linux | hooks lost the executable bit — rerun `setup.mjs` (tracked mode is 100755) |
-| `reviewed: no pass verdict` after a pass | you restaged after review; the verdict is bound to the exact staged bytes — review again |
+| `reviewed: no pass verdict` after a pass | you changed reviewed content after review (bookkeeping and a clean rebase keep the verdict, ADR-0195) — review again; if it says the digest is not staged, `git add .harness/reviews/digest.log` |
 | Tests pass alone but fail inside the hook | git exports `GIT_*` vars to hooks; test sandboxes must use `cleanEnv()` from `tests/harness/helpers.mjs` |
 | Codex quick gate never runs | project `.codex/` layer not trusted, or a Codex version where repo-local hooks don't fire (openai/codex#17532) |
 | Review loop exceeds 3 rounds | by design the loop stops; read the findings, decide, clear `blockedReason` |

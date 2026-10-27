@@ -117,6 +117,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0192](ADR-0192-artwork-font-retention.md) | Exact licensed artwork fonts in portable shape packs | accepted | 2026-10-26 |
 | [0193](ADR-0193-declarative-pack-suite.md) | A shared SDK suite builds, checks and draws declarative packs | accepted | 2026-10-27 |
 | [0194](ADR-0194-pack-source-and-version-ledger.md) | Packs export their source; one SDK check covers files, versions and bounds | accepted | 2026-10-27 |
+| [0195](ADR-0195-content-bound-review-evidence.md) | Reviews bind to rebase-stable content, and each commit carries its own evidence | accepted | 2026-10-27 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

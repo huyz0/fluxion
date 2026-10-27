@@ -26,8 +26,11 @@ Standard: `docs/standards/review.md`.
    becomes a backlog row **only** if it shows a realistic false green on a plan leg, otherwise
    argue it in `.harness/baselines/review-argued.txt` (`<ID> <finding-id>: <one-line argument>`).
    Never spend a round only on minors (M1 cp3 F2).
-6. Commit without restaging. `check-reviewed.mjs` refuses a commit whose staged hash has no
-   `pass` verdict.
+6. Stage `.harness/reviews/digest.log` (the line `record` appended) and commit. The verdict binds
+   to the change's content identity, which ignores bookkeeping and generated reports, so staging
+   the digest or rebasing onto unrelated work keeps it (ADR-0195); changing reviewed content does
+   not. `check-reviewed.mjs` refuses a commit without a `pass` verdict for its content or without
+   its own staged digest line.
 
 ## As the reviewer
 
@@ -49,7 +52,7 @@ You get the task and the diff, never the author's rationale; do not look for it.
 ## Verdict JSON
 
 ```json
-{ "task": "M5.3", "kind": "code", "diff_sha256": "<from packet>", "reviewer": "codex:gpt-5.x",
+{ "task": "M5.3", "kind": "code", "diff_sha256": "<from packet>", "content_id": "<from packet>", "reviewer": "codex:gpt-5.x",
   "verdict": "pass", "findings": [
   { "id": "F1", "file": "packages/routing/src/ortho.ts", "line": 88, "severity": "major",
     "failure_scenario": "Target left of source with obstacle between → route crosses obstacle" } ] }

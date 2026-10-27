@@ -28,8 +28,9 @@ one line per step: `PASS|FAIL|SKIP <step> (<ms>)`. SKIP must state why (e.g. "no
 3. Never bypass (`--no-verify`, `SKIP=`, editing thresholds). If a gate is wrong, that is its
    own task with its own review.
 4. Staged vs working tree: `--staged` checks what will be committed. Stage first
-   (`git add -A` on intended files only), then verify through the review packet, review, and commit **without
-   restaging** — the review verdict is bound to the staged diff hash.
+   (`git add -A` on intended files only), then verify through the review packet, review, stage the
+   recorded digest line and commit. The verdict is bound to the change's content identity
+   (ADR-0195): restaging bookkeeping keeps it, changing reviewed content does not.
 
 ## Output block
 

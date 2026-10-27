@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // Turn a review from a claim into an artifact bound to the exact staged bytes.
 //   review.mjs hash                                  sha256 of `git diff --cached --binary`
-//   review.mjs context --task M3.4                   reviewer packet (markdown) to stdout
-//   review.mjs record --file v.json --task M3.4      validate + store .harness/review/<hash>.json
+//   review.mjs content [--commit <sha>]              rebase-stable content identity (ADR-0195)
+//   review.mjs context --task M3.4 [--commit <sha>]  reviewer packet (markdown) to stdout
+//   review.mjs record --file v.json --task M3.4 [--commit <sha>]  validate + store .harness/review/<hash>.json
+// --commit reviews a landed commit after the fact (evidence recovery, M18.99); the verdict binds
+// to that commit's content identity instead of the staged diff.
 //   review.mjs show                                  stored verdicts for the staged diff
 //   review.mjs milestone --milestone M3              milestone-review packet to stdout
 // The script owns hash, packet, schema and artifact; the reviewing agent owns the judgement.
@@ -10,6 +13,7 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { currentMilestone, exists, git, node, readText, repoPath, stagedDiff, stagedHash } from '../gates/lib.mjs';
+import { contentId } from '../gates/review-content.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -61,15 +65,25 @@ switch (cmd) {
     console.log(stagedHash());
     break;
 
+  case 'content':
+    console.log(contentId(arg('commit')));
+    break;
+
   case 'context': {
     const task = arg('task') ?? die('--task required', 2);
-    const diff = stagedDiff();
-    if (!diff.trim()) die('nothing staged');
-    const paths = git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).filter(Boolean);
+    const commit = arg('commit');
+    const diff = commit ? git(['show', '--binary', '--no-color', '--format=', commit]).stdout : stagedDiff();
+    if (!diff.trim()) die(commit ? `commit ${commit} has no diff` : 'nothing staged');
+    const paths = git(commit ? ['diff', '--name-only', `${commit}^`, commit] : ['diff', '--cached', '--name-only'])
+      .stdout.split(/\r?\n/)
+      .filter(Boolean);
     const round = roundsFor(task).length + 1;
-    const gates = node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review']).stdout.trim();
+    const gates = commit
+      ? `(landed commit ${commit}: gates ran when it was committed)`
+      : node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review']).stdout.trim();
     console.log(`# Review packet — ${task} (round ${round} of max ${t('REVIEW_ROUND_CAP')})\n`);
-    console.log(`diff_sha256: ${stagedHash()}\n`);
+    if (!commit) console.log(`diff_sha256: ${stagedHash()}\n`);
+    console.log(`content_id: ${contentId(commit)}\n`);
     console.log(`## Task (verbatim from backlog)\n\n${taskRow(task)}\n`);
     console.log(
       `## Standards to apply\n\n${standardsFor(paths)
@@ -80,7 +94,7 @@ switch (cmd) {
     const prev = roundsFor(task).at(-1);
     if (prev) console.log(`## Previous round findings\n\n\`\`\`json\n${JSON.stringify(prev.findings, null, 2)}\n\`\`\`\n`);
     console.log(`## Instructions\n\nFollow .agents/skills/code-review/SKILL.md "As the reviewer". Output ONLY the verdict JSON.\n`);
-    console.log(`## Staged diff\n\n\`\`\`diff\n${diff}\n\`\`\``);
+    console.log(`## ${commit ? `Diff of commit ${commit}` : 'Staged diff'}\n\n\`\`\`diff\n${diff}\n\`\`\``);
     break;
   }
 
@@ -88,10 +102,17 @@ switch (cmd) {
     const file = arg('file') ?? die('--file required', 2);
     const task = arg('task') ?? die('--task required', 2);
     const v = JSON.parse(readFileSync(file, 'utf8'));
-    const hash = stagedHash();
+    const commit = arg('commit');
+    const hash = commit ? (v.diff_sha256 ?? '') : stagedHash();
+    const content = contentId(commit);
     const bad = [];
     if (v.task !== task) bad.push(`task '${v.task}' != '${task}'`);
-    if (v.diff_sha256 !== hash) bad.push('diff_sha256 does not match the staged diff (restaged after review?)');
+    // A staged review binds to the exact bytes or, after a rebase or bookkeeping restage, to the same content identity.
+    if (commit) {
+      if (v.content_id !== content) bad.push(`content_id does not match commit ${commit}`);
+    } else if (v.diff_sha256 !== hash && !(v.content_id && v.content_id === content))
+      bad.push('diff_sha256 does not match the staged diff (restaged after review?)');
+    if (!content) bad.push('the change has no reviewable content (bookkeeping and generated reports only)');
     if (!['pass', 'changes-requested'].includes(v.verdict)) bad.push('verdict must be pass|changes-requested');
     if (!v.reviewer) bad.push('reviewer required');
     if (!Array.isArray(v.findings)) bad.push('findings[] required');
@@ -103,13 +124,14 @@ switch (cmd) {
     if (bad.length) die(`verdict rejected:\n- ${bad.join('\n- ')}`);
     const round = roundsFor(task).length + 1;
     mkdirSync(REVIEW_DIR, { recursive: true });
-    writeFileSync(join(REVIEW_DIR, `${hash}.r${round}.json`), JSON.stringify({ ...v, round, recordedAt: new Date().toISOString() }, null, 2));
-    // Tracked digest so history shows non-negotiable 4 held (M0 cp1 F2). It is written after the
-    // staged diff was hashed, so it lands in the next commit (bookkeeping-exempt path).
+    const name = `${hash || content}.r${round}.json`;
+    writeFileSync(join(REVIEW_DIR, name), JSON.stringify({ ...v, content_id: content, round, recordedAt: new Date().toISOString() }, null, 2));
+    // Tracked digest so history shows non-negotiable 4 held (M0 cp1 F2). The digest is bookkeeping,
+    // outside the content identity, so it is staged with the commit it reviews (ADR-0195).
     const digest = repoPath('.harness', 'reviews', 'digest.log');
     mkdirSync(dirname(digest), { recursive: true });
-    appendFileSync(digest, `${v.task}\t${hash}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\n`);
-    console.log(`recorded ${v.verdict} for ${task} round ${round} (${hash.slice(0, 12)})`);
+    appendFileSync(digest, `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}\n`);
+    console.log(`recorded ${v.verdict} for ${task} round ${round} (${(hash || content).slice(0, 12)}); stage .harness/reviews/digest.log with this change`);
     if (round > t('REVIEW_ROUND_CAP') && v.verdict !== 'pass') die(`round cap ${t('REVIEW_ROUND_CAP')} exceeded — stop (drive stop condition)`, 3);
     break;
   }
@@ -135,5 +157,8 @@ switch (cmd) {
   }
 
   default:
-    die('usage: review.mjs hash | context --task ID | record --file v.json --task ID | show | milestone [--milestone M<n>]', 2);
+    die(
+      'usage: review.mjs hash | content [--commit SHA] | context --task ID [--commit SHA] | record --file v.json --task ID [--commit SHA] | show | milestone [--milestone M<n>]',
+      2,
+    );
 }
