@@ -1,6 +1,6 @@
 // NFR-DX-003 / non-negotiable 4: a commit needs a pass verdict bound to its reviewed content (ADR-0195).
 import assert from 'node:assert/strict';
-import { chmodSync } from 'node:fs';
+import { chmodSync, readdirSync, rmSync } from 'node:fs';
 import { after, afterEach, before, describe, it } from 'node:test';
 import { out, sandbox } from './helpers.mjs';
 
@@ -8,7 +8,7 @@ const TASK = 'M0.5';
 let sb;
 
 const hash = () => sb.node('scripts/harness/review.mjs', ['hash']).stdout.trim();
-const verdict = (over = {}) => ({ task: TASK, kind: 'code', diff_sha256: hash(), reviewer: 'test', verdict: 'pass', findings: [], ...over });
+const verdict = (over = {}) => ({ task: TASK, kind: 'code', diff_sha256: hash(), reviewer: 'test:unit', verdict: 'pass', findings: [], ...over });
 function record(v) {
   sb.write('.harness/tmp/v.json', JSON.stringify(v));
   return sb.node('scripts/harness/review.mjs', ['record', '--file', sb.path('.harness/tmp/v.json'), '--task', TASK]);
@@ -78,8 +78,24 @@ describe('review binding (NFR-DX-003)', () => {
     assert.equal(checkReviewed().status, 1);
   });
 
-  it('numbers rounds per task', () => {
-    assert.match(record(verdict()).stdout, /round 3/);
+  it('numbers rounds from the tracked digest, which keeps changes-requested rounds, not the local directory (M18.127)', () => {
+    const digest = sb.read('.harness/reviews/digest.log');
+    assert.match(digest, /^M0\.5\t[0-9a-f]{64}\tr1\tchanges-requested\ttest:unit\t1 findings\tcontent:/m);
+    // local verdict files are per worktree; the round must not depend on them
+    for (const f of readdirSync(sb.path('.harness/reviews')).filter((n) => n.endsWith('.json'))) rmSync(sb.path(`.harness/reviews/${f}`));
+    assert.equal(sb.read('.harness/reviews/digest.log'), digest, 'the digest itself is kept');
+    assert.match(record(verdict()).stdout, /round 2/);
+    // a pass closes the cycle, so the round cap counts the rounds of one change
+    assert.match(record(verdict()).stdout, /round 1/);
+  });
+
+  it('rejects a reviewer outside the vendor:role[:posthoc] grammar (M18.127, cp14 F6)', () => {
+    for (const reviewer of ['test', 'Claude:Reviewer', 'claude:reviewer:extra', 'claude:', '', undefined]) {
+      const r = record(verdict({ reviewer }));
+      assert.equal(r.status, 1, `${reviewer}: ${out(r)}`);
+      assert.match(r.stderr, /must be vendor:role\[:posthoc\]/);
+    }
+    assert.equal(record(verdict({ reviewer: 'codex:gpt-5.x' })).status, 0);
   });
 
   it('exempts bookkeeping-only commits', () => {
@@ -241,7 +257,7 @@ describe('rebase-stable content binding (ADR-0195, M18.99)', () => {
     put('src/a.txt', 'one\nTWO\nthree\n');
     const reviewed = id();
     const recordedAt = sbx.node('scripts/harness/review.mjs', ['hash']).stdout.trim();
-    sbx.write('.harness/tmp/v.json', JSON.stringify({ task: TASK, diff_sha256: recordedAt, reviewer: 't', verdict: 'pass', findings: [] }));
+    sbx.write('.harness/tmp/v.json', JSON.stringify({ task: TASK, diff_sha256: recordedAt, reviewer: 't:unit', verdict: 'pass', findings: [] }));
     assert.equal(sbx.node('scripts/harness/review.mjs', ['record', '--file', sbx.path('.harness/tmp/v.json'), '--task', TASK]).status, 0);
     run('stash', '-q');
     put('src/b.txt', 'b changed on main\n');
@@ -263,14 +279,66 @@ describe('rebase-stable content binding (ADR-0195, M18.99)', () => {
     assert.equal(packet.status, 0, out(packet));
     assert.match(packet.stdout, new RegExp(`content_id: ${id(sha)}`));
     assert.match(packet.stdout, /\+landed/);
-    const v = (content_id) => {
-      sbx.write('.harness/tmp/p.json', JSON.stringify({ task: TASK, content_id, reviewer: 't', verdict: 'pass', findings: [] }));
+    const v = (content_id, reviewer = 't:unit:posthoc') => {
+      sbx.write('.harness/tmp/p.json', JSON.stringify({ task: TASK, content_id, reviewer, verdict: 'pass', findings: [] }));
       return sbx.node('scripts/harness/review.mjs', ['record', '--file', sbx.path('.harness/tmp/p.json'), '--task', TASK, '--commit', sha]);
     };
     const wrong = v('0'.repeat(64));
     assert.equal(wrong.status, 1, out(wrong));
     assert.match(wrong.stderr, /content_id does not match commit/);
+    const live = v(id(sha), 't:unit');
+    assert.equal(live.status, 1, 'a landed commit is reviewed after the fact (M18.127)');
+    assert.match(live.stderr, /reviewer vendor:role:posthoc/);
     assert.equal(v(id(sha)).status, 0);
-    assert.match(sbx.read('.harness/reviews/digest.log'), new RegExp(`^M0\\.5\\t-\\tr\\d+\\tpass\\tt\\t0 findings\\tcontent:${id(sha)}$`, 'm'));
+    assert.match(sbx.read('.harness/reviews/digest.log'), new RegExp(`^M0\\.5\\t-\\tr\\d+\\tpass\\tt:unit:posthoc\\t0 findings\\tcontent:${id(sha)}$`, 'm'));
+  });
+
+  it('rebinds a pass line to a landed commit only when it reviewed that exact diff, marked rebind (M18.127)', () => {
+    const DIGEST = '.harness/reviews/digest.log';
+    const lines = () => sbx.read(DIGEST).split('\n').filter(Boolean);
+    const rebind = (commit, n, task = TASK) => sbx.node('scripts/harness/review.mjs', ['rebind', '--task', task, '--commit', commit, '--line', String(n)]);
+    const recordStaged = (v) => {
+      sbx.write(
+        '.harness/tmp/v.json',
+        JSON.stringify({ task: TASK, diff_sha256: sbx.node('scripts/harness/review.mjs', ['hash']).stdout.trim(), reviewer: 't:unit', findings: [], ...v }),
+      );
+      const r = sbx.node('scripts/harness/review.mjs', ['record', '--file', sbx.path('.harness/tmp/v.json'), '--task', TASK]);
+      assert.equal(r.status, 0, out(r));
+      return lines().length;
+    };
+    put('src/a.txt', 'rebound\n');
+    const cr = recordStaged({ verdict: 'changes-requested', findings: [{ id: 'F1', file: 'src/a.txt', severity: 'major', failure_scenario: 'x' }] });
+    const pass = recordStaged({ verdict: 'pass' });
+    // the commit carries its own digest lines, as every real task commit does (M18.127 r1 F1)
+    run('add', DIGEST);
+    run('commit', '-q', '--no-verify', '-m', 'M0.5: test: rebound');
+    const sha = run('rev-parse', 'HEAD');
+    put('src/b.txt', 'other diff\n');
+    recordStaged({ verdict: 'pass' });
+    const other = lines().at(-1);
+    run('reset', '-q', '--hard');
+    // the digest is tracked now, so keep the other diff's pass line past the reset
+    sbx.write(DIGEST, `${sbx.read(DIGEST)}${other}\n`);
+    const otherPass = lines().length;
+
+    for (const [n, task, why] of [
+      [cr, TASK, /line \d+ is not a pass line of M0\.5/],
+      [pass, 'M0.6', /line \d+ is not a pass line of M0\.6/],
+      [otherPass, TASK, /reviewed diff [0-9a-f]{12}, not commit/],
+      [999, TASK, /no such digest line/],
+    ]) {
+      const r = rebind(sha, n, task);
+      assert.notEqual(r.status, 0, out(r));
+      assert.match(r.stderr, why);
+    }
+    const before = lines().length;
+    const r = rebind(sha, pass);
+    assert.equal(r.status, 0, out(r));
+    assert.equal(lines().length, before + 1);
+    const [task, , round, verdict, reviewer, , content, bound] = lines().at(-1).split('\t');
+    assert.deepEqual(
+      [task, round, verdict, reviewer, content, bound],
+      [TASK, lines()[pass - 1].split('\t')[2], 'rebind', 't:unit', `content:${id(sha)}`, `bound:${pass}`],
+    );
   });
 });

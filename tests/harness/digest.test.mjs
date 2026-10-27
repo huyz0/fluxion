@@ -99,6 +99,50 @@ describe('digest coverage (M18.99)', () => {
     assert.equal(check(['--head']).status, 0);
   });
 
+  it('a rebind line binds content only through a pass line that reviewed the exact diff; a stale pass needs a later line binding this content (M18.127)', () => {
+    const lines = () => sb.git('show', `:${DIGEST}`).stdout.split('\n').filter(Boolean).length;
+    const rebindLine = (task, hash, content, n) => `${task}\t${hash}\tr1\trebind\tt:unit\t0 findings\tcontent:${content}\tbound:${n}\n`;
+    const passLine = (task, hash, content) => `${task}\t${hash}\tr1\tpass\tt:unit\t0 findings\tcontent:${content}\n`;
+    /** Stage src/M18.4.txt; returns its content id and the staged hash `record` would bind. */
+    const staged = (text = 'M18.4\n') => {
+      put('src/M18.4.txt', text);
+      return [sb.node('scripts/harness/review.mjs', ['content']).stdout.trim(), sb.node('scripts/harness/review.mjs', ['hash']).stdout.trim()];
+    };
+    const attempt = (digestLines, expect, why) => {
+      const [content, hash] = staged();
+      for (const l of digestLines(content, hash)) append(DIGEST, l());
+      commit('M18.4: test: change');
+      const r = check(['--head']);
+      run('reset', '-q', '--hard', 'HEAD~1');
+      assert.equal(r.status, expect, `${why}: ${out(r)}`);
+      return r.stderr;
+    };
+    const old = '2'.repeat(64);
+    // a pass of this exact diff recorded before content ids existed, rebound to this content
+    attempt((c, h) => [() => passLine('M18.4', h, old), () => rebindLine('M18.4', h, c, lines())], 0, 'a rebind of the reviewed diff binds');
+    // a rebind naming a changes-requested line binds nothing
+    let err = attempt(
+      (c, h) => [() => line('M18.4', 'changes-requested', old), () => rebindLine('M18.4', h, c, lines())],
+      1,
+      'a rebind of a changes-requested line',
+    );
+    assert.match(err, /M18\.4: its tree has no pass digest line bound to its content/);
+    // a hand-written rebind of a pass for another diff binds nothing (r1 F2)
+    attempt((c) => [() => passLine('M18.4', 'a'.repeat(64), old), () => rebindLine('M18.4', 'a'.repeat(64), c, lines())], 1, 'a rebind of another diff');
+    attempt((c, h) => [() => passLine('M18.4', 'a'.repeat(64), old), () => rebindLine('M18.4', h, c, lines())], 1, 'a rebind whose hash differs from its line');
+    // a pass for other content after this commit's own pass shows a pass for a diff that did not land
+    err = attempt((c) => [() => line('M18.4', 'pass', c), () => line('M18.4', 'pass', '3'.repeat(64))], 1, 'a stale pass after');
+    assert.match(err, /M18\.4: digest line \d+ is a pass for content 333333333333, not this commit's, and no later line binds this commit's content/);
+    // a later line of the task that does not bind this content does not cover it (r1 F3)
+    attempt(
+      (c) => [() => line('M18.4', 'pass', c), () => line('M18.4', 'pass', '3'.repeat(64)), () => line('M18.4', 'changes-requested', c)],
+      1,
+      'a later changes-requested line',
+    );
+    // the same stale pass followed by this content's own pass is covered
+    attempt((c) => [() => line('M18.4', 'pass', '3'.repeat(64)), () => line('M18.4', 'pass', c)], 0, 'a later pass of this content');
+  });
+
   it('a done row needs its Commit cell once a later commit exists', () => {
     put('docs/backlog/current.md', backlog([ROW('M18.5', 'done'), ROW('M18.6')]));
     task('M18.5');

@@ -65,7 +65,7 @@ describe('land (M18.106)', () => {
     sb.write(file, text);
     ok(sb.git('add', file));
     const hash = ok(sb.node('scripts/harness/review.mjs', ['hash']));
-    sb.write('.harness/tmp/v.json', JSON.stringify({ task, kind: 'code', diff_sha256: hash, reviewer: 'test', verdict: 'pass', findings: [] }));
+    sb.write('.harness/tmp/v.json', JSON.stringify({ task, kind: 'code', diff_sha256: hash, reviewer: 'test:unit', verdict: 'pass', findings: [] }));
     ok(sb.node('scripts/harness/review.mjs', ['record', '--file', sb.path('.harness/tmp/v.json'), '--task', task]));
     ok(sb.git('add', '.harness/reviews/digest.log'));
     ok(sb.git('commit', '-q', '-m', `${task}: test: ${file}`));

@@ -6,6 +6,7 @@
 //   review.mjs record --file v.json --task M3.4 [--commit <sha>]  validate + store .harness/review/<hash>.json
 // --commit reviews a landed commit after the fact (evidence recovery, M18.99); the verdict binds
 // to that commit's content identity instead of the staged diff.
+//   review.mjs rebind --task M3.4 --commit <sha> --line <n>   bind digest line n (a pass of that exact diff) to the commit
 //   review.mjs show                                  stored verdicts for the staged diff
 //   review.mjs milestone --milestone M3              milestone-review packet to stdout
 // The script owns hash, packet, schema and artifact; the reviewing agent owns the judgement.
@@ -13,7 +14,7 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { currentMilestone, exists, git, node, readText, repoPath, stagedDiff, stagedHash } from '../gates/lib.mjs';
-import { contentId } from '../gates/review-content.mjs';
+import { contentId, nextRound, parseDigest, parseReviewer, reviewedDiffHash } from '../gates/review-content.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -53,6 +54,10 @@ function verdictsFor(hash) {
     .filter((f) => f.startsWith(hash))
     .map((f) => JSON.parse(readFileSync(join(REVIEW_DIR, f), 'utf8')));
 }
+const DIGEST = repoPath('.harness', 'reviews', 'digest.log');
+const tracked = () => parseDigest(existsSync(DIGEST) ? readFileSync(DIGEST, 'utf8') : '');
+/** Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127). */
+const roundOf = (task) => nextRound(tracked(), task);
 function roundsFor(task) {
   if (!existsSync(REVIEW_DIR)) return [];
   return readdirSync(REVIEW_DIR)
@@ -77,7 +82,7 @@ switch (cmd) {
     const paths = git(commit ? ['diff', '--name-only', `${commit}^`, commit] : ['diff', '--cached', '--name-only'])
       .stdout.split(/\r?\n/)
       .filter(Boolean);
-    const round = roundsFor(task).length + 1;
+    const round = roundOf(task);
     const gates = commit
       ? `(landed commit ${commit}: gates ran when it was committed)`
       : node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review']).stdout.trim();
@@ -114,7 +119,8 @@ switch (cmd) {
       bad.push('diff_sha256 does not match the staged diff (restaged after review?)');
     if (!content) bad.push('the change has no reviewable content (bookkeeping and generated reports only)');
     if (!['pass', 'changes-requested'].includes(v.verdict)) bad.push('verdict must be pass|changes-requested');
-    if (!v.reviewer) bad.push('reviewer required');
+    if (!parseReviewer(v.reviewer)) bad.push(`reviewer '${v.reviewer ?? ''}' must be vendor:role[:posthoc] (lowercase, e.g. claude:independent-subagent)`);
+    if (commit && !parseReviewer(v.reviewer)?.posthoc) bad.push('a review of a landed commit (--commit) is posthoc: reviewer vendor:role:posthoc');
     if (!Array.isArray(v.findings)) bad.push('findings[] required');
     for (const f of v.findings ?? []) {
       if (!f.file || !f.severity || !f.failure_scenario) bad.push(`finding ${f.id ?? '?'} needs file, severity, failure_scenario`);
@@ -122,17 +128,34 @@ switch (cmd) {
     }
     if (v.verdict === 'pass' && (v.findings ?? []).some((f) => f.severity === 'blocking')) bad.push('pass with blocking findings');
     if (bad.length) die(`verdict rejected:\n- ${bad.join('\n- ')}`);
-    const round = roundsFor(task).length + 1;
+    const round = roundOf(task);
     mkdirSync(REVIEW_DIR, { recursive: true });
     const name = `${hash || content}.r${round}.json`;
     writeFileSync(join(REVIEW_DIR, name), JSON.stringify({ ...v, content_id: content, round, recordedAt: new Date().toISOString() }, null, 2));
     // Tracked digest so history shows non-negotiable 4 held (M0 cp1 F2). The digest is bookkeeping,
     // outside the content identity, so it is staged with the commit it reviews (ADR-0195).
-    const digest = repoPath('.harness', 'reviews', 'digest.log');
-    mkdirSync(dirname(digest), { recursive: true });
-    appendFileSync(digest, `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}\n`);
+    mkdirSync(dirname(DIGEST), { recursive: true });
+    appendFileSync(DIGEST, `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}\n`);
     console.log(`recorded ${v.verdict} for ${task} round ${round} (${(hash || content).slice(0, 12)}); stage .harness/reviews/digest.log with this change`);
     if (round > t('REVIEW_ROUND_CAP') && v.verdict !== 'pass') die(`round cap ${t('REVIEW_ROUND_CAP')} exceeded — stop (drive stop condition)`, 3);
+    break;
+  }
+
+  case 'rebind': {
+    // Bind an earlier pass line to a landed commit whose diff it reviewed byte for byte, e.g. a line
+    // recorded before content ids existed. It is marked `rebind`, never a reviewer verdict (M18.127).
+    const task = arg('task') ?? die('--task required', 2);
+    const commit = arg('commit') ?? die('--commit required', 2);
+    const n = Number(arg('line'));
+    const lines = tracked();
+    const bound = lines[n - 1] ?? die(`--line ${arg('line')}: no such digest line`, 2);
+    const hash = reviewedDiffHash(commit);
+    const bad = [];
+    if (bound.task !== task || bound.verdict !== 'pass') bad.push(`line ${n} is not a pass line of ${task}`);
+    if (bound.hash !== hash) bad.push(`line ${n} reviewed diff ${bound.hash.slice(0, 12)}, not commit ${commit}'s ${hash.slice(0, 12)}`);
+    if (bad.length) die(`rebind refused:\n- ${bad.join('\n- ')}`);
+    appendFileSync(DIGEST, `${task}\t${hash}\t${bound.round}\trebind\t${bound.reviewer}\t${bound.findings}\tcontent:${contentId(commit)}\tbound:${n}\n`);
+    console.log(`rebound ${task} line ${n} to ${commit}; stage .harness/reviews/digest.log`);
     break;
   }
 

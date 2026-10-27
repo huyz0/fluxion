@@ -8,11 +8,13 @@
 // for their task in the evaluated digest, or a reviewed exemption in .harness/baselines/digest-exempt.txt.
 // A done backlog row needs its Commit cell once a later commit exists to record it. A posthoc line
 // (reviewer `...:posthoc`) that names a content identity must match one of its task's commits
-// (M18.119): a posthoc review binds to what landed, not to a diff that never did.
+// (M18.119): a posthoc review binds to what landed, not to a diff that never did. A `rebind` line
+// counts only when it names a pass line of its task, and a pass line a commit adds for other content
+// must be followed by a later line of its task (M18.127).
 // CI (gates.yml) runs `--head --full-history` on every push and PR.
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
-import { contentId, parseDigest } from './review-content.mjs';
+import { contentId, isPosthoc, parseDigest, reviewedDiffHash } from './review-content.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
@@ -58,14 +60,47 @@ function evidenceProblems(commits, tree, adopted) {
   const problems = [];
   for (const { sha, task } of commits) {
     const short = sha.slice(0, 7);
-    if (adopted && atOrAfter(sha, adopted)) {
-      const content = contentId(sha);
-      const own = parseDigest(show(sha, DIGEST));
-      if (content && !own.some((l) => l.task === task && l.verdict === 'pass' && l.content === content))
-        problems.push(`${short} ${task}: its tree has no pass digest line bound to its content ${content.slice(0, 12)}`);
-    } else if (!passed.has(task) && !exempt.has(`${short} ${task}`)) problems.push(`${short} ${task}: no tracked pass digest line and no exemption`);
+    if (adopted && atOrAfter(sha, adopted)) problems.push(...boundProblems(sha, task).map((p) => `${short} ${task}: ${p}`));
+    else if (!passed.has(task) && !exempt.has(`${short} ${task}`)) problems.push(`${short} ${task}: no tracked pass digest line and no exemption`);
   }
   return problems;
+}
+
+/** A post-adoption commit needs a pass (or rebind) line bound to its content and no stale pass. */
+function boundProblems(sha, task) {
+  const content = contentId(sha);
+  if (!content) return [];
+  const own = parseDigest(show(sha, DIGEST));
+  let hash;
+  const diffHash = () => (hash ??= reviewedDiffHash(sha));
+  const covers = (l) => l.task === task && l.content === content && binds(l, own, diffHash);
+  const problems = own.some(covers) ? [] : [`its tree has no pass digest line bound to its content ${content.slice(0, 12)}`];
+  return [...problems, ...stalePasses(sha, { task, content, own, covers })];
+}
+
+/**
+ * A pass line, or a `rebind` line naming a pass line of the same task that reviewed this commit's
+ * exact diff, as `review.mjs rebind` checks: a hand-written rebind binds nothing (M18.127 r1 F2).
+ */
+function binds(line, digest, diffHash) {
+  if (line.verdict === 'pass') return true;
+  const bound = line.verdict === 'rebind' ? digest[line.bound - 1] : undefined;
+  return bound?.task === line.task && bound.verdict === 'pass' && bound.hash === line.hash && line.hash === diffHash();
+}
+
+/**
+ * Pass lines this commit added for its task that bind other content, with no later line binding
+ * this commit's content: the digest would show a pass for a diff that did not land (M18.127, cp13 F5).
+ */
+function stalePasses(sha, { task, content, own, covers }) {
+  const before = new Set(show(`${sha}^`, DIGEST).split(/\r?\n/));
+  const text = show(sha, DIGEST).split(/\r?\n/).filter(Boolean);
+  return own
+    .map((l, i) => ({ l, i, added: !before.has(text[i]) }))
+    .filter(({ l, i, added }) => added && l.task === task && l.verdict === 'pass' && l.content && l.content !== content && !own.slice(i + 1).some(covers))
+    .map(
+      ({ l, i }) => `digest line ${i + 1} is a pass for content ${l.content.slice(0, 12)}, not this commit's, and no later line binds this commit's content`,
+    );
 }
 
 /** Posthoc pass lines of `milestone` whose content identity matches none of their task's commits. */
@@ -76,7 +111,7 @@ function posthocProblems(commits, tree, milestone) {
     return ids.get(task);
   };
   return parseDigest(show(tree, DIGEST))
-    .filter((l) => /:posthoc\b/.test(l.reviewer ?? '') && l.content && l.task?.startsWith(`${milestone}.`))
+    .filter((l) => isPosthoc(l.reviewer) && l.content && l.task?.startsWith(`${milestone}.`))
     .filter((l) => !idsOf(l.task).has(l.content))
     .map((l) => `${l.task}: posthoc digest line names content ${l.content.slice(0, 12)}, which no ${l.task} commit has`);
 }

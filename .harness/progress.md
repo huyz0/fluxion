@@ -3093,3 +3093,10 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 ## M18.128 — last-ci reports an unreadable CI state as unknown (2026-10-27)
 
 - New exit 3 (UNKNOWN): no answer from the run source (was exit 0), a failed status-filtered query with no completed run in the window, and more than LAST_CI_MAX_PENDING pending runs with none completed (were exit 1). Red (1) outranks unknown, unknown outranks a wait (2). drive/next-task: exit 3 blocks feature rows like red, harness rows may proceed; AGENTS.md command line names it. Test covers each case, the ranking, and an unreadable source.
+
+## M18.127 — tracked digest shows every review round truthfully (2026-10-27)
+
+- review.mjs numbers rounds from the tracked digest (rounds since the task's last pass, so the round cap still counts one change's rounds), not the local verdict directory; changes-requested verdicts were already appended and are now tested. Reviewer must match `vendor:role[:posthoc]`; `record --commit` requires `:posthoc`.
+- New `review.mjs rebind --task --commit --line n`: binds digest line n to a landed commit only when it is a pass line of the task whose hash is that commit's exact diff; appends a `rebind` line naming `bound:n`, never a verdict.
+- check-digest: a rebind line binds content only when it names a pass line of its task; a pass line the commit added for other content with no later line of its task is refused (cp13 F5). Posthoc detection parses the reviewer grammar (cp14 F6).
+- Review r1 changes-requested, fixed: F1 rebind hashed the commit's diff including the digest lines the commit carries, so it never matched; `reviewedDiffHash` now leaves out `.harness/reviews/**` (shared by rebind and check-digest), and the test commits digest.log with the change. Live: matches d0ecbb9's pass line; a commit re-applied by land.mjs onto a moved main has other blob ids, so it is refused (fails safe). F2 check-digest now requires a rebind line's hash to equal its bound pass line's and the commit's reviewed diff hash. F3 a stale pass is covered only by a later line that binds this commit's content.

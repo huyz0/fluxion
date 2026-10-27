@@ -102,13 +102,48 @@ export function contentId(commit) {
   return createHash('sha256').update(`content-v2\n${patch}\n${backlog}\n${trace}\n`).digest('hex');
 }
 
+/**
+ * sha256 of a landed commit's diff as its reviewer saw it staged: `record` hashes the staged diff
+ * before appending the digest line the commit then carries, so `.harness/reviews/**` is left out (M18.127 r1 F1).
+ */
+export function reviewedDiffHash(commit) {
+  const diff = git(['diff', '--binary', '--no-color', '--no-ext-diff', `${commit}^`, commit, '--', '.', ':(exclude,glob).harness/reviews/**']);
+  if (diff.status !== 0) throw new Error(`git diff failed: ${diff.stderr.trim()}`);
+  return createHash('sha256').update(diff.stdout).digest('hex');
+}
+
 /** One digest line: task, diff sha256, round, verdict, reviewer, findings, content id (7th field since ADR-0195). */
 export function parseDigest(text) {
   return text
     .split(/\r?\n/)
     .filter(Boolean)
     .map((line) => {
-      const [task, hash, round, verdict, reviewer, findings, content] = line.split('\t');
-      return { task, hash, round, verdict, reviewer, findings, content: content?.replace(/^content:/, '') ?? '' };
+      const [task, hash, round, verdict, reviewer, findings, content, bound] = line.split('\t');
+      // a `rebind` line names the line it binds (1-based) in `bound:<n>` (M18.127)
+      return {
+        task,
+        hash,
+        round,
+        verdict,
+        reviewer,
+        findings,
+        content: content?.replace(/^content:/, '') ?? '',
+        bound: Number(bound?.replace(/^bound:/, '')) || 0,
+      };
     });
+}
+
+/** Reviewer field grammar `vendor:role[:posthoc]` (M18.127, cp14 F6); null when a line does not follow it. */
+export function parseReviewer(reviewer) {
+  const m = /^([a-z0-9][a-z0-9.-]*):([a-z0-9][a-z0-9.-]*)(?::(posthoc))?$/.exec(String(reviewer ?? ''));
+  return m ? { vendor: m[1], role: m[2], posthoc: Boolean(m[3]) } : null;
+}
+/** Posthoc by the grammar; lines older than the grammar by their `:posthoc` suffix. */
+export const isPosthoc = (reviewer) => parseReviewer(reviewer)?.posthoc ?? /:posthoc\b/.test(String(reviewer ?? ''));
+
+/** The review round the next verdict for `task` is: one past the rounds since its last pass (tracked digest). */
+export function nextRound(digest, task) {
+  const mine = digest.filter((l) => l.task === task && l.verdict !== 'rebind');
+  const lastPass = mine.findLastIndex((l) => l.verdict === 'pass');
+  return mine.length - lastPass;
 }
