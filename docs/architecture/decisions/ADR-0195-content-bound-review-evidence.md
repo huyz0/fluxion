@@ -93,7 +93,10 @@ pushed them without running the hooks on the rebased tree:
   across M18), so the review binding could not be checked from history. M18.38, M18.48 and
   M18.58–63 were reviewed again after the fact and bound by content identity (M18.99).
 
-These commits stay as they are (history is not rewritten); cp11 records the breach.
+- 43a90d4 (M18.103) and 17e68e3 (M18.38) also landed past the limit (10/8 and 11/8), found at
+  cp12.
+
+These commits stay as they are (history is not rewritten); cp11 and cp12 record the breaches.
 
 ## More Information
 

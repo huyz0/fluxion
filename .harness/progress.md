@@ -2988,3 +2988,8 @@ Adds @fluxion/pack-uml: 20 UML-lite definitions (structure, use-case, sequence, 
 - my-shapes.test.ts 3/3: a styled group with text and a connector saved, exported, imported and inserted into a second document keeps geometry/style/text/binding; persistence across reload; refusals. UI is M18.35.
 - Review r1 changes-requested, fixed: an unreadable stored value is moved to `fluxion.my-shapes.unreadable` before any write and never overwritten (no write while it cannot be moved); ids checked on save/put by the file's rule; each change re-reads storage (two tabs keep each other's items); ADR says the my-shapes file is FR-LIB-008's pack file. Tests 5/5.
 - Review r2 changes-requested, fixed: what is stored may hold no items (an emptied My shapes reads back, no false set-aside); put validates the whole item as a file read would (id, name, payload); opening writes nothing; a write that would exceed the readable size is refused. Tests 6/6.
+
+## M18.43 — checkpoint cp12 (2026-10-27)
+
+- Range 7545e708..f0682fe, verdict changes-requested. F1 three-OS CI red on main since 367e343 (pack-goldens sandbox exits 0 on a deleted golden in CI, Windows "No projects matched node", drawio/imported-pack timeouts, Windows budget) → M18.117, taken next by stream 1. F2 `last-ci` pending-run masking → M18.118. F3 no remote digest enforcement → M18.119. F4 My shapes lose imported definitions and credits → M18.120 (M18.35 now waits on it). F5 geometry check misses parameter interactions → M18.121. F6 argued; ADR-0195 History gains 43a90d4/17e68e3.
+- M18.34 Commit cell filled.

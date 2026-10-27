@@ -1,0 +1,103 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp12",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..f0682feebe1b93ebf4782c6ef0a7158abf1e601d",
+  "reviewer": "claude:independent-subagent:m18-cp12",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "file": "tests/harness/pack-goldens.test.mjs",
+      "line": 32,
+      "severity": "major",
+      "failure_scenario": "The three-OS `ci` workflow has been red on main for 20 consecutive commits, 367e343 (M18.21) through ff4b166 (M18.99). The last success was cd518e6, and the runs for fd6b38a, d3e2c53 and f0682fe are still queued. The failures, from run annotations: (a) since e8185ce, pack-goldens.test.mjs fails on all three OSes. On ubuntu and macOS the run after a golden is deleted exits 0 ('status=0'), so in CI the sandboxed basic suite does not detect a missing golden. That is the exact dishonesty M18.100 was meant to close. On Windows the junction sandbox gives 'No projects matched the filter \"node\"'. (b) drawio-import.test.ts 'amplifying entries are refused ... in bounded time' times out at 10 s and imported-pack.test.ts 'a document using imported Lucide icons saves portably' at 20 s on ubuntu and macOS. (c) verify (windows-latest) exceeds the 15-minute job budget. Neither the backlog nor progress.md records any of this. Every task commit in this window violates non-negotiable 1, and the local ladder passing the same harness test shows the leg depends on its environment."
+    },
+    {
+      "id": "F2",
+      "file": "scripts/harness/last-ci.mjs",
+      "line": 48,
+      "severity": "minor",
+      "failure_scenario": "last-ci exits 2 ('fix pending: wait') whenever any newer run of the red workflow is pending, and assumes that newer run is the fix. With parallel streams landing every 20 to 40 minutes, some run is always pending. At f0682fe it prints 'RED ci failure at ff4b166 ... (3 newer runs pending): wait' and exits 2, although none of the pending commits touches the failing tests. The drive and next-task rule 'a red run (exit 1) is fixed first' therefore never fires, which is how F1 lasted 20 commits."
+    },
+    {
+      "id": "F3",
+      "file": ".github/workflows/gates.yml",
+      "line": 46,
+      "severity": "minor",
+      "failure_scenario": "M18.106 makes land.mjs the landing path, but nothing on the remote enforces it. ci.yml's verify job checks out at depth 1, so its ladder step 'digest' SKIPs ('shallow clone has no task history'). gates.yml has full history but runs only check-workflows and check-commits, not check-digest. A stream that does `git rebase origin/main && git push` (the cp11 F1 failure mode) passes CI's digest check. It is caught only when the next local commit in some other worktree runs the staged ladder, which then blocks an unrelated stream. Two smaller weaknesses: before adoption, coverage is per task, not per commit (check-digest.mjs:63, `passed.has(task)`), so the content ids recorded on the M18.57–63/M18.38/M18.48 posthoc lines are never compared with contentId(sha), and a mutant line with a wrong content id stays green. The Commit-cell check accepts any non-empty text."
+    },
+    {
+      "id": "F4",
+      "file": "packages/editor/src/library/my-shapes.ts",
+      "line": 80,
+      "severity": "major",
+      "failure_scenario": "A My shapes item is an ADR-0020 clipboard payload: records, assets and bounds. It carries no shape definitions and no pack credits. Example: a user saves a group made of imported Iconify or SVG icons (M18.18/M18.101, defined only in that document's imported pack) or draw.io shapes, then inserts it into a second document that lacks that pack. The records name shape types that the second document cannot resolve, and the CC-BY/MIT attribution that NFR-LIC-003 requires is dropped, because the save path has nothing to credit. The FR-LIB-008 leg passes only because my-shapes.test.ts uses built-in shapes. FR-LIB-008 also says 'custom shape in a local pack; export/import pack file', but fluxion-my-shapes 1.0 is not a pack. The ADR-0048 amendment calls it 'the person's local pack' without reconciling that wording. Separately, importFile replaces any held item with the same id, so importing another person's file can overwrite one's own items silently, depending on how M18.35 generates ids."
+    },
+    {
+      "id": "F5",
+      "file": "packages/sdk/src/testing/geometry-check.ts",
+      "line": 30,
+      "severity": "minor",
+      "failure_scenario": "variants() moves one parameter at a time from all defaults and checks only defaultSize. Spot mutant: an outline `L {w + a * b * 20} {h/2}` with a, b in 0..1 and both defaults at 0. The check evaluates a=1 (with b=0) and b=1 (with a=0), sees 0 both times and passes, but the shape leaves its box when both are at max. Callout tails, UML compartments and similar shapes with interacting params, at the sizes users resize to, are not covered. M18.103's EARS is met literally, but the 'never leaves bounds' intent behind cp10 F9 is not."
+    },
+    {
+      "id": "F6",
+      "file": "docs/architecture/decisions/ADR-0195-content-bound-review-evidence.md",
+      "line": 83,
+      "severity": "minor",
+      "failure_scenario": "check-checkpoint --commit reports 43a90d4 (M18.103) at 10/8 and 17e68e3 (M18.38) at 11/8 unreviewed task commits. Both landed before the cp11 record 99c4cff. The ADR-0195 History section, which M18.106 required, lists only d029982 and 533b0a0, so the record of breaches is incomplete. CI 'per-commit message gates' for those pushes is red on history."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.117",
+      "note": "New row M18.117, serialized ahead of further stream feature commits: make ci.yml green on all three OSes. Fix pack-goldens.test.mjs so the sandbox runs its own copy on Linux, macOS and Windows (CI env), fix the drawio/imported-pack test timeouts by fixing the cause, not by raising thresholds, and bring windows verify inside the 15-minute budget, or ADR the budget. Record a green run with check-ci-evidence."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.118",
+      "note": "New row M18.118: last-ci exits 1 unless a pending newer run is on a commit that touches the failing paths or declares the fix (e.g. a `Fixes-ci: <run-id>` trailer), and it exits 1 after N pending runs or T minutes on the same red. Drive serializes streams while main is red."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.119",
+      "note": "New row M18.119: gates.yml runs `check-digest.mjs --head --full-history` on every push and PR, and pre-adoption posthoc lines that carry a content id must match contentId(sha)."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M18.120",
+      "note": "New row M18.120 (M18.35 depends on it): My shapes items embed the definitions and credits of non-built-in shapes they use, or refuse to save them. ADR-0048's amendment reconciles 'local pack' with the requirement text, and import refuses or renames, rather than silently replaces, a held id from another file."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M18.121",
+      "note": "New row M18.121: the shared geometry check also evaluates every corner of the number-param box (capped, e.g. at 2^8 combinations, with the rest pairwise) and at least one minimum resize size, with existing packs retrofitted."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "note": "History is not rewritten. The cp12 record commit adds 43a90d4 (10/8) and 17e68e3 (11/8) to ADR-0195's History section, and cp11/cp12 together clear the cadence. No new row."
+    }
+  ],
+  "assessment": {
+    "coherence": "The harness pair is one design. M18.99 binds reviews to a content id (normalized diff without bookkeeping or generated reports, plus backlog spec cells and hand-written trace cells), and M18.106's land.mjs re-commits through the real hooks and re-checks that id. Union merge for append-only logs fits both. The feature commits follow established patterns: UML uses the shared suite and ledger; M18.38 is a pure core schema plus routing decoration consumed by render; M18.96 extends the 1.1 lock path. The one cross-commit contradiction: M18.34 My shapes reuses the clipboard payload, which cannot carry the imported-pack definitions and credits that M18.101 and M18.96 work to preserve (F4).",
+    "specFidelity": "M18.96, M18.99, M18.106, M18.25 and M18.103 meet their EARS as written. Content binding works on history: check-digest --head --full-history reports 89 task commits covered, and the digest, land and review harness suites pass 38/38. M18.38 is honestly decomposed: loader, save/editor and corner fixes are M18.111–113. FR-LIB-008 is only partly served: no pack file, and imported artwork loses definitions and credits (F4). M18.103 checks single-parameter extremes only (F5).",
+    "standardsDrift": "Non-negotiable 1 (green tree) was abandoned in practice: three-OS CI has been red for 20 commits without a backlog row (F1), and the last-ci convention degraded into a permanent 'wait' (F2). Removes-test trailers on M18.99 and M18.106 cite superseding tests. Digest lines now carry content ids, and argued minors are recorded.",
+    "gateHonesty": "The completion gate is 44/75, so it cannot pass early, and its 'full verification' and three-OS CI legs are correctly red. Spot mutants: (1) deleting a pack golden is caught locally, but in CI the pack-goldens leg itself exits 0 (F1). (2) A posthoc digest line with a wrong content id stays green (F3). (3) An outline that escapes its box only when two params are both at max passes the M18.103 check (F5). The 'My shapes styled groups export/import' leg passes using only built-in shapes (F4).",
+    "architecture": "No layering breach. core/connector-def is pure zod; routing/decorate imports geometry only; My shapes takes injected storage. Contract changes are accompanied by ADR amendments: connectors.json fluxion-connector-defs 1.0, fluxion-my-shapes 1.0 (ADR-0048) and 1.1 shape-pack locks (08-file-format, ADR-0192). New public API: editor +66 lines, core +37, routing +28 in API reports. The new public pack @fluxion/pack-uml keeps a hand-written VERSION, so cp11 F5 (M18.110) still applies to it.",
+    "planHealth": "There are 113 backlog rows (84 done, 29 todo) against 43 planned (2.6×), up from 104 at cp11. Growth comes mainly from review findings and harness repair rather than features: 6 of 12 packs, CLI import, font subsetting and the four e2e specs remain. Parallel streams keep producing harness regressions (cp9–cp12 each reopen bookkeeping or CI integrity). Later milestones should run at most one stream while main CI is red and should budget harness integration per stream."
+  },
+  "planDelta": "Add M18.117 (three-OS CI green: pack-goldens sandbox, test timeouts, Windows budget; blocks further stream feature commits), M18.118 (last-ci stops treating any pending run as a fix), M18.119 (gates.yml runs check-digest on full history; posthoc content ids verified), M18.120 (My shapes carry or refuse non-built-in defs and credits; FR-LIB-008 pack wording reconciled; no silent id overwrite; M18.35 depends on it) and M18.121 (geometry check across param corners and a minimum size). The cp12 commit records the 43a90d4/17e68e3 breaches in ADR-0195 History and fills M18.34's Commit cell (f0682fe).",
+  "limitations": [
+    "The completion gate output came from the packet; the m18-complete run in the scratch worktree had no node_modules and was stopped. Only the digest, land and review harness suites (38/38 pass) and check-digest/check-checkpoint ran locally.",
+    "CI causes come from GitHub check-run annotations (gh api); raw job logs returned 403. The root cause of pack-goldens exiting 0 in CI is inferred, not reproduced.",
+    "UML geometry, M18.38 render goldens and the M18.96 loaders were read, not executed or visually inspected.",
+    "No repo writes besides this verdict file. The scratch worktree /tmp/claude-0/cp12 was added and then removed (git worktree prune)."
+  ]
+}

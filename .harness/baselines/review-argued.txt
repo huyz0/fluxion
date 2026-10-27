@@ -122,3 +122,4 @@ M18.99 r2 F2: the shallow skip is ok in the m18-complete leg too; milestone-gate
 M18.99 r2 F3: ADR-0195 Consequences and the check-reviewed exempt-path message still describe traceability as unbound; doc-only. Handed off to M18.106, which corrects both.
 M18.99 r3 F1: progress entry refreshed in the same commit (bookkeeping, outside the content identity).
 M18.25 F6: initial, final, fork and provided-interface name their label region below the box at the box's width; the shared geometry check (M18.103) refuses text regions outside the box, so a wider band would need a declared label-outside-box region kind. Their labels are top-aligned, so a wrapped label grows downward from the box edge (r2 F2); the narrow width stays until then.
+M18.43 cp12 F6: history is not rewritten; the cp12 record adds the 43a90d4 (10/8) and 17e68e3 (11/8) checkpoint breaches to ADR-0195 History.
