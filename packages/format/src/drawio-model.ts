@@ -5,6 +5,7 @@
 
 import { arrowhead, type Point } from './drawio-arrows.js';
 import { type Budget, color, type Label, labelSvg, num, numberOf, plainLabel, refuse, Sink, step } from './drawio-paint.js';
+import { along } from './drawio-route.js';
 import { type Box, type Paint, type Style, shapeOf, shapeSvg } from './drawio-shapes.js';
 import { elements, type XmlNode } from './drawio-xml.js';
 
@@ -135,21 +136,6 @@ function originOf(scene: Scene, id: string | undefined, depth = 0): Point {
   const origin: Point = [px + geo(cell, 'x'), py + geo(cell, 'y')];
   scene.origins.set(cell.id, origin);
   return origin;
-}
-
-/** The point at fraction `t` of a polyline's length. */
-function along(route: readonly Point[], t: number, budget: Budget): Point {
-  step(budget, route.length);
-  const lengths = route.slice(1).map((p, i) => Math.hypot(p[0] - (route[i] as Point)[0], p[1] - (route[i] as Point)[1]));
-  let left = Math.min(1, Math.max(0, t)) * lengths.reduce((a, b) => a + b, 0);
-  for (const [i, length] of lengths.entries()) {
-    if (left <= length && length > 0) {
-      const [a, b] = [route[i] as Point, route[i + 1] as Point];
-      return [a[0] + ((b[0] - a[0]) * left) / length, a[1] + ((b[1] - a[1]) * left) / length];
-    }
-    left -= length;
-  }
-  return route.at(-1) as Point;
 }
 
 /** A label vertex attached to an edge: geometry x runs -1..1 along the route, y and an offset point shift it. */

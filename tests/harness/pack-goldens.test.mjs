@@ -8,12 +8,15 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { out, REPO } from './helpers.mjs';
 
-const LINKED = ['node_modules', 'packages', 'tools', 'scripts', 'package.json', 'tsconfig.json', 'tsconfig.base.json', 'vitest.config.ts'];
+const LINKED = ['node_modules', 'packages', 'tools', 'scripts'];
+// Windows junctions only link directories, so the root files the workspace reads are copied
+const COPIED = ['package.json', 'tsconfig.json', 'tsconfig.base.json', 'vitest.config.ts'];
 const SUITE = 'packs/basic/src/pack.test.ts';
 
 function packSandbox() {
   const dir = mkdtempSync(join(realpathSync.native(tmpdir()), 'fluxion-pack-goldens-'));
   for (const p of LINKED) symlinkSync(join(REPO, p), join(dir, p), process.platform === 'win32' ? 'junction' : undefined);
+  for (const p of COPIED) cpSync(join(REPO, p), join(dir, p));
   // the pack's own node_modules links are relative (../../../packages/sdk), so they resolve through the linked packages/
   cpSync(join(REPO, 'packs/basic'), join(dir, 'packs/basic'), {
     recursive: true,
@@ -21,8 +24,9 @@ function packSandbox() {
     filter: (src) => !/[\\/](dist|\.tsbuild|coverage)$/.test(src),
   });
   const clean = (extra = {}) => {
-    const env = { ...process.env, FLUXION_VITEST_CACHE: join(dir, '.vitest-cache') };
-    for (const key of ['CI', 'VITE_FLUXION_WRITE_PACK']) delete env[key];
+    // CI forces colour, which splits the summary line the baseline matches
+    const env = { ...process.env, FLUXION_VITEST_CACHE: join(dir, '.vitest-cache'), NO_COLOR: '1' };
+    for (const key of ['CI', 'VITE_FLUXION_WRITE_PACK', 'FORCE_COLOR']) delete env[key];
     return { ...env, ...extra };
   };
   const run = (extra) =>

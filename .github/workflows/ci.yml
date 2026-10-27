@@ -26,7 +26,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 35
+    # ADR-0197: Windows verification gets 25 of a 45 minute envelope; ubuntu and macOS keep 15 of 35 (ADR-0191)
+    timeout-minutes: ${{ matrix.os == 'windows-latest' && 45 || 35 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,7 +47,7 @@ jobs:
           git config --global user.email "ci@example.invalid"
       # the only three-OS run of the full ladder (M2.22); gates.yml keeps the ubuntu-only harness gates
       - run: pnpm verify
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.os == 'windows-latest' && 25 || 15 }}
       # The ladder persists live streams and completed failures; do not rerun failed checks.
       - name: verification failure reports
         if: always() && (failure() || cancelled())

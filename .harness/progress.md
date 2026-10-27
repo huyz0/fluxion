@@ -3007,3 +3007,10 @@ Adds @fluxion/pack-uml: 20 UML-lite definitions (structure, use-case, sequence, 
 ## M18.110 — Pack versions survive changesets (2026-10-27)
 
 The ledger never records the unreleased 0.0.0 and keeps every CHANGELOG-released version; pnpm run version-packages (changeset version + scripts/packs/sync-versions.mjs, wired into the release workflow) syncs each pack's VERSION and rebuilds pack/, goldens and ledger; a write run needs VITE_FLUXION_WRITE_PACK=1 together with vitest -u, so a leaked variable fails without writing (cp11 F5, F7).
+
+## M18.117 — three-OS CI green (2026-10-27)
+
+- pack-goldens: CI's forced colour split vitest's summary line (`NO_COLOR`, `FORCE_COLOR` removed in the sandbox run); Windows junctions only link directories, so the root `package.json`, `tsconfig*.json` and `vitest.config.ts` are copied ("No projects matched node"). Reproduced the colour failure locally with `FORCE_COLOR=1`.
+- drawio route labels: `along` rebuilt the route's segment lengths for every label (3500 labels x 5000 points); lengths are measured once per route and found by binary search, every point still charged so the step budget refuses at the same entry. Amplifying test 2.8 s -> 1.1 s locally.
+- imported-pack: saves a deterministic Lucide sample (every 16th icon plus the used two and their aliases, 136 definitions) instead of all 2198; the full collection import stays in the editor's FR-LIB-005 test. 6.4 s -> 0.6 s.
+- Windows verify: green runs took 9-14 min against a 15 min step; ADR-0197 gives Windows 25 of 45 minutes, other OSes unchanged, no threshold changed.
