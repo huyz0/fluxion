@@ -4,10 +4,14 @@
 
 ```ts
 
+import { DeclarativeShapePack } from '@fluxion/sdk';
 import { Pack } from '@fluxion/sdk';
 
 // @public
 export const arrowsPack: Pack;
+
+// @public
+export const arrowsSource: DeclarativeShapePack;
 
 // @public
 export const VERSION: string;

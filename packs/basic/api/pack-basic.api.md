@@ -4,6 +4,7 @@
 
 ```ts
 
+import { DeclarativeShapePack } from '@fluxion/sdk';
 import { MarkerDef } from '@fluxion/sdk';
 import { Pack } from '@fluxion/sdk';
 import { ShapeDef } from '@fluxion/sdk';
@@ -13,6 +14,9 @@ export const basicMarkers: readonly MarkerDef[];
 
 // @public
 export const basicPack: Pack;
+
+// @public
+export const basicSource: DeclarativeShapePack;
 
 // @public
 export const blockArrow: ShapeDef;

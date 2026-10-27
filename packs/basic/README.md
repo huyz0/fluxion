@@ -18,8 +18,8 @@ const registered = basicPack.register(registries); // every shape and marker, or
 
 The same definitions ship as a declarative pack (ADR-0048, ADR-0050) in `pack/`: `index.json` and
 `categories/basic.json`, with a visual golden per definition in `__golden__/`. `src/pack.test.ts`
-checks both against the exported definitions with the SDK's shared suite (ADR-0193); ordinary runs only compare
-(a missing, extra or changed file fails), and `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/basic` rewrites them.
+checks both, and `pack-versions.json` (each released version's category hashes), against the exported `basicSource` with the SDK's
+shared check (ADR-0193, ADR-0194). Changed geometry needs a new package version. Ordinary runs only compare, and `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/basic` rewrites them.
 
 ## Shapes
 

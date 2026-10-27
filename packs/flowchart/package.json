@@ -14,7 +14,8 @@
   },
   "files": [
     "dist",
-    "pack"
+    "pack",
+    "pack-versions.json"
   ],
   "scripts": {
     "build": "tsdown",

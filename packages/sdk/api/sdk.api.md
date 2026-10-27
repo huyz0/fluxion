@@ -110,6 +110,9 @@ export interface ArtworkShapePackLoader {
     search(query: string): readonly ShapePackDefinitionEntry[];
 }
 
+// @public
+export function buildShapePackFiles(pack: DeclarativeShapePack): Readonly<Record<string, string>>;
+
 export { contrastRatio }
 
 export { CoreRegistries }
@@ -123,6 +126,20 @@ export { createFontRegistry }
 
 // @public
 export function createShapePackLoader(indexBytes: Uint8Array, options: ShapePackLoaderOptions): Promise<Result<ShapePackLoader, readonly Diagnostic[]>>;
+
+// @public
+export type DeclarativeShapePack = {
+    readonly id: string;
+    readonly version: string;
+    readonly name: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly credits: readonly ShapePackCredit[];
+    readonly definitions: readonly {
+        readonly name: string;
+        readonly def: ShapeDef;
+    }[];
+};
 
 // @public
 export function definePack(spec: PackSpec): Pack;
@@ -152,6 +169,9 @@ export { MARKER_SIZE }
 export { MarkerDef }
 
 export { markerTrim }
+
+// @public
+export function namedShapeDefs(defs: readonly ShapeDef[], names: Readonly<Record<string, string>>): DeclarativeShapePack["definitions"];
 
 export { NumberParam }
 

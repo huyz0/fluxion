@@ -4,10 +4,14 @@
 
 ```ts
 
+import { DeclarativeShapePack } from '@fluxion/sdk';
 import { Pack } from '@fluxion/sdk';
 
 // @public
 export const infographicPack: Pack;
+
+// @public
+export const infographicSource: DeclarativeShapePack;
 
 // @public
 export const VERSION: string;

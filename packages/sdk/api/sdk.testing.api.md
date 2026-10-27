@@ -12,7 +12,12 @@ import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 
 // @public
-export function buildShapePackFiles(draft: ShapePackDraft): Readonly<Record<string, string>>;
+export type CheckedInShapePack = {
+    readonly pack: Readonly<Record<string, string>>;
+    readonly goldens: Readonly<Record<string, string>>;
+    readonly packageJson: string;
+    readonly versions: string | undefined;
+};
 
 // @public
 export type CheckedShapePack = {
@@ -21,23 +26,31 @@ export type CheckedShapePack = {
 };
 
 // @public
+export function checkShapePack(pack: DeclarativeShapePack, checkedIn: CheckedInShapePack): Promise<ShapePackProblems>;
+
+// @public
 export function checkShapePackFiles(files: Readonly<Record<string, string>>, licensePolicy?: ShapePackLicensePolicy): Promise<Result<CheckedShapePack, readonly Diagnostic[]>>;
 
 // @public
 export function renderShapeGolden(def: ShapeDef): string;
 
 // @public
-export type ShapePackDraft = {
-    readonly id: string;
-    readonly version: string;
-    readonly name: string;
-    readonly license: string;
-    readonly attribution: string;
-    readonly credits: readonly ShapePackCredit[];
-    readonly definitions: readonly {
-        readonly name: string;
-        readonly def: ShapeDef;
-    }[];
+export type ShapePackExpectation = {
+    readonly pack: Readonly<Record<string, string>>;
+    readonly goldens: Readonly<Record<string, string>>;
+    readonly versions: string;
+};
+
+// @public
+export function shapePackExpectation(pack: DeclarativeShapePack, versions: string | undefined): ShapePackExpectation;
+
+// @public
+export type ShapePackProblems = {
+    readonly files: readonly string[];
+    readonly loading: readonly string[];
+    readonly brands: readonly string[];
+    readonly bounds: readonly string[];
+    readonly versions: readonly string[];
 };
 
 ```

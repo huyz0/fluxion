@@ -1,5 +1,5 @@
 // Public entry of @fluxion/pack-basic; the package comment is the dts banner in tsdown.config.ts.
-import { definePack, type Pack } from '@fluxion/sdk';
+import { type DeclarativeShapePack, definePack, type Pack } from '@fluxion/sdk';
 import { basicMarkers } from './markers.js';
 import { blockArrow } from './shapes/block-arrow.js';
 import { callout } from './shapes/callout.js';
@@ -24,11 +24,57 @@ import { trapezoid } from './shapes/trapezoid.js';
 import { triangle } from './shapes/triangle.js';
 
 /**
- * Version of this package.
+ * Version of this package; also the version of its declarative distribution in `pack/`.
  *
  * @public
  */
 export const VERSION: string = '0.0.0';
+
+/**
+ * The basic pack's declarative source (ADR-0194): the index metadata, credits and named definitions its `pack/` distribution is
+ * built from.
+ *
+ * @public
+ */
+export const basicSource: DeclarativeShapePack = {
+  id: 'basic',
+  version: VERSION,
+  name: 'Basic shapes',
+  license: 'MIT',
+  attribution: 'Fluxion contributors',
+  credits: [
+    {
+      id: 'fluxion',
+      license: 'MIT',
+      attribution: 'Fluxion contributors',
+      notice: 'Copyright (c) 2026 Fluxion contributors. Released under the MIT License.',
+      source: { kind: 'original', author: 'Fluxion contributors', statement: 'Original artwork drawn for Fluxion.' },
+    },
+  ],
+  definitions: [
+    { name: 'Rectangle', def: rect },
+    { name: 'Rounded rectangle', def: roundedRect },
+    { name: 'Ellipse', def: ellipse },
+    { name: 'Triangle', def: triangle },
+    { name: 'Diamond', def: diamond },
+    { name: 'Parallelogram', def: parallelogram },
+    { name: 'Trapezoid', def: trapezoid },
+    { name: 'Hexagon', def: hexagon },
+    { name: 'Octagon', def: octagon },
+    { name: 'Star', def: star },
+    { name: 'Block arrow', def: blockArrow },
+    { name: 'Callout', def: callout },
+    { name: 'Cloud', def: cloud },
+    { name: 'Cylinder', def: cylinder },
+    { name: 'Document', def: document },
+    { name: 'Note', def: note },
+    { name: 'Line', def: line },
+    { name: 'Polyline', def: polyline },
+    { name: 'Freehand', def: freehand },
+    { name: 'Text box', def: textBox },
+    { name: 'Image frame', def: imageFrame },
+  ],
+};
 
 /**
  * The basic shapes (FR-SHP-002) and connector markers (FR-CON-003), namespace `basic`. Hosts register it into their core registries
@@ -38,29 +84,7 @@ export const VERSION: string = '0.0.0';
  */
 export const basicPack: Pack = definePack({
   id: 'basic',
-  shapes: [
-    rect,
-    roundedRect,
-    ellipse,
-    triangle,
-    diamond,
-    parallelogram,
-    trapezoid,
-    hexagon,
-    octagon,
-    star,
-    blockArrow,
-    callout,
-    cloud,
-    cylinder,
-    document,
-    note,
-    line,
-    polyline,
-    freehand,
-    textBox,
-    imageFrame,
-  ],
+  shapes: basicSource.definitions.map(({ def }) => def),
   markers: basicMarkers,
 });
 

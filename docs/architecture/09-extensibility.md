@@ -267,15 +267,18 @@ with source credits and used-subset attribution. Content-asset permissions never
 code dependencies; current code/font policy stays unchanged. M18.12/14/33 implement
 validation, portable credits and the license gate/player UI before these are supported.
 
-## First-party declarative pack suite (ADR-0193)
+## First-party declarative pack suite (ADR-0193, ADR-0194)
 
-`@fluxion/sdk/testing` builds a pack's canonical `index.json` and hashed category files
-(`buildShapePackFiles`), loads them as a host would (`checkShapePackFiles`) and draws each
-definition's normalized SVG golden (`renderShapeGolden`). Each first-party shape pack keeps
-its distribution in `pack/` and goldens in `__golden__/`; `src/pack.test.ts` requires both
-to match its exported definitions. Ordinary runs only compare: a missing, extra or
-changed file fails and nothing is written (M18.100); `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/<pack>`
-rewrites them for review.
+A shape pack exports its source as a `DeclarativeShapePack` (`<pack>Source`: version equal to
+the package version, names, credits, named definitions); `buildShapePackFiles` from
+`@fluxion/sdk` turns it into the canonical `index.json` and hashed category files.
+`@fluxion/sdk/testing` draws each definition's normalized SVG golden (`renderShapeGolden`)
+and `checkShapePack` reports every problem of the checked-in `pack/`, `__golden__/` and
+`pack-versions.json`: changed, missing or extra files, loader diagnostics, vendor brands,
+drawing outside the box, and versions. The ledger maps each released version to its category
+hashes; changing geometry at a recorded version fails until the package version is bumped.
+Ordinary runs only compare (M18.100); `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/<pack>`
+rewrites the files for review.
 
 ## Declarative shape-pack validation (ADR-0178)
 

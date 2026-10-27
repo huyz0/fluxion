@@ -4,6 +4,7 @@
 
 ```ts
 
+import { DeclarativeShapePack } from '@fluxion/sdk';
 import { Pack } from '@fluxion/sdk';
 import { ShapeDef } from '@fluxion/sdk';
 
@@ -12,6 +13,9 @@ export const flowchartPack: Pack;
 
 // @public
 export const flowchartShapes: readonly ShapeDef[];
+
+// @public
+export const flowchartSource: DeclarativeShapePack;
 
 // @public
 export const VERSION: string;
