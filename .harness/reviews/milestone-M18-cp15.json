@@ -1,0 +1,111 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp15",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..d0cee9e517c7165e0a47b270902c90776494e8a8",
+  "reviewedDelta": "cfcf600867cee82454d1d0374cdf6ab4d018b285..d0cee9e517c7165e0a47b270902c90776494e8a8 (6a0b3fc M18.43 cp14 record, 92ffb32 M18.138, 7753626 M18.139, d0cee9e M18.134)",
+  "reviewer": "claude:independent-subagent:m18-cp15",
+  "verdict": "changes-requested",
+  "questions": {
+    "coherence": "The delta is coherent and stays in harness code: the cp14 record, one fix for a hook-env leak (M18.138), one change to the landing block (M18.139) and the cp14 F1 fix (M18.134). landingBlock is still the single classifier that land.mjs and check-checkpoint share, and both callers now pass the commit's backlog and changed paths. ci-runs gains `completed` in both its gh and REST sources with one shape. last-ci's --runs-file now goes through a fileSource on the same reading path as GitHub, which removes a test-only branch. Two inconsistencies remain. last-ci still has three ways to report an unreadable state: UNKNOWN exit 1, a partial query failure exit 1, and a total read failure exit 0 (F3). M18.139's harness-path list mixes harness code with product and contract sources under scripts/ and docs/ (F1).",
+    "specFidelity": "The cp14 dispositions were honoured. Rows M18.134 to M18.137 exist with title, Req, EARS and Depends that match cp14's proposed_row verbatim (checked field by field). F5's Depends cells were corrected. F6 was folded into M18.127. The M18.124 review minors were recorded as an argued line. The cp14 Learned line is in M18.md. M18.134 meets its EARS: a status-filtered query per workflow; UNKNOWN past LAST_CI_MAX_PENDING; a test of 10 pending over a red; live at d0cee9e `last-ci --offline` prints 'RED ci failure at ff4b166 (run 40458514031) (10 newer runs pending)' and exits 1. M18.138 meets its test clause but not its universal clause 'WHEN a harness test spawns git or a git-reading script', because nothing enforces that for the next test (F2). M18.139 meets its EARS, but tests the refusals only through check-checkpoint and not land.mjs (argued at r2). Its exemption weakens what M18.135 is meant to enforce (F1).",
+    "standardsDrift": "Digest round labels still contradict commit bodies on every delta commit, for the fourth checkpoint running (F4; M18.127 is still todo). The rows in the delta (M18.138 and M18.139) follow the 'Commit cell filled by the next commit' convention. The subject format and trailers are followed. thresholds.mjs and the visual baselines are untouched in cfcf600..d0cee9e.",
+    "gateHonesty": "Imagined mutants. (1) landing-block.mjs:36 `paths.every(harnessPath)` changed to `true`: killed by checkpoint.test.mjs, the 'sneaky' case. Dropping `docs/` from HARNESS_PATHS: killed by the own-row case. Dropping `scripts/`: survives. land.mjs passing `[]` as paths: survives, since land has no refusal test for M18.139. (2) last-ci.mjs merge removed (`runs = window`): killed by the regex /RED ci failure at deadbee/, because the status still matches as UNKNOWN. `>` changed to `>=` on LAST_CI_MAX_PENDING: killed by the slice(0,4) assertion. `unread.has` removed: killed by the queryFails case. gh `--status completed` or REST `status=completed` removed: killed by the argument and URL assertions in ci-evidence.test.mjs. (3) M18.138: removing cleanEnv from the clone test's git at last-ci.test.mjs:126 is killed by the decoy-HEAD test. A new test that spawns git without cleanEnv is caught by nothing, because precommit runs the harness tests with the hook's env (F2). Live: `check-checkpoint --commit` passes for all four delta commits (0 to 3 of 8), `check-digest --head --full-history` passes (107 M18 task commits), and last-ci exits 1 on the real red run. The block itself can still be bypassed in two steps (F1).",
+    "architecture": "No package, contract, SDK or dependency changes: 16 files, all under scripts/, tests/harness/, .harness/ and docs/. ci-runs.mjs grows one reader method in both sources. No ADR is needed. The landing rule's notion of a 'harness path' is new policy, and it is defined inline in landing-block.mjs with no standard or ADR behind it. That is why it came out broader than the harness (F1).",
+    "planHealth": "43 planned rows, 135 current (3.1x); the header matches. The delta closed 3 rows (M18.134, M18.138, M18.139), and 2 of them were new and unplanned (the stream-2 report, plus a fix to a gate that blocked its own fix). This review adds 1 row and amends M18.135. No FR feature commit has landed since cp13. The milestone is now bounded by CI capacity, not code. `gh run list --workflow ci.yml --branch main` shows 13 ci runs queued from 8879c64 (08:06Z) to d0cee9e (15:28Z), and the one at bfce2d0 has been in_progress since 08:15Z. Push concurrency is per-sha with no cancel, so every harness push adds to the queue. M18.117 (blocks-landing) cannot finish by code alone, yet .harness/state.json has blockedReason null (F5). Later milestones should plan runner capacity, and a queue policy, as explicit items."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "scripts/gates/landing-block.mjs",
+      "line": 36,
+      "evidence": "landing-block.mjs:5 HARNESS_PATHS = /^(scripts\\/|tests\\/harness\\/|\\.harness\\/|\\.github\\/|\\.githooks\\/|\\.agents\\/|\\.claude\\/|docs\\/|AGENTS\\.md$|CLAUDE\\.md$)/. Under scripts/ are product and contract sources: scripts/fonts/build-font-engine.mjs (the shipped font WASM), scripts/format/goldens.mjs and corpus.mjs (format fixtures), scripts/core/pack-schemas.mjs, scripts/dsl/fluxscript-schema.test.ts and examples.config.ts (packages/dsl's test:examples), and scripts/docs/authoring-guide.mjs (the apps/docs build). docs/ includes docs/requirements/ and docs/architecture/. :36 uses the commit's own row only on that path test. A parent row is still exempted by /\\bHARNESS\\b/ on its Req cell, whatever paths the commit touches: land.test.mjs's M18.123 case lands `M0.15` with src/gate.txt under a HARNESS row.",
+      "problem": "Two bypasses of the block. (a) Two steps. Commit A, `M18.200: docs(harness): ...`, changes only docs/backlog/current.md and adds `| M18.200 | ... | HARNESS | ... | todo |`. It is accepted as an own row on harness paths. Commit B, `M18.200: feat(...)`, touches packages/. The parent row now says HARNESS, so B is accepted too. land.mjs rebuilds commit by commit on HEAD, so both land in one invocation. Before M18.139, the same two steps needed a bookkeeping commit; now any task commit can open them. M18.135's proposed EARS ('Req cell exactly HARNESS (or whose commit touches only harness paths)') does not close this, because an exact-HARNESS row can itself be added by a harness-path commit. The label is self-issued. (b) One step. A commit that brings its own HARNESS row can change the shipped font engine build, format goldens, DSL tests, requirements or ADRs while the block is on.",
+      "suggestion": "Make the exemption depend on paths, not labels. While a blocking row is open, a task commit other than the blocking row lands only if every changed path is a harness path, whatever its row's Req cell says. Narrow the harness paths to a positive list of harness code (scripts/gates/, scripts/harness/, scripts/ci/, scripts/tooling/, tests/harness/, .harness/, .github/, .githooks/, .agents/, .claude/, docs/backlog/, docs/milestones/, docs/harness/, AGENTS.md, CLAUDE.md). Write the list once, in landing-block.mjs, and cite it from docs/standards or the M18.123 row. Add land.mjs refusal tests, because land is where streams meet the rule.",
+      "disposition": "reopen",
+      "target": "M18.135 (amend in place; it is todo)",
+      "proposed_row": "M18.135 Blocking rows cannot be bypassed by labels or self-added rows (cp14 F2, cp15 F1) | HARNESS | WHILE a `blocks-landing` row is open THE SYSTEM SHALL let land only that row's commits and task commits every changed path of which is a harness path, whatever the row's Req cell says, where harness paths are a single positive list of harness code (scripts/gates/, scripts/harness/, scripts/ci/, scripts/tooling/, tests/harness/, .harness/, .github/, .githooks/, .agents/, .claude/, docs/backlog/, docs/milestones/, docs/harness/, AGENTS.md, CLAUDE.md) excluding product and contract sources under scripts/ and docs/; and SHALL refuse a commit that marks a `blocks-landing` row done unless check-ci-evidence holds a green three-OS record for its parent or later; harness tests in both land.mjs and check-checkpoint SHALL prove that a row added as HARNESS by an earlier harness-path commit does not let a later commit touching packages/ land, that a commit under its own HARNESS row touching scripts/fonts/ or docs/requirements/ is refused, and that a done flip without evidence is refused | M18.123, M18.139 | todo"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/gates/precommit.mjs",
+      "line": 149,
+      "evidence": "precommit.mjs:149 `runAsync(process.execPath, ['--test-reporter=spec', '--test', ...harnessToRun()])`. lib.mjs:41-45 spawns with `{ cwd: REPO_ROOT, ...opts }` and no env, so every harness test inherits the commit hook's GIT_DIR and GIT_INDEX_FILE. M18.138 added cleanEnv() to one test, last-ci.test.mjs:126 and :19. A grep of tests/ for git spawns without cleanEnv finds none today (compiler-parity filters GIT_* inline, and pack-goldens.test.mjs:28 spawns vitest and sync-versions without cleaning, but neither runs git), so the sweep's claim holds for now. The bug fired twice: stream 2 on M18.125, then again on M18.139's own commit. progress.md says: 'Committing M18.139 on a base without M18.138 hit the very bug M18.138 fixes (the hook's clone test committed the staged index as `M1.4: fix(ci): v`)'.",
+      "problem": "M18.138's EARS is universal ('WHEN a harness test spawns git or a git-reading script THE SYSTEM SHALL pass an environment without the hook's GIT_* variables'), but the gate covers one test. Imagined mutant: a future test adds `spawnSync('git', ['commit', ...], { cwd: tmp })`. Every check stays green until that test commits a staged index into the worktree being committed. That corrupts history silently, and it does so in the pre-commit ladder. The fix belongs at the ladder, which is the one place that has the hook env.",
+      "suggestion": "Have precommit pass test steps (node --test harness, vitest) an env with GIT_* removed except GIT_EXEC_PATH. Compute staged-path inputs before spawning, which harnessToRun already does. Prove it with a harness test that runs a probe test spawning bare `git commit --allow-empty` in a temp dir, under the ladder's test-step env and a decoy GIT_DIR, and asserts that the decoy's HEAD is unchanged.",
+      "disposition": "reopen",
+      "proposed_row": "M18.140 Pre-commit ladder strips hook git variables from its test steps (cp15 F2) | HARNESS | WHEN the pre-commit ladder spawns a test step (harness node --test, vitest) THE SYSTEM SHALL pass it an environment without GIT_* variables other than GIT_EXEC_PATH, so no test can reach the repository being committed whatever it spawns; a harness test SHALL run a probe test that spawns bare `git commit --allow-empty` in a temporary directory with the ladder's test-step environment over a decoy GIT_DIR/GIT_INDEX_FILE and prove the decoy's HEAD unchanged | M18.138 | todo"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "scripts/harness/last-ci.mjs",
+      "line": 115,
+      "evidence": "last-ci.mjs:113-115: when source.branch() throws, it prints 'cannot read ${branch}'s runs ... check CI by hand' and calls `process.exit(0)`. M18.134 made a failure of one workflow's status query UNKNOWN and exit 1, and made more than LAST_CI_MAX_PENDING pending runs UNKNOWN and exit 1 (:126-130). With gh unauthenticated and REST unreachable, both completed() queries fail and branch() then throws, so the result is exit 0. UNKNOWN shares exit code 1 with RED.",
+      "problem": "Partial unreadability now blocks, but total unreadability is green. This is the same 'fail-open neighbour' pattern as cp14's Learned line. M18.128 (todo) covers the total case ('distinct non-zero code (unknown)'). M18.134's UNKNOWN lines will need to move to that code too, or the codes will drift apart.",
+      "suggestion": "Take M18.128 next among the harness rows. Amend its EARS so that every UNKNOWN that last-ci reports (the outer catch, a failed status query, and too many pending runs with none completed) uses the one distinct code, with a test for each.",
+      "disposition": "argue",
+      "target": "M18.128",
+      "note": "Covered by open M18.128. Amend it to cover M18.134's UNKNOWN lines. No new row."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": ".harness/reviews/digest.log",
+      "line": 0,
+      "evidence": "digest.log tail at d0cee9e: 'M18.139 ... r1 pass claude:independent-subagent:m18.139-r2', while 7753626's body says 'Review r2 pass' and progress.md records an r1 changes-requested round that is not in the digest. 'M18.134 ... r1 pass claude:independent-subagent:m18.134-r2', while d0cee9e's body says 'Review r2 pass' and progress.md records r1 changes-requested. 'M18.43 ... r5 pass ...cp14-commit-r2'. The reviewer strings follow yet another ad-hoc form (`independent-subagent:<task>-rN`).",
+      "problem": "cp13 F5 and cp14 F6 still hold, now on a fourth checkpoint. The tracked digest's round numbers contradict the commit bodies, and changes-requested rounds are missing. The driver now encodes the round in the reviewer name to compensate, which makes the field even less parseable for the grammar that M18.127 is meant to add.",
+      "suggestion": "Land M18.127 next, after M18.128, before further harness rows. It has now been outranked by three unplanned rows.",
+      "disposition": "argue",
+      "target": "M18.127",
+      "note": "Covered by open M18.127 (amended at cp14). No new row. Priority note only."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": ".harness/state.json",
+      "line": 6,
+      "evidence": "`gh run list --repo huyz0/fluxion --workflow ci.yml --branch main --limit 14` at review time: 13 runs `queued` from 40471203743 (8879c64, 08:06Z) to 40531314179 (d0cee9e, 15:28Z), and 40472229061 (bfce2d0) `in_progress` since 08:15Z. gates runs complete (6a0b3fc success). ci.yml:17-19 has concurrency group `ci-${{ github.sha }}` with cancel-in-progress only for pull requests. state.json at d0cee9e: currentTask M18.134, blockedReason null, loopActive true.",
+      "problem": "M18.117 (the blocks-landing row) needs a completed green three-OS ci run. No ci run on main has completed in more than 7 hours, and every harness push adds another queued run, so no code commit can close the row. AGENTS.md says to hand back to the human when the top tasks are blocked or the next step needs authority, and runner capacity and the queue policy are both outside granted scope. The loop is instead producing more harness rows (two this delta were unplanned) while the block holds.",
+      "suggestion": "Record the CI-capacity block in state.json blockedReason and ask Huy to decide: runner capacity, cancelling superseded queued ci runs on main (which changes the evidence semantics and so needs an ADR amending ADR-0174/0198), or batching pushes. Until then, limit pushes to commits that change CI or the gates.",
+      "disposition": "argue",
+      "target": "human decision (state.json blockedReason)",
+      "note": "Not a code defect. It is an outward-facing infrastructure decision. No row until the human chooses; a CI queue-policy row would follow that choice."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.135",
+      "note": "Amend open row M18.135 in place with the proposed row: path-based exemption over a positive list of harness paths, label not sufficient, plus land.mjs refusal tests. Depends gains M18.139."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.140",
+      "note": "New harness row: precommit strips GIT_* from its test steps, so the class M18.138 fixed once cannot recur."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "target": "M18.128",
+      "note": "Amend M18.128 so every last-ci UNKNOWN, including M18.134's, shares the distinct code, and the outer catch stops exiting 0."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "target": "M18.127",
+      "note": "Covered by M18.127. Land it right after M18.128."
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "target": "human",
+      "note": "Record a blockedReason for CI capacity and ask Huy for the queue/runner decision. No row until the decision is made."
+    }
+  ],
+  "cp14DispositionsCheck": "F1 -> M18.134 done (d0cee9e), EARS verbatim, verified live (exit 1 on run 40458514031). F2 -> M18.135 present and todo, EARS verbatim. This review amends it, because M18.139 changed the exemption it targets (F1). F3 -> M18.136 present and todo, verbatim. F4 -> M18.137 present and todo, verbatim; the M18.124 review minors are recorded in review-argued.txt. F5 -> the M18.118 and M18.124 Depends cells are now '\u2014', and M18.133's pending decision is noted in progress.md (not in state.json). F6 -> M18.127 amended with the `vendor:role[:posthoc]` grammar, still todo. The cp14 Learned line is present in M18.md.",
+  "planDelta": "Amend M18.135 (path-based exemption over a positive harness-path list, so a label or a self-added row cannot exempt, and land.mjs refusal tests; Depends adds M18.139). Add M18.140 (precommit strips GIT_* from test steps, with a probe test). Amend M18.128 to cover M18.134's UNKNOWN lines. Order the harness rows M18.128, then M18.127, then M18.135, then M18.140. Bookkeeping: header to 136 rows; record the CI-capacity block in state.json blockedReason and ask the human (F5). Learned line: 'cp15: a gate that blocks its own fix gets an exemption written in a hurry, and the exemption becomes the next bypass. Define \"harness\" by paths, once, and test the exemption in the tool the streams actually run (land.mjs).'"
+}

@@ -3084,3 +3084,8 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - ci-runs gains `completed(branch, workflowFile)`: gh `run list --workflow <f> --event push --status completed --limit 1`, REST `actions/workflows/<f>/runs?...&status=completed&per_page=1`. last-ci merges each workflow's newest completed run into the 30-run window (a failed query leaves the window). More than LAST_CI_MAX_PENDING pending runs with none completed exit 1 as UNKNOWN. Runs-file entries marked `outsideWindow` stand for runs only the status query sees.
 - Live at 6a0b3fc it now reports `RED ci failure at ff4b166 (run 40458514031)` and exits 1, where before it printed "no completed run" and exited 0.
 - Review r1 changes-requested, fixed: F1 --runs-file is now a run source (fileSource) on the same reading path as GitHub, so reverting the merge fails the window test; F2 a failed status query is printed and, with no completed run in the window, is UNKNOWN (exit 1), tested.
+
+## M18.43 — checkpoint cp15 (2026-10-27)
+
+- Range 7545e708..d0cee9e, verdict changes-requested (5 minor) over 6a0b3fc, 92ffb32, 7753626, d0cee9e. F1 M18.139's own-row exemption plus label-based exemption allow a two-step bypass, and the harness-path list covers product sources under scripts/ and docs/ -> M18.135 amended in place with the reviewer's row (positive path list, label not sufficient, land.mjs refusal tests). F2 the ladder still hands hook GIT_* to test steps -> M18.140. F3 argued into M18.128 (amended: one UNKNOWN code, outer read failure no longer exits 0). F4 argued: M18.127 next after M18.128. F5 to the human: CI capacity recorded as blockedReason.
+- cp14 dispositions honoured (M18.134-137 match the proposed rows). Header 136.

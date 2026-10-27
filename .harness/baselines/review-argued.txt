@@ -135,3 +135,9 @@ M18.43 cp14 F6: covered by open M18.127, amended with the reviewer-field grammar
 M18.124 review minors (recorded at cp14 F4): the partial ci-workflow check of the two partition jobs and the untested last-ci unreadable-nightly line are recorded here: M18.137 carries the unreadable-nightly test, and its orchestration test of the plan outputs (matrix, matrix_2, chains=2 covering every partition once) is accepted in place of checking every step of both partition jobs in ci-workflow.test.mjs, since the outputs are what the partition jobs consume.
 M18.138 r1 F1: the decoy test's assertion is the decoy HEAD staying put; the pass-count match only shows the nested run reported, and the name pattern selects the one clone test.
 M18.139 r2 F1: both callers share landingBlock, the paths rule is tested through check-checkpoint --commit (which CI runs on every pushed commit), and land.mjs's diff is the same sha^..sha; M18.135 revisits the exemptions with land tests.
+M18.43 cp15 F3: folded into M18.128 (amended with every UNKNOWN case and the outer read failure).
+M18.43 cp15 F4: covered by M18.127, ordered right after M18.128.
+M18.43 cp15 F5: CI runner capacity is the human's decision; recorded as state.json blockedReason and raised to Huy.
+M18.43 cp15 record r1 F1: the harness rows are stream 1's; it takes them in the cp15 order (M18.128, M18.127, M18.135, M18.140) by hand, as next-task allows choosing among unblocked rows.
+M18.43 cp15 record r1 F2: M18.128's existing EARS already requires its distinct code to be tested; whoever builds it tests each UNKNOWN case the amendment names (reviewer note, recorded here).
+M18.43 cp15 record r1 F3: the Learned line keeps both lessons (paths not labels; strip hook env at the ladder); the land.mjs refusal tests are an M18.135 acceptance clause.
