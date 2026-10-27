@@ -1,0 +1,40 @@
+{
+  "savedAt": "2026-10-27T00:25:49.093043+00:00",
+  "reason": "User requested commit to main before switching sessions",
+  "lastImplementationCommit": "b9bc50af26ef0d192fb36d3c7254096d75b05c07",
+  "nextTask": "M18.94",
+  "nextAction": "Implement strict pack 1.1 font metadata and old/new/negative fixtures under ADR-0192; first inspect current main CI and preserve any new work.",
+  "plan": "docs/architecture/decisions/ADR-0192-artwork-font-retention.md",
+  "spec": "specs/M18-artwork-font-retention/",
+  "completed": {
+    "M18.80": "ce9a0148 production corpus174/174 browsers; CI36/36 and Gates success",
+    "M18.92": "2aa23c9d CI timestamp reader; CI36/36 and Gates success",
+    "M18.93": "c9c5e131 reviewed font plan/cp8; CI40423181785 all36 success and Gates40423181704 success",
+    "M18.98": {
+      "commit": "b9bc50af26ef0d192fb36d3c7254096d75b05c07",
+      "focusedTests": 47,
+      "stagedSeconds": 354.1,
+      "commitHookSeconds": 344.7,
+      "review": "pass, zero findings; tracked code-M18.98-session-close.json"
+    }
+  },
+  "milestoneStatus": "M18 incomplete. cp8 at2aa23c9d actual31/71; full verification and production corpus passed. New font-retention leg intentionally remains red until real implementation acceptance exists. M19\u2013M33/R8 incomplete.",
+  "newCommitCI": "Not yet observed; inspect automatic CI after the publication carrying this handoff. Do not substitute earlier green runs.",
+  "tooling": "TS7 default, tsrs opt-in; browser bundler and Vitest unchanged.",
+  "authorization": "User standing authority: reviewed locally verified ordinary main pushes and CI recovery. No force/protection bypass/release/deploy.",
+  "readStops": [
+    "Old CI40296051434 run read HTTP401",
+    "Old CI40386733828 run endpoint HTTP401",
+    "Gates workflow metadata endpoint /repos/huyz0/fluxion/actions/workflows/367544086 HTTP401; do not retry old Gates40377593479 through another route",
+    "Raw logs for jobs121560130173 and121796880877 denied; no alternate download route",
+    "Local paths /workspace/fluxion-m18-artwork77-check-evidence/qualified-artwork.spec.ts and /tmp/fluxion-m18-source72-runtime/work/ denied",
+    "Nightly40288291826 job-list API twiceHTTP502; no unchanged repeated requests; causes of cancellations remain unknown"
+  ],
+  "recovery": "No old executor changes were recovered. Rebuilt work is now in main history. Original local branches, bundles and failure archives were preserved in the old environment; do not claim fresh checkout contains those external artifacts.",
+  "knownGaps": [
+    "M18.81 exact font retention pending M18.94\u201397",
+    "M18.16/17 CLI/UI import and later pack/library tasks remain",
+    "M18.10 complete mutation inventory/floors not qualified",
+    "Current nightly/performance provenance, layout changeset and final milestone closeout remain tracked"
+  ]
+}
