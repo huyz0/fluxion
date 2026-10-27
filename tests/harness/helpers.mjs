@@ -61,6 +61,9 @@ export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
   // module resolution expands, so TypeScript no longer saw a referenced project's sources as its own (M4.34)
   const dir = mkdtempSync(join(realpathSync.native(tmpdir()), 'fluxion-harness-'));
   for (const p of paths) cpSync(join(REPO, p), join(dir, p), { recursive: true, filter: (src) => !TRANSIENT.test(src) });
+  // a live `blocks-landing` row would refuse the fixtures' task commits; tests that need one write it (M18.123)
+  const backlog = join(dir, 'docs/backlog/current.md');
+  if (existsSync(backlog)) writeFileSync(backlog, readFileSync(backlog, 'utf8').replaceAll(' `blocks-landing`', ''));
   const sb = {
     dir,
     path: (p) => join(dir, p),

@@ -6,10 +6,12 @@
 // commit-msg, checkpoint, the precommit ladder and the content-bound review check run on the tree
 // that will land. Missing Commit cells of done rows are filled and cells naming a rewritten commit
 // follow it (bookkeeping). A conflict or any refused gate stops the run with the local branch back
-// where it started; nothing is pushed. With --push, the result is pushed as a fast-forward, retried when the branch moved.
+// where it started; nothing is pushed. While a `blocks-landing` row is open, only harness rows and
+// that row land (M18.123). With --push, the result is pushed as a fast-forward, retried when the branch moved.
 // Pushing still needs a human's request (skill ship).
 import { existsSync, realpathSync, statSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { landingBlock } from '../gates/landing-block.mjs';
 import { exists, git, node, repoPath, run } from '../gates/lib.mjs';
 
 const argv = process.argv.slice(2);
@@ -98,6 +100,8 @@ function recommit(upstream, start) {
   const rewritten = new Map();
   for (const sha of commits) {
     const subject = must(['log', '-1', '--format=%s', sha], 'read the subject');
+    const blocked = landingBlock(git(['show', `HEAD:${BACKLOG}`]).stdout, subject);
+    if (blocked) return fail(`${sha.slice(0, 7)} (${subject}) may not land: ${blocked}`);
     const picked = git(['cherry-pick', '-n', sha]);
     if (picked.status !== 0)
       return fail(

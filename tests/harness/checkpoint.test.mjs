@@ -246,4 +246,43 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
       f.sb.cleanup();
     }
   });
+
+  it('refuses a feature commit and accepts a harness commit while a blocks-landing row is open, but still allows local commits (M18.123)', () => {
+    const f = history(2);
+    const exact = (subject, file) => {
+      f.sb.write(file, `${subject}\n`);
+      git(f.sb, 'add', file);
+      git(f.sb, 'commit', '-qm', subject);
+      const sha = git(f.sb, 'rev-parse', 'HEAD');
+      git(f.sb, 'reset', '-q', '--hard', 'HEAD~1');
+      return f.sb.node(POLICY, ['--commit', sha]);
+    };
+    try {
+      const backlog = f.sb.read('docs/backlog/current.md');
+      const rows = [
+        '| M18.30 | CI green `blocks-landing` | HARNESS, FR-LIB-007 | acceptance | | todo | |',
+        '| M18.31 | feature | FR-LIB-007 | acceptance | | todo | |',
+        '| M18.32 | gate | HARNESS | acceptance | | todo | |',
+      ];
+      f.sb.write('docs/backlog/current.md', `${backlog}\n${rows.join('\n')}\n`);
+      git(f.sb, 'commit', '-qam', 'mark the blocking row');
+      const feature = exact('M18.31: feat(packs): a feature', 'feature.txt');
+      assert.equal(feature.status, 1, out(feature));
+      assert.match(out(feature), /M18\.31 is not a harness row and M18\.30 blocks landing/);
+      assert.equal(exact('M18.32: fix(harness): a gate', 'gate.txt').status, 0);
+      assert.equal(exact('M18.30: fix(ci): the blocking row', 'ci.txt').status, 0);
+      // work continues locally: the commit-msg hook does not refuse the feature (r1 F1)
+      const local = pending(f.sb, 'M18.31: feat(packs): a feature');
+      assert.equal(local.status, 0, out(local));
+      // a feature commit cannot clear the mark itself: the parent backlog decides
+      f.sb.write('docs/backlog/current.md', f.sb.read('docs/backlog/current.md').replace('| todo | |\n| M18.31', '| done | |\n| M18.31'));
+      assert.equal(exact('M18.31: feat(packs): a feature', 'docs/backlog/current.md').status, 1);
+      f.sb.write('docs/backlog/current.md', f.sb.read('docs/backlog/current.md').replace('| todo | |\n| M18.31', '| done | |\n| M18.31'));
+      git(f.sb, 'commit', '-qam', 'M18.30: fix(ci): the blocking row');
+      const after = exact('M18.31: feat(packs): a feature', 'feature.txt');
+      assert.equal(after.status, 0, out(after));
+    } finally {
+      f.sb.cleanup();
+    }
+  });
 });

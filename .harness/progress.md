@@ -3043,3 +3043,8 @@ Adds @fluxion/pack-network: 14 generic network definitions (devices: router, swi
 ## M18.124 — Nightly mutation plan fits; last-ci reports nightly (2026-10-27)
 
 Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one GitHub matrix's 256 jobs, so the plan step refused and nothing ran; ADR-0198 runs the partitions as two chained matrices (`matrixChains`, 4 concurrent each, 8 in all, aggregation needs both); the real inventory plans 138 + 138. last-ci reads the nightly's runs (ci-runs `nightly`) and reports the latest completed one without making it a verdict. Split out with evidence: route-drag-200 at 48.6 fps (M18.131, no regression: same fps before M18.38), WebKit 26.5 paste only from an editable field (M18.132), visual-xos has no -darwin/-win32 baselines and bare ubuntu differs 1 % (M18.133, approach asked of Huy).
+
+## M18.123 — Landing respects blocking rows (2026-10-27)
+
+- New `scripts/gates/landing-block.mjs`: a row whose title carries `` `blocks-landing` `` and is not done blocks task commits of rows whose Req cell lacks HARNESS (tasks missing from the backlog count as non-harness); the blocking row itself may land. check-checkpoint judges it on the parent backlog (so a feature commit cannot clear the mark), land.mjs before cherry-picking each commit, both naming the blocking row. M18.117 carries the mark.
+- Review r1 changes-requested, fixed: F1 check-checkpoint blocks only exact commits (`--commit`, CI), so the commit-msg hook still allows local feature commits; test proves both. F2 M18.117's text no longer exempts commits reviewed before cp12 (the gate has no such exception; all were rebased since).

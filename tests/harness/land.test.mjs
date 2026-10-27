@@ -230,4 +230,28 @@ describe('land (M18.106)', () => {
       rmSync(mirror, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
     }
   });
+
+  it('refuses a feature commit and lands a harness commit while a blocks-landing row is open (M18.123)', () => {
+    reset();
+    // the feature commit was reviewed before another stream marked the blocking row
+    reviewed('M0.14', 'src/feature.txt', 'feature\n');
+    const rows = [
+      '| M0.13 | CI green `blocks-landing` | HARNESS | acceptance | | todo | |',
+      '| M0.14 | feature | FR-LIB-007 | acceptance | | todo | |',
+      '| M0.15 | gate | HARNESS | acceptance | | todo | |',
+    ];
+    upstream('docs/backlog/current.md', `${rows.join('\n')}\n`);
+    const start = head();
+    const before = remoteHead();
+    const refused = land('--push');
+    assert.equal(refused.status, 1, out(refused));
+    assert.match(refused.stderr, /\(M0\.14: test: src\/feature\.txt\) may not land: M0\.14 is not a harness row and M0\.13 blocks landing/);
+    assert.equal(head(), start);
+    assert.equal(remoteHead(), before);
+    reset();
+    reviewed('M0.15', 'src/gate.txt', 'gate\n');
+    const landed = land('--push');
+    assert.equal(landed.status, 0, out(landed));
+    assert.equal(remoteHead(), head());
+  });
 });

@@ -2,10 +2,12 @@
 // Check the pending index or one exact CI commit, never unstaged checkpoint files.
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { landingBlock } from './landing-block.mjs';
 import { git } from './lib.mjs';
 
 const POLICY = 'scripts/gates/check-checkpoint.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
+const BACKLOG = 'docs/backlog/current.md';
 const taskSubject = /^M\d+\.\d+:/;
 const result = (ok, detail) => ({ ok, detail: `checkpoint: ${detail}` });
 const readAt = (tree, path) => {
@@ -100,6 +102,12 @@ async function limitAt(tree) {
   return limit;
 }
 
+/**
+ * Blocking rows are judged on exact commits only (CI): local commits stay allowed while a row blocks
+ * landing (M18.123 r1 F1). The parent backlog decides, so a feature commit cannot clear the mark itself.
+ */
+const blockedAt = (commit, base, subject) => (commit ? landingBlock(readAt(base, BACKLOG), subject) : null);
+
 /** Enforce prospectively; historical commits without the policy are exempt, deletion is not. */
 export async function checkCheckpoint({ message, commit } = {}) {
   const tree = commit ? resolve(commit) : 'index';
@@ -110,6 +118,8 @@ export async function checkCheckpoint({ message, commit } = {}) {
   if (policy) return policy;
   const base = commit ? resolve(`${tree}^`) : resolve('HEAD');
   if (!base) return result(true, 'first commit has no preceding tasks');
+  const blocked = blockedAt(commit, base, subject);
+  if (blocked) return result(false, blocked);
   const milestone = milestoneAt(base);
   if (!milestone) return result(false, 'parent roadmap has no current milestone');
   const context = { base, milestone, ...milestoneStart(base, milestone) };
