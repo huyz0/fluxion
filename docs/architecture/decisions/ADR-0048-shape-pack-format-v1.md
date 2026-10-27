@@ -125,3 +125,26 @@ format. This decision alone does not claim those unimplemented checks pass.
 
 ADR-0016 (shape expressions), ADR-0017 (SDK pack registration), ADR-0003/0153 (portable
 container and its codec); architecture 08 §2/§4 and 09 §4/§7; M18 backlog rows 12–14.
+
+## Amendments
+
+### M18.38 — pack connector types (FR-CON-010)
+
+A pack may ship `connectors.json`: `{ "format": "fluxion-connector-defs", "formatVersion": "1.0",
+"definitions": [...] }`, a separate envelope so shape index/category/subset formats 1.0/1.1 are
+unchanged. A definition is data only: `id` (pack namespace, unique), `router` (one of the
+built-in `straight`, `curved`, `orthogonal`, `polyline`), `decoration` (closed union `wavy`
+{amplitude, wavelength}, `zigzag` {amplitude, wavelength}, `double` {gap}, `pipe` {wall},
+`cable` {pitch}; positive lengths in stroke widths, at most 1000), optional `defaultStyle`,
+`name`, `describe`, `keywords`. Unknown keys, kinds or code are refused (`FLX_PACK_INVALID`,
+core `parseConnectorDefs`). The path generators are routing's `decorateRoute`, chosen by kind.
+
+A host registers each definition in `routers` under its id (routing `connectorDefRouter`): the
+router delegates to its base router and carries the decoration. A connector uses the type by
+naming the id as `route.type`, which document schema 1.7 already allows, so the document schema
+and container are unchanged. Routing, bindings, the global orthogonal pass, parallel fanning and
+the editor's route handles follow the base router (`routerBase`); the view strokes the decoration over the trimmed route and keeps the plain
+route unstroked for markers. A reader without the pack falls back to the straight router, as for
+any unknown router. Wiring `connectors.json` into the pack loader, embedding used connector
+definitions in portable saves and offering the types in the editor are follow-up rows.
+

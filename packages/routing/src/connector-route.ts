@@ -7,6 +7,7 @@ import type { ReadSignal, ReadView, Registry, ShapeDef } from '@fluxion/core';
 import { createPathSampler, type PathCommand, pathFromCommands, type Vec2 } from '@fluxion/geometry';
 import type { AnchorDef, AnchorRef, RecordId, Route, Transform } from '@fluxion/schema';
 import { type AnchorTarget, resolveAnchor, shapeAnchorTarget } from './anchor.js';
+import { routerBase } from './decorate.js';
 import { fannedPath, fanOffsetOf } from './fan.js';
 import { type RouteEnd, type RouteQuality, type Router, straightRouter } from './router.js';
 
@@ -175,5 +176,9 @@ function routeOf(view: ReadView, ctx: RouteContext, connectorId: RecordId, above
   // one of several connectors between the same two elements moves aside by its offset among them (FR-CON-011)
   const offset = fanOffsetOf(view, connectorId);
   const run = (r: Route): readonly PathCommand[] => pathOf(router, { source, target }, r, ctx.quality ?? 'cheap');
-  return { source, target, commands: offset === undefined ? run(route) : fannedPath(route, { from: source.point, to: target.point, offset }, run) };
+  return {
+    source,
+    target,
+    commands: offset === undefined ? run(route) : fannedPath(route, { from: source.point, to: target.point, offset }, run, routerBase(ctx.routers, route.type)),
+  };
 }

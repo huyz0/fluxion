@@ -1,0 +1,32 @@
+<svg data-screen-id="kFcSyCIt3gJ-8qas" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="K1Tmt8QUejRi5SK5" data-kind="shape" data-place="left:20px;top:20px;width:80px;height:50px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 80 50">
+      <path class="fx-outline" d="M0 0 L80 0 L80 50 L0 50 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:60px 45px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="YaMIz2RrNynKHjGo" data-kind="shape" data-place="left:280px;top:160px;width:80px;height:50px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 80 50">
+      <path class="fx-outline" d="M0 0 L80 0 L80 50 L0 50 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-280px;top:-160px;transform-origin:320px 185px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="Xu0ZGJvxix8IQvys" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:76px;top:15px;width:228px;height:199.97px;opacity:1" viewBox="76 15 228 199.97">
+      <defs>
+        <marker id="fx-id-0-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route-decoration" d="M100 45 L101.5 45.14 L103 45.53 L104.49 46.04 L105.99 46.5 L107.49 46.73 L108.99 46.59 L110.48 46.01 L111.98 45.02 L113.48 43.73 L114.98 42.37 L116.47 41.21 L117.97 40.51 L119.47 40.49 L120.97 41.26 L122.46 42.8 L123.96 44.94 L125.46 47.24 L126.96 49.2 L128.46 50.52 L129.95 51 L131.45 50.57 L132.95 49.3 L134.45 47.38 L135.94 45.09 L137.44 42.79 L138.94 40.83 L140.44 39.5 L141.93 39 L143.43 39.42 L144.93 40.68 L146.43 42.6 L147.92 44.88 L149.42 47.18 L150.92 49.15 L152.42 50.49 L153.91 51 L155.41 50.6 L156.91 49.34 L158.41 47.43 L159.9 45.15 L161.4 42.85 L162.9 40.87 L164.4 39.52 L165.9 39 L167.39 39.39 L168.89 40.64 L170.39 42.54 L171.89 44.82 L173.38 47.13 L174.88 49.11 L176.38 50.47 L177.88 51 L179.37 50.62 L180.87 49.38 L182.37 47.49 L183.87 45.21 L185.36 42.9 L186.86 40.91 L188.36 39.55 L189.86 39 L195.63 46.35 L194.4 47.85 L192.51 49.35 L190.24 50.85 L187.93 52.34 L185.94 53.84 L184.56 55.34 L184.01 56.84 L184.36 58.34 L185.58 59.83 L187.46 61.33 L189.73 62.83 L192.04 64.33 L194.04 65.82 L195.43 67.32 L195.99 68.82 L195.65 70.32 L194.45 71.81 L192.57 73.31 L190.3 74.81 L187.99 76.31 L185.98 77.8 L184.58 79.3 L184.01 80.8 L184.34 82.3 L185.54 83.79 L187.41 85.29 L189.67 86.79 L191.98 88.29 L194 89.79 L195.4 91.28 L195.99 92.78 L195.67 94.28 L194.49 95.78 L192.62 97.27 L190.36 98.77 L188.05 100.27 L186.03 101.77 L184.61 103.26 L184.01 104.76 L184.32 106.26 L185.5 107.76 L187.35 109.25 L189.61 110.75 L191.93 112.25 L193.95 113.75 L195.38 115.24 L195.99 116.74 L195.69 118.24 L194.53 119.74 L192.68 121.23 L190.42 122.73 L188.1 124.23 L186.07 125.73 L184.64 127.23 L184.02 128.72 L184.3 130.22 L185.46 131.72 L187.3 133.22 L189.55 134.71 L191.87 136.21 L193.91 137.71 L195.35 139.21 L195.98 140.7 L195.71 142.2 L194.56 143.7 L192.73 145.2 L190.48 146.69 L188.16 148.19 L186.12 149.69 L184.66 151.19 L184.02 152.68 L184.29 154.18 L185.42 155.68 L187.24 157.18 L189.49 158.68 L191.81 160.17 L193.86 161.67 L195.32 163.17 L195.98 164.67 L195.72 166.16 L194.6 167.66 L192.78 169.16 L190.54 170.66 L188.22 172.15 L186.16 173.65 L184.69 175.15 L184.03 176.65 L184.27 178.14 L185.38 179.64 L187.19 181.14 L189.43 182.64 L191.76 184.13 L190.63 181.19 L192.13 179.71 L193.63 179.03 L195.12 179.26 L196.62 180.36 L198.12 182.16 L199.62 184.4 L201.12 186.73 L202.61 188.79 L204.11 190.28 L205.61 190.97 L207.11 190.75 L208.6 189.66 L210.1 187.86 L211.6 185.63 L213.1 183.3 L214.59 181.23 L216.09 179.73 L217.59 179.04 L219.09 179.24 L220.58 180.32 L222.08 182.11 L223.58 184.34 L225.08 186.67 L226.57 188.74 L228.07 190.25 L229.57 190.96 L231.07 190.77 L232.57 189.7 L234.06 187.92 L235.56 185.69 L237.06 183.36 L238.56 181.28 L240.05 179.76 L241.55 179.04 L243.05 179.22 L244.55 180.28 L246.04 182.06 L247.54 184.28 L249.04 186.61 L250.54 188.46 L252.03 189.56 L253.53 189.83 L255.03 189.33 L256.53 188.25 L258.02 186.85 L259.52 185.42 L261.02 184.21 L262.52 183.4 L264.01 183.05 L265.51 183.14 L267.01 183.55 L268.51 184.11 L270.01 184.63 L271.5 184.95 L273 185" data-part="line" style="fill:none;stroke:var(--fx-color-connector);stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-route" d="M100 45 L190 45 L190 185 L273 185" data-decorated="wavy" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:none;stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+</svg>

@@ -4,12 +4,13 @@
 // rounded by the route's corner radius or else the style's; end markers from the markers registry,
 // sized in stroke widths, with the route trimmed under them, and a mid marker at its midpoint (FR-CON-003); and its labels at their
 // fractions of the route (FR-CON-006; routing's labelPosition): plain paragraphs on the screen's
-// background colour. The
+// background colour. A pack connector type (FR-CON-010) is a router carrying a decoration: its route is drawn as the
+// decoration's strokes (routing's decorateRoute), the plain route kept, unstroked, for the markers. The
 // wrapper has no box, so the SVG draws in screen coordinates; the route is a store query, so moving a
 // bound shape redraws it.
 import { type MarkerDef, markerTrim } from '@fluxion/core';
 import { type PathCommand, roundCorners, type Vec2 } from '@fluxion/geometry';
-import { hopPath, labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
+import { type DecoratedRouter, type DecoratedStroke, decorateRoute, hopPath, labelPosition, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
 import type { ConnectorElement, Marker, RecordId } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type CSSProperties, type ReactNode, useContext, useId, useMemo, useRef } from 'react';
@@ -115,6 +116,43 @@ function styled(id: RecordId, own: ConnectorElement['style'], cornerRadius: numb
   return { style, line, lengths };
 }
 
+/** The decoration of route type `type` (a pack connector type), if it has one. */
+const decorationOf = (registries: RenderRegistries, type: string): DecoratedRouter['decoration'] | undefined =>
+  (registries.routers.get(type) as Partial<DecoratedRouter> | undefined)?.decoration;
+
+/** How much a pipe's core lightens the line under it. */
+const CORE_LIGHTEN = 0.65;
+
+/**
+ * The paint of a decorated stroke: the line's colour, or, for a pipe's core, white part-way over the wall it lies on, so
+ * the core is a lighter shade of the line on any background (a colour, a gradient or an image).
+ */
+const partPaint = (part: DecoratedStroke['part'], stroke: CSSProperties['stroke']): CSSProperties =>
+  part === 'core' ? { stroke: '#ffffff', strokeOpacity: CORE_LIGHTEN } : { stroke };
+
+/** The decoration of route type `type` and the strokes it makes of `commands` (none for a plain route). */
+function decoratedRoute(registries: RenderRegistries, type: string, commands: readonly PathCommand[], width: number) {
+  const decoration = decorationOf(registries, type);
+  return { decoration, decorated: decoration === undefined ? [] : decorateRoute(commands, decoration, width) };
+}
+
+/** `line`, with no stroke when `decoration` draws the route instead: the plain route is then kept for its markers. */
+const unstroked = (line: CSSProperties, decoration: unknown): CSSProperties => (decoration === undefined ? line : { ...line, stroke: 'none' });
+
+/** The strokes of a decorated route, in `line`'s style at their own widths and colours. */
+function DecoratedStrokes(props: { readonly strokes: readonly DecoratedStroke[]; readonly line: CSSProperties }): ReactNode {
+  return props.strokes.map((d, k) => (
+    <path
+      // biome-ignore lint/suspicious/noArrayIndexKey: a decoration's strokes have no identity but their order
+      key={k}
+      className="fx-route-decoration"
+      data-part={d.part}
+      d={pathData(d.commands)}
+      style={{ ...props.line, ...partPaint(d.part, props.line.stroke), strokeWidth: d.width }}
+    />
+  ));
+}
+
 /**
  * The connector's route: the cheap pass (routeConnector's default, FR-RTE-002), or the global pass's route while it is current (FR-RTE-003:
  * the host's overlay, else the pass run in-thread, so every renderer draws the same routes),
@@ -170,11 +208,12 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   const stroked = hopped(routed, drawn, radius);
   // the line stops under each marker, whose tip then lands on the route's end
   const trimmed = trimRoute(stroked, markerTrim(start, width), markerTrim(end, width));
+  const { decoration, decorated } = decoratedRoute(registries, element.route.type, trimmed.commands, width);
   // the SVG covers the route's box plus room for the stroke and markers, its viewBox in screen
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
   // the box is held across a drag, not across passes: the settled route is framed as a renderer that drew it first frames it (FR-EDT-010)
   const held = heldFrame(frames.current, store, routed.global);
-  const { x, y, w, h } = framed(held, routeFrame(stroked));
+  const { x, y, w, h } = framed(held, routeFrame([...stroked, ...decorated.flatMap((d) => d.commands)]));
   frames.current = { store, global: routed.global, frame: { x, y, w, h } };
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (
@@ -192,10 +231,12 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
             {end === undefined ? null : <MarkerView def={end} id={`${base}-end`} color={style.stroke.color} width={width} trim={trimmed.end} />}
           </defs>
         )}
+        <DecoratedStrokes strokes={decorated} line={line} />
         <path
           className="fx-route"
+          data-decorated={decoration?.kind}
           d={pathData(trimmed.commands)}
-          style={line}
+          style={unstroked(line, decoration)}
           markerStart={start === undefined ? undefined : `url(#${base}-start)`}
           markerEnd={end === undefined ? undefined : `url(#${base}-end)`}
         />

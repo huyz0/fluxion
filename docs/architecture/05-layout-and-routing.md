@@ -274,7 +274,11 @@ nodes, labels and edges.
 - *rounded corners*: each bend becomes an arc of `min(r, seg/2)` (FR-CON-005);
 - *line jumps*: a sweep-line over the screen's route segments (pruned by the spatial index)
   gives crossings. The connector later in z-order draws an arc or gap
-  (`document.settings.lineJumps`, FR-CON-008). The result is cached per route revision.
+  (`document.settings.lineJumps`, FR-CON-008). The result is cached per route revision;
+- *pack connector types* (FR-CON-010, ADR-0048 amendment M18.38): a `routers` entry from
+  `connectorDefRouter` routes with a built-in base router (`routerBase`, so the global
+  orthogonal pass includes it) and carries a decoration; `decorateRoute` turns the trimmed route
+  into the strokes drawn: `wavy`, `zigzag` (fading to the route at both ends), `double`, `pipe`, `cable`.
 
 **Animation** (FR-LAY-009): the layout diff becomes an `anim` tween. Boxes use FLIP (model
 boxes, no DOM measurement). Routes morph via `d3-interpolate-path` with endpoints attached to the

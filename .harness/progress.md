@@ -2941,3 +2941,12 @@ Each pack exports its DeclarativeShapePack source (names, credits, version = pac
 ## M18.103 — Pack geometry across parameter ranges (2026-10-27)
 
 checkShapePack now evaluates each definition at every number param's min, max and default and every enum value: outline, decorations and handles must stay in the box, text regions nonnegative and inside it; anchors must be box fractions and number params bounded (cp10 F9). All five existing packs pass unchanged.
+
+## M18.38 — pack connector types (2026-10-27)
+
+- M18.37 pushed as 54f044c (r1 pass; minor latched replace mode fixed with M18.35).
+- ADR-0048 amendment: separate `connectors.json` envelope (format 1.0), data-only defs (built-in base router + closed decoration union + default style); core `parseConnectorDefs` (FLX_PACK_INVALID). Document schema unchanged: a connector names the type as `route.type`.
+- Routing `connectorDefRouter` registers a delegating router carrying the decoration; `routerBase` lets the global orthogonal pass include it; `decorateRoute` draws wavy/zigzag (faded to the route at both ends), double, pipe, cable. Render strokes the decoration and keeps the plain route unstroked for markers.
+- pack-connectors.test.ts 3/3: same bound route as plain orthogonal, global pass includes it (reverting the routerBase line turns it RED), five nonempty SVG goldens; parser refuses foreign namespace, duplicates, code keys, unknown kinds, bad lengths. Follow-ups M18.104 (loader) and M18.105 (portable embed + editor picker).
+- Review r1 changes-requested, fixed: parallel fanning and editor handles (segments, tangents) use the base router (`fannedPath` base arg, editor `readRoutes` sets `RoutedEnds.base`); double offsets polylines exactly with mitred corners (curves still sampled); pipe core is white at 0.65 opacity over the wall, not the screen background. Tests: fanned pair equals plain orthogonal pair; handles of lines:wavy/bow equal orthogonal/curved; exact double points at a bend.
+

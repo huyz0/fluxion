@@ -1,0 +1,32 @@
+<svg data-screen-id="kFcSyCIt3gJ-8qas" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="K1Tmt8QUejRi5SK5" data-kind="shape" data-place="left:20px;top:20px;width:80px;height:50px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 80 50">
+      <path class="fx-outline" d="M0 0 L80 0 L80 50 L0 50 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:60px 45px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="YaMIz2RrNynKHjGo" data-kind="shape" data-place="left:280px;top:160px;width:80px;height:50px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 80 50">
+      <path class="fx-outline" d="M0 0 L80 0 L80 50 L0 50 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-280px;top:-160px;transform-origin:320px 185px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="Xu0ZGJvxix8IQvys" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:76px;top:15px;width:228px;height:200px;opacity:1" viewBox="76 15 228 200">
+      <defs>
+        <marker id="fx-id-0-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route-decoration" d="M100 45 L104 46.5 L112 40.5 L120 51 L128 39 L136 51 L144 39 L152 51 L160 39 L168 51 L176 39 L184 51 L196 47 L184 55 L196 63 L184 71 L196 79 L184 87 L196 95 L184 103 L196 111 L184 119 L196 127 L184 135 L196 143 L184 151 L196 159 L184 167 L196 175 L184 183 L196 179 L204 191 L212 179 L220 191 L228 179 L236 191 L244 179 L252 191 L260 180.13 L268 186.88 L273 185" data-part="line" style="fill:none;stroke:var(--fx-color-connector);stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-route" d="M100 45 L190 45 L190 185 L273 185" data-decorated="zigzag" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:none;stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+</svg>

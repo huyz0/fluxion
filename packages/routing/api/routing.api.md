@@ -7,6 +7,8 @@
 import { AnchorDef } from '@fluxion/schema';
 import { AnchorRef } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
+import { ConnectorDecoration } from '@fluxion/core';
+import { ConnectorDef } from '@fluxion/core';
 import { IndexedBox } from '@fluxion/geometry';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
@@ -77,6 +79,11 @@ export function buildGrid(input: GridInput): Grid;
 export function chooseAutoSides(edges: readonly AutoEdge[], options?: AutoOptions): AutoChoice[];
 
 // @public
+export function connectorDefRouter(def: ConnectorDef, routers: {
+    get(id: string): Router | undefined;
+}): DecoratedRouter | undefined;
+
+// @public
 export type ConnectorRoute = {
     readonly source: RouteEnd;
     readonly target: RouteEnd;
@@ -88,6 +95,22 @@ export function createJumpCache(): (routes: readonly JumpRoute[], documentStyle?
 
 // @public
 export const curvedRouter: Router;
+
+// @public
+export type DecoratedRouter = Router & {
+    readonly base: string;
+    readonly decoration: ConnectorDecoration;
+};
+
+// @public
+export type DecoratedStroke = {
+    readonly commands: readonly PathCommand[];
+    readonly width: number;
+    readonly part: "line" | "core" | "tie";
+};
+
+// @public
+export function decorateRoute(commands: readonly PathCommand[], decoration: ConnectorDecoration, width: number): readonly DecoratedStroke[];
 
 // @public
 export const DEFAULT_ANCHORS: readonly AnchorDef[];
@@ -286,6 +309,11 @@ export type Router = {
     readonly describe?: string;
     route(request: RouteRequest): readonly PathCommand[];
 };
+
+// @public
+export function routerBase(routers: {
+    get(id: string): Router | undefined;
+}, type: string): string;
 
 // @public
 export type RouteRequest = {

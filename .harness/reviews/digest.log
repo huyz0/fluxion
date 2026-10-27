@@ -892,3 +892,4 @@ M18.101	7aa0fce6020e06daaa1ef83e86d6e42204fec1ab7f44dbfc71ab23a1fd7af9c9	r1	chan
 M18.102	7c43a898af4b10e36b6d01d51b7ab69130beab105316c8cd94883a3fa0068e91	r1	pass	claude:general-purpose-subagent	0 findings
 M18.101	2f270d87124dc637e47919f44158b066d192150d0f35f5953b74480d97dfb1fc	r2	pass	claude:subagent	2 findings
 M18.103	21fb0090b86ae107f0c921620c53d43bc2a78792fe02b54660634b9548b01e6d	r1	pass	claude:general-purpose-subagent	0 findings
+M18.37	8499bb1bca891c455f96dc6de649dd13849a9233d48798f174c54044ec066b6f	r1	pass	claude:subagent	1 findings

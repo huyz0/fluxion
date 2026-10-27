@@ -6,6 +6,7 @@ import type { ReadView } from '@fluxion/core';
 import { type Box, boxInflate, elementBounds, type PathCommand, type Vec2 } from '@fluxion/geometry';
 import { type RecordId, type Transform, transformRotation } from '@fluxion/schema';
 import { type RouteContext, routeConnector } from './connector-route.js';
+import { routerBase } from './decorate.js';
 import { buildGrid } from './orthogonal/grid.js';
 import { nudge } from './orthogonal/nudge.js';
 import { type RouteSegment, searchRoute } from './orthogonal/search.js';
@@ -145,7 +146,13 @@ export const GLOBAL_ROUTE_MAX_CONNECTORS = 400;
 export function globalRouteInput(view: ReadView, ctx: RouteContext, screenId: RecordId): GlobalRouteInput {
   const ids = [...view.members('byScreen', screenId)].sort() as RecordId[];
   const records = ids.map((id) => [id, view.get(id) as ElementLike | undefined] as const);
-  const routable = records.filter(([, r]) => r?.kind === 'connector' && r.route?.type === 'orthogonal' && (r.route.waypoints?.length ?? 0) === 0);
+  const routable = records.filter(
+    ([, r]) =>
+      r?.kind === 'connector' &&
+      typeof r.route?.type === 'string' &&
+      routerBase(ctx.routers, r.route.type) === 'orthogonal' &&
+      (r.route.waypoints?.length ?? 0) === 0,
+  );
   if (routable.length > GLOBAL_ROUTE_MAX_CONNECTORS) return { obstacles: [], connectors: [] };
   const obstacles = records.flatMap(([id, r]) =>
     r?.type === 'element' && SOLID.has(r.kind as string) && r.transform !== undefined

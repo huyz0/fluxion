@@ -7,6 +7,7 @@
 // overlay only call these.
 import type { ReadView, ShapeDef } from '@fluxion/core';
 import type { PathCommand, Vec2 } from '@fluxion/geometry';
+import { type RouteContext, routeConnector, routerBase } from '@fluxion/routing';
 import type { ConnectorElement, RecordId, ShapeElement } from '@fluxion/schema';
 import { snapAnchor } from './anchor-snap.js';
 import type { ParamCommand } from './param-handles.js';
@@ -55,6 +56,8 @@ export type RoutedEnds = {
   readonly target: RoutedEnd;
   /** The route's path, page units. */
   readonly commands: readonly PathCommand[];
+  /** The built-in router that lays the route, when its type is not one (a pack connector type, FR-CON-010); else its type. */
+  readonly base?: string;
 };
 
 /**
@@ -73,6 +76,15 @@ function connectorOf(view: ReadView, id: RecordId): ConnectorElement | undefined
   return record?.type === 'element' && record.kind === 'connector' ? record : undefined;
 }
 
+/** The routes of `view`'s connectors routed with `ctx`, each with the built-in router that lays it. */
+export function readRoutes(view: ReadView, ctx: RouteContext): RouteReader {
+  return (id) => {
+    const routed = routeConnector(view, ctx, id);
+    const type = connectorOf(view, id)?.route.type;
+    return routed === undefined || type === undefined ? routed : { ...routed, base: routerBase(ctx.routers, type) };
+  };
+}
+
 const middle = (a: Vec2, b: Vec2): Vec2 => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
 /**
@@ -89,22 +101,24 @@ export function connectorHandlesOf(view: ReadView, route: RouteReader, id: Recor
   const nodes = [routed.source.point, ...waypoints, routed.target.point];
   const mids = nodes.slice(1).map((to, k): ConnectorHandle => ({ role: 'mid', at: k, page: middle(nodes[k] as Vec2, to) }));
   const ways = waypoints.map((page, at): ConnectorHandle => ({ role: 'way', at, page }));
+  // a pack connector type is handled as the router that lays it
+  const base = routed.base ?? connector.route.type;
   return [
-    ...tangentsOf(connector, routed.commands),
+    ...tangentsOf(base, routed.commands),
     { role: 'end', at: 'source', page: routed.source.point },
     { role: 'end', at: 'target', page: routed.target.point },
     ...ways,
     // an orthogonal route is dragged by its segments, whose middles are not the stretches' middles
-    ...(connector.route.type === 'orthogonal' ? segmentsOf(routed.commands) : mids),
+    ...(base === 'orthogonal' ? segmentsOf(routed.commands) : mids),
   ];
 }
 
 /**
- * The control point of each route point of a curved connector, from its path (a cubic per leg): where the first leg leaves the source, where a
+ * The control point of each route point of a connector laid by the curved router (`base`), from its path (a cubic per leg): where the first leg leaves the source, where a
  * leg leaves each waypoint, and where the last arrives at the target.
  */
-function tangentsOf(connector: ConnectorElement, commands: readonly PathCommand[]): readonly ConnectorHandle[] {
-  if (connector.route.type !== 'curved') return [];
+function tangentsOf(base: string, commands: readonly PathCommand[]): readonly ConnectorHandle[] {
+  if (base !== 'curved') return [];
   const legs = commands.filter((c): c is Extract<PathCommand, { kind: 'C' }> => c.kind === 'C');
   const points = commands.flatMap((c) => ('to' in c ? [c.to] : []));
   return [...legs.map((c) => c.control1), legs.at(-1)?.control2].flatMap((page, at): ConnectorHandle[] =>

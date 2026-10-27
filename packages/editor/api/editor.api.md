@@ -1247,6 +1247,7 @@ export type RoutedEnds = {
     readonly source: RoutedEnd;
     readonly target: RoutedEnd;
     readonly commands: readonly PathCommand[];
+    readonly base?: string;
 };
 
 // @public

@@ -112,12 +112,13 @@ const FANNED: Readonly<Record<string, Fanner>> = {
 /**
  * The path of a connector moved aside by `offset` from the line `from`-`to`: a curved route through a waypoint beside the chord (its
  * router, `run`, draws it), a straight or waypoint-less polyline bent once at that point, an orthogonal route with its longest inner segment
- * shifted; another router's path as it draws it.
+ * shifted; another router's path as it draws it. `base` is the built-in router that lays the route (a pack connector type's, FR-CON-010).
  */
 export function fannedPath(
   route: Route,
   line: { readonly from: Vec2; readonly to: Vec2; readonly offset: number },
   run: (route: Route) => readonly PathCommand[],
+  base: string = route.type,
 ): readonly PathCommand[] {
-  return (FANNED[route.type] ?? ((r, _, go) => go(r)))(route, line, run);
+  return (FANNED[base] ?? ((r, _, go) => go(r)))(route, line, run);
 }

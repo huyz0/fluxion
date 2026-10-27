@@ -17,6 +17,7 @@ export {
   executeCommand,
   type MessageDescriptor,
 } from './commands.js';
+export { type ConnectorDecoration, type ConnectorDef, connectorDefSchema, parseConnectorDefs } from './connector-def.js';
 export {
   CORE_REGISTRY_NAMES,
   type CoreRegistries,

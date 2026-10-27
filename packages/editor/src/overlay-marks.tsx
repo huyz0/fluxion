@@ -7,7 +7,7 @@ import { type RouteContext, routeConnector } from '@fluxion/routing';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useMemo } from 'react';
 import { pageToScreen } from './camera.js';
-import { type ConnectorHandle, connectorHandlesOf } from './connector-handles.js';
+import { type ConnectorHandle, connectorHandlesOf, readRoutes } from './connector-handles.js';
 import { HANDLE_PX } from './overlay-geometry.js';
 import { type PlacedParamHandle, paramHandlesOf, type ShapeDefs } from './param-handles.js';
 import type { Session } from './session.js';
@@ -121,7 +121,7 @@ function ConnectorMarks(props: HandleMarksProps): ReactNode {
     useMemo(
       () =>
         store.query((view): readonly ConnectorHandle[] =>
-          selection.length === 1 && routes !== undefined ? connectorHandlesOf(view, (id) => routeConnector(view, routes, id), selection[0] as RecordId) : [],
+          selection.length === 1 && routes !== undefined ? connectorHandlesOf(view, readRoutes(view, routes), selection[0] as RecordId) : [],
         ),
       [store, selection, routes],
     ),

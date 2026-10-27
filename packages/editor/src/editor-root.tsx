@@ -5,7 +5,6 @@ import type { CoreRegistries, ReadView, Registry, Store, WritableSignal } from '
 import type { Box } from '@fluxion/geometry';
 import type { AssetUrls } from '@fluxion/render';
 import { type RenderRegistries, screenArea, useValue, withSettledRoutes } from '@fluxion/render';
-import { routeConnector } from '@fluxion/routing';
 import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { t } from '@lingui/core/macro';
@@ -19,6 +18,7 @@ import { Canvas, ZoomControls } from './canvas.js';
 import { CHROME_CSS } from './chrome-css.js';
 import { createClipboard } from './clipboard.js';
 import { PaletteHost } from './command-palette.js';
+import { readRoutes } from './connector-handles.js';
 import { Measured } from './debug-overlay.js';
 import { EditBody } from './edit-body.js';
 import { EditToolbar } from './edit-toolbar.js';
@@ -134,7 +134,7 @@ function useTools(
       view: store,
       screen: screenId,
       shapeDefs: registries.shapeDefs,
-      route: (id) => routeConnector(store, registries, id),
+      route: readRoutes(store, registries),
       newId: () => createId(random),
       elementsIn: (box, mode) => (screenId === undefined ? [] : (hits.current?.within(screenId, box, mode) ?? [])),
       allElements: () => (screenId === undefined ? [] : (hits.current?.all(screenId) ?? [])),

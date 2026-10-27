@@ -115,6 +115,40 @@ export type CommandTxOptions = Omit<TxOptions, "origin"> & {
 export function computed<T>(fn: () => T): ReadSignal<T>;
 
 // @public
+export type ConnectorDecoration = {
+    readonly kind: "wavy";
+    readonly amplitude: number;
+    readonly wavelength: number;
+} | {
+    readonly kind: "zigzag";
+    readonly amplitude: number;
+    readonly wavelength: number;
+} | {
+    readonly kind: "double";
+    readonly gap: number;
+} | {
+    readonly kind: "pipe";
+    readonly wall: number;
+} | {
+    readonly kind: "cable";
+    readonly pitch: number;
+};
+
+// @public
+export type ConnectorDef = {
+    readonly id: QualifiedName;
+    readonly router: "straight" | "curved" | "orthogonal" | "polyline";
+    readonly decoration: ConnectorDecoration;
+    readonly defaultStyle?: Style;
+    readonly describe?: string;
+    readonly name?: string;
+    readonly keywords?: readonly string[];
+};
+
+// @public
+export const connectorDefSchema: z.ZodType<ConnectorDef>;
+
+// @public
 export type ConsoleLike = { readonly [level in LogLevel]: (...args: unknown[]) => void; };
 
 // @public
@@ -509,6 +543,9 @@ export type ParamHandle = {
 
 // @public
 export type ParamSpec = NumberParam | EnumParam | PointsParam;
+
+// @public
+export function parseConnectorDefs(input: unknown, pack: string): Result<readonly ConnectorDef[], readonly Diagnostic[]>;
 
 // @public
 export function parseExpr(src: string, at?: ReadonlyArray<string | number>): Result<Expr, Diagnostic>;
