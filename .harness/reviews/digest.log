@@ -881,3 +881,7 @@ M18.100	f65a70db9203584c8ac27ce3410528c00aa6becb5895bea4e8825e4347d4738a	r1	pass
 M18.36	f980691ccda7dce237acb228f976e4f3ecddf62c891204d2ed08218e9eb656a0	r1	pass	claude:subagent	1 findings
 M18.36	b4ddb0a64461d3f3033399dc67780af8d68fdd2bc325774568647251c65172af	r2	pass	claude:subagent	0 findings
 M18.36	273ff3d7237959ae85323e9e9ce52f64f1d3d8a960d6da3fd85d0ecef3b67516	r3	pass	claude:subagent	0 findings
+M18.18	048274f6245aa77ef0a7e15950011044aeb5cb83503dfd84b270c43c867151c0	r3	pass	claude:subagent	0 findings
+M18.19	eca5b96f0babfcc0b69dab7e8e53efdc657ce1bc8770a0e5d3062f2441270bbc	r1	changes-requested	claude:subagent	1 findings
+M18.19	9f19cd0e7e6aa3e49f395884b5de635a04a6704803bee32b06f1b892b0edba79	r2	changes-requested	claude:subagent	3 findings
+M18.19	9c93ea98886a870130187f35c297cb85d06ce00af8cf08a8e54ccbf7eaa9dcbe	r3	changes-requested	claude:subagent	1 findings

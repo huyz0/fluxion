@@ -17,6 +17,8 @@ import { createCanvasMeasurer } from '@fluxion/render';
 import { Diagnostic } from '@fluxion/schema';
 import { Disposable } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
+import { DrawioImportOptions } from '@fluxion/format';
+import { DrawioProcessedReport } from '@fluxion/format';
 import { DslDiagnostic } from '@fluxion/dsl';
 import { FieldDef } from '@fluxion/schema';
 import { GlobalRoute } from '@fluxion/routing';
@@ -355,6 +357,12 @@ export function dragBox(from: Vec2, to: Vec2, size: {
 }): Box;
 
 // @public
+export type DrawioLibrary = Disposable & {
+    readonly report: DrawioProcessedReport;
+    readonly entries: readonly LibraryEntry[];
+};
+
+// @public
 export const EDIT_FLAGS: ReadonlySet<string>;
 
 // @public
@@ -611,6 +619,11 @@ export type ImageSize = {
 
 // @public
 export const imageTool: () => Tool;
+
+// @public
+export function importDrawioLibrary(registry: Registry<string, ShapeDef>, text: string, options: DrawioImportOptions & {
+    readonly source: string;
+}): Promise<Result<DrawioLibrary, readonly Diagnostic[]>>;
 
 // @public
 export function importIconifyLibrary(registry: Registry<string, ShapeDef>, text: string, options: IconifyImportOptions & {

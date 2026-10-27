@@ -57,6 +57,42 @@ export type DiffPut = {
 };
 
 // @public
+export type DrawioEntryOutcome = {
+    readonly index: number;
+    readonly title?: string;
+    readonly id: string;
+    readonly kind: "stencil" | "model" | "compressed-model" | "svg" | "unknown";
+} & ({
+    readonly status: "accepted";
+    readonly value: SvgImportResult;
+    readonly omissions: readonly string[];
+} | {
+    readonly status: "refused";
+    readonly diagnostics: readonly Diagnostic[];
+});
+
+// @public
+export type DrawioImportOptions = Omit<SvgImportOptions, "id"> & {
+    readonly namespace: string;
+};
+
+// @public
+export type DrawioImportReport = {
+    readonly status: "failed";
+    readonly diagnostics: readonly Diagnostic[];
+} | DrawioProcessedReport;
+
+// @public
+export type DrawioProcessedReport = {
+    readonly status: "processed";
+    readonly format: "stencil" | "mxlibrary";
+    readonly sourceSha256: string;
+    readonly entryCount: number;
+    readonly acceptedCount: number;
+    readonly entries: readonly DrawioEntryOutcome[];
+};
+
+// @public
 export function embedExternalAssets(input: EmbedInput): Promise<EmbedResult>;
 
 // @public
@@ -238,6 +274,9 @@ export type ImageInfo = {
 
 // @public
 export type ImageMime = "image/png" | "image/jpeg" | "image/webp" | "image/avif" | "image/gif" | "image/svg+xml";
+
+// @public
+export function importDrawioLibrary(text: string, options: DrawioImportOptions): Promise<DrawioImportReport>;
 
 // @public
 export type ImportedImage = {

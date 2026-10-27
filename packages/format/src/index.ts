@@ -100,6 +100,13 @@ export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type 
 export const VERSION: string = '0.0.0';
 
 export {
+  type DrawioEntryOutcome,
+  type DrawioImportOptions,
+  type DrawioImportReport,
+  type DrawioProcessedReport,
+  importDrawioLibrary,
+} from './drawio-import.js';
+export {
   type IconifyIconOutcome,
   type IconifyImportOptions,
   type IconifyImportReport,

@@ -156,6 +156,7 @@ export {
   TEMPLATE_CHOICE,
 } from './layout-picker.js';
 export { LayoutPickerSection, type LayoutPickerSectionProps } from './layout-picker-section.js';
+export { type DrawioLibrary, importDrawioLibrary } from './library/import-drawio.js';
 export { type IconifyLibrary, importIconifyLibrary } from './library/import-iconify.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
