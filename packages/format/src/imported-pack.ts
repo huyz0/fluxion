@@ -1,21 +1,9 @@
 // Imported definitions as a declarative shape pack (M18.101, ADR-0049/ADR-0182): an index, canonical category
 // files and the distribution source the portable writer saves, so a document using an imported shape saves
-// with its geometry and credit and reopens offline. Pure: hashing goes through the host's port.
-import {
-  parseShapeDef,
-  parseShapePackCategory,
-  parseShapePackIndex,
-  type ShapeDef,
-  type ShapePackCredit,
-  type ShapePackIndex,
-  type ShapePackLicensePolicy,
-  type ShapePackSource,
-} from '@fluxion/core';
+// with its geometry and credit and reopens offline. Encoded by core's shared pack encoder (M18.108, ADR-0196).
+import { encodeShapePack, type ShapeDef, type ShapePackCredit, type ShapePackIndex, type ShapePackLicensePolicy, type ShapePackSource } from '@fluxion/core';
 import { type Diagnostic, err, ok, type Result } from '@fluxion/schema';
-import { canonicalJson } from './canonical-json.js';
-import type { ContentHasher } from './flux-write-types.js';
 import type { IconifyImportReport } from './iconify-import-types.js';
-import { encodeUtf8 } from './utf8.js';
 
 /** One imported definition with its display name. @public */
 export type ImportedPackEntry = {
@@ -47,8 +35,6 @@ export type ImportedPackOptions = {
   readonly entries: readonly ImportedPackEntry[];
   /** Repository content policy; there is no permissive default. */
   readonly licensePolicy: ShapePackLicensePolicy;
-  /** Trusted SHA-256 port for the category files. */
-  readonly hasher: ContentHasher;
 };
 
 /** A validated pack: what a distribution publishes and what the portable writer saves. @public */
@@ -69,92 +55,50 @@ export type ImportedPack = {
 };
 
 const problem = (path: string, message: string): Diagnostic => ({ code: 'FLX_PACK_INVALID', severity: 'error', path, message });
-const UNCATEGORIZED = 'uncategorized';
-const slugOf = (text: string): string =>
-  text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60);
+/**
+ * An encoder path in the caller's terms: the draft's `/definitions/<i>/def` is `/entries/<i>/definition`, and
+ * the index's `/definitions/<i>/name` is `/entries/<i>/name` (the index keeps entry order); its other entry
+ * fields (`id`, `keywords`, `category`) come from the definition.
+ */
+const entryPath = (path: string): string =>
+  path
+    .replace(/^\/definitions\/(\d+)\/def(?=\/|$)/, '/entries/$1/definition')
+    .replace(/^\/definitions\/(\d+)\/name(?=\/|$)/, '/entries/$1/name')
+    .replace(/^\/definitions\/(\d+)\/(id|keywords|category)(?=\/|$)/, '/entries/$1/definition/$2')
+    .replace(/^\/definitions$/, '/entries');
 
 /**
- * One slug per distinct source category, in first-seen order: names that slug alike (`Charts & Graphs`,
- * `Charts Graphs`) or to nothing (non-Latin names) are numbered, never merged; no category is `uncategorized`.
+ * Index imported definitions as a declarative pack with one credit covering all of them, through the shared
+ * encoder (`encodeShapePack`, ADR-0196) that first-party packs use. Refuses an empty set, IDs outside the
+ * namespace, font-bearing entries and rights the content policy does not permit; nothing is partial.
+ *
+ * Provenance and licence are the caller's declaration: an SVG or draw.io import states them from what the
+ * user declares (their own drawing, or a named upstream with its SPDX licence), and `iconifyShapePack` derives
+ * them from the collection's metadata. They are declarations, not ownership checks.
+ * @public
  */
-function slugsOf(entries: readonly ImportedPackEntry[]): Map<string | undefined, string> {
-  const slugs = new Map<string | undefined, string>([[undefined, UNCATEGORIZED]]);
-  const used = new Set([UNCATEGORIZED]);
-  for (const { definition } of entries) {
-    const name = definition.category;
-    if (slugs.has(name)) continue;
-    const base = slugOf(name ?? '') || 'category';
-    let slug = base === UNCATEGORIZED ? `${base}-2` : base;
-    for (let n = 2; used.has(slug); n++) slug = `${base}-${n}`;
-    slugs.set(name, slug);
-    used.add(slug);
-  }
-  return slugs;
-}
-
-/** Entries with category slugs, grouped by slug in first-seen order. */
-function grouped(options: ImportedPackOptions): Result<Map<string, { def: ShapeDef; name: string }[]>, readonly Diagnostic[]> {
-  const groups = new Map<string, { def: ShapeDef; name: string }[]>();
-  const slugs = slugsOf(options.entries);
+export function importedShapePack(options: ImportedPackOptions): Result<ImportedPack, readonly Diagnostic[]> {
   for (const [i, entry] of options.entries.entries()) {
     // pack 1.0 carries no font resources: saving text without its exact face would not render offline (M18.96 owns 1.1)
     if (entry.fonts?.length) return err([problem(`/entries/${i}/fonts`, `${entry.definition.id} needs exact fonts, which a 1.0 pack cannot retain`)]);
-    const category = slugs.get(entry.definition.category) as string;
-    const def = parseShapeDef({ ...entry.definition, category }, ['entries', i, 'definition']);
-    if (!def.ok) return def;
-    if (!def.value.id.startsWith(`${options.namespace}:`)) return err([problem(`/entries/${i}/definition/id`, 'definition is outside the pack namespace')]);
-    groups.set(category, [...(groups.get(category) ?? []), { def: def.value, name: entry.name }]);
   }
-  return groups.size ? ok(groups) : err([problem('/entries', 'a pack needs at least one definition')]);
-}
-
-/**
- * Index imported definitions as a declarative pack with one credit covering all of them. Refuses an empty set,
- * IDs outside the namespace, and rights the content policy does not permit; nothing is partial.
- * @public
- */
-export async function importedShapePack(options: ImportedPackOptions): Promise<Result<ImportedPack, readonly Diagnostic[]>> {
-  const groups = grouped(options);
-  if (!groups.ok) return groups;
-  const categories = new Map<string, Uint8Array>();
-  const envelopes = new Map<string, unknown>();
-  const descriptors: Record<string, { path: string; sha256: string }> = {};
-  for (const [slug, members] of groups.value) {
-    const path = `categories/${slug}.json`;
-    const envelope = { formatVersion: '1.0', definitions: members.map((m) => m.def) };
-    const bytes = encodeUtf8(canonicalJson(envelope));
-    categories.set(path, bytes);
-    envelopes.set(slug, envelope);
-    descriptors[slug] = { path, sha256: await options.hasher.sha256(bytes.slice()) };
-  }
-  const members = [...groups.value.values()].flat();
   const credit: ShapePackCredit = { id: 'source', license: options.license, attribution: options.attribution, notice: options.notice, source: options.source };
-  const index = parseShapePackIndex(
+  const encoded = encodeShapePack(
     {
-      format: 'fluxion-shape-pack',
-      formatVersion: '1.0',
       id: options.namespace,
       version: options.version,
       name: options.name,
       license: options.license,
       attribution: options.attribution,
-      categories: descriptors,
-      definitions: members.map(({ def, name }) => ({ id: def.id, name, keywords: def.keywords ?? [], category: def.category as string })),
       credits: [credit],
+      definitions: options.entries.map((entry) => ({ name: entry.name, def: entry.definition })),
     },
     options.licensePolicy,
   );
-  if (!index.ok) return index;
-  for (const [slug, envelope] of envelopes) {
-    const category = parseShapePackCategory(envelope, index.value, slug, options.licensePolicy);
-    if (!category.ok) return category;
-  }
-  const definitions = members.map((m) => m.def);
-  return ok({ index: index.value, categories, source: { kind: 'distribution', index: index.value, definitions } });
+  if (!encoded.ok) return err(encoded.error.map((d) => ({ ...d, path: entryPath(d.path) })));
+  const { index, definitions, files } = encoded.value;
+  const categories = new Map([...files].filter(([path]) => path !== 'index.json'));
+  return ok({ index, categories, source: { kind: 'distribution', index, definitions } });
 }
 
 /** Version from the source: callers may pin one; otherwise the source hash keeps distinct sources distinct. */
@@ -166,10 +110,10 @@ const versionOf = (sha256: string, version: string | undefined): string => versi
  * collection without a declared license cannot be saved portably. Declared rights are not ownership checks.
  * @public
  */
-export async function iconifyShapePack(
+export function iconifyShapePack(
   report: IconifyImportReport,
-  options: Pick<ImportedPackOptions, 'licensePolicy' | 'hasher'> & { readonly version?: string },
-): Promise<Result<ImportedPack, readonly Diagnostic[]>> {
+  options: Pick<ImportedPackOptions, 'licensePolicy'> & { readonly version?: string },
+): Result<ImportedPack, readonly Diagnostic[]> {
   if (report.status !== 'processed') return err([problem('', 'the collection was not imported')]);
   const { prefix, sourceSha256, name, author, license } = report.provenance;
   if (license === undefined) return err([problem('/provenance/license', `collection ${prefix} declares no license; it cannot be saved portably`)]);

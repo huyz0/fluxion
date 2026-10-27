@@ -1,63 +1,51 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "uml:actor",
-      "outline": {
-        "path": "M {w * 0.44} {h * 0.2} A {w * 0.14} {h * 0.1} 0 1 1 {w * 0.56} {h * 0.2} L {w * 0.9} {h * 0.26} L {w * 0.9} {h * 0.5} L {w * 0.76} {h * 0.5} L {w * 0.74} {h * 0.36} L {w * 0.8} {h * 0.78} L {w * 0.56} {h * 0.78} L {w/2} {h * 0.62} L {w * 0.44} {h * 0.78} L {w * 0.2} {h * 0.78} L {w * 0.26} {h * 0.36} L {w * 0.24} {h * 0.5} L {w * 0.1} {h * 0.5} L {w * 0.1} {h * 0.26} Z"
-      },
       "anchors": [
         {
-          "name": "n",
-          "x": 0.5,
-          "y": 0,
           "dir": {
             "x": 0,
             "y": -1
-          }
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
         },
         {
-          "name": "e",
-          "x": 0.9,
-          "y": 0.38,
           "dir": {
             "x": 1,
             "y": 0
-          }
+          },
+          "name": "e",
+          "x": 0.9,
+          "y": 0.38
         },
         {
-          "name": "s",
-          "x": 0.5,
-          "y": 0.62,
           "dir": {
             "x": 0,
             "y": 1
-          }
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 0.62
         },
         {
-          "name": "w",
-          "x": 0.1,
-          "y": 0.38,
           "dir": {
             "x": -1,
             "y": 0
-          }
+          },
+          "name": "w",
+          "x": 0.1,
+          "y": 0.38
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0,
-          "y": 0.8,
-          "w": 1,
-          "h": 0.2
-        }
-      ],
+      "category": "use-case",
       "defaultSize": {
-        "w": 70,
-        "h": 130
+        "h": 130,
+        "w": 70
       },
       "describe": "An actor (person figure): a person or system that uses the system.",
+      "id": "uml:actor",
       "keywords": [
         "actor",
         "user",
@@ -66,28 +54,28 @@
         "stick figure",
         "human"
       ],
-      "category": "use-case",
-      "license": "MIT"
-    },
-    {
-      "id": "uml:use-case",
+      "license": "MIT",
       "outline": {
-        "path": "M {w/2 - w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - w/2} {h/2} Z"
+        "path": "M {w * 0.44} {h * 0.2} A {w * 0.14} {h * 0.1} 0 1 1 {w * 0.56} {h * 0.2} L {w * 0.9} {h * 0.26} L {w * 0.9} {h * 0.5} L {w * 0.76} {h * 0.5} L {w * 0.74} {h * 0.36} L {w * 0.8} {h * 0.78} L {w * 0.56} {h * 0.78} L {w/2} {h * 0.62} L {w * 0.44} {h * 0.78} L {w * 0.2} {h * 0.78} L {w * 0.26} {h * 0.36} L {w * 0.24} {h * 0.5} L {w * 0.1} {h * 0.5} L {w * 0.1} {h * 0.26} Z"
       },
       "textRegions": [
         {
+          "h": 0.2,
           "name": "body",
-          "x": 0.15,
-          "y": 0.15,
-          "w": 0.7,
-          "h": 0.7
+          "w": 1,
+          "x": 0,
+          "y": 0.8
         }
-      ],
+      ]
+    },
+    {
+      "category": "use-case",
       "defaultSize": {
-        "w": 180,
-        "h": 80
+        "h": 80,
+        "w": 180
       },
       "describe": "A use case (ellipse): something an actor achieves with the system.",
+      "id": "uml:use-case",
       "keywords": [
         "use case",
         "goal",
@@ -95,31 +83,31 @@
         "ellipse",
         "uml"
       ],
-      "category": "use-case",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - w/2} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.7,
+          "name": "body",
+          "w": 0.7,
+          "x": 0.15,
+          "y": 0.15
+        }
+      ]
     },
     {
-      "id": "uml:system-boundary",
-      "outline": {
-        "path": "M 0 0 H {w} V {h} H 0 Z"
+      "category": "use-case",
+      "defaultSize": {
+        "h": 260,
+        "w": 320
       },
       "defaultStyle": {
         "fill": "transparent"
       },
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.02,
-          "y": 0.02,
-          "w": 0.96,
-          "h": 0.1
-        }
-      ],
-      "defaultSize": {
-        "w": 320,
-        "h": 260
-      },
       "describe": "A system boundary: the box that encloses a system’s use cases.",
+      "id": "uml:system-boundary",
       "keywords": [
         "system",
         "boundary",
@@ -127,8 +115,20 @@
         "scope",
         "container"
       ],
-      "category": "use-case",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.1,
+          "name": "body",
+          "w": 0.96,
+          "x": 0.02,
+          "y": 0.02
+        }
+      ]
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

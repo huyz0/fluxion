@@ -1,31 +1,18 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "callouts:line",
       "category": "annotation",
-      "outline": {
-        "path": "M {w * 0.3} 0 H {w} V {h * 0.6} H {w * 0.3} Z"
-      },
       "decorations": [
         {
           "path": "M {w * 0.3} {h * 0.6} L 0 {h}"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.33,
-          "y": 0.05,
-          "w": 0.64,
-          "h": 0.5
-        }
-      ],
       "defaultSize": {
-        "w": 200,
-        "h": 110
+        "h": 110,
+        "w": 200
       },
       "describe": "A box with a leader line to the point it labels.",
+      "id": "callouts:line",
       "keywords": [
         "line",
         "callout",
@@ -33,36 +20,36 @@
         "label",
         "annotation"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.3} 0 H {w} V {h * 0.6} H {w * 0.3} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.5,
+          "name": "body",
+          "w": 0.64,
+          "x": 0.33,
+          "y": 0.05
+        }
+      ]
     },
     {
-      "id": "callouts:sticky-note",
       "category": "annotation",
-      "outline": {
-        "path": "M 0 0 H {w} V {h * 0.8} L {w * 0.8} {h} H 0 Z"
-      },
       "decorations": [
         {
           "path": "M {w} {h * 0.8} H {w * 0.8} V {h}"
         }
       ],
+      "defaultSize": {
+        "h": 140,
+        "w": 140
+      },
       "defaultStyle": {
         "fill": "#fde68a"
       },
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.08,
-          "y": 0.08,
-          "w": 0.84,
-          "h": 0.68
-        }
-      ],
-      "defaultSize": {
-        "w": 140,
-        "h": 140
-      },
       "describe": "A sticky note with a turned-up corner: a reminder or review comment.",
+      "id": "callouts:sticky-note",
       "keywords": [
         "sticky",
         "note",
@@ -70,22 +57,31 @@
         "reminder",
         "memo"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h * 0.8} L {w * 0.8} {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.68,
+          "name": "body",
+          "w": 0.84,
+          "x": 0.08,
+          "y": 0.08
+        }
+      ]
     },
     {
-      "id": "callouts:brace",
       "category": "annotation",
-      "outline": {
-        "path": "M {w} 0 Q {w * 0.5} 0 {w * 0.5} {h * 0.1} V {h * 0.4} Q {w * 0.5} {h/2} 0 {h/2} Q {w * 0.5} {h/2} {w * 0.5} {h * 0.6} V {h * 0.9} Q {w * 0.5} {h} {w} {h}"
+      "defaultSize": {
+        "h": 160,
+        "w": 30
       },
       "defaultStyle": {
         "fill": "transparent"
       },
-      "defaultSize": {
-        "w": 30,
-        "h": 160
-      },
       "describe": "A curly brace grouping the items beside it under one note.",
+      "id": "callouts:brace",
       "keywords": [
         "brace",
         "curly",
@@ -93,22 +89,22 @@
         "bracket",
         "annotation"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w} 0 Q {w * 0.5} 0 {w * 0.5} {h * 0.1} V {h * 0.4} Q {w * 0.5} {h/2} 0 {h/2} Q {w * 0.5} {h/2} {w * 0.5} {h * 0.6} V {h * 0.9} Q {w * 0.5} {h} {w} {h}"
+      }
     },
     {
-      "id": "callouts:bracket",
       "category": "annotation",
-      "outline": {
-        "path": "M {w} 0 H 0 V {h} H {w}"
+      "defaultSize": {
+        "h": 160,
+        "w": 24
       },
       "defaultStyle": {
         "fill": "transparent"
       },
-      "defaultSize": {
-        "w": 24,
-        "h": 160
-      },
       "describe": "A square bracket marking a span of items.",
+      "id": "callouts:bracket",
       "keywords": [
         "bracket",
         "square",
@@ -116,7 +112,11 @@
         "group",
         "annotation"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w} 0 H 0 V {h} H {w}"
+      }
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

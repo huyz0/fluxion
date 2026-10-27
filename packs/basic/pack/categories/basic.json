@@ -1,37 +1,30 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "basic:rect",
-      "outline": {
-        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
-      },
+      "category": "basic",
       "defaultSize": {
-        "w": 160,
-        "h": 100
+        "h": 100,
+        "w": 160
       },
       "describe": "A rectangle, the default box for a component, step or service.",
+      "id": "basic:rect",
       "keywords": [
         "rectangle",
         "box",
         "square"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
     },
     {
-      "id": "basic:rounded-rect",
-      "params": {
-        "r": {
-          "type": "number",
-          "min": 0,
-          "max": 1000,
-          "default": 12
-        }
+      "category": "basic",
+      "defaultSize": {
+        "h": 100,
+        "w": 160
       },
-      "outline": {
-        "path": "M {min(r, w/2, h/2)} 0 H {w - min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 {w} {min(r, w/2, h/2)} V {h - min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 {w - min(r, w/2, h/2)} {h} H {min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 0 {h - min(r, w/2, h/2)} V {min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 {min(r, w/2, h/2)} 0 Z"
-      },
+      "describe": "A rectangle with rounded corners, a friendly box for steps and cards.",
       "handles": [
         {
           "param": "r",
@@ -39,51 +32,51 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 160,
-        "h": 100
-      },
-      "describe": "A rectangle with rounded corners, a friendly box for steps and cards.",
+      "id": "basic:rounded-rect",
       "keywords": [
         "rounded",
         "rectangle",
         "card",
         "button"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {min(r, w/2, h/2)} 0 H {w - min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 {w} {min(r, w/2, h/2)} V {h - min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 {w - min(r, w/2, h/2)} {h} H {min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 0 {h - min(r, w/2, h/2)} V {min(r, w/2, h/2)} A {min(r, w/2, h/2)} {min(r, w/2, h/2)} 0 0 1 {min(r, w/2, h/2)} 0 Z"
+      },
+      "params": {
+        "r": {
+          "default": 12,
+          "max": 1000,
+          "min": 0,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:ellipse",
-      "outline": {
-        "path": "M 0 {h/2} A {w/2} {h/2} 0 1 1 {w} {h/2} A {w/2} {h/2} 0 1 1 0 {h/2} Z"
-      },
+      "category": "basic",
       "defaultSize": {
-        "w": 140,
-        "h": 100
+        "h": 100,
+        "w": 140
       },
       "describe": "An ellipse or circle, for start and end points, states and actors.",
+      "id": "basic:ellipse",
       "keywords": [
         "ellipse",
         "circle",
         "oval"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h/2} A {w/2} {h/2} 0 1 1 {w} {h/2} A {w/2} {h/2} 0 1 1 0 {h/2} Z"
+      }
     },
     {
-      "id": "basic:triangle",
-      "params": {
-        "apex": {
-          "type": "number",
-          "min": 0,
-          "max": 1,
-          "default": 0.5
-        }
+      "category": "basic",
+      "defaultSize": {
+        "h": 100,
+        "w": 120
       },
-      "outline": {
-        "path": "M {w * apex} 0 L {w} {h} L 0 {h} Z"
-      },
+      "describe": "A triangle, for warnings, hierarchies and play buttons.",
       "handles": [
         {
           "param": "apex",
@@ -91,49 +84,49 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 120,
-        "h": 100
-      },
-      "describe": "A triangle, for warnings, hierarchies and play buttons.",
+      "id": "basic:triangle",
       "keywords": [
         "triangle",
         "warning"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * apex} 0 L {w} {h} L 0 {h} Z"
+      },
+      "params": {
+        "apex": {
+          "default": 0.5,
+          "max": 1,
+          "min": 0,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:diamond",
-      "outline": {
-        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
-      },
+      "category": "basic",
       "defaultSize": {
-        "w": 140,
-        "h": 100
+        "h": 100,
+        "w": 140
       },
       "describe": "A rhombus, the decision point of a flowchart.",
+      "id": "basic:diamond",
       "keywords": [
         "diamond",
         "rhombus",
         "decision"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
+      }
     },
     {
-      "id": "basic:parallelogram",
-      "params": {
-        "skew": {
-          "type": "number",
-          "min": 0,
-          "max": 0.9,
-          "default": 0.2
-        }
+      "category": "basic",
+      "defaultSize": {
+        "h": 90,
+        "w": 160
       },
-      "outline": {
-        "path": "M {w * skew} 0 L {w} 0 L {w - w * skew} {h} L 0 {h} Z"
-      },
+      "describe": "A slanted box, the input and output step of a flowchart.",
       "handles": [
         {
           "param": "skew",
@@ -141,32 +134,32 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 160,
-        "h": 90
-      },
-      "describe": "A slanted box, the input and output step of a flowchart.",
+      "id": "basic:parallelogram",
       "keywords": [
         "parallelogram",
         "input",
         "output"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * skew} 0 L {w} 0 L {w - w * skew} {h} L 0 {h} Z"
+      },
+      "params": {
+        "skew": {
+          "default": 0.2,
+          "max": 0.9,
+          "min": 0,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:trapezoid",
-      "params": {
-        "inset": {
-          "type": "number",
-          "min": 0,
-          "max": 0.49,
-          "default": 0.2
-        }
+      "category": "basic",
+      "defaultSize": {
+        "h": 90,
+        "w": 160
       },
-      "outline": {
-        "path": "M {w * inset} 0 L {w - w * inset} 0 L {w} {h} L 0 {h} Z"
-      },
+      "describe": "A box with slanted sides, for manual steps and funnels.",
       "handles": [
         {
           "param": "inset",
@@ -174,31 +167,31 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 160,
-        "h": 90
-      },
-      "describe": "A box with slanted sides, for manual steps and funnels.",
+      "id": "basic:trapezoid",
       "keywords": [
         "trapezoid",
         "manual operation"
       ],
-      "category": "basic",
-      "license": "MIT"
-    },
-    {
-      "id": "basic:hexagon",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * inset} 0 L {w - w * inset} 0 L {w} {h} L 0 {h} Z"
+      },
       "params": {
         "inset": {
-          "type": "number",
+          "default": 0.2,
+          "max": 0.49,
           "min": 0,
-          "max": 0.5,
-          "default": 0.25
+          "type": "number"
         }
+      }
+    },
+    {
+      "category": "basic",
+      "defaultSize": {
+        "h": 120,
+        "w": 140
       },
-      "outline": {
-        "path": "M {w * inset} 0 L {w - w * inset} 0 L {w} {h/2} L {w - w * inset} {h} L {w * inset} {h} L 0 {h/2} Z"
-      },
+      "describe": "A six-sided shape, for preparation steps, services and cells.",
       "handles": [
         {
           "param": "inset",
@@ -206,31 +199,31 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 140,
-        "h": 120
-      },
-      "describe": "A six-sided shape, for preparation steps, services and cells.",
+      "id": "basic:hexagon",
       "keywords": [
         "hexagon",
         "preparation"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * inset} 0 L {w - w * inset} 0 L {w} {h/2} L {w - w * inset} {h} L {w * inset} {h} L 0 {h/2} Z"
+      },
+      "params": {
+        "inset": {
+          "default": 0.25,
+          "max": 0.5,
+          "min": 0,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:octagon",
-      "params": {
-        "cut": {
-          "type": "number",
-          "min": 0,
-          "max": 0.5,
-          "default": 0.29
-        }
+      "category": "basic",
+      "defaultSize": {
+        "h": 120,
+        "w": 120
       },
-      "outline": {
-        "path": "M {cut * min(w, h)} 0 L {w - cut * min(w, h)} 0 L {w} {cut * min(w, h)} L {w} {h - cut * min(w, h)} L {w - cut * min(w, h)} {h} L {cut * min(w, h)} {h} L 0 {h - cut * min(w, h)} L 0 {cut * min(w, h)} Z"
-      },
+      "describe": "An eight-sided shape, for stop signs and terminators.",
       "handles": [
         {
           "param": "cut",
@@ -238,41 +231,31 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 120,
-        "h": 120
-      },
-      "describe": "An eight-sided shape, for stop signs and terminators.",
+      "id": "basic:octagon",
       "keywords": [
         "octagon",
         "stop"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {cut * min(w, h)} 0 L {w - cut * min(w, h)} 0 L {w} {cut * min(w, h)} L {w} {h - cut * min(w, h)} L {w - cut * min(w, h)} {h} L {cut * min(w, h)} {h} L 0 {h - cut * min(w, h)} L 0 {cut * min(w, h)} Z"
+      },
+      "params": {
+        "cut": {
+          "default": 0.29,
+          "max": 0.5,
+          "min": 0,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:star",
-      "params": {
-        "points": {
-          "type": "int",
-          "min": 3,
-          "max": 64,
-          "default": 5
-        },
-        "inner": {
-          "type": "number",
-          "min": 0.1,
-          "max": 0.95,
-          "default": 0.5
-        }
+      "category": "basic",
+      "defaultSize": {
+        "h": 120,
+        "w": 120
       },
-      "outline": {
-        "polygon": {
-          "n": "2 * points",
-          "x": "w/2 + (i % 2 ? inner : 1) * w/2 * sin(2 * pi * i / n)",
-          "y": "h/2 - (i % 2 ? inner : 1) * h/2 * cos(2 * pi * i / n)"
-        }
-      },
+      "describe": "A star with a chosen number of points, for ratings and highlights.",
       "handles": [
         {
           "param": "inner",
@@ -280,38 +263,42 @@
           "y": "h/2 - inner * h/2 * cos(pi / points)"
         }
       ],
-      "defaultSize": {
-        "w": 120,
-        "h": 120
-      },
-      "describe": "A star with a chosen number of points, for ratings and highlights.",
+      "id": "basic:star",
       "keywords": [
         "star",
         "rating",
         "favourite"
       ],
-      "category": "basic",
-      "license": "MIT"
-    },
-    {
-      "id": "basic:block-arrow",
-      "params": {
-        "head": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.95,
-          "default": 0.35
-        },
-        "shaft": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.95,
-          "default": 0.5
+      "license": "MIT",
+      "outline": {
+        "polygon": {
+          "n": "2 * points",
+          "x": "w/2 + (i % 2 ? inner : 1) * w/2 * sin(2 * pi * i / n)",
+          "y": "h/2 - (i % 2 ? inner : 1) * h/2 * cos(2 * pi * i / n)"
         }
       },
-      "outline": {
-        "path": "M 0 {h * (1 - shaft) / 2} L {w - w * head} {h * (1 - shaft) / 2} L {w - w * head} 0 L {w} {h/2} L {w - w * head} {h} L {w - w * head} {h - h * (1 - shaft) / 2} L 0 {h - h * (1 - shaft) / 2} Z"
+      "params": {
+        "inner": {
+          "default": 0.5,
+          "max": 0.95,
+          "min": 0.1,
+          "type": "number"
+        },
+        "points": {
+          "default": 5,
+          "max": 64,
+          "min": 3,
+          "type": "int"
+        }
+      }
+    },
+    {
+      "category": "basic",
+      "defaultSize": {
+        "h": 80,
+        "w": 160
       },
+      "describe": "A thick arrow block pointing right, for flows, steps and calls to action.",
       "handles": [
         {
           "param": "head",
@@ -324,44 +311,38 @@
           "y": "h * (1 - shaft) / 2"
         }
       ],
-      "defaultSize": {
-        "w": 160,
-        "h": 80
-      },
-      "describe": "A thick arrow block pointing right, for flows, steps and calls to action.",
+      "id": "basic:block-arrow",
       "keywords": [
         "arrow",
         "next",
         "direction"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h * (1 - shaft) / 2} L {w - w * head} {h * (1 - shaft) / 2} L {w - w * head} 0 L {w} {h/2} L {w - w * head} {h} L {w - w * head} {h - h * (1 - shaft) / 2} L 0 {h - h * (1 - shaft) / 2} Z"
+      },
+      "params": {
+        "head": {
+          "default": 0.35,
+          "max": 0.95,
+          "min": 0.05,
+          "type": "number"
+        },
+        "shaft": {
+          "default": 0.5,
+          "max": 0.95,
+          "min": 0.05,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:callout",
-      "params": {
-        "tail": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.6,
-          "default": 0.25
-        },
-        "tip": {
-          "type": "number",
-          "min": 0,
-          "max": 1,
-          "default": 0.25
-        },
-        "width": {
-          "type": "number",
-          "min": 0.02,
-          "max": 0.9,
-          "default": 0.15
-        }
+      "category": "basic",
+      "defaultSize": {
+        "h": 110,
+        "w": 180
       },
-      "outline": {
-        "path": "M 0 0 H {w} V {h - h * tail} H {clamp(w * tip - w * width / 2, 0, w - w * width) + w * width} L {w * tip} {h} L {clamp(w * tip - w * width / 2, 0, w - w * width)} {h - h * tail} H 0 Z"
-      },
+      "describe": "A speech-bubble box with a pointer, for comments and annotations.",
       "handles": [
         {
           "param": "tip",
@@ -369,74 +350,86 @@
           "y": "h"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.05,
-          "y": 0.05,
-          "w": 0.9,
-          "h": "1 - tail - 0.1"
-        }
-      ],
-      "defaultSize": {
-        "w": 180,
-        "h": 110
-      },
-      "describe": "A speech-bubble box with a pointer, for comments and annotations.",
+      "id": "basic:callout",
       "keywords": [
         "callout",
         "speech",
         "bubble",
         "comment"
       ],
-      "category": "basic",
-      "license": "MIT"
-    },
-    {
-      "id": "basic:cloud",
+      "license": "MIT",
       "outline": {
-        "path": "M {w/2 + 0.34 * w} {h/2 + 0 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0.2404 * w} {h/2 + 0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0 * w} {h/2 + 0.34 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + -0.2404 * w} {h/2 + 0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + -0.34 * w} {h/2 + 0 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + -0.2404 * w} {h/2 + -0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0 * w} {h/2 + -0.34 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0.2404 * w} {h/2 + -0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0.34 * w} {h/2 + 0 * h} Z"
+        "path": "M 0 0 H {w} V {h - h * tail} H {clamp(w * tip - w * width / 2, 0, w - w * width) + w * width} L {w * tip} {h} L {clamp(w * tip - w * width / 2, 0, w - w * width)} {h - h * tail} H 0 Z"
+      },
+      "params": {
+        "tail": {
+          "default": 0.25,
+          "max": 0.6,
+          "min": 0.05,
+          "type": "number"
+        },
+        "tip": {
+          "default": 0.25,
+          "max": 1,
+          "min": 0,
+          "type": "number"
+        },
+        "width": {
+          "default": 0.15,
+          "max": 0.9,
+          "min": 0.02,
+          "type": "number"
+        }
       },
       "textRegions": [
         {
+          "h": "1 - tail - 0.1",
           "name": "body",
-          "x": 0.2,
-          "y": 0.25,
-          "w": 0.6,
-          "h": 0.5
+          "w": 0.9,
+          "x": 0.05,
+          "y": 0.05
         }
-      ],
+      ]
+    },
+    {
+      "category": "basic",
       "defaultSize": {
-        "w": 180,
-        "h": 120
+        "h": 120,
+        "w": 180
       },
       "describe": "A cloud outline, for the internet, a cloud service or a vague area.",
+      "id": "basic:cloud",
       "keywords": [
         "cloud",
         "internet",
         "network"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 + 0.34 * w} {h/2 + 0 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0.2404 * w} {h/2 + 0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0 * w} {h/2 + 0.34 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + -0.2404 * w} {h/2 + 0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + -0.34 * w} {h/2 + 0 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + -0.2404 * w} {h/2 + -0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0 * w} {h/2 + -0.34 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0.2404 * w} {h/2 + -0.2404 * h} A {0.14 * w} {0.14 * h} 0 0 1 {w/2 + 0.34 * w} {h/2 + 0 * h} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.5,
+          "name": "body",
+          "w": 0.6,
+          "x": 0.2,
+          "y": 0.25
+        }
+      ]
     },
     {
-      "id": "basic:cylinder",
-      "params": {
-        "depth": {
-          "type": "number",
-          "min": 0.02,
-          "max": 0.5,
-          "default": 0.15
-        }
-      },
-      "outline": {
-        "path": "M 0 {h * depth} V {h - h * depth} A {w/2} {h * depth} 0 0 0 {w} {h - h * depth} V {h * depth} A {w/2} {h * depth} 0 0 0 0 {h * depth} Z"
-      },
+      "category": "basic",
       "decorations": [
         {
           "path": "M 0 {h * depth} A {w/2} {h * depth} 0 0 0 {w} {h * depth}"
         }
       ],
+      "defaultSize": {
+        "h": 140,
+        "w": 120
+      },
+      "describe": "A can: the classic database or storage symbol.",
       "handles": [
         {
           "param": "depth",
@@ -444,41 +437,41 @@
           "y": "2 * h * depth"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.05,
-          "y": 0.35,
-          "w": 0.9,
-          "h": 0.5
-        }
-      ],
-      "defaultSize": {
-        "w": 120,
-        "h": 140
-      },
-      "describe": "A can: the classic database or storage symbol.",
+      "id": "basic:cylinder",
       "keywords": [
         "cylinder",
         "database",
         "storage"
       ],
-      "category": "basic",
-      "license": "MIT"
-    },
-    {
-      "id": "basic:document",
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h * depth} V {h - h * depth} A {w/2} {h * depth} 0 0 0 {w} {h - h * depth} V {h * depth} A {w/2} {h * depth} 0 0 0 0 {h * depth} Z"
+      },
       "params": {
-        "wave": {
-          "type": "number",
-          "min": 0,
-          "max": 0.25,
-          "default": 0.1
+        "depth": {
+          "default": 0.15,
+          "max": 0.5,
+          "min": 0.02,
+          "type": "number"
         }
       },
-      "outline": {
-        "path": "M 0 0 H {w} V {h - h * wave} C {w * 0.7} {h - 2 * h * wave} {w * 0.3} {h} 0 {h - h * wave} Z"
+      "textRegions": [
+        {
+          "h": 0.5,
+          "name": "body",
+          "w": 0.9,
+          "x": 0.05,
+          "y": 0.35
+        }
+      ]
+    },
+    {
+      "category": "basic",
+      "defaultSize": {
+        "h": 100,
+        "w": 160
       },
+      "describe": "A page with a wavy bottom edge, for files, reports and documents.",
       "handles": [
         {
           "param": "wave",
@@ -486,37 +479,37 @@
           "y": "h - h * wave"
         }
       ],
-      "defaultSize": {
-        "w": 160,
-        "h": 100
-      },
-      "describe": "A page with a wavy bottom edge, for files, reports and documents.",
+      "id": "basic:document",
       "keywords": [
         "document",
         "page",
         "report"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h - h * wave} C {w * 0.7} {h - 2 * h * wave} {w * 0.3} {h} 0 {h - h * wave} Z"
+      },
+      "params": {
+        "wave": {
+          "default": 0.1,
+          "max": 0.25,
+          "min": 0,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:note",
-      "params": {
-        "fold": {
-          "type": "number",
-          "min": 0,
-          "max": 0.5,
-          "default": 0.2
-        }
-      },
-      "outline": {
-        "path": "M 0 0 H {w - fold * min(w, h)} L {w} {fold * min(w, h)} V {h} H 0 Z"
-      },
+      "category": "basic",
       "decorations": [
         {
           "path": "M {w - fold * min(w, h)} 0 V {fold * min(w, h)} H {w}"
         }
       ],
+      "defaultSize": {
+        "h": 140,
+        "w": 140
+      },
+      "describe": "A sticky note with a folded corner, for remarks.",
       "handles": [
         {
           "param": "fold",
@@ -524,45 +517,63 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 140,
-        "h": 140
-      },
-      "describe": "A sticky note with a folded corner, for remarks.",
+      "id": "basic:note",
       "keywords": [
         "note",
         "sticky",
         "comment"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w - fold * min(w, h)} L {w} {fold * min(w, h)} V {h} H 0 Z"
+      },
+      "params": {
+        "fold": {
+          "default": 0.2,
+          "max": 0.5,
+          "min": 0,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "basic:line",
-      "outline": {
-        "path": "M 0 {h/2} L {w} {h/2}"
-      },
+      "category": "basic",
       "defaultSize": {
-        "w": 160,
-        "h": 16
+        "h": 16,
+        "w": 160
       },
       "describe": "A plain line between two points, with no connector behaviour.",
+      "id": "basic:line",
       "keywords": [
         "line",
         "rule",
         "divider",
         "separator"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h/2} L {w} {h/2}"
+      }
     },
     {
+      "category": "basic",
+      "defaultSize": {
+        "h": 80,
+        "w": 160
+      },
+      "describe": "An open or closed shape through points the author chooses.",
       "id": "basic:polyline",
+      "keywords": [
+        "polyline",
+        "zigzag",
+        "path"
+      ],
+      "license": "MIT",
+      "outline": {
+        "points": "vertices"
+      },
       "params": {
         "vertices": {
-          "type": "points",
-          "min": 2,
-          "max": 10000,
           "default": [
             [
               0,
@@ -580,32 +591,40 @@
               1,
               0
             ]
-          ]
+          ],
+          "max": 10000,
+          "min": 2,
+          "type": "points"
         }
-      },
-      "outline": {
-        "points": "vertices"
-      },
-      "defaultSize": {
-        "w": 160,
-        "h": 80
-      },
-      "describe": "An open or closed shape through points the author chooses.",
-      "keywords": [
-        "polyline",
-        "zigzag",
-        "path"
-      ],
-      "category": "basic",
-      "license": "MIT"
+      }
     },
     {
+      "category": "basic",
+      "defaultSize": {
+        "h": 80,
+        "w": 160
+      },
+      "defaultStyle": {
+        "stroke": {
+          "cap": "round",
+          "join": "round"
+        }
+      },
+      "describe": "A hand-drawn stroke along points the author draws.",
       "id": "basic:freehand",
+      "keywords": [
+        "freehand",
+        "pen",
+        "scribble",
+        "drawing"
+      ],
+      "license": "MIT",
+      "outline": {
+        "points": "stroke",
+        "smooth": true
+      },
       "params": {
         "stroke": {
-          "type": "points",
-          "min": 2,
-          "max": 10000,
           "default": [
             [
               0,
@@ -627,50 +646,18 @@
               1,
               0.5
             ]
-          ]
+          ],
+          "max": 10000,
+          "min": 2,
+          "type": "points"
         }
-      },
-      "outline": {
-        "points": "stroke",
-        "smooth": true
-      },
-      "defaultSize": {
-        "w": 160,
-        "h": 80
-      },
-      "defaultStyle": {
-        "stroke": {
-          "cap": "round",
-          "join": "round"
-        }
-      },
-      "describe": "A hand-drawn stroke along points the author draws.",
-      "keywords": [
-        "freehand",
-        "pen",
-        "scribble",
-        "drawing"
-      ],
-      "category": "basic",
-      "license": "MIT"
+      }
     },
     {
-      "id": "basic:text-box",
-      "outline": {
-        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
-      },
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0,
-          "y": 0,
-          "w": 1,
-          "h": 1
-        }
-      ],
+      "category": "basic",
       "defaultSize": {
-        "w": 200,
-        "h": 60
+        "h": 60,
+        "w": 200
       },
       "defaultStyle": {
         "fill": "transparent",
@@ -679,19 +666,28 @@
         }
       },
       "describe": "A box that is only text, with no border or fill by default.",
+      "id": "basic:text-box",
       "keywords": [
         "text",
         "label",
         "title"
       ],
-      "category": "basic",
-      "license": "MIT"
-    },
-    {
-      "id": "basic:image-frame",
+      "license": "MIT",
       "outline": {
         "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
       },
+      "textRegions": [
+        {
+          "h": 1,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "category": "basic",
       "decorations": [
         {
           "path": "M {w * 0.15} {h * 0.8} L {w * 0.4} {h * 0.45} L {w * 0.55} {h * 0.65} L {w * 0.65} {h * 0.55} L {w * 0.85} {h * 0.8} Z"
@@ -701,18 +697,22 @@
         }
       ],
       "defaultSize": {
-        "w": 160,
-        "h": 120
+        "h": 120,
+        "w": 160
       },
       "describe": "A rectangular frame that holds an image.",
+      "id": "basic:image-frame",
       "keywords": [
         "image",
         "picture",
         "photo",
         "placeholder"
       ],
-      "category": "basic",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

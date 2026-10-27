@@ -37,11 +37,17 @@ const draft: DeclarativeShapePack = {
   ],
 };
 
+function built(pack: DeclarativeShapePack): Readonly<Record<string, string>> {
+  const files = buildShapePackFiles(pack);
+  if (!files.ok) throw new Error(JSON.stringify(files.error));
+  return files.value;
+}
+
 describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
   it('FR-LIB-003: builds one index and one hashed file per category, deterministically', () => {
-    const files = buildShapePackFiles(draft);
+    const files = built(draft);
     expect(Object.keys(files)).toEqual(['index.json', 'categories/boxes.json', 'categories/polygons.json']);
-    expect(buildShapePackFiles(draft)).toEqual(files);
+    expect(built(draft)).toEqual(files);
     const index = JSON.parse(files['index.json'] ?? '');
     expect(index.definitions).toEqual([
       { id: 'sample:box', name: 'Box', keywords: ['box', 'square'], category: 'boxes' },
@@ -59,14 +65,14 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
   });
 
   it('FR-LIB-003, NFR-LIC-003: a built pack checks, loading every definition in index order', async () => {
-    const checked = await checkShapePackFiles(buildShapePackFiles(draft));
+    const checked = await checkShapePackFiles(built(draft));
     if (!checked.ok) throw new Error(JSON.stringify(checked.error));
     expect(checked.value.definitions).toEqual([box, tri]);
     expect(checked.value.index.credits).toEqual([credit]);
   });
 
   it('FR-LIB-003, NFR-LIC-003: a changed category, a stray file, a missing index, a forbidden license and an empty pack fail', async () => {
-    const files = buildShapePackFiles(draft);
+    const files = built(draft);
     const failure = async (input: Readonly<Record<string, string>>) => {
       const r = await checkShapePackFiles(input);
       return r.ok ? [] : r.error.map((d) => `${d.path} ${d.message}`);
@@ -76,9 +82,11 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     expect(await failure({ ...files, 'categories/extra.json': '{}' })).toEqual(['/categories~1extra.json file is not named by the index']);
     const { 'index.json': _, ...noIndex } = files;
     expect(await failure(noIndex)).toEqual(['/index.json the pack has no index.json']);
-    const gpl = buildShapePackFiles({ ...draft, credits: [{ ...credit, license: 'GPL-3.0-only' }] });
+    // the encoder refuses these, so edit a built index the way a hand-made pack could be
+    const index = JSON.parse(files['index.json'] ?? '');
+    const gpl = { ...files, 'index.json': JSON.stringify({ ...index, credits: [{ ...credit, license: 'GPL-3.0-only' }] }) };
     expect(await failure(gpl)).toEqual(['/credits/0/license license is not permitted by the supplied content policy']);
-    expect(await failure(buildShapePackFiles({ ...draft, definitions: [] }))).not.toEqual([]);
+    expect(await failure({ ...files, 'index.json': JSON.stringify({ ...index, definitions: [] }) })).not.toEqual([]);
   });
 
   it('FR-LIB-007: a golden is the normalized SVG of the definition alone, at its default size, and is stable', () => {
@@ -106,6 +114,22 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     expect(await checkShapePack(draft, files)).toEqual(clean);
     expect(Object.keys(JSON.parse(files.versions ?? '{}'))).toEqual(['1.0.0']);
     expect(Object.keys(files.goldens)).toEqual(['box.svg', 'tri.svg']);
+  });
+
+  it('FR-LIB-007, FR-LIB-009: a pack with category text or no category checks clean once built (review r1 F1)', async () => {
+    const { category: _, ...plain } = box;
+    const texts = {
+      ...draft,
+      definitions: [
+        { name: 'Box', def: { ...box, category: 'Flow Charts' } },
+        { name: 'Plain', def: { ...plain, id: 'sample:plain' as const } },
+      ],
+    };
+    expect(await checkShapePack(texts, checkedIn(texts))).toEqual(clean);
+    expect(JSON.parse(checkedIn(texts).pack['index.json'] ?? '').definitions.map((d: { category: string }) => d.category)).toEqual([
+      'flow-charts',
+      'uncategorized',
+    ]);
   });
 
   it('FR-LIB-007: missing, changed and orphan files are problems; nothing is rewritten', async () => {
@@ -154,10 +178,15 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
   it('FR-LIB-007, NFR-LIC-003: brands, unnamed or no definitions, and drawing outside the box are problems', async () => {
     const branded = { ...draft, name: 'Azure-ish' };
     expect((await checkShapePack(branded, checkedIn(branded))).brands).toEqual(['pack/index.json names a vendor brand']);
+    // a pack the encoder refuses reports only its diagnostics, whatever is checked in
     const unnamed = { ...draft, definitions: [{ name: ' ', def: box }] };
-    expect((await checkShapePack(unnamed, checkedIn(unnamed))).loading).toEqual(['/definitions/0/name Invalid string: must match pattern /\\S/']);
+    expect(await checkShapePack(unnamed, checkedIn(draft))).toEqual({
+      ...clean,
+      loading: ['/definitions/0/name Invalid string: must match pattern /\\S/'],
+    });
+    expect(() => shapePackExpectation(unnamed, undefined)).toThrow('the pack does not encode: /definitions/0/name');
     const empty = { ...draft, definitions: [] };
-    expect((await checkShapePack(empty, checkedIn(empty))).loading).toContain('the pack exports no definitions');
+    expect((await checkShapePack(empty, checkedIn(draft))).loading).toEqual(['/definitions a pack needs at least one definition']);
     const escaping = { ...draft, definitions: [{ name: 'Box', def: { ...box, outline: { path: 'M 0 0 Q {w * 3} {h / 2} 0 {h} Z' } } }] };
     expect((await checkShapePack(escaping, checkedIn(escaping))).bounds).toEqual([
       'sample:box: draws outside its 120x60 box at (180, 30)',

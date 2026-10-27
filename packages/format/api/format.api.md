@@ -327,9 +327,9 @@ export type IconifyProvenance = {
 };
 
 // @public
-export function iconifyShapePack(report: IconifyImportReport, options: Pick<ImportedPackOptions, "licensePolicy" | "hasher"> & {
+export function iconifyShapePack(report: IconifyImportReport, options: Pick<ImportedPackOptions, "licensePolicy"> & {
     readonly version?: string;
-}): Promise<Result<ImportedPack, readonly Diagnostic[]>>;
+}): Result<ImportedPack, readonly Diagnostic[]>;
 
 // @public
 export interface ImageCodec {
@@ -397,11 +397,10 @@ export type ImportedPackOptions = {
     readonly source: ShapePackSource;
     readonly entries: readonly ImportedPackEntry[];
     readonly licensePolicy: ShapePackLicensePolicy;
-    readonly hasher: ContentHasher;
 };
 
 // @public
-export function importedShapePack(options: ImportedPackOptions): Promise<Result<ImportedPack, readonly Diagnostic[]>>;
+export function importedShapePack(options: ImportedPackOptions): Result<ImportedPack, readonly Diagnostic[]>;
 
 // @public
 export function importIconifyCollection(text: string, options: IconifyImportOptions): Promise<IconifyImportReport>;

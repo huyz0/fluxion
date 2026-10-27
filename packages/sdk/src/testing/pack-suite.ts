@@ -1,6 +1,7 @@
 // The shared first-party pack suite (FR-LIB-007, NFR-LIC-003, ADR-0194): what a pack's checked-in files must be, and every
 // problem with them. A pack's test only reads its files and asserts each problem list is empty; nothing here writes.
-import type { ShapeDef } from '@fluxion/core';
+import { allowsShapePackContentLicense, encodeShapePack, type ShapeDef } from '@fluxion/core';
+import type { Diagnostic } from '@fluxion/schema';
 import { buildShapePackFiles, type DeclarativeShapePack } from '../pack-source.js';
 import { drawnPoints } from './drawn-points.js';
 import { geometryProblems } from './geometry-check.js';
@@ -64,7 +65,7 @@ const releasedVersions = (changelog: string | undefined): string[] =>
 export type ShapePackProblems = {
   /** Missing, extra or changed files in `pack/`, `__golden__/` or the ledger. */
   readonly files: readonly string[];
-  /** Loader diagnostics for the checked-in `pack/`, or a mismatch with the exported definitions. */
+  /** Encoder diagnostics for the exported pack, loader diagnostics for the checked-in `pack/`, or a mismatch with the exported definitions. */
   readonly loading: readonly string[];
   /** Vendor or product names, which a generic first-party pack never carries (ADR-0050). */
   readonly brands: readonly string[];
@@ -88,6 +89,7 @@ const sorted = (value: unknown): string =>
   JSON.stringify(value, (_key, v: unknown) =>
     typeof v === 'object' && v !== null && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : v,
   );
+const described = (d: Diagnostic): string => `${d.path} ${d.message}`;
 const localName = (def: ShapeDef): string => def.id.slice(def.id.indexOf(':') + 1);
 const categoryHashes = (indexText: string): Record<string, string> =>
   Object.fromEntries(
@@ -107,13 +109,16 @@ function parseLedger(text: string | undefined): Record<string, Record<string, st
 }
 
 /**
- * The files `pack` must have, given its existing ledger text (`versions`). A malformed ledger throws rather
- * than being rebuilt, so a write run can never drop recorded versions; repair it by hand.
+ * The files `pack` must have, given its existing ledger text (`versions`). A pack the shared encoder refuses
+ * and a malformed ledger throw rather than being rebuilt, so a write run can never drop recorded versions or
+ * write a partial pack; repair the ledger by hand.
  *
  * @public
  */
 export function shapePackExpectation(pack: DeclarativeShapePack, versions: string | undefined): ShapePackExpectation {
-  const files = buildShapePackFiles(pack);
+  const built = buildShapePackFiles(pack);
+  if (!built.ok) throw new Error(`the pack does not encode: ${built.error.map(described).join('; ')}`);
+  const files = built.value;
   const ledger = parseLedger(versions);
   if (ledger === undefined) throw new Error('pack-versions.json is not a version ledger: repair it by hand, keeping every recorded version');
   const { [UNRELEASED_PACK_VERSION]: _unreleased, ...recorded } = ledger;
@@ -170,11 +175,15 @@ function versionProblems(pack: DeclarativeShapePack, files: ShapePackExpectation
 
 /**
  * Every problem of `checkedIn` against the exported `pack`: files, host loading, brands, bounds and
- * versions (see {@link ShapePackProblems}).
+ * versions (see {@link ShapePackProblems}). A pack the shared encoder refuses (empty, outside its namespace,
+ * invalid, unpermitted rights) reports only those diagnostics, under `loading`.
  *
  * @public
  */
 export async function checkShapePack(pack: DeclarativeShapePack, checkedIn: CheckedInShapePack): Promise<ShapePackProblems> {
+  // nothing else is meaningful until the pack encodes: its files, goldens and versions all derive from the build
+  const built = buildShapePackFiles(pack);
+  if (!built.ok) return { files: [], loading: built.error.map(described), brands: [], bounds: [], versions: [] };
   if (parseLedger(checkedIn.versions) === undefined) {
     const repaired = await checkShapePack(pack, { ...checkedIn, versions: undefined });
     return {
@@ -190,15 +199,17 @@ export async function checkShapePack(pack: DeclarativeShapePack, checkedIn: Chec
     ...(checkedIn.versions === expected.versions ? [] : ['pack-versions.json differs from its build']),
   ];
   const loaded = await checkShapePackFiles(checkedIn.pack);
-  const exported = pack.definitions.map(({ def }) => def);
+  // as the encoder stores them: each category text becomes its slug (ADR-0196)
+  const encoded = encodeShapePack(pack, allowsShapePackContentLicense);
+  const exported = encoded.ok ? encoded.value.definitions : [];
   const loading = !loaded.ok
-    ? loaded.error.map((d) => `${d.path} ${d.message}`)
+    ? loaded.error.map(described)
     : sorted(loaded.value.definitions) === sorted(exported)
       ? []
       : ['pack/ does not load the exported definitions'];
   return {
     files,
-    loading: [...(pack.definitions.length === 0 ? ['the pack exports no definitions'] : []), ...loading],
+    loading,
     brands: Object.entries(expected.pack).flatMap(([path, text]) => (BRANDS.test(text) ? [`pack/${path} names a vendor brand`] : [])),
     bounds: boundsProblems(pack),
     versions: versionProblems(pack, expected, checkedIn),

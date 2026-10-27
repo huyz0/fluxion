@@ -76,6 +76,7 @@ export { parseSvgArtwork } from './shape/artwork.js';
 export { type ArtworkFontProfile, artworkFontLicenses, artworkFontProfiles } from './shape/artwork-font-profile.js';
 export { normalizeSvgArtworkFonts, type SvgArtworkFont, type SvgArtworkFontOptions } from './shape/artwork-fonts.js';
 export { allowsShapePackContentLicense, shapePackContentLicenses } from './shape/content-license-policy.js';
+export { canonicalJson, type EncodedShapePack, encodeShapePack, type ShapePackDraft } from './shape/pack-encode.js';
 export type {
   ShapePackCategory11,
   ShapePackDefinitionFonts,

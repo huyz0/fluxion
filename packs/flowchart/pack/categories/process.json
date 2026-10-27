@@ -1,63 +1,51 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "flowchart:process",
-      "outline": {
-        "path": "M 0 0 H {w} V {h} H 0 Z"
-      },
+      "category": "process",
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "A process step: an action or operation.",
+      "id": "flowchart:process",
       "keywords": [
         "process",
         "step",
         "action",
         "task"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      }
     },
     {
-      "id": "flowchart:alternate-process",
-      "outline": {
-        "path": "M {min(w, h) * 0.15} 0 H {w - min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 {w} {min(w, h) * 0.15} V {h - min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 {w - min(w, h) * 0.15} {h} H {min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 0 {h - min(w, h) * 0.15} V {min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 {min(w, h) * 0.15} 0 Z"
-      },
+      "category": "process",
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "An alternate process: a step that replaces the usual one.",
+      "id": "flowchart:alternate-process",
       "keywords": [
         "alternate",
         "process",
         "step",
         "rounded"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {min(w, h) * 0.15} 0 H {w - min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 {w} {min(w, h) * 0.15} V {h - min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 {w - min(w, h) * 0.15} {h} H {min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 0 {h - min(w, h) * 0.15} V {min(w, h) * 0.15} A {min(w, h) * 0.15} {min(w, h) * 0.15} 0 0 1 {min(w, h) * 0.15} 0 Z"
+      }
     },
     {
-      "id": "flowchart:decision",
-      "outline": {
-        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
-      },
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.2,
-          "y": 0.25,
-          "w": 0.6,
-          "h": 0.5
-        }
-      ],
+      "category": "process",
       "defaultSize": {
-        "w": 160,
-        "h": 100
+        "h": 100,
+        "w": 160
       },
       "describe": "A decision: a question with a yes/no or multi-way branch.",
+      "id": "flowchart:decision",
       "keywords": [
         "decision",
         "branch",
@@ -65,19 +53,28 @@
         "if",
         "diamond"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.5,
+          "name": "body",
+          "w": 0.6,
+          "x": 0.2,
+          "y": 0.25
+        }
+      ]
     },
     {
-      "id": "flowchart:terminator",
-      "outline": {
-        "path": "M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z"
-      },
+      "category": "process",
       "defaultSize": {
-        "w": 160,
-        "h": 60
+        "h": 60,
+        "w": 160
       },
       "describe": "A terminator: where a flow starts or ends.",
+      "id": "flowchart:terminator",
       "keywords": [
         "terminator",
         "start",
@@ -85,14 +82,13 @@
         "stop",
         "begin"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z"
+      }
     },
     {
-      "id": "flowchart:predefined-process",
-      "outline": {
-        "path": "M 0 0 H {w} V {h} H 0 Z"
-      },
+      "category": "process",
       "decorations": [
         {
           "path": "M {w * 0.1} 0 V {h}"
@@ -101,39 +97,40 @@
           "path": "M {w - w * 0.1} 0 V {h}"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.12,
-          "y": 0.1,
-          "w": 0.76,
-          "h": 0.8
-        }
-      ],
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "A predefined process: a named subroutine defined elsewhere.",
+      "id": "flowchart:predefined-process",
       "keywords": [
         "predefined",
         "subroutine",
         "function",
         "call"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.8,
+          "name": "body",
+          "w": 0.76,
+          "x": 0.12,
+          "y": 0.1
+        }
+      ]
     },
     {
-      "id": "flowchart:preparation",
-      "outline": {
-        "path": "M {w * 0.15} 0 H {w * 0.85} L {w} {h/2} L {w * 0.85} {h} H {w * 0.15} L 0 {h/2} Z"
-      },
+      "category": "process",
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "Preparation: setup or initialisation before a process, such as a loop start.",
+      "id": "flowchart:preparation",
       "keywords": [
         "preparation",
         "setup",
@@ -141,45 +138,48 @@
         "loop",
         "hexagon"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.15} 0 H {w * 0.85} L {w} {h/2} L {w * 0.85} {h} H {w * 0.15} L 0 {h/2} Z"
+      }
     },
     {
-      "id": "flowchart:manual-operation",
-      "outline": {
-        "path": "M 0 0 H {w} L {w * 0.8} {h} H {w * 0.2} Z"
-      },
+      "category": "process",
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "A manual operation: a step a person performs.",
+      "id": "flowchart:manual-operation",
       "keywords": [
         "manual",
         "operation",
         "human",
         "trapezoid"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} L {w * 0.8} {h} H {w * 0.2} Z"
+      }
     },
     {
-      "id": "flowchart:delay",
-      "outline": {
-        "path": "M 0 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H 0 Z"
-      },
+      "category": "process",
       "defaultSize": {
-        "w": 140,
-        "h": 80
+        "h": 80,
+        "w": 140
       },
       "describe": "A delay: waiting before the flow continues.",
+      "id": "flowchart:delay",
       "keywords": [
         "delay",
         "wait",
         "pause"
       ],
-      "category": "process",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H 0 Z"
+      }
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

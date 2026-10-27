@@ -1,17 +1,13 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "flowchart:data",
       "category": "data",
-      "outline": {
-        "path": "M {w * 0.2} 0 H {w} L {w * 0.8} {h} H 0 Z"
-      },
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "Data: input to or output from a process.",
+      "id": "flowchart:data",
       "keywords": [
         "data",
         "input",
@@ -19,70 +15,69 @@
         "io",
         "parallelogram"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.2} 0 H {w} L {w * 0.8} {h} H 0 Z"
+      }
     },
     {
-      "id": "flowchart:manual-input",
       "category": "data",
-      "outline": {
-        "path": "M 0 {h * 0.3} L {w} 0 V {h} H 0 Z"
-      },
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.05,
-          "y": 0.35,
-          "w": 0.9,
-          "h": 0.6
-        }
-      ],
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "Manual input: data a person enters, such as on a keyboard.",
+      "id": "flowchart:manual-input",
       "keywords": [
         "manual",
         "input",
         "keyboard",
         "entry"
       ],
-      "license": "MIT"
-    },
-    {
-      "id": "flowchart:document",
-      "category": "data",
+      "license": "MIT",
       "outline": {
-        "path": "M 0 0 H {w} V {h * 0.85} C {w * 0.75} {h * 0.65} {w * 0.25} {h * 1.05} 0 {h * 0.85} Z"
+        "path": "M 0 {h * 0.3} L {w} 0 V {h} H 0 Z"
       },
       "textRegions": [
         {
+          "h": 0.6,
           "name": "body",
-          "x": 0.05,
-          "y": 0.05,
           "w": 0.9,
-          "h": 0.7
+          "x": 0.05,
+          "y": 0.35
         }
-      ],
+      ]
+    },
+    {
+      "category": "data",
       "defaultSize": {
-        "w": 160,
-        "h": 90
+        "h": 90,
+        "w": 160
       },
       "describe": "A document: a printed or generated report.",
+      "id": "flowchart:document",
       "keywords": [
         "document",
         "report",
         "page",
         "print"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h * 0.85} C {w * 0.75} {h * 0.65} {w * 0.25} {h * 1.05} 0 {h * 0.85} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.7,
+          "name": "body",
+          "w": 0.9,
+          "x": 0.05,
+          "y": 0.05
+        }
+      ]
     },
     {
-      "id": "flowchart:multi-document",
       "category": "data",
-      "outline": {
-        "path": "M 0 {h * 0.16} H {w * 0.84} V {h * 0.87} C {w * 0.63} {h * 0.7} {w * 0.21} {h * 1.04} 0 {h * 0.87} Z"
-      },
       "decorations": [
         {
           "path": "M {w * 0.08} {h * 0.16} V {h * 0.08} H {w * 0.92} V {h * 0.79} H {w * 0.84}"
@@ -91,53 +86,45 @@
           "path": "M {w * 0.16} {h * 0.08} V 0 H {w} V {h * 0.71} H {w * 0.92}"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.04,
-          "y": 0.2,
-          "w": 0.76,
-          "h": 0.55
-        }
-      ],
       "defaultSize": {
-        "w": 170,
-        "h": 100
+        "h": 100,
+        "w": 170
       },
       "describe": "Multiple documents: a set of reports or files.",
+      "id": "flowchart:multi-document",
       "keywords": [
         "documents",
         "multiple",
         "reports",
         "files"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h * 0.16} H {w * 0.84} V {h * 0.87} C {w * 0.63} {h * 0.7} {w * 0.21} {h * 1.04} 0 {h * 0.87} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.55,
+          "name": "body",
+          "w": 0.76,
+          "x": 0.04,
+          "y": 0.2
+        }
+      ]
     },
     {
-      "id": "flowchart:database",
       "category": "data",
-      "outline": {
-        "path": "M 0 {h * 0.12} V {h * 0.88} A {w/2} {h * 0.12} 0 0 0 {w} {h * 0.88} V {h * 0.12} A {w/2} {h * 0.12} 0 0 0 0 {h * 0.12} Z"
-      },
       "decorations": [
         {
           "path": "M 0 {h * 0.12} A {w/2} {h * 0.12} 0 0 0 {w} {h * 0.12}"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.05,
-          "y": 0.3,
-          "w": 0.9,
-          "h": 0.55
-        }
-      ],
       "defaultSize": {
-        "w": 120,
-        "h": 120
+        "h": 120,
+        "w": 120
       },
       "describe": "A database: data stored for direct access.",
+      "id": "flowchart:database",
       "keywords": [
         "database",
         "db",
@@ -145,33 +132,41 @@
         "disk",
         "cylinder"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h * 0.12} V {h * 0.88} A {w/2} {h * 0.12} 0 0 0 {w} {h * 0.88} V {h * 0.12} A {w/2} {h * 0.12} 0 0 0 0 {h * 0.12} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.55,
+          "name": "body",
+          "w": 0.9,
+          "x": 0.05,
+          "y": 0.3
+        }
+      ]
     },
     {
-      "id": "flowchart:stored-data",
       "category": "data",
-      "outline": {
-        "path": "M {w * 0.15} 0 H {w} A {w * 0.15} {h/2} 0 0 0 {w} {h} H {w * 0.15} A {w * 0.15} {h/2} 0 0 1 {w * 0.15} 0 Z"
-      },
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "Stored data: data kept in any storage medium.",
+      "id": "flowchart:stored-data",
       "keywords": [
         "stored",
         "data",
         "storage",
         "save"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.15} 0 H {w} A {w * 0.15} {h/2} 0 0 0 {w} {h} H {w * 0.15} A {w * 0.15} {h/2} 0 0 1 {w * 0.15} 0 Z"
+      }
     },
     {
-      "id": "flowchart:internal-storage",
       "category": "data",
-      "outline": {
-        "path": "M 0 0 H {w} V {h} H 0 Z"
-      },
       "decorations": [
         {
           "path": "M {w * 0.15} 0 V {h}"
@@ -180,53 +175,45 @@
           "path": "M 0 {h * 0.2} H {w}"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.18,
-          "y": 0.25,
-          "w": 0.78,
-          "h": 0.7
-        }
-      ],
       "defaultSize": {
-        "w": 140,
-        "h": 90
+        "h": 90,
+        "w": 140
       },
       "describe": "Internal storage: data held in memory.",
+      "id": "flowchart:internal-storage",
       "keywords": [
         "internal",
         "storage",
         "memory",
         "ram"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.7,
+          "name": "body",
+          "w": 0.78,
+          "x": 0.18,
+          "y": 0.25
+        }
+      ]
     },
     {
-      "id": "flowchart:queue",
       "category": "data",
-      "outline": {
-        "path": "M {w * 0.1} 0 H {w * 0.9} A {w * 0.1} {h/2} 0 0 1 {w * 0.9} {h} H {w * 0.1} A {w * 0.1} {h/2} 0 0 1 {w * 0.1} 0 Z"
-      },
       "decorations": [
         {
           "path": "M {w * 0.9} 0 A {w * 0.1} {h/2} 0 0 0 {w * 0.9} {h}"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.1,
-          "y": 0.15,
-          "w": 0.7,
-          "h": 0.7
-        }
-      ],
       "defaultSize": {
-        "w": 170,
-        "h": 70
+        "h": 70,
+        "w": 170
       },
       "describe": "A queue: messages or items waiting in order, drawn as a horizontal drum.",
+      "id": "flowchart:queue",
       "keywords": [
         "queue",
         "buffer",
@@ -234,53 +221,66 @@
         "fifo",
         "sequential"
       ],
-      "license": "MIT"
-    },
-    {
-      "id": "flowchart:display",
-      "category": "data",
+      "license": "MIT",
       "outline": {
-        "path": "M 0 {h/2} L {w * 0.2} 0 H {w * 0.85} A {w * 0.15} {h/2} 0 0 1 {w * 0.85} {h} H {w * 0.2} Z"
+        "path": "M {w * 0.1} 0 H {w * 0.9} A {w * 0.1} {h/2} 0 0 1 {w * 0.9} {h} H {w * 0.1} A {w * 0.1} {h/2} 0 0 1 {w * 0.1} 0 Z"
       },
       "textRegions": [
         {
+          "h": 0.7,
           "name": "body",
-          "x": 0.2,
-          "y": 0.15,
-          "w": 0.65,
-          "h": 0.7
+          "w": 0.7,
+          "x": 0.1,
+          "y": 0.15
         }
-      ],
+      ]
+    },
+    {
+      "category": "data",
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "A display: information shown on a screen.",
+      "id": "flowchart:display",
       "keywords": [
         "display",
         "screen",
         "monitor",
         "show"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h/2} L {w * 0.2} 0 H {w * 0.85} A {w * 0.15} {h/2} 0 0 1 {w * 0.85} {h} H {w * 0.2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.7,
+          "name": "body",
+          "w": 0.65,
+          "x": 0.2,
+          "y": 0.15
+        }
+      ]
     },
     {
-      "id": "flowchart:card",
       "category": "data",
-      "outline": {
-        "path": "M {w * 0.2} 0 H {w} V {h} H 0 V {h * 0.3} Z"
-      },
       "defaultSize": {
-        "w": 140,
-        "h": 90
+        "h": 90,
+        "w": 140
       },
       "describe": "A card: a punched card or a record.",
+      "id": "flowchart:card",
       "keywords": [
         "card",
         "punched",
         "record"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.2} 0 H {w} V {h} H 0 V {h * 0.3} Z"
+      }
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

@@ -118,6 +118,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0193](ADR-0193-declarative-pack-suite.md) | A shared SDK suite builds, checks and draws declarative packs | accepted | 2026-10-27 |
 | [0194](ADR-0194-pack-source-and-version-ledger.md) | Packs export their source; one SDK check covers files, versions and bounds | accepted | 2026-10-27 |
 | [0195](ADR-0195-content-bound-review-evidence.md) | Reviews bind to rebase-stable content, and each commit carries its own evidence | accepted | 2026-10-27 |
+| [0196](ADR-0196-one-shape-pack-encoder.md) | One shape pack encoder for first-party and imported packs | accepted | 2026-10-27 |
 | [0197](ADR-0197-windows-verify-envelope.md) | Windows verification gets its own CI envelope (25 of 45 minutes) | accepted | 2026-10-27 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |

@@ -1,19 +1,12 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "callouts:speech-rect",
-      "params": {
-        "tail": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.75,
-          "default": 0.2
-        }
+      "category": "speech",
+      "defaultSize": {
+        "h": 110,
+        "w": 180
       },
-      "outline": {
-        "path": "M 0 0 H {w} V {h * 0.75} H {w * (tail + 0.2)} L {w * (tail - 0.05)} {h} L {w * (tail + 0.08)} {h * 0.75} H 0 Z"
-      },
+      "describe": "A rectangular speech bubble: something a person or system says.",
       "handles": [
         {
           "param": "tail",
@@ -21,20 +14,7 @@
           "y": "h"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.05,
-          "y": 0.05,
-          "w": 0.9,
-          "h": 0.65
-        }
-      ],
-      "defaultSize": {
-        "w": 180,
-        "h": 110
-      },
-      "describe": "A rectangular speech bubble: something a person or system says.",
+      "id": "callouts:speech-rect",
       "keywords": [
         "speech",
         "bubble",
@@ -42,22 +22,35 @@
         "dialogue",
         "comment"
       ],
-      "category": "speech",
-      "license": "MIT"
-    },
-    {
-      "id": "callouts:speech-rounded",
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h * 0.75} H {w * (tail + 0.2)} L {w * (tail - 0.05)} {h} L {w * (tail + 0.08)} {h * 0.75} H 0 Z"
+      },
       "params": {
         "tail": {
-          "type": "number",
+          "default": 0.2,
+          "max": 0.75,
           "min": 0.05,
-          "max": 0.65,
-          "default": 0.2
+          "type": "number"
         }
       },
-      "outline": {
-        "path": "M {min(w, h) * 0.12} 0 H {w - min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {w} {min(w, h) * 0.12} V {h * 0.75 - min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {w - min(w, h) * 0.12} {h * 0.75} H {w * (tail + 0.2)} L {w * (tail - 0.05)} {h} L {w * (tail + 0.08)} {h * 0.75} H {min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 0 {h * 0.75 - min(w, h) * 0.12} V {min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {min(w, h) * 0.12} 0 Z"
+      "textRegions": [
+        {
+          "h": 0.65,
+          "name": "body",
+          "w": 0.9,
+          "x": 0.05,
+          "y": 0.05
+        }
+      ]
+    },
+    {
+      "category": "speech",
+      "defaultSize": {
+        "h": 110,
+        "w": 180
       },
+      "describe": "A rounded speech bubble: a friendly remark or chat message.",
       "handles": [
         {
           "param": "tail",
@@ -65,20 +58,7 @@
           "y": "h"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.06,
-          "y": 0.06,
-          "w": 0.88,
-          "h": 0.62
-        }
-      ],
-      "defaultSize": {
-        "w": 180,
-        "h": 110
-      },
-      "describe": "A rounded speech bubble: a friendly remark or chat message.",
+      "id": "callouts:speech-rounded",
       "keywords": [
         "speech",
         "bubble",
@@ -86,22 +66,35 @@
         "chat",
         "message"
       ],
-      "category": "speech",
-      "license": "MIT"
-    },
-    {
-      "id": "callouts:speech-oval",
+      "license": "MIT",
+      "outline": {
+        "path": "M {min(w, h) * 0.12} 0 H {w - min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {w} {min(w, h) * 0.12} V {h * 0.75 - min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {w - min(w, h) * 0.12} {h * 0.75} H {w * (tail + 0.2)} L {w * (tail - 0.05)} {h} L {w * (tail + 0.08)} {h * 0.75} H {min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 0 {h * 0.75 - min(w, h) * 0.12} V {min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {min(w, h) * 0.12} 0 Z"
+      },
       "params": {
         "tail": {
-          "type": "number",
-          "min": 0.15,
-          "max": 0.7,
-          "default": 0.3
+          "default": 0.2,
+          "max": 0.65,
+          "min": 0.05,
+          "type": "number"
         }
       },
-      "outline": {
-        "path": "M {w * (tail + 0.12)} {h * 0.375 + h * 0.375 * sqrt(1 - (2 * (tail + 0.12) - 1) * (2 * (tail + 0.12) - 1))} A {w/2} {h * 0.375} 0 1 0 {w * tail} {h * 0.375 + h * 0.375 * sqrt(1 - (2 * (tail) - 1) * (2 * (tail) - 1))} L {w * (tail - 0.1)} {h} Z"
+      "textRegions": [
+        {
+          "h": 0.62,
+          "name": "body",
+          "w": 0.88,
+          "x": 0.06,
+          "y": 0.06
+        }
+      ]
+    },
+    {
+      "category": "speech",
+      "defaultSize": {
+        "h": 120,
+        "w": 180
       },
+      "describe": "An oval speech bubble: a spoken line in a comic-style dialogue.",
       "handles": [
         {
           "param": "tail",
@@ -109,20 +102,7 @@
           "y": "h"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.18,
-          "y": 0.15,
-          "w": 0.64,
-          "h": 0.45
-        }
-      ],
-      "defaultSize": {
-        "w": 180,
-        "h": 120
-      },
-      "describe": "An oval speech bubble: a spoken line in a comic-style dialogue.",
+      "id": "callouts:speech-oval",
       "keywords": [
         "speech",
         "bubble",
@@ -130,22 +110,35 @@
         "comic",
         "dialogue"
       ],
-      "category": "speech",
-      "license": "MIT"
-    },
-    {
-      "id": "callouts:speech-left",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * (tail + 0.12)} {h * 0.375 + h * 0.375 * sqrt(1 - (2 * (tail + 0.12) - 1) * (2 * (tail + 0.12) - 1))} A {w/2} {h * 0.375} 0 1 0 {w * tail} {h * 0.375 + h * 0.375 * sqrt(1 - (2 * (tail) - 1) * (2 * (tail) - 1))} L {w * (tail - 0.1)} {h} Z"
+      },
       "params": {
         "tail": {
-          "type": "number",
-          "min": 0.1,
+          "default": 0.3,
           "max": 0.7,
-          "default": 0.4
+          "min": 0.15,
+          "type": "number"
         }
       },
-      "outline": {
-        "path": "M {w * 0.15} 0 H {w} V {h} H {w * 0.15} V {h * (tail + 0.25)} L 0 {h * (tail + 0.05)} L {w * 0.15} {h * tail} Z"
+      "textRegions": [
+        {
+          "h": 0.45,
+          "name": "body",
+          "w": 0.64,
+          "x": 0.18,
+          "y": 0.15
+        }
+      ]
+    },
+    {
+      "category": "speech",
+      "defaultSize": {
+        "h": 90,
+        "w": 200
       },
+      "describe": "A speech bubble whose tail points left: a reply beside a speaker.",
       "handles": [
         {
           "param": "tail",
@@ -153,20 +146,7 @@
           "y": "h * (tail + 0.05)"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.2,
-          "y": 0.08,
-          "w": 0.75,
-          "h": 0.84
-        }
-      ],
-      "defaultSize": {
-        "w": 200,
-        "h": 90
-      },
-      "describe": "A speech bubble whose tail points left: a reply beside a speaker.",
+      "id": "callouts:speech-left",
       "keywords": [
         "speech",
         "bubble",
@@ -174,14 +154,30 @@
         "reply",
         "chat"
       ],
-      "category": "speech",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.15} 0 H {w} V {h} H {w * 0.15} V {h * (tail + 0.25)} L 0 {h * (tail + 0.05)} L {w * 0.15} {h * tail} Z"
+      },
+      "params": {
+        "tail": {
+          "default": 0.4,
+          "max": 0.7,
+          "min": 0.1,
+          "type": "number"
+        }
+      },
+      "textRegions": [
+        {
+          "h": 0.84,
+          "name": "body",
+          "w": 0.75,
+          "x": 0.2,
+          "y": 0.08
+        }
+      ]
     },
     {
-      "id": "callouts:thought",
-      "outline": {
-        "path": "M {w * 0.2} {h * 0.252} A {w * 0.14} {h * 0.1204} 0 0 1 {w * 0.45} {h * 0.1488} A {w * 0.15} {h * 0.1204} 0 0 1 {w * 0.75} {h * 0.166} A {w * 0.14} {h * 0.129} 0 0 1 {w * 0.9} {h * 0.424} A {w * 0.12} {h * 0.1118} 0 0 1 {w * 0.75} {h * 0.6476} A {w * 0.15} {h * 0.1032} 0 0 1 {w * 0.45} {h * 0.682} A {w * 0.15} {h * 0.1118} 0 0 1 {w * 0.15} {h * 0.596} A {w * 0.12} {h * 0.129} 0 0 1 {w * 0.2} {h * 0.252} Z"
-      },
+      "category": "speech",
       "decorations": [
         {
           "path": "M {w * 0.12} {h * 0.82} A {w * 0.05} {h * 0.05} 0 1 1 {w * 0.22} {h * 0.82} A {w * 0.05} {h * 0.05} 0 1 1 {w * 0.12} {h * 0.82} Z"
@@ -190,20 +186,12 @@
           "path": "M {w * 0.03} {h * 0.95} A {w * 0.03} {h * 0.03} 0 1 1 {w * 0.09} {h * 0.95} A {w * 0.03} {h * 0.03} 0 1 1 {w * 0.03} {h * 0.95} Z"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.22,
-          "y": 0.18,
-          "w": 0.56,
-          "h": 0.42
-        }
-      ],
       "defaultSize": {
-        "w": 190,
-        "h": 130
+        "h": 130,
+        "w": 190
       },
       "describe": "A thought bubble: an idea, a wish or something unspoken.",
+      "id": "callouts:thought",
       "keywords": [
         "thought",
         "bubble",
@@ -211,11 +199,37 @@
         "think",
         "cloud"
       ],
-      "category": "speech",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.2} {h * 0.252} A {w * 0.14} {h * 0.1204} 0 0 1 {w * 0.45} {h * 0.1488} A {w * 0.15} {h * 0.1204} 0 0 1 {w * 0.75} {h * 0.166} A {w * 0.14} {h * 0.129} 0 0 1 {w * 0.9} {h * 0.424} A {w * 0.12} {h * 0.1118} 0 0 1 {w * 0.75} {h * 0.6476} A {w * 0.15} {h * 0.1032} 0 0 1 {w * 0.45} {h * 0.682} A {w * 0.15} {h * 0.1118} 0 0 1 {w * 0.15} {h * 0.596} A {w * 0.12} {h * 0.129} 0 0 1 {w * 0.2} {h * 0.252} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.42,
+          "name": "body",
+          "w": 0.56,
+          "x": 0.22,
+          "y": 0.18
+        }
+      ]
     },
     {
+      "category": "speech",
+      "defaultSize": {
+        "h": 140,
+        "w": 180
+      },
+      "describe": "A jagged burst: a shout, an alert or something new.",
       "id": "callouts:shout",
+      "keywords": [
+        "shout",
+        "burst",
+        "explosion",
+        "alert",
+        "new",
+        "starburst"
+      ],
+      "license": "MIT",
       "outline": {
         "polygon": {
           "n": "24",
@@ -225,28 +239,14 @@
       },
       "textRegions": [
         {
+          "h": 0.5,
           "name": "body",
-          "x": 0.22,
-          "y": 0.25,
           "w": 0.56,
-          "h": 0.5
+          "x": 0.22,
+          "y": 0.25
         }
-      ],
-      "defaultSize": {
-        "w": 180,
-        "h": 140
-      },
-      "describe": "A jagged burst: a shout, an alert or something new.",
-      "keywords": [
-        "shout",
-        "burst",
-        "explosion",
-        "alert",
-        "new",
-        "starburst"
-      ],
-      "category": "speech",
-      "license": "MIT"
+      ]
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

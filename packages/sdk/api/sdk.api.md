@@ -46,6 +46,7 @@ import { shapePackCategorySchema } from '@fluxion/core';
 import { shapePackContentLicenses } from '@fluxion/core';
 import { ShapePackCredit } from '@fluxion/core';
 import { ShapePackDefinitionEntry } from '@fluxion/core';
+import { ShapePackDraft } from '@fluxion/core';
 import { ShapePackFontCredit } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { shapePackIndexSchema } from '@fluxion/core';
@@ -111,7 +112,7 @@ export interface ArtworkShapePackLoader {
 }
 
 // @public
-export function buildShapePackFiles(pack: DeclarativeShapePack): Readonly<Record<string, string>>;
+export function buildShapePackFiles(pack: DeclarativeShapePack, licensePolicy?: ShapePackLicensePolicy): Result<Readonly<Record<string, string>>, readonly Diagnostic[]>;
 
 export { contrastRatio }
 
@@ -128,18 +129,7 @@ export { createFontRegistry }
 export function createShapePackLoader(indexBytes: Uint8Array, options: ShapePackLoaderOptions): Promise<Result<ShapePackLoader, readonly Diagnostic[]>>;
 
 // @public
-export type DeclarativeShapePack = {
-    readonly id: string;
-    readonly version: string;
-    readonly name: string;
-    readonly license: string;
-    readonly attribution: string;
-    readonly credits: readonly ShapePackCredit[];
-    readonly definitions: readonly {
-        readonly name: string;
-        readonly def: ShapeDef;
-    }[];
-};
+export type DeclarativeShapePack = ShapePackDraft;
 
 // @public
 export function definePack(spec: PackSpec): Pack;

@@ -3014,3 +3014,10 @@ The ledger never records the unreleased 0.0.0 and keeps every CHANGELOG-released
 - drawio route labels: `along` rebuilt the route's segment lengths for every label (3500 labels x 5000 points); lengths are measured once per route and found by binary search, every point still charged so the step budget refuses at the same entry. Amplifying test 2.8 s -> 1.1 s locally.
 - imported-pack: saves a deterministic Lucide sample (every 16th icon plus the used two and their aliases, 136 definitions) instead of all 2198; the full collection import stays in the editor's FR-LIB-005 test. 6.4 s -> 0.6 s.
 - Windows verify: green runs took 9-14 min against a 15 min step; ADR-0197 gives Windows 25 of 45 minutes, other OSes unchanged, no threshold changed.
+## M18.108 — One pack encoder and validator (2026-10-27)
+
+- New pure `encodeShapePack(draft, licensePolicy)` in core (ADR-0196) with `canonicalJson`, `ShapePackDraft`, `EncodedShapePack`: sorted-key JSON, numbered category slugs, index in draft order, synchronous SHA-256, index and categories validated under the policy; refuses empty, out-of-namespace, invalid or unpermitted packs whole.
+- sdk `buildShapePackFiles` delegates to it and returns a `Result` (default repository policy); `DeclarativeShapePack = ShapePackDraft`; `checkShapePack` reports encoder diagnostics under loading only, `shapePackExpectation` throws.
+- format `importedShapePack`/`iconifyShapePack` delegate to it, are synchronous and take no hasher; paths in caller terms; format `canonicalJson` re-exports core's. ADR-0196 states where SVG/draw.io/Iconify provenance and licence come from.
+- All six first-party packs' `pack/` regenerated (sorted keys; allowed at 0.0.0).
+- Review r1 changes-requested, fixed: `checkShapePack` compares loaded definitions with the encoder's stored ones (category text and missing categories become slugs), tested with `Flow Charts` and no category; `importedShapePack` maps index entry paths (`/definitions/<i>/name` → `/entries/<i>/name`, id/keywords/category → `/entries/<i>/definition/...`), tested with an empty name.

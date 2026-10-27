@@ -1,33 +1,40 @@
 {
-  "format": "fluxion-shape-pack",
-  "formatVersion": "1.0",
-  "id": "infographic",
-  "version": "0.0.0",
-  "name": "Infographic",
-  "license": "MIT",
   "attribution": "Fluxion contributors",
   "categories": {
     "charts": {
       "path": "categories/charts.json",
-      "sha256": "66bdfebfa9b7141e256ff375fc9e810b35e7b65720e774853bd3a25ee4c14b7b"
+      "sha256": "403c638493e8a501445537cdd4fc42f5a40bb6e154b0593798c39c95d917775b"
     },
     "diagrams": {
       "path": "categories/diagrams.json",
-      "sha256": "3044484e49b47699dbb28097a2524c8a2c79a08f9628ed2d0d91500ec58797b4"
-    },
-    "layers": {
-      "path": "categories/layers.json",
-      "sha256": "745d632a041e9f662e1994dca2d86b158cad691726d5c66a2cb44fa16461300b"
+      "sha256": "b3f1824017e0d3d89f226f1321c41a64bba4d2486ee4229ad0d717e8868dd43d"
     },
     "labels": {
       "path": "categories/labels.json",
-      "sha256": "ae8de263b2e74662817bf3639b72ca5c25369515e61d546ce6418fd6fea1b1ee"
+      "sha256": "9ce1bbadf0319bb3afe0accf461bef4f6550a9c96b86ccb3f1cbba371dac64c7"
+    },
+    "layers": {
+      "path": "categories/layers.json",
+      "sha256": "b9f2e4954c0f82ee68a17a610642595f5ed2e3ac310ff72223f908bc5ce81ed4"
     }
   },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
   "definitions": [
     {
+      "category": "charts",
       "id": "infographic:pie",
-      "name": "Pie slice",
       "keywords": [
         "pie",
         "slice",
@@ -35,11 +42,11 @@
         "percentage",
         "chart"
       ],
-      "category": "charts"
+      "name": "Pie slice"
     },
     {
+      "category": "charts",
       "id": "infographic:donut",
-      "name": "Donut segment",
       "keywords": [
         "donut",
         "ring",
@@ -47,11 +54,11 @@
         "percentage",
         "chart"
       ],
-      "category": "charts"
+      "name": "Donut segment"
     },
     {
+      "category": "charts",
       "id": "infographic:gauge",
-      "name": "Gauge",
       "keywords": [
         "gauge",
         "dial",
@@ -59,11 +66,11 @@
         "speedometer",
         "score"
       ],
-      "category": "charts"
+      "name": "Gauge"
     },
     {
+      "category": "charts",
       "id": "infographic:progress",
-      "name": "Progress bar",
       "keywords": [
         "progress",
         "bar",
@@ -71,11 +78,11 @@
         "capacity",
         "percentage"
       ],
-      "category": "charts"
+      "name": "Progress bar"
     },
     {
+      "category": "charts",
       "id": "infographic:target",
-      "name": "Target",
       "keywords": [
         "target",
         "goal",
@@ -83,11 +90,11 @@
         "focus",
         "objective"
       ],
-      "category": "charts"
+      "name": "Target"
     },
     {
+      "category": "diagrams",
       "id": "infographic:venn",
-      "name": "Venn pair",
       "keywords": [
         "venn",
         "overlap",
@@ -95,11 +102,11 @@
         "sets",
         "compare"
       ],
-      "category": "diagrams"
+      "name": "Venn pair"
     },
     {
+      "category": "diagrams",
       "id": "infographic:matrix",
-      "name": "Two-by-two matrix",
       "keywords": [
         "matrix",
         "quadrant",
@@ -107,11 +114,11 @@
         "two by two",
         "swot"
       ],
-      "category": "diagrams"
+      "name": "Two-by-two matrix"
     },
     {
+      "category": "layers",
       "id": "infographic:funnel",
-      "name": "Funnel",
       "keywords": [
         "funnel",
         "conversion",
@@ -119,22 +126,22 @@
         "filter",
         "sales"
       ],
-      "category": "layers"
+      "name": "Funnel"
     },
     {
+      "category": "layers",
       "id": "infographic:funnel-layer",
-      "name": "Funnel layer",
       "keywords": [
         "funnel",
         "layer",
         "stage",
         "trapezoid"
       ],
-      "category": "layers"
+      "name": "Funnel layer"
     },
     {
+      "category": "layers",
       "id": "infographic:pyramid",
-      "name": "Pyramid",
       "keywords": [
         "pyramid",
         "hierarchy",
@@ -142,11 +149,11 @@
         "levels",
         "triangle"
       ],
-      "category": "layers"
+      "name": "Pyramid"
     },
     {
+      "category": "labels",
       "id": "infographic:step-pill",
-      "name": "Step pill",
       "keywords": [
         "step",
         "pill",
@@ -154,11 +161,11 @@
         "list",
         "stage"
       ],
-      "category": "labels"
+      "name": "Step pill"
     },
     {
+      "category": "labels",
       "id": "infographic:number-badge",
-      "name": "Number badge",
       "keywords": [
         "badge",
         "number",
@@ -166,11 +173,11 @@
         "count",
         "circle"
       ],
-      "category": "labels"
+      "name": "Number badge"
     },
     {
+      "category": "labels",
       "id": "infographic:hexagon-tile",
-      "name": "Hexagon tile",
       "keywords": [
         "hexagon",
         "tile",
@@ -178,11 +185,11 @@
         "feature",
         "capability"
       ],
-      "category": "labels"
+      "name": "Hexagon tile"
     },
     {
+      "category": "labels",
       "id": "infographic:stat-card",
-      "name": "Stat card",
       "keywords": [
         "stat",
         "kpi",
@@ -190,11 +197,11 @@
         "number",
         "card"
       ],
-      "category": "labels"
+      "name": "Stat card"
     },
     {
+      "category": "labels",
       "id": "infographic:banner",
-      "name": "Banner",
       "keywords": [
         "banner",
         "ribbon",
@@ -202,11 +209,11 @@
         "heading",
         "announcement"
       ],
-      "category": "labels"
+      "name": "Banner"
     },
     {
+      "category": "labels",
       "id": "infographic:milestone",
-      "name": "Milestone",
       "keywords": [
         "milestone",
         "timeline",
@@ -214,20 +221,13 @@
         "date",
         "marker"
       ],
-      "category": "labels"
+      "name": "Milestone"
     }
   ],
-  "credits": [
-    {
-      "id": "fluxion",
-      "license": "MIT",
-      "attribution": "Fluxion contributors",
-      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
-      "source": {
-        "kind": "original",
-        "author": "Fluxion contributors",
-        "statement": "Original artwork drawn for Fluxion."
-      }
-    }
-  ]
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "infographic",
+  "license": "MIT",
+  "name": "Infographic",
+  "version": "0.0.0"
 }

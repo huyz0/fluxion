@@ -7,7 +7,7 @@
 import { Diagnostic } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
-import { ShapePackCredit } from '@fluxion/core';
+import { ShapePackDraft } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 

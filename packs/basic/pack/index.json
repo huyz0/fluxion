@@ -1,241 +1,241 @@
 {
-  "format": "fluxion-shape-pack",
-  "formatVersion": "1.0",
-  "id": "basic",
-  "version": "0.0.0",
-  "name": "Basic shapes",
-  "license": "MIT",
   "attribution": "Fluxion contributors",
   "categories": {
     "basic": {
       "path": "categories/basic.json",
-      "sha256": "f1078a36aef7f11895a92727ccec5c3ca065d5504c2ffac28c553e5d81fdc0af"
+      "sha256": "bac39c5ecb3b924980c90b49a948cdf8592ba2b081e8b6a7a86a829aef752cd3"
     }
   },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
   "definitions": [
     {
+      "category": "basic",
       "id": "basic:rect",
-      "name": "Rectangle",
       "keywords": [
         "rectangle",
         "box",
         "square"
       ],
-      "category": "basic"
+      "name": "Rectangle"
     },
     {
+      "category": "basic",
       "id": "basic:rounded-rect",
-      "name": "Rounded rectangle",
       "keywords": [
         "rounded",
         "rectangle",
         "card",
         "button"
       ],
-      "category": "basic"
+      "name": "Rounded rectangle"
     },
     {
+      "category": "basic",
       "id": "basic:ellipse",
-      "name": "Ellipse",
       "keywords": [
         "ellipse",
         "circle",
         "oval"
       ],
-      "category": "basic"
+      "name": "Ellipse"
     },
     {
+      "category": "basic",
       "id": "basic:triangle",
-      "name": "Triangle",
       "keywords": [
         "triangle",
         "warning"
       ],
-      "category": "basic"
+      "name": "Triangle"
     },
     {
+      "category": "basic",
       "id": "basic:diamond",
-      "name": "Diamond",
       "keywords": [
         "diamond",
         "rhombus",
         "decision"
       ],
-      "category": "basic"
+      "name": "Diamond"
     },
     {
+      "category": "basic",
       "id": "basic:parallelogram",
-      "name": "Parallelogram",
       "keywords": [
         "parallelogram",
         "input",
         "output"
       ],
-      "category": "basic"
+      "name": "Parallelogram"
     },
     {
+      "category": "basic",
       "id": "basic:trapezoid",
-      "name": "Trapezoid",
       "keywords": [
         "trapezoid",
         "manual operation"
       ],
-      "category": "basic"
+      "name": "Trapezoid"
     },
     {
+      "category": "basic",
       "id": "basic:hexagon",
-      "name": "Hexagon",
       "keywords": [
         "hexagon",
         "preparation"
       ],
-      "category": "basic"
+      "name": "Hexagon"
     },
     {
+      "category": "basic",
       "id": "basic:octagon",
-      "name": "Octagon",
       "keywords": [
         "octagon",
         "stop"
       ],
-      "category": "basic"
+      "name": "Octagon"
     },
     {
+      "category": "basic",
       "id": "basic:star",
-      "name": "Star",
       "keywords": [
         "star",
         "rating",
         "favourite"
       ],
-      "category": "basic"
+      "name": "Star"
     },
     {
+      "category": "basic",
       "id": "basic:block-arrow",
-      "name": "Block arrow",
       "keywords": [
         "arrow",
         "next",
         "direction"
       ],
-      "category": "basic"
+      "name": "Block arrow"
     },
     {
+      "category": "basic",
       "id": "basic:callout",
-      "name": "Callout",
       "keywords": [
         "callout",
         "speech",
         "bubble",
         "comment"
       ],
-      "category": "basic"
+      "name": "Callout"
     },
     {
+      "category": "basic",
       "id": "basic:cloud",
-      "name": "Cloud",
       "keywords": [
         "cloud",
         "internet",
         "network"
       ],
-      "category": "basic"
+      "name": "Cloud"
     },
     {
+      "category": "basic",
       "id": "basic:cylinder",
-      "name": "Cylinder",
       "keywords": [
         "cylinder",
         "database",
         "storage"
       ],
-      "category": "basic"
+      "name": "Cylinder"
     },
     {
+      "category": "basic",
       "id": "basic:document",
-      "name": "Document",
       "keywords": [
         "document",
         "page",
         "report"
       ],
-      "category": "basic"
+      "name": "Document"
     },
     {
+      "category": "basic",
       "id": "basic:note",
-      "name": "Note",
       "keywords": [
         "note",
         "sticky",
         "comment"
       ],
-      "category": "basic"
+      "name": "Note"
     },
     {
+      "category": "basic",
       "id": "basic:line",
-      "name": "Line",
       "keywords": [
         "line",
         "rule",
         "divider",
         "separator"
       ],
-      "category": "basic"
+      "name": "Line"
     },
     {
+      "category": "basic",
       "id": "basic:polyline",
-      "name": "Polyline",
       "keywords": [
         "polyline",
         "zigzag",
         "path"
       ],
-      "category": "basic"
+      "name": "Polyline"
     },
     {
+      "category": "basic",
       "id": "basic:freehand",
-      "name": "Freehand",
       "keywords": [
         "freehand",
         "pen",
         "scribble",
         "drawing"
       ],
-      "category": "basic"
+      "name": "Freehand"
     },
     {
+      "category": "basic",
       "id": "basic:text-box",
-      "name": "Text box",
       "keywords": [
         "text",
         "label",
         "title"
       ],
-      "category": "basic"
+      "name": "Text box"
     },
     {
+      "category": "basic",
       "id": "basic:image-frame",
-      "name": "Image frame",
       "keywords": [
         "image",
         "picture",
         "photo",
         "placeholder"
       ],
-      "category": "basic"
+      "name": "Image frame"
     }
   ],
-  "credits": [
-    {
-      "id": "fluxion",
-      "license": "MIT",
-      "attribution": "Fluxion contributors",
-      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
-      "source": {
-        "kind": "original",
-        "author": "Fluxion contributors",
-        "statement": "Original artwork drawn for Fluxion."
-      }
-    }
-  ]
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "basic",
+  "license": "MIT",
+  "name": "Basic shapes",
+  "version": "0.0.0"
 }

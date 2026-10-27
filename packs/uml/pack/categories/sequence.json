@@ -1,85 +1,73 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "uml:lifeline",
-      "outline": {
-        "path": "M 0 0 H {w} V {min(50, h * 0.2)} H 0 Z"
-      },
+      "category": "sequence",
       "decorations": [
         {
           "path": "M {w/2} {min(50, h * 0.2)} V {h}"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0,
-          "y": 0,
-          "w": 1,
-          "h": "min(50, h * 0.2) / h"
-        }
-      ],
       "defaultSize": {
-        "w": 120,
-        "h": 300
+        "h": 300,
+        "w": 120
       },
       "describe": "A sequence-diagram lifeline: a participant with its line of time below it.",
+      "id": "uml:lifeline",
       "keywords": [
         "lifeline",
         "sequence",
         "participant",
         "timeline"
       ],
-      "category": "sequence",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {min(50, h * 0.2)} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": "min(50, h * 0.2) / h",
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 0
+        }
+      ]
     },
     {
-      "id": "uml:activation",
-      "outline": {
-        "path": "M 0 0 H {w} V {h} H 0 Z"
-      },
+      "category": "sequence",
       "defaultSize": {
-        "w": 16,
-        "h": 120
+        "h": 120,
+        "w": 16
       },
       "describe": "An activation bar on a lifeline: while a participant is busy.",
+      "id": "uml:activation",
       "keywords": [
         "activation",
         "execution",
         "focus",
         "sequence"
       ],
-      "category": "sequence",
-      "license": "MIT"
-    },
-    {
-      "id": "uml:fragment",
+      "license": "MIT",
       "outline": {
         "path": "M 0 0 H {w} V {h} H 0 Z"
-      },
-      "defaultStyle": {
-        "fill": "transparent"
-      },
+      }
+    },
+    {
+      "category": "sequence",
       "decorations": [
         {
           "path": "M 0 {min(24, h * 0.3)} H {min(70, w * 0.4) - min(10, w * 0.2, h * 0.15)} L {min(70, w * 0.4)} {min(24, h * 0.3) - min(10, w * 0.2, h * 0.15)} V 0"
         }
       ],
-      "textRegions": [
-        {
-          "name": "operator",
-          "x": 0.01,
-          "y": 0,
-          "w": "max(0, min(70, w * 0.4) / w - 0.06)",
-          "h": "min(24, h * 0.3) / h"
-        }
-      ],
       "defaultSize": {
-        "w": 300,
-        "h": 160
+        "h": 160,
+        "w": 300
+      },
+      "defaultStyle": {
+        "fill": "transparent"
       },
       "describe": "A combined fragment (alt, loop, opt): a framed part of an interaction.",
+      "id": "uml:fragment",
       "keywords": [
         "fragment",
         "alt",
@@ -88,8 +76,20 @@
         "frame",
         "sequence"
       ],
-      "category": "sequence",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": "min(24, h * 0.3) / h",
+          "name": "operator",
+          "w": "max(0, min(70, w * 0.4) / w - 0.06)",
+          "x": 0.01,
+          "y": 0
+        }
+      ]
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

@@ -1,51 +1,58 @@
 {
-  "format": "fluxion-shape-pack",
-  "formatVersion": "1.0",
-  "id": "flowchart",
-  "version": "0.0.0",
-  "name": "Flowchart",
-  "license": "MIT",
   "attribution": "Fluxion contributors",
   "categories": {
-    "process": {
-      "path": "categories/process.json",
-      "sha256": "7c623ef2c00b44202eea104d9a4abf82a7c3643545caea5b44809c2438200090"
-    },
     "data": {
       "path": "categories/data.json",
-      "sha256": "78476f69dae665de2cba0d8e54f94007f9eea1c5310a2d7617a051f991c6e157"
+      "sha256": "90f2e10ff5e9d18e3adbe73751e643023bc1e7d3fd337050c8fe3133d6bcf06b"
     },
     "flow": {
       "path": "categories/flow.json",
-      "sha256": "a287c488fd5ec0f972500ea5d8d1fc4229a4d69381c277d6c2c4efe53293f1bc"
+      "sha256": "34dff4dfd666291b9d19f80ae967bf14e2dfcb3bb63b2ff9c7c93486e0bf9287"
+    },
+    "process": {
+      "path": "categories/process.json",
+      "sha256": "edb099593681c73f12bbc06ce1db3d66a2c4040371ac2448e273da427be8c38e"
     }
   },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
   "definitions": [
     {
+      "category": "process",
       "id": "flowchart:process",
-      "name": "Process",
       "keywords": [
         "process",
         "step",
         "action",
         "task"
       ],
-      "category": "process"
+      "name": "Process"
     },
     {
+      "category": "process",
       "id": "flowchart:alternate-process",
-      "name": "Alternate process",
       "keywords": [
         "alternate",
         "process",
         "step",
         "rounded"
       ],
-      "category": "process"
+      "name": "Alternate process"
     },
     {
+      "category": "process",
       "id": "flowchart:decision",
-      "name": "Decision",
       "keywords": [
         "decision",
         "branch",
@@ -53,11 +60,11 @@
         "if",
         "diamond"
       ],
-      "category": "process"
+      "name": "Decision"
     },
     {
+      "category": "process",
       "id": "flowchart:terminator",
-      "name": "Terminator",
       "keywords": [
         "terminator",
         "start",
@@ -65,22 +72,22 @@
         "stop",
         "begin"
       ],
-      "category": "process"
+      "name": "Terminator"
     },
     {
+      "category": "process",
       "id": "flowchart:predefined-process",
-      "name": "Predefined process",
       "keywords": [
         "predefined",
         "subroutine",
         "function",
         "call"
       ],
-      "category": "process"
+      "name": "Predefined process"
     },
     {
+      "category": "process",
       "id": "flowchart:preparation",
-      "name": "Preparation",
       "keywords": [
         "preparation",
         "setup",
@@ -88,32 +95,32 @@
         "loop",
         "hexagon"
       ],
-      "category": "process"
+      "name": "Preparation"
     },
     {
+      "category": "process",
       "id": "flowchart:manual-operation",
-      "name": "Manual operation",
       "keywords": [
         "manual",
         "operation",
         "human",
         "trapezoid"
       ],
-      "category": "process"
+      "name": "Manual operation"
     },
     {
+      "category": "process",
       "id": "flowchart:delay",
-      "name": "Delay",
       "keywords": [
         "delay",
         "wait",
         "pause"
       ],
-      "category": "process"
+      "name": "Delay"
     },
     {
+      "category": "data",
       "id": "flowchart:data",
-      "name": "Data",
       "keywords": [
         "data",
         "input",
@@ -121,44 +128,44 @@
         "io",
         "parallelogram"
       ],
-      "category": "data"
+      "name": "Data"
     },
     {
+      "category": "data",
       "id": "flowchart:manual-input",
-      "name": "Manual input",
       "keywords": [
         "manual",
         "input",
         "keyboard",
         "entry"
       ],
-      "category": "data"
+      "name": "Manual input"
     },
     {
+      "category": "data",
       "id": "flowchart:document",
-      "name": "Document",
       "keywords": [
         "document",
         "report",
         "page",
         "print"
       ],
-      "category": "data"
+      "name": "Document"
     },
     {
+      "category": "data",
       "id": "flowchart:multi-document",
-      "name": "Multi document",
       "keywords": [
         "documents",
         "multiple",
         "reports",
         "files"
       ],
-      "category": "data"
+      "name": "Multi document"
     },
     {
+      "category": "data",
       "id": "flowchart:database",
-      "name": "Database",
       "keywords": [
         "database",
         "db",
@@ -166,33 +173,33 @@
         "disk",
         "cylinder"
       ],
-      "category": "data"
+      "name": "Database"
     },
     {
+      "category": "data",
       "id": "flowchart:stored-data",
-      "name": "Stored data",
       "keywords": [
         "stored",
         "data",
         "storage",
         "save"
       ],
-      "category": "data"
+      "name": "Stored data"
     },
     {
+      "category": "data",
       "id": "flowchart:internal-storage",
-      "name": "Internal storage",
       "keywords": [
         "internal",
         "storage",
         "memory",
         "ram"
       ],
-      "category": "data"
+      "name": "Internal storage"
     },
     {
+      "category": "data",
       "id": "flowchart:queue",
-      "name": "Queue",
       "keywords": [
         "queue",
         "buffer",
@@ -200,116 +207,109 @@
         "fifo",
         "sequential"
       ],
-      "category": "data"
+      "name": "Queue"
     },
     {
+      "category": "data",
       "id": "flowchart:display",
-      "name": "Display",
       "keywords": [
         "display",
         "screen",
         "monitor",
         "show"
       ],
-      "category": "data"
+      "name": "Display"
     },
     {
+      "category": "data",
       "id": "flowchart:card",
-      "name": "Card",
       "keywords": [
         "card",
         "punched",
         "record"
       ],
-      "category": "data"
+      "name": "Card"
     },
     {
+      "category": "flow",
       "id": "flowchart:connector",
-      "name": "Connector",
       "keywords": [
         "connector",
         "jump",
         "reference",
         "circle"
       ],
-      "category": "flow"
+      "name": "Connector"
     },
     {
+      "category": "flow",
       "id": "flowchart:off-page-connector",
-      "name": "Off-page connector",
       "keywords": [
         "off-page",
         "connector",
         "continue",
         "page"
       ],
-      "category": "flow"
+      "name": "Off-page connector"
     },
     {
+      "category": "flow",
       "id": "flowchart:merge",
-      "name": "Merge",
       "keywords": [
         "merge",
         "combine",
         "join",
         "triangle"
       ],
-      "category": "flow"
+      "name": "Merge"
     },
     {
+      "category": "flow",
       "id": "flowchart:extract",
-      "name": "Extract",
       "keywords": [
         "extract",
         "split",
         "triangle"
       ],
-      "category": "flow"
+      "name": "Extract"
     },
     {
+      "category": "flow",
       "id": "flowchart:summing-junction",
-      "name": "Summing junction",
       "keywords": [
         "summing",
         "junction",
         "and",
         "join"
       ],
-      "category": "flow"
+      "name": "Summing junction"
     },
     {
+      "category": "flow",
       "id": "flowchart:or",
-      "name": "Or junction",
       "keywords": [
         "or",
         "junction",
         "any"
       ],
-      "category": "flow"
+      "name": "Or junction"
     },
     {
+      "category": "flow",
       "id": "flowchart:annotation",
-      "name": "Annotation",
       "keywords": [
         "annotation",
         "comment",
         "note",
         "bracket"
       ],
-      "category": "flow"
+      "name": "Annotation"
     }
   ],
-  "credits": [
-    {
-      "id": "fluxion",
-      "license": "MIT",
-      "attribution": "Fluxion contributors",
-      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
-      "source": {
-        "kind": "original",
-        "author": "Fluxion contributors",
-        "statement": "Original artwork drawn for Fluxion."
-      }
-    }
-  ]
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "flowchart",
+  "license": "MIT",
+  "name": "Flowchart",
+  "version": "0.0.0"
 }

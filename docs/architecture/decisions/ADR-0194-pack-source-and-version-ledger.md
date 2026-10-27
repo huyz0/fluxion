@@ -71,4 +71,5 @@ and unreadable path data are each reported. Every `packs/*/src/pack.test.ts` run
 ## More Information
 
 ADR-0048, ADR-0050, ADR-0193 (superseded where it puts the builder in the testing entry and
-pack metadata in tests).
+pack metadata in tests). ADR-0196 (M18.108) moves the encoding into core's shared
+`encodeShapePack`: `buildShapePackFiles` now validates and returns a `Result`.

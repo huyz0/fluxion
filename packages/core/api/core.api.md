@@ -83,6 +83,9 @@ export function batch(fn: () => void): void;
 export type BinaryOp = "+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "==" | "!=";
 
 // @public
+export function canonicalJson(value: unknown): string;
+
+// @public
 export interface Clock {
     frame(callback: (time: number) => void): () => void;
     now(): number;
@@ -241,6 +244,16 @@ export type EdgeKey = {
 
 // @public
 export function effect(fn: () => void): () => void;
+
+// @public
+export type EncodedShapePack = {
+    readonly files: ReadonlyMap<string, Uint8Array>;
+    readonly index: ShapePackIndex;
+    readonly definitions: readonly ShapeDef[];
+};
+
+// @public
+export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackLicensePolicy): Result<EncodedShapePack, readonly Diagnostic[]>;
 
 // @public
 export type EnumParam = {
@@ -742,6 +755,20 @@ export type ShapePackDefinitionFonts = {
 // @public
 export type ShapePackDistributionFontResource = ShapePackFontResource & {
     readonly path: string;
+};
+
+// @public
+export type ShapePackDraft = {
+    readonly id: string;
+    readonly version: string;
+    readonly name: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly credits: readonly ShapePackCredit[];
+    readonly definitions: readonly {
+        readonly name: string;
+        readonly def: ShapeDef;
+    }[];
 };
 
 // @public

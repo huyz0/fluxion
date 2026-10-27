@@ -1,19 +1,12 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "infographic:pie",
-      "params": {
-        "value": {
-          "type": "number",
-          "min": 0.01,
-          "max": 0.99,
-          "default": 0.65
-        }
+      "category": "charts",
+      "defaultSize": {
+        "h": 120,
+        "w": 120
       },
-      "outline": {
-        "path": "M {w/2} {h/2} V 0 A {w/2} {h/2} 0 {round(value)} 1 {w/2 + w/2 * sin(2 * pi * value)} {h/2 - h/2 * cos(2 * pi * value)} Z"
-      },
+      "describe": "A pie slice sized by a value: one share of a whole.",
       "handles": [
         {
           "param": "value",
@@ -21,11 +14,7 @@
           "y": "h/2 - h/2 * cos(2 * pi * value)"
         }
       ],
-      "defaultSize": {
-        "w": 120,
-        "h": 120
-      },
-      "describe": "A pie slice sized by a value: one share of a whole.",
+      "id": "infographic:pie",
       "keywords": [
         "pie",
         "slice",
@@ -33,33 +22,27 @@
         "percentage",
         "chart"
       ],
-      "category": "charts",
-      "license": "MIT"
-    },
-    {
-      "id": "infographic:donut",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} {h/2} V 0 A {w/2} {h/2} 0 {round(value)} 1 {w/2 + w/2 * sin(2 * pi * value)} {h/2 - h/2 * cos(2 * pi * value)} Z"
+      },
       "params": {
         "value": {
-          "type": "number",
-          "min": 0.01,
+          "default": 0.65,
           "max": 0.99,
-          "default": 0.65
-        },
-        "inner": {
-          "type": "number",
-          "min": 0.2,
-          "max": 0.9,
-          "default": 0.6
+          "min": 0.01,
+          "type": "number"
         }
-      },
-      "outline": {
-        "path": "M {w/2} 0 A {w/2} {h/2} 0 {round(value)} 1 {w/2 + w/2 * sin(2 * pi * value)} {h/2 - h/2 * cos(2 * pi * value)} L {w/2 + inner * w/2 * sin(2 * pi * value)} {h/2 - inner * h/2 * cos(2 * pi * value)} A {inner * w/2} {inner * h/2} 0 {round(value)} 0 {w/2} {h/2 - inner * h/2} Z"
-      },
+      }
+    },
+    {
+      "category": "charts",
       "defaultSize": {
-        "w": 120,
-        "h": 120
+        "h": 120,
+        "w": 120
       },
       "describe": "A donut ring segment sized by a value: progress toward a goal.",
+      "id": "infographic:donut",
       "keywords": [
         "donut",
         "ring",
@@ -67,32 +50,38 @@
         "percentage",
         "chart"
       ],
-      "category": "charts",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 A {w/2} {h/2} 0 {round(value)} 1 {w/2 + w/2 * sin(2 * pi * value)} {h/2 - h/2 * cos(2 * pi * value)} L {w/2 + inner * w/2 * sin(2 * pi * value)} {h/2 - inner * h/2 * cos(2 * pi * value)} A {inner * w/2} {inner * h/2} 0 {round(value)} 0 {w/2} {h/2 - inner * h/2} Z"
+      },
+      "params": {
+        "inner": {
+          "default": 0.6,
+          "max": 0.9,
+          "min": 0.2,
+          "type": "number"
+        },
+        "value": {
+          "default": 0.65,
+          "max": 0.99,
+          "min": 0.01,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "infographic:gauge",
-      "params": {
-        "value": {
-          "type": "number",
-          "min": 0.01,
-          "max": 0.99,
-          "default": 0.65
-        }
-      },
-      "outline": {
-        "path": "M 0 {h} A {w/2} {h} 0 0 1 {w} {h} Z"
-      },
+      "category": "charts",
       "decorations": [
         {
           "path": "M {w/2} {h} L {w/2 - w * 0.4 * cos(pi * value)} {h - h * 0.8 * sin(pi * value)}"
         }
       ],
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "A half-dial gauge whose needle shows a value: a level or a score.",
+      "id": "infographic:gauge",
       "keywords": [
         "gauge",
         "dial",
@@ -100,27 +89,31 @@
         "speedometer",
         "score"
       ],
-      "category": "charts",
-      "license": "MIT"
-    },
-    {
-      "id": "infographic:progress",
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h} A {w/2} {h} 0 0 1 {w} {h} Z"
+      },
       "params": {
         "value": {
-          "type": "number",
-          "min": 0.01,
+          "default": 0.65,
           "max": 0.99,
-          "default": 0.65
+          "min": 0.01,
+          "type": "number"
         }
-      },
-      "outline": {
-        "path": "M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z"
-      },
+      }
+    },
+    {
+      "category": "charts",
       "decorations": [
         {
           "path": "M {h * 0.25} {h * 0.25} H {h * 0.25 + (w - h/2) * value} V {h * 0.75} H {h * 0.25} Z"
         }
       ],
+      "defaultSize": {
+        "h": 24,
+        "w": 200
+      },
+      "describe": "A progress bar filled to a value: completion or capacity.",
       "handles": [
         {
           "param": "value",
@@ -128,11 +121,7 @@
           "y": "h/2"
         }
       ],
-      "defaultSize": {
-        "w": 200,
-        "h": 24
-      },
-      "describe": "A progress bar filled to a value: completion or capacity.",
+      "id": "infographic:progress",
       "keywords": [
         "progress",
         "bar",
@@ -140,14 +129,21 @@
         "capacity",
         "percentage"
       ],
-      "category": "charts",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z"
+      },
+      "params": {
+        "value": {
+          "default": 0.65,
+          "max": 0.99,
+          "min": 0.01,
+          "type": "number"
+        }
+      }
     },
     {
-      "id": "infographic:target",
-      "outline": {
-        "path": "M {w/2 - w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - w/2} {h/2} Z"
-      },
+      "category": "charts",
       "decorations": [
         {
           "path": "M {w/2 - w * 0.33} {h/2} A {w * 0.33} {h * 0.33} 0 1 1 {w/2 + w * 0.33} {h/2} A {w * 0.33} {h * 0.33} 0 1 1 {w/2 - w * 0.33} {h/2} Z"
@@ -157,10 +153,11 @@
         }
       ],
       "defaultSize": {
-        "w": 120,
-        "h": 120
+        "h": 120,
+        "w": 120
       },
       "describe": "A target of three rings: a goal, focus or objective.",
+      "id": "infographic:target",
       "keywords": [
         "target",
         "goal",
@@ -168,8 +165,11 @@
         "focus",
         "objective"
       ],
-      "category": "charts",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - w/2} {h/2} Z"
+      }
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

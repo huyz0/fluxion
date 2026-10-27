@@ -46,7 +46,7 @@ const save = (ids: readonly QualifiedName[], sources: Parameters<typeof writePor
 describe('imported collections as saveable credited packs (M18.101)', () => {
   it('FR-LIB-005 FR-LIB-009 NFR-LIC-003: a document using imported Lucide icons saves portably and reopens with geometry and credit', async () => {
     const report = await importIconifyCollection(lucide, { witness });
-    const pack = value(await iconifyShapePack(report, { licensePolicy, hasher }));
+    const pack = value(iconifyShapePack(report, { licensePolicy }));
     // every accepted icon and alias is indexed, hidden ones (album) and aliases (inspect) included, with category files the index hashes exactly
     expect(pack.index.definitions).toHaveLength(136);
     expect(pack.index.definitions.map((d) => d.id)).toEqual(expect.arrayContaining(['lucide:album', 'lucide:inspect']));
@@ -75,7 +75,7 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
     const collection = (extra: object) =>
       JSON.stringify({ prefix: 'tiny', icons: { dot: { body: '<circle cx="8" cy="8" r="4"/>' } }, info: { name: 'Tiny', author: { name: 'A' }, ...extra } });
     const packOf = async (text: string, version?: string) =>
-      iconifyShapePack(await importIconifyCollection(text, { witness }), { licensePolicy, hasher, ...(version ? { version } : {}) });
+      iconifyShapePack(await importIconifyCollection(text, { witness }), { licensePolicy, ...(version ? { version } : {}) });
     const a = value(await packOf(collection({ license: { spdx: 'MIT' } })));
     const again = value(await packOf(collection({ license: { spdx: 'MIT' } })));
     const changed = value(await packOf(collection({ license: { spdx: 'MIT' }, version: '2' })));
@@ -85,7 +85,7 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
     expect(value(await packOf(collection({ license: { spdx: 'MIT' } }), '3.1.0')).index.version).toBe('3.1.0');
     expect((await packOf(collection({}))).ok).toBe(false);
     expect((await packOf(collection({ license: { spdx: 'LicenseRef-proprietary' } }))).ok).toBe(false);
-    expect((await iconifyShapePack({ status: 'failed', diagnostics: [] }, { licensePolicy, hasher })).ok).toBe(false);
+    expect(iconifyShapePack({ status: 'failed', diagnostics: [] }, { licensePolicy }).ok).toBe(false);
   });
 
   it('FR-LIB-004 FR-LIB-009 NFR-LIC-003: a user-declared SVG import saves and reopens through the same pack path', async () => {
@@ -100,15 +100,17 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
       notice: 'Drawn by the document author and dedicated to the public domain.',
       source: { kind: 'original' as const, author: 'Document author', statement: 'Original work of the document author.' },
       licensePolicy,
-      hasher,
     };
     const entries = [{ definition: svg.definition, name: 'Box', fonts: svg.fonts }];
-    const pack = value(await importedShapePack({ ...declared, entries }));
+    const pack = value(importedShapePack({ ...declared, entries }));
     const opened = value(await loadFlux(value(await save(['mine:box'], [pack.source])).bytes, { hasher, shapePackLicensePolicy: licensePolicy }));
     expect(opened.shapePacks[0]?.definitions).toEqual([{ ...svg.definition, category: 'uncategorized' }]);
     expect(opened.shapePacks[0]?.credits.map((c) => c.source)).toEqual([declared.source]);
-    expect((await importedShapePack({ ...declared, entries: [] })).ok).toBe(false);
-    expect((await importedShapePack({ ...declared, namespace: 'other', entries })).ok).toBe(false);
+    const refused = (r: ReturnType<typeof importedShapePack>) => (r.ok ? [] : r.error.map((d) => d.path));
+    expect(refused(importedShapePack({ ...declared, entries: [] }))).toEqual(['/entries']);
+    expect(refused(importedShapePack({ ...declared, namespace: 'other', entries }))).toEqual(['/entries/0/definition/id']);
+    // review r1 F2: index diagnostics name the caller's entry too
+    expect(refused(importedShapePack({ ...declared, entries: [{ ...entries[0], name: '' }] as typeof entries }))).toEqual(['/entries/0/name']);
   });
 
   it('FR-LIB-005 NFR-LIC-003: categories keep distinct slugs, and font-bearing icons are refused rather than saved without faces', async () => {
@@ -119,7 +121,7 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
       icons: { a: icon, b: icon, c: icon, d: icon, e: icon },
       categories: { 'Charts & Graphs': ['a'], 'Charts Graphs': ['b'], Флаги: ['c'], 矢印: ['d'] },
     });
-    const pack = value(await iconifyShapePack(await importIconifyCollection(categorized, { witness }), { licensePolicy, hasher }));
+    const pack = value(iconifyShapePack(await importIconifyCollection(categorized, { witness }), { licensePolicy }));
     const slugs = ['charts-graphs', 'charts-graphs-2', 'category', 'category-2', 'uncategorized'];
     expect(pack.index.definitions.map((d) => [d.id, d.category])).toEqual(['a', 'b', 'c', 'd', 'e'].map((n, i) => [`cats:${n}`, slugs[i]]));
     expect([...pack.categories.keys()].sort()).toEqual(slugs.map((s) => `categories/${s}.json`).sort());
@@ -134,7 +136,7 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
     });
     const report = await importIconifyCollection(texty, { witness, fonts: [font], defaultFont: font.sha256 });
     expect(report.status === 'processed' && report.acceptedCount).toBe(1);
-    const refused = await iconifyShapePack(report, { licensePolicy, hasher });
+    const refused = iconifyShapePack(report, { licensePolicy });
     expect(!refused.ok && refused.error[0]?.message).toMatch(/needs exact fonts/);
   });
 });

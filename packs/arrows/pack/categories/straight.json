@@ -1,25 +1,12 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "arrows:right",
-      "params": {
-        "head": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.9,
-          "default": 0.35
-        },
-        "shaft": {
-          "type": "number",
-          "min": 0.1,
-          "max": 1,
-          "default": 0.5
-        }
+      "category": "straight",
+      "defaultSize": {
+        "h": 80,
+        "w": 160
       },
-      "outline": {
-        "path": "M 0 {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H 0 Z"
-      },
+      "describe": "A block arrow pointing right: direction, progress or next step.",
       "handles": [
         {
           "param": "head",
@@ -27,20 +14,7 @@
           "y": "0"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.05,
-          "y": "(1 - shaft) / 2",
-          "w": 0.6,
-          "h": "shaft"
-        }
-      ],
-      "defaultSize": {
-        "w": 160,
-        "h": 80
-      },
-      "describe": "A block arrow pointing right: direction, progress or next step.",
+      "id": "arrows:right",
       "keywords": [
         "arrow",
         "right",
@@ -48,28 +22,41 @@
         "forward",
         "direction"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:left",
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H 0 Z"
+      },
       "params": {
         "head": {
-          "type": "number",
-          "min": 0.05,
+          "default": 0.35,
           "max": 0.9,
-          "default": 0.35
+          "min": 0.05,
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.1,
+          "default": 0.5,
           "max": 1,
-          "default": 0.5
+          "min": 0.1,
+          "type": "number"
         }
       },
-      "outline": {
-        "path": "M {w} {h * (1 - shaft) / 2} H {w * head} V 0 L 0 {h/2} L {w * head} {h} V {h * (1 + shaft) / 2} H {w} Z"
+      "textRegions": [
+        {
+          "h": "shaft",
+          "name": "body",
+          "w": 0.6,
+          "x": 0.05,
+          "y": "(1 - shaft) / 2"
+        }
+      ]
+    },
+    {
+      "category": "straight",
+      "defaultSize": {
+        "h": 80,
+        "w": 160
       },
+      "describe": "A block arrow pointing left: back, previous or return.",
       "handles": [
         {
           "param": "head",
@@ -77,11 +64,7 @@
           "y": "0"
         }
       ],
-      "defaultSize": {
-        "w": 160,
-        "h": 80
-      },
-      "describe": "A block arrow pointing left: back, previous or return.",
+      "id": "arrows:left",
       "keywords": [
         "arrow",
         "left",
@@ -89,28 +72,32 @@
         "previous",
         "direction"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:up",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w} {h * (1 - shaft) / 2} H {w * head} V 0 L 0 {h/2} L {w * head} {h} V {h * (1 + shaft) / 2} H {w} Z"
+      },
       "params": {
         "head": {
-          "type": "number",
-          "min": 0.05,
+          "default": 0.35,
           "max": 0.9,
-          "default": 0.35
+          "min": 0.05,
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.1,
+          "default": 0.5,
           "max": 1,
-          "default": 0.5
+          "min": 0.1,
+          "type": "number"
         }
+      }
+    },
+    {
+      "category": "straight",
+      "defaultSize": {
+        "h": 160,
+        "w": 80
       },
-      "outline": {
-        "path": "M {w * (1 - shaft) / 2} {h} V {h * head} H 0 L {w/2} 0 L {w} {h * head} H {w * (1 + shaft) / 2} V {h} Z"
-      },
+      "describe": "A block arrow pointing up: increase, growth or upload.",
       "handles": [
         {
           "param": "head",
@@ -118,11 +105,7 @@
           "y": "h * head"
         }
       ],
-      "defaultSize": {
-        "w": 80,
-        "h": 160
-      },
-      "describe": "A block arrow pointing up: increase, growth or upload.",
+      "id": "arrows:up",
       "keywords": [
         "arrow",
         "up",
@@ -130,28 +113,32 @@
         "growth",
         "direction"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:down",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * (1 - shaft) / 2} {h} V {h * head} H 0 L {w/2} 0 L {w} {h * head} H {w * (1 + shaft) / 2} V {h} Z"
+      },
       "params": {
         "head": {
-          "type": "number",
-          "min": 0.05,
+          "default": 0.35,
           "max": 0.9,
-          "default": 0.35
+          "min": 0.05,
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.1,
+          "default": 0.5,
           "max": 1,
-          "default": 0.5
+          "min": 0.1,
+          "type": "number"
         }
+      }
+    },
+    {
+      "category": "straight",
+      "defaultSize": {
+        "h": 160,
+        "w": 80
       },
-      "outline": {
-        "path": "M {w * (1 - shaft) / 2} 0 V {h - h * head} H 0 L {w/2} {h} L {w} {h - h * head} H {w * (1 + shaft) / 2} V 0 Z"
-      },
+      "describe": "A block arrow pointing down: decrease, decline or download.",
       "handles": [
         {
           "param": "head",
@@ -159,11 +146,7 @@
           "y": "h - h * head"
         }
       ],
-      "defaultSize": {
-        "w": 80,
-        "h": 160
-      },
-      "describe": "A block arrow pointing down: decrease, decline or download.",
+      "id": "arrows:down",
       "keywords": [
         "arrow",
         "down",
@@ -171,33 +154,33 @@
         "decline",
         "direction"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:left-right",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * (1 - shaft) / 2} 0 V {h - h * head} H 0 L {w/2} {h} L {w} {h - h * head} H {w * (1 + shaft) / 2} V 0 Z"
+      },
       "params": {
         "head": {
-          "type": "number",
+          "default": 0.35,
+          "max": 0.9,
           "min": 0.05,
-          "max": 0.45,
-          "default": 0.25
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.1,
+          "default": 0.5,
           "max": 1,
-          "default": 0.5
+          "min": 0.1,
+          "type": "number"
         }
-      },
-      "outline": {
-        "path": "M 0 {h/2} L {w * head} 0 V {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H {w * head} V {h} Z"
-      },
+      }
+    },
+    {
+      "category": "straight",
       "defaultSize": {
-        "w": 180,
-        "h": 80
+        "h": 80,
+        "w": 180
       },
       "describe": "A double-headed horizontal arrow: exchange, two-way or range.",
+      "id": "arrows:left-right",
       "keywords": [
         "arrow",
         "left",
@@ -206,33 +189,33 @@
         "two-way",
         "exchange"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:up-down",
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h/2} L {w * head} 0 V {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H {w * head} V {h} Z"
+      },
       "params": {
         "head": {
-          "type": "number",
-          "min": 0.05,
+          "default": 0.25,
           "max": 0.45,
-          "default": 0.25
+          "min": 0.05,
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.1,
+          "default": 0.5,
           "max": 1,
-          "default": 0.5
+          "min": 0.1,
+          "type": "number"
         }
-      },
-      "outline": {
-        "path": "M {w/2} 0 L {w} {h * head} H {w * (1 + shaft) / 2} V {h - h * head} H {w} L {w/2} {h} L 0 {h - h * head} H {w * (1 - shaft) / 2} V {h * head} H 0 Z"
-      },
+      }
+    },
+    {
+      "category": "straight",
       "defaultSize": {
-        "w": 80,
-        "h": 180
+        "h": 180,
+        "w": 80
       },
       "describe": "A double-headed vertical arrow: up and down, scale or fluctuation.",
+      "id": "arrows:up-down",
       "keywords": [
         "arrow",
         "up",
@@ -241,33 +224,33 @@
         "vertical",
         "two-way"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:quad",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h * head} H {w * (1 + shaft) / 2} V {h - h * head} H {w} L {w/2} {h} L 0 {h - h * head} H {w * (1 - shaft) / 2} V {h * head} H 0 Z"
+      },
       "params": {
         "head": {
-          "type": "number",
-          "min": 0.15,
-          "max": 0.25,
-          "default": 0.2
+          "default": 0.25,
+          "max": 0.45,
+          "min": 0.05,
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.3,
-          "default": 0.15
+          "default": 0.5,
+          "max": 1,
+          "min": 0.1,
+          "type": "number"
         }
-      },
-      "outline": {
-        "path": "M {w/2} 0 L {w/2 + w * head} {h * head} H {w/2 + w * shaft/2} V {h/2 - h * shaft/2} H {w - w * head} V {h/2 - h * head} L {w} {h/2} L {w - w * head} {h/2 + h * head} V {h/2 + h * shaft/2} H {w/2 + w * shaft/2} V {h - h * head} H {w/2 + w * head} L {w/2} {h} L {w/2 - w * head} {h - h * head} H {w/2 - w * shaft/2} V {h/2 + h * shaft/2} H {w * head} V {h/2 + h * head} L 0 {h/2} L {w * head} {h/2 - h * head} V {h/2 - h * shaft/2} H {w/2 - w * shaft/2} V {h * head} H {w/2 - w * head} Z"
-      },
+      }
+    },
+    {
+      "category": "straight",
       "defaultSize": {
-        "w": 140,
-        "h": 140
+        "h": 140,
+        "w": 140
       },
       "describe": "An arrow pointing four ways: spread, expansion or every direction.",
+      "id": "arrows:quad",
       "keywords": [
         "arrow",
         "quad",
@@ -276,33 +259,33 @@
         "directions",
         "move"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:notched-right",
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w/2 + w * head} {h * head} H {w/2 + w * shaft/2} V {h/2 - h * shaft/2} H {w - w * head} V {h/2 - h * head} L {w} {h/2} L {w - w * head} {h/2 + h * head} V {h/2 + h * shaft/2} H {w/2 + w * shaft/2} V {h - h * head} H {w/2 + w * head} L {w/2} {h} L {w/2 - w * head} {h - h * head} H {w/2 - w * shaft/2} V {h/2 + h * shaft/2} H {w * head} V {h/2 + h * head} L 0 {h/2} L {w * head} {h/2 - h * head} V {h/2 - h * shaft/2} H {w/2 - w * shaft/2} V {h * head} H {w/2 - w * head} Z"
+      },
       "params": {
         "head": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.9,
-          "default": 0.35
+          "default": 0.2,
+          "max": 0.25,
+          "min": 0.15,
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.1,
-          "max": 1,
-          "default": 0.5
+          "default": 0.15,
+          "max": 0.3,
+          "min": 0.05,
+          "type": "number"
         }
-      },
-      "outline": {
-        "path": "M 0 {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H 0 L {w * 0.12} {h/2} Z"
-      },
+      }
+    },
+    {
+      "category": "straight",
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "A right arrow with a notched tail: a stage in a sequence.",
+      "id": "arrows:notched-right",
       "keywords": [
         "arrow",
         "notched",
@@ -310,28 +293,27 @@
         "stage",
         "sequence"
       ],
-      "category": "straight",
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:striped-right",
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H 0 L {w * 0.12} {h/2} Z"
+      },
       "params": {
         "head": {
-          "type": "number",
+          "default": 0.35,
+          "max": 0.9,
           "min": 0.05,
-          "max": 0.7,
-          "default": 0.35
+          "type": "number"
         },
         "shaft": {
-          "type": "number",
-          "min": 0.1,
+          "default": 0.5,
           "max": 1,
-          "default": 0.5
+          "min": 0.1,
+          "type": "number"
         }
-      },
-      "outline": {
-        "path": "M {w * 0.16} {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H {w * 0.16} Z"
-      },
+      }
+    },
+    {
+      "category": "straight",
       "decorations": [
         {
           "path": "M 0 {h * (1 - shaft) / 2} H {w * 0.04} V {h * (1 + shaft) / 2} H 0 Z"
@@ -341,10 +323,11 @@
         }
       ],
       "defaultSize": {
-        "w": 160,
-        "h": 80
+        "h": 80,
+        "w": 160
       },
       "describe": "A right arrow with a striped tail: speed, momentum or acceleration.",
+      "id": "arrows:striped-right",
       "keywords": [
         "arrow",
         "striped",
@@ -352,8 +335,25 @@
         "speed",
         "fast"
       ],
-      "category": "straight",
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.16} {h * (1 - shaft) / 2} H {w - w * head} V 0 L {w} {h/2} L {w - w * head} {h} V {h * (1 + shaft) / 2} H {w * 0.16} Z"
+      },
+      "params": {
+        "head": {
+          "default": 0.35,
+          "max": 0.7,
+          "min": 0.05,
+          "type": "number"
+        },
+        "shaft": {
+          "default": 0.5,
+          "max": 1,
+          "min": 0.1,
+          "type": "number"
+        }
+      }
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

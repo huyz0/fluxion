@@ -271,7 +271,9 @@ validation, portable credits and the license gate/player UI before these are sup
 
 A shape pack exports its source as a `DeclarativeShapePack` (`<pack>Source`: version equal to
 the package version, names, credits, named definitions); `buildShapePackFiles` from
-`@fluxion/sdk` turns it into the canonical `index.json` and hashed category files.
+`@fluxion/sdk` turns it into the canonical `index.json` and hashed category files through
+core's `encodeShapePack`, the one encoder imported packs use too (ADR-0196), refusing a pack the
+loader would not accept.
 `@fluxion/sdk/testing` draws each definition's normalized SVG golden (`renderShapeGolden`)
 and `checkShapePack` reports every problem of the checked-in `pack/`, `__golden__/` and
 `pack-versions.json`: changed, missing or extra files, loader diagnostics, vendor brands,

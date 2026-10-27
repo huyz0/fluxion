@@ -7,7 +7,7 @@ const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 const WIDTH = 22; // 62^22 > 2^128
 
 /** The UTF-8 bytes of `text` (a lone surrogate encodes as U+FFFD; `TextEncoder` is not in this package's `lib`). */
-function utf8(text: string): Uint8Array {
+export function utf8(text: string): Uint8Array {
   const out: number[] = [];
   for (const ch of text) {
     let c = ch.codePointAt(0) ?? 0xfffd;

@@ -1,20 +1,12 @@
 {
-  "formatVersion": "1.0",
   "definitions": [
     {
-      "id": "arrows:chevron",
       "category": "process",
-      "params": {
-        "point": {
-          "type": "number",
-          "min": 0.05,
-          "max": 0.45,
-          "default": 0.25
-        }
+      "defaultSize": {
+        "h": 70,
+        "w": 160
       },
-      "outline": {
-        "path": "M 0 0 H {w - w * point} L {w} {h/2} L {w - w * point} {h} H 0 L {w * point} {h/2} Z"
-      },
+      "describe": "A chevron: one step of a left-to-right process strip.",
       "handles": [
         {
           "param": "point",
@@ -22,20 +14,7 @@
           "y": "0"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": "point",
-          "y": 0.1,
-          "w": "1 - 2 * point",
-          "h": 0.8
-        }
-      ],
-      "defaultSize": {
-        "w": 160,
-        "h": 70
-      },
-      "describe": "A chevron: one step of a left-to-right process strip.",
+      "id": "arrows:chevron",
       "keywords": [
         "chevron",
         "step",
@@ -43,22 +22,35 @@
         "stage",
         "pipeline"
       ],
-      "license": "MIT"
-    },
-    {
-      "id": "arrows:pentagon",
-      "category": "process",
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w - w * point} L {w} {h/2} L {w - w * point} {h} H 0 L {w * point} {h/2} Z"
+      },
       "params": {
         "point": {
-          "type": "number",
+          "default": 0.25,
+          "max": 0.45,
           "min": 0.05,
-          "max": 0.6,
-          "default": 0.2
+          "type": "number"
         }
       },
-      "outline": {
-        "path": "M 0 0 H {w - w * point} L {w} {h/2} L {w - w * point} {h} H 0 Z"
+      "textRegions": [
+        {
+          "h": 0.8,
+          "name": "body",
+          "w": "1 - 2 * point",
+          "x": "point",
+          "y": 0.1
+        }
+      ]
+    },
+    {
+      "category": "process",
+      "defaultSize": {
+        "h": 70,
+        "w": 160
       },
+      "describe": "A pentagon arrow: the first step or a labelled milestone.",
       "handles": [
         {
           "param": "point",
@@ -66,20 +58,7 @@
           "y": "0"
         }
       ],
-      "textRegions": [
-        {
-          "name": "body",
-          "x": 0.05,
-          "y": 0.1,
-          "w": "0.9 - point",
-          "h": 0.8
-        }
-      ],
-      "defaultSize": {
-        "w": 160,
-        "h": 70
-      },
-      "describe": "A pentagon arrow: the first step or a labelled milestone.",
+      "id": "arrows:pentagon",
       "keywords": [
         "pentagon",
         "home plate",
@@ -87,7 +66,28 @@
         "milestone",
         "process"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w - w * point} L {w} {h/2} L {w - w * point} {h} H 0 Z"
+      },
+      "params": {
+        "point": {
+          "default": 0.2,
+          "max": 0.6,
+          "min": 0.05,
+          "type": "number"
+        }
+      },
+      "textRegions": [
+        {
+          "h": 0.8,
+          "name": "body",
+          "w": "0.9 - point",
+          "x": 0.05,
+          "y": 0.1
+        }
+      ]
     }
-  ]
+  ],
+  "formatVersion": "1.0"
 }

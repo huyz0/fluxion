@@ -1,29 +1,36 @@
 {
-  "format": "fluxion-shape-pack",
-  "formatVersion": "1.0",
-  "id": "callouts",
-  "version": "0.0.0",
-  "name": "Callouts",
-  "license": "MIT",
   "attribution": "Fluxion contributors",
   "categories": {
-    "speech": {
-      "path": "categories/speech.json",
-      "sha256": "392d19d06d6cf9fb65e6d28592e74ae23d013e69b5f37e84d6a944300d1d4873"
-    },
     "annotation": {
       "path": "categories/annotation.json",
-      "sha256": "5d29dfdd3fe450eb35dea3ccc666cc752ce321307d5f023df5547b4b15e61bb2"
+      "sha256": "54eeb0f865285baf7886b5d5b1d680270f35cd99155ec5c4bd6b263ba32ee7e3"
     },
     "label": {
       "path": "categories/label.json",
-      "sha256": "bdb0cb446875985e7a8bd9e45a5a407f363cdf213a73e3d1aa5558adb6096219"
+      "sha256": "665ffc7949df61607b437cbd024638cb1bd459d7e352185be077063810381406"
+    },
+    "speech": {
+      "path": "categories/speech.json",
+      "sha256": "8d19ab5ed39dab9d26b7b7daaff79362c27c8ce50d422f974451bd9e31ae8da7"
     }
   },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
   "definitions": [
     {
+      "category": "speech",
       "id": "callouts:speech-rect",
-      "name": "Rectangular speech bubble",
       "keywords": [
         "speech",
         "bubble",
@@ -31,11 +38,11 @@
         "dialogue",
         "comment"
       ],
-      "category": "speech"
+      "name": "Rectangular speech bubble"
     },
     {
+      "category": "speech",
       "id": "callouts:speech-rounded",
-      "name": "Rounded speech bubble",
       "keywords": [
         "speech",
         "bubble",
@@ -43,11 +50,11 @@
         "chat",
         "message"
       ],
-      "category": "speech"
+      "name": "Rounded speech bubble"
     },
     {
+      "category": "speech",
       "id": "callouts:speech-oval",
-      "name": "Oval speech bubble",
       "keywords": [
         "speech",
         "bubble",
@@ -55,11 +62,11 @@
         "comic",
         "dialogue"
       ],
-      "category": "speech"
+      "name": "Oval speech bubble"
     },
     {
+      "category": "speech",
       "id": "callouts:speech-left",
-      "name": "Speech bubble, tail left",
       "keywords": [
         "speech",
         "bubble",
@@ -67,11 +74,11 @@
         "reply",
         "chat"
       ],
-      "category": "speech"
+      "name": "Speech bubble, tail left"
     },
     {
+      "category": "speech",
       "id": "callouts:thought",
-      "name": "Thought bubble",
       "keywords": [
         "thought",
         "bubble",
@@ -79,11 +86,11 @@
         "think",
         "cloud"
       ],
-      "category": "speech"
+      "name": "Thought bubble"
     },
     {
+      "category": "speech",
       "id": "callouts:shout",
-      "name": "Shout",
       "keywords": [
         "shout",
         "burst",
@@ -92,11 +99,11 @@
         "new",
         "starburst"
       ],
-      "category": "speech"
+      "name": "Shout"
     },
     {
+      "category": "annotation",
       "id": "callouts:line",
-      "name": "Line callout",
       "keywords": [
         "line",
         "callout",
@@ -104,11 +111,11 @@
         "label",
         "annotation"
       ],
-      "category": "annotation"
+      "name": "Line callout"
     },
     {
+      "category": "annotation",
       "id": "callouts:sticky-note",
-      "name": "Sticky note",
       "keywords": [
         "sticky",
         "note",
@@ -116,22 +123,22 @@
         "reminder",
         "memo"
       ],
-      "category": "annotation"
+      "name": "Sticky note"
     },
     {
+      "category": "label",
       "id": "callouts:tag",
-      "name": "Tag",
       "keywords": [
         "tag",
         "label",
         "price",
         "version"
       ],
-      "category": "label"
+      "name": "Tag"
     },
     {
+      "category": "label",
       "id": "callouts:pin",
-      "name": "Pin",
       "keywords": [
         "pin",
         "location",
@@ -139,22 +146,22 @@
         "marker",
         "place"
       ],
-      "category": "label"
+      "name": "Pin"
     },
     {
+      "category": "label",
       "id": "callouts:quote",
-      "name": "Quote",
       "keywords": [
         "quote",
         "quotation",
         "testimonial",
         "citation"
       ],
-      "category": "label"
+      "name": "Quote"
     },
     {
+      "category": "annotation",
       "id": "callouts:brace",
-      "name": "Brace",
       "keywords": [
         "brace",
         "curly",
@@ -162,11 +169,11 @@
         "bracket",
         "annotation"
       ],
-      "category": "annotation"
+      "name": "Brace"
     },
     {
+      "category": "annotation",
       "id": "callouts:bracket",
-      "name": "Bracket",
       "keywords": [
         "bracket",
         "square",
@@ -174,20 +181,13 @@
         "group",
         "annotation"
       ],
-      "category": "annotation"
+      "name": "Bracket"
     }
   ],
-  "credits": [
-    {
-      "id": "fluxion",
-      "license": "MIT",
-      "attribution": "Fluxion contributors",
-      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
-      "source": {
-        "kind": "original",
-        "author": "Fluxion contributors",
-        "statement": "Original artwork drawn for Fluxion."
-      }
-    }
-  ]
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "callouts",
+  "license": "MIT",
+  "name": "Callouts",
+  "version": "0.0.0"
 }
