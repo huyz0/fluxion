@@ -100,7 +100,8 @@ function recommit(upstream, start) {
   const rewritten = new Map();
   for (const sha of commits) {
     const subject = must(['log', '-1', '--format=%s', sha], 'read the subject');
-    const blocked = landingBlock(git(['show', `HEAD:${BACKLOG}`]).stdout, subject);
+    const paths = lines(git(['diff', '--name-only', '--no-renames', `${sha}^`, sha]));
+    const blocked = landingBlock(git(['show', `HEAD:${BACKLOG}`]).stdout, subject, git(['show', `${sha}:${BACKLOG}`]).stdout, paths);
     if (blocked) return fail(`${sha.slice(0, 7)} (${subject}) may not land: ${blocked}`);
     const picked = git(['cherry-pick', '-n', sha]);
     if (picked.status !== 0)

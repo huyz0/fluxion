@@ -253,5 +253,11 @@ describe('land (M18.106)', () => {
     const landed = land('--push');
     assert.equal(landed.status, 0, out(landed));
     assert.equal(remoteHead(), head());
+    // a harness commit that adds its own row lands too (M18.139)
+    const backlog = `${sb.read('docs/backlog/current.md')}| M0.16 | new gate | HARNESS | acceptance | | done | |\n`;
+    reviewed('M0.16', 'docs/backlog/current.md', backlog);
+    const own = land('--push');
+    assert.equal(own.status, 0, out(own));
+    assert.equal(remoteHead(), head());
   });
 });

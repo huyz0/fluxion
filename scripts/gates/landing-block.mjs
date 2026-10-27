@@ -2,6 +2,8 @@
 // only harness rows and the blocking row itself may land task commits. Shared by check-checkpoint
 // (commit-msg hook and exact-commit CI) and land.mjs.
 const MARK = '`blocks-landing`';
+const HARNESS_PATHS = /^(scripts\/|tests\/harness\/|\.harness\/|\.github\/|\.githooks\/|\.agents\/|\.claude\/|docs\/|AGENTS\.md$|CLAUDE\.md$)/;
+const harnessPath = (path) => HARNESS_PATHS.test(path);
 const taskOf = (subject) => /^(M\d+\.\d+):/.exec(subject)?.[1] ?? null;
 
 /** Backlog rows as { id, title, req, state }. */
@@ -20,14 +22,18 @@ export function blockingRows(backlog) {
 
 /**
  * Why a task commit with `subject` may not land on a tree with this `backlog`, or null. A row is a
- * harness row when its Req cell names HARNESS; a task missing from the backlog is not one.
+ * harness row when its Req cell names HARNESS. A row the commit adds itself is read from its own
+ * `proposed` backlog when every changed path is a harness path, so a harness fix can bring its row
+ * (M18.139); a row already on the parent keeps
+ * the parent's Req cell, so a commit cannot relabel itself. A task in neither is not a harness row.
  */
-export function landingBlock(backlog, subject) {
+export function landingBlock(backlog, subject, proposed = '', paths = []) {
   const task = taskOf(subject);
   if (!task) return null;
   const blocking = blockingRows(backlog);
   if (!blocking.length || blocking.some((row) => row.id === task)) return null;
-  const row = rows(backlog).find((r) => r.id === task);
+  // a row the commit brings itself counts only for a commit confined to harness paths (M18.139 r1 F1)
+  const row = rows(backlog).find((r) => r.id === task) ?? (paths.every(harnessPath) ? rows(proposed).find((r) => r.id === task) : undefined);
   if (row && /\bHARNESS\b/.test(row.req)) return null;
   const names = blocking.map((r) => r.id).join(', ');
   return `${task} is not a harness row and ${names} blocks landing until done (\`blocks-landing\`); land the blocking row first`;

@@ -106,7 +106,15 @@ async function limitAt(tree) {
  * Blocking rows are judged on exact commits only (CI): local commits stay allowed while a row blocks
  * landing (M18.123 r1 F1). The parent backlog decides, so a feature commit cannot clear the mark itself.
  */
-const blockedAt = (commit, base, subject) => (commit ? landingBlock(readAt(base, BACKLOG), subject) : null);
+const blockedAt = (commit, base, subject) =>
+  commit
+    ? landingBlock(
+        readAt(base, BACKLOG),
+        subject,
+        readAt(commit, BACKLOG),
+        checkedGit(['diff', '--name-only', '--no-renames', base, commit]).split(/\r?\n/).filter(Boolean),
+      )
+    : null;
 
 /** Enforce prospectively; historical commits without the policy are exempt, deletion is not. */
 export async function checkCheckpoint({ message, commit } = {}) {

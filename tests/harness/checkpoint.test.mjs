@@ -285,4 +285,35 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
       f.sb.cleanup();
     }
   });
+
+  it('a harness commit may bring its own row while a row blocks landing, but no commit can relabel its parent row (M18.139)', () => {
+    const f = history(2);
+    const exact = (subject, edit) => {
+      f.sb.write('docs/backlog/current.md', edit(f.sb.read('docs/backlog/current.md')));
+      git(f.sb, 'commit', '-qam', subject);
+      const sha = git(f.sb, 'rev-parse', 'HEAD');
+      git(f.sb, 'reset', '-q', '--hard', 'HEAD~1');
+      return f.sb.node(POLICY, ['--commit', sha]);
+    };
+    try {
+      const rows = ['| M18.30 | CI green `blocks-landing` | HARNESS | acceptance | | todo | |', '| M18.31 | feature | FR-LIB-007 | acceptance | | todo | |'];
+      f.sb.write('docs/backlog/current.md', `${f.sb.read('docs/backlog/current.md')}\n${rows.join('\n')}\n`);
+      git(f.sb, 'commit', '-qam', 'mark the blocking row');
+      const own = exact('M18.40: fix(harness): new gate', (b) => `${b}| M18.40 | gate | HARNESS | acceptance | | done | |\n`);
+      assert.equal(own.status, 0, out(own));
+      const newFeature = exact('M18.41: feat(packs): new feature', (b) => `${b}| M18.41 | feature | FR-LIB-007 | acceptance | | done | |\n`);
+      assert.equal(newFeature.status, 1, out(newFeature));
+      // a self-labelled HARNESS row does not exempt a commit outside harness paths (r1 F1)
+      f.sb.write('packages/x.ts', 'export {};\n');
+      git(f.sb, 'add', 'packages/x.ts');
+      const sneaky = exact('M18.42: feat(packs): sneaky', (b) => `${b}| M18.42 | sneaky | HARNESS | acceptance | | done | |\n`);
+      assert.equal(sneaky.status, 1, out(sneaky));
+      assert.match(out(sneaky), /M18\.42 is not a harness row/);
+      const relabel = exact('M18.31: feat(packs): a feature', (b) => b.replace('| M18.31 | feature | FR-LIB-007 |', '| M18.31 | feature | HARNESS |'));
+      assert.equal(relabel.status, 1, out(relabel));
+      assert.match(out(relabel), /M18\.31 is not a harness row and M18\.30 blocks landing/);
+    } finally {
+      f.sb.cleanup();
+    }
+  });
 });
