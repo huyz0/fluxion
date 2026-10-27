@@ -3605,3 +3605,12 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - m18-complete names packages/cli/src/pack-import.test.ts (M18.16, todo) for "CLI pack import and font-subset option"; this row's CLI evidence is packages/cli/src/e2e/cli.subset-fonts.test.ts, and M18.16 should add or point that leg at it.
 - Review r1 changes-requested, fixed: re-cutting a font that is already a subset records only the characters its earlier range still covers (so text it cannot draw is reported as a gap, not claimed); the save line uses an ICU plural ("1 font was subset").
 - Rebased onto febe298 (2026-10-30). Review r5 changes-requested, fixed: `--subset-fonts` opened and reopened files without the shape-pack content policy that convert gained in M18.116, so a .flux with saved packs was refused; and the candidate passed its saved packs without their retained artwork font bytes (M18.81), so a 1.1 pack made every subset fall back. The subset host now opens under the policy and passes the input's font bytes; the e2e test adds a file with a 1.1 artwork pack (fails on the old code).
+
+## M18.114 — font engine probe reaches the host cap (2026-10-27)
+- The probe refuses a declared decoded size over the 5 MiB host cap before allocating, as the format adapter does, and reports a 6 MiB declared case decoded with and without the cap: refused by the cap alone, while the uncapped decode is the real font (same SHA-256).
+- It reads the codec module's declared memory maximum from its memory section (2048 pages); the test requires zero malformed-input traps, a peak below that maximum, and four dirty destinations giving identical bytes.
+
+## M18.104 — draw.io importer hardening follow-ups (2026-10-27)
+- The strict XML reader refuses an element with more than 256 attributes (XmlLimits.maxAttributes, both library and entry limits).
+- A stencil `<text>` whose characters fall outside printable ASCII reports `non-ascii-label-characters-replaced: N stencil text(s)`, as model cell labels already did.
+- Triangle directions and label positions look up only their tables' own keys; `toString`/`__proto__` style values fall back to the defaults (before, the entry was refused).

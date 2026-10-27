@@ -230,6 +230,39 @@ describe('draw.io library import (FR-LIB-006)', () => {
     expect(decoded.status === 'processed' && decoded.entries[0]?.title).toBe(`A&B${' '.repeat(400_000)}C`);
   });
 
+  // M18.19 review r4 F1–F3 (M18.104)
+  it('FR-LIB-006 NFR-SEC-001: an element with more than 256 attributes is refused; 256 still read', async () => {
+    // name, w and h plus `count` more
+    const attrs = (count: number) => Array.from({ length: count }, (_, i) => ` a${i}="1"`).join('');
+    const shapes = (count: number) =>
+      `<shapes><shape name="s" w="10" h="10"${attrs(count)}><foreground><rect x="0" y="0" w="10" h="10"/><fillstroke/></foreground></shape></shapes>`;
+    expect((await importDrawioLibrary(shapes(253), options)).status).toBe('processed');
+    expect((await importDrawioLibrary(shapes(254), options)).status).toBe('failed');
+  });
+
+  it('FR-LIB-006: stencil text that loses non-ASCII characters is reported as an omission', async () => {
+    const stencil = (str: string) =>
+      `<shapes><shape name="t" w="40" h="20"><foreground><rect x="0" y="0" w="40" h="20"/><fillstroke/><text str="${str}" x="20" y="10"/></foreground></shape></shapes>`;
+    const accented = await importDrawioLibrary(stencil('Café'), options);
+    const entry = accented.status === 'processed' ? accented.entries[0] : undefined;
+    expect(entry?.status === 'accepted' && entry.omissions).toEqual(['non-ascii-label-characters-replaced: 1 stencil text']);
+    const plain = await importDrawioLibrary(stencil('Cafe'), options);
+    const kept = plain.status === 'processed' ? plain.entries[0] : undefined;
+    expect(kept?.status === 'accepted' && kept.omissions).toEqual([]);
+  });
+
+  it('FR-LIB-006 NFR-SEC-001: style values look up only the tables’ own keys', async () => {
+    // `toString` and `__proto__` are inherited names, not a direction or a label position: they fall back to the defaults
+    const xml = model(
+      box('a', 'triangle;direction=toString') + box('b', 'text;labelPosition=toString;verticalLabelPosition=__proto__', 'Hi') + box('c', 'triangle'),
+    );
+    const done = await importDrawioLibrary(library([{ xml, w: 300, h: 60, title: 'own keys' }]), options);
+    const entry = done.status === 'processed' ? done.entries[0] : undefined;
+    expect(entry?.status).toBe('accepted');
+    const svg = entry?.status === 'accepted' ? entry.value.definition : undefined;
+    expect(JSON.stringify(svg)).not.toMatch(/NaN|undefined/);
+  });
+
   it('FR-LIB-006 NFR-SEC-001: malformed, empty, entity-bearing or oversized libraries fail before conversion', async () => {
     const port = vi.fn(witness);
     for (const input of [

@@ -26,9 +26,16 @@ const MAX_ANCHORS = 256;
 const MAX_SVG_CHARS = 2 * 1024 * 1024;
 
 /** A converted stencil: its SVG, size and connection anchors. */
-type StencilSvg = { readonly svg: string; readonly w: number; readonly h: number; readonly anchors: readonly AnchorDef[] };
+type StencilSvg = {
+  readonly svg: string;
+  readonly w: number;
+  readonly h: number;
+  readonly anchors: readonly AnchorDef[];
+  /** What the SVG could not keep, as the model importer reports it (`non-ascii-label-characters-replaced: …`). */
+  readonly omissions: readonly string[];
+};
 
-type State = { paint: Paint; saved: Paint[]; path: string; readonly out: Sink };
+type State = { paint: Paint; saved: Paint[]; path: string; readonly out: Sink; replaced: number };
 
 const attr = (node: XmlNode, name: string): string | undefined => node.attributes.get(name);
 const n = (node: XmlNode, name: string, fallback = 0): number => numberOf(attr(node, name), fallback);
@@ -142,7 +149,10 @@ const STATE_OPS: Readonly<Record<string, (state: State, node: XmlNode) => void>>
     // a point label: a zero-size box at (x, y) aligned as the stencil says
     const p = state.paint;
     const spec = { text: attr(node, 'str') ?? '', x: n(node, 'x'), y: n(node, 'y'), w: 0, h: 0, size: p.fontSize, color: p.fontColor };
-    state.out.push(labelSvg({ ...spec, align: attr(node, 'align') ?? 'center', valign: attr(node, 'valign') ?? 'middle' }));
+    const svg = labelSvg({ ...spec, align: attr(node, 'align') ?? 'center', valign: attr(node, 'valign') ?? 'middle' });
+    // the checked text profile keeps printable ASCII only: a drawn text that lost characters is reported, as cell labels are
+    if (svg && /[^\x20-\x7e\n]/.test(spec.text)) state.replaced++;
+    state.out.push(svg);
   },
   save: (state) => {
     if (state.saved.length >= MAX_SAVED) refuse('stencil save depth');
@@ -213,15 +223,15 @@ const PAINT: Paint = {
 const PAINTS = new Set(['fill', 'stroke', 'fillstroke']);
 
 /** Draw the background, its implicit fill-and-stroke (unless the foreground starts by painting), then the foreground. */
-function draw(shape: XmlNode, out: Sink): string[] {
-  const state: State = { paint: { ...PAINT }, saved: [], path: '', out };
+function draw(shape: XmlNode, out: Sink): { readonly parts: string[]; readonly replaced: number } {
+  const state: State = { paint: { ...PAINT }, saved: [], path: '', out, replaced: 0 };
   const background = elements(shape, 'background')[0];
   const foreground = elements(shape, 'foreground')[0];
   for (const node of background ? elements(background) : []) drawNode(state, node);
   const first = foreground ? elements(foreground)[0]?.name : undefined;
   if (state.path && !PAINTS.has(first ?? '')) paintNode(state, { name: 'fillstroke', attributes: new Map(), children: [] });
   for (const node of foreground ? elements(foreground) : []) drawNode(state, node);
-  return out.parts;
+  return { parts: out.parts, replaced: state.replaced };
 }
 
 /** One stencil shape as SVG in its own w x h coordinate space; output is charged to the library budget as written. */
@@ -231,8 +241,9 @@ export function stencilSvg(shape: XmlNode, budget: Budget): StencilSvg {
   if (w <= 0 || h <= 0) refuse('invalid-stencil-size');
   const unknown = elements(shape).find((c) => !['connections', 'background', 'foreground'].includes(c.name));
   if (unknown) refuse(`unsupported-stencil-node: ${unknown.name}`);
-  const out = draw(shape, new Sink(Math.min(MAX_SVG_CHARS, budget.left)));
+  const { parts: out, replaced } = draw(shape, new Sink(Math.min(MAX_SVG_CHARS, budget.left)));
   if (out.every((o) => o === '')) refuse('stencil paints nothing');
+  const omissions = replaced > 0 ? [`non-ascii-label-characters-replaced: ${replaced} stencil text${replaced === 1 ? '' : 's'}`] : [];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${num(w)}" height="${num(h)}" viewBox="0 0 ${num(w)} ${num(h)}">${out.join('')}</svg>`;
-  return { svg, w, h, anchors: anchorsOf(shape) };
+  return { svg, w, h, anchors: anchorsOf(shape), omissions };
 }

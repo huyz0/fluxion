@@ -75,7 +75,8 @@ function triangle(p: Paint): string {
       [x + w, y],
     ],
   };
-  return poly(points[direction] ?? points.east, p.both);
+  // a style value is only a key of this table when it is one of its own directions, never an inherited name
+  return poly(Object.hasOwn(points, direction) ? (points[direction] as Pt[]) : points.east, p.both);
 }
 
 function cylinder(p: Paint): string {

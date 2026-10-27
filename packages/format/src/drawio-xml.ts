@@ -6,7 +6,7 @@
 export type XmlNode = { readonly name: string; readonly attributes: ReadonlyMap<string, string>; readonly children: readonly (XmlNode | string)[] };
 
 /** Reader bounds; exceeding any refuses the input. */
-export type XmlLimits = { readonly maxChars: number; readonly maxNodes: number; readonly maxDepth: number };
+export type XmlLimits = { readonly maxChars: number; readonly maxNodes: number; readonly maxDepth: number; readonly maxAttributes: number };
 
 const ENTITIES: { readonly [name: string]: string } = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
 const NAME = /^[A-Za-z_][\w:.-]*/;
@@ -54,10 +54,12 @@ function decodeXmlText(text: string): string | undefined {
   return chunks.join('');
 }
 
-function attributesOf(body: string): Map<string, string> | undefined {
+/** The attributes of a tag body; undefined when malformed, duplicated or more than `max`. */
+function attributesOf(body: string, max: number): Map<string, string> | undefined {
   const found = new Map<string, string>();
   let rest = body.trim();
   while (rest !== '') {
+    if (found.size >= max) return undefined;
     const m = /^([A-Za-z_][\w:.-]*)\s*=\s*(?:"([^"<]*)"|'([^'<]*)')\s*/.exec(rest);
     if (!m) return undefined;
     const name = m[1] as string;
@@ -130,7 +132,7 @@ function openTag(r: Reader, tag: string): boolean {
   const selfClosing = tag.endsWith('/');
   const inner = selfClosing ? tag.slice(0, -1) : tag;
   const name = NAME.exec(inner)?.[0];
-  const attributes = name === undefined ? undefined : attributesOf(inner.slice(name.length));
+  const attributes = name === undefined ? undefined : attributesOf(inner.slice(name.length), r.limits.maxAttributes);
   if (!attributes || ++r.nodes > r.limits.maxNodes || r.stack.length > r.limits.maxDepth) return false;
   if (r.stack.length === 1 && (r.stack[0] as Open).children.length > 0) return false; // a second root
   const node: Open = { name: name as string, attributes, children: [] };

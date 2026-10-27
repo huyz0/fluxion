@@ -27,8 +27,9 @@ const WORK_STEPS = 16 * 1024 * 1024;
 const SVG_DATA_CHARS = Math.ceil((ENTRY_CHARS * 4) / 3) + 64;
 /** mxlibrary rows are objects in one array: deeper JSON is refused before parsing. */
 const JSON_DEPTH = 3;
-const LIBRARY_XML: XmlLimits = { maxChars: LIBRARY_CHARS, maxNodes: 200_000, maxDepth: 64 };
-const ENTRY_XML: XmlLimits = { maxChars: ENTRY_CHARS, maxNodes: 20_000, maxDepth: 64 };
+// draw.io writes a handful of attributes per element; an object wrapper's custom properties stay well below 256
+const LIBRARY_XML: XmlLimits = { maxChars: LIBRARY_CHARS, maxNodes: 200_000, maxDepth: 64, maxAttributes: 256 };
+const ENTRY_XML: XmlLimits = { maxChars: ENTRY_CHARS, maxNodes: 20_000, maxDepth: 64, maxAttributes: 256 };
 const NAMESPACE = /^[a-z0-9][a-z0-9-]*$/;
 
 type Kind = DrawioEntryOutcome['kind'];
@@ -170,7 +171,7 @@ function stencilSources(root: XmlNode): Source[] | string {
   return shapes.map((shape) => {
     const name = shape.attributes.get('name');
     if (shape.name !== 'shape') return { kind: 'unknown' as const, convert: () => unsupported(`unsupported library node: ${shape.name}`) };
-    return { ...(name === undefined ? {} : { title: name }), kind: 'stencil' as const, convert: (budget) => ({ ...stencilSvg(shape, budget), omissions: [] }) };
+    return { ...(name === undefined ? {} : { title: name }), kind: 'stencil' as const, convert: (budget) => stencilSvg(shape, budget) };
   });
 }
 

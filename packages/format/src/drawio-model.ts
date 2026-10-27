@@ -190,12 +190,14 @@ function headerOf(cell: Cell, box: Box): Box {
 }
 
 const SHIFT: Readonly<Record<string, number>> = { top: -1, left: -1, bottom: 1, right: 1 };
+/** The shift of a label position style value: only the table's own keys count (`toString` and the like are no position). */
+const shiftOf = (value: string | undefined): number => (value !== undefined && Object.hasOwn(SHIFT, value) ? (SHIFT[value] as number) : 0);
 
 /** The box a label is laid out in: the cell, its header for containers, or beside it for outside label positions. */
 function labelBox(cell: Cell, box: Box): Box {
   const out = headerOf(cell, box);
-  const dy = (SHIFT[cell.style.values.get('verticalLabelPosition') ?? ''] ?? 0) * box.h;
-  const dx = (SHIFT[cell.style.values.get('labelPosition') ?? ''] ?? 0) * box.w;
+  const dy = shiftOf(cell.style.values.get('verticalLabelPosition')) * box.h;
+  const dx = shiftOf(cell.style.values.get('labelPosition')) * box.w;
   return { ...out, x: out.x + dx, y: out.y + dy };
 }
 
