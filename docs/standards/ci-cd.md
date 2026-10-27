@@ -97,7 +97,7 @@ jobs:
   properties:   # FC_NUM_RUNS=10000 pnpm test:props
   perf:         # pnpm bench; compare to baseline ±15 % (NFR-PERF-005); upload trend
   eval-live:    # pnpm eval --live (needs AI key secret; environment: nightly)
-  visual-xos:   # visual suite on ubuntu/windows/macos Chromium (NFR-PORT-006)
+  visual-xos:   # visual suite on Chromium: ubuntu in the pinned image gates; windows/macos known red until M32 (NFR-PORT-006, ADR-0202)
   report:       # on failure: node scripts/ci/nightly-issue.mjs → opens/updates one issue
 ```
 

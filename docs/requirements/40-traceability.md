@@ -321,7 +321,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PORT-003 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/file-session.test.ts` +3 |
 | NFR-PORT-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-os-matrix.test.mjs` |
 | NFR-PORT-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs`, `tests/harness/ci-workflow.test.mjs` |
-| NFR-PORT-006 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | — |
+| NFR-PORT-006 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` |
 | NFR-REL-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/autosave/autosave-bar.test.tsx` +7 |
 | NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/embed-used.test.ts` +18 |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |

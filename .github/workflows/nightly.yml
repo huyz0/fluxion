@@ -215,13 +215,26 @@ jobs:
     steps:
       - run: echo "eval-live — SKIP, live evals land in M16"
 
+  # ADR-0202: the ubuntu leg runs in the pinned image the baselines were made in (ci.yml's visual job) and must be green; Windows and macOS have no
+  # per-OS baselines until M32 item 11, so their legs run, annotate and upload diffs, and their failure is expected rather than the nightly's
   visual-xos:
     name: visual-xos (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+            known-red: false
+          - os: windows-latest
+            image: ''
+            known-red: true
+          - os: macos-latest
+            image: ''
+            known-red: true
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.image }}
+    continue-on-error: ${{ matrix.known-red }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -233,7 +246,9 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      # the pinned image ships its browsers; a bare runner installs Chromium
+      - if: ${{ matrix.image == '' }}
+        run: pnpm exec playwright install --with-deps chromium
       # the specs render through the built packages (the CLI), so the build comes first
       - run: pnpm run build
       # NFR-PORT-006: the visual suite on every OS, Chromium only

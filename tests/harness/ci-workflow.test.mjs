@@ -312,6 +312,25 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(report, /issues: write/);
   });
 
+  it('NFR-PORT-006 (ADR-0202): visual-xos gates its ubuntu leg in the pinned image and only the legs without baselines are known red', () => {
+    const nightly = workflow('nightly.yml');
+    const xos = /^ {2}visual-xos:[\s\S]*?(?=^ {2}\S)/m.exec(nightly)[0];
+    const legs = [...xos.matchAll(/- os: (\S+)\n\s+image: (\S+)\n\s+known-red: (true|false)/g)].map(([, os, image, red]) => ({ os, image, red }));
+    // the ubuntu leg uses the very image ci.yml's visual job made the baselines in
+    const pinned = /^ {2}visual:[\s\S]*?image: (\S+)/m.exec(workflow('ci.yml'))[1];
+    assert.deepEqual(legs, [
+      { os: 'ubuntu-latest', image: pinned, red: 'false' },
+      { os: 'windows-latest', image: "''", red: 'true' },
+      { os: 'macos-latest', image: "''", red: 'true' },
+    ]);
+    assert.match(xos, /^ {4}container: \$\{\{ matrix\.image \}\}$/m);
+    // the matrix flag is the only thing that lets a leg fail: no step and no other job forgives a failure
+    assert.match(xos, /^ {4}continue-on-error: \$\{\{ matrix\.known-red \}\}$/m);
+    assert.equal([...nightly.matchAll(/continue-on-error/g)].length, 2, 'the visual-xos flag and the bounded clipboard probe');
+    assert.match(xos, /if: \$\{\{ matrix\.image == '' \}\}\n\s+run: pnpm exec playwright install --with-deps chromium/);
+    assert.match(nightly, /^ {2}# ADR-0202:[^\n]*\n(?: {2}#[^\n]*\n)* {2}visual-xos:/m);
+  });
+
   it('HARNESS: nightly perf exposes failure annotations and preserves the JSON report without retries', () => {
     const perf = /^ {2}perf:[\s\S]*?(?=^ {2}\S)/m.exec(workflow('nightly.yml'))[0];
     assert.match(

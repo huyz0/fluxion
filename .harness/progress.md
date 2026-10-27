@@ -3372,3 +3372,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 ## M18.166 — completion-gate Vitest legs name the failing test (cp22 F3)
 
 - m18-complete's `tests()` reads the JSON report before deleting it when Vitest exits non-zero and prints `FAIL <full name>: <first failure line>` (or a failed suite's message), falling back to the process output's tail when there is no report. m18-feature-legs proves a stub failing suite's test name appears and the reporter's 'JSON report written' line does not.
+## M18.133 — visual-xos gates the pinned ubuntu leg (ADR-0202) (2026-10-27)
+
+- Recommended option of the open question to Huy (2026-10-27), reversible until landed: the ubuntu leg runs in ci.yml's pinned Playwright image and gates; Windows and macOS legs carry `known-red: true` (job-level continue-on-error), still annotate and upload diffs, until M32 item 11 makes per-OS baselines.
+- No threshold or baseline changes. ci-workflow.test.mjs pins the legs, the shared image digest and that continue-on-error appears only twice.
+- check-workflows skips locally (no Docker); actionlint runs in CI.
