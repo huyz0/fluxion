@@ -7,7 +7,7 @@ import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
 import { pathData, useValue } from '@fluxion/render';
 import { plural, t } from '@lingui/core/macro';
 import '../i18n.js';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { LIBRARY_DRAG_TYPE } from './library-insert.js';
 import { buildLibraryIndex, entryOf, type LibraryEntry } from './library-search.js';
 
@@ -101,6 +101,10 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
   const { shapeDefs, onPick, onReplace, canReplace = false, hidden } = props;
   const [query, setQuery] = useState('');
   const [replacing, setReplacing] = useState(false);
+  // losing the replaceable selection lets go of the toggle, so a later selection does not find it still on
+  useEffect(() => {
+    if (!canReplace) setReplacing(false);
+  }, [canReplace]);
   const replaceMode = replacing && canReplace;
   const pick =
     onPick === undefined

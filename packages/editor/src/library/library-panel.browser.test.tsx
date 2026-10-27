@@ -98,5 +98,13 @@ describe('library panel (FR-LIB-001)', () => {
       ['basic:rect', 'basic:cylinder'],
       ['flow:decision', 'basic:rect'],
     ]);
+    // switched on, then the selection lost: a later selection does not find it still on, and a plain click inserts
+    await click(toggle());
+    await render(false);
+    await render(true);
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+    await click(item('flow:decision'));
+    expect(picked.at(-1)).toBe('flow:decision');
+    expect(replaced).toHaveLength(2);
   });
 });
