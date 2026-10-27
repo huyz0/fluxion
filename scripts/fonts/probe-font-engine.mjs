@@ -32,13 +32,15 @@ const copyIn = (x, alloc, bytes) => {
   return at;
 };
 
-/** Decode with a host cap and a canary after the destination; returns { size, canary } or a trap name. */
-function decode(c, bytes, capacity) {
+/** Decode with a host cap (default 5 MiB) and a canary after the destination; returns { size, canary } or a trap name. */
+function decode(c, bytes, capacity, hostCap = MAX_SFNT) {
   const input = copyIn(c, c.codec_alloc, bytes);
   try {
     // wasm32 size_t reaches JavaScript signed; read it unsigned so a declared size of 2 GiB or more is not negative
     const declared = c.woff2_final_size(input, bytes.length) >>> 0;
-    const cap = Math.min(capacity ?? declared, MAX_SFNT);
+    // as the format adapter does: a declared size over the host cap is refused before any allocation
+    if (declared > hostCap) return { size: 0, canary: true, overCap: true };
+    const cap = Math.min(capacity ?? declared, hostCap);
     if (cap <= 0) return { size: 0, canary: true };
     const out = c.codec_alloc(cap + 16);
     new Uint8Array(c.memory.buffer, out + cap, 16).fill(0xc3);
@@ -94,6 +96,32 @@ function subset(h, sfnt, text) {
   return bytes;
 }
 
+/** The declared maximum (in 64 KiB pages) of a module's own linear memory, read from its memory section; undefined when unbounded. */
+function memoryMaximum(wasm) {
+  let at = 8;
+  const leb = () => {
+    let value = 0;
+    for (let shift = 0; ; shift += 7) {
+      const b = wasm[at++];
+      value += (b & 0x7f) * 2 ** shift;
+      if (b < 0x80) return value;
+    }
+  };
+  while (at < wasm.length) {
+    const id = wasm[at++];
+    const size = leb();
+    const end = at + size;
+    if (id === 5) {
+      leb(); // one memory
+      const flags = leb();
+      leb(); // initial
+      return flags & 1 ? leb() : undefined;
+    }
+    at = end;
+  }
+  return undefined;
+}
+
 /** Deterministic xorshift so malformed cases are the same on every run. */
 function* random(seed) {
   let x = seed >>> 0;
@@ -121,7 +149,7 @@ function malformedCases(font) {
   new DataView(huge.buffer).setUint32(16, 0xffffffff); // totalSfntSize: the host cap applies before allocation
   cases.push(huge);
   const over = font.slice();
-  new DataView(over.buffer).setUint32(16, 6 * 1024 * 1024); // a positive declared size over the cap: decode gets the capped buffer and refuses
+  new DataView(over.buffer).setUint32(16, 6 * 1024 * 1024); // a positive declared size over the cap: refused before allocation
   cases.push(over);
   return cases;
 }
@@ -185,6 +213,22 @@ async function main() {
     empty: subset(h, new Uint8Array(0), 'abc') === undefined,
     pagesAfter: h.memory.buffer.byteLength / 65536,
   };
+  // a declared size between the 5 MiB host cap and 2 GiB: the very same input decodes without the cap, so only the cap refuses it
+  const over = font.slice();
+  new DataView(over.buffer).setUint32(16, 6 * 1024 * 1024);
+  const capped = decode(c, over);
+  const uncapped = decode(c, over, undefined, Number.POSITIVE_INFINITY);
+  const at = copyIn(c, c.codec_alloc, over);
+  const declared = c.woff2_final_size(at, over.length) >>> 0;
+  c.codec_free(at);
+  result.overCap = {
+    declared,
+    cappedSize: capped.size,
+    refusedByCap: capped.overCap === true,
+    uncappedSize: uncapped.size,
+    uncappedSha256Matches: uncapped.size > 0 && sha256(uncapped.bytes) === sha256(sfnt.bytes),
+  };
+  result.codecMaxPages = memoryMaximum(readFileSync(join(assets, 'woff2-codec.wasm')));
   result.malformed = await malformed(font);
   console.log(JSON.stringify(result));
 }

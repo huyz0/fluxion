@@ -64,21 +64,31 @@ test('FR-AST-003 NFR-SEC-002: malformed fonts and dirty output buffers remain bo
   );
   const r = JSON.parse(out);
   assert.equal(r.codegenBlocked, true, 'the engines run with JavaScript string code generation forbidden');
-  // a real font decodes, subsets and re-encodes; every dirty destination yields the same bytes (padding is zeroed)
+  // a real font decodes, subsets and re-encodes; every dirty destination (0x00, 0xa5, 0xff, 0x5a) yields the same bytes, so padding is zeroed
   assert.ok(r.pipeline.sfntBytes > r.pipeline.subsetBytes && r.pipeline.subsetBytes > 0);
-  assert.equal(new Set(r.pipeline.woff2.map((e) => e.sha256)).size, 1);
+  assert.equal(r.pipeline.woff2.length, 4, 'four dirty destinations');
+  assert.equal(new Set(r.pipeline.woff2.map((e) => e.sha256)).size, 1, 'the bytes do not depend on what the destination held');
   assert.ok(r.pipeline.woff2.every((e) => e.size > 0 && e.canary));
   assert.ok(r.pipeline.redecodedSubsetSha256Matches);
   // too-small destinations are refused without writing past them
   assert.deepEqual(r.bounds, { encodeTooSmall: { size: 0, canary: true }, decodeTooSmall: { size: 0, canary: true } });
   // HarfBuzz refuses garbage and empty fonts and keeps its fixed 65 MiB (1040-page) memory
   assert.deepEqual(r.harfbuzz, { pages: 1040, garbage: true, empty: true, pagesAfter: 1040 });
+  // a declared size between the 5 MiB host cap and 2 GiB is refused by the cap alone: without it the same bytes decode to the real font
+  const o = r.overCap;
+  assert.ok(o.declared > 5 * 1024 * 1024 && o.declared < 2 ** 31, `declared ${o.declared} lies between the cap and 2 GiB`);
+  assert.deepEqual({ size: o.cappedSize, byCap: o.refusedByCap }, { size: 0, byCap: true });
+  assert.equal(o.uncappedSize, r.pipeline.sfntBytes);
+  assert.ok(o.uncappedSha256Matches, 'the uncapped decode is the same font');
   const m = r.malformed;
   assert.equal(m.refused + m.decoded + m.traps, m.cases);
+  assert.equal(m.traps, 0, 'no malformed input traps the codec');
   assert.ok(m.refused > m.cases / 2, 'most corrupted inputs are refused');
   assert.ok(m.canariesIntact, 'no decode writes past its destination');
   assert.ok(m.maxSize <= r.pipeline.sfntBytes && m.maxSize <= 5 * 1024 * 1024);
-  assert.ok(m.maxMemory <= 128 * 1024 * 1024);
+  // the codec's memory stays below the maximum its module declares (2048 pages = 128 MiB)
+  assert.equal(r.codecMaxPages, 2048);
+  assert.ok(m.maxMemory < r.codecMaxPages * 65536, `peak ${m.maxMemory} bytes is below the module maximum`);
 });
 
 const WORKER = `
