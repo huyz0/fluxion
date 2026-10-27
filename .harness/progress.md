@@ -2955,3 +2955,8 @@ checkShapePack now evaluates each definition at every number param's min, max an
 - F1 rebased stream commits land without re-gating and no landed diff matches its reviewed hash → M18.106. F2 → M18.99 extended; Commit cells filled.
 - F3 Replace mode latches → M18.107. F4 two pack encoders → M18.108 (M18.29, M18.105, M18.81 amended). F6 font-engine rebuild never runs → M18.109. F5, F7 (M18.103 already landed) → M18.110.
 - Row IDs M18.104/105 were taken by two streams; M18.38's connector rows renumbered to M18.111/112.
+## M18.96 — portable artwork-font closure (2026-10-27)
+
+- Format: 1.1 sources (distribution or embedded, with verified `fonts`) save used-only 1.1 subsets (pruned bindings/faces/resources/credit scopes), 1.1 locks and one `assets/<sha>.woff2` per hash. Loaders (full and lean, archive and inline) rehash font assets; missing/changed refuses. 1.0 lock schema kept as `shapePackLock10Schema`; lock/entry format must agree. Font-retaining saves reopen under `destinationLimits`.
+- Review r1 (changes requested): F1 partial/omitted destination limits fell back to zip defaults, not the loader's; now merged over loader DEFAULT_LIMITS with a 128 MiB+1 test (size-keyed fast hash port; the pure port timed out under a loaded suite). F2 limits captured before the first await.
+- New suite artwork-font-retention 9/9; format 249/249. Seven removal probes each turned tests RED. Public widening documented with migration in changeset and 08-file-format.

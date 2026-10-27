@@ -2,7 +2,7 @@
 // writes. The decisions are here, apart from the browser APIs that move the bytes (file-host.ts): a `.flux`, `.flux.html` or `.flux.json` opens
 // to a document and its assets; a file written by a newer major version (`readOnly`) or opened in part (`salvage`) is never saved over its
 // own file, only as a copy; and only a `.flux` is saved over, since the others are different formats.
-import { allowsShapePackContentLicense, type FileIO, type ShapePackSubset } from '@fluxion/core';
+import { allowsShapePackContentLicense, type FileIO, type VersionedShapePackSubset } from '@fluxion/core';
 import {
   type ContentHasher,
   createMemoryAssetStore,
@@ -58,7 +58,7 @@ export type OpenedFile = {
   /** Original opaque plugin locks, retained through saves. */
   readonly plugins?: readonly unknown[];
   /** Validated embedded geometry and complete source credits. */
-  readonly shapePacks?: readonly ShapePackSubset[];
+  readonly shapePacks?: readonly VersionedShapePackSubset[];
   /** References unresolved at open time; never inferred from later edits. */
   readonly unresolvedShapeIds?: ReadonlySet<string>;
 };

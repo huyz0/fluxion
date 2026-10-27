@@ -294,8 +294,20 @@ Pack 1.1 index, category and saved-subset envelopes add `fontResources`, `fontFa
 parsers validate them; the 1.0 parsers and 1.0 files are unchanged and refuse 1.1. Migration: a
 1.0 pack needs no change; a pack whose artwork draws text must move to 1.1 and declare its exact
 faces, resources and font credits. A writer never downgrades 1.1 to 1.0, even when the font
-closure is empty. Known data locks still declare `packFormat: '1.0'`; their 1.1 variant, byte
-acquisition and portable retention are M18.95 to M18.97.
+closure is empty. SDK acquisition (M18.95) returns verified bytes; host registration is M18.97.
+
+Portable retention (M18.96): a used 1.1 source is saved as a 1.1 subset with only the used
+definitions' bindings, faces, resources (path dropped) and credit scopes, under a lock with
+`packFormat: '1.1'`. Each retained resource's exact bytes, supplied as `fonts` (SHA-256 to bytes)
+on the source and verified, are written once per hash as the generic asset
+`assets/<sha256>.woff2`, with no theme font record; `PreparedShapePacks.fontAssets` lists them.
+Both loaders, archive and inline, rehash those assets before accepting the lock; a missing or
+changed font refuses the file (`FILE_SHAPE_PACK_INVALID`). A 1.0 lock keeps the unchanged 1.0
+schema and subset parser, so a 1.0 lock cannot carry a 1.1 entry, and a 1.1 lock refuses a 1.0
+entry. A save that retains fonts reopens its final archive under `destinationLimits` (default: the
+loader's) before returning. Migration: `LoadedFlux.shapePacks` and `ShapePackSourceData` now
+admit 1.1 subsets and `ShapePackDataLock.packFormat` admits `'1.1'`; hosts that register only 1.0
+(`registerShapePackSubsets`) refuse 1.1 subsets atomically until M18.97.
 
 ### Known shape data I/O (ADR-0184)
 

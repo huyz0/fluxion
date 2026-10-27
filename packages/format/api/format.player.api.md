@@ -9,7 +9,7 @@ import { DocumentFile } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { sha256Hex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
-import { ShapePackSubset } from '@fluxion/core';
+import { VersionedShapePackSubset } from '@fluxion/core';
 
 // @public
 export type ContentHasher = {
@@ -28,7 +28,7 @@ export function leanDocumentText(text: string): Result<OpenedDocument, FormatErr
 
 // @public
 export type LoadedFlux = {
-    readonly shapePacks: readonly ShapePackSubset[];
+    readonly shapePacks: readonly VersionedShapePackSubset[];
     readonly document: DocumentFile;
     readonly diagnostics: readonly Diagnostic[];
     readonly notes: readonly LoadNote[];

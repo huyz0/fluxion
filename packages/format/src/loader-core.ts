@@ -1,4 +1,4 @@
-import type { ShapePackLicensePolicy, ShapePackSubset } from '@fluxion/core';
+import type { ShapePackLicensePolicy, VersionedShapePackSubset } from '@fluxion/core';
 // The `.flux` loader's container half (FR-FIL-009, NFR-REL-002; architecture/08 §2): sniff, unpack under limits, check paths, verify against the manifest,
 // open the document with the reader it is given, collect the assets. It never throws: a file that cannot open is a `FormatError`,
 // a file that opens with damage carries `notes` and the reader's `diagnostics`. The validating reader (`document-open.ts`, M10.7: it salvages a cut-off or
@@ -33,8 +33,8 @@ export type LoadOptions = {
  * @public
  */
 export type LoadedFlux = {
-  /** Known saved geometry validated atomically; no definitions are registered by loading. */
-  readonly shapePacks: readonly ShapePackSubset[];
+  /** Known saved geometry validated atomically; 1.1 entries' fonts are verified `assets`. No definitions are registered by loading. */
+  readonly shapePacks: readonly VersionedShapePackSubset[];
   /** The document, migrated, repaired and validated. */
   readonly document: DocumentFile;
   /** What validation and repair found: warnings and info. */
@@ -89,7 +89,8 @@ export type LoadedManifest = {
 /** The entries the loader reads itself: they are not extras. */
 const KNOWN_ENTRIES = new Set(['mimetype', 'manifest.json', 'document.json', 'theme/tokens.json', 'source/document.flux.yaml', 'preview.webp']);
 
-const DEFAULT_LIMITS: Required<ZipLimits> = { maxEntries: 4096, maxEntryBytes: 128 * 1024 * 1024, maxTotalBytes: 256 * 1024 * 1024, strictNames: false };
+/** The loader's archive limits; portable saves check retained fonts against them by default. */
+export const DEFAULT_LIMITS: Required<ZipLimits> = { maxEntries: 4096, maxEntryBytes: 128 * 1024 * 1024, maxTotalBytes: 256 * 1024 * 1024, strictNames: false };
 const ZIP_MAGIC = [0x50, 0x4b, 0x03, 0x04];
 const ASSET_PATH = /^assets\/([0-9a-f]{64})\.([a-z0-9]+)$/;
 const MIME_OF: { readonly [ext: string]: string } = {

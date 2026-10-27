@@ -1,4 +1,4 @@
-import { parseShapePackSubset, type ShapePackLicensePolicy, type ShapePackSubset } from '@fluxion/core';
+import { parseShapePackSubset, parseVersionedShapePackSubset, type ShapePackLicensePolicy, type VersionedShapePackSubset } from '@fluxion/core';
 import { checkedSchema, type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
 import { z } from 'zod';
 import { encodeBase64 } from './base64.js';
@@ -7,16 +7,18 @@ import type { ContentHasher } from './flux-write-types.js';
 import type { ShapePackDataLock } from './shape-pack-prepare.js';
 import { decodeUtf8Strict } from './utf8.js';
 
-const lockSchema = checkedSchema<ShapePackDataLock>()(
-  z.strictObject({
-    kind: z.literal('declarative-shapes'),
-    id: z.string().min(1),
-    version: z.string().min(1),
-    packFormat: z.literal('1.0'),
-    entry: z.string().min(1),
-    integrity: z.string().regex(/^sha256-[A-Za-z0-9+/]{43}=$/),
-  }),
-);
+const lockFields = {
+  kind: z.literal('declarative-shapes'),
+  id: z.string().min(1),
+  version: z.string().min(1),
+  entry: z.string().min(1),
+  integrity: z.string().regex(/^sha256-[A-Za-z0-9+/]{43}=$/),
+};
+/** The released 1.0 lock contract, unchanged; it refuses any other `packFormat`, including 1.1. */
+export const shapePackLock10Schema: z.ZodType<ShapePackDataLock & { readonly packFormat: '1.0' }> = checkedSchema<
+  ShapePackDataLock & { readonly packFormat: '1.0' }
+>()(z.strictObject({ ...lockFields, packFormat: z.literal('1.0') }));
+const lock11Schema = checkedSchema<ShapePackDataLock & { readonly packFormat: '1.1' }>()(z.strictObject({ ...lockFields, packFormat: z.literal('1.1') }));
 const listedSchema = z.object({ sha256: z.string().regex(/^[0-9a-f]{64}$/), size: z.number().int().nonnegative() });
 const object = (input: unknown): input is Record<string, unknown> => typeof input === 'object' && input !== null && !Array.isArray(input);
 /** Whether the opaque value explicitly declares the known data-only kind. */
@@ -29,10 +31,26 @@ const failure = (path: string, message: string, diagnostics?: readonly Diagnosti
   });
 
 /** Data accepted atomically; unknown locks are never interpreted. */
-export type ValidatedShapePacks = { readonly locks: readonly ShapePackDataLock[]; readonly subsets: readonly ShapePackSubset[] };
+export type ValidatedShapePacks = { readonly locks: readonly ShapePackDataLock[]; readonly subsets: readonly VersionedShapePackSubset[] };
 type Captured = { readonly lock: ShapePackDataLock; readonly bytes: Uint8Array; readonly path: string };
 function invalidIdentity(lock: ShapePackDataLock, ids: ReadonlySet<string>, paths: ReadonlySet<string>): boolean {
   return lock.entry !== `plugins/${lock.id}@${lock.version}/defs.json` || ids.has(lock.id) || paths.has(lock.entry);
+}
+
+/** A known lock: the 1.1 schema when it says 1.1, otherwise the unchanged 1.0 contract. */
+function parseLock(raw: unknown, path: string): Result<ShapePackDataLock, FormatError> {
+  const parsed = (object(raw) && raw['packFormat'] === '1.1' ? lock11Schema : shapePackLock10Schema).safeParse(raw);
+  if (parsed.success) return ok(parsed.data);
+  return failure(
+    path,
+    'invalid declarative shape lock',
+    parsed.error.issues.map((issue) => ({
+      code: 'FLX_PACK_INVALID',
+      severity: 'error',
+      path: path + jsonPointer(issue.path.map((p) => String(p))),
+      message: issue.message,
+    })),
+  );
 }
 
 function capture(plugins: unknown, entries: ReadonlyMap<string, Uint8Array>): Result<Captured[], FormatError> {
@@ -43,19 +61,9 @@ function capture(plugins: unknown, entries: ReadonlyMap<string, Uint8Array>): Re
   for (const [i, raw] of plugins.entries()) {
     if (!isShapePackLock(raw)) continue;
     const path = `/plugins/${i}`;
-    const parsed = lockSchema.safeParse(raw);
-    if (!parsed.success)
-      return failure(
-        path,
-        'invalid declarative shape lock',
-        parsed.error.issues.map((issue) => ({
-          code: 'FLX_PACK_INVALID',
-          severity: 'error',
-          path: path + jsonPointer(issue.path.map((p) => String(p))),
-          message: issue.message,
-        })),
-      );
-    const lock = parsed.data;
+    const parsed = parseLock(raw, path);
+    if (!parsed.ok) return parsed;
+    const lock = parsed.value;
     if (invalidIdentity(lock, ids, paths)) return failure(path, 'known shape lock path or namespace is invalid or duplicated');
     const bytes = entries.get(lock.entry);
     if (!bytes) return failure(path, 'known shape entry is missing');
@@ -70,7 +78,7 @@ function manifestMatches(listed: unknown, item: Captured, hex: string): boolean 
   const parsed = listedSchema.safeParse(listed[item.lock.entry]);
   return parsed.success && parsed.data.sha256 === hex && parsed.data.size === item.bytes.length;
 }
-function parseEntry(item: Captured, policy: ShapePackLicensePolicy): Result<ShapePackSubset, FormatError> {
+function parseEntry(item: Captured, policy: ShapePackLicensePolicy): Result<VersionedShapePackSubset, FormatError> {
   const text = decodeUtf8Strict(item.bytes);
   if (text === undefined) return failure(item.path, 'shape entry is not valid UTF-8');
   let input: unknown;
@@ -79,7 +87,7 @@ function parseEntry(item: Captured, policy: ShapePackLicensePolicy): Result<Shap
   } catch {
     return failure(item.path, 'shape entry is not valid JSON');
   }
-  const parsed = parseShapePackSubset(input, policy);
+  const parsed = item.lock.packFormat === '1.1' ? parseVersionedShapePackSubset(input, policy) : parseShapePackSubset(input, policy);
   if (!parsed.ok)
     return failure(
       item.path,
@@ -87,33 +95,70 @@ function parseEntry(item: Captured, policy: ShapePackLicensePolicy): Result<Shap
       parsed.error.map((d) => ({ ...d, path: `${item.path}${d.path}` })),
     );
   if (parsed.value.id !== item.lock.id || parsed.value.version !== item.lock.version) return failure(item.path, 'shape entry identity differs from its lock');
+  if (parsed.value.formatVersion !== item.lock.packFormat) return failure(item.path, 'shape entry format differs from its lock');
   return parsed;
+}
+
+/** Every 1.1 font resource must be present as `assets/<sha256>.woff2` with its exact size and hash; archive readers rehash. */
+async function fontAssetsMatch(
+  subset: VersionedShapePackSubset,
+  entries: ReadonlyMap<string, Uint8Array>,
+  hash: (bytes: Uint8Array) => Promise<string>,
+): Promise<boolean> {
+  if (subset.formatVersion !== '1.1') return true;
+  for (const resource of subset.fontResources) {
+    const bytes = entries.get(`assets/${resource.sha256}.woff2`);
+    if (!bytes || bytes.byteLength !== resource.size || (await hash(bytes.slice())) !== resource.sha256) return false;
+  }
+  return true;
 }
 
 function integrityMatches(item: Captured, hex: string, digest: string, manifest: { readonly entries: unknown } | undefined): boolean {
   return item.lock.integrity === `sha256-${digest}` && (manifest === undefined || manifestMatches(manifest.entries, item, hex));
 }
 
+type EntryCheck = {
+  readonly policy: ShapePackLicensePolicy;
+  readonly hash: (bytes: Uint8Array) => Promise<string>;
+  readonly manifest: { readonly entries: unknown } | undefined;
+  /** Archive entries holding retained fonts, or undefined to skip the font check. */
+  readonly fonts: ReadonlyMap<string, Uint8Array> | undefined;
+};
+/** One captured entry: integrity, its format's parser, then its retained fonts. */
+async function checkEntry(item: Captured, check: EntryCheck): Promise<Result<VersionedShapePackSubset, FormatError>> {
+  const hex = await check.hash(item.bytes.slice());
+  if (!/^[0-9a-f]{64}$/.test(hex)) return failure(item.path, 'hash port returned an invalid SHA-256 digest');
+  const digest = encodeBase64(Uint8Array.from({ length: 32 }, (_, i) => Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16)));
+  if (!integrityMatches(item, hex, digest, check.manifest)) return failure(item.path, 'shape entry does not match its lock or manifest hash and size');
+  const subset = parseEntry(item, check.policy);
+  if (!subset.ok) return subset;
+  if (check.fonts && !(await fontAssetsMatch(subset.value, check.fonts, check.hash)))
+    return failure(item.path, 'a retained artwork font is missing or does not match its resource hash and size');
+  return subset;
+}
+
 /** Check known locks and bytes; providing manifest entries additionally requires exact hash/size agreement. */
 export async function validateShapePackEntries(
   plugins: unknown,
   entries: ReadonlyMap<string, Uint8Array>,
-  options: { readonly policy: ShapePackLicensePolicy | undefined; readonly hasher: ContentHasher; readonly manifest?: { readonly entries: unknown } },
+  options: {
+    readonly policy: ShapePackLicensePolicy | undefined;
+    readonly hasher: ContentHasher;
+    readonly manifest?: { readonly entries: unknown };
+    /** False only to identify old entries a save replaces; every reader and new entry checks fonts. */
+    readonly fonts?: boolean;
+  },
 ): Promise<Result<ValidatedShapePacks, FormatError>> {
-  const { policy, hasher, manifest } = options;
+  const { policy, hasher, manifest, fonts: checkFonts = true } = options;
   const captured = capture(plugins, entries);
   if (!captured.ok) return captured;
   if (!captured.value.length) return ok({ locks: [], subsets: [] });
   if (typeof policy !== 'function') return failure('/plugins', 'known shape data requires an explicit content policy');
   try {
     const hash = hasher.sha256.bind(hasher);
-    const subsets: ShapePackSubset[] = [];
+    const subsets: VersionedShapePackSubset[] = [];
     for (const item of captured.value) {
-      const hex = await hash(item.bytes.slice());
-      if (!/^[0-9a-f]{64}$/.test(hex)) return failure(item.path, 'hash port returned an invalid SHA-256 digest');
-      const digest = encodeBase64(Uint8Array.from({ length: 32 }, (_, i) => Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16)));
-      if (!integrityMatches(item, hex, digest, manifest)) return failure(item.path, 'shape entry does not match its lock or manifest hash and size');
-      const subset = parseEntry(item, policy);
+      const subset = await checkEntry(item, { policy, hash, manifest, fonts: checkFonts ? entries : undefined });
       if (!subset.ok) return subset;
       subsets.push(subset.value);
     }

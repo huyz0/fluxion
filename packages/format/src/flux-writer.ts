@@ -105,6 +105,13 @@ async function assetEntries(input: WriteFluxInput): Promise<Result<ZipInput[], F
   return ok(out);
 }
 
+/** Extra entries plus the assets under their archive names, where known 1.1 locks find their fonts. */
+export function withAssetEntries(input: Pick<WriteFluxInput, 'extraEntries' | 'assets'>): Map<string, Uint8Array> {
+  const entries = new Map(input.extraEntries ?? []);
+  for (const [key, asset] of input.assets ?? []) entries.set(`assets/${key}.${asset.ext ?? extensionOf(asset.mime)}`, asset.bytes);
+  return entries;
+}
+
 /**
  * Write `input` as a `.flux` zip. The same input gives the same bytes. A failure is a `reason`: an asset whose key is not its hash, or an
  * archive the zip format cannot hold.
@@ -114,7 +121,7 @@ async function assetEntries(input: WriteFluxInput): Promise<Result<ZipInput[], F
 export async function writeFlux(original: WriteFluxInput): Promise<Result<Uint8Array, FluxWriteFailure>> {
   try {
     const input = snapshotPackData(original);
-    const shapes = await validateShapePackEntries(input.plugins, input.extraEntries ?? new Map(), {
+    const shapes = await validateShapePackEntries(input.plugins, withAssetEntries(input), {
       policy: input.shapePackLicensePolicy,
       hasher: input.hasher,
     });

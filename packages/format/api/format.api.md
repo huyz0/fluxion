@@ -15,10 +15,11 @@ import { ShapeDef } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSource } from '@fluxion/core';
-import { ShapePackSubset } from '@fluxion/core';
 import { SvgArtwork } from '@fluxion/schema';
 import { SvgArtworkNode } from '@fluxion/schema';
 import { TokenRef } from '@fluxion/schema';
+import { VersionedShapePackIndex } from '@fluxion/core';
+import { VersionedShapePackSubset } from '@fluxion/core';
 
 // @public
 export type AssetCheck = "clean" | "changed" | "refused";
@@ -369,7 +370,7 @@ export type JournalPut = {
 
 // @public
 export type LoadedFlux = {
-    readonly shapePacks: readonly ShapePackSubset[];
+    readonly shapePacks: readonly VersionedShapePackSubset[];
     readonly document: DocumentFile;
     readonly diagnostics: readonly Diagnostic[];
     readonly notes: readonly LoadNote[];
@@ -470,6 +471,7 @@ export type PreparedShapePacks = {
     readonly diagnostics: readonly Diagnostic[];
     readonly locks: readonly ShapePackDataLock[];
     readonly extraEntries: ReadonlyMap<string, Uint8Array>;
+    readonly fontAssets: ReadonlyMap<string, Uint8Array>;
 };
 
 // @public
@@ -576,7 +578,7 @@ export type ShapePackDataLock = {
     readonly kind: "declarative-shapes";
     readonly id: string;
     readonly version: string;
-    readonly packFormat: "1.0";
+    readonly packFormat: "1.0" | "1.1";
     readonly entry: string;
     readonly integrity: string;
 };
@@ -584,11 +586,13 @@ export type ShapePackDataLock = {
 // @public
 export type ShapePackSourceData = {
     readonly kind: "distribution";
-    readonly index: ShapePackIndex;
+    readonly index: VersionedShapePackIndex;
     readonly definitions: readonly ShapeDef[];
+    readonly fonts?: ReadonlyMap<string, Uint8Array>;
 } | {
     readonly kind: "embedded";
-    readonly subset: ShapePackSubset;
+    readonly subset: VersionedShapePackSubset;
+    readonly fonts?: ReadonlyMap<string, Uint8Array>;
 };
 
 // @public
@@ -775,6 +779,7 @@ export type WritePortableFluxHtmlInput = Omit<WriteFluxHtmlInput, "flux"> & {
 
 // @public
 export type WritePortableFluxInput = WriteFluxInput & {
+    readonly destinationLimits?: ZipLimits;
     readonly shapePacks: Omit<PrepareShapePacksOptions, "hasher"> & {
         readonly sources: readonly ShapePackSourceData[];
     };

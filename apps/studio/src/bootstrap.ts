@@ -1,7 +1,7 @@
 // Opening a document in the studio (04 §4 "Bootstrapping"): a store for it, the host's first-party
 // packs registered into its core registries (ADR-0017: the studio bundles packs/basic), and the
 // render registries that draw from them.
-import { allowsShapePackContentLicense, type Core, createCore, type Logger, registerShapePackSubsets, type ShapePackSubset } from '@fluxion/core';
+import { allowsShapePackContentLicense, type Core, createCore, type Logger, registerShapePackSubsets, type VersionedShapePackSubset } from '@fluxion/core';
 import { registerApplyPatchCommand } from '@fluxion/dsl';
 import { registerArrangeCommand, registerBuiltInLayouts, registerBuiltInTemplates } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
@@ -44,7 +44,7 @@ function registerLayouts(registries: Core['registries']): { readonly ok: true } 
  */
 export function openDocument(
   file: DocumentFile,
-  options: { readonly readOnly?: boolean; readonly logger?: Logger; readonly shapePacks?: readonly ShapePackSubset[] } = {},
+  options: { readonly readOnly?: boolean; readonly logger?: Logger; readonly shapePacks?: readonly VersionedShapePackSubset[] } = {},
 ): Result<OpenDocument, string> {
   options.logger?.log('debug', 'opening a document', { records: Object.keys(file.records).length, readOnly: options.readOnly === true });
   const core = createCore(file, options.readOnly === true ? { policy: 'read-only' } : {});
