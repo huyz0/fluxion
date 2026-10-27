@@ -76,6 +76,9 @@
       "path": "./packs/flowchart"
     },
     {
+      "path": "./packs/arrows"
+    },
+    {
       "path": "./e2e"
     }
   ]

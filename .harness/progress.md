@@ -2867,3 +2867,9 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - New workspace packs/flowchart: 25 generic MIT original-work flowchart shapes in three categories (process, data, flow), pack/ distribution and 25 goldens via the ADR-0193 suite; contact sheet inspected visually.
 - Shared pack test now draws goldens from the exported definitions and adds a generic/no-vendor-brand check (NFR-LIC-003); basic's test uses the same template (M18.20 F1 fixed, F2 argued).
 - flowchart 5/5 and basic 4/4 PASS after regeneration.
+
+## M18.22 — arrows declarative pack (2026-10-27)
+
+- New workspace packs/arrows: 18 generic MIT original-work block arrows in four categories with head/shaft/point params and handles, pack/ distribution and 18 goldens via the ADR-0193 suite; contact sheet inspected.
+- arrows 5/5 PASS after regeneration; the first draft's text region named an outline-local alias and was rejected by the validator, fixed to a param expression.
+- Review r1 changes-requested (1 major, 3 minor): param ranges let the chevron text region go negative and quad/striped heads overlap, and the circular head left the box. Ranges capped (chevron 0.45, quad 0.25, striped 0.7) and the circular outline kept inside 0..h; goldens regenerated, 5/5 PASS.

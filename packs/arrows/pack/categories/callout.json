@@ -1,0 +1,54 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "arrows:callout-right",
+      "category": "callout",
+      "outline": {
+        "path": "M 0 0 H {w * 0.6} V {h * 0.3} H {w * 0.75} V {h * 0.12} L {w} {h/2} L {w * 0.75} {h * 0.88} V {h * 0.7} H {w * 0.6} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.05,
+          "y": 0.08,
+          "w": 0.5,
+          "h": 0.84
+        }
+      ],
+      "defaultSize": {
+        "w": 180,
+        "h": 100
+      },
+      "describe": "A box with an arrow out of its right side: a labelled step leading on.",
+      "keywords": [
+        "arrow",
+        "callout",
+        "right",
+        "box",
+        "label"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "arrows:split",
+      "category": "callout",
+      "outline": {
+        "path": "M 0 {h * 0.4} H {w * 0.4} L {w * 0.6} {h * 0.15} H {w * 0.75} V 0 L {w} {h * 0.22} L {w * 0.75} {h * 0.44} V {h * 0.3} H {w * 0.65} L {w * 0.52} {h/2} L {w * 0.65} {h * 0.7} H {w * 0.75} V {h * 0.56} L {w} {h * 0.78} L {w * 0.75} {h} V {h * 0.85} H {w * 0.6} L {w * 0.4} {h * 0.6} H 0 Z"
+      },
+      "defaultSize": {
+        "w": 180,
+        "h": 120
+      },
+      "describe": "An arrow that forks in two: a branch, divergence or choice.",
+      "keywords": [
+        "arrow",
+        "split",
+        "fork",
+        "branch",
+        "diverge"
+      ],
+      "license": "MIT"
+    }
+  ]
+}

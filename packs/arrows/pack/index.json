@@ -1,0 +1,262 @@
+{
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "arrows",
+  "version": "1.0.0",
+  "name": "Arrows",
+  "license": "MIT",
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "straight": {
+      "path": "categories/straight.json",
+      "sha256": "7773da6a28b110781b12bbe037ce446aa7c60406d3d0038fec3b59fa81caaadb"
+    },
+    "process": {
+      "path": "categories/process.json",
+      "sha256": "1c65a90c48df20e875404bbcabb52ff804c88cae2e277adaacd1c73442e2b397"
+    },
+    "bent": {
+      "path": "categories/bent.json",
+      "sha256": "9ef393b5822f5b2c97aecd7b2a7b534cc2b31da3a9a28bb67ff28e2e6e4b3797"
+    },
+    "callout": {
+      "path": "categories/callout.json",
+      "sha256": "1f283af0c290a175fe4377a80039cec49fa4cdd43ba9fee486e3e1e43a578bf8"
+    }
+  },
+  "definitions": [
+    {
+      "id": "arrows:right",
+      "name": "Right arrow",
+      "keywords": [
+        "arrow",
+        "right",
+        "next",
+        "forward",
+        "direction"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:left",
+      "name": "Left arrow",
+      "keywords": [
+        "arrow",
+        "left",
+        "back",
+        "previous",
+        "direction"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:up",
+      "name": "Up arrow",
+      "keywords": [
+        "arrow",
+        "up",
+        "increase",
+        "growth",
+        "direction"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:down",
+      "name": "Down arrow",
+      "keywords": [
+        "arrow",
+        "down",
+        "decrease",
+        "decline",
+        "direction"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:left-right",
+      "name": "Left-right arrow",
+      "keywords": [
+        "arrow",
+        "left",
+        "right",
+        "both",
+        "two-way",
+        "exchange"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:up-down",
+      "name": "Up-down arrow",
+      "keywords": [
+        "arrow",
+        "up",
+        "down",
+        "both",
+        "vertical",
+        "two-way"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:quad",
+      "name": "Quad arrow",
+      "keywords": [
+        "arrow",
+        "quad",
+        "four",
+        "all",
+        "directions",
+        "move"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:notched-right",
+      "name": "Notched right arrow",
+      "keywords": [
+        "arrow",
+        "notched",
+        "right",
+        "stage",
+        "sequence"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:striped-right",
+      "name": "Striped right arrow",
+      "keywords": [
+        "arrow",
+        "striped",
+        "right",
+        "speed",
+        "fast"
+      ],
+      "category": "straight"
+    },
+    {
+      "id": "arrows:chevron",
+      "name": "Chevron",
+      "keywords": [
+        "chevron",
+        "step",
+        "process",
+        "stage",
+        "pipeline"
+      ],
+      "category": "process"
+    },
+    {
+      "id": "arrows:pentagon",
+      "name": "Pentagon arrow",
+      "keywords": [
+        "pentagon",
+        "home plate",
+        "step",
+        "milestone",
+        "process"
+      ],
+      "category": "process"
+    },
+    {
+      "id": "arrows:bent-right",
+      "name": "Bent arrow",
+      "keywords": [
+        "arrow",
+        "bent",
+        "turn",
+        "right",
+        "redirect"
+      ],
+      "category": "bent"
+    },
+    {
+      "id": "arrows:bent-up",
+      "name": "Bent-up arrow",
+      "keywords": [
+        "arrow",
+        "bent",
+        "up",
+        "turn",
+        "escalate"
+      ],
+      "category": "bent"
+    },
+    {
+      "id": "arrows:u-turn",
+      "name": "U-turn arrow",
+      "keywords": [
+        "arrow",
+        "u-turn",
+        "reverse",
+        "back",
+        "rollback"
+      ],
+      "category": "bent"
+    },
+    {
+      "id": "arrows:curved-right",
+      "name": "Curved right arrow",
+      "keywords": [
+        "arrow",
+        "curved",
+        "curve",
+        "right",
+        "flow"
+      ],
+      "category": "bent"
+    },
+    {
+      "id": "arrows:circular",
+      "name": "Circular arrow",
+      "keywords": [
+        "arrow",
+        "circular",
+        "cycle",
+        "refresh",
+        "repeat",
+        "loop"
+      ],
+      "category": "bent"
+    },
+    {
+      "id": "arrows:callout-right",
+      "name": "Right arrow callout",
+      "keywords": [
+        "arrow",
+        "callout",
+        "right",
+        "box",
+        "label"
+      ],
+      "category": "callout"
+    },
+    {
+      "id": "arrows:split",
+      "name": "Split arrow",
+      "keywords": [
+        "arrow",
+        "split",
+        "fork",
+        "branch",
+        "diverge"
+      ],
+      "category": "callout"
+    }
+  ],
+  "credits": [
+    {
+      "id": "fluxion",
+      "license": "MIT",
+      "attribution": "Fluxion contributors",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "kind": "original",
+        "author": "Fluxion contributors",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ]
+}

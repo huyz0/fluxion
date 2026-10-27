@@ -194,6 +194,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party flowchart shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
+    },
+    {
+      "dir": "packs/arrows",
+      "name": "@fluxion/pack-arrows",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party block arrows shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
     }
   ]
 }

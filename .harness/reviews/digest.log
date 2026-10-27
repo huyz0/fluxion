@@ -871,3 +871,5 @@ M18.18	40deb8ab3c2f4924efecc135b2fb6fe853b76edeb9e5262d188eaea646e81b4e	r1	chang
 M18.18	33de3307848d0c04bfa2d43695594002b9fae627a76e781e5a6b82c78bff8ecf	r2	pass	claude:subagent	0 findings
 M18.21	acaec8e0cf82c2fa769170fb1e4127e1be8a899de9c9a8b29b97ed47b490a7cd	r1	pass	claude:general-purpose-subagent	0 findings
 M18.21	880fa0cc267eac1999b812c13e0b44153a6e20777ceeb88da8200cb331eea445	r2	pass	claude:general-purpose-subagent	0 findings
+M18.22	fed491cc4ffdba47aeee5e41fbb8bd2275dbf4230321991b8aebc3cb2aff4347	r1	changes-requested	claude:general-purpose-subagent	4 findings
+M18.22	591d5f7a5eca0174c587910362e3eec617ff20df1688756d9a7b13eaa4eca876	r2	pass	claude:general-purpose-subagent	1 findings

@@ -1,0 +1,30 @@
+{
+  "name": "@fluxion/pack-arrows",
+  "version": "0.0.0",
+  "description": "First-party block arrows shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pack"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@fluxion/sdk": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
