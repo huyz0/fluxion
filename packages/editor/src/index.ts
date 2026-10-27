@@ -161,6 +161,21 @@ export { type IconifyLibrary, importIconifyLibrary } from './library/import-icon
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { type ReplaceDeps, replaceableShape, replaceSelectedShape } from './library/library-replace.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
+export {
+  createMyShapes,
+  exportMyShapes,
+  insertMyShape,
+  MAX_MY_SHAPES,
+  MY_SHAPES_KEY,
+  MY_SHAPES_UNREADABLE_KEY,
+  type MyShape,
+  type MyShapes,
+  type MyShapesFile,
+  type MyShapesResult,
+  type MyShapesStorage,
+  parseMyShapes,
+  saveMyShape,
+} from './library/my-shapes.js';
 export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';
 export { startLiveLayout } from './live-layout.js';
 export { newDocument } from './new-document.js';

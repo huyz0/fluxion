@@ -303,6 +303,9 @@ export function createGlobalRouting(store: Store, ctx: RouteContext, port: Globa
 export function createHitIndex(store: Store, context: HitContext): HitIndex;
 
 // @public
+export function createMyShapes(storage: MyShapesStorage): MyShapes;
+
+// @public
 export function createSession(docId: string): Session;
 
 // @public
@@ -456,6 +459,9 @@ export function entryOf(def: ShapeDef): LibraryEntry;
 
 // @public
 export type Execute = (id: string, args: unknown, options?: CommandTxOptions) => Result<unknown, CommandFailure>;
+
+// @public
+export function exportMyShapes(items: readonly MyShape[]): string;
 
 // @public
 export function filterEntries(entries: readonly PaletteEntry[], query: string): readonly PaletteEntry[];
@@ -629,6 +635,9 @@ export function importDrawioLibrary(registry: Registry<string, ShapeDef>, text: 
 export function importIconifyLibrary(registry: Registry<string, ShapeDef>, text: string, options: IconifyImportOptions & {
     readonly source: string;
 }): Promise<Result<IconifyLibrary, readonly Diagnostic[]>>;
+
+// @public
+export function insertMyShape(deps: PasteDeps, item: MyShape, centre: Vec2): readonly RecordId[] | undefined;
 
 // @public
 export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors, defs?: ShapeDefs): InspectorModel | undefined;
@@ -851,6 +860,9 @@ export function marquee(start: Vec2, end: Vec2): Marquee;
 export type MarqueeMode = "contain" | "intersect";
 
 // @public
+export const MAX_MY_SHAPES = 500;
+
+// @public
 export const MAX_PATH_POINTS = 1e4;
 
 // @public
@@ -931,6 +943,51 @@ export type ModeSwitch = (from?: "start" | "current") => void;
 
 // @public
 export const moved: (from: Vec2, to: Vec2) => boolean;
+
+// @public
+export const MY_SHAPES_KEY = "fluxion.my-shapes";
+
+// @public
+export const MY_SHAPES_UNREADABLE_KEY = "fluxion.my-shapes.unreadable";
+
+// @public
+export type MyShape = {
+    readonly id: string;
+    readonly name: string;
+    readonly payload: ClipboardPayload & {
+        readonly bounds: NonNullable<ClipboardPayload["bounds"]>;
+    };
+};
+
+// @public
+export type MyShapes = {
+    readonly items: ReadSignal<readonly MyShape[]>;
+    put(item: MyShape): boolean;
+    remove(id: string): boolean;
+    importFile(raw: string): MyShapesResult<number>;
+};
+
+// @public
+export type MyShapesFile = {
+    readonly format: "fluxion-my-shapes";
+    readonly formatVersion: "1.0";
+    readonly items: readonly MyShape[];
+};
+
+// @public
+export type MyShapesResult<T> = {
+    readonly ok: true;
+    readonly value: T;
+} | {
+    readonly ok: false;
+    readonly reason: string;
+};
+
+// @public
+export type MyShapesStorage = {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+};
 
 // @public
 export function newDocument(random: Random): DocumentFile;
@@ -1035,6 +1092,9 @@ export type ParsedRefused = {
     readonly ok: false;
     readonly reason: string;
 };
+
+// @public
+export function parseMyShapes(raw: string): MyShapesResult<readonly MyShape[]>;
 
 // @public
 export function parsePayload(raw: string): ParsedPayload;
@@ -1258,6 +1318,12 @@ export function sameStyle(view: ReadView, selected: readonly RecordId[], pool: r
 
 // @public
 export function sameType(view: ReadView, selected: readonly RecordId[], pool: readonly RecordId[]): readonly RecordId[];
+
+// @public
+export function saveMyShape(view: ReadView, ids: readonly RecordId[], item: {
+    readonly id: string;
+    readonly name: string;
+}, source: Parameters<typeof copyPayload>[2]): MyShape | undefined;
 
 // @public
 export type ScreenItem = {

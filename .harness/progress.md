@@ -2980,3 +2980,11 @@ checkShapePack now evaluates each definition at every number param's min, max an
 ## M18.25 — uml declarative pack (2026-10-27)
 
 Adds @fluxion/pack-uml: 20 UML-lite definitions (structure, use-case, sequence, state) with MIT original-work credits, pack/ distribution, version ledger and a golden per definition; all pass the shared geometry check across parameter ranges.
+
+## M18.34 — My shapes storage and file (2026-10-27)
+
+- M18.38 pushed as 17e68e3 (r2 pass; minor: pipe core invisible on a white connector colour, noted in the commit body).
+- editor `library/my-shapes.ts`: an item is an ADR-0020 clipboard payload with bounds; `saveMyShape` (copyPayload), `insertMyShape` (pasteInto, centred, one undo step), `exportMyShapes`/`parseMyShapes` (`fluxion-my-shapes` 1.0, every item validated as a paste, refused whole), `createMyShapes(storage)` keeps items under `fluxion.my-shapes`, drops a damaged stored value. ADR-0048 amendment M18.34.
+- my-shapes.test.ts 3/3: a styled group with text and a connector saved, exported, imported and inserted into a second document keeps geometry/style/text/binding; persistence across reload; refusals. UI is M18.35.
+- Review r1 changes-requested, fixed: an unreadable stored value is moved to `fluxion.my-shapes.unreadable` before any write and never overwritten (no write while it cannot be moved); ids checked on save/put by the file's rule; each change re-reads storage (two tabs keep each other's items); ADR says the my-shapes file is FR-LIB-008's pack file. Tests 5/5.
+- Review r2 changes-requested, fixed: what is stored may hold no items (an emptied My shapes reads back, no false set-aside); put validates the whole item as a file read would (id, name, payload); opening writes nothing; a write that would exceed the readable size is refused. Tests 6/6.

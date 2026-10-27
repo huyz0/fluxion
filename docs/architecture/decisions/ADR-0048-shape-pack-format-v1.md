@@ -148,3 +148,19 @@ route unstroked for markers. A reader without the pack falls back to the straigh
 any unknown router. Wiring `connectors.json` into the pack loader, embedding used connector
 definitions in portable saves and offering the types in the editor are follow-up rows.
 
+### M18.34 — My shapes file (FR-LIB-008)
+
+My shapes, the person's local pack, is stored in local storage under `fluxion.my-shapes` and
+travels as a `{ "format": "fluxion-my-shapes", "formatVersion": "1.0", "items": [...] }` file.
+An item is `{ id, name, payload }`, where `payload` is an ADR-0020 clipboard payload with
+`bounds` (the selection's elements with members, styles and text, the bindings between them and
+the image bytes they use), so inserting an item is a paste into any document. The file is
+untrusted: every item is validated as a pasted clipboard is (`parseMyShapes`), ids are unique,
+names are present and at most 120 characters, bounds are finite, at most 500 items; a file with
+any bad item is refused whole. Item ids are checked by the same rule when saved, so every stored
+item reads back. Each change starts from what is stored now (another tab's items are kept). A
+stored value that does not validate (a newer version's file, say) is never used and never
+overwritten: it is moved to `fluxion.my-shapes.unreadable` first, and while that is not possible
+nothing is written. This file is the "pack file" FR-LIB-008 exports and imports: the local pack's
+items are groups with text, styles and bindings, which a shape pack's single-outline definitions
+cannot hold, so it is a separate envelope and the shape pack formats are unchanged.
