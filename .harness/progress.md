@@ -2873,3 +2873,9 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - New workspace packs/arrows: 18 generic MIT original-work block arrows in four categories with head/shaft/point params and handles, pack/ distribution and 18 goldens via the ADR-0193 suite; contact sheet inspected.
 - arrows 5/5 PASS after regeneration; the first draft's text region named an outline-local alias and was rejected by the validator, fixed to a param expression.
 - Review r1 changes-requested (1 major, 3 minor): param ranges let the chevron text region go negative and quad/striped heads overlap, and the circular head left the box. Ranges capped (chevron 0.45, quad 0.25, striped 0.7) and the circular outline kept inside 0..h; goldens regenerated, 5/5 PASS.
+
+## M18.23 — callouts declarative pack (2026-10-27)
+
+- New workspace packs/callouts: 13 generic MIT original-work callouts (speech, annotation, label) with tail params kept inside the box, pack/ distribution and 13 goldens via the ADR-0193 suite; contact sheet inspected (first oval draft swept the wrong arc, fixed).
+- M18.22 r2 F1 fixed: quad head min 0.15 so each barb is at least the widest half-shaft; arrows golden unchanged at defaults.
+- callouts 5/5 and arrows 5/5 PASS.

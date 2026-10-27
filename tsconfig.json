@@ -79,6 +79,9 @@
       "path": "./packs/arrows"
     },
     {
+      "path": "./packs/callouts"
+    },
+    {
       "path": "./e2e"
     }
   ]

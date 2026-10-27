@@ -76,8 +76,8 @@ export const shapes: readonly ShapeDef[] = [
     keywords: ['arrow', 'up', 'down', 'both', 'vertical', 'two-way'],
   }),
   arrow('quad', {
-    // heads of at most a quarter of the box, so the four never overlap
-    params: { head: { type: 'number', min: 0.05, max: 0.25, default: 0.2 }, shaft: { type: 'number', min: 0.05, max: 0.3, default: 0.15 } },
+    // heads of at most a quarter of the box, so the four never overlap, and at least the widest half-shaft, so each barb flares out
+    params: { head: { type: 'number', min: 0.15, max: 0.25, default: 0.2 }, shaft: { type: 'number', min: 0.05, max: 0.3, default: 0.15 } },
     outline: {
       path:
         'M {w/2} 0 L {w/2 + w * head} {h * head} H {w/2 + w * shaft/2} V {h/2 - h * shaft/2} H {w - w * head} V {h/2 - h * head} L {w} {h/2} ' +

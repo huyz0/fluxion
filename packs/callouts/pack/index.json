@@ -1,0 +1,193 @@
+{
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "callouts",
+  "version": "1.0.0",
+  "name": "Callouts",
+  "license": "MIT",
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "speech": {
+      "path": "categories/speech.json",
+      "sha256": "1859990b6b2ed96ac4029e367dac46a56c30ed6c34dc144f6d9174c4ab1e6000"
+    },
+    "annotation": {
+      "path": "categories/annotation.json",
+      "sha256": "5d29dfdd3fe450eb35dea3ccc666cc752ce321307d5f023df5547b4b15e61bb2"
+    },
+    "label": {
+      "path": "categories/label.json",
+      "sha256": "bdb0cb446875985e7a8bd9e45a5a407f363cdf213a73e3d1aa5558adb6096219"
+    }
+  },
+  "definitions": [
+    {
+      "id": "callouts:speech-rect",
+      "name": "Rectangular speech bubble",
+      "keywords": [
+        "speech",
+        "bubble",
+        "say",
+        "dialogue",
+        "comment"
+      ],
+      "category": "speech"
+    },
+    {
+      "id": "callouts:speech-rounded",
+      "name": "Rounded speech bubble",
+      "keywords": [
+        "speech",
+        "bubble",
+        "rounded",
+        "chat",
+        "message"
+      ],
+      "category": "speech"
+    },
+    {
+      "id": "callouts:speech-oval",
+      "name": "Oval speech bubble",
+      "keywords": [
+        "speech",
+        "bubble",
+        "oval",
+        "comic",
+        "dialogue"
+      ],
+      "category": "speech"
+    },
+    {
+      "id": "callouts:speech-left",
+      "name": "Speech bubble, tail left",
+      "keywords": [
+        "speech",
+        "bubble",
+        "left",
+        "reply",
+        "chat"
+      ],
+      "category": "speech"
+    },
+    {
+      "id": "callouts:thought",
+      "name": "Thought bubble",
+      "keywords": [
+        "thought",
+        "bubble",
+        "idea",
+        "think",
+        "cloud"
+      ],
+      "category": "speech"
+    },
+    {
+      "id": "callouts:shout",
+      "name": "Shout",
+      "keywords": [
+        "shout",
+        "burst",
+        "explosion",
+        "alert",
+        "new",
+        "starburst"
+      ],
+      "category": "speech"
+    },
+    {
+      "id": "callouts:line",
+      "name": "Line callout",
+      "keywords": [
+        "line",
+        "callout",
+        "leader",
+        "label",
+        "annotation"
+      ],
+      "category": "annotation"
+    },
+    {
+      "id": "callouts:sticky-note",
+      "name": "Sticky note",
+      "keywords": [
+        "sticky",
+        "note",
+        "post-it",
+        "reminder",
+        "memo"
+      ],
+      "category": "annotation"
+    },
+    {
+      "id": "callouts:tag",
+      "name": "Tag",
+      "keywords": [
+        "tag",
+        "label",
+        "price",
+        "version"
+      ],
+      "category": "label"
+    },
+    {
+      "id": "callouts:pin",
+      "name": "Pin",
+      "keywords": [
+        "pin",
+        "location",
+        "map",
+        "marker",
+        "place"
+      ],
+      "category": "label"
+    },
+    {
+      "id": "callouts:quote",
+      "name": "Quote",
+      "keywords": [
+        "quote",
+        "quotation",
+        "testimonial",
+        "citation"
+      ],
+      "category": "label"
+    },
+    {
+      "id": "callouts:brace",
+      "name": "Brace",
+      "keywords": [
+        "brace",
+        "curly",
+        "group",
+        "bracket",
+        "annotation"
+      ],
+      "category": "annotation"
+    },
+    {
+      "id": "callouts:bracket",
+      "name": "Bracket",
+      "keywords": [
+        "bracket",
+        "square",
+        "span",
+        "group",
+        "annotation"
+      ],
+      "category": "annotation"
+    }
+  ],
+  "credits": [
+    {
+      "id": "fluxion",
+      "license": "MIT",
+      "attribution": "Fluxion contributors",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "kind": "original",
+        "author": "Fluxion contributors",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ]
+}

@@ -9,7 +9,7 @@
   "categories": {
     "straight": {
       "path": "categories/straight.json",
-      "sha256": "7773da6a28b110781b12bbe037ce446aa7c60406d3d0038fec3b59fa81caaadb"
+      "sha256": "2d791a4e4395f1cc30e7312d4dbf6d31642dbdc12694b92aab7bed375fc13c58"
     },
     "process": {
       "path": "categories/process.json",

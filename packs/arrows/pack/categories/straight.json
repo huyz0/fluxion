@@ -249,7 +249,7 @@
       "params": {
         "head": {
           "type": "number",
-          "min": 0.05,
+          "min": 0.15,
           "max": 0.25,
           "default": 0.2
         },

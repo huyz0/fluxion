@@ -1,0 +1,122 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "callouts:line",
+      "category": "annotation",
+      "outline": {
+        "path": "M {w * 0.3} 0 H {w} V {h * 0.6} H {w * 0.3} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w * 0.3} {h * 0.6} L 0 {h}"
+        }
+      ],
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.33,
+          "y": 0.05,
+          "w": 0.64,
+          "h": 0.5
+        }
+      ],
+      "defaultSize": {
+        "w": 200,
+        "h": 110
+      },
+      "describe": "A box with a leader line to the point it labels.",
+      "keywords": [
+        "line",
+        "callout",
+        "leader",
+        "label",
+        "annotation"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "callouts:sticky-note",
+      "category": "annotation",
+      "outline": {
+        "path": "M 0 0 H {w} V {h * 0.8} L {w * 0.8} {h} H 0 Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w} {h * 0.8} H {w * 0.8} V {h}"
+        }
+      ],
+      "defaultStyle": {
+        "fill": "#fde68a"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.84,
+          "h": 0.68
+        }
+      ],
+      "defaultSize": {
+        "w": 140,
+        "h": 140
+      },
+      "describe": "A sticky note with a turned-up corner: a reminder or review comment.",
+      "keywords": [
+        "sticky",
+        "note",
+        "post-it",
+        "reminder",
+        "memo"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "callouts:brace",
+      "category": "annotation",
+      "outline": {
+        "path": "M {w} 0 Q {w * 0.5} 0 {w * 0.5} {h * 0.1} V {h * 0.4} Q {w * 0.5} {h/2} 0 {h/2} Q {w * 0.5} {h/2} {w * 0.5} {h * 0.6} V {h * 0.9} Q {w * 0.5} {h} {w} {h}"
+      },
+      "defaultStyle": {
+        "fill": "transparent"
+      },
+      "defaultSize": {
+        "w": 30,
+        "h": 160
+      },
+      "describe": "A curly brace grouping the items beside it under one note.",
+      "keywords": [
+        "brace",
+        "curly",
+        "group",
+        "bracket",
+        "annotation"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "callouts:bracket",
+      "category": "annotation",
+      "outline": {
+        "path": "M {w} 0 H 0 V {h} H {w}"
+      },
+      "defaultStyle": {
+        "fill": "transparent"
+      },
+      "defaultSize": {
+        "w": 24,
+        "h": 160
+      },
+      "describe": "A square bracket marking a span of items.",
+      "keywords": [
+        "bracket",
+        "square",
+        "span",
+        "group",
+        "annotation"
+      ],
+      "license": "MIT"
+    }
+  ]
+}
