@@ -2885,3 +2885,7 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - New workspace packs/infographic: 16 generic MIT original-work pieces (charts with value params incl. expression arc flags, diagrams, layers, labels), pack/ distribution and 16 goldens; contact sheet inspected.
 - Every pack test now also requires each outline and decoration to stay inside its box at the default size (sampled segment ends and cubic midpoints of the golden); it caught progress/venn drafts and callouts:thought (M18.23 F1), all fixed. M18.23 F2: rounded speech tail capped at 0.65.
 - basic, flowchart, arrows, callouts, infographic pack suites PASS.
+## M18.43 checkpoint cp10 (7545e708..2d6a63ec)
+- Fresh independent checkpoint: changes requested, 4 major and 5 minor.
+- F1 pack goldens pass when missing (snapshot write) → M18.100. F3 imported Iconify icons cannot save portably or carry credits → M18.101.
+- F2 M18.95 digest line lands with M18.96 by design; M18.99 now also gates Commit cells and lands before more parallel commits. F4 → M18.102 (M18.22/23 had already landed), F5 into M18.81, F6 argued (M18.95 F1), F7 cells filled. F8 folded into M18.102; F9 (geometry only checked at default parameters) → M18.103, which pack rows M18.25–31 now wait on.

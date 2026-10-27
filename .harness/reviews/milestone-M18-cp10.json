@@ -1,0 +1,142 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp10",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..2d6a63ec5508ffb9d818385fad3b513e692dd6ec",
+  "reviewer": "claude:independent-subagent:m18-cp10",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "file": "packs/flowchart/src/pack.test.ts",
+      "line": 92,
+      "severity": "major",
+      "failure_scenario": "Pack golden legs pass with a missing golden. Outside CI, vitest's toMatchFileSnapshot writes a missing snapshot and passes. m18-complete tests() and the precommit ladder (verifyLeg sets CI='') both run without CI. Reproduced in a copy: deleting packs/basic/__golden__/star.svg gave 'Snapshots 1 written, Tests 4 passed'; with CI=1 the same run failed. A definition added without a golden turns the leg green locally. An orphan golden for a removed definition (extra __golden__/zzz.svg) is never noticed. Same at packs/basic/src/pack.test.ts:87, and it affects all 12 pack legs. Still true for packs/arrows (92e907e) and packs/callouts (2d6a63e): same toMatchFileSnapshot loop, no __golden__ inventory check (both pass 8/8 under CI=1 today)."
+    },
+    {
+      "id": "F2",
+      "file": ".harness/reviews/digest.log",
+      "line": 1,
+      "severity": "major",
+      "failure_scenario": "M18.95 (0cca529) has no tracked digest line. Its commit added the M18.43 cp9 line instead, and the local verdict b1065f32...r1.json is gitignored. The commit says the reviewer's minor F1 is 'argued in the next commit', but review-argued.txt has no M18.95 line. This repeats cp9 F1 one checkpoint later: with four parallel streams and M18.99 (digest-coverage leg) still todo, nothing stops more uncovered task commits."
+    },
+    {
+      "id": "F3",
+      "file": "packages/editor/src/library/import-iconify.ts",
+      "line": 31,
+      "severity": "major",
+      "failure_scenario": "Plan item 6 is 'Iconify JSON collection import -> pack', but importIconifyLibrary only registers definitions in the runtime registry. It builds no pack index or credits from the retained provenance. prepareShapePacks rejects any used non-builtin ID that has no distribution or embedded source ('unresolved definition'), so a document using an imported icon cannot be saved portably, and the icon's ISC provenance never reaches the saved attribution (NFR-LIC-003). No todo row (M18.16, M18.17, M18.34) owns turning imported collections into a saveable credited pack."
+    },
+    {
+      "id": "F4",
+      "file": "packs/basic/src/pack.test.ts",
+      "line": 14,
+      "severity": "minor",
+      "failure_scenario": "Display names, the distribution version and credits exist only in each pack's test file (NAMES/DRAFT). The whole template (DRAFT, BRANDS regex, glob loader, four cases) is copied verbatim per pack, and ten more packs will copy it again. The runtime library takes names from entryOf(id), so it shows 'Or' and 'Off page connector' where pack/index.json says 'Or junction' and 'Off-page connector'. The index pins version 1.0.0 while the package VERSION is 0.0.0. Two sources of truth will drift as M18.22-31 land and M18.32 searches the index. M18.22 and M18.23 copied the template a third and fourth time (diff is NAMES plus pack id only)."
+    },
+    {
+      "id": "F5",
+      "file": "packages/sdk/src/testing/pack-files.ts",
+      "line": 70,
+      "severity": "minor",
+      "failure_scenario": "Parallel streams disagree on the pack format. The ADR-0193 suite hard-codes formatVersion '1.0' and checks files through createShapePackLoader, which M18.95 made refuse 1.1. A first-party pack whose artwork binds an exact font (pack 1.1, ADR-0192) therefore cannot be built or checked by the shared suite. pack-files.ts also redefines problem() beside pack-bytes.ts problem() with a different return shape."
+    },
+    {
+      "id": "F6",
+      "file": "packages/sdk/src/artwork-pack-loader.ts",
+      "line": 124,
+      "severity": "minor",
+      "failure_scenario": "Spot mutant: deleting the maxFaces or maxTotalFontBytes checks in bindingsOf leaves artwork-pack-loader.test.ts green, because the test only asserts the constants (line 173). With one supported profile, one resource per hash and no two faces per resource in core, the checks are also unreachable. They are untested public limits (ARTWORK_ACQUISITION_LIMITS), and M18.95 review F1 was never recorded."
+    },
+    {
+      "id": "F7",
+      "file": "docs/backlog/current.md",
+      "line": 80,
+      "severity": "minor",
+      "failure_scenario": "Done rows M18.95, M18.18, M18.20 and M18.21 have empty Commit cells again (cp9 F2 recurrence), so audits cannot map those rows to 0cca529, cd518e6, a615d21 and 367e343."
+    },
+    {
+      "id": "F8",
+      "file": "packs/arrows/pack/index.json",
+      "line": 5,
+      "severity": "minor",
+      "failure_scenario": "2d6a63e (M18.23, callouts row) changed the arrows quad head range, so the arrows straight category hash changed (7773da6a... to 2d791a4e...) while index version stayed 1.0.0. The changeset bumps @fluxion/pack-arrows patch, but the distribution version is hard-coded in the test DRAFT, so arrows@1.0.0 now names two different byte contents. A data lock (ADR-0183: id + exact version + integrity) saved against the earlier bytes would fail integrity against a host that ships the later bytes under the same version. The fix also landed in another row's commit."
+    },
+    {
+      "id": "F9",
+      "file": "packages/sdk/src/testing/shape-golden.ts",
+      "line": 19,
+      "severity": "major",
+      "failure_scenario": "The shared suite validates and draws each definition only at default params. M18.22 shipped four param-range geometry defects in r1 (chevron text region negative, quad/striped heads overlap, circular head leaves the box) and a fifth in r2 (quad barb narrower than the shaft below head 0.15). All were found by per-commit review, not tests; none of the fixes added a test, and the arrows goldens were unchanged. Callouts tail params ('kept inside the box') are likewise untested. Re-widening any range (mutant: quad head min back to 0.05) leaves every pack leg green, and nine param-heavy packs remain."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.100",
+      "note": "Reopened as M18.100 (after M18.21): missing or orphan goldens fail; gate runs never write snapshots; a harness probe deleting a golden goes red."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.99",
+      "note": "Extend M18.99 (gate on uncovered task commits and done rows without Commit cells, land before further parallel-stream commits). The M18.95 digest line (b1065f32, r1 pass) and its argued F1 were recorded after hashing by design and land with the next stream-1 commit, M18.96."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.101",
+      "note": "Reopened as M18.101: imported collections become saveable credited pack sources; M18.29 reuses the path."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M18.102",
+      "note": "Reopened as M18.102 after M18.100 (M18.22 and M18.23 had landed meanwhile): every pack's metadata moves to exported source behind a shared SDK suite helper, versions agree, and M18.32 library entries show index names."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M18.81",
+      "note": "Folded into M18.81's EARS: the ADR-0193 suite checks 1.1 packs via the artwork loader and reuses pack-bytes diagnostics."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "note": "Argued as M18.95 F1 in .harness/baselines/review-argued.txt (landing with M18.96): one profile and distinct resources per binding make the bounds unreachable by valid metadata; a constraining test needs a second profile, which ADR-0192 defers. Revisit when one is added."
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "note": "Commit cells for M18.95, M18.18, M18.20 and M18.21 filled in this commit; M18.99's leg will also flag done rows without a commit."
+    },
+    {
+      "finding": "F8",
+      "disposition": "reopen",
+      "target": "M18.102",
+      "note": "Folded into M18.102: the pack version comes from one exported constant and a category hash change without a version change fails."
+    },
+    {
+      "finding": "F9",
+      "disposition": "reopen",
+      "target": "M18.103",
+      "note": "Reopened as M18.103: the shared suite checks every definition at each parameter's min, max and default, with existing packs retrofitted. Pack rows M18.25-31 now depend on it (M18.29 also on M18.101); M18.24 was already in flight."
+    }
+  ],
+  "assessment": {
+    "coherence": "The font stream (M18.94 core 1.1 parsers, M18.95 SDK acquisition) is consistent and shares pack-bytes/readCategory. The packs stream (ADR-0193 suite) is 1.0-only and does not know about 1.1 (F5). Display names have two sources (F4). The Iconify importer reuses the witnessed SVG path and FLX_SVG_IMPORT_* codes with no competing converter.",
+    "specFidelity": "FR-LIB-005 is met at API level (2198/2198 Lucide entries, aliases searchable), but the plan's '-> pack' and portable save are unowned (F3). M18.20 read 'basic extended' as 'declarative distribution, no new shapes', which matches the row's EARS but quietly narrows plan item 10. Flowchart has 25 generic MIT shapes. FR-LIB-008, FR-LIB-011 and FR-CON-010 are still untraced.",
+    "standardsDrift": "Tracked digest lines (F2) and backlog Commit cells (F7) dropped again one checkpoint after cp9 reopened them. Subjects, changesets, ADR-0193 and API reports were kept. Layering: 24 workspaces, 0 violations. check-api: 34/34 match. check-trace: 194/338 named.",
+    "gateHonesty": "Gate fails closed at 31/72. Spot mutants: Iconify alias drop is caught (count assertion). Golden deletion is not caught locally (F1, reproduced). Removing the artwork limit checks is not caught (F6). No digest-coverage leg exists yet (M18.99). The Iconify leg's pure witness is disclosed in the test, and paint evidence stays with the SVG legs. Extension: pack legs constrain only default-param rendering (F9).",
+    "architecture": "Pure layers stay pure. SDK gained @fluxion/render behind a separate testing entry (argued M18.20 F2). Core and SDK API growth is additive and reported. The pack 1.1 contract has an ADR (0192), fixtures and migration notes.",
+    "planHealth": "98 rows vs 43 planned (2.28x): 67 done, 31 todo. Since cp9, 5 feature rows landed (M18.94, 95, 18, 20, 21). Ten pack rows remain on a copied template (F4). The F3 gap adds at least one row. Running four streams in parallel is already producing bookkeeping recurrences: serialize M18.99 first. Extension: M18.22 and M18.23 landed before M18.100 and M18.102, so both new packs inherit F1 and F4 and need retrofit."
+  },
+  "planDelta": "Add rows for F1 (golden completeness) and F3 (imported collection -> saveable credited pack). Extend M18.99 with M18.95 evidence (F2). Fold F4 into M18.22, F5 into M18.81 and F6 into M18.96. The cp8/cp9 @fluxion/layout changeset gap remains with M18.42. The planned count of 43 is not rebaselined. Extension: F8 folds into M18.102 and F9 needs a new suite row before M18.24. Hold further pack rows until M18.100, M18.102 and the F9 row land.",
+  "limitations": [
+    "Concentrated on 099b3ee..367e343. Earlier commits were judged from the packet and the cp1-cp9 verdicts.",
+    "Reproductions ran in a private copy under /tmp/claude-0/cp10-review/repo, not in either worktree.",
+    "Full pnpm verify and the three-browser legs were not run. Only check-layering, check-api, check-trace and the basic pack test were executed.",
+    "Diffs were spot-read: the iconify-import.ts transform maths and the pack-font-validation.ts closure rules were not checked line by line.",
+    "Extension commits 92e907e and 2d6a63e were read in full except the goldens. Their pack tests were run under CI=1 in the private copy (8/8 pass). Earlier: one git checkout of a golden in the copy ran through the copied .git file, which points at the fluxion-cp10 worktree gitdir. It restored identical content in the copy only and may have refreshed that worktree's index stat cache; no staged content changed."
+  ]
+}
