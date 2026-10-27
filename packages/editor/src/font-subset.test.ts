@@ -248,6 +248,30 @@ describe('used-glyph font subsetting (FR-AST-003, ADR-0051)', () => {
     expect(outcome).toMatchObject({ status: 'kept', reason: 'engine-failure' });
   });
 
+  it('NFR-SEC-002 FR-AST-003: a WOFF2 under 5 MiB that declares a 6 MiB decoded font is too-large before the codec allocates it', async () => {
+    const whole = (await subset(LATIN)).woff2;
+    const DECLARED = 6 * 1024 * 1024;
+    const lying = whole.slice();
+    // WOFF2 header: totalSfntSize is the big-endian uint32 at offset 16, which woff2_final_size reports
+    new DataView(lying.buffer).setUint32(16, DECLARED);
+    const real = await engines();
+    const allocated: number[] = [];
+    const codec = {
+      ...real.codec,
+      codec_alloc: (n: number) => {
+        allocated.push(n);
+        return real.codec.codec_alloc(n);
+      },
+    };
+    const outcome = await subsetFont(input(LATIN, { bytes: lying, sourceSha256: hex(lying) }), { ...real, codec }, hasher);
+    expect(outcome).toMatchObject({ status: 'kept', reason: 'too-large' });
+    expect(allocated.length).toBeGreaterThan(0);
+    expect(Math.max(...allocated)).toBeLessThan(DECLARED);
+    // the same bytes with their true size decode and subset: only the declared size is refused
+    const honest = await subsetFont(input(range(0x41, 0x42), { bytes: whole, sourceSha256: hex(whole) }), await engines(), hasher);
+    expect(honest.status).toBe('subset');
+  });
+
   it('FR-AST-003: engine modules must be the pinned ones of the manifest', async () => {
     const manifest = JSON.parse(readFileSync(new URL('manifest.json', ASSETS), 'utf8')) as { assets: { file: string; sha256: string }[] };
     const pinned = Object.fromEntries(manifest.assets.map((a) => [a.file, a.sha256]));

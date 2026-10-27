@@ -328,7 +328,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +12 |
 | NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +75 |
-| NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts` +2 |
+| NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts` +3 |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/ai/adapters.test.ts` +5 |
 | NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +3 |
