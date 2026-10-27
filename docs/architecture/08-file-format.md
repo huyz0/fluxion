@@ -287,6 +287,16 @@ can render and save without the original file. They never infer missing-referenc
 from later edits. M18.14 exercises actual Studio save and built standalone offline reopen across all five
 browser projects, with format-level migration, invalid-reference and credit-preservation checks.
 
+### Pack 1.1 font metadata (ADR-0192)
+
+Pack 1.1 index, category and saved-subset envelopes add `fontResources`, `fontFaces`,
+`definitionFonts` and `fontCredits` (fixtures `fixtures/shape-pack/v1.1/`). Core's versioned
+parsers validate them; the 1.0 parsers and 1.0 files are unchanged and refuse 1.1. Migration: a
+1.0 pack needs no change; a pack whose artwork draws text must move to 1.1 and declare its exact
+faces, resources and font credits. A writer never downgrades 1.1 to 1.0, even when the font
+closure is empty. Known data locks still declare `packFormat: '1.0'`; their 1.1 variant, byte
+acquisition and portable retention are M18.95 to M18.97.
+
 ### Known shape data I/O (ADR-0184)
 
 Both loaders validate known locks and saved geometry before returning `LoadedFlux.shapePacks`.

@@ -71,8 +71,24 @@ export type { Diff, PutChange, Tx, TxFailure, TxMeta, TxOptions, TxOrigin } from
 export const VERSION: string = '0.0.0';
 export type { SvgArtwork, SvgArtworkNode } from '@fluxion/schema';
 export { parseSvgArtwork } from './shape/artwork.js';
+export { type ArtworkFontProfile, artworkFontLicenses, artworkFontProfiles } from './shape/artwork-font-profile.js';
 export { normalizeSvgArtworkFonts, type SvgArtworkFont, type SvgArtworkFontOptions } from './shape/artwork-fonts.js';
 export { allowsShapePackContentLicense, shapePackContentLicenses } from './shape/content-license-policy.js';
+export type {
+  ShapePackCategory11,
+  ShapePackDefinitionFonts,
+  ShapePackDistributionFontResource,
+  ShapePackFontCredit,
+  ShapePackFontFace,
+  ShapePackFontResource,
+  ShapePackFonts,
+  ShapePackIndex11,
+  ShapePackSubset11,
+  VersionedShapePackCategory,
+  VersionedShapePackIndex,
+  VersionedShapePackSubset,
+} from './shape/pack-font-types.js';
+export { parseVersionedShapePackCategory, parseVersionedShapePackIndex, parseVersionedShapePackSubset } from './shape/pack-font-validation.js';
 export { registerShapePackSubsets } from './shape/pack-registration.js';
 export { shapePackCategorySchema, shapePackIndexSchema, shapePackSubsetSchema } from './shape/pack-schema.js';
 export type {

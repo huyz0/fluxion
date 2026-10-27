@@ -1,0 +1,91 @@
+{
+  "formatVersion": "1.1",
+  "definitions": [
+    {
+      "id": "sample:box",
+      "outline": {
+        "path": "M0 0H{w}V{h}H0Z"
+      },
+      "defaultSize": {
+        "w": 80,
+        "h": 40
+      },
+      "category": "labels",
+      "keywords": ["box"]
+    },
+    {
+      "id": "sample:label",
+      "outline": {
+        "path": "M0 0H{w}V{h}H0Z"
+      },
+      "defaultSize": {
+        "w": 80,
+        "h": 40
+      },
+      "category": "labels",
+      "keywords": ["label"],
+      "artwork": {
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 80,
+          "height": 40
+        },
+        "root": {
+          "name": "g",
+          "attributes": {},
+          "children": [
+            {
+              "name": "text",
+              "attributes": {
+                "x": "4",
+                "y": "24",
+                "font-family": "Inter",
+                "font-weight": "400",
+                "font-style": "normal"
+              },
+              "children": ["API"]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sample:badge",
+      "outline": {
+        "path": "M0 0H{w}V{h}H0Z"
+      },
+      "defaultSize": {
+        "w": 80,
+        "h": 40
+      },
+      "category": "labels",
+      "keywords": ["badge"],
+      "artwork": {
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 80,
+          "height": 40
+        },
+        "root": {
+          "name": "g",
+          "attributes": {},
+          "children": [
+            {
+              "name": "text",
+              "attributes": {
+                "x": "4",
+                "y": "24",
+                "font-family": "Brand Sans",
+                "font-weight": "400",
+                "font-style": "normal"
+              },
+              "children": ["API"]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

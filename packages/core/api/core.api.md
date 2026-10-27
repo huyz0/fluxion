@@ -58,6 +58,21 @@ export type ArgsSchema<A> = {
 };
 
 // @public
+export const artworkFontLicenses: readonly string[];
+
+// @public
+export type ArtworkFontProfile = {
+    readonly sha256: string;
+    readonly size: number;
+    readonly mime: "font/woff2";
+    readonly weight: 400;
+    readonly style: "normal";
+};
+
+// @public
+export const artworkFontProfiles: Readonly<Record<"inter-latin-400-ascii", ArtworkFontProfile>>;
+
+// @public
 export function base62(bytes: Uint8Array): string;
 
 // @public
@@ -510,6 +525,15 @@ export function parseShapePackSubset(input: unknown, licensePolicy: ShapePackLic
 export function parseSvgArtwork(input: unknown): Result<SvgArtwork, readonly Diagnostic[]>;
 
 // @public
+export function parseVersionedShapePackCategory(input: unknown, index: unknown, category: string, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackCategory, readonly Diagnostic[]>;
+
+// @public
+export function parseVersionedShapePackIndex(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackIndex, readonly Diagnostic[]>;
+
+// @public
+export function parseVersionedShapePackSubset(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackSubset, readonly Diagnostic[]>;
+
+// @public
 export type PluginId = string;
 
 // @public
@@ -630,6 +654,12 @@ export type ShapePackCategory = {
 };
 
 // @public
+export type ShapePackCategory11 = {
+    readonly formatVersion: "1.1";
+    readonly definitions: readonly ShapeDef[];
+};
+
+// @public
 export type ShapePackCategoryEntry = {
     readonly path: string;
     readonly sha256: string;
@@ -660,6 +690,54 @@ export type ShapePackDefinitionEntry = {
 };
 
 // @public
+export type ShapePackDefinitionFonts = {
+    readonly definitionId: QualifiedName;
+    readonly faceIds: readonly string[];
+};
+
+// @public
+export type ShapePackDistributionFontResource = ShapePackFontResource & {
+    readonly path: string;
+};
+
+// @public
+export type ShapePackFontCredit = {
+    readonly id: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly notice: string;
+    readonly source: ShapePackSource;
+    readonly resourceIds: readonly string[];
+    readonly definitionIds: readonly QualifiedName[];
+};
+
+// @public
+export type ShapePackFontFace = {
+    readonly id: string;
+    readonly family: string;
+    readonly weight: 400;
+    readonly style: "normal";
+    readonly resource: string;
+};
+
+// @public
+export type ShapePackFontResource = {
+    readonly id: string;
+    readonly sha256: string;
+    readonly size: number;
+    readonly mime: "font/woff2";
+    readonly profile: "inter-latin-400-ascii";
+};
+
+// @public
+export type ShapePackFonts<R extends ShapePackFontResource> = {
+    readonly fontResources: readonly R[];
+    readonly fontFaces: readonly ShapePackFontFace[];
+    readonly definitionFonts: readonly ShapePackDefinitionFonts[];
+    readonly fontCredits: readonly ShapePackFontCredit[];
+};
+
+// @public
 export type ShapePackIndex = {
     readonly format: "fluxion-shape-pack";
     readonly formatVersion: "1.0";
@@ -672,6 +750,11 @@ export type ShapePackIndex = {
     readonly definitions: readonly ShapePackDefinitionEntry[];
     readonly credits: readonly ShapePackCredit[];
 };
+
+// @public
+export type ShapePackIndex11 = Omit<ShapePackIndex, "formatVersion"> & {
+    readonly formatVersion: "1.1";
+} & ShapePackFonts<ShapePackDistributionFontResource>;
 
 // @public
 export const shapePackIndexSchema: z.ZodType<ShapePackIndex>;
@@ -703,6 +786,11 @@ export type ShapePackSubset = {
     readonly definitions: readonly ShapeDef[];
     readonly credits: readonly ShapePackCredit[];
 };
+
+// @public
+export type ShapePackSubset11 = Omit<ShapePackSubset, "formatVersion"> & {
+    readonly formatVersion: "1.1";
+} & ShapePackFonts<ShapePackFontResource>;
 
 // @public
 export const shapePackSubsetSchema: z.ZodType<ShapePackSubset>;
@@ -880,6 +968,15 @@ export type TxOrigin = "user" | "undo" | "redo" | "remote" | "system";
 
 // @public
 export const VERSION: string;
+
+// @public
+export type VersionedShapePackCategory = ShapePackCategory | ShapePackCategory11;
+
+// @public
+export type VersionedShapePackIndex = ShapePackIndex | ShapePackIndex11;
+
+// @public
+export type VersionedShapePackSubset = ShapePackSubset | ShapePackSubset11;
 
 // @public
 export type WrappedText = {
