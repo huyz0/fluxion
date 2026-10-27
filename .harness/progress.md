@@ -2930,3 +2930,11 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 ## M18.102 — Pack metadata as exported source (2026-10-27)
 
 Each pack exports its DeclarativeShapePack source (names, credits, version = package version); buildShapePackFiles moved to the SDK main entry. @fluxion/sdk/testing checkShapePack reports file, loading, brand, bounds and version problems; pack-versions.json ledgers category hashes per released version so changed geometry needs a new version (ADR-0194). Index versions are now 0.0.0, matching the packages. Library index names stay for M18.32.
+
+## M18.48 — reproducible bounded font WASM assets and host probes (2026-10-27)
+
+- M18.101 pushed 7f3eb32 (review r2 PASS). Its minors became M18.105: the Studio save wiring for imported packs, and category display names.
+- Assets live in packages/editor/assets/font-engine: harfbuzz-subset.wasm comes from npm harfbuzzjs@1.6.4 (integrity verified, no imports, 1040 fixed pages); woff2-codec.wasm is built standalone from the pinned woff2 and Brotli v1.2.1 with the codec.cc ABI wrapper, which zeroes every destination. Both carry MIT notices, and the manifest records hashes, revisions, imports and memory.
+- The recipe is scripts/fonts/build-font-engine.mjs (fetch, check, harfbuzz). emsdk 6.0.13 runs natively here, not in the research Docker image. Two clean-directory builds plus the scripted check all give 3829e158; the hash comes from this native build.
+- tests/harness/font-engine.test.mjs: hashes, notices, imports and recorded reproductions. It does a fresh rebuild and a tarball check when FLUXION_FONT_ENGINE_SOURCES and FLUXION_HARFBUZZJS_TARBALL are set (done locally: pass); CI has no emsdk, so there it checks the recorded evidence. The probe runs under --disallow-code-generation-from-strings: Roboto 400 decode, subset and encode give identical bytes from 4 dirty fills; too-small destinations refuse with canaries intact; HarfBuzz refuses garbage; 373 malformed inputs give 0 traps, canaries intact and memory of 16 MiB or less. In the Chromium worker, script-src 'self' 'wasm-unsafe-eval' runs the codec and Function stays blocked, while without wasm-unsafe-eval compilation fails with CompileError.
+
