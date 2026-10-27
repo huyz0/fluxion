@@ -2855,3 +2855,10 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - SDK `createArtworkShapePackLoader`: version-aware index, metadata-only search, `acquire` verifies category closure then each bound resource (declared-size cap, resource and profile hash) before returning frozen definition, owned byte copies and covering font credits. Shared verified reads; failures evicted; cancellation sampled around every await.
 - Helpers extracted to `pack-bytes.ts`; `readCategory` takes the parser so both loaders share it; `createShapePackLoader` unchanged and refuses 1.1.
 - Focused 9/9 + existing loader 15/15 PASS. Removal probes (hash, owned copy, cancellation) turned tests RED; magic/length checks were redundant with the pinned hash and removed. M18.94 F1 probe fixed (unused resource now RED without its check).
+
+
+## M18.18 — Iconify collection importer (2026-10-27)
+
+- Pure format converter resolves collection defaults, icon viewports, Iconify rotate/flip semantics (collection and alias rotations add, flips XOR) and alias chains bounded at 32 with cycle/missing-parent refusals; every icon and alias converts through the witnessed single-SVG path and gets an outcome. Bounds: 32 Mi chars, 50000 entries, 16 Mi total converted SVG chars (review r1 F1: aliases re-convert their root).
+- Declared info (name/author/SPDX) and source hash retained as provenance, not license approval. Keywords: categories, alias names, parent/root; first category becomes picker category. Diagnostic codes reuse FLX_SVG_IMPORT_* (no CLI schema change).
+- Editor registers accepted definitions atomically in an unheld namespace; hidden entries stay registered but leave the panel/search (new optional LibraryPanel `hidden`). Full pinned Lucide 1978+220 = 2198 accepted with a pure witness port.

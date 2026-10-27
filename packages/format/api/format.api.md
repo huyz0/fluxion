@@ -171,6 +171,50 @@ export type FormatError = {
 export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_SHAPE_PACK_INVALID" | "FILE_INTERNAL";
 
 // @public
+export type IconifyIconOutcome = {
+    readonly name: string;
+    readonly id: string;
+    readonly parent?: string;
+    readonly hidden: boolean;
+} & ({
+    readonly status: "accepted";
+    readonly value: SvgImportResult;
+} | {
+    readonly status: "refused";
+    readonly diagnostics: readonly Diagnostic[];
+});
+
+// @public
+export type IconifyImportOptions = Omit<SvgImportOptions, "id"> & {
+    readonly namespace?: string;
+};
+
+// @public
+export type IconifyImportReport = {
+    readonly status: "failed";
+    readonly diagnostics: readonly Diagnostic[];
+} | IconifyProcessedReport;
+
+// @public
+export type IconifyProcessedReport = {
+    readonly status: "processed";
+    readonly provenance: IconifyProvenance;
+    readonly iconCount: number;
+    readonly aliasCount: number;
+    readonly acceptedCount: number;
+    readonly entries: readonly IconifyIconOutcome[];
+};
+
+// @public
+export type IconifyProvenance = {
+    readonly prefix: string;
+    readonly sourceSha256: string;
+    readonly name?: string;
+    readonly author?: string;
+    readonly license?: string;
+};
+
+// @public
 export interface ImageCodec {
     toWebp(bytes: Uint8Array, mime: ImageMime, maxSide: number): Promise<EncodedImage | undefined>;
 }
@@ -203,6 +247,9 @@ export type ImportedImage = {
     readonly height?: number;
     readonly change: "none" | "downscaled" | "webp" | "svg";
 };
+
+// @public
+export function importIconifyCollection(text: string, options: IconifyImportOptions): Promise<IconifyImportReport>;
 
 // @public
 export function importImage(bytes: Uint8Array, codec: ImageCodec, maxSide?: number): Promise<Result<ImportedImage, ImageImportFailure>>;

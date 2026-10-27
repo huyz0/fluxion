@@ -51,6 +51,13 @@ describe('library panel (FR-LIB-001)', () => {
     expect(host.querySelector('[aria-live]')?.textContent).toBe('0 shapes');
   });
 
+  it('FR-LIB-005: hidden registered definitions stay out of the listing and search', async () => {
+    const shapeDefs = setup();
+    await act(async () => root.render(<LibraryPanel shapeDefs={shapeDefs} hidden={new Set(['basic:cylinder'])} />));
+    expect(names().sort()).toEqual(['basic:rect', 'flow:decision']);
+    expect(shapeDefs.get('basic:cylinder')).toBeDefined();
+  });
+
   it('FR-LIB-001: picking an item reports its id, and a definition registered later appears', async () => {
     const shapeDefs = setup();
     const picked: string[] = [];

@@ -867,3 +867,5 @@ M18.94	350d3beb2432bbec013616958f36ed49bb9635d22080b9f77333ba085ddede27	r1	pass	
 M18.20	545e5ad68d4412fefaecef3d42b9189d05750a800103bd47e245b24b1a75dafe	r1	pass	claude:general-purpose-subagent	2 findings
 M18.20	68229352af37d15d60b6057af34e4cd172d128399b194f0639885ef07cdcbfcc	r2	pass	claude:general-purpose-subagent	2 findings
 M18.43	21341cacab9bb77d73f92be19c4071493a84352a8c04431070b6d86ef2ae864a	r1	pass	claude:independent-subagent	0 findings
+M18.18	40deb8ab3c2f4924efecc135b2fb6fe853b76edeb9e5262d188eaea646e81b4e	r1	changes-requested	claude:subagent	2 findings
+M18.18	33de3307848d0c04bfa2d43695594002b9fae627a76e781e5a6b82c78bff8ecf	r2	pass	claude:subagent	0 findings

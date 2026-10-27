@@ -14,11 +14,15 @@ import { CommandTxOptions } from '@fluxion/core';
 import { ConnectorElement } from '@fluxion/schema';
 import { CoreRegistries } from '@fluxion/core';
 import { createCanvasMeasurer } from '@fluxion/render';
+import { Diagnostic } from '@fluxion/schema';
+import { Disposable } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
 import { DslDiagnostic } from '@fluxion/dsl';
 import { FieldDef } from '@fluxion/schema';
 import { GlobalRoute } from '@fluxion/routing';
 import { GlobalRouteInput } from '@fluxion/routing';
+import { IconifyImportOptions } from '@fluxion/format';
+import { IconifyProcessedReport } from '@fluxion/format';
 import { ImageCodec } from '@fluxion/format';
 import { LoadableFace } from '@fluxion/render';
 import { loadFontFaces } from '@fluxion/render';
@@ -590,6 +594,13 @@ export type HitIndex = {
 };
 
 // @public
+export type IconifyLibrary = Disposable & {
+    readonly report: IconifyProcessedReport;
+    readonly entries: readonly LibraryEntry[];
+    readonly hidden: ReadonlySet<string>;
+};
+
+// @public
 export const imageMaker: (assetId: RecordId) => ElementMaker;
 
 // @public
@@ -600,6 +611,11 @@ export type ImageSize = {
 
 // @public
 export const imageTool: () => Tool;
+
+// @public
+export function importIconifyLibrary(registry: Registry<string, ShapeDef>, text: string, options: IconifyImportOptions & {
+    readonly source: string;
+}): Promise<Result<IconifyLibrary, readonly Diagnostic[]>>;
 
 // @public
 export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors, defs?: ShapeDefs): InspectorModel | undefined;
@@ -763,6 +779,7 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode;
 export type LibraryPanelProps = {
     readonly shapeDefs: Registry<string, ShapeDef>;
     readonly onPick?: ((id: string) => void) | undefined;
+    readonly hidden?: ReadonlySet<string> | undefined;
 };
 
 // @public

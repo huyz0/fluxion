@@ -19,6 +19,8 @@ export type LibraryPanelProps = {
   readonly shapeDefs: Registry<string, ShapeDef>;
   /** Called with a definition id when its item is picked; without it the items are plain labels. */
   readonly onPick?: ((id: string) => void) | undefined;
+  /** Registered IDs left out of the listing and search, such as hidden Iconify icons (FR-LIB-005). */
+  readonly hidden?: ReadonlySet<string> | undefined;
 };
 
 /** The size a thumbnail is drawn in, px. */
@@ -90,12 +92,12 @@ function grouped(
  * @public
  */
 export function LibraryPanel(props: LibraryPanelProps): ReactNode {
-  const { shapeDefs, onPick } = props;
+  const { shapeDefs, onPick, hidden } = props;
   const [query, setQuery] = useState('');
   const version = useValue(shapeDefs.changes$);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` stands for the registry's contents
   const defs = useMemo(() => new Map(shapeDefs.list().map(([id, def]) => [id, def] as const)), [shapeDefs, version]);
-  const index = useMemo(() => buildLibraryIndex([...defs.values()].map(entryOf)), [defs]);
+  const index = useMemo(() => buildLibraryIndex([...defs.values()].filter((d) => !hidden?.has(d.id)).map(entryOf)), [defs, hidden]);
   const found = index.search(query);
   const searching = query.trim() !== '';
   const show = (e: LibraryEntry) => <Item key={e.id} entry={e} def={defs.get(e.id) as ShapeDef} onPick={onPick} />;
