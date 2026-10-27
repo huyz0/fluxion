@@ -55,4 +55,20 @@ test.describe('copy and paste inside a document', { tag: '@desktop' }, () => {
     await page.keyboard.press('ControlOrMeta+v');
     await expect(editor.elements).toHaveCount(6);
   });
+  test('FR-EDT-007: with text selected on the page and nothing on the canvas, Ctrl+C is the browser’s copy of that text', async ({ page }) => {
+    const editor = new EditorPage(page);
+    await editor.open('new');
+    await page.evaluate(() => {
+      const w = window as unknown as { copies: { tag: string; prevented: boolean }[] };
+      w.copies = [];
+      // after every other listener (a microtask), so what the editor did to the event is known
+      window.addEventListener('copy', (e) => queueMicrotask(() => w.copies.push({ tag: (e.target as Element).tagName, prevented: e.defaultPrevented })));
+    });
+    const label = await editor.zoomValue.textContent();
+    await editor.zoomValue.evaluate((el) => getSelection()?.selectAllChildren(el));
+    await page.keyboard.press('ControlOrMeta+c');
+    await expect.poll(() => page.evaluate(() => (window as unknown as { copies: unknown[] }).copies)).toEqual([{ tag: 'OUTPUT', prevented: false }]);
+    // the selection is left as it was
+    expect(await page.evaluate(() => getSelection()?.toString())).toBe(label);
+  });
 });

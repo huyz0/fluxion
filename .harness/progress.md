@@ -3377,3 +3377,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Recommended option of the open question to Huy (2026-10-27), reversible until landed: the ubuntu leg runs in ci.yml's pinned Playwright image and gates; Windows and macOS legs carry `known-red: true` (job-level continue-on-error), still annotate and upload diffs, until M32 item 11 makes per-OS baselines.
 - No threshold or baseline changes. ci-workflow.test.mjs pins the legs, the shared image digest and that continue-on-error appears only twice.
 - check-workflows skips locally (no Docker); actionlint runs in CI.
+## M18.132 — Keyboard paste across documents through an editable target (2026-10-27)
+
+- Clipboard chords on the canvas move the focus to a hidden text area (clipboard-catcher.ts) with a selected placeholder; the browser raises copy/cut/paste there on every engine, the editor's handlers own it, always prevent its default and give the focus back. The M11.59 async fallback still covers a chord with no event and restores the focus first.
+- New e2e emulates WebKit 26.5 on every engine (events from non-editable targets dropped, async read refused): red without the fix (0 of 3 pasted), green with it on Chromium; Firefox/WebKit run in CI. Browser unit tests for the catcher.
+- Review r1 F1: a chord is not routed while the page holds a text selection, so the browser still copies selected page text when the canvas has nothing selected (new e2e, red without the guard).
+- Review r2 F1: the guard is now "a copy or cut with nothing selected on the canvas and page text selected" (paste and canvas selections always route), and the catcher saves and restores the page's text selection, so a stale page selection no longer brings the WebKit failure back (emulated e2e extended, red under the r2 guard).

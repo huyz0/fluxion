@@ -2,9 +2,11 @@
 // (what Ctrl/Cmd+C, X and V fire) and the async path the menu commands use. A copy puts the payload on the system
 // clipboard in every representation at once; a paste reads it back, from this document, another or another tab,
 // and hands it to the editor's own clipboard so the paste command places it. Events in a text field, while a dialog
-// is open or while presenting are the browser's own. An engine that raises no event for the chord on the canvas (WebKit 26.5, M11.59) is answered by the async path after a short wait.
+// is open or while presenting are the browser's own. A chord goes through a hidden editable target (clipboard-catcher.ts), since an engine may raise the event only from one
+// (WebKit 26.5, M18.132); a chord no event answers all the same is done by the async path after a short wait (M11.59).
 import { useCallback, useEffect, useRef } from 'react';
 import type { Clipboard } from './clipboard.js';
+import { type ClipboardCatcher, clipboardCatcher } from './clipboard-catcher.js';
 import { type ChordFallback, chordAction, chordFallback, type Timers } from './clipboard-chord.js';
 import { readAsync, readFromEvent, writeAsync, writeToEvent } from './clipboard-dom.js';
 import { isEditable } from './editor-keys.js';
@@ -85,13 +87,33 @@ export type SystemClipboardCommands = {
 
 const windowTimers: Timers = { set: (fn, ms) => window.setTimeout(fn, ms), clear: (handle) => window.clearTimeout(handle as number) };
 
-/** The chord fallback of one editor: made once and kept for its lifetime, so a re-render never drops a chord that is waiting for its event. */
-function useChordFallback(commands: { readonly current: SystemClipboardCommands | undefined }): ChordFallback {
-  const ref = useRef<ChordFallback | undefined>(undefined);
-  ref.current ??= chordFallback(windowTimers, (action) => void commands.current?.[action]());
+/** The chord fallback and catcher of one editor: made once and kept for its lifetime, so a re-render never drops a chord that is waiting for its event. */
+function useChordFallback(commands: { readonly current: SystemClipboardCommands | undefined }): ChordFallback & { readonly catcher: ClipboardCatcher } {
+  const ref = useRef<(ChordFallback & { readonly catcher: ClipboardCatcher }) | undefined>(undefined);
+  if (ref.current === undefined) {
+    const catcher = clipboardCatcher(document);
+    const fallback = chordFallback(windowTimers, (action) => {
+      catcher.restore();
+      void commands.current?.[action]();
+    });
+    ref.current = { ...fallback, catcher };
+  }
   const fallback = ref.current;
-  useEffect(() => () => fallback.cancel(), [fallback]);
+  useEffect(
+    () => () => {
+      fallback.cancel();
+      fallback.catcher.dispose();
+    },
+    [fallback],
+  );
   return fallback;
+}
+
+/** An event on the catcher is the editor's even when it does nothing: its placeholder is never copied, cut or pasted into, and the focus goes back. */
+function settle(e: ClipboardEvent, catcher: ClipboardCatcher): void {
+  if (!catcher.owns(e.target)) return;
+  e.preventDefault();
+  catcher.restore();
 }
 
 /** Listen for the clipboard events while mounted; the menu commands over the async API. */
@@ -101,26 +123,36 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
   const commandsRef = useRef<SystemClipboardCommands | undefined>(undefined);
   const fallback = useChordFallback(commandsRef);
   useEffect(() => {
-    // not the editor's: a field's own copy and paste, a dialog, presenting
-    const editingHere = (target: EventTarget | null) => !paused && session.mode.get() === 'edit' && !isEditable(target);
+    const { catcher } = fallback;
+    // not the editor's: a field's own copy and paste, a dialog, presenting; the catcher is a field only the editor's chords reach
+    const editingHere = (target: EventTarget | null) => !paused && session.mode.get() === 'edit' && (catcher.owns(target) || !isEditable(target));
     const own = (e: ClipboardEvent) => e.clipboardData !== null && editingHere(e.target);
+    const caught = (e: ClipboardEvent) => settle(e, catcher);
     const out = (command: string) => (e: ClipboardEvent) => {
       fallback.answered();
       const payload = own(e) && run(command) ? clipboard.get() : undefined;
-      if (payload === undefined || e.clipboardData === null) return;
-      clipboard.adopt(payload, writeToEvent(e.clipboardData, payload));
-      e.preventDefault();
+      if (payload !== undefined && e.clipboardData !== null) {
+        clipboard.adopt(payload, writeToEvent(e.clipboardData, payload));
+        e.preventDefault();
+      }
+      caught(e);
     };
     const onCopy = out('clipboard.copy');
     const onCut = out('clipboard.cut');
     const onPaste = (e: ClipboardEvent) => {
       fallback.answered();
       if (own(e) && e.clipboardData !== null) pasteEvent(e, e.clipboardData, { clipboard, run, place, notify });
+      caught(e);
     };
-    // a chord the browser answers with an event is done by that event; one it does not is done here after a short wait
+    // a chord goes through the catcher, so the browser raises its event from an editable target; one it answers with no event is done here after a short wait
     const onKeyDown = (e: KeyboardEvent) => {
       const action = chordAction(e);
-      if (action !== undefined && !e.defaultPrevented && editingHere(e.target)) fallback.pressed(action);
+      if (action === undefined || e.defaultPrevented || !editingHere(e.target)) return;
+      // a chord still waiting is done (and the focus given back) first, then this one is routed; a copy or cut of the page's selected text,
+      // with nothing selected on the canvas, is the browser's own and goes where it went before
+      fallback.pressed(action);
+      const pageText = action !== 'paste' && session.selection.get().length === 0 && document.getSelection()?.isCollapsed === false;
+      if (!pageText) catcher.route();
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('copy', onCopy);
