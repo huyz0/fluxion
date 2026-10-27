@@ -114,6 +114,7 @@ export {
   type IconifyProvenance,
   importIconifyCollection,
 } from './iconify-import.js';
+export { type ImportedPack, type ImportedPackEntry, type ImportedPackOptions, iconifyShapePack, importedShapePack } from './imported-pack.js';
 export { importSvgBatch, type SvgBatchFile, type SvgBatchInput, type SvgBatchOptions, type SvgBatchOutcome, type SvgBatchReport } from './svg-batch.js';
 export {
   importSvgShape,

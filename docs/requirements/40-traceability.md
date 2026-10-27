@@ -80,12 +80,12 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.panel.spec.ts` +3 |
 | FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.drag-insert.spec.ts`, `packages/editor/src/library/library-insert.test.ts` |
 | FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/artwork.test.ts` +9 |
-| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/artwork.spec.ts` +29 |
-| FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-iconify.test.ts` +3 |
+| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/artwork.spec.ts` +30 |
+| FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-iconify.test.ts` +4 |
 | FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-drawio.test.ts` +3 |
 | FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/sdk/src/testing/testing.test.ts` +6 |
 | FR-LIB-008 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/file-recovery.test.ts` +17 |
+| FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/file-recovery.test.ts` +18 |
 | FR-LIB-010 | S | R6 | M26 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-011 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.replace-shape.spec.ts` +3 |
 | FR-ANC-001 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/anchor.test.ts`, `packages/routing/src/connector-route.test.ts` |
@@ -363,4 +363,4 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-DX-004 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` +4 |
 | NFR-LIC-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `packages/cli/src/svg-witness-bundle.test.ts` +2 |
 | NFR-LIC-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/drift.test.mjs` +2 |
-| NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` +25 |
+| NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` +26 |

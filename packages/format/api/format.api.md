@@ -14,6 +14,7 @@ import { sha256Hex } from '@fluxion/core';
 import { ShapeDef } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
+import { ShapePackSource } from '@fluxion/core';
 import { ShapePackSubset } from '@fluxion/core';
 import { SvgArtwork } from '@fluxion/schema';
 import { SvgArtworkNode } from '@fluxion/schema';
@@ -251,6 +252,11 @@ export type IconifyProvenance = {
 };
 
 // @public
+export function iconifyShapePack(report: IconifyImportReport, options: Pick<ImportedPackOptions, "licensePolicy" | "hasher"> & {
+    readonly version?: string;
+}): Promise<Result<ImportedPack, readonly Diagnostic[]>>;
+
+// @public
 export interface ImageCodec {
     toWebp(bytes: Uint8Array, mime: ImageMime, maxSide: number): Promise<EncodedImage | undefined>;
 }
@@ -286,6 +292,41 @@ export type ImportedImage = {
     readonly height?: number;
     readonly change: "none" | "downscaled" | "webp" | "svg";
 };
+
+// @public
+export type ImportedPack = {
+    readonly index: ShapePackIndex;
+    readonly categories: ReadonlyMap<string, Uint8Array>;
+    readonly source: {
+        readonly kind: "distribution";
+        readonly index: ShapePackIndex;
+        readonly definitions: readonly ShapeDef[];
+    };
+};
+
+// @public
+export type ImportedPackEntry = {
+    readonly definition: ShapeDef;
+    readonly name: string;
+    readonly fonts?: readonly unknown[];
+};
+
+// @public
+export type ImportedPackOptions = {
+    readonly namespace: string;
+    readonly version: string;
+    readonly name: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly notice: string;
+    readonly source: ShapePackSource;
+    readonly entries: readonly ImportedPackEntry[];
+    readonly licensePolicy: ShapePackLicensePolicy;
+    readonly hasher: ContentHasher;
+};
+
+// @public
+export function importedShapePack(options: ImportedPackOptions): Promise<Result<ImportedPack, readonly Diagnostic[]>>;
 
 // @public
 export function importIconifyCollection(text: string, options: IconifyImportOptions): Promise<IconifyImportReport>;
