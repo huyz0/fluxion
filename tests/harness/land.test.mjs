@@ -233,6 +233,44 @@ describe('land (M18.106)', () => {
     }
   });
 
+  it('lands a stack whose commits fill the Commit cells of neighbouring rows (M18.153)', () => {
+    reset();
+    // three more task commits would leave the later tests past the sandbox's checkpoint limit
+    const restore = remoteHead();
+    try {
+      landsNeighbouringCells();
+    } finally {
+      ok(git(origin, 'update-ref', 'refs/heads/main', restore));
+      ok(git(other, 'reset', '-q', '--hard', restore));
+      reset();
+    }
+  });
+  function landsNeighbouringCells() {
+    const BACKLOG = 'docs/backlog/current.md';
+    const row = (id, state, cell = '') => `| ${id} | gate ${id} | HARNESS | acceptance | | ${state} | ${cell} |`;
+    upstream(BACKLOG, `${[row('M0.40', 'todo'), row('M0.41', 'todo'), row('M0.42', 'todo')].join('\n')}\n`);
+    reset();
+    // each commit marks its own row done and fills the previous row's cell, as the harness loop does;
+    // the cells sit on neighbouring lines, so a cell renamed on the remote side is in the next diff's context
+    const a = reviewed('M0.40', 'scripts/gates/M0.40.txt', 'M0.40\n', {
+      [BACKLOG]: `${[row('M0.40', 'done'), row('M0.41', 'todo'), row('M0.42', 'todo')].join('\n')}\n`,
+    });
+    const b = reviewed('M0.41', 'scripts/gates/M0.41.txt', 'M0.41\n', {
+      [BACKLOG]: `${[row('M0.40', 'done', a.slice(0, 7)), row('M0.41', 'done'), row('M0.42', 'todo')].join('\n')}\n`,
+    });
+    reviewed('M0.42', 'scripts/gates/M0.42.txt', 'M0.42\n', {
+      [BACKLOG]: `${[row('M0.40', 'done', a.slice(0, 7)), row('M0.41', 'done', b.slice(0, 7)), row('M0.42', 'done')].join('\n')}\n`,
+    });
+    upstream('src/unrelated.txt', 'unrelated');
+    const r = land('--push');
+    assert.equal(r.status, 0, out(r));
+    assert.match(r.stdout, /landed 3 commit\(s\)/);
+    assert.equal(remoteHead(), head());
+    // the landed cells name the landed commits, not the local ones
+    const landed = (n) => ok(sb.git('rev-parse', '--short=7', `HEAD~${n}`));
+    assert.equal(sb.read(BACKLOG), `${[row('M0.40', 'done', landed(2)), row('M0.41', 'done', landed(1)), row('M0.42', 'done')].join('\n')}\n`);
+  }
+
   it('refuses a feature commit and lands a harness commit while a blocks-landing row is open (M18.123)', () => {
     reset();
     // the feature commit was reviewed before another stream marked the blocking row

@@ -5,8 +5,9 @@
 // regenerates the API reports and traceability, and commits each through the real hooks, so
 // commit-msg, checkpoint, the precommit ladder and the content-bound review check run on the tree
 // that will land. Missing Commit cells of done rows are filled and cells naming a rewritten commit
-// follow it (bookkeeping). A conflict or any refused gate stops the run with the local branch back
-// where it started; nothing is pushed. While a `blocks-landing` row is open, only that row's commits
+// follow it (bookkeeping), also in the commits still to apply, so filling one row's cell never
+// conflicts with the next commit's edit of its neighbour (M18.153). A conflict or any refused gate
+// stops the run with the local branch back where it started; nothing is pushed. While a `blocks-landing` row is open, only that row's commits
 // and commits confined to harness paths land, and closing it needs CI evidence (M18.123, M18.135). With --push, the result is pushed as a fast-forward, retried when the branch moved.
 // Pushing still needs a human's request (skill ship).
 import { existsSync, realpathSync, statSync } from 'node:fs';
@@ -91,6 +92,38 @@ function fillCells(rewritten) {
   must(['checkout', '--', BACKLOG], 'refresh the working backlog');
 }
 
+/** `rev`'s tree with its backlog replaced by `edit(backlog)`, built in a scratch index. */
+function treeWith(rev, edit) {
+  const tree = must(['rev-parse', `${rev}^{tree}`], 'read a tree');
+  const shown = git(['show', `${rev}:${BACKLOG}`]);
+  const next = shown.status === 0 ? edit(shown.stdout) : shown.stdout;
+  if (shown.status !== 0 || next === shown.stdout) return tree;
+  const blob = run('git', ['hash-object', '-w', '--stdin'], { input: next }).stdout.trim();
+  // the real index holds the landing in progress
+  const env = { ...process.env, GIT_INDEX_FILE: must(['rev-parse', '--path-format=absolute', '--git-path', 'land-remap.index'], 'locate a scratch index') };
+  const step = (args, what) => {
+    const r = git(args, { env });
+    if (r.status !== 0) throw new Error(`${what}: ${(r.stderr || r.stdout).trim()}`);
+    return r.stdout.trim();
+  };
+  step(['read-tree', tree], 'read a tree into the scratch index');
+  const mode = lines(git(['ls-tree', rev, '--', BACKLOG]))[0]?.split(' ')[0] ?? '100644';
+  step(['update-index', '--cacheinfo', `${mode},${blob},${BACKLOG}`], 'stage a remapped backlog');
+  return step(['write-tree'], 'write a remapped tree');
+}
+
+/**
+ * `sha` re-made with the Commit cells naming commits this landing rewrote already renamed on both
+ * sides. Picked as is, a cell fillCells renamed on the remote side sits in the context of the next
+ * commit's edit of a neighbouring row, and git reports a conflict no human made (M18.153).
+ */
+function remapped(sha, rewritten) {
+  if (!rewritten.size || !lines(git(['diff', '--name-only', `${sha}^`, sha, '--', BACKLOG])).length) return sha;
+  const rename = (text) => fillCommitCells(text, new Map(), rewritten);
+  const parent = must(['commit-tree', treeWith(`${sha}^`, rename), '-m', 'land: remapped parent'], 'write a remapped parent');
+  return must(['commit-tree', treeWith(sha, rename), '-p', parent, '-m', 'land: remapped'], 'write a remapped commit');
+}
+
 /**
  * Re-apply each local commit of `start` missing from `upstream` onto `upstream`, oldest first,
  * committing each through the hooks. Commits already on upstream (same patch) are skipped.
@@ -114,7 +147,7 @@ function recommit(upstream, start) {
       evidenceOk: (record) => ciEvidenceHolds(record, must(['rev-parse', 'HEAD'], 'read the tip'), { runsFile: opt('ci-runs-file') }),
     });
     if (blocked) return fail(`${sha.slice(0, 7)} (${subject}) may not land: ${blocked}`);
-    const picked = git(['cherry-pick', '-n', sha]);
+    const picked = git(['cherry-pick', '-n', remapped(sha, rewritten)]);
     if (picked.status !== 0)
       return fail(
         `${sha.slice(0, 7)} (${subject}) conflicts with the remote branch; rebase by hand (keep both sides of bookkeeping, regenerate reports), then land again:\n${picked.stdout}${picked.stderr}`,
