@@ -1,0 +1,139 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp13",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..cf3b0495768813fb034cb301f7e4671d672c9738",
+  "reviewer": "claude:independent-subagent:m18-cp13",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "docs/backlog/current.md",
+      "line": 122,
+      "evidence": "Commits 11fd580 (M18.108), 6e6d599 (M18.26), cf3b049 (M18.27); M18.117 row (current.md:122, still todo); 14d7ea0 commit body; gh runs 40471203743, 40472229061, 40473372927, 40479446986, 40487191105; scripts/harness/last-ci.mjs output at cf3b049",
+      "failure_scenario": "cp12 made M18.117 a serializing row: 'until this row lands on main, the streams SHALL land no further feature task commits (... commits reviewed before cp12 may land)'. 14d7ea0 says 'The row stays todo until a green three-OS run is recorded', and at cf3b049 the row is still todo with no ci-evidence record. Even so, three feature commits landed after it, between 10:03 and 10:16: M18.108 (authored 08:33), M18.26 (09:00) and M18.27 (09:21, written entirely after cp12). Before 14d7ea0, M18.39, M18.107 and M18.110 landed on a main whose verify (macOS) and verify (Windows) jobs were failing (runs 40471203743, 40472229061, 40473372927). The 'reviewed before cp12' exception may cover those three, but each one extended the red window. The fix does work in part: at 14d7ea0, verify macOS and Windows succeeded (run 40479446986). verify (ubuntu-latest) has been queued on every push since ff4b166, though, so no commit in this window has a complete three-OS result. last-ci still prints 'RED ci failure at ff4b166 ... (9 newer runs pending): wait' and exits 2. So the stop rule written in prose was not followed, and no mechanism enforces it.",
+      "disposition": "reopen",
+      "proposed_row": "M18.122 Landing respects blocking rows (cp13 F1) | HARNESS | WHILE a backlog row marked `blocks-landing` is not done THE SYSTEM SHALL make `land.mjs` and check-checkpoint refuse task commits of any other non-harness row, naming the blocking row; M18.117 SHALL carry the mark until a green three-OS run is recorded with check-ci-evidence; a harness test SHALL prove a feature commit is refused and a harness commit is accepted while the mark is set"
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "file": "scripts/ci/mutation-nightly.mjs",
+      "line": 26,
+      "evidence": "nightly run 40470089950 at f0682fe (annotations); nightly red on every run listed since 2026-10-25 (fe5687c, 3b7f0a2, 88965d8, 25a0e6c, 93598b6, f0682fe); no backlog or progress mention of the 256-job cap",
+      "failure_scenario": "The latest nightly fails five legs. None is tracked. (a) mutation-plan: 'mutation matrix exceeds 256 jobs: 274; no scope was dropped'. GitHub caps a matrix at 256, so with today's partitioning no qualifying nightly can run. Pure-core growth (M18.108 added core/shape/pack-encode.ts) only widens the gap. Unless partitioning changes, M18.10 and the completion leg 'complete current-revision mutation reports ... within existing timeout' can never go green. (b) visual-xos on all three OSes: shapes-gallery.png differs by 12190 px (ratio 0.01, FR-SHP-002). (c) perf: FR-RTE-002 route-drag-200 measured 48.6 fps against a minimum of 50. (d) previous-playwright webkit: in FR-EDT-007 cross-document paste, 0 of 3 .fx-el appeared. The completion leg 'three-OS CI and nightly perf' still points at perf run 88965d8. last-ci reads only ci and gates, so nothing in the loop surfaces nightly red.",
+      "disposition": "reopen",
+      "proposed_row": "M18.123 Nightly green on main (cp13 F2) | NFR-MNT-005, NFR-PERF, FR-SHP-002, FR-RTE-002, FR-EDT-007, HARNESS | WHEN nightly runs on main THE SYSTEM SHALL plan the full mutation scope in at most 256 matrix jobs (e.g. grouped partitions or chained matrices) without dropping any source, test or mutant and with ADR-0176 floors; the visual-xos shapes-gallery diff, the route-drag-200 fps shortfall and the WebKit cross-document paste SHALL be root-caused and fixed without changing thresholds or baselines (a Threshold-change trailer only with a reasoned ADR); last-ci (M18.118) SHALL report the latest completed nightly; M18.10 depends on this row"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "scripts/gates/m18-complete.mjs",
+      "line": 185,
+      "evidence": "6e6d599 adds packs/bpmn (@fluxion/pack-bpmn, namespace bpmn); FR-LIB-007 (docs/requirements/11-shapes-and-library.md:36), M18.md task 9 and the gate's PACKS list name `bpmn-lite`; packet gate output: 'FAIL bpmn-lite: ... missing packs/bpmn-lite/src/pack.test.ts' while row M18.26 is done",
+      "failure_scenario": "M18.26 was marked done while its own completion leg is red. The pack's directory, package name and namespace do not match the requirement's pack name. To close the leg, someone now has to rename a published-to-be package or change the gate's pack list, and a later agent may take a gate edit for gate-weakening. The next pack rows (cloud-architecture, icons-lucide) can drift the same way.",
+      "disposition": "reopen",
+      "proposed_row": "M18.124 bpmn pack name agrees with FR-LIB-007 (cp13 F3) | FR-LIB-007 | WHEN the M18 completion gate runs THE SYSTEM SHALL find the BPMN-lite pack's suite under the name FR-LIB-007 uses: either rename packs/bpmn to packs/bpmn-lite (package @fluxion/pack-bpmn-lite, before any release), or record the `bpmn` name through the spec skill and update the gate's PACKS list in the same commit; a done pack row SHALL have its pack leg green in the same commit (check by running that leg)"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "packages/format/src/imported-pack.test.ts",
+      "line": 18,
+      "evidence": "14d7ea0 (lucideSample: 2198 -> 136 definitions; assertion toHaveLength(2198) -> 136); .harness/baselines/review-argued.txt 'M18.117 r1 F2'; progress.md M18.117 (import 3.4 s + pack 1.7 s locally, 20 s on loaded runners)",
+      "failure_scenario": "cp12's disposition asked for the imported-pack timeout to be fixed at its cause. Instead, 14d7ea0 cut the input to every 16th icon. The test comment now says 'no test packs all of it'. A Studio user who imports the full Lucide collection (FR-LIB-005) and saves a document runs the same encode, which measured 1.7 s locally and approached 20 s on CI runners. No test or perf leg now measures that cost. A mutant that makes encoding quadratic in the number of definitions passes every test: 136 definitions hide it. The draw.io fix in the same commit did address its cause, which makes this one stand out.",
+      "disposition": "reopen",
+      "proposed_row": "M18.125 Full-collection pack encoding budget (cp13 F4) | FR-LIB-005, FR-LIB-009, NFR-PERF | WHEN a complete pinned Iconify collection (Lucide, 2198 icons) is imported and encoded as a saveable pack THE SYSTEM SHALL finish within a stated budget in the perf job, with a node test proving encode time grows at most linearly (e.g. 136 vs 2198 ratio bound); the sampled unit test may stay"
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": ".harness/reviews/digest.log",
+      "line": 932,
+      "evidence": "digest lines M18.108 r1 'pass 0 findings content:02dabfd7...' vs 11fd580 body 'Review r1 changes-requested (F1 ..., F2 ...)'; M18.26 single line 'r1 pass' vs 6e6d599 body 'Review r1 changes-requested ..., fixed; r2 pass'; M18.39 r3 'pass claude:subagent' is a rebinding of r2 with no review (8879c64 body) and r2 had no content id; scripts/harness/review.mjs record numbers rounds from the worktree-local .harness/review",
+      "failure_scenario": "The final pass line of every landed commit in this window is bound to that commit's content id. I recomputed contentId for all seven and each one matched. The rest of the tracked digest, though, does not match the commit bodies. For M18.108 it records a 'pass, 0 findings' r1 on different content where the body says r1 requested changes. For M18.26 the changes-requested round is missing. For M18.39 a rebinding is labelled as a subagent review round. Round numbers are local to each worktree, and changes-requested verdicts are never required in the tracked log. History therefore cannot show which rounds were reviews, which were requests for change and which were rebindings, which is the evidence non-negotiable 4 rests on.",
+      "disposition": "reopen",
+      "proposed_row": "fold into M18.119: WHEN review.mjs records a verdict THE SYSTEM SHALL append changes-requested verdicts to the tracked digest too, number rounds from the tracked digest rather than the local directory, and mark a content rebinding as `rebind` (naming the bound line), never as a reviewer verdict; check-digest SHALL refuse a pass line whose content id differs from its commit's, unless a later line covers it"
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "file": "scripts/harness/last-ci.mjs",
+      "line": 1,
+      "evidence": "In a clone with no GitHub remote: 'last-ci: cannot read main's runs (gh run list failed ...); check CI by hand', exit=0. At cf3b049 in the real checkout: 'RED ci failure at ff4b166 ... (9 newer runs pending): wait', exit 2",
+      "failure_scenario": "last-ci fails open: when gh cannot read runs it exits 0, the same code as green. A stream in a fresh worktree whose remote or authentication is broken would treat main as green. Meanwhile cp12 F2's permanent 'wait' is still live with 9 pending runs, because M18.118 has not landed, and the streams landed anyway (F1).",
+      "disposition": "reopen",
+      "proposed_row": "fold into M18.118: WHEN last-ci cannot read main's runs THE SYSTEM SHALL exit with a distinct non-zero code (unknown) that drive treats like red for feature rows"
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "file": "packs/network/src/pack.test.ts",
+      "line": 1,
+      "evidence": "packs/{arrows,basic,bpmn,callouts,flowchart,infographic,network,uml}/src/pack.test.ts are near-identical 41-line copies; 943141e had to edit six of them identically",
+      "failure_scenario": "Each new pack copies the WRITE/-u guard, the glob wiring and the clean-result shape. A future suite change, such as M18.121's parameter corners, must edit every copy, and a copy that misses the edit (for example one that keeps the old write path without the -u guard) silently brings back cp11 F7's leaked-variable write for that one pack. pack-goldens.test.mjs runs only against packs/basic, so nothing would catch it.",
+      "disposition": "reopen",
+      "proposed_row": "fold into M18.121: WHEN a first-party pack suite runs THE SYSTEM SHALL take its write-run guard and comparison from one @fluxion/sdk/testing helper (each pack passes only its source and its import.meta.glob results), and a harness check SHALL fail a pack.test.ts that does not use it"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.123",
+      "note": "New row M18.123 (harness, ahead of further feature landings): land.mjs and check-checkpoint enforce a `blocks-landing` backlog mark, set on M18.117 until a green three-OS run is recorded. Until it lands, drive runs one stream and lands harness rows only. [row renumbered at recording: M18.122 -> M18.123; M18.122 is My shapes embedding, added in the unlanded local commit 00c736d that lands right after this record] M18.123 depends only on M18.106, so it can start now; stream 1 takes it next."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.124",
+      "note": "New row M18.124: nightly green (mutation plan within 256 jobs without dropping scope; visual-xos, perf and WebKit paste root-caused without threshold changes). M18.10 depends on it. [row renumbered at recording: M18.123 -> M18.124; M18.122 is My shapes embedding, added in the unlanded local commit 00c736d that lands right after this record]"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.125",
+      "note": "New row M18.125: reconcile packs/bpmn with FR-LIB-007's `bpmn-lite` by a rename before release or by a spec-recorded name with a gate list change in the same commit. [row renumbered at recording: M18.124 -> M18.125; M18.122 is My shapes embedding, added in the unlanded local commit 00c736d that lands right after this record]"
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M18.126",
+      "note": "New row M18.126: perf-job budget and linear-growth test for encoding a full imported collection. [row renumbered at recording: M18.125 -> M18.126; M18.122 is My shapes embedding, added in the unlanded local commit 00c736d that lands right after this record]"
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M18.127",
+      "note": "New row M18.127 instead of amending M18.119: the tracked digest records changes-requested rounds, rounds are numbered from the tracked log, and rebindings are typed as `rebind`. [recorded as a new row, not a fold: M18.119 is reviewed and committed in a local stream commit that lands right after this record (fb04a82), and amending its EARS would void that review; the reviewer's EARS text is used verbatim]"
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "target": "M18.128",
+      "note": "New row M18.128 instead of amending M18.118: an unreadable CI state exits non-zero (unknown), and drive treats it as red. [recorded as a new row, not a fold: M18.118 is reviewed and committed in a local stream commit that lands right after this record (00c736d), and amending its EARS would void that review; the reviewer's EARS text is used verbatim]"
+    },
+    {
+      "finding": "F7",
+      "disposition": "reopen",
+      "target": "M18.129",
+      "note": "New row M18.129 instead of amending M18.121: one SDK pack-suite helper for every pack.test.ts, with a harness check that each pack uses it. [recorded as a new row, not a fold: M18.121 is reviewed and committed in a local stream commit that lands right after this record (stream 2's local M18.121), and amending its EARS would void that review; the reviewer's EARS text is used verbatim]"
+    }
+  ],
+  "assessment": {
+    "coherence": "The window is one design. M18.108 gives core a single pure encodeShapePack. The SDK's buildShapePackFiles, format's importedShapePack and iconifyShapePack all call it, and format's canonicalJson re-exports core's, so the duplicate encoder cp11 F4 found is gone. M18.110 builds the version ledger and the explicit write run on that encoder. M18.26 and M18.27 use the shared suite and encoder. M18.39 keeps the engine ABI pure in format and instantiates WASM in the editor. Cross-commit drift remains: the BPMN pack name differs from the requirement (F3), and the per-pack test file is copied eight times (F7).",
+    "specFidelity": "M18.107, M18.108, M18.110, M18.27 and M18.39 meet their EARS as written. M18.39's Fira Sans latin slice subsets to 33028 bytes against the 60000 budget, and its gate leg passes. M18.117 meets its pack-goldens and draw.io clauses. Windows was handled by ADR-0197, an option cp12 allowed. Its imported-pack clause was met by shrinking the input, not by fixing the cause (F4). M18.117 itself is correctly left todo pending a green run. M18.26 ships 19 BPMN-lite definitions, but under the name `bpmn`, so its completion leg is red (F3). No requirement was silently dropped. FR-LIB-008 stays partial pending M18.120 and M18.35.",
+    "standardsDrift": "Non-negotiable 1 is still not honoured in practice. cp12's serialization rule for M18.117 was written in prose and was not followed: three feature commits landed while the row was todo, and three more landed onto a main whose macOS and Windows verify jobs were red (F1). Nightly has been red for days with no row (F2). One convention did hold: every landed task commit now carries an own-tree pass line bound to its content id. I recomputed contentId for 8879c64, bfce2d0, 943141e, 14d7ea0, 11fd580, 6e6d599 and cf3b049, and all match. check-digest --head --full-history reports 97 task commits covered. The Removes-test trailer on M18.110 cites where the check moved.",
+    "gateHonesty": "The gate is at 46/75 and cannot pass early. Its CI-evidence, mutation and full-verification legs are correctly red. Spot mutants: (1) Removing M18.107's useEffect leaves aria-pressed true after deselect and reselect, so the new browser assertion fails; the test constrains. (2) In the pack-goldens sandbox, a deleted golden, an orphan golden, a leaked VITE_FLUXION_WRITE_PACK without -u, a changed ledger hash and a removed released entry each fail the run; the test constrains, and Windows and macOS now run it green. (3) An encoder that is quadratic in definition count passes, because imported-pack now packs 136 icons (F4). Structural problem: the mutation leg cannot go green while the plan needs 274 matrix jobs (F2). The 'bpmn-lite' leg is red on a done row (F3). checkpoint cadence is 7/8 at cf3b049, so this review is due.",
+    "architecture": "No layering breach. core/shape/pack-encode.ts imports only schema and core's own sync SHA-256, and format/font-subset.ts imports only format-local helpers and an injected ContentHasher. Contract changes come with ADRs: ADR-0196 (one encoder, import provenance), the ADR-0194 amendment (unreleased 0.0.0 never recorded; released versions kept), and ADR-0197 (Windows 25 of 45 minutes). Public API grew: core +27 lines (encodeShapePack), format +88 and editor +51 (font subset), sdk testing +4 (UNRELEASED_PACK_VERSION). Two new public packs were added: @fluxion/pack-bpmn and @fluxion/pack-network. The new binary fixture fixtures/fonts/fira-sans-400.ttf (457 KB, OFL, with provenance) is test-only. No runtime dependency was added.",
+    "planHealth": "There are 118 rows (90 done, 28 todo) against 43 planned, 2.74x. That is 5 rows up from cp12, all of them cp12 dispositions, and the 9 commits since cp12 closed 6 rows. Feature throughput recovered: 3 more packs; cloud-architecture, icons-lucide, devices and people remain. The bottleneck has moved from local bookkeeping to remote evidence. Ubuntu CI runners queue for hours, nightly is structurally red, and the streams keep landing despite prose stop rules. Later milestones should make every 'stop landing' disposition a mechanical land.mjs check, and should budget nightly and matrix capacity whenever the pure-package set grows."
+  },
+  "planDelta": "Add M18.122 (land.mjs enforces a blocks-landing mark; M18.117 carries it), M18.123 (nightly green: mutation plan within 256 matrix jobs without dropping scope, visual-xos/perf/WebKit failures root-caused; M18.10 depends on it), M18.124 (bpmn pack name reconciled with FR-LIB-007), M18.125 (full-collection pack encode budget). Amend M18.118 (an unknown CI state is not green), M18.119 (tracked digest keeps changes-requested and rebind rounds) and M18.121 (one SDK pack-suite helper). cp12 dispositions: M18.117\u2013121 rows added, M18.35 depends on M18.120, the ADR-0195 History addendum is present and the Learned line is present; the M18.117 serialization rule was not honoured (F1).",
+  "limitations": [
+    "The completion gate output comes from the packet. I did not rerun m18-complete. I ran check-digest --head --full-history, check-checkpoint --commit, contentId recomputation and last-ci in a throwaway --shared clone in the scratchpad, and last-ci in the read-only checkout.",
+    "CI and nightly states come from gh run/job listings and check-run annotations at review time. verify (ubuntu-latest) was still queued for every push since ff4b166, and cf3b049's ci run was in progress, so the M18.117 fix is confirmed only on macOS and Windows.",
+    "Verdict files from the streams' other worktrees could not be read. F5 rests on the tracked digest and the commit bodies only.",
+    "The new packs' goldens were read as SVG text and not rendered. The M18.39 Chromium pixel-equality test was not run. The mutation partition count (274) comes from the f0682fe nightly annotation; at cf3b049 the plan refused to compute in a checkout with untracked node_modules.",
+    "No repository writes besides this verdict file. The scratch clone lives in the session scratchpad."
+  ]
+}
