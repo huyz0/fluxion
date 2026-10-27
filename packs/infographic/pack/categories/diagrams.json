@@ -1,0 +1,61 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "infographic:venn",
+      "category": "diagrams",
+      "outline": {
+        "path": "M {w/2} {h * 0.0483} A {w * 0.35} {h/2} 0 1 0 {w/2} {h * 0.9517} A {w * 0.35} {h/2} 0 1 0 {w/2} {h * 0.0483} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w/2} {h * 0.0483} A {w * 0.35} {h/2} 0 0 1 {w/2} {h * 0.9517}"
+        },
+        {
+          "path": "M {w/2} {h * 0.0483} A {w * 0.35} {h/2} 0 0 0 {w/2} {h * 0.9517}"
+        }
+      ],
+      "defaultSize": {
+        "w": 200,
+        "h": 130
+      },
+      "describe": "Two overlapping circles: what two sets share and where they differ.",
+      "keywords": [
+        "venn",
+        "overlap",
+        "intersection",
+        "sets",
+        "compare"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:matrix",
+      "category": "diagrams",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w/2} 0 V {h}"
+        },
+        {
+          "path": "M 0 {h/2} H {w}"
+        }
+      ],
+      "defaultSize": {
+        "w": 160,
+        "h": 160
+      },
+      "describe": "A two-by-two matrix: four quadrants on two axes.",
+      "keywords": [
+        "matrix",
+        "quadrant",
+        "grid",
+        "two by two",
+        "swot"
+      ],
+      "license": "MIT"
+    }
+  ]
+}

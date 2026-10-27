@@ -82,6 +82,9 @@
       "path": "./packs/callouts"
     },
     {
+      "path": "./packs/infographic"
+    },
+    {
       "path": "./e2e"
     }
   ]

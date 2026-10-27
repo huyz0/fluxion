@@ -1,0 +1,14 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:240px;height:70px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 240 70">
+      <path class="fx-outline" d="M0 14 L28.8 14 L28.8 0 L211.2 0 L211.2 14 L240 14 L225.6 38.5 L240 63 L211.2 63 L211.2 49 L28.8 49 L28.8 63 L0 63 L14.4 38.5 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M28.8 49 C28.8 37.33 28.8 25.67 28.8 14" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M211.2 49 C211.2 37.33 211.2 25.67 211.2 14" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:140px 55px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

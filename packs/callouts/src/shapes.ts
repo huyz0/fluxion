@@ -29,7 +29,8 @@ export const shapes: readonly ShapeDef[] = [
     keywords: ['speech', 'bubble', 'say', 'dialogue', 'comment'],
   }),
   callout('speech-rounded', {
-    params: tail,
+    // the tail's base ends before the bottom-right corner's arc, even on a square bubble
+    params: { tail: { type: 'number', min: 0.05, max: 0.65, default: 0.2 } },
     outline: {
       path: `M {${r}} 0 H {w - ${r}} A {${r}} {${r}} 0 0 1 {w} {${r}} V {${body} - ${r}} A {${r}} {${r}} 0 0 1 {w - ${r}} {${body}} H {w * (tail + 0.2)} L {w * (tail - 0.05)} {h} L {w * (tail + 0.08)} {${body}} H {${r}} A {${r}} {${r}} 0 0 1 0 {${body} - ${r}} V {${r}} A {${r}} {${r}} 0 0 1 {${r}} 0 Z`,
     },
@@ -61,7 +62,7 @@ export const shapes: readonly ShapeDef[] = [
   }),
   callout('thought', {
     outline: {
-      path: 'M {w * 0.2} {h * 0.2} A {w * 0.14} {h * 0.14} 0 0 1 {w * 0.45} {h * 0.08} A {w * 0.15} {h * 0.14} 0 0 1 {w * 0.75} {h * 0.1} A {w * 0.14} {h * 0.15} 0 0 1 {w * 0.9} {h * 0.4} A {w * 0.12} {h * 0.13} 0 0 1 {w * 0.75} {h * 0.66} A {w * 0.15} {h * 0.12} 0 0 1 {w * 0.45} {h * 0.7} A {w * 0.15} {h * 0.13} 0 0 1 {w * 0.15} {h * 0.6} A {w * 0.12} {h * 0.15} 0 0 1 {w * 0.2} {h * 0.2} Z',
+      path: 'M {w * 0.2} {h * 0.252} A {w * 0.14} {h * 0.1204} 0 0 1 {w * 0.45} {h * 0.1488} A {w * 0.15} {h * 0.1204} 0 0 1 {w * 0.75} {h * 0.166} A {w * 0.14} {h * 0.129} 0 0 1 {w * 0.9} {h * 0.424} A {w * 0.12} {h * 0.1118} 0 0 1 {w * 0.75} {h * 0.6476} A {w * 0.15} {h * 0.1032} 0 0 1 {w * 0.45} {h * 0.682} A {w * 0.15} {h * 0.1118} 0 0 1 {w * 0.15} {h * 0.596} A {w * 0.12} {h * 0.129} 0 0 1 {w * 0.2} {h * 0.252} Z',
     },
     decorations: [
       { path: 'M {w * 0.12} {h * 0.82} A {w * 0.05} {h * 0.05} 0 1 1 {w * 0.22} {h * 0.82} A {w * 0.05} {h * 0.05} 0 1 1 {w * 0.12} {h * 0.82} Z' },

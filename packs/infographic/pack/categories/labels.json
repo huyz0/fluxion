@@ -1,0 +1,205 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "infographic:step-pill",
+      "category": "labels",
+      "outline": {
+        "path": "M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z"
+      },
+      "decorations": [
+        {
+          "path": "M {h/2 - h * 0.38} {h/2} A {h * 0.38} {h * 0.38} 0 1 1 {h/2 + h * 0.38} {h/2} A {h * 0.38} {h * 0.38} 0 1 1 {h/2 - h * 0.38} {h/2} Z"
+        }
+      ],
+      "textRegions": [
+        {
+          "name": "body",
+          "x": "h / w",
+          "y": 0.1,
+          "w": "1 - 1.2 * h / w",
+          "h": 0.8
+        }
+      ],
+      "defaultSize": {
+        "w": 200,
+        "h": 50
+      },
+      "describe": "A pill with a numbered circle: one step of a numbered list.",
+      "keywords": [
+        "step",
+        "pill",
+        "numbered",
+        "list",
+        "stage"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:number-badge",
+      "category": "labels",
+      "outline": {
+        "path": "M {w/2 - w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - w/2} {h/2} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w/2 - w * 0.42} {h/2} A {w * 0.42} {h * 0.42} 0 1 1 {w/2 + w * 0.42} {h/2} A {w * 0.42} {h * 0.42} 0 1 1 {w/2 - w * 0.42} {h/2} Z"
+        }
+      ],
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.15,
+          "y": 0.15,
+          "w": 0.7,
+          "h": 0.7
+        }
+      ],
+      "defaultSize": {
+        "w": 60,
+        "h": 60
+      },
+      "describe": "A round badge with a double rim: a number, rank or count.",
+      "keywords": [
+        "badge",
+        "number",
+        "rank",
+        "count",
+        "circle"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:hexagon-tile",
+      "category": "labels",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/4} V {h * 3/4} L {w/2} {h} L 0 {h * 3/4} V {h/4} Z"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.1,
+          "y": 0.25,
+          "w": 0.8,
+          "h": 0.5
+        }
+      ],
+      "defaultSize": {
+        "w": 104,
+        "h": 120
+      },
+      "describe": "A pointy-top hexagon tile that tessellates: a feature or capability.",
+      "keywords": [
+        "hexagon",
+        "tile",
+        "honeycomb",
+        "feature",
+        "capability"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:stat-card",
+      "category": "labels",
+      "outline": {
+        "path": "M {min(w, h) * 0.1} 0 H {w - min(w, h) * 0.1} A {min(w, h) * 0.1} {min(w, h) * 0.1} 0 0 1 {w} {min(w, h) * 0.1} V {h - min(w, h) * 0.1} A {min(w, h) * 0.1} {min(w, h) * 0.1} 0 0 1 {w - min(w, h) * 0.1} {h} H {min(w, h) * 0.1} A {min(w, h) * 0.1} {min(w, h) * 0.1} 0 0 1 0 {h - min(w, h) * 0.1} V {min(w, h) * 0.1} A {min(w, h) * 0.1} {min(w, h) * 0.1} 0 0 1 {min(w, h) * 0.1} 0 Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w * 0.1} {h * 0.62} H {w * 0.9}"
+        }
+      ],
+      "textRegions": [
+        {
+          "name": "value",
+          "x": 0.1,
+          "y": 0.1,
+          "w": 0.8,
+          "h": 0.48
+        },
+        {
+          "name": "label",
+          "x": 0.1,
+          "y": 0.68,
+          "w": 0.8,
+          "h": 0.24
+        }
+      ],
+      "defaultSize": {
+        "w": 160,
+        "h": 110
+      },
+      "describe": "A card for one headline number above its label: a KPI.",
+      "keywords": [
+        "stat",
+        "kpi",
+        "metric",
+        "number",
+        "card"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:banner",
+      "category": "labels",
+      "outline": {
+        "path": "M 0 {h * 0.2} H {w * 0.12} V 0 H {w * 0.88} V {h * 0.2} H {w} L {w * 0.94} {h * 0.55} L {w} {h * 0.9} H {w * 0.88} V {h * 0.7} H {w * 0.12} V {h * 0.9} H 0 L {w * 0.06} {h * 0.55} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w * 0.12} {h * 0.7} V {h * 0.2}"
+        },
+        {
+          "path": "M {w * 0.88} {h * 0.7} V {h * 0.2}"
+        }
+      ],
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.15,
+          "y": 0.05,
+          "w": 0.7,
+          "h": 0.6
+        }
+      ],
+      "defaultSize": {
+        "w": 240,
+        "h": 70
+      },
+      "describe": "A ribbon banner with folded ends: a title or announcement.",
+      "keywords": [
+        "banner",
+        "ribbon",
+        "title",
+        "heading",
+        "announcement"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:milestone",
+      "category": "labels",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h * 0.35} L {w/2} {h * 0.7} L 0 {h * 0.35} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w/2} {h * 0.7} V {h}"
+        }
+      ],
+      "defaultSize": {
+        "w": 40,
+        "h": 60
+      },
+      "describe": "A diamond milestone on a stem: a date or event on a timeline.",
+      "keywords": [
+        "milestone",
+        "timeline",
+        "event",
+        "date",
+        "marker"
+      ],
+      "license": "MIT"
+    }
+  ]
+}

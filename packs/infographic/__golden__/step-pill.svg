@@ -1,0 +1,12 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:200px;height:50px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 200 50">
+      <path class="fx-outline" d="M25 0 L175 0 C188.81 0 200 11.19 200 25 C200 38.81 188.81 50 175 50 L25 50 C11.19 50 0 38.81 0 25 C0 11.19 11.19 0 25 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M6 25 C6 14.51 14.51 6 25 6 C35.49 6 44 14.51 44 25 C44 35.49 35.49 44 25 44 C14.51 44 6 35.49 6 25 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:120px 45px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

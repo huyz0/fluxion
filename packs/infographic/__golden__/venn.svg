@@ -1,0 +1,14 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:200px;height:130px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 200 130">
+      <path class="fx-outline" d="M100 6.28 C70.58 -6.69 35.43 0.9 15.17 24.57 C-5.08 48.24 -5.08 81.76 15.17 105.43 C35.43 129.1 70.58 136.69 100 123.72 C129.42 136.69 164.57 129.1 184.83 105.43 C205.08 81.76 205.08 48.24 184.83 24.57 C164.57 0.9 129.42 -6.69 100 6.28 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M100 6.28 C124.42 17.04 139.98 39.9 139.98 65 C139.98 90.1 124.42 112.96 100 123.72" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M100 6.28 C75.58 17.04 60.02 39.9 60.02 65 C60.02 90.1 75.58 112.96 100 123.72" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:120px 85px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

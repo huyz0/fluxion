@@ -861,6 +861,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/sdk
 
+  packs/infographic:
+    dependencies:
+      '@fluxion/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+
   packs/layouts-elk:
     dependencies:
       elkjs:

@@ -1,0 +1,95 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "infographic:funnel",
+      "category": "layers",
+      "outline": {
+        "path": "M 0 0 H {w} L {w * 0.6} {h * 0.75} V {h} H {w * 0.4} V {h * 0.75} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w * 0.133} {h * 0.25} H {w * 0.867}"
+        },
+        {
+          "path": "M {w * 0.267} {h * 0.5} H {w * 0.733}"
+        }
+      ],
+      "defaultSize": {
+        "w": 160,
+        "h": 160
+      },
+      "describe": "A funnel of narrowing stages: conversion or filtering.",
+      "keywords": [
+        "funnel",
+        "conversion",
+        "stages",
+        "filter",
+        "sales"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:funnel-layer",
+      "category": "layers",
+      "params": {
+        "taper": {
+          "type": "number",
+          "min": 0,
+          "max": 0.45,
+          "default": 0.1
+        }
+      },
+      "outline": {
+        "path": "M 0 0 H {w} L {w - w * taper} {h} H {w * taper} Z"
+      },
+      "handles": [
+        {
+          "param": "taper",
+          "x": "w * taper",
+          "y": "h"
+        }
+      ],
+      "defaultSize": {
+        "w": 200,
+        "h": 50
+      },
+      "describe": "One stage of a funnel: stack several, each narrower than the last.",
+      "keywords": [
+        "funnel",
+        "layer",
+        "stage",
+        "trapezoid"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "infographic:pyramid",
+      "category": "layers",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h} H 0 Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w/3} {h/3} H {w * 2/3}"
+        },
+        {
+          "path": "M {w/6} {h * 2/3} H {w * 5/6}"
+        }
+      ],
+      "defaultSize": {
+        "w": 180,
+        "h": 150
+      },
+      "describe": "A pyramid of three tiers: a hierarchy or levels of importance.",
+      "keywords": [
+        "pyramid",
+        "hierarchy",
+        "tiers",
+        "levels",
+        "triangle"
+      ],
+      "license": "MIT"
+    }
+  ]
+}

@@ -210,6 +210,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party callouts shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
+    },
+    {
+      "dir": "packs/infographic",
+      "name": "@fluxion/pack-infographic",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party infographic shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
     }
   ]
 }

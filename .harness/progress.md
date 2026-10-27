@@ -2879,3 +2879,9 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - New workspace packs/callouts: 13 generic MIT original-work callouts (speech, annotation, label) with tail params kept inside the box, pack/ distribution and 13 goldens via the ADR-0193 suite; contact sheet inspected (first oval draft swept the wrong arc, fixed).
 - M18.22 r2 F1 fixed: quad head min 0.15 so each barb is at least the widest half-shaft; arrows golden unchanged at defaults.
 - callouts 5/5 and arrows 5/5 PASS.
+
+## M18.24 — infographic declarative pack (2026-10-27)
+
+- New workspace packs/infographic: 16 generic MIT original-work pieces (charts with value params incl. expression arc flags, diagrams, layers, labels), pack/ distribution and 16 goldens; contact sheet inspected.
+- Every pack test now also requires each outline and decoration to stay inside its box at the default size (sampled segment ends and cubic midpoints of the golden); it caught progress/venn drafts and callouts:thought (M18.23 F1), all fixed. M18.23 F2: rounded speech tail capped at 0.65.
+- basic, flowchart, arrows, callouts, infographic pack suites PASS.
