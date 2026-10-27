@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { REPO } from './helpers.mjs';
+import { cleanEnv, REPO } from './helpers.mjs';
 
 /** Runs last-ci.mjs against `runs` (gh run list shape); returns its status and output. */
 function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined) {
@@ -16,6 +16,7 @@ function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined) {
     const r = spawnSync(process.execPath, [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now, '--offline'], {
       encoding: 'utf8',
       cwd,
+      env: cleanEnv(),
     });
     return { status: r.status, out: r.stdout + r.stderr };
   } finally {
@@ -121,7 +122,8 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.equal((await rest.branch('main'))[0].message, 'Fixes-ci: 6');
     const dir = mkdtempSync(join(tmpdir(), 'last-ci-clone-'));
     try {
-      const g = (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8' });
+      // a hook's GIT_DIR/GIT_INDEX_FILE would aim these at the repo being committed (M18.138)
+      const g = (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8', env: cleanEnv() });
       g('init', '-q');
       g('-c', 'user.name=t', '-c', 'user.email=t@e', 'commit', '-q', '--allow-empty', '-m', 'M1.4: fix(ci): v', '-m', 'Fixes-ci: 41');
       const sha = g('rev-parse', 'HEAD').stdout.trim();
@@ -130,6 +132,28 @@ describe('last-ci (M5.2, M4 final F3)', () => {
       assert.equal(lastCi([fix, red], undefined, dir).status, 2);
     } finally {
       rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("M18.138: run under a commit hook's git environment, the clone test leaves the hook's repository alone", () => {
+    const decoy = mkdtempSync(join(tmpdir(), 'last-ci-decoy-'));
+    try {
+      const g = (...args) => spawnSync('git', args, { cwd: decoy, encoding: 'utf8', env: cleanEnv() });
+      g('init', '-q');
+      g('-c', 'user.name=t', '-c', 'user.email=t@e', 'commit', '-q', '--allow-empty', '-m', 'decoy');
+      const before = g('rev-parse', 'HEAD').stdout.trim();
+      // what pre-commit exports to its children
+      const env = { ...process.env, GIT_DIR: join(decoy, '.git'), GIT_INDEX_FILE: join(decoy, '.git', 'index'), GIT_WORK_TREE: decoy };
+      delete env.NODE_TEST_CONTEXT; // a nested runner reports to this one otherwise, printing nothing
+      const r = spawnSync(process.execPath, ['--test', '--test-name-pattern', 'M18.118 r1 F1', join(REPO, 'tests/harness/last-ci.test.mjs')], {
+        encoding: 'utf8',
+        env,
+      });
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /# pass 1/);
+      assert.equal(g('rev-parse', 'HEAD').stdout.trim(), before);
+    } finally {
+      rmSync(decoy, { recursive: true, force: true });
     }
   });
 });
