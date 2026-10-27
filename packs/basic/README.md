@@ -14,7 +14,12 @@ const registered = basicPack.register(registries); // every shape and marker, or
 
 | Layer | Pure | Status |
 |---|---|---|
-| Pack | data | M5: 21 shapes, 5 markers |
+| Pack | data | M5: 21 shapes, 5 markers; M18: declarative distribution in `pack/` |
+
+The same definitions ship as a declarative pack (ADR-0048, ADR-0050) in `pack/`: `index.json` and
+`categories/basic.json`, with a visual golden per definition in `__golden__/`. `src/pack.test.ts`
+checks both against the exported definitions with the SDK's shared suite (ADR-0193); `vitest -u`
+regenerates them.
 
 ## Shapes
 

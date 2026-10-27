@@ -9,7 +9,8 @@ const PACKAGE_DOC = `/**
  */`;
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  // the testing entry is its own module: the renderer and test builders stay out of the main bundle
+  entry: { index: 'src/index.ts', 'testing/index': 'src/testing/index.ts' },
   format: 'esm',
   dts: true,
   clean: true,

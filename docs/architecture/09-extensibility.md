@@ -267,6 +267,14 @@ with source credits and used-subset attribution. Content-asset permissions never
 code dependencies; current code/font policy stays unchanged. M18.12/14/33 implement
 validation, portable credits and the license gate/player UI before these are supported.
 
+## First-party declarative pack suite (ADR-0193)
+
+`@fluxion/sdk/testing` builds a pack's canonical `index.json` and hashed category files
+(`buildShapePackFiles`), loads them as a host would (`checkShapePackFiles`) and draws each
+definition's normalized SVG golden (`renderShapeGolden`). Each first-party shape pack keeps
+its distribution in `pack/` and goldens in `__golden__/`; `src/pack.test.ts` requires both
+to match its exported definitions. `vitest -u` regenerates them for review.
+
 ## Declarative shape-pack validation (ADR-0178)
 
 `@fluxion/sdk` exports `parseShapePackIndex(input, licensePolicy)` and

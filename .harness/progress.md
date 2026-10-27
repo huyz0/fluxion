@@ -2844,3 +2844,8 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 
 - M18.94 abe812d pushed to main (staged 364.0s PASS, review pass). Root cause of the apparent checkpoint block was a shallow clone, not rewritten history; unshallowed, and core.abbrev=7 keeps staged-diff hashes stable.
 - Fresh cp9 review over 17e4478..099b3ee: changes-requested. F1 (no digest lines for M18.57–63) reopened as M18.99; F2 Commit cells filled; F3 batch-leg ownership folded into M18.16. Work continues in four parallel streams.
+## M18.20 — shared declarative pack suite and basic distribution (2026-10-27)
+
+- Stream 2 of 4 parallel M18 streams (packs, search/catalog, license gate). ADR-0193 adds `@fluxion/sdk/testing`: canonical pack build, host-loader check and normalized SVG golden per definition; packs keep importing only the SDK.
+- Basic's 21 definitions ship as `packs/basic/pack/` (index + one hashed category, MIT original-work credit) with 21 goldens; pack.test requires pack/ to equal the canonical build and loads every definition from disk. "Extended" read as the declarative distribution; no new basic shapes.
+- SDK suite 5/5 and basic pack 3/3 PASS; negative cases cover edited category, stray file, missing index, forbidden license, empty pack and undrawable definition.

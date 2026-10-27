@@ -864,3 +864,5 @@ M18.92	1805477b318f4c0c74b769e77438ee6fd70da3ffb2a4457b26029b7fdc569e83	r1	pass	
 M18.93	5d1c2d1ff72fafbd715446a4f912a8645368289262f7dc37ca8091c1b8b7272e	r1	pass	codex:gpt-6	0 findings
 M18.98	3798e92df3275899b46e2083793f68d6118aef79d0c41a28707864f03871b346	r1	pass	codex:gpt-6	0 findings
 M18.94	350d3beb2432bbec013616958f36ed49bb9635d22080b9f77333ba085ddede27	r1	pass	claude:independent-subagent	1 findings
+M18.20	545e5ad68d4412fefaecef3d42b9189d05750a800103bd47e245b24b1a75dafe	r1	pass	claude:general-purpose-subagent	2 findings
+M18.20	68229352af37d15d60b6057af34e4cd172d128399b194f0639885ef07cdcbfcc	r2	pass	claude:general-purpose-subagent	2 findings

@@ -115,6 +115,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0190](ADR-0190-quick-latency-advisory.md) | Quick latency advisory with unchanged verification | accepted | 2026-10-26 |
 | [0191](ADR-0191-ci-provisioning-envelope.md) | Reserve verification separately from provisioning; retain interrupted streams without reruns | accepted | 2026-10-26 |
 | [0192](ADR-0192-artwork-font-retention.md) | Exact licensed artwork fonts in portable shape packs | accepted | 2026-10-26 |
+| [0193](ADR-0193-declarative-pack-suite.md) | A shared SDK suite builds, checks and draws declarative packs | accepted | 2026-10-27 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 
