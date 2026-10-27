@@ -2977,3 +2977,6 @@ checkShapePack now evaluates each definition at every number param's min, max an
 - Review r1 (changes requested): F1 land refuses unless git runs the repo hooks (core.hooksPath → .githooks, executable); F2 the content-mismatch test now re-applies cleanly and is refused by check-reviewed, not by a conflict; F3 rewritten Commit cells matched by prefix, keeping their length (8-char cells); F4 refuses before a reset would overwrite an untracked file upstream tracks; F5 only a non-fast-forward is retried, a remote refusal fails at once.
 - Review r2 (changes requested): F1 the untracked-file guard compared against the starting commit, so a retry took files the first attempt checked out for untracked work; now judged against the checked-out HEAD, with a retry test (pushes to an always-ahead mirror).
 - Tests: land 10/10 (unit + 9 sandbox cases with a bare origin); review + digest 28/28; mutants (commit with --no-verify; no hooks check; no untracked check; retry on any "rejected"; untracked guard against the start commit; old trace regex) each turn them RED.
+## M18.25 — uml declarative pack (2026-10-27)
+
+Adds @fluxion/pack-uml: 20 UML-lite definitions (structure, use-case, sequence, state) with MIT original-work credits, pack/ distribution, version ledger and a golden per definition; all pass the shared geometry check across parameter ranges.

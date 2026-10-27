@@ -1,0 +1,278 @@
+{
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "uml",
+  "version": "0.0.0",
+  "name": "UML",
+  "license": "MIT",
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "structure": {
+      "path": "categories/structure.json",
+      "sha256": "d23bd5a9dd74216066e84acbe2b1d71c4b65201c7c3e3a3040d0e8c85d5b64be"
+    },
+    "use-case": {
+      "path": "categories/use-case.json",
+      "sha256": "9eea578d464a50b375e2991f945e0363fe6aa97ca0cae24bdcb2f856160dbc87"
+    },
+    "sequence": {
+      "path": "categories/sequence.json",
+      "sha256": "b82daa49ee398963ed1a66bc73347298dd74a08c7baae1d6886f915e75c1d71b"
+    },
+    "state": {
+      "path": "categories/state.json",
+      "sha256": "51801c858432f6be8c29d20c84a14969c98c6d9e9e65fc6ed26ded6c511216f2"
+    }
+  },
+  "definitions": [
+    {
+      "id": "uml:class",
+      "name": "Class",
+      "keywords": [
+        "class",
+        "uml",
+        "type",
+        "attributes",
+        "operations"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:interface",
+      "name": "Interface",
+      "keywords": [
+        "interface",
+        "uml",
+        "contract",
+        "operations",
+        "protocol"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:object",
+      "name": "Object",
+      "keywords": [
+        "object",
+        "instance",
+        "uml",
+        "slots"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:package",
+      "name": "Package",
+      "keywords": [
+        "package",
+        "namespace",
+        "module",
+        "folder",
+        "uml"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:component",
+      "name": "Component",
+      "keywords": [
+        "component",
+        "module",
+        "service",
+        "library",
+        "uml"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:node",
+      "name": "Node",
+      "keywords": [
+        "node",
+        "deployment",
+        "device",
+        "server",
+        "environment"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:artifact",
+      "name": "Artifact",
+      "keywords": [
+        "artifact",
+        "file",
+        "binary",
+        "jar",
+        "deployable"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:note",
+      "name": "Note",
+      "keywords": [
+        "note",
+        "comment",
+        "annotation",
+        "uml"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:provided-interface",
+      "name": "Provided interface",
+      "keywords": [
+        "interface",
+        "lollipop",
+        "provided",
+        "port",
+        "ball"
+      ],
+      "category": "structure"
+    },
+    {
+      "id": "uml:actor",
+      "name": "Actor",
+      "keywords": [
+        "actor",
+        "user",
+        "person",
+        "role",
+        "stick figure",
+        "human"
+      ],
+      "category": "use-case"
+    },
+    {
+      "id": "uml:use-case",
+      "name": "Use case",
+      "keywords": [
+        "use case",
+        "goal",
+        "scenario",
+        "ellipse",
+        "uml"
+      ],
+      "category": "use-case"
+    },
+    {
+      "id": "uml:system-boundary",
+      "name": "System boundary",
+      "keywords": [
+        "system",
+        "boundary",
+        "subject",
+        "scope",
+        "container"
+      ],
+      "category": "use-case"
+    },
+    {
+      "id": "uml:lifeline",
+      "name": "Lifeline",
+      "keywords": [
+        "lifeline",
+        "sequence",
+        "participant",
+        "timeline"
+      ],
+      "category": "sequence"
+    },
+    {
+      "id": "uml:activation",
+      "name": "Activation",
+      "keywords": [
+        "activation",
+        "execution",
+        "focus",
+        "sequence"
+      ],
+      "category": "sequence"
+    },
+    {
+      "id": "uml:fragment",
+      "name": "Combined fragment",
+      "keywords": [
+        "fragment",
+        "alt",
+        "loop",
+        "opt",
+        "frame",
+        "sequence"
+      ],
+      "category": "sequence"
+    },
+    {
+      "id": "uml:state",
+      "name": "State",
+      "keywords": [
+        "state",
+        "status",
+        "machine",
+        "condition"
+      ],
+      "category": "state"
+    },
+    {
+      "id": "uml:initial",
+      "name": "Initial state",
+      "keywords": [
+        "initial",
+        "start",
+        "begin",
+        "dot",
+        "state"
+      ],
+      "category": "state"
+    },
+    {
+      "id": "uml:final",
+      "name": "Final state",
+      "keywords": [
+        "final",
+        "end",
+        "stop",
+        "state"
+      ],
+      "category": "state"
+    },
+    {
+      "id": "uml:choice",
+      "name": "Choice",
+      "keywords": [
+        "choice",
+        "decision",
+        "branch",
+        "guard",
+        "merge"
+      ],
+      "category": "state"
+    },
+    {
+      "id": "uml:fork",
+      "name": "Fork/join bar",
+      "keywords": [
+        "fork",
+        "join",
+        "parallel",
+        "bar",
+        "synchronise"
+      ],
+      "category": "state"
+    }
+  ],
+  "credits": [
+    {
+      "id": "fluxion",
+      "license": "MIT",
+      "attribution": "Fluxion contributors",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "kind": "original",
+        "author": "Fluxion contributors",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ]
+}

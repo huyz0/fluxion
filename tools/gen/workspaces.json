@@ -218,6 +218,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party infographic shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
+    },
+    {
+      "dir": "packs/uml",
+      "name": "@fluxion/pack-uml",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party UML-lite shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
     }
   ]
 }

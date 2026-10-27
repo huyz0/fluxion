@@ -1,0 +1,151 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "uml:state",
+      "outline": {
+        "path": "M {min(w, h) * 0.2} 0 H {w - min(w, h) * 0.2} A {min(w, h) * 0.2} {min(w, h) * 0.2} 0 0 1 {w} {min(w, h) * 0.2} V {h - min(w, h) * 0.2} A {min(w, h) * 0.2} {min(w, h) * 0.2} 0 0 1 {w - min(w, h) * 0.2} {h} H {min(w, h) * 0.2} A {min(w, h) * 0.2} {min(w, h) * 0.2} 0 0 1 0 {h - min(w, h) * 0.2} V {min(w, h) * 0.2} A {min(w, h) * 0.2} {min(w, h) * 0.2} 0 0 1 {min(w, h) * 0.2} 0 Z"
+      },
+      "defaultSize": {
+        "w": 150,
+        "h": 70
+      },
+      "describe": "A state: a condition an object stays in until an event moves it on.",
+      "keywords": [
+        "state",
+        "status",
+        "machine",
+        "condition"
+      ],
+      "category": "state",
+      "license": "MIT"
+    },
+    {
+      "id": "uml:initial",
+      "outline": {
+        "path": "M {w/2 - w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + w/2} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - w/2} {h/2} Z"
+      },
+      "defaultStyle": {
+        "fill": "{color.text}",
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0,
+          "y": 1,
+          "w": 1,
+          "h": 0
+        }
+      ],
+      "defaultSize": {
+        "w": 30,
+        "h": 30
+      },
+      "describe": "The initial pseudo-state (a filled dot): where a state machine starts.",
+      "keywords": [
+        "initial",
+        "start",
+        "begin",
+        "dot",
+        "state"
+      ],
+      "category": "state",
+      "license": "MIT"
+    },
+    {
+      "id": "uml:final",
+      "outline": {
+        "path": "M 0 {h/2} A {w/2} {h/2} 0 1 1 {w} {h/2} A {w/2} {h/2} 0 1 1 0 {h/2} L {w * 0.1} {h/2} A {w * 0.4} {h * 0.4} 0 1 0 {w * 0.9} {h/2} A {w * 0.4} {h * 0.4} 0 1 0 {w * 0.1} {h/2} L {w * 0.22} {h/2} A {w * 0.28} {h * 0.28} 0 1 1 {w * 0.78} {h/2} A {w * 0.28} {h * 0.28} 0 1 1 {w * 0.22} {h/2} Z"
+      },
+      "defaultStyle": {
+        "fill": "{color.text}",
+        "stroke": {
+          "width": 0
+        },
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0,
+          "y": 1,
+          "w": 1,
+          "h": 0
+        }
+      ],
+      "defaultSize": {
+        "w": 30,
+        "h": 30
+      },
+      "describe": "The final state (a ring around a filled dot): where a state machine ends.",
+      "keywords": [
+        "final",
+        "end",
+        "stop",
+        "state"
+      ],
+      "category": "state",
+      "license": "MIT"
+    },
+    {
+      "id": "uml:choice",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
+      },
+      "defaultSize": {
+        "w": 40,
+        "h": 40
+      },
+      "describe": "A choice (small diamond): a branch on guard conditions.",
+      "keywords": [
+        "choice",
+        "decision",
+        "branch",
+        "guard",
+        "merge"
+      ],
+      "category": "state",
+      "license": "MIT"
+    },
+    {
+      "id": "uml:fork",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "defaultStyle": {
+        "fill": "{color.text}",
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0,
+          "y": 1,
+          "w": 1,
+          "h": 0
+        }
+      ],
+      "defaultSize": {
+        "w": 160,
+        "h": 8
+      },
+      "describe": "A fork or join bar: flows split into, or wait for, parallel branches.",
+      "keywords": [
+        "fork",
+        "join",
+        "parallel",
+        "bar",
+        "synchronise"
+      ],
+      "category": "state",
+      "license": "MIT"
+    }
+  ]
+}
