@@ -316,6 +316,22 @@ A failed load is retried only on a subsequent explicit call. The adapter never r
 partial pack, chooses a network endpoint or loads executable code. `ShapePackLoaderOptions`
 captures host capabilities at creation; used-definition embedding and offline resave are exercised by M18.14.
 
+### Verified artwork font acquisition (ADR-0192)
+
+`createArtworkShapePackLoader(indexBytes, options)` takes the same options and accepts 1.0
+or 1.1 indexes; `createShapePackLoader` keeps 1.0-only behavior and refuses 1.1 rather than
+drop font obligations. `search` does no category or font I/O. `acquire(id, { signal })`
+captures its arguments before any await, reads the version-checked category (artwork text
+closure included), then reads each bound resource at `fonts/<sha256>.woff2` with the declared
+size as cap and requires the hash of the resource and its supported profile. It returns a
+frozen `AcquiredArtworkDefinition`: the definition, `AcquiredArtworkFont` faces in binding
+order with consumer-owned byte copies, and the font credits naming the definition. Concurrent
+acquisitions share one verified read per resource; failures are evicted and retried on a later
+call. Cancellation (`signal.aborted`, sampled around every host await) and every mismatch
+return diagnostics and no value. `ARTWORK_ACQUISITION_LIMITS` bounds one acquisition to 8
+faces, 5 MiB per font and 8 MiB in total. No registration or document effect happens here
+(M18.97).
+
 ### Saved shape subset validation (ADR-0182)
 
 `ShapePackSubset` is the strict saved envelope: format, formatVersion, id, version, license,

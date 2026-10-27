@@ -7,7 +7,8 @@ import {
   type ShapePackIndex,
   type ShapePackLicensePolicy,
 } from '@fluxion/core';
-import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
+import { type Diagnostic, err, ok, type Result } from '@fluxion/schema';
+import { decode, digest, freezeJson, problem, snapshot } from './pack-bytes.js';
 
 type Failure = readonly Diagnostic[];
 type Category = Result<ReadonlyMap<string, ShapeDef>, Failure>;
@@ -36,32 +37,21 @@ export interface ShapePackLoader {
   load(id: string): Promise<Result<ShapeDef, readonly Diagnostic[]>>;
 }
 
-const problem = (path: readonly string[], message: string): Failure => [{ code: 'FLX_PACK_INVALID', severity: 'error', path: jsonPointer(path), message }];
-function snapshot(bytes: Uint8Array, maxBytes: number): Uint8Array | undefined {
-  return bytes instanceof Uint8Array && bytes.byteLength <= maxBytes ? new Uint8Array(bytes) : undefined;
-}
-function freezeJson<T>(value: T): T {
-  const pending: unknown[] = [value];
-  const seen = new Set<object>();
-  while (pending.length) {
-    const item = pending.pop();
-    if (typeof item !== 'object' || item === null || seen.has(item)) continue;
-    seen.add(item);
-    Object.freeze(item);
-    for (const child of Object.values(item)) pending.push(child);
-  }
-  return value;
-}
-function decode(bytes: Uint8Array): unknown {
-  return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
-}
-async function digest(bytes: Uint8Array, hasher: Hasher): Promise<string> {
-  const hash = await hasher.sha256(new Uint8Array(bytes));
-  if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('invalid SHA-256 result');
-  return hash;
-}
+/** A category parser: the 1.0 parser, or the version-aware one for artwork acquisition. @internal */
+export type CategoryParser = (
+  input: unknown,
+  index: unknown,
+  category: string,
+  policy: ShapePackLicensePolicy,
+) => Result<{ readonly definitions: readonly ShapeDef[] }, Failure>;
 
-async function readCategory(index: ShapePackIndex, category: string, options: ShapePackLoaderOptions): Promise<Category> {
+/** Read, bound, hash-check and parse one indexed category into frozen definitions by ID. @internal */
+export async function readCategory(
+  index: Pick<ShapePackIndex, 'categories'>,
+  category: string,
+  options: ShapePackLoaderOptions,
+  parse: CategoryParser = parseShapePackCategory,
+): Promise<Category> {
   const path = ['categories', category];
   const descriptor = index.categories[category];
   if (!descriptor) return err(problem(path, 'category is not indexed'));
@@ -69,12 +59,21 @@ async function readCategory(index: ShapePackIndex, category: string, options: Sh
     const bytes = snapshot(await options.read(descriptor.path, options.maxBytes), options.maxBytes);
     if (!bytes) return err(problem(path, 'category exceeds the byte limit or is not bytes'));
     if ((await digest(bytes, options.hasher)) !== descriptor.sha256) return err(problem(path, 'category SHA-256 does not match its index'));
-    const parsed = parseShapePackCategory(decode(bytes), index, category, options.licensePolicy);
+    const parsed = parse(decode(bytes), index, category, options.licensePolicy);
     if (!parsed.ok) return parsed;
     return ok(new Map(freezeJson(parsed.value).definitions.map((definition) => [definition.id, definition])));
   } catch {
     return err(problem(path, 'category could not be read, hashed or decoded as UTF-8 JSON'));
   }
+}
+
+/** Case-insensitive, all-token substring search in stable order. @internal */
+export function searchDefinitions(definitions: readonly ShapePackDefinitionEntry[], query: string): readonly ShapePackDefinitionEntry[] {
+  const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  return definitions.filter((entry) => {
+    const text = `${entry.id} ${entry.name} ${entry.keywords.join(' ')}`.toLowerCase();
+    return tokens.every((token) => text.includes(token));
+  });
 }
 
 function lazyLoader(index: ShapePackIndex, hash: string, options: ShapePackLoaderOptions): ShapePackLoader {
@@ -94,13 +93,7 @@ function lazyLoader(index: ShapePackIndex, hash: string, options: ShapePackLoade
   return Object.freeze({
     identity: `${index.id}@${index.version}#${hash}`,
     index,
-    search: (query: string) => {
-      const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-      return index.definitions.filter((entry) => {
-        const text = `${entry.id} ${entry.name} ${entry.keywords.join(' ')}`.toLowerCase();
-        return tokens.every((token) => text.includes(token));
-      });
-    },
+    search: (query: string) => searchDefinitions(index.definitions, query),
     load: async (id: string): Promise<Result<ShapeDef, Failure>> => {
       const entry = entries.get(id);
       if (!entry) return err(problem(['definitions', id], 'definition is not indexed'));
@@ -112,7 +105,8 @@ function lazyLoader(index: ShapePackIndex, hash: string, options: ShapePackLoade
   });
 }
 
-function capabilities(options: ShapePackLoaderOptions): ShapePackLoaderOptions {
+/** Capture host capabilities so later caller mutation cannot change policy or I/O. @internal */
+export function capabilities(options: ShapePackLoaderOptions): ShapePackLoaderOptions {
   return {
     maxBytes: options.maxBytes,
     read: options.read.bind(options),

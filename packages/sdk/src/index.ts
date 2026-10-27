@@ -62,6 +62,15 @@ export {
   type ThemeProblem,
   validateTheme,
 } from '@fluxion/theme';
+export {
+  type AcquiredArtworkDefinition,
+  type AcquiredArtworkFont,
+  ARTWORK_ACQUISITION_LIMITS,
+  type ArtworkAcquireOptions,
+  type ArtworkAcquireSignal,
+  type ArtworkAcquisitionLimits,
+  type ArtworkShapePackLoader,
+  createArtworkShapePackLoader,
+} from './artwork-pack-loader.js';
 export { definePack, type Pack, type PackRegistries, type PackSpec, registerShapeDef, type ThemeDef } from './pack.js';
-
 export { createShapePackLoader, type ShapePackLoader, type ShapePackLoaderOptions } from './pack-loader.js';

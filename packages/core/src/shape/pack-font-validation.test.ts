@@ -90,7 +90,10 @@ it('FR-LIB-004: resources must match the supported profile exactly, with canonic
     v.fontFaces[1].resource = 'copy';
     v.fontCredits[0].resourceIds.push('copy');
   });
-  refusedIndex('unused resource', (v) => v.fontResources.push({ ...v.fontResources[0], id: 'unused' }));
+  refusedIndex('unused resource', (v) => Object.assign(v, { fontFaces: [], definitionFonts: [], fontCredits: [] }));
+  const fontless = index();
+  Object.assign(fontless, { fontResources: [], fontFaces: [], definitionFonts: [], fontCredits: [] });
+  expect(indexOk(fontless)).toBe(true);
   refusedIndex('missing font fields', (v) => delete v.fontCredits);
 });
 

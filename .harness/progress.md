@@ -2849,3 +2849,9 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - Stream 2 of 4 parallel M18 streams (packs, search/catalog, license gate). ADR-0193 adds `@fluxion/sdk/testing`: canonical pack build, host-loader check and normalized SVG golden per definition; packs keep importing only the SDK.
 - Basic's 21 definitions ship as `packs/basic/pack/` (index + one hashed category, MIT original-work credit) with 21 goldens; pack.test requires pack/ to equal the canonical build and loads every definition from disk. "Extended" read as the declarative distribution; no new basic shapes.
 - SDK suite 5/5 and basic pack 3/3 PASS; negative cases cover edited category, stray file, missing index, forbidden license, empty pack and undrawable definition.
+
+## M18.95 — verified artwork font acquisition (2026-10-27)
+
+- SDK `createArtworkShapePackLoader`: version-aware index, metadata-only search, `acquire` verifies category closure then each bound resource (declared-size cap, resource and profile hash) before returning frozen definition, owned byte copies and covering font credits. Shared verified reads; failures evicted; cancellation sampled around every await.
+- Helpers extracted to `pack-bytes.ts`; `readCategory` takes the parser so both loaders share it; `createShapePackLoader` unchanged and refuses 1.1.
+- Focused 9/9 + existing loader 15/15 PASS. Removal probes (hash, owned copy, cancellation) turned tests RED; magic/length checks were redundant with the pinned hash and removed. M18.94 F1 probe fixed (unused resource now RED without its check).

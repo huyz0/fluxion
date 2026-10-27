@@ -46,6 +46,7 @@ import { shapePackCategorySchema } from '@fluxion/core';
 import { shapePackContentLicenses } from '@fluxion/core';
 import { ShapePackCredit } from '@fluxion/core';
 import { ShapePackDefinitionEntry } from '@fluxion/core';
+import { ShapePackFontCredit } from '@fluxion/core';
 import { ShapePackIndex } from '@fluxion/core';
 import { shapePackIndexSchema } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
@@ -58,12 +59,63 @@ import { TextRegionDef } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
 import { ThemeProblem } from '@fluxion/theme';
 import { validateTheme } from '@fluxion/theme';
+import { VersionedShapePackIndex } from '@fluxion/core';
+
+// @public
+export type AcquiredArtworkDefinition = {
+    readonly definition: ShapeDef;
+    readonly fonts: readonly AcquiredArtworkFont[];
+    readonly fontCredits: readonly ShapePackFontCredit[];
+};
+
+// @public
+export type AcquiredArtworkFont = {
+    readonly faceId: string;
+    readonly family: string;
+    readonly weight: 400;
+    readonly style: "normal";
+    readonly resourceId: string;
+    readonly sha256: string;
+    readonly profile: "inter-latin-400-ascii";
+    readonly bytes: Uint8Array;
+};
 
 export { allowsShapePackContentLicense }
+
+// @public
+export const ARTWORK_ACQUISITION_LIMITS: ArtworkAcquisitionLimits;
+
+// @public
+export type ArtworkAcquireOptions = {
+    readonly signal?: ArtworkAcquireSignal;
+};
+
+// @public
+export type ArtworkAcquireSignal = {
+    readonly aborted: boolean;
+};
+
+// @public
+export type ArtworkAcquisitionLimits = {
+    readonly maxFontBytes: number;
+    readonly maxFaces: number;
+    readonly maxTotalFontBytes: number;
+};
+
+// @public
+export interface ArtworkShapePackLoader {
+    acquire(id: string, options?: ArtworkAcquireOptions): Promise<Result<AcquiredArtworkDefinition, readonly Diagnostic[]>>;
+    readonly identity: string;
+    readonly index: VersionedShapePackIndex;
+    search(query: string): readonly ShapePackDefinitionEntry[];
+}
 
 export { contrastRatio }
 
 export { CoreRegistries }
+
+// @public
+export function createArtworkShapePackLoader(indexBytes: Uint8Array, options: ShapePackLoaderOptions): Promise<Result<ArtworkShapePackLoader, readonly Diagnostic[]>>;
 
 export { createCoreRegistries }
 
