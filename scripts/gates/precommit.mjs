@@ -28,7 +28,7 @@ import {
   testScope,
   workspaceCatalogOnly,
 } from './ladder-scope.mjs';
-import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync } from './lib.mjs';
+import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync, testStepEnv } from './lib.mjs';
 import { withLiveStepLog } from './live-step-log.mjs';
 
 const argv = new Set(process.argv.slice(2));
@@ -146,7 +146,7 @@ const STEPS = [
     (m) => m !== 'quick',
     () => (!exists('tests/harness') ? 'tests/harness not written yet (M0)' : harnessToRun().length > 0 || 'no staged path the harness tests read'),
     // spec reporter: it closes with a "failing tests" list, which the FAIL detail starts at (M1.39)
-    () => runAsync(process.execPath, ['--test-reporter=spec', '--test', ...harnessToRun()]),
+    () => runAsync(process.execPath, ['--test-reporter=spec', '--test', ...harnessToRun()], { env: testStepEnv() }),
   ],
   ['lint', () => true, () => (hasPkg && exists('biome.json')) || 'biome not configured yet (M1.9)', () => pnpm('run', 'lint')],
   [
@@ -158,10 +158,11 @@ const STEPS = [
     // touches no browser-tested workspace nor its dependencies runs the node project only, its
     // coverage limited to the workspaces without browser tests (ladder-scope.mjs).
     () => {
-      if (mode === 'quick') return pnpm('exec', 'vitest', 'run', '--changed');
+      const vitest = (...a) => runAsync('pnpm', a, { env: testStepEnv() });
+      if (mode === 'quick') return vitest('exec', 'vitest', 'run', '--changed');
       const plan = testPlan();
-      if (plan.browser) return pnpm('run', 'test:coverage');
-      return pnpm('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`));
+      if (plan.browser) return vitest('run', 'test:coverage');
+      return vitest('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`));
     },
   ],
   // the FluxScript example corpus compiles against the real packs (FR-DSL-001, FR-DSL-006; M12.44): a staged commit runs it when it touches dsl,
@@ -178,7 +179,7 @@ const STEPS = [
           : mode !== 'staged' || examplesNeeded(stagedPaths(), workspaces()) || 'no staged dsl, pack, example or workspace they compile against (CI runs it)',
     () =>
       runAsync('pnpm', ['--filter', '@fluxion/dsl', 'run', 'test:examples'], {
-        env: { ...process.env, FLUXION_VITEST_CACHE: repoPath('.vitest-cache/dsl-examples') },
+        env: { ...testStepEnv(), FLUXION_VITEST_CACHE: repoPath('.vitest-cache/dsl-examples') },
       }),
   ],
   // the recorded eval replays its recordings, keyed by the system prompt the catalog and cheat sheet build, so a staged change that can move
@@ -193,7 +194,7 @@ const STEPS = [
     () =>
       // what `pnpm eval --recorded` runs, through runAsync: it gives Windows the shell a pnpm .cmd shim needs (M16.37 review F1)
       runAsync('pnpm', ['exec', 'vitest', 'run', '--config', 'scripts/eval/eval.config.ts'], {
-        env: { ...process.env, FLUXION_VITEST_CACHE: repoPath('.vitest-cache/eval') },
+        env: { ...testStepEnv(), FLUXION_VITEST_CACHE: repoPath('.vitest-cache/eval') },
       }),
   ],
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],

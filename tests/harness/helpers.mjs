@@ -5,6 +5,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { testStepEnv } from '../../scripts/gates/lib.mjs';
 
 export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -13,7 +14,7 @@ export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * exports GIT_INDEX_FILE (relative), GIT_AUTHOR_* etc.; sandbox repos and worktrees must not
  * inherit them (a linked worktree's `.git` is a file, so `.git/index` breaks it).
  */
-export const cleanEnv = (env = process.env) => Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
+export const cleanEnv = testStepEnv; // the ladder's test-step environment (M18.140)
 
 /**
  * Build state that other ladder steps rewrite while the harness tests run concurrently (M1.28):

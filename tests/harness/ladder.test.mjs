@@ -1,10 +1,12 @@
 // NFR-DX-002: the pre-commit ladder overlaps independent steps without changing what it reports.
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { failureAnnotation } from '../../scripts/gates/failure-report.mjs';
-import { nestedSkip, run, runAsync } from '../../scripts/gates/lib.mjs';
-import { out, sandbox, TRANSIENT } from './helpers.mjs';
+import { nestedSkip, repoPath, run, runAsync, testStepEnv } from '../../scripts/gates/lib.mjs';
+import { cleanEnv, out, sandbox, TRANSIENT } from './helpers.mjs';
 
 describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
   it('runAsync returns what run returns: status, stdout and stderr', async () => {
@@ -213,6 +215,60 @@ describe('pre-commit ladder concurrency (NFR-DX-002, M1.28)', () => {
       assert.equal(new Set(printed).size, printed.length, 'no step printed twice');
     } finally {
       sb.cleanup();
+    }
+  });
+});
+
+describe('pre-commit ladder test-step environment (NFR-DX-002, M18.140)', () => {
+  it('a test spawning bare git commit under the hook variables cannot reach the repository being committed', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'fluxion-ladder-env-'));
+    try {
+      // the decoy stands for the repository a hook is committing
+      const decoy = join(dir, 'decoy');
+      const git = (...args) => run('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.invalid', ...args], { cwd: dir, env: cleanEnv() });
+      assert.equal(git('init', '-q', decoy).status, 0);
+      assert.equal(git('-C', decoy, 'commit', '-q', '--allow-empty', '-m', 'decoy').status, 0);
+      const head = () => git('-C', decoy, 'rev-parse', 'HEAD').stdout.trim();
+      const before = head();
+      // without NODE_TEST_CONTEXT, which would make the probe run as this runner's child and filter its test
+      const { NODE_TEST_CONTEXT: _, ...outer } = process.env;
+      const hook = { ...outer, GIT_DIR: join(decoy, '.git'), GIT_INDEX_FILE: join(decoy, '.git', 'index'), GIT_WORK_TREE: decoy };
+      // the probe test: a bare `git commit --allow-empty` in its own temporary directory, inheriting its environment
+      const probe = join(dir, 'probe.test.mjs');
+      writeFileSync(
+        probe,
+        `import { spawnSync } from 'node:child_process';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { it } from 'node:test';
+it('commits', () => {
+  spawnSync('git', ['-c', 'user.name=p', '-c', 'user.email=p@example.invalid', 'commit', '-q', '--allow-empty', '-m', 'stray'], { cwd: mkdtempSync(join(tmpdir(), 'probe-')) });
+});
+`,
+      );
+      // as the harness-tests step runs it
+      const step = (env) => runAsync(process.execPath, ['--test-reporter=spec', '--test', probe], { cwd: dir, env });
+      const stripped = await step(testStepEnv(hook));
+      assert.equal(stripped.status, 0, out(stripped));
+      assert.match(stripped.stdout, /✔ commits/, 'the probe ran');
+      assert.equal(head(), before, 'the ladder env keeps the decoy HEAD');
+      // control: the hook's own environment lets the probe commit into the decoy
+      await step(hook);
+      assert.notEqual(head(), before, 'the probe reaches the decoy with the hook env');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('every test step of the ladder runs under the test-step environment', () => {
+    const source = readFileSync(repoPath('scripts/gates/precommit.mjs'), 'utf8');
+    for (const name of ['harness-tests', 'test', 'examples', 'eval']) {
+      const start = source.indexOf(`\n    '${name}',\n`);
+      assert.ok(start > 0, `${name} step`);
+      const body = source.slice(start, source.indexOf('\n  ],', start));
+      assert.match(body, /testStepEnv\(\)/, `${name} passes testStepEnv()`);
+      assert.doesNotMatch(body, /\bpnpm\(|\.\.\.process\.env/, `${name} spawns nothing with the hook env`);
     }
   });
 });

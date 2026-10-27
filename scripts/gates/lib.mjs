@@ -17,6 +17,13 @@ export const readText = (p) => readFileSync(repoPath(p), 'utf8');
 export const quoteWin = (a) => (/^[\w.,:/\\=@+-]+$/.test(a) ? a : `"${String(a).replace(/"/g, '""')}"`);
 
 /** Run a command in the repo root. Returns { status, stdout, stderr }. Never throws. */
+/**
+ * The environment the pre-commit ladder gives its test steps: no GIT_* variable but GIT_EXEC_PATH.
+ * A hook exports GIT_DIR, GIT_INDEX_FILE and the like; a test that spawns git with them would
+ * reach the repository being committed, whatever directory it runs in (M18.140, cp15 F2).
+ */
+export const testStepEnv = (env = process.env) => Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
+
 export function run(cmd, args = [], opts = {}) {
   // Windows needs a shell to run .cmd shims (pnpm, npx, codex). Passing an args array together
   // with shell:true concatenates unescaped (DEP0190), so build one quoted command line instead.
