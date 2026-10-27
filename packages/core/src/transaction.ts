@@ -213,17 +213,63 @@ export function referentialErrors(records: ReadonlyMap<RecordId, AnyRecord>): Ma
 }
 
 /**
+ * The fields schema's referential validation reads (checkReferences, 02-document-model §5 layer 2), as paths into a record; of a connector's free
+ * ends only whether they are set counts. A record whose fields on these paths are unchanged leaves the document's referential errors as they were.
+ */
+export const REFERENCE_PATHS: readonly (readonly string[])[] = [
+  ['id'],
+  ['type'],
+  ['kind'],
+  ['index'],
+  ['screenId'],
+  ['parentId'],
+  ['themeId'],
+  ['masterId'],
+  ['parentElementId'],
+  ['sectionId'],
+  ['background', 'assetId'],
+  ['assetId'],
+  ['snapshotAssetId'],
+  ['style', 'fill', 'assetId'],
+  ['connectorId'],
+  ['elementId'],
+  ['end'],
+  ['timelineId'],
+  ['ownerId'],
+  ['targetId'],
+  ['semantic', 'slug'],
+];
+
+const at = (record: AnyRecord, path: readonly string[]): unknown =>
+  path.reduce<unknown>((v, k) => (typeof v === 'object' && v !== null ? (v as Record<string, unknown>)[k] : undefined), record);
+
+const freeEnds = (record: AnyRecord): string => ['freeSource', 'freeTarget'].map((k) => (at(record, [k]) === undefined ? '-' : '+')).join('');
+
+/** Whether `after` reads the same as `before` to referential validation ({@link REFERENCE_PATHS}): moving or restyling a record does not. */
+export function referencesUnchanged(before: AnyRecord, after: AnyRecord): boolean {
+  return freeEnds(before) === freeEnds(after) && REFERENCE_PATHS.every((path) => jsonEqual(at(before, path), at(after, path)));
+}
+
+/** Whether `diff` deletes and adds nothing and changes no record's {@link REFERENCE_PATHS}. */
+const referencesKept = (diff: Diff): boolean =>
+  diff.deletes.size === 0 && [...diff.puts.values()].every(({ before, after }) => before !== undefined && referencesUnchanged(before, after));
+
+/**
  * Validation of a diff (ADR-0014): the changed records against their schemas, then the post-state's
  * references; only referential errors the pre-state did not have count. Returns the error
- * diagnostics and, when there are none, the post-state's referential error keys.
+ * diagnostics and, when there are none and the references changed, the post-state's referential error keys
+ * (undefined when they are the pre-state's). `post` and `before` are read only when the references changed.
  */
 export function checkDiff(
   diff: Diff,
-  post: ReadonlyMap<RecordId, AnyRecord>,
-  before: ReadonlyMap<string, Diagnostic>,
-): { readonly problems: readonly Diagnostic[]; readonly after: Map<string, Diagnostic> } {
+  post: () => ReadonlyMap<RecordId, AnyRecord>,
+  before: () => ReadonlyMap<string, Diagnostic>,
+): { readonly problems: readonly Diagnostic[]; readonly after: Map<string, Diagnostic> | undefined } {
   const structural = [...diff.puts].flatMap(([id, { after }]) => validateRecord(id, after)).filter((d) => d.severity === 'error');
-  if (structural.length) return { problems: structural, after: new Map(before) };
-  const after = referentialErrors(post);
-  return { problems: [...after].filter(([key]) => !before.has(key)).map(([, d]) => d), after };
+  if (structural.length) return { problems: structural, after: undefined };
+  // nothing referential changed (a drag, a restyle): the referential errors are the pre-state's, with no pass over every record (FR-RTE-002, M18.131)
+  if (referencesKept(diff)) return { problems: [], after: undefined };
+  const known = before();
+  const after = referentialErrors(post());
+  return { problems: [...after].filter(([key]) => !known.has(key)).map(([, d]) => d), after };
 }

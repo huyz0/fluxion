@@ -356,12 +356,14 @@ export class RecordStore implements Store {
 
   /** Validation problems of `diff`; on none, the post-state's referential errors become the known ones. */
   #check(diff: Diff): readonly Diagnostic[] {
-    this.#knownErrors ??= referentialErrors(this.#records);
-    const post = new Map(this.#records);
-    for (const [id, { after }] of diff.puts) post.set(id, after);
-    for (const id of diff.deletes.keys()) post.delete(id);
-    const { problems, after } = checkDiff(diff, post, this.#knownErrors);
-    if (!problems.length) this.#knownErrors = after;
+    const post = () => {
+      const records = new Map(this.#records);
+      for (const [id, { after }] of diff.puts) records.set(id, after);
+      for (const id of diff.deletes.keys()) records.delete(id);
+      return records;
+    };
+    const { problems, after } = checkDiff(diff, post, () => (this.#knownErrors ??= referentialErrors(this.#records)));
+    if (!problems.length && after !== undefined) this.#knownErrors = after;
     return problems;
   }
 

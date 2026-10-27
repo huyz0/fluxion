@@ -3383,3 +3383,12 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - New e2e emulates WebKit 26.5 on every engine (events from non-editable targets dropped, async read refused): red without the fix (0 of 3 pasted), green with it on Chromium; Firefox/WebKit run in CI. Browser unit tests for the catcher.
 - Review r1 F1: a chord is not routed while the page holds a text selection, so the browser still copies selected page text when the canvas has nothing selected (new e2e, red without the guard).
 - Review r2 F1: the guard is now "a copy or cut with nothing selected on the canvas and page text selected" (paste and canvas selections always route), and the catcher saves and restores the page's text selection, so a stale page selection no longer brings the WebKit failure back (emulated e2e extended, red under the r2 guard).
+## M18.145 — less work per connector-drag frame (toward M18.131) (2026-10-27)
+
+- Local profile (2x CPU throttle): store commit ran validateReferences over every record on each move (~2 %), and every connector's a11y text re-ran on each hub move because it read the whole bound record (~1.4 %).
+- core: checkDiff skips the referential pass when no record is added or deleted and no put changes a REFERENCE_PATHS field (lazy post-state and known errors); reference-paths.test mutates every other field of a record of each kind and checks validateReferences is unchanged, so a new check on a field the sample records carry fails it (the sample has a record of every RECORD_TYPES type; a field none of them carries is not covered).
+- render: connectorText reads bound names through one shared query per element; a11y.test counts the text query's runs (red before).
+- A/B, 2x throttle, 2 rounds x 10 runs: mean 37.7 vs 36.0 fps (+4.5 %). Not verified at the nightly's 50 fps floor (48.6 measured there); no threshold change.
+- Row M18.144 added for M18.132's review minor (r3 F1).
+- Review r1 (as M18.131): F1 the row's only criterion is the nightly's 50 fps, unverified here, so this is M18.145 and M18.131 stays open on it; F2 the sample now has every record type and the claim is narrowed; F3 a deleted element's cached name is dropped.
+- Review r1 (M18.145): F1 a checkDiff test with counting thunks shows a move or rename reads neither the post-state nor the known errors, and a re-reference, add or delete reads both (red with the skip removed); F2 (the cache prune untested) is carried in the commit body.

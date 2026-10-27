@@ -110,7 +110,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-CON-012 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/attachment.test.ts` |
 | FR-CON-013 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RTE-001 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/connector-view.browser.test.tsx` +2 |
-| FR-RTE-002 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/perf.route-drag-200.spec.ts` +4 |
+| FR-RTE-002 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/perf.route-drag-200.spec.ts` +6 |
 | FR-RTE-003 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `apps/studio/src/route-port.test.ts` +9 |
 | FR-RTE-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/determinism.test.ts`, `packages/routing/src/orthogonal/grid.test.ts` |
 | FR-RDR-001 | M | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
@@ -335,7 +335,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/open-sources.test.ts`, `e2e/privacy.no-telemetry.spec.ts` |
 | NFR-SEC-007 | S | R6 | M28 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/shape/content-license-policy.test.ts` |
 | NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.editor.spec.ts` +4 |
-| NFR-A11Y-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.player.spec.ts` +2 |
+| NFR-A11Y-002 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.player.spec.ts` +3 |
 | NFR-A11Y-003 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-A11Y-004 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/examples.r1-offline.spec.ts`, `e2e/player.keyboard-only.spec.ts` |
 | NFR-A11Y-005 | S | R3 | M20 | [30-non-functional.md](30-non-functional.md) | — |

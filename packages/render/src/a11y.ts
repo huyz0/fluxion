@@ -1,6 +1,6 @@
 // The text a screen reader gets for what a screen draws without words (NFR-A11Y-002, ADR-0015): an image's alt text and a connector's relation, "A connects to B: label".
 // Pure functions of the records, read through the store's tracked view so a rename or a rewire updates the text.
-import type { ReadView } from '@fluxion/core';
+import { computed, type ReadSignal, type ReadView } from '@fluxion/core';
 import type { ConnectorElement, ElementRecord, RecordId, RichTextNode } from '@fluxion/schema';
 
 /** The characters of `node` and what it holds, blocks apart by a space. */
@@ -22,14 +22,40 @@ export function nameOf(element: ElementRecord): string {
   return text || named.name?.trim() || element.kind;
 }
 
+/** Each view's element names, one shared query per element (M18.131). */
+const names = new WeakMap<ReadView, Map<RecordId, ReadSignal<string | undefined>>>();
+
+/**
+ * The name of element `id` (undefined when it is not one), read through a query of its own: a connector's text then depends on the bound
+ * element's name, not its whole record, so moving a shape re-reads its name once instead of redoing the text of every connector bound to it.
+ */
+function nameIn(view: ReadView, id: RecordId): string | undefined {
+  let byId = names.get(view);
+  if (byId === undefined) {
+    byId = new Map();
+    names.set(view, byId);
+  }
+  let name = byId.get(id);
+  if (name === undefined) {
+    const own = byId;
+    name = computed(() => {
+      const element = view.get(id) as ElementRecord | undefined;
+      // a deleted element's query is not kept for later texts (the ones reading it still follow it)
+      if (element === undefined) own.delete(id);
+      return element?.type === 'element' ? nameOf(element) : undefined;
+    });
+    byId.set(id, name);
+  }
+  return name();
+}
+
 /** The name of the element bound to the `end` of `connector`, or "(unattached)". */
 function endName(view: ReadView, connector: ConnectorElement, end: 'source' | 'target'): string {
   const binding = view
     .members('bindingsByElement', connector.id)
     .map((id) => view.get(id) as Bound | undefined)
     .find((b) => b?.connectorId === connector.id && b.end === end);
-  const bound = binding?.elementId === undefined ? undefined : (view.get(binding.elementId) as ElementRecord | undefined);
-  return bound?.type === 'element' ? nameOf(bound) : 'a free end';
+  return (binding?.elementId === undefined ? undefined : nameIn(view, binding.elementId)) ?? 'a free end';
 }
 
 /** "A connects to B: label" for a connector, with its labels' text after the colon. */
