@@ -90,6 +90,10 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     const ok = lastCi([...green, run('nightly', 'failure', '2026-09-28T03:00:00Z'), run('nightly', 'success', '2026-09-29T03:00:00Z', 'c0ffee00000000')]);
     assert.match(ok.out, /last-ci: nightly green at c0ffee0/);
     assert.match(lastCi(green).out, /last-ci: nightly has no completed run on main; not a verdict/);
+    // an unreadable nightly is said and changes no verdict (M18.137)
+    const unread = lastCi([...green, run('nightly', 'success', '2026-09-29T03:00:00Z', { queryFails: true })]);
+    assert.equal(unread.status, 0, unread.out);
+    assert.match(unread.out, /last-ci: cannot read main's nightly runs \(query failed\); not a verdict/);
     // a red workflow still decides the exit; the nightly line changes nothing
     assert.equal(lastCi([run('ci', 'failure', '2026-09-29T02:00:00Z'), run('nightly', 'success', '2026-09-29T03:00:00Z')]).status, 1);
   });

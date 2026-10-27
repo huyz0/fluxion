@@ -91,7 +91,10 @@ function fileSource(all) {
       if (all.some((r) => r.queryFails && r.workflowName === workflow)) throw new Error('query failed');
       return [newest(pushes.filter((r) => r.workflowName === workflow && r.status === 'completed'))].filter(Boolean);
     },
-    nightly: async () => all.filter((r) => r.workflowName === 'nightly'),
+    nightly: async () => {
+      if (all.some((r) => r.queryFails && r.workflowName === 'nightly')) throw new Error('query failed');
+      return all.filter((r) => r.workflowName === 'nightly');
+    },
   };
 }
 

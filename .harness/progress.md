@@ -3127,3 +3127,9 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - drive step 3 and next-task state one rule for last-ci exit 1 (exit 3 keeps M18.128's rule): while a `blocks-landing` row is open, only that row and commits confined to HARNESS_PATHS proceed (as landing-block enforces); otherwise no row starts before the red is fixed. AGENTS.md's command line says the same (cp16 F2).
 - last-ci names each open `blocks-landing` row on a red verdict (`--backlog`, default the repo's). Live it prints `M18.117 blocks landing ...` after the fd6b38a red. Test: named when open, not when done, not on green; existing tests pass an empty backlog.
 - Review r1 changes-requested (recorded as such; the reviewer wrote `fail`), fixed: F1 the rule had also been applied to exit 3, dropping M18.128's "harness rows may proceed"; the one rule now covers exit 1 only and the exit-3 text is restored. F2 the skills said last-ci names the row on exit 3 too; the wording is now exit 1 only, which is where last-ci prints it.
+
+## M18.137 — chained mutation plan proven end to end (2026-10-27)
+
+- mutation-nightly.test runs the real plan step on a clean clone of HEAD (sharing node_modules): the repository's plan has 276 partitions, and the step writes exactly `matrix`, `matrix_2` and `chains=2`, each matrix within 256 jobs, together listing every partition id of the plan once. The test asserts the over-256 premise, so a shrinking plan fails it loudly rather than passing vacuously.
+- last-ci's unreadable-nightly line is tested (a run-source `queryFails` nightly entry): printed, verdict unchanged.
+- The third clause (M18.10's evidence cites a completed two-chain nightly run) is carried into M18.10's acceptance, and M18.10 depends on M18.137.

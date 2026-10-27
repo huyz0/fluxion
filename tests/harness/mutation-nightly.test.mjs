@@ -1,8 +1,12 @@
 // NFR-MNT-005: exercise real orchestration commands with an explicitly synthetic mutation engine.
 import assert from 'node:assert/strict';
-import { existsSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { out } from './helpers.mjs';
+import { MATRIX_JOBS_MAX, partitionManifest } from '../../scripts/harness/mutation-partitions.mjs';
+import { cleanEnv, out, REPO } from './helpers.mjs';
 import { mutationFixture } from './mutation-fixture.mjs';
 
 const collect = (sb) =>
@@ -140,6 +144,47 @@ process.exitCode = runPackage({manifestPath:'reports/mutation-plan.json',partiti
       assert.equal(existsSync(sb.path('reports/mutation-plan.json')), false);
     } finally {
       sb.cleanup();
+    }
+  });
+
+  it('NFR-MNT-005: over 256 partitions, the real plan step writes matrix, matrix_2 and chains=2 covering every partition once (M18.137)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'fluxion-plan-'));
+    try {
+      // the plan needs clean inputs, so it runs on a clone of HEAD sharing this checkout's dependencies
+      const clone = join(dir, 'repo');
+      const git = (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8', env: cleanEnv() });
+      for (const args of [
+        ['clone', '-q', '--shared', '--no-checkout', REPO, clone],
+        ['-C', clone, 'checkout', '-q', '--detach', 'HEAD'],
+      ])
+        assert.equal(git(...args).status, 0, out(git(...args)));
+      symlinkSync(join(REPO, 'node_modules'), join(clone, 'node_modules'), 'junction');
+      appendFileSync(join(clone, '.git', 'info', 'exclude'), 'node_modules\n');
+      const r = spawnSync(process.execPath, [join(clone, 'scripts/ci/mutation-nightly.mjs'), 'plan', '--out', join(dir, 'plan.json')], {
+        cwd: clone,
+        encoding: 'utf8',
+        env: { ...cleanEnv(), GITHUB_OUTPUT: join(dir, 'outputs') },
+      });
+      assert.equal(r.status, 0, out(r));
+      const ids = partitionManifest(JSON.parse(readFileSync(join(dir, 'plan.json'), 'utf8'))).map((p) => p.id);
+      // the repository's own plan is the two-chain case; if it ever fits one matrix, this test needs a larger fixture
+      assert.ok(ids.length > MATRIX_JOBS_MAX, `the plan has ${ids.length} partitions, not over ${MATRIX_JOBS_MAX}`);
+      const all = Object.fromEntries(
+        readFileSync(join(dir, 'outputs'), 'utf8')
+          .trim()
+          .split('\n')
+          .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]),
+      );
+      assert.deepEqual(Object.keys(all).sort(), ['chains', 'matrix', 'matrix_2']);
+      assert.equal(all.chains, '2');
+      const chains = [all.matrix, all.matrix_2].map((m) => JSON.parse(m).include.map((e) => e.id));
+      for (const chain of chains) assert.ok(chain.length > 0 && chain.length <= MATRIX_JOBS_MAX, `${chain.length} jobs in one matrix`);
+      const listed = chains.flat();
+      assert.equal(new Set(listed).size, listed.length, 'no partition listed twice');
+      assert.deepEqual([...listed].sort(), [...ids].sort(), 'every partition listed');
+      assert.match(r.stdout, new RegExp(`${ids.length} complete partitions in 2 matrix job\\(s\\) \\(${chains[0].length} \\+ ${chains[1].length}\\)`));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 });
