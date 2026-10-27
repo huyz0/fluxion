@@ -9,8 +9,21 @@ const collect = (sb) =>
   sb.node('scripts/ci/mutation-nightly.mjs', ['plan', '--out', 'reports/mutation-plan.json'], {
     env: { ...process.env, GITHUB_OUTPUT: sb.path('reports/outputs') },
   });
+/** The plan step's GitHub outputs, by name. */
+const outputs = (sb) =>
+  Object.fromEntries(
+    sb
+      .read('reports/outputs')
+      .trim()
+      .split('\n')
+      .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]),
+  );
 function execute(sb) {
-  const matrix = JSON.parse(sb.read('reports/outputs').trim().slice('matrix='.length));
+  const all = outputs(sb);
+  // a plan within one matrix's 256 jobs runs one chained matrix (ADR-0198)
+  assert.equal(all.chains, '1');
+  assert.equal(all.matrix_2, undefined);
+  const matrix = JSON.parse(all.matrix);
   for (const { id } of matrix.include) {
     const r = sb.node('scripts/harness/mutate-shard.mjs', ['--manifest', 'reports/mutation-plan.json', '--partition', id, '--out-dir', `reports/parts/${id}`]);
     assert.equal(r.status, 0, out(r));
@@ -53,7 +66,7 @@ describe('nightly mutation orchestration (NFR-MNT-005)', () => {
       assert.equal(sb.git('commit', '-qm', '51 core sources').status, 0);
       const collected = collect(sb);
       assert.equal(collected.status, 0, out(collected));
-      const matrix = JSON.parse(sb.read('reports/outputs').trim().slice('matrix='.length));
+      const matrix = JSON.parse(outputs(sb).matrix);
       assert.deepEqual(
         matrix.include.map((x) => x.id),
         ['anim-1', 'core-1', 'core-2'],

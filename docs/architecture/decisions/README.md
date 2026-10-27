@@ -96,7 +96,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0171](ADR-0171-circular-timing-advisory.md) | Only valid circular-500 timing overruns are advisory; all other budgets and correctness remain blocking | accepted | 2026-10-25 |
 | [0172](ADR-0172-millisecond-baseline-readers.md) | Retain only consumed millisecond baselines; supplement ADR-0170 reader inventory | accepted | 2026-10-25 |
 | [0173](ADR-0173-complete-mutation-source-partitions.md) | Complete mutation source partitions without reduced coverage or floors | superseded (sizing) | 2026-10-25 |
-| [0174](ADR-0174-mutation-partition-sizing.md) | Smaller complete mutation partitions from terminal timing evidence | accepted | 2026-10-25 |
+| [0174](ADR-0174-mutation-partition-sizing.md) | Smaller complete mutation partitions from terminal timing evidence | accepted (matrix cap amended by ADR-0198) | 2026-10-25 |
 | [0175](ADR-0175-screen-duplicate-external-ends.md) | Caller-resolved free endpoints for screen duplication | accepted | 2026-10-25 |
 | [0176](ADR-0176-proportionate-development-gates.md) | Proportionate development gates | accepted | 2026-10-25 |
 | [0177](ADR-0177-shared-svg-policy.md) | Shared decoded SVG attribute policy | accepted | 2026-10-25 |
@@ -120,6 +120,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0195](ADR-0195-content-bound-review-evidence.md) | Reviews bind to rebase-stable content, and each commit carries its own evidence | accepted | 2026-10-27 |
 | [0196](ADR-0196-one-shape-pack-encoder.md) | One shape pack encoder for first-party and imported packs | accepted | 2026-10-27 |
 | [0197](ADR-0197-windows-verify-envelope.md) | Windows verification gets its own CI envelope (25 of 45 minutes) | accepted | 2026-10-27 |
+| [0198](ADR-0198-chained-mutation-matrices.md) | Nightly mutation partitions run as chained matrices of at most 256 jobs | accepted | 2026-10-27 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 

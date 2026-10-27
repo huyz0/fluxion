@@ -65,4 +65,16 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.equal(lastCi([run('ci', 'queued', '2026-09-29T02:00:00Z')]).status, 0);
     assert.equal(lastCi([]).status, 0);
   });
+
+  it("NFR-MNT-005: the nightly's latest completed run is reported, red or green, and never blocks the task (M18.124)", () => {
+    const green = [run('ci', 'success', '2026-09-29T02:00:00Z'), run('gates', 'success', '2026-09-29T02:00:00Z')];
+    const red = lastCi([...green, run('nightly', 'in_progress', '2026-09-29T04:00:00Z'), run('nightly', 'failure', '2026-09-29T03:00:00Z', 'feedbee0000000')]);
+    assert.equal(red.status, 0, red.out);
+    assert.match(red.out, /last-ci: nightly RED failure at feedbee \(run 20\); not a verdict/);
+    const ok = lastCi([...green, run('nightly', 'failure', '2026-09-28T03:00:00Z'), run('nightly', 'success', '2026-09-29T03:00:00Z', 'c0ffee00000000')]);
+    assert.match(ok.out, /last-ci: nightly green at c0ffee0/);
+    assert.match(lastCi(green).out, /last-ci: nightly has no completed run on main; not a verdict/);
+    // a red workflow still decides the exit; the nightly line changes nothing
+    assert.equal(lastCi([run('ci', 'failure', '2026-09-29T02:00:00Z'), run('nightly', 'success', '2026-09-29T03:00:00Z')]).status, 1);
+  });
 });

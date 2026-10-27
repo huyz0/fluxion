@@ -7,6 +7,7 @@ decision-makers: harness (M18.58, independent plan review required before implem
 # ADR-0174 — Mutation partition sizing
 
 Supersedes ADR-0173's default sizing only; its completeness contract remains in force.
+Amended by [ADR-0198](ADR-0198-chained-mutation-matrices.md): the 256-job cap now applies per chained matrix.
 
 ## Context and Problem Statement
 

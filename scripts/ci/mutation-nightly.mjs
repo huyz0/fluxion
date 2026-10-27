@@ -3,7 +3,7 @@
 import { appendFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { failureAnnotation } from '../gates/failure-report.mjs';
-import { partitionManifest } from '../harness/mutation-partitions.mjs';
+import { matrixChains, partitionManifest } from '../harness/mutation-partitions.mjs';
 import { buildPlan, samePlan } from '../harness/mutation-plan.mjs';
 import { MUTATION_EVIDENCE_PREFIX, mutationReceipt } from './mutation-evidence.mjs';
 
@@ -22,12 +22,15 @@ const escapeCommandData = (value) => value.replaceAll('%', '%25').replaceAll('\r
 function collect(output) {
   rmSync(output, { force: true });
   const plan = buildPlan(),
-    parts = partitionManifest(plan);
-  if (parts.length > 256) throw new Error(`mutation matrix exceeds 256 jobs: ${parts.length}; no scope was dropped`);
+    parts = partitionManifest(plan),
+    chains = matrixChains(parts);
   write(output, plan);
-  const matrix = { include: parts.map((p) => ({ id: p.id })) };
-  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\n`);
-  console.log(`mutation plan: ${parts.length} complete partitions, ${plan.mutants.length} mutants at ${plan.revision}`);
+  // one output per chained matrix job (`matrix`, `matrix_2`), and how many of them run
+  const lines = chains.map((chain, i) => `${i === 0 ? 'matrix' : `matrix_${i + 1}`}=${JSON.stringify({ include: chain.map((p) => ({ id: p.id })) })}`);
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${[...lines, `chains=${chains.length}`].join('\n')}\n`);
+  console.log(
+    `mutation plan: ${parts.length} complete partitions in ${chains.length} matrix job(s) (${chains.map((c) => c.length).join(' + ')}), ${plan.mutants.length} mutants at ${plan.revision}`,
+  );
 }
 
 function aggregate(output) {

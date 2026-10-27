@@ -2,6 +2,21 @@
 import { checkManifest, hasValidMutants, scoreMutants, validateShard } from './mutation-shards.mjs';
 
 export const DEFAULT_PARTITION_TARGET = 50;
+/** GitHub's cap on the jobs one matrix expands to. */
+export const MATRIX_JOBS_MAX = 256;
+/** Chained partition jobs in nightly.yml (`mutation-partitions`, `mutation-partitions-2`), one matrix each (ADR-0198). */
+export const MATRIX_CHAINS = 2;
+
+/**
+ * Partitions in plan order split into the fewest matrices of at most `max` jobs, as evenly as possible. Throws when even
+ * `chains` matrices cannot hold them all: the plan never drops a partition to fit.
+ */
+export function matrixChains(parts, chains = MATRIX_CHAINS, max = MATRIX_JOBS_MAX) {
+  const used = Math.max(1, Math.ceil(parts.length / max));
+  if (used > chains) throw new Error(`mutation matrix needs ${parts.length} jobs, over ${chains} chained matrices of ${max}; no scope was dropped`);
+  const size = Math.ceil(parts.length / used);
+  return Array.from({ length: used }, (_, i) => parts.slice(i * size, (i + 1) * size));
+}
 
 /** The target schedules whole files; it never drops mutants from an oversized file. */
 export function partitionManifest(manifest, target = DEFAULT_PARTITION_TARGET) {

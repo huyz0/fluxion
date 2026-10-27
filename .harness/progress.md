@@ -3039,3 +3039,7 @@ Adds @fluxion/pack-network: 14 generic network definitions (devices: router, swi
 ## M18.114 — font engine probe reaches the host cap (2026-10-27)
 - The probe refuses a declared decoded size over the 5 MiB host cap before allocating, as the format adapter does, and reports a 6 MiB declared case decoded with and without the cap: refused by the cap alone, while the uncapped decode is the real font (same SHA-256).
 - It reads the codec module's declared memory maximum from its memory section (2048 pages); the test requires zero malformed-input traps, a peak below that maximum, and four dirty destinations giving identical bytes.
+
+## M18.124 — Nightly mutation plan fits; last-ci reports nightly (2026-10-27)
+
+Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one GitHub matrix's 256 jobs, so the plan step refused and nothing ran; ADR-0198 runs the partitions as two chained matrices (`matrixChains`, 4 concurrent each, 8 in all, aggregation needs both); the real inventory plans 138 + 138. last-ci reads the nightly's runs (ci-runs `nightly`) and reports the latest completed one without making it a verdict. Split out with evidence: route-drag-200 at 48.6 fps (M18.131, no regression: same fps before M18.38), WebKit 26.5 paste only from an editable field (M18.132), visual-xos has no -darwin/-win32 baselines and bare ubuntu differs 1 % (M18.133, approach asked of Huy).

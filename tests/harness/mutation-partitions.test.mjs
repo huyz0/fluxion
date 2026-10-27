@@ -1,7 +1,7 @@
 // NFR-MNT-005: partitions must cover the independent inventory before package scores count.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { aggregatePartitions, partitionManifest } from '../../scripts/harness/mutation-partitions.mjs';
+import { aggregatePartitions, MATRIX_CHAINS, MATRIX_JOBS_MAX, matrixChains, partitionManifest } from '../../scripts/harness/mutation-partitions.mjs';
 import { createManifest } from '../../scripts/harness/mutation-shards.mjs';
 
 const hash = 'a'.repeat(64);
@@ -151,5 +151,41 @@ describe('complete source partitions (NFR-MNT-005)', () => {
       edit(reports);
       assert.equal(aggregatePartitions(plan, reports, 1).ok, false, edit.toString());
     }
+  });
+});
+
+describe('chained mutation matrices (ADR-0198, M18.124)', () => {
+  const parts = (n) => Array.from({ length: n }, (_, i) => ({ id: `p-${i + 1}` }));
+  const ids = (chains) => chains.flat().map((p) => p.id);
+  it('NFR-MNT-005: a plan within one matrix stays one chain; a larger one splits evenly, in order, dropping nothing', () => {
+    assert.equal(MATRIX_JOBS_MAX, 256);
+    assert.equal(MATRIX_CHAINS, 2);
+    assert.deepEqual(
+      matrixChains(parts(3)).map((c) => c.length),
+      [3],
+    );
+    assert.deepEqual(
+      matrixChains(parts(256)).map((c) => c.length),
+      [256],
+    );
+    // the 274 partitions of nightly 40470089950 that one matrix refused
+    const split = matrixChains(parts(274));
+    assert.deepEqual(
+      split.map((c) => c.length),
+      [137, 137],
+    );
+    assert.deepEqual(ids(split), ids([parts(274)]));
+    assert.deepEqual(
+      matrixChains(parts(257)).map((c) => c.length),
+      [129, 128],
+    );
+    assert.deepEqual(
+      matrixChains(parts(512)).map((c) => c.length),
+      [256, 256],
+    );
+  });
+  it('NFR-MNT-005: a plan beyond every chained matrix fails instead of dropping a partition', () => {
+    assert.throws(() => matrixChains(parts(513)), /needs 513 jobs, over 2 chained matrices of 256; no scope was dropped/);
+    assert.throws(() => matrixChains(parts(5), 1, 4), /needs 5 jobs, over 1 chained matrices of 4/);
   });
 });

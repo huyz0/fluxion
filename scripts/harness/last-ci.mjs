@@ -4,7 +4,9 @@
 // succeed blocks the next task (exit 1) until it is fixed, so a platform break cannot sit under a
 // stack of later commits. When a newer run of that workflow is still pending (the fix is pushed and
 // running), it exits 2: wait for that run, do not fix again. An older red run that a newer green one
-// replaced does not block. Exit 0: every workflow is green or has no completed run yet.
+// replaced does not block. Exit 0: every workflow is green or has no completed run yet. The nightly's latest
+// completed run is reported too, never as a verdict: its failures do not block a task (nightly.yml), but its
+// state is what the final mutation and nightly rows read (M18.124).
 //   node scripts/harness/last-ci.mjs [--branch main] [--runs-file <json>]
 // --runs-file: a JSON array of runs in `gh run list --json databaseId,workflowName,headSha,status,
 // conclusion,createdAt` shape, used instead of GitHub (tests).
@@ -20,8 +22,17 @@ const opt = (k) => {
 const branch = opt('branch') ?? 'main';
 
 let runs;
+let nightlyRuns;
 try {
-  runs = opt('runs-file') ? JSON.parse(readFileSync(opt('runs-file'), 'utf8')) : await runSource().branch(branch);
+  if (opt('runs-file')) {
+    const all = JSON.parse(readFileSync(opt('runs-file'), 'utf8'));
+    [runs, nightlyRuns] = [all.filter((r) => r.workflowName !== 'nightly'), all.filter((r) => r.workflowName === 'nightly')];
+  } else {
+    const source = runSource();
+    runs = await source.branch(branch);
+    // an unreadable nightly is said, not a verdict on the task
+    nightlyRuns = await source.nightly(branch).catch((e) => e);
+  }
 } catch (e) {
   // no answer from GitHub is not a verdict: say so and do not block the loop on the network
   console.log(`last-ci: cannot read ${branch}'s runs (${e.message}${transportHint()}); check CI by hand`);
@@ -55,4 +66,13 @@ for (const workflow of WORKFLOWS) {
   verdict = 1;
   console.log(`last-ci: RED ${workflow} ${done.conclusion} at ${sha} (run ${done.databaseId}): fix main's CI before the next task`);
 }
+const newestNightly = Array.isArray(nightlyRuns)
+  ? [...nightlyRuns].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).find((r) => r.status === 'completed')
+  : undefined;
+if (!Array.isArray(nightlyRuns)) console.log(`last-ci: cannot read ${branch}'s nightly runs (${nightlyRuns?.message ?? 'no answer'}); not a verdict`);
+else if (newestNightly === undefined) console.log(`last-ci: nightly has no completed run on ${branch}; not a verdict`);
+else
+  console.log(
+    `last-ci: nightly ${newestNightly.conclusion === 'success' ? 'green' : `RED ${newestNightly.conclusion}`} at ${String(newestNightly.headSha).slice(0, 7)} (run ${newestNightly.databaseId}); not a verdict`,
+  );
 process.exit(verdict);

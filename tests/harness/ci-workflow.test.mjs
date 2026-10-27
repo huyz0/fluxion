@@ -242,6 +242,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.deepEqual(jobsOf(nightly), [
       'mutation-plan',
       'mutation-partitions',
+      'mutation-partitions-2',
       'mutation',
       'properties',
       'perf',
@@ -251,15 +252,27 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
       'report',
     ]);
     assert.match(nightly, /FC_RUNS: '10000'/);
-    const partitions = /^ {2}mutation-partitions:[\s\S]*?(?=^ {2}mutation:)/m.exec(nightly)?.[0] ?? '';
-    assert.match(partitions, /fail-fast: false/);
-    assert.match(partitions, /timeout-minutes: 60/);
-    assert.match(partitions, /Execute complete mutation partition/);
-    assert.match(partitions, /node scripts\/harness\/mutate-shard\.mjs --manifest reports\/mutation-plan\.json --partition/);
-    assert.match(partitions, /mutation-partition-\$\{\{ matrix.id \}\}/);
-    assert.doesNotMatch(partitions, /continue-on-error|--from|--dedup|--retries [1-9]/);
+    // ADR-0198: the partitions run as two chained matrices (GitHub caps one at 256 jobs), 4 concurrent each, 8 in all
+    const first = /^ {2}mutation-partitions:[\s\S]*?(?=^ {2}mutation-partitions-2:)/m.exec(nightly)?.[0] ?? '';
+    const second = /^ {2}mutation-partitions-2:[\s\S]*?(?=^ {2}mutation:)/m.exec(nightly)?.[0] ?? '';
+    assert.match(first, /matrix: \$\{\{ fromJSON\(needs\.mutation-plan\.outputs\.matrix\) \}\}/);
+    assert.match(second, /matrix: \$\{\{ fromJSON\(needs\.mutation-plan\.outputs\.matrix_2\) \}\}/);
+    assert.match(second, /if: \$\{\{ fromJSON\(needs\.mutation-plan\.outputs\.chains\) > 1 \}\}/);
+    assert.match(nightly, /matrix_2: \$\{\{ steps\.plan\.outputs\.matrix_2 \}\}/);
+    assert.match(nightly, /chains: \$\{\{ steps\.plan\.outputs\.chains \}\}/);
+    // 8 concurrent in all: the first matrix alone runs 8, two chains run 4 each
+    assert.match(first, /max-parallel: \$\{\{ fromJSON\(needs\.mutation-plan\.outputs\.chains\) > 1 && 4 \|\| 8 \}\}\n/);
+    assert.match(second, /max-parallel: 4\n/);
+    for (const partitions of [first, second]) {
+      assert.match(partitions, /fail-fast: false/);
+      assert.match(partitions, /timeout-minutes: 60/);
+      assert.match(partitions, /Execute complete mutation partition/);
+      assert.match(partitions, /node scripts\/harness\/mutate-shard\.mjs --manifest reports\/mutation-plan\.json --partition/);
+      assert.match(partitions, /mutation-partition-\$\{\{ matrix.id \}\}/);
+      assert.doesNotMatch(partitions, /continue-on-error|--from|--dedup|--retries [1-9]/);
+    }
     const aggregate = /^ {2}mutation:[\s\S]*?(?=^ {2}properties:)/m.exec(nightly)?.[0] ?? '';
-    assert.match(aggregate, /needs: \[mutation-plan, mutation-partitions\]/);
+    assert.match(aggregate, /needs: \[mutation-plan, mutation-partitions, mutation-partitions-2\]/);
     assert.match(aggregate, /if: always\(\)/);
     assert.match(aggregate, /Validate complete mutation reports/);
     assert.match(aggregate, /node scripts\/ci\/mutation-nightly\.mjs aggregate/);

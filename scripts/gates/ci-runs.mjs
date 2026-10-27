@@ -58,6 +58,16 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
         conclusion: r.conclusion,
         createdAt: r.created_at,
       })),
+    // the nightly's last runs on the branch, scheduled or dispatched (not pushes): last-ci reports them (M18.124)
+    nightly: async (name) =>
+      ((await get(`actions/workflows/nightly.yml/runs?branch=${encodeURIComponent(name)}&per_page=5`)).workflow_runs ?? []).map((r) => ({
+        databaseId: r.id,
+        workflowName: r.name,
+        headSha: r.head_sha,
+        status: r.status,
+        conclusion: r.conclusion,
+        createdAt: r.created_at,
+      })),
   };
 }
 
@@ -92,6 +102,19 @@ export function ghSource(spawn = spawnSync) {
     list: async (sha) => gh(['run', 'list', '--commit', sha, '--limit', '50', '--json', 'databaseId,workflowName,conclusion']),
     branch: async (name) =>
       gh(['run', 'list', '--branch', name, '--event', 'push', '--limit', '30', '--json', 'databaseId,workflowName,headSha,status,conclusion,createdAt']),
+    nightly: async (name) =>
+      gh([
+        'run',
+        'list',
+        '--workflow',
+        'nightly.yml',
+        '--branch',
+        name,
+        '--limit',
+        '5',
+        '--json',
+        'databaseId,workflowName,headSha,status,conclusion,createdAt',
+      ]),
   };
 }
 

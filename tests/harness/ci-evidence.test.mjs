@@ -251,6 +251,26 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     await assert.rejects(rest.view(99), /answered 404/);
   });
 
+  it("NFR-MNT-005: the nightly's runs are read by workflow file on the branch, whatever their event (M18.124)", async () => {
+    const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const nightly = { id: 21, name: 'nightly', head_sha: 'b'.repeat(40), conclusion: 'failure', status: 'completed', event: 'schedule', created_at: 'T' };
+    const calls = [];
+    const fetch = async (url, init) => {
+      calls.push({ url, headers: init.headers });
+      return { ok: true, status: 200, json: async () => ({ workflow_runs: [nightly] }) };
+    };
+    assert.deepEqual(await restSource({ fetch }).nightly('main'), [
+      { databaseId: 21, workflowName: 'nightly', headSha: 'b'.repeat(40), status: 'completed', conclusion: 'failure', createdAt: 'T' },
+    ]);
+    assert.equal(calls[0].url, 'https://api.github.com/repos/huyz0/fluxion/actions/workflows/nightly.yml/runs?branch=main&per_page=5');
+    const spawned = [];
+    await ghSource((cmd, args) => {
+      spawned.push([cmd, ...args]);
+      return { status: 0, stdout: '[]' };
+    }).nightly('main');
+    assert.deepEqual(spawned[0].slice(0, 8), ['gh', 'run', 'list', '--workflow', 'nightly.yml', '--branch', 'main', '--limit']);
+  });
+
   it('REST is used when gh is absent, with the Bearer token only when GITHUB_TOKEN is set', async () => {
     const { hasGh, runSource } = await import('../../scripts/gates/ci-runs.mjs');
     assert.equal(
