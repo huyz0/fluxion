@@ -1,0 +1,213 @@
+{
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "devices": {
+      "path": "categories/devices.json",
+      "sha256": "be3f32995d550d97e27b1eb72aab8b381206530a7d8dcbb130283cb97dafad98"
+    },
+    "hosts": {
+      "path": "categories/hosts.json",
+      "sha256": "552079eecb0f679603e136ece014a0a40f31b15a7855a63d0712f0ea3c220c67"
+    },
+    "security": {
+      "path": "categories/security.json",
+      "sha256": "1eeaec973040d03a52cc8dc1e1f594c77968561ab3754c1ae46383d4f4d061fe"
+    },
+    "zones": {
+      "path": "categories/zones.json",
+      "sha256": "74cbe1e069b795f5fe7716ff607da2f31abeb844c3c039584ed4a95b5848e745"
+    }
+  },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
+  "definitions": [
+    {
+      "category": "devices",
+      "id": "network:router",
+      "keywords": [
+        "router",
+        "gateway",
+        "layer 3",
+        "routing",
+        "network"
+      ],
+      "name": "Router"
+    },
+    {
+      "category": "devices",
+      "id": "network:switch",
+      "keywords": [
+        "switch",
+        "layer 2",
+        "ethernet",
+        "lan",
+        "network"
+      ],
+      "name": "Switch"
+    },
+    {
+      "category": "devices",
+      "id": "network:hub",
+      "keywords": [
+        "hub",
+        "patch panel",
+        "repeater",
+        "network"
+      ],
+      "name": "Hub"
+    },
+    {
+      "category": "security",
+      "id": "network:firewall",
+      "keywords": [
+        "firewall",
+        "security",
+        "filter",
+        "policy",
+        "wall",
+        "network"
+      ],
+      "name": "Firewall"
+    },
+    {
+      "category": "devices",
+      "id": "network:load-balancer",
+      "keywords": [
+        "load balancer",
+        "balancing",
+        "proxy",
+        "distribution",
+        "network"
+      ],
+      "name": "Load balancer"
+    },
+    {
+      "category": "hosts",
+      "id": "network:server",
+      "keywords": [
+        "server",
+        "host",
+        "machine",
+        "compute",
+        "tower"
+      ],
+      "name": "Server"
+    },
+    {
+      "category": "hosts",
+      "id": "network:rack",
+      "keywords": [
+        "rack",
+        "cabinet",
+        "data center",
+        "servers",
+        "hosting"
+      ],
+      "name": "Rack"
+    },
+    {
+      "category": "hosts",
+      "id": "network:storage",
+      "keywords": [
+        "storage",
+        "nas",
+        "san",
+        "disk",
+        "array",
+        "backup"
+      ],
+      "name": "Network storage"
+    },
+    {
+      "category": "devices",
+      "id": "network:access-point",
+      "keywords": [
+        "access point",
+        "wifi",
+        "wireless",
+        "wlan",
+        "hotspot"
+      ],
+      "name": "Access point"
+    },
+    {
+      "category": "zones",
+      "id": "network:internet",
+      "keywords": [
+        "internet",
+        "cloud",
+        "wan",
+        "external",
+        "network"
+      ],
+      "name": "Internet"
+    },
+    {
+      "category": "zones",
+      "id": "network:subnet",
+      "keywords": [
+        "subnet",
+        "vlan",
+        "zone",
+        "dmz",
+        "segment",
+        "network"
+      ],
+      "name": "Subnet"
+    },
+    {
+      "category": "zones",
+      "id": "network:bus",
+      "keywords": [
+        "bus",
+        "segment",
+        "backbone",
+        "ethernet",
+        "trunk"
+      ],
+      "name": "Network segment"
+    },
+    {
+      "category": "devices",
+      "id": "network:modem",
+      "keywords": [
+        "modem",
+        "cpe",
+        "edge",
+        "isp",
+        "broadband"
+      ],
+      "name": "Modem"
+    },
+    {
+      "category": "security",
+      "id": "network:vpn",
+      "keywords": [
+        "vpn",
+        "tunnel",
+        "encryption",
+        "lock",
+        "secure",
+        "ipsec"
+      ],
+      "name": "VPN"
+    }
+  ],
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "network",
+  "license": "MIT",
+  "name": "Network",
+  "version": "0.0.0"
+}

@@ -3026,3 +3026,8 @@ The ledger never records the unreleased 0.0.0 and keeps every CHANGELOG-released
 
 Adds @fluxion/pack-bpmn: 19 BPMN-lite definitions (activities: task, sub-process, call activity, transaction; events: start, intermediate, end, timer, message; gateways: exclusive, parallel, inclusive, event-based; data object and store; pool and lane; group and text annotation), MIT original work, encoded by the shared encoder (ADR-0196) with a golden per definition. Event kinds differ by border width and inner mark; the annotation's outline is its open bracket.
 - Review r1 changes-requested, fixed: events and gateways carry their label below the symbol (`x 0, y 1, w 1, h 0`, top-aligned, as uml's small symbols do); sub-process and data-object text heights clamp at 0 and the data-object region's top at 1.
+
+## M18.27 — Network pack (2026-10-27)
+
+Adds @fluxion/pack-network: 14 generic network definitions (devices: router, switch, hub, load balancer, access point, modem; security: firewall, VPN; hosts: server, rack, network storage; zones: internet cloud, dashed subnet, network segment), MIT original work with no vendor artwork, encoded by the shared encoder (ADR-0196) with a golden per definition; device and host labels sit below the symbol.
+- Review r1 pass with minors, fixed: modem, internet, VPN and access point declare anchors on their drawn body (each within 1.1 units of the drawing at default size); the router comment matches its crossing strokes.

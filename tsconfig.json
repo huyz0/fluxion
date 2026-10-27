@@ -91,6 +91,9 @@
       "path": "./packs/bpmn"
     },
     {
+      "path": "./packs/network"
+    },
+    {
       "path": "./e2e"
     }
   ]

@@ -1,0 +1,31 @@
+{
+  "name": "@fluxion/pack-network",
+  "version": "0.0.0",
+  "description": "First-party network shape pack: generic routers, switches, firewalls, hosts and zones.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pack",
+    "pack-versions.json"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@fluxion/sdk": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

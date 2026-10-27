@@ -1,0 +1,20 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:72px;height:54px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 72 54">
+      <path class="fx-outline" d="M0 0 L72 0 L72 54 L0 54 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M0 18 C24 18 48 18 72 18" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M0 36 C24 36 48 36 72 36" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M54.9 9 C54.9 7.51 56.11 6.3 57.6 6.3 C59.09 6.3 60.3 7.51 60.3 9 C60.3 10.49 59.09 11.7 57.6 11.7 C56.11 11.7 54.9 10.49 54.9 9 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M54.9 27 C54.9 25.51 56.11 24.3 57.6 24.3 C59.09 24.3 60.3 25.51 60.3 27 C60.3 28.49 59.09 29.7 57.6 29.7 C56.11 29.7 54.9 28.49 54.9 27 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M54.9 45 C54.9 43.51 56.11 42.3 57.6 42.3 C59.09 42.3 60.3 43.51 60.3 45 C60.3 46.49 59.09 47.7 57.6 47.7 C56.11 47.7 54.9 46.49 54.9 45 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:56px 47px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,162 @@
+{
+  "definitions": [
+    {
+      "category": "hosts",
+      "decorations": [
+        {
+          "path": "M 0 {h / 4} H {w}"
+        },
+        {
+          "path": "M 0 {2 * h / 4} H {w}"
+        },
+        {
+          "path": "M 0 {3 * h / 4} H {w}"
+        },
+        {
+          "path": "M {w * 0.12} {h / 4 / 2} H {w * 0.4}"
+        },
+        {
+          "path": "M {w * 0.12} {1.5 * h / 4} H {w * 0.4}"
+        },
+        {
+          "path": "M {w * 0.12} {2.5 * h / 4} H {w * 0.4}"
+        },
+        {
+          "path": "M {w * 0.12} {3.5 * h / 4} H {w * 0.4}"
+        }
+      ],
+      "defaultSize": {
+        "h": 72,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A server: a host that runs services for others.",
+      "id": "network:server",
+      "keywords": [
+        "server",
+        "host",
+        "machine",
+        "compute",
+        "tower"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "hosts",
+      "decorations": [
+        {
+          "path": "M {w * 0.1} {h * 0.05} H {w * 0.9} V {h * 0.95} H {w * 0.1} Z"
+        },
+        {
+          "path": "M {w * 0.1} {h * 0.25} H {w * 0.9}"
+        },
+        {
+          "path": "M {w * 0.1} {h * 0.45} H {w * 0.9}"
+        },
+        {
+          "path": "M {w * 0.1} {h * 0.65} H {w * 0.9}"
+        }
+      ],
+      "defaultSize": {
+        "h": 96,
+        "w": 56
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A rack or cabinet holding several servers and network devices.",
+      "id": "network:rack",
+      "keywords": [
+        "rack",
+        "cabinet",
+        "data center",
+        "servers",
+        "hosting"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "hosts",
+      "decorations": [
+        {
+          "path": "M 0 {h / 3} H {w}"
+        },
+        {
+          "path": "M 0 {h * 2 / 3} H {w}"
+        },
+        {
+          "path": "M {w * 0.8 - (min(w, h) * 0.05)} {h / 6} A {min(w, h) * 0.05} {min(w, h) * 0.05} 0 1 1 {w * 0.8 + (min(w, h) * 0.05)} {h / 6} A {min(w, h) * 0.05} {min(w, h) * 0.05} 0 1 1 {w * 0.8 - (min(w, h) * 0.05)} {h / 6} Z"
+        },
+        {
+          "path": "M {w * 0.8 - (min(w, h) * 0.05)} {h / 2} A {min(w, h) * 0.05} {min(w, h) * 0.05} 0 1 1 {w * 0.8 + (min(w, h) * 0.05)} {h / 2} A {min(w, h) * 0.05} {min(w, h) * 0.05} 0 1 1 {w * 0.8 - (min(w, h) * 0.05)} {h / 2} Z"
+        },
+        {
+          "path": "M {w * 0.8 - (min(w, h) * 0.05)} {h * 5 / 6} A {min(w, h) * 0.05} {min(w, h) * 0.05} 0 1 1 {w * 0.8 + (min(w, h) * 0.05)} {h * 5 / 6} A {min(w, h) * 0.05} {min(w, h) * 0.05} 0 1 1 {w * 0.8 - (min(w, h) * 0.05)} {h * 5 / 6} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 54,
+        "w": 72
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "Network storage (NAS or SAN): disks shared over the network.",
+      "id": "network:storage",
+      "keywords": [
+        "storage",
+        "nas",
+        "san",
+        "disk",
+        "array",
+        "backup"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

@@ -234,6 +234,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party BPMN-lite shape pack: activities, events, gateways, data and swimlanes."
+    },
+    {
+      "dir": "packs/network",
+      "name": "@fluxion/pack-network",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party network shape pack: generic routers, switches, firewalls, hosts and zones."
     }
   ]
 }
