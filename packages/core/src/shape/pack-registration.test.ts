@@ -1,6 +1,16 @@
 import { err } from '@fluxion/schema';
-import { expect, it } from 'vitest';
-import { allowsShapePackContentLicense, createRegistry, registerShapePackSubsets, type ShapeDef } from '../index.js';
+import { describe, expect, it } from 'vitest';
+import {
+  type ArtworkFontBinding,
+  allowsShapePackContentLicense,
+  artworkFontAlias,
+  artworkFontRequirements,
+  createRegistry,
+  parseVersionedShapePackSubset,
+  registerShapePackSubsets,
+  registerVersionedShapePackSubsets,
+  type ShapeDef,
+} from '../index.js';
 
 const files = import.meta.glob('../../../../fixtures/shape-pack/subset.json', { query: '?raw', import: 'default', eager: true });
 const subset = () => JSON.parse(Object.values(files)[0] ?? 'null');
@@ -65,3 +75,65 @@ it('FR-LIB-009: a registry refusal after the first insertion rolls back newly re
   expect(registerShapePackSubsets(failing, [subset()], policy).ok).toBe(false);
   expect(target.list()).toEqual([]);
 });
+
+describe('FR-LIB-004 FR-AST-003: versioned registration binds exact artwork fonts (M18.97)', () => {
+  const v11Files = import.meta.glob('../../../../fixtures/shape-pack/v1.1/subset.json', { query: '?raw', import: 'default', eager: true });
+  const v11 = () => JSON.parse(Object.values(v11Files)[0] ?? 'null');
+  const SHA = '8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc';
+  const registries = () => ({ shapeDefs: registry(), artworkFonts: createRegistry<string, readonly ArtworkFontBinding[]>('artworkFonts') });
+
+  it('lists each bound byte identity once, with its private alias', () => {
+    const parsed = parseVersionedShapePackSubset(v11(), policy);
+    if (!parsed.ok) throw new Error('fixture');
+    const other = { ...v11(), id: 'other', definitions: v11().definitions.map((d: ShapeDef) => ({ ...d, id: d.id.replace('sample:', 'other:') })) };
+    other.definitionFonts = [{ definitionId: 'other:label', faceIds: ['inter'] }];
+    other.fontCredits = other.fontCredits.map((c: { definitionIds: string[] }) => ({ ...c, definitionIds: ['other:label'] }));
+    const second = parseVersionedShapePackSubset(other, policy);
+    if (!second.ok) throw new Error(JSON.stringify(second.error));
+    const legacy = parseVersionedShapePackSubset(subset(), policy);
+    if (!legacy.ok) throw new Error('fixture');
+    expect(artworkFontRequirements([parsed.value, second.value, legacy.value])).toEqual([
+      { sha256: SHA, size: 23664, weight: 400, style: 'normal', alias: artworkFontAlias(SHA) },
+    ]);
+  });
+
+  it('registers canonical geometry and renderer bindings, and disposes both', () => {
+    const target = registries();
+    const done = registerVersionedShapePackSubsets(target, [v11(), subset2()], policy, new Set([SHA]));
+    if (!done.ok) throw new Error(JSON.stringify(done.error));
+    expect(target.shapeDefs.get('sample:label')).toEqual(v11().definitions[1]);
+    expect(target.artworkFonts.get('sample:label')).toEqual([{ family: 'Inter', weight: 400, style: 'normal', sha256: SHA, alias: artworkFontAlias(SHA) }]);
+    expect(target.artworkFonts.get('sample:box')).toBeUndefined();
+    expect(target.shapeDefs.get('legacy:box')).toBeDefined();
+    done.value.dispose();
+    expect([target.shapeDefs.list(), target.artworkFonts.list()]).toEqual([[], []]);
+  });
+
+  it('refuses everything when a bound font is not registered, so its text never falls back', () => {
+    const target = registries();
+    const done = registerVersionedShapePackSubsets(target, [subset2(), v11()], policy, new Set());
+    expect(done.ok).toBe(false);
+    if (!done.ok) expect(done.error[0]?.message).toMatch(/artwork font 8909904a.* is not registered/);
+    expect([target.shapeDefs.list(), target.artworkFonts.list()]).toEqual([[], []]);
+  });
+
+  it('rolls back geometry when a binding cannot be registered', () => {
+    const target = registries();
+    target.artworkFonts.register('sample:label', [], 'elsewhere');
+    expect(registerVersionedShapePackSubsets(target, [v11()], policy, new Set([SHA])).ok).toBe(false);
+    expect(target.shapeDefs.list()).toEqual([]);
+    expect(target.artworkFonts.list().map(([id]) => id)).toEqual(['sample:label']);
+  });
+
+  it('keeps the 1.0-only path refusing 1.1 subsets', () => {
+    const target = registry();
+    expect(registerShapePackSubsets(target, [v11()], policy).ok).toBe(false);
+    expect(target.list()).toEqual([]);
+  });
+});
+
+/** The 1.0 fixture under another namespace, to mix versions in one registration. */
+function subset2() {
+  const pack = subset();
+  return { ...pack, id: 'legacy', definitions: pack.definitions.map((d: ShapeDef) => ({ ...d, id: d.id.replace('sample:', 'legacy:') })) };
+}

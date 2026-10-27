@@ -1,5 +1,5 @@
 // Validated imported paint (FR-LIB-004). React owns every node; no markup parser is used.
-import { parseSvgArtwork, type ShapeDef } from '@fluxion/core';
+import { type ArtworkFontBinding, aliasSvgArtworkFonts, parseSvgArtwork, type ShapeDef } from '@fluxion/core';
 import type { SvgArtwork, SvgArtworkNode } from '@fluxion/schema';
 import { checkedSvgAttribute, isCssColor } from '@fluxion/schema';
 import { colorResolver, type Theme, tokenPath } from '@fluxion/theme';
@@ -91,16 +91,27 @@ export function ArtworkView(props: {
   );
 }
 
-/** Undefined uses legacy paint; false marks invalid manually registered artwork. */
+/** Parsed artwork, drawn in the private aliases of `fonts` when the definition is bound (M18.97). */
+function checkedArtwork(def: ShapeDef | undefined, fonts: readonly ArtworkFontBinding[] | undefined): SvgArtwork | false | undefined {
+  if (def?.artwork === undefined) return undefined;
+  const parsed = parseSvgArtwork(def.artwork);
+  if (!parsed.ok) return false;
+  if (fonts === undefined) return parsed.value;
+  // a bound definition never falls back: a text face without its exact registered bytes is invalid paint
+  const aliased = aliasSvgArtworkFonts(parsed.value.root, fonts);
+  return aliased.ok ? { ...parsed.value, root: aliased.root } : false;
+}
+
+/** Undefined uses legacy paint; false marks invalid manually registered artwork, or bound text without its exact face. */
 export function useArtwork(
   def: ShapeDef | undefined,
   size: { readonly w: number; readonly h: number },
-  prefix: string,
-  theme: Theme,
+  paint: { readonly prefix: string; readonly theme: Theme; readonly fonts?: readonly ArtworkFontBinding[] | undefined },
 ): ReactNode | false | undefined {
+  const { prefix, theme, fonts } = paint;
   const { w, h } = size;
-  const parsed = useMemo(() => (def?.artwork === undefined ? undefined : parseSvgArtwork(def.artwork)), [def]);
-  if (parsed === undefined) return undefined;
-  if (!parsed.ok || !artworkFits(parsed.value, w, h)) return false;
-  return <ArtworkView artwork={parsed.value} prefix={prefix} w={w} h={h} theme={theme} />;
+  const artwork = useMemo(() => checkedArtwork(def, fonts), [def, fonts]);
+  if (artwork === undefined) return undefined;
+  if (artwork === false || !artworkFits(artwork, w, h)) return false;
+  return <ArtworkView artwork={artwork} prefix={prefix} w={w} h={h} theme={theme} />;
 }

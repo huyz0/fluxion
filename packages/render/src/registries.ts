@@ -2,7 +2,16 @@
 // host's core `shapeDefs` registry (ADR-0016, ADR-0017), its `routers` (FR-RTE-001) and `markers`
 // (FR-CON-003), looked up here
 // and never switched on; built-ins register through the same API as plugins.
-import { createRegistry, type MarkerDef, type ReadSignal, type ReadView, type Registry, type ShapeDef, type Store } from '@fluxion/core';
+import {
+  type ArtworkFontBinding,
+  createRegistry,
+  type MarkerDef,
+  type ReadSignal,
+  type ReadView,
+  type Registry,
+  type ShapeDef,
+  type Store,
+} from '@fluxion/core';
 import type { GlobalRoute, GlobalRouteInput, RouteContext, Router } from '@fluxion/routing';
 import type { ElementRecord } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
@@ -75,6 +84,12 @@ export type RenderRegistries = {
    * one-file player): the pass would block it. Without either, the cheap routes are drawn.
    */
   readonly globalPass?: ReadSignal<GlobalPass | undefined>;
+  /**
+   * Private-alias bindings of saved artwork text by definition id (ADR-0192, M18.97), written by
+   * `registerVersionedShapePackSubsets` once the host has loaded the exact bytes. A bound
+   * definition's text is drawn in its aliases only; without this registry, artwork draws as saved.
+   */
+  readonly artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>;
 };
 
 /**
@@ -88,7 +103,7 @@ export type GlobalPass = (input: GlobalRouteInput) => readonly GlobalRoute[];
 /**
  * Render registries with no element views, reading shape definitions from `shapeDefs`, routers from
  * `routers` and markers from `markers` (a host's core registries, holding its packs; default: fresh
- * empty ones).
+ * empty ones), and artwork font bindings from `artworkFonts` when the host registers saved 1.1 packs.
  *
  * @public
  */
@@ -96,6 +111,7 @@ export function createRenderRegistries(
   shapeDefs: Registry<string, ShapeDef> = createRegistry<string, ShapeDef>('shapeDefs'),
   routers: Registry<string, Router> = createRegistry<string, Router>('routers'),
   markers: Registry<string, MarkerDef> = createRegistry<string, MarkerDef>('markers'),
+  artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>,
 ): RenderRegistries {
-  return { elementViews: createRegistry<string, ElementView>('elementViews'), shapeDefs, routers, markers };
+  return { elementViews: createRegistry<string, ElementView>('elementViews'), shapeDefs, routers, markers, ...(artworkFonts ? { artworkFonts } : {}) };
 }

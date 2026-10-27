@@ -1,7 +1,7 @@
 // The built-in views (ADR-0015 §5): the shape, connector, image, text, group and frame views, the built-in routers
 // (FR-RTE-001) and markers (FR-CON-003), registered through the same API as plugins (source `core`). Shape definitions come from
 // packs the host registers (ADR-0016, ADR-0017).
-import type { MarkerDef, Registry, ShapeDef } from '@fluxion/core';
+import type { ArtworkFontBinding, MarkerDef, Registry, ShapeDef } from '@fluxion/core';
 import { type Router, registerBuiltinRouters } from '@fluxion/routing';
 import { connectorText, imageAlt } from './a11y.js';
 import { ConnectorView } from './connector-view.js';
@@ -38,8 +38,9 @@ export function builtinRegistries(
   shapeDefs?: Registry<string, ShapeDef>,
   routers?: Registry<string, Router>,
   markers?: Registry<string, MarkerDef>,
+  artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>,
 ): RenderRegistries {
-  const registries = createRenderRegistries(shapeDefs, routers, markers);
+  const registries = createRenderRegistries(shapeDefs, routers, markers, artworkFonts);
   registerBuiltinViews(registries);
   registerBuiltinRouters(registries.routers);
   registerBuiltinMarkers(registries.markers);

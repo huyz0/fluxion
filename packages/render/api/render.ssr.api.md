@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ArtworkFontBinding } from '@fluxion/core';
 import { ComponentType } from 'react';
 import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';

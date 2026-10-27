@@ -1,11 +1,20 @@
 // What opening a `.flux` for presenting comes to, for the one-file player (`start`) and the element (`defineFluxionPlayer`): the lean reader, a read-only store,
 // the bundled pack, the images of the file as blob URLs and its fonts. One path, so the two present the same file the same way.
 
-import { allowsShapePackContentLicense, type CoreRegistries, createCoreRegistries, createStore, type Registry, registerShapePackSubsets } from '@fluxion/core';
+import {
+  type ArtworkFontBinding,
+  allowsShapePackContentLicense,
+  type CoreRegistries,
+  createCoreRegistries,
+  createRegistry,
+  createStore,
+  type Registry,
+} from '@fluxion/core';
 import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
 import { basicPack } from '@fluxion/pack-basic';
 import { renderRegistriesFor } from '@fluxion/player';
 import type { OpenedFlux } from '@fluxion/player/element';
+import { registerSavedShapePacks } from '@fluxion/render';
 import type { AssetRecord, RecordId } from '@fluxion/schema';
 import { loadEmbeddedFonts } from './fonts.js';
 import type { RoutingWorker } from './routing-chunk-loader.js';
@@ -88,14 +97,21 @@ export async function openFlux(
     const registries = createCoreRegistries();
     const refused = registerBundled(registries);
     if (refused !== undefined) return fail(`The built-in shapes could not be registered: ${refused}`);
-    const embedded = registerShapePackSubsets(registries.shapeDefs, loaded.value.shapePacks, allowsShapePackContentLicense);
+    // saved packs' artwork text draws only in its exact retained fonts, under private aliases: missing bytes refuse the file (M18.97)
+    const artworkFonts = createRegistry<string, readonly ArtworkFontBinding[]>('artworkFonts');
+    const assets = loaded.value.assets;
+    const embedded = await registerSavedShapePacks({ shapeDefs: registries.shapeDefs, artworkFonts }, loaded.value.shapePacks, {
+      bytesOf: (sha) => assets.get(sha)?.bytes,
+      policy: allowsShapePackContentLicense,
+      sha256: (b) => hasher.sha256(b),
+    });
     if (!embedded.ok) return fail(`The saved shapes could not be registered: ${embedded.error.map((d) => d.message).join('; ')}`);
     made.push({ release: () => embedded.value.dispose() });
     const images = imageUrls(loaded.value);
     made.push(images);
     // the file's own fonts first: the first paint is in them, measured with their recorded metrics
     made.push(await loadEmbeddedFonts(loaded.value));
-    const render = renderRegistriesFor(registries);
+    const render = renderRegistriesFor(registries, artworkFonts);
     if (routing === undefined) settled(false);
     const routes = routing === undefined ? undefined : workerRoutes(store, render, routing);
     void routes?.done.then(settled);

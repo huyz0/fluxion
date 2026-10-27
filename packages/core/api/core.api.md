@@ -25,6 +25,18 @@ import { Vec2 } from '@fluxion/geometry';
 import { z } from 'zod';
 
 // @public
+export type AliasedSvgArtwork = {
+    readonly ok: true;
+    readonly root: SvgArtworkNode;
+} | {
+    readonly ok: false;
+    readonly error: string;
+};
+
+// @public
+export function aliasSvgArtworkFonts(root: SvgArtworkNode, bindings: readonly ArtworkFontBinding[]): AliasedSvgArtwork;
+
+// @public
 export function allowsShapePackContentLicense(expression: string): boolean;
 
 // @public
@@ -59,6 +71,18 @@ export type ArgsSchema<A> = {
 };
 
 // @public
+export function artworkFontAlias(sha256: string): string;
+
+// @public
+export type ArtworkFontBinding = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly sha256: string;
+    readonly alias: string;
+};
+
+// @public
 export const artworkFontLicenses: readonly string[];
 
 // @public
@@ -72,6 +96,24 @@ export type ArtworkFontProfile = {
 
 // @public
 export const artworkFontProfiles: Readonly<Record<"inter-latin-400-ascii", ArtworkFontProfile>>;
+
+// @public
+export type ArtworkFontRequirement = {
+    readonly sha256: string;
+    readonly size: number;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly alias: string;
+};
+
+// @public
+export function artworkFontRequirements(packs: readonly VersionedShapePackSubset[]): readonly ArtworkFontRequirement[];
+
+// @public
+export type ArtworkShapeRegistries = {
+    readonly shapeDefs: Registry<string, ShapeDef>;
+    readonly artworkFonts: Registry<string, readonly ArtworkFontBinding[]>;
+};
 
 // @public
 export function base62(bytes: Uint8Array): string;
@@ -441,6 +483,9 @@ export type IndexName = "byScreen" | "byParent" | "byType" | "bindingsByElement"
 export type IntegrityHook = (context: HookContext) => void;
 
 // @public
+export function isArtworkFontAlias(family: string): boolean;
+
+// @public
 export type LogEntry = {
     readonly level: LogLevel;
     readonly namespace: string;
@@ -622,6 +667,9 @@ export function registerCoreHooks(registry: Registry<string, IntegrityHook>): Di
 
 // @public
 export function registerShapePackSubsets(registry: Registry<string, ShapeDef>, inputs: readonly unknown[], policy: ShapePackLicensePolicy): Result<Disposable, readonly Diagnostic[]>;
+
+// @public
+export function registerVersionedShapePackSubsets(registries: ArtworkShapeRegistries, inputs: readonly unknown[], policy: ShapePackLicensePolicy, registered: ReadonlySet<string>): Result<Disposable, readonly Diagnostic[]>;
 
 // @public
 export interface Registry<K extends string, V> {

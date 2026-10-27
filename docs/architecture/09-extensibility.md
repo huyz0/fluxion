@@ -337,8 +337,27 @@ order with consumer-owned byte copies, and the font credits naming the definitio
 acquisitions share one verified read per resource; failures are evicted and retried on a later
 call. Cancellation (`signal.aborted`, sampled around every host await) and every mismatch
 return diagnostics and no value. `ARTWORK_ACQUISITION_LIMITS` bounds one acquisition to 8
-faces, 5 MiB per font and 8 MiB in total. No registration or document effect happens here
-(M18.97).
+faces, 5 MiB per font and 8 MiB in total. No registration or document effect happens here.
+
+### Artwork font registration (ADR-0192, M18.97)
+
+Exact artwork bytes are registered under the private family `artworkFontAlias(sha256)`
+(`fx-artwork-<sha256>`), derived from the byte identity alone, never under the source family:
+ordinary document text of the same family keeps its own face. Core is pure:
+`artworkFontRequirements(subsets)` lists each bound identity once, and
+`registerVersionedShapePackSubsets({ shapeDefs, artworkFonts }, subsets, policy, registered)`
+registers 1.0 and 1.1 subsets atomically, refusing everything when a bound identity is not in
+`registered`. Geometry stays canonical; per-definition `ArtworkFontBinding`s go to
+`artworkFonts`. Render's `registerArtworkFonts` checks every font (present, exact size and
+SHA-256) before creating any `FontFace`, requires each to load, copies bytes before its first
+await, and leaves nothing on failure or cancellation; one face per identity per font set is
+shared and leaves with its last owner. `registerSavedShapePacks` composes both. The
+`fx-artwork-` prefix is reserved (`isArtworkFontAlias`): hosts never register a document or theme
+font under it, so one file cannot shadow another file's artwork face on the same page.
+`RenderRegistries.artworkFonts` reaches the shape view, which draws bound text through
+`aliasSvgArtworkFonts` (alias named, the text's inline font declarations dropped) and draws a
+placeholder, never a fallback face, for text without its binding. The one-file player opens
+files this way before its first paint. The studio host is M18.115; the CLI is M18.116.
 
 ### Saved shape subset validation (ADR-0182)
 
