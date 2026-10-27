@@ -2820,3 +2820,10 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - M18.92 published2aa23c9d after focused37/live444000msPASS, staged120.4s/hooks118.5sPASS, freshreviewPASS0. M18.80ce9a CI36/36/GatesPASS, Windowsverify824s. Current2aaCI pending; GatesPASS.
 - cp8 cumulative review approves with0findings; independent18harness/23NodePASS. Exact2aa pinned stock gate31/71exit1; fullverify and productioncorpusPASS. Remaining features, mutation/perf, layout changeset and closeout retained. No-network remote-evidence failures are not passes or permission to retry denied reads.
 - ADR0192 and94–97 slices keep1.0files, exact profile/rights, atomic acquisition and offline used closure; M18.81 remains the integration acceptance. New completion-leg omission probe observedRED; real future suites remain absent/red, not fabricated acceptance. Plan review pending before implementation.
+
+## M18.98 — shared artwork-font normalization (2026-10-27)
+
+- Reviewed plan93 publishedc9c5e131 (staged124.0s/hooks120.5sPASS, freshplanPASS0); Gates40423181704PASS and CI40423181785 active. Previousce9a/2aa CI36/36PASS and GatesPASS.
+- Extract the existing pure normalization into core before new metadata behavior, preserving format internal entry by re-export. The import algorithm, ASCII/reference restrictions and duplicate exact-hash refusal stay unchanged; aliases across definitions remain possible.
+- New shared-entry3tests observedRED before extraction; focused47/47PASS includes existing importer/batch/canonical paint request suites. Core API report/minor changeset and architecture docs accompany new public symbols. Type/build/stagedverification and independent review pending; M18.94metadata not implemented.
+- First staged352.8sFAIL only missing TypeDoc for the three inline return properties (harness744/745, API same cause); full test/coverage legPASS351.2s. Added return-property documentation; no normalization behavior change. Failure logs preserved; corrected verification pending.

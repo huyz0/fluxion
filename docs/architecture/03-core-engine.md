@@ -225,3 +225,5 @@ outline rendering. Portable storage of used definitions remains the separate M18
 `isSvgArtworkData` provides the schema package's bounded structural predicate without
 a schema runtime in the player. `tokenRefSchema` is shared by the closed declarative
 ShapeDef contract. Document record schemas retain their existing unknown-field policy.
+
+`normalizeSvgArtworkFonts` shares the existing import normalization with version-aware pack validation (ADR-0192). `SvgArtworkFont` and `SvgArtworkFontOptions` describe exact faces and an optional default hash. It accepts already validated bounded artwork, preserves ASCII and text-reference refusals, and performs no acquisition or registration. Format keeps its internal importer entry as a re-export; canonical import behavior is unchanged.

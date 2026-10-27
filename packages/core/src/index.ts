@@ -71,6 +71,7 @@ export type { Diff, PutChange, Tx, TxFailure, TxMeta, TxOptions, TxOrigin } from
 export const VERSION: string = '0.0.0';
 export type { SvgArtwork, SvgArtworkNode } from '@fluxion/schema';
 export { parseSvgArtwork } from './shape/artwork.js';
+export { normalizeSvgArtworkFonts, type SvgArtworkFont, type SvgArtworkFontOptions } from './shape/artwork-fonts.js';
 export { allowsShapePackContentLicense, shapePackContentLicenses } from './shape/content-license-policy.js';
 export { registerShapePackSubsets } from './shape/pack-registration.js';
 export { shapePackCategorySchema, shapePackIndexSchema, shapePackSubsetSchema } from './shape/pack-schema.js';

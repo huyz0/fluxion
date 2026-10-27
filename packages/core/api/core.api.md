@@ -446,6 +446,13 @@ export function namespaceEnabled(spec: string, namespace: string): boolean;
 export function nextVisibleScreen(view: ReadView, from: RecordId, step?: 1 | -1): RecordId | undefined;
 
 // @public
+export function normalizeSvgArtworkFonts(root: SvgArtworkNode, options: SvgArtworkFontOptions): {
+    root: SvgArtworkNode;
+    fonts: readonly SvgArtworkFont[];
+    error?: string;
+};
+
+// @public
 export type NumberParam = {
     readonly type: "number" | "int";
     readonly min?: number;
@@ -779,6 +786,20 @@ export type StyledRun = {
 };
 
 export { SvgArtwork }
+
+// @public
+export type SvgArtworkFont = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly sha256: string;
+};
+
+// @public
+export type SvgArtworkFontOptions = {
+    readonly fonts?: readonly SvgArtworkFont[];
+    readonly defaultFont?: string;
+};
 
 export { SvgArtworkNode }
 
