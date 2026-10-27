@@ -878,3 +878,6 @@ M18.24	ae1941d784165a3ecac9ee144347b4b245240fad02ce58fbfb5bb808c4c3e3f5	r1	pass	
 M18.43	5a25b7560d948f0b1ddc47760795e118e6feae2edb73e915b4a1dbba9bf7d8d7	r1	pass	claude:independent-subagent:cp10-commit-review	1 findings
 M18.43	72569f95334af7d643f2b0d0c88c6a357cc55560723b1bf28246978f3ce6ea12	r2	pass	claude:independent-subagent:cp10-commit-review	0 findings
 M18.100	f65a70db9203584c8ac27ce3410528c00aa6becb5895bea4e8825e4347d4738a	r1	pass	claude:general-purpose-subagent	0 findings
+M18.36	f980691ccda7dce237acb228f976e4f3ecddf62c891204d2ed08218e9eb656a0	r1	pass	claude:subagent	1 findings
+M18.36	b4ddb0a64461d3f3033399dc67780af8d68fdd2bc325774568647251c65172af	r2	pass	claude:subagent	0 findings
+M18.36	273ff3d7237959ae85323e9e9ce52f64f1d3d8a960d6da3fd85d0ecef3b67516	r3	pass	claude:subagent	0 findings

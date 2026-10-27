@@ -35,6 +35,7 @@ import type { Registry } from './registry.js';
 import { SCREEN_COMMANDS } from './screens/screen-commands.js';
 import { screenIndexAfter } from './screens/screen-order.js';
 import { SECTION_COMMANDS } from './screens/section-commands.js';
+import { REPLACE_SHAPE_COMMANDS } from './shape/replace.js';
 import { THEME_COMMANDS } from './theme-commands.js';
 import type { TxFailure } from './transaction.js';
 
@@ -95,6 +96,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...SCREEN_COMMANDS,
   ...SECTION_COMMANDS,
   ...THEME_COMMANDS,
+  ...REPLACE_SHAPE_COMMANDS,
   CREATE_ELEMENT,
   UPDATE_ELEMENT,
   CREATE_ASSET,

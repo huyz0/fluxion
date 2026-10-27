@@ -2895,3 +2895,12 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - cp10 F1: pack suites compared goldens with toMatchFileSnapshot, which writes a missing golden outside CI. Every pack test now compares pack/ and __golden__/ exactly with the checked-in files (missing, orphan or changed fails) and writes only in an explicit VITE_FLUXION_WRITE_PACK=1 -u run.
 - Harness probe tests/harness/pack-goldens.test.mjs runs the real basic suite in a linked sandbox: baseline 5/5, a deleted golden goes red and is not written back, an orphan golden goes red. Local manual probe on the checkout matched.
 - All five pack suites 59/59 PASS; READMEs and 09 document the write command.
+
+
+## M18.36 — replace shape command (2026-10-27)
+
+- Core `shape.replace` swaps `defId` in one transaction, keeping box, text and style; old params and instance anchors are dropped.
+- Named bindings keep their name when the new definition (or defaults) has it, else take the nearest new anchor by box fraction; perimeter anchors without a fixed point float; side/point/auto/floating refs are unchanged.
+- Caller passes both definitions' anchors (commands see only the store); `DEFAULT_ANCHOR_DEFS` moved to core and routing's `DEFAULT_ANCHORS` now aliases it.
+- New commands/replace-shape.test.ts (the m18 gate leg path) 6/6 PASS (rect→ellipse keeps all connectors, exact one-step undo/redo, refusals, property); registry/bootstrap determinism and undo-bench command lists updated (undo-5000 bench 37/37 PASS); routing/editor/mcp/sdk/cli node suites PASS.
+

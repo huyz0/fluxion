@@ -5,6 +5,7 @@
 ```ts
 
 import { AnchorDef } from '@fluxion/schema';
+import { AnchorRef } from '@fluxion/schema';
 import { AnyRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { Diagnostic } from '@fluxion/schema';
@@ -168,6 +169,9 @@ export function createRegistry<K extends string, V>(name: string, options?: Regi
 
 // @public
 export function createStore(file: DocumentFile, options?: StoreOptions): Store;
+
+// @public
+export const DEFAULT_ANCHOR_DEFS: readonly AnchorDef[];
 
 // @public
 export const DEFAULT_OUTLINE_BUDGET = 1e5;
@@ -424,6 +428,9 @@ export type LoggerOptions = {
 
 // @public
 export type LogLevel = "debug" | "info" | "warn" | "error";
+
+// @public
+export function mapAnchor(ref: AnchorRef, from: readonly AnchorDef[], to: readonly AnchorDef[]): AnchorRef;
 
 // @public
 export const MARKER_SIZE = 5;

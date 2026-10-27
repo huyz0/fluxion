@@ -41,6 +41,7 @@ export { nextVisibleScreen } from './screens/screen-order.js';
 export { type HandleSubject, handleValue, type ParamHandle, shapeHandles } from './shape/handles.js';
 export { hitTestShape, outlineDistance, projectToOutline } from './shape/hit.js';
 export { DEFAULT_OUTLINE_BUDGET, type EvaluatedOutline, evaluateOutline } from './shape/outline.js';
+export { DEFAULT_ANCHOR_DEFS, mapAnchor } from './shape/replace.js';
 export {
   type EnumParam,
   type HandleDef,

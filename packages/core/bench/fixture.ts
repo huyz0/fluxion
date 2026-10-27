@@ -217,6 +217,8 @@ function benchArgs(
     'element.distribute': { ids: [1410, 1411, 1413, 1414, 1417].map((i) => shapes[i]), axis: 'horizontal', by: 'gaps' },
     // a shape of screen 5 to the front
     'element.zOrder': { ids: [shapes[1420]], to: 'front' },
+    // a shape of screen 5 swapped to another definition, its bindings remapped
+    'shape.replace': { id: shapes[1430], defId: 'basic:ellipse' },
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
     ...themeArgs(screens[5] as RecordId),
@@ -270,6 +272,7 @@ export const COMMANDS = [
   'element.align',
   'element.distribute',
   'element.zOrder',
+  'shape.replace',
   'document.update',
   'document.setTheme',
   'screen.setThemeOverride',

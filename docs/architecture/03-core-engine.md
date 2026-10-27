@@ -93,6 +93,7 @@ type CommandDef<A> = {
   section.create / rename / setCollapsed / reorder / delete screen.setSection and screen.move (a drop's place and section in one step) (sections are records ordered by index; deleting one lets its screens go in the same transaction; M8.15),
   screen.setNotes (the speaker notes, a rich-text document; absent removes the field; M8.16),
   screen.setLayout (the screen's layout spec, as the inspector's options form writes it; absent removes it; M17.17),
+  shape.replace (swaps a shape's definition id in one transaction keeping box, text and style; the caller passes the old and new definitions' anchors, a named binding keeps its name or moves to the nearest new anchor (`mapAnchor`, defaults `DEFAULT_ANCHOR_DEFS`), old params and instance anchors are dropped; FR-LIB-011, M18.36),
   document.update, asset.create (an asset record, beside the element that uses it: a pasted image, M7.23).
 - **All** mutations from UI, keyboard, command palette, AI patches, MCP and plugins go through
   commands: one audit path, one undo semantics, one AI surface. The architecture test allows

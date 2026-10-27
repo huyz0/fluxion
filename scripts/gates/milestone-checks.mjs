@@ -436,6 +436,7 @@ export const BENCH_COMMANDS = [
   'element.align',
   'element.distribute',
   'element.zOrder',
+  'shape.replace',
   'document.update',
   'document.setTheme',
   'screen.setThemeOverride',

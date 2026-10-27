@@ -6,7 +6,7 @@
 // center or perimeter. Side and point anchors are fractions of the box too; `auto`
 // floats until the anchor choice of FR-ANC-004 (M16). Everything is computed in the element's own
 // box and mapped through its placement, so an anchor follows every move, resize, rotation and flip.
-import { evaluateOutline, projectToOutline, type ShapeDef } from '@fluxion/core';
+import { DEFAULT_ANCHOR_DEFS, evaluateOutline, projectToOutline, type ShapeDef } from '@fluxion/core';
 import {
   apply,
   createPathSampler,
@@ -60,13 +60,7 @@ export type ResolvedAnchor = {
  *
  * @public
  */
-export const DEFAULT_ANCHORS: readonly AnchorDef[] = [
-  { name: 'n', x: 0.5, y: 0, dir: { x: 0, y: -1 } },
-  { name: 'e', x: 1, y: 0.5, dir: { x: 1, y: 0 } },
-  { name: 's', x: 0.5, y: 1, dir: { x: 0, y: 1 } },
-  { name: 'w', x: 0, y: 0.5, dir: { x: -1, y: 0 } },
-  { name: 'center', x: 0.5, y: 0.5 },
-];
+export const DEFAULT_ANCHORS: readonly AnchorDef[] = DEFAULT_ANCHOR_DEFS;
 
 /** Outward directions of the box sides. */
 const SIDES = {

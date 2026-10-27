@@ -28,6 +28,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'document.setTheme',
       'screen.setThemeOverride',
       'document.updateMeta',
+      'shape.replace',
       'element.create',
       'element.update',
       'asset.create',
@@ -90,6 +91,7 @@ describe('built-in record commands (FR-EXT-001)', () => {
       'section.rename',
       'section.reorder',
       'section.setCollapsed',
+      'shape.replace',
     ]);
     expect(CORE_COMMANDS.every((c) => commands.source(c.id) === 'core')).toBe(true);
     // a plugin holding a built-in id is reported, not silently skipped (M3.14 review F1)
