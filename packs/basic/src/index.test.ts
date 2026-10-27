@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { basicPack, rect, VERSION } from './index.js';
 
 it('NFR-MNT-004 smoke: @fluxion/pack-basic exports its version', () => {
-  expect(VERSION).toBe('0.0.0');
+  // the package version, which `changeset version` bumps and scripts/packs/sync-versions.mjs copies here (M18.110)
+  const packageJson = import.meta.glob('../package.json', { query: '?raw', import: 'default', eager: true })['../package.json'] ?? '{}';
+  expect(VERSION).toBe(JSON.parse(packageJson).version);
 });
 
 describe('basic pack (FR-SHP-002)', () => {

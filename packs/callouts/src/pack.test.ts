@@ -1,7 +1,8 @@
 // The callouts pack's checked-in distribution (FR-LIB-007, ADR-0048, ADR-0050, ADR-0194): pack/, __golden__/ and pack-versions.json
 // must equal what the SDK suite builds from the exported `calloutsSource`, load through the host loader, carry no vendor brand, draw
-// inside each box, and agree with the package version. Runs only compare and never write. To regenerate the files, run
-// `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/callouts`, then a plain run to check them.
+// inside each box, and agree with the package version and CHANGELOG.md. Runs only compare and never write. To regenerate the files,
+// run `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/callouts` (both are needed), then a plain run to check them; after
+// `changeset version`, `node scripts/packs/sync-versions.mjs` does both for every pack.
 import { type CheckedInShapePack, checkShapePack, shapePackExpectation } from '@fluxion/sdk/testing';
 import { describe, expect, it } from 'vitest';
 import { calloutsSource } from './index.js';
@@ -21,11 +22,14 @@ const checkedIn: CheckedInShapePack = {
   goldens: below(import.meta.glob('../__golden__/**/*', { query: '?raw', import: 'default', eager: true }), '../__golden__/'),
   packageJson: import.meta.glob('../package.json', { query: '?raw', import: 'default', eager: true })['../package.json'] ?? '',
   versions: import.meta.glob('../pack-versions.json', { query: '?raw', import: 'default', eager: true })['../pack-versions.json'],
+  changelog: import.meta.glob('../CHANGELOG.md', { query: '?raw', import: 'default', eager: true })['../CHANGELOG.md'],
 };
 
 describe('the callouts declarative pack (FR-LIB-007)', () => {
   it('FR-LIB-003, FR-LIB-007, NFR-LIC-003: the checked-in files are the build of the exported source, with no problem', async () => {
     if (WRITE) {
+      // a write run needs the variable and `-u` together: the variable alone (say, leaked into a gate) fails, never writes
+      expect(expect.getState().snapshotState.snapshotUpdateState, 'VITE_FLUXION_WRITE_PACK=1 needs `vitest run -u`').toBe('all');
       const expected = shapePackExpectation(calloutsSource, checkedIn.versions);
       for (const [path, text] of Object.entries(expected.pack)) await expect(text).toMatchFileSnapshot(`../pack/${path}`);
       for (const [path, text] of Object.entries(expected.goldens)) await expect(text).toMatchFileSnapshot(`../__golden__/${path}`);

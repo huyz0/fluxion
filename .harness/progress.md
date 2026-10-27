@@ -3004,3 +3004,6 @@ Adds @fluxion/pack-uml: 20 UML-lite definitions (structure, use-case, sequence, 
 
 - M18.34 landed as f0682fe via land.mjs (r3 pass, re-bound r4 to content id; minor: a no-op change still sets an unreadable value aside).
 - LibraryPanel turns its Replace toggle off when `canReplace` goes false (cp11 F3). Browser test extended: toggle on, deselect, reselect, toggle is off and a plain click inserts; red without the effect (1 failed), green with it.
+## M18.110 — Pack versions survive changesets (2026-10-27)
+
+The ledger never records the unreleased 0.0.0 and keeps every CHANGELOG-released version; pnpm run version-packages (changeset version + scripts/packs/sync-versions.mjs, wired into the release workflow) syncs each pack's VERSION and rebuilds pack/, goldens and ledger; a write run needs VITE_FLUXION_WRITE_PACK=1 together with vitest -u, so a leaked variable fails without writing (cp11 F5, F7).

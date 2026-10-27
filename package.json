@@ -26,6 +26,7 @@
     "verify": "node scripts/gates/precommit.mjs --all",
     "verify:fast": "node scripts/gates/precommit.mjs --quick",
     "release": "turbo run build --filter=./packages/* --filter=./packs/* && changeset publish",
+    "version-packages": "changeset version && node scripts/packs/sync-versions.mjs",
     "eval": "node scripts/eval/run.mjs",
     "mutate": "node scripts/harness/mutate.mjs",
     "i18n:extract": "node scripts/i18n/extract.mjs",

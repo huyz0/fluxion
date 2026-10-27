@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildShapePackFiles, type DeclarativeShapePack, namedShapeDefs, type ShapeDef } from '../index.js';
 import { drawnPoints } from './drawn-points.js';
 import { geometryProblems } from './geometry-check.js';
-import { type CheckedInShapePack, checkShapePack, checkShapePackFiles, renderShapeGolden, shapePackExpectation } from './index.js';
+import { type CheckedInShapePack, checkShapePack, checkShapePackFiles, renderShapeGolden, shapePackExpectation, UNRELEASED_PACK_VERSION } from './index.js';
 
 const box: ShapeDef = {
   id: 'sample:box',
@@ -213,5 +213,22 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     });
     expect(failing).toHaveLength(1);
     expect(failing[0]).toMatch(/^sample:box at k=-1: outline does not evaluate: /);
+  });
+
+  it('FR-LIB-007: the unreleased version is never recorded, and a released version missing from the ledger fails (M18.110)', async () => {
+    const unreleased = { ...draft, version: UNRELEASED_PACK_VERSION };
+    const files = checkedIn(unreleased, '{\n  "0.0.0": { "boxes": "x" }\n}\n');
+    expect(files.versions).toBe('{}\n');
+    // geometry may change freely before the first release
+    const wider = { ...unreleased, definitions: [{ name: 'Box', def: { ...box, defaultSize: { w: 130, h: 60 } } }] };
+    expect((await checkShapePack(wider, { ...checkedIn(wider), versions: files.versions })).versions).toEqual([]);
+    // every version CHANGELOG.md names as released keeps its ledger entry; removing one fails
+    const released = checkedIn(draft);
+    const changelog = '# @fluxion/pack-sample\n\n## 1.0.0\n\n### Minor Changes\n\n- first\n\n## 0.9.0-beta.1\n\n- earlier\n';
+    const withOld = `${JSON.stringify({ '0.9.0-beta.1': { boxes: 'a' }, ...JSON.parse(released.versions ?? '{}') }, null, 2)}\n`;
+    expect(await checkShapePack(draft, { ...checkedIn(draft, withOld), changelog })).toEqual(clean);
+    expect((await checkShapePack(draft, { ...released, changelog })).versions).toEqual([
+      'pack-versions.json has no entry for the released version 0.9.0-beta.1: restore it',
+    ]);
   });
 });

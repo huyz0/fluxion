@@ -44,7 +44,15 @@ unchanged pack version (F8).
   hashes. The current version is added when absent and never replaced, so changed hashes at
   a recorded version fail with "release the change as a new pack version". The package
   version must equal the source version. A malformed ledger is reported and never rebuilt.
-- A pack test reads `pack/`, `__golden__/`, `package.json` and the ledger and requires every
+- Pre-release and releases (M18.110, cp11 F5/F7): `0.0.0` (`UNRELEASED_PACK_VERSION`) is never
+  recorded, so geometry changes freely before the first release. Every `## <version>` heading of the
+  package's `CHANGELOG.md` is a released version whose ledger entry must stay. `pnpm run
+  version-packages` (`changeset version` then `scripts/packs/sync-versions.mjs`, the release
+  workflow's version step) copies each bumped package version into the pack's `VERSION` and rebuilds
+  `pack/`, goldens and ledger.
+- A write run needs `VITE_FLUXION_WRITE_PACK=1` and `vitest -u` together; the variable alone fails
+  without writing, so a leaked variable cannot make a gate write or pass a missing golden.
+- A pack test reads `pack/`, `__golden__/`, `package.json`, the ledger and `CHANGELOG.md` and requires every
   problem list to be empty. Only `VITE_FLUXION_WRITE_PACK=1 vitest -u` writes (M18.100).
 
 ### Consequences

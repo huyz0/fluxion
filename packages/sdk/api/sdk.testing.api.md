@@ -17,6 +17,7 @@ export type CheckedInShapePack = {
     readonly goldens: Readonly<Record<string, string>>;
     readonly packageJson: string;
     readonly versions: string | undefined;
+    readonly changelog?: string | undefined;
 };
 
 // @public
@@ -52,5 +53,8 @@ export type ShapePackProblems = {
     readonly bounds: readonly string[];
     readonly versions: readonly string[];
 };
+
+// @public
+export const UNRELEASED_PACK_VERSION = "0.0.0";
 
 ```

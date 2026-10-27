@@ -277,7 +277,9 @@ and `checkShapePack` reports every problem of the checked-in `pack/`, `__golden_
 `pack-versions.json`: changed, missing or extra files, loader diagnostics, vendor brands,
 geometry leaving the box at any number param's bounds or enum value (outline, handles, text
 regions, anchors), and versions. The ledger maps each released version to its category
-hashes; changing geometry at a recorded version fails until the package version is bumped.
+hashes; changing geometry at a recorded version fails until the package version is bumped,
+and a version `CHANGELOG.md` names must keep its entry. `0.0.0` is never recorded. After
+`changeset version`, `pnpm run version-packages` syncs each pack's `VERSION` and rebuilds its files.
 Ordinary runs only compare (M18.100); `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/<pack>`
 rewrites the files for review.
 

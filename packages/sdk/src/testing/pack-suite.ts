@@ -22,6 +22,8 @@ export type CheckedInShapePack = {
   readonly packageJson: string;
   /** `pack-versions.json`, absent before the first build. */
   readonly versions: string | undefined;
+  /** `CHANGELOG.md`, absent before the first release: its `## <version>` headings are the released versions. */
+  readonly changelog?: string | undefined;
 };
 
 /**
@@ -29,6 +31,8 @@ export type CheckedInShapePack = {
  * normalized SVG per definition, named by its local id) and `pack-versions.json`, the ledger of each
  * released version's category hashes. The ledger keeps every recorded version; the current version is
  * added when absent and never replaced, so changed geometry at a recorded version shows up as a problem.
+ * The pre-release rule: {@link UNRELEASED_PACK_VERSION} is never recorded, so geometry may change freely
+ * until the first `changeset version` gives the pack a real version.
  *
  * @public
  */
@@ -40,6 +44,17 @@ export type ShapePackExpectation = {
   /** Expected ledger text. */
   readonly versions: string;
 };
+
+/**
+ * The version a pack has before its first release; the ledger never records it.
+ *
+ * @public
+ */
+export const UNRELEASED_PACK_VERSION = '0.0.0';
+
+/** The versions a changesets `CHANGELOG.md` names as released: its `## <version>` headings. */
+const releasedVersions = (changelog: string | undefined): string[] =>
+  [...(changelog ?? '').matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\s*$/gm)].map((m) => m[1] as string);
 
 /**
  * Every problem of a checked-in pack, by check; a passing pack has every list empty.
@@ -101,7 +116,11 @@ export function shapePackExpectation(pack: DeclarativeShapePack, versions: strin
   const files = buildShapePackFiles(pack);
   const ledger = parseLedger(versions);
   if (ledger === undefined) throw new Error('pack-versions.json is not a version ledger: repair it by hand, keeping every recorded version');
-  const next = Object.hasOwn(ledger, pack.version) ? ledger : { ...ledger, [pack.version]: categoryHashes(files['index.json'] ?? '{}') };
+  const { [UNRELEASED_PACK_VERSION]: _unreleased, ...recorded } = ledger;
+  const next =
+    pack.version === UNRELEASED_PACK_VERSION || Object.hasOwn(recorded, pack.version)
+      ? recorded
+      : { ...recorded, [pack.version]: categoryHashes(files['index.json'] ?? '{}') };
   return {
     pack: files,
     goldens: Object.fromEntries(pack.definitions.map(({ def }) => [`${localName(def)}.svg`, renderShapeGolden(def)])),
@@ -139,10 +158,13 @@ function versionProblems(pack: DeclarativeShapePack, files: ShapePackExpectation
     packageVersion = undefined;
   }
   if (packageVersion !== pack.version) out.push(`pack version ${pack.version} differs from package version ${String(packageVersion)}`);
-  const recorded = parseLedger(checkedIn.versions)?.[pack.version];
+  const ledger = parseLedger(checkedIn.versions) ?? {};
+  const recorded = pack.version === UNRELEASED_PACK_VERSION ? undefined : ledger[pack.version];
   const current = categoryHashes(files.pack['index.json'] ?? '{}');
   if (recorded !== undefined && JSON.stringify(recorded) !== JSON.stringify(current))
     out.push(`category hashes changed at the recorded version ${pack.version}: release the change as a new pack version`);
+  for (const released of releasedVersions(checkedIn.changelog))
+    if (!Object.hasOwn(ledger, released)) out.push(`pack-versions.json has no entry for the released version ${released}: restore it`);
   return out;
 }
 
