@@ -273,8 +273,9 @@ validation, portable credits and the license gate/player UI before these are sup
 (`buildShapePackFiles`), loads them as a host would (`checkShapePackFiles`) and draws each
 definition's normalized SVG golden (`renderShapeGolden`). Each first-party shape pack keeps
 its distribution in `pack/` and goldens in `__golden__/`; `src/pack.test.ts` requires both
-to match its exported definitions. `vitest -u` rewrites them for review; a second run checks
-the rewritten files.
+to match its exported definitions. Ordinary runs only compare: a missing, extra or
+changed file fails and nothing is written (M18.100); `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/<pack>`
+rewrites them for review.
 
 ## Declarative shape-pack validation (ADR-0178)
 

@@ -2889,3 +2889,9 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - Fresh independent checkpoint: changes requested, 4 major and 5 minor.
 - F1 pack goldens pass when missing (snapshot write) → M18.100. F3 imported Iconify icons cannot save portably or carry credits → M18.101.
 - F2 M18.95 digest line lands with M18.96 by design; M18.99 now also gates Commit cells and lands before more parallel commits. F4 → M18.102 (M18.22/23 had already landed), F5 into M18.81, F6 argued (M18.95 F1), F7 cells filled. F8 folded into M18.102; F9 (geometry only checked at default parameters) → M18.103, which pack rows M18.25–31 now wait on.
+
+## M18.100 — pack golden legs fail closed (2026-10-27)
+
+- cp10 F1: pack suites compared goldens with toMatchFileSnapshot, which writes a missing golden outside CI. Every pack test now compares pack/ and __golden__/ exactly with the checked-in files (missing, orphan or changed fails) and writes only in an explicit VITE_FLUXION_WRITE_PACK=1 -u run.
+- Harness probe tests/harness/pack-goldens.test.mjs runs the real basic suite in a linked sandbox: baseline 5/5, a deleted golden goes red and is not written back, an orphan golden goes red. Local manual probe on the checkout matched.
+- All five pack suites 59/59 PASS; READMEs and 09 document the write command.

@@ -15,7 +15,7 @@ inside its box, so selection and hit bounds cover the whole outline.
 | `label` | `tag`, `pin`, `quote` |
 
 `pack/` holds `index.json` and one hashed file per category; `__golden__/` holds one normalized SVG per definition.
-`src/pack.test.ts` checks both against the exported definitions with the SDK's shared suite (ADR-0193): `vitest -u` rewrites
-them, and a second run checks the rewritten files.
+`src/pack.test.ts` checks both against the exported definitions with the SDK's shared suite (ADR-0193): ordinary runs only compare
+(a missing, extra or changed file fails), and `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/callouts` rewrites them.
 
 Architecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).

@@ -1,6 +1,7 @@
 // The basic pack as a declarative distribution (FR-LIB-007, ADR-0048, ADR-0050): pack/ holds the canonical build of the
 // definitions this package exports; every definition loads from those files through the host loader and has a visual golden.
-// `vitest -u` rewrites pack/ and __golden__/ from the definitions (ADR-0193); a second run then checks the rewritten files.
+// Runs only compare: a missing, extra or changed file in pack/ or __golden__/ fails, and nothing is written. To regenerate both from
+// the definitions, run `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/basic` (ADR-0193), then a plain run to check them.
 import { buildShapePackFiles, checkShapePackFiles, renderShapeGolden, type ShapePackDraft } from '@fluxion/sdk/testing';
 import { describe, expect, it } from 'vitest';
 import { basicPack } from './index.js';
@@ -83,21 +84,30 @@ function cubicMiddle(at: readonly [number, number], c: readonly number[]): reado
   return [(at[0] + 3 * x1 + 3 * x2 + x) / 8, (at[1] + 3 * y1 + 3 * y2 + y) / 8];
 }
 
-const disk = Object.fromEntries(
-  Object.entries(import.meta.glob('../pack/**/*.json', { query: '?raw', import: 'default', eager: true })).map(([path, text]) => [
-    path.replace('../pack/', ''),
-    text,
-  ]),
-);
+/** Only an explicit write run (see the top) may rewrite pack/ and __golden__/; every other run, a gate's included, compares. */
+const WRITE = (import.meta as { readonly env?: Readonly<Record<string, string | undefined>> }).env?.['VITE_FLUXION_WRITE_PACK'] === '1';
+/** Files under `dir` by their path below it, read as checked in. */
+const checkedIn = (raw: Record<string, string>, dir: string) => Object.fromEntries(Object.entries(raw).map(([path, text]) => [path.replace(dir, ''), text]));
+const disk = checkedIn(import.meta.glob('../pack/**/*.json', { query: '?raw', import: 'default', eager: true }), '../pack/');
+const goldens = checkedIn(import.meta.glob('../__golden__/**/*', { query: '?raw', import: 'default', eager: true }), '../__golden__/');
 const files = buildShapePackFiles(DRAFT);
+
+/** Compare `expected` with the checked-in files of `dir` exactly; in a write run, rewrite them instead. */
+async function matchFiles(expected: Readonly<Record<string, string>>, actual: Readonly<Record<string, string>>, dir: string): Promise<void> {
+  if (WRITE) {
+    for (const [path, text] of Object.entries(expected)) await expect(text, path).toMatchFileSnapshot(`${dir}${path}`);
+    return;
+  }
+  expect(Object.keys(actual).sort(), `files in ${dir}`).toEqual(Object.keys(expected).sort());
+  for (const [path, text] of Object.entries(expected)) expect(actual[path], path).toBe(text);
+}
 
 describe('the basic declarative pack (FR-LIB-007)', () => {
   it('FR-LIB-003: every definition is named, and pack/ is the canonical build of the exported definitions', async () => {
     expect(basicPack.shapes.length).toBeGreaterThan(0);
     expect(DRAFT.definitions.filter((d) => d.name === '').map((d) => d.def.id)).toEqual([]);
     expect(Object.keys(NAMES).sort()).toEqual(basicPack.shapes.map((d) => d.id).sort());
-    for (const [path, text] of Object.entries(files)) await expect(text).toMatchFileSnapshot(`../pack/${path}`);
-    expect(Object.keys(disk).sort()).toEqual(Object.keys(files).sort());
+    await matchFiles(files, disk, '../pack/');
   });
 
   it('FR-LIB-003, NFR-LIC-003: every definition loads from pack/ through the host loader, licensed and credited', async () => {
@@ -118,7 +128,8 @@ describe('the basic declarative pack (FR-LIB-007)', () => {
     expect(outside.map((def) => def.id)).toEqual([]);
   });
 
-  it('FR-LIB-007: every definition has a nonempty, passing visual golden', async () => {
-    for (const def of basicPack.shapes) await expect(renderShapeGolden(def), def.id).toMatchFileSnapshot(`../__golden__/${def.id.replace('basic:', '')}.svg`);
+  it('FR-LIB-007: __golden__/ holds exactly one nonempty, passing visual golden per definition', async () => {
+    const expected = Object.fromEntries(basicPack.shapes.map((def) => [`${def.id.replace('basic:', '')}.svg`, renderShapeGolden(def)]));
+    await matchFiles(expected, goldens, '../__golden__/');
   });
 });
