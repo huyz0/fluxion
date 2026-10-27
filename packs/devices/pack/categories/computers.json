@@ -1,0 +1,128 @@
+{
+  "definitions": [
+    {
+      "category": "computers",
+      "decorations": [
+        {
+          "path": "M {w * 0.06} {h * 0.08} H {w * 0.94} V {h * 0.67} H {w * 0.06} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 60,
+        "w": 72
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A desktop computer or workstation with its monitor.",
+      "id": "devices:desktop",
+      "keywords": [
+        "desktop",
+        "computer",
+        "workstation",
+        "pc",
+        "monitor",
+        "display"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h * 0.75} H {w * 0.58} V {h * 0.88} H {w * 0.72} V {h} H {w * 0.28} V {h * 0.88} H {w * 0.42} V {h * 0.75} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.91
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.91
+        }
+      ],
+      "category": "computers",
+      "decorations": [
+        {
+          "path": "M {w * 0.16} {h * 0.1} H {w * 0.84} V {h * 0.74} H {w * 0.16} Z"
+        },
+        {
+          "path": "M {w * 0.1} {h * 0.82} H {w * 0.9}"
+        },
+        {
+          "path": "M {w * 0.42} {h * 0.91} H {w * 0.58}"
+        }
+      ],
+      "defaultSize": {
+        "h": 52,
+        "w": 80
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A laptop or notebook computer.",
+      "id": "devices:laptop",
+      "keywords": [
+        "laptop",
+        "notebook",
+        "computer",
+        "portable",
+        "client"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.1} 0 H {w * 0.9} V {h * 0.82} H {w} V {h} H 0 V {h * 0.82} H {w * 0.1} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

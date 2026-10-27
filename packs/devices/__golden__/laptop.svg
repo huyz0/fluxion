@@ -1,0 +1,16 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:80px;height:52px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 80 52">
+      <path class="fx-outline" d="M8 0 L72 0 L72 42.64 L80 42.64 L80 52 L0 52 L0 42.64 L8 42.64 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M12.8 5.2 C30.93 5.2 49.07 5.2 67.2 5.2 C67.2 16.29 67.2 27.39 67.2 38.48 C49.07 38.48 30.93 38.48 12.8 38.48 C12.8 27.39 12.8 16.29 12.8 5.2 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M8 42.64 C29.33 42.64 50.67 42.64 72 42.64" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M33.6 47.32 C37.87 47.32 42.13 47.32 46.4 47.32" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:60px 46px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,31 @@
+{
+  "name": "@fluxion/pack-devices",
+  "version": "0.0.0",
+  "description": "First-party devices shape pack: generic computers, mobiles, peripherals, media and IoT devices.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pack",
+    "pack-versions.json"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@fluxion/sdk": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

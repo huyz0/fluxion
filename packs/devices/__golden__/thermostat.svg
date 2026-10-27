@@ -1,0 +1,14 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:48px;height:48px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 48 48">
+      <path class="fx-outline" d="M0 24 C0 10.75 10.75 0 24 0 C37.26 0 48 10.75 48 24 C48 37.26 37.26 48 24 48 C10.75 48 0 37.26 0 24 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M8.64 24 C8.64 15.52 15.52 8.64 24 8.64 C32.48 8.64 39.36 15.52 39.36 24 C39.36 32.48 32.48 39.36 24 39.36 C15.52 39.36 8.64 32.48 8.64 24 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M24 8.64 C24 10.88 24 13.12 24 15.36" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:44px 44px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

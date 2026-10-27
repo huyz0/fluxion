@@ -1,0 +1,230 @@
+{
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "computers": {
+      "path": "categories/computers.json",
+      "sha256": "afa43f036f6f4ebe8b2118d654d080a86e148dd917ed66d70022c4ea3ed4cc2c"
+    },
+    "iot": {
+      "path": "categories/iot.json",
+      "sha256": "93558a93810a4f610ddc1b4ec11d9f640d5ab11f0dd00e571e93912e23d31e4b"
+    },
+    "media": {
+      "path": "categories/media.json",
+      "sha256": "c2233e98af83e92904574f8a1d3a25a903b81820781fc686ffc615c476667a2e"
+    },
+    "mobile": {
+      "path": "categories/mobile.json",
+      "sha256": "5e67c339b2475dbf90a206942b27ff4b68ded39ead1f25b415270cb55f695cf9"
+    },
+    "peripherals": {
+      "path": "categories/peripherals.json",
+      "sha256": "a760aa5f0bbab9da35c10f6ea4769785339d1d61b6ba8fb78d897ff6c81549f7"
+    }
+  },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
+  "definitions": [
+    {
+      "category": "computers",
+      "id": "devices:desktop",
+      "keywords": [
+        "desktop",
+        "computer",
+        "workstation",
+        "pc",
+        "monitor",
+        "display"
+      ],
+      "name": "Desktop"
+    },
+    {
+      "category": "computers",
+      "id": "devices:laptop",
+      "keywords": [
+        "laptop",
+        "notebook",
+        "computer",
+        "portable",
+        "client"
+      ],
+      "name": "Laptop"
+    },
+    {
+      "category": "mobile",
+      "id": "devices:phone",
+      "keywords": [
+        "phone",
+        "smartphone",
+        "mobile",
+        "handset",
+        "cell",
+        "client"
+      ],
+      "name": "Phone"
+    },
+    {
+      "category": "mobile",
+      "id": "devices:tablet",
+      "keywords": [
+        "tablet",
+        "pad",
+        "mobile",
+        "touch",
+        "client"
+      ],
+      "name": "Tablet"
+    },
+    {
+      "category": "mobile",
+      "id": "devices:watch",
+      "keywords": [
+        "watch",
+        "smartwatch",
+        "wearable",
+        "fitness tracker"
+      ],
+      "name": "Watch"
+    },
+    {
+      "category": "peripherals",
+      "id": "devices:printer",
+      "keywords": [
+        "printer",
+        "print",
+        "copier",
+        "multifunction",
+        "peripheral"
+      ],
+      "name": "Printer"
+    },
+    {
+      "category": "peripherals",
+      "id": "devices:keyboard",
+      "keywords": [
+        "keyboard",
+        "input",
+        "typing",
+        "peripheral"
+      ],
+      "name": "Keyboard"
+    },
+    {
+      "category": "peripherals",
+      "id": "devices:mouse",
+      "keywords": [
+        "mouse",
+        "pointer",
+        "pointing device",
+        "input",
+        "peripheral"
+      ],
+      "name": "Mouse"
+    },
+    {
+      "category": "peripherals",
+      "id": "devices:camera",
+      "keywords": [
+        "camera",
+        "webcam",
+        "cctv",
+        "video",
+        "photo",
+        "capture"
+      ],
+      "name": "Camera"
+    },
+    {
+      "category": "peripherals",
+      "id": "devices:usb-drive",
+      "keywords": [
+        "usb",
+        "flash drive",
+        "thumb drive",
+        "removable",
+        "storage"
+      ],
+      "name": "USB drive"
+    },
+    {
+      "category": "media",
+      "id": "devices:tv",
+      "keywords": [
+        "tv",
+        "television",
+        "screen",
+        "display",
+        "signage",
+        "media"
+      ],
+      "name": "TV"
+    },
+    {
+      "category": "media",
+      "id": "devices:speaker",
+      "keywords": [
+        "speaker",
+        "audio",
+        "sound",
+        "smart speaker",
+        "media"
+      ],
+      "name": "Speaker"
+    },
+    {
+      "category": "iot",
+      "id": "devices:sensor",
+      "keywords": [
+        "sensor",
+        "iot",
+        "probe",
+        "detector",
+        "telemetry",
+        "measurement"
+      ],
+      "name": "Sensor"
+    },
+    {
+      "category": "iot",
+      "id": "devices:iot-device",
+      "keywords": [
+        "iot",
+        "device",
+        "edge",
+        "gateway",
+        "embedded",
+        "connected"
+      ],
+      "name": "IoT device"
+    },
+    {
+      "category": "iot",
+      "id": "devices:thermostat",
+      "keywords": [
+        "thermostat",
+        "smart home",
+        "controller",
+        "climate",
+        "iot"
+      ],
+      "name": "Thermostat"
+    }
+  ],
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "devices",
+  "license": "MIT",
+  "name": "Devices",
+  "version": "0.0.0"
+}

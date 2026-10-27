@@ -1,0 +1,14 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:44px;height:64px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 44 64">
+      <path class="fx-outline" d="M4.4 0 L39.6 0 C42.03 0 44 1.97 44 4.4 L44 59.6 C44 62.03 42.03 64 39.6 64 L4.4 64 C1.97 64 0 62.03 0 59.6 L0 4.4 C0 1.97 1.97 0 4.4 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M7.92 40.96 C7.92 35.93 10.6 31.28 14.96 28.77 C19.32 26.25 24.68 26.25 29.04 28.77 C33.4 31.28 36.08 35.93 36.08 40.96 C36.08 45.99 33.4 50.64 29.04 53.15 C24.68 55.67 19.32 55.67 14.96 53.15 C10.6 50.64 7.92 45.99 7.92 40.96 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M16.72 15.36 C16.72 12.44 19.08 10.08 22 10.08 C24.92 10.08 27.28 12.44 27.28 15.36 C27.28 18.28 24.92 20.64 22 20.64 C19.08 20.64 16.72 18.28 16.72 15.36 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:42px 52px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

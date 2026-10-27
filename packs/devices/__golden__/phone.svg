@@ -1,0 +1,16 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:36px;height:64px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 36 64">
+      <path class="fx-outline" d="M5.04 0 L30.96 0 C33.74 0 36 2.26 36 5.04 L36 58.96 C36 61.74 33.74 64 30.96 64 L5.04 64 C2.26 64 0 61.74 0 58.96 L0 5.04 C0 2.26 2.26 0 5.04 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M3.6 7.68 C13.2 7.68 22.8 7.68 32.4 7.68 C32.4 23.47 32.4 39.25 32.4 55.04 C22.8 55.04 13.2 55.04 3.6 55.04 C3.6 39.25 3.6 23.47 3.6 7.68 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M14.4 3.84 C16.8 3.84 19.2 3.84 21.6 3.84" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M13.68 59.52 C16.56 59.52 19.44 59.52 22.32 59.52" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:38px 52px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

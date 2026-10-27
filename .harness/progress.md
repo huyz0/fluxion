@@ -3231,3 +3231,7 @@ The shared pack geometry check (geometryProblems) also evaluates every corner of
 ## M18.29 — Lucide icon pack (2026-10-27)
 
 Adds @fluxion/pack-icons-lucide: 185 curated Lucide icons in 18 categories, imported from the pinned Iconify lucide set (iconify/icon-sets@db4c0e1, corpus sha256 recorded in the pack source) by scripts/packs/lucide.mjs through the shared encoder (ADR-0196), with a golden per definition. Lucide is ISC; the 46 Feather-derived icons carry Feather's MIT credit by definition id; the full notices ship in NOTICE. The SDK golden check accepts artwork-only definitions when the artwork draws at least one element, instead of requiring an outline.
+
+## M18.30 — Devices pack (2026-10-27)
+
+Adds @fluxion/pack-devices: 15 generic device definitions in five categories (computers: desktop, laptop; mobile: phone, tablet, watch; peripherals: printer, keyboard, mouse, camera, USB drive; media: TV, speaker; IoT: sensor, IoT device, thermostat), MIT original work with no vendor artwork, colours or names, stroke-only marks with the label below, encoded by the shared encoder (ADR-0196) with a golden per definition; passes the corner and small-size geometry check (M18.121).

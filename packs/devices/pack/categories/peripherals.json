@@ -1,0 +1,245 @@
+{
+  "definitions": [
+    {
+      "category": "peripherals",
+      "decorations": [
+        {
+          "path": "M {w * 0.2} {h * 0.65} H {w * 0.8}"
+        },
+        {
+          "path": "M {w * 0.8} {h * 0.42} H {w * 0.88}"
+        },
+        {
+          "path": "M {w * 0.33} {h * 0.9} H {w * 0.67}"
+        }
+      ],
+      "defaultSize": {
+        "h": 52,
+        "w": 64
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A printer or multifunction device.",
+      "id": "devices:printer",
+      "keywords": [
+        "printer",
+        "print",
+        "copier",
+        "multifunction",
+        "peripheral"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.25} 0 H {w * 0.75} V {h * 0.3} H {w} V {h * 0.8} H {w * 0.8} V {h} H {w * 0.2} V {h * 0.8} H 0 V {h * 0.3} H {w * 0.25} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "peripherals",
+      "decorations": [
+        {
+          "path": "M {w * 0.14} {h * 0.3} H {w * 0.24000000000000002}"
+        },
+        {
+          "path": "M {w * 0.29} {h * 0.3} H {w * 0.39}"
+        },
+        {
+          "path": "M {w * 0.44} {h * 0.3} H {w * 0.54}"
+        },
+        {
+          "path": "M {w * 0.59} {h * 0.3} H {w * 0.69}"
+        },
+        {
+          "path": "M {w * 0.74} {h * 0.3} H {w * 0.84}"
+        },
+        {
+          "path": "M {w * 0.14} {h * 0.5} H {w * 0.24000000000000002}"
+        },
+        {
+          "path": "M {w * 0.29} {h * 0.5} H {w * 0.39}"
+        },
+        {
+          "path": "M {w * 0.44} {h * 0.5} H {w * 0.54}"
+        },
+        {
+          "path": "M {w * 0.59} {h * 0.5} H {w * 0.69}"
+        },
+        {
+          "path": "M {w * 0.74} {h * 0.5} H {w * 0.84}"
+        },
+        {
+          "path": "M {w * 0.29} {h * 0.72} H {w * 0.71}"
+        }
+      ],
+      "defaultSize": {
+        "h": 32,
+        "w": 88
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A keyboard: text and command input.",
+      "id": "devices:keyboard",
+      "keywords": [
+        "keyboard",
+        "input",
+        "typing",
+        "peripheral"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {min(w, h) * 0.12} 0 H {w - (min(w, h) * 0.12)} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {w} {min(w, h) * 0.12} V {h - (min(w, h) * 0.12)} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {w - (min(w, h) * 0.12)} {h} H {min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 0 {h - (min(w, h) * 0.12)} V {min(w, h) * 0.12} A {min(w, h) * 0.12} {min(w, h) * 0.12} 0 0 1 {min(w, h) * 0.12} 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "peripherals",
+      "decorations": [
+        {
+          "path": "M 0 {h * 0.4} H {w}"
+        },
+        {
+          "path": "M {w/2} 0 V {h * 0.4}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 32
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A mouse or other pointing device.",
+      "id": "devices:mouse",
+      "keywords": [
+        "mouse",
+        "pointer",
+        "pointing device",
+        "input",
+        "peripheral"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {min(w, h) * 0.45} 0 H {w - (min(w, h) * 0.45)} A {min(w, h) * 0.45} {min(w, h) * 0.45} 0 0 1 {w} {min(w, h) * 0.45} V {h - (min(w, h) * 0.45)} A {min(w, h) * 0.45} {min(w, h) * 0.45} 0 0 1 {w - (min(w, h) * 0.45)} {h} H {min(w, h) * 0.45} A {min(w, h) * 0.45} {min(w, h) * 0.45} 0 0 1 0 {h - (min(w, h) * 0.45)} V {min(w, h) * 0.45} A {min(w, h) * 0.45} {min(w, h) * 0.45} 0 0 1 {min(w, h) * 0.45} 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "peripherals",
+      "decorations": [
+        {
+          "path": "M {w/2 - (min(w * 0.22, h * 0.28))} {h * 0.6} A {min(w * 0.22, h * 0.28)} {min(w * 0.22, h * 0.28)} 0 1 1 {w/2 + (min(w * 0.22, h * 0.28))} {h * 0.6} A {min(w * 0.22, h * 0.28)} {min(w * 0.22, h * 0.28)} 0 1 1 {w/2 - (min(w * 0.22, h * 0.28))} {h * 0.6} Z"
+        },
+        {
+          "path": "M {w * 0.78} {h * 0.34} H {w * 0.88}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 64
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A camera: still, video, webcam or security camera.",
+      "id": "devices:camera",
+      "keywords": [
+        "camera",
+        "webcam",
+        "cctv",
+        "video",
+        "photo",
+        "capture"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 {h * 0.2} H {w * 0.3} V 0 H {w * 0.6} V {h * 0.2} H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "peripherals",
+      "decorations": [
+        {
+          "path": "M {w * 0.38} {h * 0.08} H {w * 0.46} V {h * 0.16} H {w * 0.38} Z"
+        },
+        {
+          "path": "M {w * 0.54} {h * 0.08} H {w * 0.62} V {h * 0.16} H {w * 0.54} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 60,
+        "w": 28
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A USB stick or other removable storage.",
+      "id": "devices:usb-drive",
+      "keywords": [
+        "usb",
+        "flash drive",
+        "thumb drive",
+        "removable",
+        "storage"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w * 0.3} 0 H {w * 0.7} V {h * 0.25} H {w} V {h} H 0 V {h * 0.25} H {w * 0.3} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}
