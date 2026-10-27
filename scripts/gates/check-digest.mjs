@@ -14,13 +14,15 @@
 // CI (gates.yml) runs `--head --full-history` on every push and PR.
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
-import { contentId, isPosthoc, parseDigest, reviewedDiffHash } from './review-content.mjs';
+import { contentId, isPosthoc, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
 const DIGEST = '.harness/reviews/digest.log';
 const EXEMPT = '.harness/baselines/digest-exempt.txt';
 const BACKLOG = 'docs/backlog/current.md';
+/** The task whose commit made review.mjs write only `vendor:role[:posthoc]` reviewers (M18.141). */
+const GRAMMAR_SINCE = 'M18.127';
 
 const show = (tree, path) => {
   const r = git(['show', `${tree === 'index' ? '' : tree}:${path}`]);
@@ -103,15 +105,36 @@ function stalePasses(sha, { task, content, own, covers }) {
     );
 }
 
+/**
+ * The digest's lines as { text, line }, each marked `old` when it was already in the digest before
+ * GRAMMAR_SINCE's commit: only those may keep a free-form reviewer (M18.141, cp16 F1).
+ */
+function digestLines(tree) {
+  const since = lines(git(['log', '--first-parent', '--reverse', '--format=%H', '--grep', `^${GRAMMAR_SINCE.replace('.', '\\.')}:`, 'HEAD']))[0];
+  const before = new Set(since ? show(`${since}^`, DIGEST).split(/\r?\n/) : []);
+  const texts = show(tree, DIGEST).split(/\r?\n/).filter(Boolean);
+  return parseDigest(texts.join('\n')).map((line, i) => ({ line, n: i + 1, old: before.has(texts[i]) }));
+}
+
+/** Lines added since the grammar whose reviewer is not `vendor:role[:posthoc]`. */
+function grammarProblems(entries) {
+  return entries
+    .filter(({ line, old }) => !old && !parseReviewer(line.reviewer))
+    .map(({ line, n }) => `digest line ${n} (${line.task}): reviewer '${line.reviewer}' is not vendor:role[:posthoc] (${GRAMMAR_SINCE})`);
+}
+
 /** Posthoc pass lines of `milestone` whose content identity matches none of their task's commits. */
-function posthocProblems(commits, tree, milestone) {
+function posthocProblems(commits, entries, milestone) {
   const ids = new Map();
   const idsOf = (task) => {
     if (!ids.has(task)) ids.set(task, new Set(commits.filter((c) => c.task === task).map((c) => contentId(c.sha))));
     return ids.get(task);
   };
-  return parseDigest(show(tree, DIGEST))
-    .filter((l) => isPosthoc(l.reviewer) && l.content && l.task?.startsWith(`${milestone}.`))
+  // the grammar alone decides for lines added since it; the regex fallback is for older lines only
+  const posthoc = ({ line, old }) => (old ? isPosthoc(line.reviewer) : parseReviewer(line.reviewer)?.posthoc);
+  return entries
+    .filter((e) => posthoc(e) && e.line.content && e.line.task?.startsWith(`${milestone}.`))
+    .map(({ line }) => line)
     .filter((l) => !idsOf(l.task).has(l.content))
     .map((l) => `${l.task}: posthoc digest line names content ${l.content.slice(0, 12)}, which no ${l.task} commit has`);
 }
@@ -149,7 +172,13 @@ export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
   const milestone = /\*\*Current milestone: `(M\d+)`\*\*/.exec(roadmap)?.[1];
   if (!milestone) return { ok: false, detail: 'digest: roadmap has no current milestone' };
   const commits = taskCommits(milestone);
-  const problems = [...evidenceProblems(commits, tree, adoption()), ...posthocProblems(commits, tree, milestone), ...commitCellProblems(commits, tree)];
+  const entries = digestLines(tree);
+  const problems = [
+    ...evidenceProblems(commits, tree, adoption()),
+    ...grammarProblems(entries),
+    ...posthocProblems(commits, entries, milestone),
+    ...commitCellProblems(commits, tree),
+  ];
   if (problems.length) return { ok: false, detail: `digest: ${problems.length} problem(s)\n  ${problems.join('\n  ')}` };
   return { ok: true, detail: `digest: ${commits.length} ${milestone} task commits have tracked review evidence and Commit cells` };
 }

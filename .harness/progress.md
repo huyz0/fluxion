@@ -3116,3 +3116,8 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 ## M18.43 — checkpoint cp16 (2026-10-27)
 
 - Range 7545e708..742fbdf, verdict changes-requested (3 minor) over a270259, d0ecbb9, e86cf69, 742fbdf. cp15 dispositions honoured. F1 check-digest does not enforce the reviewer grammar on new lines -> M18.141. F2 drive's red-CI rule contradicts the blocking-row regime -> M18.142. F3 argued to the human: blockedReason refreshed; this record lands with M18.140 in one push, then stream 1 stops pushing until CI drains or Huy decides. Header 138; Learned line added. Rows are the reviewer's proposed rows verbatim.
+
+## M18.141 — check-digest enforces the reviewer grammar on new lines (2026-10-27)
+
+- check-digest reads each digest line with whether it was already in the digest at the parent of M18.127's first-parent commit (`GRAMMAR_SINCE`). Lines added since must have a `vendor:role[:posthoc]` reviewer, and only `parseReviewer` decides whether they are posthoc; the `:posthoc` regex fallback stays for older lines (cp16 F1). Live: 73 older free-form lines still pass; `--head --full-history` passes.
+- digest.test: added `claude:independent-subagent:m18.200-r2` and `x:y:posthoc-r2` lines are refused (the latter not read as posthoc); a free-form line committed before an M18.127 commit passes and one added after it is refused.

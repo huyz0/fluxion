@@ -9,7 +9,7 @@ const POLICY = 'scripts/gates/check-digest.mjs';
 const DIGEST = '.harness/reviews/digest.log';
 const ROW = (id, state = 'todo', commit = '') => `| ${id} | task | HARNESS | WHEN x THE SYSTEM SHALL y | — | ${state} | ${commit} |`;
 const backlog = (rows) => `# Backlog\n\n| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`;
-const line = (task, verdict = 'pass', content = '') => `${task}\tdeadbeef\tr1\t${verdict}\tt\t0 findings${content ? `\tcontent:${content}` : ''}\n`;
+const line = (task, verdict = 'pass', content = '') => `${task}\tdeadbeef\tr1\t${verdict}\tt:unit\t0 findings${content ? `\tcontent:${content}` : ''}\n`;
 
 describe('digest coverage (M18.99)', () => {
   let sb;
@@ -191,5 +191,35 @@ describe('digest coverage (M18.99)', () => {
     assert.equal(strict.status, 1, out(strict));
     assert.match(strict.stderr, /shallow clone; fetch full history/);
     assert.ok(shallow);
+  });
+
+  it('lines added since M18.127 must carry a vendor:role[:posthoc] reviewer, decided by that grammar alone (M18.141)', () => {
+    const start = run('rev-parse', 'HEAD');
+    const bad = (reviewer, content = '4'.repeat(64)) => `M18.1\t-\tr9\tpass\t${reviewer}\t0 findings\tcontent:${content}\n`;
+    const kept = sb.git('show', `:${DIGEST}`).stdout;
+    try {
+      // before any M18.127 commit, every line is judged
+      for (const reviewer of ['claude:independent-subagent:m18.200-r2', 'x:y:posthoc-r2']) {
+        append(DIGEST, bad(reviewer));
+        const r = check();
+        assert.equal(r.status, 1, `${reviewer}: ${out(r)}`);
+        assert.match(r.stderr, new RegExp(`reviewer '${reviewer.replace(/\./g, '\\.')}' is not vendor:role\\[:posthoc\\] \\(M18\\.127\\)`));
+        // `posthoc-r2` is not the posthoc marker: the regex fallback no longer applies to a new line
+        assert.doesNotMatch(r.stderr, /posthoc digest line names content 444444444444/);
+        put(DIGEST, kept);
+      }
+      // a free-form line already in the digest before M18.127's commit still passes
+      append(DIGEST, bad('codex:gpt-6 /root/m18_review'));
+      commit('chore: a pre-grammar review line');
+      task('M18.127');
+      let r = check(['--head']);
+      assert.equal(r.status, 0, out(r));
+      append(DIGEST, bad('codex:gpt-6 /root/m18_review_r2'));
+      r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /reviewer 'codex:gpt-6 \/root\/m18_review_r2' is not vendor:role/);
+    } finally {
+      run('reset', '-q', '--hard', start);
+    }
   });
 });
