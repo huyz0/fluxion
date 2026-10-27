@@ -16,6 +16,8 @@ const NOTICE_HOLDERS = {
   'licenses/brotli.txt': 'by the Brotli Authors',
   'licenses/harfbuzz.txt': 'HarfBuzz is licensed under the so-called "Old MIT" license',
   'licenses/harfbuzzjs.txt': 'The harfbuzzjs project authors',
+  'licenses/emscripten.txt': 'Emscripten authors',
+  'licenses/musl.txt': 'Rich Felker',
 };
 
 test('FR-AST-003 NFR-LIC-001: pinned font binaries rebuild identically and retain notices', () => {
@@ -43,8 +45,11 @@ test('FR-AST-003 NFR-LIC-001: pinned font binaries rebuild identically and retai
   const codec = m.assets.find((a) => a.file === 'woff2-codec.wasm');
   // two clean-directory builds were recorded; with the pinned toolchain and checkouts present, rebuild again now
   assert.ok(codec.reproductions.length >= 2 && codec.reproductions.every((r) => r.sha256 === codec.sha256));
+  assert.ok(codec.runtime?.emscripten && codec.runtime?.llvm, 'the linked Emscripten runtime records its licence terms');
   const sources = process.env.FLUXION_FONT_ENGINE_SOURCES;
-  if (sources && emscriptenVersion() === m.toolchain.emscripten) assert.equal(sha256(buildCodec(sources)), codec.sha256, 'fresh rebuild');
+  // a requested rebuild without the pinned toolchain fails rather than passing as skipped
+  if (sources) assert.equal(emscriptenVersion(), m.toolchain.emscripten, 'FLUXION_FONT_ENGINE_SOURCES is set: source emsdk 6.0.13 first');
+  if (sources) assert.equal(sha256(buildCodec(sources)), codec.sha256, 'fresh rebuild');
   else console.log('# font engine: rebuild skipped (set FLUXION_FONT_ENGINE_SOURCES and source emsdk 6.0.13); recorded reproductions checked');
   const tarball = process.env.FLUXION_HARFBUZZJS_TARBALL;
   if (tarball) assert.ok(verifyHarfbuzz(tarball));

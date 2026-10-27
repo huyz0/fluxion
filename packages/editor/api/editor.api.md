@@ -21,6 +21,8 @@ import { DrawioImportOptions } from '@fluxion/format';
 import { DrawioProcessedReport } from '@fluxion/format';
 import { DslDiagnostic } from '@fluxion/dsl';
 import { FieldDef } from '@fluxion/schema';
+import { FontEngines } from '@fluxion/format';
+import { FontSubsetOutcome } from '@fluxion/format';
 import { GlobalRoute } from '@fluxion/routing';
 import { GlobalRouteInput } from '@fluxion/routing';
 import { IconifyImportOptions } from '@fluxion/format';
@@ -442,6 +444,12 @@ export type EditorRootProps = {
 export type ElementMaker = (at: Placement) => AnyRecord;
 
 // @public
+export type EmbeddedFont = {
+    readonly asset: AssetRecord;
+    readonly bytes: Uint8Array;
+};
+
+// @public
 export function endDrop(view: ReadView, shapeDefs: {
     get(id: string): ShapeDef | undefined;
 }, drop: {
@@ -482,6 +490,18 @@ export function fitImage(w: number | undefined, h: number | undefined): ImageSiz
 export type FitTargets = {
     readonly screen?: Box | undefined;
     readonly selection?: Box | undefined;
+};
+
+// @public
+export const FONT_ENGINE_HASHES: {
+    readonly harfbuzz: "62415fe6bad92ef16f3e5d2dbed6c66a4adec7f5a59c6d27084811c92cce1ba5";
+    readonly codec: "3829e158c6a14f186b7514dd6bcdf195c5dfd0f9c57e7082e9850e642067cb6f";
+};
+
+// @public
+export type FontEngineModules = {
+    readonly harfbuzz: Uint8Array;
+    readonly codec: Uint8Array;
 };
 
 // @public
@@ -538,6 +558,19 @@ export type FontSources = {
 };
 
 // @public
+export type FontSubsetDeps = {
+    readonly engines: () => Promise<FontEngines>;
+    readonly sha256: (bytes: Uint8Array) => Promise<string>;
+    readonly cache?: Map<string, FontSubsetOutcome>;
+};
+
+// @public
+export type FontSubsetPlan = {
+    readonly inventory: GlyphInventory;
+    readonly fonts: ReadonlyMap<RecordId, FontSubsetOutcome>;
+};
+
+// @public
 export function formatBytes(bytes: number): string;
 
 // @public
@@ -572,6 +605,18 @@ export type GlobalRouting = {
     readonly refined: ReadSignal<ReadonlyMap<string, readonly PathCommand[]> | undefined>;
     dispose(): void;
 };
+
+// @public
+export type GlyphInventory = {
+    readonly status: "complete";
+    readonly codepoints: readonly number[];
+} | {
+    readonly status: "unbounded";
+    readonly reason: string;
+};
+
+// @public
+export function glyphInventory(doc: DocumentFile): GlyphInventory;
 
 // @public
 export const GRID_CELL = 24;
@@ -674,6 +719,9 @@ export type InspectorOverride = (fields: readonly FieldDef[]) => readonly FieldD
 export type Inspectors = {
     get(kind: string): InspectorOverride | undefined;
 };
+
+// @public
+export function instantiateFontEngines(modules: FontEngineModules, sha256: (bytes: Uint8Array) => Promise<string>): Promise<FontEngines>;
 
 // @public
 export function isEditable(target: EventTarget | null): boolean;
@@ -1196,6 +1244,9 @@ export type Placement = {
     readonly index: string;
     readonly transform: Box;
 };
+
+// @public
+export function planFontSubsets(doc: DocumentFile, fonts: readonly EmbeddedFont[], deps: FontSubsetDeps): Promise<FontSubsetPlan>;
 
 // @public
 export function planPaste(payload: ClipboardPayload, target: {

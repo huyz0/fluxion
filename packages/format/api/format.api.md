@@ -139,6 +139,11 @@ export type EncodedImage = {
 };
 
 // @public
+export type EngineMemory = {
+    readonly buffer: ArrayBuffer;
+};
+
+// @public
 export type EntryRead = {
     readonly ok: true;
     readonly value: JournalEntry;
@@ -199,6 +204,51 @@ export type FluxJsonOutput = {
 export type FluxWriteFailure = ZipFailure;
 
 // @public
+export const FONT_SUBSET_POLICY = "fluxion-font-subset/1 features=all scripts=all names=all+legacy hinting=kept";
+
+// @public
+export type FontEngines = {
+    readonly harfbuzz: HarfBuzzSubsetExports;
+    readonly codec: Woff2CodecExports;
+    readonly identity: {
+        readonly harfbuzz: string;
+        readonly codec: string;
+    };
+};
+
+// @public
+export type FontKeptReason = "reserved-font-name" | "unverified-source" | "variable-font" | "font-collection" | "unsupported-format" | "malformed" | "too-large" | "not-smaller" | "unbounded-text" | "engine-failure";
+
+// @public
+export function fontSubsetCacheKey(input: FontSubsetInput, engines: Pick<FontEngines, "identity">, hasher: ContentHasher): Promise<string>;
+
+// @public
+export type FontSubsetInput = {
+    readonly bytes: Uint8Array;
+    readonly sourceSha256: string;
+    readonly weight: number;
+    readonly style: string;
+    readonly codepoints: readonly number[];
+    readonly rights?: string;
+    readonly verifiedSource?: boolean;
+    readonly modificationPermission?: boolean;
+    readonly metrics?: unknown;
+};
+
+// @public
+export type FontSubsetOutcome = {
+    readonly status: "subset";
+    readonly woff2: Uint8Array;
+    readonly sha256: string;
+    readonly cacheKey: string;
+    readonly fingerprint: string;
+} | {
+    readonly status: "kept";
+    readonly reason: FontKeptReason;
+    readonly message: string;
+};
+
+// @public
 export type FormatError = {
     readonly code: FormatErrorCode;
     readonly message: string;
@@ -207,6 +257,30 @@ export type FormatError = {
 
 // @public
 export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_SHAPE_PACK_INVALID" | "FILE_INTERNAL";
+
+// @public
+export type HarfBuzzSubsetExports = {
+    readonly memory: EngineMemory;
+    malloc(size: number): number;
+    free(pointer: number): void;
+    hb_blob_create(data: number, length: number, mode: number, userData: number, destroy: number): number;
+    hb_blob_destroy(blob: number): void;
+    hb_blob_get_data(blob: number, length: number): number;
+    hb_blob_get_length(blob: number): number;
+    hb_face_create(blob: number, index: number): number;
+    hb_face_destroy(face: number): void;
+    hb_face_reference_blob(face: number): number;
+    hb_set_add(set: number, codepoint: number): void;
+    hb_set_clear(set: number): void;
+    hb_set_invert(set: number): void;
+    hb_subset_input_create_or_fail(): number;
+    hb_subset_input_destroy(input: number): void;
+    hb_subset_input_set(input: number, which: number): number;
+    hb_subset_input_get_flags(input: number): number;
+    hb_subset_input_set_flags(input: number, flags: number): void;
+    hb_subset_input_unicode_set(input: number): number;
+    hb_subset_or_fail(face: number, input: number): number;
+};
 
 // @public
 export type IconifyIconOutcome = {
@@ -599,6 +673,9 @@ export type ShapePackSourceData = {
 export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
 
 // @public
+export function subsetFont(input: FontSubsetInput, engines: FontEngines, hasher: ContentHasher): Promise<FontSubsetOutcome>;
+
+// @public
 export type SvgBatchFile = {
     readonly path: string;
     readonly bytes: Uint8Array;
@@ -714,6 +791,17 @@ export function usedFontFamilies(doc: DocumentFile): ReadonlySet<string> | undef
 
 // @public
 export const VERSION: string;
+
+// @public
+export type Woff2CodecExports = {
+    readonly memory: EngineMemory;
+    codec_alloc(size: number): number;
+    codec_free(pointer: number): void;
+    woff2_max_encoded(data: number, length: number): number;
+    woff2_encode(data: number, length: number, out: number, capacity: number): number;
+    woff2_final_size(data: number, length: number): number;
+    woff2_decode(data: number, length: number, out: number, capacity: number): number;
+};
 
 // @public
 export function writeFlux(original: WriteFluxInput): Promise<Result<Uint8Array, FluxWriteFailure>>;

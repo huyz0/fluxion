@@ -107,6 +107,18 @@ export {
   importDrawioLibrary,
 } from './drawio-import.js';
 export {
+  type EngineMemory,
+  FONT_SUBSET_POLICY,
+  type FontEngines,
+  type FontKeptReason,
+  type FontSubsetInput,
+  type FontSubsetOutcome,
+  fontSubsetCacheKey,
+  type HarfBuzzSubsetExports,
+  subsetFont,
+  type Woff2CodecExports,
+} from './font-subset.js';
+export {
   type IconifyIconOutcome,
   type IconifyImportOptions,
   type IconifyImportReport,

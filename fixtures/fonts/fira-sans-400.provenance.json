@@ -1,0 +1,18 @@
+{
+  "file": "fira-sans-400.ttf",
+  "family": "Fira Sans",
+  "weight": 400,
+  "style": "normal",
+  "version": "4.203",
+  "license": "OFL-1.1",
+  "licenseFile": "LICENSE-FiraSans-OFL.txt",
+  "reservedFontName": false,
+  "source": {
+    "repository": "https://github.com/google/fonts",
+    "revision": "e7db6ca603fd4862010383ff17ffd6cc4ffac1c0",
+    "path": "ofl/firasans/FiraSans-Regular.ttf"
+  },
+  "sha256": "c29556a2719bf613ef3d5e070e40d903a8965d9c081beca1375dc1e6e0f93c23",
+  "bytes": 456996,
+  "use": "M18.39 used-glyph subset tests (packages/editor/src/font-subset.test.ts)"
+}

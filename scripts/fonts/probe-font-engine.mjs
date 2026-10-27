@@ -36,12 +36,13 @@ const copyIn = (x, alloc, bytes) => {
 function decode(c, bytes, capacity) {
   const input = copyIn(c, c.codec_alloc, bytes);
   try {
-    const declared = c.woff2_final_size(input, bytes.length);
+    // wasm32 size_t reaches JavaScript signed; read it unsigned so a declared size of 2 GiB or more is not negative
+    const declared = c.woff2_final_size(input, bytes.length) >>> 0;
     const cap = Math.min(capacity ?? declared, MAX_SFNT);
     if (cap <= 0) return { size: 0, canary: true };
     const out = c.codec_alloc(cap + 16);
     new Uint8Array(c.memory.buffer, out + cap, 16).fill(0xc3);
-    const size = c.woff2_decode(input, bytes.length, out, cap);
+    const size = c.woff2_decode(input, bytes.length, out, cap) >>> 0;
     const result = {
       size,
       canary: new Uint8Array(c.memory.buffer, out + cap, 16).every((b) => b === 0xc3),
@@ -119,6 +120,9 @@ function malformedCases(font) {
   const huge = font.slice();
   new DataView(huge.buffer).setUint32(16, 0xffffffff); // totalSfntSize: the host cap applies before allocation
   cases.push(huge);
+  const over = font.slice();
+  new DataView(over.buffer).setUint32(16, 6 * 1024 * 1024); // a positive declared size over the cap: decode gets the capped buffer and refuses
+  cases.push(over);
   return cases;
 }
 

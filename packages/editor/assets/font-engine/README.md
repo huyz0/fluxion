@@ -4,7 +4,7 @@ Pinned WebAssembly for used-glyph font subsetting (ADR-0051). M18.39 adds the ed
 
 - `harfbuzz-subset.wasm` is the subset-only module from npm `harfbuzzjs@1.6.4`. It is verified by package integrity. It has no imports and fixed memory of 1040 pages.
 - `woff2-codec.wasm` is Google WOFF2 with Brotli v1.2.1, built standalone from `codec.cc` with emsdk 6.0.13. It imports only memory-growth notification and `proc_exit`, starts at 16 MiB and is capped at 128 MiB. It zeroes every destination before encoding or decoding.
-- `manifest.json` holds the hashes, source revisions, notices and recorded clean rebuilds. `licenses/` holds the MIT notices of all four sources.
+- `manifest.json` holds the hashes, source revisions, notices and recorded clean rebuilds. `licenses/` holds the MIT notices of all four sources and of the Emscripten runtime (its own code and musl) linked into the codec; the libc++ code it links is under the LLVM exception, recorded in `runtime`.
 
 Rebuild and verify:
 

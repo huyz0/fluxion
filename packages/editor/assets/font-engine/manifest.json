@@ -12,15 +12,31 @@
       "sha256": "3829e158c6a14f186b7514dd6bcdf195c5dfd0f9c57e7082e9850e642067cb6f",
       "bytes": 691548,
       "license": "MIT",
-      "notices": ["licenses/woff2.txt", "licenses/brotli.txt"],
+      "notices": ["licenses/woff2.txt", "licenses/brotli.txt", "licenses/emscripten.txt", "licenses/musl.txt"],
+      "runtime": {
+        "emscripten": "Emscripten 6.0.13 system libraries linked into the module: Emscripten's own code (MIT, licenses/emscripten.txt) and its musl libc (MIT, licenses/musl.txt)",
+        "llvm": "libc++, libc++abi and compiler-rt code is Apache-2.0 WITH LLVM-exception; the exception lets portions embedded in object form be redistributed without the notice conditions of sections 4(a), 4(b) and 4(d)"
+      },
       "wrapper": "codec.cc",
       "sources": [
-        { "name": "woff2", "url": "https://github.com/google/woff2", "revision": "fb9c3379f2605b10f3e8f1d9636664ab5576775c" },
-        { "name": "brotli", "url": "https://github.com/google/brotli", "revision": "db24a98aed38a16de78cc05ca15cdd8dc2a0d92d", "tag": "v1.2.1" }
+        {
+          "name": "woff2",
+          "url": "https://github.com/google/woff2",
+          "revision": "fb9c3379f2605b10f3e8f1d9636664ab5576775c"
+        },
+        {
+          "name": "brotli",
+          "url": "https://github.com/google/brotli",
+          "revision": "db24a98aed38a16de78cc05ca15cdd8dc2a0d92d",
+          "tag": "v1.2.1"
+        }
       ],
       "imports": ["env.emscripten_notify_memory_growth", "wasi_snapshot_preview1.proc_exit"],
       "exports": ["codec_alloc", "codec_free", "woff2_max_encoded", "woff2_encode", "woff2_final_size", "woff2_decode"],
-      "memory": { "initialMiB": 16, "maximumMiB": 128 },
+      "memory": {
+        "initialMiB": 16,
+        "maximumMiB": 128
+      },
       "reproductions": [
         {
           "date": "2026-10-27",
@@ -47,11 +63,21 @@
         "path": "package/dist/harfbuzz-subset.wasm"
       },
       "sources": [
-        { "name": "harfbuzzjs", "url": "https://github.com/harfbuzz/harfbuzzjs", "revision": "3f162fa2c6ba68b40839fe2c11502a26632e20df" },
-        { "name": "harfbuzz", "url": "https://github.com/harfbuzz/harfbuzz", "revision": "35f656a1a2bab548ea7f54a6dd3fba2b09680d14" }
+        {
+          "name": "harfbuzzjs",
+          "url": "https://github.com/harfbuzz/harfbuzzjs",
+          "revision": "3f162fa2c6ba68b40839fe2c11502a26632e20df"
+        },
+        {
+          "name": "harfbuzz",
+          "url": "https://github.com/harfbuzz/harfbuzz",
+          "revision": "35f656a1a2bab548ea7f54a6dd3fba2b09680d14"
+        }
       ],
       "imports": [],
-      "memory": { "fixedPages": 1040 }
+      "memory": {
+        "fixedPages": 1040
+      }
     }
   ]
 }
