@@ -4,7 +4,7 @@
       "category": "labels",
       "decorations": [
         {
-          "path": "M {h/2 - h * 0.38} {h/2} A {h * 0.38} {h * 0.38} 0 1 1 {h/2 + h * 0.38} {h/2} A {h * 0.38} {h * 0.38} 0 1 1 {h/2 - h * 0.38} {h/2} Z"
+          "path": "M {(min(w/2, h/2)) - min((min(w/2, h/2)), h/2) * 0.76} {h/2} A {min((min(w/2, h/2)), h/2) * 0.76} {h * 0.38} 0 1 1 {(min(w/2, h/2)) + min((min(w/2, h/2)), h/2) * 0.76} {h/2} A {min((min(w/2, h/2)), h/2) * 0.76} {h * 0.38} 0 1 1 {(min(w/2, h/2)) - min((min(w/2, h/2)), h/2) * 0.76} {h/2} Z"
         }
       ],
       "defaultSize": {
@@ -22,14 +22,14 @@
       ],
       "license": "MIT",
       "outline": {
-        "path": "M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z"
+        "path": "M {min(w/2, h/2)} 0 H {w - min(w/2, h/2)} A {min(w/2, h/2)} {h/2} 0 0 1 {w - min(w/2, h/2)} {h} H {min(w/2, h/2)} A {min(w/2, h/2)} {h/2} 0 0 1 {min(w/2, h/2)} 0 Z"
       },
       "textRegions": [
         {
           "h": 0.8,
           "name": "body",
-          "w": "1 - 1.2 * h / w",
-          "x": "h / w",
+          "w": "max(0, 1 - 2.4 * min(w/2, h/2) / w)",
+          "x": "2 * min(w/2, h/2) / w",
           "y": 0.1
         }
       ]

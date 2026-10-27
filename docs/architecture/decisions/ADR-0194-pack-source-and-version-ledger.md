@@ -40,6 +40,10 @@ unchanged pack version (F8).
   at each number param's minimum, maximum and default and every enum value, the evaluated
   outline, decorations and handles staying in the box and text regions being nonnegative and
   inside it; anchors must be box fractions and number params must have a range (M18.103).
+  Bounded number params are also checked together at every corner of their range (every pair's
+  corners beyond six params), and every variant at the default size and at the smallest sizes
+  the check resizes to: a 16 x 16 square and the default narrowed or flattened to 16 units
+  (M18.121, cp12 F5).
 - `pack-versions.json`, shipped with the pack, maps each released version to its category
   hashes. The current version is added when absent and never replaced, so changed hashes at
   a recorded version fail with "release the change as a new pack version". The package

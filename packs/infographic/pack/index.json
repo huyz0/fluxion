@@ -11,7 +11,7 @@
     },
     "labels": {
       "path": "categories/labels.json",
-      "sha256": "9ce1bbadf0319bb3afe0accf461bef4f6550a9c96b86ccb3f1cbba371dac64c7"
+      "sha256": "60b8313bb33dc7a6128e16fe5ac705b92b12511d536e48ab30942eabd9e6939f"
     },
     "layers": {
       "path": "categories/layers.json",

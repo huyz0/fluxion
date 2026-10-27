@@ -7,6 +7,8 @@ const MIT = 'MIT';
 const r = 'min(w, h) * 0.15';
 /** A bar or band inset, as a fraction of the width. */
 const bar = 'w * 0.1';
+/** A rounded end's horizontal radius: half the height, but never past the middle. */
+const end = 'min(w/2, h/2)';
 
 const step = (id: string, def: Omit<ShapeDef, 'id' | 'license' | 'category'> & { category?: string }): ShapeDef => ({
   id: `flowchart:${id}`,
@@ -43,7 +45,8 @@ export const flowchartShapes: readonly ShapeDef[] = [
     keywords: ['decision', 'branch', 'condition', 'if', 'diamond'],
   }),
   step('terminator', {
-    outline: { path: 'M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z' },
+    // the ends' horizontal radius never passes the middle, so a narrow terminator stays an ellipse inside its box
+    outline: { path: `M {${end}} 0 H {w - ${end}} A {${end}} {h/2} 0 0 1 {w - ${end}} {h} H {${end}} A {${end}} {h/2} 0 0 1 {${end}} 0 Z` },
     defaultSize: { w: 160, h: 60 },
     describe: 'A terminator: where a flow starts or ends.',
     keywords: ['terminator', 'start', 'end', 'stop', 'begin'],
@@ -69,7 +72,7 @@ export const flowchartShapes: readonly ShapeDef[] = [
     keywords: ['manual', 'operation', 'human', 'trapezoid'],
   }),
   step('delay', {
-    outline: { path: 'M 0 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H 0 Z' },
+    outline: { path: 'M 0 0 H {w - min(w, h/2)} A {min(w, h/2)} {h/2} 0 0 1 {w - min(w, h/2)} {h} H 0 Z' },
     defaultSize: { w: 140, h: 80 },
     describe: 'A delay: waiting before the flow continues.',
     keywords: ['delay', 'wait', 'pause'],

@@ -14,6 +14,8 @@ const value = { value: { type: 'number', min: 0.01, max: 0.99, default: 0.65 } }
 const at = (rx: string, ry: string) => [`w/2 + ${rx} * sin(2 * pi * value)`, `h/2 - ${ry} * cos(2 * pi * value)`];
 /** SVG's large-arc flag: 1 when the slice passes half a turn. */
 const large = 'round(value)';
+/** A step pill's end radius: half the height, but never past the middle. */
+const pillEnd = 'min(w/2, h/2)';
 const circle = (rx: string, ry: string) => `M {w/2 - ${rx}} {h/2} A {${rx}} {${ry}} 0 1 1 {w/2 + ${rx}} {h/2} A {${rx}} {${ry}} 0 1 1 {w/2 - ${rx}} {h/2} Z`;
 const r = 'min(w, h) * 0.1';
 
@@ -109,9 +111,12 @@ export const shapes: readonly ShapeDef[] = [
   }),
   piece('step-pill', {
     category: 'labels',
-    outline: { path: 'M {h/2} 0 H {w - h/2} A {h/2} {h/2} 0 0 1 {w - h/2} {h} H {h/2} A {h/2} {h/2} 0 0 1 {h/2} 0 Z' },
-    decorations: [{ path: circle('h * 0.38', 'h * 0.38').replaceAll('w/2', 'h/2') }],
-    textRegions: [{ name: 'body', x: 'h / w', y: 0.1, w: '1 - 1.2 * h / w', h: 0.8 }],
+    // the ends' horizontal radius never passes the middle, so a narrow pill stays inside its box, number circle included
+    outline: {
+      path: `M {${pillEnd}} 0 H {w - ${pillEnd}} A {${pillEnd}} {h/2} 0 0 1 {w - ${pillEnd}} {h} H {${pillEnd}} A {${pillEnd}} {h/2} 0 0 1 {${pillEnd}} 0 Z`,
+    },
+    decorations: [{ path: circle(`${pillEnd} * 0.76`, 'h * 0.38').replaceAll('w/2', `(${pillEnd})`) }],
+    textRegions: [{ name: 'body', x: `2 * ${pillEnd} / w`, y: 0.1, w: `max(0, 1 - 2.4 * ${pillEnd} / w)`, h: 0.8 }],
     defaultSize: { w: 200, h: 50 },
     describe: 'A pill with a numbered circle: one step of a numbered list.',
     keywords: ['step', 'pill', 'numbered', 'list', 'stage'],

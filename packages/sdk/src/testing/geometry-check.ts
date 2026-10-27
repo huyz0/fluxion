@@ -1,12 +1,19 @@
-// A definition's geometry across its parameter ranges (FR-LIB-007, FR-LIB-003, ADR-0194): the outline, decorations and handles
-// stay in the box (each cubic at its exact extremes), and every text region has a nonnegative size inside it, at the default size for each number param's minimum,
-// maximum and default and for every enum value; anchors are fractions of the box.
+// A definition's geometry across its parameter ranges and sizes (FR-LIB-007, FR-LIB-003, ADR-0194): the outline, decorations
+// and handles stay in the box (each cubic at its exact extremes), and every text region has a nonnegative size inside it, for
+// each number param's minimum, maximum and default, every enum value and every corner of the number-param box (M18.121), at
+// the default size and at the smallest sizes the check resizes to; anchors are fractions of the box.
 import { evaluateOutline, type ParamSpec, type ShapeDef, shapeHandles, textRegion } from '@fluxion/core';
 
 /** How far a point may fall outside the box, in units: rounding only. */
 const SLACK = 0.5;
 
+/** The smallest side the check resizes a shape to, in units: a box this small still draws inside itself. */
+export const MIN_CHECK_SIDE = 16;
+/** Up to this many bounded number params, every corner of their box is checked; beyond it, every pair's corners (the rest at defaults). */
+const ALL_CORNERS = 6;
+
 type Point = { readonly x: number; readonly y: number };
+type Size = { readonly w: number; readonly h: number };
 type Variant = { readonly label: string; readonly params: Readonly<Record<string, unknown>> };
 
 const round = (v: number): number => Math.round(v * 100) / 100;
@@ -20,16 +27,48 @@ function paramValues(id: string, name: string, spec: ParamSpec): { readonly valu
   return values.length === 2 ? { values } : { values, unbounded: `${id}: param ${name} has no min or max, so its range cannot be checked` };
 }
 
-/** The params to evaluate: all defaults, then each number param at its bounds and each enum at every value. */
+/** Every combination of the bounded number params at their bounds, or of each pair when there are too many (cp12 F5). */
+function corners(bounded: readonly (readonly [string, number, number])[]): Readonly<Record<string, number>>[] {
+  const combine = (params: readonly (readonly [string, number, number])[]): Record<string, number>[] =>
+    params.reduce<Record<string, number>[]>(
+      (acc, [name, min, max]) =>
+        acc.flatMap((c) => [
+          { ...c, [name]: min },
+          { ...c, [name]: max },
+        ]),
+      [{}],
+    );
+  if (bounded.length < 2) return [];
+  if (bounded.length <= ALL_CORNERS) return combine(bounded);
+  return bounded.flatMap((a, i) => bounded.slice(i + 1).flatMap((b) => combine([a, b])));
+}
+
+/** The params to evaluate: all defaults, each number param at its bounds, each enum at every value, then the corners. */
 function variants(def: ShapeDef): { readonly list: Variant[]; readonly unbounded: string[] } {
   const list: Variant[] = [{ label: 'defaults', params: {} }];
   const unbounded: string[] = [];
+  const bounded: [string, number, number][] = [];
   for (const [name, spec] of Object.entries(def.params ?? {})) {
     const param = paramValues(def.id, name, spec);
     if (param.unbounded !== undefined) unbounded.push(param.unbounded);
     for (const value of param.values) list.push({ label: `${name}=${value}`, params: { [name]: value } });
+    if (spec.type === 'number' && spec.min !== undefined && spec.max !== undefined) bounded.push([name, spec.min, spec.max]);
   }
+  for (const params of corners(bounded))
+    list.push({
+      label: Object.entries(params)
+        .map(([name, value]) => `${name}=${value}`)
+        .join(','),
+      params,
+    });
   return { list, unbounded };
+}
+
+/** The sizes to evaluate: the default, then the smallest square and the default narrowed and flattened to the smallest side. */
+function sizes(def: ShapeDef): Size[] {
+  const { w, h } = def.defaultSize;
+  const min = MIN_CHECK_SIDE;
+  return [def.defaultSize, { w: min, h: min }, { w: min, h }, { w, h: min }];
 }
 
 type Cubic = { readonly p0: Point; readonly p1: Point; readonly p2: Point; readonly p3: Point };
@@ -62,10 +101,9 @@ function extremes(s: Cubic): Point[] {
   return ts.map((t) => cubicAt(s, t));
 }
 
-/** The problems of one variant: outline or decorations, handles and text regions. */
-function variantProblems(def: ShapeDef, variant: Variant): string[] {
-  const size = def.defaultSize;
-  const where = `${def.id} at ${variant.label}`;
+/** The problems of one variant at one size: outline or decorations, handles and text regions. */
+function variantProblems(def: ShapeDef, variant: Variant, size: Size): string[] {
+  const where = `${def.id} at ${variant.label}${size === def.defaultSize ? '' : ` ${size.w}x${size.h}`}`;
   const outside = (p: Point) => p.x < -SLACK || p.y < -SLACK || p.x > size.w + SLACK || p.y > size.h + SLACK;
   const outline = evaluateOutline(def, size, variant.params);
   if (!outline.ok) return [`${where}: outline does not evaluate: ${outline.error.message}`];
@@ -97,5 +135,5 @@ export function geometryProblems(def: ShapeDef): string[] {
   const anchors = (def.anchors ?? [])
     .filter((a) => fractionOutside(a.x) || fractionOutside(a.y) || fractionOutside(a.t))
     .map((a) => `${def.id}: anchor ${a.name} is outside the box`);
-  return [...new Set([...unbounded, ...anchors, ...list.flatMap((v) => variantProblems(def, v))])];
+  return [...new Set([...unbounded, ...anchors, ...sizes(def).flatMap((size) => list.flatMap((v) => variantProblems(def, v, size)))])];
 }

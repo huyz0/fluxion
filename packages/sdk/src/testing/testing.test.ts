@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildShapePackFiles, type DeclarativeShapePack, namedShapeDefs, type ShapeDef } from '../index.js';
 import { drawnPoints } from './drawn-points.js';
-import { geometryProblems } from './geometry-check.js';
+import { geometryProblems, MIN_CHECK_SIDE } from './geometry-check.js';
 import { type CheckedInShapePack, checkShapePack, checkShapePackFiles, renderShapeGolden, shapePackExpectation, UNRELEASED_PACK_VERSION } from './index.js';
 
 const box: ShapeDef = {
@@ -191,6 +191,9 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     expect((await checkShapePack(escaping, checkedIn(escaping))).bounds).toEqual([
       'sample:box: draws outside its 120x60 box at (180, 30)',
       'sample:box at defaults: draws outside its 120x60 box at (180, 30)',
+      'sample:box at defaults 16x16: draws outside its 16x16 box at (24, 8)',
+      'sample:box at defaults 16x60: draws outside its 16x60 box at (24, 30)',
+      'sample:box at defaults 120x16: draws outside its 120x16 box at (180, 8)',
     ]);
   });
 
@@ -223,6 +226,15 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
       'sample:box at d=2: text region body has a negative size -120x60',
       'sample:box at d=2: text region 1 (tail) leaves the box',
       'sample:box at side=out: draws outside its 120x60 box at (130, 30)',
+      ...['16x16', '16x60', '120x16'].flatMap((at) => {
+        const w = Number(at.split('x')[0]);
+        return [
+          `sample:box at d=2 ${at}: handle 0 (d) leaves the box at (${2 * w}, 0)`,
+          `sample:box at d=2 ${at}: text region body has a negative size -${at}`,
+          `sample:box at d=2 ${at}: text region 1 (tail) leaves the box`,
+          `sample:box at side=out ${at}: draws outside its ${at} box at (${w + 10}, ${Number(at.split('x')[1]) / 2})`,
+        ];
+      }),
     ]);
     expect(geometryProblems({ ...box, params: { r: { type: 'number', min: 0, default: 1 } } })).toEqual([
       'sample:box: param r has no min or max, so its range cannot be checked',
@@ -230,18 +242,49 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     // a curve is checked at its exact extreme (y = -44.44 at t = 1/3), which sampling at quarter steps would miss
     expect(geometryProblems({ ...box, outline: { path: 'M 0 0 C 0 -100 0 0 0 0 L {w} {h} Z' } })).toEqual([
       'sample:box at defaults: draws outside its 120x60 box at (0, -44.44)',
+      'sample:box at defaults 16x16: draws outside its 16x16 box at (0, -44.44)',
+      'sample:box at defaults 16x60: draws outside its 16x60 box at (0, -44.44)',
+      'sample:box at defaults 120x16: draws outside its 120x16 box at (0, -44.44)',
     ]);
     // a handle that does not evaluate at a bound is reported, not dropped
     const hidden = { ...box, params: { d: { type: 'number' as const, min: 0, max: 2, default: 1 } }, handles: [{ param: 'd', x: 'w * sqrt(d - 1)', y: '0' }] };
-    expect(geometryProblems(hidden)).toEqual(['sample:box at d=0: handle 0 (d) does not evaluate']);
+    expect(geometryProblems(hidden)).toEqual(['', ' 16x16', ' 16x60', ' 120x16'].map((at) => `sample:box at d=0${at}: handle 0 (d) does not evaluate`));
     expect(geometryProblems({ ...box, anchors: [{ name: 'out', x: 1.5, y: 0.5 }] })).toEqual(['sample:box: anchor out is outside the box']);
     const failing = geometryProblems({
       ...box,
       params: { k: { type: 'number', min: -1, max: 1, default: 1 } },
       outline: { path: 'M 0 0 L {w * sqrt(k)} 0 L 0 {h} Z' },
     });
-    expect(failing).toHaveLength(1);
+    expect(failing).toHaveLength(4);
     expect(failing[0]).toMatch(/^sample:box at k=-1: outline does not evaluate: /);
+  });
+
+  it('FR-LIB-007, FR-LIB-003: params are checked together at every corner of their range, and shapes at the smallest sizes (M18.121, cp12 F5)', () => {
+    // cp12 F5's mutant: each param alone at its maximum leaves the other at 0, so only the corner where both are 1 escapes
+    const both: ShapeDef = {
+      ...box,
+      params: { a: { type: 'number', min: 0, max: 1, default: 0 }, b: { type: 'number', min: 0, max: 1, default: 0 } },
+      outline: { path: 'M 0 0 L {w} 0 L {w + a * b * 20} {h/2} L {w} {h} L 0 {h} Z' },
+    };
+    expect(geometryProblems(both)).toEqual([
+      'sample:box at a=1,b=1: draws outside its 120x60 box at (140, 30)',
+      'sample:box at a=1,b=1 16x16: draws outside its 16x16 box at (36, 8)',
+      'sample:box at a=1,b=1 16x60: draws outside its 16x60 box at (36, 30)',
+      'sample:box at a=1,b=1 120x16: draws outside its 120x16 box at (140, 8)',
+    ]);
+    // beyond six bounded params every pair's corners are checked, the rest at their defaults
+    const many: ShapeDef = {
+      ...box,
+      params: Object.fromEntries(['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((n) => [n, { type: 'number' as const, min: 0, max: 1, default: 0 }])),
+      outline: { path: 'M 0 0 L {w} 0 L {w + f * g * 20} {h/2} L {w} {h} L 0 {h} Z' },
+    };
+    expect(geometryProblems(many)[0]).toBe('sample:box at f=1,g=1: draws outside its 120x60 box at (140, 30)');
+    // a fixed offset fits the default box but not a narrow one
+    expect(geometryProblems({ ...box, outline: { path: 'M 0 0 L 40 0 L 40 {h} L 0 {h} Z' } })).toEqual([
+      'sample:box at defaults 16x16: draws outside its 16x16 box at (40, 0)',
+      'sample:box at defaults 16x60: draws outside its 16x60 box at (40, 0)',
+    ]);
+    expect(MIN_CHECK_SIDE).toBe(16);
   });
 
   it('FR-LIB-007: the unreleased version is never recorded, and a released version missing from the ledger fails (M18.110)', async () => {
