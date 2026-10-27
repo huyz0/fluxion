@@ -1,0 +1,207 @@
+{
+  "definitions": [
+    {
+      "category": "events",
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A start event (thin circle): where the process begins.",
+      "id": "bpmn:start-event",
+      "keywords": [
+        "start",
+        "event",
+        "begin",
+        "trigger",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "events",
+      "decorations": [
+        {
+          "path": "M {w/2 - (w/2 - 4)} {h/2} A {w/2 - 4} {h/2 - 4} 0 1 1 {w/2 + (w/2 - 4)} {h/2} A {w/2 - 4} {h/2 - 4} 0 1 1 {w/2 - (w/2 - 4)} {h/2} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "An intermediate event (double circle): something that happens during the process.",
+      "id": "bpmn:intermediate-event",
+      "keywords": [
+        "intermediate",
+        "event",
+        "catch",
+        "throw",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "events",
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        },
+        "stroke": {
+          "width": 4
+        }
+      },
+      "describe": "An end event (thick circle): where a path of the process finishes.",
+      "id": "bpmn:end-event",
+      "keywords": [
+        "end",
+        "event",
+        "finish",
+        "terminate",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "events",
+      "decorations": [
+        {
+          "path": "M {w/2 - (w/2 - 4)} {h/2} A {w/2 - 4} {h/2 - 4} 0 1 1 {w/2 + (w/2 - 4)} {h/2} A {w/2 - 4} {h/2 - 4} 0 1 1 {w/2 - (w/2 - 4)} {h/2} Z"
+        },
+        {
+          "path": "M {w/2 - (w * 0.3)} {h/2} A {w * 0.3} {h * 0.3} 0 1 1 {w/2 + (w * 0.3)} {h/2} A {w * 0.3} {h * 0.3} 0 1 1 {w/2 - (w * 0.3)} {h/2} Z"
+        },
+        {
+          "path": "M {w/2} {h * 0.28} V {h/2} L {w * 0.64} {h * 0.58}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A timer event: the process waits for a date, time or interval.",
+      "id": "bpmn:timer-event",
+      "keywords": [
+        "timer",
+        "clock",
+        "wait",
+        "schedule",
+        "event",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "events",
+      "decorations": [
+        {
+          "path": "M {w/2 - (w/2 - 4)} {h/2} A {w/2 - 4} {h/2 - 4} 0 1 1 {w/2 + (w/2 - 4)} {h/2} A {w/2 - 4} {h/2 - 4} 0 1 1 {w/2 - (w/2 - 4)} {h/2} Z"
+        },
+        {
+          "path": "M {w * 0.3} {h * 0.34} H {w * 0.7} V {h * 0.66} H {w * 0.3} Z"
+        },
+        {
+          "path": "M {w * 0.3} {h * 0.34} L {w/2} {h/2} L {w * 0.7} {h * 0.34}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A message event (envelope): the process sends or waits for a message.",
+      "id": "bpmn:message-event",
+      "keywords": [
+        "message",
+        "envelope",
+        "email",
+        "signal",
+        "event",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

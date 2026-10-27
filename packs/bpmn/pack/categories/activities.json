@@ -1,0 +1,142 @@
+{
+  "definitions": [
+    {
+      "category": "activities",
+      "defaultSize": {
+        "h": 80,
+        "w": 140
+      },
+      "describe": "A task: one unit of work done by a person or a system.",
+      "id": "bpmn:task",
+      "keywords": [
+        "task",
+        "activity",
+        "step",
+        "work",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {0 + min(10, w * 0.1, h * 0.15)} {0} H {w - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0} {0 + min(10, w * 0.1, h * 0.15)} V {h - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0 - min(10, w * 0.1, h * 0.15)} {h - 0} H {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0} {h - 0 - min(10, w * 0.1, h * 0.15)} V {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0 + min(10, w * 0.1, h * 0.15)} {0} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.84,
+          "name": "body",
+          "w": 0.88,
+          "x": 0.06,
+          "y": 0.08
+        }
+      ]
+    },
+    {
+      "category": "activities",
+      "decorations": [
+        {
+          "path": "M {w/2 - min(14, w * 0.15, h * 0.25)/2} {h - min(14, w * 0.15, h * 0.25) - 2} H {w/2 + min(14, w * 0.15, h * 0.25)/2} V {h - 2} H {w/2 - min(14, w * 0.15, h * 0.25)/2} Z"
+        },
+        {
+          "path": "M {w/2} {h - min(14, w * 0.15, h * 0.25) * 0.8 - 2} V {h - min(14, w * 0.15, h * 0.25) * 0.2 - 2}"
+        },
+        {
+          "path": "M {w/2 - min(14, w * 0.15, h * 0.25) * 0.3} {h - min(14, w * 0.15, h * 0.25)/2 - 2} H {w/2 + min(14, w * 0.15, h * 0.25) * 0.3}"
+        }
+      ],
+      "defaultSize": {
+        "h": 80,
+        "w": 140
+      },
+      "describe": "A collapsed sub-process: an activity with its own detailed flow, marked with a plus.",
+      "id": "bpmn:subprocess",
+      "keywords": [
+        "subprocess",
+        "sub-process",
+        "collapsed",
+        "activity",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {0 + min(10, w * 0.1, h * 0.15)} {0} H {w - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0} {0 + min(10, w * 0.1, h * 0.15)} V {h - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0 - min(10, w * 0.1, h * 0.15)} {h - 0} H {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0} {h - 0 - min(10, w * 0.1, h * 0.15)} V {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0 + min(10, w * 0.1, h * 0.15)} {0} Z"
+      },
+      "textRegions": [
+        {
+          "h": "max(0, 1 - (min(14, w * 0.15, h * 0.25) + 8) / h)",
+          "name": "body",
+          "w": 0.88,
+          "x": 0.06,
+          "y": 0.08
+        }
+      ]
+    },
+    {
+      "category": "activities",
+      "defaultSize": {
+        "h": 80,
+        "w": 140
+      },
+      "defaultStyle": {
+        "stroke": {
+          "width": 4
+        }
+      },
+      "describe": "A call activity (thick border): reuses a process or task defined elsewhere.",
+      "id": "bpmn:call-activity",
+      "keywords": [
+        "call activity",
+        "reusable",
+        "global task",
+        "activity",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {0 + min(10, w * 0.1, h * 0.15)} {0} H {w - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0} {0 + min(10, w * 0.1, h * 0.15)} V {h - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0 - min(10, w * 0.1, h * 0.15)} {h - 0} H {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0} {h - 0 - min(10, w * 0.1, h * 0.15)} V {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0 + min(10, w * 0.1, h * 0.15)} {0} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.84,
+          "name": "body",
+          "w": 0.88,
+          "x": 0.06,
+          "y": 0.08
+        }
+      ]
+    },
+    {
+      "category": "activities",
+      "decorations": [
+        {
+          "path": "M {4 + max(0, min(10, w * 0.1, h * 0.15) - 3)} {4} H {w - 4 - max(0, min(10, w * 0.1, h * 0.15) - 3)} A {max(0, min(10, w * 0.1, h * 0.15) - 3)} {max(0, min(10, w * 0.1, h * 0.15) - 3)} 0 0 1 {w - 4} {4 + max(0, min(10, w * 0.1, h * 0.15) - 3)} V {h - 4 - max(0, min(10, w * 0.1, h * 0.15) - 3)} A {max(0, min(10, w * 0.1, h * 0.15) - 3)} {max(0, min(10, w * 0.1, h * 0.15) - 3)} 0 0 1 {w - 4 - max(0, min(10, w * 0.1, h * 0.15) - 3)} {h - 4} H {4 + max(0, min(10, w * 0.1, h * 0.15) - 3)} A {max(0, min(10, w * 0.1, h * 0.15) - 3)} {max(0, min(10, w * 0.1, h * 0.15) - 3)} 0 0 1 {4} {h - 4 - max(0, min(10, w * 0.1, h * 0.15) - 3)} V {4 + max(0, min(10, w * 0.1, h * 0.15) - 3)} A {max(0, min(10, w * 0.1, h * 0.15) - 3)} {max(0, min(10, w * 0.1, h * 0.15) - 3)} 0 0 1 {4 + max(0, min(10, w * 0.1, h * 0.15) - 3)} {4} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 80,
+        "w": 140
+      },
+      "describe": "A transaction (double border): a sub-process whose steps succeed or are undone together.",
+      "id": "bpmn:transaction",
+      "keywords": [
+        "transaction",
+        "compensation",
+        "atomic",
+        "subprocess",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {0 + min(10, w * 0.1, h * 0.15)} {0} H {w - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0} {0 + min(10, w * 0.1, h * 0.15)} V {h - 0 - min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {w - 0 - min(10, w * 0.1, h * 0.15)} {h - 0} H {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0} {h - 0 - min(10, w * 0.1, h * 0.15)} V {0 + min(10, w * 0.1, h * 0.15)} A {min(10, w * 0.1, h * 0.15)} {min(10, w * 0.1, h * 0.15)} 0 0 1 {0 + min(10, w * 0.1, h * 0.15)} {0} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.8,
+          "name": "body",
+          "w": 0.84,
+          "x": 0.08,
+          "y": 0.1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

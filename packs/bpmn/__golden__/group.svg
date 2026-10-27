@@ -1,0 +1,10 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:240px;height:160px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 240 160">
+      <path class="fx-outline" d="M10 0 L230 0 C235.52 0 240 4.48 240 10 L240 150 C240 155.52 235.52 160 230 160 L10 160 C4.48 160 0 155.52 0 150 L0 10 C0 4.48 4.48 0 10 0 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:8 4">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:140px 100px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

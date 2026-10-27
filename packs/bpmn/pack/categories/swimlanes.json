@@ -1,0 +1,88 @@
+{
+  "definitions": [
+    {
+      "category": "swimlanes",
+      "decorations": [
+        {
+          "path": "M 0 {min(30, h / 4)} H {w}"
+        }
+      ],
+      "defaultSize": {
+        "h": 180,
+        "w": 480
+      },
+      "defaultStyle": {
+        "fill": "transparent",
+        "font": {
+          "verticalAlign": "middle"
+        }
+      },
+      "describe": "A pool: one participant in the process, with its name in the top band.",
+      "id": "bpmn:pool",
+      "keywords": [
+        "pool",
+        "participant",
+        "swimlane",
+        "organization",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": "min(30, h / 4) / h",
+          "name": "name",
+          "w": 0.96,
+          "x": 0.02,
+          "y": 0
+        },
+        {
+          "h": "1 - min(30, h / 4) / h",
+          "name": "body",
+          "w": 0.96,
+          "x": 0.02,
+          "y": "min(30, h / 4) / h"
+        }
+      ]
+    },
+    {
+      "category": "swimlanes",
+      "defaultSize": {
+        "h": 120,
+        "w": 480
+      },
+      "defaultStyle": {
+        "fill": "transparent",
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A lane: a role or team inside a pool, named at its top left.",
+      "id": "bpmn:lane",
+      "keywords": [
+        "lane",
+        "role",
+        "team",
+        "swimlane",
+        "responsibility",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M 0 0 H {w} V {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0.2,
+          "name": "name",
+          "w": 0.4,
+          "x": 0.02,
+          "y": 0.02
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

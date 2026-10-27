@@ -1,0 +1,287 @@
+{
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "activities": {
+      "path": "categories/activities.json",
+      "sha256": "0e61566e0c429db764ca161c90a12fca8d069b3d7bf3093404205ef8344507a3"
+    },
+    "artifacts": {
+      "path": "categories/artifacts.json",
+      "sha256": "cba54b98453f000eb349513b6025a54f111a3d7c123501d7f6e3425dbf05fc43"
+    },
+    "data": {
+      "path": "categories/data.json",
+      "sha256": "53e356a5fcdf55b3f94d773dab44caf014fe4962a04e7f070a1cfbcea4174cb8"
+    },
+    "events": {
+      "path": "categories/events.json",
+      "sha256": "a24c0b59ce6eeb8d3a7eda6deaa693055b9d627bf21f2fe4fc40f3113a12ffaf"
+    },
+    "gateways": {
+      "path": "categories/gateways.json",
+      "sha256": "c6b23a69c9cb36e956cc9e65190d516d9e4ee38dff10b06221a94f4092213579"
+    },
+    "swimlanes": {
+      "path": "categories/swimlanes.json",
+      "sha256": "3a71023a689e31d8e3c0a62a7e21bc9401ae0165c47e83f01c38492106ff37e9"
+    }
+  },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
+  "definitions": [
+    {
+      "category": "activities",
+      "id": "bpmn:task",
+      "keywords": [
+        "task",
+        "activity",
+        "step",
+        "work",
+        "bpmn"
+      ],
+      "name": "Task"
+    },
+    {
+      "category": "activities",
+      "id": "bpmn:subprocess",
+      "keywords": [
+        "subprocess",
+        "sub-process",
+        "collapsed",
+        "activity",
+        "bpmn"
+      ],
+      "name": "Sub-process"
+    },
+    {
+      "category": "activities",
+      "id": "bpmn:call-activity",
+      "keywords": [
+        "call activity",
+        "reusable",
+        "global task",
+        "activity",
+        "bpmn"
+      ],
+      "name": "Call activity"
+    },
+    {
+      "category": "activities",
+      "id": "bpmn:transaction",
+      "keywords": [
+        "transaction",
+        "compensation",
+        "atomic",
+        "subprocess",
+        "bpmn"
+      ],
+      "name": "Transaction"
+    },
+    {
+      "category": "events",
+      "id": "bpmn:start-event",
+      "keywords": [
+        "start",
+        "event",
+        "begin",
+        "trigger",
+        "bpmn"
+      ],
+      "name": "Start event"
+    },
+    {
+      "category": "events",
+      "id": "bpmn:intermediate-event",
+      "keywords": [
+        "intermediate",
+        "event",
+        "catch",
+        "throw",
+        "bpmn"
+      ],
+      "name": "Intermediate event"
+    },
+    {
+      "category": "events",
+      "id": "bpmn:end-event",
+      "keywords": [
+        "end",
+        "event",
+        "finish",
+        "terminate",
+        "bpmn"
+      ],
+      "name": "End event"
+    },
+    {
+      "category": "events",
+      "id": "bpmn:timer-event",
+      "keywords": [
+        "timer",
+        "clock",
+        "wait",
+        "schedule",
+        "event",
+        "bpmn"
+      ],
+      "name": "Timer event"
+    },
+    {
+      "category": "events",
+      "id": "bpmn:message-event",
+      "keywords": [
+        "message",
+        "envelope",
+        "email",
+        "signal",
+        "event",
+        "bpmn"
+      ],
+      "name": "Message event"
+    },
+    {
+      "category": "gateways",
+      "id": "bpmn:exclusive-gateway",
+      "keywords": [
+        "exclusive",
+        "xor",
+        "gateway",
+        "decision",
+        "branch",
+        "bpmn"
+      ],
+      "name": "Exclusive gateway"
+    },
+    {
+      "category": "gateways",
+      "id": "bpmn:parallel-gateway",
+      "keywords": [
+        "parallel",
+        "and",
+        "gateway",
+        "fork",
+        "join",
+        "bpmn"
+      ],
+      "name": "Parallel gateway"
+    },
+    {
+      "category": "gateways",
+      "id": "bpmn:inclusive-gateway",
+      "keywords": [
+        "inclusive",
+        "or",
+        "gateway",
+        "condition",
+        "bpmn"
+      ],
+      "name": "Inclusive gateway"
+    },
+    {
+      "category": "gateways",
+      "id": "bpmn:event-gateway",
+      "keywords": [
+        "event-based",
+        "gateway",
+        "race",
+        "wait",
+        "bpmn"
+      ],
+      "name": "Event-based gateway"
+    },
+    {
+      "category": "data",
+      "id": "bpmn:data-object",
+      "keywords": [
+        "data",
+        "document",
+        "object",
+        "file",
+        "input",
+        "output",
+        "bpmn"
+      ],
+      "name": "Data object"
+    },
+    {
+      "category": "data",
+      "id": "bpmn:data-store",
+      "keywords": [
+        "data store",
+        "database",
+        "storage",
+        "persist",
+        "bpmn"
+      ],
+      "name": "Data store"
+    },
+    {
+      "category": "swimlanes",
+      "id": "bpmn:pool",
+      "keywords": [
+        "pool",
+        "participant",
+        "swimlane",
+        "organization",
+        "bpmn"
+      ],
+      "name": "Pool"
+    },
+    {
+      "category": "swimlanes",
+      "id": "bpmn:lane",
+      "keywords": [
+        "lane",
+        "role",
+        "team",
+        "swimlane",
+        "responsibility",
+        "bpmn"
+      ],
+      "name": "Lane"
+    },
+    {
+      "category": "artifacts",
+      "id": "bpmn:group",
+      "keywords": [
+        "group",
+        "cluster",
+        "dashed",
+        "category",
+        "artifact",
+        "bpmn"
+      ],
+      "name": "Group"
+    },
+    {
+      "category": "artifacts",
+      "id": "bpmn:annotation",
+      "keywords": [
+        "annotation",
+        "note",
+        "comment",
+        "text",
+        "artifact",
+        "bpmn"
+      ],
+      "name": "Text annotation"
+    }
+  ],
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "bpmn",
+  "license": "MIT",
+  "name": "BPMN-lite",
+  "version": "0.0.0"
+}

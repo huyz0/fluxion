@@ -1,0 +1,175 @@
+{
+  "definitions": [
+    {
+      "category": "gateways",
+      "decorations": [
+        {
+          "path": "M {w/2 - w * 0.2 * 0.7} {h/2 - h * 0.2 * 0.7} L {w/2 + w * 0.2 * 0.7} {h/2 + h * 0.2 * 0.7}"
+        },
+        {
+          "path": "M {w/2 + w * 0.2 * 0.7} {h/2 - h * 0.2 * 0.7} L {w/2 - w * 0.2 * 0.7} {h/2 + h * 0.2 * 0.7}"
+        }
+      ],
+      "defaultSize": {
+        "h": 56,
+        "w": 56
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "An exclusive gateway (X): exactly one outgoing path is taken.",
+      "id": "bpmn:exclusive-gateway",
+      "keywords": [
+        "exclusive",
+        "xor",
+        "gateway",
+        "decision",
+        "branch",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "gateways",
+      "decorations": [
+        {
+          "path": "M {w/2} {h/2 - h * 0.2} V {h/2 + h * 0.2}"
+        },
+        {
+          "path": "M {w/2 - w * 0.2} {h/2} H {w/2 + w * 0.2}"
+        }
+      ],
+      "defaultSize": {
+        "h": 56,
+        "w": 56
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A parallel gateway (+): all paths run at once, or wait for each other to join.",
+      "id": "bpmn:parallel-gateway",
+      "keywords": [
+        "parallel",
+        "and",
+        "gateway",
+        "fork",
+        "join",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "gateways",
+      "decorations": [
+        {
+          "path": "M {w/2 - (w * 0.2)} {h/2} A {w * 0.2} {h * 0.2} 0 1 1 {w/2 + (w * 0.2)} {h/2} A {w * 0.2} {h * 0.2} 0 1 1 {w/2 - (w * 0.2)} {h/2} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 56,
+        "w": 56
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "An inclusive gateway (O): one or more outgoing paths are taken.",
+      "id": "bpmn:inclusive-gateway",
+      "keywords": [
+        "inclusive",
+        "or",
+        "gateway",
+        "condition",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "gateways",
+      "decorations": [
+        {
+          "path": "M {w/2 - (w * 0.24)} {h/2} A {w * 0.24} {h * 0.24} 0 1 1 {w/2 + (w * 0.24)} {h/2} A {w * 0.24} {h * 0.24} 0 1 1 {w/2 - (w * 0.24)} {h/2} Z"
+        },
+        {
+          "path": "M {w/2 - (w * 0.2)} {h/2} A {w * 0.2} {h * 0.2} 0 1 1 {w/2 + (w * 0.2)} {h/2} A {w * 0.2} {h * 0.2} 0 1 1 {w/2 - (w * 0.2)} {h/2} Z"
+        },
+        {
+          "path": "M {w/2} {h/2 - h * 0.12} L {w/2 + w * 0.114} {h/2 - h * 0.037} L {w/2 + w * 0.071} {h/2 + h * 0.097} L {w/2 - w * 0.071} {h/2 + h * 0.097} L {w/2 - w * 0.114} {h/2 - h * 0.037} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 56,
+        "w": 56
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "An event-based gateway: the path taken is the one whose event happens first.",
+      "id": "bpmn:event-gateway",
+      "keywords": [
+        "event-based",
+        "gateway",
+        "race",
+        "wait",
+        "bpmn"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h/2} L {w/2} {h} L 0 {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

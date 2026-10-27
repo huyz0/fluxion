@@ -3021,3 +3021,8 @@ The ledger never records the unreleased 0.0.0 and keeps every CHANGELOG-released
 - format `importedShapePack`/`iconifyShapePack` delegate to it, are synchronous and take no hasher; paths in caller terms; format `canonicalJson` re-exports core's. ADR-0196 states where SVG/draw.io/Iconify provenance and licence come from.
 - All six first-party packs' `pack/` regenerated (sorted keys; allowed at 0.0.0).
 - Review r1 changes-requested, fixed: `checkShapePack` compares loaded definitions with the encoder's stored ones (category text and missing categories become slugs), tested with `Flow Charts` and no category; `importedShapePack` maps index entry paths (`/definitions/<i>/name` → `/entries/<i>/name`, id/keywords/category → `/entries/<i>/definition/...`), tested with an empty name.
+
+## M18.26 — BPMN-lite pack (2026-10-27)
+
+Adds @fluxion/pack-bpmn: 19 BPMN-lite definitions (activities: task, sub-process, call activity, transaction; events: start, intermediate, end, timer, message; gateways: exclusive, parallel, inclusive, event-based; data object and store; pool and lane; group and text annotation), MIT original work, encoded by the shared encoder (ADR-0196) with a golden per definition. Event kinds differ by border width and inner mark; the annotation's outline is its open bracket.
+- Review r1 changes-requested, fixed: events and gateways carry their label below the symbol (`x 0, y 1, w 1, h 0`, top-aligned, as uml's small symbols do); sub-process and data-object text heights clamp at 0 and the data-object region's top at 1.

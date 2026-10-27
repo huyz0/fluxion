@@ -88,6 +88,9 @@
       "path": "./packs/uml"
     },
     {
+      "path": "./packs/bpmn"
+    },
+    {
       "path": "./e2e"
     }
   ]
