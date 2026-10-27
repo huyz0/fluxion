@@ -2950,3 +2950,8 @@ checkShapePack now evaluates each definition at every number param's min, max an
 - pack-connectors.test.ts 3/3: same bound route as plain orthogonal, global pass includes it (reverting the routerBase line turns it RED), five nonempty SVG goldens; parser refuses foreign namespace, duplicates, code keys, unknown kinds, bad lengths. Follow-ups M18.104 (loader) and M18.105 (portable embed + editor picker).
 - Review r1 changes-requested, fixed: parallel fanning and editor handles (segments, tangents) use the base router (`fannedPath` base arg, editor `readRoutes` sets `RoutedEnds.base`); double offsets polylines exactly with mitred corners (curves still sampled); pipe core is white at 0.65 opacity over the wall, not the screen background. Tests: fanned pair equals plain orthogonal pair; handles of lines:wavy/bow equal orthogonal/curved; exact double points at a bend.
 
+## M18.43 checkpoint cp11 (7545e708..533b0a04)
+- Fresh independent checkpoint: changes requested, 2 major and 5 minor.
+- F1 rebased stream commits land without re-gating and no landed diff matches its reviewed hash → M18.106. F2 → M18.99 extended; Commit cells filled.
+- F3 Replace mode latches → M18.107. F4 two pack encoders → M18.108 (M18.29, M18.105, M18.81 amended). F6 font-engine rebuild never runs → M18.109. F5, F7 (M18.103 already landed) → M18.110.
+- Row IDs M18.104/105 were taken by two streams; M18.38's connector rows renumbered to M18.111/112.

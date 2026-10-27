@@ -1,0 +1,118 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp11",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..533b0a043d75ed10b66d0a04cef8210ae910f85e",
+  "reviewer": "claude:independent-subagent:m18-cp11",
+  "verdict": "changes-requested",
+  "findings": [
+    {
+      "id": "F1",
+      "file": "scripts/gates/check-checkpoint.mjs",
+      "line": 113,
+      "severity": "major",
+      "failure_scenario": "The four streams land rebased commits on main, and those commits never run the local hooks. As a result: (a) `check-checkpoint.mjs --commit` fails for d029982 (8/8) and 533b0a0 (9/8), and the CI gates workflow is red on main at both ('per-commit message gates'). (b) e8185ce landed with a failing harness-tests leg (pack-goldens.test.mjs was missing from SOURCE_HARNESS), and 03918b9 had to repair main. (c) ba60342, e8185ce, 03918b9 and d029982 each add their own task's digest line. review.mjs record appends that line after hashing the staged diff, so the committed diff cannot be the reviewed one. (d) None of the 10 landed diffs in 2d6a63e..533b0a0 hashes (git diff --binary) to any digest.log entry. Across all of M18, 2 of 81 match (abe812d, 8026874). Non-negotiable 4's binding therefore cannot be checked from history. A conflict resolution made during a rebase lands unreviewed. M18.36 r4 was re-reviewed after rebasing over cp10 and was then rebased again over e8185ce."
+    },
+    {
+      "id": "F2",
+      "file": ".harness/reviews/digest.log",
+      "line": 893,
+      "severity": "major",
+      "failure_scenario": "The cp10 disposition said M18.99 'SHALL land before further parallel-stream task commits'. It is still todo after 9 more task commits. Tracked pass lines are missing for M18.95 (now two checkpoints late), M18.37 and M18.48. The M18.95 F1 argued line, which the cp10 F6 disposition relies on, is still absent from review-argued.txt. Done rows M18.100, M18.102, M18.36, M18.37 and M18.48 have empty Commit cells, a third recurrence after cp9 F2 and cp10 F7. Also, M18.99 as written ('a tracked pass digest line for its diff') cannot pass by hash under rebased landings (F1d), so the leg needs a rebase-stable binding."
+    },
+    {
+      "id": "F3",
+      "file": "packages/editor/src/library/library-panel.tsx",
+      "line": 104,
+      "severity": "minor",
+      "failure_scenario": "The review minor on M18.37 is still live: `replacing` stays true when the selection is cleared, because replaceMode = replacing && canReplace only masks it. A user toggles Replace, deselects, and later selects another shape. Their next plain click in the library then replaces that shape instead of inserting a new one. The commit says the fix comes 'with the My shapes panel row', but M18.34 and M18.35 do not mention it and no argued line exists, so the deferral is untracked."
+    },
+    {
+      "id": "F4",
+      "file": "packages/sdk/src/pack-source.ts",
+      "line": 45,
+      "severity": "minor",
+      "failure_scenario": "The streams built two pack encoders. M18.102's SDK buildShapePackFiles writes insertion-order 2-space JSON, hashes with core's sync sha256, does no validation and keeps def.category verbatim. M18.101's format importedShapePack writes sorted-key canonicalJson, hashes through the injected port, validates and slugifies categories. The same pack gives different category bytes and hashes. M18.101's row says M18.29 'SHALL reuse this path', but ADR-0194 and checkShapePack require exactly the buildShapePackFiles output, so icons-lucide cannot satisfy both. Other rows also lag. M18.81 still names the 'ADR-0193 suite' and does not own lifting importedShapePack's refusal of font-bearing entries ('until the 1.1 font path'). M18.105 lists draw.io, but only Iconify has a provenance helper, and draw.io libraries declare no license."
+    },
+    {
+      "id": "F5",
+      "file": "packages/sdk/src/testing/pack-suite.ts",
+      "line": 135,
+      "severity": "minor",
+      "failure_scenario": "Pack versions are hand-kept VERSION constants that must equal package.json, and the packs are public (changesets privatePackages.version is false). Running `changeset version` for release bumps @fluxion/pack-* to 0.1.0 (pending minor changesets) while VERSION stays '0.0.0', so every pack test fails in the release step. Before release, any geometry change at 0.0.0 fails 'release the change as a new pack version' until someone bumps package.json by hand, outside changesets. M18.103's retrofit is the first row likely to hit this. Separately, deleting the ledger entry and then doing a write run re-records new hashes at the same version, and no gate notices."
+    },
+    {
+      "id": "F6",
+      "file": "tests/harness/font-engine.test.mjs",
+      "line": 48,
+      "severity": "minor",
+      "failure_scenario": "The m18-complete leg 'pinned font binaries rebuild identically and retain notices' skips the rebuild unless FLUXION_FONT_ENGINE_SOURCES and emsdk 6.0.13 are present, which they are in neither CI nor the gate. It then checks only manifest-recorded 'reproductions' that the author wrote. Spot mutant: replace woff2-codec.wasm with any build that has the same imports and update the manifest's sha256, bytes and reproductions. Every leg stays green, although M18.48's EARS requires reproducing binary hashes."
+    },
+    {
+      "id": "F7",
+      "file": "packs/basic/src/pack.test.ts",
+      "line": 16,
+      "severity": "minor",
+      "failure_scenario": "m18-complete tests() and verifyLeg pass process.env through, and only the harness probe deletes VITE_FLUXION_WRITE_PACK. If that variable is set in the shell from a regeneration, the 12 pack legs take the WRITE branch: a missing golden is written and passes, and orphan goldens and ledger or version problems are not checked. That reopens cp10 F1 for gate runs."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.106",
+      "note": "New row M18.106: landing parallel-stream commits on main re-runs commit-msg, checkpoint and precommit on the rebased commit, and refuses a landed diff whose non-bookkeeping content differs from the reviewed diff (e.g. a review hash over non-bookkeeping paths or patch-id). Record the d029982/533b0a0 checkpoint breach and the e8185ce red tree as history; this cp11 record clears the cadence."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.99",
+      "note": "Extend M18.99 to cover M18.95, M18.37 and M18.48 evidence, the M18.95 F1 argued line, and Commit cells for M18.100, M18.102, M18.36, M18.37 and M18.48. Bind coverage the same rebase-stable way as M18.106. Serialize: no further stream task commits until M18.99 and M18.106 land. Done in this commit: M18.99 extended; Commit cells filled for M18.100, M18.36, M18.37, M18.48 (and M18.103, M18.38). The M18.95 digest and argued lines land with M18.96, which is committed and waiting only on this checkpoint."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.107",
+      "note": "New row M18.107: Replace mode clears when the selection stops being replaceable, with a browser test for the toggle, deselect, reselect and plain-click sequence."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M18.108",
+      "note": "New row M18.108: one pack encoder and validator shared by first-party and imported packs, which format and sdk both use. Amend M18.29 (which path), M18.81 (ADR-0194 suite, and lifting the 1.1 refusal in importedShapePack) and M18.105 (where draw.io and SVG provenance and licence come from). Done: M18.108 added; M18.29 and the Studio imported-pack row M18.105 now depend on it; M18.81's criteria name the shared suite, the M18.108 encoder and lifting the imported 1.1 refusal."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M18.110",
+      "note": "M18.103 had already landed (43a90d4), so this is new row M18.110: VERSION is derived from or checked against package.json in a way `changeset version` keeps green, pre-release geometry changes follow a stated rule (e.g. the ledger only freezes published versions), and removing a ledger entry fails."
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "target": "M18.109",
+      "note": "New row M18.109: a pinned-toolchain CI job (or nightly) rebuilds woff2-codec.wasm and records the run as evidence the gate reads. Otherwise the leg is renamed to what it checks and the reproduction claim is argued with a human decision."
+    },
+    {
+      "finding": "F7",
+      "disposition": "reopen",
+      "target": "M18.110",
+      "note": "M18.103 had already landed (43a90d4), so this is new row M18.110: gate and ladder runs delete VITE_FLUXION_WRITE_PACK, or the write branch also refuses to pass without -u."
+    }
+  ],
+  "assessment": {
+    "coherence": "Within each stream the work is consistent. Replace-shape (M18.36 core command with DEFAULT_ANCHOR_DEFS moved to core and aliased by routing; M18.37 UI) holds together. draw.io (M18.19) reuses the witnessed SVG path and the shared register-imported helper. Across streams there are two pack encoders and conflicting row instructions for M18.29, M18.81 and M18.105 (F4). Bookkeeping drifts the same way in every stream (F1, F2).",
+    "specFidelity": "cp10 reopens: M18.100 closes F1 for tests (exact pack/ and __golden__ comparison, and a harness sandbox probe for missing, orphan and changed-ledger cases), except when the write variable leaks into gate runs (F7). M18.101 closes F3 at format/API level: Iconify and declared-SVG packs save and reopen with credit in tests. Studio wiring is M18.105, so a Studio user still cannot save imported icons portably. M18.102 closes F4 and F8: exported sources, one SDK check, index=package=0.0.0, a ledger refusing changed hashes at a recorded version. Library index names wait for M18.32, and the release interaction is open (F5). FR-LIB-006 (draw.io, 12/12, 10/10, 12/12) and FR-LIB-011 are now met. M18.48 pins the assets but does not wire them. FR-LIB-008 and FR-CON-010 remain untraced.",
+    "standardsDrift": "Digest lines, Commit cells and checkpoint cadence slipped for the third checkpoint running, now with red CI on main (F1, F2). A review minor was deferred to a row that does not own it (F3). Changesets, ADR-0194, API reports and requirement IDs in test titles were kept.",
+    "gateHonesty": "check-checkpoint works, and its CI run caught the breach, but streams landed past it (F1). The m18 gate has no digest or Commit-cell leg yet (M18.99). The font-engine reproduction leg passes without a rebuild (F6). The pack write variable can turn the pack legs into writers (F7). Spot mutants: deleting or adding a golden and zeroing a ledger hash are caught (harness probe). Swapping the codec wasm with an edited manifest is not caught (F6). Removing importedShapePack's font refusal is caught by its test.",
+    "architecture": "check-trace leaves 2 M/S requirements untraced (FR-LIB-008, FR-CON-010). check-layering and check-api could not run in this worktree because packs/infographic is not installed or built (environmental). format stays pure: draw.io uses an in-package inflate and XML reader with no node or DOM imports. The SDK main API grew by DeclarativeShapePack, buildShapePackFiles and namedShapeDefs under ADR-0194. The editor gained 1.3 MB of WASM assets (MIT, notices kept) that nothing loads yet.",
+    "planHealth": "104 rows against 43 planned (2.42x), 77 done and 27 todo; the backlog header still says 97. Since cp10, 6 rows were added (M18.100-105) and 8 feature or fix rows landed. This checkpoint adds 4 rows (M18.106-109). Parallel streams roughly doubled throughput but produced every major finding here. Serialize M18.99 and M18.106 before any further stream commit. CI on main is a deep queue (all ci runs 2d6a63e..533b0a0 still queued), so the three-browser and three-OS claims, including M18.37's, are unverified."
+  },
+  "planDelta": "Add M18.106 (gated landing of rebased stream commits, rebase-stable review binding), M18.107 (Replace-mode latch), M18.108 (one pack encoder; amend the M18.29, M18.81 and M18.105 EARS) and M18.109 (font-engine rebuild evidence). Extend M18.99 (M18.95, M18.37 and M18.48 evidence, the M18.95 F1 argued line, 5 Commit cells) and M18.103 (VERSION and changesets, ledger edits, the write variable in gates). Update the backlog header count. Hold all parallel-stream task commits until M18.99 and M18.106 land, and wait for the queued CI on 533b0a0 and the later 43a90d4 before the next checkpoint.",
+  "limitations": [
+    "Concentrated on 2d6a63e..533b0a0. Earlier commits were judged from the cp1-cp10 verdicts.",
+    "No repo writes. One `git fetch --dry-run` in /home/claude/fluxion-cp10 may have added objects to the shared object store; it updated no refs (origin/main has 43a90d4, outside this range).",
+    "pnpm verify, m18-complete, the pack suites and the browser legs were not run. check-layering and check-api failed for environmental reasons (packs/infographic is not installed or built in this worktree). check-trace and check-checkpoint --commit were run.",
+    "Hash comparisons used git diff --binary --no-color --no-ext-diff <c>^ <c> (abbrev 7-12 tried). The reviewed staged diffs themselves are not available, so F1(d) shows a mismatch, not its content.",
+    "draw.io (2000 lines) and the probe and build scripts were spot-read, not read line by line. The e8185ce red-tree claim relies on 03918b9's own message."
+  ]
+}
