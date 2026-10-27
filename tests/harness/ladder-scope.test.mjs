@@ -144,6 +144,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
       'mutation-evidence-gate',
       'nightly-diagnostics',
       'mode-policy',
+      'pack-goldens',
       'packages',
       'perf-baseline',
       'schema-open-objects',
