@@ -74,6 +74,7 @@ recorded. Then merge the worktree branch (rebase, keep one commit per task), mov
 |---|---|
 | `git commit` fails with `node: not found` | Node not on PATH for git hooks (Windows: restart the shell after installing Node) |
 | Hooks silently don't run on macOS/Linux | hooks lost the executable bit — rerun `setup.mjs` (tracked mode is 100755) |
+| `land: … conflicts` or `land: gates refused` | nothing was pushed and your branch is unchanged; rebase by hand, regenerate reports, re-review if the content changed, then `node scripts/harness/land.mjs --push` again (M18.106) |
 | `reviewed: no pass verdict` after a pass | you changed reviewed content after review (bookkeeping and a clean rebase keep the verdict, ADR-0195) — review again; if it says the digest is not staged, `git add .harness/reviews/digest.log` |
 | Tests pass alone but fail inside the hook | git exports `GIT_*` vars to hooks; test sandboxes must use `cleanEnv()` from `tests/harness/helpers.mjs` |
 | Codex quick gate never runs | project `.codex/` layer not trusted, or a Codex version where repo-local hooks don't fire (openai/codex#17532) |

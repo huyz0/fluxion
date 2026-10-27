@@ -45,7 +45,7 @@ while the milestone is not qualified complete:
   9  commit             "<ID>: <type>(<scope>): <summary>" + Co-Authored-By trailer,
                         after staging the digest line `record` appended (the verdict is
                         bound to the content identity, which bookkeeping does not change;
-                        ADR-0195)
+                        ADR-0195); land on main with scripts/harness/land.mjs (skill ship)
  10  gate               at checkpoints/final closeout (or a changed leg needing investigation),
                         run the completion command and print its summary; otherwise report
                         scoped verification and automatic CI, without claiming a full-gate pass

@@ -27,3 +27,8 @@
 *.webm binary
 *.lottie binary
 *.riv binary
+
+# Append-only loop logs: parallel streams add lines at the end, so a rebase keeps both sides (M18.106)
+.harness/progress.md merge=union
+.harness/reviews/digest.log merge=union
+.harness/baselines/review-argued.txt merge=union

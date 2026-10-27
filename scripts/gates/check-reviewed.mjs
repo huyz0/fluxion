@@ -41,7 +41,7 @@ if (diff.every((p) => BOOKKEEPING.some((re) => re.test(p))) && backlogOnlyStateC
 // tracked pass line: the digest is bookkeeping, so staging it leaves the identity unchanged.
 const content = contentId();
 if (!content) {
-  console.log('reviewed: bookkeeping and generated reports only (exempt; check-api and check-trace verify reports)');
+  console.log('reviewed: bookkeeping and generated reports only (exempt; check-api verifies API reports and check-trace the Tests column)');
   process.exit(0);
 }
 const dir = repoPath('.harness', 'review');

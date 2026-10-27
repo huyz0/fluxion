@@ -51,7 +51,7 @@ export function backlogSpecDelta(before, after) {
 function traceLines(text) {
   return text.split(/\r?\n/).map((line) => {
     const cells = line.split('|');
-    return /^\s*(FR|NFR)-[A-Z]+-\d+\s*$/.test(cells[1] ?? '') ? cells.slice(0, -2).join('|') : line;
+    return /^\s*(FR|NFR)-[A-Z0-9]+-\d+\s*$/.test(cells[1] ?? '') ? cells.slice(0, -2).join('|') : line;
   });
 }
 

@@ -1,0 +1,191 @@
+#!/usr/bin/env node
+// Land reviewed local task commits on a moving remote branch (M18.106, ADR-0195):
+//   land.mjs [--remote origin] [--branch main] [--push] [--attempts 3]
+// Each attempt fetches, re-applies the local commits onto the remote branch one by one,
+// regenerates the API reports and traceability, and commits each through the real hooks, so
+// commit-msg, checkpoint, the precommit ladder and the content-bound review check run on the tree
+// that will land. Missing Commit cells of done rows are filled and cells naming a rewritten commit
+// follow it (bookkeeping). A conflict or any refused gate stops the run with the local branch back
+// where it started; nothing is pushed. With --push, the result is pushed as a fast-forward, retried when the branch moved.
+// Pushing still needs a human's request (skill ship).
+import { existsSync, realpathSync, statSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { exists, git, node, repoPath, run } from '../gates/lib.mjs';
+
+const argv = process.argv.slice(2);
+const opt = (name, fallback) => {
+  const i = argv.indexOf(`--${name}`);
+  return i >= 0 ? argv[i + 1] : fallback;
+};
+const BACKLOG = 'docs/backlog/current.md';
+const lines = (r) => r.stdout.split(/\r?\n/).filter(Boolean);
+const fail = (message) => ({ ok: false, message });
+
+function must(args, what) {
+  const r = git(args);
+  if (r.status !== 0) throw new Error(`${what}: ${(r.stderr || r.stdout).trim()}`);
+  return r.stdout.trim();
+}
+
+/** Regenerate the reports a rebase can stale; they are outside the content identity. */
+function regenerate() {
+  const steps = [
+    // check-api reads built declarations
+    [exists('turbo.json'), 'pnpm', ['run', 'build']],
+    [exists('turbo.json'), process.execPath, ['scripts/gates/check-api.mjs', '--update']],
+    [exists('docs/requirements/40-traceability.md'), process.execPath, ['scripts/gates/check-trace.mjs', '--write']],
+  ];
+  for (const [needed, cmd, args] of steps) {
+    if (!needed) continue;
+    const r = run(cmd, args);
+    if (r.status !== 0) return `${args.join(' ')} failed:\n${r.stdout}${r.stderr}`;
+  }
+  return null;
+}
+
+/**
+ * Fill the Commit cell of done rows whose task commit exists in history, and point cells that name
+ * a commit this landing rewrote (`rewritten`: full old sha → full new sha) at the new sha, keeping
+ * the cell's abbreviation length (bookkeeping only).
+ */
+const renamed = (cell, rewritten) => {
+  if (!/^[0-9a-f]{7,40}$/.test(cell)) return null;
+  for (const [old, next] of rewritten) if (old.startsWith(cell)) return next.slice(0, cell.length);
+  return null;
+};
+
+export function fillCommitCells(text, commitOf, rewritten = new Map()) {
+  return text
+    .split('\n')
+    .map((line) => {
+      const cells = line.split('|');
+      const id = /^\s*(M\d+\.\d+)\s*$/.exec(cells[1] ?? '')?.[1];
+      if (!id || cells.length < 9 || !/^\s*done\b/.test(cells[6])) return line;
+      const cell = cells[7].trim();
+      const next = cell ? renamed(cell, rewritten) : commitOf.get(id);
+      if (!next) return line;
+      cells[7] = ` ${next} `;
+      return cells.join('|');
+    })
+    .join('\n');
+}
+
+function fillCells(rewritten) {
+  if (!exists(BACKLOG)) return;
+  const commitOf = new Map(
+    lines(git(['log', '--first-parent', '--reverse', '--format=%h %s', 'HEAD']))
+      .map((l) => /^(\w+) (M\d+\.\d+):/.exec(l))
+      .filter(Boolean)
+      .map((m) => [m[2], m[1].slice(0, 7)]),
+  );
+  const shown = git(['show', `:${BACKLOG}`]);
+  if (shown.status !== 0) return;
+  const filled = fillCommitCells(shown.stdout, commitOf, rewritten);
+  if (filled === shown.stdout) return;
+  const write = run('git', ['hash-object', '-w', '--stdin'], { input: filled });
+  const mode = lines(git(['ls-files', '-s', '--', BACKLOG]))[0]?.split(' ')[0] ?? '100644';
+  must(['update-index', '--cacheinfo', `${mode},${write.stdout.trim()},${BACKLOG}`], 'stage filled Commit cells');
+  must(['checkout', '--', BACKLOG], 'refresh the working backlog');
+}
+
+/**
+ * Re-apply each local commit of `start` missing from `upstream` onto `upstream`, oldest first,
+ * committing each through the hooks. Commits already on upstream (same patch) are skipped.
+ */
+function recommit(upstream, start) {
+  const commits = lines(git(['rev-list', '--reverse', '--right-only', '--cherry-pick', '--no-merges', `${upstream}...${start}`]));
+  must(['reset', '-q', '--hard', upstream], 'move to the remote branch');
+  const rewritten = new Map();
+  for (const sha of commits) {
+    const subject = must(['log', '-1', '--format=%s', sha], 'read the subject');
+    const picked = git(['cherry-pick', '-n', sha]);
+    if (picked.status !== 0)
+      return fail(
+        `${sha.slice(0, 7)} (${subject}) conflicts with the remote branch; rebase by hand (keep both sides of bookkeeping, regenerate reports), then land again:\n${picked.stdout}${picked.stderr}`,
+      );
+    const stale = regenerate();
+    if (stale) return fail(stale);
+    must(['add', '-u'], 'stage regenerated reports'); // tracked files only: never sweep in untracked work
+    fillCells(rewritten);
+    const r = git(['commit', '-q', '-C', sha]);
+    if (r.status !== 0) return fail(`gates refused ${sha.slice(0, 7)} (${subject}) on the remote branch:\n${r.stdout}${r.stderr}`);
+    rewritten.set(sha, must(['rev-parse', 'HEAD'], 'read the new commit'));
+  }
+  return { ok: true, count: commits.length };
+}
+
+/** The commits are gated by the repo's hooks, so they must be the ones git runs (M18.106 r1 F1). */
+function hooksProblem() {
+  const configured = git(['config', 'core.hooksPath']).stdout.trim();
+  const active = configured && existsSync(repoPath(configured)) ? realpathSync(repoPath(configured)) : null;
+  if (active !== realpathSync(repoPath('.githooks')))
+    return `git does not run the repo hooks (core.hooksPath is '${configured || 'unset'}'); run pnpm run setup`;
+  // POSIX git skips a hook that is not executable
+  const off = ['pre-commit', 'commit-msg'].filter(
+    (h) => !existsSync(repoPath('.githooks', h)) || (process.platform !== 'win32' && !(statSync(repoPath('.githooks', h)).mode & 0o111)),
+  );
+  return off.length ? `hooks missing or not executable: ${off.join(', ')}` : null;
+}
+
+/**
+ * Untracked or ignored files at paths the fetched branch tracks: a hard reset would destroy them
+ * (r1 F4). Judged against the checked-out HEAD, which a retry has already moved (r2 F1).
+ */
+function untrackedInTheWay(upstream) {
+  return lines(git(['diff', '--name-only', '--no-renames', '--diff-filter=A', 'HEAD', upstream])).filter((p) => existsSync(repoPath(p)));
+}
+
+/** One attempt: gate the commits on the fetched branch, then push. `retry` when the branch moved. */
+function attempt({ remote, branch, push, start }) {
+  must(['fetch', '-q', remote, branch], `fetch ${remote}/${branch}`);
+  const upstream = must(['rev-parse', 'FETCH_HEAD'], 'read the fetched branch');
+  if (!lines(git(['rev-list', `${upstream}..${start}`])).length) return { ok: true, message: `nothing to land on ${remote}/${branch}` };
+  const clobbered = untrackedInTheWay(upstream);
+  if (clobbered.length) return fail(`untracked files would be overwritten by ${remote}/${branch}; move them first:\n  ${clobbered.join('\n  ')}`);
+  const gated = recommit(upstream, start);
+  if (!gated.ok) return gated;
+  const digest = node('scripts/gates/check-digest.mjs', ['--head']);
+  if (digest.status !== 0) return fail(`landed history lacks review evidence:\n${digest.stdout}${digest.stderr}`);
+  if (!push) return { ok: true, message: `re-gated ${gated.count} commit(s) on ${remote}/${branch}; not pushed (--push)` };
+  const pushed = git(['push', '-q', remote, `HEAD:${branch}`]);
+  if (pushed.status === 0)
+    return { ok: true, message: `landed ${gated.count} commit(s) on ${remote}/${branch} at ${must(['rev-parse', '--short', 'HEAD'], 'read HEAD')}` };
+  // only a moved branch is worth another attempt; "[remote rejected]" (a hook, a protected branch) is final
+  return /non-fast-forward|fetch first|^\s*! \[rejected\]/m.test(pushed.stderr) ? { retry: true } : fail(`push failed:\n${pushed.stderr}`);
+}
+
+/** Land the local commits; on any failure the branch is back at its starting commit. */
+export function land({ remote = 'origin', branch = 'main', push = false, attempts = 3 } = {}) {
+  if (lines(git(['status', '--porcelain', '--untracked-files=no'])).length) return fail('working tree has uncommitted changes; land commits only');
+  const hooks = hooksProblem();
+  if (hooks) return fail(hooks);
+  const start = must(['rev-parse', 'HEAD'], 'read HEAD');
+  let result = fail(`${remote}/${branch} kept moving; ${attempts} attempts used`);
+  try {
+    for (let n = 0; n < attempts; n++) {
+      const r = attempt({ remote, branch, push, start });
+      if (!r.retry) {
+        result = r;
+        break;
+      }
+    }
+  } catch (e) {
+    result = fail(e.message);
+  }
+  if (!result.ok) {
+    git(['cherry-pick', '--abort']);
+    git(['reset', '-q', '--hard', start]);
+  }
+  return result;
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  let result;
+  try {
+    result = land({ remote: opt('remote', 'origin'), branch: opt('branch', 'main'), push: argv.includes('--push'), attempts: Number(opt('attempts', '3')) });
+  } catch (e) {
+    result = fail(e.message);
+  }
+  (result.ok ? console.log : console.error)(`land: ${result.message}`);
+  process.exitCode = result.ok ? 0 : 1;
+}

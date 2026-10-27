@@ -2968,3 +2968,12 @@ checkShapePack now evaluates each definition at every number param's min, max an
 - Recovered evidence: content-bound post-hoc reviews of M18.58–63 (pass, 0 findings) and M18.38/M18.48 (pass, 2 minors each → M18.113, M18.114). `check-digest`: 85 M18 task commits covered.
 - Tests: review + digest 28/28; mutants (no exclusions, no own-content check, no cell check, whitespace stripped, trace cells dropped) each turn them RED.
 - Review: r1 changes requested (F1–F7 fixed); r2 pass, minors F1–F3 handed off to M18.106 (argued); r3 pass (lint-only import reorder; this entry refreshed per r3 F1).
+
+## M18.106 — gated landing of rebased commits (2026-10-27)
+
+- `scripts/harness/land.mjs [--push]`: fetches main, re-applies each local commit (patch-equivalent ones skipped) with `cherry-pick -n`, regenerates API reports and traceability when the workspace has them, stages tracked files only, fills/rewrites Commit cells, and commits through the real hooks (commit-msg, checkpoint, ladder, content-bound check-reviewed); then `check-digest --head`; fast-forward push retried 3×. Any refusal restores the branch; nothing is pushed.
+- `.gitattributes`: merge=union for progress.md, digest.log, review-argued.txt. Skill ship gains the direct-landing procedure; drive step 9 and harness README point to it.
+- M18.99 r2 minors: NFR-A11Y-* rows recognised in traceability (F1); `check-digest --full-history` fails on a shallow clone and the M18 leg uses it (F2); ADR-0195 Consequences and the check-reviewed message corrected (F3). ADR-0195 gains the cp11 F1 history.
+- Review r1 (changes requested): F1 land refuses unless git runs the repo hooks (core.hooksPath → .githooks, executable); F2 the content-mismatch test now re-applies cleanly and is refused by check-reviewed, not by a conflict; F3 rewritten Commit cells matched by prefix, keeping their length (8-char cells); F4 refuses before a reset would overwrite an untracked file upstream tracks; F5 only a non-fast-forward is retried, a remote refusal fails at once.
+- Review r2 (changes requested): F1 the untracked-file guard compared against the starting commit, so a retry took files the first attempt checked out for untracked work; now judged against the checked-out HEAD, with a retry test (pushes to an always-ahead mirror).
+- Tests: land 10/10 (unit + 9 sandbox cases with a bare origin); review + digest 28/28; mutants (commit with --no-verify; no hooks check; no untracked check; retry on any "rejected"; untracked guard against the start commit; old trace regex) each turn them RED.

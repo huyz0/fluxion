@@ -2,6 +2,7 @@
 // Durable review evidence for every task commit of the active milestone (M18.99, ADR-0195).
 //   check-digest.mjs            committed history up to HEAD, with the staged tree's digest and backlog
 //   check-digest.mjs --head     the same against HEAD's own tree (CI and completion gates)
+//   --full-history              fail, not skip, on a shallow clone (completion gates must judge history)
 // From the commit that adopted this gate on, each task commit must carry, in its own tree, a pass
 // digest line for its task bound to its own content identity. Earlier task commits need a pass line
 // for their task in the evaluated digest, or a reviewed exemption in .harness/baselines/digest-exempt.txt.
@@ -83,12 +84,15 @@ function commitCellProblems(commits, tree) {
 }
 
 /** Check one tree ('index' or 'HEAD') against the active milestone's committed task history. */
-export function checkDigest({ tree = 'index' } = {}) {
+export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
   // a checkout without history or a roadmap (partial harness sandboxes) has nothing to cover
   if (git(['rev-parse', '--verify', 'HEAD']).status !== 0) return { ok: true, detail: 'digest: SKIP — no committed history' };
   // a shallow clone (CI's depth-1 checkout) cannot see the history this gate judges; the local
   // ladder and the completion gate run it on full history
-  if (git(['rev-parse', '--is-shallow-repository']).stdout.trim() === 'true') return { ok: true, detail: 'digest: SKIP — shallow clone has no task history' };
+  if (git(['rev-parse', '--is-shallow-repository']).stdout.trim() === 'true')
+    return fullHistory
+      ? { ok: false, detail: 'digest: shallow clone; fetch full history (git fetch --unshallow) to judge review evidence' }
+      : { ok: true, detail: 'digest: SKIP — shallow clone has no task history' };
   const roadmap = show('HEAD', ROADMAP);
   if (!roadmap) return { ok: true, detail: 'digest: SKIP — no committed roadmap' };
   const milestone = /\*\*Current milestone: `(M\d+)`\*\*/.exec(roadmap)?.[1];
@@ -100,7 +104,7 @@ export function checkDigest({ tree = 'index' } = {}) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const verdict = checkDigest({ tree: process.argv.includes('--head') ? 'HEAD' : 'index' });
+  const verdict = checkDigest({ tree: process.argv.includes('--head') ? 'HEAD' : 'index', fullHistory: process.argv.includes('--full-history') });
   (verdict.ok ? console.log : console.error)(verdict.detail);
   process.exitCode = verdict.ok ? 0 : 1;
 }

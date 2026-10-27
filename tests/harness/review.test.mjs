@@ -210,14 +210,16 @@ describe('rebase-stable content binding (ADR-0195, M18.99)', () => {
 
   it('binds hand-written traceability cells but not the generated Tests column (M18.99 r1 F3)', () => {
     const TRACE = 'docs/requirements/40-traceability.md';
-    const row = (milestone, tests) => `| FR-LIB-003 | M | R3 | ${milestone} | [11](11.md) | ${tests} |`;
-    put(TRACE, `# 40\n\n${row('M18', '`a.test.ts`')}\n`);
+    // IDs with digits in their area (NFR-A11Y-*) are matrix rows too (M18.99 r2 F1)
+    const row = (milestone, tests, rid = 'FR-LIB-003') => `| ${rid} | M | R3 | ${milestone} | [11](11.md) | ${tests} |`;
+    const matrix = (tests, a11yTests = '`b.test.ts`') => `# 40\n\n${row('M18', tests)}\n${row('M18', a11yTests, 'NFR-A11Y-002')}\n`;
+    put(TRACE, matrix('`a.test.ts`'));
     run('commit', '-q', '--no-verify', '-m', 'fixture: trace');
     put('src/a.txt', 'one\nTWO\nthree\n');
     const reviewed = id();
-    put(TRACE, `# 40\n\n${row('M18', '`a.test.ts` +3')}\n`);
+    put(TRACE, matrix('`a.test.ts` +3', '`b.test.ts` +1'));
     assert.equal(id(), reviewed, 'the Tests column is regenerated');
-    put(TRACE, `# 40\n\n${row('M19', '`a.test.ts`')}\n`);
+    put(TRACE, `# 40\n\n${row('M19', '`a.test.ts`')}\n${row('M18', '`b.test.ts`', 'NFR-A11Y-002')}\n`);
     assert.notEqual(id(), reviewed, 'the Milestone(s) column is written by hand');
     run('reset', '-q', '--hard', 'HEAD~1');
   });

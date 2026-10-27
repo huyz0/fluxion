@@ -116,16 +116,20 @@ describe('digest coverage (M18.99)', () => {
     assert.equal(r.status, 0, out(r));
   });
 
-  it('skips a shallow clone, whose history it cannot judge (M18.99 r1 F2)', () => {
+  it('skips a shallow clone, whose history it cannot judge, unless full history is required (M18.99 r1 F2)', () => {
     const clone = `${sb.dir}-shallow`;
     const r = sb.git('clone', '-q', '--depth', '1', `file://${sb.dir}`, clone);
     assert.equal(r.status, 0, out(r));
     const shallow = sb.node(POLICY, ['--head'], { cwd: clone });
     // the gate resolves the repository from its own location, so run the clone's copy
     const own = spawnSync(process.execPath, [`${clone}/${POLICY}`, '--head'], { cwd: clone, encoding: 'utf8', env: cleanEnv() });
+    // a completion gate must judge history, so it fails instead (M18.99 r2 F2)
+    const strict = spawnSync(process.execPath, [`${clone}/${POLICY}`, '--head', '--full-history'], { cwd: clone, encoding: 'utf8', env: cleanEnv() });
     rmSync(clone, { recursive: true, force: true });
     assert.equal(own.status, 0, out(own));
     assert.match(own.stdout, /SKIP — shallow clone/);
+    assert.equal(strict.status, 1, out(strict));
+    assert.match(strict.stderr, /shallow clone; fetch full history/);
     assert.ok(shallow);
   });
 });

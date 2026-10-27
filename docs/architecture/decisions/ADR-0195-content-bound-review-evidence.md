@@ -62,9 +62,10 @@ evidence of the last commit of a stream waits for that stream's next commit, or 
 ### Consequences
 
 Good: a rebase over unrelated work keeps the review; evidence is in the commit it covers; a gate
-finds missing evidence and Commit cells. Bad: hand-edited API reports or traceability are not
-bound (their gates still fail a mismatch); landing a rebased commit still needs the ladder rerun
-on the rebased tree (M18.106).
+finds missing evidence and Commit cells. Bad: hand-edited API reports and the traceability
+Tests column are not bound (check-api and check-trace still fail a mismatch); landing a rebased
+commit needs the ladder rerun on the rebased tree, which `scripts/harness/land.mjs` does
+(M18.106).
 
 ### Confirmation
 
@@ -74,8 +75,26 @@ spec cells, descoping, new rows and hand-written traceability cells change it; a
 rebase onto unrelated work passes check-reviewed; and an after-the-fact record needs the
 commit's identity. `tests/harness/digest.test.mjs` proves pre-adoption task coverage and
 exemptions, own-tree content-bound lines after adoption, the Commit-cell rule in both modes and
-the shallow-clone skip.
+the shallow-clone skip (and its failure under `--full-history`, which the M18 completion leg
+uses). `tests/harness/land.test.mjs` proves `land.mjs` re-gates and pushes a reviewed commit onto
+a moved `main`, and refuses, with the branch restored and nothing pushed, an unreviewed commit, a
+commit whose re-applied diff no longer matches its review, and a conflict (M18.106).
+
+### History (cp11 F1)
+
+Before this decision and M18.106, parallel streams rebased reviewed commits onto `main` and
+pushed them without running the hooks on the rebased tree:
+
+- d029982 (M18.102) and 533b0a0 (M18.48) landed past the checkpoint limit (8/8 and 9/8
+  unreviewed task commits), so CI's per-commit message gates are red at both.
+- e8185ce (M18.100) landed a red tree: its harness-tests leg failed because pack-goldens.test.mjs
+  was missing from SOURCE_HARNESS. 03918b9 repaired `main`.
+- None of the ten landed diffs in 2d6a63e..533b0a0 hashed to any digest.log entry (2 of 81
+  across M18), so the review binding could not be checked from history. M18.38, M18.48 and
+  M18.58–63 were reviewed again after the fact and bound by content identity (M18.99).
+
+These commits stay as they are (history is not rewritten); cp11 records the breach.
 
 ## More Information
 
-docs/standards/review.md R4, ADR-0176 (diagnostic replan), M18.106 (re-gated landing).
+docs/standards/review.md R4, ADR-0176 (diagnostic replan), M18.106 (re-gated landing, `scripts/harness/land.mjs`, skill `ship`).
