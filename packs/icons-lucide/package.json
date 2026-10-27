@@ -1,0 +1,32 @@
+{
+  "name": "@fluxion/pack-icons-lucide",
+  "version": "0.0.0",
+  "description": "First-party Lucide icon pack: a curated, categorized subset of Lucide icons (ISC; Feather-derived icons MIT).",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@fluxion/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pack",
+    "pack-versions.json",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@fluxion/sdk": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

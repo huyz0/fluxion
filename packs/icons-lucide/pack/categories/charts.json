@@ -1,0 +1,824 @@
+{
+  "definitions": [
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M3 3v16a2 2 0 0 0 2 2h16M7 16h8m-8-5h12M7 6h3",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:chart-bar",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M3 3v16a2 2 0 0 0 2 2h16"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "m19 9l-5 5l-4-4l-3 3"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:chart-line",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M21.21 15.89A10 10 0 1 1 8 2.83"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:chart-pie",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M16 7h6v6"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "m22 7l-8.5 8.5l-5-5L2 17"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:trending-up",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M16 17h6v-6"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "m22 17l-8.5-8.5l-5 5L2 7"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:trending-down",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:activity",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "m12 14l4-4M3.34 19a10 10 0 1 1 17.32 0",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:gauge",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "10"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "6"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "2"
+                  },
+                  "children": [],
+                  "name": "circle"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:target",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "10"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "d": "M22 12h-4M6 12H2m10-6V2m0 20v-4"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "charts",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:crosshair",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    }
+  ],
+  "formatVersion": "1.0"
+}

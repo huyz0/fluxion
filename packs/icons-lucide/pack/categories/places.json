@@ -1,0 +1,1195 @@
+{
+  "definitions": [
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "10"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "d": "M12 2a14.5 14.5 0 0 0 0 20a14.5 14.5 0 0 0 0-20M2 12h20"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:globe",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:house",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M12 10h.01M12 14h.01M12 6h.01M16 10h.01M16 14h.01M16 6h.01M8 10h.01M8 14h.01M8 6h.01M9 22v-3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "height": "20",
+                    "rx": "2",
+                    "width": "16",
+                    "x": "4",
+                    "y": "2"
+                  },
+                  "children": [],
+                  "name": "rect"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:building",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M10 12h4m-4-4h4m0 13v-3a2 2 0 0 0-4 0v3"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:building-complex",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M12 16h.01M16 16h.01M3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5a.5.5 0 0 0-.769-.422l-4.462 2.844A.5.5 0 0 1 15 10.5v-2a.5.5 0 0 0-.769-.422L9.77 10.922A.5.5 0 0 1 9 10.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2zm5-3h.01",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:factory",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5m8.774-10.69a1.12 1.12 0 0 0-1.549 0a2.5 2.5 0 0 1-3.451 0a1.12 1.12 0 0 0-1.548 0a2.5 2.5 0 0 1-3.452 0a1.12 1.12 0 0 0-1.549 0a2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:store",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M18 21V10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v11"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 1.132-1.803l7.95-3.974a2 2 0 0 1 1.837 0l7.948 3.974A2 2 0 0 1 22 8zM6 13h12M6 17h12"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:warehouse",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M12 7v4m2 10v-3a2 2 0 0 0-4 0v3m4-12h-4"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M18 11h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h2"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M18 21V5a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:hospital",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0zm.894.211v15M9 3.236v15",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:map",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "10",
+                    "r": "3"
+                  },
+                  "children": [],
+                  "name": "circle"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:map-pin",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "10"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "d": "m16.24 7.76l-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:compass",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "m3 11l19-9l-9 19l-2-8z",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:navigation",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "places",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:flag",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    }
+  ],
+  "formatVersion": "1.0"
+}

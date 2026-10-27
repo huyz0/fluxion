@@ -1,0 +1,1439 @@
+{
+  "definitions": [
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "m2.05 2.05l1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "cx": "18",
+                    "cy": "20",
+                    "r": "2"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "cx": "8",
+                    "cy": "20",
+                    "r": "2"
+                  },
+                  "children": [],
+                  "name": "circle"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:shopping-cart",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M16 10a4 4 0 0 1-8 0M3.103 6.034h17.794"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:shopping-bag",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "height": "14",
+                    "rx": "2",
+                    "width": "20",
+                    "x": "2",
+                    "y": "5"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "d": "M2 10h20M6 14h2"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:credit-card",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:wallet",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "height": "12",
+                    "rx": "2",
+                    "width": "20",
+                    "x": "2",
+                    "y": "6"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "2"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "d": "M6 12h.01M18 12h.01"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:banknote",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M12 2v20m5-17H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:dollar-sign",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M4 10h12M4 14h9m6-8a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8c2 0 3.8-.8 5.2-2",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:euro",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M19 5L5 19"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "cx": "6.5",
+                    "cy": "6.5",
+                    "r": "2.5"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "cx": "17.5",
+                    "cy": "17.5",
+                    "r": "2.5"
+                  },
+                  "children": [],
+                  "name": "circle"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:percent",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M12 17V7m4 1h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M4 3a1 1 0 0 1 1-1a1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1a1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2a1 1 0 0 1-1-1z"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:receipt",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "height": "20",
+                    "rx": "2",
+                    "width": "16",
+                    "x": "4",
+                    "y": "2"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "d": "M8 6h8m0 8v4m0-8h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:calculator",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M12 7v14m8-10v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8m3.5-4a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5a1 1 0 0 1 0 5"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "height": "4",
+                    "rx": "1",
+                    "width": "18",
+                    "x": "3",
+                    "y": "7"
+                  },
+                  "children": [],
+                  "name": "rect"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:gift",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "height": "5",
+                    "rx": "1",
+                    "width": "5",
+                    "x": "3",
+                    "y": "3"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "height": "5",
+                    "rx": "1",
+                    "width": "5",
+                    "x": "16",
+                    "y": "3"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "height": "5",
+                    "rx": "1",
+                    "width": "5",
+                    "x": "3",
+                    "y": "16"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "d": "M21 16h-3a2 2 0 0 0-2 2v3m5 0v.01M12 7v3a2 2 0 0 1-2 2H7m-4 0h.01M12 3h.01M12 16v.01M16 12h1m4 0v.01M12 21v-1"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:qr-code",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M3 5v14M8 5v14m4-14v14m5-14v14m4-14v14",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:barcode",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M12 3v18m7-13l3 8a5 5 0 0 1-6 0zV7"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M3 7h1a17 17 0 0 0 8-2a17 17 0 0 0 8 2h1M5 8l3 8a5 5 0 0 1-6 0zV7m2 14h10"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:scale",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "m14 13l-8.381 8.38a1 1 0 0 1-3.001-3l8.384-8.381M16 16l6-6m-.5.5l-8-8M8 8l6-6M8.5 7.5l8 8",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "commerce",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:gavel",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    }
+  ],
+  "formatVersion": "1.0"
+}

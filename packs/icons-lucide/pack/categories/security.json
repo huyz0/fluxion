@@ -1,0 +1,933 @@
+{
+  "definitions": [
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "height": "11",
+                    "rx": "2",
+                    "ry": "2",
+                    "width": "18",
+                    "x": "3",
+                    "y": "11"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "d": "M7 11V7a5 5 0 0 1 10 0v4"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:lock",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "height": "11",
+                    "rx": "2",
+                    "ry": "2",
+                    "width": "18",
+                    "x": "3",
+                    "y": "11"
+                  },
+                  "children": [],
+                  "name": "rect"
+                },
+                {
+                  "attributes": {
+                    "d": "M7 11V7a5 5 0 0 1 9.9-1"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:lock-open",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "m2 21l9.6-9.6m-4.1 4.1l2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "cx": "15.5",
+                    "cy": "7.5",
+                    "r": "5.5"
+                  },
+                  "children": [],
+                  "name": "circle"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:key",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:shield",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "m9 12l2 2l4-4"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:shield-check",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "3"
+                  },
+                  "children": [],
+                  "name": "circle"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:eye",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575a1 1 0 0 1 0 .696a10.8 10.8 0 0 1-1.444 2.49m-6.41-.679a3 3 0 0 1-4.242-4.242"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 4.446-5.143M2 2l20 20"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:eye-off",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "d": "M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4M14 13.12c0 2.38 0 6.38-1 8.88m4.29-.98c.12-.6.43-2.3.5-3.02M2 12a10 10 0 0 1 18-6M2 16h.01m19.79 0c.2-2 .131-5.354 0-6"
+                  },
+                  "children": [],
+                  "name": "path"
+                },
+                {
+                  "attributes": {
+                    "d": "M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2m2.31 12c.21-.66.45-1.32.57-2M9 6.8a6 6 0 0 1 9 5.2v2"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:fingerprint-pattern",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "d": "M3 7V5a2 2 0 0 1 2-2h2m10 0h2a2 2 0 0 1 2 2v2m0 10v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2",
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [],
+              "name": "path"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:scan",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    },
+    {
+      "anchors": [
+        {
+          "dir": {
+            "x": 0,
+            "y": -1
+          },
+          "name": "n",
+          "x": 0.5,
+          "y": 0
+        },
+        {
+          "dir": {
+            "x": 1,
+            "y": 0
+          },
+          "name": "e",
+          "x": 1,
+          "y": 0.5
+        },
+        {
+          "dir": {
+            "x": 0,
+            "y": 1
+          },
+          "name": "s",
+          "x": 0.5,
+          "y": 1
+        },
+        {
+          "dir": {
+            "x": -1,
+            "y": 0
+          },
+          "name": "w",
+          "x": 0,
+          "y": 0.5
+        }
+      ],
+      "artwork": {
+        "root": {
+          "attributes": {
+            "height": "24",
+            "viewBox": "0 0 24 24",
+            "width": "24"
+          },
+          "children": [
+            {
+              "attributes": {
+                "fill": "none",
+                "stroke": "currentColor",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-width": "2"
+              },
+              "children": [
+                {
+                  "attributes": {
+                    "cx": "12",
+                    "cy": "12",
+                    "r": "10"
+                  },
+                  "children": [],
+                  "name": "circle"
+                },
+                {
+                  "attributes": {
+                    "d": "M4.929 4.929L19.07 19.071"
+                  },
+                  "children": [],
+                  "name": "path"
+                }
+              ],
+              "name": "g"
+            }
+          ],
+          "name": "svg"
+        },
+        "viewBox": {
+          "height": 24,
+          "width": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "category": "security",
+      "defaultSize": {
+        "h": 24,
+        "w": 24
+      },
+      "id": "lucide:ban",
+      "keywords": [],
+      "outline": {
+        "path": "M 0 0 L {w} 0 L {w} {h} L 0 {h} Z"
+      }
+    }
+  ],
+  "formatVersion": "1.0"
+}

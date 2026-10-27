@@ -1,0 +1,18 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:24px;height:24px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 24 24">
+      <svg aria-hidden="true" class="fx-artwork" height="24" preserveAspectRatio="none" viewBox="0 0 24 24" width="24">
+        <svg height="24" viewBox="0 0 24 24" width="24">
+          <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <circle cx="12" cy="12" r="4">
+            </circle>
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41">
+            </path>
+          </g>
+        </svg>
+      </svg>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:32px 32px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

@@ -97,6 +97,9 @@
       "path": "./packs/cloud-architecture"
     },
     {
+      "path": "./packs/icons-lucide"
+    },
+    {
       "path": "./e2e"
     }
   ]

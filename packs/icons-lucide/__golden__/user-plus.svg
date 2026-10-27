@@ -1,0 +1,20 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:24px;height:24px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 24 24">
+      <svg aria-hidden="true" class="fx-artwork" height="24" preserveAspectRatio="none" viewBox="0 0 24 24" width="24">
+        <svg height="24" viewBox="0 0 24 24" width="24">
+          <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2">
+            </path>
+            <circle cx="9" cy="7" r="4">
+            </circle>
+            <path d="M19 8v6m3-3h-6">
+            </path>
+          </g>
+        </svg>
+      </svg>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:32px 32px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

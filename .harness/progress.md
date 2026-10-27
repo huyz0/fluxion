@@ -3227,3 +3227,7 @@ Adds @fluxion/pack-cloud-architecture: 18 provider-neutral cloud architecture de
 ## M18.121 — Geometry check across parameter corners and small sizes (2026-10-27)
 
 The shared pack geometry check (geometryProblems) also evaluates every corner of a definition's bounded number params (all corners up to six params, every pair's corners beyond, the rest at defaults) and every variant at a 16 x 16 square and at the default narrowed and flattened to 16 units (cp12 F5). Retrofits: the flowchart terminator and delay and the infographic step pill clamp their rounded ends to half the width, so a narrow shape stays inside its box, number circle and text region included. Every existing pack (cloud-architecture included) passes.
+
+## M18.29 — Lucide icon pack (2026-10-27)
+
+Adds @fluxion/pack-icons-lucide: 185 curated Lucide icons in 18 categories, imported from the pinned Iconify lucide set (iconify/icon-sets@db4c0e1, corpus sha256 recorded in the pack source) by scripts/packs/lucide.mjs through the shared encoder (ADR-0196), with a golden per definition. Lucide is ISC; the 46 Feather-derived icons carry Feather's MIT credit by definition id; the full notices ship in NOTICE. The SDK golden check accepts artwork-only definitions when the artwork draws at least one element, instead of requiring an outline.

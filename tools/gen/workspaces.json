@@ -250,6 +250,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party cloud architecture shape pack: provider-neutral compute, storage, integration, networking and boundary symbols."
+    },
+    {
+      "dir": "packs/icons-lucide",
+      "name": "@fluxion/pack-icons-lucide",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party Lucide icon pack: a curated, categorized subset of Lucide icons (ISC; Feather-derived icons MIT)."
     }
   ]
 }

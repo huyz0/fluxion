@@ -1,0 +1,1269 @@
+{
+  "attribution": "Lucide Icons and Contributors; Feather-derived icons by Cole Bemis",
+  "categories": {
+    "actions": {
+      "path": "categories/actions.json",
+      "sha256": "d9a824118c572edae8b12eb3f41084431c17094a0e91d2c94a78e202ef66a28c"
+    },
+    "arrows": {
+      "path": "categories/arrows.json",
+      "sha256": "8625b1689346c2bf2bb2877badd7307153c0d885dd52aae34b872cc3586c2911"
+    },
+    "charts": {
+      "path": "categories/charts.json",
+      "sha256": "2aa3d9bdb8dd16d13654ab7c8cf282c518ed6e04eb154c6ac121209a2a72c286"
+    },
+    "commerce": {
+      "path": "categories/commerce.json",
+      "sha256": "eec5bca68115fd2b21b6ef0cf0032141a0d36c79da8113cea7a4a6cf8b274d17"
+    },
+    "communication": {
+      "path": "categories/communication.json",
+      "sha256": "767c2b94b2cd637e5230ed672cda01f0a62fd3313eb70f56d92a9e98f789bc4b"
+    },
+    "development": {
+      "path": "categories/development.json",
+      "sha256": "663678041591b2cbff9e0f73c47a924d33eca360c9e6bac270eeea9a5b21b3f4"
+    },
+    "devices": {
+      "path": "categories/devices.json",
+      "sha256": "319c97c2bf846d278591a02e06c47afce9c17180e28bbe0289d4998fed2e5af4"
+    },
+    "files": {
+      "path": "categories/files.json",
+      "sha256": "31d3474c5df260da5d2822c252e4f378acd833cbb454fbd6aecfc165b4a6b817"
+    },
+    "health": {
+      "path": "categories/health.json",
+      "sha256": "7662e24aa6df44e2b78e15f99652d9fbf7bbee8423bea4e874b6d017cdfd8104"
+    },
+    "infrastructure": {
+      "path": "categories/infrastructure.json",
+      "sha256": "2925c374c3fa38a0cf4a3011cb46623104861c21cf0225c446f7b0bcd0eb97bc"
+    },
+    "layout": {
+      "path": "categories/layout.json",
+      "sha256": "aff8b773d9a1e4b075df1426b57fdf71fde55ee4bf8636fbf22f2552d6b6810f"
+    },
+    "nature": {
+      "path": "categories/nature.json",
+      "sha256": "143c8c5a752037f87be3a1642b699bf6e9953652ea61ac6d32a64182cabf4e9a"
+    },
+    "people": {
+      "path": "categories/people.json",
+      "sha256": "94c61b477e539e3c55887033d7fe63a72884a772b5fe02bcafc3cf7c14d2a4a5"
+    },
+    "places": {
+      "path": "categories/places.json",
+      "sha256": "2d5d4f538a12b146411a806b31e5ea6401ea4e25ada7788afd1a89fd6f2d4a62"
+    },
+    "security": {
+      "path": "categories/security.json",
+      "sha256": "1d3a2539aa7535d829b020cfb1ca59b0bc46ac20ca9556e724553a22839ba987"
+    },
+    "status": {
+      "path": "categories/status.json",
+      "sha256": "fc71695fe21a4743be19257578c1ffef6be132bfd6e4e139373aa59774e6ec69"
+    },
+    "time": {
+      "path": "categories/time.json",
+      "sha256": "33787ab79ee0b37f68488565a2e48d5d70aaf986b7d037d90a4a30ca6ef4fe2a"
+    },
+    "transport": {
+      "path": "categories/transport.json",
+      "sha256": "ed24bce865f33c5661dfc2cb008b739942c8dd782bb7eb8b8398272e7fd35b2e"
+    }
+  },
+  "credits": [
+    {
+      "attribution": "Lucide Icons and Contributors",
+      "id": "lucide",
+      "license": "ISC",
+      "notice": "ISC License\n\nCopyright (c) 2026 Lucide Icons and Contributors\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
+      "source": {
+        "kind": "upstream",
+        "reference": "iconify:lucide",
+        "revision": "iconify/icon-sets@db4c0e1c75f933ae45c4484cd02ee3781a789363",
+        "sha256": "bcf5691ce5db582f7810db9009d5821050c67dbab78f126e92de218732fb8863"
+      }
+    },
+    {
+      "attribution": "Cole Bemis (Feather)",
+      "definitionIds": [
+        "lucide:server",
+        "lucide:database",
+        "lucide:radio",
+        "lucide:rss",
+        "lucide:power",
+        "lucide:monitor",
+        "lucide:tablet",
+        "lucide:smartphone",
+        "lucide:headphones",
+        "lucide:smile",
+        "lucide:lock",
+        "lucide:key",
+        "lucide:share",
+        "lucide:link",
+        "lucide:external-link",
+        "lucide:clipboard",
+        "lucide:compass",
+        "lucide:navigation",
+        "lucide:calendar",
+        "lucide:clock",
+        "lucide:shopping-bag",
+        "lucide:dollar-sign",
+        "lucide:percent",
+        "lucide:target",
+        "lucide:crosshair",
+        "lucide:check",
+        "lucide:x",
+        "lucide:plus",
+        "lucide:minus",
+        "lucide:circle-x",
+        "lucide:circle-alert",
+        "lucide:triangle-alert",
+        "lucide:info",
+        "lucide:circle-question-mark",
+        "lucide:search",
+        "lucide:download",
+        "lucide:upload",
+        "lucide:move",
+        "lucide:music",
+        "lucide:arrow-right",
+        "lucide:arrow-left",
+        "lucide:arrow-up",
+        "lucide:arrow-down",
+        "lucide:code",
+        "lucide:terminal",
+        "lucide:moon"
+      ],
+      "id": "feather",
+      "license": "MIT",
+      "notice": "The following Lucide icons are derived from the Feather project:\n\nairplay, alert-circle, alert-octagon, alert-triangle, aperture, arrow-down-circle, arrow-down-left, arrow-down-right, arrow-down, arrow-left-circle, arrow-left, arrow-right-circle, arrow-right, arrow-up-circle, arrow-up-left, arrow-up-right, arrow-up, at-sign, calendar, cast, check, chevron-down, chevron-left, chevron-right, chevron-up, chevrons-down, chevrons-left, chevrons-right, chevrons-up, circle, clipboard, clock, code, columns, command, compass, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, crosshair, database, divide-circle, divide-square, dollar-sign, download, external-link, feather, frown, hash, headphones, help-circle, info, italic, key, layout, life-buoy, link-2, link, loader, lock, log-in, log-out, maximize, meh, minimize, minimize-2, minus-circle, minus-square, minus, monitor, moon, more-horizontal, more-vertical, move, music, navigation-2, navigation, octagon, pause-circle, percent, plus-circle, plus-square, plus, power, radio, rss, search, server, share, shopping-bag, sidebar, smartphone, smile, square, table-2, tablet, target, terminal, trash-2, trash, triangle, tv, type, upload, x-circle, x-octagon, x-square, x, zoom-in, zoom-out\n\nThe MIT License (MIT) (for the icons listed above)\n\nCopyright (c) 2013-present Cole Bemis\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
+      "source": {
+        "kind": "upstream",
+        "reference": "iconify:lucide",
+        "revision": "iconify/icon-sets@db4c0e1c75f933ae45c4484cd02ee3781a789363",
+        "sha256": "bcf5691ce5db582f7810db9009d5821050c67dbab78f126e92de218732fb8863"
+      }
+    }
+  ],
+  "definitions": [
+    {
+      "category": "infrastructure",
+      "id": "lucide:server",
+      "keywords": [],
+      "name": "Server"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:database",
+      "keywords": [],
+      "name": "Database"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:cloud",
+      "keywords": [],
+      "name": "Cloud"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:hard-drive",
+      "keywords": [],
+      "name": "Hard drive"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:cpu",
+      "keywords": [],
+      "name": "Cpu"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:wifi",
+      "keywords": [],
+      "name": "Wifi"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:router",
+      "keywords": [],
+      "name": "Router"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:network",
+      "keywords": [],
+      "name": "Network"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:cable",
+      "keywords": [],
+      "name": "Cable"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:bluetooth",
+      "keywords": [],
+      "name": "Bluetooth"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:radio",
+      "keywords": [],
+      "name": "Radio"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:rss",
+      "keywords": [],
+      "name": "Rss"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:container",
+      "keywords": [],
+      "name": "Container"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:box",
+      "keywords": [],
+      "name": "Box"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:package",
+      "keywords": [],
+      "name": "Package"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:boxes",
+      "keywords": [],
+      "name": "Boxes"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:plug",
+      "keywords": [],
+      "name": "Plug"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:power",
+      "keywords": [],
+      "name": "Power"
+    },
+    {
+      "category": "infrastructure",
+      "id": "lucide:battery",
+      "keywords": [],
+      "name": "Battery"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:laptop",
+      "keywords": [],
+      "name": "Laptop"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:monitor",
+      "keywords": [],
+      "name": "Monitor"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:tablet",
+      "keywords": [],
+      "name": "Tablet"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:smartphone",
+      "keywords": [],
+      "name": "Smartphone"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:printer",
+      "keywords": [],
+      "name": "Printer"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:phone",
+      "keywords": [],
+      "name": "Phone"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:camera",
+      "keywords": [],
+      "name": "Camera"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:video",
+      "keywords": [],
+      "name": "Video"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:mic",
+      "keywords": [],
+      "name": "Mic"
+    },
+    {
+      "category": "devices",
+      "id": "lucide:headphones",
+      "keywords": [],
+      "name": "Headphones"
+    },
+    {
+      "category": "people",
+      "id": "lucide:user",
+      "keywords": [],
+      "name": "User"
+    },
+    {
+      "category": "people",
+      "id": "lucide:users",
+      "keywords": [],
+      "name": "Users"
+    },
+    {
+      "category": "people",
+      "id": "lucide:user-round",
+      "keywords": [],
+      "name": "User round"
+    },
+    {
+      "category": "people",
+      "id": "lucide:user-plus",
+      "keywords": [],
+      "name": "User plus"
+    },
+    {
+      "category": "people",
+      "id": "lucide:bot",
+      "keywords": [],
+      "name": "Bot"
+    },
+    {
+      "category": "people",
+      "id": "lucide:brain",
+      "keywords": [],
+      "name": "Brain"
+    },
+    {
+      "category": "people",
+      "id": "lucide:smile",
+      "keywords": [],
+      "name": "Smile"
+    },
+    {
+      "category": "people",
+      "id": "lucide:graduation-cap",
+      "keywords": [],
+      "name": "Graduation cap"
+    },
+    {
+      "category": "people",
+      "id": "lucide:briefcase",
+      "keywords": [],
+      "name": "Briefcase"
+    },
+    {
+      "category": "security",
+      "id": "lucide:lock",
+      "keywords": [],
+      "name": "Lock"
+    },
+    {
+      "category": "security",
+      "id": "lucide:lock-open",
+      "keywords": [],
+      "name": "Lock open"
+    },
+    {
+      "category": "security",
+      "id": "lucide:key",
+      "keywords": [],
+      "name": "Key"
+    },
+    {
+      "category": "security",
+      "id": "lucide:shield",
+      "keywords": [],
+      "name": "Shield"
+    },
+    {
+      "category": "security",
+      "id": "lucide:shield-check",
+      "keywords": [],
+      "name": "Shield check"
+    },
+    {
+      "category": "security",
+      "id": "lucide:eye",
+      "keywords": [],
+      "name": "Eye"
+    },
+    {
+      "category": "security",
+      "id": "lucide:eye-off",
+      "keywords": [],
+      "name": "Eye off"
+    },
+    {
+      "category": "security",
+      "id": "lucide:fingerprint-pattern",
+      "keywords": [],
+      "name": "Fingerprint pattern"
+    },
+    {
+      "category": "security",
+      "id": "lucide:scan",
+      "keywords": [],
+      "name": "Scan"
+    },
+    {
+      "category": "security",
+      "id": "lucide:ban",
+      "keywords": [],
+      "name": "Ban"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:mail",
+      "keywords": [],
+      "name": "Mail"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:message-square",
+      "keywords": [],
+      "name": "Message square"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:message-circle",
+      "keywords": [],
+      "name": "Message circle"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:send",
+      "keywords": [],
+      "name": "Send"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:inbox",
+      "keywords": [],
+      "name": "Inbox"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:bell",
+      "keywords": [],
+      "name": "Bell"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:share",
+      "keywords": [],
+      "name": "Share"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:link",
+      "keywords": [],
+      "name": "Link"
+    },
+    {
+      "category": "communication",
+      "id": "lucide:external-link",
+      "keywords": [],
+      "name": "External link"
+    },
+    {
+      "category": "files",
+      "id": "lucide:file",
+      "keywords": [],
+      "name": "File"
+    },
+    {
+      "category": "files",
+      "id": "lucide:file-text",
+      "keywords": [],
+      "name": "File text"
+    },
+    {
+      "category": "files",
+      "id": "lucide:files",
+      "keywords": [],
+      "name": "Files"
+    },
+    {
+      "category": "files",
+      "id": "lucide:folder",
+      "keywords": [],
+      "name": "Folder"
+    },
+    {
+      "category": "files",
+      "id": "lucide:folder-open",
+      "keywords": [],
+      "name": "Folder open"
+    },
+    {
+      "category": "files",
+      "id": "lucide:archive",
+      "keywords": [],
+      "name": "Archive"
+    },
+    {
+      "category": "files",
+      "id": "lucide:clipboard",
+      "keywords": [],
+      "name": "Clipboard"
+    },
+    {
+      "category": "files",
+      "id": "lucide:clipboard-list",
+      "keywords": [],
+      "name": "Clipboard list"
+    },
+    {
+      "category": "files",
+      "id": "lucide:notebook",
+      "keywords": [],
+      "name": "Notebook"
+    },
+    {
+      "category": "files",
+      "id": "lucide:book",
+      "keywords": [],
+      "name": "Book"
+    },
+    {
+      "category": "files",
+      "id": "lucide:book-open",
+      "keywords": [],
+      "name": "Book open"
+    },
+    {
+      "category": "files",
+      "id": "lucide:image",
+      "keywords": [],
+      "name": "Image"
+    },
+    {
+      "category": "files",
+      "id": "lucide:bookmark",
+      "keywords": [],
+      "name": "Bookmark"
+    },
+    {
+      "category": "files",
+      "id": "lucide:tag",
+      "keywords": [],
+      "name": "Tag"
+    },
+    {
+      "category": "places",
+      "id": "lucide:globe",
+      "keywords": [],
+      "name": "Globe"
+    },
+    {
+      "category": "places",
+      "id": "lucide:house",
+      "keywords": [],
+      "name": "House"
+    },
+    {
+      "category": "places",
+      "id": "lucide:building",
+      "keywords": [],
+      "name": "Building"
+    },
+    {
+      "category": "places",
+      "id": "lucide:building-complex",
+      "keywords": [],
+      "name": "Building complex"
+    },
+    {
+      "category": "places",
+      "id": "lucide:factory",
+      "keywords": [],
+      "name": "Factory"
+    },
+    {
+      "category": "places",
+      "id": "lucide:store",
+      "keywords": [],
+      "name": "Store"
+    },
+    {
+      "category": "places",
+      "id": "lucide:warehouse",
+      "keywords": [],
+      "name": "Warehouse"
+    },
+    {
+      "category": "places",
+      "id": "lucide:hospital",
+      "keywords": [],
+      "name": "Hospital"
+    },
+    {
+      "category": "places",
+      "id": "lucide:map",
+      "keywords": [],
+      "name": "Map"
+    },
+    {
+      "category": "places",
+      "id": "lucide:map-pin",
+      "keywords": [],
+      "name": "Map pin"
+    },
+    {
+      "category": "places",
+      "id": "lucide:compass",
+      "keywords": [],
+      "name": "Compass"
+    },
+    {
+      "category": "places",
+      "id": "lucide:navigation",
+      "keywords": [],
+      "name": "Navigation"
+    },
+    {
+      "category": "places",
+      "id": "lucide:flag",
+      "keywords": [],
+      "name": "Flag"
+    },
+    {
+      "category": "transport",
+      "id": "lucide:truck",
+      "keywords": [],
+      "name": "Truck"
+    },
+    {
+      "category": "transport",
+      "id": "lucide:car",
+      "keywords": [],
+      "name": "Car"
+    },
+    {
+      "category": "transport",
+      "id": "lucide:plane",
+      "keywords": [],
+      "name": "Plane"
+    },
+    {
+      "category": "transport",
+      "id": "lucide:ship",
+      "keywords": [],
+      "name": "Ship"
+    },
+    {
+      "category": "transport",
+      "id": "lucide:bike",
+      "keywords": [],
+      "name": "Bike"
+    },
+    {
+      "category": "transport",
+      "id": "lucide:rocket",
+      "keywords": [],
+      "name": "Rocket"
+    },
+    {
+      "category": "time",
+      "id": "lucide:calendar",
+      "keywords": [],
+      "name": "Calendar"
+    },
+    {
+      "category": "time",
+      "id": "lucide:clock",
+      "keywords": [],
+      "name": "Clock"
+    },
+    {
+      "category": "time",
+      "id": "lucide:timer",
+      "keywords": [],
+      "name": "Timer"
+    },
+    {
+      "category": "time",
+      "id": "lucide:alarm-clock",
+      "keywords": [],
+      "name": "Alarm clock"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:shopping-cart",
+      "keywords": [],
+      "name": "Shopping cart"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:shopping-bag",
+      "keywords": [],
+      "name": "Shopping bag"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:credit-card",
+      "keywords": [],
+      "name": "Credit card"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:wallet",
+      "keywords": [],
+      "name": "Wallet"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:banknote",
+      "keywords": [],
+      "name": "Banknote"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:dollar-sign",
+      "keywords": [],
+      "name": "Dollar sign"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:euro",
+      "keywords": [],
+      "name": "Euro"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:percent",
+      "keywords": [],
+      "name": "Percent"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:receipt",
+      "keywords": [],
+      "name": "Receipt"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:calculator",
+      "keywords": [],
+      "name": "Calculator"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:gift",
+      "keywords": [],
+      "name": "Gift"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:qr-code",
+      "keywords": [],
+      "name": "Qr code"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:barcode",
+      "keywords": [],
+      "name": "Barcode"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:scale",
+      "keywords": [],
+      "name": "Scale"
+    },
+    {
+      "category": "commerce",
+      "id": "lucide:gavel",
+      "keywords": [],
+      "name": "Gavel"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:chart-bar",
+      "keywords": [],
+      "name": "Chart bar"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:chart-line",
+      "keywords": [],
+      "name": "Chart line"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:chart-pie",
+      "keywords": [],
+      "name": "Chart pie"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:trending-up",
+      "keywords": [],
+      "name": "Trending up"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:trending-down",
+      "keywords": [],
+      "name": "Trending down"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:activity",
+      "keywords": [],
+      "name": "Activity"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:gauge",
+      "keywords": [],
+      "name": "Gauge"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:target",
+      "keywords": [],
+      "name": "Target"
+    },
+    {
+      "category": "charts",
+      "id": "lucide:crosshair",
+      "keywords": [],
+      "name": "Crosshair"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:layers",
+      "keywords": [],
+      "name": "Layers"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:layout-grid",
+      "keywords": [],
+      "name": "Layout grid"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:layout-dashboard",
+      "keywords": [],
+      "name": "Layout dashboard"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:kanban",
+      "keywords": [],
+      "name": "Kanban"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:table",
+      "keywords": [],
+      "name": "Table"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:list",
+      "keywords": [],
+      "name": "List"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:list-checks",
+      "keywords": [],
+      "name": "List checks"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:component",
+      "keywords": [],
+      "name": "Component"
+    },
+    {
+      "category": "layout",
+      "id": "lucide:puzzle",
+      "keywords": [],
+      "name": "Puzzle"
+    },
+    {
+      "category": "status",
+      "id": "lucide:check",
+      "keywords": [],
+      "name": "Check"
+    },
+    {
+      "category": "status",
+      "id": "lucide:x",
+      "keywords": [],
+      "name": "X"
+    },
+    {
+      "category": "status",
+      "id": "lucide:plus",
+      "keywords": [],
+      "name": "Plus"
+    },
+    {
+      "category": "status",
+      "id": "lucide:minus",
+      "keywords": [],
+      "name": "Minus"
+    },
+    {
+      "category": "status",
+      "id": "lucide:circle-check",
+      "keywords": [],
+      "name": "Circle check"
+    },
+    {
+      "category": "status",
+      "id": "lucide:circle-x",
+      "keywords": [],
+      "name": "Circle x"
+    },
+    {
+      "category": "status",
+      "id": "lucide:circle-alert",
+      "keywords": [],
+      "name": "Circle alert"
+    },
+    {
+      "category": "status",
+      "id": "lucide:triangle-alert",
+      "keywords": [],
+      "name": "Triangle alert"
+    },
+    {
+      "category": "status",
+      "id": "lucide:info",
+      "keywords": [],
+      "name": "Info"
+    },
+    {
+      "category": "status",
+      "id": "lucide:circle-question-mark",
+      "keywords": [],
+      "name": "Circle question mark"
+    },
+    {
+      "category": "status",
+      "id": "lucide:heart",
+      "keywords": [],
+      "name": "Heart"
+    },
+    {
+      "category": "status",
+      "id": "lucide:star",
+      "keywords": [],
+      "name": "Star"
+    },
+    {
+      "category": "status",
+      "id": "lucide:thumbs-up",
+      "keywords": [],
+      "name": "Thumbs up"
+    },
+    {
+      "category": "status",
+      "id": "lucide:award",
+      "keywords": [],
+      "name": "Award"
+    },
+    {
+      "category": "status",
+      "id": "lucide:trophy",
+      "keywords": [],
+      "name": "Trophy"
+    },
+    {
+      "category": "status",
+      "id": "lucide:sparkles",
+      "keywords": [],
+      "name": "Sparkles"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:search",
+      "keywords": [],
+      "name": "Search"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:filter",
+      "keywords": [],
+      "name": "Filter"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:settings",
+      "keywords": [],
+      "name": "Settings"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:sliders-horizontal",
+      "keywords": [],
+      "name": "Sliders horizontal"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:wrench",
+      "keywords": [],
+      "name": "Wrench"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:hammer",
+      "keywords": [],
+      "name": "Hammer"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:cog",
+      "keywords": [],
+      "name": "Cog"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:refresh-cw",
+      "keywords": [],
+      "name": "Refresh cw"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:rotate-ccw",
+      "keywords": [],
+      "name": "Rotate ccw"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:repeat",
+      "keywords": [],
+      "name": "Repeat"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:shuffle",
+      "keywords": [],
+      "name": "Shuffle"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:download",
+      "keywords": [],
+      "name": "Download"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:upload",
+      "keywords": [],
+      "name": "Upload"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:move",
+      "keywords": [],
+      "name": "Move"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:play",
+      "keywords": [],
+      "name": "Play"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:pause",
+      "keywords": [],
+      "name": "Pause"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:square-play",
+      "keywords": [],
+      "name": "Square play"
+    },
+    {
+      "category": "actions",
+      "id": "lucide:music",
+      "keywords": [],
+      "name": "Music"
+    },
+    {
+      "category": "arrows",
+      "id": "lucide:arrow-right",
+      "keywords": [],
+      "name": "Arrow right"
+    },
+    {
+      "category": "arrows",
+      "id": "lucide:arrow-left",
+      "keywords": [],
+      "name": "Arrow left"
+    },
+    {
+      "category": "arrows",
+      "id": "lucide:arrow-up",
+      "keywords": [],
+      "name": "Arrow up"
+    },
+    {
+      "category": "arrows",
+      "id": "lucide:arrow-down",
+      "keywords": [],
+      "name": "Arrow down"
+    },
+    {
+      "category": "arrows",
+      "id": "lucide:arrow-right-left",
+      "keywords": [],
+      "name": "Arrow right left"
+    },
+    {
+      "category": "development",
+      "id": "lucide:code",
+      "keywords": [],
+      "name": "Code"
+    },
+    {
+      "category": "development",
+      "id": "lucide:terminal",
+      "keywords": [],
+      "name": "Terminal"
+    },
+    {
+      "category": "development",
+      "id": "lucide:git-branch",
+      "keywords": [],
+      "name": "Git branch"
+    },
+    {
+      "category": "development",
+      "id": "lucide:git-commit-horizontal",
+      "keywords": [],
+      "name": "Git commit horizontal"
+    },
+    {
+      "category": "development",
+      "id": "lucide:git-merge",
+      "keywords": [],
+      "name": "Git merge"
+    },
+    {
+      "category": "development",
+      "id": "lucide:git-pull-request",
+      "keywords": [],
+      "name": "Git pull request"
+    },
+    {
+      "category": "development",
+      "id": "lucide:bug",
+      "keywords": [],
+      "name": "Bug"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:zap",
+      "keywords": [],
+      "name": "Zap"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:lightbulb",
+      "keywords": [],
+      "name": "Lightbulb"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:flame",
+      "keywords": [],
+      "name": "Flame"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:droplet",
+      "keywords": [],
+      "name": "Droplet"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:sun",
+      "keywords": [],
+      "name": "Sun"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:moon",
+      "keywords": [],
+      "name": "Moon"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:cloud-rain",
+      "keywords": [],
+      "name": "Cloud rain"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:leaf",
+      "keywords": [],
+      "name": "Leaf"
+    },
+    {
+      "category": "nature",
+      "id": "lucide:tree-pine",
+      "keywords": [],
+      "name": "Tree pine"
+    },
+    {
+      "category": "health",
+      "id": "lucide:stethoscope",
+      "keywords": [],
+      "name": "Stethoscope"
+    },
+    {
+      "category": "health",
+      "id": "lucide:pill",
+      "keywords": [],
+      "name": "Pill"
+    },
+    {
+      "category": "health",
+      "id": "lucide:heart-pulse",
+      "keywords": [],
+      "name": "Heart pulse"
+    }
+  ],
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "lucide",
+  "license": "ISC AND MIT",
+  "name": "Lucide icons",
+  "version": "0.0.0"
+}

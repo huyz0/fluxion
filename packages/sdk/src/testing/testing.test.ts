@@ -103,6 +103,14 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     expect(() => renderShapeGolden({ ...box, outline: { path: 'M 0 0 L {w / 0} 0 L 0 {h} Z' } })).toThrow('sample:box: renders no outline');
   });
 
+  it('FR-LIB-007: imported artwork, which replaces the outline, is drawn in its viewport, and artwork that draws nothing throws (M18.29)', () => {
+    const root = (children: readonly unknown[]) => ({ name: 'svg', attributes: { viewBox: '0 0 24 24' }, children });
+    const rect = { name: 'rect', attributes: { x: '2', y: '2', width: '20', height: '20', fill: 'currentColor' }, children: [] };
+    const icon = { ...box, id: 'sample:icon', artwork: { viewBox: { x: 0, y: 0, width: 24, height: 24 }, root: root([rect]) } } as ShapeDef;
+    expect(renderShapeGolden(icon)).toMatch(/<svg[^>]*class="fx-artwork"[^>]*>[\s\S]*<rect\b/);
+    expect(() => renderShapeGolden({ ...icon, artwork: { ...icon.artwork, root: root([]) } } as ShapeDef)).toThrow('sample:icon: renders no artwork');
+  });
+
   const checkedIn = (pack: DeclarativeShapePack, versions?: string): CheckedInShapePack => {
     const expected = shapePackExpectation(pack, versions);
     return { pack: expected.pack, goldens: expected.goldens, packageJson: `{"version":"${pack.version}"}`, versions: expected.versions };
