@@ -3121,3 +3121,9 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 
 - check-digest reads each digest line with whether it was already in the digest at the parent of M18.127's first-parent commit (`GRAMMAR_SINCE`). Lines added since must have a `vendor:role[:posthoc]` reviewer, and only `parseReviewer` decides whether they are posthoc; the `:posthoc` regex fallback stays for older lines (cp16 F1). Live: 73 older free-form lines still pass; `--head --full-history` passes.
 - digest.test: added `claude:independent-subagent:m18.200-r2` and `x:y:posthoc-r2` lines are refused (the latter not read as posthoc); a free-form line committed before an M18.127 commit passes and one added after it is refused.
+
+## M18.142 — drive's red-CI rule agrees with the blocking-row regime (2026-10-27)
+
+- drive step 3 and next-task state one rule for last-ci exit 1 (exit 3 keeps M18.128's rule): while a `blocks-landing` row is open, only that row and commits confined to HARNESS_PATHS proceed (as landing-block enforces); otherwise no row starts before the red is fixed. AGENTS.md's command line says the same (cp16 F2).
+- last-ci names each open `blocks-landing` row on a red verdict (`--backlog`, default the repo's). Live it prints `M18.117 blocks landing ...` after the fd6b38a red. Test: named when open, not when done, not on green; existing tests pass an empty backlog.
+- Review r1 changes-requested (recorded as such; the reviewer wrote `fail`), fixed: F1 the rule had also been applied to exit 3, dropping M18.128's "harness rows may proceed"; the one rule now covers exit 1 only and the exit-3 text is restored. F2 the skills said last-ci names the row on exit 3 too; the wording is now exit 1 only, which is where last-ci prints it.

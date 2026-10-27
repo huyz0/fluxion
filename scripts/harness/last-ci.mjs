@@ -13,15 +13,18 @@
 // red (1) outranks unknown, unknown outranks a wait (2). Exit 0: every workflow is green or has no completed run yet. The nightly's latest
 // completed run is reported too, never as a verdict: its failures do not block a task (nightly.yml), but its
 // state is what the final mutation and nightly rows read (M18.124).
-//   node scripts/harness/last-ci.mjs [--branch main] [--runs-file <json>] [--now <iso>] [--offline]
+//   node scripts/harness/last-ci.mjs [--branch main] [--runs-file <json>] [--now <iso>] [--offline] [--backlog <file>]
 // --runs-file: a JSON array of runs in `gh run list --json databaseId,workflowName,headSha,status,
 // conclusion,createdAt` shape, used instead of GitHub (tests; `outsideWindow` marks a run only the
 // status-filtered query sees); a run's optional `message` stands in
 // for its commit message, which is otherwise read from the local clone, fetching an unseen head from origin
-// unless --offline.
+// unless --offline. On red, an open `blocks-landing` row of the backlog (--backlog, default the repo's) is named:
+// while it is open, that row and commits confined to HARNESS_PATHS may proceed (M18.142, cp16 F2).
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { runSource, transportHint } from '../gates/ci-runs.mjs';
+import { blockingRows } from '../gates/landing-block.mjs';
+import { repoPath } from '../gates/lib.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const WORKFLOWS = ['ci', 'gates'];
@@ -162,4 +165,13 @@ else
   console.log(
     `last-ci: nightly ${newestNightly.conclusion === 'success' ? 'green' : `RED ${newestNightly.conclusion}`} at ${String(newestNightly.headSha).slice(0, 7)} (run ${newestNightly.databaseId}); not a verdict`,
   );
+// one rule with landing-block: while a row blocks landing, red does not stop that row or harness-path work (M18.142)
+if (verdict === 1) {
+  const file = opt('backlog') ?? repoPath('docs', 'backlog', 'current.md');
+  const blocking = blockingRows(existsSync(file) ? readFileSync(file, 'utf8') : '').map((r) => r.id);
+  if (blocking.length)
+    console.log(
+      `last-ci: ${blocking.join(', ')} blocks landing (\`blocks-landing\`): only that row and commits confined to HARNESS_PATHS proceed until it is done; other rows wait`,
+    );
+}
 process.exit(verdict);

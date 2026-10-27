@@ -16,7 +16,9 @@ milestone's completion command exiting 0 — never by your opinion.
 2. Run `node scripts/gates/precommit.mjs --quick` (or `pnpm verify:fast` from M1). If red and
    the cause is not your in-progress task, fixing the tree is the first task.
 3. Run `node scripts/harness/last-ci.mjs` (main's newest completed `ci` and `gates` runs). If it
-   exits 1, main's CI is red: fixing it is the first task, before any row (M4 final F3); the fix
+   exits 1, main's CI is red. While a `blocks-landing` row is open (last-ci names it), only that
+   row and commits confined to `HARNESS_PATHS` proceed, as `landing-block` enforces when landing;
+   otherwise fixing the red is the first task, before any row (M4 final F3, M18.142). The fix
    commit carries `Fixes-ci: <red run id>`. Exit 2 means that declared fix is still pending: wait
    for it and run last-ci again; do not fix twice (M18.118). Exit 3 means main's CI state is
    unknown (unreadable, or every run still pending): treat it like red for feature rows; harness

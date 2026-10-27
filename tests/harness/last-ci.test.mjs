@@ -8,16 +8,23 @@ import { describe, it } from 'node:test';
 import { cleanEnv, REPO } from './helpers.mjs';
 
 /** Runs last-ci.mjs against `runs` (gh run list shape); returns its status and output. */
-function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined) {
+function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined, backlog = undefined) {
   const dir = mkdtempSync(join(tmpdir(), 'last-ci-'));
   try {
     const file = join(dir, 'runs.json');
     writeFileSync(file, JSON.stringify(runs));
-    const r = spawnSync(process.execPath, [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now, '--offline'], {
-      encoding: 'utf8',
-      cwd,
-      env: cleanEnv(),
-    });
+    // a backlog of the test's own, or none: the live backlog's rows must not change what a test sees
+    const backlogFile = join(dir, 'backlog.md');
+    writeFileSync(backlogFile, backlog ?? '');
+    const r = spawnSync(
+      process.execPath,
+      [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now, '--offline', '--backlog', backlogFile],
+      {
+        encoding: 'utf8',
+        cwd,
+        env: cleanEnv(),
+      },
+    );
     return { status: r.status, out: r.stdout + r.stderr };
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -200,5 +207,20 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('a red run names an open blocks-landing row, under which that row and harness-path commits proceed (M18.142)', () => {
+    const row = (state) => `| M18.117 | CI green \`blocks-landing\` | HARNESS | acceptance | — | ${state} | |\n`;
+    const red = [run('ci', 'failure', '2026-09-29T02:00:00Z', 'deadbee0000000'), run('gates', 'success', '2026-09-29T02:00:00Z')];
+    const named = /last-ci: M18\.117 blocks landing \(`blocks-landing`\): only that row and commits confined to HARNESS_PATHS proceed until it is done/;
+    let r = lastCi(red, undefined, undefined, row('todo'));
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, named);
+    r = lastCi(red, undefined, undefined, row('done'));
+    assert.equal(r.status, 1, r.out);
+    assert.doesNotMatch(r.out, /blocks landing/, 'a done row blocks nothing');
+    r = lastCi([run('ci', 'success', '2026-09-29T02:00:00Z'), run('gates', 'success', '2026-09-29T02:00:00Z')], undefined, undefined, row('todo'));
+    assert.equal(r.status, 0, r.out);
+    assert.doesNotMatch(r.out, /blocks landing/, 'only a red verdict names it');
   });
 });

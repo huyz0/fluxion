@@ -24,10 +24,12 @@ description: Choose the next task and confirm it is genuinely ready. Use at the 
 - [ ] Fits one commit that leaves the tree green (rule of thumb: ≤ ~400 changed lines excl.
       fixtures/snapshots). If not, split into new rows now.
 - [ ] Not already done: check `git log --grep "<ID>:"`.
-- [ ] Main's CI is not red: `node scripts/harness/last-ci.mjs` exits 0. A red run (exit 1) is fixed
-      before this row starts, by a commit with `Fixes-ci: <run id>`; exit 2 means that fix's run is
-      pending: wait for it (M4 final F3, M18.118). Exit 3 (unknown) blocks a feature row like red;
-      a harness row may start (M18.128).
+- [ ] Main's CI is not red: `node scripts/harness/last-ci.mjs` exits 0. On exit 1 (red), while a
+      `blocks-landing` row is open (last-ci names it) only that row and work confined to
+      `HARNESS_PATHS` may start, as `landing-block` enforces; otherwise the red is fixed first, by a
+      commit with `Fixes-ci: <run id>` (M4 final F3, M18.142). Exit 2 means that fix's run is
+      pending: wait for it (M18.118). Exit 3 (unknown) blocks a feature row like red; a harness row
+      may start (M18.128).
 
 ## Then
 
