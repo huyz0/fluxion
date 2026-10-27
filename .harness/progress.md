@@ -3089,3 +3089,7 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 
 - Range 7545e708..d0cee9e, verdict changes-requested (5 minor) over 6a0b3fc, 92ffb32, 7753626, d0cee9e. F1 M18.139's own-row exemption plus label-based exemption allow a two-step bypass, and the harness-path list covers product sources under scripts/ and docs/ -> M18.135 amended in place with the reviewer's row (positive path list, label not sufficient, land.mjs refusal tests). F2 the ladder still hands hook GIT_* to test steps -> M18.140. F3 argued into M18.128 (amended: one UNKNOWN code, outer read failure no longer exits 0). F4 argued: M18.127 next after M18.128. F5 to the human: CI capacity recorded as blockedReason.
 - cp14 dispositions honoured (M18.134-137 match the proposed rows). Header 136.
+
+## M18.128 — last-ci reports an unreadable CI state as unknown (2026-10-27)
+
+- New exit 3 (UNKNOWN): no answer from the run source (was exit 0), a failed status-filtered query with no completed run in the window, and more than LAST_CI_MAX_PENDING pending runs with none completed (were exit 1). Red (1) outranks unknown, unknown outranks a wait (2). drive/next-task: exit 3 blocks feature rows like red, harness rows may proceed; AGENTS.md command line names it. Test covers each case, the ranking, and an unreadable source.

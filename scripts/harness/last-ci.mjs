@@ -8,8 +8,9 @@
 // nor does a declared fix once more than LAST_CI_MAX_PENDING runs are pending on the same red, or
 // once the fix has been pending for LAST_CI_MAX_WAIT_MS. An older red run that a newer green one
 // replaced does not block. Each workflow's newest completed run is read by a status-filtered query, so the
-// branch window cannot drop it; more than LAST_CI_MAX_PENDING pending runs with none completed exit 1 as
-// unknown (M18.134). Exit 0: every workflow is green or has no completed run yet. The nightly's latest
+// branch window cannot drop it. Exit 3 (unknown, M18.128): more than LAST_CI_MAX_PENDING pending runs with
+// none completed (M18.134), a failed status query with none in the window, or no answer from GitHub;
+// red (1) outranks unknown, unknown outranks a wait (2). Exit 0: every workflow is green or has no completed run yet. The nightly's latest
 // completed run is reported too, never as a verdict: its failures do not block a task (nightly.yml), but its
 // state is what the final mutation and nightly rows read (M18.124).
 //   node scripts/harness/last-ci.mjs [--branch main] [--runs-file <json>] [--now <iso>] [--offline]
@@ -24,6 +25,8 @@ import { runSource, transportHint } from '../gates/ci-runs.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const WORKFLOWS = ['ci', 'gates'];
+/** Exit code when main's CI state cannot be known; drive treats it like red for feature rows (M18.128). */
+const UNKNOWN = 3;
 const argv = process.argv.slice(2);
 const opt = (k) => {
   const i = argv.indexOf(`--${k}`);
@@ -110,13 +113,15 @@ try {
   // an unreadable nightly is said, not a verdict on the task
   nightlyRuns = await source.nightly(branch).catch((e) => e);
 } catch (e) {
-  // no answer from GitHub is not a verdict: say so and do not block the loop on the network
-  console.log(`last-ci: cannot read ${branch}'s runs (${e.message}${transportHint()}); check CI by hand`);
-  process.exit(0);
+  // no answer from GitHub is no green either: unknown, which blocks feature rows (M18.128)
+  console.log(`last-ci: UNKNOWN cannot read ${branch}'s runs (${e.message}${transportHint()}); check CI by hand`);
+  process.exit(UNKNOWN);
 }
 
 const newestFirst = [...runs].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
 let verdict = 0;
+/** Red outranks unknown, unknown outranks a wait (M18.128). */
+const worst = (a, b) => [1, UNKNOWN, 2, 0].find((code) => code === a || code === b);
 for (const workflow of WORKFLOWS) {
   const mine = newestFirst.filter((r) => r.workflowName === workflow);
   const done = mine.find((r) => r.status === 'completed');
@@ -125,7 +130,7 @@ for (const workflow of WORKFLOWS) {
   const tail = pending > 0 ? ` (${pending} newer run${pending === 1 ? '' : 's'} pending)` : '';
   if (!done && (pending > t('LAST_CI_MAX_PENDING') || unread.has(workflow))) {
     // so many pending runs, or an unread query, and none completed: the last verdict is out of sight, not green (M18.134)
-    verdict = 1;
+    verdict = worst(verdict, UNKNOWN);
     console.log(`last-ci: UNKNOWN ${workflow}: no completed run found behind ${pending} pending runs on ${branch}; check CI by hand`);
     continue;
   }
@@ -141,7 +146,7 @@ for (const workflow of WORKFLOWS) {
   if (pending > 0) {
     // a red workflow that blocks (exit 1) outranks a wait (M5.2 review F1)
     const red = redWithPending(workflow, done, mine.slice(0, pending), sha);
-    verdict = red.verdict === 1 ? 1 : verdict || 2;
+    verdict = worst(verdict, red.verdict);
     console.log(red.line);
     continue;
   }

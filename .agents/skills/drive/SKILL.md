@@ -18,7 +18,9 @@ milestone's completion command exiting 0 — never by your opinion.
 3. Run `node scripts/harness/last-ci.mjs` (main's newest completed `ci` and `gates` runs). If it
    exits 1, main's CI is red: fixing it is the first task, before any row (M4 final F3); the fix
    commit carries `Fixes-ci: <red run id>`. Exit 2 means that declared fix is still pending: wait
-   for it and run last-ci again; do not fix twice (M18.118).
+   for it and run last-ci again; do not fix twice (M18.118). Exit 3 means main's CI state is
+   unknown (unreadable, or every run still pending): treat it like red for feature rows; harness
+   rows may proceed (M18.128).
 4. If `state.json.blockedReason` needs a human decision or denied authorization, report and stop.
    A technical three-attempt stop instead requires independent diagnostic review and an explicit
    in-scope replan before clearing it (ADR-0176); preserve the failed attempts and review evidence.

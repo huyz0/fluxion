@@ -169,13 +169,36 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.match(red.out, /RED ci failure at deadbee \(run 41\) \(10 newer runs pending\)/);
     // nothing completed anywhere: more than LAST_CI_MAX_PENDING (4) pending runs are unknown, at most 4 are not yet a verdict
     const unknown = lastCi([...pending, gates]);
-    assert.equal(unknown.status, 1, unknown.out);
+    assert.equal(unknown.status, 3, unknown.out);
     assert.match(unknown.out, /UNKNOWN ci: no completed run found behind 10 pending runs/);
     assert.equal(lastCi([...pending.slice(0, 4), gates]).status, 0);
-    assert.equal(lastCi([...pending.slice(0, 5), gates]).status, 1);
+    assert.equal(lastCi([...pending.slice(0, 5), gates]).status, 3);
     // a failed status query is said, and with no completed run in the window the state is unknown (r1 F2)
     const unread = lastCi([pending[0], gates, hidden, { workflowName: 'ci', queryFails: true }]);
-    assert.equal(unread.status, 1, unread.out);
+    assert.equal(unread.status, 3, unread.out);
     assert.match(unread.out, /cannot read ci's newest completed run \(query failed\)[\s\S]*UNKNOWN ci/);
+  });
+
+  it('M18.128: every unknown state exits 3, red outranks it and it outranks a wait; an unreadable branch is unknown, not green', () => {
+    const pending = Array.from({ length: 5 }, (_, i) => run('ci', 'queued', `2026-09-29T03:1${i}:00Z`, { databaseId: 70 + i, message: 'M1.3: feat(x): w' }));
+    const redGates = run('gates', 'failure', '2026-09-29T02:00:00Z');
+    assert.equal(lastCi([...pending, redGates]).status, 1, 'red gates outranks unknown ci');
+    const red = run('gates', 'failure', '2026-09-29T02:00:00Z', { databaseId: 41 });
+    const fix = run('gates', 'in_progress', '2026-09-29T03:00:00Z', { headSha: 'abc', message: 'M1.2: fix(ci): z\n\nFixes-ci: 41\n', databaseId: 42 });
+    assert.equal(lastCi([...pending, fix, red]).status, 3, 'unknown ci outranks a gates wait');
+    assert.equal(lastCi([fix, red]).status, 2);
+    // the run source itself cannot be read: a runs file that is not JSON stands in for no answer from GitHub
+    const dir = mkdtempSync(join(tmpdir(), 'last-ci-bad-'));
+    try {
+      writeFileSync(join(dir, 'runs.json'), 'not json');
+      const r = spawnSync(process.execPath, [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', join(dir, 'runs.json'), '--offline'], {
+        encoding: 'utf8',
+        env: cleanEnv(),
+      });
+      assert.equal(r.status, 3, r.stdout + r.stderr);
+      assert.match(r.stdout, /UNKNOWN cannot read main's runs/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
