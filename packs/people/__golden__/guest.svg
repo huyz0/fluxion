@@ -1,0 +1,14 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:48px;height:48px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 48 48">
+      <path class="fx-outline" d="M0 24 C0 10.75 10.75 0 24 0 C37.26 0 48 10.75 48 24 C48 37.26 37.26 48 24 48 C10.75 48 0 37.26 0 24 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:4 3">
+      </path>
+      <path class="fx-decoration" d="M16.32 18.24 C16.32 14 19.76 10.56 24 10.56 C28.24 10.56 31.68 14 31.68 18.24 C31.68 22.48 28.24 25.92 24 25.92 C19.76 25.92 16.32 22.48 16.32 18.24 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:4 3">
+      </path>
+      <path class="fx-decoration" d="M10.56 38.4 C10.56 32.04 16.58 26.88 24 26.88 C31.42 26.88 37.44 32.04 37.44 38.4" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:4 3">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:44px 44px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

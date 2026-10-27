@@ -1,0 +1,206 @@
+{
+  "definitions": [
+    {
+      "category": "roles",
+      "decorations": [
+        {
+          "path": "M {w/2 - min(w, h) * 0.08 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - min(w, h) * 0.08 + (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - min(w, h) * 0.08 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} Z"
+        },
+        {
+          "path": "M {w/2 - min(w, h) * 0.08 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 - min(w, h) * 0.08 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.3} {h/2 + min(w, h) * 0.04 - (min(w, h) * 0.14)} L {w/2 + min(w, h) * 0.3 + (min(w, h) * 0.14) * 0.85} {h/2 + min(w, h) * 0.04 - (min(w, h) * 0.14) * 0.6} V {h/2 + min(w, h) * 0.04 + (min(w, h) * 0.14) * 0.2} L {w/2 + min(w, h) * 0.3} {h/2 + min(w, h) * 0.04 + (min(w, h) * 0.14)} L {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14) * 0.85} {h/2 + min(w, h) * 0.04 + (min(w, h) * 0.14) * 0.2} V {h/2 + min(w, h) * 0.04 - (min(w, h) * 0.14) * 0.6} Z"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "An administrator: a person with elevated rights (shield badge).",
+      "id": "people:admin",
+      "keywords": [
+        "admin",
+        "administrator",
+        "operator",
+        "superuser",
+        "privileged",
+        "role"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "roles",
+      "decorations": [
+        {
+          "path": "M {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 + (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} Z"
+        },
+        {
+          "path": "M {w/2 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        },
+        {
+          "path": "M {w/2 - min(w, h) * 0.06} {h/2 + min(w, h) * 0.14} L {w/2 - min(w, h) * 0.15} {h/2 + min(w, h) * 0.21} L {w/2 - min(w, h) * 0.06} {h/2 + min(w, h) * 0.28}"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.06} {h/2 + min(w, h) * 0.14} L {w/2 + min(w, h) * 0.15} {h/2 + min(w, h) * 0.21} L {w/2 + min(w, h) * 0.06} {h/2 + min(w, h) * 0.28}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A developer or engineer (code mark).",
+      "id": "people:developer",
+      "keywords": [
+        "developer",
+        "engineer",
+        "programmer",
+        "coder",
+        "maintainer",
+        "role"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "roles",
+      "decorations": [
+        {
+          "path": "M {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 + (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} Z"
+        },
+        {
+          "path": "M {w/2 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        },
+        {
+          "path": "M {w/2 - min(w, h) * 0.24} {h/2 + min(w, h) * -0.12} A {min(w, h) * 0.24} {min(w, h) * 0.24} 0 0 1 {w/2 + min(w, h) * 0.24} {h/2 + min(w, h) * -0.12}"
+        },
+        {
+          "path": "M {w/2 - min(w, h) * 0.24} {h/2 + min(w, h) * -0.16} V {h/2 + min(w, h) * -0.04}"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.24} {h/2 + min(w, h) * -0.16} V {h/2 + min(w, h) * -0.04}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A support agent: help desk, customer service or on-call staff (headset).",
+      "id": "people:support",
+      "keywords": [
+        "support",
+        "help desk",
+        "agent",
+        "customer service",
+        "call center",
+        "on call",
+        "role"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "roles",
+      "decorations": [
+        {
+          "path": "M {w/2 - min(w, h) * 0.18} {h/2 + min(w, h) * -0.24} H {w/2 + min(w, h) * 0.18} V {h/2 + min(w, h) * 0.02} H {w/2 - min(w, h) * 0.18} Z"
+        },
+        {
+          "path": "M {w/2} {h/2 + min(w, h) * -0.24} V {h/2 + min(w, h) * -0.34}"
+        },
+        {
+          "path": "M {w/2 - min(w, h) * 0.09} {h/2 + min(w, h) * -0.12} V {h/2 + min(w, h) * -0.08}"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.09} {h/2 + min(w, h) * -0.12} V {h/2 + min(w, h) * -0.08}"
+        },
+        {
+          "path": "M {w/2 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A bot: an automated actor, service account or AI agent.",
+      "id": "people:bot",
+      "keywords": [
+        "bot",
+        "robot",
+        "automation",
+        "service account",
+        "agent",
+        "ai",
+        "system actor"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

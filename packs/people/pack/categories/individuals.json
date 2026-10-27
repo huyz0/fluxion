@@ -1,0 +1,198 @@
+{
+  "definitions": [
+    {
+      "category": "individuals",
+      "decorations": [
+        {
+          "path": "M {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 + (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} Z"
+        },
+        {
+          "path": "M {w/2 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A person: a user, customer, employee or other individual.",
+      "id": "people:person",
+      "keywords": [
+        "person",
+        "user",
+        "individual",
+        "human",
+        "customer",
+        "actor",
+        "account"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "individuals",
+      "decorations": [
+        {
+          "path": "M {w/2 - min(w, h) * 0.08 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - min(w, h) * 0.08 + (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - min(w, h) * 0.08 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} Z"
+        },
+        {
+          "path": "M {w/2 - min(w, h) * 0.08 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 - min(w, h) * 0.08 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14)} {h/2 + min(w, h) * 0.04} A {min(w, h) * 0.14} {min(w, h) * 0.14} 0 1 1 {w/2 + min(w, h) * 0.3 + (min(w, h) * 0.14)} {h/2 + min(w, h) * 0.04} A {min(w, h) * 0.14} {min(w, h) * 0.14} 0 1 1 {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14)} {h/2 + min(w, h) * 0.04} Z"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14) * 0.55} {h/2 + min(w, h) * 0.04} H {w/2 + min(w, h) * 0.3 + (min(w, h) * 0.14) * 0.55}"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.3} {h/2 + min(w, h) * 0.04 - (min(w, h) * 0.14) * 0.55} V {h/2 + min(w, h) * 0.04 + (min(w, h) * 0.14) * 0.55}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A person being added: a new user, sign-up or invitation.",
+      "id": "people:person-add",
+      "keywords": [
+        "add user",
+        "new user",
+        "sign up",
+        "invite",
+        "register",
+        "onboarding"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "individuals",
+      "decorations": [
+        {
+          "path": "M {w/2 - min(w, h) * 0.08 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - min(w, h) * 0.08 + (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - min(w, h) * 0.08 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} Z"
+        },
+        {
+          "path": "M {w/2 - min(w, h) * 0.08 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 - min(w, h) * 0.08 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14)} {h/2 + min(w, h) * 0.04} A {min(w, h) * 0.14} {min(w, h) * 0.14} 0 1 1 {w/2 + min(w, h) * 0.3 + (min(w, h) * 0.14)} {h/2 + min(w, h) * 0.04} A {min(w, h) * 0.14} {min(w, h) * 0.14} 0 1 1 {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14)} {h/2 + min(w, h) * 0.04} Z"
+        },
+        {
+          "path": "M {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14) * 0.5} {h/2 + min(w, h) * 0.04} L {w/2 + min(w, h) * 0.3 - (min(w, h) * 0.14) * 0.1} {h/2 + min(w, h) * 0.04 + (min(w, h) * 0.14) * 0.4} L {w/2 + min(w, h) * 0.3 + (min(w, h) * 0.14) * 0.55} {h/2 + min(w, h) * 0.04 - (min(w, h) * 0.14) * 0.4}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "A verified person: an authenticated, approved or confirmed user.",
+      "id": "people:person-check",
+      "keywords": [
+        "verified user",
+        "authenticated",
+        "approved",
+        "confirmed",
+        "trusted",
+        "login"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "category": "individuals",
+      "decorations": [
+        {
+          "path": "M {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 + (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} A {min(w, h) * 0.16} {min(w, h) * 0.16} 0 1 1 {w/2 - (min(w, h) * 0.16)} {h/2 + min(w, h) * 0.3 - (min(w, h)) * 0.42} Z"
+        },
+        {
+          "path": "M {w/2 - (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3} A {(min(w, h)) * 0.28} {(min(w, h)) * 0.24} 0 0 1 {w/2 + (min(w, h)) * 0.28} {h/2 + min(w, h) * 0.3}"
+        }
+      ],
+      "defaultSize": {
+        "h": 48,
+        "w": 48
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        },
+        "stroke": {
+          "dash": [
+            4,
+            3
+          ]
+        }
+      },
+      "describe": "A guest (dashed): an anonymous or not yet registered visitor.",
+      "id": "people:guest",
+      "keywords": [
+        "guest",
+        "anonymous",
+        "visitor",
+        "unregistered",
+        "public"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {w/2 - (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 + (w/2)} {h/2} A {w/2} {h/2} 0 1 1 {w/2 - (w/2)} {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}

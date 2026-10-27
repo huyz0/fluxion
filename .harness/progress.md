@@ -3235,3 +3235,9 @@ Adds @fluxion/pack-icons-lucide: 185 curated Lucide icons in 18 categories, impo
 ## M18.30 — Devices pack (2026-10-27)
 
 Adds @fluxion/pack-devices: 15 generic device definitions in five categories (computers: desktop, laptop; mobile: phone, tablet, watch; peripherals: printer, keyboard, mouse, camera, USB drive; media: TV, speaker; IoT: sensor, IoT device, thermostat), MIT original work with no vendor artwork, colours or names, stroke-only marks with the label below, encoded by the shared encoder (ADR-0196) with a golden per definition; passes the corner and small-size geometry check (M18.121).
+
+## M18.31 — People pack (2026-10-27)
+
+Adds @fluxion/pack-people: 10 generic avatar definitions in three categories (individuals: person, person add, person check, dashed guest; groups: pair, group; roles: admin with a shield badge, developer with code chevrons, support with a headset, bot), MIT original work, stroke-only with the label below, encoded by the shared encoder (ADR-0196) with a golden per definition; passes the corner and small-size geometry check (M18.121). Also drops a stray trailing doc comment from the devices pack's shapes (M18.30 review F1).
+- Review r1 changes-requested, fixed: the badge (person add, person check, admin) sits right of a figure moved left, inside the frame, so the frame no longer crosses it (F1); single-avatar figures, badges and marks are placed from the frame's centre in min(w, h) units, so they keep their spacing at any aspect (F2).
+- Review r2 changes-requested, fixed: pair and group figures place the head from the shoulders in figure units (one `figure(cx, s, baseY)` for every avatar), so heads sit on the shoulders at any size (F1).

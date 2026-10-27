@@ -1,0 +1,171 @@
+{
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "groups": {
+      "path": "categories/groups.json",
+      "sha256": "bb865139b76fc368683fcefc05279fc1af8e764619af146c541c73211ce173c8"
+    },
+    "individuals": {
+      "path": "categories/individuals.json",
+      "sha256": "a0d355956cd0fe8963eefb020f06634e824e641ffe83ddaba9365a205ea6aadd"
+    },
+    "roles": {
+      "path": "categories/roles.json",
+      "sha256": "9d5f1f00704df651bf88f660c3930ef8a728db714084873a40820d242fd340aa"
+    }
+  },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
+  "definitions": [
+    {
+      "category": "individuals",
+      "id": "people:person",
+      "keywords": [
+        "person",
+        "user",
+        "individual",
+        "human",
+        "customer",
+        "actor",
+        "account"
+      ],
+      "name": "Person"
+    },
+    {
+      "category": "individuals",
+      "id": "people:person-add",
+      "keywords": [
+        "add user",
+        "new user",
+        "sign up",
+        "invite",
+        "register",
+        "onboarding"
+      ],
+      "name": "Add person"
+    },
+    {
+      "category": "individuals",
+      "id": "people:person-check",
+      "keywords": [
+        "verified user",
+        "authenticated",
+        "approved",
+        "confirmed",
+        "trusted",
+        "login"
+      ],
+      "name": "Verified person"
+    },
+    {
+      "category": "individuals",
+      "id": "people:guest",
+      "keywords": [
+        "guest",
+        "anonymous",
+        "visitor",
+        "unregistered",
+        "public"
+      ],
+      "name": "Guest"
+    },
+    {
+      "category": "groups",
+      "id": "people:pair",
+      "keywords": [
+        "pair",
+        "two people",
+        "partners",
+        "couple",
+        "peers",
+        "relationship"
+      ],
+      "name": "Pair"
+    },
+    {
+      "category": "groups",
+      "id": "people:group",
+      "keywords": [
+        "group",
+        "team",
+        "people",
+        "users",
+        "department",
+        "audience",
+        "community"
+      ],
+      "name": "Group"
+    },
+    {
+      "category": "roles",
+      "id": "people:admin",
+      "keywords": [
+        "admin",
+        "administrator",
+        "operator",
+        "superuser",
+        "privileged",
+        "role"
+      ],
+      "name": "Administrator"
+    },
+    {
+      "category": "roles",
+      "id": "people:developer",
+      "keywords": [
+        "developer",
+        "engineer",
+        "programmer",
+        "coder",
+        "maintainer",
+        "role"
+      ],
+      "name": "Developer"
+    },
+    {
+      "category": "roles",
+      "id": "people:support",
+      "keywords": [
+        "support",
+        "help desk",
+        "agent",
+        "customer service",
+        "call center",
+        "on call",
+        "role"
+      ],
+      "name": "Support agent"
+    },
+    {
+      "category": "roles",
+      "id": "people:bot",
+      "keywords": [
+        "bot",
+        "robot",
+        "automation",
+        "service account",
+        "agent",
+        "ai",
+        "system actor"
+      ],
+      "name": "Bot"
+    }
+  ],
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "people",
+  "license": "MIT",
+  "name": "People",
+  "version": "0.0.0"
+}

@@ -266,6 +266,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party devices shape pack: generic computers, mobiles, peripherals, media and IoT devices."
+    },
+    {
+      "dir": "packs/people",
+      "name": "@fluxion/pack-people",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party people shape pack: generic people, groups and roles."
     }
   ]
 }

@@ -103,6 +103,9 @@
       "path": "./packs/devices"
     },
     {
+      "path": "./packs/people"
+    },
+    {
       "path": "./e2e"
     }
   ]

@@ -1,0 +1,18 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:48px;height:48px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 48 48">
+      <path class="fx-outline" d="M0 24 C0 10.75 10.75 0 24 0 C37.26 0 48 10.75 48 24 C48 37.26 37.26 48 24 48 C10.75 48 0 37.26 0 24 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M12.48 18.24 C12.48 14 15.92 10.56 20.16 10.56 C24.4 10.56 27.84 14 27.84 18.24 C27.84 22.48 24.4 25.92 20.16 25.92 C15.92 25.92 12.48 22.48 12.48 18.24 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M6.72 38.4 C6.72 32.04 12.74 26.88 20.16 26.88 C27.58 26.88 33.6 32.04 33.6 38.4" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M31.68 25.92 C31.68 23.52 32.96 21.3 35.04 20.1 C37.12 18.9 39.68 18.9 41.76 20.1 C43.84 21.3 45.12 23.52 45.12 25.92 C45.12 28.32 43.84 30.54 41.76 31.74 C39.68 32.94 37.12 32.94 35.04 31.74 C32.96 30.54 31.68 28.32 31.68 25.92 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M35.04 25.92 C35.94 26.82 36.83 27.71 37.73 28.61 C39.18 26.82 40.64 25.02 42.1 23.23" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:44px 44px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

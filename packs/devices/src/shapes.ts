@@ -198,5 +198,3 @@ export const shapes: readonly ShapeDef[] = [
     keywords: ['thermostat', 'smart home', 'controller', 'climate', 'iot'],
   }),
 ];
-
-/** Library display names by definition id. */
