@@ -1,7 +1,7 @@
 // The edit mode's body (split from the root, M7.24): the screens list, the canvas with the timeline, and the inspector.
 import type { CoreRegistries, Store } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
-import type { RenderRegistries } from '@fluxion/render';
+import { type RenderRegistries, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { type ReactNode, useCallback } from 'react';
 import type { AssetStore } from './asset-store.js';
@@ -14,6 +14,8 @@ import { type ArrangePort, LAYOUT_CHOICES, registeredLayoutIds } from './layout-
 import type { OptionsSchemaOf } from './layout-options-form.js';
 import { registeredTemplateIds } from './layout-picker.js';
 import { insertShape } from './library/library-insert.js';
+import type { LibraryPanelProps } from './library/library-panel.js';
+import { replaceableShape, replaceSelectedShape } from './library/library-replace.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
 import { placeImageFiles } from './place-images.js';
 import type { Execute } from './pointer.js';
@@ -53,15 +55,15 @@ export type EditBodyProps = {
   readonly arrange?: ArrangePort | undefined;
 };
 
-/** The left tabs: screens, problems, notes, the library (a pick inserts) and the Source tab when the host gives the core registries. */
-function leftTabsFor(props: EditBodyProps, insert: (defId: string) => void, onRemap: (remap: ReadonlyMap<RecordId, RecordId>) => void): ReactNode {
+/** The left tabs: screens, problems, notes, the library (a pick inserts or replaces) and the Source tab when the host gives the core registries. */
+function leftTabsFor(props: EditBodyProps, library: LibraryPanelProps, onRemap: (remap: ReadonlyMap<RecordId, RecordId>) => void): ReactNode {
   const { store, session, screenId, registries, execute, newId, sourceRegistries } = props;
   return (
     <LeftTabs
       screens={{ store, session, shown: screenId, registries, execute, newId }}
       problems={{ store, session, execute }}
       notes={{ store, execute, screenId }}
-      library={{ shapeDefs: registries.shapeDefs, onPick: (id) => insert(id) }}
+      library={library}
       source={sourceRegistries === undefined ? undefined : { store, execute, registries: sourceRegistries, screenId, onRemap }}
     />
   );
@@ -110,9 +112,17 @@ export function EditBody(props: EditBodyProps): ReactNode {
     [store, execute, screenId, newId, assetStore, session, box, notify],
   );
   const onRemap = useCallback((remap: ReadonlyMap<RecordId, RecordId>) => followRemap(session, remap), [session]);
+  // a library pick replaces the selected shape when the panel's Replace toggle or a shift-click asks (FR-LIB-011)
+  const selection = useValue(session.selection.get);
+  const library: LibraryPanelProps = {
+    shapeDefs: registries.shapeDefs,
+    onPick: (id) => insert(id),
+    onReplace: (id) => void replaceSelectedShape({ view: store, execute, session, shapeDefs: registries.shapeDefs }, id),
+    canReplace: replaceableShape(store, selection) !== undefined,
+  };
   return (
     <div className="fx-chrome-body">
-      {panel('left', leftTabsFor(props, insert, onRemap))}
+      {panel('left', leftTabsFor(props, library, onRemap))}
       {splitter('left')}
       <div className="fx-chrome-center">
         <Canvas

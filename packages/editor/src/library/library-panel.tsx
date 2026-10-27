@@ -1,6 +1,8 @@
 // The library panel (FR-LIB-001, M8.30): the registered shape definitions by pack and category, each with a thumbnail
 // of its outline drawn at its default size, and a search box over the index of library-search.ts. With a query the
-// matches are listed best first. Picking one is the host's (`onPick`, M8.18: click to insert, drag to drop).
+// matches are listed best first. Picking one is the host's (`onPick`, M8.18: click to insert, drag to drop). With
+// `onReplace` and a replaceable selection, the Replace toggle (or a shift-click) makes the next pick replace the
+// selected shape instead (FR-LIB-011, M18.37).
 import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
 import { pathData, useValue } from '@fluxion/render';
 import { plural, t } from '@lingui/core/macro';
@@ -19,6 +21,10 @@ export type LibraryPanelProps = {
   readonly shapeDefs: Registry<string, ShapeDef>;
   /** Called with a definition id when its item is picked; without it the items are plain labels. */
   readonly onPick?: ((id: string) => void) | undefined;
+  /** Called with a definition id when it should replace the selected shape; without it there is no Replace toggle. */
+  readonly onReplace?: ((id: string) => void) | undefined;
+  /** Whether the selection is one shape a pick could replace (default false). */
+  readonly canReplace?: boolean | undefined;
   /** Registered IDs left out of the listing and search, such as hidden Iconify icons (FR-LIB-005). */
   readonly hidden?: ReadonlySet<string> | undefined;
 };
@@ -43,7 +49,7 @@ function Thumb(props: { readonly def: ShapeDef }): ReactNode {
 }
 
 /** One item: a button when something is picked by it, else a label. */
-function Item(props: { readonly entry: LibraryEntry; readonly def: ShapeDef; readonly onPick: LibraryPanelProps['onPick'] }): ReactNode {
+function Item(props: { readonly entry: LibraryEntry; readonly def: ShapeDef; readonly onPick: ((id: string, shift: boolean) => void) | undefined }): ReactNode {
   const { entry, def, onPick } = props;
   const body = (
     <>
@@ -60,7 +66,7 @@ function Item(props: { readonly entry: LibraryEntry; readonly def: ShapeDef; rea
           type="button"
           className="fx-chrome-button fx-chrome-library-button"
           draggable
-          onClick={() => onPick(entry.id)}
+          onClick={(e) => onPick(entry.id, e.shiftKey)}
           onDragStart={(e) => {
             e.dataTransfer.effectAllowed = 'copy';
             e.dataTransfer.setData(LIBRARY_DRAG_TYPE, entry.id);
@@ -92,15 +98,26 @@ function grouped(
  * @public
  */
 export function LibraryPanel(props: LibraryPanelProps): ReactNode {
-  const { shapeDefs, onPick, hidden } = props;
+  const { shapeDefs, onPick, onReplace, canReplace = false, hidden } = props;
   const [query, setQuery] = useState('');
+  const [replacing, setReplacing] = useState(false);
+  const replaceMode = replacing && canReplace;
+  const pick =
+    onPick === undefined
+      ? undefined
+      : (id: string, shift: boolean) => {
+          if (onReplace !== undefined && canReplace && (replaceMode || shift)) {
+            setReplacing(false);
+            onReplace(id);
+          } else onPick(id);
+        };
   const version = useValue(shapeDefs.changes$);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` stands for the registry's contents
   const defs = useMemo(() => new Map(shapeDefs.list().map(([id, def]) => [id, def] as const)), [shapeDefs, version]);
   const index = useMemo(() => buildLibraryIndex([...defs.values()].filter((d) => !hidden?.has(d.id)).map(entryOf)), [defs, hidden]);
   const found = index.search(query);
   const searching = query.trim() !== '';
-  const show = (e: LibraryEntry) => <Item key={e.id} entry={e} def={defs.get(e.id) as ShapeDef} onPick={onPick} />;
+  const show = (e: LibraryEntry) => <Item key={e.id} entry={e} def={defs.get(e.id) as ShapeDef} onPick={pick} />;
   return (
     <div className="fx-chrome-library">
       <input
@@ -111,6 +128,18 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
+      {onReplace === undefined ? null : (
+        <button
+          type="button"
+          className="fx-chrome-button fx-chrome-library-replace"
+          aria-pressed={replaceMode}
+          disabled={!canReplace}
+          title={t`The next shape picked replaces the selected one, keeping its text and connectors (shift-click does it once)`}
+          onClick={() => setReplacing(!replaceMode)}
+        >
+          {t`Replace selected shape`}
+        </button>
+      )}
       <p className="fx-chrome-library-count" aria-live="polite">
         {plural(found.length, { one: '# shape', other: '# shapes' })}
       </p>

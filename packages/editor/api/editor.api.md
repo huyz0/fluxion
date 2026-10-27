@@ -792,6 +792,8 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode;
 export type LibraryPanelProps = {
     readonly shapeDefs: Registry<string, ShapeDef>;
     readonly onPick?: ((id: string) => void) | undefined;
+    readonly onReplace?: ((id: string) => void) | undefined;
+    readonly canReplace?: boolean | undefined;
     readonly hidden?: ReadonlySet<string> | undefined;
 };
 
@@ -1208,6 +1210,20 @@ export function registeredLayoutIds(entries: readonly (readonly [string, unknown
 export function registeredTemplateIds(entries: readonly (readonly [string, unknown])[]): readonly string[];
 
 export { registerFontMetrics }
+
+// @public
+export function replaceableShape(view: ReadView, selection: readonly RecordId[]): RecordId | undefined;
+
+// @public
+export type ReplaceDeps = {
+    readonly view: ReadView;
+    readonly execute: Execute;
+    readonly session: Session;
+    readonly shapeDefs: Registry<string, ShapeDef>;
+};
+
+// @public
+export function replaceSelectedShape(deps: ReplaceDeps, defId: string): boolean;
 
 // @public
 export function resetKey(overrides: KeyOverrides, id: string): KeyOverrides;

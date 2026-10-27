@@ -159,6 +159,7 @@ export { LayoutPickerSection, type LayoutPickerSectionProps } from './layout-pic
 export { type DrawioLibrary, importDrawioLibrary } from './library/import-drawio.js';
 export { type IconifyLibrary, importIconifyLibrary } from './library/import-iconify.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
+export { type ReplaceDeps, replaceableShape, replaceSelectedShape } from './library/library-replace.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
 export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';
 export { startLiveLayout } from './live-layout.js';

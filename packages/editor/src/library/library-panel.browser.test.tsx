@@ -67,4 +67,36 @@ describe('library panel (FR-LIB-001)', () => {
     await act(async () => void shapeDefs.register('flow:start', def('flow:start', 'Flow'), 'test'));
     expect(names()).toContain('flow:start');
   });
+
+  it('FR-LIB-011: the Replace toggle, or a shift-click, makes a pick replace the selected shape instead of inserting', async () => {
+    const shapeDefs = setup();
+    const picked: string[] = [];
+    const replaced: string[] = [];
+    const render = (canReplace: boolean) =>
+      act(async () =>
+        root.render(<LibraryPanel shapeDefs={shapeDefs} onPick={(id) => picked.push(id)} onReplace={(id) => replaced.push(id)} canReplace={canReplace} />),
+      );
+    const toggle = () => [...host.querySelectorAll('button')].find((b) => b.textContent === 'Replace selected shape') as HTMLButtonElement;
+    const item = (id: string) => host.querySelector(`[data-def-id="${id}"] button`) as HTMLButtonElement;
+    const click = (el: HTMLElement, shiftKey = false) => act(async () => el.dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey })));
+    // nothing replaceable selected: the toggle is off and disabled, a shift-click still inserts
+    await render(false);
+    expect(toggle().disabled).toBe(true);
+    await click(item('basic:rect'), true);
+    expect([picked, replaced]).toEqual([['basic:rect'], []]);
+    await render(true);
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+    await click(toggle());
+    expect(toggle().getAttribute('aria-pressed')).toBe('true');
+    await click(item('flow:decision'));
+    // one pick replaced, and the toggle let go
+    expect([picked, replaced]).toEqual([['basic:rect'], ['flow:decision']]);
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+    await click(item('basic:cylinder'));
+    await click(item('basic:rect'), true);
+    expect([picked, replaced]).toEqual([
+      ['basic:rect', 'basic:cylinder'],
+      ['flow:decision', 'basic:rect'],
+    ]);
+  });
 });

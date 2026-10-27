@@ -2913,3 +2913,10 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - Editor shares atomic namespace registration between Iconify and draw.io imports.
 - Review r1 F1 / r2 F1-F3: edge routes are memoized and label-anchored edge chains nest at most 32 deep (no stack overflow, no exponential re-routing); any conversion fault refuses only its entry.
 - Review r3 F1 (no library-wide budget) was the third failed round, so an independent diagnostic review ran under ADR-0176. Root cause: the converters built unbounded output before any budget check. Replan, done in one change: a charged SVG sink per entry (2 Mi, and no more than the remaining 16 Mi library budget); a 16 Mi step budget (cells, route points walked, placeholder lookups); label caps of 64 Ki raw, 4096 plain and 64 lines, also enforced while placeholders resolve; dash patterns of at most 16 values; at most 256 stencil anchors; a linear tag strip, XML reference decoder, anchor dedupe and duplicate-id numbering; a JSON pre-scan (at most 4096 rows, depth 3); and embedded SVG data refused by length before decoding. All 15 diagnostic probes now refuse in about 1 s or less per entry, with RSS under 400 MB; the library-level parse stays linear, at about 0.1 s per Mi. The pinned corpus is still 12/12, 10/10 and 12/12.
+
+## M18.37 — replace shape from the library (2026-10-27)
+
+- M18.36 pushed as d767fd1 after cp10 (r4 pass, one minor argued in review-argued.txt).
+- Library panel gains a "Replace selected shape" toggle (aria-pressed, disabled unless one shape is selected) and shift-click; the next pick calls `replaceSelectedShape`, which passes both definitions' anchors from the registry to core `shape.replace`. Selection kept.
+- library-replace.test.ts 2/2, library-panel browser 4/4, e2e library.replace-shape.spec.ts Chromium PASS (label kept, both bindings kept, one undo restores both rects via saved file). Firefox/WebKit not installed here: CI legs.
+

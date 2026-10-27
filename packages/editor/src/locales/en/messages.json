@@ -65,6 +65,12 @@
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
+  "2Qmo07": {
+    "message": "The next shape picked replaces the selected one, keeping its text and connectors (shift-click does it once)",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
+    ]
+  },
   "2ebxwM": {
     "message": "Layout: {type}",
     "origin": [
@@ -184,6 +190,12 @@
     "message": "Undo",
     "origin": [
       "packages/editor/src/history-buttons.tsx"
+    ]
+  },
+  "A2rvmC": {
+    "message": "Replace selected shape",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
     ]
   },
   "ACjxWW": {
