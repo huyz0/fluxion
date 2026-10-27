@@ -13,6 +13,8 @@ export const THRESHOLDS = {
   PROGRESS_ENTRY_MAX_LINES: { value: 10, weakens: 'up' },
   REVIEW_ROUND_CAP: { value: 3, weakens: 'up' },
   CHECKPOINT_EVERY_TASK_COMMITS: { value: 8, weakens: 'up' }, // M18.7: existing independent review cadence
+  LAST_CI_MAX_PENDING: { value: 4, weakens: 'up' }, // M18.118: newer runs last-ci waits through on one red before it blocks
+  LAST_CI_MAX_WAIT_MS: { value: 7_200_000, weakens: 'up' }, // M18.118: how long a declared fix may stay pending on one red
 
   // code structure (NFR-MNT-003)
   FILE_MAX_LINES: { value: 400, weakens: 'up' },

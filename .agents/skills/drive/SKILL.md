@@ -16,8 +16,9 @@ milestone's completion command exiting 0 — never by your opinion.
 2. Run `node scripts/gates/precommit.mjs --quick` (or `pnpm verify:fast` from M1). If red and
    the cause is not your in-progress task, fixing the tree is the first task.
 3. Run `node scripts/harness/last-ci.mjs` (main's newest completed `ci` and `gates` runs). If it
-   exits 1, main's CI is red: fixing it is the first task, before any row (M4 final F3). Exit 2
-   means a newer run (the fix) is still pending: wait for it and run last-ci again; do not fix twice.
+   exits 1, main's CI is red: fixing it is the first task, before any row (M4 final F3); the fix
+   commit carries `Fixes-ci: <red run id>`. Exit 2 means that declared fix is still pending: wait
+   for it and run last-ci again; do not fix twice (M18.118).
 4. If `state.json.blockedReason` needs a human decision or denied authorization, report and stop.
    A technical three-attempt stop instead requires independent diagnostic review and an explicit
    in-scope replan before clearing it (ADR-0176); preserve the failed attempts and review evidence.

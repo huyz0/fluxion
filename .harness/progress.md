@@ -3048,3 +3048,11 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 
 - New `scripts/gates/landing-block.mjs`: a row whose title carries `` `blocks-landing` `` and is not done blocks task commits of rows whose Req cell lacks HARNESS (tasks missing from the backlog count as non-harness); the blocking row itself may land. check-checkpoint judges it on the parent backlog (so a feature commit cannot clear the mark), land.mjs before cherry-picking each commit, both naming the blocking row. M18.117 carries the mark.
 - Review r1 changes-requested, fixed: F1 check-checkpoint blocks only exact commits (`--commit`, CI), so the commit-msg hook still allows local feature commits; test proves both. F2 M18.117's text no longer exempts commits reviewed before cp12 (the gate has no such exception; all were rebased since).
+
+## M18.118 — last-ci waits only for a declared fix (2026-10-27)
+
+- A pending run hides a red one only when its commit carries `Fixes-ci: <red run id>` (message from the run's `message` field or the local clone), and only while at most LAST_CI_MAX_PENDING (4) runs are pending and the fix has been pending at most LAST_CI_MAX_WAIT_MS (120 min); otherwise exit 1. Both bounds are new thresholds.
+- EARS amended: run metadata names no failing paths, so "touches the failing paths" is dropped rather than guessed. drive/next-task skills name the trailer.
+- New row M18.122 (My shapes embed pack subsets, split from M18.120 for stream 3).
+- Re-applied onto main ahead of M18.97 (M18.123 lets harness rows land while M18.117 blocks): last-ci's header now covers both the declared-fix rule and M18.124's nightly report, both tests kept; the M18.115 fx-artwork- clause moves to M18.115's own commit (its row lands with M18.97). Content changed, so reviewed again.
+- Review r3 changes-requested, fixed: M18.97's progress, digest and argued lines that union-merged into the re-applied commit are removed (they land with M18.97); the stale M18.115/M18.97-cell bullet is corrected.
