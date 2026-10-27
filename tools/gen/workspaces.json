@@ -186,6 +186,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party bundled fonts: Inter, Source Serif 4 and JetBrains Mono under OFL-1.1 (FR-THM-008); imports only `@fluxion/sdk`."
+    },
+    {
+      "dir": "packs/flowchart",
+      "name": "@fluxion/pack-flowchart",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party flowchart shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
     }
   ]
 }

@@ -2862,3 +2862,8 @@ next: corrected staged verification/fresh review, normal push, then native Windo
 - Pure format converter resolves collection defaults, icon viewports, Iconify rotate/flip semantics (collection and alias rotations add, flips XOR) and alias chains bounded at 32 with cycle/missing-parent refusals; every icon and alias converts through the witnessed single-SVG path and gets an outcome. Bounds: 32 Mi chars, 50000 entries, 16 Mi total converted SVG chars (review r1 F1: aliases re-convert their root).
 - Declared info (name/author/SPDX) and source hash retained as provenance, not license approval. Keywords: categories, alias names, parent/root; first category becomes picker category. Diagnostic codes reuse FLX_SVG_IMPORT_* (no CLI schema change).
 - Editor registers accepted definitions atomically in an unheld namespace; hidden entries stay registered but leave the panel/search (new optional LibraryPanel `hidden`). Full pinned Lucide 1978+220 = 2198 accepted with a pure witness port.
+## M18.21 — flowchart declarative pack (2026-10-27)
+
+- New workspace packs/flowchart: 25 generic MIT original-work flowchart shapes in three categories (process, data, flow), pack/ distribution and 25 goldens via the ADR-0193 suite; contact sheet inspected visually.
+- Shared pack test now draws goldens from the exported definitions and adds a generic/no-vendor-brand check (NFR-LIC-003); basic's test uses the same template (M18.20 F1 fixed, F2 argued).
+- flowchart 5/5 and basic 4/4 PASS after regeneration.

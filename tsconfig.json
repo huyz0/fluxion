@@ -73,6 +73,9 @@
       "path": "./packs/fonts-core"
     },
     {
+      "path": "./packs/flowchart"
+    },
+    {
       "path": "./e2e"
     }
   ]

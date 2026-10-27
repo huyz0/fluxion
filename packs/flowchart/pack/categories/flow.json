@@ -1,0 +1,200 @@
+{
+  "formatVersion": "1.0",
+  "definitions": [
+    {
+      "id": "flowchart:connector",
+      "category": "flow",
+      "outline": {
+        "path": "M 0 {h/2} A {w/2} {h/2} 0 0 1 {w} {h/2} A {w/2} {h/2} 0 0 1 0 {h/2} Z"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.15,
+          "y": 0.15,
+          "w": 0.7,
+          "h": 0.7
+        }
+      ],
+      "defaultSize": {
+        "w": 50,
+        "h": 50
+      },
+      "describe": "An on-page connector: a labelled jump to another point on the same page.",
+      "keywords": [
+        "connector",
+        "jump",
+        "reference",
+        "circle"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "flowchart:off-page-connector",
+      "category": "flow",
+      "outline": {
+        "path": "M 0 0 H {w} V {h * 0.6} L {w/2} {h} L 0 {h * 0.6} Z"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.1,
+          "y": 0.1,
+          "w": 0.8,
+          "h": 0.5
+        }
+      ],
+      "defaultSize": {
+        "w": 60,
+        "h": 70
+      },
+      "describe": "An off-page connector: the flow continues on another page.",
+      "keywords": [
+        "off-page",
+        "connector",
+        "continue",
+        "page"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "flowchart:merge",
+      "category": "flow",
+      "outline": {
+        "path": "M 0 0 H {w} L {w/2} {h} Z"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.25,
+          "y": 0.1,
+          "w": 0.5,
+          "h": 0.4
+        }
+      ],
+      "defaultSize": {
+        "w": 80,
+        "h": 70
+      },
+      "describe": "Merge: several flows or sets combined into one.",
+      "keywords": [
+        "merge",
+        "combine",
+        "join",
+        "triangle"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "flowchart:extract",
+      "category": "flow",
+      "outline": {
+        "path": "M {w/2} 0 L {w} {h} H 0 Z"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.25,
+          "y": 0.5,
+          "w": 0.5,
+          "h": 0.4
+        }
+      ],
+      "defaultSize": {
+        "w": 80,
+        "h": 70
+      },
+      "describe": "Extract: one set split out of another.",
+      "keywords": [
+        "extract",
+        "split",
+        "triangle"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "flowchart:summing-junction",
+      "category": "flow",
+      "outline": {
+        "path": "M 0 {h/2} A {w/2} {h/2} 0 0 1 {w} {h/2} A {w/2} {h/2} 0 0 1 0 {h/2} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w * 0.146} {h * 0.146} L {w * 0.854} {h * 0.854}"
+        },
+        {
+          "path": "M {w * 0.854} {h * 0.146} L {w * 0.146} {h * 0.854}"
+        }
+      ],
+      "defaultSize": {
+        "w": 50,
+        "h": 50
+      },
+      "describe": "A summing junction: flows that must all arrive (logical AND).",
+      "keywords": [
+        "summing",
+        "junction",
+        "and",
+        "join"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "flowchart:or",
+      "category": "flow",
+      "outline": {
+        "path": "M 0 {h/2} A {w/2} {h/2} 0 0 1 {w} {h/2} A {w/2} {h/2} 0 0 1 0 {h/2} Z"
+      },
+      "decorations": [
+        {
+          "path": "M {w/2} 0 V {h}"
+        },
+        {
+          "path": "M 0 {h/2} H {w}"
+        }
+      ],
+      "defaultSize": {
+        "w": 50,
+        "h": 50
+      },
+      "describe": "An or junction: any one of the incoming flows continues (logical OR).",
+      "keywords": [
+        "or",
+        "junction",
+        "any"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "flowchart:annotation",
+      "category": "flow",
+      "outline": {
+        "path": "M {w * 0.15} 0 H 0 V {h} H {w * 0.15}"
+      },
+      "defaultStyle": {
+        "fill": "transparent"
+      },
+      "textRegions": [
+        {
+          "name": "body",
+          "x": 0.08,
+          "y": 0.05,
+          "w": 0.9,
+          "h": 0.9
+        }
+      ],
+      "defaultSize": {
+        "w": 140,
+        "h": 70
+      },
+      "describe": "An annotation: a comment bracket attached to a step.",
+      "keywords": [
+        "annotation",
+        "comment",
+        "note",
+        "bracket"
+      ],
+      "license": "MIT"
+    }
+  ]
+}
