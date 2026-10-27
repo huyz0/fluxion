@@ -3064,3 +3064,9 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - M18.118 r1 F1 follow-up: last-ci reads a pending fix's message from REST `head_commit.message`, else the local clone, fetching an unseen head from origin (`--offline` for tests). Tests: digest 6, last-ci 5, ci-workflow 25.
 
 - Re-applied onto main after M18.118 (c5ce674): last-ci's header keeps M18.124's nightly sentence and adds `--offline`. Content changed, so reviewed again.
+
+## M18.43 — checkpoint cp14 (2026-10-27)
+
+- Range 7545e708..cfcf600, verdict changes-requested (1 major, 5 minor) over d251306, 9f93fcd, 1bbb772, fd702f1, c5ce674, cfcf600. F1 last-ci printed "no completed run" and exited 0 while main's last completed ci (40458514031, ff4b166) was red: the 30-run window lost it -> M18.134. F2 blocks-landing exempts any Req naming HARNESS, and a blocking row can flip done without evidence -> M18.135. F3 the shipped WOFF2 5 MiB declared-size check is untested -> M18.136. F4 the two-chain nightly is untested -> M18.137. F5 argued: M18.114 landed in the cp13 freeze before the gate; M18.118/M18.124 Depends cells corrected to none; M18.133 awaits Huy's decision on visual-xos baselines (stream 2's card). F6 folded into M18.127 (reviewer-field grammar).
+- Backlog header recounted to 133 rows (was a stale 126).
+- Record review r1 changes-requested: the four new rows now use the checkpoint reviewer's proposed rows verbatim (M18.134 status-filtered read and 10-pending-over-red test, M18.135 keeps the blocking row's own exemption and both tests, M18.136 cites FR-AST-003 and the removal-kills-test clause, M18.137 tests the unreadable-nightly line); M18.124's two review minors are recorded as an argued line carried by M18.137.

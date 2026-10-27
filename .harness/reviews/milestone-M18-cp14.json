@@ -1,0 +1,124 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp14",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..cfcf600867cee82454d1d0374cdf6ab4d018b285",
+  "reviewedDelta": "cf3b0495768813fb034cb301f7e4671d672c9738..cfcf600867cee82454d1d0374cdf6ab4d018b285 (d251306 M18.43 cp13 record, 9f93fcd M18.114, 1bbb772 M18.124, fd702f1 M18.123, c5ce674 M18.118, cfcf600 M18.119)",
+  "reviewer": "claude:independent-subagent:m18-cp14",
+  "verdict": "changes-requested",
+  "questions": {
+    "coherence": "The delta is coherent: five of the six task commits are cp12/cp13 CI-recovery harness rows sharing landing-block.mjs, last-ci.mjs and ci-runs.mjs. landing-block is shared by land.mjs and check-checkpoint and is not duplicated. last-ci gained Fixes-ci (M18.118), a nightly report (M18.124) and REST/clone message reading (M18.119) without conflict, though its fail-open paths (gh unreadable, no completed run) stay inconsistent with the new bounded-wait rule (F1).",
+    "specFidelity": "M18.123 meets its EARS except for the 'until a green three-OS run is recorded' clause (F2). M18.118 changed its own EARS to drop 'touches the failing paths', with a stated reason. M18.124 was narrowed to the plan and split to M18.131-133 with traceable rows, and M18.10 now depends on all of them. M18.119 meets its EARS. M18.114 meets its wording, but the test constrains the probe's own copy of the cap, not the shipped adapter (F3).",
+    "standardsDrift": "Digest round labels still contradict commit bodies (F6, open as M18.127). The Depends column and the cp13 freeze were ignored once each (F5). The commit-subject format, Commit cells and ADR for the workflow contract (ADR-0198) were all followed. The thresholds added in M18.118 are new and tighten; none loosen.",
+    "gateHonesty": "Imagined mutants: (1) removing font-subset.ts:256 survives every test (F3). (2) renaming matrix_2 at mutation-nightly.mjs:29 survives every test (F4). (3) landing-block mutants (always treating rows as HARNESS, ignoring done, reading the child backlog) are each killed by checkpoint.test.mjs and land.test.mjs. (4) the check-digest posthoc mismatch mutant is killed by digest.test.mjs. Live: last-ci exits 0 on a main whose last completed ci run is red (F1). `check-digest --head --full-history` passes (103 commits), and check-checkpoint --commit passes for every delta commit (5/8).",
+    "architecture": "No package or contract changes outside harness scripts and workflows. ADR-0198 amends ADR-0174 for the workflow change. No new dependencies. gates.yml checks out the PR head, which matches check-commits' HEAD_SHA.",
+    "planHealth": "43 planned rows, 129 current (3.0x), and the header still says 126. The delta closed 6 rows and opened 4 (M18.122, M18.131-133); this review adds 4 more. No FR feature commit landed in the delta, and the milestone is CI-recovery bound: ci has had no completed run on main since ff4b166 (06:00Z), because ubuntu verify is queued on every push. Later milestones should budget a CI-capacity/runner item explicitly. M18.133 waits on a human decision."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "scripts/harness/last-ci.mjs",
+      "line": 93,
+      "evidence": "`node scripts/harness/last-ci.mjs --offline` at cfcf600 against the live repo printed 'last-ci: ci has no completed run on main (10 newer runs pending)' / 'gates green at c5ce674' / 'nightly RED failure at f0682fe ... not a verdict' and exited 0. `gh run list --workflow ci.yml --branch main --status completed --limit 1` gives run 40458514031 at ff4b166, conclusion failure. scripts/gates/ci-runs.mjs:106 reads `--event push --limit 30`, and that list includes the `release` workflow, so only about 10 ci runs fit. Every ci run since 14d7ea0 (bfce2d0 ... cfcf600) is still `queued`, for example 40512552904, where every job is queued.",
+      "problem": "M18.118 made a pending run hold a red one only when it declares `Fixes-ci`, and bounded the wait by LAST_CI_MAX_PENDING (4) and LAST_CI_MAX_WAIT_MS. Both rules sit only in the `done` branch. Once the red completed run scrolls out of the 30-run window, the `if (!done)` branch prints 'no completed run' and leaves verdict at 0. A stack of more than about 10 pending pushes on a red main therefore turns last-ci green, and that is the state of main right now. drive/next-task read exit 0 as 'main's CI is not red' and start feature work. This is the cp12 F2 failure mode again (a pending run hides red), now through the window and not through the wait branch. M18.128 (unreadable state is unknown) does not cover it, because gh answered.",
+      "suggestion": "Treat 'no completed run among N pending' as unknown or red once N exceeds LAST_CI_MAX_PENDING. Or read the newest completed run per workflow directly (`gh run list --workflow <wf> --status completed --limit 1`, or REST `?status=completed`) so the window cannot hide it. Add a runs-file test with 5 or more pending ci runs and no completed one that expects a non-zero exit.",
+      "disposition": "reopen",
+      "proposed_row": "M18.134 last-ci cannot lose a red run past its window (cp14 F1) | HARNESS | WHEN main's newest completed `ci` or `gates` run is red, or a workflow has more than LAST_CI_MAX_PENDING pending runs and no completed run in the list read, THE SYSTEM SHALL exit non-zero (red, or the unknown code of M18.128), reading each workflow's newest completed run by a status-filtered query rather than a fixed-size mixed-workflow window; a harness test SHALL prove that 10 pending ci runs over an older red run do not exit 0 | M18.118 | todo"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/gates/landing-block.mjs",
+      "line": 31,
+      "evidence": "landingBlock exempts any row whose Req cell matches /\\bHARNESS\\b/. Open rows with mixed Req cells at cfcf600 (docs/backlog/current.md): M18.129 'FR-LIB-007, HARNESS' (edits every packs/*/src/pack.test.ts and adds an @fluxion/sdk/testing helper, which is public SDK API), M18.109 'NFR-SEC-001, HARNESS', M18.42 'FR-LIB-003, FR-LIB-007, HARNESS' and M18.10 'NFR-MNT-005, HARNESS'. The mark is lifted by `!/^done\\b/.test(row.state)` alone: nothing ties M18.117's done state to a recorded check-ci-evidence run, as the M18.123 EARS requires ('SHALL carry the mark until a green three-OS run is recorded').",
+      "problem": "While the block is on, a feature or SDK change can land by citing HARNESS next to its FR IDs, and an earlier harness-row commit can add HARNESS to a feature row's Req cell, which the parent-backlog rule would accept. A single commit that sets M18.117 to done lifts the block without any ci-evidence record. The gate enforces the label, not the intent ('only harness rows').",
+      "suggestion": "Exempt only rows whose Req cell is exactly HARNESS, or require mixed rows to touch only scripts/, tests/harness/, .harness/, .github/ and docs/. Have check-checkpoint refuse a commit that flips a `blocks-landing` row to done unless check-ci-evidence holds a green three-OS record at or after its parent. Add the two cases to checkpoint.test.mjs.",
+      "disposition": "reopen",
+      "proposed_row": "M18.135 Blocking rows cannot be bypassed by labels (cp14 F2) | HARNESS | WHILE a `blocks-landing` row is open THE SYSTEM SHALL let land only that row and rows whose Req cell is exactly HARNESS (or whose commit touches only harness paths), and SHALL refuse a commit that marks a `blocks-landing` row done unless check-ci-evidence holds a green three-OS record for its parent or later; harness tests SHALL prove that a mixed FR+HARNESS row touching packages/ is refused and that a done flip without evidence is refused | M18.123 | todo"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "packages/format/src/font-subset.ts",
+      "line": 256,
+      "evidence": "9f93fcd adds `if (declared > hostCap) return { ..., overCap: true }` to scripts/fonts/probe-font-engine.mjs:43, its own copy of the cap ('as the format adapter does'), and font-engine.test.mjs asserts the probe's `refusedByCap`. The production branch `if (declared > MAX_BYTES) refuse('too-large', ...)` at font-subset.ts:256 is tested nowhere. `grep -rn 'setUint32(16' packages/*/src --include=*.test.ts` finds no declared-size patch. The only 'too-large' test (packages/editor/src/font-subset.test.ts:223) passes 5 MiB + 1 input bytes, not a small WOFF2 that declares more than 5 MiB.",
+      "problem": "Imagined mutant: delete font-subset.ts:256. The probe still refuses through its own check. The uncapped decode of the 6 MiB-declared font succeeds, so production would allocate the declared size, decode and accept the font. Every test stays green. M18.114 proves that the probe's copy of the cap works, not that the shipped adapter's does, and that adapter is what NFR-SEC-002 protects.",
+      "suggestion": "Add a format test that patches totalSfntSize (offset 16) of a real WOFF2 to 6 MiB and expects `too-large` from the format adapter before allocation, for example by asserting codec_alloc is never called with the declared size. Or have the probe import and call the adapter's decode path rather than re-implementing it.",
+      "disposition": "reopen",
+      "proposed_row": "M18.136 Shipped WOFF2 decode refuses an over-cap declared size (cp14 F3) | NFR-SEC-002, FR-AST-003 | WHEN the format adapter decodes a WOFF2 whose header declares a decoded size over 5 MiB (input under 5 MiB) THE SYSTEM SHALL refuse it as `too-large` before allocating the declared size; a format test SHALL patch a real font's totalSfntSize to 6 MiB and fail if font-subset.ts's declared-size check is removed | M18.114 | todo"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "scripts/ci/mutation-nightly.mjs",
+      "line": 29,
+      "evidence": "1bbb772 marks M18.124 done. The latest completed nightly is still run 40470089950 at f0682fe, failure (last-ci output above), so no run has used two chains. mutation-nightly.test.mjs asserts only `chains == '1'` and `matrix_2 === undefined`, and ci-workflow.test.mjs matches the YAML text. The commit body says 'Review minors (follow-up): ci-workflow test checks only some steps of the two partition jobs; no test for last-ci's unreadable-nightly line', but no backlog row and no review-argued line records either one (grep of docs/backlog/current.md and .harness/baselines/review-argued.txt).",
+      "problem": "Imagined mutant: rename the second output to `matrix2` at mutation-nightly.mjs:29. Every test passes, and the first real two-chain nightly fails in `mutation-partitions-2`. It fails loudly and drops no scope, but M18.10 is then the first place the chained design meets GitHub. The two review minors were dropped silently, which the 'Never widen scope silently' rule covers in reverse.",
+      "suggestion": "Add an orchestration test that runs `collect` with partitions over 256 (for example through an injected target) and asserts that `matrix`, `matrix_2` and `chains=2` together cover every partition id exactly once. Record the two review minors as rows or argued lines.",
+      "disposition": "reopen",
+      "proposed_row": "M18.137 Chained mutation plan proven end to end (cp14 F4) | NFR-MNT-005, HARNESS | WHEN the nightly plan step runs with more than 256 partitions THE SYSTEM SHALL write `matrix`, `matrix_2` and `chains=2` that cover every partition id exactly once, shown by a harness orchestration test; last-ci's unreadable-nightly line SHALL have a test; M18.10's evidence SHALL cite a completed two-chain nightly run | M18.124 | todo"
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "line": 122,
+      "evidence": "cp13's F1 disposition: 'Until it lands, drive runs one stream and lands harness rows only.' 9f93fcd (M18.114, Req NFR-SEC-002, not HARNESS) landed at 11:23 (gates run 40495811053), before fd702f1 (M18.123). current.md:128 (M18.118) and :129 (M18.124) both list `M18.117` as a dependency, M18.117 is todo, and both landed done (c5ce674, 1bbb772). next-task/SKILL.md:12 says to 'take the top row whose ... dependencies are done'. .harness/state.json:3 still has currentTask M18.119 with blockedReason null, while M18.133 waits on 'Huy's decision (asked 2026-10-27)'.",
+      "problem": "For the third checkpoint running, a written ordering rule was not followed: the cp13 freeze and the Depends column were both ignored. M18.114 is test-only and harmless, and landing M18.118 and M18.124 before M18.117 was probably right, since they are CI recovery. But a Depends cell that the driver ignores misleads the reviewer and the next stream. The human decision M18.133 waits on is recorded only in row prose, which is not where the harness looks for it.",
+      "suggestion": "Correct the Depends cells of M18.118 and M18.124 (they do not depend on M18.117) in the next bookkeeping commit. Note M18.133's pending human decision in state.json (blockedReason is per loop; a short 'awaiting' note or a progress.md line is enough). No gate change: M18.123 and F2 now carry the landing rule.",
+      "disposition": "argue",
+      "note": "No new row. The landing rule is now enforced by M18.123, strengthened by F2/M18.135. The driver fixes the two Depends cells and records M18.133's pending decision in the next bookkeeping commit."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "file": ".harness/reviews/digest.log",
+      "line": 939,
+      "evidence": "digest.log:939 'M18.123 ... r1 pass claude-opus-5-5 (isolated subagent, round 2)'. :938 M18.124 has only an 'r2 pass' line. :940-941 M18.118 has r1 pass and r2 pass, while c5ce674's body says 'review r4 pass'. :942-943 M18.119 has r1 pass and r2 pass on different content, while cfcf600's body says 'Review r1 pass'. Reviewer strings vary freely ('claude:opus-5.5', 'claude:claude-opus-5-5 (isolated reviewer subagent)', 'claude:subagent-reviewer').",
+      "problem": "cp13 F5 still holds on every commit in this delta: the tracked digest's round numbers and labels contradict the commit bodies, and changes-requested rounds are missing. M18.127 is open and listed after other harness work. The new posthoc rule in check-digest keys on the free-text reviewer suffix `:posthoc`, which also shows that reviewer identity needs a fixed vocabulary.",
+      "suggestion": "Take M18.127 next among the harness rows, and add a reviewer-field grammar to it (vendor:role[:posthoc]) so check-digest can rely on it.",
+      "disposition": "argue",
+      "note": "Already covered by open row M18.127 (cp13 F5). Amend M18.127's EARS in its own commit to include a fixed reviewer-field grammar. No new row."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.134",
+      "note": "New harness row. It sits naturally beside M18.128 (unknown state) and may land in the same stream right after it. Until it lands, streams should read `gh run list --workflow ci.yml --status completed --limit 1` by hand before feature work."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.135",
+      "note": "New harness row strengthening M18.123: an exact-HARNESS exemption (or harness-path-only commits), and evidence before a blocking row may flip to done."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.136",
+      "note": "New NFR-SEC-002 row: a format-adapter test for an over-cap declared size."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M18.137",
+      "note": "New harness row: a two-chain orchestration test plus the two untracked review minors; M18.10 cites a real two-chain nightly."
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "target": "review-argued.txt",
+      "note": "Process drift with no product impact; the landing rule is now gated (M18.123, M18.135). Fix the M18.118 and M18.124 Depends cells and record M18.133's pending human decision in bookkeeping."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "target": "M18.127",
+      "note": "Covered by open M18.127. Amend it to fix a reviewer-field grammar."
+    }
+  ],
+  "cp13DispositionsCheck": "F1 -> M18.123 done (fd702f1), but the freeze it asked for was broken once by M18.114 before the gate landed (F5), and the gate has label gaps (F2). F2 -> M18.124 done (plan and nightly report), with visual/perf/WebKit split to M18.131/132/133 (todo; M18.133 awaits Huy), M18.10 depends on all four, and the nightly is still red at f0682fe. F3 M18.125, F4 M18.126, F5 M18.127, F6 M18.128 and F7 M18.129 are all present and todo. M18.126 and M18.124 dropped cp13's NFR-PERF ID; M18.131 carries FR-RTE-002. The cp13 Learned line is present in M18.md. M18.130 is unused (gap in numbering).",
+  "planDelta": "Add M18.134 (last-ci cannot lose a red run past its window; pair with M18.128), M18.135 (blocks-landing exemptions by exact HARNESS or harness paths; no done flip without ci-evidence), M18.136 (format adapter refuses an over-cap WOFF2 declared size, tested), M18.137 (two-chain mutation plan orchestration test, untracked M18.124 review minors, M18.10 cites a two-chain nightly). Bookkeeping: fix the M18.118/M18.124 Depends cells, update the backlog header count, record M18.133's pending human decision. Amend M18.127 with a reviewer-field grammar. Learned line: 'cp14: a gate bounded in one branch leaks through its neighbours \u2014 last-ci's no-completed-run path and blocks-landing's label exemption each let through what the rule forbade; test the fail-open paths, not just the rule.'"
+}
