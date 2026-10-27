@@ -3112,3 +3112,7 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 
 - lib.mjs `testStepEnv()`: the environment without GIT_* but GIT_EXEC_PATH. The harness-tests, test (Vitest), examples and eval steps run under it, so a test that spawns git cannot reach the repository being committed (cp15 F2). tests/harness/helpers.mjs `cleanEnv` is now the same function.
 - ladder.test: a probe test spawning bare `git commit --allow-empty` in a temp dir, run as the harness-tests step runs it under a decoy GIT_DIR/GIT_INDEX_FILE/GIT_WORK_TREE, leaves the decoy HEAD unchanged; with the hook env the same probe moves it (control). A source check requires all four test steps to pass testStepEnv() and none to spawn with process.env.
+
+## M18.43 — checkpoint cp16 (2026-10-27)
+
+- Range 7545e708..742fbdf, verdict changes-requested (3 minor) over a270259, d0ecbb9, e86cf69, 742fbdf. cp15 dispositions honoured. F1 check-digest does not enforce the reviewer grammar on new lines -> M18.141. F2 drive's red-CI rule contradicts the blocking-row regime -> M18.142. F3 argued to the human: blockedReason refreshed; this record lands with M18.140 in one push, then stream 1 stops pushing until CI drains or Huy decides. Header 138; Learned line added. Rows are the reviewer's proposed rows verbatim.
