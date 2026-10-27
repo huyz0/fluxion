@@ -116,6 +116,22 @@ describe('digest coverage (M18.99)', () => {
     assert.equal(r.status, 0, out(r));
   });
 
+  it('a posthoc line that names a content identity must match a commit of its task (M18.119)', () => {
+    const sha = run('log', '--format=%H', '--grep', '^M18.1:', '-1');
+    const landed = sb.node('scripts/harness/review.mjs', ['content', '--commit', sha]).stdout.trim();
+    const posthoc = (content) => `M18.1\t-\tr1\tpass\tclaude:independent-subagent:posthoc\t0 findings\tcontent:${content}\n`;
+    append(DIGEST, posthoc(landed));
+    let r = check();
+    assert.equal(r.status, 0, out(r));
+    append(DIGEST, posthoc('1'.repeat(64)));
+    r = check();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /M18\.1: posthoc digest line names content 111111111111, which no M18\.1 commit has/);
+    const kept = sb.git('show', `:${DIGEST}`).stdout.replace(posthoc('1'.repeat(64)), '');
+    put(DIGEST, kept);
+    assert.equal(check().status, 0);
+  });
+
   it('skips a shallow clone, whose history it cannot judge, unless full history is required (M18.99 r1 F2)', () => {
     const clone = `${sb.dir}-shallow`;
     const r = sb.git('clone', '-q', '--depth', '1', `file://${sb.dir}`, clone);

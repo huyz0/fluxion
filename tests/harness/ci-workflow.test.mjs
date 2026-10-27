@@ -28,6 +28,10 @@ describe('gates workflow (NFR-PORT-005)', () => {
     assert.doesNotMatch(ci, /node --test "tests\/harness\/\*\.test\.mjs"/, 'full ladder runs the harness once');
     assert.match(wf, /node scripts\/gates\/check-workflows\.mjs --require-docker/);
     assert.match(wf, /node scripts\/gates\/check-commits\.mjs --range/);
+    // M18.119: review evidence is judged remotely too, on full history and on a PR's own head
+    assert.match(wf, /^ {8}run: node scripts\/gates\/check-digest\.mjs --head --full-history$/m);
+    assert.match(wf, /fetch-depth: 0/);
+    assert.match(wf, /ref: \$\{\{ github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
   });
 
   it('commit messages checked by script: the per-commit step is one check-commits.mjs call and only ci.yml verifies on three OSes (M1 final F5)', () => {

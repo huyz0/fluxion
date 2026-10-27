@@ -3056,3 +3056,11 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - New row M18.122 (My shapes embed pack subsets, split from M18.120 for stream 3).
 - Re-applied onto main ahead of M18.97 (M18.123 lets harness rows land while M18.117 blocks): last-ci's header now covers both the declared-fix rule and M18.124's nightly report, both tests kept; the M18.115 fx-artwork- clause moves to M18.115's own commit (its row lands with M18.97). Content changed, so reviewed again.
 - Review r3 changes-requested, fixed: M18.97's progress, digest and argued lines that union-merged into the re-applied commit are removed (they land with M18.97); the stale M18.115/M18.97-cell bullet is corrected.
+
+## M18.119 — remote digest enforcement (2026-10-27)
+
+- gates.yml runs `check-digest.mjs --head --full-history` on every push and PR, checking out a PR's own head (not GitHub's merge commit) so first-parent task history is what landed.
+- check-digest: a posthoc line (`...:posthoc`) naming a content id must match one of its task's commits; all 8 current posthoc lines do.
+- M18.118 r1 F1 follow-up: last-ci reads a pending fix's message from REST `head_commit.message`, else the local clone, fetching an unseen head from origin (`--offline` for tests). Tests: digest 6, last-ci 5, ci-workflow 25.
+
+- Re-applied onto main after M18.118 (c5ce674): last-ci's header keeps M18.124's nightly sentence and adds `--offline`. Content changed, so reviewed again.

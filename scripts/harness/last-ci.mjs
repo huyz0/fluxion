@@ -10,10 +10,11 @@
 // replaced does not block. Exit 0: every workflow is green or has no completed run yet. The nightly's latest
 // completed run is reported too, never as a verdict: its failures do not block a task (nightly.yml), but its
 // state is what the final mutation and nightly rows read (M18.124).
-//   node scripts/harness/last-ci.mjs [--branch main] [--runs-file <json>] [--now <iso>]
+//   node scripts/harness/last-ci.mjs [--branch main] [--runs-file <json>] [--now <iso>] [--offline]
 // --runs-file: a JSON array of runs in `gh run list --json databaseId,workflowName,headSha,status,
 // conclusion,createdAt` shape, used instead of GitHub (tests); a run's optional `message` stands in
-// for its commit message, which is otherwise read from the local clone (`git fetch` first).
+// for its commit message, which is otherwise read from the local clone, fetching an unseen head from origin
+// unless --offline.
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { runSource, transportHint } from '../gates/ci-runs.mjs';
@@ -28,10 +29,20 @@ const opt = (k) => {
 const branch = opt('branch') ?? 'main';
 const now = opt('now') ? Date.parse(opt('now')) : Date.now();
 
-/** The commit message of a run's head: its `message` field, else the local clone's copy ('' when unknown). */
+const offline = argv.includes('--offline');
+const show = (sha) => spawnSync('git', ['show', '-s', '--format=%B', sha], { encoding: 'utf8' });
+/**
+ * The commit message of a run's head: its `message` field (REST), else the local clone's copy, fetched
+ * from origin when the clone has not seen it yet (M18.118 r1 F1); '' when it cannot be had.
+ */
 function messageOf(r) {
   if (typeof r.message === 'string') return r.message;
-  const shown = spawnSync('git', ['show', '-s', '--format=%B', String(r.headSha)], { encoding: 'utf8' });
+  const sha = String(r.headSha);
+  let shown = show(sha);
+  if (shown.status !== 0 && !offline && /^[0-9a-f]{40}$/.test(sha)) {
+    spawnSync('git', ['fetch', '-q', '--no-tags', 'origin', sha], { encoding: 'utf8', timeout: 60_000 });
+    shown = show(sha);
+  }
   return shown.status === 0 ? shown.stdout : '';
 }
 /** The run ids a message's `Fixes-ci:` trailers name. */

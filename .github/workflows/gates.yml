@@ -3,7 +3,8 @@
 # per OS in ci.yml's verify matrix (M2.22); this workflow keeps the ubuntu-only gates: workflow lint
 # with Docker, and every commit's task/checkpoint/trailer gates via
 # check-commits.mjs. check-reviewed is local-only: per-commit verdicts are bound to local staged
-# bytes (.harness/review is gitignored). Both scripts use only Node built-ins: nothing is installed.
+# bytes (.harness/review is gitignored); check-digest judges the tracked digest instead (M18.119).
+# These scripts use only Node built-ins: nothing is installed.
 name: gates
 
 on:
@@ -30,6 +31,8 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          # a PR's own head, not GitHub's merge commit: the digest gate reads first-parent task history
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .node-version
@@ -44,3 +47,7 @@ jobs:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: node scripts/gates/check-commits.mjs --range "$BASE..$HEAD_SHA"
+      # every task commit carries its own pass digest line, and posthoc lines match what landed
+      # (M18.119, ADR-0195); full history, since a shallow clone cannot judge it
+      - name: review evidence on full history
+        run: node scripts/gates/check-digest.mjs --head --full-history

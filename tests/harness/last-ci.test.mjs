@@ -8,12 +8,15 @@ import { describe, it } from 'node:test';
 import { REPO } from './helpers.mjs';
 
 /** Runs last-ci.mjs against `runs` (gh run list shape); returns its status and output. */
-function lastCi(runs, now = '2026-09-29T03:30:00Z') {
+function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined) {
   const dir = mkdtempSync(join(tmpdir(), 'last-ci-'));
   try {
     const file = join(dir, 'runs.json');
     writeFileSync(file, JSON.stringify(runs));
-    const r = spawnSync(process.execPath, [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now], { encoding: 'utf8' });
+    const r = spawnSync(process.execPath, [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now, '--offline'], {
+      encoding: 'utf8',
+      cwd,
+    });
     return { status: r.status, out: r.stdout + r.stderr };
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -105,5 +108,28 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.equal(lastCi([fix, red], '2026-09-29T05:00:00Z').status, 2);
     // without a message field the commit message comes from the local clone; an unknown sha has none
     assert.equal(lastCi([run('ci', 'in_progress', '2026-09-29T03:00:00Z', { headSha: '0'.repeat(40), databaseId: 42 }), red]).status, 1);
+  });
+
+  it('M18.118 r1 F1: the trailer is read from REST head_commit, else from the local clone', async () => {
+    const { restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const body = {
+      workflow_runs: [
+        { id: 7, name: 'ci', head_sha: 'f'.repeat(40), status: 'queued', conclusion: null, created_at: 'x', head_commit: { message: 'Fixes-ci: 6' } },
+      ],
+    };
+    const rest = restSource({ fetch: async () => ({ ok: true, json: async () => body }) });
+    assert.equal((await rest.branch('main'))[0].message, 'Fixes-ci: 6');
+    const dir = mkdtempSync(join(tmpdir(), 'last-ci-clone-'));
+    try {
+      const g = (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8' });
+      g('init', '-q');
+      g('-c', 'user.name=t', '-c', 'user.email=t@e', 'commit', '-q', '--allow-empty', '-m', 'M1.4: fix(ci): v', '-m', 'Fixes-ci: 41');
+      const sha = g('rev-parse', 'HEAD').stdout.trim();
+      const red = run('ci', 'failure', '2026-09-29T02:00:00Z', { headSha: 'deadbee0000000', databaseId: 41 });
+      const fix = run('ci', 'in_progress', '2026-09-29T03:00:00Z', { headSha: sha, databaseId: 42 });
+      assert.equal(lastCi([fix, red], undefined, dir).status, 2);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

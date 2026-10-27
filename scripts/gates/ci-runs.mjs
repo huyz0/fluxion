@@ -57,6 +57,8 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
         status: r.status,
         conclusion: r.conclusion,
         createdAt: r.created_at,
+        // last-ci reads a pending fix's Fixes-ci trailer from it (M18.118); gh's run list has no message
+        ...(typeof r.head_commit?.message === 'string' && { message: r.head_commit.message }),
       })),
     // the nightly's last runs on the branch, scheduled or dispatched (not pushes): last-ci reports them (M18.124)
     nightly: async (name) =>

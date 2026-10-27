@@ -6,7 +6,10 @@
 // From the commit that adopted this gate on, each task commit must carry, in its own tree, a pass
 // digest line for its task bound to its own content identity. Earlier task commits need a pass line
 // for their task in the evaluated digest, or a reviewed exemption in .harness/baselines/digest-exempt.txt.
-// A done backlog row needs its Commit cell once a later commit exists to record it.
+// A done backlog row needs its Commit cell once a later commit exists to record it. A posthoc line
+// (reviewer `...:posthoc`) that names a content identity must match one of its task's commits
+// (M18.119): a posthoc review binds to what landed, not to a diff that never did.
+// CI (gates.yml) runs `--head --full-history` on every push and PR.
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
 import { contentId, parseDigest } from './review-content.mjs';
@@ -65,6 +68,19 @@ function evidenceProblems(commits, tree, adopted) {
   return problems;
 }
 
+/** Posthoc pass lines of `milestone` whose content identity matches none of their task's commits. */
+function posthocProblems(commits, tree, milestone) {
+  const ids = new Map();
+  const idsOf = (task) => {
+    if (!ids.has(task)) ids.set(task, new Set(commits.filter((c) => c.task === task).map((c) => contentId(c.sha))));
+    return ids.get(task);
+  };
+  return parseDigest(show(tree, DIGEST))
+    .filter((l) => /:posthoc\b/.test(l.reviewer ?? '') && l.content && l.task?.startsWith(`${milestone}.`))
+    .filter((l) => !idsOf(l.task).has(l.content))
+    .map((l) => `${l.task}: posthoc digest line names content ${l.content.slice(0, 12)}, which no ${l.task} commit has`);
+}
+
 /**
  * Done rows with an empty Commit cell. Checking HEAD's own tree, HEAD's row may stay empty (no
  * commit can name itself); checking the index, the pending commit is the later one that must fill it.
@@ -98,7 +114,7 @@ export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
   const milestone = /\*\*Current milestone: `(M\d+)`\*\*/.exec(roadmap)?.[1];
   if (!milestone) return { ok: false, detail: 'digest: roadmap has no current milestone' };
   const commits = taskCommits(milestone);
-  const problems = [...evidenceProblems(commits, tree, adoption()), ...commitCellProblems(commits, tree)];
+  const problems = [...evidenceProblems(commits, tree, adoption()), ...posthocProblems(commits, tree, milestone), ...commitCellProblems(commits, tree)];
   if (problems.length) return { ok: false, detail: `digest: ${problems.length} problem(s)\n  ${problems.join('\n  ')}` };
   return { ok: true, detail: `digest: ${commits.length} ${milestone} task commits have tracked review evidence and Commit cells` };
 }
