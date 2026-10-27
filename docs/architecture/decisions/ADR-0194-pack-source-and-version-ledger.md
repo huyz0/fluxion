@@ -35,8 +35,11 @@ unchanged pack version (F8).
   version), names, credits and named definitions. Its `Pack` registers the same definitions.
 - `@fluxion/sdk/testing` adds `shapePackExpectation(pack, ledger)` and
   `checkShapePack(pack, checkedIn)`. They return every problem by check: files (pack/,
-  goldens and ledger missing, extra or changed), loading, brands, bounds (segment ends and
-  `Q`/`C` midpoints; unknown path commands fail) and versions.
+  goldens and ledger missing, extra or changed), loading, brands, bounds and versions. Bounds
+  covers the drawn golden (segment ends and `Q`/`C` midpoints; unknown path commands fail) and,
+  at each number param's minimum, maximum and default and every enum value, the evaluated
+  outline, decorations and handles staying in the box and text regions being nonnegative and
+  inside it; anchors must be box fractions and number params must have a range (M18.103).
 - `pack-versions.json`, shipped with the pack, maps each released version to its category
   hashes. The current version is added when absent and never replaced, so changed hashes at
   a recorded version fail with "release the change as a new pack version". The package

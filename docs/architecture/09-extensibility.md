@@ -275,7 +275,8 @@ the package version, names, credits, named definitions); `buildShapePackFiles` f
 `@fluxion/sdk/testing` draws each definition's normalized SVG golden (`renderShapeGolden`)
 and `checkShapePack` reports every problem of the checked-in `pack/`, `__golden__/` and
 `pack-versions.json`: changed, missing or extra files, loader diagnostics, vendor brands,
-drawing outside the box, and versions. The ledger maps each released version to its category
+geometry leaving the box at any number param's bounds or enum value (outline, handles, text
+regions, anchors), and versions. The ledger maps each released version to its category
 hashes; changing geometry at a recorded version fails until the package version is bumped.
 Ordinary runs only compare (M18.100); `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/<pack>`
 rewrites the files for review.

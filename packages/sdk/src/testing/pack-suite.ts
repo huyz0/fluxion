@@ -3,6 +3,7 @@
 import type { ShapeDef } from '@fluxion/core';
 import { buildShapePackFiles, type DeclarativeShapePack } from '../pack-source.js';
 import { drawnPoints } from './drawn-points.js';
+import { geometryProblems } from './geometry-check.js';
 import { checkShapePackFiles } from './pack-files.js';
 import { renderShapeGolden } from './shape-golden.js';
 
@@ -52,7 +53,11 @@ export type ShapePackProblems = {
   readonly loading: readonly string[];
   /** Vendor or product names, which a generic first-party pack never carries (ADR-0050). */
   readonly brands: readonly string[];
-  /** Definitions whose outline or decorations leave their box at the default size, or cannot be read. */
+  /**
+   * Geometry leaving the box: the drawn golden at the default size, and the outline, decorations, handles
+   * and text regions at each number param's minimum, maximum and default and every enum value; negative
+   * text regions, anchors outside the box and number params without a range.
+   */
   readonly bounds: readonly string[];
   /** Index, package and ledger versions that disagree, or geometry changed without a new version. */
   readonly versions: readonly string[];
@@ -120,7 +125,8 @@ function boundsProblems(pack: DeclarativeShapePack): string[] {
     const drawn = drawnPoints(renderShapeGolden(def));
     if (drawn.unreadable.length) return [`${def.id}: unreadable path data ${drawn.unreadable.join(', ')}`];
     const outside = drawn.points.filter(([x, y]) => x < -SLACK || y < -SLACK || x > w + SLACK || y > h + SLACK);
-    return outside.length ? [`${def.id}: draws outside its ${w}x${h} box at ${outside.map(([x, y]) => `(${x}, ${y})`).join(' ')}`] : [];
+    const golden = outside.length ? [`${def.id}: draws outside its ${w}x${h} box at ${outside.map(([x, y]) => `(${x}, ${y})`).join(' ')}`] : [];
+    return [...golden, ...geometryProblems(def)];
   });
 }
 
