@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 export const REPO = 'huyz0/fluxion';
 const API = 'https://api.github.com';
 const FIELDS = 'databaseId,workflowName,headSha,conclusion,jobs';
+const RUN_FIELDS = 'databaseId,workflowName,headSha,status,conclusion,createdAt';
 
 /** True when a `gh` binary can be spawned at all (installed; authentication is not checked). */
 export const hasGh = (spawn = spawnSync) => spawn('gh', ['--version'], { encoding: 'utf8' }).error?.code !== 'ENOENT';
@@ -60,6 +61,11 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
         // last-ci reads a pending fix's Fixes-ci trailer from it (M18.118); gh's run list has no message
         ...(typeof r.head_commit?.message === 'string' && { message: r.head_commit.message }),
       })),
+    // a workflow's newest completed push run: no fixed-size window of mixed workflows can hide it (M18.134, cp14 F1)
+    completed: async (name, file) =>
+      ((await get(`actions/workflows/${file}/runs?branch=${encodeURIComponent(name)}&event=push&status=completed&per_page=1`)).workflow_runs ?? []).map(
+        (r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at }),
+      ),
     // the nightly's last runs on the branch, scheduled or dispatched (not pushes): last-ci reports them (M18.124)
     nightly: async (name) =>
       ((await get(`actions/workflows/nightly.yml/runs?branch=${encodeURIComponent(name)}&per_page=5`)).workflow_runs ?? []).map((r) => ({
@@ -104,6 +110,8 @@ export function ghSource(spawn = spawnSync) {
     list: async (sha) => gh(['run', 'list', '--commit', sha, '--limit', '50', '--json', 'databaseId,workflowName,conclusion']),
     branch: async (name) =>
       gh(['run', 'list', '--branch', name, '--event', 'push', '--limit', '30', '--json', 'databaseId,workflowName,headSha,status,conclusion,createdAt']),
+    completed: async (name, file) =>
+      gh(['run', 'list', '--workflow', file, '--branch', name, '--event', 'push', '--status', 'completed', '--limit', '1', '--json', RUN_FIELDS]),
     nightly: async (name) =>
       gh([
         'run',

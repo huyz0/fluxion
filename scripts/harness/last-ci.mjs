@@ -7,12 +7,15 @@
 // run, do not fix again. Any other pending run is ordinary work landing on red and does not hide it;
 // nor does a declared fix once more than LAST_CI_MAX_PENDING runs are pending on the same red, or
 // once the fix has been pending for LAST_CI_MAX_WAIT_MS. An older red run that a newer green one
-// replaced does not block. Exit 0: every workflow is green or has no completed run yet. The nightly's latest
+// replaced does not block. Each workflow's newest completed run is read by a status-filtered query, so the
+// branch window cannot drop it; more than LAST_CI_MAX_PENDING pending runs with none completed exit 1 as
+// unknown (M18.134). Exit 0: every workflow is green or has no completed run yet. The nightly's latest
 // completed run is reported too, never as a verdict: its failures do not block a task (nightly.yml), but its
 // state is what the final mutation and nightly rows read (M18.124).
 //   node scripts/harness/last-ci.mjs [--branch main] [--runs-file <json>] [--now <iso>] [--offline]
 // --runs-file: a JSON array of runs in `gh run list --json databaseId,workflowName,headSha,status,
-// conclusion,createdAt` shape, used instead of GitHub (tests); a run's optional `message` stands in
+// conclusion,createdAt` shape, used instead of GitHub (tests; `outsideWindow` marks a run only the
+// status-filtered query sees); a run's optional `message` stands in
 // for its commit message, which is otherwise read from the local clone, fetching an unseen head from origin
 // unless --offline.
 import { spawnSync } from 'node:child_process';
@@ -64,18 +67,48 @@ function redWithPending(workflow, done, newer, sha) {
   return { verdict: 2, line: `${head}: wait for the declared fix (run ${fix.databaseId}), then run last-ci again` };
 }
 
+const newest = (list) => [...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0];
+/** The window plus each workflow's newest completed run, once each. */
+const withNewestCompleted = (window, completed) => [...window, ...completed.filter((c) => !window.some((r) => r.databaseId === c.databaseId))];
+
+/**
+ * --runs-file as a run source, so tests take the same reading path as GitHub: a run marked
+ * `outsideWindow` is one only the status-filtered query sees; a `{ workflowName, queryFails: true }`
+ * entry makes that workflow's query fail.
+ */
+function fileSource(all) {
+  const pushes = all.filter((r) => r.workflowName !== 'nightly' && !r.queryFails);
+  return {
+    branch: async () => pushes.filter((r) => !r.outsideWindow),
+    completed: async (_, file) => {
+      const workflow = file.replace(/\.yml$/, '');
+      if (all.some((r) => r.queryFails && r.workflowName === workflow)) throw new Error('query failed');
+      return [newest(pushes.filter((r) => r.workflowName === workflow && r.status === 'completed'))].filter(Boolean);
+    },
+    nightly: async () => all.filter((r) => r.workflowName === 'nightly'),
+  };
+}
+
 let runs;
 let nightlyRuns;
+/** Workflows whose status-filtered query failed: no completed run in the window is then unknown, not "none yet" (r1 F2). */
+const unread = new Set();
 try {
-  if (opt('runs-file')) {
-    const all = JSON.parse(readFileSync(opt('runs-file'), 'utf8'));
-    [runs, nightlyRuns] = [all.filter((r) => r.workflowName !== 'nightly'), all.filter((r) => r.workflowName === 'nightly')];
-  } else {
-    const source = runSource();
-    runs = await source.branch(branch);
-    // an unreadable nightly is said, not a verdict on the task
-    nightlyRuns = await source.nightly(branch).catch((e) => e);
-  }
+  const source = opt('runs-file') ? fileSource(JSON.parse(readFileSync(opt('runs-file'), 'utf8'))) : runSource();
+  // the branch window mixes workflows and can drop an old red run; ask for each workflow's newest
+  // completed run too (M18.134, cp14 F1). A failed query is said, and the unknown rule below applies.
+  const completed = await Promise.all(
+    WORKFLOWS.map((w) =>
+      source.completed(branch, `${w}.yml`).catch((e) => {
+        unread.add(w);
+        console.log(`last-ci: cannot read ${w}'s newest completed run (${e.message}); only the branch window is read`);
+        return [];
+      }),
+    ),
+  );
+  runs = withNewestCompleted(await source.branch(branch), completed.flat());
+  // an unreadable nightly is said, not a verdict on the task
+  nightlyRuns = await source.nightly(branch).catch((e) => e);
 } catch (e) {
   // no answer from GitHub is not a verdict: say so and do not block the loop on the network
   console.log(`last-ci: cannot read ${branch}'s runs (${e.message}${transportHint()}); check CI by hand`);
@@ -90,6 +123,12 @@ for (const workflow of WORKFLOWS) {
   // only runs started after that one can carry a fix: in newest-first order they come before it (review r2 F1)
   const pending = done === undefined ? mine.length : mine.indexOf(done);
   const tail = pending > 0 ? ` (${pending} newer run${pending === 1 ? '' : 's'} pending)` : '';
+  if (!done && (pending > t('LAST_CI_MAX_PENDING') || unread.has(workflow))) {
+    // so many pending runs, or an unread query, and none completed: the last verdict is out of sight, not green (M18.134)
+    verdict = 1;
+    console.log(`last-ci: UNKNOWN ${workflow}: no completed run found behind ${pending} pending runs on ${branch}; check CI by hand`);
+    continue;
+  }
   if (!done) {
     console.log(`last-ci: ${workflow} has no completed run on ${branch}${tail}`);
     continue;

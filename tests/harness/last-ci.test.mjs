@@ -156,4 +156,26 @@ describe('last-ci (M5.2, M4 final F3)', () => {
       rmSync(decoy, { recursive: true, force: true });
     }
   });
+
+  it('M18.134: a red run that fell out of the listing window still blocks, and many pending runs with no completed one are unknown, not green', () => {
+    const pending = Array.from({ length: 10 }, (_, i) =>
+      run('ci', 'queued', `2026-09-29T03:${String(10 + i)}:00Z`, { databaseId: 60 + i, message: 'M1.3: feat(x): w' }),
+    );
+    const gates = run('gates', 'success', '2026-09-29T02:30:00Z');
+    // only the status-filtered query sees the old red run (cp14 F1: release and gates runs filled the window)
+    const hidden = run('ci', 'failure', '2026-09-29T01:00:00Z', { headSha: 'deadbee0000000', databaseId: 41, outsideWindow: true });
+    const red = lastCi([...pending, gates, hidden]);
+    assert.equal(red.status, 1, red.out);
+    assert.match(red.out, /RED ci failure at deadbee \(run 41\) \(10 newer runs pending\)/);
+    // nothing completed anywhere: more than LAST_CI_MAX_PENDING (4) pending runs are unknown, at most 4 are not yet a verdict
+    const unknown = lastCi([...pending, gates]);
+    assert.equal(unknown.status, 1, unknown.out);
+    assert.match(unknown.out, /UNKNOWN ci: no completed run found behind 10 pending runs/);
+    assert.equal(lastCi([...pending.slice(0, 4), gates]).status, 0);
+    assert.equal(lastCi([...pending.slice(0, 5), gates]).status, 1);
+    // a failed status query is said, and with no completed run in the window the state is unknown (r1 F2)
+    const unread = lastCi([pending[0], gates, hidden, { workflowName: 'ci', queryFails: true }]);
+    assert.equal(unread.status, 1, unread.out);
+    assert.match(unread.out, /cannot read ci's newest completed run \(query failed\)[\s\S]*UNKNOWN ci/);
+  });
 });

@@ -271,6 +271,40 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     assert.deepEqual(spawned[0].slice(0, 8), ['gh', 'run', 'list', '--workflow', 'nightly.yml', '--branch', 'main', '--limit']);
   });
 
+  it("HARNESS: a workflow's newest completed push run is read by status, outside any mixed window (M18.134, cp14 F1)", async () => {
+    const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const red = { id: 31, name: 'ci', head_sha: 'c'.repeat(40), conclusion: 'failure', status: 'completed', event: 'push', created_at: 'T' };
+    const calls = [];
+    const fetch = async (url) => {
+      calls.push(url);
+      return { ok: true, status: 200, json: async () => ({ workflow_runs: [red] }) };
+    };
+    assert.deepEqual(await restSource({ fetch }).completed('main', 'ci.yml'), [
+      { databaseId: 31, workflowName: 'ci', headSha: 'c'.repeat(40), status: 'completed', conclusion: 'failure', createdAt: 'T' },
+    ]);
+    assert.equal(calls[0], 'https://api.github.com/repos/huyz0/fluxion/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&per_page=1');
+    const spawned = [];
+    await ghSource((cmd, args) => {
+      spawned.push([cmd, ...args]);
+      return { status: 0, stdout: '[]' };
+    }).completed('main', 'gates.yml');
+    assert.deepEqual(spawned[0].slice(0, 13), [
+      'gh',
+      'run',
+      'list',
+      '--workflow',
+      'gates.yml',
+      '--branch',
+      'main',
+      '--event',
+      'push',
+      '--status',
+      'completed',
+      '--limit',
+      '1',
+    ]);
+  });
+
   it('REST is used when gh is absent, with the Bearer token only when GITHUB_TOKEN is set', async () => {
     const { hasGh, runSource } = await import('../../scripts/gates/ci-runs.mjs');
     assert.equal(
