@@ -94,6 +94,9 @@
       "path": "./packs/network"
     },
     {
+      "path": "./packs/cloud-architecture"
+    },
+    {
       "path": "./e2e"
     }
   ]

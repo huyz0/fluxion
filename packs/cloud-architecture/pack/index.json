@@ -1,0 +1,279 @@
+{
+  "attribution": "Fluxion contributors",
+  "categories": {
+    "boundaries": {
+      "path": "categories/boundaries.json",
+      "sha256": "9aa29add8358e64466f46743d088439e8ea4f73bd7f4408a0f60aea599413e74"
+    },
+    "compute": {
+      "path": "categories/compute.json",
+      "sha256": "5620ded5ac175c70ff54945c0075e1c8119e17e4bff654029b63c04e16a5ea2b"
+    },
+    "integration": {
+      "path": "categories/integration.json",
+      "sha256": "ae71e32ff94725b5d3405c44126d6a6516f669827a86f2c57c187081583da686"
+    },
+    "networking": {
+      "path": "categories/networking.json",
+      "sha256": "ed9a67bc96d15860564fa0c4231bcbbb8e12c02dc0c6e69748b73ecf6419d099"
+    },
+    "operations": {
+      "path": "categories/operations.json",
+      "sha256": "ac471fc4d97aaf6c36f34173229c55400129613fe63db1b4d59a4f8b2abd5da0"
+    },
+    "security": {
+      "path": "categories/security.json",
+      "sha256": "e0baff405f6a988f0f858eba19376f49f20a88c1dc571c4ef4faa0ed44677927"
+    },
+    "storage": {
+      "path": "categories/storage.json",
+      "sha256": "2cdef0fab679b54f2ba87d2631217c310afdd0af8bb3ac1acbd2e73e66b014c9"
+    }
+  },
+  "credits": [
+    {
+      "attribution": "Fluxion contributors",
+      "id": "fluxion",
+      "license": "MIT",
+      "notice": "Copyright (c) 2026 Fluxion contributors. Released under the MIT License.",
+      "source": {
+        "author": "Fluxion contributors",
+        "kind": "original",
+        "statement": "Original artwork drawn for Fluxion."
+      }
+    }
+  ],
+  "definitions": [
+    {
+      "category": "compute",
+      "id": "cloud:compute",
+      "keywords": [
+        "compute",
+        "vm",
+        "virtual machine",
+        "instance",
+        "server",
+        "cloud"
+      ],
+      "name": "Compute"
+    },
+    {
+      "category": "compute",
+      "id": "cloud:container",
+      "keywords": [
+        "container",
+        "pod",
+        "image",
+        "workload",
+        "cloud"
+      ],
+      "name": "Container"
+    },
+    {
+      "category": "compute",
+      "id": "cloud:function",
+      "keywords": [
+        "function",
+        "serverless",
+        "faas",
+        "event",
+        "cloud"
+      ],
+      "name": "Function"
+    },
+    {
+      "category": "compute",
+      "id": "cloud:cluster",
+      "keywords": [
+        "cluster",
+        "orchestration",
+        "nodes",
+        "scheduler",
+        "cloud"
+      ],
+      "name": "Cluster"
+    },
+    {
+      "category": "storage",
+      "id": "cloud:object-storage",
+      "keywords": [
+        "object storage",
+        "bucket",
+        "blob",
+        "files",
+        "cloud"
+      ],
+      "name": "Object storage"
+    },
+    {
+      "category": "storage",
+      "id": "cloud:block-storage",
+      "keywords": [
+        "block storage",
+        "volume",
+        "disk",
+        "ssd",
+        "cloud"
+      ],
+      "name": "Block storage"
+    },
+    {
+      "category": "storage",
+      "id": "cloud:database",
+      "keywords": [
+        "database",
+        "sql",
+        "nosql",
+        "db",
+        "managed",
+        "cloud"
+      ],
+      "name": "Database"
+    },
+    {
+      "category": "storage",
+      "id": "cloud:cache",
+      "keywords": [
+        "cache",
+        "memory",
+        "key-value",
+        "fast",
+        "cloud"
+      ],
+      "name": "Cache"
+    },
+    {
+      "category": "integration",
+      "id": "cloud:queue",
+      "keywords": [
+        "queue",
+        "messages",
+        "fifo",
+        "buffer",
+        "cloud"
+      ],
+      "name": "Queue"
+    },
+    {
+      "category": "integration",
+      "id": "cloud:pub-sub",
+      "keywords": [
+        "pub/sub",
+        "topic",
+        "events",
+        "broadcast",
+        "notification",
+        "cloud"
+      ],
+      "name": "Pub/sub topic"
+    },
+    {
+      "category": "integration",
+      "id": "cloud:api-gateway",
+      "keywords": [
+        "api gateway",
+        "api",
+        "endpoint",
+        "rest",
+        "ingress",
+        "cloud"
+      ],
+      "name": "API gateway"
+    },
+    {
+      "category": "networking",
+      "id": "cloud:cdn",
+      "keywords": [
+        "cdn",
+        "edge",
+        "content delivery",
+        "globe",
+        "cache",
+        "cloud"
+      ],
+      "name": "CDN"
+    },
+    {
+      "category": "networking",
+      "id": "cloud:dns",
+      "keywords": [
+        "dns",
+        "domain",
+        "name resolution",
+        "routing",
+        "cloud"
+      ],
+      "name": "DNS"
+    },
+    {
+      "category": "security",
+      "id": "cloud:identity",
+      "keywords": [
+        "identity",
+        "iam",
+        "auth",
+        "key",
+        "access",
+        "secrets",
+        "cloud"
+      ],
+      "name": "Identity"
+    },
+    {
+      "category": "operations",
+      "id": "cloud:monitoring",
+      "keywords": [
+        "monitoring",
+        "metrics",
+        "logging",
+        "observability",
+        "alerts",
+        "cloud"
+      ],
+      "name": "Monitoring"
+    },
+    {
+      "category": "boundaries",
+      "id": "cloud:region",
+      "keywords": [
+        "region",
+        "geography",
+        "boundary",
+        "group",
+        "cloud"
+      ],
+      "name": "Region"
+    },
+    {
+      "category": "boundaries",
+      "id": "cloud:zone",
+      "keywords": [
+        "availability zone",
+        "zone",
+        "datacenter",
+        "boundary",
+        "cloud"
+      ],
+      "name": "Availability zone"
+    },
+    {
+      "category": "boundaries",
+      "id": "cloud:private-network",
+      "keywords": [
+        "private network",
+        "vpc",
+        "vnet",
+        "network",
+        "boundary",
+        "cloud"
+      ],
+      "name": "Private network"
+    }
+  ],
+  "format": "fluxion-shape-pack",
+  "formatVersion": "1.0",
+  "id": "cloud",
+  "license": "MIT",
+  "name": "Cloud architecture",
+  "version": "0.0.0"
+}

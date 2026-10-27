@@ -1,0 +1,16 @@
+<svg data-screen-id="fEZxSMCblzSNqiwM" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="udx-PwJUaPJukIQD" data-kind="shape" data-place="left:20px;top:20px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M19.04 16.8 C16.05 20.53 13.07 24.27 10.08 28 C13.07 31.73 16.05 35.47 19.04 39.2" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M36.96 16.8 C39.95 20.53 42.93 24.27 45.92 28 C42.93 31.73 39.95 35.47 36.96 39.2" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M31.36 15.68 C29.12 23.89 26.88 32.11 24.64 40.32" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:-20px;top:-20px;transform-origin:48px 48px;transform:rotate(0deg)">
+    </g>
+  </g>
+</svg>

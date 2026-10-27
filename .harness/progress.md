@@ -3218,3 +3218,8 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - ci run 40748235794 at dcb3a59 is green (verify on ubuntu, windows and macOS; gates 40748235774); `check-ci-evidence --record dcb3a59` is recorded and the `blocks-landing` mark is removed, so feature commits land again.
 - cold-setup there: "failed by time (660902 ms > 600000 ms); slowest phase verify:test 604230 ms" (harness-tests 452 s, attw 346 s, api 288 s beside it), as expected with serial browser files; continue-on-error until M18.157.
 - 38184a1's run 40744784972 was red only because macOS verify hit its 15-minute step limit (runner load); its next run at dcb3a59 passed.
+## M18.28 — Cloud architecture pack (2026-10-27)
+
+Adds @fluxion/pack-cloud-architecture: 18 provider-neutral cloud architecture definitions (compute, container, function, cluster; object and block storage, database, cache; queue, pub/sub topic, API gateway; CDN, DNS; identity; monitoring; dashed region, dotted zone and dash-dot private network boundaries), MIT original work with no vendor artwork, colours or names, encoded by the shared encoder (ADR-0196) with a golden per definition. Services are rounded tiles with a stroke-only mark and the label below.
+- Review r1 pass with a minor, fixed: the zone boundary is drawn dotted (a near-zero dash with a round cap), as its description says.
+- Renamed packs/cloud → packs/cloud-architecture (@fluxion/pack-cloud-architecture) so the package name matches FR-LIB-007 and the M18 gate; the `cloud` namespace and exports are unchanged; re-reviewed.

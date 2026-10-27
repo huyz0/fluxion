@@ -242,6 +242,14 @@
       "runtime": "dom",
       "dependsOn": ["sdk"],
       "desc": "First-party network shape pack: generic routers, switches, firewalls, hosts and zones."
+    },
+    {
+      "dir": "packs/cloud-architecture",
+      "name": "@fluxion/pack-cloud-architecture",
+      "layer": "Pack",
+      "runtime": "dom",
+      "dependsOn": ["sdk"],
+      "desc": "First-party cloud architecture shape pack: provider-neutral compute, storage, integration, networking and boundary symbols."
     }
   ]
 }

@@ -1,0 +1,48 @@
+{
+  "definitions": [
+    {
+      "category": "operations",
+      "decorations": [
+        {
+          "path": "M {w * 0.2} {h * 0.2} V {h * 0.8} H {w * 0.82}"
+        },
+        {
+          "path": "M {w * 0.26} {h * 0.66} L {w * 0.42} {h * 0.46} L {w * 0.56} {h * 0.58} L {w * 0.78} {h * 0.3}"
+        }
+      ],
+      "defaultSize": {
+        "h": 56,
+        "w": 56
+      },
+      "defaultStyle": {
+        "font": {
+          "verticalAlign": "top"
+        }
+      },
+      "describe": "Monitoring and logging: metrics, logs and alerts.",
+      "id": "cloud:monitoring",
+      "keywords": [
+        "monitoring",
+        "metrics",
+        "logging",
+        "observability",
+        "alerts",
+        "cloud"
+      ],
+      "license": "MIT",
+      "outline": {
+        "path": "M {min(8, w * 0.12, h * 0.12)} 0 H {w - min(8, w * 0.12, h * 0.12)} A {min(8, w * 0.12, h * 0.12)} {min(8, w * 0.12, h * 0.12)} 0 0 1 {w} {min(8, w * 0.12, h * 0.12)} V {h - min(8, w * 0.12, h * 0.12)} A {min(8, w * 0.12, h * 0.12)} {min(8, w * 0.12, h * 0.12)} 0 0 1 {w - min(8, w * 0.12, h * 0.12)} {h} H {min(8, w * 0.12, h * 0.12)} A {min(8, w * 0.12, h * 0.12)} {min(8, w * 0.12, h * 0.12)} 0 0 1 0 {h - min(8, w * 0.12, h * 0.12)} V {min(8, w * 0.12, h * 0.12)} A {min(8, w * 0.12, h * 0.12)} {min(8, w * 0.12, h * 0.12)} 0 0 1 {min(8, w * 0.12, h * 0.12)} 0 Z"
+      },
+      "textRegions": [
+        {
+          "h": 0,
+          "name": "body",
+          "w": 1,
+          "x": 0,
+          "y": 1
+        }
+      ]
+    }
+  ],
+  "formatVersion": "1.0"
+}
