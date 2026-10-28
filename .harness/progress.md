@@ -3250,3 +3250,8 @@ Adds @fluxion/pack-people: 10 generic avatar definitions in three categories (in
 
 - last-ci reads the cold-setup job of ci's newest completed run (ci-runs.mjs `coldSetup`: REST and gh, the job log or null) and prints it: green; a failure by status (`budget: cold setup failed by status ...`) is RED and exits 1, since a fresh clone fails; a failure by time is a warning (continue-on-error until M18.157); a log without a blame line, or unreadable, is an UNKNOWN cause to check by hand, without changing the exit code, because this sandbox cannot read job logs (the log blob host answers 403) and an always-unknown cold job would block every feature row until M18.157.
 - Live at dcb3a59: "cold-setup failure at dcb3a59 (run 40748235794); cause UNKNOWN (log unreadable)"; its log (read through the GitHub connector) says by time, 660902 ms.
+
+## M18.156 — chained-plan test checks the tree being committed (2026-10-28)
+
+- The M18.137 case now clones HEAD, applies the source tree's tracked changes (`git diff --binary HEAD`) and commits them in the clone, so the plan step still sees clean inputs but runs the code being committed. Untracked files are not included (the row asks for tracked changes).
+- New case: a clone whose working tree changes `scripts/ci/mutation-nightly.mjs` to drop each matrix's first partition fails the chained-plan check on "every partition listed". With the apply step disabled (HEAD only), that case fails, so the mutant the row names is killed. Both cases take about 15 s together. The diff is read with a 1 GiB buffer, since a tracked change can exceed spawnSync's 1 MiB default (review r1).
