@@ -372,6 +372,17 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.match(failed.stderr, /cold setup failed by status in phase verify:test after 3400 ms/);
   });
 
+  it('NFR-DX-001: a failed cold verify prints the FAIL detail, not only the ladder tail after it (M18.158)', () => {
+    sb.cleanup();
+    sb = coldSandbox();
+    const passes = Array.from({ length: 20 }, (_, i) => `PASS step${i} (1ms)`);
+    const ladder = ['FAIL test (3400ms)', '    FAIL packages/x/src/x.test.ts > x > times out', ...passes, 'VERIFY all: FAIL (3.4s)'].join('\n');
+    const failed = sb.node('scripts/gates/check-budget.mjs', ['--cold'], { env: fakeEnv(sb, { FAKE_PNPM_FAIL: 'verify', FAKE_LADDER_OUTPUT: ladder }) });
+    assert.equal(failed.status, 1, out(failed));
+    assert.match(failed.stderr, /cold run failed\nFAIL test \(3400ms\)\n {4}FAIL packages\/x\/src\/x\.test\.ts > x > times out/);
+    assert.doesNotMatch(failed.stderr, /PASS step/, 'the passing steps are left out');
+  });
+
   it("NFR-DX-002: the recorded staged time is the worst-case commit's", () => {
     const all = readdirSync(join(REPO, 'tests/harness'))
       .filter((f) => f.endsWith('.test.mjs'))

@@ -47,10 +47,24 @@ function lockfileHash(root = repoPath()) {
   return existsSync(lock) ? createHash('sha256').update(readFileSync(lock)).digest('hex') : 'none';
 }
 
+/** A failed verify's FAIL blocks (precommit prints them before its PASS lines), else the output's last 15 lines (M18.158). */
+function failureTail(out) {
+  const lines = out.trim().split(/\r?\n/);
+  const first = lines.findIndex((l) => /^FAIL /.test(l));
+  return (
+    first < 0
+      ? lines.slice(-15)
+      : lines
+          .slice(first)
+          .filter((l) => !/^(PASS|SKIP|ADVISORY) /.test(l))
+          .slice(0, 80)
+  ).join('\n');
+}
+
 const timed = (fn, lockfile) => {
   const t0 = Date.now();
   const r = fn();
-  return { ms: Date.now() - t0, ok: r.status === 0, lockfile, tail: `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split(/\r?\n/).slice(-15).join('\n') };
+  return { ms: Date.now() - t0, ok: r.status === 0, lockfile, tail: failureTail(`${r.stdout ?? ''}\n${r.stderr ?? ''}`) };
 };
 
 /**
@@ -95,7 +109,7 @@ function coldSetup(provisional) {
       pnpm('verify', ['verify']),
     ]);
     const last = phases.at(-1).result;
-    const tail = `${last.stdout ?? ''}\n${last.stderr ?? ''}`.trim().split(/\r?\n/).slice(-15).join('\n');
+    const tail = failureTail(`${last.stdout ?? ''}\n${last.stderr ?? ''}`);
     const measured = { ms: phases.reduce((sum, p) => sum + p.ms, 0), lockfile, phases, cloneMs };
     if (phases.some((p) => !p.ok)) return { ...measured, ok: false, tail };
     // proof the install downloaded into the empty store instead of reusing the machine's
