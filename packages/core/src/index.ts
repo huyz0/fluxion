@@ -105,6 +105,7 @@ export {
   type ArtworkFontRequirement,
   type ArtworkShapeRegistries,
   artworkFontRequirements,
+  checkVersionedShapePackSubsets,
   registerShapePackSubsets,
   registerVersionedShapePackSubsets,
 } from './shape/pack-registration.js';

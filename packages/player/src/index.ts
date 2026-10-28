@@ -1,7 +1,8 @@
 // Public entry of @fluxion/player; the package comment is the dts banner in tsdown.config.ts.
 
 // the recorded metrics of a font the page has loaded (ADR-0148): a host that loads a document's own fonts registers them so text is measured as the editor did
-export { registerFontMetrics } from '@fluxion/render';
+// saved packs with their exact artwork fonts under private aliases (ADR-0192): a host registers them before showing the document
+export { registerFontMetrics, registerSavedShapePacks, type SavedShapePackPorts } from '@fluxion/render';
 export { realtimeClock } from './clock.js';
 export { buildsOfScreen, hiddenAt } from './deck-builds.js';
 export { CHROME_IDLE_MS, type ChromeLabels, DEFAULT_LABELS, DeckChrome, type DeckChromeProps } from './deck-chrome.js';

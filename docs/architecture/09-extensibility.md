@@ -360,7 +360,17 @@ font under it, so one file cannot shadow another file's artwork face on the same
 `RenderRegistries.artworkFonts` reaches the shape view, which draws bound text through
 `aliasSvgArtworkFonts` (alias named, the text's inline font declarations dropped) and draws a
 placeholder, never a fallback face, for text without its binding. The one-file player opens
-files this way before its first paint. The studio host is M18.115; the CLI is M18.116.
+files this way before its first paint. The CLI is M18.116.
+
+Hosts check first (M18.115): `checkVersionedShapePackSubsets(registry, inputs, policy)` parses,
+checks rights and finds namespaces free without effects, and `registerSavedShapePacks` runs it
+before reading any font, so a refused pack never touches the page. Render's `loadFontFaces`, the
+studio's opened-file fonts and the one-file player skip document fonts in the reserved namespace.
+The studio opens a file's saved packs through `registerSavedShapePacks` (re-exported by the
+player) before showing it in the editor or present mode: `OpenedFile.artworkFonts` holds the
+loader-verified bytes by SHA-256, crash-recovery state carries them (they have no asset record),
+and Save passes them with each embedded source. They leave with the file; edits, undo and redo
+never touch them. Missing or changed bytes show the refusal instead of the document.
 
 ### Saved shape subset validation (ADR-0182)
 

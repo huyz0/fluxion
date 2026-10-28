@@ -5,6 +5,7 @@ import {
   allowsShapePackContentLicense,
   artworkFontAlias,
   artworkFontRequirements,
+  checkVersionedShapePackSubsets,
   createRegistry,
   parseVersionedShapePackSubset,
   registerShapePackSubsets,
@@ -123,6 +124,22 @@ describe('FR-LIB-004 FR-AST-003: versioned registration binds exact artwork font
     expect(registerVersionedShapePackSubsets(target, [v11()], policy, new Set([SHA])).ok).toBe(false);
     expect(target.shapeDefs.list()).toEqual([]);
     expect(target.artworkFonts.list().map(([id]) => id)).toEqual(['sample:label']);
+  });
+
+  it('checks subsets without effects: parsed under the policy, namespaces free, malformed input is diagnostics (M18.115)', () => {
+    const target = registries();
+    const checked = checkVersionedShapePackSubsets(target.shapeDefs, [v11(), subset2()], policy);
+    expect(checked.ok && checked.value.map((p) => [p.id, p.formatVersion])).toEqual([
+      ['sample', '1.1'],
+      ['legacy', '1.0'],
+    ]);
+    expect(checkVersionedShapePackSubsets(target.shapeDefs, [v11()], () => false).ok).toBe(false);
+    expect(checkVersionedShapePackSubsets(target.shapeDefs, [v11(), v11()], policy).ok).toBe(false);
+    expect(checkVersionedShapePackSubsets(target.shapeDefs, [{ ...v11(), fontResources: 'none' }], policy).ok).toBe(false);
+    expect(checkVersionedShapePackSubsets(target.shapeDefs, 'none' as never, policy).ok).toBe(false);
+    target.shapeDefs.register('sample:other', v11().definitions[0], 'installed');
+    expect(checkVersionedShapePackSubsets(target.shapeDefs, [v11()], policy).ok).toBe(false);
+    expect(target.artworkFonts.list()).toEqual([]);
   });
 
   it('keeps the 1.0-only path refusing 1.1 subsets', () => {

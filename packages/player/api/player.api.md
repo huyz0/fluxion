@@ -14,8 +14,10 @@ import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { RefObject } from 'react';
 import { registerFontMetrics } from '@fluxion/render';
+import { registerSavedShapePacks } from '@fluxion/render';
 import { Registry } from '@fluxion/core';
 import { RenderRegistries } from '@fluxion/render';
+import { SavedShapePackPorts } from '@fluxion/render';
 import { Store } from '@fluxion/core';
 
 // @public
@@ -200,8 +202,12 @@ export const realtimeClock: Clock;
 
 export { registerFontMetrics }
 
+export { registerSavedShapePacks }
+
 // @public
 export function renderRegistriesFor(host: CoreRegistries, artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>): RenderRegistries;
+
+export { SavedShapePackPorts }
 
 // @public
 export function toggleFullscreen(target: FullscreenTarget, doc: FullscreenDocument): Promise<FullscreenResult>;

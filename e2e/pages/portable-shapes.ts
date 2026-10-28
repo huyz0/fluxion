@@ -123,3 +123,48 @@ export async function fullDistributionFile(): Promise<Uint8Array> {
     }),
   );
 }
+
+/** A real `.flux` whose saved 1.1 pack draws `sample:label`'s text in exact Inter, retained as `assets/<sha>.woff2` (ADR-0192). */
+export async function artworkFontFile(): Promise<{ readonly bytes: Uint8Array; readonly sha256: string }> {
+  const { api, hasher } = await format();
+  const core = await load<CoreApi>('packages/core/dist/index.js');
+  const schema = await load<SchemaApi>('packages/schema/dist/index.js');
+  const json = JSON.parse(readFileSync('fixtures/docs/minimal.flux.json', 'utf8')) as { records: Record<string, { type: string; id: string }> };
+  const screen = Object.values(json.records).find((record) => record.type === 'screen');
+  if (!screen) throw new Error('fixture has no screen');
+  const record = {
+    id: 'ArtworkLabel01',
+    type: 'element',
+    kind: 'shape',
+    screenId: screen.id,
+    index: 'a0',
+    defId: 'sample:label',
+    transform: { x: 150, y: 150, w: 240, h: 120 },
+  };
+  const document = value(schema.parseDocument(JSON.stringify({ ...json, records: { ...json.records, [record.id]: record } }))).document;
+  const subset = JSON.parse(readFileSync('fixtures/shape-pack/v1.1/subset.json', 'utf8'));
+  const inter = new Uint8Array(readFileSync('packs/fonts-core/fonts/inter-latin-400-normal.woff2'));
+  const sha256 = api.sha256Hex(inter);
+  const written = await api.writePortableFlux({
+    document,
+    appVersion: '0',
+    hasher,
+    shapePacks: {
+      sources: [{ kind: 'embedded', subset, fonts: new Map([[sha256, inter]]) }],
+      builtinIds: new Set(),
+      licensePolicy: core.allowsShapePackContentLicense,
+    },
+  });
+  return { bytes: value(written).bytes, sha256 };
+}
+
+/** The saved packs' format versions and the bytes of `sha256` in Studio output, read with the strict public reader. */
+export async function savedArtworkFont(bytes: Uint8Array, sha256: string) {
+  const { api, hasher } = await format();
+  const core = await load<CoreApi>('packages/core/dist/index.js');
+  const loaded = value(await api.loadFlux(bytes, { hasher, shapePackLicensePolicy: core.allowsShapePackContentLicense })) as unknown as {
+    shapePacks: { formatVersion: string }[];
+    assets: ReadonlyMap<string, { bytes: Uint8Array }>;
+  };
+  return { versions: loaded.shapePacks.map((pack) => pack.formatVersion), font: loaded.assets.get(sha256)?.bytes };
+}

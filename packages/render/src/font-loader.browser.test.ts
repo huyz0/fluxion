@@ -59,4 +59,18 @@ describe('loading fonts (FR-THM-008)', () => {
     expect(rejected).toBe(true);
     expect([...document.fonts].some((f) => f.family.includes(`${FAMILY}Bad`))).toBe(false);
   });
+
+  it('FR-AST-003: a face in the reserved artwork-alias namespace is skipped, so it cannot shadow exact artwork bytes (M18.115)', async () => {
+    const done = track();
+    const alias = `fx-artwork-${'0'.repeat(64)}`;
+    await loadFontFaces([
+      { family: alias, weight: 400, style: 'normal', url: regular },
+      { family: `"FX-Artwork-${'1'.repeat(64)}"`, weight: 400, style: 'normal', url: regular },
+      { family: `${FAMILY}Kept`, weight: 400, style: 'normal', url: regular },
+    ]);
+    done();
+    const families = [...document.fonts].map((f) => f.family.replaceAll('"', '').toLowerCase());
+    expect(families.filter((f) => f.startsWith('fx-artwork-'))).toEqual([]);
+    expect(families).toContain(`${FAMILY}Kept`.toLowerCase());
+  });
 });

@@ -1,7 +1,8 @@
 // The fonts a file brings (FR-THM-008, FR-FIL-006, M10.34): a font asset of a document the studio opens is loaded as a face from its own bytes, and
 // once it has loaded its recorded metrics are registered, so the page draws and measures the text in it as the file's author saw it. A face that does
-// not load is left out (the text falls back), and releasing takes the faces and the records out again when the document is closed.
-import { readFontMetrics } from '@fluxion/core';
+// not load is left out (the text falls back), and releasing takes the faces and the records out again when the document is closed. A family in the
+// reserved artwork-alias namespace (`fx-artwork-`, ADR-0192) is never loaded, so no file can shadow exact artwork bytes.
+import { isArtworkFontAlias, readFontMetrics } from '@fluxion/core';
 import { registerFontMetrics } from '@fluxion/editor';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 
@@ -39,7 +40,7 @@ export async function registerOpenedFonts(
   const loading: Promise<boolean>[] = [];
   for (const { id, font } of fontAssets(document)) {
     const url = urls.get(id);
-    if (url === undefined || typeof font.family !== 'string' || typeof font.weight !== 'number') continue;
+    if (url === undefined || typeof font.family !== 'string' || typeof font.weight !== 'number' || isArtworkFontAlias(font.family)) continue;
     try {
       const face = new FontFace(font.family, `url(${JSON.stringify(url)})`, {
         weight: String(font.weight),

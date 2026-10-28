@@ -128,6 +128,9 @@ export type BinaryOp = "+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "
 export function canonicalJson(value: unknown): string;
 
 // @public
+export function checkVersionedShapePackSubsets(registry: Registry<string, ShapeDef>, inputs: readonly unknown[], policy: ShapePackLicensePolicy): Result<readonly VersionedShapePackSubset[], readonly Diagnostic[]>;
+
+// @public
 export interface Clock {
     frame(callback: (time: number) => void): () => void;
     now(): number;

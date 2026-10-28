@@ -1,12 +1,23 @@
 // Opening a document in the studio (04 §4 "Bootstrapping"): a store for it, the host's first-party
 // packs registered into its core registries (ADR-0017: the studio bundles packs/basic), and the
 // render registries that draw from them.
-import { allowsShapePackContentLicense, type Core, createCore, type Logger, registerShapePackSubsets, type VersionedShapePackSubset } from '@fluxion/core';
+import {
+  type ArtworkFontBinding,
+  allowsShapePackContentLicense,
+  type Core,
+  createCore,
+  createRegistry,
+  type Disposable,
+  type Logger,
+  type Registry,
+  registerShapePackSubsets,
+  type VersionedShapePackSubset,
+} from '@fluxion/core';
 import { registerApplyPatchCommand } from '@fluxion/dsl';
 import { registerArrangeCommand, registerBuiltInLayouts, registerBuiltInTemplates } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
 import { themesCorePack } from '@fluxion/pack-themes-core';
-import { renderRegistriesFor } from '@fluxion/player';
+import { registerSavedShapePacks, renderRegistriesFor } from '@fluxion/player';
 import { type DocumentFile, err, ok, type Result } from '@fluxion/schema';
 
 /**
@@ -19,6 +30,8 @@ export type OpenDocument = {
   readonly core: Core;
   /** Element views, shapes and markers, the bundled packs included. */
   readonly registries: ReturnType<typeof renderRegistriesFor>;
+  /** The artwork font bindings of saved 1.1 packs, which the render registries draw with (ADR-0192). */
+  readonly artworkFonts: Registry<string, readonly ArtworkFontBinding[]>;
   /** The themes the bundled packs offer (the theme switcher's choices). */
   readonly themes: readonly {
     readonly name: string;
@@ -59,7 +72,31 @@ export function openDocument(
   // `ai.applyPatch` (FR-AI-003): the AI panel's Apply
   const patching = registerApplyPatchCommand(core.registries.commands, core.registries);
   if (!patching.ok) return err(`The AI patch command failed to register: ${patching.error.message}`);
-  return ok({ core, registries: renderRegistriesFor(core.registries), themes: themesCorePack.themes });
+  const artworkFonts = createRegistry<string, readonly ArtworkFontBinding[]>('artworkFonts');
+  return ok({ core, registries: renderRegistriesFor(core.registries, artworkFonts), artworkFonts, themes: themesCorePack.themes });
+}
+
+/**
+ * Register a file's saved 1.0 and 1.1 packs into `opened` (made by {@link openDocument} without them) through
+ * `registerSavedShapePacks`: each exact artwork font `fonts` holds is verified and loaded under its private alias first, then geometry and
+ * bindings. The document must not be shown before this resolves. A refusal (missing or changed bytes, a face that does not load, a
+ * cancelled `signal`) is one line and leaves no face, definition or binding behind, so no artwork text falls back to another face. The
+ * disposer releases them with the file; edits and their undo or redo never touch them.
+ *
+ * @public
+ */
+export async function registerOpenedShapePacks(
+  opened: OpenDocument,
+  packs: readonly VersionedShapePackSubset[],
+  fonts: ReadonlyMap<string, Uint8Array>,
+  ports: { readonly sha256: (bytes: Uint8Array) => Promise<string>; readonly signal?: AbortSignal; readonly fonts?: FontFaceSet },
+): Promise<Result<Disposable, string>> {
+  const registered = await registerSavedShapePacks({ shapeDefs: opened.core.registries.shapeDefs, artworkFonts: opened.artworkFonts }, packs, {
+    ...ports,
+    bytesOf: (sha) => fonts.get(sha),
+    policy: allowsShapePackContentLicense,
+  });
+  return registered.ok ? registered : err(`The saved shapes could not be registered: ${registered.error.map((d) => d.message).join('; ')}`);
 }
 
 export { cryptoRandom } from './random.js';

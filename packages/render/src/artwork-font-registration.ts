@@ -6,6 +6,7 @@ import {
   type ArtworkShapeRegistries,
   artworkFontAlias,
   artworkFontRequirements,
+  checkVersionedShapePackSubsets,
   type Disposable,
   registerVersionedShapePackSubsets,
   type ShapePackLicensePolicy,
@@ -158,8 +159,9 @@ export type SavedShapePackPorts = ArtworkFontPorts & {
 
 /**
  * Register saved 1.0 and 1.1 shape packs for drawing: load the exact artwork fonts they bind from `bytesOf` (a loader's verified
- * assets by hash), then register geometry and bindings. Any refusal or cancellation leaves no face, definition or binding behind,
- * and no text is drawn in a fallback face. The disposer releases all three.
+ * assets by hash), then register geometry and bindings. The packs are parsed, their rights checked and their namespaces found free
+ * before any font is read. Any refusal or cancellation leaves no face, definition or binding behind, and no text is drawn in a
+ * fallback face. The disposer releases all three.
  *
  * @public
  */
@@ -169,8 +171,11 @@ export async function registerSavedShapePacks(
   ports: SavedShapePackPorts,
 ): Promise<Result<Disposable, readonly Diagnostic[]>> {
   const { bytesOf, policy } = ports;
+  // parsed, rights checked and namespaces free before any face exists: a refused pack never touches the page
+  const checked = checkVersionedShapePackSubsets(registries.shapeDefs, packs, policy);
+  if (!checked.ok) return checked;
   const fonts = await registerArtworkFonts(
-    artworkFontRequirements(packs).map((font) => ({ ...font, bytes: bytesOf(font.sha256) })),
+    artworkFontRequirements(checked.value).map((font) => ({ ...font, bytes: bytesOf(font.sha256) })),
     ports,
   );
   if (!fonts.ok) return fonts;

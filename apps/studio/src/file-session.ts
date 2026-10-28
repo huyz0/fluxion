@@ -2,7 +2,7 @@
 // writes. The decisions are here, apart from the browser APIs that move the bytes (file-host.ts): a `.flux`, `.flux.html` or `.flux.json` opens
 // to a document and its assets; a file written by a newer major version (`readOnly`) or opened in part (`salvage`) is never saved over its
 // own file, only as a copy; and only a `.flux` is saved over, since the others are different formats.
-import { allowsShapePackContentLicense, type FileIO, type VersionedShapePackSubset } from '@fluxion/core';
+import { allowsShapePackContentLicense, artworkFontRequirements, type FileIO, type VersionedShapePackSubset } from '@fluxion/core';
 import {
   type ContentHasher,
   createMemoryAssetStore,
@@ -61,7 +61,19 @@ export type OpenedFile = {
   readonly shapePacks?: readonly VersionedShapePackSubset[];
   /** References unresolved at open time; never inferred from later edits. */
   readonly unresolvedShapeIds?: ReadonlySet<string>;
+  /** The exact retained artwork font bytes the saved 1.1 packs bind, by SHA-256, as the loader verified them (ADR-0192). */
+  readonly artworkFonts?: ReadonlyMap<string, Uint8Array>;
 };
+
+/** The retained bytes of every artwork font `packs` bind that `assets` holds, by SHA-256 (the loader rehashed them). */
+function retainedArtworkFonts(packs: readonly VersionedShapePackSubset[], assets: ReadonlyMap<string, FluxAsset>): ReadonlyMap<string, Uint8Array> {
+  const fonts = new Map<string, Uint8Array>();
+  for (const { sha256 } of artworkFontRequirements(packs)) {
+    const bytes = assets.get(sha256)?.bytes;
+    if (bytes !== undefined) fonts.set(sha256, bytes);
+  }
+  return fonts;
+}
 
 /** The text of `bytes` as UTF-8 (the studio runs in a browser, which has TextDecoder). */
 const textOf = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
@@ -95,6 +107,7 @@ async function openArchive(name: string, bytes: Uint8Array, kind: FileKind, hash
     plugins: f.manifest?.plugins ?? [],
     shapePacks: f.shapePacks,
     unresolvedShapeIds: unresolvedShapeIds(f.document, f.shapePacks),
+    artworkFonts: retainedArtworkFonts(f.shapePacks, f.assets),
   });
 }
 
@@ -261,7 +274,7 @@ export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, st
     ...(file === undefined ? {} : { extraEntries: file.extraEntries, manifestExtras: file.manifestExtras }),
     hasher: input.hasher,
     plugins: file?.plugins ?? [],
-    shapePacks: shapeSaveOptions(file?.shapePacks ?? [], input.shapePackSources ?? [], file?.unresolvedShapeIds ?? new Set()),
+    shapePacks: shapeSaveOptions(file?.shapePacks ?? [], input.shapePackSources ?? [], file?.unresolvedShapeIds ?? new Set(), file?.artworkFonts),
   });
   return written.ok
     ? ok({ bytes: written.value.bytes, missing: picked.missing.length, external: embedded.failures.length, diagnostics: written.value.diagnostics })

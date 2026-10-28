@@ -202,6 +202,30 @@ describe('registerSavedShapePacks and the shape view', () => {
     expect(inSet(ALIAS)).toEqual([]);
   });
 
+  it('checks the packs before reading any font: a denied, occupied or malformed pack loads no face (M18.115)', async () => {
+    const artworkFonts = createRegistry<string, readonly ArtworkFontBinding[]>('artworkFonts');
+    const registries = { ...testRegistries(), artworkFonts };
+    registries.shapeDefs.register('taken:box', subset().definitions[0] as never, 'installed');
+    let reads = 0;
+    const bytesOf = () => {
+      reads++;
+      return inter;
+    };
+    const before = registries.shapeDefs.list();
+    for (const [packs, policy] of [
+      [[subset()], () => false],
+      [[{ ...subset(), id: 'taken' }], allowsShapePackContentLicense],
+      [[{ ...subset(), fontResources: 'none' }], allowsShapePackContentLicense],
+    ] as const) {
+      const refused = await registerSavedShapePacks(registries, packs as never, { ...ports, bytesOf, policy });
+      expect(refused.ok).toBe(false);
+    }
+    expect(reads).toBe(0);
+    expect(registries.shapeDefs.list()).toEqual(before);
+    expect(artworkFonts.list()).toEqual([]);
+    expect(inSet(ALIAS)).toEqual([]);
+  });
+
   it('cancelled after its fonts load, registers no definition or binding and releases the faces', async () => {
     const artworkFonts = createRegistry<string, readonly ArtworkFontBinding[]>('artworkFonts');
     const registries = { ...testRegistries(), artworkFonts };

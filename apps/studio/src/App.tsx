@@ -30,6 +30,7 @@ import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
 import { createRoutePort } from './route-port.js';
 import { routeOf } from './routes.js';
+import { noArtworkFonts, noSavedPacks, useSavedShapePacks } from './saved-shape-packs.js';
 import { installTestHooks } from './test-hooks.js';
 
 const subscribe = (onChange: () => void) => {
@@ -207,9 +208,7 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   const readOnly = guard.phase === 'read-only';
   const opened = useMemo(() => {
     const file = entry === undefined ? loadDocument(docId, cryptoRandom) : ok(entry.file.document);
-    const doc = file.ok
-      ? openDocument(file.value, { readOnly, logger: studioLogger(window.location.search, console).child('studio'), shapePacks: entry?.file.shapePacks ?? [] })
-      : file;
+    const doc = file.ok ? openDocument(file.value, { readOnly, logger: studioLogger(window.location.search, console).child('studio') }) : file;
     if (!doc.ok) return doc;
     // the bytes of the document's assets (images, fonts) and the font picker's sources live as long as the document is open here
     const assets = createAssetStore();
@@ -236,7 +235,11 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   useEffect(() => {
     void loadBundledFonts();
   }, []);
+  // the file's saved packs, their exact artwork fonts first, before the document is shown (M18.115)
+  const packs = useSavedShapePacks(opened, entry?.file.shapePacks ?? noSavedPacks, entry?.file.artworkFonts ?? noArtworkFonts);
   if (!opened.ok) return <Problem message={opened.error} />;
+  if (packs.phase === 'refused') return <Problem message={packs.message} />;
+  if (packs.phase === 'registering') return <main data-testid="studio-root" aria-busy="true" />;
   return mode === 'edit' ? (
     <ProtectedEditor opened={opened.value} docId={docId} entry={entry} guard={guard} instance={instance} />
   ) : (

@@ -308,7 +308,7 @@ entry. A save that retains fonts reopens its final archive under `destinationLim
 loader's) before returning. Migration: `LoadedFlux.shapePacks` and `ShapePackSourceData` now
 admit 1.1 subsets and `ShapePackDataLock.packFormat` admits `'1.1'`; hosts that register only 1.0
 (`registerShapePackSubsets`) refuse 1.1 subsets atomically; the one-file player registers them
-with their exact fonts (M18.97, 09-extensibility), the studio from M18.115.
+with their exact fonts (M18.97, 09-extensibility), and so does the studio (M18.115).
 
 ### Known shape data I/O (ADR-0184)
 

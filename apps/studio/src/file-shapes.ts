@@ -17,14 +17,15 @@ export function unresolvedShapeIds(document: DocumentFile, packs: readonly Versi
   return missing;
 }
 
-/** Preserve loaded sources and require explicit provenance for newly supplied geometry. */
+/** Preserve loaded sources, with the retained artwork font bytes their 1.1 subsets bind, and require explicit provenance for newly supplied geometry. */
 export function shapeSaveOptions(
   packs: readonly VersionedShapePackSubset[],
   sources: readonly ShapePackSourceData[],
   preserved: ReadonlySet<string>,
+  fonts: ReadonlyMap<string, Uint8Array> = new Map(),
 ): Omit<PrepareShapePacksOptions, 'hasher'> & { readonly sources: readonly ShapePackSourceData[] } {
   return {
-    sources: [...packs.map((subset) => ({ kind: 'embedded' as const, subset })), ...sources],
+    sources: [...packs.map((subset) => ({ kind: 'embedded' as const, subset, fonts })), ...sources],
     builtinIds,
     licensePolicy: allowsShapePackContentLicense,
     preservedUnresolvedIds: preserved,

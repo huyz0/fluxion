@@ -90,4 +90,11 @@ describe('the fonts an opened file brings (FR-THM-008, FR-FIL-006)', () => {
     expect(families()).not.toContain('NoBytes');
     release();
   });
+
+  it('FR-AST-003: a font asset named in the reserved artwork-alias namespace is never loaded (M18.115)', async () => {
+    const alias = `fx-artwork-${'0'.repeat(64)}`;
+    const release = await registerOpenedFonts(documentWith(alias, 500), new Map([['font1' as RecordId, await dataUrl()]]));
+    expect(families()).not.toContain(alias);
+    release();
+  });
 });

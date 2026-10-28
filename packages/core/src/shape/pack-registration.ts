@@ -67,6 +67,25 @@ export function registerShapePackSubsets(
   }
 }
 
+/**
+ * The checks {@link registerVersionedShapePackSubsets} makes before any effect: each input parsed as a
+ * 1.0 or 1.1 subset under `policy`, no namespace twice and none already in `registry`. Pure; a host
+ * runs it before loading any artwork font, so a refused pack never touches the page. Malformed input
+ * is diagnostics, never a throw.
+ * @public
+ */
+export function checkVersionedShapePackSubsets(
+  registry: Registry<string, ShapeDef>,
+  inputs: readonly unknown[],
+  policy: ShapePackLicensePolicy,
+): Result<readonly VersionedShapePackSubset[], readonly Diagnostic[]> {
+  try {
+    return Array.isArray(inputs) ? preflight(registry, inputs, policy, parseVersionedShapePackSubset) : err([problem('saved packs must be an array')]);
+  } catch {
+    return err([problem('saved shape packs could not be checked')]);
+  }
+}
+
 /** The exact bytes a host must register before {@link registerVersionedShapePackSubsets}. @public */
 export type ArtworkFontRequirement = {
   /** Lowercase SHA-256 of the exact bytes. */
