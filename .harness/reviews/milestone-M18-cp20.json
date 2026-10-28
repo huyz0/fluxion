@@ -1,0 +1,82 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp20",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..a1363eb4bcfb45c095b32038954f06517a21891f",
+  "reviewer": "claude:independent-subagent:m18-cp20",
+  "verdict": "approved",
+  "reviewedDelta": "7e02778c1d56ee3772412e3beda5400cd79da7e1..a1363eb4bcfb45c095b32038954f06517a21891f (38184a1 M18.43 cp19 record; dcb3a59 + 003ef9b M18.160; landing batch of 5 pushed together at 21:42Z: 589f7fb M18.28, 3505f72 M18.121, 3317c80 M18.29, a077c0f M18.30, a1363eb M18.31). Earlier range retained from cp1-cp19.",
+  "cp19DispositionsCheck": "F1 (reopen -> M18.160): honoured. dcb3a59 restores fileParallelism:false for the browser project on every OS (vitest.config.ts:81), carries Fixes-ci: 40736474821 and a Removes-test trailer for the replaced Linux-parallel scheduling test (renamed and re-asserted, not dropped); no timeout or assertion changed; progress.md states the Linux choice, its effect on M18.157 (rowAttempts M18.157: 0 -> 1) and the Windows inline.browser 1-in-10 record. 003ef9b closes on ci 40748235794 (green, three OSes) with ci-evidence recorded for dcb3a59 and blocks-landing removed. M18.44's done row text was updated to match the new scheduling. F2 (reopen -> M18.161): row added, still todo; cp19's planDelta ordered it 'before or with the first batch' and the batch landed without it (F1 below). The cold-setup line was recorded by hand for dcb3a59 (by time, 660.9 s), not yet for a1363eb. F3 (argue): honoured; review-argued.txt has the cp19 F3 landing note, and each batch commit re-records budget.json on its rebased parent (commit = 003ef9b, 3505f72, 3317c80, a077c0f in turn, all --cold-pending), never hand-editing the commit value. cp19 Learned line present in M18.md.",
+  "questions": {
+    "coherence": "Coherent. The four packs use one pattern (DeclarativeShapePack source in src/index.ts, shared encoder ADR-0196, checkShapePack in pack.test.ts, version ledger, changeset), and icons-lucide reuses M18.101's Iconify importer and the Node paint witness through scripts/packs/lucide.mjs rather than a second converter. renderShapeGolden gains one artwork branch instead of a parallel check. The per-pack pack.test.ts is now copied in 11 packs (41 lines each); that duplication is what open M18.129 removes. Pack namespaces differ from package names for cloud-architecture (`cloud`) and icons-lucide (`lucide`), both documented in the READMEs; M18.41's DSL resolution must use the namespaces.",
+    "specFidelity": "M18.28-31 meet their EARS: each pack is nonempty (18, 185, 15, 10 definitions), declares license and credits (original MIT with an explicit author statement for cloud/devices/people; Lucide ISC for all icons plus a definition-scoped Feather MIT credit for the 46 listed icons, with verbatim notices, pinned revision and corpus sha256), has a golden per definition, and passes the vendor-brand check; m18-complete reports PASS for all four pack legs. Ran here: vitest node project over packs/{people,devices,cloud-architecture,icons-lucide} and packages/sdk/src/testing: 9 files, 24 tests passed; sha256 of specs/import/corpus/iconify/lucide.json equals the pack's sourceSha256 and manifest entry. M18.121 meets its EARS: all corners up to six bounded params, pairwise beyond, plus 16x16, 16xh and wx16 sizes; flowchart terminator/delay and infographic step-pill retrofitted with clamped ends whose default-size geometry and goldens are unchanged. Gaps: nothing verifies the Lucide provenance (F2), and the npm license field of icons-lucide says MIT for a package whose dist bundles ISC artwork (F2). FR-LIB-007's 'all 12 packs' leg is still red only through bpmn-lite naming (M18.125) and M18.32 search.",
+    "standardsDrift": "Subjects, trailers, changesets, FR/NFR-titled tests (pack.test 'FR-LIB-003, FR-LIB-007, NFR-LIC-003', geometry tests 'FR-LIB-007, FR-LIB-003', index.test 'NFR-MNT-004') and generated traceability conform; no test removed except the trailered scheduling test; thresholds and baselines unchanged. Drift: (a) four reviewer role names in this delta (independent-subagent, general-purpose-subagent, opus-5.5-subagent, subagent-reviewer), against cp17 F4's argued 'one role name in practice'; the grammar gate accepts all. (b) progress.md records M18.31 review r1 and r2 as changes-requested, while digest.log shows only r1/r2 pass lines for M18.31 (those rounds predate M18.127 on 2026-10-27, so they were never tracked); harmless, but the digest is not the full round history for held commits reviewed before e86cf69. (c) Each batch commit re-records budget.json silently: quickMs went 22 s -> 203 s at 589f7fb and stays at about 180 s (QUICK_GATE_BUDGET_MS 180 s, advisory per ADR-0190), and no commit body mentions it (F3).",
+    "gateHonesty": "No gate weakened. check-digest --head --full-history at a1363eb passes (136 M18 task commits, 5.1 s); its default mode flags only M18.31's empty Commit cell, which the next bookkeeping commit fills. Mutants imagined: (1) geometry-check without the size loop is killed by the 'fixed offset fits the default box but not a narrow one' case; (2) ALL_CORNERS = 2 (pairwise always) survives: the tests use two params and seven params, so no three-param interaction case distinguishes all-corners from pairwise (F4); (3) renderShapeGolden's ARTWORK_DRAWN accepts an artwork viewport containing an empty <path d=\"\"> or zero-size rect, so 'an empty golden proves nothing' is only partly enforced for artwork (F4); (4) dropping the Feather definitionIds would be caught by checkShapePack comparing pack/index.json credits to the source, but editing icons.json's sourceSha256 or definitions by hand passes every test, since no test reads the corpus (F2). Completion gate: 50/75 green; reds are honest (mutation evidence, e2e/CLI legs, bpmn-lite name, M18.32/33, docs, final review; the @fluxion/layout changeset leg is pre-existing from M18.69, raised at cp9/cp10).",
+    "architecture": "Packs depend only on @fluxion/sdk (workspace), no new runtime or player dependency; lucide.mjs is a dev script under scripts/packs (knip entry added) that imports built format/cli dist. The SDK testing change (artwork branch) is a patch changeset on @fluxion/sdk testing entry, not core. Pure-core layering untouched. Contracts: pack format unchanged; ADR-0194 and 09-extensibility updated for the geometry check in the same commit. Brand policy (ADR-0050 'generic original symbols') holds: no vendor names or marks in the three original packs, and the Lucide subset carries no brand icons.",
+    "planHealth": "147 rows vs 43 planned (3.4x), unchanged in this delta apart from M18.160/161; growth remains harness rows from checkpoints. Main: 003ef9b ci green before the batch; the batch of 5 (within the 7 limit) was pushed at 21:42Z over green main (no batch commit over a red main). a1363eb: gates 40774190882 green; ci 40774190911 has verify ubuntu and windows green, cold-setup green (about 541 s, under COLD_SETUP_MAX_MS, versus 660.9 s by time at dcb3a59, so cold time is noisy around the limit), macOS verify still running at review time. Next batch must wait for that run and record its cold line; M18.161 should land first (F1). 31 rows not done; remaining feature work is large (M18.16/17/81/97 import and font hosts, M18.32/33/35/41/42, M18.10 mutation evidence)."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "line": 157,
+      "evidence": "cp19 planDelta: '(2) M18.161 before or with the first batch; (3) then held feature commits in batches of at most 7, each followed by a green ci run whose cold-setup line is recorded'. M18.161 is todo at a1363eb; the first batch (589f7fb..a1363eb) landed at 21:42Z. progress.md records dcb3a59's cold line by hand ('failed by time (660902 ms > 600000 ms)'); no line yet for a1363eb (ci 40774190911 in progress).",
+      "failure_scenario": "A held commit that breaks fresh-clone install or setup turns cold-setup red by status inside a green run (continue-on-error); last-ci, land.mjs and check-ci-evidence read only the run conclusion, so the next batch lands over it unless someone opens the job by hand.",
+      "recommendation": "Land M18.161 before batch 2. Until then, record a1363eb's cold-setup result (job conclusion success here) in progress.md when run 40774190911 completes, and do not push batch 2 before that run is green on macOS."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "packs/icons-lucide/src/index.ts",
+      "line": 26,
+      "evidence": "UPSTREAM.sha256 comes from src/icons.json's sourceSha256 and revision is a literal; no test compares them with specs/import/corpus/manifest.json (iconify-lucide commit db4c0e1c..., iconify entry sha256 bcf5691c...) or hashes the corpus file; pack.test.ts compares pack/ only with the exported source built from icons.json. ADR-0050: 'The checked-in first-party source manifest links those hashes to actual input files and license/notice evidence; the gate verifies those files.' packs/icons-lucide/package.json declares \"license\": \"MIT\" although dist/index.js bundles the ISC AND MIT artwork (pack index license 'ISC AND MIT'); ADR-0050: 'A wrapper package's MIT declaration cannot replace the rights and notices of the artwork it contains.'",
+      "failure_scenario": "A hand edit of icons.json (a modified path, or an icon added from outside the pinned collection) or a re-pin of the corpus without regenerating keeps every test green while the credits claim the old pinned source; npm metadata and license scanners downstream see only MIT.",
+      "recommendation": "Add a node test in packs/icons-lucide asserting sourceSha256 equals the manifest's iconify-lucide sha256 and the corpus file's hash, the revision equals the manifest commit, the notices equal specs/import/corpus/licenses/lucide.txt split as lucide.mjs does, and every icon name exists in the pinned collection; set package.json license to 'MIT AND ISC' (check-licenses still passes, both allowlisted) or record why MIT is right in an argue line."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": ".harness/budget.json",
+      "line": 7,
+      "evidence": "589f7fb: quickMs 22210 -> 203246 (QUICK_GATE_BUDGET_MS 180000, advisory per ADR-0190); 3317c80 173978; a077c0f 181989; a1363eb 180058. None of the four commit bodies or progress entries mentions the re-record or the 9x quick-gate change.",
+      "failure_scenario": "The quick gate's latency regression (likely from a lockfile change marking every file changed, or from the 11th-12th pack's tests) becomes the recorded baseline without anyone deciding it, and later records cannot tell noise from regression.",
+      "recommendation": "In the next bookkeeping commit, state the cause of the 22 s -> ~180-200 s quickMs change in progress.md (lockfile-triggered full run vs real growth); if real, file it under M18.157's ladder-cut work. Mention a budget re-record in the commit body whenever a commit carries one."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "packages/sdk/src/testing/testing.test.ts",
+      "line": 264,
+      "evidence": "geometry-check.ts:16 ALL_CORNERS = 6; tests cover 2 bounded params (all corners) and 7 (pairwise). Mutant ALL_CORNERS = 2 survives: no case has 3-6 params whose escape needs three at their bounds together. shape-golden.ts:10 ARTWORK_DRAWN matches any <path|rect|...> tag inside fx-artwork, so <path d=\"\"/> passes as 'drawn'.",
+      "failure_scenario": "A later edit that degrades the all-corners branch to pairwise, or an imported icon whose converted paths are empty, keeps the pack suite green while M18.121's 'every corner' and the golden's 'an empty golden proves nothing' are no longer true.",
+      "recommendation": "Add a three-param case (outline escapes only at a=b=c=1) and an artwork case whose only element is <path d=\"\"/> expecting 'renders no artwork', with the regex requiring a nonempty d/points/size; fold into M18.129, which touches the same SDK testing helper next."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "argue",
+      "target": "M18.161",
+      "note": "Existing row; order it before landing batch 2 and record a1363eb's cold-setup result when ci 40774190911 completes."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.162",
+      "note": "| M18.162 | icons-lucide provenance verified and npm license declared (cp20 F2) | NFR-LIC-003, FR-LIB-007 | WHEN the icons-lucide suite runs THE SYSTEM SHALL fail unless its credited source sha256 and revision equal the corpus manifest's iconify-lucide entry and the pinned file's hash, its notices equal the pinned licence text, and every icon exists in the pinned collection; the package's license field SHALL name the artwork's licences or an argue line SHALL record why not | M18.29, ADR-0050 | todo | |"
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "target": "M18.157 / progress.md",
+      "note": "Record the quickMs cause in the next bookkeeping commit; no row unless it is real growth, then it joins M18.157's ladder cuts."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "target": "M18.129",
+      "note": "Add the three-param corner case and the empty-artwork case when M18.129 consolidates the pack test helper; amend M18.129's EARS with both cases."
+    }
+  ],
+  "planDelta": "Add M18.162 (icons-lucide provenance verified, cp20 F2); header to 148 rows. Amend M18.129 with the three-param corner and empty-artwork cases (F4). Order: wait for ci 40774190911 (macOS verify) to finish green and record its cold-setup result; land M18.161 before batch 2; then held feature commits in batches of at most 7 with a checkpoint between batches. M18.159 still awaits Huy; M18.157 has 1 failed attempt (cold time 541-661 s across the last two runs, so it sits on the limit). Learned line: 'cp20: a pack whose artwork comes from upstream is only as traceable as the test that ties its recorded hash to the pinned file; a hash copied into source is a claim, not provenance (M18.162).'"
+}
