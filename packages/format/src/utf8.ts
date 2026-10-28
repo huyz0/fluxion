@@ -5,22 +5,37 @@ const REPLACEMENT = 0xfffd;
 /** The smallest code point that needs this many continuation bytes (shorter forms of it are overlong). */
 const MIN_FOR = [0, 0x80, 0x800, 0x10000];
 
-/** The UTF-8 bytes of the code point `c`. */
-function bytesOf(c: number): number[] {
-  if (c < 0x80) return [c];
-  if (c < 0x800) return [0xc0 | (c >> 6), 0x80 | (c & 63)];
-  if (c < 0x10000) return [0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63)];
-  return [0xf0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63)];
+/** The code point at UTF-16 index `i` of `text` (a lone surrogate is U+FFFD) and how many units it spans. */
+function codePointAt(text: string, i: number): readonly [code: number, units: 1 | 2] {
+  const c = text.charCodeAt(i);
+  if (c < 0xd800 || c > 0xdfff) return [c, 1];
+  const low = text.charCodeAt(i + 1);
+  return c <= 0xdbff && low >= 0xdc00 && low <= 0xdfff ? [0x10000 + ((c - 0xd800) << 10) + (low - 0xdc00), 2] : [REPLACEMENT, 1];
 }
 
-/** The UTF-8 bytes of `text`. */
-export function encodeUtf8(text: string): Uint8Array {
-  const out: number[] = [];
-  for (const ch of text) {
-    const c = ch.codePointAt(0) ?? REPLACEMENT;
-    out.push(...bytesOf(c >= 0xd800 && c <= 0xdfff ? REPLACEMENT : c));
+/** Write the UTF-8 bytes of code point `c` into `out` at `n`; the index after them. */
+function writeCodePoint(out: Uint8Array, n: number, c: number): number {
+  if (c < 0x80) {
+    out[n] = c;
+    return n + 1;
   }
-  return Uint8Array.from(out);
+  const tail = c < 0x800 ? 1 : c < 0x10000 ? 2 : 3;
+  out[n] = ((0xff00 >> (tail + 1)) & 0xff) | (c >> (6 * tail));
+  for (let k = 1; k <= tail; k++) out[n + k] = 0x80 | ((c >> (6 * (tail - k))) & 63);
+  return n + tail + 1;
+}
+
+/** The UTF-8 bytes of `text`, written into one buffer sized for the worst case (3 bytes per UTF-16 unit): a per-character array made
+ * a 3 Mi-character library take 180 ms to hash, the bulk of a bounded-time import test's budget on a loaded runner (M18.117). */
+export function encodeUtf8(text: string): Uint8Array {
+  const out = new Uint8Array(text.length * 3);
+  let n = 0;
+  for (let i = 0; i < text.length; ) {
+    const [code, units] = codePointAt(text, i);
+    n = writeCodePoint(out, n, code);
+    i += units;
+  }
+  return out.slice(0, n);
 }
 
 /** How many continuation bytes the lead byte `b` asks for (0: it is not a lead byte). */

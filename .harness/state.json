@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M18.117 (blocks-landing): ci at 3151d30 is green on every job except cold-setup (600.5 s against 600 s). Per Huy (2026-10-28) cold-setup is made non-blocking (continue-on-error, pinned to M18.157, which wins the margin back under the unchanged limit). Closing M18.117 needs a whole green ci run on the tip that carries that change.",
-  "updated": "2026-10-28T08:50:00Z"
+  "blockedReason": "M18.117 (blocks-landing): ci at 2d1466a is green on every job except verify (ubuntu), one draw.io bounded-time test over its 10 s under load (fixed in the next commit by a faster encodeUtf8), and cold-setup (non-blocking until M18.157). Closing M18.117 needs a whole green ci run on the tip that carries the fix.",
+  "updated": "2026-10-28T10:25:00Z"
 }

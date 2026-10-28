@@ -3165,3 +3165,9 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - Locally (4 cores) the ladder is about 1700 CPU-seconds: Vitest with coverage 660, harness tests 625, api 128, attw 126, publint 45. Running off-critical steps at low priority, and Vitest's node project on threads, gained nothing. There is no single slow test to fix, so the ladder's work has to shrink.
 - Huy's call (2026-10-28): stop cold-setup from blocking landing while keeping it red. ci.yml's cold-setup job gets `continue-on-error: true`; a ci-workflow test allows that on cold-setup alone, and only while M18.157 (back under the unchanged limit, then drop the exemption and record --cold-from-ci) is open. COLD_SETUP_MAX_MS is unchanged.
 - cp17-round minors folded in: the scheduling test asserts that the root test block sets no fileParallelism or maxWorkers; M18.44's serial acceptance is narrowed to macOS and Windows.
+
+## M18.117 — draw.io bounded-time test back within its 10 s on Linux (2026-10-28)
+
+- ci run 40659614556 (2d1466a): verify (ubuntu) failed on one test: drawio-import's "amplifying entries are refused while converting, in bounded time" timed out at its own 10 s. Since 3151d30 the node project shares Linux cores with the browser project, and the test took 1.7 s alone (2.0 s under coverage).
+- Rows alone sum to 840 ms but take 1589 ms together. A microbenchmark of the 3 Mi-character svg row: format's encodeUtf8 180 ms, sha256 100 ms, XML 1 ms, JSON 3 ms. encodeUtf8 built a number[] one spread push per character, which also grows superlinearly on large text. It now writes into one Uint8Array sized for the worst case, with the same semantics (lone surrogates to U+FFFD). The test takes 0.5 s and the 16 Mi budget test 0.5 s (from 1.2 s). The 10 s timeout is unchanged.
+- New utf8.test: fixed cases of every width and lone surrogates, a fast-check property against TextEncoder over any UTF-16 string, and a round-trip on well-formed text.
