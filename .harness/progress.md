@@ -3309,3 +3309,11 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - `OpenedFile.artworkFonts` (loader-verified bytes by hash) travels in crash-recovery state (no asset record) and with each embedded source on Save.
 - M18.97 r1 F1 fixed: core `checkVersionedShapePackSubsets` (effect-free parse/rights/namespace), run by `registerSavedShapePacks` before reading any font. M18.97 r2 F1 (argued here): render `loadFontFaces` and studio opened fonts skip the reserved `fx-artwork-` namespace.
 - Tests: studio node 2 (open/save/recovery bytes; probes removing recovery or save fonts turned them red), studio browser 3 + opened-fonts 1, render browser 1 (probe without the check: red) + font-loader 1, core 1, e2e `file.artwork-fonts.spec.ts` (alias face, ordinary Inter kept, delete/undo/redo, F5, Save keeps bytes, present route, release on leaving) green on Chromium.
+
+## M18.116 — CLI renders .flux files with retained artwork fonts (2026-10-28)
+
+- `fluxion render` reads a `.flux` (zip signature) through `loadFlux` under `allowsShapePackContentLicense`; render/ssr `embedSavedShapePacks` checks packs, verifies each bound font's size and hash, registers geometry plus a fresh `artworkFonts` registry; `renderDocumentToHtml({ artworkFonts })` writes one generated `@font-face` per alias, bytes inline (alias/descriptors validated, never caller CSS).
+- `--format png`: `renderPngs(…, fonts)` waits for `document.fonts.ready` and loads each alias through the optional `Shot.evaluate`; an alias that does not load (or a page that cannot be asked) exits 1 before any photograph.
+- `convert` opens saved packs under the policy (before: refused for want of one); `.flux` → `.flux.json` refuses rather than drop saved packs.
+- Tests: render node 4 (embed, refusals, check-before-read, CSS), cli unit 2 (wait/refusal), cli e2e 4 against the built bin and Chromium (exact base64 under alias, PNG glyphs differ from the page without the face, missing asset exit 1, convert).
+- Review r1 changes-requested, fixed: F1 a `.flux` opened only in part (salvage) is refused, exit 1; container notes come back as `FLX_CLI_IO` warnings with the loader's diagnostics (tests: invalid records refused, an unlisted entry warned). F2 images are drawn as `data:` URLs from the loader's verified asset bytes (image MIME only; test).

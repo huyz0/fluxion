@@ -16,6 +16,7 @@ fluxion lint deck.flux.json --min-score 90                          # exit 1 bel
 fluxion layout deck.flux.json --score                               # overlaps, crossings, bends, displacement
 fluxion decompile deck.flux.json -o deck.flux.yaml [--format mermaid --screen <id>]
 fluxion render deck.flux.json --format png -o shots/                # needs a Chromium (else exit 2)
+fluxion render deck.flux -o deck.html                               # a .flux too: its images and exact artwork fonts embedded; missing font bytes or a partial file exit 1
 fluxion catalog --format llm                                        # what the host can draw
 ```
 

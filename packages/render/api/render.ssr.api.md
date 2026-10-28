@@ -6,6 +6,8 @@
 
 import { ArtworkFontBinding } from '@fluxion/core';
 import { ComponentType } from 'react';
+import { Diagnostic } from '@fluxion/schema';
+import { Disposable } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
 import { ElementRecord } from '@fluxion/schema';
 import { GlobalRoute } from '@fluxion/routing';
@@ -16,12 +18,39 @@ import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
+import { Result } from '@fluxion/schema';
 import { RouteContext } from '@fluxion/routing';
 import { Router } from '@fluxion/routing';
 import { ShapeDef } from '@fluxion/core';
+import { ShapePackLicensePolicy } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+import { VersionedShapePackSubset } from '@fluxion/core';
+
+// @public
+export type EmbeddedArtworkFont = {
+    readonly alias: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly bytes: Uint8Array;
+};
+
+// @public
+export type EmbeddedShapePacks = Disposable & {
+    readonly fonts: readonly EmbeddedArtworkFont[];
+    readonly artworkFonts: Registry<string, readonly ArtworkFontBinding[]>;
+};
+
+// @public
+export function embedSavedShapePacks(shapeDefs: Registry<string, ShapeDef>, packs: readonly VersionedShapePackSubset[], ports: EmbedShapePackPorts): Promise<Result<EmbeddedShapePacks, readonly Diagnostic[]>>;
+
+// @public
+export type EmbedShapePackPorts = {
+    readonly bytesOf: (sha256: string) => Uint8Array | undefined;
+    readonly policy: ShapePackLicensePolicy;
+    readonly sha256: (bytes: Uint8Array) => Promise<string>;
+};
 
 // @public
 export function renderDocumentToHtml(file: DocumentFile, options?: RenderHtmlOptions): RenderedHtml;
@@ -39,6 +68,7 @@ export type RenderHtmlOptions = {
     readonly registries?: RenderRegistries;
     readonly assets?: AssetUrls;
     readonly measurer?: TextMeasurer;
+    readonly artworkFonts?: readonly EmbeddedArtworkFont[];
 };
 
 ```

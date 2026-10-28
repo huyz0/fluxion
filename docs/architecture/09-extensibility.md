@@ -360,7 +360,15 @@ font under it, so one file cannot shadow another file's artwork face on the same
 `RenderRegistries.artworkFonts` reaches the shape view, which draws bound text through
 `aliasSvgArtworkFonts` (alias named, the text's inline font declarations dropped) and draws a
 placeholder, never a fallback face, for text without its binding. The one-file player opens
-files this way before its first paint. The CLI is M18.116.
+files this way before its first paint. Where no `FontFace` exists, `@fluxion/render/ssr`'s
+`embedSavedShapePacks(shapeDefs, packs, ports)` checks the packs, verifies every bound font's
+size and SHA-256 and registers geometry with a new `artworkFonts` registry; `renderDocumentToHtml`
+takes the returned `fonts` as `artworkFonts` and writes one generated `@font-face` per identity
+under its alias, bytes inline (M18.116). `fluxion render` opens a `.flux` this way under the shape
+content policy; `--format png` photographs only after every alias face has loaded and otherwise
+exits 1, as it does for missing bytes or a file that opens only in part; container notes are
+warnings, and images are drawn from the archive's verified bytes. `convert` opens saved packs under the same policy and
+refuses a `.flux.json` that would drop them.
 
 Hosts check first (M18.115): `checkVersionedShapePackSubsets(registry, inputs, policy)` parses,
 checks rights and finds namespaces free without effects, and `registerSavedShapePacks` runs it

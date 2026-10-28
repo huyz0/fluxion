@@ -96,8 +96,12 @@ function release(fonts: FontFaceSet, alias: string, entry: Shared): void {
   });
 }
 
-/** Why `font` cannot be registered from `bytes`, or undefined. */
-async function refusal(font: ArtworkFontBytes, bytes: Uint8Array | undefined, sha256: ArtworkFontPorts['sha256']): Promise<string | undefined> {
+/**
+ * Why `font` cannot be registered from `bytes`, or undefined.
+ *
+ * @internal
+ */
+export async function refusal(font: ArtworkFontBytes, bytes: Uint8Array | undefined, sha256: ArtworkFontPorts['sha256']): Promise<string | undefined> {
   if (bytes === undefined) return `artwork font ${font.sha256} is missing; its text is not drawn in another face`;
   if (font.alias !== artworkFontAlias(font.sha256)) return `artwork font ${font.sha256} has a foreign alias`;
   if (bytes.byteLength !== font.size || (await sha256(bytes)) !== font.sha256) return `artwork font ${font.sha256} does not match its declared bytes`;

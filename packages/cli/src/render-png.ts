@@ -13,6 +13,8 @@ import { io, type Outcome } from './command.js';
 export type Shot = {
   /** Replaces the page with `html`. */
   readonly setContent: (html: string) => Promise<void>;
+  /** Runs `fn(arg)` in the page and resolves with its result; needed to wait for embedded artwork fonts. */
+  readonly evaluate?: <R, A>(fn: (arg: A) => R | Promise<R>, arg: A) => Promise<R>;
   /** The element matching `selector`. */
   readonly locator: (selector: string) => {
     /** Photographs the element; the PNG bytes when no `path` is given. */
@@ -63,8 +65,36 @@ const peerMissing = (reason: string): Outcome => ({
   ],
 });
 
-/** Photographs each of `screens` from `html` into `dir`; the files written, or the outcome that says why not. */
-export async function renderPngs(html: string, screens: readonly string[], dir: string, launch: Launcher): Promise<readonly string[] | Outcome> {
+/** The families of `families` that did not load in the page, once its fonts are ready (all of them when the page cannot be asked). */
+async function unloaded(page: Shot, families: readonly string[]): Promise<readonly string[]> {
+  if (families.length === 0) return [];
+  if (page.evaluate === undefined) return families;
+  // runs in the page (serialized by Playwright), where the CLI's Node types do not describe the DOM
+  return page.evaluate(async (names: readonly string[]) => {
+    type PageFonts = { readonly ready: Promise<unknown>; load(font: string, text: string): Promise<readonly { readonly status: string }[]> };
+    const set = (globalThis as unknown as { readonly document: { readonly fonts: PageFonts } }).document.fonts;
+    await set.ready;
+    const missing: string[] = [];
+    for (const name of names) {
+      const faces = await set.load(`16px "${name}"`, 'A').catch(() => []);
+      if (faces.length === 0 || faces.some((face) => face.status !== 'loaded')) missing.push(name);
+    }
+    return missing;
+  }, families);
+}
+
+/**
+ * Photographs each of `screens` from `page` (its HTML, and the private families of the exact artwork fonts it embeds) into `dir`; the
+ * files written, or the outcome that says why not. Those fonts must all load before the first photograph: one that does not refuses the render
+ * (exit 1), so no artwork text is photographed in another face (ADR-0192).
+ */
+export async function renderPngs(
+  page: string | { readonly html: string; readonly fonts: readonly string[] },
+  screens: readonly string[],
+  dir: string,
+  launch: Launcher,
+): Promise<readonly string[] | Outcome> {
+  const { html, fonts } = typeof page === 'string' ? { html: page, fonts: [] } : page;
   let browser: Browser;
   try {
     browser = await launch();
@@ -73,12 +103,14 @@ export async function renderPngs(html: string, screens: readonly string[], dir: 
   }
   try {
     await mkdir(dir, { recursive: true });
-    const page = await browser.newPage({ deviceScaleFactor: 1 });
-    await page.setContent(html);
+    const shot = await browser.newPage({ deviceScaleFactor: 1 });
+    await shot.setContent(html);
+    const missing = await unloaded(shot, fonts);
+    if (missing.length > 0) return io(`artwork font ${missing.join(', ')} could not be loaded; its text is not drawn in another face`, ['argv']);
     const files: string[] = [];
     for (const id of screens) {
       const file = join(dir, `${id}.png`);
-      await page.locator(`[data-screen-id="${id}"]`).screenshot({ path: file });
+      await shot.locator(`[data-screen-id="${id}"]`).screenshot({ path: file });
       files.push(file);
     }
     return files;

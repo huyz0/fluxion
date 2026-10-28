@@ -60,6 +60,7 @@ export type ScreenImageResult = {
 // @public
 export type Shot = {
     readonly setContent: (html: string) => Promise<void>;
+    readonly evaluate?: <R, A>(fn: (arg: A) => R | Promise<R>, arg: A) => Promise<R>;
     readonly locator: (selector: string) => {
         readonly screenshot: (options: {
             readonly path?: string;

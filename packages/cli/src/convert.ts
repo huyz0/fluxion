@@ -1,13 +1,15 @@
 // `fluxion convert <input> <output>` (FR-FIL-003, FR-CLI-001, ADR-0155): a `.flux` becomes a `.flux.html` and a `.flux.html` becomes the `.flux` it
 // holds. The archive is moved unchanged, so the round trip is byte-identical. Nothing in the input executes or is trusted: the archive is
 // verified by its recorded hash (`readFluxHtml`) or opened by the loader (`loadFlux`) before it is embedded. A `.flux` also becomes a
-// `.flux.json` and back (FR-FIL-005, ADR-0162), with `--assets external` writing the assets beside the JSON.
+// `.flux.json` and back (FR-FIL-005, ADR-0162), with `--assets external` writing the assets beside the JSON. Saved shape packs are
+// opened under the shape content policy (ADR-0184), as every host opens them.
 
 import { readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type ContentHasher, loadFlux, readFluxHtml, readFluxJson, sha256Hex, writeFlux, writeFluxHtml, writeFluxJson } from '@fluxion/format';
+import { allowsShapePackContentLicense } from '@fluxion/sdk';
 import { type Command, internal, io, type Outcome, usage } from './command.js';
 import { CLI_VERSION } from './version.js';
 
@@ -47,7 +49,7 @@ const why = (e: unknown): string => (e instanceof Error ? e.message : String(e))
 
 /** `.flux` bytes → the text of a `.flux.html` that embeds them. */
 async function toHtml(flux: Uint8Array, fallbackTitle: string, input: string): Promise<{ readonly html: string } | Outcome> {
-  const loaded = await loadFlux(flux, { hasher });
+  const loaded = await loadFlux(flux, { hasher, shapePackLicensePolicy: allowsShapePackContentLicense });
   if (!loaded.ok) return io(`cannot convert ${input}: ${loaded.error.message}`, ['argv']);
   const player = await playerScript();
   if (player === undefined) return internal('the one-file player is not built: run the build of @fluxion/player-inline');
@@ -66,8 +68,11 @@ async function toHtml(flux: Uint8Array, fallbackTitle: string, input: string): P
 
 /** `.flux` bytes → a `.flux.json` text and the asset files to write beside it. */
 async function toJson(flux: Uint8Array, input: string, output: string, assets: 'inline' | 'external'): Promise<Produced | Outcome> {
-  const loaded = await loadFlux(flux, { hasher });
+  const loaded = await loadFlux(flux, { hasher, shapePackLicensePolicy: allowsShapePackContentLicense });
   if (!loaded.ok) return io(`cannot convert ${input}: ${loaded.error.message}`, ['argv']);
+  // a .flux.json has no place for saved shape packs or their retained fonts: refused rather than written without them
+  if (loaded.value.shapePacks.length > 0)
+    return io(`cannot convert ${input}: its saved shape packs cannot be kept in a .flux.json; convert it to a .flux.html instead`, ['argv']);
   const { document, source } = loaded.value;
   const name = output.replace(/^.*[\\/]/, '').replace(/\.flux\.json$/i, '');
   const written = await writeFluxJson({

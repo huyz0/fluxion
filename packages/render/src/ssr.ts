@@ -7,6 +7,7 @@ import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { LIGHT_THEME, type Theme } from '@fluxion/theme';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { artworkFontFaceCss, type EmbeddedArtworkFont } from './artwork-font-embed.js';
 import type { AssetUrls } from './assets.js';
 import { builtinRegistries } from './builtins.js';
 import { CONTENT_CSS } from './content-css.js';
@@ -32,6 +33,8 @@ export type RenderHtmlOptions = {
   readonly assets?: AssetUrls;
   /** Measures text for `shrink` (default in a browser: the page's canvas measurer; none on a server). */
   readonly measurer?: TextMeasurer;
+  /** Exact artwork fonts the page embeds as `@font-face` under their private aliases (`embedSavedShapePacks`, ADR-0192). */
+  readonly artworkFonts?: readonly EmbeddedArtworkFont[];
 };
 
 /**
@@ -97,6 +100,7 @@ export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOpti
     `<title>${escapeHtml(title?.title ?? 'Fluxion document')}</title>`,
     `<style data-fx-content>${CONTENT_CSS}</style>`,
     `<style>${PAGE_CSS}</style>`,
+    ...(options.artworkFonts?.length ? [`<style data-fx-artwork-fonts>${artworkFontFaceCss(options.artworkFonts)}</style>`] : []),
     '</head>',
     '<body>',
     `<main class="fx-document">${screens.join('')}</main>`,
@@ -106,3 +110,5 @@ export function renderDocumentToHtml(file: DocumentFile, options: RenderHtmlOpti
   ].join('\n');
   return { html, screens: ids };
 }
+
+export { type EmbeddedArtworkFont, type EmbeddedShapePacks, type EmbedShapePackPorts, embedSavedShapePacks } from './artwork-font-embed.js';

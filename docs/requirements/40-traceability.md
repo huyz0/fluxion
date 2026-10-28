@@ -57,7 +57,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-011 | C | R8 | M32 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.import-image.spec.ts` +6 |
 | FR-AST-002 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/image-codec.browser.test.ts` +3 |
-| FR-AST-003 | S | R3 | M18 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/artwork-fonts.test.ts` +14 |
+| FR-AST-003 | S | R3 | M18 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/artwork-fonts.test.ts` +17 |
 | FR-AST-004 | S | R4 | M23 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-005 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.remove-unused.spec.ts` +3 |
 | FR-AST-006 | S | R2 | M15 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +3 |
@@ -80,7 +80,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.panel.spec.ts` +3 |
 | FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.drag-insert.spec.ts`, `packages/editor/src/library/library-insert.test.ts` |
 | FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/artwork.test.ts` +16 |
-| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/artwork-fonts.test.ts` +35 |
+| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/artwork-fonts.test.ts` +37 |
 | FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-iconify.test.ts` +4 |
 | FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-drawio.test.ts` +4 |
 | FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/pack-encode.test.ts` +17 |
@@ -277,7 +277,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AI-009 | M | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/eval/eval.test.ts` +2 |
 | FR-AI-010 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `e2e/dsl.streaming-render.spec.ts` +5 |
 | FR-AI-011 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/docs/src/guide-drift.test.ts`, `tests/harness/authoring-guide.test.mjs` |
-| FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.convert.test.ts` +6 |
+| FR-CLI-001 | M | R0 | M4 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/e2e/cli.artwork-fonts.test.ts` +7 |
 | FR-CLI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/commands.test.ts` +3 |
 | FR-CLI-003 | M | R6 | M26 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-CLI-004 | S | R7 | M31 | [20-ai-authoring.md](20-ai-authoring.md) | — |
@@ -327,7 +327,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +12 |
-| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +66 |
+| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +67 |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts` +2 |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/ai/adapters.test.ts` +5 |

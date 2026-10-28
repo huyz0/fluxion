@@ -54,4 +54,37 @@ describe('renderPngs (FR-AI-006, ADR-0036)', () => {
     expect(r).toMatchObject({ exitCode: 1, diagnostics: [{ code: 'FLX_CLI_IO' }] });
     expect(log).toEqual(['closed']);
   });
+
+  it('FR-AST-003: an embedded artwork font that does not load refuses the render before any photograph (M18.116)', async () => {
+    const alias = `fx-artwork-${'a'.repeat(64)}`;
+    for (const evaluate of [async () => [alias], undefined]) {
+      const log: string[] = [];
+      const browser: Browser = {
+        ...fakeBrowser(log),
+        newPage: async () => ({ ...(await fakeBrowser(log).newPage({ deviceScaleFactor: 1 })), ...(evaluate ? { evaluate: evaluate as never } : {}) }),
+      };
+      const r = await renderPngs({ html: '<p>x</p>', fonts: [alias] }, ['a'], join(dir, 'unloaded'), async () => browser);
+      expect(r).toMatchObject({ exitCode: 1, diagnostics: [{ code: 'FLX_CLI_IO', message: expect.stringContaining(alias) }] });
+      expect(log.filter((l) => l.startsWith('shot:'))).toEqual([]);
+      expect(log.at(-1)).toBe('closed');
+    }
+  });
+
+  it('FR-AST-003: once every embedded artwork font has loaded, the screens are photographed (M18.116)', async () => {
+    const log: string[] = [];
+    const asked: unknown[] = [];
+    const browser: Browser = {
+      ...fakeBrowser(log),
+      newPage: async () => ({
+        ...(await fakeBrowser(log).newPage({ deviceScaleFactor: 1 })),
+        evaluate: (async (_fn: unknown, arg: unknown) => {
+          asked.push(arg);
+          return [];
+        }) as never,
+      }),
+    };
+    const files = await renderPngs({ html: '<p>x</p>', fonts: ['fx-artwork-x'] }, ['a'], join(dir, 'loaded'), async () => browser);
+    expect(files).toEqual([join(dir, 'loaded', 'a.png')]);
+    expect(asked).toEqual([['fx-artwork-x']]);
+  });
 });
