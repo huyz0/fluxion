@@ -1,0 +1,73 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp19",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..7e02778c1d56ee3772412e3beda5400cd79da7e1",
+  "reviewer": "claude:independent-subagent:m18-cp19",
+  "verdict": "changes-requested",
+  "reviewedDelta": "d3060312909a4b605cd643f33ab06fb4826cc7f8..7e02778c1d56ee3772412e3beda5400cd79da7e1 (964bb20 M18.43 cp18 record, 439cf97 + 7f55f2d M18.158, 7e02778 M18.155 + ADR-0205)",
+  "cp18DispositionsCheck": "F1 (reopen) -> split into M18.158 (blocks-landing; done at 439cf97, closed at 7f55f2d) and M18.159 (time-only exemption, todo, awaiting Huy's OK). The split is fine; M18.158's FAIL-detail tail is real and pinned (both slice bounds, PASS/::error:: before the block, 80-line cap). Its close states a deviation: the 3bb2bc6 cause is not named and nothing was fixed, because the next cold run (40726991261, 439cf97) was green. That is honest about the row's 'from the first log that shows it' wording, but it leaves the obligation with no owner; see F2. F2 (argue) -> review-argued.txt:147 has the landing rule; it is now triggered (F1) and has not been acted on. F3 (argue) -> review-argued.txt:148; M18.155 landed before any held lockfile commit, and state.json has rowAttempts {M18.157: 0}. F4 (argue) -> review-argued.txt:145-146 and :149 added; progress.md's utf8 line corrected. M18.md Learned line for cp18 present. Honoured, except the F2 landing rule (see F1).",
+  "questions": {
+    "coherence": "Coherent. M18.155 reuses M18.153's remap (one RENAMES table over backlog and budget record, one restage helper) rather than a second mechanism; ADR-0205 amends ADR-0195 narrowly (one JSON line of one file) and contentIds() is threaded through all three consumers (check-reviewed, check-digest, review.mjs record). failureTail() is one function used for both timed and cold paths.",
+    "specFidelity": "M18.155 meets its EARS: land.test lands a two-commit stack whose second records the budget at the first onto a moved remote; budget.test refuses off-history and unknown commits locally and not in CI. M18.158's first clause is met; its second ('cause recorded ... fixed first if by status') was closed as a stated deviation. M18.159 still waits on the owner. The 35 not-done FR rows are untouched in this delta (harness only).",
+    "standardsDrift": "Subjects, trailers and review rounds conform; no test removed; thresholds and baselines unchanged. Process drift: 7e02778 was pushed (ci run 40741202792 created 18:01:23Z) after main's ci run 40736474821 at 7f55f2d had concluded failure (17:54:15Z), with no Fixes-ci trailer and no row for it; last-ci --offline at 7e02778 prints 'RED ci failure at 7f55f2d ... none declares Fixes-ci: 40736474821; fix main's CI before the next task' (exit 1 = fix first). No blocks-landing row was open, so the harness-path exception did not apply.",
+    "gateHonesty": "Ran in the cp13 worktree at 7e02778: check-digest --head --full-history passes (128 M18 task commits, 4.2 s, so contentIds' double diff is cheap); node --test review.test + land.test 40/40; budget.test 21/21; check-budget prints pending-ci as expected. Mutants imagined: (1) failureTail without the PASS/SKIP filter is killed by the doesNotMatch(/PASS (step|lint)|::error/); (2) contentIds returning only the current id is killed by review.test's pre-0205 verdict case; (3) dropping the !inCi guard on the ancestry check is killed by budget.test's 'not in CI' case. The CI gates are honest about run conclusion, but ci-ok, last-ci and check-ci-evidence still read only the run conclusion, and cold-setup is continue-on-error: at 7e02778 the cold step failed again (18:01:41-18:12:06, 625 s wall, so about 617 s measured, probably by time; the job log blob returns 403 through this sandbox's proxy, so the blame line was not read here) and nothing in the harness reports it (F2).",
+    "architecture": "Harness and ADR only. ADR-0205 is the right vehicle for changing the review identity (non-negotiable 6 analogue, ADR-0195 amended with status note). The accepted weakening (a hand-edit of only budget.json's commit value is not review-bound) is stated, and check-budget's ancestry check covers it locally; CI exempts it, which is acceptable because the review gate itself runs locally. The legacy identity is accepted indefinitely; it only differs for a budget-commit-line change, so it opens no loophole. ADR index row 0205 is appended after 0026/0027 rather than in order (pre-existing pattern).",
+    "planHealth": "43 planned, 145 rows (3.4x), all growth in this delta is harness rows from checkpoint findings. Main is red at 7f55f2d and the next run (7e02778) has cold-setup red again and Windows/macOS verify still running at review time. The roughly 25 held feature commits must not start landing until main is green and the Linux contention flake has an owner and fix (F1). The cp18 tension is now concrete: the cp18 F2 rule says a Linux timeout is fixed by serial browser files on Linux, which M18.117 measured as pushing cold setup over COLD_SETUP_MAX_MS (M18.157). That choice should be made once, deliberately, not per batch. Batches of at most 7 with a checkpoint between them remain right; each batch needs a green ci run including a read cold-setup result."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "vitest.config.ts",
+      "line": 81,
+      "evidence": "ci run 40736474821 at 7f55f2d, conclusion failure: verify (ubuntu) job 122986273145 failed on packages/format/src/drawio-import.test.ts 'amplifying entries are refused while converting, in bounded time' (Test timed out in 10000ms), the same test that failed at 2d1466a (progress.md:3171, 1.7 s alone); verify (windows) job 122986273186 failed on packages/player-inline/src/inline.browser.test.ts (3 tests: expected 'pending' to be 'settled', expected false to be true). 7f55f2d changed only a comment and a harness test. 7e02778 pushed at 18:01 after that run concluded at 17:54, no Fixes-ci trailer, no row. last-ci --offline: 'RED ci failure at 7f55f2d (run 40736474821) ... none declares Fixes-ci'. review-argued.txt:147 (cp18 F2) says a Linux timeout after landing is fixed by serial browser files on Linux or faster code, counted against M18.157 under ADR-0176.",
+      "problem": "Main is red, the red is the Linux contention flake cp18 F2 predicted (second occurrence on verify, plausibly also the unexplained 3bb2bc6 cold verify:test red), plus a Windows player-inline browser flake, and the next task was pushed over it instead of fixing it. Landing feature batches on a red, flaky main makes every batch's ci result unreadable and invites a timeout raise.",
+      "suggestion": "Before the first landing batch: add a row carrying `blocks-landing` and a Fixes-ci: 40736474821 commit. For Linux, choose once between restoring fileParallelism: false on Linux (accepting that M18.157 then needs a different cut) and making the bounded-time import path faster or isolating that file from the browser group; never raise the 10 s. For Windows, diagnose inline.browser's pending/settled waits (they were already raised to 15 s at progress.md:2022, so do not raise again). Record the attempt against M18.157's ADR-0176 counter, and note in progress.md that 7e02778 was pushed over a red main.",
+      "disposition": "reopen",
+      "proposed_row": "| M18.160 | Main green again: Linux drawio bounded-time and Windows player-inline browser failures at 7f55f2d (cp19 F1) | HARNESS, NFR-DX-003, FR-LIB-006, FR-FIL-002 | WHEN ci runs on main THE SYSTEM SHALL pass verify on all three OSes with drawio-import's 'amplifying entries are refused while converting, in bounded time' and inline.browser's tests unchanged in assertions and timeouts, by serial browser files on Linux or by faster or isolated work, never by a raised timeout or a removed test; the fix commit SHALL carry `Fixes-ci: 40736474821`, the row SHALL carry `blocks-landing` until check-ci-evidence records a green three-OS run for its tip, and progress.md SHALL state the Linux choice and its effect on cold-setup time (M18.157) | M18.117, M18.157 | todo | |"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": ".github/workflows/ci.yml",
+      "line": 69,
+      "evidence": "M18.158 closed at 7f55f2d with the 3bb2bc6 cause 'an unexplained one-off' and no owner for the next occurrence; M18.159 (time-only exemption) is todo awaiting Huy. ci run 40741202792 at 7e02778: cold-setup job 123002942450 conclusion failure, step 'cold setup within COLD_SETUP_MAX_MS' 18:01:41-18:12:06 (625 s). last-ci.mjs, check-ci-evidence.mjs and land.mjs contain no reference to cold-setup (grep -i cold: none), so they report only the run conclusion, which continue-on-error keeps green.",
+      "problem": "Until M18.159 is approved and built, a by-status cold failure (a fresh-clone install or setup break from a held commit adding packs or dependencies) lands silently, and nothing records which reason each red cold run had. The obligation M18.158 left open ('record the cause from the first log that shows it') has no row, and the cp18 landing rule depends on someone opening each job by hand.",
+      "suggestion": "Without changing what fails the run (so no owner OK is needed): make last-ci report the cold-setup job's conclusion and, when readable, its 'budget: cold setup failed by status|time' line for main's last run, and make the landing batch procedure require that line to be recorded in progress.md. Read run 40741202792's blame line now and record it.",
+      "disposition": "reopen",
+      "proposed_row": "| M18.161 | last-ci reports cold-setup's own result while it is continue-on-error (cp19 F2) | HARNESS, NFR-DX-001 | WHILE ci's cold-setup job is continue-on-error THE SYSTEM SHALL make last-ci print main's last cold-setup job conclusion and, when the log is readable, its `budget: cold setup failed by ...` line, and SHALL exit 1 when that line says 'by status', leaving a by-time failure as a printed warning; a harness test with stubbed jobs SHALL prove a by-status cold red under a green run exits 1, a by-time one exits 0 with the warning, and an unreadable log reports unknown | M18.158, M18.159 | todo | |"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "scripts/harness/land.mjs",
+      "line": 80,
+      "evidence": "renameBudgetCommit renames only shas in `rewritten`, i.e. commits this landing re-applies. 7e02778 changed budget.json's commit line 8d27ab1 -> 72c0152. A held commit that re-records the budget (a pnpm-lock.yaml change) edits the same line from 8d27ab1, so its cherry-pick conflicts on that line. check-budget's new ancestry check (check-budget.mjs:279-288) runs in the staged ladder (precommit.mjs:275), so held stacks not yet rebased onto 7e02778 now fail their own staged ladder, because 8d27ab1 is not on their history.",
+      "problem": "Expected and correct behaviour, but it will surface in the landing batches as a conflict or a red staged ladder that looks like a land.mjs bug, and the tempting fix (hand-editing the commit value, which ADR-0205 leaves unbound by review) is exactly the weak spot ADR-0205 names.",
+      "suggestion": "Landing note: rebase held stacks onto 7e02778 before working on them; for any held commit touching .harness/budget.json, resolve by re-recording (check-budget --record --cold-pending) on the rebased parent, not by editing the commit value, and get the re-record reviewed. No row unless it happens.",
+      "disposition": "argue",
+      "proposed_row": ""
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.160",
+      "note": "blocks-landing; Fixes-ci: 40736474821; one deliberate Linux scheduling choice weighed against M18.157; no timeout raise; record that 7e02778 was pushed over a red main."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.161",
+      "note": "Report-only change to last-ci; no owner OK needed. Record run 40741202792's cold blame line now."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "target": "M18.43 bookkeeping",
+      "note": "Landing note in review-argued.txt: rebase held stacks onto 7e02778 first; budget conflicts are resolved by re-recording, never by editing the commit value."
+    }
+  ],
+  "planDelta": "Add M18.160 (blocks-landing, main green again, cp19 F1) and M18.161 (last-ci reports cold-setup's own result, cp19 F2). Header to 147 rows. Order: (1) M18.160 to a green three-OS ci with evidence, choosing the Linux scheduling once and noting its effect on M18.157; (2) M18.161 before or with the first batch; (3) then held feature commits in batches of at most 7, each followed by a green ci run whose cold-setup line is recorded, with a checkpoint between batches; held stacks are rebased onto 7e02778 first and budget.json conflicts are re-recorded. M18.159 still awaits Huy; M18.156 and M18.157 can proceed. Learned line: 'cp19: a landing rule argued at one checkpoint (fix a Linux timeout before the next batch) has to be acted on when it fires; the next task went out over a red main the rule had predicted.'"
+}
