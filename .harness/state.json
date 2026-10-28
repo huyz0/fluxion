@@ -1,9 +1,9 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.43",
+  "currentTask": "M18.154",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": "M18.117 (blocks-landing): all three verify jobs and osv-scanner are green on main since the qs override, but ci's cold-setup job fails on 7 of the last 12 main runs (620-685 s on failures against the 600 s COLD_SETUP_MAX_MS, 465-505 s on passes; tip b89ad89 took 648 s with no queue). It is not runner backlog (cp17 F1). M18.154 makes check-budget --cold name its slow phase; the fix then lands as M18.117 task commits, without raising the limit. Closing M18.117 needs a whole green ci run on the exact tip.",
-  "updated": "2026-10-28T00:36:49Z"
+  "updated": "2026-10-28T00:42:42Z"
 }

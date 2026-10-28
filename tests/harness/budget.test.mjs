@@ -358,6 +358,20 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.match(failed.stderr, /cold run failed[\s\S]*fake verify failed/);
   });
 
+  it('--cold prints each phase and names the failing ladder step (M18.154)', () => {
+    sb.cleanup();
+    sb = coldSandbox();
+    const ladder = 'PASS lint (1200ms)\nFAIL test (3400ms)';
+    const ok = sb.node('scripts/gates/check-budget.mjs', ['--cold'], { env: fakeEnv(sb, { FAKE_LADDER_OUTPUT: 'PASS lint (1200ms)' }) });
+    assert.equal(ok.status, 0, out(ok));
+    for (const phase of ['clone', 'install', 'setup', 'verify']) assert.match(ok.stdout, new RegExp(`^budget: cold phase ${phase} \\d+ ms`, 'm'));
+    assert.match(ok.stdout, /^budget: cold phase verify:lint 1200 ms$/m);
+    const failed = sb.node('scripts/gates/check-budget.mjs', ['--cold'], { env: fakeEnv(sb, { FAKE_PNPM_FAIL: 'verify', FAKE_LADDER_OUTPUT: ladder }) });
+    assert.equal(failed.status, 1, out(failed));
+    assert.match(failed.stdout, /^budget: cold phase verify:test 3400 ms \(failed\)$/m);
+    assert.match(failed.stderr, /cold setup failed by status in phase verify:test after 3400 ms/);
+  });
+
   it("NFR-DX-002: the recorded staged time is the worst-case commit's", () => {
     const all = readdirSync(join(REPO, 'tests/harness'))
       .filter((f) => f.endsWith('.test.mjs'))
@@ -392,6 +406,8 @@ const real = (p) => p && join(realpathSync(dirname(p)), basename(p));
 const call = { args, cwd: process.cwd(), rawStore: store, store: real(store), browsers: real(process.env.PLAYWRIGHT_BROWSERS_PATH), storeExisted: existsSync(store),
   lockfile: lock && createHash('sha256').update(lock).digest('hex'), budget: budget && JSON.parse(budget) };
 appendFileSync(process.env.FAKE_PNPM_LOG, JSON.stringify(call) + '\\n');
+// the verify ladder's step lines, as precommit.mjs prints them (M18.154)
+if (args[0] === 'verify' && process.env.FAKE_LADDER_OUTPUT) console.log(process.env.FAKE_LADDER_OUTPUT);
 if (args[0] === process.env.FAKE_PNPM_FAIL) {
   console.error('fake ' + args[0] + ' failed');
   process.exit(1);

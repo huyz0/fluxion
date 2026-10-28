@@ -26,6 +26,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runSource } from './ci-runs.mjs';
+import { coldReport, runPhases } from './cold-phases.mjs';
 import { gateLatency, validLatency } from './gate-latency.mjs';
 import { lockfileWorkspaceOnly } from './ladder-scope.mjs';
 import { git, repoPath, run } from './lib.mjs';
@@ -62,8 +63,11 @@ function coldSetup(provisional) {
   const dir = mkdtempSync(join(tmpdir(), 'fluxion-cold-'));
   try {
     // core.autocrlf=false: the clone's bytes (lockfile hash included) equal the repo's on every OS (M2.28)
+    const cloneStart = Date.now();
     const clone = git(['clone', '--quiet', '--no-hardlinks', '--config', 'core.autocrlf=false', repoPath(), join(dir, 'repo')]);
     if (clone.status !== 0) return { ms: 0, ok: false, tail: clone.stderr };
+    // reported, not counted: the measured cold setup starts at the install (NFR-DX-001)
+    const cloneMs = Date.now() - cloneStart;
     const cwd = join(dir, 'repo');
     // a hook's GIT_DIR / GIT_INDEX_FILE must not point the clone's git and pnpm at this repo
     const clean = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
@@ -84,15 +88,19 @@ function coldSetup(provisional) {
       pnpm_config_store_dir: join(dir, 'store'),
       PLAYWRIGHT_BROWSERS_PATH: join(dir, 'browsers'),
     };
-    return timed(() => {
-      for (const args of [['install', '--frozen-lockfile', '--store-dir', join(dir, 'store')], ['run', 'setup'], ['verify']]) {
-        const r = run('pnpm', args, { cwd, env });
-        if (r.status !== 0) return r;
-      }
-      // proof the install downloaded into the empty store instead of reusing the machine's
-      if (!existsSync(join(dir, 'store'))) return { status: 1, stdout: '', stderr: 'the cold install did not use the temporary store' };
-      return { status: 0, stdout: '', stderr: '' };
-    }, lockfile);
+    const pnpm = (name, args) => ({ name, run: () => run('pnpm', args, { cwd, env }) });
+    const phases = runPhases([
+      pnpm('install', ['install', '--frozen-lockfile', '--store-dir', join(dir, 'store')]),
+      pnpm('setup', ['run', 'setup']),
+      pnpm('verify', ['verify']),
+    ]);
+    const last = phases.at(-1).result;
+    const tail = `${last.stdout ?? ''}\n${last.stderr ?? ''}`.trim().split(/\r?\n/).slice(-15).join('\n');
+    const measured = { ms: phases.reduce((sum, p) => sum + p.ms, 0), lockfile, phases, cloneMs };
+    if (phases.some((p) => !p.ok)) return { ...measured, ok: false, tail };
+    // proof the install downloaded into the empty store instead of reusing the machine's
+    if (!existsSync(join(dir, 'store'))) return { ...measured, ok: false, tail: 'the cold install did not use the temporary store' };
+    return { ...measured, ok: true, tail };
   } finally {
     rmSync(dir, { recursive: true, force: true, maxRetries: 3 });
   }
@@ -110,6 +118,13 @@ const limitProblems = (record, keys = Object.keys(LIMITS)) =>
 // stand-ins at the limits, as in --record, because no quick/staged run happens here
 if (argv.includes('--cold')) {
   const cold = coldSetup({ recordedAt: new Date().toISOString(), quickMs: LIMITS.quickMs, stagedMs: LIMITS.stagedMs, coldSetupMs: LIMITS.coldSetupMs });
+  // where the time went, on every run, and which phase to blame when it fails (M18.154)
+  if (cold.phases) {
+    const report = coldReport(cold.phases, LIMITS.coldSetupMs);
+    console.log(`budget: cold phase clone ${cold.cloneMs} ms (not counted)`);
+    for (const line of report.lines) console.log(line);
+    if (report.blame) console.error(report.blame);
+  }
   if (!cold.ok) console.error(`budget: cold run failed\n${cold.tail}`);
   const problems = limitProblems({ coldSetupMs: cold.ok ? cold.ms : null }, ['coldSetupMs']);
   for (const p of problems) console.error(`budget: ${p}`);
