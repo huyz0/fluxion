@@ -39,7 +39,7 @@ test('HARNESS: Windows serializes existing test projects without changing invent
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
-test('NFR-DX-001: Linux runs browser test files in parallel beside the node project; macOS keeps them serial (M18.117)', () => {
+test('NFR-DX-003: browser test files run serially on Linux as on macOS, after the node project (M18.160, cp19 F1)', () => {
   const result = spawnSync(
     process.execPath,
     [
@@ -57,17 +57,13 @@ test('NFR-DX-001: Linux runs browser test files in parallel beside the node proj
     try {
       const linux = await config('linux'), mac = await config('darwin');
       const [node, browser] = linux.test.projects.map(p => p.test);
-      // one scheduling group: neither project restricts parallelism or orders itself after the other
-      for (const p of [node, browser]) {
-        assert.equal(p.fileParallelism, undefined, p.name);
-        assert.equal(p.sequence, undefined, p.name);
-        assert.equal(p.maxWorkers, undefined, p.name);
-      }
-      // nor does the root test block the projects extend
+      // side by side, Linux's browser files starved the node project's bounded-time tests (drawio-import at 10 s, twice)
+      assert.equal(browser.fileParallelism, false);
+      assert.equal(node.fileParallelism, undefined);
+      for (const p of [node, browser]) assert.equal(p.sequence, undefined, p.name);
       assert.equal(linux.test.fileParallelism, undefined);
       assert.equal(linux.test.maxWorkers, undefined);
-      assert.equal(mac.test.projects[1].test.fileParallelism, false);
-      assert.equal(mac.test.projects[0].test.fileParallelism, undefined);
+      for (let i = 0; i < 2; i++) assert.deepEqual(mac.test.projects[i].test.fileParallelism, linux.test.projects[i].test.fileParallelism);
       for (const key of ['coverage', 'testTimeout', 'hookTimeout']) assert.deepEqual(mac.test[key], linux.test[key]);
     } finally { Object.defineProperty(process, 'platform', platform); }
   `,
