@@ -62,11 +62,10 @@ jobs:
   # NFR-DX-001: a fresh clone set up from nothing (pnpm i --frozen-lockfile, pnpm run setup, pnpm verify
   # into an empty pnpm store and browser cache) within COLD_SETUP_MAX_MS; check-budget --cold measures
   # it the way --record does locally and fails above the threshold
-  # continue-on-error until M18.157: on the 4-core runner the ladder's work sits at the limit (600.5 s on
-  # 3151d30). The job still fails, visibly, but does not fail the run; Huy's call (2026-10-28), no limit change
+  # while M18.157 is open a run over the limit is a warning (check-budget --cold exits 0 and annotates it);
+  # a failure by status fails the run (M18.159, Huy's call 2026-10-28; no limit change)
   cold-setup:
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

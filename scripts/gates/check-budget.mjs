@@ -6,7 +6,8 @@
 //                               setup (fresh local clone: pnpm i --frozen-lockfile, pnpm run setup,
 //                               pnpm verify); takes minutes
 //   check-budget.mjs --cold     measure only the cold setup, the same isolated way, and fail when it
-//                               fails or takes over COLD_SETUP_MAX_MS; writes nothing (ci.yml cold-setup)
+//                               fails or takes over COLD_SETUP_MAX_MS (only a warning while M18.157 is
+//                               open, M18.159); writes nothing (ci.yml cold-setup)
 //   check-budget.mjs --record --cold-from-ci <sha>
 //                               as --record, but the cold setup is the duration of the cold-setup step of
 //                               <sha>'s green ci run (ADR-0145), so a machine that cannot download
@@ -128,6 +129,15 @@ const limitProblems = (record, keys = Object.keys(LIMITS)) =>
     return key !== 'quickMs' && v > LIMITS[key] ? [`${key} ${v} ms > ${LIMITS[key]} ms`] : [];
   });
 
+// the backlog row that brings the cold setup back under COLD_SETUP_MAX_MS; until it is done a by-time overrun is a
+// warning, not a failure (Huy's call, 2026-10-28; M18.159). No backlog, or the row done or gone, means no exemption.
+const COLD_TIME_ROW = 'M18.157';
+function coldTimeExempt() {
+  const backlog = repoPath('docs', 'backlog', 'current.md');
+  if (!existsSync(backlog)) return false;
+  return new RegExp(`^\\| ${COLD_TIME_ROW.replace('.', '\\.')} \\|.*\\| (?:todo|doing) \\|`, 'm').test(readFileSync(backlog, 'utf8'));
+}
+
 // CI (NFR-DX-001): a fresh runner measures the cold setup itself; the clone's budget step sees
 // stand-ins at the limits, as in --record, because no quick/staged run happens here
 if (argv.includes('--cold')) {
@@ -144,7 +154,11 @@ if (argv.includes('--cold')) {
   for (const p of problems) console.error(`budget: ${p}`);
   if (!problems.length)
     console.log(`budget: cold setup ${cold.ms} ms <= ${LIMITS.coldSetupMs} ms (empty store: pnpm i --frozen-lockfile, pnpm run setup, pnpm verify)`);
-  process.exit(problems.length ? 1 : 0);
+  // a failure by status (install, setup, empty store, a verify step) always fails; while the row that wins back
+  // cold-setup's margin is open, only a run over the unchanged limit is exempt, as a visible warning (M18.159)
+  const exempt = cold.ok && problems.length > 0 && coldTimeExempt();
+  if (exempt) console.log(`::warning title=cold setup over budget::cold setup ${cold.ms} ms > ${LIMITS.coldSetupMs} ms, exempt while ${COLD_TIME_ROW} is open`);
+  process.exit(problems.length && !exempt ? 1 : 0);
 }
 
 // ci.yml's cold-setup job runs check-budget --cold in this step; its duration is the measurement

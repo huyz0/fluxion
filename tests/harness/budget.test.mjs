@@ -1,7 +1,7 @@
 // NFR-DX-001 / NFR-DX-002: recorded gate latencies (cold setup, quick, staged) stay within the thresholds.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { chmodSync, existsSync, readdirSync, readFileSync } from 'node:fs';
+import { chmodSync, existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { delimiter, dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { harnessFiles, packagingNeeded, testScope } from '../../scripts/gates/ladder-scope.mjs';
@@ -414,6 +414,35 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.doesNotMatch(failed.stderr, /PASS (step|lint)|::error/, 'the passing steps and the annotation before the FAIL block are left out');
     assert.match(failed.stderr, /detail line 77\n/);
     assert.doesNotMatch(failed.stderr, /detail line 78\b/, 'at most 80 lines');
+  });
+
+  it('NFR-DX-001: --cold fails by status always and exempts a by-time overrun only while M18.157 is open (M18.159)', () => {
+    sb.cleanup();
+    sb = coldSandbox();
+    // a 1 ms limit makes every cold run an overrun; the limit itself is not what this case checks
+    const thresholds = sb.read('scripts/gates/thresholds.mjs');
+    sb.write('scripts/gates/thresholds.mjs', thresholds.replace(/COLD_SETUP_MAX_MS: \{ value: [\d_]+/, 'COLD_SETUP_MAX_MS: { value: 1'));
+    const row = (state) => `| M18.157 | Cold setup back under its budget (M18.117) | HARNESS, NFR-DX-001 | x | M18.117 | ${state} | |\n`;
+    const cold = (extra = {}) => sb.node('scripts/gates/check-budget.mjs', ['--cold'], { env: fakeEnv(sb, extra) });
+
+    sb.write('docs/backlog/current.md', row('todo'));
+    const slow = cold();
+    assert.equal(slow.status, 0, out(slow));
+    assert.match(slow.stdout, /^::warning title=cold setup over budget::cold setup \d+ ms > 1 ms, exempt while M18\.157 is open$/m);
+    assert.match(slow.stderr, /coldSetupMs \d+ ms > 1 ms/, 'the overrun is still reported');
+    // by status, under the exemption too: install, setup, a verify step, and an install that left the store unused
+    for (const extra of [{ FAKE_PNPM_FAIL: 'install' }, { FAKE_PNPM_FAIL: 'run' }, { FAKE_PNPM_FAIL: 'verify' }, { FAKE_PNPM_NO_STORE: '1' }]) {
+      const failed = cold(extra);
+      assert.equal(failed.status, 1, `${JSON.stringify(extra)}\n${out(failed)}`);
+      assert.doesNotMatch(failed.stdout, /::warning/);
+    }
+    // the exemption ends with the row: done, or no backlog at all
+    sb.write('docs/backlog/current.md', row('done'));
+    const done = cold();
+    assert.equal(done.status, 1, out(done));
+    assert.doesNotMatch(done.stdout, /::warning/);
+    rmSync(sb.path('docs'), { recursive: true });
+    assert.equal(cold().status, 1);
   });
 
   it("NFR-DX-002: the recorded staged time is the worst-case commit's", () => {

@@ -3255,3 +3255,9 @@ Adds @fluxion/pack-people: 10 generic avatar definitions in three categories (in
 
 - The M18.137 case now clones HEAD, applies the source tree's tracked changes (`git diff --binary HEAD`) and commits them in the clone, so the plan step still sees clean inputs but runs the code being committed. Untracked files are not included (the row asks for tracked changes).
 - New case: a clone whose working tree changes `scripts/ci/mutation-nightly.mjs` to drop each matrix's first partition fails the chained-plan check on "every partition listed". With the apply step disabled (HEAD only), that case fails, so the mutant the row names is killed. Both cases take about 15 s together. The diff is read with a 1 GiB buffer, since a tracked change can exceed spawnSync's 1 MiB default (review r1).
+
+## M18.159 — cold-setup exemption covers time only (2026-10-28)
+
+- Huy approved narrowing the exemption (decision card, 2026-10-28 22:26Z). ci.yml's cold-setup job is no longer continue-on-error. `check-budget --cold` now always exits 1 on a failure by status (install, setup, the empty-store check, a verify step); a run that only exceeds the unchanged COLD_SETUP_MAX_MS exits 0 with a `::warning` annotation while M18.157 is todo or doing in docs/backlog/current.md, and exits 1 once the row is done or absent.
+- A run that is over time but exempt has a successful step, so `--cold-from-ci` could record it; the resulting record is over the limit and the local full check refuses it, which is the M18.157 signal.
+- Tests: budget.test runs --cold with a 1 ms limit in a sandbox: an overrun exits 0 with the warning while the row is todo, each status failure exits 1 without it, and a done or missing row makes the overrun fail. ci-workflow.test now forbids continue-on-error anywhere in ci.yml (it replaces the M18.117 test that allowed it on cold-setup). M18.157's EARS now says the exemption ends with that row, instead of removing continue-on-error.

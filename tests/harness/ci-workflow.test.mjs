@@ -162,19 +162,14 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.match(/^ {2}ci-ok:[\s\S]*?(?=^ {2}\S|(?![\s\S]))/m.exec(ci)[0], /if: always\(\)/, 'ci-ok must run when a dependency failed');
   });
 
-  it('NFR-DX-001: only cold-setup may fail without failing the run, while M18.157 is open (M18.117)', () => {
+  it('NFR-DX-001: no ci job may fail without failing the run; cold-setup exempts only time, in check-budget (M18.159)', () => {
+    // M18.117 made cold-setup continue-on-error; M18.159 replaced that with a time-only exemption in check-budget --cold
+    assert.doesNotMatch(ci, /continue-on-error/, 'no job- or step-level exemption');
     const jobs = /^jobs:\n([\s\S]*)$/m.exec(ci)[1].split(/^(?= {2}[\w-]+:$)/m);
-    const lenient = jobs.filter((j) => /^ {4}continue-on-error:/m.test(j)).map((j) => /^ {2}([\w-]+):/.exec(j)[1]);
-    const backlog = readFileSync(join(REPO, 'docs/backlog/current.md'), 'utf8');
-    const open = /^\| M18\.157 \|.*\| (?:todo|doing) \|/m.test(backlog);
-    // the exemption lasts only as long as the row that wins back cold-setup's margin
-    assert.deepEqual(lenient, open ? ['cold-setup'] : []);
-    if (open)
-      assert.match(
-        jobs.find((j) => j.startsWith('  cold-setup:')),
-        /^ {4}continue-on-error: true$/m,
-      );
-    assert.doesNotMatch(ci, /^ {6,}continue-on-error/m, 'no step-level exemption');
+    assert.match(
+      jobs.find((j) => j.startsWith('  cold-setup:')),
+      /- name: cold setup within COLD_SETUP_MAX_MS\n\s+run: node scripts\/gates\/check-budget\.mjs --cold\n/,
+    );
   });
 
   it('verifies on three OSes and shards e2e over three engines x 4 in the pinned image (NFR-PORT-005)', () => {
