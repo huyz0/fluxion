@@ -1,0 +1,90 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp18",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..d3060312909a4b605cd643f33ab06fb4826cc7f8",
+  "reviewer": "claude:independent-subagent:m18-cp18",
+  "verdict": "changes-requested",
+  "reviewedDelta": "be59eb72c99650364f0a6a726edab2a203efdd41..d3060312909a4b605cd643f33ab06fb4826cc7f8 (9aea8ae M18.154, 3151d30 M18.117 Vitest side by side on Linux, 2d1466a M18.117 cold-setup continue-on-error + M18.157, 3bb2bc6 M18.117 encodeUtf8 one buffer, d306031 M18.117 close)",
+  "cp17DispositionsCheck": "F1 -> M18.154 added with cp17's proposed_row word for word and done at 9aea8ae. Verified in code: cold-phases.mjs runPhases/ladderSteps/coldReport; check-budget --cold prints clone (not counted), install, setup, verify and each `PASS|FAIL name (Nms)` ladder step (precommit.mjs:306/314 print exactly that form), and blames by status (first failed phase/step) or by time (slowest leaf). The measured total is still install+setup+verify and thresholds.mjs is untouched in the delta. In the review clone, cold-phases, ci-workflow and windows-test-scheduling tests pass (33/33). The diagnostic did its job: run 40612177188's phase lines named the Vitest step (603 s), and the fix landed as M18.117 task commits (3151d30, 2d1466a, 3bb2bc6), as F1 required, without raising COLD_SETUP_MAX_MS. cp17's bookkeeping was done: blockedReason rewritten (visible as the pre-image in 2d1466a's state.json diff), progress.md carries the correction, M18.md:227 has the Learned line. F2 -> M18.155 present, todo. F3 -> M18.156 present, todo. F4 argued: the delta's eight digest lines all use `claude:independent-subagent`, matching review.mjs:122's example, so the drift stopped in practice (with the opposite name to cp17's suggestion, which is fine). But no `M18.43 cp17 F4` line was added to .harness/baselines/review-argued.txt (nor cp16 F3's), which the milestone-review skill requires for an argue (F4 below). Honoured, apart from that bookkeeping.",
+  "questions": {
+    "coherence": "Coherent. M18.154 is harness-only and its output drove the three M18.117 commits, each of which cites the run that motivated it. The continue-on-error exemption is pinned in one place (ci-workflow.test) to one job and one open row (M18.157), and forbids step-level exemptions. The Linux-only scheduling change keeps M18.44's macOS/Windows serial setting and narrows M18.44's acceptance text in the backlog to match (docs/requirements untouched). The 3151d30 review minors were folded into 2d1466a as promised.",
+    "specFidelity": "M18.154 meets its EARS (both stub cases, plus an end-to-end budget.test over fake pnpm). M18.117 as written requires verify green on three OSes, the pack-goldens/drawio/imported-pack fixes without raising thresholds, and a recorded green run: run 40675694374 at 3bb2bc6 has conclusion success with all three verify jobs, e2e x12, visual, lighthouse, a11y, size, api, cli-mcp, license, security, eval-recorded and ci-ok green (checked with gh); ci-evidence.json records it with gates 40675694317. The row is honestly closed against its own text. But it closed with cold-setup red for a reason the close does not state (F1). M18.157 is a reasonable owner row for the time budget; it is not the owner of a by-status failure. encodeUtf8: lead-byte arithmetic checked by hand for 2/3/4-byte forms ((0xff00>>(tail+1))&0xff = 0xc0/0xe0/0xf0); surrogate handling matches the old `for..of` + replace semantics; utf8.test pins every width and lone/paired surrogate edges and a fast-check property against an independent encodeURIComponent reference, and passes with drawio-import.test (11/11). The 3-bytes-per-unit worst case is correct (a supplementary pair is 4 bytes for 2 units). `slice` copies once; acceptable.",
+    "standardsDrift": "Subjects and trailers conform; no test removed; thresholds and visual baselines unchanged; the trace table was regenerated (NFR-DX-001 +5). Two prose slips: progress.md's 3bb2bc6 entry says the property test is 'against TextEncoder' while the test (and the commit body) use an encodeURIComponent reference; and argued findings from cp16 F3 and cp17 F4 are missing from review-argued.txt (F4).",
+    "gateHonesty": "Live at d306031: check-digest --head --full-history passes ('124 M18 task commits have tracked review evidence and Commit cells'); last-ci --offline exits 0 (ci green at 3bb2bc6, gates green at d306031, one newer ci run 40721524266 queued); check-checkpoint at d306031 reports 5/8, so cp18 is early, not late. The continue-on-error exemption is honest about time but not about status: check-ci-evidence, last-ci and ci-ok all read the run conclusion, which GitHub reports as success for a failed continue-on-error job (confirmed: ci-ok passed with cold-setup failure). Step timings from the jobs API: the cold step ran 666 s on 9aea8ae (659.7 s measured) and 609 s on 3151d30 (600.5 s measured), i.e. about 6-9 s of clone/overhead; on 3bb2bc6 it ran 575 s (11:47:43-11:57:18), so about 566 s measured, under the 600 s limit, and still exited 1. That is a by-status failure of the fresh-clone install/setup/verify, which now reaches no gate (F1). The job log could not be read from this sandbox (log blob 403 through the proxy), so the failing phase is not identified here; M18.154's blame line in that log names it. Spot-checked mutants: (1) coldReport choosing the first rather than slowest leaf is killed by 'over the limit by time, names the slowest phase' (install 100 s vs verify:e2e 400 s); (2) runPhases not stopping after a failure is killed by the 'later phases do not run' case; (3) dropping the `open` check in the ci-workflow test (always allowing cold-setup) survives only while M18.157 is open, which is the intended window, and is killed once the row closes, because the test then demands an empty lenient list.",
+    "architecture": "Only packages/format/src/utf8.ts changes in product code: pure, no new dependency, no contract change (bytes are identical by the property test). vitest.config.ts branches on process.platform at config time, which is outside the pure packages. ci.yml change is job-level only. No ADR needed for the delta; the continue-on-error is an owner decision pinned to M18.157 with the limit unchanged, which non-negotiable 2 permits because no threshold or test was weakened.",
+    "planHealth": "43 planned, 143 rows (3.3x). The delta closed M18.154 and M18.117 and added M18.157. M18.117 being done lifts the landing block, so the remaining FR rows (35 not done per the gate) can move again. Before landing about 25 held feature commits: the cold-setup by-status red must be read and either fixed or shown to be time-only (F1); the Linux side-by-side scheduling has one green verify (ubuntu) after one red caused by it (2d1466a, drawio bounded-time test at 10 s vs 1.7 s alone), so the batches are its first real load test (F2); budget.json is still pending-ci, so a held commit that changes pnpm-lock.yaml before M18.155 lands repeats cp17 F2 (F3). Checkpoint cadence allows 8 task commits per checkpoint, so 25 commits mean at least three checkpoints during landing."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": ".github/workflows/ci.yml",
+      "line": 69,
+      "evidence": "gh api actions/jobs, cold-setup step 'cold setup within COLD_SETUP_MAX_MS': 9aea8ae 01:02:17-01:13:23 (666 s; progress.md gives 659.7 s measured), 3151d30 02:25:10-02:35:19 (609 s; 600.5 s measured), 3bb2bc6 11:47:43-11:57:18 (575 s, so about 566 s measured, below 600 s) with conclusion failure, exit code 1 (check-run annotation 'Process completed with exit code 1'). check-budget --cold (check-budget.mjs:120-135) exits 1 under the limit only when a phase failed by status or the empty-store check failed. Run 40675694374 conclusion success and ci-ok success with cold-setup failure. d306031's body and progress.md say only 'cold-setup still fails (non-blocking until M18.157)'. M18.157's acceptance is about time ('finish ... within COLD_SETUP_MAX_MS ... by cutting the ladder's work'). The job log blob was not readable from this sandbox (403), so the blamed phase was not seen here.",
+      "problem": "The owner approved making cold-setup non-blocking because it sat at the time limit. At 3bb2bc6 it failed under the limit, so something in a fresh clone (frozen install into an empty store, `pnpm run setup`, or a cold verify step) failed by status, and the close does not say what. continue-on-error hides status failures as well as time overruns from ci-ok, last-ci and check-ci-evidence. The cold job is the only place a fresh-clone regression shows (verify jobs use a warm cache), and about 25 held feature commits, some adding packs and possibly dependencies, are about to land. A clean-clone break would land green, and M18.157 would later inherit a failure it was not written for.",
+      "suggestion": "Before the first landing batch, read M18.154's `budget: cold setup failed by ...` line in run 40675694374's cold-setup log (and in d306031's run once done) and record it in progress.md. If it says 'by status', fix that cause first. Then narrow the exemption to time: replace job-level continue-on-error with a check-budget --cold mode that, while M18.157 is open, reports a by-time-only overrun as a visible warning and exit 0, but still exits 1 on any by-status failure. This narrows Huy's 2026-10-28 mechanism without changing the limit, so ask for his OK. Re-pin the ci-workflow test to the new flag and M18.157.",
+      "disposition": "reopen",
+      "proposed_row": "| M18.158 | Cold-setup exemption covers time only; 3bb2bc6 cold red explained (cp18 F1) | HARNESS, NFR-DX-001 | WHEN ci's cold-setup job runs while M18.157 is open THE SYSTEM SHALL fail the ci run when the cold setup fails by status (install, setup, empty-store check or a cold verify step) and SHALL exempt only a by-time overrun of the unchanged COLD_SETUP_MAX_MS, reported as a visible warning, replacing job-level continue-on-error (owner OK required, as it narrows the 2026-10-28 exemption); the cause of cold-setup's red at 3bb2bc6 (run 40675694374, about 566 s measured, under the limit) SHALL be recorded from M18.154's blame line and fixed first if by status; a harness test SHALL prove a stub by-status failure under the limit exits non-zero, a by-time-only overrun exits zero with the warning only while M18.157 is open, and the ci-workflow test SHALL forbid continue-on-error on every job | M18.154, M18.157 | todo | |"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "vitest.config.ts",
+      "line": 81,
+      "evidence": "Main ci runs after 3151d30: 40620783636 (3151d30) verify ubuntu green; 40659614556 (2d1466a) verify ubuntu red on drawio-import's 'amplifying entries are refused while converting, in bounded time' at its own 10 s, a test that takes 1.7 s alone (progress.md:3171), attributed by the author to the node project now sharing cores with the browser project; 40675694374 (3bb2bc6) green after encodeUtf8 was made faster. Wall-clock-sensitive tests remain, e.g. packages/theme/src/font-file.test.ts:100 ('read in bounded time') and packages/editor/src/source-view/completion.test.ts. M18.44's RAF timeouts were measured on macOS; Linux browser files in parallel have one green CI run behind them.",
+      "problem": "A 1.7 s test that crossed 10 s shows how much contention the side-by-side scheduling adds on a 4-core runner. The fix made one code path faster but left the contention, and the held feature commits bring new browser (RAF-driven library UI) and bounded-time import tests that were verified locally before or without this scheduling. The first landing batches are this config's real load test, and a red there could be misread as a feature defect, or 'fixed' by raising a timeout.",
+      "suggestion": "Land in small batches with a full ci run between them. When a Linux timeout appears after landing, restore `fileParallelism: false` on Linux or make the code faster, never raise the timeout (non-negotiable 2), and count it against M18.157 under ADR-0176. Write this rule into the cp18 record's landing note; no row is needed unless it happens.",
+      "disposition": "argue",
+      "target": "M18.43 bookkeeping (cp18 landing note)"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": ".harness/budget.json",
+      "line": 1,
+      "evidence": "check-budget.mjs:267-270: a pending-ci record passes in CI and --staged, but fails a local full ladder; completion gate 'full verification with all required steps' is FAIL. d306031: 'budget.json stays pending-ci until M18.157 records --cold-from-ci'. M18.157 needs three consecutive under-limit main runs and has no attempt count; M18.155 (budget records follow landed commits) is still todo, and land.mjs still leaves budget.json's `commit` naming the pre-land sha (cp17 F2).",
+      "problem": "Until M18.157 closes, `pnpm verify` is red on every machine, so it cannot be used to prove a landing batch green locally, and an agent may learn to ignore it. If any held commit changes pnpm-lock.yaml and re-records budget.json before M18.155 lands, the record names a sha that never reaches main again, and in a fresh clone sameDependencies() cannot read it.",
+      "suggestion": "Order: land M18.155 before any held commit that touches pnpm-lock.yaml or .harness/budget.json, and check each batch for those paths. In landing batches, prove green with the staged ladder plus the ci run, and say in progress.md that the full local ladder is red only on the pending budget. Give M18.157 an ADR-0176 attempt count in state.json.",
+      "disposition": "argue",
+      "target": "M18.43 bookkeeping (landing order in cp18 planDelta)"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": ".harness/baselines/review-argued.txt",
+      "line": 143,
+      "evidence": "The last M18.43 entries are cp15's (lines 139-143); `grep cp16\\|cp17` finds nothing, though cp16 F3 and cp17 F4 were argued. progress.md's 3bb2bc6 entry says 'a fast-check property against TextEncoder', but packages/format/src/utf8.test.ts uses an encodeURIComponent-based reference (as the commit body says).",
+      "problem": "The milestone-review skill records each argue as a line in review-argued.txt, and the packet's 'Argued findings' section reads from it, so later reviewers cannot see that cp16 F3 and cp17 F4 were argued rather than dropped. The progress line misstates what the property test compares against.",
+      "suggestion": "In the cp18 record, add `M18.43 cp16 F3`, `M18.43 cp17 F4` and this checkpoint's argued findings to review-argued.txt, and correct the progress.md reference to 'an encodeURIComponent-based reference'.",
+      "disposition": "argue",
+      "target": "M18.43 bookkeeping (cp18 record)"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.158, M18.159",
+      "note": "Read and record the 3bb2bc6 cold-setup blame line before the first landing batch; fix it first if by status. Narrow the exemption to time only, with Huy's OK; the limit stays. Split in two: M18.158 makes the cold log name the failing tests and records/fixes the cause (no owner OK needed); M18.159 is the time-only exemption awaiting Huy."
+    },
+    {
+      "finding": "F2",
+      "disposition": "argue",
+      "target": "M18.43 bookkeeping",
+      "note": "Landing note: small batches, a ci run between them; a Linux timeout is fixed by serial browser files or faster code, never a timeout raise."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "target": "M18.43 bookkeeping",
+      "note": "M18.155 lands before any held commit touching pnpm-lock.yaml or budget.json; M18.157 gets an ADR-0176 attempt count."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "target": "M18.43 bookkeeping",
+      "note": "Add the missing cp16 F3 / cp17 F4 argue lines and this checkpoint's; fix the utf8 progress line."
+    }
+  ],
+  "planDelta": "Add M18.158 (cold-setup exemption covers time only; 3bb2bc6's cold red explained). Header to 144 rows. Order before landing held feature commits: (1) read run 40675694374's and d306031's (40721524266) cold-setup blame lines and record them; fix any by-status cause first (M18.158). (2) M18.155 before any held commit that touches pnpm-lock.yaml or .harness/budget.json. (3) Then land held commits in batches of at most 8 task commits, a checkpoint between batches as check-checkpoint requires, a full ci run green before the next batch. A Linux timeout in a batch is fixed by serial browser files on Linux or faster code, never a timeout raise. M18.156 and M18.157 can proceed alongside. Bookkeeping in the cp18 record: review-argued.txt lines for cp16 F3, cp17 F4 and cp18 F2-F4; progress.md utf8 reference corrected. Learned line: 'cp18: an exemption granted for time must not also hide status; a red job under its own limit is a different failure from the one that was excused.'"
+}

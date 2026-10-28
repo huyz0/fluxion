@@ -142,3 +142,8 @@ M18.43 cp15 record r1 F1: the harness rows are stream 1's; it takes them in the 
 M18.43 cp15 record r1 F2: M18.128's existing EARS already requires its distinct code to be tested; whoever builds it tests each UNKNOWN case the amendment names (reviewer note, recorded here).
 M18.43 cp15 record r1 F3: the Learned line keeps both lessons (paths not labels; strip hook env at the ladder); the land.mjs refusal tests are an M18.135 acceptance clause.
 M18.127 r2 F1: rebind fails safe (refuses) when an earlier round's digest line was staged before the pass; its use is binding pre-content-id lines of single-round commits like d0ecbb9, and a refused commit keeps the posthoc review path (record --commit).
+M18.43 cp16 F3: blockedReason refreshed in the cp16 record; pushing stopped after the last landable harness row until Huy decided (recorded late, in cp18).
+M18.43 cp17 F4: one reviewer role name in practice (`claude:independent-subagent`, review.mjs's example); no gate reads the role, so no row (recorded late, in cp18).
+M18.43 cp18 F2: landing note: small batches with a full ci run between them; a Linux timeout after landing is fixed by serial browser files on Linux or faster code, never a raised timeout, and counts against M18.157 under ADR-0176.
+M18.43 cp18 F3: M18.155 lands before any held commit that touches pnpm-lock.yaml or .harness/budget.json (each batch is checked for those paths); batches are proven by the staged ladder plus the ci run while the full local ladder is red only on the pending budget; M18.157 has an ADR-0176 attempt count in state.json.
+M18.43 cp18 F4: the cp16 F3 and cp17 F4 argue lines are added here; progress.md's utf8 entry now names the encodeURIComponent-based reference.
