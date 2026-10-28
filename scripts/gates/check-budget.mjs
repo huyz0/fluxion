@@ -47,7 +47,7 @@ function lockfileHash(root = repoPath()) {
   return existsSync(lock) ? createHash('sha256').update(readFileSync(lock)).digest('hex') : 'none';
 }
 
-/** A failed verify's FAIL blocks (precommit prints them before its PASS lines), else the output's last 15 lines (M18.158). */
+/** A failed verify's FAIL blocks (precommit prints its steps in order, so PASS lines come before and after them), at most 80 lines, else the output's last 15 lines (M18.158). */
 function failureTail(out) {
   const lines = out.trim().split(/\r?\n/);
   const first = lines.findIndex((l) => /^FAIL /.test(l));

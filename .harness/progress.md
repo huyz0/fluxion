@@ -3188,3 +3188,9 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 
 - check-budget's cold (and record) failure tail now starts at the ladder's first `FAIL ` line and leaves out the PASS/SKIP/ADVISORY lines, up to 80 lines; without a FAIL line it keeps the last 15. budget.test pins it with a stub ladder whose FAIL block precedes 20 passing steps; the test fails on the old tail.
 - A local `pnpm test` at d306031 passes (571 files, 3058 tests), and a local cold run cannot reach the Chromium download host, so the 3bb2bc6 cause will be read from the next ci cold-setup log. The row stays doing until it is recorded and, if by status, fixed.
+
+## M18.158 — closed: the 3bb2bc6 cold red did not recur (2026-10-28)
+
+- ci run 40726991261 at 439cf97 (the first with the new failure tail): cold-setup green, 471415 ms <= 600000 ms; verify:test 426 s, harness-tests 399 s, attw 324 s, api 277 s. gates 40726990365 green. `check-ci-evidence --record 439cf97` is recorded for the close.
+- The 3bb2bc6 cause cannot be recorded by name: that log printed only "failed by status in phase verify:test after 517002 ms", the job's output is gone, a local `pnpm test` passes (571 files, 3058 tests) and a local cold run cannot reach the Chromium host. It is recorded as an unexplained one-off verify:test failure; a guess, not shown by any log, is contention on the 4-core runner (the same runner class had a 1.7 s drawio test cross its 10 s at 2d1466a). It was not fixed, because there is nothing named to fix; the next one prints its failing tests (the stub ladder now has PASS and ::error:: lines before its FAIL block and 90 detail lines, so both slice bounds are pinned; mutants removing either fail).
+- 439cf97 is the first under-limit cold run toward M18.157's three consecutive. The `blocks-landing` mark is removed, so feature commits land again (M18.155 first).

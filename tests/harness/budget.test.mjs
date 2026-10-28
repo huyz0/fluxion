@@ -376,11 +376,17 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     sb.cleanup();
     sb = coldSandbox();
     const passes = Array.from({ length: 20 }, (_, i) => `PASS step${i} (1ms)`);
-    const ladder = ['FAIL test (3400ms)', '    FAIL packages/x/src/x.test.ts > x > times out', ...passes, 'VERIFY all: FAIL (3.4s)'].join('\n');
+    const detail = Array.from({ length: 90 }, (_, i) => `    detail line ${i}`);
+    const before = ['::error title=test::annotation printed as the step failed', 'PASS lint (1ms)'];
+    const ladder = [...before, 'FAIL test (3400ms)', '    FAIL packages/x/src/x.test.ts > x > times out', ...detail, ...passes, 'VERIFY all: FAIL (3.4s)'].join(
+      '\n',
+    );
     const failed = sb.node('scripts/gates/check-budget.mjs', ['--cold'], { env: fakeEnv(sb, { FAKE_PNPM_FAIL: 'verify', FAKE_LADDER_OUTPUT: ladder }) });
     assert.equal(failed.status, 1, out(failed));
     assert.match(failed.stderr, /cold run failed\nFAIL test \(3400ms\)\n {4}FAIL packages\/x\/src\/x\.test\.ts > x > times out/);
-    assert.doesNotMatch(failed.stderr, /PASS step/, 'the passing steps are left out');
+    assert.doesNotMatch(failed.stderr, /PASS (step|lint)|::error/, 'the passing steps and the annotation before the FAIL block are left out');
+    assert.match(failed.stderr, /detail line 77\n/);
+    assert.doesNotMatch(failed.stderr, /detail line 78\b/, 'at most 80 lines');
   });
 
   it("NFR-DX-002: the recorded staged time is the worst-case commit's", () => {
