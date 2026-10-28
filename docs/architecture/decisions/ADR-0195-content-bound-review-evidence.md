@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted (amended by ADR-0205: the budget record's commit value is outside the identity)
 date: 2026-10-27
 decision-makers: harness (M18.99; cp9 F1, cp10 F2, cp11 F1/F2; amends review standard R4, subject to independent review)
 ---

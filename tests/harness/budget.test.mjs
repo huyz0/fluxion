@@ -310,6 +310,11 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
   it('staged lockfile runs the budget step; other staged commits skip it (ADR-0145)', () => {
     sb.cleanup();
     sb = sandbox(undefined, { git: true });
+    sb.write('seed.txt', 'seed\n');
+    sb.git('add', 'seed.txt');
+    sb.git('commit', '-q', '--no-verify', '-m', 'fixture: seed');
+    // the record names a commit on HEAD's history (M18.155)
+    const OK_HERE = { ...OK, commit: sb.git('rev-parse', 'HEAD').stdout.trim() };
     const budgetLine = () =>
       sb
         // CI pinned: an inherited CI=true would accept the old record (ADR-0143; M3.5 review r2 F1)
@@ -327,10 +332,10 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     sb.git('add', 'pnpm-lock.yaml');
     const hash = createHash('sha256').update(lock).digest('hex');
     // a pending-ci record for the staged lockfile passes only through check-budget --staged
-    sb.write('.harness/budget.json', JSON.stringify({ ...OK, lockfile: hash, coldSetupSource: 'pending-ci' }));
+    sb.write('.harness/budget.json', JSON.stringify({ ...OK_HERE, lockfile: hash, coldSetupSource: 'pending-ci' }));
     assert.match(String(budgetLine()), /^PASS budget\b/);
     // the old record fails the commit
-    sb.write('.harness/budget.json', JSON.stringify(OK));
+    sb.write('.harness/budget.json', JSON.stringify(OK_HERE));
     assert.match(String(budgetLine()), /^FAIL budget\b/);
     // an inherited CI=true does not relax the staged check (M3.5 review r3 F2)
     const underCi = sb.node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review'], { env: { ...process.env, CI: 'true' } }).stdout;
@@ -340,6 +345,28 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
       env: { ...process.env, CI: '' },
     }).stdout;
     assert.doesNotMatch(noBudget, /^(PASS|FAIL|SKIP) budget\b/m);
+  });
+
+  it("NFR-DX-001: outside CI a record must name a commit on HEAD's history (M18.155)", () => {
+    sb.cleanup();
+    sb = sandbox(['scripts'], { git: true });
+    const commit = (name) => {
+      sb.write(name, `${name}\n`);
+      sb.git('add', name);
+      sb.git('commit', '-q', '--no-verify', '-m', `fixture: ${name}`);
+      return sb.git('rev-parse', 'HEAD').stdout.trim();
+    };
+    const landed = commit('a.txt');
+    const offHistory = commit('b.txt'); // a pre-land sha: the branch moves on without it
+    sb.git('reset', '-q', '--hard', landed);
+    commit('c.txt');
+    assert.equal(budget({ ...OK, commit: landed }).status, 0, 'an ancestor of HEAD');
+    for (const sha of [offHistory, 'abc1234']) {
+      const r = budget({ ...OK, commit: sha });
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, new RegExp(`record's commit ${sha.slice(0, 7)} is not on HEAD's history`));
+      assert.equal(budget({ ...OK, commit: sha }, 'true').status, 0, 'CI does not check it');
+    }
   });
 
   it('--cold measures only the isolated cold setup, writes no record, and fails when the setup fails (NFR-DX-001)', () => {

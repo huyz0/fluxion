@@ -14,7 +14,7 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { currentMilestone, exists, git, node, readText, repoPath, stagedDiff, stagedHash } from '../gates/lib.mjs';
-import { contentId, nextRound, parseDigest, parseReviewer, reviewedDiffHash } from '../gates/review-content.mjs';
+import { contentId, contentIds, nextRound, parseDigest, parseReviewer, reviewedDiffHash } from '../gates/review-content.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -110,12 +110,13 @@ switch (cmd) {
     const commit = arg('commit');
     const hash = commit ? (v.diff_sha256 ?? '') : stagedHash();
     const content = contentId(commit);
+    const ids = contentIds(commit);
     const bad = [];
     if (v.task !== task) bad.push(`task '${v.task}' != '${task}'`);
     // A staged review binds to the exact bytes or, after a rebase or bookkeeping restage, to the same content identity.
     if (commit) {
-      if (v.content_id !== content) bad.push(`content_id does not match commit ${commit}`);
-    } else if (v.diff_sha256 !== hash && !(v.content_id && v.content_id === content))
+      if (!ids.includes(v.content_id)) bad.push(`content_id does not match commit ${commit}`);
+    } else if (v.diff_sha256 !== hash && !(v.content_id && ids.includes(v.content_id)))
       bad.push('diff_sha256 does not match the staged diff (restaged after review?)');
     if (!content) bad.push('the change has no reviewable content (bookkeeping and generated reports only)');
     if (!['pass', 'changes-requested'].includes(v.verdict)) bad.push('verdict must be pass|changes-requested');

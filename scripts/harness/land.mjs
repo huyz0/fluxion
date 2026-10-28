@@ -6,7 +6,8 @@
 // commit-msg, checkpoint, the precommit ladder and the content-bound review check run on the tree
 // that will land. Missing Commit cells of done rows are filled and cells naming a rewritten commit
 // follow it (bookkeeping), also in the commits still to apply, so filling one row's cell never
-// conflicts with the next commit's edit of its neighbour (M18.153). A conflict or any refused gate
+// conflicts with the next commit's edit of its neighbour (M18.153); a .harness/budget.json `commit` naming
+// a rewritten commit follows it the same way (M18.155). A conflict or any refused gate
 // stops the run with the local branch back where it started; nothing is pushed. While a `blocks-landing` row is open, only that row's commits
 // and commits confined to harness paths land, and closing it needs CI evidence (M18.123, M18.135). With --push, the result is pushed as a fast-forward, retried when the branch moved.
 // Pushing still needs a human's request (skill ship).
@@ -22,6 +23,7 @@ const opt = (name, fallback) => {
 };
 const BACKLOG = 'docs/backlog/current.md';
 const CI_EVIDENCE = '.harness/reviews/ci-evidence.json';
+const BUDGET = '.harness/budget.json';
 const lines = (r) => r.stdout.split(/\r?\n/).filter(Boolean);
 const fail = (message) => ({ ok: false, message });
 
@@ -74,6 +76,26 @@ export function fillCommitCells(text, commitOf, rewritten = new Map()) {
     .join('\n');
 }
 
+/** A budget record whose `commit` names a commit this landing rewrote, pointed at the new sha (M18.155). */
+export function renameBudgetCommit(text, rewritten) {
+  return text.replace(/("commit":\s*")([0-9a-f]{7,40})(")/, (whole, open, sha, close) => {
+    for (const [old, next] of rewritten) if (old.startsWith(sha)) return `${open}${next.slice(0, sha.length)}${close}`;
+    return whole;
+  });
+}
+
+/** Rewrite the staged `path` with `edit` (bookkeeping), and refresh its working copy. */
+function restage(path, edit) {
+  const shown = git(['show', `:${path}`]);
+  if (shown.status !== 0) return;
+  const next = edit(shown.stdout);
+  if (next === shown.stdout) return;
+  const write = run('git', ['hash-object', '-w', '--stdin'], { input: next });
+  const mode = lines(git(['ls-files', '-s', '--', path]))[0]?.split(' ')[0] ?? '100644';
+  must(['update-index', '--cacheinfo', `${mode},${write.stdout.trim()},${path}`], `stage the rewritten ${path}`);
+  must(['checkout', '--', path], `refresh the working ${path}`);
+}
+
 function fillCells(rewritten) {
   if (!exists(BACKLOG)) return;
   const commitOf = new Map(
@@ -82,23 +104,28 @@ function fillCells(rewritten) {
       .filter(Boolean)
       .map((m) => [m[2], m[1].slice(0, 7)]),
   );
-  const shown = git(['show', `:${BACKLOG}`]);
-  if (shown.status !== 0) return;
-  const filled = fillCommitCells(shown.stdout, commitOf, rewritten);
-  if (filled === shown.stdout) return;
-  const write = run('git', ['hash-object', '-w', '--stdin'], { input: filled });
-  const mode = lines(git(['ls-files', '-s', '--', BACKLOG]))[0]?.split(' ')[0] ?? '100644';
-  must(['update-index', '--cacheinfo', `${mode},${write.stdout.trim()},${BACKLOG}`], 'stage filled Commit cells');
-  must(['checkout', '--', BACKLOG], 'refresh the working backlog');
+  restage(BACKLOG, (text) => fillCommitCells(text, commitOf, rewritten));
 }
 
-/** `rev`'s tree with its backlog replaced by `edit(backlog)`, built in a scratch index. */
-function treeWith(rev, edit) {
+/** The bookkeeping that names commits, each with how it follows the commits this landing rewrote. */
+const RENAMES = {
+  [BACKLOG]: (text, rewritten) => fillCommitCells(text, new Map(), rewritten),
+  [BUDGET]: renameBudgetCommit,
+};
+
+/** `rev`'s tree with each bookkeeping file renamed for `rewritten`, built in a scratch index. */
+function treeWith(rev, rewritten) {
   const tree = must(['rev-parse', `${rev}^{tree}`], 'read a tree');
-  const shown = git(['show', `${rev}:${BACKLOG}`]);
-  const next = shown.status === 0 ? edit(shown.stdout) : shown.stdout;
-  if (shown.status !== 0 || next === shown.stdout) return tree;
-  const blob = run('git', ['hash-object', '-w', '--stdin'], { input: next }).stdout.trim();
+  const blobs = [];
+  for (const [path, rename] of Object.entries(RENAMES)) {
+    const shown = git(['show', `${rev}:${path}`]);
+    if (shown.status !== 0) continue;
+    const next = rename(shown.stdout, rewritten);
+    if (next === shown.stdout) continue;
+    const mode = lines(git(['ls-tree', rev, '--', path]))[0]?.split(' ')[0] ?? '100644';
+    blobs.push([path, mode, run('git', ['hash-object', '-w', '--stdin'], { input: next }).stdout.trim()]);
+  }
+  if (!blobs.length) return tree;
   // the real index holds the landing in progress
   const env = { ...process.env, GIT_INDEX_FILE: must(['rev-parse', '--path-format=absolute', '--git-path', 'land-remap.index'], 'locate a scratch index') };
   const step = (args, what) => {
@@ -107,21 +134,19 @@ function treeWith(rev, edit) {
     return r.stdout.trim();
   };
   step(['read-tree', tree], 'read a tree into the scratch index');
-  const mode = lines(git(['ls-tree', rev, '--', BACKLOG]))[0]?.split(' ')[0] ?? '100644';
-  step(['update-index', '--cacheinfo', `${mode},${blob},${BACKLOG}`], 'stage a remapped backlog');
+  for (const [path, mode, blob] of blobs) step(['update-index', '--cacheinfo', `${mode},${blob},${path}`], `stage a remapped ${path}`);
   return step(['write-tree'], 'write a remapped tree');
 }
 
 /**
- * `sha` re-made with the Commit cells naming commits this landing rewrote already renamed on both
+ * `sha` re-made with the Commit cells and budget record naming commits this landing rewrote already renamed on both
  * sides. Picked as is, a cell fillCells renamed on the remote side sits in the context of the next
  * commit's edit of a neighbouring row, and git reports a conflict no human made (M18.153).
  */
 function remapped(sha, rewritten) {
-  if (!rewritten.size || !lines(git(['diff', '--name-only', `${sha}^`, sha, '--', BACKLOG])).length) return sha;
-  const rename = (text) => fillCommitCells(text, new Map(), rewritten);
-  const parent = must(['commit-tree', treeWith(`${sha}^`, rename), '-m', 'land: remapped parent'], 'write a remapped parent');
-  return must(['commit-tree', treeWith(sha, rename), '-p', parent, '-m', 'land: remapped'], 'write a remapped commit');
+  if (!rewritten.size || !lines(git(['diff', '--name-only', `${sha}^`, sha, '--', ...Object.keys(RENAMES)])).length) return sha;
+  const parent = must(['commit-tree', treeWith(`${sha}^`, rewritten), '-m', 'land: remapped parent'], 'write a remapped parent');
+  return must(['commit-tree', treeWith(sha, rewritten), '-p', parent, '-m', 'land: remapped'], 'write a remapped commit');
 }
 
 /**

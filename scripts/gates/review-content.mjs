@@ -67,12 +67,24 @@ export function lineDelta(before, after) {
     .join('\n');
 }
 
-/** A diff without what a rebase alone changes: blob ids and hunk line numbers. Whitespace stays. */
-export function normalizedDiff(diff) {
+/** The budget record names the commit it measured, which land.mjs renames like a Commit cell (M18.155, ADR-0205). */
+export const BUDGET = '.harness/budget.json';
+const BUDGET_COMMIT = /^([-+ ]\s*"commit":\s*")[0-9a-f]{7,40}(",?)$/;
+
+/**
+ * A diff without what a rebase alone changes: blob ids and hunk line numbers. Whitespace stays.
+ * Unless `legacy`, the budget record's `commit` value is dropped too (ADR-0205).
+ */
+export function normalizedDiff(diff, { legacy = false } = {}) {
+  let file = '';
   return diff
     .split('\n')
     .filter((l) => !/^index [0-9a-f]+\.\.[0-9a-f]+/.test(l))
-    .map((l) => (/^@@ -\d+(,\d+)? \+\d+(,\d+)? @@/.test(l) ? '@@' : l))
+    .map((l) => {
+      if (l.startsWith('diff --git ')) file = l;
+      if (/^@@ -\d+(,\d+)? \+\d+(,\d+)? @@/.test(l)) return '@@';
+      return !legacy && file === `diff --git a/${BUDGET} b/${BUDGET}` ? l.replace(BUDGET_COMMIT, '$1<commit>$2') : l;
+    })
     .join('\n');
 }
 
@@ -91,15 +103,24 @@ export function changedPaths(commit) {
  * The content identity of the staged change (no argument) or of one commit. Empty when the
  * change touches only bookkeeping, generated reports and backlog State/Commit cells.
  */
-export function contentId(commit) {
+export function contentId(commit, { legacy = false } = {}) {
   const diff = git(['diff', '--binary', '--full-index', '--no-color', '--no-ext-diff', '--no-renames', ...range(commit), '--', '.', ...EXCLUDED]);
   if (diff.status !== 0) throw new Error(`git diff failed: ${diff.stderr.trim()}`);
-  const patch = diff.stdout ? createHash('sha256').update(normalizedDiff(diff.stdout)).digest('hex') : '';
+  const patch = diff.stdout ? createHash('sha256').update(normalizedDiff(diff.stdout, { legacy })).digest('hex') : '';
   const [before, after] = revs(commit);
   const backlog = backlogSpecDelta(show(before, BACKLOG), show(after, BACKLOG));
   const trace = lineDelta(traceLines(show(before, TRACE)), traceLines(show(after, TRACE)));
   if (!patch && !backlog && !trace) return '';
   return createHash('sha256').update(`content-v2\n${patch}\n${backlog}\n${trace}\n`).digest('hex');
+}
+
+/**
+ * Every identity a verdict for this change may carry: the current one first, then the one from before
+ * ADR-0205 when it differs (only a change to the budget record's `commit` line differs), so evidence
+ * recorded before it still binds.
+ */
+export function contentIds(commit) {
+  return [...new Set([contentId(commit), contentId(commit, { legacy: true })])];
 }
 
 /**

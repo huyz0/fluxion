@@ -271,6 +271,43 @@ describe('rebase-stable content binding (ADR-0195, M18.99)', () => {
     assert.equal(r.status, 0, out(r));
   });
 
+  it("ignores the budget record's commit value, which land.mjs renames, and keeps binding evidence from before (M18.155, ADR-0205)", () => {
+    const BUDGET = '.harness/budget.json';
+    const record = (commit, quickMs = 1) => `${JSON.stringify({ recordedAt: 't', commit, quickMs }, null, 2)}\n`;
+    put(BUDGET, record('a'.repeat(40)));
+    run('commit', '-q', '--no-verify', '-m', 'fixture: budget');
+    put(BUDGET, record('b'.repeat(40)));
+    const reviewed = id();
+    put(BUDGET, record('c'.repeat(40)));
+    assert.equal(id(), reviewed, 'a renamed commit keeps the identity');
+    put(BUDGET, record('c'.repeat(40), 2));
+    assert.notEqual(id(), reviewed, 'a measured number is content');
+    // only the budget record's commit is renamed by landing: the same line elsewhere stays content
+    put('src/record.json', record('a'.repeat(40)));
+    const elsewhere = id();
+    put('src/record.json', record('e'.repeat(40)));
+    assert.notEqual(id(), elsewhere, 'a commit value outside the budget record is content');
+    run('reset', '-q', '--', 'src/record.json');
+    // a verdict recorded under the identity from before ADR-0205 still satisfies check-reviewed
+    put(BUDGET, record('d'.repeat(40)));
+    sbx.write(
+      '.harness/tmp/legacy.mjs',
+      "import { contentId } from '../../scripts/gates/review-content.mjs';\nconsole.log(contentId(undefined, { legacy: true }));\n",
+    );
+    const legacy = sbx.node('.harness/tmp/legacy.mjs', []).stdout.trim();
+    assert.notEqual(legacy, id(), 'the legacy identity binds the commit value');
+    sbx.write('.harness/tmp/l.json', JSON.stringify({ task: TASK, content_id: legacy, diff_sha256: 'x', reviewer: 't:unit', verdict: 'pass', findings: [] }));
+    const recorded = sbx.node('scripts/harness/review.mjs', ['record', '--file', sbx.path('.harness/tmp/l.json'), '--task', TASK]);
+    assert.equal(recorded.status, 0, out(recorded));
+    // a verdict and digest line written before ADR-0205 carry the legacy identity
+    rmSync(sbx.path('.harness/review'), { recursive: true, force: true });
+    sbx.write('.harness/review/legacy.json', JSON.stringify({ task: TASK, verdict: 'pass', content_id: legacy }));
+    put('.harness/reviews/digest.log', `${TASK}\t-\tr1\tpass\tt:unit\t0 findings\tcontent:${legacy}\n`);
+    const checked = sbx.node('scripts/gates/check-reviewed.mjs', []);
+    assert.equal(checked.status, 0, out(checked));
+    run('reset', '-q', '--hard', 'HEAD~1');
+  });
+
   it('records an after-the-fact review of a landed commit only with its content identity', () => {
     put('src/a.txt', 'landed\n');
     run('commit', '-q', '--no-verify', '-m', 'M0.5: test: landed');

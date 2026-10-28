@@ -276,6 +276,16 @@ if (record.lockfile !== lockfileHash() && !sameDependencies()) {
   if (inCi) console.log('budget: the record predates pnpm-lock.yaml; in CI the cold-setup job measures this lockfile (ADR-0143)');
   else problems.push('the record predates the current pnpm-lock.yaml: run check-budget.mjs --record (or, without Chromium, --record --cold-pending; ADR-0145)');
 }
+// a record names the commit it measured; one naming a commit off HEAD's history (a pre-land sha) can neither be
+// traced nor matched to its lockfile, so outside CI it is refused (M18.155). A shallow clone cannot tell, and says so.
+if (!inCi && typeof record.commit === 'string') {
+  const known = git(['cat-file', '-e', `${record.commit}^{commit}`]).status === 0;
+  // without history to read (no repository, or a shallow clone) an unknown commit proves nothing
+  const blind = !known && git(['rev-parse', '--is-shallow-repository']).stdout.trim() !== 'false';
+  if (blind) console.log(`budget: the record's commit ${record.commit.slice(0, 7)} is not in this clone's history; not checked`);
+  else if (!known || git(['merge-base', '--is-ancestor', record.commit, 'HEAD']).status !== 0)
+    problems.push(`the record's commit ${record.commit.slice(0, 7)} is not on HEAD's history: re-record it, or point it at the landed commit`);
+}
 // a pending-ci record (ADR-0145) belongs to a lockfile commit whose cold setup CI measures after the
 // push: the staged ladder and CI accept it; a local full ladder or completion gate asks for the CI number
 if (record.coldSetupSource === PENDING) {

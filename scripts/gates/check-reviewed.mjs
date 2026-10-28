@@ -4,7 +4,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { git, repoPath } from './lib.mjs';
-import { contentId, parseDigest } from './review-content.mjs';
+import { contentIds, parseDigest } from './review-content.mjs';
 
 const diff = git(['diff', '--cached', '--name-only']).stdout.split(/\r?\n/).filter(Boolean);
 if (diff.length === 0) process.exit(0);
@@ -39,7 +39,8 @@ if (diff.every((p) => BOOKKEEPING.some((re) => re.test(p))) && backlogOnlyStateC
 
 // Bound to the rebase-stable content identity (ADR-0195), and the commit must carry its own
 // tracked pass line: the digest is bookkeeping, so staging it leaves the identity unchanged.
-const content = contentId();
+const ids = contentIds();
+const content = ids[0];
 if (!content) {
   console.log('reviewed: bookkeeping and generated reports only (exempt; check-api verifies API reports and check-trace the Tests column)');
   process.exit(0);
@@ -50,9 +51,9 @@ const verdicts = existsSync(dir)
       .filter((f) => f.endsWith('.json'))
       .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')))
   : [];
-const local = verdicts.find((v) => v.verdict === 'pass' && v.content_id === content);
+const local = verdicts.find((v) => v.verdict === 'pass' && ids.includes(v.content_id));
 const staged = git(['show', ':.harness/reviews/digest.log']);
-const tracked = parseDigest(staged.status === 0 ? staged.stdout : '').some((l) => l.verdict === 'pass' && l.content === content);
+const tracked = parseDigest(staged.status === 0 ? staged.stdout : '').some((l) => l.verdict === 'pass' && ids.includes(l.content));
 if (local && tracked) {
   console.log(`reviewed: pass verdict for ${local.task} bound to content ${content.slice(0, 12)}`);
   process.exit(0);

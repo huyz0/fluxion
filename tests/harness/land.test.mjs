@@ -271,6 +271,32 @@ describe('land (M18.106)', () => {
     assert.equal(sb.read(BACKLOG), `${[row('M0.40', 'done', landed(2)), row('M0.41', 'done', landed(1)), row('M0.42', 'done')].join('\n')}\n`);
   }
 
+  it('lands a stack whose budget record names its first commit, renamed to the landed one (M18.155)', () => {
+    reset();
+    const restore = remoteHead();
+    try {
+      const BUDGET = '.harness/budget.json';
+      const record = (commit) => `${JSON.stringify({ recordedAt: '2026-10-28T00:00:00.000Z', commit, quickMs: 1 }, null, 2)}\n`;
+      upstream('docs/backlog/current.md', '| M0.43 | gate | HARNESS | acceptance | | todo | |\n| M0.44 | gate | HARNESS | acceptance | | todo | |\n');
+      reset();
+      const first = reviewed('M0.43', 'scripts/gates/M0.43.txt', 'M0.43\n');
+      // as check-budget --record does: the record names HEAD, the stack's first commit
+      reviewed('M0.44', 'scripts/gates/M0.44.txt', 'M0.44\n', { [BUDGET]: record(first) });
+      upstream('src/unrelated-155.txt', 'unrelated');
+      const r = land('--push');
+      assert.equal(r.status, 0, out(r));
+      assert.equal(remoteHead(), head());
+      const landedFirst = ok(sb.git('rev-parse', 'HEAD~1'));
+      assert.notEqual(landedFirst, first, 'the first commit was rewritten onto the moved remote');
+      assert.equal(sb.read(BUDGET), record(landedFirst));
+      assert.equal(ok(sb.git('show', `HEAD:${BUDGET}`)), record(landedFirst).trim());
+    } finally {
+      ok(git(origin, 'update-ref', 'refs/heads/main', restore));
+      ok(git(other, 'reset', '-q', '--hard', restore));
+      reset();
+    }
+  });
+
   it('refuses a feature commit and lands a harness commit while a blocks-landing row is open (M18.123)', () => {
     reset();
     // the feature commit was reviewed before another stream marked the blocking row

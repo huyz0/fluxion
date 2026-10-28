@@ -14,7 +14,7 @@
 // CI (gates.yml) runs `--head --full-history` on every push and PR.
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
-import { contentId, isPosthoc, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
+import { contentIds, isPosthoc, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
@@ -70,14 +70,15 @@ function evidenceProblems(commits, tree, adopted) {
 
 /** A post-adoption commit needs a pass (or rebind) line bound to its content and no stale pass. */
 function boundProblems(sha, task) {
-  const content = contentId(sha);
+  const ids = contentIds(sha);
+  const content = ids[0];
   if (!content) return [];
   const own = parseDigest(show(sha, DIGEST));
   let hash;
   const diffHash = () => (hash ??= reviewedDiffHash(sha));
-  const covers = (l) => l.task === task && l.content === content && binds(l, own, diffHash);
+  const covers = (l) => l.task === task && ids.includes(l.content) && binds(l, own, diffHash);
   const problems = own.some(covers) ? [] : [`its tree has no pass digest line bound to its content ${content.slice(0, 12)}`];
-  return [...problems, ...stalePasses(sha, { task, content, own, covers })];
+  return [...problems, ...stalePasses(sha, { task, ids, own, covers })];
 }
 
 /**
@@ -94,12 +95,12 @@ function binds(line, digest, diffHash) {
  * Pass lines this commit added for its task that bind other content, with no later line binding
  * this commit's content: the digest would show a pass for a diff that did not land (M18.127, cp13 F5).
  */
-function stalePasses(sha, { task, content, own, covers }) {
+function stalePasses(sha, { task, ids, own, covers }) {
   const before = new Set(show(`${sha}^`, DIGEST).split(/\r?\n/));
   const text = show(sha, DIGEST).split(/\r?\n/).filter(Boolean);
   return own
     .map((l, i) => ({ l, i, added: !before.has(text[i]) }))
-    .filter(({ l, i, added }) => added && l.task === task && l.verdict === 'pass' && l.content && l.content !== content && !own.slice(i + 1).some(covers))
+    .filter(({ l, i, added }) => added && l.task === task && l.verdict === 'pass' && l.content && !ids.includes(l.content) && !own.slice(i + 1).some(covers))
     .map(
       ({ l, i }) => `digest line ${i + 1} is a pass for content ${l.content.slice(0, 12)}, not this commit's, and no later line binds this commit's content`,
     );
@@ -127,7 +128,7 @@ function grammarProblems(entries) {
 function posthocProblems(commits, entries, milestone) {
   const ids = new Map();
   const idsOf = (task) => {
-    if (!ids.has(task)) ids.set(task, new Set(commits.filter((c) => c.task === task).map((c) => contentId(c.sha))));
+    if (!ids.has(task)) ids.set(task, new Set(commits.filter((c) => c.task === task).flatMap((c) => contentIds(c.sha))));
     return ids.get(task);
   };
   // the grammar alone decides for lines added since it; the regex fallback is for older lines only
