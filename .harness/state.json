@@ -1,9 +1,9 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.153",
+  "currentTask": "M18.43",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M18.117 (blocks-landing): main's ci queue drained ~20:20Z. Tip dfc4849 is red on two jobs: security/osv-scanner (new advisory GHSA-6pq8-jhm2-2vcw on qs 6.16.0, fixed by the M18.117 qs override) and cold-setup (615 s > 600 s budget after the 21-run backlog; re-measured on the next run, not loosened). Closing M18.117 needs a green ci run for the exact tip.",
-  "updated": "2026-10-27T22:09:50Z"
+  "blockedReason": "M18.117 (blocks-landing): all three verify jobs and osv-scanner are green on main since the qs override, but ci's cold-setup job fails on 7 of the last 12 main runs (620-685 s on failures against the 600 s COLD_SETUP_MAX_MS, 465-505 s on passes; tip b89ad89 took 648 s with no queue). It is not runner backlog (cp17 F1). M18.154 makes check-budget --cold name its slow phase; the fix then lands as M18.117 task commits, without raising the limit. Closing M18.117 needs a whole green ci run on the exact tip.",
+  "updated": "2026-10-28T00:36:49Z"
 }
