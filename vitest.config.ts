@@ -76,7 +76,9 @@ export default defineConfig({
           name: 'browser',
           // Keep RAF-driven UI files from competing for browser pages during the full ladder
           // (M18.44: macOS CI timed out under the unchanged 20 s limit). Windows also separates projects.
-          fileParallelism: false,
+          // Linux runs browser files in parallel, in the node project's group: run after it, alone, they
+          // made Vitest the cold setup's critical path, over COLD_SETUP_MAX_MS (M18.117, cp17 F1).
+          ...(process.platform === 'linux' ? {} : { fileParallelism: false }),
           ...(process.platform === 'win32' ? { sequence: { groupOrder: 1 } } : {}),
           include: [`${SRC}/*.browser.test.{ts,tsx}`],
           browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] },
