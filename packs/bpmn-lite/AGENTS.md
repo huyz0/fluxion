@@ -1,4 +1,4 @@
-# @fluxion/pack-bpmn — agent notes
+# @fluxion/pack-bpmn-lite — agent notes
 
 First-party BPMN-lite shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`.
 

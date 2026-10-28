@@ -1,7 +1,7 @@
-// The bpmn pack's checked-in distribution (FR-LIB-007, ADR-0048, ADR-0050, ADR-0194): pack/, __golden__/ and pack-versions.json
+// The bpmn-lite pack's checked-in distribution (FR-LIB-007, ADR-0048, ADR-0050, ADR-0194): pack/, __golden__/ and pack-versions.json
 // must equal what the SDK suite builds from the exported `bpmnSource`, load through the host loader, carry no vendor brand, draw
 // inside each box, and agree with the package version and CHANGELOG.md. Runs only compare and never write. To regenerate the files,
-// run `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/bpmn` (both are needed), then a plain run to check them; after
+// run `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run packs/bpmn-lite -u` (both are needed), then a plain run to check them; after
 // `changeset version`, `node scripts/packs/sync-versions.mjs` does both for every pack.
 import { type CheckedInShapePack, checkShapePack, shapePackExpectation } from '@fluxion/sdk/testing';
 import { describe, expect, it } from 'vitest';
@@ -25,7 +25,7 @@ const checkedIn: CheckedInShapePack = {
   changelog: import.meta.glob('../CHANGELOG.md', { query: '?raw', import: 'default', eager: true })['../CHANGELOG.md'],
 };
 
-describe('the bpmn declarative pack (FR-LIB-007)', () => {
+describe('the bpmn-lite declarative pack (FR-LIB-007)', () => {
   it('FR-LIB-003, FR-LIB-007, NFR-LIC-003: the checked-in files are the build of the exported source, with no problem', async () => {
     if (WRITE) {
       // a write run needs the variable and `-u` together: the variable alone (say, leaked into a gate) fails, never writes

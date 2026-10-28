@@ -844,7 +844,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/sdk
 
-  packs/bpmn:
+  packs/bpmn-lite:
     dependencies:
       '@fluxion/sdk':
         specifier: workspace:*

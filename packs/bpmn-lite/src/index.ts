@@ -1,4 +1,4 @@
-// Public entry of @fluxion/pack-bpmn; the package comment is the dts banner in tsdown.config.ts.
+// Public entry of @fluxion/pack-bpmn-lite; the package comment is the dts banner in tsdown.config.ts.
 import { type DeclarativeShapePack, definePack, namedShapeDefs, type Pack } from '@fluxion/sdk';
 import { shapes } from './shapes.js';
 

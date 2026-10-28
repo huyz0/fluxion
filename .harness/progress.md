@@ -3273,3 +3273,6 @@ Adds @fluxion/pack-people: 10 generic avatar definitions in three categories (in
 ## M18.163 — land.mjs rebuilds project-reference declarations first (2026-10-29)
 
 - Stream 2's batch (M18.125, M18.129, M18.33, M18.133) was refused by land.mjs at the M18.129 pick: TypeDoc reported "@fluxion/sdk/testing has no exported member testShapePack". land hard-resets to the remote, which leaves packages/sdk/.tsbuild at the remote's declarations, and regenerate() ran only `pnpm run build` before `check-api --update`. regenerate() now runs `pnpm run typecheck` (tsc -b) first; a land.test case pins the order.
+## M18.125 — bpmn pack renamed bpmn-lite (2026-10-27)
+
+Renamed packs/bpmn to packs/bpmn-lite and the package to @fluxion/pack-bpmn-lite (unreleased, so no migration), so the M18 completion gate's bpmn-lite leg finds the pack FR-LIB-007 names; the `bpmn` namespace, definition ids and exports (bpmnSource, bpmnPack) are unchanged. API report, changeset, workspaces, tsconfig and lockfile importer follow. Gate legs run green for bpmn-lite, cloud-architecture, icons-lucide, devices and people.

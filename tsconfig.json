@@ -88,7 +88,7 @@
       "path": "./packs/uml"
     },
     {
-      "path": "./packs/bpmn"
+      "path": "./packs/bpmn-lite"
     },
     {
       "path": "./packs/network"

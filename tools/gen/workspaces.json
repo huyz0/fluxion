@@ -228,8 +228,8 @@
       "desc": "First-party UML-lite shape pack: declarative definitions with license and goldens (FR-LIB-007); imports only `@fluxion/sdk`."
     },
     {
-      "dir": "packs/bpmn",
-      "name": "@fluxion/pack-bpmn",
+      "dir": "packs/bpmn-lite",
+      "name": "@fluxion/pack-bpmn-lite",
       "layer": "Pack",
       "runtime": "dom",
       "dependsOn": ["sdk"],

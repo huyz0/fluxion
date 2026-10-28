@@ -3,7 +3,7 @@ import { defineConfig } from 'tsdown';
 // The package comment is a dts banner: in the bundled index.d.ts, imports from other packages come
 // before index.ts's own text, and API Extractor needs @packageDocumentation at the very top (as schema).
 const PACKAGE_DOC = `/**
- * \`@fluxion/pack-bpmn\` — First-party bpmn shape pack; imports only \`@fluxion/sdk\`.
+ * \`@fluxion/pack-bpmn-lite\` — First-party BPMN-lite shape pack; imports only \`@fluxion/sdk\`.
  *
  * @packageDocumentation
  */`;

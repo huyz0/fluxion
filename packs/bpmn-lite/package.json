@@ -1,5 +1,5 @@
 {
-  "name": "@fluxion/pack-bpmn",
+  "name": "@fluxion/pack-bpmn-lite",
   "version": "0.0.0",
   "description": "First-party BPMN-lite shape pack: activities, events, gateways, data and swimlanes.",
   "license": "MIT",
