@@ -20,6 +20,10 @@
 // for its commit message, which is otherwise read from the local clone, fetching an unseen head from origin
 // unless --offline. On red, an open `blocks-landing` row of the backlog (--backlog, default the repo's) is named:
 // while it is open, that row and commits confined to HARNESS_PATHS may proceed (M18.142, cp16 F2).
+// While ci's cold-setup job is continue-on-error, a red cold-setup does not fail the run, so its own
+// result and blame line are printed for ci's newest completed run: a failure by status exits 1, a
+// failure by time is a warning, an unreadable log is said (M18.161, cp19 F2). A run's optional
+// `coldSetup: { conclusion, log }` stands in for GitHub in --runs-file.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { runSource, transportHint } from '../gates/ci-runs.mjs';
@@ -91,6 +95,11 @@ function fileSource(all) {
       if (all.some((r) => r.queryFails && r.workflowName === workflow)) throw new Error('query failed');
       return [newest(pushes.filter((r) => r.workflowName === workflow && r.status === 'completed'))].filter(Boolean);
     },
+    coldSetup: async (id) => {
+      const cold = all.find((r) => r.databaseId === id)?.coldSetup;
+      if (cold === 'throws') throw new Error('query failed');
+      return cold;
+    },
     nightly: async () => {
       if (all.some((r) => r.queryFails && r.workflowName === 'nightly')) throw new Error('query failed');
       return all.filter((r) => r.workflowName === 'nightly');
@@ -100,10 +109,11 @@ function fileSource(all) {
 
 let runs;
 let nightlyRuns;
+let source;
 /** Workflows whose status-filtered query failed: no completed run in the window is then unknown, not "none yet" (r1 F2). */
 const unread = new Set();
 try {
-  const source = opt('runs-file') ? fileSource(JSON.parse(readFileSync(opt('runs-file'), 'utf8'))) : runSource();
+  source = opt('runs-file') ? fileSource(JSON.parse(readFileSync(opt('runs-file'), 'utf8'))) : runSource();
   // the branch window mixes workflows and can drop an old red run; ask for each workflow's newest
   // completed run too (M18.134, cp14 F1). A failed query is said, and the unknown rule below applies.
   const completed = await Promise.all(
@@ -158,6 +168,35 @@ for (const workflow of WORKFLOWS) {
   }
   verdict = 1;
   console.log(`last-ci: RED ${workflow} ${done.conclusion} at ${sha} (run ${done.databaseId}): fix main's CI before the next task`);
+}
+/** The cold-setup line of ci's newest completed run, and whether it blocks (by status). */
+async function coldSetupReport(run, newer) {
+  const where = `at ${String(run.headSha).slice(0, 7)} (run ${run.databaseId})`;
+  const cold = await Promise.resolve(source.coldSetup?.(run.databaseId)).catch(() => null);
+  if (cold === undefined) return { verdict: 0, line: `last-ci: ci has no cold-setup job ${where}` };
+  if (cold === null) return { verdict: 0, line: `last-ci: cold-setup UNKNOWN ${where}: its job could not be read; check it by hand` };
+  if (cold.conclusion === 'success') return { verdict: 0, line: `last-ci: cold-setup green ${where}` };
+  const blame = typeof cold.log === 'string' ? /budget: cold setup failed by (status|time)[^\r\n]*/.exec(cold.log) : null;
+  if (!blame)
+    return {
+      verdict: 0,
+      line: `last-ci: cold-setup ${cold.conclusion} ${where}; cause UNKNOWN (log ${cold.log === null ? 'unreadable' : 'without a blame line'}); check it by hand`,
+    };
+  const text = blame[0].replace(/^budget: /, '');
+  // a declared fix of that ci run waits as it does for the run's own red (M18.161 r1 F3)
+  if (blame[1] === 'status' && newer.length) {
+    const red = redWithPending('cold-setup', { ...run, conclusion: 'failure' }, newer, String(run.headSha).slice(0, 7));
+    return { verdict: red.verdict, line: `${red.line}; ${text}` };
+  }
+  if (blame[1] === 'status') return { verdict: 1, line: `last-ci: RED cold-setup ${where}: ${text}; a fresh clone fails, fix it before the next task` };
+  return { verdict: 0, line: `last-ci: warning: cold-setup ${where}: ${text} (continue-on-error until M18.157)` };
+}
+const ciRuns = newestFirst.filter((r) => r.workflowName === 'ci');
+const ciDone = ciRuns.find((r) => r.status === 'completed');
+if (ciDone) {
+  const cold = await coldSetupReport(ciDone, ciRuns.slice(0, ciRuns.indexOf(ciDone)));
+  verdict = worst(verdict, cold.verdict);
+  console.log(cold.line);
 }
 const newestNightly = Array.isArray(nightlyRuns)
   ? [...nightlyRuns].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).find((r) => r.status === 'completed')

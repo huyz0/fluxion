@@ -281,6 +281,39 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     assert.deepEqual(spawned[0].slice(0, 8), ['gh', 'run', 'list', '--workflow', 'nightly.yml', '--branch', 'main', '--limit']);
   });
 
+  it("NFR-DX-001: a run's cold-setup job and its log are read through REST and gh, the log null when unreadable (M18.161)", async () => {
+    const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const jobs = [
+      { id: 7, name: 'verify (ubuntu-latest)', conclusion: 'success' },
+      { id: 8, name: 'cold-setup', conclusion: 'failure' },
+    ];
+    const calls = [];
+    const fetch = (logOk) => async (url) => {
+      calls.push(url);
+      if (url.endsWith('/logs')) return { ok: logOk, status: logOk ? 200 : 403, text: async () => 'budget: cold setup failed by time' };
+      return { ok: true, status: 200, json: async () => ({ jobs }) };
+    };
+    assert.deepEqual(await restSource({ fetch: fetch(true) }).coldSetup(41), { conclusion: 'failure', log: 'budget: cold setup failed by time' });
+    assert.deepEqual(calls, [
+      'https://api.github.com/repos/huyz0/fluxion/actions/runs/41/jobs?per_page=100',
+      'https://api.github.com/repos/huyz0/fluxion/actions/jobs/8/logs',
+    ]);
+    assert.deepEqual(await restSource({ fetch: fetch(false) }).coldSetup(41), { conclusion: 'failure', log: null });
+    const spawned = [];
+    const gh = (logStatus) =>
+      ghSource((cmd, args) => {
+        spawned.push([cmd, ...args]);
+        if (args[0] === 'api') return { status: logStatus, stdout: 'budget: cold setup failed by status' };
+        return { status: 0, stdout: JSON.stringify({ jobs: [{ databaseId: 9, name: 'cold-setup', conclusion: 'failure' }] }) };
+      });
+    assert.deepEqual(await gh(0).coldSetup(42), { conclusion: 'failure', log: 'budget: cold setup failed by status' });
+    assert.deepEqual(spawned.slice(0, 2), [
+      ['gh', 'run', 'view', '42', '--json', 'jobs'],
+      ['gh', 'api', 'repos/huyz0/fluxion/actions/jobs/9/logs'],
+    ]);
+    assert.deepEqual(await gh(1).coldSetup(42), { conclusion: 'failure', log: null });
+  });
+
   it("HARNESS: a workflow's newest completed push run is read by status, outside any mixed window (M18.134, cp14 F1)", async () => {
     const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
     const red = { id: 31, name: 'ci', head_sha: 'c'.repeat(40), conclusion: 'failure', status: 'completed', event: 'push', created_at: 'T' };

@@ -66,6 +66,13 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
       ((await get(`actions/workflows/${file}/runs?branch=${encodeURIComponent(name)}&event=push&status=completed&per_page=1`)).workflow_runs ?? []).map(
         (r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at }),
       ),
+    // a run's cold-setup job and its log text (null when unreadable): last-ci reports it while it is continue-on-error (M18.161)
+    coldSetup: async (id) => {
+      const job = ((await get(`actions/runs/${id}/jobs?per_page=100`)).jobs ?? []).find((j) => j.name === 'cold-setup');
+      if (!job) return undefined;
+      const res = await fetch(`${API}/repos/${repo}/actions/jobs/${job.id}/logs`, { headers }).catch(() => undefined);
+      return { conclusion: job.conclusion, log: res?.ok ? await res.text() : null };
+    },
     // the nightly's last runs on the branch, scheduled or dispatched (not pushes): last-ci reports them (M18.124)
     nightly: async (name) =>
       ((await get(`actions/workflows/nightly.yml/runs?branch=${encodeURIComponent(name)}&per_page=5`)).workflow_runs ?? []).map((r) => ({
@@ -112,6 +119,12 @@ export function ghSource(spawn = spawnSync) {
       gh(['run', 'list', '--branch', name, '--event', 'push', '--limit', '30', '--json', 'databaseId,workflowName,headSha,status,conclusion,createdAt']),
     completed: async (name, file) =>
       gh(['run', 'list', '--workflow', file, '--branch', name, '--event', 'push', '--status', 'completed', '--limit', '1', '--json', RUN_FIELDS]),
+    coldSetup: async (id) => {
+      const job = (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).find((j) => j.name === 'cold-setup');
+      if (!job) return undefined;
+      const log = spawn('gh', ['api', `repos/${REPO}/actions/jobs/${job.databaseId}/logs`], { encoding: 'utf8', maxBuffer: 1 << 26 });
+      return { conclusion: job.conclusion, log: log.status === 0 ? log.stdout : null };
+    },
     nightly: async (name) =>
       gh([
         'run',

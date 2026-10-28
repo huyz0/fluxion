@@ -39,6 +39,47 @@ const run = (workflowName, state, createdAt, extra = {}) => {
 };
 
 describe('last-ci (M5.2, M4 final F3)', () => {
+  it("NFR-DX-001: reports ci's cold-setup job while it is continue-on-error; only a failure by status blocks (M18.161)", () => {
+    const at = (coldSetup) => lastCi([run('ci', 'success', '2026-09-29T02:00:00Z', { coldSetup }), run('gates', 'success', '2026-09-29T02:00:00Z')]);
+    const log = (line) => `2026-09-29T02:10:00Z budget: cold phase verify 1 ms\n2026-09-29T02:10:00Z budget: ${line}\n`;
+    const status = at({ conclusion: 'failure', log: log('cold setup failed by status in phase verify:test after 517002 ms') });
+    assert.equal(status.status, 1, status.out);
+    assert.match(status.out, /RED cold-setup at abcdef1 \(run 20\): cold setup failed by status in phase verify:test after 517002 ms/);
+    const time = at({ conclusion: 'failure', log: log('cold setup failed by time (660902 ms > 600000 ms); slowest phase verify:test 604230 ms') });
+    assert.equal(time.status, 0, time.out);
+    assert.match(time.out, /warning: cold-setup at abcdef1 \(run 20\): cold setup failed by time \(660902 ms > 600000 ms\)/);
+    const unreadable = at({ conclusion: 'failure', log: null });
+    assert.equal(unreadable.status, 0, unreadable.out);
+    assert.match(unreadable.out, /cold-setup failure at abcdef1 \(run 20\); cause UNKNOWN \(log unreadable\)/);
+    // a newer ci run pending does not hide it: the newest *completed* run's cold-setup is read (r1 F1)
+    const behind = lastCi([
+      run('ci', 'in_progress', '2026-09-29T03:00:00Z', { databaseId: 21, headSha: 'fff', message: 'M1.1: feat(x): y' }),
+      run('ci', 'success', '2026-09-29T02:00:00Z', {
+        coldSetup: { conclusion: 'failure', log: log('cold setup failed by status in phase install after 1 ms') },
+      }),
+      run('gates', 'success', '2026-09-29T02:00:00Z'),
+    ]);
+    assert.equal(behind.status, 1, behind.out);
+    assert.match(behind.out, /RED cold-setup .*run 20.*none declares Fixes-ci: 20.*failed by status in phase install/);
+    // unless that newer run declares itself the fix: then wait, as for the run's own red (r1 F3)
+    const fixing = lastCi([
+      run('ci', 'in_progress', '2026-09-29T03:00:00Z', { databaseId: 21, headSha: 'fff', message: 'M1.1: fix(x): y\n\nFixes-ci: 20' }),
+      run('ci', 'success', '2026-09-29T02:00:00Z', {
+        coldSetup: { conclusion: 'failure', log: log('cold setup failed by status in phase install after 1 ms') },
+      }),
+      run('gates', 'success', '2026-09-29T02:00:00Z'),
+    ]);
+    assert.equal(fixing.status, 2, fixing.out);
+    // a query that throws is unknown, never green (r1 F2)
+    const thrown = at('throws');
+    assert.equal(thrown.status, 0, thrown.out);
+    assert.match(thrown.out, /cold-setup UNKNOWN at abcdef1 \(run 20\): its job could not be read/);
+    assert.doesNotMatch(thrown.out, /cold-setup green/);
+    const green = at({ conclusion: 'success', log: null });
+    assert.equal(green.status, 0, green.out);
+    assert.match(green.out, /cold-setup green at abcdef1/);
+  });
+
   it('a red last run on main blocks the next task', () => {
     const r = lastCi([
       run('ci', 'failure', '2026-09-29T02:00:00Z', 'deadbee0000000'),
