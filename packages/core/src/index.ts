@@ -74,7 +74,16 @@ export const VERSION: string = '0.0.0';
 export type { SvgArtwork, SvgArtworkNode } from '@fluxion/schema';
 export { parseSvgArtwork } from './shape/artwork.js';
 export { type ArtworkFontProfile, artworkFontLicenses, artworkFontProfiles } from './shape/artwork-font-profile.js';
-export { normalizeSvgArtworkFonts, type SvgArtworkFont, type SvgArtworkFontOptions } from './shape/artwork-fonts.js';
+export {
+  type AliasedSvgArtwork,
+  type ArtworkFontBinding,
+  aliasSvgArtworkFonts,
+  artworkFontAlias,
+  isArtworkFontAlias,
+  normalizeSvgArtworkFonts,
+  type SvgArtworkFont,
+  type SvgArtworkFontOptions,
+} from './shape/artwork-fonts.js';
 export { allowsShapePackContentLicense, shapePackContentLicenses } from './shape/content-license-policy.js';
 export { canonicalJson, type EncodedShapePack, encodeShapePack, type ShapePackDraft } from './shape/pack-encode.js';
 export type {
@@ -92,7 +101,13 @@ export type {
   VersionedShapePackSubset,
 } from './shape/pack-font-types.js';
 export { parseVersionedShapePackCategory, parseVersionedShapePackIndex, parseVersionedShapePackSubset } from './shape/pack-font-validation.js';
-export { registerShapePackSubsets } from './shape/pack-registration.js';
+export {
+  type ArtworkFontRequirement,
+  type ArtworkShapeRegistries,
+  artworkFontRequirements,
+  registerShapePackSubsets,
+  registerVersionedShapePackSubsets,
+} from './shape/pack-registration.js';
 export { shapePackCategorySchema, shapePackIndexSchema, shapePackSubsetSchema } from './shape/pack-schema.js';
 export type {
   ShapePackCategory,

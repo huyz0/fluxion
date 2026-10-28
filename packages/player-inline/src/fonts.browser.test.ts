@@ -53,6 +53,15 @@ describe('the fonts a file carries (FR-THM-008)', () => {
     expect([...document.fonts].some((f) => f.family.includes('MeasuredProbe'))).toBe(false);
   });
 
+  it('FR-AST-003: a document font named in the reserved artwork-alias namespace is never registered (ADR-0192)', async () => {
+    const register = vi.fn((_faces: readonly FaceMetrics[]) => vi.fn());
+    const family = `fx-artwork-${'c'.repeat(64)}`;
+    const { release } = await loadEmbeddedFonts(file(family, await roboto(), table()), { register });
+    expect([...document.fonts].some((f) => f.family.includes(family))).toBe(false);
+    expect(register).not.toHaveBeenCalled();
+    release();
+  });
+
   it('FR-THM-008: a metrics table that is not well-formed is never registered, whatever else the file holds', async () => {
     const bytes = await roboto();
     const bad: unknown[] = [

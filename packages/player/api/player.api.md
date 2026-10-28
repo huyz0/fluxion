@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ArtworkFontBinding } from '@fluxion/core';
 import { AssetUrls } from '@fluxion/render';
 import { Builds } from '@fluxion/anim';
 import { Clock } from '@fluxion/core';
@@ -13,6 +14,7 @@ import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { RefObject } from 'react';
 import { registerFontMetrics } from '@fluxion/render';
+import { Registry } from '@fluxion/core';
 import { RenderRegistries } from '@fluxion/render';
 import { Store } from '@fluxion/core';
 
@@ -199,7 +201,7 @@ export const realtimeClock: Clock;
 export { registerFontMetrics }
 
 // @public
-export function renderRegistriesFor(host: CoreRegistries): RenderRegistries;
+export function renderRegistriesFor(host: CoreRegistries, artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>): RenderRegistries;
 
 // @public
 export function toggleFullscreen(target: FullscreenTarget, doc: FullscreenDocument): Promise<FullscreenResult>;

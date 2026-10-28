@@ -1,8 +1,8 @@
-import { allowsShapePackContentLicense, type ShapePackSubset } from '@fluxion/core';
-import { sha256Hex, writePortableFlux } from '@fluxion/format';
+import { allowsShapePackContentLicense, artworkFontAlias, type ShapePackSubset, type ShapePackSubset11 } from '@fluxion/core';
+import { readZip, sha256Hex, writePortableFlux, writeZip } from '@fluxion/format';
 import type { QualifiedName } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
-import { expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { openFlux } from './open-flux.js';
 
 const files = import.meta.glob('../../../fixtures/shape-pack/subset.json', { query: '?raw', import: 'default', eager: true });
@@ -43,4 +43,79 @@ it('FR-LIB-009: an embedded builtin namespace is refused even with disjoint IDs,
   const next = await openFlux(await archive(pack));
   expect(next.ok).toBe(true);
   if (next.ok) next.value.release();
+});
+
+describe('FR-LIB-004 FR-AST-003: retained artwork fonts (M18.97)', () => {
+  const v11 = import.meta.glob('../../../fixtures/shape-pack/v1.1/subset.json', { query: '?raw', import: 'default', eager: true });
+  const interUrl = import.meta.glob('../../../packs/fonts-core/fonts/inter-latin-400-normal.woff2', {
+    query: '?url',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>;
+  const inter = async () => new Uint8Array(await (await fetch(Object.values(interUrl)[0] ?? '')).arrayBuffer());
+  const ALIAS = artworkFontAlias('8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc');
+  const aliased = () => [...document.fonts].filter((face) => face.family.replace(/"/g, '') === ALIAS);
+  async function archive11(): Promise<Uint8Array> {
+    const pack = JSON.parse(Object.values(v11)[0] ?? 'null') as ShapePackSubset11;
+    const bytes = await inter();
+    const b = documentBuilder();
+    const screen = b.screen();
+    b.rect(screen, { defId: 'sample:label' });
+    const result = await writePortableFlux({
+      document: b.build(),
+      appVersion: '0',
+      hasher: { sha256: async (data) => sha256Hex(data) },
+      shapePacks: {
+        sources: [{ kind: 'embedded', subset: pack, fonts: new Map([[sha256Hex(bytes), bytes]]) }],
+        builtinIds: new Set(),
+        licensePolicy: allowsShapePackContentLicense,
+      },
+    });
+    if (!result.ok) throw new Error(result.error.reason);
+    return result.value.bytes;
+  }
+
+  it('registers the exact retained face under its alias before presenting, and releases it with the file', async () => {
+    const opened = await openFlux(await archive11());
+    if (!opened.ok) throw new Error(opened.message);
+    expect(opened.value.registries.artworkFonts?.get('sample:label')).toEqual([
+      { family: 'Inter', weight: 400, style: 'normal', sha256: expect.any(String), alias: ALIAS },
+    ]);
+    expect(aliased().map((face) => face.status)).toEqual(['loaded']);
+    opened.value.release();
+    await Promise.resolve();
+    expect(aliased()).toEqual([]);
+  });
+
+  it('refuses a file whose retained font is missing, leaving no face or shape behind', async () => {
+    const entries = readZip(await archive11());
+    if (!entries.ok) throw new Error('zip');
+    const stripped = writeZip(entries.value.filter((entry) => !entry.name.endsWith('.woff2')).map(({ name, bytes }) => ({ name, bytes })));
+    if (!stripped.ok) throw new Error('zip');
+    const refused = await openFlux(stripped.value);
+    expect(refused.ok).toBe(false);
+    expect(aliased()).toEqual([]);
+  });
+
+  it('refuses an intact file whose retained face fails to load in the page, then opens it once the page can load it', async () => {
+    // the loader has verified the bytes, so only the player's own registration can refuse: its rollback path
+    const original = globalThis.FontFace;
+    globalThis.FontFace = class extends original {
+      override load(): Promise<FontFace> {
+        return Promise.reject(new Error('blocked'));
+      }
+    };
+    const bytes = await archive11();
+    try {
+      const refused = await openFlux(bytes);
+      expect(refused.ok).toBe(false);
+      if (!refused.ok) expect(refused.message).toMatch(/saved shapes could not be registered: .*could not be loaded/);
+    } finally {
+      globalThis.FontFace = original;
+    }
+    expect(aliased()).toEqual([]);
+    const reopened = await openFlux(bytes);
+    if (!reopened.ok) throw new Error(reopened.message);
+    reopened.value.release();
+  });
 });

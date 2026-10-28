@@ -154,3 +154,4 @@ M18.43 cp20 F4: the three-parameter corner case and the empty-artwork (<path d="
 M18.43 cp21 F2: M18.162 takes its argue path: check-licenses requires license MIT for every workspace (the code's licence); the artwork's ISC and MIT terms are gated in pack/index.json credits since M18.33, unless an ADR-0050 amendment changes the workspace rule in the same commit.
 M18.43 cp21 F3: the under-limit status case with M18.157 open is folded into M18.164's EARS; the exemption already requires cold.ok.
 M18.43 cp21 F4: the backlog header was 149 for 150 rows; the cp21 record sets 151 with M18.164; every budget.json re-record is named in its commit body from now on.
+M18.97 r2 F1: the reserved-prefix rule is enforced in the one-file player here; studio and render loadFontFaces adopt it with M18.115, whose acceptance gains the rule in its own commit (before studio registers any artwork face, so nothing is exposed meanwhile).

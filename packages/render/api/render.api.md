@@ -4,9 +4,14 @@
 
 ```ts
 
+import { ArtworkFontBinding } from '@fluxion/core';
+import { ArtworkFontRequirement } from '@fluxion/core';
+import { ArtworkShapeRegistries } from '@fluxion/core';
 import { ComponentType } from 'react';
 import { Context } from 'react';
 import { CSSProperties } from 'react';
+import { Diagnostic } from '@fluxion/schema';
+import { Disposable } from '@fluxion/core';
 import { ElementRecord } from '@fluxion/schema';
 import { FaceMetrics } from '@fluxion/core';
 import { GlobalRoute } from '@fluxion/routing';
@@ -21,6 +26,7 @@ import { RecordId } from '@fluxion/schema';
 import { Rect } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { ResolvedPaint } from '@fluxion/theme';
+import { Result } from '@fluxion/schema';
 import { RichTextDoc } from '@fluxion/schema';
 import { RichTextMark } from '@fluxion/schema';
 import { RichTextNode } from '@fluxion/schema';
@@ -29,11 +35,25 @@ import { Router } from '@fluxion/routing';
 import { ScreenRecord } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { ShapeElement } from '@fluxion/schema';
+import { ShapePackLicensePolicy } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { StyledBlock } from '@fluxion/core';
 import { TextElement } from '@fluxion/schema';
 import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+import { VersionedShapePackSubset } from '@fluxion/core';
+
+// @public
+export type ArtworkFontBytes = ArtworkFontRequirement & {
+    readonly bytes: Uint8Array | undefined;
+};
+
+// @public
+export type ArtworkFontPorts = {
+    readonly sha256: (bytes: Uint8Array) => Promise<string>;
+    readonly fonts?: FontFaceSet;
+    readonly signal?: AbortSignal;
+};
 
 // @public
 export type AssetUrls = (assetId: RecordId) => string | undefined;
@@ -54,7 +74,7 @@ export function browserMeasurer(): CanvasTextMeasurer | undefined;
 export const BUILTIN_MARKERS: readonly MarkerDef[];
 
 // @public
-export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>): RenderRegistries;
+export function builtinRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>, artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>): RenderRegistries;
 
 // @public
 export function cameraTransform(area: Rect, camera: {
@@ -84,7 +104,7 @@ export function createCanvasMeasurer(): CanvasTextMeasurer;
 export function createFixedMeasurer(advance?: number): TextMeasurer;
 
 // @public
-export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>): RenderRegistries;
+export function createRenderRegistries(shapeDefs?: Registry<string, ShapeDef>, routers?: Registry<string, Router>, markers?: Registry<string, MarkerDef>, artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>): RenderRegistries;
 
 // @public
 export function DocumentView(props: DocumentViewProps): ReactNode;
@@ -253,13 +273,25 @@ export type RecordedFace = {
 export function recordFaceMetrics(bytes: Uint8Array, face: RecordedFace): Promise<FaceMetrics>;
 
 // @public
+export function registerArtworkFonts(fonts: readonly ArtworkFontBytes[], ports: ArtworkFontPorts): Promise<Result<RegisteredArtworkFonts, readonly Diagnostic[]>>;
+
+// @public
 export function registerBuiltinMarkers(markers: Registry<string, MarkerDef>): ReturnType<Registry<string, MarkerDef>["register"]>;
 
 // @public
 export function registerBuiltinViews(registries: RenderRegistries): void;
 
 // @public
+export type RegisteredArtworkFonts = {
+    readonly registered: ReadonlySet<string>;
+    readonly dispose: () => void;
+};
+
+// @public
 export function registerFontMetrics(faces: readonly FaceMetrics[]): () => void;
+
+// @public
+export function registerSavedShapePacks(registries: ArtworkShapeRegistries, packs: readonly VersionedShapePackSubset[], ports: SavedShapePackPorts): Promise<Result<Disposable, readonly Diagnostic[]>>;
 
 // @public
 export type RenderMode = "edit" | "present" | "export" | "thumbnail";
@@ -272,6 +304,7 @@ export type RenderRegistries = {
     readonly markers: Registry<string, MarkerDef>;
     readonly refined?: RouteContext["refined"];
     readonly globalPass?: ReadSignal<GlobalPass | undefined>;
+    readonly artworkFonts?: Registry<string, readonly ArtworkFontBinding[]>;
 };
 
 // @public
@@ -284,6 +317,12 @@ export type RenderStatsRecorder = (name: string, ms: number) => void;
 export function RichText(props: {
     readonly doc: RichTextDoc | undefined;
 }): ReactNode;
+
+// @public
+export type SavedShapePackPorts = ArtworkFontPorts & {
+    readonly bytesOf: (sha256: string) => Uint8Array | undefined;
+    readonly policy: ShapePackLicensePolicy;
+};
 
 // @public
 export function screenArea(screen: Pick<ScreenRecord, "kind" | "size" | "viewport">): Rect;

@@ -140,3 +140,99 @@ export function normalizeSvgArtworkFonts(
   const fonts = [...state.used.values()].sort((a, b) => (a.sha256 < b.sha256 ? -1 : a.sha256 > b.sha256 ? 1 : 0));
   return { root: { ...checked, attributes }, fonts, ...(state.error ? { error: state.error } : {}) };
 }
+
+/** A source face bound to the private alias its exact bytes are registered under (ADR-0192). @public */
+export type ArtworkFontBinding = {
+  /** Original source family, as the artwork names it. */
+  readonly family: string;
+  /** Static weight. */
+  readonly weight: number;
+  /** Static style. */
+  readonly style: 'normal' | 'italic';
+  /** SHA-256 of the exact registered bytes. */
+  readonly sha256: string;
+  /** Renderer-facing family; {@link artworkFontAlias} of `sha256`. */
+  readonly alias: string;
+};
+
+/**
+ * The deterministic private family that exact artwork bytes are registered under: derived from the
+ * byte identity alone, so packs sharing one binary share one face, and no document or theme family
+ * can name it by accident.
+ * @public
+ */
+export function artworkFontAlias(sha256: string): string {
+  return `${ARTWORK_ALIAS_PREFIX}${sha256}`;
+}
+const ARTWORK_ALIAS_PREFIX = 'fx-artwork-';
+
+/**
+ * Whether a family lies in the reserved artwork-alias namespace. Hosts never register a document or
+ * theme font under such a family, so no file can shadow another file's exact artwork face.
+ * @public
+ */
+export function isArtworkFontAlias(family: string): boolean {
+  return family
+    .trim()
+    .replace(/^(["'])(.*)\1$/, '$2')
+    .toLowerCase()
+    .startsWith(ARTWORK_ALIAS_PREFIX);
+}
+
+const FONT_STYLE = /^font-(family|weight|style)$/i;
+const withoutFontStyle = (style: string | undefined): string | undefined => {
+  if (style === undefined) return undefined;
+  const kept = style.split(';').filter((d) => d.trim() && !FONT_STYLE.test(d.slice(0, d.indexOf(':')).trim()));
+  return kept.length ? kept.join(';') : undefined;
+};
+
+/** A non-empty text element's attributes naming its bound alias, or the refusal. */
+function aliasedText(node: SvgArtworkNode, face: Face, bindings: Map<string, ArtworkFontBinding>): SvgArtworkNode['attributes'] | string {
+  if (!supportedText(node)) return 'unsupported-text-profile';
+  const bound = bindings.get(key(face));
+  if (!bound) return 'missing-exact-font-face';
+  const { style: inline, ...rest } = node.attributes;
+  const style = withoutFontStyle(inline);
+  return { ...rest, ...(style ? { style } : {}), 'font-family': bound.alias, 'font-weight': String(bound.weight), 'font-style': bound.style };
+}
+
+function aliased(node: SvgArtworkNode, parent: Face, bindings: Map<string, ArtworkFontBinding>, state: { error?: string }): SvgArtworkNode {
+  const face = inherited(node, parent);
+  if (node.name === 'tspan') state.error = 'unsupported-text-profile';
+  let attributes = node.attributes;
+  if (node.name === 'text' && node.children.some((c) => typeof c === 'string' && c.trim())) {
+    const result = aliasedText(node, face, bindings);
+    if (typeof result === 'string') state.error ??= result;
+    else attributes = result;
+  }
+  return { ...node, attributes, children: node.children.map((c) => (typeof c === 'string' ? c : aliased(c, face, bindings, state))) };
+}
+
+/** {@link aliasSvgArtworkFonts}'s result. @public */
+export type AliasedSvgArtwork =
+  | {
+      /** Every bound text names its alias. */
+      readonly ok: true;
+      /** Renderer-facing copy of the artwork. */
+      readonly root: SvgArtworkNode;
+    }
+  | {
+      /** Some text has no exact bound face. */
+      readonly ok: false;
+      /** Refusal reason, as in {@link normalizeSvgArtworkFonts}. */
+      readonly error: string;
+    };
+
+/**
+ * Renderer-facing artwork: every non-empty text element names the private alias of its exact bound
+ * face, with its own inline font declarations dropped so nothing overrides the alias. The canonical
+ * artwork is not changed. A text face without a binding is an error, never a fallback.
+ * @public
+ */
+export function aliasSvgArtworkFonts(root: SvgArtworkNode, bindings: readonly ArtworkFontBinding[]): AliasedSvgArtwork {
+  if (referencedText(root)) return { ok: false, error: 'unsupported-text-reference-inheritance' };
+  const byFace = new Map(bindings.map((b) => [key({ family: b.family, weight: String(b.weight), style: b.style }), b]));
+  const state: { error?: string } = {};
+  const checked = aliased(root, { family: '', weight: '400', style: 'normal' }, byFace, state);
+  return state.error ? { ok: false, error: state.error } : { ok: true, root: checked };
+}

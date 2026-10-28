@@ -314,7 +314,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const measurer = useContext(MeasurerContext) ?? browserMeasurer();
   const fonts = useFontGeneration();
   const { w, h } = element.transform;
-  const artwork = useArtwork(def, { w, h }, `fx-art-${ids}`, theme);
+  const artwork = useArtwork(def, { w, h }, { prefix: `fx-art-${ids}`, theme, fonts: registries.artworkFonts?.get(element.defId) });
   const outlined = useMemo(() => (def === undefined ? undefined : evaluateOutline(def, { w, h }, element.params)), [def, w, h, element.params]);
   const paragraphs = useMemo(() => plainParagraphs(element.text), [element.text]);
   // the text as it is drawn (sizes, headings, spacing, indents), which the fit measures

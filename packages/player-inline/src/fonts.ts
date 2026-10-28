@@ -1,7 +1,8 @@
 // The fonts a `.flux` carries (FR-THM-008, FR-FIL-002, M10.32): each font asset becomes a `FontFace` made from the file's own bytes (never a URL, so no
 // `font-src` is needed under the file's CSP), and once the faces have loaded their recorded metrics (ADR-0148) are registered, so the page measures
-// text as the studio did when it saved. A face that does not load is skipped: its text is drawn in a fallback, as in any browser.
-import type { FaceMetrics } from '@fluxion/core';
+// text as the studio did when it saved. A face that does not load is skipped: its text is drawn in a fallback, as in any browser. A family in the
+// reserved artwork-alias namespace is skipped too, so a file cannot shadow the exact artwork faces of a file on the same page (ADR-0192).
+import { type FaceMetrics, isArtworkFontAlias } from '@fluxion/core';
 import type { LoadedFlux } from '@fluxion/format/player';
 import { registerFontMetrics } from '@fluxion/player';
 
@@ -54,6 +55,7 @@ export async function loadEmbeddedFonts(
   const metrics: FaceMetrics[] = [];
   const loading: Promise<void>[] = [];
   for (const { family, weight, style, bytes, meta } of embeddedFonts(loaded)) {
+    if (isArtworkFontAlias(family)) continue;
     try {
       const face = new FontFace(family, bytes.slice().buffer, {
         weight: String(weight),

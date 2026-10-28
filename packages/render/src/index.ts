@@ -1,5 +1,13 @@
 // Public entry of @fluxion/render; the package comment is the dts banner in tsdown.config.ts.
 
+export {
+  type ArtworkFontBytes,
+  type ArtworkFontPorts,
+  type RegisteredArtworkFonts,
+  registerArtworkFonts,
+  registerSavedShapePacks,
+  type SavedShapePackPorts,
+} from './artwork-font-registration.js';
 export type { AssetUrls } from './assets.js';
 export { paintCss } from './background.js';
 export { builtinRegistries, registerBuiltinViews } from './builtins.js';
