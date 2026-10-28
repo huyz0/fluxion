@@ -63,6 +63,9 @@ test('NFR-DX-001: Linux runs browser test files in parallel beside the node proj
         assert.equal(p.sequence, undefined, p.name);
         assert.equal(p.maxWorkers, undefined, p.name);
       }
+      // nor does the root test block the projects extend
+      assert.equal(linux.test.fileParallelism, undefined);
+      assert.equal(linux.test.maxWorkers, undefined);
       assert.equal(mac.test.projects[1].test.fileParallelism, false);
       assert.equal(mac.test.projects[0].test.fileParallelism, undefined);
       for (const key of ['coverage', 'testTimeout', 'hookTimeout']) assert.deepEqual(mac.test[key], linux.test[key]);

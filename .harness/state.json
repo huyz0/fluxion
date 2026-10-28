@@ -4,6 +4,6 @@
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "M18.117 (blocks-landing): all three verify jobs and osv-scanner are green on main since the qs override, but ci's cold-setup job fails on 7 of the last 12 main runs (620-685 s on failures against the 600 s COLD_SETUP_MAX_MS, 465-505 s on passes; tip b89ad89 took 648 s with no queue). It is not runner backlog (cp17 F1). M18.154 makes check-budget --cold name its slow phase; the fix then lands as M18.117 task commits, without raising the limit. Closing M18.117 needs a whole green ci run on the exact tip.",
-  "updated": "2026-10-28T02:05:50Z"
+  "blockedReason": "M18.117 (blocks-landing): ci at 3151d30 is green on every job except cold-setup (600.5 s against 600 s). Per Huy (2026-10-28) cold-setup is made non-blocking (continue-on-error, pinned to M18.157, which wins the margin back under the unchanged limit). Closing M18.117 needs a whole green ci run on the tip that carries that change.",
+  "updated": "2026-10-28T08:50:00Z"
 }
