@@ -3212,3 +3212,9 @@ Root-caused nightly 40470089950. Mutation: 274 (now 276) partitions exceed one G
 - Linux choice: restore `fileParallelism: false` for the browser project on every OS (M18.117's side-by-side run is reverted). Side by side, the node project's bounded-time tests shared 4 cores with Chromium: drawio-import's "amplifying entries ..." takes 0.6 s alone and 1.3 s under coverage here, but hit its 10 s at 2d1466a and 7f55f2d. The code is not the problem (lines 5 ms, placeholders 2 ms, unclosed tags 82 ms, svg data 142 ms, route walks 160 ms), so making it faster cannot absorb an 8x slowdown. Timeouts and assertions are unchanged.
 - Effect on M18.157: the test step goes back to about 600 s serial (603 s at 9aea8ae), so cold-setup will be over COLD_SETUP_MAX_MS by time again; it stays continue-on-error, and M18.157 must cut other work (harness-tests about 400 s, attw 324 s, api 277 s run beside it). This is M18.157's first failed attempt under ADR-0176 (state.json rowAttempts).
 - Windows: inline.browser's routing-chunk and arrow-key waits timed out once in the last ten main runs (7f55f2d; green at 439cf97, 3bb2bc6, 3151d30, 9aea8ae, b89ad89, dfc4849, 742fbdf, e86cf69, d0ecbb9). Its browser files were already serial; nothing changes for Windows, and the row closes only on a green three-OS run.
+
+## M18.160 — closed: main green on three OSes (2026-10-28)
+
+- ci run 40748235794 at dcb3a59 is green (verify on ubuntu, windows and macOS; gates 40748235774); `check-ci-evidence --record dcb3a59` is recorded and the `blocks-landing` mark is removed, so feature commits land again.
+- cold-setup there: "failed by time (660902 ms > 600000 ms); slowest phase verify:test 604230 ms" (harness-tests 452 s, attw 346 s, api 288 s beside it), as expected with serial browser files; continue-on-error until M18.157.
+- 38184a1's run 40744784972 was red only because macOS verify hit its 15-minute step limit (runner load); its next run at dcb3a59 passed.
