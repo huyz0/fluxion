@@ -166,7 +166,7 @@ export const isPosthoc = (reviewer) => parseReviewer(reviewer)?.posthoc ?? /:pos
 
 /**
  * The round of the next verdict for `task` over `content`, numbered from the tracked digest's lines for
- * the task that are not yet in a commit (missing from `committed`, the parsed digest at HEAD): one past
+ * the task that have not landed (missing from `committed`, the parsed digest on the landed base): one past
  * the highest of them, so a pass never restarts the count before the task's commit and the round cap
  * counts changes-requested rounds after a pass; content that already passed among them is a
  * re-application on a new base and keeps that round, marked `reapply` (M18.177, cp23 F1).

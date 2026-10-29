@@ -3441,3 +3441,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Live at 8cae07a it now prints RED for 084008f's failed Windows jobs (waiting on M18.190's declared fix, run 40874049093) and for the older stuck-queued runs, which drop out once a newer ci run completes.
 - Found: M18.192's title carries a backticked `blocks-landing`, so blockingRows reads it as a second mark (since 50628fe). Unmarking it is closing it, which needs green three-OS evidence (r1 F1), so it stays; it closes together with M18.178 once that evidence exists.
 - r1 F2: a job concluded `timed_out` or `startup_failure` counts as failed too (a completed run with either is already red); `action_required` waits for a person and is not a failure.
+
+## M18.193 — review rounds count from the landed base (cp24 F4, 2026-10-29)
+
+- review.mjs's closed digest lines now come from the merge-base of HEAD with `refs/remotes/origin/main` (land.mjs's default target), not HEAD; with no such ref it falls back to HEAD. A task committed locally but not landed, then amended after a later finding, continues at one past its highest round instead of restarting at r1; a re-application after HEAD moved keeps its round, marked reapply; once it lands, the next review starts at r1.
+- Test: review.test.mjs's landed-base case fails on the old HEAD reading (amend records r1) and passes now.

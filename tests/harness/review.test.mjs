@@ -141,6 +141,66 @@ describe('review binding (NFR-DX-003)', () => {
     }
   });
 
+  it('counts rounds from the landed base, so a committed but unlanded task keeps counting (M18.193, cp24 F4)', () => {
+    const s = sandbox(undefined, { git: true });
+    try {
+      const rec = (v) => {
+        s.write('.harness/tmp/v.json', JSON.stringify(v));
+        return s.node('scripts/harness/review.mjs', ['record', '--file', s.path('.harness/tmp/v.json'), '--task', TASK]);
+      };
+      const v = () => ({
+        task: TASK,
+        diff_sha256: s.node('scripts/harness/review.mjs', ['hash']).stdout.trim(),
+        reviewer: 'test:unit',
+        verdict: 'pass',
+        findings: [],
+      });
+      const lastLine = () => s.read('.harness/reviews/digest.log').trim().split('\n').at(-1).split('\t');
+      // the landed base: what origin/main holds
+      s.git('add', '-A');
+      s.git('commit', '-q', '--no-verify', '-m', 'base');
+      s.git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+      // r1 pass, then the task is committed locally but not landed
+      s.write('src/b.txt', 'one\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 1 \(/);
+      s.git('add', '.harness/reviews/digest.log');
+      s.git('commit', '-q', '--no-verify', '-m', `${TASK}: feat(x): one`);
+      // a later finding, reviewed with the commit still at HEAD and then amended: r2, not a fresh r1
+      s.write('src/b.txt', 'two\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 2 \(/);
+      assert.equal(lastLine()[2], 'r2');
+      s.git('add', '.harness/reviews/digest.log');
+      s.git('commit', '-q', '--no-verify', '--amend', '-m', `${TASK}: feat(x): two`);
+      // the amended commit's own diff from the base is new content: r3
+      s.git('reset', '-q', '--soft', 'HEAD~1');
+      assert.match(rec(v()).stdout, /round 3 \(/);
+      s.git('add', '.harness/reviews/digest.log');
+      s.git('commit', '-q', '--no-verify', '-m', `${TASK}: feat(x): two`);
+      // HEAD moves (another commit lands under it): the passed content re-applied keeps r3, marked reapply
+      s.git('reset', '-q', '--soft', 'HEAD~1');
+      s.git('stash', '-q');
+      s.write('src/c.txt', 'other\n');
+      s.git('add', 'src/c.txt');
+      s.git('commit', '-q', '--no-verify', '-m', 'M0.9: feat(y): other');
+      s.git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+      s.git('stash', 'pop', '-q');
+      s.git('add', 'src/b.txt', '.harness/reviews/digest.log');
+      assert.match(rec(v()).stdout, /round 3 \(reapply\)/);
+      assert.deepEqual([lastLine()[2], lastLine().at(-1)], ['r3', 'reapply']);
+      // once it lands on the base, the task's next review starts at r1
+      s.git('add', '.harness/reviews/digest.log');
+      s.git('commit', '-q', '--no-verify', '-m', `${TASK}: feat(x): two`);
+      s.git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+      s.write('src/b.txt', 'three\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 1 \(/);
+    } finally {
+      s.cleanup();
+    }
+  });
+
   it('rejects a reviewer outside the vendor:role[:posthoc] grammar (M18.127, cp14 F6)', () => {
     for (const reviewer of ['test', 'Claude:Reviewer', 'claude:reviewer:extra', 'claude:', '', undefined]) {
       const r = record(verdict({ reviewer }));

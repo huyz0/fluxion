@@ -56,12 +56,19 @@ function verdictsFor(hash) {
 }
 const DIGEST = repoPath('.harness', 'reviews', 'digest.log');
 const tracked = () => parseDigest(existsSync(DIGEST) ? readFileSync(DIGEST, 'utf8') : '');
-/** The digest as HEAD commits it: rounds already committed are closed (M18.177). */
+/** The remote-tracking branch land.mjs lands on (its defaults, origin/main). */
+const LANDED = 'refs/remotes/origin/main';
+/**
+ * The digest on the landed base, the merge-base of HEAD with LANDED (HEAD when there is none): rounds
+ * that landed are closed, so a task committed but not landed, amended or re-reviewed after HEAD moved
+ * keeps counting (M18.177, M18.193 cp24 F4).
+ */
 function committedDigest() {
-  const at = git(['show', 'HEAD:.harness/reviews/digest.log']);
+  const base = git(['merge-base', 'HEAD', LANDED]);
+  const at = git(['show', `${base.status === 0 ? base.stdout.trim() : 'HEAD'}:.harness/reviews/digest.log`]);
   return parseDigest(at.status === 0 ? at.stdout : '');
 }
-/** Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127), among lines not yet committed (M18.177). */
+/** Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127), among lines not yet landed (M18.177, M18.193). */
 const roundOf = (task, content = '') => nextRound(tracked(), task, { content, committed: committedDigest() });
 function roundsFor(task) {
   if (!existsSync(REVIEW_DIR)) return [];
