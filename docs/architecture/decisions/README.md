@@ -125,6 +125,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 | [0205](ADR-0205-budget-commit-is-bookkeeping.md) | The budget record's `commit` follows landing, outside the review identity | accepted | 2026-10-28 |
+| [0206](ADR-0206-svg-pack-import-command.md) | `fluxion pack-import`: a folder or ZIP of SVGs becomes one checked pack directory, or nothing | accepted | 2026-10-29 |
 
 ## ADR required when
 

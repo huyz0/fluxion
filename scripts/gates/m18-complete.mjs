@@ -154,6 +154,12 @@ leg('SVG sanitizer, outlines, color mapping and >=4 anchors', () => {
     : converter;
 });
 
+// FR-LIB-004 batch import through the CLI host (ADR-0206, M18.171): the format batch suite and the corpus/bounds suite against the built bin, not an editor wrapper (cp9 F3)
+leg('50 SVG batch imports, bounded ZIP and traversal rejection', () => {
+  const batch = tests('packages/format/src/svg-batch.test.ts');
+  return batch === true ? tests('packages/cli/src/e2e/cli.pack-import.test.ts') : batch;
+});
+
 leg('imported artwork retains exact licensed fonts offline', () => {
   const retained = tests('packages/format/src/artwork-font-retention.test.ts');
   if (retained !== true) return retained;
@@ -165,7 +171,6 @@ const featureTests = [
   ['direct-pack artwork rejects unsafe nodes, references and excessive resources', 'packages/core/src/shape/artwork.test.ts'],
   ['pack schema rejects invalid definitions and missing license', 'packages/core/src/shape/pack-schema.test.ts'],
   ['lazy index and geometry loading', 'packages/sdk/src/pack-loader.test.ts'],
-  ['50 SVG batch imports, bounded ZIP and traversal rejection', 'packages/editor/src/library/import-svg-batch.test.ts'],
   ['Iconify complete collection with searchable names and aliases', 'packages/editor/src/library/import-iconify.test.ts'],
   ['draw.io fixture metric >=90 percent and safe XML', 'packages/editor/src/library/import-drawio.test.ts'],
   ['used-pack attribution survives portable save/open', 'packages/format/src/pack-attribution.test.ts'],
