@@ -19,11 +19,14 @@
 //   --file <f>        another record (tests)
 //   --runs-file <f>   JSON array of `gh run view --json databaseId,workflowName,headSha,conclusion,jobs`
 //                     objects used instead of GitHub (tests)
+// Both modes also read every ci run on main with the recorded sha's product tree (same-tree.mjs): a job
+// that failed or timed out in one of them and has not been green in two later runs refuses (M18.196, cp25 F2).
 // GitHub is read through `gh` when installed, else the REST API (GITHUB_TOKEN sent when set; ci-runs.mjs).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { runSource, transportHint } from './ci-runs.mjs';
 import { git, repoPath } from './lib.mjs';
 import { AFTER_REVIEW_PATHS } from './milestone-checks.mjs';
+import { describe, intermittent, onTree, productBase } from './same-tree.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k) => {
@@ -73,6 +76,26 @@ function problems(run, workflow, sha) {
     if (job?.conclusion !== 'success') out.push(`${workflow}: job ${job?.name ?? names[0]} ${job ? job.conclusion : 'missing'}`);
   }
   return out;
+}
+
+/** ci runs on main with their jobs: the fixture's ci entries, else the branch window and each run's jobs. */
+async function branchCiRuns() {
+  if (fixture) return fixture.filter((r) => r.workflowName === 'ci');
+  const runs = (await source.branch('main')).filter((r) => r.workflowName === 'ci');
+  return Promise.all(runs.map(async (r) => ({ ...r, jobs: await source.jobs(r.databaseId) })));
+}
+
+/** Jobs that failed on `sha`'s product tree and are not yet green twice since (M18.196); unreadable runs are a problem too. */
+async function sameTreeProblems(sha) {
+  const base = productBase(sha);
+  if (!base) return [`the product tree of ${String(sha).slice(0, 7)} cannot be read (no such commit locally, or no product commit before it)`];
+  let runs;
+  try {
+    runs = await branchCiRuns();
+  } catch (e) {
+    return [`reading main's ci runs failed: ${e?.message ?? e}${fixture ? '' : transportHint()}`];
+  }
+  return describe(intermittent(runs.filter((r) => onTree(base, r.headSha))));
 }
 
 /** HEAD's newest commit touching a path outside AFTER_REVIEW_PATHS (the list the final-review range check uses). */
@@ -139,6 +162,8 @@ if (argv.includes('--record')) {
     if (!hit) fail(`no successful ${workflow} run for ${sha.slice(0, 7)} yet`);
     runs[workflow] = hit.databaseId;
   }
+  const flaky = await sameTreeProblems(sha);
+  if (flaky.length) fail(`not recording ${sha.slice(0, 7)}: ${flaky.join('; ')}`);
   const perfRun = opt('perf-run');
   const perf = perfRun === undefined ? {} : { perf: { run: Number(perfRun), sha: (await live(() => view(Number(perfRun)))).headSha } };
   writeFileSync(file, `${JSON.stringify({ sha, recordedAt: new Date().toISOString(), runs, ...perf }, null, 2)}\n`);
@@ -163,6 +188,7 @@ for (const workflow of Object.keys(REQUIRED)) {
     }
   }
 }
+if (typeof record.sha === 'string') errors.push(...(await sameTreeProblems(record.sha)));
 if (argv.includes('--perf')) errors.push(...(await perfProblems(record.perf, base, label)));
 if (errors.length) fail(errors.join('\n  '));
 console.log(`ci-evidence: ${String(record.sha).slice(0, 7)} green on ${OSES.join(', ')} (gates ${record.runs.gates}, ci ${record.runs.ci})`);

@@ -3487,3 +3487,10 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - No `Fixes-ci`: the fix (attempt 3, rowAttempts 3, `Fixes-ci: 40905801401`) follows an independent diagnostic review of a traced failure (ADR-0176). M18.195 stays todo.
 - Review r1 changes-requested: F1 (blocking) on Windows the resource is `immediate`, so the owned taskkill starts in `force()` and the trace would print `sinceTerminationMs: null` → the start is also recorded in `force()` before `kill()`; F2 (major) no test of that path → a Windows-shaped (`immediate`) test; F3 (minor) the trace bypasses CliIo → argued (the witness API has no io port; changing it is outside the diagnostic step).
 - Review r2 pass, no findings.
+
+## M18.196 — ci evidence and last-ci see a job that failed on the same product tree (cp25 F2, 2026-10-29)
+
+- New scripts/gates/same-tree.mjs. A run's product tree is the newest commit at or before its head changing a path outside HARNESS_PATHS, docs/ and .changeset/. This deviates from the row's "outside HARNESS_PATHS": docs and changesets change no code ci runs, and ceb8246's ADR would otherwise reset the tree. `intermittent(runs)` lists jobs that failed or timed out and are not yet green in 2 later completed runs on that tree; cancelled jobs and the aggregate `ci-ok` are excluded.
+- check-ci-evidence (`--record` and verify) refuses while one exists, and also when the tree or the listing is unreadable. last-ci prints such a green ci run as INTERMITTENT (exit 1), and an unreadable tree or job list as UNKNOWN (3). In --runs-file, a run's `tree` names its product tree.
+- Live: last-ci now exits 1 at ceb8246. Windows verify failed in 40894960957 and 40905801401 and has 1 of the 2 later greens it needs.
+- Tests in ci-evidence.test.mjs and last-ci.test.mjs fail on the old code. They cover: two failures then one green, refused, and a second green, recorded; an earlier tree not counting; verify mode refusing; ci-ok and cancelled jobs excluded; unreadable jobs reported as UNKNOWN.

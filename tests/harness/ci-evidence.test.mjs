@@ -163,6 +163,66 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.equal(JSON.parse(sb.read('rec.json')).sha, sha.new);
   });
 
+  it('HARNESS: --record refuses while a job that failed on the same product tree is not yet green in two later runs (M18.196, cp25 F2)', () => {
+    const s = sandbox(['scripts'], { git: true });
+    try {
+      const commit = (path, subject) => {
+        s.write(path, `${subject}\n`);
+        s.git('add', path);
+        s.git('commit', '-q', '--no-verify', '-m', subject);
+        return s.git('rev-parse', 'HEAD').stdout.trim();
+      };
+      const before = commit('packages/old.ts', 'M9.1: feat(core): an older product tree');
+      const product = commit('packages/p.ts', 'M9.2: fix(cli): the product tree under test');
+      // harness, ci and docs commits keep the product tree (like e3f6e36, db19f11, ceb8246 on 8cae07a)
+      const h1 = commit('scripts/gates/x.mjs', 'M9.3: fix(harness): one');
+      const h2 = commit('docs/architecture/decisions/ADR-9.md', 'M9.4: docs(adr): two');
+      const h3 = commit('.github/workflows/x.yml', 'M9.5: ci(ci): three');
+      const at = (id, head, minute, windows = 'success') => ({
+        ...withJob(run(id, 'ci', head, 'verify'), 'windows-latest', windows),
+        conclusion: windows,
+        status: 'completed',
+        createdAt: `2026-10-29T10:${minute}:00Z`,
+      });
+      const gates = { ...run(1, 'gates', h2, 'gates'), status: 'completed', createdAt: '2026-10-29T10:20:00Z' };
+      const rec = (runs) => {
+        s.write('runs.json', JSON.stringify(runs));
+        return s.node('scripts/gates/check-ci-evidence.mjs', [
+          '--record',
+          h2,
+          '--since',
+          product,
+          '--file',
+          s.path('rec.json'),
+          '--runs-file',
+          s.path('runs.json'),
+        ]);
+      };
+      // windows verify failed at h1 (twice, as in 40894960957 and 40905801401), then one green at h2: refused
+      const flaky = [at(20, h2, '20'), gates, at(10, h1, '10', 'failure'), at(11, h1, '12', 'failure')];
+      let r = rec(flaky);
+      assert.equal(r.status, 1, out(r));
+      assert.match(
+        r.stderr,
+        /not recording \w{7}: .*job verify \(windows-latest\) failure in ci run 11 at \w{7} on the same product tree, green in 1 later run\(s\) of 2 needed/,
+      );
+      // a second later green on the tree records
+      r = rec([...flaky, at(30, h3, '30')]);
+      assert.equal(r.status, 0, out(r));
+      assert.match(r.stdout, /recorded \w{7} \{"gates":1,"ci":20\}/);
+      // a failure on an earlier product tree does not count
+      r = rec([at(20, h2, '20'), gates, at(5, before, '05', 'failure')]);
+      assert.equal(r.status, 0, out(r));
+      // the check holds the record too: without the second green, the recorded evidence is refused
+      s.write('runs.json', JSON.stringify(flaky));
+      r = s.node('scripts/gates/check-ci-evidence.mjs', ['--file', s.path('rec.json'), '--runs-file', s.path('runs.json'), '--since', product]);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /job verify \(windows-latest\) failure in ci run 10/);
+    } finally {
+      s.cleanup();
+    }
+  });
+
   it('--milestone fails a recorded sha before the final review range end, even with green runs', () => {
     const r = check(record(sha.code), green(sha.code), ['--milestone', 'M9']);
     assert.equal(r.status, 1, out(r));

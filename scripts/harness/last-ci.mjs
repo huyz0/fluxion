@@ -28,12 +28,16 @@
 // any job concluded failure (or timed_out, startup_failure) is RED at that run, waited for only as a declared fix of it is; jobs that
 // cannot be read are unknown; a cancelled or unfinished job is not a failure. More than
 // LAST_CI_MAX_PENDING pending runs behind a completed green are unknown, never green. A run's optional
-// `jobs: [{ name, conclusion }]` (or 'throws') stands in for GitHub in --runs-file.
+// `jobs: [{ name, conclusion }]` (or 'throws') stands in for GitHub in --runs-file. A green ci run is
+// INTERMITTENT (exit 1) while a job failed or timed out in a ci run on its product tree and has not been
+// green in two later completed runs there (M18.196, cp25 F2, same-tree.mjs); an unreadable tree or job
+// list is unknown. In --runs-file a run's optional `tree` names its product tree (else its head sha).
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { runSource, transportHint } from '../gates/ci-runs.mjs';
 import { blockingRows } from '../gates/landing-block.mjs';
 import { repoPath } from '../gates/lib.mjs';
+import { describe, intermittent, onTree, productBase } from '../gates/same-tree.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const WORKFLOWS = ['ci', 'gates'];
@@ -110,6 +114,40 @@ async function pendingRed(workflow, newer) {
     lines.push(red.line);
   }
   return { verdict, lines };
+}
+
+/** Fetch `sha` from origin when the clone has not seen it, unless --offline. */
+function ensureCommit(sha) {
+  if (spawnSync('git', ['cat-file', '-e', `${sha}^{commit}`]).status === 0 || offline || !/^[0-9a-f]{40}$/.test(String(sha))) return;
+  spawnSync('git', ['fetch', '-q', '--no-tags', 'origin', String(sha)], { encoding: 'utf8', timeout: 60_000 });
+}
+/** The runs of `mine` with `done`'s product tree, or null when it cannot be read (M18.196). */
+function treeRuns(mine, done) {
+  if (opt('runs-file')) {
+    const key = (r) => r.tree ?? r.headSha;
+    return mine.filter((r) => key(r) === key(done));
+  }
+  for (const r of mine) ensureCommit(r.headSha);
+  const base = productBase(done.headSha);
+  return base ? mine.filter((r) => onTree(base, r.headSha)) : null;
+}
+/** A green ci run is intermittent while a job failed on its tree and is not yet green twice since (M18.196, cp25 F2). */
+async function sameTreeVerdict(workflow, done, mine) {
+  const where = `green at ${String(done.headSha).slice(0, 7)} (run ${done.databaseId})`;
+  const onIt = treeRuns(mine, done);
+  if (onIt === null) return { verdict: UNKNOWN, lines: [`last-ci: UNKNOWN ${workflow}: the product tree of its ${where} cannot be read; check CI by hand`] };
+  const withJobs = [];
+  for (const r of onIt) {
+    const jobs = await Promise.resolve(source.jobs?.(r.databaseId)).catch(() => null);
+    if (!Array.isArray(jobs))
+      return {
+        verdict: UNKNOWN,
+        lines: [`last-ci: UNKNOWN ${workflow}: the jobs of run ${r.databaseId} on the tree of its ${where} could not be read; check CI by hand`],
+      };
+    withJobs.push({ ...r, jobs });
+  }
+  const found = describe(intermittent(withJobs));
+  return { verdict: found.length ? 1 : 0, lines: found.map((line) => `last-ci: INTERMITTENT ${workflow} ${where}: ${line}; fix it before the next task`) };
 }
 
 const newest = (list) => [...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0];
@@ -207,7 +245,10 @@ for (const workflow of WORKFLOWS) {
     continue;
   }
   if (done.conclusion === 'success' || done.conclusion === 'skipped') {
-    console.log(`last-ci: ${workflow} green at ${sha} (run ${done.databaseId})${tail}`);
+    const tree = workflow === 'ci' ? await sameTreeVerdict(workflow, done, mine) : { verdict: 0, lines: [] };
+    verdict = worst(verdict, tree.verdict);
+    for (const line of tree.lines) console.log(line);
+    if (tree.verdict === 0) console.log(`last-ci: ${workflow} green at ${sha} (run ${done.databaseId})${tail}`);
     continue;
   }
   if (pending > 0) {

@@ -345,6 +345,42 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.equal(lastCi([...five.slice(1), pendingRun(0, windowsRed), green, gates]).status, 1);
   });
 
+  it('M18.196: a green ci run is intermittent while a job that failed on its product tree is not green in two later runs (cp25 F2)', () => {
+    const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
+    const verify = (windows) => [
+      { name: 'verify (ubuntu-latest)', conclusion: 'success' },
+      { name: 'verify (windows-latest)', conclusion: windows },
+      { name: 'ci-ok', conclusion: windows === 'success' ? 'success' : 'failure' },
+    ];
+    const ci = (id, minute, windows, tree = 'T1') =>
+      run('ci', windows === 'success' ? 'success' : 'failure', `2026-09-29T02:${minute}:00Z`, {
+        databaseId: id,
+        headSha: `sha${id}000000`,
+        tree,
+        jobs: verify(windows),
+      });
+    // windows failed twice on the tree, then one green: intermittent, exit 1
+    let r = lastCi([ci(42, '30', 'success'), ci(41, '20', 'failure'), ci(40, '10', 'failure'), gates]);
+    assert.equal(r.status, 1, r.out);
+    assert.match(
+      r.out,
+      /INTERMITTENT ci green at sha4200 \(run 42\): job verify \(windows-latest\) failure in ci run 41 at sha4100 on the same product tree, green in 1 later run\(s\) of 2 needed/,
+    );
+    assert.doesNotMatch(r.out, /job ci-ok/, 'the aggregate job is not counted');
+    assert.doesNotMatch(r.out, /ci green at sha4200 \(run 42\)$/m);
+    // two later greens: green
+    r = lastCi([ci(43, '40', 'success'), ci(42, '30', 'success'), ci(41, '20', 'failure'), gates]);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /ci green at sha4300 \(run 43\)/);
+    // a failure on another product tree does not count; a cancelled job is no failure
+    r = lastCi([ci(42, '30', 'success'), ci(41, '20', 'failure', 'T0'), ci(40, '10', 'cancelled'), gates]);
+    assert.equal(r.status, 0, r.out);
+    // jobs that cannot be read are unknown
+    r = lastCi([{ ...ci(42, '30', 'success'), jobs: 'throws' }, gates]);
+    assert.equal(r.status, 3, r.out);
+    assert.match(r.out, /UNKNOWN ci: the jobs of run 42 on the tree of its green at sha4200 \(run 42\) could not be read/);
+  });
+
   it('a red run names an open blocks-landing row, under which that row and harness-path commits proceed (M18.142)', () => {
     const row = (state) => `| M18.117 | CI green \`blocks-landing\` | HARNESS | acceptance | — | ${state} | |\n`;
     const red = [run('ci', 'failure', '2026-09-29T02:00:00Z', 'deadbee0000000'), run('gates', 'success', '2026-09-29T02:00:00Z')];
