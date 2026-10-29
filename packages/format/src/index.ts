@@ -127,6 +127,15 @@ export {
   importIconifyCollection,
 } from './iconify-import.js';
 export {
+  type DeclaredImportCredit,
+  type DeclaredImportCredits,
+  type ImportCreditsProblem,
+  type ImportRights,
+  parseImportCredits,
+  scopedCredits,
+  withNotices,
+} from './import-credits.js';
+export {
   type ImportedPack,
   type ImportedPackEntry,
   type ImportedPackFont,
@@ -144,5 +153,6 @@ export {
   type SvgPaintRequest,
   type SvgPaintWitness,
 } from './svg-import.js';
-
+export { categoryOf, escapes, INPUT_LIMITS, memberIds, type SvgMemberProblem, slugOf, zipMembers } from './svg-pack-members.js';
 export { createSvgPaintRequest, parseSvgPaintRequest } from './svg-paint-request.js';
+export { SESSION_AGE_MS, SESSION_REQUESTS, type WitnessSessionPort, type WitnessSessions, witnessSessions } from './svg-witness-sessions.js';

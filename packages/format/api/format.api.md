@@ -34,6 +34,9 @@ export interface AssetStore {
 }
 
 // @public
+export const categoryOf: (path: string) => string;
+
+// @public
 export function checkAsset(asset: FluxAsset): AssetCheck;
 
 // @public
@@ -46,6 +49,21 @@ export function createMemoryAssetStore(hasher: ContentHasher): AssetStore;
 
 // @public
 export function createSvgPaintRequest(artwork: SvgArtwork, fonts: readonly SvgImportFont[]): Result<SvgPaintRequest, readonly Diagnostic[]>;
+
+// @public
+export type DeclaredImportCredit = Omit<ShapePackCredit, "definitionIds" | "notice"> & {
+    readonly notice?: string | undefined;
+    readonly noticeFile?: string | undefined;
+    readonly members: readonly string[];
+};
+
+// @public
+export type DeclaredImportCredits = {
+    readonly license: string;
+    readonly attribution: string;
+    readonly credits: readonly DeclaredImportCredit[];
+    readonly noticeFiles: readonly string[];
+};
 
 // @public
 export type DiffLike = {
@@ -154,6 +172,9 @@ export type EntryRefused = {
     readonly ok: false;
     readonly reason: string;
 };
+
+// @public
+export const escapes: (name: string) => boolean;
 
 // @public
 export const FLUX_FORMAT_VERSION = "1.0";
@@ -357,6 +378,12 @@ export type ImageInfo = {
 export type ImageMime = "image/png" | "image/jpeg" | "image/webp" | "image/avif" | "image/gif" | "image/svg+xml";
 
 // @public
+export type ImportCreditsProblem = {
+    readonly kind: "schema" | "member";
+    readonly message: string;
+};
+
+// @public
 export function importDrawioLibrary(text: string, options: DrawioImportOptions): Promise<DrawioImportReport>;
 
 // @public
@@ -423,10 +450,25 @@ export function importIconifyCollection(text: string, options: IconifyImportOpti
 export function importImage(bytes: Uint8Array, codec: ImageCodec, maxSide?: number): Promise<Result<ImportedImage, ImageImportFailure>>;
 
 // @public
+export type ImportRights = {
+    readonly license: string;
+    readonly attribution: string;
+    readonly credits: readonly Omit<ShapePackCredit, "definitionIds">[];
+    readonly memberCredit?: ReadonlyMap<string, string>;
+};
+
+// @public
 export function importSvgBatch(input: SvgBatchInput, options: SvgBatchOptions): Promise<SvgBatchReport>;
 
 // @public
 export function importSvgShape(input: string, options: SvgImportOptions): Promise<Result<SvgImportResult, readonly Diagnostic[]>>;
+
+// @public
+export const INPUT_LIMITS: {
+    readonly maxEntries: number;
+    readonly maxEntryBytes: number;
+    readonly maxTotalBytes: number;
+};
 
 // @public
 export function inspectSvg(input: string): SvgInspection | undefined;
@@ -513,6 +555,11 @@ export const MAX_IMPORT_BYTES: number;
 export const MAX_SVG_CHARS: number;
 
 // @public
+export function memberIds(files: readonly {
+    readonly path: string;
+}[], namespace: string): Map<string, string> | SvgMemberProblem[];
+
+// @public
 export function minifySvg(svg: string): string;
 
 // @public
@@ -531,6 +578,9 @@ export type OpenedDocument = {
     readonly readOnly: boolean;
     readonly salvage?: Salvage;
 };
+
+// @public
+export function parseImportCredits(json: unknown): DeclaredImportCredits | ImportCreditsProblem;
 
 // @public
 export function parseSvgPaintRequest(input: unknown): Result<SvgPaintRequest, readonly Diagnostic[]>;
@@ -647,6 +697,9 @@ export function sanitizeSvg(input: string): string | undefined;
 export function scaleToFit(width: number, height: number, max: number): PixelSize | undefined;
 
 // @public
+export function scopedCredits(rights: ImportRights, idOf: ReadonlyMap<string, string>): ShapePackCredit[] | undefined | string;
+
+// @public
 export function selectAssets(doc: DocumentFile, store: AssetStore): Promise<SelectedAssets>;
 
 // @public
@@ -657,6 +710,12 @@ export type SelectedAssets = {
 
 // @public
 export const serializeEntry: (entry: JournalEntry) => string;
+
+// @public
+export const SESSION_AGE_MS = 9e4;
+
+// @public
+export const SESSION_REQUESTS = 128;
 
 export { sha256Hex }
 
@@ -681,6 +740,9 @@ export type ShapePackSourceData = {
     readonly subset: VersionedShapePackSubset;
     readonly fonts?: ReadonlyMap<string, Uint8Array>;
 };
+
+// @public
+export function slugOf(path: string): string;
 
 // @public
 export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
@@ -769,6 +831,12 @@ export type SvgInspection = {
 };
 
 // @public
+export type SvgMemberProblem = {
+    readonly path: string;
+    readonly message: string;
+};
+
+// @public
 export type SvgPaintReceipt = {
     readonly identity: string;
     readonly status: "painted" | "no-witness" | "unsupported";
@@ -804,6 +872,25 @@ export function usedFontFamilies(doc: DocumentFile): ReadonlySet<string> | undef
 
 // @public
 export const VERSION: string;
+
+// @public
+export function withNotices(declared: DeclaredImportCredits, notices: ReadonlyMap<string, string>): ImportRights | string;
+
+// @public
+export type WitnessSessionPort<F> = {
+    readonly witness: SvgPaintWitness;
+    readonly dispose: () => Promise<Result<void, F>>;
+};
+
+// @public
+export type WitnessSessions<F> = {
+    readonly witness: SvgPaintWitness;
+    readonly failure: () => F | undefined;
+    readonly dispose: () => Promise<void>;
+};
+
+// @public
+export function witnessSessions<F>(start: () => Promise<Result<WitnessSessionPort<F>, F>>, now: () => number): Promise<Result<WitnessSessions<F>, F>>;
 
 // @public
 export type Woff2CodecExports = {
@@ -916,6 +1003,9 @@ export type ZipLimits = {
     readonly maxEntryBytes?: number;
     readonly maxTotalBytes?: number;
 };
+
+// @public
+export function zipMembers(bytes: Uint8Array): SvgBatchFile[] | SvgMemberProblem;
 
 // @public
 export type ZipMethod = "deflate" | "store";

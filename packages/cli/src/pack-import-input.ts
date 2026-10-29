@@ -7,20 +7,12 @@ import type { Stats } from 'node:fs';
 import { constants } from 'node:fs';
 import { lstat, open, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { readZip, type SvgBatchFile } from '@fluxion/format';
-import { qualifiedNameSchema } from '@fluxion/schema';
+import { INPUT_LIMITS, type SvgBatchFile, type SvgMemberProblem, zipMembers } from '@fluxion/format';
 
-/** The bounds every input shares with `importSvgBatch` (ADR-0188). */
-export const INPUT_LIMITS: { readonly maxEntries: number; readonly maxEntryBytes: number; readonly maxTotalBytes: number } = Object.freeze({
-  maxEntries: 4096,
-  maxEntryBytes: 128 * 1024 * 1024,
-  maxTotalBytes: 256 * 1024 * 1024,
-});
+export { categoryOf, memberIds, slugOf } from '@fluxion/format';
 
 /** A refusal of the input: what is wrong, and the member path it concerns ('' for the whole input). */
-export type InputProblem = { readonly path: string; readonly message: string };
-
-const isSvg = (path: string) => /\.svg$/i.test(path);
+export type InputProblem = SvgMemberProblem;
 
 type Found = { readonly path: string; readonly abs: string; readonly size: number };
 
@@ -85,20 +77,12 @@ async function readListed(f: Found): Promise<Uint8Array | undefined> {
   }
 }
 
-/** Whether a ZIP member name could name a file outside the input; checked again by `importSvgBatch`, refused here before any conversion. */
-const escapes = (name: string): boolean => /^\/|^[A-Za-z]:|\\/.test(name) || name.split('/').some((s) => s === '' || s === '.' || s === '..');
-
 /** The regular members of a ZIP file, its own size checked before reading. */
 async function unzip(file: string, size: number): Promise<SvgBatchFile[] | InputProblem> {
   if (size > INPUT_LIMITS.maxTotalBytes) return { path: '', message: 'ZIP file exceeds 256 MiB' };
   const bytes = await readListed({ path: '', abs: file, size });
   if (bytes === undefined) return { path: '', message: 'ZIP file changed while it was read' };
-  const zip = readZip(bytes, { ...INPUT_LIMITS, strictNames: true });
-  if (!zip.ok) return { path: '', message: `ZIP refused: ${zip.error.reason}` };
-  const members = zip.value.filter((e) => !e.name.endsWith('/'));
-  const escaping = members.find((e) => escapes(e.name));
-  if (escaping) return { path: escaping.name, message: 'escapes the input: an absolute, backslash, empty, `.` or `..` name' };
-  return members.map((e) => ({ path: e.name, bytes: e.bytes }));
+  return zipMembers(bytes);
 }
 
 /** The members of `input` (a folder or a `.zip` file), or why it cannot be read within the bounds. */
@@ -116,39 +100,4 @@ export async function readMembers(input: string): Promise<SvgBatchFile[] | Input
     return { path: '', message: `cannot read ${input}` };
   }
   return { path: '', message: `${input} is neither a folder nor a .zip file` };
-}
-
-/** `a/b/My Icon.svg` → `my-icon`: lowercased basename without `.svg`, each run outside `[a-z0-9]` one `-`, trimmed. */
-export function slugOf(path: string): string {
-  const base = (path.split('/').at(-1) ?? '').replace(/\.svg$/i, '');
-  return base
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-/** A member's category text: its directory, or `uncategorized` at the root. */
-export const categoryOf = (path: string): string => (path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : 'uncategorized');
-
-/** The id of every member in `namespace`, or every problem: a non-SVG member, an empty or invalid id, two members with one id. */
-export function memberIds(files: readonly SvgBatchFile[], namespace: string): Map<string, string> | InputProblem[] {
-  const problems: InputProblem[] = [];
-  const ids = new Map<string, string>();
-  const owner = new Map<string, string>();
-  for (const { path } of files) {
-    if (!isSvg(path)) {
-      problems.push({ path, message: 'is not an SVG; every member of a pack-import must be one' });
-      continue;
-    }
-    const id = `${namespace}:${slugOf(path)}`;
-    if (slugOf(path) === '' || !qualifiedNameSchema.safeParse(id).success) {
-      problems.push({ path, message: `its name gives no valid definition id ("${id}")` });
-      continue;
-    }
-    const earlier = owner.get(id);
-    if (earlier !== undefined) problems.push({ path, message: `gives the id ${id}, as ${earlier} does` });
-    else owner.set(id, path);
-    ids.set(path, id);
-  }
-  return problems.length ? problems : ids;
 }
