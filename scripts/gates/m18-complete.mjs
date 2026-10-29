@@ -22,6 +22,20 @@ const result = (r) => r.status === 0 || (r.stderr || r.stdout).trim().split(/\r?
 const command = (file, args = []) => (exists(file) ? result(node(file, args)) : `missing ${file}`);
 const json = (file) => JSON.parse(readText(file));
 
+// The first failing test's full name and first failure line from a Vitest JSON report, read before it
+// is deleted; null when there is no readable report or no failed test in it (M18.166, cp22 F3).
+function failedTest(out) {
+  try {
+    const report = JSON.parse(readFileSync(out, 'utf8'));
+    const failed = report.testResults.flatMap((suite) => suite.assertionResults ?? []).find((a) => a.status === 'failed');
+    if (failed) return `FAIL ${failed.fullName ?? failed.title}: ${String(failed.failureMessages?.[0] ?? '').split(/\r?\n/)[0]}`;
+    const suite = report.testResults.find((s) => s.status === 'failed' && s.message);
+    return suite ? `FAIL ${suite.name}: ${suite.message.split(/\r?\n/)[0]}` : null;
+  } catch {
+    return null;
+  }
+}
+
 // A nonempty report, successful process, and every assertion passed are all required.
 function tests(file, { project = 'node', config } = {}) {
   if (!exists(file)) return `missing ${file}`;
@@ -37,7 +51,7 @@ function tests(file, { project = 'node', config } = {}) {
       `--outputFile=${out}`,
       file,
     ]);
-    if (r.status !== 0) return `${file}: ${result(r)}`;
+    if (r.status !== 0) return `${file}: ${failedTest(out) ?? result(r)}`;
     const report = JSON.parse(readFileSync(out, 'utf8'));
     const assertions = report.testResults.flatMap((suite) => suite.assertionResults);
     return (
