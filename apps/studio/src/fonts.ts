@@ -9,7 +9,7 @@ import type { BundledFace } from './font-embed.js';
 // the files of the pack, by path under it (`fonts/<file>.woff2`): a glob, because a bundler only follows URLs it can see
 declare global {
   interface ImportMeta {
-    glob(pattern: string, options: { readonly query: '?url'; readonly import: 'default'; readonly eager: true }): Record<string, string>;
+    glob(pattern: string, options: { readonly query: '?url' | '?raw'; readonly import: 'default'; readonly eager: true }): Record<string, string>;
   }
 }
 

@@ -52,6 +52,7 @@ import { Store } from '@fluxion/core';
 import { SvgBatchReport } from '@fluxion/format';
 import { SvgImportFont } from '@fluxion/format';
 import { SvgMemberProblem } from '@fluxion/format';
+import { SvgWitnessOptions } from '@fluxion/render/svg-witness';
 import { Theme } from '@fluxion/theme';
 import { ThemeError } from '@fluxion/theme';
 import { TokenRef } from '@fluxion/schema';
@@ -1674,6 +1675,9 @@ export type SvgLibraryRights = {
     readonly reference: string;
     readonly sha256: string;
 };
+
+// @public
+export function svgWitnessStarter(options: SvgWitnessOptions): SvgLibraryOptions["startWitness"];
 
 // @public
 export function switchScreen(session: Session, id: RecordId): void;

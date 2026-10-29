@@ -178,6 +178,7 @@ export {
 } from './library/import-svg.js';
 export { MAX_BATCH_COLORS, type SvgBatchColors, svgBatchColors } from './library/import-svg-colors.js';
 export type { SvgLibraryInput, SvgLibraryItem } from './library/import-svg-input.js';
+export { svgWitnessStarter } from './library/import-svg-witness.js';
 export { LibraryImportDialog, type LibraryImportDialogProps } from './library/library-import-dialog.js';
 export type { LibraryImporter, LibraryImportRequest } from './library/library-importer.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';

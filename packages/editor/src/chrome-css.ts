@@ -71,6 +71,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-icon { display: inline-block; min-width: 1.2em; text-align: center; line-height: 1; }
 .fx-chrome-choices { display: flex; gap: 2px; flex-wrap: wrap; }
 .fx-chrome-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 4px; min-width: 240px; padding: 12px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2); }
+.fx-chrome-import { z-index: 30; min-width: 360px; max-width: 90vw; max-height: 80vh; overflow: auto; }
 .fx-chrome-import-declaration { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; border: 0; min-width: 0; }
 .fx-chrome-screens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .fx-chrome-screen { display: flex; flex-direction: column; gap: 2px; padding: 2px; border-radius: 4px; }

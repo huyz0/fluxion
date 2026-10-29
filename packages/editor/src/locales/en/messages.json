@@ -645,6 +645,12 @@
       "packages/editor/src/library/library-import-form.ts"
     ]
   },
+  "QMGSLh": {
+    "message": "Read {0}",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "Rr-tAv": {
     "message": "Document details",
     "origin": [

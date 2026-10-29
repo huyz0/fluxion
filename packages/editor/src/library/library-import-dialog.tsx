@@ -43,12 +43,27 @@ function Field(props: { readonly label: string; readonly value: string; readonly
 /** The rights fields of the chosen form. */
 function Rights(props: { readonly form: LibraryImportForm; readonly set: (patch: Partial<LibraryImportForm>) => void }): ReactNode {
   const { form, set } = props;
+  // which pick a finished read belongs to: only the latest file's text is taken, however the reads finish
+  const picks = useRef(0);
   if (form.kind === 'credits')
     return (
-      <label className="fx-chrome-formrow">
-        {t`Credits file (JSON, notices inline)`}
-        <input type="file" accept=".json,application/json" onChange={(e) => void e.target.files?.[0]?.text().then((creditsText) => set({ creditsText }))} />
-      </label>
+      <>
+        <label className="fx-chrome-formrow">
+          {t`Credits file (JSON, notices inline)`}
+          <input
+            type="file"
+            accept=".json,application/json"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              const pick = ++picks.current;
+              // the earlier file's credits go at once, so a convert before this one is read is refused, never run under them
+              set({ creditsText: undefined, creditsName: undefined });
+              void file?.text().then((creditsText) => (pick === picks.current ? set({ creditsText, creditsName: file.name }) : undefined));
+            }}
+          />
+        </label>
+        {form.creditsName === undefined ? null : <output>{t`Read ${form.creditsName}`}</output>}
+      </>
     );
   return (
     <>

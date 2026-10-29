@@ -180,18 +180,67 @@ describe('<LibraryImportDialog> (FR-LIB-004)', () => {
       ],
     };
     const picker = field('Credits file (JSON, notices inline)') as HTMLInputElement;
-    const transfer = new DataTransfer();
-    transfer.items.add(new File([JSON.stringify(credits)], 'credits.json', { type: 'application/json' }));
-    await act(async () => {
+    const choose = (name: string, text: string) => {
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([text], name, { type: 'application/json' }));
       picker.files = transfer.files;
       picker.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    // the file's text is read asynchronously; Convert sends the declaration once it is in
-    await vi.waitFor(async () => {
+    };
+    await act(async () => choose('credits.json', JSON.stringify(credits)));
+    // the file's text is read asynchronously, and the dialog says when it is in
+    await vi.waitFor(() => expect(text()).toContain('Read credits.json'));
+    // another file picked: the earlier credits go at once, so a Convert before it is read is refused rather than run under them
+    act(() => choose('other.json', JSON.stringify({ ...credits, attribution: 'Other' })));
+    expect(text()).not.toContain('Read credits.json');
+    await click('Convert');
+    expect(refusals()).toEqual([['', 'Choose a credits file.']]);
+    expect(f.convert).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(text()).toContain('Read other.json'));
+    await click('Convert');
+    expect(f.convert.mock.calls[0]?.[1].rights).toMatchObject({ kind: 'credits', credits: { attribution: 'Other', noticeFiles: [] } });
+  });
+
+  it('NFR-LIC-003: when an earlier credits file is read after a later one, the later one stands', async () => {
+    const f = fake();
+    await act(async () => root.render(<LibraryImportDialog importer={f.importer} input={input} onClose={vi.fn()} />));
+    await set(field('Rights'), 'credits');
+    const credits = (attribution: string) =>
+      JSON.stringify({
+        license: 'MIT',
+        attribution,
+        credits: [
+          {
+            id: 'mine',
+            license: 'MIT',
+            attribution,
+            notice: 'Me, MIT.',
+            source: { kind: 'original', author: 'Me', statement: 'Mine.' },
+            members: ['a.svg'],
+          },
+        ],
+      });
+    // each read finishes when the test says, the first one last
+    const reads: ((text: string) => void)[] = [];
+    const spy = vi.spyOn(File.prototype, 'text').mockImplementation(() => new Promise<string>((resolve) => reads.push(resolve)));
+    try {
+      const picker = field('Credits file (JSON, notices inline)') as HTMLInputElement;
+      const choose = (name: string) => {
+        const transfer = new DataTransfer();
+        transfer.items.add(new File(['{}'], name, { type: 'application/json' }));
+        picker.files = transfer.files;
+        picker.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+      act(() => choose('slow.json'));
+      act(() => choose('quick.json'));
+      await act(async () => reads[1]?.(credits('Quick')));
+      await act(async () => reads[0]?.(credits('Slow')));
+      expect(text()).toContain('Read quick.json');
+      expect(text()).not.toContain('slow.json');
       await click('Convert');
-      expect(f.convert).toHaveBeenCalled();
-    });
-    expect(f.convert.mock.calls[0]?.[1].rights).toMatchObject({ kind: 'credits', credits: { license: 'MIT', noticeFiles: [] } });
+      expect(f.convert.mock.calls[0]?.[1].rights).toMatchObject({ kind: 'credits', credits: { attribution: 'Quick' } });
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('NFR-LIC-003: the declaration is fixed and Esc does not close while a convert or an import runs, so the pack registered is the one shown', async () => {

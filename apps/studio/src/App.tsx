@@ -22,6 +22,7 @@ import { fontSources } from './font-sources.js';
 import { loadBundledFonts } from './fonts.js';
 import { rememberSaved } from './library/library-service.js';
 import { RecentFiles } from './library/recent-files.js';
+import { studioLibraryImports } from './library-import.js';
 import { localSettings } from './local-settings.js';
 import { fluxionFileOf, type LaunchHandle, MAX_OPEN_BYTES, pickedFromLaunch, pickedFromUrl, srcOf } from './open-sources.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
@@ -157,6 +158,10 @@ function ProtectedEditor(props: {
   }, []);
   useEffect(() => installTestHooks({ store: core.store, execute: core.execute, registries: core.registries, session }), [core, session]);
   const { autosave, state } = useProtection({ id: journalId(docId, entry, instance), store: core.store, assets, entry, title, guard });
+  // SVG libraries imported here (FR-LIB-004): registered into this document, their sources saved with it, released when it closes
+  const imports = useMemo(() => studioLibraryImports(opened, { document, fetch: (...args) => fetch(...args), now: () => Date.now() }), [opened]);
+  useEffect(() => () => imports.dispose(), [imports]);
+  const shapePackSources = useSyncExternalStore(imports.subscribe, imports.sources);
   return (
     <>
       <EditorRoot
@@ -171,6 +176,7 @@ function ProtectedEditor(props: {
         assets={assets}
         fonts={fonts}
         arrange={arrange}
+        libraryImporter={imports.importer}
         toolbar={
           <>
             <FileBar
@@ -178,6 +184,7 @@ function ProtectedEditor(props: {
               store={core.store}
               assets={assets}
               entry={entry}
+              shapePackSources={shapePackSources}
               onOpened={(id) => navigate(`/edit/${id}`)}
               onSaved={(saved) => {
                 void autosave?.saved();

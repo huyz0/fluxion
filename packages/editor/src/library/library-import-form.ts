@@ -17,8 +17,10 @@ export type LibraryImportForm = {
   readonly version: string;
   readonly name: string;
   readonly kind: RightsKind;
-  /** The credits file's text, once picked. */
+  /** The credits file's text, once picked and read. */
   readonly creditsText?: string | undefined;
+  /** The name of the credits file whose text {@link LibraryImportForm.creditsText} holds. */
+  readonly creditsName?: string | undefined;
   readonly license: string;
   readonly attribution: string;
   readonly author: string;
