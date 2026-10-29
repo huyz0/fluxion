@@ -3392,3 +3392,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Row M18.144 added for M18.132's review minor (r3 F1).
 - Review r1 (as M18.131): F1 the row's only criterion is the nightly's 50 fps, unverified here, so this is M18.145 and M18.131 stays open on it; F2 the sample now has every record type and the claim is narrowed; F3 a deleted element's cached name is dropped.
 - Review r1 (M18.145): F1 a checkDiff test with counting thunks shows a move or rename reads neither the post-state nor the known errors, and a re-reference, add or delete reads both (red with the skip removed); F2 (the cache prune untested) is carried in the commit body.
+
+## M18.43 — checkpoint cp23
+
+- cp23 (7545e708..ac64e7b) is approved with three minors. Delta: the cp22 record, M18.164 (landed alone under `blocks-landing` with ci evidence for 6a672da), M18.172 before M18.16, and M18.166. cp22's dispositions were honoured except F2's round labels, reopened.
+- F1 → M18.177 (review rounds keep counting after a pass until the task lands). F2 → M18.178 (last-ci green only on a known in-budget cold duration; `##[warning]` log form; M18.161 test title). F3 → M18.179 (Playwright legs name why no test ran; Vitest no-report stub). Ids start at 177 because stream 5 claimed M18.173-176.
+- Order: ci at 5d2813f, 3ffad13, ac64e7b and 453b5ca green first (fix any red with Fixes-ci); then M18.177-179 before the next feature batch, enforced by marking M18.178 `blocks-landing` (stream 1 lands M18.177 and M18.179 first, M18.178 last); M18.157 attempt 3 only after an independent diagnostic review; feature batches at most 7 with green ci between.
