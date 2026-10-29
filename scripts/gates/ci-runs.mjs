@@ -66,6 +66,8 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
       ((await get(`actions/workflows/${file}/runs?branch=${encodeURIComponent(name)}&event=push&status=completed&per_page=1`)).workflow_runs ?? []).map(
         (r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at }),
       ),
+    // a run's jobs and their conclusions, read while it is still pending: last-ci sees a failed job early (M18.191)
+    jobs: async (id) => ((await get(`actions/runs/${id}/jobs?per_page=100`)).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
     // a run's cold-setup job, its cold step's duration and its log text (null when unknown): last-ci reports them (M18.161, M18.164)
     coldSetup: async (id) => {
       const job = ((await get(`actions/runs/${id}/jobs?per_page=100`)).jobs ?? []).find((j) => j.name === 'cold-setup');
@@ -127,6 +129,7 @@ export function ghSource(spawn = spawnSync) {
       gh(['run', 'list', '--branch', name, '--event', 'push', '--limit', '30', '--json', 'databaseId,workflowName,headSha,status,conclusion,createdAt']),
     completed: async (name, file) =>
       gh(['run', 'list', '--workflow', file, '--branch', name, '--event', 'push', '--status', 'completed', '--limit', '1', '--json', RUN_FIELDS]),
+    jobs: async (id) => (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
     coldSetup: async (id) => {
       const job = (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).find((j) => j.name === 'cold-setup');
       if (!job) return undefined;

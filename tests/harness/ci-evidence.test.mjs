@@ -326,6 +326,32 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     assert.deepEqual(await timed.coldSetup(42), { conclusion: 'success', ms: 565_000, log: null });
   });
 
+  it("HARNESS: a pending run's jobs and their conclusions are read through REST and gh (M18.191, cp24 F1)", async () => {
+    const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const jobs = [
+      { id: 7, name: 'verify (windows-latest)', conclusion: 'failure', steps: [] },
+      { id: 8, name: 'verify (ubuntu-latest)', conclusion: null },
+    ];
+    const want = [
+      { name: 'verify (windows-latest)', conclusion: 'failure' },
+      { name: 'verify (ubuntu-latest)', conclusion: null },
+    ];
+    const calls = [];
+    const fetch = async (url) => {
+      calls.push(url);
+      return { ok: true, status: 200, json: async () => ({ jobs }) };
+    };
+    assert.deepEqual(await restSource({ fetch }).jobs(41), want);
+    assert.deepEqual(calls, ['https://api.github.com/repos/huyz0/fluxion/actions/runs/41/jobs?per_page=100']);
+    const spawned = [];
+    const gh = ghSource((cmd, args) => {
+      spawned.push([cmd, ...args]);
+      return { status: 0, stdout: JSON.stringify({ jobs: jobs.map(({ id, ...j }) => ({ databaseId: id, ...j })) }) };
+    });
+    assert.deepEqual(await gh.jobs(42), want);
+    assert.deepEqual(spawned, [['gh', 'run', 'view', '42', '--json', 'jobs']]);
+  });
+
   it("HARNESS: a workflow's newest completed push run is read by status, outside any mixed window (M18.134, cp14 F1)", async () => {
     const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
     const red = { id: 31, name: 'ci', head_sha: 'c'.repeat(40), conclusion: 'failure', status: 'completed', event: 'push', created_at: 'T' };

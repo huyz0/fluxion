@@ -24,7 +24,11 @@
 // a failure by time is a warning, an unreadable log is said (M18.161, cp19 F2). A success that passed
 // only under check-budget's by-time exemption while M18.157 is open (M18.159) is printed as over budget
 // with its duration, never green (M18.164). A run's optional `coldSetup: { conclusion, ms, log }`
-// stands in for GitHub in --runs-file.
+// stands in for GitHub in --runs-file. A pending run is read before it completes (M18.191, cp24 F1):
+// any job concluded failure (or timed_out, startup_failure) is RED at that run, waited for only as a declared fix of it is; jobs that
+// cannot be read are unknown; a cancelled or unfinished job is not a failure. More than
+// LAST_CI_MAX_PENDING pending runs behind a completed green are unknown, never green. A run's optional
+// `jobs: [{ name, conclusion }]` (or 'throws') stands in for GitHub in --runs-file.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { runSource, transportHint } from '../gates/ci-runs.mjs';
@@ -78,6 +82,36 @@ function redWithPending(workflow, done, newer, sha) {
   return { verdict: 2, line: `${head}: wait for the declared fix (run ${fix.databaseId}), then run last-ci again` };
 }
 
+/**
+ * Pending runs whose jobs already failed (M18.191, cp24 F1): each is red at that run, waited for only
+ * while a newer pending run declares Fixes-ci for it; unreadable jobs are unknown, never green.
+ */
+/** Job conclusions that already make a pending run red; cancelled, skipped and unfinished ones do not. */
+const FAILED_JOB = new Set(['failure', 'timed_out', 'startup_failure']);
+async function pendingRed(workflow, newer) {
+  let verdict = 0;
+  const lines = [];
+  for (const [i, r] of newer.entries()) {
+    const sha = String(r.headSha).slice(0, 7);
+    const jobs = await Promise.resolve(source.jobs?.(r.databaseId)).catch(() => null);
+    if (!Array.isArray(jobs)) {
+      verdict = worst(verdict, UNKNOWN);
+      lines.push(`last-ci: UNKNOWN ${workflow}: the jobs of pending run ${r.databaseId} at ${sha} could not be read; check CI by hand`);
+      continue;
+    }
+    const failed = jobs.filter((j) => FAILED_JOB.has(j.conclusion)).map((j) => `${j.name}${j.conclusion === 'failure' ? '' : ` ${j.conclusion}`}`);
+    if (failed.length === 0) continue;
+    const run = { ...r, conclusion: `failure in ${failed.join(', ')} (run still pending)` };
+    const red =
+      i === 0
+        ? { verdict: 1, line: `last-ci: RED ${workflow} ${run.conclusion} at ${sha} (run ${r.databaseId}): fix main's CI before the next task` }
+        : redWithPending(workflow, run, newer.slice(0, i), sha);
+    verdict = worst(verdict, red.verdict);
+    lines.push(red.line);
+  }
+  return { verdict, lines };
+}
+
 const newest = (list) => [...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0];
 /** The window plus each workflow's newest completed run, once each. */
 const withNewestCompleted = (window, completed) => [...window, ...completed.filter((c) => !window.some((r) => r.databaseId === c.databaseId))];
@@ -95,6 +129,11 @@ function fileSource(all) {
       const workflow = file.replace(/\.yml$/, '');
       if (all.some((r) => r.queryFails && r.workflowName === workflow)) throw new Error('query failed');
       return [newest(pushes.filter((r) => r.workflowName === workflow && r.status === 'completed'))].filter(Boolean);
+    },
+    jobs: async (id) => {
+      const jobs = all.find((r) => r.databaseId === id)?.jobs ?? [];
+      if (jobs === 'throws') throw new Error('query failed');
+      return jobs;
     },
     coldSetup: async (id) => {
       const cold = all.find((r) => r.databaseId === id)?.coldSetup;
@@ -145,6 +184,9 @@ for (const workflow of WORKFLOWS) {
   // only runs started after that one can carry a fix: in newest-first order they come before it (review r2 F1)
   const pending = done === undefined ? mine.length : mine.indexOf(done);
   const tail = pending > 0 ? ` (${pending} newer run${pending === 1 ? '' : 's'} pending)` : '';
+  const failing = await pendingRed(workflow, mine.slice(0, pending));
+  verdict = worst(verdict, failing.verdict);
+  for (const line of failing.lines) console.log(line);
   if (!done && (pending > t('LAST_CI_MAX_PENDING') || unread.has(workflow))) {
     // so many pending runs, or an unread query, and none completed: the last verdict is out of sight, not green (M18.134)
     verdict = worst(verdict, UNKNOWN);
@@ -156,6 +198,14 @@ for (const workflow of WORKFLOWS) {
     continue;
   }
   const sha = String(done.headSha).slice(0, 7);
+  if ((done.conclusion === 'success' || done.conclusion === 'skipped') && pending > t('LAST_CI_MAX_PENDING')) {
+    // a green this far behind says nothing about the runs queued over it (M18.191, cp24 F1)
+    verdict = worst(verdict, UNKNOWN);
+    console.log(
+      `last-ci: UNKNOWN ${workflow}: green at ${sha} (run ${done.databaseId}) is behind ${pending} pending runs, more than ${t('LAST_CI_MAX_PENDING')}; check CI by hand`,
+    );
+    continue;
+  }
   if (done.conclusion === 'success' || done.conclusion === 'skipped') {
     console.log(`last-ci: ${workflow} green at ${sha} (run ${done.databaseId})${tail}`);
     continue;

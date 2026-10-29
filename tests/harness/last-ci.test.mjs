@@ -274,6 +274,53 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     }
   });
 
+  it('M18.191: a failed job in a pending run is red at that run, and a green behind too many pending runs is unknown (cp24 F1)', () => {
+    const green = run('ci', 'success', '2026-09-29T01:00:00Z', { databaseId: 40 });
+    const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
+    const pendingRun = (i, jobs, message = 'M1.3: feat(x): w') =>
+      run('ci', 'in_progress', `2026-09-29T02:${String(10 + i)}:00Z`, { databaseId: 50 + i, headSha: `beef${i}000000`, message, jobs });
+    const windowsRed = [
+      { name: 'verify (ubuntu-latest)', conclusion: null },
+      { name: 'verify (windows-latest)', conclusion: 'failure' },
+    ];
+    // a windows verify job failed while its run is still in progress: red at that run, not the older green
+    let r = lastCi([pendingRun(0, windowsRed), green, gates]);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /RED ci failure in verify \(windows-latest\) \(run still pending\) at beef000 \(run 50\): fix main's CI/);
+    // a newer run that does not declare a fix for it does not hide it; one that does is waited for
+    r = lastCi([pendingRun(1, []), pendingRun(0, windowsRed), green, gates]);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /none declares Fixes-ci: 50/);
+    r = lastCi([pendingRun(1, [], 'M1.4: fix(ci): z\n\nFixes-ci: 50\n'), pendingRun(0, windowsRed), green, gates]);
+    assert.equal(r.status, 2, r.out);
+    assert.match(r.out, /wait for the declared fix \(run 51\)/);
+    // cancelled, queued and unfinished jobs are no failure: the older verdict stands
+    const quiet = [
+      { name: 'verify (windows-latest)', conclusion: 'cancelled' },
+      { name: 'e2e', conclusion: null },
+      { name: 'cli-mcp', conclusion: 'skipped' },
+    ];
+    r = lastCi([pendingRun(0, quiet), green, gates]);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /ci green at abcdef1 \(run 40\) \(1 newer run pending\)/);
+    // a timed-out job is a failure too
+    r = lastCi([pendingRun(0, [{ name: 'e2e (webkit)', conclusion: 'timed_out' }]), green, gates]);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /RED ci failure in e2e \(webkit\) timed_out \(run still pending\)/);
+    // jobs that cannot be read are unknown, not green
+    r = lastCi([pendingRun(0, 'throws'), green, gates]);
+    assert.equal(r.status, 3, r.out);
+    assert.match(r.out, /UNKNOWN ci: the jobs of pending run 50 at beef000 could not be read/);
+    // five pending runs behind a completed green are unknown; four are not yet a verdict
+    const five = Array.from({ length: 5 }, (_, i) => pendingRun(i, []));
+    r = lastCi([...five, green, gates]);
+    assert.equal(r.status, 3, r.out);
+    assert.match(r.out, /UNKNOWN ci: green at abcdef1 \(run 40\) is behind 5 pending runs, more than 4/);
+    assert.equal(lastCi([...five.slice(0, 4), green, gates]).status, 0);
+    // red outranks that unknown
+    assert.equal(lastCi([...five.slice(1), pendingRun(0, windowsRed), green, gates]).status, 1);
+  });
+
   it('a red run names an open blocks-landing row, under which that row and harness-path commits proceed (M18.142)', () => {
     const row = (state) => `| M18.117 | CI green \`blocks-landing\` | HARNESS | acceptance | — | ${state} | |\n`;
     const red = [run('ci', 'failure', '2026-09-29T02:00:00Z', 'deadbee0000000'), run('gates', 'success', '2026-09-29T02:00:00Z')];
