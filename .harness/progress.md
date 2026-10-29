@@ -3261,3 +3261,15 @@ Adds @fluxion/pack-people: 10 generic avatar definitions in three categories (in
 - Huy approved narrowing the exemption (decision card, 2026-10-28 22:26Z). ci.yml's cold-setup job is no longer continue-on-error. `check-budget --cold` now always exits 1 on a failure by status (install, setup, the empty-store check, a verify step); a run that only exceeds the unchanged COLD_SETUP_MAX_MS exits 0 with a `::warning` annotation while M18.157 is todo or doing in docs/backlog/current.md, and exits 1 once the row is done or absent.
 - A run that is over time but exempt has a successful step, so `--cold-from-ci` could record it; the resulting record is over the limit and the local full check refuses it, which is the M18.157 signal.
 - Tests: budget.test runs --cold with a 1 ms limit in a sandbox: an overrun exits 0 with the warning while the row is todo, each status failure exits 1 without it, and a done or missing row makes the overrun fail. ci-workflow.test now forbids continue-on-error anywhere in ci.yml (it replaces the M18.117 test that allowed it on cold-setup). M18.157's EARS now says the exemption ends with that row, instead of removing continue-on-error.
+
+## M18.157 — attempt 2 measured, not landed (2026-10-28)
+
+- ci cold-setup since M18.160's serial browser files: 669 s at 0e4e256, 664 s at d2e6b6c, 679 s at 5d4643b (672.5 s measured; verify:test 615 s, harness-tests 467 s, attw 388 s, api 301 s beside it; install 11.5 s, setup 8.5 s). a1363eb's 541 s was the outlier. 5d4643b's job is the first under M18.159: green with the `::warning` annotation.
+- Local 4-core container, warm `pnpm verify`: test 459 s, total 462 s. `pnpm test:coverage` alone 341 s (browser project alone 171 s, node project alone 137 s), so the test step is stretched by contention, not by its own work.
+- Attempt 2, starting the test step first and the other independent steps at niceness 10: test 482 s, total 485 s, no gain (CPU priority is not what the test step waits on). Not landed; rowAttempts M18.157 = 2.
+- Also measured, not landed: node then browser project in sequence on Linux (groupOrder, as on Windows): test 426 s, total 429 s, one sample each, about 7 %, not the 80-100 s the cold job needs.
+- Next attempt has to cut work beside the test step (attw and publint each `npm pack` every library separately, about 5 and 2.5 min; harness tests about 7 min); under ADR-0176 a third failure needs an independent diagnostic review first.
+
+## M18.163 — land.mjs rebuilds project-reference declarations first (2026-10-29)
+
+- Stream 2's batch (M18.125, M18.129, M18.33, M18.133) was refused by land.mjs at the M18.129 pick: TypeDoc reported "@fluxion/sdk/testing has no exported member testShapePack". land hard-resets to the remote, which leaves packages/sdk/.tsbuild at the remote's declarations, and regenerate() ran only `pnpm run build` before `check-api --update`. regenerate() now runs `pnpm run typecheck` (tsc -b) first; a land.test case pins the order.

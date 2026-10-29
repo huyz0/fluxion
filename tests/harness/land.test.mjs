@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, rmSync, writeFileSync } from 'node:fs';
 import { after, before, describe, it } from 'node:test';
-import { fillCommitCells } from '../../scripts/harness/land.mjs';
+import { fillCommitCells, regenerateSteps } from '../../scripts/harness/land.mjs';
 import { cleanEnv, out, sandbox } from './helpers.mjs';
 
 describe('fillCommitCells (M18.106)', () => {
@@ -37,6 +37,21 @@ describe('fillCommitCells (M18.106)', () => {
       ROW('M1.5', 'done', ''),
       ROW('M1.6', 'done', 'eeeeeeee'),
     ]);
+  });
+});
+
+describe('regenerateSteps (M18.163)', () => {
+  it('HARNESS: rebuilds project-reference declarations (tsc -b) before the build and the API reports read them (M18.163)', () => {
+    // run in the repository, where turbo.json and the traceability file exist
+    const steps = regenerateSteps().map(([needed, cmd, args]) => ({ needed, command: [cmd === process.execPath ? 'node' : cmd, ...args].join(' ') }));
+    assert.ok(
+      steps.every((s) => s.needed),
+      JSON.stringify(steps),
+    );
+    assert.deepEqual(
+      steps.map((s) => s.command),
+      ['pnpm run typecheck', 'pnpm run build', 'node scripts/gates/check-api.mjs --update', 'node scripts/gates/check-trace.mjs --write'],
+    );
   });
 });
 

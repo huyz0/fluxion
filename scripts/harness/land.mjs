@@ -34,14 +34,20 @@ function must(args, what) {
 }
 
 /** Regenerate the reports a rebase can stale; they are outside the content identity. */
+/**
+ * The regeneration commands, in order. check-api reads built declarations, and its TypeDoc run reads the
+ * .tsbuild declarations of project references, which the hard reset to the remote leaves at the remote's
+ * tree: `tsc -b` (typecheck) rebuilds them first, or a picked commit's new export is missing (M18.163).
+ */
+export const regenerateSteps = () => [
+  [exists('turbo.json'), 'pnpm', ['run', 'typecheck']],
+  [exists('turbo.json'), 'pnpm', ['run', 'build']],
+  [exists('turbo.json'), process.execPath, ['scripts/gates/check-api.mjs', '--update']],
+  [exists('docs/requirements/40-traceability.md'), process.execPath, ['scripts/gates/check-trace.mjs', '--write']],
+];
+
 function regenerate() {
-  const steps = [
-    // check-api reads built declarations
-    [exists('turbo.json'), 'pnpm', ['run', 'build']],
-    [exists('turbo.json'), process.execPath, ['scripts/gates/check-api.mjs', '--update']],
-    [exists('docs/requirements/40-traceability.md'), process.execPath, ['scripts/gates/check-trace.mjs', '--write']],
-  ];
-  for (const [needed, cmd, args] of steps) {
+  for (const [needed, cmd, args] of regenerateSteps()) {
     if (!needed) continue;
     const r = run(cmd, args);
     if (r.status !== 0) return `${args.join(' ')} failed:\n${r.stdout}${r.stderr}`;
