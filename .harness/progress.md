@@ -3678,3 +3678,7 @@ The studio reads and verifies every first-party pack index (one SDK loader each,
 
 The studio's Credits dialog lists each used pack's licence, attribution and applicable credits with their notices (saved namespaces keep the file's pinned credits; library-loaded packs give their index's credits trimmed to the used definitions), and the player's chrome offers the same from the file's embedded records, as text and offline; e2e library.pack-credits covers studio, save and the one-file player.
 - Rebase onto febe298 (2026-10-30): over M18.17, App.tsx passed 400 lines (useDocumentCatalog moved to use-document-catalog.ts); review r5 changes-requested (Credits omitted imported SVG libraries), fixed with one saveSources reader for the save and the dialog; r6 pass, minor (no e2e of the wiring) carried in the commit body. Rounds counted from the merge-base (M18.193), agreed with stream 1.
+
+## M18.162 — icons-lucide provenance verified (2026-10-29)
+
+packs/icons-lucide/src/provenance.test.ts reads the corpus: the credited sha256 equals the manifest's iconify-lucide entry and the pinned file's own hash, the revision is the manifest's repository@commit, the notices equal licenses/lucide.txt (its hash checked against the manifest) split as lucide.mjs splits it, and every icon is an icon of the pinned collection. A mutated revision fails it. The package licence stays MIT, argued in review-argued.txt (check-licenses requires MIT for workspace packages).
