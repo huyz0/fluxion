@@ -3458,7 +3458,7 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 
 ## M18.43 — plan M18.194 (macOS verify envelope, ci 40894960957, 2026-10-29)
 
-- ci 40894960957 at e3f6e36: `verify (macos-latest)` stopped at its 15-minute `pnpm verify` step (ADR-0191) with no failing check. The step grew 754 s (084008f), 773 s (475402c), 873 s (8cae07a), then past 900 s once M18.191–193 added about 30 s of harness tests. Stream 6's per-step timings at 8cae07a: test (Vitest with coverage) 831 s, harness-tests 743 s, attw 341 s, all running side by side on 3 vCPUs.
+- ci 40894960957 at e3f6e36: `verify (macos-latest)` stopped at its 15-minute `pnpm verify` step (ADR-0191) with no failing check. Correction (cp25): the same run's `verify (windows-latest)` also failed, in `cli.pack-import` with "Node SVG witness: cleanup" (job 123521434707), and so did db19f11's (ci 40905801401, job 123560078067); the watcher stopped at the first failed job and this entry called the run macOS-only. The step grew 754 s (084008f), 773 s (475402c), 873 s (8cae07a), then past 900 s once M18.191–193 added about 30 s of harness tests. Stream 6's per-step timings at 8cae07a: test (Vitest with coverage) 831 s, harness-tests 743 s, attw 341 s, all running side by side on 3 vCPUs.
 - Stream 6 says M18.186 (attw/publint) would not reliably move the critical path. The stopgap is ADR-0197's shape for macOS (20 of 40 min). The root fix stays recovering headroom: coverage placement (Huy's call, stream 6 is measuring it) and harness-test time (M18.157).
 
 ## M18.194 — macOS verify gets 20 of a 40-minute envelope (ci 40894960957, 2026-10-29)
@@ -3469,3 +3469,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 
 - A successful cold-setup is over budget when the log has the annotation in either form (`::warning title=cold setup over budget::` or GitHub's downloaded `##[warning]`) or the by-time blame line, or when the known duration exceeds COLD_SETUP_MAX_MS; green only with a known duration (check-budget's `budget: cold setup N ms <=` line, which wins over the step's time, else the step's time); otherwise duration UNKNOWN. ghSource.coldSetup hydrates missing step times as view() does. The M18.161 test title drops 'continue-on-error'. Closing the row lifts cp23's `blocks-landing` mark.
 - Rebased onto e3f6e36 (M18.191–193): last-ci's pending-run job reading and the cold-setup duration rules sit side by side. The row closes by State done (the mark stays in its title), together with M18.192, whose title also carries the mark; both need the green three-OS record of a run at e3f6e36 or later, staged as .harness/reviews/ci-evidence.json.
+
+## M18.43 — checkpoint cp25 (through fccbb9c, changes-requested)
+
+- Reopened: M18.195 (`blocks-landing`; the Windows witness cleanup still fails in 2 of 4 runs on M18.190's tree: trace, independent diagnostic review, then attempt 3 with `Fixes-ci: 40905801401`; closes after three consecutive Windows-green main runs), M18.196 (ci evidence and last-ci read every run on the same product tree), M18.197 (the mark is only the title's last token; its title is reworded from the record's so that it does not mention the backticked mark, which would make it a second mark under today's rule, r1).
+- Handed off: F4 (the root fix for macOS verify time) to Huy's coverage-placement card.
+- The font thread's five commits wait for M18.195 to close unless Huy decides otherwise.

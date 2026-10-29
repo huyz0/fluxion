@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.178",
+  "currentTask": "M18.43",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it.",
-  "updated": "2026-10-29T19:10:00Z",
+  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). M18.195 (`blocks-landing`) holds feature batches unless Huy says otherwise.",
+  "updated": "2026-10-29T19:50:00Z",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 2
