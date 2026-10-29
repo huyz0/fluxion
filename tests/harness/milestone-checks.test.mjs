@@ -660,6 +660,36 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.deepEqual(seen, [spec, '--project=perf', '--workers=1', '--reporter=json']);
     assert.match(String(playwrightSpecs([spec], ['chromium'], { runner: () => ({ status: 1, stdout: '', stderr: 'boom' }) })), /wrote no report: boom/);
   });
+
+  it('a Playwright leg that ran no test names why, once: the report error, else the runner tail (M18.179, cp23 F3)', async () => {
+    const { checkPlaywrightReport, checkPlaywrightTitles, playwrightSpecs } = await import('../../scripts/gates/milestone-checks.mjs');
+    const spec = 'e2e/smoke.studio-boots.spec.ts';
+    const webServer = {
+      suites: [],
+      errors: [{ message: '\x1b[31mError: Process from config.webServer was not able to start. Exit code: 1\x1b[39m\n    at stack line' }],
+    };
+    const why = String(checkPlaywrightReport(webServer, [spec], ['chromium', 'firefox']));
+    assert.match(
+      why,
+      /\[chromium\]: no test ran; .*\[firefox\]: no test ran \(playwright: Error: Process from config\.webServer was not able to start\. Exit code: 1\)$/,
+    );
+    assert.equal(why.match(/playwright:/g).length, 1, 'once for the leg');
+    assert.doesNotMatch(why, /stack line/);
+    assert.ok(!why.includes(String.fromCharCode(27)), 'ANSI colours stripped');
+    assert.match(String(checkPlaywrightTitles(webServer, spec, ['s'], ['chromium'])), /no test titled "s" \(playwright: Error: Process from config\.webServer/);
+    // no error in the report: the runner's output tail
+    const runner = (_args, env) => {
+      writeFileSync(env.PLAYWRIGHT_JSON_OUTPUT_NAME, JSON.stringify({ suites: [] }));
+      return { status: 1, stdout: '', stderr: 'pnpm: ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND' };
+    };
+    assert.match(String(playwrightSpecs([spec], ['chromium'], { runner })), /no test ran \(playwright: pnpm: ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND\)/);
+    // a failed test is its own cause: nothing appended
+    const failed = {
+      suites: [{ file: 'smoke.studio-boots.spec.ts', specs: [{ title: 's', tests: [{ projectName: 'chromium', status: 'unexpected' }] }] }],
+      errors: [{ message: 'x' }],
+    };
+    assert.doesNotMatch(String(checkPlaywrightReport(failed, [spec], ['chromium'])), /playwright:/);
+  });
 });
 
 describe('the NFR-I18N-001 legs of m11-complete (M11.75, NFR-I18N-001)', () => {

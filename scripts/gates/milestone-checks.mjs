@@ -688,6 +688,21 @@ function playwrightTests(report) {
   return out;
 }
 
+/** The first six problems of a Playwright leg and how many more. */
+const summarize = (bad) => bad.slice(0, 6).join('; ') + (bad.length > 6 ? `; … ${bad.length - 6} more` : '');
+
+/**
+ * Why a Playwright run ran no test, once for the leg: the report's first top-level error line (a
+ * webServer that did not start, a config error), else the runner's output tail when it exited
+ * non-zero; '' when neither says (M18.179, cp23 F3).
+ */
+const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
+function noTestCause(report) {
+  const first = (report?.errors ?? []).map((e) => String(e?.message ?? e?.value ?? '').replace(ANSI, '')).find((m) => m.trim());
+  const cause = first ? first.trim().split(/\r?\n/)[0] : (report?.runnerTail ?? '');
+  return cause ? ` (playwright: ${cause})` : '';
+}
+
 /**
  * Judge a Playwright JSON report: every spec of `specs` (paths under e2e/) ran at least one test on
  * every project of `projects`, and every one of them passed on its first run (a pass on retry is
@@ -704,7 +719,7 @@ export function checkPlaywrightReport(report, specs, projects) {
       for (const t of mine.filter((x) => x.status !== 'expected')) bad.push(`${spec} [${project}] "${t.title}": ${t.status}`);
     }
   }
-  return bad.length === 0 || bad.slice(0, 6).join('; ') + (bad.length > 6 ? `; … ${bad.length - 6} more` : '');
+  return bad.length === 0 || summarize(bad) + (bad.some((b) => b.endsWith(': no test ran')) ? noTestCause(report) : '');
 }
 
 /**
@@ -723,7 +738,7 @@ export function checkPlaywrightTitles(report, spec, titles, projects) {
       else if (run.some((t) => t.status !== 'expected')) bad.push(`${spec} [${project}] "${title}": ${run.map((t) => t.status).join(', ')}`);
     }
   }
-  return bad.length === 0 || bad.slice(0, 6).join('; ') + (bad.length > 6 ? `; … ${bad.length - 6} more` : '');
+  return bad.length === 0 || summarize(bad) + (tests.length === 0 ? noTestCause(report) : '');
 }
 
 const runPlaywright = (args, env) => run('pnpm', ['exec', 'playwright', 'test', ...args], { env: { ...process.env, ...env } });
@@ -743,7 +758,10 @@ export function playwrightReport(specs, projects, { runner = runPlaywright, work
     const alone = workers === undefined ? [] : [`--workers=${workers}`];
     const r = runner([...specs, ...projects.map((p) => `--project=${p}`), ...alone, '--reporter=json'], { PLAYWRIGHT_JSON_OUTPUT_NAME: out });
     if (!existsSync(out)) return `playwright wrote no report: ${r.status === 0 ? 'exit 0' : tail(r)}`;
-    return JSON.parse(readFileSync(out, 'utf8'));
+    const report = JSON.parse(readFileSync(out, 'utf8'));
+    // the cause of a run that ran nothing, when its report has no error of its own (M18.179)
+    if (r.status !== 0 && report && typeof report === 'object') report.runnerTail = tail(r);
+    return report;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

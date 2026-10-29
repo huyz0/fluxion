@@ -31,7 +31,8 @@ export function run(command,args) {
   const named=status==='named-failure';
   const report={numFailedTestSuites:status==='failed'||named?1:0,testResults:[{assertionResults:status==='empty'?[]:named?[{status:'passed',fullName:'suite > fine'},{status:'failed',fullName:'suite > breaks the paint',failureMessages:['AssertionError: expected red to be blue\\n    at x.test.ts:1:1']}]:[{status}]}]};
   const output=args.find(a=>a.startsWith('--outputFile=')).slice('--outputFile='.length);
-  if(status!=='missing-report') writeFileSync(output,status==='invalid-report'?'not-json':JSON.stringify(report));
+  if(status!=='missing-report'&&status!=='exit-no-report') writeFileSync(output,status==='invalid-report'?'not-json':JSON.stringify(report));
+  if(status==='exit-no-report') return {status:1,stdout:'',stderr:'Error: Failed to load url ./missing.ts\\nvitest exited'};
   return {status:status==='exit-failure'||named?1:0,stdout:'JSON report written to '+output,stderr:''};
 }
 export async function runLegs() {
@@ -74,8 +75,12 @@ describe('M18 feature completion wiring (HARNESS, FR-LIB-004, FR-LIB-009)', () =
       assert.equal(r.status, 1, out(r));
       assert.match(r.stdout, /FAIL suite > breaks the paint: AssertionError: expected red to be blue"/);
       assert.doesNotMatch(r.stdout, /JSON report written|x\.test\.ts:1:1/);
-      // no report: the process output's tail, as before
+      // a report without a failed test: the process output's tail, as before
       assert.match(probe(sb, 'exit-failure', LOADER).stdout, /JSON report written/);
+      // no report at all: the process output's tail (M18.179, M18.166 review minor)
+      const none = probe(sb, 'exit-no-report', LOADER);
+      assert.equal(none.status, 1, out(none));
+      assert.match(none.stdout, /Failed to load url \.\/missing\.ts \| vitest exited/);
     } finally {
       sb.cleanup();
     }

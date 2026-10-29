@@ -3402,3 +3402,7 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 ## M18.177 — review rounds keep counting after a pass until the task lands (cp23 F1)
 
 - review.mjs numbers a verdict one past the task's highest round among its digest lines not yet committed (absent from HEAD's digest.log; a task's rounds are committed with the task's own commit, so this is "since it landed" without reading history, which shallow clones and sandboxes lack), so a pass no longer restarts the count at r1 and the round cap counts changes-requested rounds that follow a pass. Content that already passed since then keeps that round and its digest line ends `reapply`; parseDigest exposes it.
+
+## M18.179 — completion-gate Playwright legs name why no test ran (cp23 F3)
+
+- checkPlaywrightReport and checkPlaywrightTitles append, once per leg, the cause of a run that ran nothing: the report's first top-level error line (ANSI stripped; e.g. a webServer that did not start), else the runner's output tail when it exited non-zero (playwrightReport keeps it as `runnerTail`). m18-feature-legs proves a Vitest leg that exits non-zero with no report prints the process output tail (M18.166 review minor).
