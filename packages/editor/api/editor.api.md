@@ -6,6 +6,8 @@
 
 import { AnchorRef } from '@fluxion/schema';
 import { AnyRecord } from '@fluxion/schema';
+import { ArtworkFontPorts } from '@fluxion/render';
+import { ArtworkShapeRegistries } from '@fluxion/core';
 import { AssetRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { browserMeasurer } from '@fluxion/render';
@@ -14,6 +16,7 @@ import { CommandTxOptions } from '@fluxion/core';
 import { ConnectorElement } from '@fluxion/schema';
 import { CoreRegistries } from '@fluxion/core';
 import { createCanvasMeasurer } from '@fluxion/render';
+import { DeclaredImportCredits } from '@fluxion/format';
 import { Diagnostic } from '@fluxion/schema';
 import { Disposable } from '@fluxion/core';
 import { DocumentFile } from '@fluxion/schema';
@@ -28,6 +31,8 @@ import { GlobalRouteInput } from '@fluxion/routing';
 import { IconifyImportOptions } from '@fluxion/format';
 import { IconifyProcessedReport } from '@fluxion/format';
 import { ImageCodec } from '@fluxion/format';
+import { ImportedPack } from '@fluxion/format';
+import { ImportedPackFont } from '@fluxion/format';
 import { LoadableFace } from '@fluxion/render';
 import { loadFontFaces } from '@fluxion/render';
 import { MarkerDef } from '@fluxion/core';
@@ -44,9 +49,14 @@ import { Result } from '@fluxion/schema';
 import { RouteContext } from '@fluxion/routing';
 import { ShapeDef } from '@fluxion/core';
 import { Store } from '@fluxion/core';
+import { SvgBatchReport } from '@fluxion/format';
+import { SvgImportFont } from '@fluxion/format';
+import { SvgMemberProblem } from '@fluxion/format';
 import { Theme } from '@fluxion/theme';
 import { ThemeError } from '@fluxion/theme';
+import { TokenRef } from '@fluxion/schema';
 import { Vec2 } from '@fluxion/geometry';
+import { WitnessSessionPort } from '@fluxion/format';
 import { WritableSignal } from '@fluxion/core';
 
 // @public
@@ -265,6 +275,9 @@ export function connectorTool(): Tool;
 
 // @public
 export const CONTEXT_MENU_EVENT = "fx-contextmenu";
+
+// @public
+export function convertSvgLibrary(input: SvgLibraryInput, options: SvgLibraryOptions): Promise<Result<SvgLibraryConversion, readonly SvgMemberProblem[]>>;
 
 // @public
 export function copyPayload(view: ReadView, ids: readonly RecordId[], source: {
@@ -908,6 +921,9 @@ export function marquee(start: Vec2, end: Vec2): Marquee;
 export type MarqueeMode = "contain" | "intersect";
 
 // @public
+export const MAX_BATCH_COLORS = 64;
+
+// @public
 export const MAX_MY_SHAPES = 500;
 
 // @public
@@ -1323,6 +1339,9 @@ export function registeredTemplateIds(entries: readonly (readonly [string, unkno
 export { registerFontMetrics }
 
 // @public
+export function registerSvgLibrary(registries: ArtworkShapeRegistries, pack: ImportedPack, ports: ArtworkFontPorts): Promise<Result<SvgLibrary, readonly Diagnostic[]>>;
+
+// @public
 export function replaceableShape(view: ReadView, selection: readonly RecordId[]): RecordId | undefined;
 
 // @public
@@ -1564,6 +1583,75 @@ export type StreamFluxResult = {
 
 // @public
 export function streamFluxScript(source: AsyncIterable<string> | ReadableStream<string>, options: StreamFluxOptions): Promise<StreamFluxResult>;
+
+// @public
+export type SvgBatchColors = {
+    readonly colors: readonly string[];
+    readonly colorsOmitted: number;
+};
+
+// @public
+export function svgBatchColors(definitions: readonly ShapeDef[]): SvgBatchColors;
+
+// @public
+export type SvgLibrary = Disposable & {
+    readonly entries: readonly LibraryEntry[];
+};
+
+// @public
+export type SvgLibraryConversion = SvgBatchColors & {
+    readonly pack: ImportedPack;
+    readonly report: SvgBatchReport;
+};
+
+// @public
+export type SvgLibraryFont = {
+    readonly face: SvgImportFont;
+    readonly rights: ImportedPackFont;
+};
+
+// @public
+export type SvgLibraryInput = {
+    readonly kind: "files" | "zip";
+    readonly items: readonly SvgLibraryItem[];
+};
+
+// @public
+export type SvgLibraryItem = {
+    readonly name: string;
+    readonly size: number;
+    readonly bytes: () => Promise<Uint8Array>;
+};
+
+// @public
+export type SvgLibraryOptions = {
+    readonly namespace: string;
+    readonly version: string;
+    readonly name: string;
+    readonly rights: SvgLibraryRights;
+    readonly colors?: Readonly<Record<string, TokenRef>>;
+    readonly tokenRefs?: ReadonlySet<string>;
+    readonly fonts?: readonly SvgLibraryFont[];
+    readonly startWitness: () => Promise<Result<WitnessSessionPort<readonly Diagnostic[]>, readonly Diagnostic[]>>;
+    readonly now: () => number;
+};
+
+// @public
+export type SvgLibraryRights = {
+    readonly kind: "credits";
+    readonly credits: DeclaredImportCredits;
+} | {
+    readonly kind: "original";
+    readonly license: string;
+    readonly attribution: string;
+    readonly author: string;
+} | {
+    readonly kind: "upstream";
+    readonly license: string;
+    readonly attribution: string;
+    readonly reference: string;
+    readonly sha256: string;
+};
 
 // @public
 export function switchScreen(session: Session, id: RecordId): void;

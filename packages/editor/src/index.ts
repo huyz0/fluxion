@@ -169,6 +169,15 @@ export {
 export { LayoutPickerSection, type LayoutPickerSectionProps } from './layout-picker-section.js';
 export { type DrawioLibrary, importDrawioLibrary } from './library/import-drawio.js';
 export { type IconifyLibrary, importIconifyLibrary } from './library/import-iconify.js';
+export {
+  convertSvgLibrary,
+  type SvgLibraryConversion,
+  type SvgLibraryFont,
+  type SvgLibraryOptions,
+  type SvgLibraryRights,
+} from './library/import-svg.js';
+export { MAX_BATCH_COLORS, type SvgBatchColors, svgBatchColors } from './library/import-svg-colors.js';
+export type { SvgLibraryInput, SvgLibraryItem } from './library/import-svg-input.js';
 export { LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { type ReplaceDeps, replaceableShape, replaceSelectedShape } from './library/library-replace.js';
 export { buildLibraryIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
@@ -187,6 +196,7 @@ export {
   parseMyShapes,
   saveMyShape,
 } from './library/my-shapes.js';
+export { registerSvgLibrary, type SvgLibrary } from './library/register-svg.js';
 export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';
 export { startLiveLayout } from './live-layout.js';
 export { newDocument } from './new-document.js';

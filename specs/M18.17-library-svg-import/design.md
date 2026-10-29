@@ -34,8 +34,11 @@ reads and process wiring and imports the rest; its suites run unchanged and gree
 - Rights: parsed credits (`parseImportCredits(json, notices)`), or the one-credit form, `original`
   with an author or `upstream` with a reference and a typed hash. In the studio `notices` is empty:
   a credit with `noticeFile` is refused, naming the credit, and asks for an inline `notice`.
-- `registerSvgLibrary(registry, pack, source)` → `{ entries, dispose }`, atomic, a held namespace
-  refused (`registerImported`).
+- `registerSvgLibrary(registries, pack, ports)` → `{ entries, dispose }`: the artwork registries
+  (`shapeDefs` and `artworkFonts`) and render's font ports, since a 1.1 pack's exact face must be
+  loaded and bound before any definition registers; all or nothing through render's
+  `registerSavedShapePacks` over format's `shapePackSubsetOf(pack.source)`, a held namespace refused
+  (M18.175 review r1 F2).
 
 **M18.176 — the dialog.** `EditorRoot` gains `libraryImporter?: LibraryImporter` (public editor API),
 passed through `edit-body.tsx` to `LibraryPanelProps.importer`. With it the panel shows **Import

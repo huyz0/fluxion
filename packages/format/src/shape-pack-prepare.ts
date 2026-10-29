@@ -134,6 +134,15 @@ function distribution(input: Record<string, unknown>, policy: ShapePackLicensePo
   return ok({ ...header, formatVersion: '1.1', fontResources: pack.fontResources.map(retained), fontFaces, definitionFonts, fontCredits });
 }
 
+/**
+ * The saved subset of a pack source with every definition it holds, checked under `policy`, or why it is not one: what a host
+ * registers right after an import, before any save (M18.175).
+ * @public
+ */
+export function shapePackSubsetOf(source: ShapePackSourceData, policy: ShapePackLicensePolicy): Result<VersionedShapePackSubset, readonly Diagnostic[]> {
+  return object(source) ? parsedSource(source, policy) : err([problem('', 'source must be an object')]);
+}
+
 type Source = { readonly subset: VersionedShapePackSubset; readonly fonts: ReadonlyMap<string, Uint8Array> };
 /** Owned copies of host font bytes, captured before any await. */
 function fontsOf(input: Record<string, unknown>): ReadonlyMap<string, Uint8Array> | undefined {

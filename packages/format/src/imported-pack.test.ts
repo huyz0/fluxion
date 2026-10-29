@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { decodeBase64 } from './base64.js';
 import { importIconifyCollection } from './iconify-import.js';
 import { type ImportedPackOptions, iconifyShapePack, importedShapePack } from './imported-pack.js';
-import { loadFlux, writePortableFlux } from './index.js';
+import { loadFlux, shapePackSubsetOf, writePortableFlux } from './index.js';
 import { sha256Hex } from './sha256.js';
 import { importSvgShape, type SvgPaintWitness } from './svg-import.js';
 
@@ -119,6 +119,9 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
     const opened = value(await loadFlux(value(await save(['mine:box'], [pack.source])).bytes, { hasher, shapePackLicensePolicy: licensePolicy }));
     expect(opened.shapePacks[0]?.definitions).toEqual([{ ...svg.definition, category: 'uncategorized' }]);
     expect(opened.shapePacks[0]?.credits.map((c) => c.source)).toEqual([declared.source]);
+    // the subset a host registers right after the import is the one the save carries (M18.175)
+    expect(value(shapePackSubsetOf(pack.source, licensePolicy))).toEqual(opened.shapePacks[0]);
+    expect(shapePackSubsetOf({ ...pack.source, definitions: [] }, () => false).ok).toBe(false);
     const refused = (r: ReturnType<typeof importedShapePack>) => (r.ok ? [] : r.error.map((d) => d.path));
     expect(refused(importedShapePack({ ...declared, entries: [] }))).toEqual(['/entries']);
     expect(refused(importedShapePack({ ...declared, namespace: 'other', entries }))).toEqual(['/entries/0/definition/id']);

@@ -742,6 +742,9 @@ export type ShapePackSourceData = {
 };
 
 // @public
+export function shapePackSubsetOf(source: ShapePackSourceData, policy: ShapePackLicensePolicy): Result<VersionedShapePackSubset, readonly Diagnostic[]>;
+
+// @public
 export function slugOf(path: string): string;
 
 // @public

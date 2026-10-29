@@ -88,6 +88,7 @@ export {
   prepareUsedShapePacks,
   type ShapePackDataLock,
   type ShapePackSourceData,
+  shapePackSubsetOf,
 } from './shape-pack-prepare.js';
 export { usedFontFamilies } from './used-fonts.js';
 export { readZip, writeZip, type ZipEntry, type ZipFailure, type ZipInput, type ZipLimits, type ZipMethod } from './zip.js';
