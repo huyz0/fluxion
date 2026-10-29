@@ -157,7 +157,7 @@ leg('SVG sanitizer, outlines, color mapping and >=4 anchors', () => {
 leg('imported artwork retains exact licensed fonts offline', () => {
   const retained = tests('packages/format/src/artwork-font-retention.test.ts');
   if (retained !== true) return retained;
-  const installed = tests('packages/cli/src/e2e/artwork-fonts.test.ts');
+  const installed = tests('packages/cli/src/e2e/cli.artwork-fonts.test.ts');
   return installed === true ? playwrightSpecs(['e2e/artwork.font-retention.spec.ts'], ['chromium', 'firefox', 'webkit'], { runner: imageRunner() }) : installed;
 });
 

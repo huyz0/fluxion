@@ -15,6 +15,8 @@ type FormatApi = {
   sha256Hex(bytes: Uint8Array): string;
   readZip(bytes: Uint8Array): Result<{ name: string; bytes: Uint8Array }[]>;
   writeZip(entries: { name: string; bytes: Uint8Array }[]): Result<Uint8Array>;
+  importSvgShape(svg: string, options: unknown): Promise<Result<{ definition: unknown; fonts: unknown[] }>>;
+  importedShapePack(options: unknown): Result<{ source: unknown }>;
 };
 type CoreApi = { allowsShapePackContentLicense(license: string): boolean };
 type SchemaApi = { parseDocument(text: string): Result<{ document: unknown }> };
@@ -167,4 +169,74 @@ export async function savedArtworkFont(bytes: Uint8Array, sha256: string) {
     assets: ReadonlyMap<string, { bytes: Uint8Array }>;
   };
   return { versions: loaded.shapePacks.map((pack) => pack.formatVersion), font: loaded.assets.get(sha256)?.bytes };
+}
+
+/**
+ * A `.flux` holding an imported SVG whose text needs exact Inter, saved as a 1.1 pack with the bytes (M18.81), and an ordinary
+ * text element drawn in the document's own Inter: the same family, which the artwork's bytes must never take.
+ */
+export async function importedArtworkFontFile(): Promise<{ readonly bytes: Uint8Array; readonly sha256: string }> {
+  const { api, hasher } = await format();
+  const core = await load<CoreApi>('packages/core/dist/index.js');
+  const schema = await load<SchemaApi>('packages/schema/dist/index.js');
+  const inter = new Uint8Array(readFileSync('packs/fonts-core/fonts/inter-latin-400-normal.woff2'));
+  const sha256 = api.sha256Hex(inter);
+  const face = { family: 'Inter', weight: 400, style: 'normal', sha256 };
+  // a deterministic paint port: this file exercises retention, not the witness (M18.80 qualifies that)
+  const witness = async (r: { identity: string; fonts: { sha256: string }[] }) => ({
+    identity: r.identity,
+    status: 'painted',
+    fontHashes: r.fonts.map((f) => f.sha256),
+  });
+  const svg = value(
+    await api.importSvgShape('<svg viewBox="0 0 80 40"><text x="4" y="24" font-family="Inter">API</text></svg>', { id: 'mine:api', witness, fonts: [face] }),
+  );
+  const pack = value(
+    api.importedShapePack({
+      namespace: 'mine',
+      version: '1.0.0',
+      name: 'My shapes',
+      license: 'CC0-1.0',
+      attribution: 'Document author',
+      notice: 'Drawn by the document author and dedicated to the public domain.',
+      source: { kind: 'original', author: 'Document author', statement: 'Original work of the document author.' },
+      licensePolicy: core.allowsShapePackContentLicense,
+      entries: [{ definition: svg.definition, name: 'API', fonts: svg.fonts }],
+      fonts: [
+        {
+          bytes: inter,
+          license: 'OFL-1.1',
+          attribution: 'Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)',
+          notice: 'Inter is licensed under the SIL Open Font License, Version 1.1.',
+          source: { kind: 'upstream', reference: 'npm:@fontsource/inter@5.3.0/files/inter-latin-400-normal.woff2', sha256 },
+        },
+      ],
+    }),
+  );
+  const json = JSON.parse(readFileSync('fixtures/docs/minimal.flux.json', 'utf8')) as { records: Record<string, { type: string; id: string }> };
+  const screen = Object.values(json.records).find((record) => record.type === 'screen');
+  if (!screen) throw new Error('fixture has no screen');
+  const shape = {
+    id: 'ImportedText001',
+    type: 'element',
+    kind: 'shape',
+    screenId: screen.id,
+    index: 'a0',
+    defId: 'mine:api',
+    transform: { x: 150, y: 150, w: 240, h: 120 },
+  };
+  const paragraph = { type: 'paragraph', content: [{ type: 'text', text: 'Ordinary Inter' }] };
+  const text = {
+    id: 'OrdinaryText001',
+    type: 'element',
+    kind: 'text',
+    screenId: screen.id,
+    index: 'a1',
+    text: { type: 'doc', content: [paragraph] },
+    transform: { x: 150, y: 320, w: 400, h: 60 },
+  };
+  const records = { ...json.records, [shape.id]: shape, [text.id]: text };
+  const document = value(schema.parseDocument(JSON.stringify({ ...json, records }))).document;
+  const shapePacks = { sources: [pack.source], builtinIds: new Set(), licensePolicy: core.allowsShapePackContentLicense };
+  return { bytes: value(await api.writePortableFlux({ document, appVersion: '0', hasher, shapePacks })).bytes, sha256 };
 }

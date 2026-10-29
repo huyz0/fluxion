@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { out, sandbox } from './helpers.mjs';
 
 const USED = 'packages/format/src/artwork-font-retention.test.ts';
-const CREDITS = 'packages/cli/src/e2e/artwork-fonts.test.ts';
+const CREDITS = 'packages/cli/src/e2e/cli.artwork-fonts.test.ts';
 const BROWSER = 'e2e/artwork.font-retention.spec.ts';
 function fixture() {
   const sb = sandbox(['scripts/gates/m18-complete.mjs']);
