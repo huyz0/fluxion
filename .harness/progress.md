@@ -3348,3 +3348,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - F1 (major): the chain landed while M18.164 was still todo, against cp21's recorded order. M18.164 is now `blocks-landing`. F2 argued (digest round labels, reviewer ids). F3: new row M18.166, completion-gate Vitest legs name the failing test.
 - Order: ci 40820909096 at 8ab3bfb green on Windows; M18.164; M18.172 with or before M18.16; M18.157 attempt 3 only after an independent diagnostic review; feature batches at most 7 with green ci between.
 - Closing M18.164 needs a green three-OS ci run recorded with `check-ci-evidence.mjs --record <tip>` for the tip it lands on (M18.135), so feature landings wait for that run too (cp22 record review minor).
+
+## M18.172 — font collision check tells the theme's Inter from the artwork's bytes (2026-10-29)
+
+- `e2e/artwork.font-retention.spec.ts`: an init script records every `FontFace` the page constructs (family, byte length). Studio: a baseline page opens the same document without the artwork (`importedArtworkFontFile({ artwork: false })`); after the artwork file opens, the `Inter` faces (weight/style/range) equal the baseline's and the constructed faces are the baseline's plus one, under the alias, with Inter's exact length. `.flux.html` from `file://`: the same against a baseline `.flux.html`.
+- Mutant (artwork registration also adding the bytes as `Inter`): both tests fail; restored. Chromium 2/2 green; Firefox/WebKit are CI's (not installed here).
+- Review r1 pass with F1 (minor): a swap of the host's Inter for a CSS face of the artwork's bytes kept weight/style/range and passed the studio test → the check also compares the sources of every CSS `Inter` `@font-face` rule and records `document.fonts.delete`; the swap mutant now fails both tests (restored). r2 reviews the fix.

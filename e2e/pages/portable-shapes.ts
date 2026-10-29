@@ -173,9 +173,10 @@ export async function savedArtworkFont(bytes: Uint8Array, sha256: string) {
 
 /**
  * A `.flux` holding an imported SVG whose text needs exact Inter, saved as a 1.1 pack with the bytes (M18.81), and an ordinary
- * text element drawn in the document's own Inter: the same family, which the artwork's bytes must never take.
+ * text element drawn in the document's own Inter: the same family, which the artwork's bytes must never take. With `artwork: false`
+ * only the ordinary text: the baseline of the host's own faces.
  */
-export async function importedArtworkFontFile(): Promise<{ readonly bytes: Uint8Array; readonly sha256: string }> {
+export async function importedArtworkFontFile(options: { readonly artwork?: boolean } = {}): Promise<{ readonly bytes: Uint8Array; readonly sha256: string }> {
   const { api, hasher } = await format();
   const core = await load<CoreApi>('packages/core/dist/index.js');
   const schema = await load<SchemaApi>('packages/schema/dist/index.js');
@@ -235,7 +236,8 @@ export async function importedArtworkFontFile(): Promise<{ readonly bytes: Uint8
     text: { type: 'doc', content: [paragraph] },
     transform: { x: 150, y: 320, w: 400, h: 60 },
   };
-  const records = { ...json.records, [shape.id]: shape, [text.id]: text };
+  // without the artwork: the baseline the collision check compares the host's own faces against (M18.172)
+  const records = options.artwork === false ? { ...json.records, [text.id]: text } : { ...json.records, [shape.id]: shape, [text.id]: text };
   const document = value(schema.parseDocument(JSON.stringify({ ...json, records }))).document;
   const shapePacks = { sources: [pack.source], builtinIds: new Set(), licensePolicy: core.allowsShapePackContentLicense };
   return { bytes: value(await api.writePortableFlux({ document, appVersion: '0', hasher, shapePacks })).bytes, sha256 };
