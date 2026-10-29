@@ -133,6 +133,12 @@ export function ghSource(spawn = spawnSync) {
     coldSetup: async (id) => {
       const job = (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).find((j) => j.name === 'cold-setup');
       if (!job) return undefined;
+      // older gh omits step times: fetch them as view() does, so the duration is known (M18.178)
+      try {
+        hydrateColdStepTimes(job, id, gh);
+      } catch {
+        /* no step time: the log may still name the duration (M18.178 r1) */
+      }
       const log = spawn('gh', ['api', `repos/${REPO}/actions/jobs/${job.databaseId}/logs`], { encoding: 'utf8', maxBuffer: 1 << 26 });
       const step = (job.steps ?? []).find((s) => s.name === COLD_STEP);
       return { conclusion: job.conclusion, ms: stepMs(step?.startedAt, step?.completedAt), log: log.status === 0 ? log.stdout : null };

@@ -324,6 +324,33 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
       return { status: 0, stdout: JSON.stringify({ jobs: [{ databaseId: 9, name: 'cold-setup', conclusion: 'success', steps }] }) };
     });
     assert.deepEqual(await timed.coldSetup(42), { conclusion: 'success', ms: 565_000, log: null });
+    // an older gh without step times: the successful cold job's times are fetched, as view() does (M18.178)
+    const hydrated = ghSource((_cmd, args) => {
+      if (args[0] === 'api' && args[1].endsWith('/logs')) return { status: 1, stdout: '' };
+      if (args[0] === 'api') {
+        const steps = [{ name: 'cold setup within COLD_SETUP_MAX_MS', started_at: '2026-10-28T10:00:00Z', completed_at: '2026-10-28T10:11:04Z' }];
+        return { status: 0, stdout: JSON.stringify({ id: 9, run_id: 42, name: 'cold-setup', steps }) };
+      }
+      return {
+        status: 0,
+        stdout: JSON.stringify({
+          jobs: [{ databaseId: 9, name: 'cold-setup', conclusion: 'success', steps: [{ name: 'cold setup within COLD_SETUP_MAX_MS' }] }],
+        }),
+      };
+    });
+    assert.deepEqual(await hydrated.coldSetup(42), { conclusion: 'success', ms: 664_000, log: null });
+    // a failed hydration leaves the duration unknown but keeps the log (M18.178 r1)
+    const failing = ghSource((_cmd, args) => {
+      if (args[0] === 'api' && args[1].endsWith('/logs')) return { status: 0, stdout: 'budget: cold setup 598000 ms <= 600000 ms' };
+      if (args[0] === 'api') return { status: 1, stdout: '', stderr: 'HTTP 502' };
+      return {
+        status: 0,
+        stdout: JSON.stringify({
+          jobs: [{ databaseId: 9, name: 'cold-setup', conclusion: 'success', steps: [{ name: 'cold setup within COLD_SETUP_MAX_MS' }] }],
+        }),
+      };
+    });
+    assert.deepEqual(await failing.coldSetup(42), { conclusion: 'success', ms: null, log: 'budget: cold setup 598000 ms <= 600000 ms' });
   });
 
   it("HARNESS: a pending run's jobs and their conclusions are read through REST and gh (M18.191, cp24 F1)", async () => {

@@ -242,20 +242,32 @@ async function coldSetupReport(run, newer) {
   if (blame[1] === 'status') return { verdict: 1, line: `last-ci: RED cold-setup ${where}: ${text}; a fresh clone fails, fix it before the next task` };
   return { verdict: 0, line: `last-ci: warning: cold-setup ${where}: ${text}` };
 }
-/** A successful cold-setup is green only when known within budget; M18.159's by-time exemption is an overrun (M18.164). */
+/** The cold run's duration in ms and whether the log calls it over budget; ms null when unknown. */
+function coldDuration(cold) {
+  const log = typeof cold.log === 'string' ? cold.log : '';
+  const over =
+    /(?:::warning title=cold setup over budget::|##\[warning\])cold setup (\d+) ms >/.exec(log) ?? /budget: cold setup failed by time \((\d+) ms >/.exec(log);
+  if (over) return { ms: Number(over[1]), over: true };
+  // check-budget's own measure wins over the step's, which also counts the step's start-up
+  const within = /budget: cold setup (\d+) ms <= /.exec(log);
+  return { ms: within ? Number(within[1]) : Number.isFinite(cold.ms) ? cold.ms : null, over: false };
+}
+/**
+ * A successful cold-setup is green only when its duration is known within budget: the cold step's
+ * time, or check-budget's `budget: cold setup N ms <=` line. M18.159's by-time exemption is an overrun,
+ * read from the step time, the blame line or the over-budget annotation in either log form
+ * (`::warning title=…::` as printed, `##[warning]` as GitHub's downloaded log writes it); anything
+ * else is UNKNOWN (M18.164, M18.178).
+ */
 function coldSuccess(cold, where) {
   const limit = t('COLD_SETUP_MAX_MS');
-  const log = typeof cold.log === 'string' ? cold.log : '';
-  const warned = /::warning title=cold setup over budget::cold setup (\d+) ms/.exec(log);
-  const ms = warned ? Number(warned[1]) : cold.ms;
-  if (warned || (Number.isFinite(ms) && ms > limit))
-    return {
-      verdict: 0,
-      line: `last-ci: warning: cold-setup over budget ${where}: ${Math.round(ms / 1000)} s > ${limit / 1000} s (exempt while M18.157 is open)`,
-    };
-  if (!Number.isFinite(ms) && typeof cold.log !== 'string')
-    return { verdict: 0, line: `last-ci: cold-setup success ${where}; duration UNKNOWN (no step time, log unreadable); check it by hand` };
-  return { verdict: 0, line: `last-ci: cold-setup green ${where}${Number.isFinite(ms) ? ` (${Math.round(ms / 1000)} s)` : ''}` };
+  const { ms, over } = coldDuration(cold);
+  const s = (n) => `${Math.round(n / 1000)} s`;
+  if (ms !== null && (over || ms > limit))
+    return { verdict: 0, line: `last-ci: warning: cold-setup over budget ${where}: ${s(ms)} > ${s(limit)} (exempt while M18.157 is open)` };
+  if (ms !== null) return { verdict: 0, line: `last-ci: cold-setup green ${where} (${s(ms)})` };
+  const why = typeof cold.log === 'string' ? 'no step time, no budget line in the log' : 'no step time, log unreadable';
+  return { verdict: 0, line: `last-ci: cold-setup success ${where}; duration UNKNOWN (${why}); check it by hand` };
 }
 const ciRuns = newestFirst.filter((r) => r.workflowName === 'ci');
 const ciDone = ciRuns.find((r) => r.status === 'completed');

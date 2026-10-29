@@ -39,7 +39,7 @@ const run = (workflowName, state, createdAt, extra = {}) => {
 };
 
 describe('last-ci (M5.2, M4 final F3)', () => {
-  it("NFR-DX-001: reports ci's cold-setup job while it is continue-on-error; only a failure by status blocks (M18.161)", () => {
+  it("NFR-DX-001: reports ci's cold-setup job; only a failure by status blocks (M18.161)", () => {
     const at = (coldSetup) => lastCi([run('ci', 'success', '2026-09-29T02:00:00Z', { coldSetup }), run('gates', 'success', '2026-09-29T02:00:00Z')]);
     const log = (line) => `2026-09-29T02:10:00Z budget: cold phase verify 1 ms\n2026-09-29T02:10:00Z budget: ${line}\n`;
     const status = at({ conclusion: 'failure', log: log('cold setup failed by status in phase verify:test after 517002 ms') });
@@ -96,8 +96,32 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     const blind = at({ conclusion: 'success', ms: null, log: null });
     assert.match(blind.out, /cold-setup success at abcdef1 \(run 20\); duration UNKNOWN/);
     assert.doesNotMatch(blind.out, /cold-setup green/);
-    // within budget, from either source
-    assert.match(at({ conclusion: 'success', ms: null, log: 'budget: cold phase verify 1 ms\n' }).out, /cold-setup green at abcdef1/);
+    // a readable log with neither a budget line nor a step time is unknown, not green (M18.178)
+    const silent = at({ conclusion: 'success', ms: null, log: 'budget: cold phase verify 1 ms\n' });
+    assert.match(silent.out, /cold-setup success at abcdef1 \(run 20\); duration UNKNOWN \(no step time, no budget line in the log\)/);
+    assert.doesNotMatch(silent.out, /cold-setup green/);
+  });
+
+  it('NFR-DX-001: a cold-setup is green only on a known in-budget duration, the warning read in both log forms (M18.178, cp23 F2)', () => {
+    const at = (coldSetup) => lastCi([run('ci', 'success', '2026-09-29T02:00:00Z', { coldSetup }), run('gates', 'success', '2026-09-29T02:00:00Z')]);
+    // GitHub's downloaded log writes the annotation as ##[warning]
+    const downloaded = at({
+      conclusion: 'success',
+      ms: null,
+      log: '2026-09-29T02:10:00.1Z ##[warning]cold setup 664000 ms > 600000 ms, exempt while M18.157 is open\n',
+    });
+    assert.match(downloaded.out, /warning: cold-setup over budget at abcdef1 \(run 20\): 664 s > 600 s/);
+    assert.doesNotMatch(downloaded.out, /cold-setup green/);
+    // the blame line alone is an overrun too
+    const blamed = at({ conclusion: 'success', ms: null, log: 'budget: cold setup failed by time (661000 ms > 600000 ms); slowest phase verify:test 1 ms\n' });
+    assert.match(blamed.out, /over budget .*: 661 s > 600 s/);
+    // check-budget's own within-budget line is a known duration, and wins over the step's start-up
+    const within = at({ conclusion: 'success', ms: 601_500, log: 'budget: cold setup 598000 ms <= 600000 ms (empty store: …)\n' });
+    assert.match(within.out, /cold-setup green at abcdef1 \(run 20\) \(598 s\)/);
+    // a readable log without a budget line: the step time alone decides
+    assert.match(at({ conclusion: 'success', ms: 540_000, log: 'budget: cold phase verify 1 ms\n' }).out, /cold-setup green at abcdef1 \(run 20\) \(540 s\)/);
+    // no source at all: unknown
+    assert.match(at({ conclusion: 'success', ms: null, log: '' }).out, /duration UNKNOWN/);
   });
 
   it('a red last run on main blocks the next task', () => {
