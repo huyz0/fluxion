@@ -2,7 +2,7 @@
 // Check the pending index or one exact CI commit, never unstaged checkpoint files.
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { ciEvidenceHolds, landingBlock } from './landing-block.mjs';
+import { ciEvidenceHolds, ciFixProblem, landingBlock } from './landing-block.mjs';
 import { git } from './lib.mjs';
 
 const POLICY = 'scripts/gates/check-checkpoint.mjs';
@@ -118,6 +118,7 @@ const blockedAt = (commit, base, subject, runsFile) =>
         paths: checkedGit(['diff', '--name-only', '--no-renames', base, commit]).split(/\r?\n/).filter(Boolean),
         evidence: readAt(commit, CI_EVIDENCE),
         evidenceOk: (record) => ciEvidenceHolds(record, base, { runsFile }),
+        ciFixProblem: (task, id) => ciFixProblem(task, id, base, { runsFile }),
       })
     : null;
 

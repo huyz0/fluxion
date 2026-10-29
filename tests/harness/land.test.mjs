@@ -55,6 +55,9 @@ describe('regenerateSteps (M18.163)', () => {
   });
 });
 
+/** Key of `reviewed`'s extra files that is a commit-message trailer instead (Object.entries skips it). */
+const TRAILER = Symbol('trailer');
+
 describe('land (M18.106)', () => {
   let sb;
   let origin;
@@ -75,8 +78,9 @@ describe('land (M18.106)', () => {
     ok(git(other, 'commit', '-q', '--no-verify', '-m', `chore: upstream ${file}`));
     ok(git(other, 'push', '-q', 'origin', 'HEAD:main'));
   }
-  /** A reviewed task commit made through the real hooks. */
+  /** A reviewed task commit made through the real hooks; `extra[TRAILER]` adds a message trailer. */
   function reviewed(task, file, text, extra = {}) {
+    const trailer = extra[TRAILER];
     for (const [path, body] of [[file, text], ...Object.entries(extra)]) {
       sb.write(path, body);
       ok(sb.git('add', path));
@@ -85,7 +89,7 @@ describe('land (M18.106)', () => {
     sb.write('.harness/tmp/v.json', JSON.stringify({ task, kind: 'code', diff_sha256: hash, reviewer: 'test:unit', verdict: 'pass', findings: [] }));
     ok(sb.node('scripts/harness/review.mjs', ['record', '--file', sb.path('.harness/tmp/v.json'), '--task', task]));
     ok(sb.git('add', '.harness/reviews/digest.log'));
-    ok(sb.git('commit', '-q', '-m', `${task}: test: ${file}`));
+    ok(sb.git('commit', '-q', '-m', `${task}: test: ${file}`, ...(trailer ? ['-m', trailer] : [])));
     return head();
   }
   function reset() {
@@ -408,5 +412,41 @@ describe('land (M18.106)', () => {
     rmSync(runsFile, { force: true });
     assert.equal(closed.status, 0, out(closed));
     assert.equal(remoteHead(), head());
+  });
+
+  it('HARNESS: lands a planned ci fix through a blocking row once, and only for a real red run (M18.192, cp24 F3)', () => {
+    reset();
+    const BACKLOG = 'docs/backlog/current.md';
+    const fixRow = (id, run) => `| ${id} | fix (ci ${run}) | FR-LIB-004 | the commit SHALL carry \`Fixes-ci: ${run}\` | | todo | |\n`;
+    upstream(
+      BACKLOG,
+      `${sb.read(BACKLOG)}| M0.20 | CI green \`blocks-landing\` | HARNESS | acceptance | | todo | |\n${fixRow('M0.21', 501)}${fixRow('M0.22', 502)}`,
+    );
+    reset();
+    const runsFile = `${sb.dir}-fix-runs.json`;
+    // ci run 501 failed on the branch; GitHub has no run 502
+    writeFileSync(runsFile, JSON.stringify([{ databaseId: 501, workflowName: 'ci', headSha: head(), conclusion: 'failure', jobs: [] }]));
+    const refusedBy = (pattern) => {
+      const start = head();
+      const before = remoteHead();
+      const r = land('--push', '--ci-runs-file', runsFile);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, pattern);
+      assert.equal(head(), start);
+      assert.equal(remoteHead(), before);
+      reset();
+    };
+    try {
+      reviewed('M0.22', 'src/made-up.txt', 'x\n', { [TRAILER]: 'Fixes-ci: 502' });
+      refusedBy(/M0\.22: its Fixes-ci exempts nothing: ci-run-red: run 502 was not found/);
+      reviewed('M0.21', 'src/fix.txt', 'fix\n', { [TRAILER]: 'Fixes-ci: 501' });
+      const fixed = land('--push', '--ci-runs-file', runsFile);
+      assert.equal(fixed.status, 0, out(fixed));
+      assert.equal(remoteHead(), head());
+      reviewed('M0.21', 'src/fix.txt', 'fix again\n', { [TRAILER]: 'Fixes-ci: 501' });
+      refusedBy(/a M0\.21 commit carrying Fixes-ci: 501 already landed; the exemption is spent/);
+    } finally {
+      rmSync(runsFile, { force: true });
+    }
   });
 });

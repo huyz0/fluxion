@@ -1,6 +1,7 @@
 // Blocking backlog rows (M18.123): while a row whose title carries `blocks-landing` is not done,
 // only the blocking row's commits and harness-path commits may land. Shared by check-checkpoint
 // (commit-msg hook and exact-commit CI) and land.mjs.
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { node, repoPath } from './lib.mjs';
 
@@ -78,17 +79,28 @@ function plannedCiFix(backlog, task, message) {
   const ids = [...String(message ?? '').matchAll(/^Fixes-ci: (\d+)\s*$/gm)].map((m) => m[1]);
   // an open row only: a done row's task id and trailer are things any later commit could write (r1 F1)
   const row = rows(backlog).find((r) => r.id === task && !/^done\b/.test(r.state));
-  return Boolean(row && ids.some((id) => new RegExp(`Fixes-ci: ${id}(?!\\d)`).test(row.acceptance)));
+  return row ? ids.filter((id) => new RegExp(`Fixes-ci: ${id}(?!\\d)`).test(row.acceptance)) : [];
 }
 
 /**
  * Why a commit with `subject` may not land on a tree with this `backlog`, or null. While a row
  * blocks landing, only that row's task commits and commits whose every changed path is a harness path
  * land, whatever the row's Req cell says (M18.135): neither a label nor a row the commit brings
- * itself exempts product code, except the planned fix of a red ci run (M18.181). No commit closes a
- * blocking row without CI evidence.
+ * itself exempts product code, except the planned fix of a red ci run (M18.181), which
+ * `ciFixProblem(task, id)` must clear (null) as a real red run not yet fixed by that task (M18.192). No
+ * commit closes a blocking row without CI evidence.
  */
-export function landingBlock({ backlog, subject, message = subject, before = backlog, proposed = '', paths = [], evidence = '', evidenceOk = () => false }) {
+export function landingBlock({
+  backlog,
+  subject,
+  message = subject,
+  before = backlog,
+  proposed = '',
+  paths = [],
+  evidence = '',
+  evidenceOk = () => false,
+  ciFixProblem = () => 'no reader of ci runs was given',
+}) {
   const blocking = blockingRows(backlog);
   if (!blocking.length) return null;
   // every commit, task or not (a Revert, a fixup), is judged: only the row's own task commits are exempt from the paths (r1 F1)
@@ -97,8 +109,14 @@ export function landingBlock({ backlog, subject, message = subject, before = bac
   const closing = closeBlock({ backlog, before, proposed, evidence, evidenceOk });
   if (closing) return `${who}: ${closing}`;
   if (blocking.some((row) => row.id === task)) return null;
-  // the fix that makes ci green lands, or a row waiting on green ci evidence deadlocks behind it (M18.181)
-  if (task && plannedCiFix(backlog, task, message)) return null;
+  // the fix that makes ci green lands, or a row waiting on green ci evidence deadlocks behind it (M18.181),
+  // once, and only for a real red run of the branch (M18.192, cp24 F3)
+  const planned = task ? plannedCiFix(backlog, task, message) : [];
+  if (planned.length) {
+    const problems = planned.map((id) => ciFixProblem(task, id));
+    if (problems.some((p) => p === null)) return null;
+    return `${who}: its Fixes-ci exempts nothing: ${problems.join('; ')}`;
+  }
   const outside = paths.find((path) => !harnessPath(path));
   if (!outside) return null;
   const names = blocking.map((r) => r.id).join(', ');
@@ -117,4 +135,27 @@ export function ciEvidenceHolds(record, parent, { runsFile } = {}) {
   const r = node('scripts/gates/check-ci-evidence.mjs', ['--file', file, '--since', parent, ...(runsFile ? ['--runs-file', runsFile] : [])]);
   if (r.status !== 0) console.error(r.stderr.trim());
   return r.status === 0;
+}
+
+const gitOut = (args) => {
+  const r = spawnSync('git', args, { encoding: 'utf8' });
+  return r.status === 0 ? r.stdout : null;
+};
+/**
+ * Why `task`'s `Fixes-ci: <id>` may not exempt a commit landing on `base`, or null (M18.192, cp24 F3):
+ * a commit of the task carrying that trailer already landed since the task's row was added (the
+ * exemption is spent once), or run <id> is not a red ci or gates run on the branch (ci-run-red.mjs,
+ * read live; an unreadable answer refuses). `runsFile` stands in for GitHub in tests.
+ */
+export function ciFixProblem(task, id, base, { runsFile } = {}) {
+  const added = gitOut(['log', '--format=%H', '-S', `| ${task} |`, base, '--', 'docs/backlog/current.md']);
+  const since = added?.trim().split('\n').at(-1);
+  if (!since) return `${task}'s row is not in ${String(base).slice(0, 7)}'s backlog history`;
+  const log = gitOut(['log', '--format=%B%x00', `${since}..${base}`]);
+  if (log === null) return `the history since ${task}'s row was added cannot be read`;
+  const trailer = new RegExp(`^Fixes-ci: ${id}\\s*$`, 'm');
+  const spent = log.split('\0').some((m) => m.trimStart().startsWith(`${task}:`) && trailer.test(m));
+  if (spent) return `a ${task} commit carrying Fixes-ci: ${id} already landed; the exemption is spent`;
+  const r = node('scripts/gates/ci-run-red.mjs', [id, '--since', base, ...(runsFile ? ['--runs-file', runsFile] : [])]);
+  return r.status === 0 ? null : r.stderr.trim() || `run ${id} is not a red ci run`;
 }

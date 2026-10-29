@@ -319,14 +319,15 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
 
   it('the planned fix of a red ci run lands while a row blocks landing; a trailer alone exempts nothing (M18.181)', () => {
     const f = history(2);
-    const exact = (message, file = 'packages/cli/fix.ts', edit = (b) => b) => {
+    const runsFile = f.sb.path('.harness/tmp/runs.json');
+    const exact = (message, file = 'packages/cli/fix.ts', edit = (b) => b, keep = false) => {
       f.sb.write('docs/backlog/current.md', edit(f.sb.read('docs/backlog/current.md')));
       f.sb.write(file, `${message}\n`);
       git(f.sb, 'add', '-A');
       git(f.sb, 'commit', '-qm', message);
       const sha = git(f.sb, 'rev-parse', 'HEAD');
-      git(f.sb, 'reset', '-q', '--hard', 'HEAD~1');
-      return f.sb.node(POLICY, ['--commit', sha]);
+      if (!keep) git(f.sb, 'reset', '-q', '--hard', 'HEAD~1');
+      return f.sb.node(POLICY, ['--commit', sha, '--ci-runs-file', runsFile]);
     };
     try {
       const rows = [
@@ -336,6 +337,13 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
       ];
       f.sb.write('docs/backlog/current.md', `${f.sb.read('docs/backlog/current.md')}\n${rows.join('\n')}\n`);
       git(f.sb, 'commit', '-qam', 'plan the fix');
+      // what GitHub reports (M18.192): ci run 77 red on this branch, with a failed job while still pending
+      const onBranch = git(f.sb, 'rev-parse', 'HEAD~1');
+      const ciRun = (databaseId, conclusion, jobs = [], headSha = onBranch) => ({ databaseId, workflowName: 'ci', headSha, conclusion, jobs });
+      f.sb.write(
+        '.harness/tmp/runs.json',
+        JSON.stringify([ciRun(77, null, [{ name: 'verify (windows-latest)', conclusion: 'failure' }]), ciRun(78, 'failure'), ciRun(79, 'failure')]),
+      );
       // the planned fix, with the trailer its row names, lands through the mark
       const fix = exact('M18.50: fix(cli): the Windows fix\n\nFixes-ci: 77');
       assert.equal(fix.status, 0, out(fix));
@@ -363,6 +371,50 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
         (b) => `${b}| M18.52 | fix | FR-LIB-004 | the commit SHALL carry \`Fixes-ci: 77\` | | done | |\n`,
       );
       assert.equal(brought.status, 1, out(brought));
+    } finally {
+      f.sb.cleanup();
+    }
+  });
+
+  it('HARNESS: a planned ci fix lands once, and only for a real red run of the branch (M18.192, cp24 F3)', () => {
+    const f = history(2);
+    const runsFile = f.sb.path('.harness/tmp/runs.json');
+    const exact = (message, keep = false) => {
+      f.sb.write('packages/cli/fix.ts', `${message}\n`);
+      git(f.sb, 'add', '-A');
+      git(f.sb, 'commit', '-qm', message);
+      const sha = git(f.sb, 'rev-parse', 'HEAD');
+      if (!keep) git(f.sb, 'reset', '-q', '--hard', 'HEAD~1');
+      return f.sb.node(POLICY, ['--commit', sha, '--ci-runs-file', runsFile]);
+    };
+    try {
+      const row = (id, run) => `| ${id} | fix (ci ${run}) | FR-LIB-004 | the commit SHALL carry \`Fixes-ci: ${run}\` | | todo | |`;
+      const rows = [
+        '| M18.30 | CI green `blocks-landing` | HARNESS | acceptance | | todo | |',
+        row('M18.60', 90),
+        row('M18.61', 91),
+        row('M18.62', 92),
+        row('M18.63', 93),
+      ];
+      f.sb.write('docs/backlog/current.md', `${f.sb.read('docs/backlog/current.md')}\n${rows.join('\n')}\n`);
+      git(f.sb, 'commit', '-qam', 'plan the fixes');
+      const onBranch = git(f.sb, 'rev-parse', 'HEAD~1');
+      const ciRun = (databaseId, conclusion, headSha = onBranch, workflowName = 'ci') => ({ databaseId, workflowName, headSha, conclusion, jobs: [] });
+      // 90 is made up (GitHub has no such run), 91 is green, 92 ran off the branch, 93 is red on it
+      f.sb.write('.harness/tmp/runs.json', JSON.stringify([ciRun(91, 'success'), ciRun(92, 'failure', 'f'.repeat(40)), ciRun(93, 'failure')]));
+      const refused = (message, pattern) => {
+        const r = exact(message);
+        assert.equal(r.status, 1, `${message}\n${out(r)}`);
+        assert.match(out(r), pattern);
+      };
+      refused('M18.60: fix(cli): made-up run\n\nFixes-ci: 90', /M18\.60: its Fixes-ci exempts nothing: ci-run-red: run 90 was not found/);
+      refused('M18.61: fix(cli): green run\n\nFixes-ci: 91', /run 91 is not red \(conclusion success, no failed job\)/);
+      refused('M18.62: fix(cli): another branch\n\nFixes-ci: 92', /run 92 ran on fffffff, which is not on the branch/);
+      // the planned first fix of a real red run passes, and lands
+      const first = exact('M18.63: fix(cli): the fix\n\nFixes-ci: 93', true);
+      assert.equal(first.status, 0, out(first));
+      // a second commit of the task carrying the same trailer is refused: the exemption is spent
+      refused('M18.63: fix(cli): again\n\nFixes-ci: 93', /a M18\.63 commit carrying Fixes-ci: 93 already landed; the exemption is spent/);
     } finally {
       f.sb.cleanup();
     }

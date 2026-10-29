@@ -3446,3 +3446,12 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 
 - review.mjs's closed digest lines now come from the merge-base of HEAD with `refs/remotes/origin/main` (land.mjs's default target), not HEAD; with no such ref it falls back to HEAD. A task committed locally but not landed, then amended after a later finding, continues at one past its highest round instead of restarting at r1; a re-application after HEAD moved keeps its round, marked reapply; once it lands, the next review starts at r1.
 - Test: review.test.mjs's landed-base case fails on the old HEAD reading (amend records r1) and passes now.
+
+## M18.192 — a planned ci fix lands once, and only for a real red run (cp24 F3, 2026-10-29)
+
+- landingBlock's planned-fix exemption (M18.181) now also needs `ciFixProblem(task, id)` to clear it. Both land.mjs and CI's check-checkpoint --commit pass one.
+  - The exemption is spent once a commit of the task carrying that `Fixes-ci: <id>` has landed since the task's row was added (the row's addition is found with `git log -S '| <task> |'`).
+  - The run must be a real red run on the branch. The new scripts/gates/ci-run-red.mjs reads it live (gh/REST, or --runs-file in tests): a ci or gates run whose conclusion, or one of whose jobs, is failure, timed_out or startup_failure, at a head that is the base or its ancestor. A pending run with a failed job counts, as in M18.191: ci 40858059983 was still queued with its Windows jobs failed when M18.190 fixed it.
+  - An unreadable run refuses, and the default with no reader refuses.
+- Tests: checkpoint.test.mjs refuses a made-up id, a green run's id, a run off the branch and a second commit of the task. It passes the planned first commit. The M18.181 case now gives its red run through --ci-runs-file. land.test.mjs proves the planned first fix lands through land.mjs, and that a made-up id and a second commit are refused.
+- The row stays todo. Its title carries `blocks-landing`, so it is a second mark (found in M18.191), and closing it needs green three-OS evidence. It closes in M18.178's evidence commit.

@@ -13,7 +13,7 @@
 // Pushing still needs a human's request (skill ship).
 import { existsSync, realpathSync, statSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { ciEvidenceHolds, landingBlock } from '../gates/landing-block.mjs';
+import { ciEvidenceHolds, ciFixProblem, landingBlock } from '../gates/landing-block.mjs';
 import { exists, git, node, repoPath, run } from '../gates/lib.mjs';
 
 const argv = process.argv.slice(2);
@@ -177,6 +177,8 @@ function recommit(upstream, start) {
       evidence: git(['show', `${sha}:${CI_EVIDENCE}`]).stdout,
       // the re-applied commit's parent is the remote tip it lands on
       evidenceOk: (record) => ciEvidenceHolds(record, must(['rev-parse', 'HEAD'], 'read the tip'), { runsFile: opt('ci-runs-file') }),
+      // a planned ci fix: a real red run, once (M18.192)
+      ciFixProblem: (task, id) => ciFixProblem(task, id, must(['rev-parse', 'HEAD'], 'read the tip'), { runsFile: opt('ci-runs-file') }),
     });
     if (blocked) return fail(`${sha.slice(0, 7)} (${subject}) may not land: ${blocked}`);
     const picked = git(['cherry-pick', '-n', remapped(sha, rewritten)]);
