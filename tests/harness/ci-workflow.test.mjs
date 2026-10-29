@@ -230,9 +230,12 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(pre, /'--test-reporter=spec', '--test', \.\.\.harnessToRun\(\)/);
     assert.match(pre, /mode === 'staged' \? harnessFiles\(stagedPaths\(\), HARNESS\(\), scopeOptions\(\)\) : HARNESS\(\)/);
     const verify = /^ {2}verify:[\s\S]*?(?=^ {2}\S)/m.exec(ci)?.[0] ?? '';
-    // ADR-0197: only Windows verification is widened, to 25 of 45 minutes; the others keep 15 of 35 (ADR-0191)
-    assert.match(verify, /^ {4}timeout-minutes: \$\{\{ matrix\.os == 'windows-latest' && 45 \|\| 35 \}\}$/m);
-    assert.match(verify, /- run: pnpm verify\n\s+timeout-minutes: \$\{\{ matrix\.os == 'windows-latest' && 25 \|\| 15 \}\}\n/);
+    // ADR-0197: Windows verification is widened to 25 of 45 minutes, ADR-0209: macOS to 20 of 40; ubuntu keeps 15 of 35 (ADR-0191)
+    assert.match(verify, /^ {4}timeout-minutes: \$\{\{ matrix\.os == 'windows-latest' && 45 \|\| matrix\.os == 'macos-latest' && 40 \|\| 35 \}\}$/m);
+    assert.match(
+      verify,
+      /- run: pnpm verify\n\s+timeout-minutes: \$\{\{ matrix\.os == 'windows-latest' && 25 \|\| matrix\.os == 'macos-latest' && 20 \|\| 15 \}\}\n/,
+    );
     assert.match(verify, /chromium for the Vitest browser project \(T1\)\n\s+timeout-minutes: 15/);
     assert.doesNotMatch(verify, /name: harness tests|continue-on-error|retry/);
     assert.match(verify, /name: verification failure reports\n\s+if: always\(\) && \(failure\(\) \|\| cancelled\(\)\)\n\s+timeout-minutes: 2/);

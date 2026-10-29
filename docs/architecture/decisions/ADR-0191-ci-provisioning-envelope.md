@@ -1,5 +1,5 @@
 ---
-status: accepted (the Windows verify step and job bounds superseded by ADR-0197)
+status: accepted (the Windows verify step and job bounds superseded by ADR-0197, the macOS ones by ADR-0209)
 date: 2026-10-26
 decision-makers: user reasonable-gates instruction; independent plan review PASS0 (round2; streaming cancellation evidence added)
 ---

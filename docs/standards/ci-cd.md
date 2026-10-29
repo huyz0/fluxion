@@ -15,7 +15,7 @@ that exists only in YAML is a bug.
 | quick | PostToolUse hook, on demand | `pnpm verify:fast` = `precommit.mjs --quick` (incremental `tsc -b`, `biome ci .`, `vitest run --changed`, harness checks) | 180 s latency target, visible advisory (ADR-0190); failed checks remain blocking |
 | pre-commit | `.githooks/pre-commit` | `node scripts/gates/precommit.mjs --staged` (runs what the staged paths can affect: `ladder-scope.mjs`; the rest runs in CI) | ≤ 900 s (`check-budget.mjs`, ADR-0166) |
 | milestone | checkpoints and final closeout | `node scripts/gates/m<n>-complete.mjs` | per milestone |
-| CI | PR, merge queue, push to `main` | `pnpm verify` (= `precommit.mjs --all`) + E2E, visual, a11y, size, API, license, security | Verification ≤15min (Windows ≤25min, ADR-0197); provisioning separately bounded inside 35min verify-job envelope (Windows 45min) (ADR-0191) |
+| CI | PR, merge queue, push to `main` | `pnpm verify` (= `precommit.mjs --all`) + E2E, visual, a11y, size, API, license, security | Verification ≤15min (Windows ≤25min, ADR-0197; macOS ≤20min, ADR-0209); provisioning separately bounded inside 35min verify-job envelope (Windows 45min, macOS 40min) (ADR-0191) |
 | nightly | cron | mutation, long property runs, perf benchmarks, live AI eval, cross-OS visual | ≤ 90 min |
 
 ### Proportionate development policy (ADR-0176)
