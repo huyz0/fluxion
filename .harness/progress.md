@@ -3455,3 +3455,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
   - An unreadable run refuses, and the default with no reader refuses.
 - Tests: checkpoint.test.mjs refuses a made-up id, a green run's id, a run off the branch and a second commit of the task. It passes the planned first commit. The M18.181 case now gives its red run through --ci-runs-file. land.test.mjs proves the planned first fix lands through land.mjs, and that a made-up id and a second commit are refused.
 - The row stays todo. Its title carries `blocks-landing`, so it is a second mark (found in M18.191), and closing it needs green three-OS evidence. It closes in M18.178's evidence commit.
+
+## M18.43 — plan M18.194 (macOS verify envelope, ci 40894960957, 2026-10-29)
+
+- ci 40894960957 at e3f6e36: `verify (macos-latest)` stopped at its 15-minute `pnpm verify` step (ADR-0191) with no failing check. The step grew 754 s (084008f), 773 s (475402c), 873 s (8cae07a), then past 900 s once M18.191–193 added about 30 s of harness tests. Stream 6's per-step timings at 8cae07a: test (Vitest with coverage) 831 s, harness-tests 743 s, attw 341 s, all running side by side on 3 vCPUs.
+- Stream 6 says M18.186 (attw/publint) would not reliably move the critical path. The stopgap is ADR-0197's shape for macOS (20 of 40 min). The root fix stays recovering headroom: coverage placement (Huy's call, stream 6 is measuring it) and harness-test time (M18.157).

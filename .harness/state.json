@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.192",
+  "currentTask": "M18.43",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it.",
-  "updated": "2026-10-29T15:20:00Z",
+  "updated": "2026-10-29T16:05:00Z",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 2
