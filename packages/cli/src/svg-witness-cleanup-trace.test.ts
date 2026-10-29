@@ -1,0 +1,80 @@
+// NFR-SEC-001 (M18.195): a cleanup failure prints one WITNESS_CLEANUP line naming the branch that decided it, the time since the
+// owned termination started and the time from the reserve's expiry to the verdict; a clean close prints nothing.
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { createWitnessCleanup } from './svg-witness-cleanup.js';
+import { type OwnedBrowserProcess, ownBrowserProcess } from './svg-witness-process.js';
+
+// time is faked; setImmediate stays real, since the reserve's verdict waits for the loop's I/O of its turn (M18.190)
+beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance'] }));
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
+const traces = () => {
+  const write = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  return () =>
+    write.mock.calls
+      .map(([chunk]) => String(chunk))
+      .filter((line) => line.startsWith('WITNESS_CLEANUP '))
+      .map((line) => JSON.parse(line.slice('WITNESS_CLEANUP '.length)) as Record<string, unknown>);
+};
+function stuck(immediate?: true): OwnedBrowserProcess {
+  return { hasExited: () => false, onExit: () => () => {}, close: vi.fn(async () => {}), kill: vi.fn(async () => {}), ...(immediate ? { immediate } : {}) };
+}
+
+it('NFR-SEC-001: an owned process that has not exited at the reserve prints one trace naming that branch and its times', async () => {
+  const lines = traces();
+  const cleanup = createWitnessCleanup();
+  ownBrowserProcess(stuck(), cleanup);
+  const closed = cleanup.close();
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(await closed).toBe(false);
+  expect(lines()).toEqual([{ decided: 'owned-not-exited', sinceTerminationMs: 2000, expiryToVerdictMs: 0, forced: true, platform: process.platform }]);
+});
+
+it('NFR-SEC-001: on Windows, where the owned taskkill starts at once, the trace times it from that start', async () => {
+  const lines = traces();
+  const cleanup = createWitnessCleanup();
+  const resource = stuck(true);
+  ownBrowserProcess(resource, cleanup);
+  const closed = cleanup.close();
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(await closed).toBe(false);
+  expect(resource.kill).toHaveBeenCalledTimes(1);
+  expect(resource.close).not.toHaveBeenCalled();
+  expect(lines()).toEqual([{ decided: 'owned-not-exited', sinceTerminationMs: 2000, expiryToVerdictMs: 0, forced: true, platform: process.platform }]);
+});
+
+it('NFR-SEC-001: a launch still pending with no owned process at the reserve prints one trace naming that branch', async () => {
+  const lines = traces();
+  const cleanup = createWitnessCleanup();
+  cleanup.launchStarted();
+  const closed = cleanup.close();
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(await closed).toBe(false);
+  expect(lines()).toEqual([{ decided: 'launch-pending', sinceTerminationMs: null, expiryToVerdictMs: 0, forced: false, platform: process.platform }]);
+});
+
+it('NFR-SEC-001: a clean close prints no trace', async () => {
+  const lines = traces();
+  const cleanup = createWitnessCleanup();
+  let exited = false;
+  const listeners = new Set<() => void>();
+  ownBrowserProcess(
+    {
+      hasExited: () => exited,
+      onExit: (fn) => {
+        listeners.add(fn);
+        return () => listeners.delete(fn);
+      },
+      close: async () => {
+        exited = true;
+        for (const fn of listeners) fn();
+      },
+      kill: async () => {},
+    },
+    cleanup,
+  );
+  expect(await cleanup.close()).toBe(true);
+  expect(lines()).toEqual([]);
+});

@@ -19,6 +19,8 @@ class CleanupCoordinator implements WitnessCleanup {
   private limit: ReturnType<typeof setTimeout> | undefined;
   private grace: ReturnType<typeof setTimeout> | undefined;
   private unsubscribe = () => {};
+  /** When the owned termination first started (`resource.close()`, or `kill()` when it comes first), for the cleanup-failure trace (M18.195). */
+  private terminationStartedAt: number | undefined;
 
   private finish(success: boolean) {
     if (this.settled) return;
@@ -33,11 +35,28 @@ class CleanupCoordinator implements WitnessCleanup {
     }
     this.resolve(success);
   }
+  /** One line on stderr naming why the reserve ended in a cleanup failure, and when (M18.195: diagnose before attempt 3). */
+  private trace() {
+    const now = performance.now();
+    const trace = {
+      decided: this.resource ? 'owned-not-exited' : 'launch-pending',
+      sinceTerminationMs: this.terminationStartedAt === undefined ? null : Math.round(now - this.terminationStartedAt),
+      expiryToVerdictMs: Math.round(now - this.deadline),
+      forced: this.forced,
+      platform: process.platform,
+    };
+    process.stderr.write(`WITNESS_CLEANUP ${JSON.stringify(trace)}\n`);
+  }
   private force = () => {
     if (this.forced || !this.resource || this.resource.hasExited()) return;
     this.forced = true;
     void Promise.resolve()
-      .then(() => (this.resource && !this.resource.hasExited() ? this.resource.kill() : undefined))
+      .then(() => {
+        if (!this.resource || this.resource.hasExited()) return undefined;
+        // Windows' owned taskkill starts here (`immediate`), elsewhere the grace's kill follows an earlier close
+        this.terminationStartedAt ??= performance.now();
+        return this.resource.kill();
+      })
       .catch(() => {});
   };
   private observe(resource: OwnedBrowserProcess): boolean {
@@ -72,7 +91,11 @@ class CleanupCoordinator implements WitnessCleanup {
     }
     this.grace = setTimeout(this.force, Math.min(1000, Math.max(0, this.deadline - performance.now() - 1000)));
     void Promise.resolve()
-      .then(() => (!this.settled && !resource.hasExited() ? resource.close() : undefined))
+      .then(() => {
+        if (this.settled || resource.hasExited()) return undefined;
+        this.terminationStartedAt = performance.now();
+        return resource.close();
+      })
       .catch(() => {});
   }
   close = (): Promise<boolean> => {
@@ -86,7 +109,10 @@ class CleanupCoordinator implements WitnessCleanup {
     this.limit = setTimeout(() => {
       setImmediate(() => {
         const exited = this.resource ? this.resource.hasExited() : !this.pending;
-        if (!exited) this.force();
+        if (!exited) {
+          this.trace();
+          this.force();
+        }
         this.finish(exited);
       });
     }, 2000);

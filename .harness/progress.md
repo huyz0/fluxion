@@ -3480,3 +3480,10 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 
 - blockingRows counts a row only when its title ends with the backticked `blocks-landing`, so a title that mentions the mechanism (M18.181, M18.192) blocks nothing. land.mjs, check-checkpoint and last-ci share the function. docs/harness/README.md says so.
 - Test: checkpoint.test.mjs proves that a trailing mark blocks, mid-title mentions do not, and closing a mention-only row needs no evidence. It fails on the old `includes` rule.
+## M18.195 — trace the Windows witness cleanup failure (attempt 3 waits, 2026-10-29)
+
+- After M18.190, Windows verify still failed intermittently with "Node SVG witness: cleanup" in `cli.pack-import` (ci 40894960957 at e3f6e36, the 129-member case; ci 40905801401 at db19f11, the corpus folder/ZIP case), with no trace of which branch decided it (cp25 F1).
+- `svg-witness-cleanup.ts`: when the reserve's verdict is a failure, one `WITNESS_CLEANUP {decided, sinceTerminationMs, expiryToVerdictMs, forced, platform}` line goes to stderr (`decided`: `owned-not-exited` or `launch-pending`). The e2e prints the CLI's stderr with a failed status, so the next Windows failure carries it. The reserve, the probe's injected-failure assertions and every existing test are unchanged; `svg-witness-cleanup-trace.test.ts` covers both branches and a clean close printing nothing.
+- No `Fixes-ci`: the fix (attempt 3, rowAttempts 3, `Fixes-ci: 40905801401`) follows an independent diagnostic review of a traced failure (ADR-0176). M18.195 stays todo.
+- Review r1 changes-requested: F1 (blocking) on Windows the resource is `immediate`, so the owned taskkill starts in `force()` and the trace would print `sinceTerminationMs: null` → the start is also recorded in `force()` before `kill()`; F2 (major) no test of that path → a Windows-shaped (`immediate`) test; F3 (minor) the trace bypasses CliIo → argued (the witness API has no io port; changing it is outside the diagnostic step).
+- Review r2 pass, no findings.
