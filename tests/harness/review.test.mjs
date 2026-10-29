@@ -80,13 +80,65 @@ describe('review binding (NFR-DX-003)', () => {
 
   it('numbers rounds from the tracked digest, which keeps changes-requested rounds, not the local directory (M18.127)', () => {
     const digest = sb.read('.harness/reviews/digest.log');
-    assert.match(digest, /^M0\.5\t[0-9a-f]{64}\tr1\tchanges-requested\ttest:unit\t1 findings\tcontent:/m);
+    // r2: the earlier r1 pass was for other content of the same task, which has not landed (M18.177)
+    assert.match(digest, /^M0\.5\t[0-9a-f]{64}\tr2\tchanges-requested\ttest:unit\t1 findings\tcontent:/m);
     // local verdict files are per worktree; the round must not depend on them
     for (const f of readdirSync(sb.path('.harness/reviews')).filter((n) => n.endsWith('.json'))) rmSync(sb.path(`.harness/reviews/${f}`));
     assert.equal(sb.read('.harness/reviews/digest.log'), digest, 'the digest itself is kept');
-    assert.match(record(verdict()).stdout, /round 2/);
-    // a pass closes the cycle, so the round cap counts the rounds of one change
-    assert.match(record(verdict()).stdout, /round 1/);
+    assert.match(record(verdict()).stdout, /round 3/);
+    // the same content passing again is a re-application: it keeps its round (M18.177)
+    assert.match(record(verdict()).stdout, /round 3 \(reapply\)/);
+  });
+
+  it('keeps counting rounds after a pass until the task lands; a re-application keeps its round (M18.177, cp23 F1)', () => {
+    const s = sandbox(undefined, { git: true });
+    try {
+      const rec = (v) => {
+        s.write('.harness/tmp/v.json', JSON.stringify(v));
+        return s.node('scripts/harness/review.mjs', ['record', '--file', s.path('.harness/tmp/v.json'), '--task', TASK]);
+      };
+      const v = (over = {}) => ({
+        task: TASK,
+        diff_sha256: s.node('scripts/harness/review.mjs', ['hash']).stdout.trim(),
+        reviewer: 'test:unit',
+        verdict: 'pass',
+        findings: [],
+        ...over,
+      });
+      const cr = { verdict: 'changes-requested', findings: [{ file: 'src/b.txt', severity: 'major', failure_scenario: 'x' }] };
+      const lastLine = () => s.read('.harness/reviews/digest.log').trim().split('\n').at(-1).split('\t');
+      s.write('src/b.txt', 'one\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 1 \(/);
+      // new content after a pass: r2, not r1
+      s.write('src/b.txt', 'two\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 2 \(/);
+      assert.equal(lastLine()[2], 'r2');
+      // the first content again (re-applied on a new base): r1, marked reapply
+      s.write('src/b.txt', 'one\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 1 \(reapply\)/);
+      assert.deepEqual(lastLine().slice(2, 4).concat(lastLine().at(-1)), ['r1', 'pass', 'reapply']);
+      // changes-requested rounds after a pass hit the cap
+      s.write('src/b.txt', 'three\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v(cr)).stdout, /round 3 \(/);
+      const capped = rec(v(cr));
+      assert.equal(capped.status, 3, out(capped));
+      assert.match(capped.stderr, /round cap 3 exceeded/);
+      // once the task lands, its next review starts at r1
+      s.write('src/b.txt', 'four\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 5 \(/);
+      s.git('add', '.harness/reviews/digest.log');
+      s.git('commit', '-q', '--no-verify', '-m', `${TASK}: feat(x): lands`);
+      s.write('src/b.txt', 'five\n');
+      s.git('add', 'src/b.txt');
+      assert.match(rec(v()).stdout, /round 1 \(/);
+    } finally {
+      s.cleanup();
+    }
   });
 
   it('rejects a reviewer outside the vendor:role[:posthoc] grammar (M18.127, cp14 F6)', () => {

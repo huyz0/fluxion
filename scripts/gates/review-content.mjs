@@ -150,6 +150,8 @@ export function parseDigest(text) {
         findings,
         content: content?.replace(/^content:/, '') ?? '',
         bound: Number(bound?.replace(/^bound:/, '')) || 0,
+        // a re-application of passed content on a new base keeps its round (M18.177)
+        reapply: bound === 'reapply',
       };
     });
 }
@@ -162,9 +164,19 @@ export function parseReviewer(reviewer) {
 /** Posthoc by the grammar; lines older than the grammar by their `:posthoc` suffix. */
 export const isPosthoc = (reviewer) => parseReviewer(reviewer)?.posthoc ?? /:posthoc\b/.test(String(reviewer ?? ''));
 
-/** The review round the next verdict for `task` is: one past the rounds since its last pass (tracked digest). */
-export function nextRound(digest, task) {
-  const mine = digest.filter((l) => l.task === task && l.verdict !== 'rebind');
-  const lastPass = mine.findLastIndex((l) => l.verdict === 'pass');
-  return mine.length - lastPass;
+/**
+ * The round of the next verdict for `task` over `content`, numbered from the tracked digest's lines for
+ * the task that are not yet in a commit (missing from `committed`, the parsed digest at HEAD): one past
+ * the highest of them, so a pass never restarts the count before the task's commit and the round cap
+ * counts changes-requested rounds after a pass; content that already passed among them is a
+ * re-application on a new base and keeps that round, marked `reapply` (M18.177, cp23 F1).
+ */
+export function nextRound(digest, task, { content = '', committed = [] } = {}) {
+  const key = (l) => [l.task, l.hash, l.round, l.verdict, l.reviewer, l.content].join('\t');
+  const before = new Set(committed.filter((l) => l.task === task).map(key));
+  const since = digest.filter((l) => l.task === task && l.verdict !== 'rebind' && !before.has(key(l)));
+  const passed = content ? since.findLast((l) => l.verdict === 'pass' && l.content === content) : undefined;
+  const number = (l) => Number(/^r(\d+)$/.exec(l.round)?.[1]) || 0;
+  if (passed) return { round: number(passed), reapply: true };
+  return { round: Math.max(0, ...since.map(number)) + 1, reapply: false };
 }

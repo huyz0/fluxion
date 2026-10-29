@@ -56,8 +56,13 @@ function verdictsFor(hash) {
 }
 const DIGEST = repoPath('.harness', 'reviews', 'digest.log');
 const tracked = () => parseDigest(existsSync(DIGEST) ? readFileSync(DIGEST, 'utf8') : '');
-/** Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127). */
-const roundOf = (task) => nextRound(tracked(), task);
+/** The digest as HEAD commits it: rounds already committed are closed (M18.177). */
+function committedDigest() {
+  const at = git(['show', 'HEAD:.harness/reviews/digest.log']);
+  return parseDigest(at.status === 0 ? at.stdout : '');
+}
+/** Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127), among lines not yet committed (M18.177). */
+const roundOf = (task, content = '') => nextRound(tracked(), task, { content, committed: committedDigest() });
 function roundsFor(task) {
   if (!existsSync(REVIEW_DIR)) return [];
   return readdirSync(REVIEW_DIR)
@@ -82,7 +87,7 @@ switch (cmd) {
     const paths = git(commit ? ['diff', '--name-only', `${commit}^`, commit] : ['diff', '--cached', '--name-only'])
       .stdout.split(/\r?\n/)
       .filter(Boolean);
-    const round = roundOf(task);
+    const { round } = roundOf(task, contentId(commit));
     const gates = commit
       ? `(landed commit ${commit}: gates ran when it was committed)`
       : node('scripts/gates/precommit.mjs', ['--staged', '--summary', '--no-review']).stdout.trim();
@@ -129,15 +134,20 @@ switch (cmd) {
     }
     if (v.verdict === 'pass' && (v.findings ?? []).some((f) => f.severity === 'blocking')) bad.push('pass with blocking findings');
     if (bad.length) die(`verdict rejected:\n- ${bad.join('\n- ')}`);
-    const round = roundOf(task);
+    const { round, reapply } = roundOf(task, content);
     mkdirSync(REVIEW_DIR, { recursive: true });
     const name = `${hash || content}.r${round}.json`;
     writeFileSync(join(REVIEW_DIR, name), JSON.stringify({ ...v, content_id: content, round, recordedAt: new Date().toISOString() }, null, 2));
     // Tracked digest so history shows non-negotiable 4 held (M0 cp1 F2). The digest is bookkeeping,
     // outside the content identity, so it is staged with the commit it reviews (ADR-0195).
     mkdirSync(dirname(DIGEST), { recursive: true });
-    appendFileSync(DIGEST, `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}\n`);
-    console.log(`recorded ${v.verdict} for ${task} round ${round} (${(hash || content).slice(0, 12)}); stage .harness/reviews/digest.log with this change`);
+    appendFileSync(
+      DIGEST,
+      `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}${reapply ? '\treapply' : ''}\n`,
+    );
+    console.log(
+      `recorded ${v.verdict} for ${task} round ${round}${reapply ? ' (reapply)' : ''} (${(hash || content).slice(0, 12)}); stage .harness/reviews/digest.log with this change`,
+    );
     if (round > t('REVIEW_ROUND_CAP') && v.verdict !== 'pass') die(`round cap ${t('REVIEW_ROUND_CAP')} exceeded — stop (drive stop condition)`, 3);
     break;
   }
