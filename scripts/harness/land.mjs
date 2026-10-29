@@ -169,6 +169,7 @@ function recommit(upstream, start) {
     const blocked = landingBlock({
       backlog: git(['show', `HEAD:${BACKLOG}`]).stdout,
       subject,
+      message: must(['log', '-1', '--format=%B', sha], 'read the message'),
       // the commit's own change decides whether it closes a row; it may predate the mark
       before: git(['show', `${sha}^:${BACKLOG}`]).stdout,
       proposed: git(['show', `${sha}:${BACKLOG}`]).stdout,

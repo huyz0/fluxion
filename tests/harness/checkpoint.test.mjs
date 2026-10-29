@@ -317,6 +317,57 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
     }
   });
 
+  it('the planned fix of a red ci run lands while a row blocks landing; a trailer alone exempts nothing (M18.181)', () => {
+    const f = history(2);
+    const exact = (message, file = 'packages/cli/fix.ts', edit = (b) => b) => {
+      f.sb.write('docs/backlog/current.md', edit(f.sb.read('docs/backlog/current.md')));
+      f.sb.write(file, `${message}\n`);
+      git(f.sb, 'add', '-A');
+      git(f.sb, 'commit', '-qm', message);
+      const sha = git(f.sb, 'rev-parse', 'HEAD');
+      git(f.sb, 'reset', '-q', '--hard', 'HEAD~1');
+      return f.sb.node(POLICY, ['--commit', sha]);
+    };
+    try {
+      const rows = [
+        '| M18.30 | CI green `blocks-landing` | HARNESS | acceptance | | todo | |',
+        '| M18.50 | Windows fix (ci 77) | FR-LIB-004 | WHEN x THE SYSTEM SHALL y; the commit SHALL carry `Fixes-ci: 77` | | todo | |',
+        '| M18.51 | feature | FR-LIB-007 | acceptance | | todo | |',
+      ];
+      f.sb.write('docs/backlog/current.md', `${f.sb.read('docs/backlog/current.md')}\n${rows.join('\n')}\n`);
+      git(f.sb, 'commit', '-qam', 'plan the fix');
+      // the planned fix, with the trailer its row names, lands through the mark
+      const fix = exact('M18.50: fix(cli): the Windows fix\n\nFixes-ci: 77');
+      assert.equal(fix.status, 0, out(fix));
+      // the same commit naming another run, or none, is refused
+      for (const message of ['M18.50: fix(cli): the Windows fix\n\nFixes-ci: 78', 'M18.50: fix(cli): the Windows fix']) {
+        const r = exact(message);
+        assert.equal(r.status, 1, `${message}\n${out(r)}`);
+        assert.match(out(r), /M18\.50 changes packages\/cli\/fix\.ts, which is not a harness path/);
+      }
+      // a run id that is only a prefix of the planned one exempts nothing (r1 F2)
+      assert.equal(exact('M18.50: fix(cli): the Windows fix\n\nFixes-ci: 7').status, 1);
+      // a done row exempts nothing: any later commit could reuse its id and trailer (r1 F1)
+      const doneRow = '| M18.53 | old fix (ci 79) | FR-LIB-004 | the commit SHALL carry `Fixes-ci: 79` | | done | abc1234 |';
+      f.sb.write('docs/backlog/current.md', `${f.sb.read('docs/backlog/current.md')}${doneRow}\n`);
+      git(f.sb, 'commit', '-qam', 'an old fix, done');
+      const reused = exact('M18.53: feat(packs): reuses an old fix id\n\nFixes-ci: 79');
+      assert.equal(reused.status, 1, out(reused));
+      // a feature commit carrying the trailer is refused: its row does not name the run
+      const feature = exact('M18.51: feat(packs): a feature\n\nFixes-ci: 77');
+      assert.equal(feature.status, 1, out(feature));
+      // nor can a commit bring the row that would exempt it: the row must be on the tip it lands on
+      const brought = exact(
+        'M18.52: fix(cli): self-planned\n\nFixes-ci: 77',
+        'packages/cli/x.ts',
+        (b) => `${b}| M18.52 | fix | FR-LIB-004 | the commit SHALL carry \`Fixes-ci: 77\` | | done | |\n`,
+      );
+      assert.equal(brought.status, 1, out(brought));
+    } finally {
+      f.sb.cleanup();
+    }
+  });
+
   it('while a row blocks landing, harness paths are one positive list and closing the row needs CI evidence for its parent (M18.135)', () => {
     const f = history(2);
     const BACKLOG = 'docs/backlog/current.md';

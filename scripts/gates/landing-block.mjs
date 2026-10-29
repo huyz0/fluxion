@@ -30,13 +30,13 @@ export const HARNESS_PATHS = [
 export const harnessPath = (path) => HARNESS_PATHS.some((p) => (p.endsWith('/') ? path.startsWith(p) : path === p));
 const taskOf = (subject) => /^(M\d+\.\d+):/.exec(subject)?.[1] ?? null;
 
-/** Backlog rows as { id, title, state }. */
+/** Backlog rows as { id, title, acceptance, state }. */
 function rows(backlog) {
   return String(backlog ?? '')
     .split(/\r?\n/)
     .map((line) => line.split('|').map((cell) => cell.trim()))
     .filter((cells) => cells.length >= 9 && /^M\d+\.\d+$/.test(cells[1]))
-    .map((cells) => ({ id: cells[1], title: cells[2], state: cells[6] }));
+    .map((cells) => ({ id: cells[1], title: cells[2], acceptance: cells[4], state: cells[6] }));
 }
 
 /** Open rows marked `blocks-landing`. */
@@ -69,12 +69,26 @@ function closeBlock({ backlog, before, proposed, evidence, evidenceOk }) {
 }
 
 /**
+ * Whether a commit is the planned fix of a red ci run (M18.181): its `message` carries
+ * `Fixes-ci: <id>` and its task's row, already open (not done) in the `backlog` it lands on (so a
+ * reviewed commit put it there before this one), names that same `Fixes-ci: <id>` in its acceptance. A trailer alone,
+ * which any commit can write, exempts nothing.
+ */
+function plannedCiFix(backlog, task, message) {
+  const ids = [...String(message ?? '').matchAll(/^Fixes-ci: (\d+)\s*$/gm)].map((m) => m[1]);
+  // an open row only: a done row's task id and trailer are things any later commit could write (r1 F1)
+  const row = rows(backlog).find((r) => r.id === task && !/^done\b/.test(r.state));
+  return Boolean(row && ids.some((id) => new RegExp(`Fixes-ci: ${id}(?!\\d)`).test(row.acceptance)));
+}
+
+/**
  * Why a commit with `subject` may not land on a tree with this `backlog`, or null. While a row
  * blocks landing, only that row's task commits and commits whose every changed path is a harness path
  * land, whatever the row's Req cell says (M18.135): neither a label nor a row the commit brings
- * itself exempts product code. No commit closes a blocking row without CI evidence.
+ * itself exempts product code, except the planned fix of a red ci run (M18.181). No commit closes a
+ * blocking row without CI evidence.
  */
-export function landingBlock({ backlog, subject, before = backlog, proposed = '', paths = [], evidence = '', evidenceOk = () => false }) {
+export function landingBlock({ backlog, subject, message = subject, before = backlog, proposed = '', paths = [], evidence = '', evidenceOk = () => false }) {
   const blocking = blockingRows(backlog);
   if (!blocking.length) return null;
   // every commit, task or not (a Revert, a fixup), is judged: only the row's own task commits are exempt from the paths (r1 F1)
@@ -83,6 +97,8 @@ export function landingBlock({ backlog, subject, before = backlog, proposed = ''
   const closing = closeBlock({ backlog, before, proposed, evidence, evidenceOk });
   if (closing) return `${who}: ${closing}`;
   if (blocking.some((row) => row.id === task)) return null;
+  // the fix that makes ci green lands, or a row waiting on green ci evidence deadlocks behind it (M18.181)
+  if (task && plannedCiFix(backlog, task, message)) return null;
   const outside = paths.find((path) => !harnessPath(path));
   if (!outside) return null;
   const names = blocking.map((r) => r.id).join(', ');

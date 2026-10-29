@@ -113,6 +113,7 @@ const blockedAt = (commit, base, subject, runsFile) =>
     ? landingBlock({
         backlog: readAt(base, BACKLOG),
         subject,
+        message: checkedGit(['log', '-1', '--format=%B', commit]),
         proposed: readAt(commit, BACKLOG),
         paths: checkedGit(['diff', '--name-only', '--no-renames', base, commit]).split(/\r?\n/).filter(Boolean),
         evidence: readAt(commit, CI_EVIDENCE),

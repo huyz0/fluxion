@@ -3406,3 +3406,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 ## M18.179 — completion-gate Playwright legs name why no test ran (cp23 F3)
 
 - checkPlaywrightReport and checkPlaywrightTitles append, once per leg, the cause of a run that ran nothing: the report's first top-level error line (ANSI stripped; e.g. a webServer that did not start), else the runner's output tail when it exited non-zero (playwrightReport keeps it as `runnerTail`). m18-feature-legs proves a Vitest leg that exits non-zero with no report prints the process output tail (M18.166 review minor).
+
+## M18.181 — the planned fix of a red ci run lands through `blocks-landing`
+
+- Deadlock: ci at 3ffad13 is red on Windows (M18.16, run 40837280675); its fix M18.180 touches packages/cli, so land.mjs refused it while cp23's M18.178 is `blocks-landing`, and M18.178 cannot close without green three-OS evidence, which needs the fix. A first attempt lifted the mark; its review refused that as a gate weakening (closeBlock would refuse it anyway) and asked for this row instead.
+- landingBlock now passes a task commit whose `Fixes-ci: <id>` trailer matches a `Fixes-ci: <id>` named in its row's acceptance on the tip it lands on; a trailer alone, a row brought by the commit itself, or another id exempts nothing. This commit also plans M18.180's row (font thread's text plus the trailer clause), so M18.180 lands next, then M18.178 with ci evidence, then feature batches.
