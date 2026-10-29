@@ -1,0 +1,67 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp22",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..8ab3bfb83bd64716442f47177c7ded450cdf84a7",
+  "reviewer": "claude:independent-subagent:m18-cp22",
+  "verdict": "approved",
+  "reviewedDelta": "8bd0b678178f17b958168b43319787760cd90e96..8ab3bfb83bd64716442f47177c7ded450cdf84a7: c661e68 M18.43 cp21 record; ffa3e92 M18.165 (Fixes-ci: 40803138780); then one push at 05:00:42Z of 60eddd9 M18.97, 26fc906 M18.115, 8ea6ff3 M18.116, 05e6c99 M18.81 (re-reviewed after the shape-golden merge), 7625b51 M18.170, 8ab3bfb M18.171. 7 task commits since cp21 (under the 8 cadence). Earlier range retained from cp1-cp21.",
+  "cp21DispositionsCheck": "F1 (reopen -> M18.164): row present with the agreed EARS, still todo; the order recorded with it (progress.md cp21 entry and planDelta: 'land M18.164 before the next feature batch') was NOT honoured: the six-commit font/plan batch landed at 05:00:42Z with M18.164 todo (F1 here). F2 (argue): argue line in review-argued.txt (M18.162 keeps MIT; artwork licences gated in pack credits); M18.162's row still carries 'or an argue line SHALL record why not', which the argue line satisfies. F3 (argue into M18.164): folded into M18.164's EARS (under-limit status case with M18.157 todo). F4 (argue): header corrected at c661e68 and now 'current: 157' for 157 rows; no budget.json re-record in this delta, so the naming rule was not exercised. Other cp21 order items: ci 40803138780 was red on Windows and M18.165 fixed it with Fixes-ci; ci 40807958923 at ffa3e92 green before the batch landed (honoured). budget --cold-from-ci deliberately not run while cold-setup is exempt (argued in the cp21 record); M18.157 attempt 3 not started.",
+  "questions": {
+    "coherence": "Coherent chain closing ADR-0192's font retention: M18.97 (core alias fx-artwork-<sha256>, aliasSvgArtworkFonts, atomic 1.0/1.1 registration; render registerArtworkFonts with verify-all-before-any-FontFace, refcounted sharing, cancel rollback; one-file player), M18.115 (studio registers before showing, recovery and Save carry bytes, checkVersionedShapePackSubsets before any font read), M18.116 (CLI render embeds one generated @font-face per alias, PNG waits for alias faces), M18.81 (encoder writes 1.1 with fonts/<sha>.woff2, importers lift the 1.1 refusal, sdk suite loads through the artwork loader), M18.170 (leg names real suites, new three-browser offline spec), M18.171 (ADR-0206 plan for M18.16, batch leg rebound off the editor wrapper, cp9 F3 closed). M18.165 is a two-line Windows fix of cp21-era code.",
+    "specFidelity": "M18.97: met (render browser 6, core 16 cases; reserved-namespace skip in player). M18.115: met; undo/redo/F5/release in e2e file.artwork-fonts. M18.116: met (cli e2e 7/7 ran here 4 times, stable; render embed 4). M18.81: met: 1.0 encode byte-identical, 1.1 build via artwork loader, refusal lifted with Removes-test reason, conflicting font rights refused; r2 minor (case-sensitive face keys) carried into M18.16's EARS. M18.170: met in substance; the 'keep ordinary Inter in its own family' clause is weakly proven because artwork and theme share identical Inter bytes (the only supported profile), tracked as M18.172; Firefox/WebKit not run locally, ci 40820909096 e2e chromium/firefox/webkit 12/12 shards green and the spec is @desktop (not excluded on desktop projects), but I could not download the blob reports to confirm the spec executed there. M18.171: met; ADR-0206 accepted, spec folder present, leg runs format svg-batch.test.ts then cli.pack-import.test.ts (missing until M18.16, red honestly). Ran here: vitest node 24 files/149 tests (sdk testing, core shape, format imported-pack, render embed, cli render-png, studio artwork-fonts), vitest browser 4 files/20 tests (render registration, font-loader, player-inline embedded shapes, studio saved packs), node --test licenses + m18-artwork-font-leg 27/27.",
+    "standardsDrift": "Subjects, changesets (6, covering core/format/sdk/render/cli/player/player-inline with migration notes) and FR/NFR titles conform; Removes-test trailer on 05e6c99 present with reason. Drift: (a) digest round labels do not follow M18.127's 'every round truthfully': M18.170 has two 'r1' lines while its body says r2; M18.81 has three r1 lines (re-application restarts numbering); M18.97's r1 changes-requested and r2 rounds on the never-landed 4e8a8dd are only in the body (F2); (b) reviewer ids vary within one delta: claude:independent-subagent, claude:claude-opus-5-5, claude:opus-5.5, claude:isolated-subagent (repeat of cp21 drift b); (c) M18.171's Commit cell is empty at 8ab3bfb, consistent with the fill-on-next-commit practice (check-digest --head: 152 M18 task commits covered).",
+    "gateHonesty": "No gate weakened: thresholds.mjs unchanged, no visual baselines, only test deletion is 05e6c99's refusal case with a Removes-test reason and replacement 1.1 describe; the M18.29/cp20 F4 ARTWORK_DRAWN regex keeps all geometry alternatives and adds text with visible content, with empty/whitespace/empty-tspan cases proven to throw. Completion gate 53/75 with honest reds. The packet's red on 'imported artwork retains exact licensed fonts offline' reads only 'JSON report written to …' because tests() returns the last stdout lines of a --reporter=json run and deletes the report; the suite passes here 4/4, so the red was environmental (likely a stale built bin), but the gate cannot say why (F3). Font security: only the pinned Inter 400 profile (sha256 8909904a…, 23664 bytes) is accepted at parse; hosts re-verify size+SHA-256 before any FontFace/@font-face; @font-face CSS is generated from a ^fx-artwork-[0-9a-f]{64}$ alias and validated descriptors only; font licences limited to OFL-1.1/Apache-2.0 plus the content policy; document/theme fonts in the reserved namespace are skipped (no shadowing). Bounded decoding holds because no arbitrary font bytes reach a decoder.",
+    "architecture": "Pure core: artwork-fonts.ts and pack-registration are pure (no DOM/timers); FontFace use stays in render; ssr path in render/ssr; CLI reaches core only via render/sdk (no new deps, no package.json changes in the delta). Player: re-exports registerSavedShapePacks from render, which it already depends on; ci 'size' green. Contracts: no new file-format version; 1.1 packs and saved-file closure were contracted by ADR-0192 with fixtures under fixtures/shape-pack/v1.1 (M18.94) and migration notes (M18.96); this delta changes public APIs of core/format/sdk/render/cli/player with API reports and changesets, citing ADR-0192; CLI --json contract for pack-import decided in ADR-0206 before code. ci 40820909096 at 8ab3bfb: api, license, security, size, visual, a11y, e2e x12, cli-mcp x6, ubuntu+macOS verify green, cold-setup 05:00:47-05:10:12 (565 s, under 600 s), Windows verify still running at review time.",
+    "planHealth": "157 rows vs 43 planned (3.65x), 130 done, 27 todo. The font-retention chain (M18.81/94-97/115/116/170) is closed; remaining feature work: M18.16 (now well specified), M18.17, M18.32/35/41/42/143, M18.40, M18.104/105/111-113/120/122/126, CI/qualification rows M18.131-133/136/157/164 and M18.10 mutation evidence. Process: the batch waited for ffa3e92's green ci, but skipped the recorded M18.164-first order (F1); this is the same failure mode cp19 recorded (a prose ordering not enforced by land.mjs). Batch size 6 task commits (limit 7). Windows verify at 8ab3bfb must finish green before the next push."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "docs/backlog/current.md",
+      "line": 403,
+      "evidence": "progress.md cp21 entry (c661e68): 'Order after cp21: … land M18.164 before the next feature batch'. At 8ab3bfb M18.164 is still '| todo | |' while 60eddd9, 26fc906, 8ea6ff3, 05e6c99, 7625b51, 8ab3bfb (four feature rows, one test row, one plan row) were pushed together at 05:00:42Z (ci 40820909096). land.mjs only enforces `blocks-landing`, and M18.164 was not marked.",
+      "failure_scenario": "last-ci keeps printing 'cold-setup green' for exempt overruns; here 8ab3bfb's cold-setup took 565 s (under budget), but the next batch over 600 s would be invisible to drive and the operator, and M18.157's 'three consecutive runs within the limit' cannot be read from last-ci. More generally, every checkpoint ordering written only in prose has now been skipped twice (cp19, cp22).",
+      "recommendation": "Make M18.164 the next task and mark it `blocks-landing` in the cp22 record commit (it is HARNESS, so M18.123/M18.135 let it and harness commits through); from now on any 'X before the next batch' disposition is expressed as a `blocks-landing` mark, not prose."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": ".harness/reviews/digest.log",
+      "line": 1,
+      "evidence": "Delta lines: M18.170 'r1 pass' twice (body: 'r1 pass … fixed the probe's path, r2'); M18.81 'r1' three times then r2; M18.97 has one 'r1 pass claude:claude-opus-5-5' line although its body lists r1 changes-requested and r2 on 4e8a8dd before the re-review. Reviewer ids in the same delta: claude:independent-subagent, claude:claude-opus-5-5, claude:opus-5.5, claude:isolated-subagent.",
+      "failure_scenario": "Bookkeeping: a later reader of the tracked digest cannot reconstruct how many rounds a commit took or which reviewer kind judged it, which is what M18.127 and M18.141 set out to guarantee; check-digest accepts it because the grammar allows any id and repeated round labels.",
+      "recommendation": "Argue: a re-application onto a new content id restarts rounds by design; record the convention (round numbers are per content id; a re-application line notes 'reapply') in review-argued.txt, and normalise reviewer ids to role names (independent-subagent / cross-vendor) in run-reviewer/record; no new row unless it recurs at cp23."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "scripts/gates/m18-complete.mjs",
+      "line": 21,
+      "evidence": "`const result = (r) => r.status === 0 || (r.stderr || r.stdout).trim().split(/\\r?\\n/).slice(-4).join(' | ')` used by tests() (line 40) on a `--reporter=json --outputFile` run whose report is then deleted; the packet's leg reads 'packages/cli/src/e2e/cli.artwork-fonts.test.ts: JSON report written to /tmp/m18-tests-vyZjCR/report.json'. The same suite passes 7/7 here, four runs in a row.",
+      "failure_scenario": "A red completion leg gives no failing test name or error, so an environmental red (stale built bin) and a real regression look identical; at final review an agent may re-run until green or misattribute a real failure.",
+      "recommendation": "New row M18.166: on a non-zero vitest exit, tests() reads the JSON report before deleting it and returns the first failing assertion's fullName and first failure-message line (else the stderr tail); harness case with a stub failing suite."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "argue",
+      "target": "M18.164",
+      "note": "No new row: the cp22 record commit marks M18.164 `blocks-landing` (existing M18.123/M18.135 gate), so only it and harness-path commits land until it is done; checkpoint orderings are expressed as `blocks-landing` marks from now on. Learned line records the pattern."
+    },
+    {
+      "finding": "F2",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "Round labels restart per content id on re-application; record the convention and normalise reviewer ids in later records; reopen only if cp23 shows the same drift."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.166",
+      "note": "| M18.166 | Completion-gate vitest legs name the failing test (cp22 F3) | HARNESS | WHEN a `tests()` leg of scripts/gates/m18-complete.mjs runs Vitest and it exits non-zero THE SYSTEM SHALL read the JSON report before deleting it and print the first failing test's full name and the first line of its failure message (or the stderr tail when no report exists), never only the reporter's 'JSON report written' line; a harness test SHALL prove a stub failing suite's test name appears in the leg's FAIL line | M18.1 | todo | |"
+    }
+  ],
+  "planDelta": "Add M18.166 (gate legs name the failing Vitest test; cp22 F3); header to 158 rows. Mark M18.164 `blocks-landing` in the cp22 record and land it next (cp22 F1); record F1/F2 argue lines. Order: wait for ci 40820909096 (Windows verify) to finish green; M18.164; then M18.172 with or before M18.16 (both touch the font/import path); M18.157 attempt 3 only after an independent diagnostic review (ADR-0176); feature batches stay at most 7 with green ci between. Learned line: 'cp22 (through `8ab3bfb`): an order written in a checkpoint record was skipped by the next batch exactly as cp19's was; an ordering that streams must obey is a `blocks-landing` mark, not a sentence in progress.md (M18.164).'"
+}

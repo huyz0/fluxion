@@ -3341,3 +3341,10 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Completion leg "50 SVG batch imports, bounded ZIP and traversal rejection" rebound from the editor wrapper to `packages/format/src/svg-batch.test.ts` + `packages/cli/src/e2e/cli.pack-import.test.ts` (cp9 F3); the CLI suite arrives with M18.16.
 - M18.170 r1 F1 (collision check cannot tell a second Inter registration) became row M18.172: it is a realistic false green on the font-retention leg.
 - Plan review r1 changes-requested: F1 (major) one credit cannot honestly cover the mixed-rights corpus, and a computed upstream hash broke folder/ZIP byte identity → per-member `--credits` file with scoped credits, declared hashes only. F2 id slug rule specified (empty/invalid refused naming the path; ADR-0188 slug note). F3 ZIP size checked before reading.
+
+## M18.43 — checkpoint cp22 recorded (2026-10-29)
+
+- cp22 (7545e708..8ab3bfb) is approved with one major and two minors. Delta: the cp21 record, M18.165, and the font-retention chain M18.97, M18.115, M18.116, M18.81, M18.170, M18.171 (from stream 5's bundle, re-applied on main by stream 1; M18.81 re-reviewed after its merge with cp20 F4's shape-golden check).
+- F1 (major): the chain landed while M18.164 was still todo, against cp21's recorded order. M18.164 is now `blocks-landing`. F2 argued (digest round labels, reviewer ids). F3: new row M18.166, completion-gate Vitest legs name the failing test.
+- Order: ci 40820909096 at 8ab3bfb green on Windows; M18.164; M18.172 with or before M18.16; M18.157 attempt 3 only after an independent diagnostic review; feature batches at most 7 with green ci between.
+- Closing M18.164 needs a green three-OS ci run recorded with `check-ci-evidence.mjs --record <tip>` for the tip it lands on (M18.135), so feature landings wait for that run too (cp22 record review minor).
