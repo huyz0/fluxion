@@ -1,0 +1,82 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp21",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..8bd0b678178f17b958168b43319787760cd90e96",
+  "reviewer": "claude:independent-subagent:m18-cp21",
+  "verdict": "approved",
+  "reviewedDelta": "a1363eb4bcfb45c095b32038954f06517a21891f..8bd0b678178f17b958168b43319787760cd90e96: 71b5e20 M18.43 cp20 record; 0e4e256 M18.161; d2e6b6c M18.156; 5d4643b M18.159; 5f9d860 M18.163; then stream 2's batch of 3 pushed together at 01:53Z: 1008fcd M18.125, c5bebff M18.129, 8bd0b67 M18.33. 7 task commits since cp20 (under the 8 cadence). Earlier range retained from cp1-cp20.",
+  "cp20DispositionsCheck": "F1 (argue, M18.161 before batch 2): honoured. a1363eb's ci 40774190911 completed green at 22:03:20Z (macOS included); 71b5e20+0e4e256 were pushed at 22:16:58Z, and the feature batch (1008fcd, c5bebff, 8bd0b67) only at 01:53:45Z after 5f9d860's ci 40799505794 was green at 01:32Z. a1363eb's 541 s cold line is recorded in progress.md (M18.157 attempt 2 entry). F2 (reopen -> M18.162): row present, still todo; not due yet, but see F2 below (its first option conflicts with check-licenses). F3 (argue): argue line present in review-argued.txt with the cause (lockfile changes run the full ladder); the 'mention a re-record in the commit body' part was followed by c5bebff but not by 1008fcd, which re-records budget.json (quickMs 180058 -> 201185) silently (F4). F4 (argue into M18.129): honoured. M18.129's EARS was amended in 71b5e20; c5bebff adds the a=b=c=1 three-param case (testing.test.ts) and the <path d=\"\"/> 'renders no artwork' case with a DRAWN_ELEMENT regex that requires d/points/width/r/rx/x2; ran here, 25 tests pass. Residual: a rect with width=\"0\" still counts as drawn (cp20 evidence named zero-size rects; the EARS only named path d=\"\"), recorded in gateHonesty, no row.",
+  "questions": {
+    "coherence": "Coherent. The harness rows close the cold-setup reporting chain (M18.158 names the phase, M18.161 has last-ci read the job, M18.159 replaces continue-on-error with a time-only exemption in check-budget) but leave last-ci behind it: after M18.159 an exempt overrun is a successful job, which last-ci prints as 'cold-setup green', and its by-time text still says 'continue-on-error until M18.157' (F1). M18.129 removes the 12 copied pack tests in favour of testShapePack plus a harness scan (pack-tests.test.mjs); M18.33 adds pack content licence checks beside the code checks with a separate allowlist (SHAPE_CONTENT_LICENSES) kept equal to core's by a test. M18.163 is a land.mjs ordering fix found by the batch it then landed.",
+    "specFidelity": "M18.161: EARS met (by-status exit 1, by-time warning exit 0, unreadable UNKNOWN, plus a declared Fixes-ci wait and a throwing source); its WHILE clause became obsolete one commit later (M18.159). M18.156: met (tracked-change clone, partition-drop mutant case). M18.159: met in substance (no continue-on-error in ci.yml, status failures exit 1, time overrun exits 0 with ::warning only while M18.157 is todo/doing, done/missing row fails); the 'by-status failure under the limit' clause is shown only over a 1 ms limit (F3). M18.163: met, but its test pins a constant order list rather than a landing that needs tsc -b. M18.125: met; gate leg 'bpmn-lite: every definition validates and has a nonempty passing visual golden' PASS; all pack/ and __golden__ files R100. M18.129: met; ran vitest node project on packages/sdk/src/testing, packs/bpmn-lite, packs/icons-lucide: 6 files, 25 tests passed; harness pack-tests 2/2. M18.33: met as rewritten; the original 'show attribution for each used pack' clause is split to M18.143 (depends M18.33, M18.32), which keeps the e2e library.pack-credits leg red, so nothing was dropped. Ran licences/drift/last-ci/pack-tests cases: 27/27 pass, including --packs over the real repo.",
+    "standardsDrift": "Subjects, trailers (Removes-test on c5bebff and 5d4643b with reasons, Renames-test and Threshold-change: none on 1008fcd), FR/NFR titles (describe titles now carry FR-LIB-003, FR-LIB-007, NFR-LIC-003 for each pack; NFR-LIC-003 trace +1) conform. New SDK optional peer + dev dependency vitest (MIT) is stated in c5bebff's body and is not a player dependency. Drift: (a) 1008fcd re-records .harness/budget.json without saying so in its body, against cp20 F3's argued practice (F4); (b) reviewer role names still vary (general-purpose-subagent for stream 2, independent-subagent for stream 1); (c) backlog header says 149 rows, the table has 150 (M18.163 added without a header bump); (d) M18.161's row text ('WHILE ... continue-on-error') describes a state M18.159 removed.",
+    "gateHonesty": "No gate weakened. thresholds.mjs only gains SHAPE_CONTENT_LICENSES, and check-drift now flags any addition to it (drift case 'a shape content licence added'). The removed ci-workflow test is replaced by a stricter one (no continue-on-error anywhere). The 12 removed per-pack comparison cases are one registered case each via testShapePack, same assertion (checkShapePack toEqual all-empty) and same write guard. check-digest --head at 8bd0b67: '144 M18 task commits have tracked review evidence and Commit cells'. Mutants imagined: (1) ALL_CORNERS = 2: killed by the three-param case; (2) dropping cold.ok from the exemption: killed by the 1 ms case's status failures with the row todo; (3) testShapePack registered but a pack calling checkShapePack itself: killed by pack-tests' OWN patterns; (4) ARTWORK_DRAWN accepting rect width=\"0\": survives (residual, no row); (5) last-ci printing 'green' for an exempt overrun: not a mutant, the shipped behaviour (F1). check-budget at 8bd0b67: advisory quick overrun 496 ms, cold pending CI. Completion gate 53/75 PASS; reds are honest (mutation evidence, e2e/CLI/DSL/docs legs, M18.32/143 credits search, @fluxion/layout changeset carried since M18.69, final review).",
+    "architecture": "Pure core untouched. @fluxion/sdk/testing now imports vitest's expect/it, declared as an optional peer (dependency-cruiser exempts declared peers; an undeclared import still fails, per the commit). ADR-0199 records the shared pack test. Contracts: the bpmn -> bpmn-lite rename changes only the directory and the npm package name of an unreleased 0.0.0 package; the pack id and namespace stay 'bpmn', definition ids and exports are unchanged and pack/ bytes are R100, and no saved-file field carries the npm package name (no package/src import of @fluxion/pack-bpmn*), so the file format is unaffected and no ADR or migration is required. check-licenses still demands package.json license === 'MIT' for every workspace (check-licenses.mjs:188), which shapes M18.162 (F2).",
+    "planHealth": "150 rows vs 43 planned (3.5x), 123 done, 27 todo. Process: no commit landed over a red main in this delta. 0e4e256 landed after a1363eb's ci was green; d2e6b6c and 5d4643b (harness rows) were each pushed while the previous ci run was still in progress (not red, and last-ci reads completed runs); the feature batch of 3 waited for 5f9d860's green run. ci 40803138780 at 8bd0b67: gates green, cold-setup green in about 7m45s of job time, ubuntu and macOS verify green, windows verify running at review time. Cold time is noisy: 541 s (a1363eb), 664-685 s (0e4e256..5f9d860), about 465 s (8bd0b67). M18.157 has 2 failed attempts; under ADR-0176 the third needs an independent diagnostic review and replan first. Budget's cold value is still the pending-ci stand-in (444000); record --cold-from-ci once 8bd0b67's run completes. Remaining feature work is large (M18.16/17/81/97, M18.32/35/41/42/143, M18.10 mutation evidence)."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "scripts/harness/last-ci.mjs",
+      "line": 178,
+      "evidence": "`if (cold.conclusion === 'success') return { verdict: 0, line: `last-ci: cold-setup green ${where}` };` Since 5d4643b (M18.159) an over-limit cold setup exits 0 with a ::warning, so its job concludes success: run 40799505794 at 5f9d860 has cold-setup 'success' after 01:17:26-01:28:51Z, and progress.md measures 664-685 s at 0e4e256..5f9d860 against COLD_SETUP_MAX_MS 600000. Line 192 still says '(continue-on-error until M18.157)'. The M18.159 reviewer raised both as minors 'for the next checkpoint's rows'; no row exists.",
+      "failure_scenario": "While M18.157 is open, last-ci prints 'cold-setup green' for runs over the 600 s budget, so the operator and drive see no overrun signal at all after cp19/cp20 asked for one per run; M18.157's 'three consecutive main runs within the limit' cannot be judged from last-ci, and the by-time branch it does test is now unreachable on main.",
+      "recommendation": "New row M18.164: last-ci reads the cold-setup step duration (job steps' started/completed, available without the log) or the '::warning title=cold setup over budget' annotation, and prints 'over budget (exempt while M18.157 is open)' instead of green; drop the continue-on-error wording; update M18.161's row text to the post-M18.159 state. Test: a stubbed success job over the limit is not reported green."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/gates/check-licenses.mjs",
+      "line": 188,
+      "evidence": "`if (license !== 'MIT') errors.push(`${w.dir}/package.json license is ...`, not MIT`)` applies to every workspace, packs included (and to --packs). M18.162's EARS offers 'the package's license field SHALL name the artwork's licences' (cp20 F2 suggested 'MIT AND ISC') or an argue line.",
+      "failure_scenario": "Whoever takes M18.162 sets packs/icons-lucide/package.json license to 'MIT AND ISC', check-licenses fails, and the fix is to relax the workspace rule inside a feature row, without the ADR a licence-policy change needs.",
+      "recommendation": "Amend M18.162: take the argue path (package code is MIT; artwork licences are declared in pack/index.json credits, which M18.33 now gates), or change the workspace rule only under an ADR-0050 amendment in the same commit."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "tests/harness/budget.test.mjs",
+      "line": 422,
+      "evidence": "The M18.159 case sets COLD_SETUP_MAX_MS to 1, so each by-status failure it checks is also over the limit; M18.159's EARS asks for 'a stub by-status failure under the limit exits non-zero' while M18.157 is open. M18.154's under-limit case runs with no backlog (no exemption).",
+      "failure_scenario": "Low: the exemption requires cold.ok, so a status failure cannot be exempted whatever its time; a future refactor that decides by time first (e.g. exempt when the only time problem is present) would not be caught for an under-limit status failure with the row open.",
+      "recommendation": "Add the under-limit-with-row-todo status case when M18.164 next edits the cold-setup tests; no separate row."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": ".harness/budget.json",
+      "line": 1,
+      "evidence": "1008fcd re-records budget.json (commit a077c0f -> 5d4643b, quickMs 180058 -> 201185) and its body does not mention it; cp20 F3's recommendation, argued in review-argued.txt, was to mention every re-record. Backlog header: 'current: 149' with 150 rows.",
+      "failure_scenario": "Bookkeeping only: a reviewer of a later budget regression cannot find which commit moved the record or why from commit bodies.",
+      "recommendation": "Next bookkeeping commit: correct the header count and, from now on, name any budget.json re-record in the body; record cp21 F4 as an argue line."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.164",
+      "note": "| M18.164 | last-ci reports an exempt cold-setup overrun, not green (cp21 F1) | HARNESS, NFR-DX-001 | WHEN ci's cold-setup job succeeds only under M18.159's by-time exemption THE SYSTEM SHALL make last-ci print it as over budget (exempt while M18.157 is open) with its duration, read from the job's step timing or its ::warning annotation, never as green, and SHALL drop the continue-on-error wording; M18.161's row text SHALL describe the post-M18.159 state; a harness test SHALL prove a stubbed successful cold-setup over COLD_SETUP_MAX_MS is not reported green, and a check-budget case SHALL prove a by-status failure under the limit with M18.157 todo exits 1 (cp21 F3) | M18.159, M18.161 | todo | |"
+    },
+    {
+      "finding": "F2",
+      "disposition": "argue",
+      "target": "M18.162",
+      "note": "Amend M18.162's note: check-licenses requires license 'MIT' for every workspace, so take the argue path (code MIT; artwork licences gated in pack/index.json credits by M18.33) unless an ADR-0050 amendment changes the workspace rule in the same commit."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "target": "M18.164",
+      "note": "Folded into M18.164's EARS (under-limit status case with M18.157 todo); the exemption already requires cold.ok, so no correctness gap today."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "target": "docs/backlog/current.md / review-argued.txt",
+      "note": "Bookkeeping: fix the header count in the cp21 record commit (151 with M18.164); name every budget.json re-record in the commit body from now on."
+    }
+  ],
+  "planDelta": "Add M18.164 (last-ci reports an exempt cold-setup overrun, plus the under-limit status case; cp21 F1, F3); header to 151 rows. Amend M18.162's note per F2 (argue path or ADR-0050 amendment). Order: wait for ci 40803138780 (windows verify) to finish green and record 8bd0b67's cold-setup result and budget --cold-from-ci; M18.164 before the next feature batch; M18.157 attempt 3 only after an independent diagnostic review and replan (ADR-0176, 2 failed attempts), targeting the work beside the test step (attw/publint packing, harness tests) as progress.md proposes; feature batches stay at most 7 with green ci between. Learned line: 'cp21: narrowing an exemption changes what every reader of that job sees; once an overrun became a successful job, last-ci called it green, so a reporting tool must be updated in the same row as the gate it reports on (M18.164).'"
+}

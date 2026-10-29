@@ -3283,3 +3283,10 @@ Every pack.test.ts now calls testShapePack from @fluxion/sdk/testing with only i
 ## M18.33 — Pack license gate (2026-10-27)
 
 check-licenses refuses a first-party pack index, credit or definition whose content licence is missing or outside SHAPE_CONTENT_LICENSES (core's list, kept equal by a harness test), and missing attributions or notices; --packs runs the pack checks alone; content licences never authorize code dependencies; check-drift treats a new content licence as weakening. The credits views move to M18.143.
+
+## M18.43 — checkpoint cp21 recorded (2026-10-29)
+
+- cp21 (7545e708..8bd0b67) is approved with four minors. The delta is the cp20 record, M18.161, M18.156, M18.159, M18.163 and stream 2's M18.125, M18.129 and M18.33; none landed over a red main, and the bpmn-lite rename keeps the pack id `bpmn` (no saved-file contract change).
+- F1 reopened as M18.164: since M18.159 an exempt time overrun is a successful job, so last-ci prints "cold-setup green" for 664-685 s runs. F2, F3 and F4 are argued (M18.162's licence field stays MIT; the under-limit status case joins M18.164; header count corrected to 151).
+- Order after cp21: wait for 8bd0b67's ci (run 40803138780) and record its cold-setup result; land M18.164 before the next feature batch; M18.157's attempt 3 only after an independent diagnostic review (ADR-0176, two attempts failed). M18.162's licence clause is amended to keep MIT (cp21 F2, review r1).
+- Feature batches stay at most 7 task commits with a green ci between them and a checkpoint before the limit. `check-budget --record --cold-from-ci` is not run while cold-setup runs over COLD_SETUP_MAX_MS (an exempt overrun would record a number the local check refuses); budget.json stays pending-ci until M18.157 (cp21 record review r2 minor).

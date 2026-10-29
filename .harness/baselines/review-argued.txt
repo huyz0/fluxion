@@ -151,3 +151,6 @@ M18.43 cp19 F3: landing note: held stacks rebase onto 7e02778 first; a held comm
 M18.43 cp20 F1: M18.161 lands before batch 2, and batch 2 waits for a1363eb's ci (run 40774190911) to finish green, its cold-setup result recorded in progress.md.
 M18.43 cp20 F3: the quickMs jump (about 22 s at 7e02778 to 174-203 s across the pack batch) is each pack commit adding a workspace package, so pnpm-lock.yaml changes and the quick gate runs the full ladder; checked against M18.157's ladder cuts, no row.
 M18.43 cp20 F4: the three-parameter corner case and the empty-artwork (<path d=""/>) case are added to M18.129's EARS, which next changes the SDK pack test helper; stream 2 was told (2026-10-28).
+M18.43 cp21 F2: M18.162 takes its argue path: check-licenses requires license MIT for every workspace (the code's licence); the artwork's ISC and MIT terms are gated in pack/index.json credits since M18.33, unless an ADR-0050 amendment changes the workspace rule in the same commit.
+M18.43 cp21 F3: the under-limit status case with M18.157 open is folded into M18.164's EARS; the exemption already requires cold.ok.
+M18.43 cp21 F4: the backlog header was 149 for 150 rows; the cp21 record sets 151 with M18.164; every budget.json re-record is named in its commit body from now on.
