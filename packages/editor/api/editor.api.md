@@ -451,6 +451,7 @@ export type EditorRootProps = {
     readonly fonts?: FontSources;
     readonly sourceRegistries?: CoreRegistries;
     readonly layoutOptionsSchema?: OptionsSchemaOf;
+    readonly libraryImporter?: LibraryImporter;
 };
 
 // @public
@@ -850,6 +851,26 @@ export type LibraryEntry = {
 };
 
 // @public
+export function LibraryImportDialog(props: LibraryImportDialogProps): ReactNode;
+
+// @public
+export type LibraryImportDialogProps = {
+    readonly importer: LibraryImporter;
+    readonly input: SvgLibraryInput;
+    readonly onClose: () => void;
+};
+
+// @public
+export type LibraryImporter = {
+    readonly convert: (input: SvgLibraryInput, request: LibraryImportRequest) => Promise<Result<SvgLibraryConversion, readonly SvgMemberProblem[]>>;
+    readonly register: (pack: ImportedPack) => Promise<Result<unknown, readonly Diagnostic[]>>;
+    readonly colorTokens: readonly TokenRef[];
+};
+
+// @public
+export type LibraryImportRequest = Pick<SvgLibraryOptions, "namespace" | "version" | "name" | "rights" | "colors">;
+
+// @public
 export type LibraryIndex = {
     search(query: string): readonly LibraryEntry[];
     readonly size: number;
@@ -865,6 +886,7 @@ export type LibraryPanelProps = {
     readonly onReplace?: ((id: string) => void) | undefined;
     readonly canReplace?: boolean | undefined;
     readonly hidden?: ReadonlySet<string> | undefined;
+    readonly importer?: LibraryImporter | undefined;
 };
 
 // @public

@@ -29,6 +29,12 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "1HfW_F": {
+    "message": "Colors",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "1QfxQT": {
     "message": "Dismiss",
     "origin": [
@@ -101,10 +107,22 @@
       "packages/editor/src/command-palette.tsx"
     ]
   },
+  "48lwtB": {
+    "message": "{0, plural, one {# more color is not offered} other {# more colors are not offered}}",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "4xxB5n": {
     "message": "Import an image…",
     "origin": [
       "packages/editor/src/image-picker.tsx"
+    ]
+  },
+  "5HrgV-": {
+    "message": "Keep as written",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "5WYZKZ": {
@@ -123,6 +141,12 @@
     "message": "Clear {0}",
     "origin": [
       "packages/editor/src/inspector.tsx"
+    ]
+  },
+  "6YtxFj": {
+    "message": "Name",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "77Emn0": {
@@ -154,6 +178,12 @@
     "message": "Document",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "7dPNC3": {
+    "message": "Rights",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "8uA5Jn": {
@@ -234,10 +264,28 @@
       "packages/editor/src/image-picker.tsx"
     ]
   },
+  "CKJ6Y-": {
+    "message": "{0, plural, one {Imported # shape} other {Imported # shapes}}",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "CXDHcv": {
     "message": "Grid",
     "origin": [
       "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "CbWMCe": {
+    "message": "Give the source's SHA-256 as 64 lowercase hex digits.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
+  "Cjfy6G": {
+    "message": "Give the name.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
     ]
   },
   "CmIKXf": {
@@ -250,6 +298,12 @@
     "message": "Hidden",
     "origin": [
       "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "DPfwMq": {
+    "message": "Done",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "DaqVOF": {
@@ -422,10 +476,28 @@
       "packages/editor/src/image-picker.tsx"
     ]
   },
+  "JHiJSm": {
+    "message": "Choose a credits file.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
+  "JxPdar": {
+    "message": "Choose the license of the SVGs.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
   "KaCJpx": {
     "message": "Present (F5)",
     "origin": [
       "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "KdOJTX": {
+    "message": "Give the namespace.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
     ]
   },
   "KiJn9B": {
@@ -450,6 +522,12 @@
     "message": "Screens, library and layers",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "LvT2zE": {
+    "message": "Import SVG…",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
     ]
   },
   "M6P3Qa": {
@@ -494,6 +572,12 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
+  "OC1HYE": {
+    "message": "From a source",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "ONWvwQ": {
     "message": "Upload",
     "origin": [
@@ -531,6 +615,18 @@
       "packages/editor/src/keymap-dialog.tsx"
     ]
   },
+  "OuME7l": {
+    "message": "Converting…",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "P23zBB": {
+    "message": "Attribution",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "Po9RAe": {
     "message": "{family} could not be added.",
     "origin": [
@@ -541,6 +637,12 @@
     "message": "details",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "Pzm4zX": {
+    "message": "Give the attribution.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
     ]
   },
   "Rr-tAv": {
@@ -556,6 +658,12 @@
       "packages/editor/src/source-view/source-status.ts"
     ]
   },
+  "SKRCeO": {
+    "message": "Give the version.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
   "SagCAA": {
     "message": "New section",
     "origin": [
@@ -567,6 +675,18 @@
     "origin": [
       "packages/editor/src/problems-tab.tsx",
       "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
+  "TJ5XC0": {
+    "message": "The credits file is not valid: {0}",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
+  "U9QR8R": {
+    "message": "Import SVG",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "UOUary": {
@@ -586,6 +706,12 @@
     "origin": [
       "packages/editor/src/panels.tsx",
       "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "VbeIOx": {
+    "message": "Author",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "WJ8iwk": {
@@ -628,6 +754,18 @@
     "message": "name",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "Y2Sdko": {
+    "message": "Token for {color}",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "YED6NJ": {
+    "message": "Choose a license",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "Y_0yYP": {
@@ -684,6 +822,12 @@
       "packages/editor/src/source-view/source-status.ts"
     ]
   },
+  "_Le-z-": {
+    "message": "Give the author's name.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
   "_RhvUo": {
     "message": "settings",
     "origin": [
@@ -694,6 +838,12 @@
     "message": "Remove custom field {0}",
     "origin": [
       "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "_tAcxS": {
+    "message": "The credits file is not JSON.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
     ]
   },
   "_xt4Y7": {
@@ -712,6 +862,12 @@
     "message": "Used",
     "origin": [
       "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "bUM2wG": {
+    "message": "My own work",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "bwRvnp": {
@@ -1018,6 +1174,7 @@
     "message": "Cancel",
     "origin": [
       "packages/editor/src/image-picker.tsx",
+      "packages/editor/src/library/library-import-dialog.tsx",
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
@@ -1045,6 +1202,12 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "eE0JZ4": {
+    "message": "Version",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "eZb-lw": {
     "message": "Present",
     "origin": [
@@ -1055,6 +1218,12 @@
     "message": "The FluxScript of this screen will be shown here.",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "elZUgE": {
+    "message": "Credits file (JSON, notices inline)",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "eoe8BR": {
@@ -1111,10 +1280,22 @@
       "packages/editor/src/edit-toolbar.tsx"
     ]
   },
+  "hpt6PP": {
+    "message": "Give where the source is.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
   "hsax1u": {
     "message": "position",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "hvZwVx": {
+    "message": "Convert",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "i22EYX": {
@@ -1127,6 +1308,18 @@
     "message": "{0} value",
     "origin": [
       "packages/editor/src/inspector.tsx"
+    ]
+  },
+  "iQmbPb": {
+    "message": "License",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "jqzkbE": {
+    "message": "Credits file…",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "kBaxJl": {
@@ -1145,6 +1338,12 @@
     "message": "position and size",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "l3s5ri": {
+    "message": "Import",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "lG1keT": {
@@ -1195,6 +1394,18 @@
       "packages/editor/src/source-view/source-status.ts"
     ]
   },
+  "napoLl": {
+    "message": "{0, plural, one {# shape is ready} other {# shapes are ready}}",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "nm8wiI": {
+    "message": "Source SHA-256",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "o-XJ9D": {
     "message": "Change",
     "origin": [
@@ -1211,6 +1422,12 @@
     "message": "Custom fields",
     "origin": [
       "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "ofhozU": {
+    "message": "{0, plural, one {# file picked} other {# files picked}}",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "ovBPCi": {
@@ -1314,6 +1531,12 @@
     "message": "{0} is larger than 5 MB: fonts over 5 MB are not taken.",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "skj9zM": {
+    "message": "Importing…",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "snYg8R": {
@@ -1467,6 +1690,12 @@
       "packages/editor/src/asset-dialog.tsx"
     ]
   },
+  "wMe2Qp": {
+    "message": "Namespace",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "wNumhz": {
     "message": "Press the new shortcut…",
     "origin": [
@@ -1476,6 +1705,7 @@
   "wdxz7K": {
     "message": "Source",
     "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx",
       "packages/editor/src/panels.tsx"
     ]
   },

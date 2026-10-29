@@ -13,6 +13,7 @@ import type { EditorLayout } from './layout.js';
 import { type ArrangePort, LAYOUT_CHOICES, registeredLayoutIds } from './layout-arrange.js';
 import type { OptionsSchemaOf } from './layout-options-form.js';
 import { registeredTemplateIds } from './layout-picker.js';
+import type { LibraryImporter } from './library/library-importer.js';
 import { insertShape } from './library/library-insert.js';
 import type { LibraryPanelProps } from './library/library-panel.js';
 import { replaceableShape, replaceSelectedShape } from './library/library-replace.js';
@@ -53,6 +54,8 @@ export type EditBodyProps = {
   readonly layoutOptionsSchema?: OptionsSchemaOf | undefined;
   /** The host's layout worker, which the options form lays out in (M17.34). */
   readonly arrange?: ArrangePort | undefined;
+  /** The host's SVG library import, behind the library panel's **Import SVG…** (M18.176). */
+  readonly libraryImporter?: LibraryImporter | undefined;
 };
 
 /** The left tabs: screens, problems, notes, the library (a pick inserts or replaces) and the Source tab when the host gives the core registries. */
@@ -119,6 +122,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
     onPick: (id) => insert(id),
     onReplace: (id) => void replaceSelectedShape({ view: store, execute, session, shapeDefs: registries.shapeDefs }, id),
     canReplace: replaceableShape(store, selection) !== undefined,
+    importer: props.libraryImporter,
   };
   return (
     <div className="fx-chrome-body">

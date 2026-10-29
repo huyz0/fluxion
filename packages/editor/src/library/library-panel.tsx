@@ -2,12 +2,16 @@
 // of its outline drawn at its default size, and a search box over the index of library-search.ts. With a query the
 // matches are listed best first. Picking one is the host's (`onPick`, M8.18: click to insert, drag to drop). With
 // `onReplace` and a replaceable selection, the Replace toggle (or a shift-click) makes the next pick replace the
-// selected shape instead (FR-LIB-011, M18.37).
+// selected shape instead (FR-LIB-011, M18.37). With the host's `importer`, **Import SVG…** picks SVG files or a ZIP and opens the
+// import dialog (FR-LIB-004, M18.176).
 import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
 import { pathData, useValue } from '@fluxion/render';
 import { plural, t } from '@lingui/core/macro';
 import '../i18n.js';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import type { SvgLibraryInput } from './import-svg-input.js';
+import { LibraryImportDialog } from './library-import-dialog.js';
+import type { LibraryImporter } from './library-importer.js';
 import { LIBRARY_DRAG_TYPE } from './library-insert.js';
 import { buildLibraryIndex, entryOf, type LibraryEntry } from './library-search.js';
 
@@ -27,7 +31,45 @@ export type LibraryPanelProps = {
   readonly canReplace?: boolean | undefined;
   /** Registered IDs left out of the listing and search, such as hidden Iconify icons (FR-LIB-005). */
   readonly hidden?: ReadonlySet<string> | undefined;
+  /** The host's SVG library import; without it there is no **Import SVG…**. */
+  readonly importer?: LibraryImporter | undefined;
 };
+
+/** The picked files as an import input: one ZIP, or SVG files. */
+function inputOf(files: readonly File[]): SvgLibraryInput {
+  const items = files.map((f) => ({ name: f.name, size: f.size, bytes: async () => new Uint8Array(await f.arrayBuffer()) }));
+  return { kind: files.length === 1 && /\.zip$/i.test(files[0]?.name ?? '') ? 'zip' : 'files', items };
+}
+
+/** **Import SVG…**: a file picker, then the dialog over what was picked. */
+function ImportSvg(props: { readonly importer: LibraryImporter }): ReactNode {
+  const [input, setInput] = useState<SvgLibraryInput | undefined>(undefined);
+  return (
+    <>
+      <button
+        type="button"
+        className="fx-chrome-button fx-chrome-library-import"
+        onClick={(e) => (e.currentTarget.nextElementSibling as HTMLInputElement | null)?.click()}
+      >
+        {t`Import SVG…`}
+      </button>
+      <input
+        type="file"
+        accept=".svg,.zip,image/svg+xml,application/zip"
+        multiple
+        aria-hidden="true"
+        tabIndex={-1}
+        hidden
+        onChange={(e) => {
+          const files = [...(e.target.files ?? [])];
+          e.target.value = '';
+          if (files.length) setInput(inputOf(files));
+        }}
+      />
+      {input === undefined ? null : <LibraryImportDialog importer={props.importer} input={input} onClose={() => setInput(undefined)} />}
+    </>
+  );
+}
 
 /** The size a thumbnail is drawn in, px. */
 const THUMB = { w: 48, h: 36 } as const;
@@ -98,7 +140,7 @@ function grouped(
  * @public
  */
 export function LibraryPanel(props: LibraryPanelProps): ReactNode {
-  const { shapeDefs, onPick, onReplace, canReplace = false, hidden } = props;
+  const { shapeDefs, onPick, onReplace, canReplace = false, hidden, importer } = props;
   const [query, setQuery] = useState('');
   const [replacing, setReplacing] = useState(false);
   // losing the replaceable selection lets go of the toggle, so a later selection does not find it still on
@@ -132,6 +174,7 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
+      {importer === undefined ? null : <ImportSvg importer={importer} />}
       {onReplace === undefined ? null : (
         <button
           type="button"

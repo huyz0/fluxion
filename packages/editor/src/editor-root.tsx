@@ -33,6 +33,7 @@ import { KEYMAP_KEY, type KeyOverrides, readOverrides } from './keymap-overrides
 import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown, readLayout } from './layout.js';
 import { type ArrangePort, registeredLayoutIds } from './layout-arrange.js';
 import type { OptionsSchemaOf } from './layout-options-form.js';
+import type { LibraryImporter } from './library/library-importer.js';
 import { startLiveLayout } from './live-layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
@@ -86,6 +87,8 @@ export type EditorRootProps = {
   readonly sourceRegistries?: CoreRegistries;
   /** The JSON Schema of a layout's options by its id (the host's `layoutOptionsJsonSchema`), for the inspector's layout options form; no form without it. */
   readonly layoutOptionsSchema?: OptionsSchemaOf;
+  /** The host's SVG library import (convert, then register the final pack); the library panel shows **Import SVG…** with it. */
+  readonly libraryImporter?: LibraryImporter;
 };
 
 /** Randomness from the browser's crypto. */
@@ -366,6 +369,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
           sourceRegistries={props.sourceRegistries}
           layoutOptionsSchema={props.layoutOptionsSchema}
           arrange={props.arrange}
+          libraryImporter={props.libraryImporter}
           screenId={screenId}
           area={area}
           newId={newId}
