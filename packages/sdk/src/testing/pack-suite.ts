@@ -1,6 +1,6 @@
 // The shared first-party pack suite (FR-LIB-007, NFR-LIC-003, ADR-0194): what a pack's checked-in files must be, and every
 // problem with them. A pack's test only reads its files and asserts each problem list is empty; nothing here writes.
-import { allowsShapePackContentLicense, encodeShapePack, type ShapeDef } from '@fluxion/core';
+import { type ArtworkFontBinding, allowsShapePackContentLicense, artworkFontAlias, encodeShapePack, type ShapeDef } from '@fluxion/core';
 import type { Diagnostic } from '@fluxion/schema';
 import { buildShapePackFiles, type DeclarativeShapePack } from '../pack-source.js';
 import { drawnPoints } from './drawn-points.js';
@@ -25,12 +25,14 @@ export type CheckedInShapePack = {
   readonly versions: string | undefined;
   /** `CHANGELOG.md`, absent before the first release: its `## <version>` headings are the released versions. */
   readonly changelog?: string | undefined;
+  /** A 1.1 pack's binary `pack/fonts/` files by pack-relative path (`fonts/<sha256>.woff2`); absent for a 1.0 pack. */
+  readonly fonts?: Readonly<Record<string, Uint8Array>>;
 };
 
 /**
  * What a pack package's generated files must hold: `pack/` (the canonical build), `__golden__/` (one
  * normalized SVG per definition, named by its local id) and `pack-versions.json`, the ledger of each
- * released version's category hashes. The ledger keeps every recorded version; the current version is
+ * released version's category hashes (and a 1.1 pack's font hashes by path). The ledger keeps every recorded version; the current version is
  * added when absent and never replaced, so changed geometry at a recorded version shows up as a problem.
  * The pre-release rule: {@link UNRELEASED_PACK_VERSION} is never recorded, so geometry may change freely
  * until the first `changeset version` gives the pack a real version.
@@ -38,8 +40,10 @@ export type CheckedInShapePack = {
  * @public
  */
 export type ShapePackExpectation = {
-  /** Expected `pack/` files. */
+  /** Expected `pack/` text files. */
   readonly pack: Readonly<Record<string, string>>;
+  /** Expected binary `pack/` files of a 1.1 pack, its exact fonts by pack-relative path (ADR-0192); empty for 1.0. */
+  readonly fonts: Readonly<Record<string, Uint8Array>>;
   /** Expected `__golden__/` files. */
   readonly goldens: Readonly<Record<string, string>>;
   /** Expected ledger text. */
@@ -91,10 +95,12 @@ const sorted = (value: unknown): string =>
   );
 const described = (d: Diagnostic): string => `${d.path} ${d.message}`;
 const localName = (def: ShapeDef): string => def.id.slice(def.id.indexOf(':') + 1);
-const categoryHashes = (indexText: string): Record<string, string> =>
-  Object.fromEntries(
-    Object.entries((JSON.parse(indexText) as { categories: Record<string, { sha256: string }> }).categories).map(([slug, c]) => [slug, c.sha256]),
-  );
+/** The ledger entry of a build: each category's hash by slug and, for 1.1, each exact font's hash by its path (ADR-0192). */
+function categoryHashes(indexText: string): Record<string, string> {
+  const index = JSON.parse(indexText) as { categories: Record<string, { sha256: string }>; fontResources?: { path: string; sha256: string }[] };
+  const fonts = (index.fontResources ?? []).map((r) => [r.path, r.sha256]);
+  return Object.fromEntries([...Object.entries(index.categories).map(([slug, c]) => [slug, c.sha256]), ...fonts]);
+}
 /** The ledger in `text`; absent text is an empty ledger, and anything but an object of hash objects is no ledger at all. */
 function parseLedger(text: string | undefined): Record<string, Record<string, string>> | undefined {
   if (text === undefined) return {};
@@ -128,9 +134,39 @@ export function shapePackExpectation(pack: DeclarativeShapePack, versions: strin
       : { ...recorded, [pack.version]: categoryHashes(files['index.json'] ?? '{}') };
   return {
     pack: files,
-    goldens: Object.fromEntries(pack.definitions.map(({ def }) => [`${localName(def)}.svg`, renderShapeGolden(def)])),
+    fonts: fontFiles(pack),
+    goldens: Object.fromEntries(pack.definitions.map(({ def }) => [`${localName(def)}.svg`, renderShapeGolden(def, bindingsOf(pack, def.id))])),
     versions: `${JSON.stringify(next, null, 2)}\n`,
   };
+}
+
+/** The alias bindings of a 1.1 draft's definition, in its face order: what a host registers once the bytes are verified. */
+function bindingsOf(pack: DeclarativeShapePack, id: string): ArtworkFontBinding[] {
+  const fonts = pack.fonts;
+  const faceIds = fonts?.definitionFonts.find((d) => d.definitionId === id)?.faceIds ?? [];
+  return faceIds.flatMap((faceId) => {
+    const face = fonts?.fontFaces.find((f) => f.id === faceId);
+    const resource = fonts?.fontResources.find((r) => r.id === face?.resource);
+    if (!face || !resource) return [];
+    return [{ family: face.family, weight: face.weight, style: face.style, sha256: resource.sha256, alias: artworkFontAlias(resource.sha256) }];
+  });
+}
+
+/** The exact font files of a 1.1 draft by resource path; the encoder has verified each against its resource. */
+const fontFiles = (pack: DeclarativeShapePack): Record<string, Uint8Array> =>
+  Object.fromEntries((pack.fonts?.fontResources ?? []).map((r) => [r.path, pack.fonts?.bytes.get(r.sha256) ?? new Uint8Array()]));
+
+const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.byteLength === b.byteLength && a.every((x, i) => x === b[i]);
+
+function fontProblems(expected: Readonly<Record<string, Uint8Array>>, actual: Readonly<Record<string, Uint8Array>>): string[] {
+  const out: string[] = [];
+  for (const [path, bytes] of Object.entries(expected)) {
+    const found = Object.hasOwn(actual, path) ? actual[path] : undefined;
+    if (found === undefined) out.push(`pack/${path} is missing`);
+    else if (!sameBytes(found, bytes)) out.push(`pack/${path} differs from its build`);
+  }
+  for (const path of Object.keys(actual)) if (!Object.hasOwn(expected, path)) out.push(`pack/${path} belongs to no font resource`);
+  return out;
 }
 
 function fileProblems(dir: string, expected: Readonly<Record<string, string>>, actual: Readonly<Record<string, string>>): string[] {
@@ -195,10 +231,11 @@ export async function checkShapePack(pack: DeclarativeShapePack, checkedIn: Chec
   const expected = shapePackExpectation(pack, checkedIn.versions);
   const files = [
     ...fileProblems('pack/', expected.pack, checkedIn.pack),
+    ...fontProblems(expected.fonts, checkedIn.fonts ?? {}),
     ...fileProblems('__golden__/', expected.goldens, checkedIn.goldens),
     ...(checkedIn.versions === expected.versions ? [] : ['pack-versions.json differs from its build']),
   ];
-  const loaded = await checkShapePackFiles(checkedIn.pack);
+  const loaded = await checkShapePackFiles(checkedIn.pack, allowsShapePackContentLicense, checkedIn.fonts);
   // as the encoder stores them: each category text becomes its slug (ADR-0196)
   const encoded = encodeShapePack(pack, allowsShapePackContentLicense);
   const exported = encoded.ok ? encoded.value.definitions : [];

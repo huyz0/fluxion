@@ -112,6 +112,10 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     // an element without the geometry it needs draws nothing either (cp20 F4)
     const blank = { name: 'path', attributes: { d: '' }, children: [] };
     expect(() => renderShapeGolden({ ...icon, artwork: { ...icon.artwork, root: root([blank]) } } as ShapeDef)).toThrow('sample:icon: renders no artwork');
+    // text draws only with content: empty, whitespace-only or an empty tspan draws nothing (M18.81 r1)
+    const text = (children: readonly unknown[]) => ({ name: 'text', attributes: { x: '2', y: '20' }, children });
+    for (const empty of [text([]), text([' \n ']), text([{ name: 'tspan', attributes: {}, children: [] }])])
+      expect(() => renderShapeGolden({ ...icon, artwork: { ...icon.artwork, root: root([empty]) } } as ShapeDef)).toThrow('sample:icon: renders no artwork');
   });
 
   const checkedIn = (pack: DeclarativeShapePack, versions?: string): CheckedInShapePack => {

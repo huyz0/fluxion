@@ -85,7 +85,7 @@ export {
   type SvgArtworkFontOptions,
 } from './shape/artwork-fonts.js';
 export { allowsShapePackContentLicense, shapePackContentLicenses } from './shape/content-license-policy.js';
-export { canonicalJson, type EncodedShapePack, encodeShapePack, type ShapePackDraft } from './shape/pack-encode.js';
+export { canonicalJson, type EncodedShapePack, encodeShapePack, type ShapePackDraft, type ShapePackDraftFonts } from './shape/pack-encode.js';
 export type {
   ShapePackCategory11,
   ShapePackDefinitionFonts,

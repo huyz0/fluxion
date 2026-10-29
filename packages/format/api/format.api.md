@@ -12,7 +12,6 @@ import { Result } from '@fluxion/schema';
 import { safeLinkUrl } from '@fluxion/schema';
 import { sha256Hex } from '@fluxion/core';
 import { ShapeDef } from '@fluxion/core';
-import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSource } from '@fluxion/core';
 import { SvgArtwork } from '@fluxion/schema';
@@ -327,7 +326,7 @@ export type IconifyProvenance = {
 };
 
 // @public
-export function iconifyShapePack(report: IconifyImportReport, options: Pick<ImportedPackOptions, "licensePolicy"> & {
+export function iconifyShapePack(report: IconifyImportReport, options: Pick<ImportedPackOptions, "licensePolicy" | "fonts"> & {
     readonly version?: string;
 }): Result<ImportedPack, readonly Diagnostic[]>;
 
@@ -370,12 +369,14 @@ export type ImportedImage = {
 
 // @public
 export type ImportedPack = {
-    readonly index: ShapePackIndex;
+    readonly index: VersionedShapePackIndex;
     readonly categories: ReadonlyMap<string, Uint8Array>;
+    readonly fontFiles: ReadonlyMap<string, Uint8Array>;
     readonly source: {
         readonly kind: "distribution";
-        readonly index: ShapePackIndex;
+        readonly index: VersionedShapePackIndex;
         readonly definitions: readonly ShapeDef[];
+        readonly fonts: ReadonlyMap<string, Uint8Array>;
     };
 };
 
@@ -383,7 +384,16 @@ export type ImportedPack = {
 export type ImportedPackEntry = {
     readonly definition: ShapeDef;
     readonly name: string;
-    readonly fonts?: readonly unknown[];
+    readonly fonts?: readonly SvgImportFont[];
+};
+
+// @public
+export type ImportedPackFont = {
+    readonly bytes: Uint8Array;
+    readonly license: string;
+    readonly attribution: string;
+    readonly notice: string;
+    readonly source: ShapePackSource;
 };
 
 // @public
@@ -397,6 +407,7 @@ export type ImportedPackOptions = {
     readonly source: ShapePackSource;
     readonly entries: readonly ImportedPackEntry[];
     readonly licensePolicy: ShapePackLicensePolicy;
+    readonly fonts?: readonly ImportedPackFont[];
 };
 
 // @public

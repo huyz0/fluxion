@@ -2,11 +2,14 @@
 // `buildShapePackFiles`) and imported collections (`@fluxion/format` `importedShapePack`) give the same bytes for the same pack.
 // Canonical JSON (keys sorted at every depth), category slugs from any category text, SHA-256 of each category file, and the
 // index and every category validated by the pack parsers under the caller's content policy. Pure: core's synchronous SHA-256.
+// A draft with `fonts` encodes as pack 1.1 (ADR-0192): its font metadata in the index and each exact font file, checked against
+// its resource, at `fonts/<sha256>.woff2`.
 import { type Diagnostic, err, ok, type Result } from '@fluxion/schema';
 import { sha256Hex } from '../hash/sha256.js';
 import { utf8 } from '../hash/stable-id.js';
-import type { ShapePackCredit, ShapePackIndex, ShapePackLicensePolicy } from './pack-types.js';
-import { parseShapePackCategory, parseShapePackIndex } from './pack-validation.js';
+import type { ShapePackDistributionFontResource, ShapePackFonts, VersionedShapePackIndex } from './pack-font-types.js';
+import { parseVersionedShapePackCategory, parseVersionedShapePackIndex } from './pack-font-validation.js';
+import type { ShapePackCredit, ShapePackLicensePolicy } from './pack-types.js';
 import { parseShapeDef, type ShapeDef } from './shape-def.js';
 
 /**
@@ -35,20 +38,33 @@ export type ShapePackDraft = {
     /** The definition. */
     readonly def: ShapeDef;
   }[];
+  /** Exact artwork fonts (ADR-0192): present, the pack encodes as 1.1, even with an empty closure. */
+  readonly fonts?: ShapePackDraftFonts;
 };
 
 /**
- * An encoded, validated pack: its files by pack-relative path (`index.json`, `categories/<slug>.json`), the
+ * The pack 1.1 font metadata of a draft and the exact bytes of each resource, by lowercase SHA-256.
+ *
+ * @public
+ */
+export type ShapePackDraftFonts = ShapePackFonts<ShapePackDistributionFontResource> & {
+  /** Exact bytes of every resource, by its SHA-256; each must match its resource's hash and size. */
+  readonly bytes: ReadonlyMap<string, Uint8Array>;
+};
+
+/**
+ * An encoded, validated pack: its files by pack-relative path (`index.json`, `categories/<slug>.json`, and for 1.1
+ * `fonts/<sha256>.woff2`), the
  * parsed index, and every definition as stored (category set to its slug), in index order, which is draft
  * order; each category file holds its definitions in that order.
  *
  * @public
  */
 export type EncodedShapePack = {
-  /** Canonical file bytes by pack-relative path; `index.json` first, then categories in order of first use. */
+  /** Canonical file bytes by pack-relative path; `index.json` first, then categories in order of first use, then fonts by resource. */
   readonly files: ReadonlyMap<string, Uint8Array>;
-  /** The validated index. */
-  readonly index: ShapePackIndex;
+  /** The validated index, version 1.1 when the draft has fonts. */
+  readonly index: VersionedShapePackIndex;
   /** Every definition as stored, in index order. */
   readonly definitions: readonly ShapeDef[];
 };
@@ -117,16 +133,36 @@ function stored(draft: ShapePackDraft): Result<{ def: ShapeDef; name: string }[]
   return out.length ? ok(out) : err([problem('/definitions', 'a pack needs at least one definition')]);
 }
 
+/** The font files of a 1.1 draft by their resource paths, or the diagnostics of bytes that are missing or not their resource's. */
+function fontFiles(fonts: ShapePackDraftFonts): Result<[string, Uint8Array][], readonly Diagnostic[]> {
+  const out: [string, Uint8Array][] = [];
+  const errors: Diagnostic[] = [];
+  for (const [i, r] of fonts.fontResources.entries()) {
+    const bytes = fonts.bytes.get(r.sha256);
+    if (bytes === undefined || bytes.byteLength !== r.size || sha256Hex(bytes) !== r.sha256)
+      errors.push(problem(`/fonts/fontResources/${i}`, `the bytes of font ${r.id} are missing or do not match its SHA-256 and size`));
+    else out.push([r.path, bytes.slice()]);
+  }
+  const extra = [...fonts.bytes.keys()].filter((sha) => !fonts.fontResources.some((r) => r.sha256 === sha));
+  for (const sha of extra) errors.push(problem('/fonts/bytes', `font bytes ${sha} belong to no resource`));
+  return errors.length ? err(errors) : ok(out);
+}
+
 /**
  * Encode `draft` as a declarative pack (ADR-0048, ADR-0196) and validate every file it writes under
  * `licensePolicy`. Refuses an empty pack, ids outside the namespace, invalid definitions and rights the policy
- * does not permit; nothing is partial. The same draft always gives the same bytes.
+ * does not permit; nothing is partial. The same draft always gives the same bytes. A draft with `fonts` is a
+ * pack 1.1 (ADR-0192): its index and categories are validated by the 1.1 parsers (exact font closure of each
+ * definition's artwork text, scoped font credits) and every resource's bytes must match it.
  *
  * @public
  */
 export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackLicensePolicy): Result<EncodedShapePack, readonly Diagnostic[]> {
   const members = stored(draft);
   if (!members.ok) return members;
+  const fonts = draft.fonts === undefined ? ok([] as [string, Uint8Array][]) : fontFiles(draft.fonts);
+  if (!fonts.ok) return fonts;
+  const formatVersion = draft.fonts === undefined ? '1.0' : '1.1';
   const groups = new Map<string, ShapeDef[]>();
   for (const { def } of members.value) groups.set(def.category as string, [...(groups.get(def.category as string) ?? []), def]);
   const categoryFiles = new Map<string, Uint8Array>();
@@ -134,16 +170,25 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
   const descriptors: Record<string, { path: string; sha256: string }> = {};
   for (const [slug, definitions] of groups) {
     const path = `categories/${slug}.json`;
-    const envelope = { formatVersion: '1.0', definitions };
+    const envelope = { formatVersion, definitions };
     const bytes = utf8(canonicalJson(envelope));
     categoryFiles.set(path, bytes);
     envelopes.set(slug, envelope);
     descriptors[slug] = { path, sha256: sha256Hex(bytes) };
   }
-  const index = parseShapePackIndex(
+  const metadata =
+    draft.fonts === undefined
+      ? {}
+      : {
+          fontResources: draft.fonts.fontResources,
+          fontFaces: draft.fonts.fontFaces,
+          definitionFonts: draft.fonts.definitionFonts,
+          fontCredits: draft.fonts.fontCredits,
+        };
+  const index = parseVersionedShapePackIndex(
     {
       format: 'fluxion-shape-pack',
-      formatVersion: '1.0',
+      formatVersion,
       id: draft.id,
       version: draft.version,
       name: draft.name,
@@ -152,14 +197,15 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
       categories: descriptors,
       definitions: members.value.map(({ def, name }) => ({ id: def.id, name, keywords: def.keywords ?? [], category: def.category as string })),
       credits: draft.credits,
+      ...metadata,
     },
     licensePolicy,
   );
   if (!index.ok) return index;
   for (const [slug, envelope] of envelopes) {
-    const category = parseShapePackCategory(envelope, index.value, slug, licensePolicy);
+    const category = parseVersionedShapePackCategory(envelope, index.value, slug, licensePolicy);
     if (!category.ok) return err(category.error.map((d) => ({ ...d, path: `/categories/${slug}${d.path}` })));
   }
-  const files = new Map<string, Uint8Array>([['index.json', utf8(canonicalJson(index.value))], ...categoryFiles]);
+  const files = new Map<string, Uint8Array>([['index.json', utf8(canonicalJson(index.value))], ...categoryFiles, ...fonts.value]);
   return ok({ files, index: index.value, definitions: members.value.map((m) => m.def) });
 }

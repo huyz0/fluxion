@@ -3,7 +3,7 @@
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { readZip, sha256Hex, writeFlux, writePortableFlux, writeZip } from '@fluxion/format';
+import { importedShapePack, importSvgShape, readZip, sha256Hex, writeFlux, writePortableFlux, writeZip } from '@fluxion/format';
 import { parseDocument } from '@fluxion/schema';
 import { allowsShapePackContentLicense } from '@fluxion/sdk';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -128,6 +128,71 @@ describe('fluxion render of a .flux with retained artwork fonts (M18.116)', () =
       ok: true,
       diagnostics: [{ code: 'FLX_CLI_IO', severity: 'warning', path: '/entries/future~1unlisted.bin' }],
     });
+  });
+
+  it('FR-LIB-004 FR-AST-003: imported SVG text saves with its exact font as a 1.1 pack and renders offline in it (M18.81)', {
+    timeout: E2E_TIMEOUT,
+  }, async () => {
+    const face = { family: 'Inter', weight: 400, style: 'normal' as const, sha256: SHA };
+    const witness = async (r: { identity: string; fonts: readonly { sha256: string }[] }) => ({
+      identity: r.identity,
+      status: 'painted' as const,
+      fontHashes: r.fonts.map((f) => f.sha256),
+    });
+    const svg = await importSvgShape('<svg viewBox="0 0 80 40"><text x="4" y="24" font-family="Inter">API</text></svg>', {
+      id: 'mine:api',
+      witness,
+      fonts: [face],
+    });
+    if (!svg.ok) throw new Error(JSON.stringify(svg.error));
+    const pack = importedShapePack({
+      namespace: 'mine',
+      version: '1.0.0',
+      name: 'My shapes',
+      license: 'CC0-1.0',
+      attribution: 'Document author',
+      notice: 'Drawn by the document author and dedicated to the public domain.',
+      source: { kind: 'original', author: 'Document author', statement: 'Original work of the document author.' },
+      licensePolicy: allowsShapePackContentLicense,
+      entries: [{ definition: svg.value.definition, name: 'API', fonts: svg.value.fonts }],
+      fonts: [
+        {
+          bytes: INTER,
+          license: 'OFL-1.1',
+          attribution: 'The Inter Project Authors',
+          notice: 'SIL Open Font License 1.1',
+          source: { kind: 'upstream', reference: 'npm:@fontsource/inter', sha256: SHA },
+        },
+      ],
+    });
+    if (!pack.ok) throw new Error(JSON.stringify(pack.error));
+    const json = JSON.parse(readFileSync(join(REPO, 'fixtures/docs/minimal.flux.json'), 'utf8')) as { records: Record<string, { type: string; id: string }> };
+    const screen = Object.values(json.records).find((r) => r.type === 'screen');
+    if (!screen) throw new Error('fixture has no screen');
+    const shape = {
+      id: 'ImportedText001',
+      type: 'element',
+      kind: 'shape',
+      screenId: screen.id,
+      index: 'a0',
+      defId: 'mine:api',
+      transform: { x: 40, y: 40, w: 320, h: 160 },
+    };
+    const parsed = parseDocument(JSON.stringify({ ...json, records: { ...json.records, [shape.id]: shape } }));
+    if (!parsed.ok) throw new Error('fixture does not parse');
+    const written = await writePortableFlux({
+      document: parsed.value.document,
+      appVersion: '0',
+      hasher,
+      shapePacks: { sources: [pack.value.source], builtinIds: new Set(), licensePolicy: allowsShapePackContentLicense },
+    });
+    if (!written.ok) throw new Error(written.error.reason);
+    const out = join(dir, 'imported.html');
+    const r = fluxion(['render', await file('imported.flux', written.value.bytes), '-o', out, '--json']);
+    expect(JSON.parse(r.stdout), r.stdout).toMatchObject({ ok: true, exitCode: 0 });
+    const html = readFileSync(out, 'utf8');
+    expect(html).toContain(`font-family: "${ALIAS}"; src: url(data:font/woff2;base64,${Buffer.from(INTER).toString('base64')})`);
+    expect(/<text[^>]*>API<\/text>/.exec(html)?.[0]).toContain(`font-family="${ALIAS}"`);
   });
 
   it('FR-CLI-001: images of a .flux are drawn from its own verified bytes', { timeout: E2E_TIMEOUT }, async () => {

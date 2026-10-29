@@ -380,6 +380,22 @@ loader-verified bytes by SHA-256, crash-recovery state carries them (they have n
 and Save passes them with each embedded source. They leave with the file; edits, undo and redo
 never touch them. Missing or changed bytes show the refusal instead of the document.
 
+Imported artwork and the shared pack suite (M18.81): core's `encodeShapePack` takes a draft's
+`fonts` (`ShapePackDraftFonts`: the 1.1 font metadata plus each resource's exact bytes by SHA-256)
+and then encodes a 1.1 index and categories, checked by the 1.1 parsers, with each font, size and
+hash verified, at `fonts/<sha256>.woff2`; a draft without `fonts` encodes byte-identically as
+before. `importedShapePack` and `iconifyShapePack` take `fonts` (`ImportedPackFont`: bytes and the
+font's declared license, attribution, notice and source) for the faces entries' text needs
+(`SvgImportResult.fonts`): any font-bearing entry makes the pack a 1.1 with one resource per byte
+identity, its faces, bindings and a font credit scoped to the definitions using it, and the
+distribution source carries the bytes, so a portable save retains them and the file reopens
+offline. A needed font that is not supplied, not a supported profile or under a font license the
+policy refuses is refused; nothing is partial. The sdk suite builds text files with
+`buildShapePackFiles`, expects a 1.1 pack's fonts as binary files (`ShapePackExpectation.fonts`,
+`CheckedInShapePack.fonts`), records each font's hash in the version ledger and checks the files
+through `createArtworkShapePackLoader`, acquiring every definition with its verified fonts;
+`renderShapeGolden(def, fonts)` draws artwork text under the alias bindings.
+
 ### Saved shape subset validation (ADR-0182)
 
 `ShapePackSubset` is the strict saved envelope: format, formatVersion, id, version, license,

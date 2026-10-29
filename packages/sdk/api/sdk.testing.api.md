@@ -4,12 +4,13 @@
 
 ```ts
 
+import { ArtworkFontBinding } from '@fluxion/core';
 import { Diagnostic } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { ShapePackDraft } from '@fluxion/core';
-import { ShapePackIndex } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
+import { VersionedShapePackIndex } from '@fluxion/core';
 
 // @public
 export type CheckedInShapePack = {
@@ -18,11 +19,12 @@ export type CheckedInShapePack = {
     readonly packageJson: string;
     readonly versions: string | undefined;
     readonly changelog?: string | undefined;
+    readonly fonts?: Readonly<Record<string, Uint8Array>>;
 };
 
 // @public
 export type CheckedShapePack = {
-    readonly index: ShapePackIndex;
+    readonly index: VersionedShapePackIndex;
     readonly definitions: readonly ShapeDef[];
 };
 
@@ -30,14 +32,15 @@ export type CheckedShapePack = {
 export function checkShapePack(pack: DeclarativeShapePack, checkedIn: CheckedInShapePack): Promise<ShapePackProblems>;
 
 // @public
-export function checkShapePackFiles(files: Readonly<Record<string, string>>, licensePolicy?: ShapePackLicensePolicy): Promise<Result<CheckedShapePack, readonly Diagnostic[]>>;
+export function checkShapePackFiles(files: Readonly<Record<string, string>>, licensePolicy?: ShapePackLicensePolicy, fonts?: Readonly<Record<string, Uint8Array>>): Promise<Result<CheckedShapePack, readonly Diagnostic[]>>;
 
 // @public
-export function renderShapeGolden(def: ShapeDef): string;
+export function renderShapeGolden(def: ShapeDef, fonts?: readonly ArtworkFontBinding[]): string;
 
 // @public
 export type ShapePackExpectation = {
     readonly pack: Readonly<Record<string, string>>;
+    readonly fonts: Readonly<Record<string, Uint8Array>>;
     readonly goldens: Readonly<Record<string, string>>;
     readonly versions: string;
 };

@@ -293,7 +293,7 @@ export function effect(fn: () => void): () => void;
 // @public
 export type EncodedShapePack = {
     readonly files: ReadonlyMap<string, Uint8Array>;
-    readonly index: ShapePackIndex;
+    readonly index: VersionedShapePackIndex;
     readonly definitions: readonly ShapeDef[];
 };
 
@@ -820,6 +820,12 @@ export type ShapePackDraft = {
         readonly name: string;
         readonly def: ShapeDef;
     }[];
+    readonly fonts?: ShapePackDraftFonts;
+};
+
+// @public
+export type ShapePackDraftFonts = ShapePackFonts<ShapePackDistributionFontResource> & {
+    readonly bytes: ReadonlyMap<string, Uint8Array>;
 };
 
 // @public

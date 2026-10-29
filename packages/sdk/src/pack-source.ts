@@ -14,11 +14,12 @@ import { type Diagnostic, ok, type Result } from '@fluxion/schema';
 export type DeclarativeShapePack = ShapePackDraft;
 
 /**
- * The canonical distribution files of `pack`, by pack-relative path: `index.json` and one
+ * The canonical distribution text files of `pack`, by pack-relative path: `index.json` and one
  * `categories/<slug>.json` per category, encoded and validated by core's shared `encodeShapePack`
  * (ADR-0196) under the repository content-license policy (or `licensePolicy`): sorted-key two-space JSON
  * ending in a newline, with each category's SHA-256 in the index. The same pack always gives the same
- * bytes; an invalid pack gives its diagnostics and no files.
+ * bytes; an invalid pack gives its diagnostics and no files. A 1.1 pack's binary `fonts/<sha256>.woff2` files are
+ * its draft's exact `fonts.bytes` (ADR-0192), verified by the encoder and left out of this text map.
  *
  * @public
  */
@@ -29,7 +30,8 @@ export function buildShapePackFiles(
   const encoded = encodeShapePack(pack, licensePolicy);
   if (!encoded.ok) return encoded;
   const decoder = new TextDecoder();
-  return ok(Object.fromEntries([...encoded.value.files].map(([path, bytes]) => [path, decoder.decode(bytes)])));
+  const text = [...encoded.value.files].filter(([path]) => !path.startsWith('fonts/'));
+  return ok(Object.fromEntries(text.map(([path, bytes]) => [path, decoder.decode(bytes)])));
 }
 
 /**
