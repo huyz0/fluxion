@@ -17,15 +17,7 @@ vi.mock('./svg-witness-windows.js', () => ({
 
 function fixture() {
   const events = new EventEmitter();
-  const process = Object.assign(events, {
-    exitCode: null as number | null,
-    signalCode: null,
-    kill: vi.fn(() => {
-      process.exitCode = 1;
-      events.emit('exit', 1);
-      return true;
-    }),
-  });
+  const process = Object.assign(events, { exitCode: null as number | null, signalCode: null });
   const server = {
     wsEndpoint: () => 'ws://127.0.0.1:12345/generated-secret',
     process: () => process,
@@ -96,24 +88,4 @@ it('NFR-SEC-001: Windows ownership bypasses both synchronous Playwright shutdown
   expect(f.server.close).not.toHaveBeenCalled();
   expect(f.server.kill).not.toHaveBeenCalled();
   expect(f.process.exitCode).toBe(0);
-});
-
-it('NFR-SEC-001: on Windows a tree termination that has not ended the browser by the grace ends its own process directly, inside the reserve', async () => {
-  const f = fixture();
-  // the taskkill helper is still running (a loaded host): it has neither ended the browser nor exited (ci 40837280675)
-  vi.mocked(createWindowsTermination).mockReturnValueOnce({ kill: vi.fn(() => new Promise<void>(() => {})), stop: vi.fn() });
-  const started = performance.now();
-  const owner = processOwner(f.server, createWitnessCleanup(), 'win32');
-  expect(await owner.close()).toBe(true);
-  expect(f.process.kill).toHaveBeenCalledWith('SIGKILL');
-  expect(performance.now() - started).toBeLessThan(2000);
-  expect(f.server.close).not.toHaveBeenCalled();
-  expect(f.server.kill).not.toHaveBeenCalled();
-});
-
-it('NFR-SEC-001: on Windows a tree termination that ends the browser in time never terminates it again', async () => {
-  const f = fixture();
-  const owner = processOwner(f.server, createWitnessCleanup(), 'win32');
-  expect(await owner.close()).toBe(true);
-  expect(f.process.kill).not.toHaveBeenCalled();
 });

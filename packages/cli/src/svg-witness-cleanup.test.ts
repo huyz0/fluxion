@@ -3,7 +3,8 @@ import { createWitnessCleanup } from './svg-witness-cleanup.js';
 import { controlWitness } from './svg-witness-control.js';
 import { type OwnedBrowserProcess, ownBrowserProcess } from './svg-witness-process.js';
 
-beforeEach(() => vi.useFakeTimers());
+// time is faked; setImmediate stays real, since the reserve's verdict waits for the loop's I/O of its turn (ci 40858059983)
+beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance'] }));
 afterEach(() => vi.useRealTimers());
 function resource() {
   let exited = false;

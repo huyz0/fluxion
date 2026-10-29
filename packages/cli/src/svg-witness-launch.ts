@@ -29,15 +29,9 @@ export function processOwner(server: BrowserServer, cleanup?: WitnessCleanup, pl
           child.removeListener('exit', listener);
         };
       },
-      // Windows: the tree termination starts at once; if the browser has not exited by the cleanup grace, its own process is
-      // ended directly, so a slow taskkill on a loaded host cannot use up the whole two-second reserve (ci 40837280675)
       close: windows ? windows.kill : () => server.close(),
-      kill: windows
-        ? async () => {
-            child.kill('SIGKILL');
-          }
-        : () => server.kill(),
-      ...(windows ? { stop: windows.stop } : {}),
+      kill: windows ? windows.kill : () => server.kill(),
+      ...(windows ? { immediate: true, stop: windows.stop } : {}),
     },
     cleanup,
   );

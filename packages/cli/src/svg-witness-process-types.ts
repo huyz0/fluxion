@@ -4,6 +4,7 @@ export type OwnedBrowserProcess = {
   readonly onExit: (listener: () => void) => () => void;
   readonly close: () => Promise<void>;
   readonly kill: () => Promise<void>;
+  readonly immediate?: boolean;
   readonly stop?: () => void;
 };
 export type BrowserProcessOwner = { readonly close: () => Promise<boolean> };

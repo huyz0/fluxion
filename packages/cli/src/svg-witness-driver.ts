@@ -19,8 +19,6 @@ export type BrowserServer = {
     readonly signalCode: string | null;
     readonly once: (event: 'exit', listener: () => void) => unknown;
     readonly removeListener: (event: 'exit', listener: () => void) => unknown;
-    /** Ends this one process directly (TerminateProcess on Windows), without Playwright's synchronous taskkill. */
-    readonly kill: (signal: 'SIGKILL') => boolean;
   };
   readonly close: () => Promise<void>;
   readonly kill: () => Promise<void>;

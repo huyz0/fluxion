@@ -66,6 +66,10 @@ class CleanupCoordinator implements WitnessCleanup {
       return;
     }
     if (!this.observe(resource)) return;
+    if (resource.immediate) {
+      this.force();
+      return;
+    }
     this.grace = setTimeout(this.force, Math.min(1000, Math.max(0, this.deadline - performance.now() - 1000)));
     void Promise.resolve()
       .then(() => (!this.settled && !resource.hasExited() ? resource.close() : undefined))
@@ -77,10 +81,14 @@ class CleanupCoordinator implements WitnessCleanup {
       this.resolve = done;
     });
     this.deadline = performance.now() + 2000;
+    // The verdict is read after the loop's I/O of this turn: a starved host runs the expired reserve before an exit that
+    // already happened, and reading it then would report a clean close as a cleanup failure (ci 40858059983).
     this.limit = setTimeout(() => {
-      const exited = this.resource ? this.resource.hasExited() : !this.pending;
-      if (!exited) this.force();
-      this.finish(exited);
+      setImmediate(() => {
+        const exited = this.resource ? this.resource.hasExited() : !this.pending;
+        if (!exited) this.force();
+        this.finish(exited);
+      });
     }, 2000);
     if (this.resource) this.shutdown();
     else if (!this.pending) this.finish(true);

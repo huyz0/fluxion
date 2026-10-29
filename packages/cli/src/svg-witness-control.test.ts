@@ -2,7 +2,8 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createWitnessCleanup } from './svg-witness-cleanup.js';
 import { controlWitness } from './svg-witness-control.js';
 
-beforeEach(() => vi.useFakeTimers());
+// time is faked; setImmediate stays real, since the reserve's verdict waits for the loop's I/O of its turn (ci 40858059983)
+beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance'] }));
 afterEach(() => vi.useRealTimers());
 it('NFR-SEC-001: Node lifetime reserves its final two seconds for owned-process cleanup', async () => {
   const cleanup = vi.fn(async () => true);
