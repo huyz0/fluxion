@@ -8,6 +8,7 @@ import { type CliIo, type Command, type ExitCode, internal, type Options, type O
 import { COMPILE, LAYOUT, LINT, MIGRATE } from './commands.js';
 import { CONVERT } from './convert.js';
 import { API_VERSION, OUTPUT_SCHEMAS } from './output.js';
+import { PACK_IMPORT } from './pack-import.js';
 import { RENDER } from './render.js';
 import { VALIDATE } from './validate.js';
 import { CLI_VERSION } from './version.js';
@@ -23,6 +24,7 @@ const COMMANDS: { readonly [name: string]: Command } = {
   patch: PATCH,
   decompile: DECOMPILE,
   catalog: CATALOG,
+  'pack-import': PACK_IMPORT,
 };
 
 const GLOBAL: Options = { help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, json: { type: 'boolean' } };

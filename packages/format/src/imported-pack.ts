@@ -68,6 +68,12 @@ export type ImportedPackOptions = {
   readonly licensePolicy: ShapePackLicensePolicy;
   /** The fonts entries' text uses (ADR-0192): with any font-bearing entry the pack is a 1.1 that retains them. */
   readonly fonts?: readonly ImportedPackFont[];
+  /**
+   * Credits scoped to the entries they cover, for sources of mixed rights (ADR-0206): when present they are the
+   * pack's credits instead of the one built from `notice` and `source`; each names `definitionIds`, and together
+   * they cover every entry exactly once.
+   */
+  readonly credits?: readonly ShapePackCredit[];
 };
 
 /** A validated pack: what a distribution publishes and what the portable writer saves. @public */
@@ -78,6 +84,8 @@ export type ImportedPack = {
   readonly categories: ReadonlyMap<string, Uint8Array>;
   /** Exact font files keyed by their index path (`fonts/<sha256>.woff2`); empty for a 1.0 pack. */
   readonly fontFiles: ReadonlyMap<string, Uint8Array>;
+  /** Every canonical file of the pack directory by pack-relative path: `index.json`, then the categories, then the fonts. */
+  readonly files: ReadonlyMap<string, Uint8Array>;
   /** Source for `writePortableFlux`'s shape packs. */
   readonly source: {
     /** Distribution metadata plus resolved geometry. */
@@ -117,7 +125,8 @@ function faceRefusal(face: SvgImportFont, declared: ReadonlyMap<string, Imported
 
 /** The id of `face` in `faces`, one per byte identity and source family, added when new. */
 function faceId(faces: Map<string, ShapePackFontFace>, face: SvgImportFont): string {
-  const key = `${face.sha256}\n${face.family}`;
+  // one face per font and family as the 1.1 parser compares families: case-insensitively (M18.81 r2 F1)
+  const key = `${face.sha256}\n${face.family.toLowerCase()}`;
   const id = faces.get(key)?.id ?? `face-${faces.size + 1}`;
   faces.set(key, { id, family: face.family, weight: 400, style: 'normal', resource: resourceId(face.sha256) });
   return id;
@@ -183,8 +192,24 @@ function draftFonts(entries: readonly ImportedPackEntry[], fonts: readonly Impor
   });
 }
 
+/** Why scoped `credits` do not cover every entry exactly once, or undefined when they do (or are absent). */
+function coverage(entries: readonly ImportedPackEntry[], credits: readonly ShapePackCredit[] | undefined): Diagnostic | undefined {
+  if (credits === undefined) return undefined;
+  const count = new Map(entries.map((e) => [e.definition.id as string, 0]));
+  for (const [i, c] of credits.entries()) {
+    if (!c.definitionIds?.length) return problem(`/credits/${i}/definitionIds`, `credit ${c.id} names no definitions`);
+    for (const id of c.definitionIds) {
+      const seen = count.get(id);
+      if (seen === undefined) return problem(`/credits/${i}/definitionIds`, `credit ${c.id} names ${id}, which is not an entry`);
+      count.set(id, seen + 1);
+    }
+  }
+  const [id, n] = [...count].find(([, n]) => n !== 1) ?? [];
+  return id === undefined ? undefined : problem('/credits', `${id} is covered by ${n} credits; each entry needs exactly one`);
+}
+
 /**
- * Index imported definitions as a declarative pack with one credit covering all of them, through the shared
+ * Index imported definitions as a declarative pack with one credit covering all of them (or scoped `credits`), through the shared
  * encoder (`encodeShapePack`, ADR-0196) that first-party packs use. Refuses an empty set, IDs outside the
  * namespace and rights the content policy does not permit; nothing is partial. Entries whose text needs exact
  * fonts make the pack a 1.1 (ADR-0192) that carries each font's bytes, face and declared rights from `fonts`; a
@@ -198,6 +223,8 @@ function draftFonts(entries: readonly ImportedPackEntry[], fonts: readonly Impor
 export function importedShapePack(options: ImportedPackOptions): Result<ImportedPack, readonly Diagnostic[]> {
   const fonts = draftFonts(options.entries, options.fonts ?? []);
   if (!fonts.ok) return fonts;
+  const scoped = coverage(options.entries, options.credits);
+  if (scoped !== undefined) return err([scoped]);
   const credit: ShapePackCredit = { id: 'source', license: options.license, attribution: options.attribution, notice: options.notice, source: options.source };
   const encoded = encodeShapePack(
     {
@@ -206,7 +233,7 @@ export function importedShapePack(options: ImportedPackOptions): Result<Imported
       name: options.name,
       license: options.license,
       attribution: options.attribution,
-      credits: [credit],
+      credits: options.credits ?? [credit],
       definitions: options.entries.map((entry) => ({ name: entry.name, def: entry.definition })),
       ...(fonts.value === undefined ? {} : { fonts: fonts.value }),
     },
@@ -216,7 +243,7 @@ export function importedShapePack(options: ImportedPackOptions): Result<Imported
   const { index, definitions, files } = encoded.value;
   const categories = new Map([...files].filter(([path]) => path.startsWith('categories/')));
   const fontFiles = new Map([...files].filter(([path]) => path.startsWith('fonts/')));
-  return ok({ index, categories, fontFiles, source: { kind: 'distribution', index, definitions, fonts: new Map(fonts.value?.bytes ?? []) } });
+  return ok({ index, categories, fontFiles, files, source: { kind: 'distribution', index, definitions, fonts: new Map(fonts.value?.bytes ?? []) } });
 }
 
 /** Version from the source: callers may pin one; otherwise the source hash keeps distinct sources distinct. */

@@ -3,8 +3,8 @@
 Contract: [ADR-0206](../../docs/architecture/decisions/ADR-0206-svg-pack-import-command.md).
 
 `packages/cli/src/pack-import.ts` (command), `pack-import-rights.ts` (flags or `--credits` file → pack
-license, scoped credits, member coverage), `pack-import-input.ts` (bounded folder walk → `SvgBatchInput`;
-a ZIP's size checked before it is read), `pack-import-write.ts` (temporary sibling, read-back check, rename). Flow:
+license, scoped credits, member coverage), `pack-import-input.ts` (bounded folder walk, or a ZIP's size
+checked, then listed once with `readZip` and escaping names refused → `{kind:'files'}` members), `pack-import-write.ts` (temporary sibling, read-back check, rename). Flow:
 parse flags (usage errors first, exit 2) → rights → read input → ids/categories from paths (empty or
 invalid slugs and collisions refused, naming paths) → every member credited exactly once →
 `createNodeSvgPaintWitness({ theme: LIGHT_THEME, fonts: [Inter] })` → `importSvgBatch` → all accepted or

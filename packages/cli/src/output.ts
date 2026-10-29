@@ -152,6 +152,35 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
       versionResult,
     ]),
   ),
+  'pack-import': reply(
+    z.literal('pack-import'),
+    z.union([
+      z
+        .object({
+          pack: z.object({ id: z.string(), version: z.string(), formatVersion: z.enum(['1.0', '1.1']), dir: z.string() }).strict(),
+          inputCount: z.number().int().min(0),
+          svgCount: z.number().int().min(0),
+          acceptedCount: z.number().int().min(0),
+          definitions: z.array(
+            z
+              .object({
+                id: z.string(),
+                name: z.string(),
+                category: z.string(),
+                source: z.string(),
+                sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
+                anchors: z.number().int().min(0),
+                fonts: z.array(z.string().regex(/^[0-9a-f]{64}$/)),
+              })
+              .strict(),
+          ),
+          files: z.array(z.string()),
+        })
+        .strict(),
+      helpResult,
+      versionResult,
+    ]),
+  ),
 };
 
 /**

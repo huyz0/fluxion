@@ -51,7 +51,11 @@ chromium|firefox|webkit] [--json]`.
   `<attribution>, licensed <license>.`. Hashes are declared, never computed from the input, so a
   folder and a ZIP of the same members give the same bytes. Every license is checked by
   `allowsShapePackContentLicense`. `importedShapePack` gains an optional scoped `credits` list for
-  this (additive; the single-credit options stay).
+  this and its result the canonical `files` map the CLI writes (both additive; the single-credit
+  options stay, and the flag form's one credit is the pack's unscoped credit). An upstream member
+  is credited on its own: one credit per member whose `reference` is
+  `<repository>@<commit>:<upstreamPath>` and whose `sha256` is that member's declared hash, so a
+  pin names exactly the bytes it covers (M18.171 r2 F1).
 - **IDs and categories from paths.** ADR-0188 keeps the pure batch free of slug inference; this host
   derives the explicit `ids` map it passes. A member `a/b/My Icon.svg` gets id `<ns>:my-icon`: the
   basename without `.svg`, lowercased, each run of characters outside `[a-z0-9]` to one `-`, leading
@@ -60,20 +64,27 @@ chromium|firefox|webkit] [--json]`.
   each diagnostic naming the member path(s). Category text is the member's directory (`a/b`); the
   root is `uncategorized`.
 - **Bounds.** ZIP: the file's size is checked (`stat`) before it is read, refusing more than 256 MiB;
-  then `importSvgBatch`'s own bounds (4096 entries, 128 MiB per entry, 256 MiB in total, strict
-  archive names, so `..`, absolute and backslash names fail). Folder: the CLI walks with
+  then it is listed once with `readZip` under `importSvgBatch`'s bounds (4096 entries, 128 MiB per
+  entry, 256 MiB in total, strict names), and its members go to the batch as `{kind:'files'}`
+  (M18.171 r2 F2); an absolute, backslash, empty, `.` or `..` member name is refused there, before
+  any witness, and again by the batch's own preflight. Folder: the CLI walks with
   `lstat`, refuses any symlink, device or other non-regular entry, and stops reading before the
   same caps are passed; dot-files are members like any other. A decompression bomb fails on the
   declared and the inflated size caps without inflating past them.
 - **Every member must convert.** A non-SVG member, a refused SVG or a witness failure fails the
   whole import (exit 1); each diagnostic names its source path. Nothing is written.
+- **Witness sessions.** A Node session admits 128 requests and lives 120 s (ADR-0189), so the batch
+  is witnessed by successive sessions, each replaced after 128 requests or 90 s and disposed with
+  its disposal checked before the next starts. A session that cannot start or close fails the
+  import with its own diagnostics (exit 2 for a missing browser peer, else 1); no member after it
+  is counted as painted.
 - **Fonts.** The witness and the importer get one face: `@fluxion/pack-fonts-core`'s Inter 400
   normal, the only supported artwork profile, with its own rights (OFL-1.1, its copyright and
   `OFL.txt`) and as the default face for text that names none. Text in another family is refused
   by the converter. A pack with text is a 1.1 that carries `fonts/<sha256>.woff2`.
 - **Output.** `-o` must not exist. The pack (`index.json`, `categories/*.json`, `fonts/*.woff2`)
-  is written to a sibling temporary directory, read back through `checkShapePackFiles` (the
-  artwork loader), then renamed to `-o`; any failure removes the temporary directory.
+  is written to a sibling temporary directory, read back through `createArtworkShapePackLoader` (the
+  version-aware artwork loader `checkShapePackFiles` uses, every definition acquired), then renamed to `-o`; any failure removes the temporary directory.
 - **Reply.** `result`: `{ pack: { id, version, formatVersion, dir }, inputCount, svgCount,
   acceptedCount, definitions: [{ id, name, category, source, sourceSha256, anchors, fonts }],
   files: [path] }`, validated by `packages/cli/schemas/pack-import.output.json`. Exit 1 for input
