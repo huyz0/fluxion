@@ -3475,3 +3475,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Reopened: M18.195 (`blocks-landing`; the Windows witness cleanup still fails in 2 of 4 runs on M18.190's tree: trace, independent diagnostic review, then attempt 3 with `Fixes-ci: 40905801401`; closes after three consecutive Windows-green main runs), M18.196 (ci evidence and last-ci read every run on the same product tree), M18.197 (the mark is only the title's last token; its title is reworded from the record's so that it does not mention the backticked mark, which would make it a second mark under today's rule, r1).
 - Handed off: F4 (the root fix for macOS verify time) to Huy's coverage-placement card.
 - The font thread's five commits wait for M18.195 to close unless Huy decides otherwise.
+
+## M18.197 — the landing mark is the title's last token (cp25 F3, 2026-10-29)
+
+- blockingRows counts a row only when its title ends with the backticked `blocks-landing`, so a title that mentions the mechanism (M18.181, M18.192) blocks nothing. land.mjs, check-checkpoint and last-ci share the function. docs/harness/README.md says so.
+- Test: checkpoint.test.mjs proves that a trailing mark blocks, mid-title mentions do not, and closing a mention-only row needs no evidence. It fails on the old `includes` rule.

@@ -376,6 +376,29 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
     }
   });
 
+  it('HARNESS: only a title ending with the mark blocks landing; a mention mid-title does not (M18.197, cp25 F3)', async () => {
+    const { blockingRows, landingBlock } = await import('../../scripts/gates/landing-block.mjs');
+    const backlog = [
+      '| M18.30 | CI green `blocks-landing` | HARNESS | acceptance | | todo | |',
+      '| M18.31 | A planned ci fix lands through `blocks-landing` once (cp24 F3) | HARNESS | acceptance | | todo | |',
+      '| M18.32 | `blocks-landing` is a mark only as the last token | HARNESS | acceptance | | todo | |',
+      '| M18.33 | feature | FR-LIB-007 | acceptance | | todo | |',
+    ].join('\n');
+    assert.deepEqual(
+      blockingRows(backlog).map((r) => r.id),
+      ['M18.30'],
+    );
+    // the trailing mark still blocks a product commit of another row; a mention-only row's own product commit is no exemption
+    assert.match(landingBlock({ backlog, proposed: backlog, subject: 'M18.33: feat(x): y', paths: ['packages/core/x.ts'] }) ?? '', /M18\.30 blocks landing/);
+    assert.match(landingBlock({ backlog, proposed: backlog, subject: 'M18.31: feat(x): y', paths: ['packages/core/x.ts'] }) ?? '', /M18\.30 blocks landing/);
+    // closing a mention-only row needs no ci evidence: it never was a mark
+    const done = backlog.replace(
+      '| M18.31 | A planned ci fix lands through `blocks-landing` once (cp24 F3) | HARNESS | acceptance | | todo | |',
+      '| M18.31 | A planned ci fix lands through `blocks-landing` once (cp24 F3) | HARNESS | acceptance | | done | |',
+    );
+    assert.equal(landingBlock({ backlog, subject: 'M18.31: fix(harness): y', proposed: done, paths: ['scripts/gates/x.mjs'] }), null);
+  });
+
   it('HARNESS: a planned ci fix lands once, and only for a real red run of the branch (M18.192, cp24 F3)', () => {
     const f = history(2);
     const runsFile = f.sb.path('.harness/tmp/runs.json');

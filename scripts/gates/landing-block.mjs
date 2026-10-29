@@ -1,4 +1,4 @@
-// Blocking backlog rows (M18.123): while a row whose title carries `blocks-landing` is not done,
+// Blocking backlog rows (M18.123): while a row whose title ends with `blocks-landing` (M18.197) is not done,
 // only the blocking row's commits and harness-path commits may land. Shared by check-checkpoint
 // (commit-msg hook and exact-commit CI) and land.mjs.
 import { spawnSync } from 'node:child_process';
@@ -40,9 +40,12 @@ function rows(backlog) {
     .map((cells) => ({ id: cells[1], title: cells[2], acceptance: cells[4], state: cells[6] }));
 }
 
-/** Open rows marked `blocks-landing`. */
+/**
+ * Open rows marked `blocks-landing`: the mark is the title's last token, so a title that only
+ * mentions the mechanism (M18.181, M18.192) blocks nothing (M18.197, cp25 F3).
+ */
 export function blockingRows(backlog) {
-  return rows(backlog).filter((row) => row.title.includes(MARK) && !/^done\b/.test(row.state));
+  return rows(backlog).filter((row) => row.title.endsWith(MARK) && !/^done\b/.test(row.state));
 }
 
 /**
