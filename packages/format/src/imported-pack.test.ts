@@ -4,7 +4,7 @@ import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { decodeBase64 } from './base64.js';
 import { importIconifyCollection } from './iconify-import.js';
-import { iconifyShapePack, importedShapePack } from './imported-pack.js';
+import { type ImportedPackOptions, iconifyShapePack, importedShapePack } from './imported-pack.js';
 import { loadFlux, writePortableFlux } from './index.js';
 import { sha256Hex } from './sha256.js';
 import { importSvgShape, type SvgPaintWitness } from './svg-import.js';
@@ -202,5 +202,77 @@ describe('imported artwork with exact fonts as 1.1 packs (M18.81)', () => {
     const supplied = value(iconifyShapePack(report, { licensePolicy, fonts: [interRights] }));
     expect([without.index.formatVersion, supplied.index.formatVersion, supplied.fontFiles.size]).toEqual(['1.0', '1.0', 0]);
     expect([...supplied.categories]).toEqual([...without.categories]);
+  });
+});
+
+describe('imported packs of mixed rights and one font in two spellings (M18.16)', () => {
+  const declared = {
+    namespace: 'mine',
+    version: '1.0.0',
+    name: 'My shapes',
+    license: 'ISC AND MIT',
+    attribution: 'Lucide contributors; Fluxion contributors',
+    notice: 'unused when credits are scoped',
+    source: { kind: 'original' as const, author: 'unused', statement: 'unused' },
+    licensePolicy,
+  };
+  const svg = async (id: string, markup: string, fonts: readonly (typeof interFace)[] = []) =>
+    value(await importSvgShape(markup, { id, witness, fonts: [...fonts], ...(fonts.length ? { defaultFont: INTER_SHA } : {}) }));
+
+  it('FR-LIB-004 NFR-LIC-003: scoped credits cover each entry exactly once and reopen with their scopes', async () => {
+    const a = await svg('mine:a', '<svg viewBox="0 0 10 10"><rect width="9" height="9"/></svg>');
+    const b = await svg('mine:b', '<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>');
+    const entries = [
+      { definition: a.definition, name: 'A' },
+      { definition: b.definition, name: 'B' },
+    ];
+    const upstream = {
+      id: 'lucide',
+      license: 'ISC',
+      attribution: 'Lucide contributors',
+      notice: 'ISC License',
+      source: { kind: 'upstream' as const, reference: 'lucide-icons/lucide@abc:icons/a.svg', sha256: 'a'.repeat(64) },
+      definitionIds: ['mine:a' as const],
+    };
+    const original = {
+      id: 'fluxion',
+      license: 'MIT',
+      attribution: 'Fluxion contributors',
+      notice: 'MIT License',
+      source: { kind: 'original' as const, author: 'Fluxion contributors', statement: 'Original artwork.' },
+      definitionIds: ['mine:b' as const],
+    };
+    const pack = value(importedShapePack({ ...declared, entries, credits: [upstream, original] }));
+    expect(pack.index.credits).toEqual([upstream, original]);
+    const opened = value(await loadFlux(value(await save(['mine:a'], [pack.source])).bytes, { hasher, shapePackLicensePolicy: licensePolicy }));
+    expect(opened.shapePacks[0]?.credits.map((c) => c.id)).toEqual(['lucide']);
+    const refused = (credits: NonNullable<ImportedPackOptions['credits']>) => {
+      const r = importedShapePack({ ...declared, entries, credits });
+      return r.ok ? '' : `${r.error[0]?.path} ${r.error[0]?.message}`;
+    };
+    expect(refused([upstream])).toBe('/credits mine:b is covered by 0 credits; each entry needs exactly one');
+    expect(refused([upstream, { ...original, definitionIds: ['mine:b', 'mine:a'] }])).toBe(
+      '/credits mine:a is covered by 2 credits; each entry needs exactly one',
+    );
+    expect(refused([upstream, { ...original, definitionIds: ['mine:c' as 'mine:b'] }])).toBe(
+      '/credits/1/definitionIds credit fluxion names mine:c, which is not an entry',
+    );
+  });
+
+  it('FR-AST-003: "Inter" and "inter" on the same bytes share one face, so one pack holds both (M18.81 r2 F1)', async () => {
+    const lower = { ...interFace, family: 'inter' };
+    const upper = await svg('mine:upper', '<svg viewBox="0 0 80 40"><text x="4" y="24" font-family="Inter">API</text></svg>', [interFace]);
+    const low = await svg('mine:lower', '<svg viewBox="0 0 80 40"><text x="4" y="24" font-family="inter">API</text></svg>', [lower]);
+    const entries = [
+      { definition: upper.definition, name: 'Upper', fonts: upper.fonts },
+      { definition: low.definition, name: 'Lower', fonts: low.fonts },
+    ];
+    const pack = value(importedShapePack({ ...declared, license: 'MIT', entries, fonts: [interRights] }));
+    if (pack.index.formatVersion !== '1.1') throw new Error('not 1.1');
+    expect(pack.index.fontFaces.map((f) => f.id)).toEqual(['face-1']);
+    expect(pack.index.definitionFonts).toEqual([
+      { definitionId: 'mine:upper', faceIds: ['face-1'] },
+      { definitionId: 'mine:lower', faceIds: ['face-1'] },
+    ]);
   });
 });

@@ -414,3 +414,7 @@ Credit-display UI remains M18.33.
 SVG import reuses `inspectSvgTree` from format (ADR-0186): bounded, allowlisted decoded
 data with removal diagnostics. This is not semantic artwork validation; M18.15 must
 validate viewport, geometry and local references through core before registration.
+`fluxion pack-import` (ADR-0206, M18.16) is the host that joins the batch (ADR-0188), the Node
+paint witness (ADR-0189) and `importedShapePack` (ADR-0192): a folder or ZIP of SVGs, each member
+credited to its declared rights by a scoped credit, becomes one checked 1.0/1.1 pack directory
+written atomically, or nothing.

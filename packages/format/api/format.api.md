@@ -12,6 +12,7 @@ import { Result } from '@fluxion/schema';
 import { safeLinkUrl } from '@fluxion/schema';
 import { sha256Hex } from '@fluxion/core';
 import { ShapeDef } from '@fluxion/core';
+import { ShapePackCredit } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSource } from '@fluxion/core';
 import { SvgArtwork } from '@fluxion/schema';
@@ -372,6 +373,7 @@ export type ImportedPack = {
     readonly index: VersionedShapePackIndex;
     readonly categories: ReadonlyMap<string, Uint8Array>;
     readonly fontFiles: ReadonlyMap<string, Uint8Array>;
+    readonly files: ReadonlyMap<string, Uint8Array>;
     readonly source: {
         readonly kind: "distribution";
         readonly index: VersionedShapePackIndex;
@@ -408,6 +410,7 @@ export type ImportedPackOptions = {
     readonly entries: readonly ImportedPackEntry[];
     readonly licensePolicy: ShapePackLicensePolicy;
     readonly fonts?: readonly ImportedPackFont[];
+    readonly credits?: readonly ShapePackCredit[];
 };
 
 // @public
