@@ -285,7 +285,12 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
     const jobs = [
       { id: 7, name: 'verify (ubuntu-latest)', conclusion: 'success' },
-      { id: 8, name: 'cold-setup', conclusion: 'failure' },
+      {
+        id: 8,
+        name: 'cold-setup',
+        conclusion: 'failure',
+        steps: [{ name: 'cold setup within COLD_SETUP_MAX_MS', started_at: '2026-10-28T10:00:00Z', completed_at: '2026-10-28T10:11:04Z' }],
+      },
     ];
     const calls = [];
     const fetch = (logOk) => async (url) => {
@@ -293,12 +298,12 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
       if (url.endsWith('/logs')) return { ok: logOk, status: logOk ? 200 : 403, text: async () => 'budget: cold setup failed by time' };
       return { ok: true, status: 200, json: async () => ({ jobs }) };
     };
-    assert.deepEqual(await restSource({ fetch: fetch(true) }).coldSetup(41), { conclusion: 'failure', log: 'budget: cold setup failed by time' });
+    assert.deepEqual(await restSource({ fetch: fetch(true) }).coldSetup(41), { conclusion: 'failure', ms: 664_000, log: 'budget: cold setup failed by time' });
     assert.deepEqual(calls, [
       'https://api.github.com/repos/huyz0/fluxion/actions/runs/41/jobs?per_page=100',
       'https://api.github.com/repos/huyz0/fluxion/actions/jobs/8/logs',
     ]);
-    assert.deepEqual(await restSource({ fetch: fetch(false) }).coldSetup(41), { conclusion: 'failure', log: null });
+    assert.deepEqual(await restSource({ fetch: fetch(false) }).coldSetup(41), { conclusion: 'failure', ms: 664_000, log: null });
     const spawned = [];
     const gh = (logStatus) =>
       ghSource((cmd, args) => {
@@ -306,12 +311,19 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
         if (args[0] === 'api') return { status: logStatus, stdout: 'budget: cold setup failed by status' };
         return { status: 0, stdout: JSON.stringify({ jobs: [{ databaseId: 9, name: 'cold-setup', conclusion: 'failure' }] }) };
       });
-    assert.deepEqual(await gh(0).coldSetup(42), { conclusion: 'failure', log: 'budget: cold setup failed by status' });
+    assert.deepEqual(await gh(0).coldSetup(42), { conclusion: 'failure', ms: null, log: 'budget: cold setup failed by status' });
     assert.deepEqual(spawned.slice(0, 2), [
       ['gh', 'run', 'view', '42', '--json', 'jobs'],
       ['gh', 'api', 'repos/huyz0/fluxion/actions/jobs/9/logs'],
     ]);
-    assert.deepEqual(await gh(1).coldSetup(42), { conclusion: 'failure', log: null });
+    assert.deepEqual(await gh(1).coldSetup(42), { conclusion: 'failure', ms: null, log: null });
+    // the cold step's duration comes from gh's step times too (M18.164)
+    const timed = ghSource((_cmd, args) => {
+      if (args[0] === 'api') return { status: 1, stdout: '' };
+      const steps = [{ name: 'cold setup within COLD_SETUP_MAX_MS', startedAt: '2026-10-28T10:00:00Z', completedAt: '2026-10-28T10:09:25Z' }];
+      return { status: 0, stdout: JSON.stringify({ jobs: [{ databaseId: 9, name: 'cold-setup', conclusion: 'success', steps }] }) };
+    });
+    assert.deepEqual(await timed.coldSetup(42), { conclusion: 'success', ms: 565_000, log: null });
   });
 
   it("HARNESS: a workflow's newest completed push run is read by status, outside any mixed window (M18.134, cp14 F1)", async () => {

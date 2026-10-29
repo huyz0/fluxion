@@ -20,10 +20,11 @@
 // for its commit message, which is otherwise read from the local clone, fetching an unseen head from origin
 // unless --offline. On red, an open `blocks-landing` row of the backlog (--backlog, default the repo's) is named:
 // while it is open, that row and commits confined to HARNESS_PATHS may proceed (M18.142, cp16 F2).
-// While ci's cold-setup job is continue-on-error, a red cold-setup does not fail the run, so its own
-// result and blame line are printed for ci's newest completed run: a failure by status exits 1, a
-// failure by time is a warning, an unreadable log is said (M18.161, cp19 F2). A run's optional
-// `coldSetup: { conclusion, log }` stands in for GitHub in --runs-file.
+// ci's newest completed run's cold-setup result and blame line are printed: a failure by status exits 1,
+// a failure by time is a warning, an unreadable log is said (M18.161, cp19 F2). A success that passed
+// only under check-budget's by-time exemption while M18.157 is open (M18.159) is printed as over budget
+// with its duration, never green (M18.164). A run's optional `coldSetup: { conclusion, ms, log }`
+// stands in for GitHub in --runs-file.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { runSource, transportHint } from '../gates/ci-runs.mjs';
@@ -175,7 +176,7 @@ async function coldSetupReport(run, newer) {
   const cold = await Promise.resolve(source.coldSetup?.(run.databaseId)).catch(() => null);
   if (cold === undefined) return { verdict: 0, line: `last-ci: ci has no cold-setup job ${where}` };
   if (cold === null) return { verdict: 0, line: `last-ci: cold-setup UNKNOWN ${where}: its job could not be read; check it by hand` };
-  if (cold.conclusion === 'success') return { verdict: 0, line: `last-ci: cold-setup green ${where}` };
+  if (cold.conclusion === 'success') return coldSuccess(cold, where);
   const blame = typeof cold.log === 'string' ? /budget: cold setup failed by (status|time)[^\r\n]*/.exec(cold.log) : null;
   if (!blame)
     return {
@@ -189,7 +190,22 @@ async function coldSetupReport(run, newer) {
     return { verdict: red.verdict, line: `${red.line}; ${text}` };
   }
   if (blame[1] === 'status') return { verdict: 1, line: `last-ci: RED cold-setup ${where}: ${text}; a fresh clone fails, fix it before the next task` };
-  return { verdict: 0, line: `last-ci: warning: cold-setup ${where}: ${text} (continue-on-error until M18.157)` };
+  return { verdict: 0, line: `last-ci: warning: cold-setup ${where}: ${text}` };
+}
+/** A successful cold-setup is green only when known within budget; M18.159's by-time exemption is an overrun (M18.164). */
+function coldSuccess(cold, where) {
+  const limit = t('COLD_SETUP_MAX_MS');
+  const log = typeof cold.log === 'string' ? cold.log : '';
+  const warned = /::warning title=cold setup over budget::cold setup (\d+) ms/.exec(log);
+  const ms = warned ? Number(warned[1]) : cold.ms;
+  if (warned || (Number.isFinite(ms) && ms > limit))
+    return {
+      verdict: 0,
+      line: `last-ci: warning: cold-setup over budget ${where}: ${Math.round(ms / 1000)} s > ${limit / 1000} s (exempt while M18.157 is open)`,
+    };
+  if (!Number.isFinite(ms) && typeof cold.log !== 'string')
+    return { verdict: 0, line: `last-ci: cold-setup success ${where}; duration UNKNOWN (no step time, log unreadable); check it by hand` };
+  return { verdict: 0, line: `last-ci: cold-setup green ${where}${Number.isFinite(ms) ? ` (${Math.round(ms / 1000)} s)` : ''}` };
 }
 const ciRuns = newestFirst.filter((r) => r.workflowName === 'ci');
 const ciDone = ciRuns.find((r) => r.status === 'completed');

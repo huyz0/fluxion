@@ -3348,3 +3348,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - F1 (major): the chain landed while M18.164 was still todo, against cp21's recorded order. M18.164 is now `blocks-landing`. F2 argued (digest round labels, reviewer ids). F3: new row M18.166, completion-gate Vitest legs name the failing test.
 - Order: ci 40820909096 at 8ab3bfb green on Windows; M18.164; M18.172 with or before M18.16; M18.157 attempt 3 only after an independent diagnostic review; feature batches at most 7 with green ci between.
 - Closing M18.164 needs a green three-OS ci run recorded with `check-ci-evidence.mjs --record <tip>` for the tip it lands on (M18.135), so feature landings wait for that run too (cp22 record review minor).
+
+## M18.164 — last-ci reports an exempt cold-setup overrun (cp21 F1)
+
+- ci-runs' coldSetup also returns the cold step's duration (`ms`, from REST or gh step times). last-ci prints a successful cold-setup over COLD_SETUP_MAX_MS, or one whose log carries check-budget's `::warning title=cold setup over budget`, as `warning: cold-setup over budget … (exempt while M18.157 is open)`; green only when known within budget; neither known is UNKNOWN. The continue-on-error wording is gone and M18.161's row describes the post-M18.159 state.
+- budget.test proves a by-status failure under the real limit exits 1 with M18.157 todo. Closing the row lifts `blocks-landing`; the commit carries ci-evidence for the tip it lands on.

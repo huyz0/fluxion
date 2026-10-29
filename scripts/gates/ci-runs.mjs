@@ -66,12 +66,13 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
       ((await get(`actions/workflows/${file}/runs?branch=${encodeURIComponent(name)}&event=push&status=completed&per_page=1`)).workflow_runs ?? []).map(
         (r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at }),
       ),
-    // a run's cold-setup job and its log text (null when unreadable): last-ci reports it while it is continue-on-error (M18.161)
+    // a run's cold-setup job, its cold step's duration and its log text (null when unknown): last-ci reports them (M18.161, M18.164)
     coldSetup: async (id) => {
       const job = ((await get(`actions/runs/${id}/jobs?per_page=100`)).jobs ?? []).find((j) => j.name === 'cold-setup');
       if (!job) return undefined;
       const res = await fetch(`${API}/repos/${repo}/actions/jobs/${job.id}/logs`, { headers }).catch(() => undefined);
-      return { conclusion: job.conclusion, log: res?.ok ? await res.text() : null };
+      const step = (job.steps ?? []).find((s) => s.name === COLD_STEP);
+      return { conclusion: job.conclusion, ms: stepMs(step?.started_at, step?.completed_at), log: res?.ok ? await res.text() : null };
     },
     // the nightly's last runs on the branch, scheduled or dispatched (not pushes): last-ci reports them (M18.124)
     nightly: async (name) =>
@@ -85,6 +86,13 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
       })),
   };
 }
+
+/** ci's step that runs check-budget --cold, and its duration in ms (null when a time is missing or unparsable). */
+const COLD_STEP = 'cold setup within COLD_SETUP_MAX_MS';
+const stepMs = (start, end) => {
+  const ms = Date.parse(end) - Date.parse(start);
+  return Number.isFinite(ms) && ms >= 0 ? ms : null;
+};
 
 /** Older gh versions omit step times; request only the exact successful cold job. */
 function hydrateColdStepTimes(job, runId, gh) {
@@ -123,7 +131,8 @@ export function ghSource(spawn = spawnSync) {
       const job = (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).find((j) => j.name === 'cold-setup');
       if (!job) return undefined;
       const log = spawn('gh', ['api', `repos/${REPO}/actions/jobs/${job.databaseId}/logs`], { encoding: 'utf8', maxBuffer: 1 << 26 });
-      return { conclusion: job.conclusion, log: log.status === 0 ? log.stdout : null };
+      const step = (job.steps ?? []).find((s) => s.name === COLD_STEP);
+      return { conclusion: job.conclusion, ms: stepMs(step?.startedAt, step?.completedAt), log: log.status === 0 ? log.stdout : null };
     },
     nightly: async (name) =>
       gh([

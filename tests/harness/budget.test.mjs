@@ -445,6 +445,16 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     assert.equal(cold().status, 1);
   });
 
+  it('NFR-DX-001: a by-status cold failure under the real limit exits 1 while M18.157 is open (M18.164, cp21 F3)', () => {
+    sb.cleanup();
+    sb = coldSandbox();
+    sb.write('docs/backlog/current.md', '| M18.157 | Cold setup back under its budget (M18.117) | HARNESS, NFR-DX-001 | x | M18.117 | todo | |\n');
+    const failed = sb.node('scripts/gates/check-budget.mjs', ['--cold'], { env: fakeEnv(sb, { FAKE_PNPM_FAIL: 'verify' }) });
+    assert.equal(failed.status, 1, out(failed));
+    assert.doesNotMatch(failed.stdout, /::warning/);
+    assert.doesNotMatch(out(failed), /coldSetupMs \d+ ms >/, 'under the limit: a failure by status, not by time');
+  });
+
   it("NFR-DX-002: the recorded staged time is the worst-case commit's", () => {
     const all = readdirSync(join(REPO, 'tests/harness'))
       .filter((f) => f.endsWith('.test.mjs'))

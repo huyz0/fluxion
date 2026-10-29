@@ -75,9 +75,29 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.equal(thrown.status, 0, thrown.out);
     assert.match(thrown.out, /cold-setup UNKNOWN at abcdef1 \(run 20\): its job could not be read/);
     assert.doesNotMatch(thrown.out, /cold-setup green/);
-    const green = at({ conclusion: 'success', log: null });
+    const green = at({ conclusion: 'success', ms: 565_000, log: null });
     assert.equal(green.status, 0, green.out);
-    assert.match(green.out, /cold-setup green at abcdef1/);
+    assert.match(green.out, /cold-setup green at abcdef1 \(run 20\) \(565 s\)/);
+  });
+
+  it('NFR-DX-001: a cold-setup that succeeds only under the by-time exemption is over budget, never green (M18.164)', () => {
+    const at = (coldSetup) => lastCi([run('ci', 'success', '2026-09-29T02:00:00Z', { coldSetup }), run('gates', 'success', '2026-09-29T02:00:00Z')]);
+    const warning = '2026-09-29T02:10:00Z ::warning title=cold setup over budget::cold setup 669120 ms > 600000 ms, exempt while M18.157 is open\n';
+    // from the step timing alone, the log unreadable
+    const timed = at({ conclusion: 'success', ms: 664_000, log: null });
+    assert.equal(timed.status, 0, timed.out);
+    assert.match(timed.out, /warning: cold-setup over budget at abcdef1 \(run 20\): 664 s > 600 s \(exempt while M18\.157 is open\)/);
+    assert.doesNotMatch(timed.out, /cold-setup green|continue-on-error/);
+    // from the ::warning annotation alone, no step time
+    const annotated = at({ conclusion: 'success', ms: null, log: warning });
+    assert.match(annotated.out, /warning: cold-setup over budget at abcdef1 \(run 20\): 669 s > 600 s/);
+    assert.doesNotMatch(annotated.out, /cold-setup green/);
+    // neither known: unknown, never green
+    const blind = at({ conclusion: 'success', ms: null, log: null });
+    assert.match(blind.out, /cold-setup success at abcdef1 \(run 20\); duration UNKNOWN/);
+    assert.doesNotMatch(blind.out, /cold-setup green/);
+    // within budget, from either source
+    assert.match(at({ conclusion: 'success', ms: null, log: 'budget: cold phase verify 1 ms\n' }).out, /cold-setup green at abcdef1/);
   });
 
   it('a red last run on main blocks the next task', () => {
