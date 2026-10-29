@@ -2,7 +2,7 @@
 // bounds checked before anything is read or converted, and `-o` holding a checked pack or nothing.
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, truncateSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { type SvgPaintWitness, writeZip } from '@fluxion/format';
 import { ok } from '@fluxion/schema';
 import { afterAll, describe, expect, it, vi } from 'vitest';
@@ -69,7 +69,8 @@ function tree(dir: string): Record<string, string> {
   return Object.fromEntries(
     (readdirSync(dir, { recursive: true, withFileTypes: true }) as { name: string; parentPath: string; isFile(): boolean }[])
       .filter((e) => e.isFile())
-      .map((e) => [join(e.parentPath, e.name).slice(dir.length + 1), readFileSync(join(e.parentPath, e.name), 'base64')]),
+      // keyed by `/`-separated pack paths, as the reply names them, on every OS
+      .map((e) => [relative(dir, join(e.parentPath, e.name)).split(sep).join('/'), readFileSync(join(e.parentPath, e.name), 'base64')]),
   );
 }
 

@@ -66,10 +66,6 @@ class CleanupCoordinator implements WitnessCleanup {
       return;
     }
     if (!this.observe(resource)) return;
-    if (resource.immediate) {
-      this.force();
-      return;
-    }
     this.grace = setTimeout(this.force, Math.min(1000, Math.max(0, this.deadline - performance.now() - 1000)));
     void Promise.resolve()
       .then(() => (!this.settled && !resource.hasExited() ? resource.close() : undefined))
