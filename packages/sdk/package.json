@@ -32,7 +32,8 @@
   },
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "vitest": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -40,11 +41,15 @@
     },
     "react-dom": {
       "optional": true
+    },
+    "vitest": {
+      "optional": true
     }
   },
   "devDependencies": {
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "vitest": "catalog:"
   },
   "publishConfig": {
     "access": "public",

@@ -9,4 +9,5 @@ export {
   shapePackExpectation,
   UNRELEASED_PACK_VERSION,
 } from './pack-suite.js';
+export { type ShapePackGlobs, testShapePack } from './pack-test.js';
 export { renderShapeGolden } from './shape-golden.js';

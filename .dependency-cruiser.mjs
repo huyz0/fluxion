@@ -97,7 +97,9 @@ export default {
       comment: 'shipped source imports only packages its own package.json declares',
       severity: 'error',
       from: { path: '^(packages|packs)/[^/]+/src/', pathNot: '\\.(test|spec|stories)\\.[cm]?[jt]sx?$|/__fixtures__/' },
-      to: { dependencyTypes: ['npm-no-pkg', 'npm-unknown'] },
+      // a declared optional peer is also typed npm-no-pkg, from its peerDependenciesMeta entry (dependency-cruiser maps every
+      // *ependencies key it does not know to that type), so a peer is declared whatever else it is typed (M18.129)
+      to: { dependencyTypes: ['npm-no-pkg', 'npm-unknown'], dependencyTypesNot: ['npm-peer'] },
     },
     {
       name: 'not-to-unresolvable',

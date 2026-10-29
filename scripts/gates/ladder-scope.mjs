@@ -35,6 +35,8 @@ export const SOURCE_HARNESS = [
   'mode-policy',
   // runs the real basic pack suite against a copy of packs/basic and its package.json (M18.100, M18.102)
   'pack-goldens',
+  // every first-party pack test takes its comparison and write guard from the SDK's testShapePack (M18.129)
+  'pack-tests',
   // the calibration workload must import nothing from the project, and every judged bench file exists (ADR-0170)
   'perf-baseline',
   'schema-open-objects',

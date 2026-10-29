@@ -17,6 +17,6 @@ declarative distribution in `pack/` (ADR-0048).
 
 `pack/` holds `index.json` and one hashed file per category; `__golden__/` holds one normalized SVG per definition.
 `src/pack.test.ts` checks both, and `pack-versions.json` (each released version's category hashes), against the exported `infographicSource` with the SDK's
-shared check (ADR-0193, ADR-0194). Changed geometry needs a new package version. Ordinary runs only compare, and `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run -u packs/infographic` rewrites them.
+shared check (ADR-0193, ADR-0194). Changed geometry needs a new package version. Ordinary runs only compare, and `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run packs/infographic -u` rewrites them.
 
 Architecture: [docs/architecture/01-overview.md](../../docs/architecture/01-overview.md).

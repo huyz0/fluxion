@@ -46,6 +46,15 @@ export type ShapePackExpectation = {
 export function shapePackExpectation(pack: DeclarativeShapePack, versions: string | undefined): ShapePackExpectation;
 
 // @public
+export type ShapePackGlobs = {
+    readonly pack: Readonly<Record<string, string>>;
+    readonly goldens: Readonly<Record<string, string>>;
+    readonly packageJson: Readonly<Record<string, string>>;
+    readonly versions: Readonly<Record<string, string>>;
+    readonly changelog: Readonly<Record<string, string>>;
+};
+
+// @public
 export type ShapePackProblems = {
     readonly files: readonly string[];
     readonly loading: readonly string[];
@@ -53,6 +62,9 @@ export type ShapePackProblems = {
     readonly bounds: readonly string[];
     readonly versions: readonly string[];
 };
+
+// @public
+export function testShapePack(source: DeclarativeShapePack, globs: ShapePackGlobs): void;
 
 // @public
 export const UNRELEASED_PACK_VERSION = "0.0.0";

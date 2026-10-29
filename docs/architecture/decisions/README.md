@@ -121,6 +121,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0196](ADR-0196-one-shape-pack-encoder.md) | One shape pack encoder for first-party and imported packs | accepted | 2026-10-27 |
 | [0197](ADR-0197-windows-verify-envelope.md) | Windows verification gets its own CI envelope (25 of 45 minutes) | accepted | 2026-10-27 |
 | [0198](ADR-0198-chained-mutation-matrices.md) | Nightly mutation partitions run as chained matrices of at most 256 jobs | accepted | 2026-10-27 |
+| [0199](ADR-0199-one-shared-pack-test.md) | Every first-party pack runs one shared pack test | accepted | 2026-10-27 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |
 | [0027](ADR-0027-observability-and-privacy.md) | Observability and privacy: the Logger, the debug overlay, the diagnostic report, no telemetry | accepted | 2026-10-04 |
 | [0205](ADR-0205-budget-commit-is-bookkeeping.md) | The budget record's `commit` follows landing, outside the review identity | accepted | 2026-10-28 |

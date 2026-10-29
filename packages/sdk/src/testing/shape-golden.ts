@@ -6,8 +6,11 @@ import { renderDocumentToHtml } from '@fluxion/render/ssr';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { registerShapeDef } from '../pack.js';
 
+/** A drawing element with the geometry it needs: path data, points, a size or a radius, or a second end (cp20 F4). */
+const DRAWN_ELEMENT =
+  '<(?:path\\b[^>]*\\sd="[^"]+"|(?:polyline|polygon)\\b[^>]*\\spoints="[^"]+"|rect\\b[^>]*\\swidth="[^"]+"|circle\\b[^>]*\\sr="[^"]+"|ellipse\\b[^>]*\\srx="[^"]+"|line\\b[^>]*\\sx2="[^"]+")';
 /** An artwork viewport with a drawn element before it closes (M18.29: imported icons draw artwork, not an outline). */
-const ARTWORK_DRAWN = /<svg[^>]*class="fx-artwork"[^>]*>(?:(?!<\/svg>)[\s\S])*?<(?:path|rect|circle|ellipse|line|polyline|polygon)\b/;
+const ARTWORK_DRAWN = new RegExp(`<svg[^>]*class="fx-artwork"[^>]*>(?:(?!</svg>)[\\s\\S])*?${DRAWN_ELEMENT}`);
 /** Space around the shape on its screen. */
 const MARGIN = 20;
 

@@ -3276,3 +3276,7 @@ Adds @fluxion/pack-people: 10 generic avatar definitions in three categories (in
 ## M18.125 — bpmn pack renamed bpmn-lite (2026-10-27)
 
 Renamed packs/bpmn to packs/bpmn-lite and the package to @fluxion/pack-bpmn-lite (unreleased, so no migration), so the M18 completion gate's bpmn-lite leg finds the pack FR-LIB-007 names; the `bpmn` namespace, definition ids and exports (bpmnSource, bpmnPack) are unchanged. API report, changeset, workspaces, tsconfig and lockfile importer follow. Gate legs run green for bpmn-lite, cloud-architecture, icons-lucide, devices and people.
+
+## M18.129 — One shared pack test for every first-party pack (2026-10-27)
+
+Every pack.test.ts now calls testShapePack from @fluxion/sdk/testing with only its source and globs; a harness check refuses a pack test that compares or writes by itself (ADR-0199).

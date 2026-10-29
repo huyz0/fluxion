@@ -109,6 +109,9 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     const icon = { ...box, id: 'sample:icon', artwork: { viewBox: { x: 0, y: 0, width: 24, height: 24 }, root: root([rect]) } } as ShapeDef;
     expect(renderShapeGolden(icon)).toMatch(/<svg[^>]*class="fx-artwork"[^>]*>[\s\S]*<rect\b/);
     expect(() => renderShapeGolden({ ...icon, artwork: { ...icon.artwork, root: root([]) } } as ShapeDef)).toThrow('sample:icon: renders no artwork');
+    // an element without the geometry it needs draws nothing either (cp20 F4)
+    const blank = { name: 'path', attributes: { d: '' }, children: [] };
+    expect(() => renderShapeGolden({ ...icon, artwork: { ...icon.artwork, root: root([blank]) } } as ShapeDef)).toThrow('sample:icon: renders no artwork');
   });
 
   const checkedIn = (pack: DeclarativeShapePack, versions?: string): CheckedInShapePack => {
@@ -280,6 +283,13 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
       'sample:box at a=1,b=1 16x60: draws outside its 16x60 box at (36, 30)',
       'sample:box at a=1,b=1 120x16: draws outside its 120x16 box at (140, 8)',
     ]);
+    // up to six bounded params every corner is checked: three escape only together (cp20 F4)
+    const three: ShapeDef = {
+      ...box,
+      params: Object.fromEntries(['a', 'b', 'c'].map((n) => [n, { type: 'number' as const, min: 0, max: 1, default: 0 }])),
+      outline: { path: 'M 0 0 L {w} 0 L {w + a * b * c * 20} {h/2} L {w} {h} L 0 {h} Z' },
+    };
+    expect(geometryProblems(three)[0]).toBe('sample:box at a=1,b=1,c=1: draws outside its 120x60 box at (140, 30)');
     // beyond six bounded params every pair's corners are checked, the rest at their defaults
     const many: ShapeDef = {
       ...box,

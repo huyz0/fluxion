@@ -1,4 +1,4 @@
-# @fluxion/pack-bpmn-lite
+# @fluxion/pack-bpmn
 
 First-party BPMN-lite notation (FR-LIB-007), namespace `bpmn`: 19 declarative definitions drawn for Fluxion (MIT). A host
 registers them like any plugin (ADR-0017), or loads the declarative distribution in `pack/` (ADR-0048). Event kinds differ

@@ -83,7 +83,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/artwork.spec.ts` +30 |
 | FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-iconify.test.ts` +4 |
 | FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-drawio.test.ts` +4 |
-| FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/pack-encode.test.ts` +15 |
+| FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/pack-encode.test.ts` +17 |
 | FR-LIB-008 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/my-shapes.test.ts` |
 | FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/file-recovery.test.ts` +20 |
 | FR-LIB-010 | S | R6 | M26 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
@@ -363,4 +363,4 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-DX-004 | M | R0 | M0 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` +4 |
 | NFR-LIC-001 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `packages/cli/src/svg-witness-bundle.test.ts` +3 |
 | NFR-LIC-002 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/drift.test.mjs` +2 |
-| NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` +35 |
+| NFR-LIC-003 | M | R3 | M18 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/font-embed.test.ts` +36 |

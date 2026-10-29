@@ -282,8 +282,9 @@ value, at the default size or resized to 16 units (outline, handles, text region
 hashes; changing geometry at a recorded version fails until the package version is bumped,
 and a version `CHANGELOG.md` names must keep its entry. `0.0.0` is never recorded. After
 `changeset version`, `pnpm run version-packages` syncs each pack's `VERSION` and rebuilds its files.
-Ordinary runs only compare (M18.100); `VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run packs/<pack> -u`
-rewrites the files for review.
+Every first-party pack's `src/pack.test.ts` calls `testShapePack(source, globs)` with its
+exported source and its `import.meta.glob` results (ADR-0199). Ordinary runs only compare (M18.100);
+`VITE_FLUXION_WRITE_PACK=1 pnpm exec vitest run packs/<pack> -u` rewrites the files for review.
 
 ## Declarative shape-pack validation (ADR-0178)
 
