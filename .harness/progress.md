@@ -3417,3 +3417,13 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Cause: on Windows the cleanup's only way to end the browser was `taskkill /PID <pid> /T /F`, issued once at close (`immediate`), with no fallback; spawning taskkill and walking the tree on a loaded runner can outlast the whole two-second reserve, so the exit was not observed in time.
 - Fix: the tree termination still starts at once (`close`), and the cleanup's existing grace (≤ 1 s) now ends the browser's own process directly with `child.kill('SIGKILL')` (TerminateProcess; never Playwright's synchronous taskkill); `immediate` is gone. The two-second reserve is unchanged. The unit test keys pack paths with `/`.
 - Tests: Windows ownership with a taskkill that never returns ends the process directly and closes `true` under 2 s (fails with the old kill: 2009 ms); a taskkill that ends the browser in time is never followed by a direct kill. Linux: CLI witness and pack-import suites and the e2e green; Windows is CI's.
+
+## M18.43 — plan M18.190 (Windows witness cleanup, attempt 2)
+
+- ci 40858059983 at 084008f is still red on Windows: M18.180's direct kill broke the svg-witness probe's owned-termination contract, and pack-import's "cleanup" was a misreport (the reserve timer read exitCode before the loop's pending I/O on a starved host). The font thread's row M18.190 is planned here so its `Fixes-ci: 40858059983` commit lands through M18.178's `blocks-landing` (M18.181).
+
+## M18.43 — checkpoint cp24 (through 084008f, changes-requested)
+
+- Reopened: M18.191 (last-ci reads failed jobs of pending runs; UNKNOWN behind more than LAST_CI_MAX_PENDING pending), M18.192 (the Fixes-ci exemption needs a real red run and is spent once), M18.193 (review rounds count from the landed base). M18.178 keeps the only `blocks-landing` mark and now depends on M18.191.
+- Argued: F2 onto M18.190, which lands next through the mark with `Fixes-ci: 40858059983` and records rowAttempts 'windows-witness-cleanup': 2; nothing else is pushed until its Windows verify and cli-mcp jobs finish.
+- Handed off: F5 (visual-xos known-red legs) to Huy; blockedReason names it. Feature work is not held on it.
