@@ -3290,3 +3290,7 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - F1 reopened as M18.164: since M18.159 an exempt time overrun is a successful job, so last-ci prints "cold-setup green" for 664-685 s runs. F2, F3 and F4 are argued (M18.162's licence field stays MIT; the under-limit status case joins M18.164; header count corrected to 151).
 - Order after cp21: wait for 8bd0b67's ci (run 40803138780) and record its cold-setup result; land M18.164 before the next feature batch; M18.157's attempt 3 only after an independent diagnostic review (ADR-0176, two attempts failed). M18.162's licence clause is amended to keep MIT (cp21 F2, review r1).
 - Feature batches stay at most 7 task commits with a green ci between them and a checkpoint before the limit. `check-budget --record --cold-from-ci` is not run while cold-setup runs over COLD_SETUP_MAX_MS (an exempt overrun would record a number the local check refuses); budget.json stays pending-ci until M18.157 (cp21 record review r2 minor).
+
+## M18.165 — Windows import of a drive path (2026-10-29)
+
+- ci 40803138780 at 8bd0b67 was red on Windows verify only: licenses.test's "the gate's content licences are core's shapePackContentLicenses" (M18.33) called import() with `D:\...\thresholds.mjs`, which Node's ESM loader reads as scheme `d:`. It now imports `pathToFileURL(...).href`; scripts/packs/lucide.mjs had the same pattern and is fixed alike. No other harness import() takes a bare path.

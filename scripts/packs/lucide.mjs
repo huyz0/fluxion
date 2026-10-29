@@ -7,11 +7,12 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const ROOT = process.cwd();
 const PACK = join(ROOT, 'packs/icons-lucide');
-const { importIconifyCollection } = await import(join(ROOT, 'packages/format/dist/index.js'));
-const { createNodeSvgPaintWitness } = await import(join(ROOT, 'packages/cli/dist/svg-witness.js'));
+const { importIconifyCollection } = await import(pathToFileURL(join(ROOT, 'packages/format/dist/index.js')).href);
+const { createNodeSvgPaintWitness } = await import(pathToFileURL(join(ROOT, 'packages/cli/dist/svg-witness.js')).href);
 
 const source = readFileSync(join(ROOT, 'specs/import/corpus/iconify/lucide.json'), 'utf8');
 // provenance names the pinned collection file itself, not the per-chunk subsets handed to the importer

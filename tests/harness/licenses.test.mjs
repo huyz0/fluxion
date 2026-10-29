@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { out, REPO, sandbox, TRANSIENT } from './helpers.mjs';
 
 const { workspaces } = JSON.parse(readFileSync(join(REPO, 'tools/gen/workspaces.json'), 'utf8'));
@@ -245,7 +246,7 @@ describe('check-licenses (NFR-LIC-001, NFR-LIC-002, NFR-LIC-003)', () => {
   });
 
   it("NFR-LIC-003: the gate's content licences are core's shapePackContentLicenses", async () => {
-    const { SHAPE_CONTENT_LICENSES } = await import(join(REPO, 'scripts/gates/thresholds.mjs'));
+    const { SHAPE_CONTENT_LICENSES } = await import(pathToFileURL(join(REPO, 'scripts/gates/thresholds.mjs')).href); // a file URL: Windows reads 'd:' as a scheme
     const source = readFileSync(join(REPO, 'packages/core/src/shape/content-license-policy.ts'), 'utf8');
     const list = /shapePackContentLicenses: readonly string\[\] = Object\.freeze\(\[([^\]]*)\]\)/.exec(source)?.[1] ?? '';
     assert.deepEqual([...SHAPE_CONTENT_LICENSES.allow].sort(), [...list.matchAll(/'([^']+)'/g)].map((m) => m[1]).sort());
