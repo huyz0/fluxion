@@ -3682,3 +3682,9 @@ The studio's Credits dialog lists each used pack's licence, attribution and appl
 ## M18.162 — icons-lucide provenance verified (2026-10-29)
 
 packs/icons-lucide/src/provenance.test.ts reads the corpus: the credited sha256 equals the manifest's iconify-lucide entry and the pinned file's own hash, the revision is the manifest's repository@commit, the notices equal licenses/lucide.txt (its hash checked against the manifest) split as lucide.mjs splits it, and every icon is an icon of the pinned collection. A mutated revision fails it. The package licence stays MIT, argued in review-argued.txt (check-licenses requires MIT for workspace packages).
+
+## 2026-10-30 M18.208: the font-engine rebuild checks the pinned compiler revision (cp29 F2)
+- build-font-engine.mjs check now refuses an emcc whose `--version` revision is not the manifest's toolchain.emscriptenRevision, as well as another release (toolchainProblem, parsed by emccIdentity). The local emsdk 6.0.13 reads as pinned.
+- font-engine-rebuild.mjs fetches emsdk at the new manifest pin toolchain.emsdkRevision (35659964bc27, the commit tagged 6.0.13, whose releases map gives 6.0.13 -> eb1327573255), confirms HEAD, and no longer clones by tag. A fetch by that sha was tried here and works.
+- A harness case in font-engine.test.mjs shows the pinned line accepted, and the same release at another revision, a short revision, another release and no emcc refused, and checks the rebuild script's pin.
+- The recipe and pins changed, so check-font-engine-evidence fails at this commit until the push's font-engine run is recorded (the m18-complete leg only).

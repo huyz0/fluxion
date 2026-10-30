@@ -9,15 +9,20 @@ import { join, resolve } from 'node:path';
 import { manifest } from '../fonts/build-font-engine.mjs';
 
 const work = resolve(process.argv[2] ?? 'font-engine-work');
-const { emscripten } = manifest().toolchain;
+const { emscripten, emsdkRevision } = manifest().toolchain;
 const emsdk = join(work, 'emsdk');
 const sources = join(work, 'sources');
 const build = resolve(import.meta.dirname, '../fonts/build-font-engine.mjs');
 const sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: 'inherit', ...opts });
 
 mkdirSync(work, { recursive: true });
-// emsdk tags each release by its version; the installer then fetches that release's prebuilt toolchain
-sh('git', ['clone', '--quiet', '--depth', '1', '--branch', emscripten, 'https://github.com/emscripten-core/emsdk.git', emsdk]);
+// emsdk at its recorded commit, not by tag alone (M18.208): the installer at that commit maps the release to its prebuilt
+// toolchain, and build-font-engine.mjs check refuses an emcc at another emscripten revision
+sh('git', ['init', '--quiet', emsdk]);
+sh('git', ['-C', emsdk, 'fetch', '--quiet', '--depth', '1', 'https://github.com/emscripten-core/emsdk.git', emsdkRevision]);
+sh('git', ['-C', emsdk, 'checkout', '--quiet', 'FETCH_HEAD']);
+const head = execFileSync('git', ['-C', emsdk, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+if (head !== emsdkRevision) throw new Error(`emsdk is at ${head}, expected ${emsdkRevision}`);
 sh(join(emsdk, 'emsdk'), ['install', emscripten], { cwd: emsdk });
 sh(join(emsdk, 'emsdk'), ['activate', emscripten], { cwd: emsdk });
 sh(process.execPath, [build, 'fetch', '--sources', sources]);

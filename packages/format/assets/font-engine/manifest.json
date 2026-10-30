@@ -4,6 +4,7 @@
   "toolchain": {
     "emscripten": "6.0.13",
     "emscriptenRevision": "e13ee988ce3d87a738dd8f3661d02223308c412a",
+    "emsdkRevision": "35659964bc2762fffec0d257997fb61475f765b7",
     "host": "emsdk 6.0.13 installed natively on linux x64"
   },
   "assets": [

@@ -7,7 +7,16 @@ import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { chromium } from '@playwright/test';
-import { ASSETS, buildCodec, emscriptenVersion, manifest, sha256, verifyHarfbuzz } from '../../scripts/fonts/build-font-engine.mjs';
+import {
+  ASSETS,
+  buildCodec,
+  emccIdentity,
+  emscriptenVersion,
+  manifest,
+  sha256,
+  toolchainProblem,
+  verifyHarfbuzz,
+} from '../../scripts/fonts/build-font-engine.mjs';
 import { REPO } from './helpers.mjs';
 
 const assetBytes = (file) => readFileSync(join(ASSETS, file));
@@ -54,6 +63,31 @@ test('FR-AST-003 NFR-LIC-001: pinned font binaries rebuild identically and retai
   const tarball = process.env.FLUXION_HARFBUZZJS_TARBALL;
   if (tarball) assert.ok(verifyHarfbuzz(tarball));
   else assert.match(m.assets.find((a) => a.file === 'harfbuzz-subset.wasm').package.integrity, /^sha512-[A-Za-z0-9+/]{86}==$/);
+});
+
+test('NFR-SEC-001: the rebuild refuses an emcc of the pinned release at another emscripten revision, and pins emsdk by commit (M18.208)', () => {
+  const { toolchain } = manifest();
+  assert.match(toolchain.emscriptenRevision, /^[0-9a-f]{40}$/);
+  assert.match(toolchain.emsdkRevision, /^[0-9a-f]{40}$/);
+  const line = (version, revision) => `emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) ${version} (${revision})`;
+  const pinned = line(toolchain.emscripten, toolchain.emscriptenRevision);
+  assert.deepEqual(emccIdentity(pinned), { version: toolchain.emscripten, revision: toolchain.emscriptenRevision });
+  assert.equal(toolchainProblem(pinned, toolchain), undefined);
+  // the same release built from another emscripten commit
+  const other = line(toolchain.emscripten, 'f'.repeat(40));
+  assert.match(
+    toolchainProblem(other, toolchain) ?? '',
+    new RegExp(`emcc ${toolchain.emscripten} is at emscripten revision f{40}; the pinned toolchain is ${toolchain.emscriptenRevision}`),
+  );
+  // a line without a full revision, another release, and no emcc at all
+  assert.match(toolchainProblem(`emcc (x) ${toolchain.emscripten} (e13ee98)`, toolchain) ?? '', /revision unknown/);
+  assert.match(toolchainProblem(line('6.0.12', toolchain.emscriptenRevision), toolchain) ?? '', /emcc 6\.0\.12; the pinned toolchain is emsdk 6\.0\.13/);
+  assert.match(toolchainProblem(undefined, toolchain) ?? '', /emcc missing/);
+  // the workflow's rebuild checks emsdk out at the recorded commit and confirms it, never by tag alone
+  const rebuild = readFileSync(join(REPO, 'scripts/ci/font-engine-rebuild.mjs'), 'utf8');
+  assert.match(rebuild, /'fetch', '--quiet', '--depth', '1', 'https:\/\/github\.com\/emscripten-core\/emsdk\.git', emsdkRevision\]/);
+  assert.match(rebuild, /if \(head !== emsdkRevision\) throw/);
+  assert.doesNotMatch(rebuild, /'--branch'/);
 });
 
 test('FR-AST-003 NFR-SEC-002: malformed fonts and dirty output buffers remain bounded and deterministic', () => {

@@ -6,7 +6,7 @@
 //   node scripts/fonts/build-font-engine.mjs check --sources <dir>      rebuild the codec in a clean directory; compare
 //   node scripts/fonts/build-font-engine.mjs harfbuzz --tarball <tgz>   verify npm integrity and the extracted module
 //
-// `check` needs `emcc` from emsdk 6.0.13 on PATH (source emsdk_env.sh). The font-engine workflow runs fetch and check
+// `check` needs `emcc` from emsdk 6.0.13 on PATH (source emsdk_env.sh), at the manifest's emscripten revision. The font-engine workflow runs fetch and check
 // (scripts/ci/font-engine-rebuild.mjs); check-font-engine-evidence.mjs holds the recorded run (M18.109).
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -37,14 +37,36 @@ const LINK = [
 const codecAsset = (m) => m.assets.find((a) => a.file === 'woff2-codec.wasm');
 const harfbuzzAsset = (m) => m.assets.find((a) => a.file === 'harfbuzz-subset.wasm');
 
-/** The emcc version line must name the pinned release; another compiler cannot reproduce the hash. */
-export function emscriptenVersion() {
+/** The release and emscripten revision an `emcc --version` first line names, e.g. `emcc (…) 6.0.13 (e13ee98…)`; absent parts undefined. */
+export function emccIdentity(line) {
+  const [, version, revision] = /\) (\d+\.\d+\.\d+) \(([0-9a-f]{40})\)/.exec(line ?? '') ?? /\) (\d+\.\d+\.\d+) \(/.exec(line ?? '') ?? [];
+  return { version, revision };
+}
+
+/**
+ * Why the emcc whose version line is `line` is not the pinned toolchain, or undefined: both the release and its emscripten revision
+ * must be the manifest's (M18.208, cp29 F2), as another compiler, even one reporting the same release, cannot reproduce the hash.
+ */
+export function toolchainProblem(line, toolchain) {
+  const { version, revision } = emccIdentity(line);
+  if (version !== toolchain.emscripten) return `emcc ${version ?? 'missing'}; the pinned toolchain is emsdk ${toolchain.emscripten}`;
+  if (revision !== toolchain.emscriptenRevision) {
+    return `emcc ${version} is at emscripten revision ${revision ?? 'unknown'}; the pinned toolchain is ${toolchain.emscriptenRevision}`;
+  }
+  return undefined;
+}
+
+/** The first line of `emcc --version`, or undefined without emcc on PATH. */
+function emccLine() {
   try {
-    return /\) (\d+\.\d+\.\d+) \(/.exec(run('emcc', ['--version']).split('\n')[0] ?? '')?.[1];
+    return run('emcc', ['--version']).split('\n')[0] ?? '';
   } catch {
     return undefined;
   }
 }
+
+/** The emcc release on PATH, or undefined. */
+export const emscriptenVersion = () => emccIdentity(emccLine()).version;
 
 /** Each pinned checkout under `sources` must be at its recorded revision. */
 function checkRevisions(sources, pins) {
@@ -58,8 +80,8 @@ function checkRevisions(sources, pins) {
 export function buildCodec(sources) {
   const m = manifest();
   const asset = codecAsset(m);
-  const version = emscriptenVersion();
-  if (version !== m.toolchain.emscripten) throw new Error(`emcc ${version ?? 'missing'}; the pinned toolchain is emsdk ${m.toolchain.emscripten}`);
+  const problem = toolchainProblem(emccLine(), m.toolchain);
+  if (problem) throw new Error(problem);
   checkRevisions(sources, asset.sources);
   const build = mkdtempSync(join(tmpdir(), 'fluxion-font-engine-'));
   try {
