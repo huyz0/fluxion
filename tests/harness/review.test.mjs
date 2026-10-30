@@ -24,6 +24,8 @@ function stage(file, text) {
 describe('review binding (NFR-DX-003)', () => {
   before(() => {
     sb = sandbox(undefined, { git: true });
+    // These cases record many rounds of one task in a shared sandbox; the round cap has its own cases (M18.215).
+    sb.write('.harness/state.json', JSON.stringify({ roundAllowance: { [TASK]: 'shared test sandbox' } }));
   });
   after(() => sb.cleanup());
 
@@ -127,15 +129,62 @@ describe('review binding (NFR-DX-003)', () => {
       const capped = rec(v(cr));
       assert.equal(capped.status, 3, out(capped));
       assert.match(capped.stderr, /round cap 3 exceeded/);
-      // once the task lands, its next review starts at r1
+      // the over-cap round is recorded, marked, not lost (M18.215)
+      assert.deepEqual(lastLine().slice(2, 4).concat(lastLine().at(-1)), ['r4', 'changes-requested', 'over-cap']);
+      // a pass past the cap needs the human allowance named first (M18.215)
       s.write('src/b.txt', 'four\n');
       s.git('add', 'src/b.txt');
-      assert.match(rec(v()).stdout, /round 5 \(/);
+      const unallowed = rec(v());
+      assert.equal(unallowed.status, 3, out(unallowed));
+      assert.match(unallowed.stderr, /past the cap 3: a pass here needs the human allowance/);
+      assert.equal(lastLine()[2], 'r4');
+      s.write('.harness/progress.md', `round-allowance: ${TASK} Huy, 2026-10-30, one more round\n`);
+      assert.match(rec(v()).stdout, /round 5 \(over-cap\)/);
       s.git('add', '.harness/reviews/digest.log');
       s.git('commit', '-q', '--no-verify', '-m', `${TASK}: feat(x): lands`);
       s.write('src/b.txt', 'five\n');
       s.git('add', 'src/b.txt');
       assert.match(rec(v()).stdout, /round 1 \(/);
+    } finally {
+      s.cleanup();
+    }
+  });
+
+  it('takes the over-cap allowance from state.json roundAllowance, and only for its own task (M18.215, cp30 F3)', () => {
+    const s = sandbox(undefined, { git: true });
+    try {
+      const rec = (v) => {
+        s.write('.harness/tmp/v.json', JSON.stringify(v));
+        return s.node('scripts/harness/review.mjs', ['record', '--file', s.path('.harness/tmp/v.json'), '--task', TASK]);
+      };
+      const v = (over = {}) => ({
+        task: TASK,
+        diff_sha256: s.node('scripts/harness/review.mjs', ['hash']).stdout.trim(),
+        reviewer: 'test:unit',
+        verdict: 'changes-requested',
+        findings: [{ file: 'src/c.txt', severity: 'major', failure_scenario: 'x' }],
+        ...over,
+      });
+      for (const [i, text] of ['a', 'b', 'c', 'd'].entries()) {
+        s.write('src/c.txt', `${text}\n`);
+        s.git('add', 'src/c.txt');
+        assert.equal(rec(v()).status, i < 3 ? 0 : 3);
+      }
+      s.write('src/c.txt', 'e\n');
+      s.git('add', 'src/c.txt');
+      s.write('.harness/state.json', JSON.stringify({ roundAllowance: { 'M9.9': 'someone else' } }));
+      assert.equal(rec(v({ verdict: 'pass', findings: [] })).status, 3);
+      s.write('.harness/state.json', JSON.stringify({ roundAllowance: { [TASK]: 'Huy, 2026-10-30' } }));
+      const allowed = rec(v({ verdict: 'pass', findings: [] }));
+      assert.equal(allowed.status, 0, out(allowed));
+      assert.match(allowed.stdout, /round 5 \(over-cap\)/);
+      const marks = s
+        .read('.harness/reviews/digest.log')
+        .trim()
+        .split('\n')
+        .map((l) => l.split('\t'))
+        .map((l) => `${l[2]}:${l[3]}:${l[7] ?? ''}`);
+      assert.deepEqual(marks, ['r1:changes-requested:', 'r2:changes-requested:', 'r3:changes-requested:', 'r4:changes-requested:over-cap', 'r5:pass:over-cap']);
     } finally {
       s.cleanup();
     }

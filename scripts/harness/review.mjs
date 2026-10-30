@@ -70,6 +70,19 @@ function committedDigest() {
 }
 /** Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127), among lines not yet landed (M18.177, M18.193). */
 const roundOf = (task, content = '') => nextRound(tracked(), task, { content, committed: committedDigest() });
+/**
+ * The human allowance for review rounds past the cap, as `.harness/state.json` roundAllowance[task] or a
+ * progress.md line `round-allowance: <task> <who, when>`; '' when none is named (M18.215, cp30 F3).
+ */
+function roundAllowance(task) {
+  const statePath = repoPath('.harness', 'state.json');
+  const named = existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf8')).roundAllowance?.[task] : undefined;
+  if (typeof named === 'string' && named.trim()) return named.trim();
+  const progress = repoPath('.harness', 'progress.md');
+  const escaped = task.replace(/\./g, '\\.');
+  const line = existsSync(progress) ? new RegExp(`^round-allowance: ${escaped} (\\S.*)$`, 'm').exec(readFileSync(progress, 'utf8')) : null;
+  return line?.[1].trim() ?? '';
+}
 function roundsFor(task) {
   if (!existsSync(REVIEW_DIR)) return [];
   return readdirSync(REVIEW_DIR)
@@ -142,6 +155,13 @@ switch (cmd) {
     if (v.verdict === 'pass' && (v.findings ?? []).some((f) => f.severity === 'blocking')) bad.push('pass with blocking findings');
     if (bad.length) die(`verdict rejected:\n- ${bad.join('\n- ')}`);
     const { round, reapply } = roundOf(task, content);
+    const cap = t('REVIEW_ROUND_CAP');
+    const overCap = round > cap && !reapply;
+    if (overCap && v.verdict === 'pass' && !roundAllowance(task))
+      die(
+        `round ${round} is past the cap ${cap}: a pass here needs the human allowance named first, as .harness/state.json roundAllowance["${task}"] or a progress.md line "round-allowance: ${task} <who, when>" (M18.215)`,
+        3,
+      );
     mkdirSync(REVIEW_DIR, { recursive: true });
     const name = `${hash || content}.r${round}.json`;
     writeFileSync(join(REVIEW_DIR, name), JSON.stringify({ ...v, content_id: content, round, recordedAt: new Date().toISOString() }, null, 2));
@@ -150,12 +170,13 @@ switch (cmd) {
     mkdirSync(dirname(DIGEST), { recursive: true });
     appendFileSync(
       DIGEST,
-      `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}${reapply ? '\treapply' : ''}\n`,
+      `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}${reapply ? '\treapply' : overCap ? '\tover-cap' : ''}\n`,
     );
     console.log(
-      `recorded ${v.verdict} for ${task} round ${round}${reapply ? ' (reapply)' : ''} (${(hash || content).slice(0, 12)}); stage .harness/reviews/digest.log with this change`,
+      `recorded ${v.verdict} for ${task} round ${round}${reapply ? ' (reapply)' : overCap ? ' (over-cap)' : ''} (${(hash || content).slice(0, 12)}); stage .harness/reviews/digest.log with this change`,
     );
-    if (round > t('REVIEW_ROUND_CAP') && v.verdict !== 'pass') die(`round cap ${t('REVIEW_ROUND_CAP')} exceeded — stop (drive stop condition)`, 3);
+    // An over-cap non-pass is recorded above, marked `over-cap`, and still stops the loop (M18.215, cp30 F3).
+    if (overCap && v.verdict !== 'pass') die(`round cap ${cap} exceeded — stop (drive stop condition); recorded as over-cap`, 3);
     break;
   }
 
