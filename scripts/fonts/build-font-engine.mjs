@@ -6,7 +6,8 @@
 //   node scripts/fonts/build-font-engine.mjs check --sources <dir>      rebuild the codec in a clean directory; compare
 //   node scripts/fonts/build-font-engine.mjs harfbuzz --tarball <tgz>   verify npm integrity and the extracted module
 //
-// `check` needs `emcc` from emsdk 6.0.13 on PATH (source emsdk_env.sh); nothing here runs in CI by default.
+// `check` needs `emcc` from emsdk 6.0.13 on PATH (source emsdk_env.sh). The font-engine workflow runs fetch and check
+// (scripts/ci/font-engine-rebuild.mjs); check-font-engine-evidence.mjs holds the recorded run (M18.109).
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';

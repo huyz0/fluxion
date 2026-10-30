@@ -17,3 +17,5 @@ FLUXION_FONT_ENGINE_SOURCES=/tmp/font-src FLUXION_HARFBUZZJS_TARBALL=harfbuzzjs-
 ```
 
 A changed hash is a contract change: update the manifest, record two clean rebuilds and get it reviewed.
+
+On GitHub the `font-engine` workflow does the codec rebuild (`scripts/ci/font-engine-rebuild.mjs`) on every push to main that touches these files, and on demand. Record a green run with `node scripts/gates/check-font-engine-evidence.mjs --record <run-id>`; the M18 completion gate re-reads it and fails once the codec bytes, hash or pins change after that run (M18.109).

@@ -56,6 +56,8 @@ export const SAMPLE_HARNESS = [
   'adapters',
   'api',
   'coverage',
+  // copies the font-engine assets (wasm, manifest), not sources: a change to them runs the whole harness
+  'font-engine-evidence',
   'ladder',
   'layering',
   'licenses',

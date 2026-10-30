@@ -145,6 +145,9 @@ leg('pinned font engines preserve bounds, padding and CSP', () =>
   ]),
 );
 
+// the local test checks recorded reproductions; the rebuild itself runs in the font-engine workflow (M18.109, cp11 F6)
+leg('a pinned-toolchain CI rebuild reproduces the committed woff2-codec.wasm', () => command('scripts/gates/check-font-engine-evidence.mjs'));
+
 leg('checked artwork preserves paint and scopes references without changing legacy rendering', () => {
   const artwork = tests('packages/render/src/artwork-view.browser.test.tsx', { project: 'browser' });
   return artwork === true ? tests('packages/render/src/shape-view.browser.test.tsx', { project: 'browser' }) : artwork;

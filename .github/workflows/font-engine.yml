@@ -1,0 +1,31 @@
+# Font-engine rebuild evidence (M18.109, ADR-0051, NFR-SEC-001): rebuild woff2-codec.wasm with the pinned emsdk from the pinned
+# woff2 and Brotli checkouts and compare it with the committed bytes. A green run is recorded with
+# `node scripts/gates/check-font-engine-evidence.mjs --record <run-id>`, which the M18 completion gate re-reads.
+name: font-engine
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - packages/format/assets/font-engine/**
+      - scripts/fonts/build-font-engine.mjs
+      - scripts/ci/font-engine-rebuild.mjs
+      - .github/workflows/font-engine.yml
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+      # runs build-font-engine.mjs check --sources <dir> under the pinned emsdk; fails when the bytes differ
+      - run: node scripts/ci/font-engine-rebuild.mjs "$RUNNER_TEMP/font-engine"
