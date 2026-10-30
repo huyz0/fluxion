@@ -1,0 +1,78 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp29",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..c62be1bb649bfc3a972ef1b6b353a31947bc9254",
+  "reviewer": "claude:independent-subagent:m18-cp29",
+  "verdict": "approve",
+  "reviewedDelta": "903bdc397bea99299dcfa8580c3ba662d1fe126c..c62be1bb649bfc3a972ef1b6b353a31947bc9254 (b888f60, eaf65c6, a6c1cdd, 53f8311, 78a8aae, 5d5c767, c62be1b). 0ded9c1, the font-engine evidence record, was read as context only.",
+  "cp28DispositionsCheck": "F1 (reopen as M18.203): done at c62be1b. rangeIndex parses the field once with a scanner (no regex per part), sorts the run keys in a Float64Array and merges them; covers() bisects. A field over 2 000 000 chars, or with merged runs covering more than 0x110000 scalars, is 'unreadable': subsetFontGaps reports the whole inventory and coveredBy uses whole-font semantics, as the row asks. I measured adversarial 2 MB inputs against 5000 CJK codepoints with tsx: U+00A0 padding 77 ms, 'U+0,' x 500k 84 ms, bare commas 43 ms, U+2028 inside parts 89 ms, 180k ranges 40 ms. All are linear and under the 200 ms budget. Removing either cap fails a case in the new test. The test sits in packages/editor rather than format because format may not use `performance`, which progress.md explains. Existing tests are unchanged. F2 (reopen as M18.204): done at eaf65c6. The leg runs pack-import.test.ts and then cli.subset-fonts.test.ts, and the harness case shows it failing when the e2e is red or absent; both harness suites pass locally (8/8). The leg runs before the gate's own build leg, so it tests whatever dist/bin.js exists. That ordering is shared with older legs (m14, m18:177/183), so it is not new and gets no finding. F3 (M18.205): still todo. No nightly has completed since 903bdc3. Nightly 41028194620 at 8628af0 still shows 'queued'. F4 (argued, Windows hold): the cp28 record's progress lines carry the 1344 s reading and the exited-after-reserve trace. The planDelta order held. b888f60 and eaf65c6 are harness-only. The product fix 53f8311 landed after ci 41066494490 failed and was itself green on all jobs, WebKit included, in ci 41079529941. The next product batch (78a8aae, 5d5c767, c62be1b) was pushed at 17:29Z, after that run went green at 16:20Z. Windows 'Run pnpm verify' read 1228 s at b888f60 (41074366279) and 1307 s at 53f8311 (41079529941), both under 1400 s. The batch at c62be1b adds Windows-run tests (two harness suites and three vitest cases). Its ci 41099253702 was still queued with no jobs at 17:49Z, so its reading is pending and is carried in the planDelta.",
+  "questions": {
+    "coherence": "Still one design. M18.203 replaces the two O(codepoints x pairs) scans with one shared recordedCoverage/covers path, used both by subsetFontGaps and by coveredBy. M18.136 tests the existing declared-size refusal through the shipped adapter with the pinned engines and a codec_alloc spy. M18.109 follows the check-ci-evidence pattern: a recorded run id, re-read live, bound to the blob ids of the commit's codec, manifest pins and recipe. unicodeRangePairs, the regex-per-part parser, stays exported and unbounded, but no caller in the repo reads untrusted data with it any more.",
+    "specFidelity": "M18.203 meets its row: parse once, merge, bisect; a stated cap; >0x110000 is unreadable; a 1.6 MB field against 5000 codepoints in about 20 ms, under 200 ms. M18.204 meets its row. M18.206 fixes the layout, not the test: the fixed container gains maxHeight calc(100vh - 56px) and overflowY auto, no e2e file changed, and it carries Fixes-ci 41066494490. WebKit was green at 53f8311. M18.136 meets its row: totalSfntSize is patched to 6 MiB, the result is too-large, the largest codec allocation stays below the declared size, and the honest bytes still subset. Strictly it patches a subset WOFF2 cut from Fira Sans, not the distributed file, but that is a real font's WOFF2. M18.109 meets its row's first branch: a workflow rebuilds with emsdk 6.0.13 from the pinned checkouts and compares bytes, and 0ded9c1 records run 41099253864 (rebuild success, about 58 s). I re-ran the checker live against that record and it passed. It verifies the release version but not the manifest's pinned emscriptenRevision (F2).",
+    "standardsDrift": "Subjects, trailers, changesets (format patch for M18.203; none for the test-only and harness rows) and digest lines hold. The backlog header still says 'current: 185' after a6c1cdd added M18.206; there are 186 rows (F3). One Commit cell is stale: M18.136 names 484d13e, a pre-rebase sha that does not exist in this clone. 0ded9c1 did not fix it (F1).",
+    "gateHonesty": "No test was removed, no e2e was edited, and no threshold was loosened. SUBSET_RANGE_READ_MAX_MS is new, weakens 'up', and the test pins it to 200. Mutant spot checks: (1) dropping SUBSET_RANGE_MAX_CHARS makes the 2 MB 'U+41-5A,...' field cover 0x41 and 0x42, so the gap assertion fails. (2) dropping the MAX_SCALARS check makes 'U+0-FFFFFF' cover 0x41 and report no gap, which fails. (3) removing the declared-size refusal in font-subset.ts lets decode allocate about 6 MiB and return not-smaller, which fails both 'too-large' and the allocation bound; this is by reading, not executed, because the worktree is read-only. check-digest only tests that a Commit cell is non-empty, not that it names a commit of that task, so a stale sha passes 'every M18 task commit keeps ... its Commit cell' (F1). check-layering: 0 violations. Gates workflow 41099253709 at c62be1b: success.",
+    "architecture": "The pure core is untouched. The format change uses no timers, clock or DOM; module-level hexEnd is synchronous scratch state, not shared across awaits. No public API change: the new functions are module-private and subsetFontGaps keeps its signature, with only a doc addition. There is no file-format change: reading a loose field more strictly is reader policy, and ADR-0201's field is unchanged. No new runtime dependency. The new workflow pins its actions by SHA, sets persist-credentials false and contents: read. Its toolchain comes from an emsdk git tag plus emsdk's download, not a commit pin (F2).",
+    "planHealth": "186 rows against 43 planned (4.3x), 168 done and 18 todo. The delta closed 5 rows (M18.109, .136, .203, .204, .206) and opened 1 (M18.206, CI recovery). It opens 2 small harness rows here. CI throughput is now the constraint, not the code: ci 41099253702 and the 0ded9c1 runs are queued with no jobs, and nightly 41028194620 has shown 'queued' for about 9 h. That stalls M18.205, which needs a nightly, and M18.10's hosted qualification. M18.182–189 are not rows in docs/backlog/current.md on main. They exist only as stream-6 references in progress.md, ADR-0209 and cp26, so neither m18-complete nor check-backlog can see them. They should arrive as backlog rows when Huy grants the push. The remaining order is sound: M18.205 when a nightly completes; stream 2 (M18.32, .143, .162) gated on the Windows reading; then the todo rows; then M18.10/42/43."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "line": 149,
+      "evidence": "M18.136's Commit cell is '484d13e'. `git cat-file -e 484d13e` fails, and it is not an ancestor of HEAD. The landed commit is 78a8aae: authored 2026-10-27, committed 2026-10-30 17:15Z on rebase. 5d5c767 filled the cell with the pre-rebase sha, and 0ded9c1 left it. A scan of every M18 Commit cell finds this as the only bad one. scripts/gates/check-digest.mjs:147-158 (commitCellProblems) only flags an empty cell, so check-digest --head --full-history prints '204 M18 task commits have tracked review evidence and Commit cells'.",
+      "failure_scenario": "Rebase-before-land is routine here, so any row whose cell is filled from a local sha before landing ends up citing an unreachable commit. The completion gate's Commit-cell leg passes anyway, and a later reviewer or `git show <cell>` cannot find the change the row claims."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/ci/font-engine-rebuild.mjs",
+      "line": 20,
+      "evidence": "The rebuild clones emsdk with `--branch 6.0.13` (a mutable tag) and runs `emsdk install 6.0.13`, which downloads a prebuilt toolchain. build-font-engine.mjs:43 checks only the version number from `emcc --version` (/\\) (\\d+\\.\\d+\\.\\d+) \\(/), and ignores the revision that the same line prints in parentheses. The manifest pins toolchain.emscriptenRevision e13ee988ce3d87a738dd8f3661d02223308c412a, but nothing reads it. check-font-engine-evidence compares the manifest's toolchain object between the run's commit and now, so the record stays valid whatever compiler the tag resolved to.",
+      "failure_scenario": "The evidence row claims a pinned-toolchain rebuild, but the pin that names the compiler build is never compared. A rebuild that matches the committed bytes still shows that the bytes come from the pinned sources. The fail-open case is narrow: a retagged or substituted emsdk 6.0.13 that also produced the committed bytes. But the record cannot say which compiler it used, and any later rebuild under a moved tag is red for a reason the log does not name."
+    },
+    {
+      "id": "F3",
+      "severity": "nit",
+      "file": "docs/backlog/current.md",
+      "line": 3,
+      "evidence": "The header says 'Planned: 43 rows; current: 185', but the file has 186 M18 rows: a6c1cdd added M18.206 without updating the count.",
+      "failure_scenario": "Plan-health accounting at the final review reads the header and undercounts the growth."
+    },
+    {
+      "id": "F4",
+      "severity": "nit",
+      "file": "packages/format/src/font-subset-save.ts",
+      "line": 107,
+      "evidence": "The writer records unicodeRangeOf(coveredBy(asset, inventory)). The inventory may hold up to 0x110000 scalars (font-subset.ts:158), and nothing caps the written string. An inventory of about 250k non-adjacent scalars writes more than 2 000 000 chars, which the new reader then treats as unreadable.",
+      "failure_scenario": "The studio's own subset save of a pathological document then reports every character as a gap on the next save. This fails safe (a whole-font re-cut and a spurious warning), and no realistic text gets there."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.207",
+      "note": "| M18.207 | A Commit cell names a landed commit of its row (cp29 F1, F3) | HARNESS | WHEN check-digest reads a done row's Commit cell THE SYSTEM SHALL refuse a sha that is not an ancestor of the checked tree or whose commit subject does not begin with that row's id; M18.136's cell SHALL read 78a8aae and the backlog header's current count SHALL match the row count; a harness case SHALL show an unreachable cell and another task's sha both refused, and a correct cell accepted | M18.99 | todo | |"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.208",
+      "note": "| M18.208 | The font-engine rebuild checks the pinned compiler revision (cp29 F2) | NFR-SEC-001, HARNESS | WHEN build-font-engine.mjs check runs THE SYSTEM SHALL refuse an emcc whose --version revision differs from the manifest's toolchain.emscriptenRevision, and font-engine-rebuild.mjs SHALL check out emsdk at a recorded commit rather than by tag alone; a harness case SHALL show a matching version with a different revision refused; the recorded run is re-recorded after the recipe change (check-font-engine-evidence already demands it) | M18.109 | todo | |"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.207",
+      "note": "Folded into M18.207's acceptance (the header count matches the row count)."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "target": "review-argued",
+      "note": "cp29 F4: a self-written font.subset.unicodes can exceed the 2 000 000-char read cap only for an inventory of about 250k scattered scalars. The reader then fails safe, with whole-font semantics and every character reported as a gap. No realistic document does this. Revisit only if a writer cap is ever needed for another reason."
+    }
+  ],
+  "planDelta": "Add M18.207 (Commit cells must name a landed commit of their row; fix M18.136's cell to 78a8aae and the header count; cp29 F1/F3) and M18.208 (the font-engine rebuild verifies emscriptenRevision and pins emsdk by commit; cp29 F2). Neither blocks landing, and the backlog header goes to 188. Order: (1) Land the cp29 record (harness path) with both rows. (2) Before the next product push, read Windows 'Run pnpm verify' in ci 41099253702 (c62be1b), which was still queued at 17:49Z. If it is 1400 s or more, hold Windows-run test growth for Huy's bound card as cp28 F4 requires. Readings so far: 1228 s (b888f60), 1307 s (53f8311). (3) M18.207 is harness-only and may land at any time. M18.208 changes the recipe, so it needs a fresh font-engine run and record (0ded9c1's record goes stale by design). Land it before M18.43. (4) M18.205 still waits for a completed nightly. Nightly 41028194620 has shown 'queued' for about 9 h, so if no nightly completes by the next checkpoint, diagnose runner availability rather than recording locally. (5) Stream 2 (M18.32, .143, .162), with M18.143 rebased once onto the final stream-2 base; then M18.105, .35, .111–113, .120, .122, .131, .144, .157, .41. (6) Stream 6's M18.182–189 enter docs/backlog/current.md as rows when Huy grants the push; until then the completion gate cannot see them. (7) M18.10, M18.42, M18.43. Learned: 'cp29 (through `c62be1b`): an evidence pin that no check reads is a comment (emscriptenRevision), and a Commit cell checked only for being non-empty survives a rebase with a sha nobody can show.'"
+}

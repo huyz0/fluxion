@@ -3656,3 +3656,10 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - The editor's font-subset-save.test.ts reads a 1.6 MB range (200 001 parts) against 5000 CJK codepoints within SUBSET_RANGE_READ_MAX_MS (200 ms, new in thresholds.mjs; best of three reads, about 20 ms here, and 4.7 s before the change). Over-long, over-wide, overlapping and reversed ranges are covered too. The test sits with the existing subset-save suite because `performance` is not allowed in format's sources. Existing font-subset tests are unchanged.
 
 - 2026-10-30 M18.109 evidence: font-engine run 41099253864 (push of c62be1b) rebuilt woff2-codec.wasm with the pinned toolchain; its hash matches the committed 3829e158c6a1. Recorded in .harness/reviews/font-engine-evidence.json, so the m18-complete leg "a pinned-toolchain CI rebuild reproduces the committed woff2-codec.wasm" can pass.
+
+## 2026-10-30 cp29 (claude, stream 1)
+done: checkpoint cp29 through c62be1b approve (independent subagent); delta M18.204, .206, .136, .109, .203
+ci: 41079529941 green at 53f8311 (Fixes-ci 41066494490, webkit); Windows verify 1228 s b888f60, 1307 s 53f8311
+reopen: M18.207 Commit cells name a landed commit of their row (F1/F3; M18.136 cell -> 78a8aae), M18.208 emscriptenRevision checked (F2)
+argued: F4 range over read cap only at ~250k scalars, fails safe
+next: read Windows verify at c62be1b before next product push; stream 2; M18.205 nightly still queued
