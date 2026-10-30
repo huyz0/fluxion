@@ -206,3 +206,42 @@ describe('disposable font worker with a watchdog (FR-AST-003, ADR-0051)', () => 
     expect(throwing.report[0]).toMatchObject({ reason: 'engine-failure' });
   });
 });
+
+// M18.203 (cp28 F1): font.subset.unicodes comes from any opened file, and subsetFontGaps reads it on every studio save
+const READ_MAX_MS = Number(
+  /SUBSET_RANGE_READ_MAX_MS: \{ value: ([0-9_]+)/
+    .exec(readFileSync(new URL('../../../scripts/gates/thresholds.mjs', import.meta.url), 'utf8'))?.[1]
+    ?.replace(/_/g, ''),
+);
+const CJK = Array.from({ length: 5000 }, (_, i) => 0x4e00 + i);
+/** A subset font record whose recorded range is `unicodes`. */
+const recorded = (unicodes: string) => font('f1', 'bundled', { font: { ...font('f1', 'bundled').font, subset: { source: hex(FIRA), unicodes } } });
+
+describe('reading a recorded subset range (NFR-SEC-001, FR-AST-003)', () => {
+  it('NFR-SEC-001 FR-AST-003: a 1.6 MB recorded range against 5000 codepoints is read within its budget', () => {
+    expect(READ_MAX_MS).toBe(200);
+    // 200 000 single code points (about 1.6 MB), plus a run the text uses
+    const parts = Array.from({ length: 200_000 }, (_, i) => `U+${(0x20000 + 2 * i).toString(16).toUpperCase()}`);
+    const unicodes = ['U+4E00-4E0F', ...parts].join(',');
+    expect(unicodes.length).toBeGreaterThan(1_600_000);
+    const doc = docOf('x', recorded(unicodes));
+    expect(subsetFontGaps(doc, CJK)).toEqual([{ asset: 'f1', missing: CJK.slice(16) }]);
+    // the best of three reads, so a loaded runner's pause is not read as cost (unbounded, one read took 13.8 s)
+    const times = [0, 1, 2].map(() => {
+      const start = performance.now();
+      subsetFontGaps(doc, CJK);
+      return performance.now() - start;
+    });
+    const ms = Math.min(...times);
+    expect(ms, `${ms.toFixed(1)} ms`).toBeLessThan(READ_MAX_MS);
+  });
+
+  it('NFR-SEC-001 FR-AST-003: a range too long or covering more than every scalar is no recorded range, so all the text is a gap', () => {
+    const long = `U+41-5A,${'U+20000,'.repeat(250_001)}U+20000`;
+    expect(long.length).toBeGreaterThan(2_000_000);
+    expect(subsetFontGaps(docOf('x', recorded(long)), [0x41, 0x42])).toEqual([{ asset: 'f1', missing: [0x41, 0x42] }]);
+    expect(subsetFontGaps(docOf('x', recorded('U+0-FFFFFF')), [0x41])).toEqual([{ asset: 'f1', missing: [0x41] }]);
+    // overlapping and out-of-order runs merge; a reversed run covers nothing
+    expect(subsetFontGaps(docOf('x', recorded('U+45-50,U+41-46,U+60-5F')), [0x41, 0x50, 0x51, 0x60])).toEqual([{ asset: 'f1', missing: [0x51, 0x60] }]);
+  });
+});
