@@ -200,7 +200,19 @@ function ProtectedEditor(props: {
         }
       />
       {aiOpen ? (
-        <div style={{ position: 'fixed', top: 48, right: 8, zIndex: 9000, background: 'var(--fx-bg, #fff)', border: '1px solid #cbd5e1' }}>
+        // bounded by the viewport and scrolling its own content, so a taller panel keeps every control reachable (M18.206)
+        <div
+          style={{
+            position: 'fixed',
+            top: 48,
+            right: 8,
+            maxHeight: 'calc(100vh - 56px)',
+            overflowY: 'auto',
+            zIndex: 9000,
+            background: 'var(--fx-bg, #fff)',
+            border: '1px solid #cbd5e1',
+          }}
+        >
           <AiPanel store={core.store} execute={core.execute} registries={core.registries} session={session} />
         </div>
       ) : null}
