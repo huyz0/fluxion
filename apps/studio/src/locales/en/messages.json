@@ -161,6 +161,12 @@
       "apps/studio/src/autosave/recovery-prompt.tsx"
     ]
   },
+  "PA9uWN": {
+    "message": "{0} was saved as a subset and does not draw “{chars}”: add the original font to draw them.",
+    "origin": [
+      "apps/studio/src/font-subset-port.ts"
+    ]
+  },
   "PBxg_E": {
     "message": "Not now",
     "origin": [
@@ -171,6 +177,12 @@
     "message": "Screen",
     "origin": [
       "apps/studio/src/ai/ai-panel.tsx"
+    ]
+  },
+  "Rr8lKZ": {
+    "message": "Subset embedded fonts to the text they draw when saving",
+    "origin": [
+      "apps/studio/src/ai/ai-settings-section.tsx"
     ]
   },
   "U59i4j": {
@@ -235,6 +247,12 @@
       "apps/studio/src/file-bar.tsx"
     ]
   },
+  "dXr3Ez": {
+    "message": "{0} stayed whole: {1}.",
+    "origin": [
+      "apps/studio/src/font-subset-port.ts"
+    ]
+  },
   "e6j4Yn": {
     "message": "Applied. Undo takes it back in one step.",
     "origin": [
@@ -295,6 +313,12 @@
       "apps/studio/src/autosave/recovery-prompt.tsx"
     ]
   },
+  "kIfUhS": {
+    "message": "{fonts} subset to the text they draw ({saved} KB smaller).",
+    "origin": [
+      "apps/studio/src/font-subset-port.ts"
+    ]
+  },
   "mmYVfA": {
     "message": "Saved.",
     "origin": [
@@ -329,6 +353,12 @@
     "message": "Model",
     "origin": [
       "apps/studio/src/ai/ai-settings-section.tsx"
+    ]
+  },
+  "sczTpJ": {
+    "message": "{0, plural, one {# font was} other {# fonts were}}",
+    "origin": [
+      "apps/studio/src/font-subset-port.ts"
     ]
   },
   "tfDRzk": {

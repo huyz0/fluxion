@@ -107,6 +107,8 @@ export {
   type DrawioProcessedReport,
   importDrawioLibrary,
 } from './drawio-import.js';
+export { FONT_ENGINE_HASHES, type FontEngineModules, type FontEnginePorts, instantiateFontEngines, type WasmInstantiate } from './font-engines.js';
+export { type GlyphInventory, glyphInventory } from './font-inventory.js';
 export {
   type EngineMemory,
   FONT_SUBSET_POLICY,
@@ -119,6 +121,26 @@ export {
   subsetFont,
   type Woff2CodecExports,
 } from './font-subset.js';
+export {
+  FONT_SUBSET_JOB_TIMEOUT_MS,
+  type FontJobScope,
+  type FontJobWorker,
+  type JobTimers,
+  runFontSubsetJob,
+  serveFontSubsetJob,
+} from './font-subset-job.js';
+export { type EmbeddedFont, type FontSubsetDeps, type FontSubsetPlan, planFontSubsets } from './font-subset-plan.js';
+export {
+  type FontSubsetIdentity,
+  type FontSubsetLine,
+  type SubsetAsset,
+  type SubsetFontGap,
+  type SubsetSave,
+  subsetFontGaps,
+  subsetFontsForSave,
+  unicodeRangeOf,
+  unicodeRangePairs,
+} from './font-subset-save.js';
 export {
   type IconifyIconOutcome,
   type IconifyImportOptions,

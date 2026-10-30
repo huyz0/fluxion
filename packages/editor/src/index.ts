@@ -84,17 +84,6 @@ export {
 } from './editor-commands.js';
 export { type EditorKeysInput, isEditable, useEditorKeys } from './editor-keys.js';
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
-export {
-  type EmbeddedFont,
-  FONT_ENGINE_HASHES,
-  type FontEngineModules,
-  type FontSubsetDeps,
-  type FontSubsetPlan,
-  type GlyphInventory,
-  glyphInventory,
-  instantiateFontEngines,
-  planFontSubsets,
-} from './font-subset.js';
 export { createGlobalRouting, GLOBAL_ROUTE_SETTLE_MS, type GlobalRoutePort, type GlobalRouting } from './global-routing.js';
 export { createHitIndex, type HitIndex, PICK_PX } from './hit-test.js';
 export type { HitContext } from './hittable.js';

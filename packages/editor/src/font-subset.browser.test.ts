@@ -1,13 +1,13 @@
-import { subsetFont } from '@fluxion/format';
+import { glyphInventory, instantiateFontEngines, subsetFont, type WasmInstantiate } from '@fluxion/format';
 import { describe, expect, it } from 'vitest';
-import { glyphInventory, instantiateFontEngines } from './font-subset.js';
 
 // Rendered and shaped parity of a used-glyph subset with its source in Chromium (FR-AST-003, ADR-0051): the same
 // strings drawn with the original TTF and with the subset WOFF2 give the same advances and the same pixels.
 const url = (glob: Record<string, string>): string => Object.values(glob)[0] ?? '';
 const FIRA = url(import.meta.glob('../../../fixtures/fonts/fira-sans-400.ttf', { query: '?url', import: 'default', eager: true }));
-const HARFBUZZ = url(import.meta.glob('../assets/font-engine/harfbuzz-subset.wasm', { query: '?url', import: 'default', eager: true }));
-const CODEC = url(import.meta.glob('../assets/font-engine/woff2-codec.wasm', { query: '?url', import: 'default', eager: true }));
+const HARFBUZZ = url(import.meta.glob('../../format/assets/font-engine/harfbuzz-subset.wasm', { query: '?url', import: 'default', eager: true }));
+const CODEC = url(import.meta.glob('../../format/assets/font-engine/woff2-codec.wasm', { query: '?url', import: 'default', eager: true }));
+const instantiate: WasmInstantiate = async (bytes, imports) => (await WebAssembly.instantiate(bytes as BufferSource, imports as WebAssembly.Imports)).instance;
 const bytesOf = async (from: string) => new Uint8Array(await (await fetch(from)).arrayBuffer());
 const sha256 = async (bytes: Uint8Array): Promise<string> =>
   Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes.slice().buffer)), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -44,7 +44,7 @@ function pixels(text: string, family: string): Uint8ClampedArray {
 describe('subset rendering parity (FR-AST-003, ADR-0051)', () => {
   it('FR-AST-003: a subset shapes and renders its inventory exactly like the source font', async () => {
     const source = await bytesOf(FIRA);
-    const engines = await instantiateFontEngines({ harfbuzz: await bytesOf(HARFBUZZ), codec: await bytesOf(CODEC) }, sha256);
+    const engines = await instantiateFontEngines({ harfbuzz: await bytesOf(HARFBUZZ), codec: await bytesOf(CODEC) }, { sha256, instantiate });
     const doc = {
       schemaVersion: '1.7',
       records: {

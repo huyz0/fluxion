@@ -224,10 +224,10 @@ function nameText(sfnt: Uint8Array, table: { offset: number; length: number } | 
 
 /**
  * A Reserved Font Name declaration: "..., with Reserved Font Name 'Source'.", "Reserved Font Names: Foo, Bar" or
- * "Reserved Font Name "Foo"" after a comma or at a line start. The OFL body's definitions ('"Reserved Font Name"
+ * "Reserved Font Name "Foo"" after a comma, period, semicolon or at a line start. The OFL body's definitions ('"Reserved Font Name"
  * refers to', 'may use the Reserved Font Name(s)') and the template's "<Reserved Font Name>" do not reserve a name.
  */
-const RESERVED_NAME = /(?:(?:with|,|^)\s*(?:the\s+)?reserved\s+font\s+names?\s*:?|reserved\s+font\s+names?\s*:)\s*(?!<)["'\u2018\u201c]?[\p{L}\p{N}]/imu;
+const RESERVED_NAME = /(?:(?:with|[,.;]|^)\s*(?:the\s+)?reserved\s+font\s+names?\s*:?|reserved\s+font\s+names?\s*:)\s*(?!<)["'\u2018\u201c]?[\p{L}\p{N}]/imu;
 
 /** Refuse what this adapter does not subset: collections, WOFF1, unknown formats, variable fonts, malformed tables, RFN. */
 function checkSfnt(sfnt: Uint8Array, input: FontSubsetInput): void {

@@ -28,6 +28,8 @@ type FormatApi = {
             h?: number;
             mime?: string;
             hash?: string;
+            name?: string;
+            font?: { family?: string; subset?: { source: string; unicodes: string } };
           };
         };
       };
@@ -77,6 +79,20 @@ export async function imageAssetsOf(
   return Object.values(loaded.document.records)
     .filter((r) => r.type === 'asset' && r.mime?.startsWith('image/'))
     .map((r) => ({ w: r.w, h: r.h, mime: r.mime, embedded: r.hash !== undefined && loaded.assets.has(r.hash) }));
+}
+
+/** The font assets of saved `.flux` bytes: type, name, the hash of the bytes the file holds, and the source a subset was cut from. */
+export async function fontAssetsOf(
+  bytes: Uint8Array,
+): Promise<{ mime: string | undefined; name: string | undefined; held: string | undefined; hash: string | undefined; source: string | undefined }[]> {
+  const api = await format();
+  const loaded = value(await api.loadFlux(bytes, { hasher: hasherOf(api) }), 'loadFlux');
+  return Object.values(loaded.document.records)
+    .filter((r) => r.type === 'asset' && r.mime?.startsWith('font/'))
+    .map((r) => {
+      const held = r.hash === undefined ? undefined : loaded.assets.get(r.hash)?.bytes;
+      return { mime: r.mime, name: r.name, hash: r.hash, held: held && api.sha256Hex(held), source: r.font?.subset?.source };
+    });
 }
 
 /** The document record inside saved `.flux` bytes: its metadata and times. */

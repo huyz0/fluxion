@@ -18,7 +18,10 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "assets/font-engine/*.wasm",
+    "assets/font-engine/manifest.json",
+    "assets/font-engine/licenses"
   ],
   "scripts": {
     "build": "tsdown",

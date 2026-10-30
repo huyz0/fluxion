@@ -60,3 +60,11 @@ node packages/cli/dist/bin.js convert deck.flux deck.flux.html
 node packages/cli/dist/bin.js convert deck.flux deck.flux.json --assets external
 node packages/cli/dist/bin.js convert deck.flux.json deck.flux
 ```
+
+With `--subset-fonts`, the `.flux` written (or embedded in a `.flux.html`) carries each embedded font cut down to the characters the
+document draws. A `.flux` may then be both sides. A font whose licence or source does not allow it, or that cannot be cut safely, stays
+whole, and the `--json` reply's `fonts` lists what happened to each one:
+
+```sh
+node packages/cli/dist/bin.js convert deck.flux deck.small.flux --subset-fonts --json
+```

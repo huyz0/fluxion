@@ -23,6 +23,32 @@ const diagnosticSchema = z
 
 const helpResult = z.object({ help: z.string() }).strict();
 const versionResult = z.object({ version: z.string() }).strict();
+/** What `convert --subset-fonts` did with one embedded font (ADR-0201): subset, or kept whole with a reason (ADR-0051). */
+const fontLineSchema = z.discriminatedUnion('status', [
+  z.object({ asset: z.string(), name: z.string(), before: z.number().int().min(0), after: z.number().int().min(0), status: z.literal('subset') }).strict(),
+  z
+    .object({
+      asset: z.string(),
+      name: z.string(),
+      before: z.number().int().min(0),
+      after: z.number().int().min(0),
+      status: z.literal('kept'),
+      reason: z.enum([
+        'reserved-font-name',
+        'unverified-source',
+        'variable-font',
+        'font-collection',
+        'unsupported-format',
+        'malformed',
+        'too-large',
+        'not-smaller',
+        'unbounded-text',
+        'engine-failure',
+      ]),
+      message: z.string(),
+    })
+    .strict(),
+]);
 
 /** One command's reply: success with its result, or failure with the diagnostics that caused it. */
 function reply<C extends z.ZodType, R extends z.ZodType>(command: C, result: R) {
@@ -68,7 +94,14 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
     z.literal('convert'),
     z.union([
       z
-        .object({ from: z.string(), to: z.string(), direction: z.enum(['to-html', 'to-flux', 'to-json', 'from-json']), bytes: z.number().int().min(0) })
+        .object({
+          from: z.string(),
+          to: z.string(),
+          direction: z.enum(['to-html', 'to-flux', 'to-json', 'from-json']),
+          bytes: z.number().int().min(0),
+          // --subset-fonts (ADR-0201): one line per embedded font of the .flux written
+          fonts: z.array(fontLineSchema).optional(),
+        })
         .strict(),
       helpResult,
       versionResult,

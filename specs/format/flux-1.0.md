@@ -61,8 +61,13 @@ and blocks a plugin.
 - An asset record holds `hash`, `mime`, `size`, and for images `w` and `h`. Only referenced assets are written.
 - Images are recognised by their magic bytes, never by name. A raster wider or taller than 2560 px is scaled down to that and stored as WebP
   where that is smaller. SVG is rebuilt from an allowlist (no scripts, event handlers, `foreignObject`, external references).
-- Fonts are stored whole as WOFF2 with their recorded metrics, copyright line and licence. The fonts a document references, and no others, are
-  embedded when it is saved; an opened file's fonts are loaded from its own bytes.
+- Fonts are stored as WOFF2 (or the face's own format) with their recorded metrics, copyright line and licence. The fonts a document
+  references, and no others, are embedded when it is saved; an opened file's fonts are loaded from its own bytes. A font is stored whole
+  unless the saving program was asked to subset it (ADR-0051, ADR-0201): then it may be a used-glyph WOFF2 subset, whose asset record keeps
+  `hash`, `size` and `name` of the subset bytes and adds `font.subset` = `{ source, sourceSize, policy, fingerprint, unicodes }`: the SHA-256
+  and size of the whole font it was cut from, the subsetting policy, its layout fingerprint, and the characters it covers as a CSS
+  `unicode-range`. A reader that does not know `font.subset` keeps it when the file is saved again. Text that needs a character outside
+  `unicodes` needs the original font; a reader must not fetch one silently.
 
 ## 5. The page
 

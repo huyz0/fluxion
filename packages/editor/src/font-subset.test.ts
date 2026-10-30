@@ -1,15 +1,25 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { type FontEngines, type FontSubsetInput, fontSubsetCacheKey, subsetFont } from '@fluxion/format';
+import {
+  FONT_ENGINE_HASHES,
+  type FontEngines,
+  type FontSubsetDeps,
+  type FontSubsetInput,
+  fontSubsetCacheKey,
+  glyphInventory,
+  instantiateFontEngines,
+  planFontSubsets,
+  subsetFont,
+  type WasmInstantiate,
+} from '@fluxion/format';
 import type { AssetRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
-import { FONT_ENGINE_HASHES, type FontSubsetDeps, glyphInventory, instantiateFontEngines, planFontSubsets } from './font-subset.js';
 
 // fixtures/fonts/fira-sans-400.ttf: Fira Sans Regular 4.203 from google/fonts, OFL-1.1 with no Reserved Font Name
 // (provenance in fixtures/fonts/fira-sans-400.provenance.json), 456996 bytes and 137772 bytes as full WOFF2.
 const FIRA = new Uint8Array(readFileSync(new URL('../../../fixtures/fonts/fira-sans-400.ttf', import.meta.url)));
 const OFL = readFileSync(new URL('../../../fixtures/fonts/LICENSE-FiraSans-OFL.txt', import.meta.url), 'utf8');
-const ASSETS = new URL('../assets/font-engine/', import.meta.url);
+const ASSETS = new URL('../../format/assets/font-engine/', import.meta.url);
 const MODULES = {
   harfbuzz: new Uint8Array(readFileSync(new URL('harfbuzz-subset.wasm', ASSETS))),
   codec: new Uint8Array(readFileSync(new URL('woff2-codec.wasm', ASSETS))),
@@ -23,7 +33,8 @@ const MAX_BYTES = Number(
 const hex = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
 const sha256 = async (bytes: Uint8Array): Promise<string> => hex(bytes);
 const hasher = { sha256 };
-const engines = (): Promise<FontEngines> => instantiateFontEngines(MODULES, sha256);
+const instantiate: WasmInstantiate = async (bytes, imports) => (await WebAssembly.instantiate(bytes as BufferSource, imports as WebAssembly.Imports)).instance;
+const engines = (): Promise<FontEngines> => instantiateFontEngines(MODULES, { sha256, instantiate });
 const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, i) => from + i);
 /** The Google Fonts `latin` slice's unicode-range. */
 const LATIN = [
@@ -241,7 +252,7 @@ describe('used-glyph font subsetting (FR-AST-003, ADR-0051)', () => {
     const manifest = JSON.parse(readFileSync(new URL('manifest.json', ASSETS), 'utf8')) as { assets: { file: string; sha256: string }[] };
     const pinned = Object.fromEntries(manifest.assets.map((a) => [a.file, a.sha256]));
     expect(FONT_ENGINE_HASHES).toEqual({ harfbuzz: pinned['harfbuzz-subset.wasm'], codec: pinned['woff2-codec.wasm'] });
-    await expect(instantiateFontEngines({ ...MODULES, codec: MODULES.harfbuzz }, sha256)).rejects.toThrow(/pinned/);
+    await expect(instantiateFontEngines({ ...MODULES, codec: MODULES.harfbuzz }, { sha256, instantiate })).rejects.toThrow(/pinned/);
   });
 });
 

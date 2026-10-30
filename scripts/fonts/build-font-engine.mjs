@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Reproducible font-engine assets (M18.48, ADR-0051): the single recipe for the standalone WOFF2/Brotli codec and the
-// verification of the pinned HarfBuzz subset module. Pins live in packages/editor/assets/font-engine/manifest.json.
+// verification of the pinned HarfBuzz subset module. Pins live in packages/format/assets/font-engine/manifest.json.
 //
 //   node scripts/fonts/build-font-engine.mjs fetch --sources <dir>      clone woff2 + brotli at the pinned revisions
 //   node scripts/fonts/build-font-engine.mjs check --sources <dir>      rebuild the codec in a clean directory; compare
@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const ASSETS = join(dirname(fileURLToPath(import.meta.url)), '../../packages/editor/assets/font-engine');
+export const ASSETS = join(dirname(fileURLToPath(import.meta.url)), '../../packages/format/assets/font-engine');
 export const manifest = () => JSON.parse(readFileSync(join(ASSETS, 'manifest.json'), 'utf8'));
 export const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], ...opts });

@@ -8,18 +8,23 @@ import {
   createMemoryAssetStore,
   embedExternalAssets,
   type FluxAsset,
+  type FontSubsetDeps,
+  type FontSubsetLine,
+  glyphInventory,
   type LoadNote,
   loadFlux,
   openDocumentText,
   readFluxHtml,
   type Salvage,
   type ShapePackSourceData,
+  type SubsetSave,
   selectAssets,
   sha256Hex,
+  subsetFontGaps,
+  subsetFontsForSave,
   writePortableFlux,
 } from '@fluxion/format';
 import { type AnyRecord, type Diagnostic, type DocumentFile, err, ok, type Result } from '@fluxion/schema';
-
 import { shapeSaveOptions, unresolvedShapeIds } from './file-shapes.js';
 
 /**
@@ -208,6 +213,10 @@ export type SavedBytes = {
   readonly external: number;
   /** Portable-save warnings that the host must display before claiming success. */
   readonly diagnostics: readonly Diagnostic[];
+  /** What subset-on-save did with each font; empty when the option is off. */
+  readonly fonts: readonly FontSubsetLine[];
+  /** Subset fonts the document's text has outgrown: characters each no longer draws (the original font is needed for them). */
+  readonly fontGaps: readonly { readonly name: string; readonly missing: readonly number[] }[];
 };
 
 /**
@@ -232,6 +241,8 @@ export type SaveInput = {
   readonly embedExternal?: Pick<FileIO, 'read'>;
   /** The font asset records and bytes to add to the saved document (the bundled fonts its text uses); the live document is not changed. */
   readonly fonts?: (document: DocumentFile) => Promise<{ readonly records: readonly AnyRecord[]; readonly assets: ReadonlyMap<string, FluxAsset> }>;
+  /** Subset-on-save (FR-AST-003, ADR-0051): how each font job runs; absent while the option is off, which writes whole fonts. */
+  readonly subsetFonts?: FontSubsetDeps;
 };
 
 /** The assets of `input.document` that have bytes, by hash: those the file held, else those the editor holds. */
@@ -245,21 +256,27 @@ async function heldAssets(input: SaveInput): Promise<Map<string, FluxAsset>> {
   return byHash;
 }
 
-/**
- * The `.flux` bytes of `input.document`: its referenced assets, the source, the entries and the manifest fields the file came with, so a
- * re-save keeps what the studio does not know. Bytes whose hash is not their record's are not that asset: they are left out and counted as
- * missing. A failure is one line.
- *
- * @public
- */
-export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, string>> {
+/** The assets a save may write, by hash: those the file or the editor holds and the bundled fonts, each checked against its hash. */
+async function verifiedAssets(input: SaveInput, extra: ReadonlyMap<string, FluxAsset>): Promise<Map<string, FluxAsset>> {
+  const out = new Map<string, FluxAsset>();
+  for (const [hash, asset] of [...(await heldAssets(input)), ...extra]) if ((await input.hasher.sha256(asset.bytes)) === hash) out.set(hash, asset);
+  return out;
+}
+
+/** The subset fonts of `document` whose recorded inventory lacks characters its text now uses. */
+function gapsOf(document: DocumentFile): SavedBytes['fontGaps'] {
+  const inventory = glyphInventory(document);
+  if (inventory.status !== 'complete') return [];
+  return subsetFontGaps(document, inventory.codepoints).map((g) => ({
+    name: String((document.records[g.asset] as { name?: unknown } | undefined)?.name ?? g.asset),
+    missing: g.missing,
+  }));
+}
+
+/** Write `document` with the assets of `byHash` it references. */
+async function writeDocument(input: SaveInput, document: DocumentFile, byHash: ReadonlyMap<string, FluxAsset>): Promise<Result<SavedBytes, string>> {
   const store = createMemoryAssetStore(input.hasher);
-  const extra = (await input.fonts?.(input.document)) ?? { records: [], assets: new Map<string, FluxAsset>() };
-  // the fonts the studio brings are part of what is written, not of the open document
-  const document: DocumentFile = { ...input.document, records: { ...input.document.records, ...Object.fromEntries(extra.records.map((r) => [r.id, r])) } };
-  for (const [hash, asset] of [...(await heldAssets(input)), ...extra.assets]) {
-    if ((await input.hasher.sha256(asset.bytes)) === hash) await store.put(asset.bytes, asset.mime);
-  }
+  for (const asset of byHash.values()) await store.put(asset.bytes, asset.mime);
   const embedded = input.embedExternal
     ? await embedExternalAssets({ document, store, io: input.embedExternal, hasher: input.hasher })
     : { document, failures: [] };
@@ -277,8 +294,68 @@ export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, st
     shapePacks: shapeSaveOptions(file?.shapePacks ?? [], input.shapePackSources ?? [], file?.unresolvedShapeIds ?? new Set(), file?.artworkFonts),
   });
   return written.ok
-    ? ok({ bytes: written.value.bytes, missing: picked.missing.length, external: embedded.failures.length, diagnostics: written.value.diagnostics })
+    ? ok({
+        bytes: written.value.bytes,
+        missing: picked.missing.length,
+        external: embedded.failures.length,
+        diagnostics: written.value.diagnostics,
+        fonts: [],
+        fontGaps: gapsOf(document),
+      })
     : err(`The file could not be written: ${written.error.reason}`);
+}
+
+/** Whether the written candidate reopens with every subset font's record pointing at bytes of that exact hash. */
+async function reopensWithSubsets(bytes: Uint8Array, candidate: SubsetSave, hasher: ContentHasher): Promise<boolean> {
+  const opened = await openFileBytes('candidate.flux', bytes, hasher);
+  if (!opened.ok || opened.value.salvage !== undefined) return false;
+  for (const line of candidate.report.filter((l) => l.status === 'subset')) {
+    const record = opened.value.document.records[line.asset] as { hash?: string; mime?: string } | undefined;
+    const held = record?.hash === undefined ? undefined : opened.value.assets.get(record.hash);
+    if (held === undefined || record?.mime !== 'font/woff2' || (await hasher.sha256(held.bytes)) !== record.hash) return false;
+  }
+  return true;
+}
+
+/** A report whose subsets were not kept: the whole fonts were written instead. */
+const unvalidated = (report: readonly FontSubsetLine[]): FontSubsetLine[] =>
+  report.map((l) =>
+    l.status === 'subset'
+      ? {
+          asset: l.asset,
+          name: l.name,
+          before: l.before,
+          after: l.before,
+          status: 'kept',
+          reason: 'engine-failure',
+          message: 'the saved subset did not reopen intact',
+        }
+      : l,
+  );
+
+/**
+ * The `.flux` bytes of `input.document`: its referenced assets, the source, the entries and the manifest fields the file came with, so a
+ * re-save keeps what the studio does not know. Bytes whose hash is not their record's are not that asset: they are left out and counted as
+ * missing. With `subsetFonts`, eligible fonts are written as used-glyph subsets after the candidate reopens intact; otherwise, and for every
+ * font that cannot be subset, the whole font is written. A failure is one line.
+ *
+ * @public
+ */
+export async function fileBytes(input: SaveInput): Promise<Result<SavedBytes, string>> {
+  const extra = (await input.fonts?.(input.document)) ?? { records: [], assets: new Map<string, FluxAsset>() };
+  // the fonts the studio brings are part of what is written, not of the open document
+  const document: DocumentFile = { ...input.document, records: { ...input.document.records, ...Object.fromEntries(extra.records.map((r) => [r.id, r])) } };
+  const byHash = await verifiedAssets(input, extra.assets);
+  if (input.subsetFonts === undefined) return writeDocument(input, document, byHash);
+  const candidate = await subsetFontsForSave(document, (hash) => byHash.get(hash)?.bytes, input.subsetFonts);
+  if (!candidate.report.some((l) => l.status === 'subset')) {
+    const whole = await writeDocument(input, document, byHash);
+    return whole.ok ? ok({ ...whole.value, fonts: candidate.report }) : whole;
+  }
+  const subset = await writeDocument(input, candidate.document, new Map([...byHash, ...candidate.assets]));
+  if (subset.ok && (await reopensWithSubsets(subset.value.bytes, candidate, input.hasher))) return ok({ ...subset.value, fonts: candidate.report });
+  const whole = await writeDocument(input, document, byHash);
+  return whole.ok ? ok({ ...whole.value, fonts: unvalidated(candidate.report) }) : whole;
 }
 
 /** SubtleCrypto where the page has it, else the pure SHA-256 of `format`. */

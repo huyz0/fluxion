@@ -45,6 +45,99 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "fonts": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "asset": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "before": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "after": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "status": {
+                            "type": "string",
+                            "const": "subset"
+                          }
+                        },
+                        "required": [
+                          "asset",
+                          "name",
+                          "before",
+                          "after",
+                          "status"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "asset": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "before": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "after": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "status": {
+                            "type": "string",
+                            "const": "kept"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "reserved-font-name",
+                              "unverified-source",
+                              "variable-font",
+                              "font-collection",
+                              "unsupported-format",
+                              "malformed",
+                              "too-large",
+                              "not-smaller",
+                              "unbounded-text",
+                              "engine-failure"
+                            ]
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "asset",
+                          "name",
+                          "before",
+                          "after",
+                          "status",
+                          "reason",
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
                 }
               },
               "required": [

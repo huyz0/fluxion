@@ -2,6 +2,7 @@
 // model, and whether a save embeds external images (FR-AST-006). The settings apply to the next request.
 import { t } from '@lingui/core/macro';
 import { type JSX, useState } from 'react';
+import { SUBSET_FONTS_SETTING } from '../font-subset-port.js';
 import { localSettings } from '../local-settings.js';
 import { EMBED_EXTERNAL_SETTING } from '../url-reader.js';
 import { AI_BASE_URL_SETTING, AI_MODEL_SETTING, aiSetting, readBaseUrl, setAiSetting } from './ai-settings.js';
@@ -20,6 +21,7 @@ export function AiSettingsSection(): JSX.Element {
   const [baseUrl, setBaseUrl] = useState(aiSetting(AI_BASE_URL_SETTING) ?? '');
   const [model, setModel] = useState(aiSetting(AI_MODEL_SETTING) ?? '');
   const [embed, setEmbed] = useState(localSettings().get(EMBED_EXTERNAL_SETTING) === true);
+  const [subset, setSubset] = useState(localSettings().get(SUBSET_FONTS_SETTING) === true);
   const [said, setSaid] = useState('');
 
   // an OpenAI-compatible server is asked with the OpenAI key, so a key entered with a base URL is kept as that one
@@ -76,6 +78,17 @@ export function AiSettingsSection(): JSX.Element {
           }}
         />{' '}
         {t`Embed external images when saving`}
+      </label>
+      <label style={{ display: 'block' }}>
+        <input
+          type="checkbox"
+          checked={subset}
+          onChange={(e) => {
+            setSubset(e.target.checked);
+            localSettings().set(SUBSET_FONTS_SETTING, e.target.checked);
+          }}
+        />{' '}
+        {t`Subset embedded fonts to the text they draw when saving`}
       </label>
       <p role="status" aria-live="polite">
         {said}

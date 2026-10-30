@@ -11,6 +11,7 @@ import { type JSX, useCallback, useEffect, useRef, useState } from 'react';
 import type { FileHost, PickedFile } from './file-host.js';
 import { describeFile, fileBytes, mayOverwrite, openFileBytes, type SavedBytes, webHasher } from './file-session.js';
 import { bundledFontsFor } from './font-embed.js';
+import { fontReportLine, studioSubsetDeps, subsetFontsOn } from './font-subset-port.js';
 import { embeddableFaces } from './fonts.js';
 import { heldBytes } from './held-bytes.js';
 import { assetUrls, type OpenedEntry, registerOpened } from './opened-files.js';
@@ -64,6 +65,7 @@ export function currentFile(
     appVersion: STUDIO_VERSION,
     shapePackSources,
     ...(embedExternalOn() ? { embedExternal: urlReader } : {}),
+    ...(subsetFontsOn() ? { subsetFonts: studioSubsetDeps() } : {}),
     fonts: (document) =>
       bundledFontsFor(document, { faces: embeddableFaces(), newId: () => createId(cryptoRandom), sha256: (bytes) => webHasher.sha256(bytes) }),
   });
@@ -74,7 +76,8 @@ function warningsOf(saved: SavedBytes): string {
   const missing = saved.missing > 0 ? t` ${saved.missing} assets had no bytes to write.` : '';
   const external = saved.external > 0 ? t` ${saved.external} external images could not be embedded and still need the network.` : '';
   const shapes = saved.diagnostics.map((d) => d.message).join(' ');
-  return `${missing}${external}${shapes ? ` ${shapes}` : ''}`;
+  const fonts = fontReportLine(saved.fonts, saved.fontGaps);
+  return `${missing}${external}${shapes ? ` ${shapes}` : ''}${fonts ? ` ${fonts}` : ''}`;
 }
 
 /** A failure as one line for the person. */

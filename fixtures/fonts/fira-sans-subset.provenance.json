@@ -1,0 +1,9 @@
+{
+  "file": "fira-sans-subset.flux",
+  "made": "fluxion convert whole.flux fira-sans-subset.flux --subset-fonts (M18.40)",
+  "from": "fira-sans-400.ttf embedded whole in a one-screen document drawing \"Subset office façade\"",
+  "policy": "fluxion-font-subset/1 features=all scripts=all names=all+legacy hinting=kept",
+  "license": "OFL-1.1",
+  "licenseFile": "LICENSE-FiraSans-OFL.txt",
+  "use": "Format compatibility of subset fonts (packages/editor/src/font-subset-compat.test.ts)"
+}

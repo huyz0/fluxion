@@ -5,9 +5,11 @@
 ```ts
 
 import { AnyRecord } from '@fluxion/schema';
+import { AssetRecord } from '@fluxion/schema';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { FileIO } from '@fluxion/core';
+import { RecordId } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { safeLinkUrl } from '@fluxion/schema';
 import { sha256Hex } from '@fluxion/core';
@@ -110,6 +112,12 @@ export type DrawioProcessedReport = {
     readonly entryCount: number;
     readonly acceptedCount: number;
     readonly entries: readonly DrawioEntryOutcome[];
+};
+
+// @public
+export type EmbeddedFont = {
+    readonly asset: AssetRecord;
+    readonly bytes: Uint8Array;
 };
 
 // @public
@@ -225,7 +233,28 @@ export type FluxJsonOutput = {
 export type FluxWriteFailure = ZipFailure;
 
 // @public
+export const FONT_ENGINE_HASHES: {
+    readonly harfbuzz: "62415fe6bad92ef16f3e5d2dbed6c66a4adec7f5a59c6d27084811c92cce1ba5";
+    readonly codec: "3829e158c6a14f186b7514dd6bcdf195c5dfd0f9c57e7082e9850e642067cb6f";
+};
+
+// @public
+export const FONT_SUBSET_JOB_TIMEOUT_MS = 3e4;
+
+// @public
 export const FONT_SUBSET_POLICY = "fluxion-font-subset/1 features=all scripts=all names=all+legacy hinting=kept";
+
+// @public
+export type FontEngineModules = {
+    readonly harfbuzz: Uint8Array;
+    readonly codec: Uint8Array;
+};
+
+// @public
+export type FontEnginePorts = {
+    readonly sha256: (bytes: Uint8Array) => Promise<string>;
+    readonly instantiate: WasmInstantiate;
+};
 
 // @public
 export type FontEngines = {
@@ -238,10 +267,45 @@ export type FontEngines = {
 };
 
 // @public
+export type FontJobScope = {
+    onmessage: ((event: {
+        readonly data: FontSubsetInput;
+    }) => void) | null;
+    postMessage(message: FontSubsetOutcome): void;
+};
+
+// @public
+export type FontJobWorker = {
+    postMessage(message: FontSubsetInput): void;
+    onmessage: ((event: {
+        readonly data: unknown;
+    }) => void) | null;
+    onerror: ((event: unknown) => void) | null;
+    terminate(): void;
+};
+
+// @public
 export type FontKeptReason = "reserved-font-name" | "unverified-source" | "variable-font" | "font-collection" | "unsupported-format" | "malformed" | "too-large" | "not-smaller" | "unbounded-text" | "engine-failure";
 
 // @public
 export function fontSubsetCacheKey(input: FontSubsetInput, engines: Pick<FontEngines, "identity">, hasher: ContentHasher): Promise<string>;
+
+// @public
+export type FontSubsetDeps = {
+    readonly engines?: () => Promise<FontEngines>;
+    readonly job?: (input: FontSubsetInput) => Promise<FontSubsetOutcome>;
+    readonly sha256: (bytes: Uint8Array) => Promise<string>;
+    readonly cache?: Map<string, FontSubsetOutcome>;
+};
+
+// @public
+export type FontSubsetIdentity = {
+    readonly source: string;
+    readonly sourceSize: number;
+    readonly policy: string;
+    readonly fingerprint: string;
+    readonly unicodes: string;
+};
 
 // @public
 export type FontSubsetInput = {
@@ -257,6 +321,20 @@ export type FontSubsetInput = {
 };
 
 // @public
+export type FontSubsetLine = {
+    readonly asset: RecordId;
+    readonly name: string;
+    readonly before: number;
+    readonly after: number;
+} & ({
+    readonly status: "subset";
+} | {
+    readonly status: "kept";
+    readonly reason: FontKeptReason;
+    readonly message: string;
+});
+
+// @public
 export type FontSubsetOutcome = {
     readonly status: "subset";
     readonly woff2: Uint8Array;
@@ -270,6 +348,12 @@ export type FontSubsetOutcome = {
 };
 
 // @public
+export type FontSubsetPlan = {
+    readonly inventory: GlyphInventory;
+    readonly fonts: ReadonlyMap<RecordId, FontSubsetOutcome>;
+};
+
+// @public
 export type FormatError = {
     readonly code: FormatErrorCode;
     readonly message: string;
@@ -278,6 +362,18 @@ export type FormatError = {
 
 // @public
 export type FormatErrorCode = "FILE_NOT_FLUX" | "FILE_ZIP_INVALID" | "FILE_PATH_UNSAFE" | "FILE_DOCUMENT_MISSING" | "FILE_DOCUMENT_INVALID" | "FILE_TOO_LARGE" | "FILE_SHAPE_PACK_INVALID" | "FILE_INTERNAL";
+
+// @public
+export type GlyphInventory = {
+    readonly status: "complete";
+    readonly codepoints: readonly number[];
+} | {
+    readonly status: "unbounded";
+    readonly reason: string;
+};
+
+// @public
+export function glyphInventory(doc: DocumentFile): GlyphInventory;
 
 // @public
 export type HarfBuzzSubsetExports = {
@@ -477,6 +573,15 @@ export function inspectSvg(input: string): SvgInspection | undefined;
 export function inspectSvgTree(input: string): SvgTreeInspection | undefined;
 
 // @public
+export function instantiateFontEngines(modules: FontEngineModules, ports: FontEnginePorts): Promise<FontEngines>;
+
+// @public
+export type JobTimers = {
+    setTimeout(run: () => void, ms: number): unknown;
+    clearTimeout(handle: unknown): void;
+};
+
+// @public
 export const JOURNAL_MAX_BYTES: number;
 
 // @public
@@ -592,6 +697,9 @@ export type PixelSize = {
 };
 
 // @public
+export function planFontSubsets(doc: DocumentFile, fonts: readonly EmbeddedFont[], deps: FontSubsetDeps): Promise<FontSubsetPlan>;
+
+// @public
 export type PortableFluxHtmlOutput = {
     readonly html: string;
     readonly diagnostics: readonly Diagnostic[];
@@ -677,6 +785,9 @@ export type ReplayStop = {
     readonly dropped: number;
 };
 
+// @public
+export function runFontSubsetJob(input: FontSubsetInput, spawn: () => FontJobWorker, timers: JobTimers, timeoutMs?: number): Promise<FontSubsetOutcome>;
+
 export { safeLinkUrl }
 
 // @public
@@ -710,6 +821,9 @@ export type SelectedAssets = {
 
 // @public
 export const serializeEntry: (entry: JournalEntry) => string;
+
+// @public
+export function serveFontSubsetJob(scope: FontJobScope, modules: () => Promise<FontEngineModules>, ports: FontEnginePorts): void;
 
 // @public
 export const SESSION_AGE_MS = 9e4;
@@ -751,7 +865,32 @@ export function slugOf(path: string): string;
 export function sniffImage(bytes: Uint8Array): ImageInfo | undefined;
 
 // @public
+export type SubsetAsset = {
+    readonly bytes: Uint8Array;
+    readonly mime: "font/woff2";
+};
+
+// @public
 export function subsetFont(input: FontSubsetInput, engines: FontEngines, hasher: ContentHasher): Promise<FontSubsetOutcome>;
+
+// @public
+export type SubsetFontGap = {
+    readonly asset: RecordId;
+    readonly missing: readonly number[];
+};
+
+// @public
+export function subsetFontGaps(document: DocumentFile, inventory: readonly number[]): readonly SubsetFontGap[];
+
+// @public
+export function subsetFontsForSave(document: DocumentFile, bytesOf: (hash: string) => Uint8Array | undefined, deps: FontSubsetDeps): Promise<SubsetSave>;
+
+// @public
+export type SubsetSave = {
+    readonly document: DocumentFile;
+    readonly assets: ReadonlyMap<string, SubsetAsset>;
+    readonly report: readonly FontSubsetLine[];
+};
 
 // @public
 export type SvgBatchFile = {
@@ -865,6 +1004,12 @@ export type SvgTreeInspection = {
 };
 
 // @public
+export function unicodeRangeOf(codepoints: readonly number[]): string;
+
+// @public
+export function unicodeRangePairs(range: string): readonly (readonly [number, number])[];
+
+// @public
 export const UNPINNED_HASH: string;
 
 // @public
@@ -875,6 +1020,15 @@ export function usedFontFamilies(doc: DocumentFile): ReadonlySet<string> | undef
 
 // @public
 export const VERSION: string;
+
+// @public
+export type WasmInstantiate = (bytes: Uint8Array, imports: {
+    readonly [module: string]: {
+        readonly [name: string]: unknown;
+    };
+}) => Promise<{
+    readonly exports: unknown;
+}>;
 
 // @public
 export function withNotices(declared: DeclaredImportCredits, notices: ReadonlyMap<string, string>): ImportRights | string;

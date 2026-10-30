@@ -8,9 +8,20 @@ import { readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type ContentHasher, loadFlux, readFluxHtml, readFluxJson, sha256Hex, writeFlux, writeFluxHtml, writeFluxJson } from '@fluxion/format';
+import {
+  type ContentHasher,
+  type FontSubsetLine,
+  loadFlux,
+  readFluxHtml,
+  readFluxJson,
+  sha256Hex,
+  writeFlux,
+  writeFluxHtml,
+  writeFluxJson,
+} from '@fluxion/format';
 import { allowsShapePackContentLicense } from '@fluxion/sdk';
 import { type Command, internal, io, type Outcome, usage } from './command.js';
+import { cliSubsetDeps, subsetFlux } from './font-subset.js';
 import { CLI_VERSION } from './version.js';
 
 const hasher: ContentHasher = { sha256: (bytes) => Promise.resolve(sha256Hex(bytes)) };
@@ -112,12 +123,44 @@ async function fromJson(text: string, input: string): Promise<Produced | Outcome
   return written.ok ? { bytes: written.value, files: [] } : io(`cannot convert ${input}: ${written.error.reason}`, ['argv']);
 }
 
-type Produced = { readonly bytes: Uint8Array; readonly files: readonly { readonly path: string; readonly bytes: Uint8Array }[] };
+type Produced = {
+  readonly bytes: Uint8Array;
+  readonly files: readonly { readonly path: string; readonly bytes: Uint8Array }[];
+  readonly fonts?: readonly FontSubsetLine[];
+};
 
 /** The bytes (and side files) `input` converts to. */
-type Request = { readonly input: string; readonly output: string; readonly from: string; readonly to: string; readonly assets: 'inline' | 'external' };
+type Request = {
+  readonly input: string;
+  readonly output: string;
+  readonly from: string;
+  readonly to: string;
+  readonly assets: 'inline' | 'external';
+  readonly subsetFonts: boolean;
+};
 
-async function produce(bytes: Uint8Array, { input, output, from, to, assets }: Request): Promise<Produced | Outcome> {
+/** `.flux` bytes with their eligible fonts subset (ADR-0201), and what happened to each font. */
+async function subset(flux: Uint8Array, input: string): Promise<Required<Pick<Produced, 'bytes' | 'fonts'>> | Outcome> {
+  const done = await subsetFlux(flux, cliSubsetDeps(hasher), hasher);
+  return 'error' in done ? io(`cannot subset the fonts of ${input}: ${done.error}`, ['argv']) : done;
+}
+
+/** The conversion, with `--subset-fonts` applied to the `.flux` it reads (into a `.flux.html` or a `.flux`) or writes (from either). */
+async function produce(bytes: Uint8Array, request: Request): Promise<Produced | Outcome> {
+  if (!request.subsetFonts) return produceAs(bytes, request);
+  if (request.from === 'flux') {
+    const cut = await subset(bytes, request.input);
+    if (!('bytes' in cut)) return cut;
+    const made = request.to === 'flux' ? { bytes: cut.bytes, files: [] } : await produceAs(cut.bytes, request);
+    return 'bytes' in made ? { ...made, fonts: cut.fonts } : made;
+  }
+  const made = await produceAs(bytes, request);
+  if (!('bytes' in made)) return made;
+  const cut = await subset(made.bytes, request.input);
+  return 'bytes' in cut ? { bytes: cut.bytes, files: [], fonts: cut.fonts } : cut;
+}
+
+async function produceAs(bytes: Uint8Array, { input, output, from, to, assets }: Request): Promise<Produced | Outcome> {
   if (to === 'json') return toJson(bytes, input, output, assets);
   if (from === 'json') return fromJson(new TextDecoder().decode(bytes), input);
   if (from === 'flux') {
@@ -143,32 +186,56 @@ async function writeAll(output: string, produced: Produced): Promise<Outcome | u
   return undefined;
 }
 
-/** Converts `input` to `output`. */
-async function convert(input: string, output: string, assets: 'inline' | 'external', log: (text: string) => void): Promise<Outcome> {
+type Kind = NonNullable<ReturnType<typeof kindOf>>;
+
+/** The kinds of `input` and `output` when they are a pair `convert` handles, else the usage error. */
+function pairOf(input: string, output: string, subsetFonts: boolean): { readonly from: Kind; readonly to: Kind } | Outcome {
   const [from, to] = [kindOf(input), kindOf(output)];
-  // one .flux on either side of a .flux.html or a .flux.json (ADR-0155, ADR-0162)
-  const pair = from !== undefined && to !== undefined && from !== to && (from === 'flux' || to === 'flux');
-  if (!pair) return usage('convert needs a .flux and a .flux.html or a .flux.json, as <input> <output>');
+  // one .flux on either side of a .flux.html or a .flux.json (ADR-0155, ADR-0162); a .flux to a .flux only to subset its fonts (ADR-0201)
+  const rewrite = subsetFonts && from === 'flux' && to === 'flux';
+  if (from === undefined || to === undefined || (from === to && !rewrite) || (from !== 'flux' && to !== 'flux'))
+    return usage('convert needs a .flux and a .flux.html or a .flux.json, as <input> <output>');
+  if (subsetFonts && to === 'json') return usage('--subset-fonts applies to a .flux or a .flux.html output only');
+  return { from, to };
+}
+
+/** The log line of one font of `--subset-fonts`. */
+const fontLog = (f: FontSubsetLine): string =>
+  f.status === 'subset' ? `font ${f.name}: subset, ${f.before} -> ${f.after} bytes\n` : `font ${f.name}: kept whole (${f.reason}): ${f.message}\n`;
+
+/** Converts `input` to `output`. */
+async function convert(input: string, output: string, options: Pick<Request, 'assets' | 'subsetFonts'>, log: (text: string) => void): Promise<Outcome> {
+  const pair = pairOf(input, output, options.subsetFonts);
+  if ('exitCode' in pair) return pair;
+  const { from, to } = pair;
   let bytes: Uint8Array;
   try {
     bytes = new Uint8Array(await readFile(input));
   } catch (e) {
     return io(`cannot read ${input}: ${why(e)}`, ['argv']);
   }
-  const produced = await produce(bytes, { input, output, from, to, assets });
+  const produced = await produce(bytes, { input, output, from, to, ...options });
   if (!('bytes' in produced)) return produced;
   const failed = await writeAll(output, produced);
   if (failed) return failed;
   log(`${input} -> ${output}: ${produced.bytes.byteLength} bytes\n`);
+  for (const f of produced.fonts ?? []) log(fontLog(f));
   const direction = from === 'json' ? 'from-json' : DIRECTION[to];
-  return { exitCode: 0, diagnostics: [], result: { from: input, to: output, direction, bytes: produced.bytes.byteLength } };
+  const fonts = produced.fonts === undefined ? {} : { fonts: produced.fonts.map(fontLine) };
+  return { exitCode: 0, diagnostics: [], result: { from: input, to: output, direction, bytes: produced.bytes.byteLength, ...fonts } };
 }
+
+/** One font's line of the `--json` result (ADR-0201): the report without its record-id branding. */
+const fontLine = (f: FontSubsetLine): Record<string, unknown> =>
+  f.status === 'subset'
+    ? { asset: f.asset, name: f.name, before: f.before, after: f.after, status: f.status }
+    : { asset: f.asset, name: f.name, before: f.before, after: f.after, status: f.status, reason: f.reason, message: f.message };
 
 /** The `convert` command. */
 export const CONVERT: Command = {
   summary: 'Turn a .flux into a .flux.html or a .flux.json, and back',
-  usage: 'convert <input> <output> [--assets inline|external]',
-  options: { assets: { type: 'string' } },
+  usage: 'convert <input> <output> [--assets inline|external] [--subset-fonts]',
+  options: { assets: { type: 'string' }, 'subset-fonts': { type: 'boolean' } },
   run: ({ values, positionals }, out) => {
     const [input, output, ...extra] = positionals;
     if (input === undefined || output === undefined) return usage('convert needs <input> and <output>');
@@ -176,6 +243,6 @@ export const CONVERT: Command = {
     const assets = values['assets'] ?? 'inline';
     if (assets !== 'inline' && assets !== 'external') return usage('--assets is inline or external');
     if (values['assets'] !== undefined && kindOf(output) !== 'json') return usage('--assets applies to a .flux.json output only');
-    return convert(input, output, assets, out.stderr);
+    return convert(input, output, { assets, subsetFonts: values['subset-fonts'] === true }, out.stderr);
   },
 };
