@@ -1,5 +1,5 @@
-// The library's search index (FR-LIB-001, ADR-0021): lower-cased, accent-folded tokens of an entry's name, pack,
-// category and keywords, in a sorted array answered by binary search. A query of several words keeps the entries that
+// The library's search index (FR-LIB-001, ADR-0021): lower-cased, accent-folded tokens of an entry's name, pack (id and
+// name), category and keywords, in a sorted array answered by binary search. A query of several words keeps the entries that
 // satisfy every word; a word matches a token exactly (best), as its prefix, or, when nothing has it as a prefix, inside
 // it. Results rank by the sum of the words' matches, then by name. Pure; built once per set of packs.
 import type { ShapeDef } from '@fluxion/core';
@@ -14,8 +14,10 @@ export type LibraryEntry = {
   readonly id: string;
   /** The name people read, from the id. */
   readonly name: string;
-  /** The pack that provides it. */
+  /** The pack that provides it: its id, the definition id's namespace. */
   readonly pack: string;
+  /** The pack's name as its index gives it, for the panel's heading; the id when absent. */
+  readonly packName?: string | undefined;
   /** Its category in the panel. */
   readonly category: string;
   /** Words that find it. */
@@ -61,6 +63,20 @@ export function entryOf(def: ShapeDef): LibraryEntry {
   return { id: def.id, name, pack, category: def.category ?? 'Other', keywords: def.keywords ?? [] };
 }
 
+/**
+ * The entries of a pack index's definitions, with the names the index gives them and the pack's own name; nothing of their
+ * geometry is needed (FR-LIB-009).
+ *
+ * @public
+ */
+export function entriesOfIndex(index: {
+  readonly id: string;
+  readonly name: string;
+  readonly definitions: readonly { readonly id: string; readonly name: string; readonly category: string; readonly keywords: readonly string[] }[];
+}): LibraryEntry[] {
+  return index.definitions.map((d) => ({ id: d.id, name: d.name, pack: index.id, packName: index.name, category: d.category, keywords: d.keywords }));
+}
+
 const compare = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 /** The first index in sorted `tokens` whose token is not below `key`. */
@@ -79,7 +95,13 @@ function lowerBound(tokens: readonly string[], key: string): number {
 function tableOf(entries: readonly LibraryEntry[]): { readonly tokens: string[]; readonly posting: number[][] } {
   const byToken = new Map<string, number[]>();
   entries.forEach((e, i) => {
-    for (const t of new Set([...tokensOf(e.name), ...tokensOf(e.pack), ...tokensOf(e.category), ...e.keywords.flatMap(tokensOf)])) {
+    for (const t of new Set([
+      ...tokensOf(e.name),
+      ...tokensOf(e.pack),
+      ...tokensOf(e.packName ?? ''),
+      ...tokensOf(e.category),
+      ...e.keywords.flatMap(tokensOf),
+    ])) {
       const list = byToken.get(t);
       if (list === undefined) byToken.set(t, [i]);
       else list.push(i);

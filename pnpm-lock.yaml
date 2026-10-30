@@ -380,15 +380,48 @@ importers:
       '@fluxion/layout':
         specifier: workspace:*
         version: link:../../packages/layout
+      '@fluxion/pack-arrows':
+        specifier: workspace:*
+        version: link:../../packs/arrows
       '@fluxion/pack-basic':
         specifier: workspace:*
         version: link:../../packs/basic
+      '@fluxion/pack-bpmn-lite':
+        specifier: workspace:*
+        version: link:../../packs/bpmn-lite
+      '@fluxion/pack-callouts':
+        specifier: workspace:*
+        version: link:../../packs/callouts
+      '@fluxion/pack-cloud-architecture':
+        specifier: workspace:*
+        version: link:../../packs/cloud-architecture
+      '@fluxion/pack-devices':
+        specifier: workspace:*
+        version: link:../../packs/devices
+      '@fluxion/pack-flowchart':
+        specifier: workspace:*
+        version: link:../../packs/flowchart
       '@fluxion/pack-fonts-core':
         specifier: workspace:*
         version: link:../../packs/fonts-core
+      '@fluxion/pack-icons-lucide':
+        specifier: workspace:*
+        version: link:../../packs/icons-lucide
+      '@fluxion/pack-infographic':
+        specifier: workspace:*
+        version: link:../../packs/infographic
+      '@fluxion/pack-network':
+        specifier: workspace:*
+        version: link:../../packs/network
+      '@fluxion/pack-people':
+        specifier: workspace:*
+        version: link:../../packs/people
       '@fluxion/pack-themes-core':
         specifier: workspace:*
         version: link:../../packs/themes-core
+      '@fluxion/pack-uml':
+        specifier: workspace:*
+        version: link:../../packs/uml
       '@fluxion/player':
         specifier: workspace:*
         version: link:../../packages/player
@@ -398,6 +431,9 @@ importers:
       '@fluxion/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@fluxion/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@lingui/core':
         specifier: 'catalog:'
         version: 6.9.0(@babel/core@7.29.7(supports-color@8.1.1))

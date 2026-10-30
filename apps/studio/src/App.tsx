@@ -27,12 +27,14 @@ import { localSettings } from './local-settings.js';
 import { fluxionFileOf, type LaunchHandle, MAX_OPEN_BYTES, pickedFromLaunch, pickedFromUrl, srcOf } from './open-sources.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { registerOpenedFonts } from './opened-fonts.js';
+import type { DocumentCatalog } from './pack-catalog.js';
 import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
 import { createRoutePort } from './route-port.js';
 import { routeOf } from './routes.js';
 import { noArtworkFonts, noSavedPacks, useSavedShapePacks } from './saved-shape-packs.js';
 import { installTestHooks } from './test-hooks.js';
+import { useDocumentCatalog } from './use-document-catalog.js';
 
 const subscribe = (onChange: () => void) => {
   window.addEventListener('popstate', onChange);
@@ -142,8 +144,9 @@ function ProtectedEditor(props: {
   readonly entry: OpenedEntry | undefined;
   readonly guard: Guard;
   readonly instance: string;
+  readonly catalog: DocumentCatalog | undefined;
 }): JSX.Element {
-  const { opened, docId, entry, guard, instance } = props;
+  const { opened, docId, entry, guard, instance, catalog } = props;
   const { core, themes, assets, fonts } = opened;
   const registries = useGlobalRouting(core, opened.registries);
   const host = useMemo(() => browserFileHost(), []);
@@ -177,6 +180,7 @@ function ProtectedEditor(props: {
         fonts={fonts}
         arrange={arrange}
         libraryImporter={imports.importer}
+        {...(catalog === undefined ? {} : { catalog })}
         toolbar={
           <>
             <FileBar
@@ -184,7 +188,8 @@ function ProtectedEditor(props: {
               store={core.store}
               assets={assets}
               entry={entry}
-              shapePackSources={shapePackSources}
+              // the imported libraries' sources and the first-party definitions the document loaded, read at save time
+              shapePackSources={() => [...shapePackSources, ...(catalog?.sources() ?? [])]}
               onOpened={(id) => navigate(`/edit/${id}`)}
               onSaved={(saved) => {
                 void autosave?.saved();
@@ -256,11 +261,12 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   }, []);
   // the file's saved packs, their exact artwork fonts first, before the document is shown (M18.115)
   const packs = useSavedShapePacks(opened, entry?.file.shapePacks ?? noSavedPacks, entry?.file.artworkFonts ?? noArtworkFonts);
+  const catalog = useDocumentCatalog(opened.ok ? opened.value.core : undefined, entry?.file.shapePacks ?? noSavedPacks);
   if (!opened.ok) return <Problem message={opened.error} />;
   if (packs.phase === 'refused') return <Problem message={packs.message} />;
   if (packs.phase === 'registering') return <main data-testid="studio-root" aria-busy="true" />;
   return mode === 'edit' ? (
-    <ProtectedEditor opened={opened.value} docId={docId} entry={entry} guard={guard} instance={instance} />
+    <ProtectedEditor opened={opened.value} docId={docId} entry={entry} guard={guard} instance={instance} catalog={catalog} />
   ) : (
     <PlayerRoot store={opened.value.core.store} registries={opened.value.registries} />
   );

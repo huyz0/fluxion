@@ -107,4 +107,29 @@ describe('library panel (FR-LIB-001)', () => {
     expect(picked.at(-1)).toBe('flow:decision');
     expect(replaced).toHaveLength(2);
   });
+
+  it('FR-LIB-007, FR-LIB-009: catalog entries are listed by their index names before they load, and a registered one takes its catalog name', async () => {
+    const shapeDefs = setup();
+    const picked: string[] = [];
+    const catalog = [
+      { id: 'basic:rect', name: 'Rectangle', pack: 'basic', packName: 'Basic shapes', category: 'Boxes', keywords: [] },
+      { id: 'devices:usb-drive', name: 'USB drive', pack: 'devices', packName: 'Devices', category: 'peripherals', keywords: ['storage'] },
+    ];
+    await act(async () => root.render(<LibraryPanel shapeDefs={shapeDefs} catalog={catalog} onPick={(id) => picked.push(id)} />));
+    expect(names()).toEqual(['basic:cylinder', 'basic:rect', 'devices:usb-drive', 'flow:decision']);
+    // a pack's heading is its index name when an entry gives one
+    expect([...host.querySelectorAll('h3')].map((h) => h.textContent)).toEqual(['Basic shapes / Boxes', 'Devices / peripherals', 'flow / Flow']);
+    expect(host.querySelector('[data-def-id="basic:rect"]')?.textContent).toBe('Rectangle');
+    // not loaded: an empty tile, but listed, searched and picked like the rest
+    const usb = () => host.querySelector('[data-def-id="devices:usb-drive"]') as HTMLElement;
+    expect(usb().textContent).toBe('USB drive');
+    expect(usb().querySelector('svg path')).toBeNull();
+    expect(usb().querySelector('svg rect')).not.toBeNull();
+    act(() => (usb().querySelector('button') as HTMLButtonElement).click());
+    expect(picked).toEqual(['devices:usb-drive']);
+    // once registered it draws its outline
+    await act(async () => void shapeDefs.register('devices:usb-drive', def('devices:usb-drive', 'peripherals'), 'devices'));
+    expect(usb().querySelector('svg path')).not.toBeNull();
+    expect(names().filter((n) => n === 'devices:usb-drive')).toHaveLength(1);
+  });
 });

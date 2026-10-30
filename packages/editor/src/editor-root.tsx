@@ -34,6 +34,7 @@ import { defaultLayout, type EditorLayout, LAYOUT_KEY, type PanelId, panelShown,
 import { type ArrangePort, registeredLayoutIds } from './layout-arrange.js';
 import type { OptionsSchemaOf } from './layout-options-form.js';
 import type { LibraryImporter } from './library/library-importer.js';
+import type { LibraryCatalog } from './library/library-panel.js';
 import { startLiveLayout } from './live-layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
@@ -89,6 +90,8 @@ export type EditorRootProps = {
   readonly layoutOptionsSchema?: OptionsSchemaOf;
   /** The host's SVG library import (convert, then register the final pack); the library panel shows **Import SVG…** with it. */
   readonly libraryImporter?: LibraryImporter;
+  /** Shape definitions the library offers before their geometry is loaded (FR-LIB-009, M18.32): listed by their pack index's names, loaded on pick. */
+  readonly catalog?: LibraryCatalog;
 };
 
 /** Randomness from the browser's crypto. */
@@ -370,6 +373,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
           layoutOptionsSchema={props.layoutOptionsSchema}
           arrange={props.arrange}
           libraryImporter={props.libraryImporter}
+          catalog={props.catalog}
           screenId={screenId}
           area={area}
           newId={newId}

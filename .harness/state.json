@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.209",
+  "currentTask": "M18.32",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209).",
-  "updated": "2026-10-30T03:00:00Z",
+  "updated": "2026-10-30T18:33:17.358092+00:00",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 3

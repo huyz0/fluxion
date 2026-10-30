@@ -3,7 +3,9 @@
 // matches are listed best first. Picking one is the host's (`onPick`, M8.18: click to insert, drag to drop). With
 // `onReplace` and a replaceable selection, the Replace toggle (or a shift-click) makes the next pick replace the
 // selected shape instead (FR-LIB-011, M18.37). With the host's `importer`, **Import SVG…** picks SVG files or a ZIP and opens the
-// import dialog (FR-LIB-004, M18.176).
+// import dialog (FR-LIB-004, M18.176). A host's `catalog` adds entries whose geometry is not loaded yet (FR-LIB-009, M18.32):
+// they are listed and searched by their pack index's names, drawn as a plain tile until loaded, and picked like any other
+// (the host loads the definition first); a registered definition with a catalog entry takes the catalog's names.
 import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
 import { pathData, useValue } from '@fluxion/render';
 import { plural, t } from '@lingui/core/macro';
@@ -14,6 +16,19 @@ import { LibraryImportDialog } from './library-import-dialog.js';
 import type { LibraryImporter } from './library-importer.js';
 import { LIBRARY_DRAG_TYPE } from './library-insert.js';
 import { buildLibraryIndex, entryOf, type LibraryEntry } from './library-search.js';
+
+/**
+ * Shape definitions a host offers before their geometry is loaded (FR-LIB-009, M18.32): the entries to list, by their pack
+ * index's names, and how to load and register one before it is inserted.
+ *
+ * @public
+ */
+export type LibraryCatalog = {
+  /** The entries, registered or not. */
+  readonly entries: readonly LibraryEntry[];
+  /** Load and register the definition `id` when it is not yet; resolves to false when it cannot be (the host has said why). */
+  ensure(id: string): Promise<boolean>;
+};
 
 /**
  * Props of {@link LibraryPanel}.
@@ -33,7 +48,11 @@ export type LibraryPanelProps = {
   readonly hidden?: ReadonlySet<string> | undefined;
   /** The host's SVG library import; without it there is no **Import SVG…**. */
   readonly importer?: LibraryImporter | undefined;
+  /** Entries the host can load on pick, by their pack index's names (M18.32); a registered definition keeps its own entry otherwise. */
+  readonly catalog?: readonly LibraryEntry[] | undefined;
 };
+
+const NO_ENTRIES: readonly LibraryEntry[] = [];
 
 /** The picked files as an import input: one ZIP, or SVG files. */
 function inputOf(files: readonly File[]): SvgLibraryInput {
@@ -90,12 +109,36 @@ function Thumb(props: { readonly def: ShapeDef }): ReactNode {
   );
 }
 
+/** The tile of an entry whose geometry is not loaded yet: the thumbnail's box, empty (FR-LIB-009). */
+function Pending(): ReactNode {
+  return (
+    <svg className="fx-chrome-library-thumb" width={THUMB.w} height={THUMB.h} viewBox={`0 0 ${THUMB.w} ${THUMB.h}`} aria-hidden="true">
+      <rect
+        x={8}
+        y={4}
+        width={THUMB.w - 16}
+        height={THUMB.h - 8}
+        rx={4}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1}
+        strokeDasharray="3 3"
+        opacity={0.5}
+      />
+    </svg>
+  );
+}
+
 /** One item: a button when something is picked by it, else a label. */
-function Item(props: { readonly entry: LibraryEntry; readonly def: ShapeDef; readonly onPick: ((id: string, shift: boolean) => void) | undefined }): ReactNode {
+function Item(props: {
+  readonly entry: LibraryEntry;
+  readonly def: ShapeDef | undefined;
+  readonly onPick: ((id: string, shift: boolean) => void) | undefined;
+}): ReactNode {
   const { entry, def, onPick } = props;
   const body = (
     <>
-      <Thumb def={def} />
+      {def === undefined ? <Pending /> : <Thumb def={def} />}
       <span>{entry.name}</span>
     </>
   );
@@ -121,17 +164,30 @@ function Item(props: { readonly entry: LibraryEntry; readonly def: ShapeDef; rea
   );
 }
 
-/** The entries grouped by pack, then category, each in name order. */
-function grouped(
-  entries: readonly LibraryEntry[],
-): Array<{ readonly pack: string; readonly categories: Array<{ readonly category: string; readonly items: LibraryEntry[] }> }> {
-  const packs = new Map<string, Map<string, LibraryEntry[]>>();
+/** The entries grouped by pack (in order of the packs' names), then category, each in name order. */
+function grouped(entries: readonly LibraryEntry[]): Array<{
+  readonly pack: string;
+  readonly name: string;
+  readonly categories: Array<{ readonly category: string; readonly items: LibraryEntry[] }>;
+}> {
+  const packs = new Map<string, { name: string; cats: Map<string, LibraryEntry[]> }>();
   for (const e of entries) {
-    const cats = packs.get(e.pack) ?? new Map<string, LibraryEntry[]>();
-    cats.set(e.category, [...(cats.get(e.category) ?? []), e]);
-    packs.set(e.pack, cats);
+    const pack = packs.get(e.pack) ?? { name: e.pack, cats: new Map<string, LibraryEntry[]>() };
+    // any entry that knows the pack's index name names the pack
+    if (e.packName !== undefined) pack.name = e.packName;
+    pack.cats.set(e.category, [...(pack.cats.get(e.category) ?? []), e]);
+    packs.set(e.pack, pack);
   }
-  return [...packs].map(([pack, cats]) => ({ pack, categories: [...cats].map(([category, items]) => ({ category, items })) }));
+  return [...packs]
+    .map(([pack, { name, cats }]) => ({ pack, name, categories: [...cats].map(([category, items]) => ({ category, items })) }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+}
+
+/** What the panel lists: each registered definition's entry, the catalog's where it has one, then the catalog's other entries. */
+function listed(defs: ReadonlyMap<string, ShapeDef>, catalog: readonly LibraryEntry[], hidden: ReadonlySet<string> | undefined): LibraryEntry[] {
+  const named = new Map(catalog.map((e) => [e.id, e]));
+  const registered = [...defs.values()].map((d) => named.get(d.id) ?? entryOf(d));
+  return [...registered, ...catalog.filter((e) => !defs.has(e.id))].filter((e) => !hidden?.has(e.id));
 }
 
 /**
@@ -140,7 +196,7 @@ function grouped(
  * @public
  */
 export function LibraryPanel(props: LibraryPanelProps): ReactNode {
-  const { shapeDefs, onPick, onReplace, canReplace = false, hidden, importer } = props;
+  const { shapeDefs, onPick, onReplace, canReplace = false, hidden, importer, catalog = NO_ENTRIES } = props;
   const [query, setQuery] = useState('');
   const [replacing, setReplacing] = useState(false);
   // losing the replaceable selection lets go of the toggle, so a later selection does not find it still on
@@ -160,10 +216,10 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
   const version = useValue(shapeDefs.changes$);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` stands for the registry's contents
   const defs = useMemo(() => new Map(shapeDefs.list().map(([id, def]) => [id, def] as const)), [shapeDefs, version]);
-  const index = useMemo(() => buildLibraryIndex([...defs.values()].filter((d) => !hidden?.has(d.id)).map(entryOf)), [defs, hidden]);
+  const index = useMemo(() => buildLibraryIndex(listed(defs, catalog, hidden)), [defs, catalog, hidden]);
   const found = index.search(query);
   const searching = query.trim() !== '';
-  const show = (e: LibraryEntry) => <Item key={e.id} entry={e} def={defs.get(e.id) as ShapeDef} onPick={pick} />;
+  const show = (e: LibraryEntry) => <Item key={e.id} entry={e} def={defs.get(e.id)} onPick={pick} />;
   return (
     <div className="fx-chrome-library">
       <input
@@ -196,11 +252,11 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
         </ul>
       ) : (
         grouped(found).map((p) => (
-          <section key={p.pack} aria-label={t`Pack ${p.pack}`} data-pack={p.pack}>
+          <section key={p.pack} aria-label={t`Pack ${p.name}`} data-pack={p.pack}>
             {p.categories.map((c) => (
               <div key={c.category}>
-                <h3 className="fx-chrome-heading">{`${p.pack} / ${c.category}`}</h3>
-                <ul className="fx-chrome-library-list" aria-label={`${p.pack} ${c.category}`}>
+                <h3 className="fx-chrome-heading">{`${p.name} / ${c.category}`}</h3>
+                <ul className="fx-chrome-library-list" aria-label={`${p.name} ${c.category}`}>
                   {c.items.map(show)}
                 </ul>
               </div>

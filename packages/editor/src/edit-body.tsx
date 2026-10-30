@@ -15,7 +15,7 @@ import type { OptionsSchemaOf } from './layout-options-form.js';
 import { registeredTemplateIds } from './layout-picker.js';
 import type { LibraryImporter } from './library/library-importer.js';
 import { insertShape } from './library/library-insert.js';
-import type { LibraryPanelProps } from './library/library-panel.js';
+import type { LibraryCatalog, LibraryPanelProps } from './library/library-panel.js';
 import { replaceableShape, replaceSelectedShape } from './library/library-replace.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
 import { placeImageFiles } from './place-images.js';
@@ -56,6 +56,8 @@ export type EditBodyProps = {
   readonly arrange?: ArrangePort | undefined;
   /** The host's SVG library import, behind the library panel's **Import SVG…** (M18.176). */
   readonly libraryImporter?: LibraryImporter | undefined;
+  /** Definitions the library offers before they are loaded (M18.32); a pick or drop of one loads it first. */
+  readonly catalog?: LibraryCatalog | undefined;
 };
 
 /** The left tabs: screens, problems, notes, the library (a pick inserts or replaces) and the Source tab when the host gives the core registries. */
@@ -92,7 +94,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
   const { panel, splitter } = usePanels(layout, onLayout);
   const { onMenu, menu } = useCanvasMenu({ ...menus, tools, area });
   // a library item put on the canvas: at the drop point, or at the middle of the view for a click
-  const insert = useCallback(
+  const insertLoaded = useCallback(
     (defId: string, at?: Vec2) =>
       void insertShape(
         { view: store, screen: screenId, newId, execute, seal: () => store.history.seal(), session, shapeDefs: registries.shapeDefs },
@@ -101,6 +103,19 @@ export function EditBody(props: EditBodyProps): ReactNode {
       ),
     [store, screenId, newId, execute, session, registries, box],
   );
+  // a catalog entry is loaded and registered first (M18.32); a definition already registered goes straight in
+  const { catalog } = props;
+  const loaded = useCallback(
+    (defId: string, then: () => void) => {
+      if (catalog === undefined || registries.shapeDefs.get(defId) !== undefined) then();
+      else
+        void catalog.ensure(defId).then((ok) => {
+          if (ok) then();
+        });
+    },
+    [catalog, registries],
+  );
+  const insert = useCallback((defId: string, at?: Vec2) => loaded(defId, () => insertLoaded(defId, at)), [loaded, insertLoaded]);
   // image files dropped on the canvas, or picked in the image picker: imported, then placed like a pasted image
   const importFiles = useCallback(
     (files: readonly File[], at?: Vec2) =>
@@ -120,9 +135,10 @@ export function EditBody(props: EditBodyProps): ReactNode {
   const library: LibraryPanelProps = {
     shapeDefs: registries.shapeDefs,
     onPick: (id) => insert(id),
-    onReplace: (id) => void replaceSelectedShape({ view: store, execute, session, shapeDefs: registries.shapeDefs }, id),
+    onReplace: (id) => loaded(id, () => void replaceSelectedShape({ view: store, execute, session, shapeDefs: registries.shapeDefs }, id)),
     canReplace: replaceableShape(store, selection) !== undefined,
     importer: props.libraryImporter,
+    catalog: catalog?.entries,
   };
   return (
     <div className="fx-chrome-body">

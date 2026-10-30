@@ -18,6 +18,21 @@
       ],
       "project": ["scripts/**/*.mjs", "tools/**/*.mjs", "tests/**/*.mjs", "e2e/**/*.ts", "*.config.ts"],
       "ignoreDependencies": ["@arethetypeswrong/cli", "dependency-cruiser", "@microsoft/api-extractor", "@huyz0/tzap"]
+    },
+    "apps/studio": {
+      "ignoreDependencies": [
+        "@fluxion/pack-arrows",
+        "@fluxion/pack-bpmn-lite",
+        "@fluxion/pack-callouts",
+        "@fluxion/pack-cloud-architecture",
+        "@fluxion/pack-devices",
+        "@fluxion/pack-flowchart",
+        "@fluxion/pack-icons-lucide",
+        "@fluxion/pack-infographic",
+        "@fluxion/pack-network",
+        "@fluxion/pack-people",
+        "@fluxion/pack-uml"
+      ]
     }
   },
   "ignoreExportsUsedInFile": true

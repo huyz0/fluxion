@@ -451,6 +451,7 @@ export type EditorRootProps = {
     readonly sourceRegistries?: CoreRegistries;
     readonly layoutOptionsSchema?: OptionsSchemaOf;
     readonly libraryImporter?: LibraryImporter;
+    readonly catalog?: LibraryCatalog;
 };
 
 // @public
@@ -468,6 +469,18 @@ export function endDrop(view: ReadView, shapeDefs: {
     readonly tolerance?: number | undefined;
     readonly covered?: ((p: Vec2) => boolean) | undefined;
 }): readonly ParamCommand[];
+
+// @public
+export function entriesOfIndex(index: {
+    readonly id: string;
+    readonly name: string;
+    readonly definitions: readonly {
+        readonly id: string;
+        readonly name: string;
+        readonly category: string;
+        readonly keywords: readonly string[];
+    }[];
+}): LibraryEntry[];
 
 // @public
 export function entryOf(def: ShapeDef): LibraryEntry;
@@ -795,10 +808,17 @@ export type LayoutTarget = {
 export function layoutTarget(get: (id: string) => unknown, selection: readonly string[], screenId: string | undefined): LayoutTarget | undefined;
 
 // @public
+export type LibraryCatalog = {
+    readonly entries: readonly LibraryEntry[];
+    ensure(id: string): Promise<boolean>;
+};
+
+// @public
 export type LibraryEntry = {
     readonly id: string;
     readonly name: string;
     readonly pack: string;
+    readonly packName?: string | undefined;
     readonly category: string;
     readonly keywords: readonly string[];
 };
@@ -840,6 +860,7 @@ export type LibraryPanelProps = {
     readonly canReplace?: boolean | undefined;
     readonly hidden?: ReadonlySet<string> | undefined;
     readonly importer?: LibraryImporter | undefined;
+    readonly catalog?: readonly LibraryEntry[] | undefined;
 };
 
 // @public

@@ -1,6 +1,6 @@
 import type { ShapeDef } from '@fluxion/core';
 import { describe, expect, it } from 'vitest';
-import { buildLibraryIndex, entryOf, type LibraryEntry, tokensOf } from './library-search.js';
+import { buildLibraryIndex, entriesOfIndex, entryOf, type LibraryEntry, tokensOf } from './library-search.js';
 
 const entry = (id: string, keywords: string[] = [], category = 'Basic'): LibraryEntry => ({ id, name: id, pack: 'basic', category, keywords });
 const names = (r: readonly LibraryEntry[]) => r.map((e) => e.id);
@@ -60,5 +60,21 @@ describe('library search (FR-LIB-001)', () => {
       keywords: [],
     });
     expect(names(buildLibraryIndex([entryOf(def)]).search('card'))).toEqual(['basic:rounded-rect']);
+  });
+
+  it('FR-LIB-007, FR-LIB-009: a pack index gives entries its own names and the pack name, and the pack name finds them', () => {
+    const entries = entriesOfIndex({
+      id: 'devices',
+      name: 'Gadget devices',
+      definitions: [{ id: 'devices:usb-drive', name: 'USB drive', category: 'peripherals', keywords: ['storage'] }],
+    });
+    expect(entries).toEqual([
+      { id: 'devices:usb-drive', name: 'USB drive', pack: 'devices', packName: 'Gadget devices', category: 'peripherals', keywords: ['storage'] },
+    ]);
+    expect(
+      buildLibraryIndex(entries)
+        .search('gadget')
+        .map((e) => e.id),
+    ).toEqual(['devices:usb-drive']);
   });
 });

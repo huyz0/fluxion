@@ -122,6 +122,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0197](ADR-0197-windows-verify-envelope.md) | Windows verification gets its own CI envelope (25 of 45 minutes) | accepted | 2026-10-27 |
 | [0198](ADR-0198-chained-mutation-matrices.md) | Nightly mutation partitions run as chained matrices of at most 256 jobs | accepted | 2026-10-27 |
 | [0199](ADR-0199-one-shared-pack-test.md) | Every first-party pack runs one shared pack test | accepted | 2026-10-27 |
+| [0200](ADR-0200-studio-library-first-party-packs.md) | The studio library offers every first-party pack, loaded lazily | accepted | 2026-10-27 |
 | [0201](ADR-0201-subset-font-metadata-and-convert-flag.md) | Subset fonts record their source in `font.subset`; `fluxion convert --subset-fonts` reports each font | accepted | 2026-10-27 |
 | [0202](ADR-0202-visual-xos-known-red-legs.md) | visual-xos gates the pinned ubuntu leg; Windows and macOS are known red until M32 | accepted | 2026-10-27 |
 | [0026](ADR-0026-player-packaging.md) | Player packaging: the `<fluxion-player>` element, the React wrapper, the core and the lazy parts, no Zod in the player | accepted | 2026-10-04 |

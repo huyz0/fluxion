@@ -65,3 +65,4 @@ ADR-0016 (shape definitions).
   - Render reads markers from `RenderRegistries.markers`, where the schema's built-ins register as source `core`. A host passes its core registry: the CLI hands `builtinRegistries` the host's `shapeDefs` and `markers`.
   - `packs/basic` adds `basic:open-arrow` and the crow's-foot `-one`, `-many`, `-zero-one` and `-zero-many`.
   - Confirmation: the SDK's pack test covers markers, all or nothing. The CLI test (the host that bundles the pack) draws every basic marker at two stroke widths and checks its size and the trim under it.
+- 2026-10-27 (M18.32): extended by [ADR-0200](ADR-0200-studio-library-first-party-packs.md). The studio lists the other eleven first-party shape packs and reads their checked-in `pack/` files lazily for the library, through the SDK's loader (ADR-0181); it does not register them up front.

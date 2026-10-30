@@ -31,8 +31,8 @@ export type FileBarProps = {
   readonly assets: AssetStore;
   /** The file this document was opened from, if it was opened from one. */
   readonly entry: OpenedEntry | undefined;
-  /** Explicit SDK sources for new namespaces; loaded embedded sources remain authoritative. */
-  readonly shapePackSources?: readonly ShapePackSourceData[];
+  /** Explicit SDK sources for new namespaces, or how to read them at save time; loaded embedded sources remain authoritative. */
+  readonly shapePackSources?: readonly ShapePackSourceData[] | (() => readonly ShapePackSourceData[]);
   /** Go to the editor of the document `docId`. */
   readonly onOpened: (docId: string) => void;
   /** Called after the file was written, with its name and bytes (autosave marks the journal saved; the library keeps a copy). */
@@ -147,7 +147,7 @@ export function FileBar(props: FileBarProps): JSX.Element {
       if (saving.current) return;
       saving.current = true;
       try {
-        const made = await currentFile(entry, store, assets, shapePackSources);
+        const made = await currentFile(entry, store, assets, typeof shapePackSources === 'function' ? shapePackSources() : shapePackSources);
         if (!made.ok) return setMessage(made.error);
         const said = !copy && target.current !== undefined ? await overwrite(target.current, made.value.bytes) : await saveAs(made.value.bytes);
         setMessage(`${said}${warningsOf(made.value)}`);

@@ -36,6 +36,9 @@
       "path": "../../packages/schema"
     },
     {
+      "path": "../../packages/sdk"
+    },
+    {
       "path": "../../packs/basic"
     },
     {
@@ -43,6 +46,39 @@
     },
     {
       "path": "../../packs/fonts-core"
+    },
+    {
+      "path": "../../packs/arrows"
+    },
+    {
+      "path": "../../packs/bpmn-lite"
+    },
+    {
+      "path": "../../packs/callouts"
+    },
+    {
+      "path": "../../packs/cloud-architecture"
+    },
+    {
+      "path": "../../packs/devices"
+    },
+    {
+      "path": "../../packs/flowchart"
+    },
+    {
+      "path": "../../packs/icons-lucide"
+    },
+    {
+      "path": "../../packs/infographic"
+    },
+    {
+      "path": "../../packs/network"
+    },
+    {
+      "path": "../../packs/people"
+    },
+    {
+      "path": "../../packs/uml"
     }
   ]
 }

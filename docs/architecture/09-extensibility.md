@@ -327,6 +327,14 @@ A failed load is retried only on a subsequent explicit call. The adapter never r
 partial pack, chooses a network endpoint or loads executable code. `ShapePackLoaderOptions`
 captures host capabilities at creation; used-definition embedding and offline resave are exercised by M18.14.
 
+The studio library uses one loader per first-party pack (M18.32). Every index is verified when
+the studio starts, and the library lists and searches the packs by the names their indexes give
+(`entriesOfIndex`; the editor's `catalog` prop). An entry's category is read only when the entry
+is picked or dropped, or when the open document already uses it; the definition is then
+registered in that document's registry. A namespace the opened file embeds stays the file's
+(ADR-0185). What the document loaded is passed to the save as `distribution` sources, so the
+file embeds only the definitions it uses (FR-LIB-009).
+
 ### Verified artwork font acquisition (ADR-0192)
 
 `createArtworkShapePackLoader(indexBytes, options)` takes the same options and accepts 1.0
