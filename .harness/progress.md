@@ -3663,3 +3663,6 @@ ci: 41079529941 green at 53f8311 (Fixes-ci 41066494490, webkit); Windows verify 
 reopen: M18.207 Commit cells name a landed commit of their row (F1/F3; M18.136 cell -> 78a8aae), M18.208 emscriptenRevision checked (F2)
 argued: F4 range over read cap only at ~250k scalars, fails safe
 next: read Windows verify at c62be1b before next product push; stream 2; M18.205 nightly still queued
+
+## 2026-10-30 M18.43: plan M18.209 (ci 41099253702 red at c62be1b)
+- verify (macos-latest) and cold-setup failed on M18.203's wall-clock assertion in the parallel unit suite (296.6 ms against SUBSET_RANGE_READ_MAX_MS 200). The row keeps the 200 ms budget unchanged but moves it to a nightly bench, and makes the unit test prove the bound by relative scaling, as imported-pack-scaling.test.ts does for M18.126.
