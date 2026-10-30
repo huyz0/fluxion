@@ -3514,3 +3514,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 ## M18.43 — plan M18.198 (2026-10-30)
 
 - M18.195's review r4 (pass) left minor F1: once the cleanup has settled, `stop()` kills a still-running taskkill and its rejection starts a two-second timer nothing cancels; the verdict is unaffected, but the process can stay alive up to 2 s after dispose. Stream 1 asked for it as a row; id M18.198 claimed. The optional `cleanup` default (r4 F2) stays as it is.
+
+## M18.43 — checkpoint cp26 (2026-10-30)
+
+- Verdict changes-requested; reopened M18.199 (ci evidence and last-ci page the whole product tree), M18.200 (a pending product fix of the same failed job reads as fix pending, exit 2), M18.201 (a Windows close after the reserve traces 'exited-after-reserve'; the e2e prints the lines on success).
+- Traced Windows reds 40984987413 (job 123833804411) and 40985544159 (job 123835584518) closed at 2006/2010 ms on b9a6f0f's tree, before 417153f: they confirm the diagnosis.
+- Order: cp26 record; M18.199/200 (harness paths); close M18.195 with M18.190 after three consecutive Windows-green runs from 417153f, no reruns or cancellations; then the font batch; then M18.198 with M18.201 as one cli batch.
