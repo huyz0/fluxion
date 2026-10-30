@@ -7,8 +7,8 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { cleanEnv, REPO } from './helpers.mjs';
 
-/** Runs last-ci.mjs against `runs` (gh run list shape); returns its status and output. */
-function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined, backlog = undefined) {
+/** Runs last-ci.mjs against `runs` (gh run list shape) with a backlog and extra `args`; returns its status and output. */
+function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined, { backlog, args = [] } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'last-ci-'));
   try {
     const file = join(dir, 'runs.json');
@@ -18,7 +18,7 @@ function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined, backlog = u
     writeFileSync(backlogFile, backlog ?? '');
     const r = spawnSync(
       process.execPath,
-      [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now, '--offline', '--backlog', backlogFile],
+      [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now, '--offline', '--backlog', backlogFile, ...args],
       {
         encoding: 'utf8',
         cwd,
@@ -381,17 +381,50 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.match(r.out, /UNKNOWN ci: the jobs of run 42 on the tree of its green at sha4200 \(run 42\) could not be read/);
   });
 
+  it("M18.199: the tree's runs are paged back to its start, never read from a fixed window (cp26 F1)", () => {
+    const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
+    const jobs = (windows) => [
+      { name: 'verify (ubuntu-latest)', conclusion: windows === 'cancelled' ? 'cancelled' : 'success' },
+      { name: 'verify (windows-latest)', conclusion: windows },
+    ];
+    const ci = (id, minute, windows, tree = 'T1') =>
+      run('ci', windows, `2026-09-29T02:${String(minute).padStart(2, '0')}:00Z`, { databaseId: id, headSha: `sha${id}00000`, tree, jobs: jobs(windows) });
+    // windows verify failed twice on the tree (like 40894960957, 40905801401), then ten later pushes:
+    // one green and nine cancelled, so with five runs a page both failures lie on page 3
+    const later = [ci(60, 50, 'success'), ...Array.from({ length: 9 }, (_, i) => ci(50 + i, 40 + i, 'cancelled'))];
+    const failed = [ci(41, 20, 'failure'), ci(40, 10, 'failure')];
+    const start = ci(30, 5, 'success', 'T0');
+    const paged = ['--page-size', '5'];
+    let r = lastCi([...later, ...failed, start, gates], undefined, undefined, { args: paged });
+    assert.equal(r.status, 1, r.out);
+    assert.match(
+      r.out,
+      /INTERMITTENT ci green at sha6000 \(run 60\): job verify \(windows-latest\) failure in ci run 41 .*green in 1 later run\(s\) of 2 needed/,
+    );
+    // the same tree read in full with a second later green: green
+    r = lastCi([ci(61, 55, 'success'), ...later, ...failed, start, gates], undefined, undefined, { args: paged });
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /ci green at sha6100 \(run 61\)/);
+    // a history cut before the tree's start, or a page that cannot be read, is unknown, never green
+    r = lastCi([ci(61, 55, 'success'), ...later, ...failed, gates, { truncated: true }], undefined, undefined, { args: paged });
+    assert.equal(r.status, 3, r.out);
+    assert.match(r.out, /UNKNOWN ci: the runs on the product tree of its green at sha6100 \(run 61\) cannot be read \(main's ci runs ran out at page 4/);
+    r = lastCi([ci(61, 55, 'success'), ...later, ...failed, start, gates, { pageFails: 3 }], undefined, undefined, { args: paged });
+    assert.equal(r.status, 3, r.out);
+    assert.match(r.out, /cannot be read \(page 3 of the runs file failed\)/);
+  });
+
   it('a red run names an open blocks-landing row, under which that row and harness-path commits proceed (M18.142)', () => {
     const row = (state) => `| M18.117 | CI green \`blocks-landing\` | HARNESS | acceptance | — | ${state} | |\n`;
     const red = [run('ci', 'failure', '2026-09-29T02:00:00Z', 'deadbee0000000'), run('gates', 'success', '2026-09-29T02:00:00Z')];
     const named = /last-ci: M18\.117 blocks landing \(`blocks-landing`\): only that row and commits confined to HARNESS_PATHS proceed until it is done/;
-    let r = lastCi(red, undefined, undefined, row('todo'));
+    let r = lastCi(red, undefined, undefined, { backlog: row('todo') });
     assert.equal(r.status, 1, r.out);
     assert.match(r.out, named);
-    r = lastCi(red, undefined, undefined, row('done'));
+    r = lastCi(red, undefined, undefined, { backlog: row('done') });
     assert.equal(r.status, 1, r.out);
     assert.doesNotMatch(r.out, /blocks landing/, 'a done row blocks nothing');
-    r = lastCi([run('ci', 'success', '2026-09-29T02:00:00Z'), run('gates', 'success', '2026-09-29T02:00:00Z')], undefined, undefined, row('todo'));
+    r = lastCi([run('ci', 'success', '2026-09-29T02:00:00Z'), run('gates', 'success', '2026-09-29T02:00:00Z')], undefined, undefined, { backlog: row('todo') });
     assert.equal(r.status, 0, r.out);
     assert.doesNotMatch(r.out, /blocks landing/, 'only a red verdict names it');
   });

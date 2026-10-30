@@ -223,6 +223,66 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     }
   });
 
+  it("HARNESS: --record pages main's ci runs back to the tree's start and refuses when it cannot (M18.199, cp26 F1)", () => {
+    const s = sandbox(['scripts'], { git: true });
+    try {
+      const commit = (path, subject) => {
+        s.write(path, `${subject}\n`);
+        s.git('add', path);
+        s.git('commit', '-q', '--no-verify', '-m', subject);
+        return s.git('rev-parse', 'HEAD').stdout.trim();
+      };
+      const before = commit('packages/old.ts', 'M9.1: feat(core): an older product tree');
+      const product = commit('packages/p.ts', 'M9.2: fix(cli): the product tree under test');
+      // ten harness pushes on the tree, as after 40894960957 and 40905801401
+      const heads = Array.from({ length: 10 }, (_, i) => commit(`scripts/gates/h${i}.mjs`, `M9.${3 + i}: fix(harness): push ${i}`));
+      const at = (id, head, minute, windows = 'success') => ({
+        ...withJob(run(id, 'ci', head, 'verify'), 'windows-latest', windows),
+        conclusion: windows,
+        status: 'completed',
+        createdAt: `2026-10-29T10:${String(minute).padStart(2, '0')}:00Z`,
+      });
+      const tip = heads.at(-1);
+      const gates = { ...run(1, 'gates', tip, 'gates'), status: 'completed', createdAt: '2026-10-29T11:00:00Z' };
+      // one green at the tip, nine cancelled pushes, the two windows failures on page 3 of five-run pages
+      const later = [at(60, tip, 50), ...heads.slice(0, 9).map((h, i) => at(50 + i, h, 40 + i, 'cancelled'))];
+      const failed = [at(41, product, 20, 'failure'), at(40, product, 10, 'failure')];
+      const start = at(30, before, 5);
+      const rec = (runs) => {
+        s.write('runs.json', JSON.stringify(runs));
+        return s.node('scripts/gates/check-ci-evidence.mjs', [
+          '--record',
+          tip,
+          '--since',
+          product,
+          '--file',
+          s.path('rec.json'),
+          '--runs-file',
+          s.path('runs.json'),
+          '--page-size',
+          '5',
+        ]);
+      };
+      let r = rec([...later, ...failed, start, gates]);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /not recording \w{7}: .*job verify \(windows-latest\) failure in ci run 41 .*green in 1 later run\(s\) of 2 needed/);
+      // the same tree read in full with a second later green records
+      const second = at(61, tip, 55);
+      r = rec([second, ...later, ...failed, start, gates]);
+      assert.equal(r.status, 0, out(r));
+      assert.match(r.stdout, /recorded \w{7} \{"gates":1,"ci":61\}/);
+      // a history cut before the tree's start, or an unreadable page, refuses: unread runs are no green
+      r = rec([second, ...later, ...failed, gates, { truncated: true }]);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /not recording \w{7}: reading main's ci runs on the product tree of \w{7} failed: main's ci runs ran out at page 4/);
+      r = rec([second, ...later, ...failed, start, gates, { pageFails: 2 }]);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /page 2 of the runs file failed/);
+    } finally {
+      s.cleanup();
+    }
+  });
+
   it('--milestone fails a recorded sha before the final review range end, even with green runs', () => {
     const r = check(record(sha.code), green(sha.code), ['--milestone', 'M9']);
     assert.equal(r.status, 1, out(r));
@@ -319,6 +379,51 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
       'no token, no Authorization header',
     );
     await assert.rejects(rest.view(99), /answered 404/);
+  });
+
+  it("HARNESS: ci's push runs are paged alike through REST and gh, and a tree's runs are read to its start (M18.199, cp26 F1)", async () => {
+    const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const { pagedTreeRuns } = await import('../../scripts/gates/same-tree.mjs');
+    const ghRunOf = (id) => ({ id, name: 'ci', head_sha: 'c'.repeat(40), status: 'completed', conclusion: 'success', created_at: 'T' });
+    const mapped = { databaseId: 7, workflowName: 'ci', headSha: 'c'.repeat(40), status: 'completed', conclusion: 'success', createdAt: 'T' };
+    const urls = [];
+    const fetch = async (url) => {
+      urls.push(url);
+      return { ok: true, status: 200, json: async () => ({ workflow_runs: [ghRunOf(7)] }) };
+    };
+    assert.deepEqual(await restSource({ fetch }).ciPage('main', 2), [mapped]);
+    const path = 'actions/workflows/ci.yml/runs?branch=main&event=push&per_page=100&page=2';
+    assert.equal(urls[0], `https://api.github.com/repos/huyz0/fluxion/${path}`);
+    const spawned = [];
+    const gh = ghSource((cmd, args) => {
+      spawned.push([cmd, ...args]);
+      return { status: 0, stdout: JSON.stringify({ workflow_runs: [ghRunOf(7)] }) };
+    });
+    assert.deepEqual(await gh.ciPage('main', 2), [mapped]);
+    assert.deepEqual(spawned[0], ['gh', 'api', `repos/huyz0/fluxion/${path}`]);
+    // paging stops at the tree's start; running out first, or past maxPages, throws
+    const pages = [[{ id: 1 }, { id: 2 }], [{ id: 3 }, { id: 4 }], [{ id: 5 }]];
+    const read = [];
+    const page = async (n) => {
+      read.push(n);
+      return pages[n - 1] ?? [];
+    };
+    const on = (r) => r.id <= 3;
+    assert.deepEqual(await pagedTreeRuns({ page, on, start: (r) => r.id === 4 }), [{ id: 1 }, { id: 2 }, { id: 3 }]);
+    assert.deepEqual(read, [1, 2]);
+    await assert.rejects(pagedTreeRuns({ page, on, start: () => false }), /ran out at page 4/);
+    await assert.rejects(pagedTreeRuns({ page, on, start: () => false, maxPages: 2 }), /in 2 pages/);
+    assert.equal((await pagedTreeRuns({ page, on, start: () => false, complete: true })).length, 3);
+    await assert.rejects(
+      pagedTreeRuns({
+        page: async () => {
+          throw new Error('answered 502');
+        },
+        on,
+        start: () => false,
+      }),
+      /answered 502/,
+    );
   });
 
   it("NFR-MNT-005: the nightly's runs are read by workflow file on the branch, whatever their event (M18.124)", async () => {

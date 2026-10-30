@@ -32,12 +32,14 @@
 // INTERMITTENT (exit 1) while a job failed or timed out in a ci run on its product tree and has not been
 // green in two later completed runs there (M18.196, cp25 F2, same-tree.mjs); an unreadable tree or job
 // list is unknown. In --runs-file a run's optional `tree` names its product tree (else its head sha).
+// The tree's runs are paged back to its start, never read from the branch window; a page that cannot be
+// read, or running out first, is unknown (M18.199, cp26 F1). --page-size <n>: runs per page of --runs-file.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { runSource, transportHint } from '../gates/ci-runs.mjs';
+import { PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
 import { blockingRows } from '../gates/landing-block.mjs';
 import { repoPath } from '../gates/lib.mjs';
-import { describe, intermittent, onTree, productBase } from '../gates/same-tree.mjs';
+import { describe, intermittent, pagedTreeRuns, shaTreeRuns } from '../gates/same-tree.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const WORKFLOWS = ['ci', 'gates'];
@@ -121,21 +123,41 @@ function ensureCommit(sha) {
   if (spawnSync('git', ['cat-file', '-e', `${sha}^{commit}`]).status === 0 || offline || !/^[0-9a-f]{40}$/.test(String(sha))) return;
   spawnSync('git', ['fetch', '-q', '--no-tags', 'origin', String(sha)], { encoding: 'utf8', timeout: 60_000 });
 }
-/** The runs of `mine` with `done`'s product tree, or null when it cannot be read (M18.196). */
-function treeRuns(mine, done) {
+/**
+ * The ci runs with `done`'s product tree, paged back to the tree's start (M18.199, cp26 F1). In
+ * --runs-file a run's `tree` (else its head) names its tree; a run older than `done` on another tree is
+ * the start, and the file is the whole history unless an entry says `truncated`.
+ */
+function treeRuns(done) {
   if (opt('runs-file')) {
     const key = (r) => r.tree ?? r.headSha;
-    return mine.filter((r) => key(r) === key(done));
+    return pagedTreeRuns({
+      page: (n) => source.ciPage(branch, n),
+      on: (r) => key(r) === key(done),
+      start: (r) => key(r) !== key(done) && String(r.createdAt) < String(done.createdAt),
+      complete: !fileRuns.some((r) => r.truncated),
+    });
   }
-  for (const r of mine) ensureCommit(r.headSha);
-  const base = productBase(done.headSha);
-  return base ? mine.filter((r) => onTree(base, r.headSha)) : null;
+  const page = async (n) => {
+    const runs = await source.ciPage(branch, n);
+    for (const r of runs) ensureCommit(r.headSha);
+    return runs;
+  };
+  ensureCommit(done.headSha);
+  return shaTreeRuns(page, done.headSha);
 }
 /** A green ci run is intermittent while a job failed on its tree and is not yet green twice since (M18.196, cp25 F2). */
-async function sameTreeVerdict(workflow, done, mine) {
+async function sameTreeVerdict(workflow, done) {
   const where = `green at ${String(done.headSha).slice(0, 7)} (run ${done.databaseId})`;
-  const onIt = treeRuns(mine, done);
-  if (onIt === null) return { verdict: UNKNOWN, lines: [`last-ci: UNKNOWN ${workflow}: the product tree of its ${where} cannot be read; check CI by hand`] };
+  let onIt;
+  try {
+    onIt = await treeRuns(done);
+  } catch (e) {
+    return {
+      verdict: UNKNOWN,
+      lines: [`last-ci: UNKNOWN ${workflow}: the runs on the product tree of its ${where} cannot be read (${e.message}); check CI by hand`],
+    };
+  }
   const withJobs = [];
   for (const r of onIt) {
     const jobs = await Promise.resolve(source.jobs?.(r.databaseId)).catch(() => null);
@@ -162,6 +184,13 @@ const withNewestCompleted = (window, completed) => [...window, ...completed.filt
 function fileSource(all) {
   const pushes = all.filter((r) => r.workflowName !== 'nightly' && !r.queryFails);
   return {
+    // ci's runs newest first in pages of --page-size, `outsideWindow` ones too; `{ pageFails: n }` fails page n
+    ciPage: async (_, n) => {
+      if (all.some((r) => r.pageFails === n)) throw new Error(`page ${n} of the runs file failed`);
+      const size = Number(opt('page-size') ?? PAGE_SIZE);
+      const ci = pushes.filter((r) => r.workflowName === 'ci').sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+      return ci.slice((n - 1) * size, n * size);
+    },
     branch: async () => pushes.filter((r) => !r.outsideWindow),
     completed: async (_, file) => {
       const workflow = file.replace(/\.yml$/, '');
@@ -188,10 +217,13 @@ function fileSource(all) {
 let runs;
 let nightlyRuns;
 let source;
+/** The --runs-file entries, [] when GitHub is read. */
+let fileRuns = [];
 /** Workflows whose status-filtered query failed: no completed run in the window is then unknown, not "none yet" (r1 F2). */
 const unread = new Set();
 try {
-  source = opt('runs-file') ? fileSource(JSON.parse(readFileSync(opt('runs-file'), 'utf8'))) : runSource();
+  fileRuns = opt('runs-file') ? JSON.parse(readFileSync(opt('runs-file'), 'utf8')) : [];
+  source = opt('runs-file') ? fileSource(fileRuns) : runSource();
   // the branch window mixes workflows and can drop an old red run; ask for each workflow's newest
   // completed run too (M18.134, cp14 F1). A failed query is said, and the unknown rule below applies.
   const completed = await Promise.all(
@@ -245,7 +277,7 @@ for (const workflow of WORKFLOWS) {
     continue;
   }
   if (done.conclusion === 'success' || done.conclusion === 'skipped') {
-    const tree = workflow === 'ci' ? await sameTreeVerdict(workflow, done, mine) : { verdict: 0, lines: [] };
+    const tree = workflow === 'ci' ? await sameTreeVerdict(workflow, done) : { verdict: 0, lines: [] };
     verdict = worst(verdict, tree.verdict);
     for (const line of tree.lines) console.log(line);
     if (tree.verdict === 0) console.log(`last-ci: ${workflow} green at ${sha} (run ${done.databaseId})${tail}`);

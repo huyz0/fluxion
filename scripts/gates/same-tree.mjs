@@ -3,7 +3,8 @@
 // head has the same product tree as the green run they rely on (no commit changing a product path in
 // between), and a job that failed or timed out in one of them counts until it has been green in
 // REQUIRED_GREENS later completed runs on that tree. A product path is any path outside HARNESS_PATHS,
-// docs/ and .changeset/: those change no code a ci job runs as the product.
+// docs/ and .changeset/: those change no code a ci job runs as the product. The runs are read page by
+// page back to the tree's start, never from a fixed window that can drop the failed run (M18.199, cp26 F1).
 import { harnessPath } from './landing-block.mjs';
 import { git } from './lib.mjs';
 
@@ -63,3 +64,52 @@ export const describe = (found, greens = REQUIRED_GREENS) =>
     (f) =>
       `job ${f.job} ${f.conclusion} in ci run ${f.run} at ${String(f.sha).slice(0, 7)} on the same product tree, green in ${f.greens} later run(s) of ${greens} needed`,
   );
+
+/** Pages read before a tree's start is given up as out of reach (M18.199). */
+export const TREE_MAX_PAGES = 20;
+
+/**
+ * The runs on one tree, read newest first page by page (`page(n)`, from 1) until a run at or before the
+ * tree's start (`start(run)`) has been read (M18.199, cp26 F1); `on(run)` says a run is on the tree.
+ * Throws when a page cannot be read, or the pages run out (an empty page, or `maxPages` read) before the
+ * start, unless `complete`: the source then holds the whole history (a test's runs file). Unread runs are no green.
+ */
+export async function pagedTreeRuns({ page, on, start, complete = false, maxPages = TREE_MAX_PAGES }) {
+  const out = [];
+  for (let n = 1; n <= maxPages; n++) {
+    const runs = await page(n);
+    if (!Array.isArray(runs) || runs.length === 0) {
+      if (complete) return out;
+      throw new Error(`main's ci runs ran out at page ${n} before a run at or before the tree's start`);
+    }
+    if (collect(runs, on, start, out)) return out;
+  }
+  throw new Error(`no run at or before the tree's start in ${maxPages} pages of main's ci runs`);
+}
+
+/** Pushes the runs of one page that are `on` the tree to `out`; true once a run at the tree's `start` is read. */
+function collect(runs, on, start, out) {
+  for (const r of runs) {
+    if (on(r)) out.push(r);
+    if (start(r)) return true;
+  }
+  return false;
+}
+
+/**
+ * The runs on `sha`'s product tree through `page` (see pagedTreeRuns): on the tree is onTree, before
+ * its start is a proper ancestor of the product base. Throws when the tree cannot be read.
+ */
+export function shaTreeRuns(page, sha, { gitRun = git, complete = false, maxPages } = {}) {
+  const base = productBase(sha, gitRun);
+  if (!base)
+    return Promise.reject(new Error(`the product tree of ${String(sha).slice(0, 7)} cannot be read (no such commit locally, or no product commit before it)`));
+  return pagedTreeRuns({
+    page,
+    on: (r) => onTree(base, r.headSha, gitRun),
+    // strictly before: every run at the base itself is on the tree and read
+    start: (r) => r.headSha !== base && gitRun(['merge-base', '--is-ancestor', String(r.headSha), base]).status === 0,
+    complete,
+    maxPages,
+  });
+}

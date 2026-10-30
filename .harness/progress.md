@@ -3520,3 +3520,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Verdict changes-requested; reopened M18.199 (ci evidence and last-ci page the whole product tree), M18.200 (a pending product fix of the same failed job reads as fix pending, exit 2), M18.201 (a Windows close after the reserve traces 'exited-after-reserve'; the e2e prints the lines on success).
 - Traced Windows reds 40984987413 (job 123833804411) and 40985544159 (job 123835584518) closed at 2006/2010 ms on b9a6f0f's tree, before 417153f: they confirm the diagnosis.
 - Order: cp26 record; M18.199/200 (harness paths); close M18.195 with M18.190 after three consecutive Windows-green runs from 417153f, no reruns or cancellations; then the font batch; then M18.198 with M18.201 as one cli batch.
+
+## M18.199 — ci evidence and last-ci read the whole product tree (2026-10-30)
+
+- cp26 F1: both read the tree's runs from the newest 30 push runs of every workflow, so a failed Windows run behind ten pushes fell out of sight. ci-runs `ciPage` (REST, and gh through `gh api` on the same path) reads ci.yml's push runs 100 a page; same-tree `pagedTreeRuns`/`shaTreeRuns` page until a run strictly before the tree's product base, and throw when a page fails or the pages run out (20 at most).
+- check-ci-evidence refuses (record and verify) and last-ci prints UNKNOWN (exit 3) on such a throw. Runs files page with --page-size; `{ pageFails: n }` and `{ truncated: true }` stand for an unreadable page and a cut history.
+- gh's reads get a 256 MB buffer: one 100-run page overflowed spawnSync's 1 MB (ENOBUFS, seen live). Live verify now reads the tree of ceb8246 in full and names 40946682115 (Windows, 238ee26) as not yet green twice.

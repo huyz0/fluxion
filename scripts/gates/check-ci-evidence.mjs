@@ -21,12 +21,14 @@
 //                     objects used instead of GitHub (tests)
 // Both modes also read every ci run on main with the recorded sha's product tree (same-tree.mjs): a job
 // that failed or timed out in one of them and has not been green in two later runs refuses (M18.196, cp25 F2).
+// The runs are paged back to the tree's start; a page that cannot be read, or running out first, refuses (M18.199).
+//   --page-size <n>   runs per page of --runs-file (tests; GitHub is read 100 a page)
 // GitHub is read through `gh` when installed, else the REST API (GITHUB_TOKEN sent when set; ci-runs.mjs).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { runSource, transportHint } from './ci-runs.mjs';
+import { PAGE_SIZE, runSource, transportHint } from './ci-runs.mjs';
 import { git, repoPath } from './lib.mjs';
 import { AFTER_REVIEW_PATHS } from './milestone-checks.mjs';
-import { describe, intermittent, onTree, productBase } from './same-tree.mjs';
+import { describe, intermittent, shaTreeRuns } from './same-tree.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k) => {
@@ -78,24 +80,41 @@ function problems(run, workflow, sha) {
   return out;
 }
 
-/** ci runs on main with their jobs: the fixture's ci entries, else the branch window and each run's jobs. */
-async function branchCiRuns() {
-  if (fixture) return fixture.filter((r) => r.workflowName === 'ci');
-  const runs = (await source.branch('main')).filter((r) => r.workflowName === 'ci');
-  return Promise.all(runs.map(async (r) => ({ ...r, jobs: await source.jobs(r.databaseId) })));
+/**
+ * A page of ci's push runs on main, newest first: GitHub's, or the fixture's ci entries in pages of
+ * --page-size (tests). A fixture entry `{ pageFails: n }` makes page n unreadable; one `{ truncated: true }`
+ * says the fixture's history is cut, so running out of it is no tree start (M18.199).
+ */
+async function ciPage(n) {
+  if (!fixture) {
+    const runs = await source.ciPage('main', n);
+    for (const r of runs) ensureCommit(r.headSha);
+    return runs;
+  }
+  if (fixture.some((r) => r.pageFails === n)) throw new Error(`page ${n} of the runs file failed`);
+  const size = Number(opt('page-size') ?? PAGE_SIZE);
+  const ci = fixture.filter((r) => r.workflowName === 'ci').sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return ci.slice((n - 1) * size, n * size);
+}
+/** Fetch a run's head from origin when the clone has not seen it, so that its tree can be told. */
+function ensureCommit(sha) {
+  if (!/^[0-9a-f]{40}$/.test(String(sha)) || git(['cat-file', '-e', `${sha}^{commit}`]).status === 0) return;
+  git(['fetch', '-q', '--no-tags', 'origin', String(sha)]);
 }
 
-/** Jobs that failed on `sha`'s product tree and are not yet green twice since (M18.196); unreadable runs are a problem too. */
+/**
+ * Jobs that failed on `sha`'s product tree and are not yet green twice since (M18.196); every ci run back
+ * to the tree's start is read (M18.199, cp26 F1), and an unreadable tree, page or run is a problem too.
+ */
 async function sameTreeProblems(sha) {
-  const base = productBase(sha);
-  if (!base) return [`the product tree of ${String(sha).slice(0, 7)} cannot be read (no such commit locally, or no product commit before it)`];
   let runs;
   try {
-    runs = await branchCiRuns();
+    const onIt = await shaTreeRuns(ciPage, sha, { complete: Boolean(fixture) && !fixture.some((r) => r.truncated) });
+    runs = fixture ? onIt : await Promise.all(onIt.map(async (r) => ({ ...r, jobs: await source.jobs(r.databaseId) })));
   } catch (e) {
-    return [`reading main's ci runs failed: ${e?.message ?? e}${fixture ? '' : transportHint()}`];
+    return [`reading main's ci runs on the product tree of ${String(sha).slice(0, 7)} failed: ${e?.message ?? e}${fixture ? '' : transportHint()}`];
   }
-  return describe(intermittent(runs.filter((r) => onTree(base, r.headSha))));
+  return describe(intermittent(runs));
 }
 
 /** HEAD's newest commit touching a path outside AFTER_REVIEW_PATHS (the list the final-review range check uses). */
