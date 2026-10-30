@@ -414,6 +414,76 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.match(r.out, /cannot be read \(page 3 of the runs file failed\)/);
   });
 
+  it('M18.200: a pending product fix of the same failed job is a fix pending (exit 2), a harness-only or other-job fix is not (cp26 F2)', () => {
+    const gates = run('gates', 'success', '2026-10-30T01:00:00Z', { databaseId: 39 });
+    const windows = (conclusion) => [
+      { name: 'verify (ubuntu-latest)', conclusion: 'success' },
+      { name: 'verify (windows-latest)', conclusion },
+      { name: 'ci-ok', conclusion: conclusion === 'failure' ? 'failure' : conclusion },
+    ];
+    // 40905801401: verify (windows-latest) failed at db19f11, the run then cancelled; far behind the window
+    const named = (jobs = windows('failure'), extra = {}) =>
+      run('ci', 'cancelled', '2026-10-29T08:00:00Z', { databaseId: 40905801401, headSha: 'db19f11', tree: 'T0', outsideWindow: true, jobs, ...extra });
+    const green = run('ci', 'success', '2026-10-29T20:00:00Z', { databaseId: 40953359465, headSha: '82bc01e', tree: 'T1', jobs: windows('success') });
+    // 40984987413 and 40985544159: windows failed on b9a6f0f's tree while the runs were still pending
+    const red = (id, sha, minute) =>
+      run('ci', 'in_progress', `2026-10-30T00:${minute}:00Z`, {
+        databaseId: id,
+        headSha: sha,
+        tree: 'T2',
+        jobs: windows('failure'),
+        message: 'M18.43: chore(harness): x',
+      });
+    const reds = [red(40985544159, '8419d51', '40'), red(40984987413, '35a71bb', '30')];
+    // 417153f: the product fix, pending, declaring the earlier windows red
+    const fix = (paths, message = 'M18.195: fix(cli): wait for the observed exit\n\nFixes-ci: 40905801401\n') =>
+      run('ci', 'queued', '2026-10-30T01:10:00Z', { databaseId: 40989002393, headSha: '417153f', tree: 'T3', jobs: [], message, paths });
+    const product = ['packages/cli/src/svg-witness-cleanup.ts', '.harness/progress.md'];
+    let r = lastCi([fix(product), ...reds, green, gates, named()], '2026-10-30T01:30:00Z');
+    assert.equal(r.status, 2, r.out);
+    assert.match(
+      r.out,
+      /RED ci failure in verify \(windows-latest\), ci-ok \(run still pending\) at 8419d51 \(run 40985544159\) \(1 newer run pending\): wait for the pending fix of job verify \(windows-latest\) \(run 40989002393, Fixes-ci: 40905801401\), then run last-ci again/,
+    );
+    assert.match(r.out, /at 35a71bb \(run 40984987413\) \(2 newer runs pending\): wait for the pending fix of job verify \(windows-latest\) \(run 40989002393/);
+    assert.doesNotMatch(r.out, /none declares Fixes-ci/);
+    // a harness-only commit with the trailer fixes no product job
+    r = lastCi([fix(['scripts/gates/x.mjs', '.harness/progress.md']), ...reds, green, gates, named()], '2026-10-30T01:30:00Z');
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /\(run 40985544159\) \(1 newer run pending\): none declares Fixes-ci: 40985544159/);
+    // a fix naming a run that failed another job, or a run off the branch, is no fix of this one
+    const macos = [
+      { name: 'verify (macos-latest)', conclusion: 'timed_out' },
+      { name: 'verify (windows-latest)', conclusion: 'success' },
+      // the aggregate job failed in both runs: it ties no fix to the red (r1)
+      { name: 'ci-ok', conclusion: 'failure' },
+    ];
+    assert.equal(lastCi([fix(product), ...reds, green, gates, named(macos)], '2026-10-30T01:30:00Z').status, 1);
+    assert.equal(lastCi([fix(product), ...reds, green, gates, named(undefined, { headBranch: 'topic' })], '2026-10-30T01:30:00Z').status, 1);
+    // the bounds of M18.118 hold: pending past LAST_CI_MAX_WAIT_MS is red
+    r = lastCi([fix(product), ...reds, green, gates, named()], '2026-10-30T09:30:00Z');
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /has been pending over/);
+    // a completed red waits for it too, its failed jobs read from the run
+    const done = run('ci', 'failure', '2026-10-30T00:50:00Z', { databaseId: 40986000000, headSha: 'aaaaaaa', jobs: windows('failure') });
+    r = lastCi([fix(product), done, gates, named()], '2026-10-30T01:30:00Z');
+    assert.equal(r.status, 2, r.out);
+    assert.match(r.out, /RED ci failure at aaaaaaa \(run 40986000000\) \(1 newer run pending\): wait for the pending fix of job verify \(windows-latest\)/);
+    // an intermittent tree (M18.196) waits for it as well; without it, it stays red
+    const tree = (id, minute, conclusion) =>
+      run('ci', conclusion, `2026-10-30T00:${minute}:00Z`, { databaseId: id, headSha: `sha${id}`, tree: 'T2', jobs: windows(conclusion) });
+    const flaky = [tree(43, '45', 'success'), tree(42, '40', 'failure'), named()];
+    r = lastCi([fix(product), ...flaky, gates], '2026-10-30T01:30:00Z');
+    assert.equal(r.status, 2, r.out);
+    assert.match(
+      r.out,
+      /INTERMITTENT ci green at sha43 \(run 43\): job verify \(windows-latest\) failure in ci run 42 .*needed: wait for the pending fix of job verify \(windows-latest\) \(run 40989002393/,
+    );
+    r = lastCi([fix(['scripts/gates/x.mjs']), ...flaky, gates], '2026-10-30T01:30:00Z');
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /needed; fix it before the next task/);
+  });
+
   it('a red run names an open blocks-landing row, under which that row and harness-path commits proceed (M18.142)', () => {
     const row = (state) => `| M18.117 | CI green \`blocks-landing\` | HARNESS | acceptance | — | ${state} | |\n`;
     const red = [run('ci', 'failure', '2026-09-29T02:00:00Z', 'deadbee0000000'), run('gates', 'success', '2026-09-29T02:00:00Z')];

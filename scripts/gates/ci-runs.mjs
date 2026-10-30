@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 
 export const REPO = 'huyz0/fluxion';
 const API = 'https://api.github.com';
-const FIELDS = 'databaseId,workflowName,headSha,conclusion,jobs';
+const FIELDS = 'databaseId,workflowName,headSha,headBranch,conclusion,jobs';
 const RUN_FIELDS = 'databaseId,workflowName,headSha,status,conclusion,createdAt';
 /** Runs per page when ci's runs are paged (GitHub's maximum). */
 export const PAGE_SIZE = 100;
@@ -32,6 +32,8 @@ export const toGhRun = (run, jobs) => ({
   workflowName: run.name,
   headSha: run.head_sha,
   conclusion: run.conclusion,
+  // last-ci checks that a run a fix names ran on the branch (M18.200)
+  ...(typeof run.head_branch === 'string' && { headBranch: run.head_branch }),
   // steps with their times: check-budget --cold-from-ci reads the cold-setup step's duration
   jobs: jobs.map((j) => ({
     name: j.name,

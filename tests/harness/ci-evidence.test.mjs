@@ -402,18 +402,28 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     assert.deepEqual(await gh.ciPage('main', 2), [mapped]);
     assert.deepEqual(spawned[0], ['gh', 'api', `repos/huyz0/fluxion/${path}`]);
     // paging stops at the tree's start; running out first, or past maxPages, throws
-    const pages = [[{ id: 1 }, { id: 2 }], [{ id: 3 }, { id: 4 }], [{ id: 5 }]];
+    const pages = [[{ databaseId: 1 }, { databaseId: 2 }], [{ databaseId: 3 }, { databaseId: 4 }], [{ databaseId: 5 }]];
     const read = [];
     const page = async (n) => {
       read.push(n);
       return pages[n - 1] ?? [];
     };
-    const on = (r) => r.id <= 3;
-    assert.deepEqual(await pagedTreeRuns({ page, on, start: (r) => r.id === 4 }), [{ id: 1 }, { id: 2 }, { id: 3 }]);
+    const on = (r) => r.databaseId <= 3;
+    assert.deepEqual(await pagedTreeRuns({ page, on, start: (r) => r.databaseId === 4 }), [{ databaseId: 1 }, { databaseId: 2 }, { databaseId: 3 }]);
     assert.deepEqual(read, [1, 2]);
     await assert.rejects(pagedTreeRuns({ page, on, start: () => false }), /ran out at page 4/);
     await assert.rejects(pagedTreeRuns({ page, on, start: () => false, maxPages: 2 }), /in 2 pages/);
     assert.equal((await pagedTreeRuns({ page, on, start: () => false, complete: true })).length, 3);
+    // a push between two reads shifts a run onto the next page: it is read twice, counted once (M18.199 r1)
+    const shifted = [
+      [{ databaseId: 1 }, { databaseId: 2 }],
+      [{ databaseId: 2 }, { databaseId: 3 }],
+    ];
+    const once = await pagedTreeRuns({ page: async (n) => shifted[n - 1] ?? [], on: () => true, start: (r) => r.databaseId === 3 });
+    assert.deepEqual(
+      once.map((r) => r.databaseId),
+      [1, 2, 3],
+    );
     await assert.rejects(
       pagedTreeRuns({
         page: async () => {

@@ -34,12 +34,15 @@
 // list is unknown. In --runs-file a run's optional `tree` names its product tree (else its head sha).
 // The tree's runs are paged back to its start, never read from the branch window; a page that cannot be
 // read, or running out first, is unknown (M18.199, cp26 F1). --page-size <n>: runs per page of --runs-file.
+// A red run, or an intermittent tree, also waits (exit 2, bounded as above) for a pending run whose commit
+// changes a product path and declares Fixes-ci for a ci run on the branch that failed the same job (M18.200,
+// cp26 F2); a harness-only commit fixes no product job. In --runs-file a run's `paths` stand for its commit's.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
 import { blockingRows } from '../gates/landing-block.mjs';
 import { repoPath } from '../gates/lib.mjs';
-import { describe, intermittent, pagedTreeRuns, shaTreeRuns } from '../gates/same-tree.mjs';
+import { describe, intermittent, pagedTreeRuns, productPath, shaTreeRuns } from '../gates/same-tree.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const WORKFLOWS = ['ci', 'gates'];
@@ -72,11 +75,44 @@ function messageOf(r) {
 /** The run ids a message's `Fixes-ci:` trailers name. */
 const declared = (message) => [...message.matchAll(/^Fixes-ci:\s*(.+)$/gim)].flatMap((m) => m[1].split(/[\s,]+/).filter(Boolean));
 
-/** How a red completed run with `newer` pending runs is reported: exit 2 (wait) only for a declared, bounded fix. */
-function redWithPending(workflow, done, newer, sha) {
-  const head = `last-ci: RED ${workflow} ${done.conclusion} at ${sha} (run ${done.databaseId}) (${newer.length} newer run${newer.length === 1 ? '' : 's'} pending)`;
-  const fix = newer.findLast((r) => declared(messageOf(r)).includes(String(done.databaseId)));
-  if (fix === undefined) return { verdict: 1, line: `${head}: none declares Fixes-ci: ${done.databaseId}; fix main's CI before the next task` };
+/** The paths a run's head changes: its `paths` (--runs-file), else the local clone's; [] when unknown. */
+function pathsOf(r) {
+  if (Array.isArray(r.paths)) return r.paths;
+  ensureCommit(r.headSha);
+  const shown = spawnSync('git', ['show', '--format=', '--name-only', '--no-renames', String(r.headSha)], { encoding: 'utf8' });
+  return shown.status === 0 ? shown.stdout.split(/\r?\n/).filter(Boolean) : [];
+}
+/** The jobs that failed in run `id` (ci's aggregate job aside), [] when they cannot be read. */
+async function failedJobs(id) {
+  const jobs = await Promise.resolve(source.jobs?.(id)).catch(() => null);
+  return Array.isArray(jobs) ? jobs.filter((j) => FAILED_JOB.has(j.conclusion) && j.name !== 'ci-ok').map((j) => j.name) : [];
+}
+/**
+ * A pending product fix of the same failed job (M18.200, cp26 F2): the oldest run of `newer` whose commit
+ * changes a product path and declares Fixes-ci for a ci run on the branch that failed one of `jobs`, as
+ * `{ fix, job, named }`; undefined when none. A harness-only commit fixes no product job.
+ */
+async function sameJobFix(jobs, newer) {
+  if (jobs.length === 0) return undefined;
+  for (const r of [...newer].reverse()) {
+    const ids = declared(messageOf(r));
+    if (ids.length === 0 || !pathsOf(r).some(productPath)) continue;
+    for (const named of ids) {
+      const job = await namedFailedJob(named, jobs);
+      if (job !== undefined) return { fix: r, job, named };
+    }
+  }
+  return undefined;
+}
+/** The one of `jobs` that failed in ci run `named` on the branch; undefined when none or unreadable. */
+async function namedFailedJob(named, jobs) {
+  const run = await Promise.resolve(source.view?.(named)).catch(() => null);
+  if (run?.workflowName !== 'ci' || run.headBranch !== branch) return undefined;
+  // ci's aggregate job fails with any other, so it never ties a fix to a red (M18.200 r1)
+  return (run.jobs ?? []).find((j) => FAILED_JOB.has(j.conclusion) && j.name !== 'ci-ok' && jobs.includes(j.name))?.name;
+}
+/** Exit 2 while `fix`, one of `newer`, is pending within the bounds of M18.118; else 1. */
+function boundedWait(head, fix, newer, wait) {
   if (newer.length > t('LAST_CI_MAX_PENDING'))
     return { verdict: 1, line: `${head}: more than ${t('LAST_CI_MAX_PENDING')} runs pending on one red; stop landing and fix main's CI` };
   const waited = now - Date.parse(fix.createdAt);
@@ -85,7 +121,20 @@ function redWithPending(workflow, done, newer, sha) {
       verdict: 1,
       line: `${head}: the declared fix (run ${fix.databaseId}) has been pending over ${t('LAST_CI_MAX_WAIT_MS') / 60000} min; check it by hand`,
     };
-  return { verdict: 2, line: `${head}: wait for the declared fix (run ${fix.databaseId}), then run last-ci again` };
+  return { verdict: 2, line: `${head}: ${wait}, then run last-ci again` };
+}
+/**
+ * How a red run with `newer` pending runs is reported: exit 2 (wait) only for a bounded fix that declares
+ * Fixes-ci for it, or a pending product fix of one of its failed `jobs` (M18.200; read when not given).
+ */
+async function redWithPending(workflow, done, newer, jobs) {
+  const sha = String(done.headSha).slice(0, 7);
+  const head = `last-ci: RED ${workflow} ${done.conclusion} at ${sha} (run ${done.databaseId}) (${newer.length} newer run${newer.length === 1 ? '' : 's'} pending)`;
+  const fix = newer.findLast((r) => declared(messageOf(r)).includes(String(done.databaseId)));
+  if (fix !== undefined) return boundedWait(head, fix, newer, `wait for the declared fix (run ${fix.databaseId})`);
+  const same = await sameJobFix(jobs ?? (await failedJobs(done.databaseId)), newer);
+  if (same === undefined) return { verdict: 1, line: `${head}: none declares Fixes-ci: ${done.databaseId}; fix main's CI before the next task` };
+  return boundedWait(head, same.fix, newer, `wait for the pending fix of job ${same.job} (run ${same.fix.databaseId}, Fixes-ci: ${same.named})`);
 }
 
 /**
@@ -105,13 +154,19 @@ async function pendingRed(workflow, newer) {
       lines.push(`last-ci: UNKNOWN ${workflow}: the jobs of pending run ${r.databaseId} at ${sha} could not be read; check CI by hand`);
       continue;
     }
-    const failed = jobs.filter((j) => FAILED_JOB.has(j.conclusion)).map((j) => `${j.name}${j.conclusion === 'failure' ? '' : ` ${j.conclusion}`}`);
+    const failedOnes = jobs.filter((j) => FAILED_JOB.has(j.conclusion));
+    const failed = failedOnes.map((j) => `${j.name}${j.conclusion === 'failure' ? '' : ` ${j.conclusion}`}`);
     if (failed.length === 0) continue;
     const run = { ...r, conclusion: `failure in ${failed.join(', ')} (run still pending)` };
     const red =
       i === 0
         ? { verdict: 1, line: `last-ci: RED ${workflow} ${run.conclusion} at ${sha} (run ${r.databaseId}): fix main's CI before the next task` }
-        : redWithPending(workflow, run, newer.slice(0, i), sha);
+        : await redWithPending(
+            workflow,
+            run,
+            newer.slice(0, i),
+            failedOnes.map((j) => j.name),
+          );
     verdict = worst(verdict, red.verdict);
     lines.push(red.line);
   }
@@ -168,8 +223,16 @@ async function sameTreeVerdict(workflow, done) {
       };
     withJobs.push({ ...r, jobs });
   }
-  const found = describe(intermittent(withJobs));
-  return { verdict: found.length ? 1 : 0, lines: found.map((line) => `last-ci: INTERMITTENT ${workflow} ${where}: ${line}; fix it before the next task`) };
+  const found = intermittent(withJobs);
+  const lines = describe(found).map((line) => `last-ci: INTERMITTENT ${workflow} ${where}: ${line}`);
+  return { verdict: found.length ? 1 : 0, lines, jobs: found.map((f) => f.job) };
+}
+/** An intermittent tree waits (exit 2) while a newer pending run is a bounded product fix of one of its jobs (M18.200). */
+async function intermittentWithPending(tree, newer) {
+  const same = newer.length ? await sameJobFix(tree.jobs, newer) : undefined;
+  if (same === undefined) return { verdict: 1, lines: tree.lines.map((line) => `${line}; fix it before the next task`) };
+  const waited = boundedWait('', same.fix, newer, `wait for the pending fix of job ${same.job} (run ${same.fix.databaseId}, Fixes-ci: ${same.named})`);
+  return { verdict: waited.verdict, lines: tree.lines.map((line) => `${line}${waited.line}`) };
 }
 
 const newest = (list) => [...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0];
@@ -196,6 +259,12 @@ function fileSource(all) {
       const workflow = file.replace(/\.yml$/, '');
       if (all.some((r) => r.queryFails && r.workflowName === workflow)) throw new Error('query failed');
       return [newest(pushes.filter((r) => r.workflowName === workflow && r.status === 'completed'))].filter(Boolean);
+    },
+    // a run of the file by id, on the branch unless it says otherwise (M18.200)
+    view: async (id) => {
+      const r = all.find((x) => String(x.databaseId) === String(id));
+      if (r === undefined) throw new Error(`run ${id} not in --runs-file`);
+      return { headBranch: branch, ...r, jobs: Array.isArray(r.jobs) ? r.jobs : [] };
     },
     jobs: async (id) => {
       const jobs = all.find((r) => r.databaseId === id)?.jobs ?? [];
@@ -277,7 +346,8 @@ for (const workflow of WORKFLOWS) {
     continue;
   }
   if (done.conclusion === 'success' || done.conclusion === 'skipped') {
-    const tree = workflow === 'ci' ? await sameTreeVerdict(workflow, done) : { verdict: 0, lines: [] };
+    let tree = workflow === 'ci' ? await sameTreeVerdict(workflow, done) : { verdict: 0, lines: [] };
+    if (tree.verdict === 1) tree = await intermittentWithPending(tree, mine.slice(0, pending));
     verdict = worst(verdict, tree.verdict);
     for (const line of tree.lines) console.log(line);
     if (tree.verdict === 0) console.log(`last-ci: ${workflow} green at ${sha} (run ${done.databaseId})${tail}`);
@@ -285,7 +355,7 @@ for (const workflow of WORKFLOWS) {
   }
   if (pending > 0) {
     // a red workflow that blocks (exit 1) outranks a wait (M5.2 review F1)
-    const red = redWithPending(workflow, done, mine.slice(0, pending), sha);
+    const red = await redWithPending(workflow, done, mine.slice(0, pending));
     verdict = worst(verdict, red.verdict);
     console.log(red.line);
     continue;
@@ -309,7 +379,8 @@ async function coldSetupReport(run, newer) {
   const text = blame[0].replace(/^budget: /, '');
   // a declared fix of that ci run waits as it does for the run's own red (M18.161 r1 F3)
   if (blame[1] === 'status' && newer.length) {
-    const red = redWithPending('cold-setup', { ...run, conclusion: 'failure' }, newer, String(run.headSha).slice(0, 7));
+    // only a fix that names the run: cold-setup's own job is not matched across runs
+    const red = await redWithPending('cold-setup', { ...run, conclusion: 'failure' }, newer, []);
     return { verdict: red.verdict, line: `${red.line}; ${text}` };
   }
   if (blame[1] === 'status') return { verdict: 1, line: `last-ci: RED cold-setup ${where}: ${text}; a fresh clone fails, fix it before the next task` };

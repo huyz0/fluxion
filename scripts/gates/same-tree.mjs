@@ -65,8 +65,8 @@ export const describe = (found, greens = REQUIRED_GREENS) =>
       `job ${f.job} ${f.conclusion} in ci run ${f.run} at ${String(f.sha).slice(0, 7)} on the same product tree, green in ${f.greens} later run(s) of ${greens} needed`,
   );
 
-/** Pages read before a tree's start is given up as out of reach (M18.199). */
-export const TREE_MAX_PAGES = 20;
+/** Pages read before a tree's start is given up as out of reach: GitHub lists at most 1000 filtered runs, 10 pages of 100 (M18.199 r1). */
+export const TREE_MAX_PAGES = 10;
 
 /**
  * The runs on one tree, read newest first page by page (`page(n)`, from 1) until a run at or before the
@@ -90,7 +90,8 @@ export async function pagedTreeRuns({ page, on, start, complete = false, maxPage
 /** Pushes the runs of one page that are `on` the tree to `out`; true once a run at the tree's `start` is read. */
 function collect(runs, on, start, out) {
   for (const r of runs) {
-    if (on(r)) out.push(r);
+    // a push between two page reads shifts a run onto the next page: it counts once (M18.199 r1)
+    if (on(r) && !out.some((x) => x.databaseId === r.databaseId)) out.push(r);
     if (start(r)) return true;
   }
   return false;
