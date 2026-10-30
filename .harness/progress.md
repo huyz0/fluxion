@@ -3510,3 +3510,7 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Review r2 (changes-requested): F1 again Huy's call; F2 `remaining()` was fractional, which Node's spawn refuses, so every real taskkill would have thrown (now whole milliseconds, and the test helper is spawned with the bound so Node checks it); F3 the failure-then-exit tests could see the exit first (the exit now follows the helper's, and the order is asserted); F4 the ADR's confirmation list (updated).
 - Tests: 6 Windows-shaped cases with real processes; the trace tests take the new fields and the Windows wait; the launch test checks the helper's bound; the CLI suite passes 165 of 165, including the probe and pack-import e2e.
 - ADR-0189 amendment (accepted by Huy 2026-10-30): the change lengthens the Windows reserve up to the lifecycle, and M18.195's acceptance names "no raised timeout"; Huy accepted it on 2026-10-30 and the acceptance allows it (35a71bb, 8419d51); a fake-timer test pins that the 2 s after a failed termination stop at the lifecycle end. rowAttempts 'windows-witness-cleanup': 3.
+
+## M18.43 — plan M18.198 (2026-10-30)
+
+- M18.195's review r4 (pass) left minor F1: once the cleanup has settled, `stop()` kills a still-running taskkill and its rejection starts a two-second timer nothing cancels; the verdict is unaffected, but the process can stay alive up to 2 s after dispose. Stream 1 asked for it as a row; id M18.198 claimed. The optional `cleanup` default (r4 F2) stays as it is.
