@@ -3567,3 +3567,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Tests: `library-import-dialog.browser.test.tsx` (Chromium, fake importer) covers every state, the declaration refusals, refusals by member path, the credits file, mapping with re-convert, a register failure, and the panel's button and picker.
 - Review r1 changes-requested: F1 (major) the declaration stayed editable during a convert or an import, so a pending result could register under rights no longer shown → the declaration is a fieldset disabled while busy; F2 (minor) Esc closed the dialog while busy → Esc closes only when nothing runs. One component test covers both.
 - Review r2 pass, no findings.
+
+## M18.43 — checkpoint cp27 (2026-10-30)
+
+- Approved over 7545e70..4c8513b; cp26's order was kept (record, M18.199/200, M18.195 + M18.190 closed on live runs, font batch M18.173–176). F1 (minor) reopened as M18.202: readZip inflates each entry before reading the next directory record, though M18.175 promises every declared size is refused first.
+- Order: wait for the font batch's ci 41020919664 to go green (last-ci exit 0); M18.17 (M18.202 with it or just before); then the cli batch M18.198 + M18.201, holding the next feature batch until its Windows verify is green; then stream 2, then M18.10/42/43.
