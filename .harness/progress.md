@@ -3705,3 +3705,4 @@ done: review.mjs records a non-pass past REVIEW_ROUND_CAP marked `over-cap` and 
 backfill: M18.143's three untracked over-cap rounds appended as posthoc lines with their reviewed diff hashes (an unrecorded r4 pass, 2 minor; r5 changes-requested, Credits omitted imported SVG libraries; b6 changes-requested, focus lost on Escape after the idle hide); content ids left empty because none landed (verdicts in /mnt/project-files/stream2/m18143-overcap/)
 round-allowance: M18.143 Huy answered "You decide" on the open decision cards (2026-10-28, via the coordinator); stream 2 closed the fourth-round card on its recommended option "allow"
 
+- 2026-10-30 M18.208 evidence: font-engine run 41118543736 (push of 787b8cd) fetched emsdk at 35659964bc27, passed the emcc revision check and rebuilt woff2-codec.wasm 3829e158c6a1 unchanged; re-recorded in .harness/reviews/font-engine-evidence.json.
