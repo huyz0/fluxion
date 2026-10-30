@@ -87,6 +87,31 @@ it('NFR-SEC-001: the two-second window after a failed Windows termination never 
   expect(lines()).toMatchObject([{ sinceTerminationMs: 5000, expiryToVerdictMs: 3000, waitedForExit: true, termination: 'failed' }]);
 });
 
+it('NFR-SEC-001: a termination that rejects after the cleanup settled arms no timer (M18.198)', async () => {
+  const lines = traces();
+  const cleanup = createWitnessCleanup({ lifecycleMs: 60000 });
+  let exit = () => {};
+  let rejectKill = (_cause: Error) => {};
+  // the owned exit is observed while taskkill still runs; settling stops the helper, which then rejects the termination
+  const resource: OwnedBrowserProcess = {
+    ...stuck(true),
+    onExit: (listener) => {
+      exit = listener;
+      return () => {};
+    },
+    kill: vi.fn(() => new Promise<void>((_, reject) => (rejectKill = reject))),
+    stop: () => rejectKill(Error('taskkill stopped')),
+  };
+  ownBrowserProcess(resource, cleanup);
+  const closed = cleanup.close();
+  await vi.advanceTimersByTimeAsync(3000);
+  exit();
+  expect(await closed).toBe(true);
+  await vi.advanceTimersByTimeAsync(0);
+  expect(vi.getTimerCount()).toBe(0);
+  expect(lines()).toEqual([]);
+});
+
 it('NFR-SEC-001: a launch still pending with no owned process at the reserve prints one trace naming that branch', async () => {
   const lines = traces();
   const cleanup = createWitnessCleanup();

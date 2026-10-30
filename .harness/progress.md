@@ -3585,3 +3585,7 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Backlog header count corrected to the rows held (a rebase had kept main's count over M18.173's four added rows).
 - Review r1 pass with two minors, both fixed (r2 reviews them): F1 an earlier credits file read after a later one could replace it → only the latest pick's read is taken (test with reads finishing out of order); F2 a pack whose registration ended after the document closed stayed registered with its face → each dispose bumps an epoch and a registration begun before it is released as it ends, while later imports still register (test).
 - Review r2 pass, no findings.
+## M18.198 — no timer after a settled witness cleanup (2026-10-30)
+
+- `svg-witness-cleanup.ts`: the immediate termination's rejection handler returns once the cleanup has settled, so `stop()` ending a running taskkill after the observed exit no longer arms the two-second window. The verdict is unchanged.
+- Test (`svg-witness-cleanup-trace.test.ts`, fake timers): the exit is observed while the termination runs, settling stops the helper, the termination rejects, and no timer is pending. It failed before the fix (1 timer); the witness suites pass 61 of 61.

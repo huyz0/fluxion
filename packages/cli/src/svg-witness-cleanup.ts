@@ -82,6 +82,8 @@ class CleanupCoordinator implements WitnessCleanup {
           },
           (cause: unknown) => {
             if (!immediate) throw cause;
+            // a settled cleanup's `stop()` ends a running taskkill: its rejection decides nothing and arms no timer (M18.198)
+            if (this.settled) return;
             this.termination = 'failed';
             this.failedAt = performance.now();
             // past the reserve, a failed termination gives the owned exit two seconds from the failure, not the lifecycle's end
