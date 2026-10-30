@@ -69,7 +69,7 @@ export const THRESHOLDS = {
 
   // M18 required asset/import acceptance criteria (ADR-0171)
   FONT_SUBSET_LATIN_MAX_BYTES: { value: 60_000, weakens: 'up' },
-  // reading a crafted 1.6 MB font.subset.unicodes against 5000 codepoints (M18.203, cp28 F1: 13.8 s unbounded)
+  // reading a crafted 1.6 MB font.subset.unicodes against 5000 codepoints (M18.203, cp28 F1: 13.8 s unbounded); p99 in the nightly perf job (M18.209)
   SUBSET_RANGE_READ_MAX_MS: { value: 200, weakens: 'up' },
   SVG_IMPORT_MIN_ANCHORS: { value: 4, weakens: 'down' },
   DRAWIO_LIB_IMPORT_MIN_PCT: { value: 90, weakens: 'down' },

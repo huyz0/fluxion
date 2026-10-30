@@ -207,33 +207,53 @@ describe('disposable font worker with a watchdog (FR-AST-003, ADR-0051)', () => 
   });
 });
 
-// M18.203 (cp28 F1): font.subset.unicodes comes from any opened file, and subsetFontGaps reads it on every studio save
-const READ_MAX_MS = Number(
-  /SUBSET_RANGE_READ_MAX_MS: \{ value: ([0-9_]+)/
-    .exec(readFileSync(new URL('../../../scripts/gates/thresholds.mjs', import.meta.url), 'utf8'))?.[1]
-    ?.replace(/_/g, ''),
-);
+// M18.203 (cp28 F1): font.subset.unicodes comes from any opened file, and subsetFontGaps reads it on every studio save. M18.209: the
+// read's absolute budget (SUBSET_RANGE_READ_MAX_MS) is the nightly perf job's (packages/format/bench/subset-range-read.bench.ts); here
+// the bound is proven by scaling, so a loaded runner slows both sides alike.
 const CJK = Array.from({ length: 5000 }, (_, i) => 0x4e00 + i);
 /** A subset font record whose recorded range is `unicodes`. */
 const recorded = (unicodes: string) => font('f1', 'bundled', { font: { ...font('f1', 'bundled').font, subset: { source: hex(FIRA), unicodes } } });
+const SCALING_RUNS = 5;
+const SCALING_MAX = 3;
+const medianOf = (xs: readonly number[]): number => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] as number;
+/** Milliseconds for one subsetFontGaps read of `doc` against `inventory`. */
+function readMs(doc: DocumentFile, inventory: readonly number[]): number {
+  const start = performance.now();
+  subsetFontGaps(doc, inventory);
+  return performance.now() - start;
+}
+/** The median of `whole` over `part`, one warm-up each and then alternated, so machine load falls on both alike. */
+function ratio(whole: () => number, part: () => number): number {
+  whole();
+  part();
+  const ratios: number[] = [];
+  for (let i = 0; i < SCALING_RUNS; i++) ratios.push(whole() / part());
+  return medianOf(ratios);
+}
 
 describe('reading a recorded subset range (NFR-SEC-001, FR-AST-003)', () => {
-  it('NFR-SEC-001 FR-AST-003: a 1.6 MB recorded range against 5000 codepoints is read within its budget', () => {
-    expect(READ_MAX_MS).toBe(200);
+  it('NFR-SEC-001 FR-AST-003: a 1.6 MB recorded range reads in time linear in its length and nearly independent of the codepoints asked', () => {
     // 200 000 single code points (about 1.6 MB), plus a run the text uses
     const parts = Array.from({ length: 200_000 }, (_, i) => `U+${(0x20000 + 2 * i).toString(16).toUpperCase()}`);
     const unicodes = ['U+4E00-4E0F', ...parts].join(',');
     expect(unicodes.length).toBeGreaterThan(1_600_000);
     const doc = docOf('x', recorded(unicodes));
     expect(subsetFontGaps(doc, CJK)).toEqual([{ asset: 'f1', missing: CJK.slice(16) }]);
-    // the best of three reads, so a loaded runner's pause is not read as cost (unbounded, one read took 13.8 s)
-    const times = [0, 1, 2].map(() => {
-      const start = performance.now();
-      subsetFontGaps(doc, CJK);
-      return performance.now() - start;
-    });
-    const ms = Math.min(...times);
-    expect(ms, `${ms.toFixed(1)} ms`).toBeLessThan(READ_MAX_MS);
+    // (a) 16 times the codepoints may cost at most 3 times in total (cp28 F1 scanned every recorded run per codepoint: about 16 times)
+    const sample = CJK.filter((_, i) => i % 16 === 0);
+    const byCodepoints = ratio(
+      () => readMs(doc, CJK),
+      () => readMs(doc, sample),
+    );
+    expect(byCodepoints, `${byCodepoints.toFixed(2)} times`).toBeLessThanOrEqual(SCALING_MAX);
+    // (b) 16 times the range may cost at most 3 times per character (a quadratic parse: about 16 times)
+    const prefix = ['U+4E00-4E0F', ...parts.slice(0, parts.length / 16)].join(',');
+    const short = docOf('x', recorded(prefix));
+    const perChar = ratio(
+      () => readMs(doc, CJK) / unicodes.length,
+      () => readMs(short, CJK) / prefix.length,
+    );
+    expect(perChar, `${perChar.toFixed(2)} times per character`).toBeLessThanOrEqual(SCALING_MAX);
   });
 
   it('NFR-SEC-001 FR-AST-003: a range too long or covering more than every scalar is no recorded range, so all the text is a gap', () => {

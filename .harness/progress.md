@@ -3666,3 +3666,7 @@ next: read Windows verify at c62be1b before next product push; stream 2; M18.205
 
 ## 2026-10-30 M18.43: plan M18.209 (ci 41099253702 red at c62be1b)
 - verify (macos-latest) and cold-setup failed on M18.203's wall-clock assertion in the parallel unit suite (296.6 ms against SUBSET_RANGE_READ_MAX_MS 200). The row keeps the 200 ms budget unchanged but moves it to a nightly bench, and makes the unit test prove the bound by relative scaling, as imported-pack-scaling.test.ts does for M18.126.
+
+## 2026-10-30 M18.209: subset-range read bound without a unit-suite wall clock (Fixes-ci 41099253702)
+- font-subset-save.test.ts no longer asserts 200 ms inside the parallel suite. It times the 1.6 MB range against 5000 codepoints beside (a) a 1-in-16 codepoint sample and (b) a 1-in-16 prefix of the range, alternated after a warm-up, the median of 5, and allows at most 3 times. Here both medians are about 1.0. With covers() replaced by a scan of every run per codepoint (the cp28 F1 shape) check (a) reads about 12 times and fails.
+- SUBSET_RANGE_READ_MAX_MS (200, unchanged) is held by the nightly perf job's new bench packages/format/bench/subset-range-read.bench.ts in perf-baseline.mjs BENCHES: p99 24 ms here. Its local calibration units 0.781 are in perf-baseline.calibrated.json, as M18.126 did; M18.205 re-records them from the nightly run.

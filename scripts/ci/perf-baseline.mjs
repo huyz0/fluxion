@@ -1,5 +1,5 @@
 // The nightly perf job's layout and pack-encode check (NFR-PERF-005, ADR-0170): run the layered, tree, radial and mindmap benches and the
-// full-collection pack encode (M18.126) and hold each to its threshold
+// full-collection pack encode (M18.126) and the recorded subset range read (M18.209), and hold each to its threshold
 // (p99 ms, the budget itself) and to PERF_REGRESSION_TOLERANCE_PCT over its calibrated baseline. A hosted runner is a different machine each night
 // (layered-500 read 238, 172 and 136 ms p99 on the same code, M17.25), so the regression is judged in calibration units: the bench's p50 over the
 // p50 of the frozen calibration workload (packages/layout/bench/calibration.bench.ts) run in the same Vitest process, the median of RUNS runs.
@@ -21,6 +21,8 @@ export const BENCHES = [
   ['mindmap-500', 'packages/layout/bench/mindmap-500.bench.ts', 'LAYOUT_500_NODES_MS'],
   // a complete imported Iconify collection encoded as a saveable pack (M18.126, cp13 F4)
   ['iconify-pack-2198', 'packages/format/bench/iconify-pack-2198.bench.ts', 'ICONIFY_PACK_2198_MAX_MS'],
+  // a crafted 1.6 MB recorded font subset range read against 5000 codepoints (M18.209, cp28 F1)
+  ['subset-range-read', 'packages/format/bench/subset-range-read.bench.ts', 'SUBSET_RANGE_READ_MAX_MS'],
 ];
 /** Runs per bench; the median of each reading is judged. */
 export const RUNS = 5;
