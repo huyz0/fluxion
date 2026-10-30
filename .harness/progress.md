@@ -3494,3 +3494,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - check-ci-evidence (`--record` and verify) refuses while one exists, and also when the tree or the listing is unreadable. last-ci prints such a green ci run as INTERMITTENT (exit 1), and an unreadable tree or job list as UNKNOWN (3). In --runs-file, a run's `tree` names its product tree.
 - Live: last-ci now exits 1 at ceb8246. Windows verify failed in 40894960957 and 40905801401 and has 1 of the 2 later greens it needs.
 - Tests in ci-evidence.test.mjs and last-ci.test.mjs fail on the old code. They cover: two failures then one green, refused, and a second green, recorded; an earlier tree not counting; verify mode refusing; ci-ok and cancelled jobs excluded; unreadable jobs reported as UNKNOWN.
+
+## M18.43 — M18.195's acceptance takes Huy's decision on the Windows exit wait (2026-10-30)
+
+- Independent diagnosis (ADR-0176, before attempt 3): the Windows failures are timing. On a starved runner, taskkill plus Chromium's teardown can outlast the fixed 2 s reserve. Failures happened only in runs where Windows verify took 1207 s or more, 3 of 6 such runs. A slow termination helper reproduces it on Linux.
+- Huy accepted the proposed attempt 3 (2026-10-30 01:12Z): Windows cleanup waits for the real exit, fails fast on a failed termination, and is bounded by the 120 s session lifecycle. The row's acceptance now records that wait as the one allowed lengthening. Huy also chose (2026-10-29) to hold the font batch until M18.195 closes.
