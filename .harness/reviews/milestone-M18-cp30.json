@@ -1,0 +1,120 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp30",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..787b8cde41829b6a4d5bd559792cffed992aaf2f",
+  "reviewer": "claude:independent-subagent:m18-cp30",
+  "verdict": "changes-requested",
+  "reviewedDelta": "c62be1bb649bfc3a972ef1b6b353a31947bc9254..787b8cde41829b6a4d5bd559792cffed992aaf2f: 0ded9c1 (M18.109 evidence, run 41099253864), b3e44e6 (cp29 record), 4d3ffd7 (plan M18.209), 5ae0b5d (M18.209), daecd29 (M18.32), 80293f9 (M18.143), 99db217 (M18.162), 787b8cd (M18.208). Here: check-commits 8/8 pass; check-digest --head --full-history: 212 M18 task commits carry review evidence and Commit cells; check-layering: 0 violations; check-tests-kept --commit passes for each product commit, and the two removals (5ae0b5d, daecd29) carry Removes-test trailers; check-drift exit 0. The M18.209 scaling case passed 3 times in series and 6 times run concurrently on 4 cores. The pack-catalog, pack-credits and icons-lucide provenance suites pass 13/13. tests/harness/font-engine.test.mjs passes 4/4. CI: ci 41107715552 at 5ae0b5d is green on attempt 2. The attempt-1 size and firefox 4/4 failures were artifact-download failures ('Artifact download failed after 5 retries'), so the re-run is legitimate. ci 41117375355 at 99db217 is not 'cancelled as stale': e2e (firefox 2/4) failed in its test step, and the remaining jobs were then cancelled. last-ci exits 1 (RED at 99db217, no Fixes-ci). ci 41118543795 at 787b8cd is still running or queued. font-engine 41118543736 at 787b8cd is green. Gates 41118543818 is green.",
+  "cp29DispositionsCheck": "F1 (reopen as M18.207): still todo. b3e44e6 corrected M18.136's cell to 78a8aae, which is an ancestor of HEAD. Every other delta row's cell names its own landed commit; M18.208's cell is empty, as usual until the next commit fills it. F2 (reopen as M18.208): done at 787b8cd. toolchainProblem refuses a different emscripten revision (the harness case passes) and the rebuild fetches emsdk at the manifest's emsdkRevision and confirms HEAD. font-engine run 41118543736 at 787b8cd rebuilt the bytes under the new check. The record is not made yet: check-font-engine-evidence currently reports three changed paths. That matches the row's plan (next commit). F3 (folded into M18.207): it recurred. The header says 'current: 188', but 4d3ffd7 added M18.209 and there are 189 rows (cp30 F6). F4 (argued): the line is present. planDelta: (1) honoured. (2) Windows 'Run pnpm verify' read 1319 s at c62be1b (41099253702), 1316 s at 5ae0b5d and 1307 s at 99db217, all under 1400. Stream 2 added Windows-run node tests and still stayed under the hold. (3) M18.208 landed before M18.43; M18.207 has not landed. (4) Not honoured. Nightly 41028194620 has shown 'queued' since 08:41Z (about 11.5 h), and its jobs endpoint returns HTTP 500. No diagnosis was recorded (cp30 F2). (5) Stream 2 landed (M18.32, .143, .162), but its CI is red (cp30 F1). (6) M18.182–189 are still not rows, and neither are the stream-3 and stream-4 rows named for next (M18.130, M18.210–212).",
+  "questions": {
+    "coherence": "Still one design. M18.32's studio catalog uses the SDK's createShapePackLoader once per index (ADR-0181), with hash checks and a 4 MiB cap. It reads only bundled files through import.meta.glob, so no network path is added. It keeps saved namespaces out (ADR-0183) and refuses a namespace that an imported library holds. M18.143 reuses one PackCreditsList in the player and the studio dialog, and one saveSources reader feeds both the save and the Credits dialog, so the list matches what a save embeds. M18.208 follows the M18.109 evidence pattern. M18.209 follows imported-pack-scaling: a relative unit check plus a nightly absolute bench. One drift: the narrative and the evidence disagree on M18.143's review rounds (F3).",
+    "specFidelity": "M18.209 meets its row. The threshold is unchanged at 200 (thresholds.mjs only gains a comment). The bench is listed in BENCHES with calibrated units 0.781, and the gap and over-cap cases are unchanged. One understatement: at c62be1b all three OSes failed this test, not only macOS (ubuntu 918.6 ms, windows 425.4 ms, macos 296.6 ms in the annotations); the commit and plan name only macOS. M18.32 meets its row: the library lists every first-party pack, headed by its index name, search runs over the index without reading a category, and a pick or drop loads the category on demand. Its R11 minors are listed in the body. M18.143 meets the content parts of its row: offline from the file's embedded subsets, drawn as text, http(s)-only links with rel noopener noreferrer, and the file's credits are never replaced by an installed pack's. Its 'library.pack-credits SHALL pass on Chromium, Firefox and WebKit' is not shown. Only Chromium ran locally, and the CI shard that holds the spec, firefox 2/4, failed (F1). M18.162 meets its row; the MIT npm field is argued. M18.208 meets its row; the record is pending as planned.",
+    "standardsDrift": "Subjects, trailers, changesets and digest lines hold, and Fixes-ci and Removes-test are used where needed. Two items drift. The backlog header count (F6). The review-round cap (R9, REVIEW_ROUND_CAP 3): M18.143 went past it on an allowance that is not recorded, and its changes-requested rounds after the cap are missing from the digest (F3). The R11 minors of M18.32 and M18.143 are in the commit bodies as the standard asks. One of them, the M18.32 catalog that never recovers from one failed read, is a real FR-LIB-009 defect (F4).",
+    "gateHonesty": "No threshold was loosened, no e2e assertion was dropped without a trailer, and no baseline changed. Mutant spot checks: (1) With covers() replaced by a per-codepoint scan of every run, the sample ratio is about 12x against the cap of 3, so case (a) fails. This is by the author's measurement and by reading; I ran the unmutated case 9 times and it held. (2) If toolchainProblem dropped the revision comparison, the 'f'x40 revision case would fail. (3) If isWebLink returned true for everything, the browser test's javascript:/data:/protocol-relative cases and the zero-links assertion would fail. Gate gap: since M18.209, SUBSET_RANGE_READ_MAX_MS is held only by the nightly bench. No nightly has completed green since at least 10-24, and the current one is wedged, so nothing that completes enforces the absolute budget today (F2). The scaling case still proves linearity on every run. last-ci correctly reports main RED at 99db217.",
+    "architecture": "check-layering: 0 violations. The pure core is untouched by the delta, and format gains only a bench file. Contracts: the player's public API grows (PackCreditsList, creditedPacks, DEFAULT_CREDITS_LABELS, the CreditedPack and CreditsLabels types, and credits/creditsLabels on mountPlayer, PlayerDeck and OpenedFlux). The API reports are updated, the api job is green at 99db217, and ADR-0050 has an amendment. The ./element entry references CreditedPack without exporting it (F7). The file format and SDK API are unchanged. The editor adds LibraryCatalog and entriesOfIndex, with its report updated and ADR-0200 recording the design. Dependencies: apps/studio gains workspace:* first-party packs and @fluxion/sdk, with no third-party package and the budget re-recorded. Player size: the player-core blocking leg is green (size job at 99db217). player-inline and the fluxion-player script grew by about 1.2 kB gzip (191,324 to 192,499 B), still over the advisory 150 kB target as before (ADR-0176 advisory). Security: every credit field is a React text child. isWebLink parses with URL and allows only http:/https:, so javascript:, data: and protocol-relative references are text, as tested. Links use target _blank with rel noopener noreferrer, and nothing is fetched. The player panel keeps deck keys out, and Escape returns focus with the bar kept shown (the b6 fix). Lazy loading reads only build-bundled files, with hash and size checks, under the content-licence policy; an opened file can only make the studio load bundled first-party categories.",
+    "planHealth": "189 rows against 43 planned (4.4x): 173 done, 16 todo. The delta closed 5 rows (M18.32, .143, .162, .208, .209) and opened 1 (M18.209, CI recovery). This review opens 4 small rows. The constraints are CI and the nightly, not code. Main is red at 99db217. The nightly has not completed green for a week and is now wedged, which stalls M18.205, M18.131, M18.10 and the absolute subset-range budget. Rows named as next work are still not on main: M18.130 (the stream-3 Undo stack), M18.182–189 and M18.210–212 with ADR-0210. Until they are rows, the completion gate cannot see them. ADR-0210 (pack format 1.2) changes the file format late in the milestone, and more than eight sites branch on formatVersion === '1.1', including the two new credit readers (F5). The order below is sound once main is green."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "e2e/library.pack-credits.spec.ts",
+      "line": 13,
+      "evidence": "ci 41117375355 at 99db217 (the push of daecd29, 80293f9 and 99db217): job 124275552567 'e2e (firefox 2/4)' failed in step 'Run pnpm test:e2e --project=\"$BROWSER\" ... --shard=\"$SHARD/4\"'. That is a test failure, not the artifact step. The remaining jobs were then cancelled. `playwright test --list --project=firefox --shard=2/4` here puts library.pack-credits.spec.ts:13 and both library.panel.spec.ts cases (the M18.32 and M18.143 specs) in that shard. 80293f9's body says 'It passes on Chromium here; Firefox and WebKit are not installed locally'. `node scripts/harness/last-ci.mjs` exits 1: 'RED ci failure in e2e (firefox 2/4) ... none declares Fixes-ci: 41117375355'. The job log could not be read from here (the log host returned 403 through the proxy), so the failing test is not named.",
+      "failure_scenario": "M18.143 is marked done while its row's 'SHALL pass on Chromium, Firefox and WebKit' is red or unproven. If the credits panel or the lazy pick does not work on Firefox (for example, the offline player's Credits button hidden by the 3 s idle before the click), Firefox users get no attribution (NFR-LIC-003). Also, the packet's 'cancelled as stale' would have let the red pass unnoticed."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/ci/perf-baseline.mjs",
+      "line": 25,
+      "evidence": "M18.209 moves SUBSET_RANGE_READ_MAX_MS (200) to the nightly bench subset-range-read. Scheduled nightlies: 40842994983 failure (10-29), 40658126076 cancelled, 40470089950, 40288291826, 40173471678 and 40073756854 failure. 41028194620 (8628af0) has shown 'queued' since 2026-10-30T08:41Z, and GET .../runs/41028194620/jobs returns {\"message\":\"Server Error\"}. cp29's planDelta (4) asked for a runner diagnosis by this checkpoint, but progress.md has none. The c62be1b annotations show the parallel-suite read at 918.6 ms on ubuntu, 425.4 ms on windows and 296.6 ms on macOS. 4d3ffd7 and 5ae0b5d cite only macOS.",
+      "failure_scenario": "The absolute 200 ms budget for reading an untrusted 1.6 MB range (NFR-SEC-001) is now enforced by a job that has not completed green in a week. A constant-factor regression (still linear, so the scaling case passes) ships unseen. M18.205, M18.131 and M18.10 all wait on the same wedged nightly."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "scripts/harness/review.mjs",
+      "line": 158,
+      "evidence": "M18.143's digest lines are r1, r2 and r3 changes-requested, then r4, r5 and r6 pass. 80293f9's body says 'r4 passed (fourth round allowed on 2026-10-28)', 'Review r5 F1 ... changes-requested' and 'Re-review b6 F1 (major) ... Round b6b passed'. No tracked file records who allowed the fourth round: progress.md says only 'Rounds counted from the merge-base (M18.193), agreed with stream 1'. review.mjs:158 dies on a non-pass verdict above REVIEW_ROUND_CAP, so the blocking b6 verdict could not be recorded and appears nowhere in the digest. Digest r5 reads 'pass 1 findings', while the body says changes-requested.",
+      "failure_scenario": "R9's stop ('after round 3 with blocking findings open, the drive loop stops and asks the human') was passed on an untracked allowance. The cap then makes every later blocking verdict unrecordable rather than stopping the loop. The durable evidence shows a clean pass history for a commit that had a major WCAG 2.4.3 defect after the cap, and a later reviewer cannot tell."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "apps/studio/src/pack-catalog.ts",
+      "line": 66,
+      "evidence": "loadPackCatalog runs Promise.all over loaderOf, and loaderOf awaits read() (a Vite lazy chunk) outside any catch. bundledPackCatalog caches the promise with `bundled ??=`. use-document-catalog.ts calls bundledPackCatalog(webHasher).then(...) with no rejection handler. The daecd29 body lists this as R11 F1 ('one pack index that fails to read rejects the whole cached catalog').",
+      "failure_scenario": "One chunk fetch that fails, such as a studio tab left open across a redeploy or a flaky network, leaves the cached catalog rejected for the page's life, with an unhandled rejection. The library offers only the basic pack, and catalog.resolve never runs, so an opened document whose first-party shapes were saved without geometry (autosave, examples) draws them unresolved. Credits and the save also lose the catalog's sources. This is an FR-LIB-009 defect, not cosmetic."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "packages/player/src/pack-credits.tsx",
+      "line": 73,
+      "evidence": "creditedPacks reads `s.formatVersion === '1.1' ? s.fontCredits : []`, and the studio's fontCreditsOf does the same (apps/studio/src/pack-credits.tsx:26). Six more sites branch on '1.1' in core, format and sdk (pack-registration.ts:121, pack-encode.ts:170, shape-pack-prepare.ts:229/289, artwork-pack-loader.ts:165/175). The next stream-4 work is ADR-0210, pack format 1.2 (category names), through M18.210–212.",
+      "failure_scenario": "If a 1.2 subset carries fontCredits, both credit readers compile unchanged and silently drop its font credits in the player and the studio, which is an NFR-LIC-003 regression no current test would catch."
+    },
+    {
+      "id": "F6",
+      "severity": "nit",
+      "file": "docs/backlog/current.md",
+      "line": 3,
+      "evidence": "'Planned: 43 rows; current: 188', but there are 189 M18 rows: 4d3ffd7 added M18.209 without updating the count. This is cp29 F3 again.",
+      "failure_scenario": "Plan-health accounting undercounts until M18.207 gates the count."
+    },
+    {
+      "id": "F7",
+      "severity": "nit",
+      "file": "packages/player/api/player.element.api.md",
+      "line": 31,
+      "evidence": "OpenedFlux.credits is `readonly CreditedPack[]`, but the ./element entry exports only defineFluxionPlayer, FluxOpener, OpenedFlux and PlayerPosition. CreditedPack is exported only from the main entry.",
+      "failure_scenario": "A page that writes its own FluxOpener for <fluxion-player> cannot name the credits type from the entry it uses and must import types from the main entry. This is cosmetic for the contract, but the API report hides the gap."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.213",
+      "note": "| M18.213 | Main green again: e2e firefox 2/4 at 99db217 diagnosed and fixed (ci 41117375355, cp30 F1) | NFR-LIC-003, FR-LIB-009, HARNESS | WHEN ci runs at the fix commit THE SYSTEM SHALL pass e2e/library.pack-credits.spec.ts and both e2e/library.panel.spec.ts cases on Chromium, Firefox and WebKit with no retry and no assertion removed; the failing test of job 124275552567 SHALL be named from its log in progress.md with its cause; a product or spec fix SHALL carry `Fixes-ci: 41117375355`, and if the cause is infrastructure the record SHALL quote the failing step's log line; M18.143 stays done only once this row closes | M18.143, M18.32 | todo | |"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.214",
+      "note": "| M18.214 | A nightly completes on main again (cp30 F2) | NFR-PERF-005, NFR-SEC-001, HARNESS | WHEN the wedged nightly 41028194620 is diagnosed (its jobs endpoint returns HTTP 500 after more than 11 h queued) THE SYSTEM SHALL record the cause and, with Huy's authorization for any cancel or dispatch on the remote, obtain a completed nightly on a current main commit whose perf job judges subset-range-read and iconify-pack-2198, so M18.205 can record its units; progress.md SHALL also correct M18.209's record to name all three OS readings at c62be1b (ubuntu 918.6, windows 425.4, macos 296.6 ms) | M18.209 | todo | |"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.215",
+      "note": "| M18.215 | A review beyond the round cap is recorded, not lost (cp30 F3) | HARNESS | WHEN review.mjs record receives a non-pass verdict above REVIEW_ROUND_CAP THE SYSTEM SHALL append it to the digest marked `over-cap` and exit with the stop status instead of discarding it, and WHEN a pass is recorded above the cap THE SYSTEM SHALL refuse it unless .harness/state.json or progress.md names the human allowance (who and when) for that task; a harness case SHALL show both; M18.143's untracked rounds (r5 changes-requested, b6 F1 major) SHALL be appended as posthoc lines | M18.193 | todo | |"
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M18.216",
+      "note": "| M18.216 | One pack file that fails to read does not empty the studio catalog (cp30 F4, M18.32 R11 F1) | FR-LIB-009, FR-LIB-007 | WHEN reading one first-party pack index or category rejects THE SYSTEM SHALL list that pack under the catalog's refused packs and keep every other pack listed and resolvable, SHALL NOT cache a rejected catalog for the page's life, and SHALL leave no unhandled rejection; a pack-catalog case SHALL show one index read rejecting while a document using another pack's shapes still resolves them | M18.32 | todo | |"
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M18.210",
+      "note": "Fold into M18.210/ADR-0210's acceptance when those rows land: every `formatVersion === '1.1'` branch, the two credit readers included (player creditedPacks and studio fontCreditsOf), handles 1.2, and a player and a studio case show a 1.2 subset's font credits listed. If M18.210 lands without this, the next checkpoint reopens it as its own row."
+    },
+    {
+      "finding": "F6",
+      "disposition": "reopen",
+      "target": "M18.207",
+      "note": "Already in M18.207's acceptance (the header count matches the row count). The fix commit sets it to the true count, 189 plus the rows this record adds."
+    },
+    {
+      "finding": "F7",
+      "disposition": "argue",
+      "target": "review-argued",
+      "note": "cp30 F7: OpenedFlux in @fluxion/player/element references CreditedPack, which is exported only from @fluxion/player. It is a type-only import from the main entry with no runtime cost. Export it from ./element if the element API is next touched (M18.42 docs may name it)."
+    }
+  ],
+  "planDelta": "Add M18.213 (main green: firefox 2/4 at 99db217, cp30 F1), M18.214 (a completed nightly, cp30 F2), M18.215 (over-cap reviews recorded, cp30 F3) and M18.216 (catalog survives one failed read, cp30 F4). None carries the blocks-landing mark: last-ci's red stop already holds landing until M18.213 closes. The backlog header goes to 193. Order: (1) Land this cp30 record (harness path) with the four rows. (2) M18.213 first. Read job 124275552567's log; if ci 41118543795 at 787b8cd (same product code) shows firefox 2/4 green, still name the cause, because a re-run is not evidence under zero retries. Nothing else of product lands while last-ci is RED. (3) The stream-4 M18.208 evidence record (font-engine 41118543736 at 787b8cd is green; check-font-engine-evidence fails until it is recorded), then M18.207, both harness-only. (4) M18.214: diagnose the wedged nightly and ask Huy before any cancel or dispatch on the remote. M18.205 follows from that nightly. (5) Before any code, put M18.130, M18.182–189 and M18.210–212 into docs/backlog/current.md (with ADR-0210 before M18.210's code; fold cp30 F5 into M18.210's acceptance). Then M18.210–212, and stream 3's held stack in its stated order (M18.113, M18.120, M18.35, M18.130, M18.111, M18.112, M18.122), each read against the Windows hold (latest 1307 s at 99db217; stop at 1400 s). (6) M18.216 and M18.215 at any point; then M18.144, M18.41, M18.131 and M18.157. (7) M18.10, M18.42, M18.43. Learned: 'cp30 (through `787b8cd`): a row that names three browsers is not done when the shard holding its spec is red, and a stale-run label must be checked against the run itself; a review cap that refuses to record over-cap verdicts hides them instead of stopping the loop; a budget moved to the nightly is only enforced while a nightly completes.'"
+}

@@ -3688,3 +3688,11 @@ packs/icons-lucide/src/provenance.test.ts reads the corpus: the credited sha256 
 - font-engine-rebuild.mjs fetches emsdk at the new manifest pin toolchain.emsdkRevision (35659964bc27, the commit tagged 6.0.13, whose releases map gives 6.0.13 -> eb1327573255), confirms HEAD, and no longer clones by tag. A fetch by that sha was tried here and works.
 - A harness case in font-engine.test.mjs shows the pinned line accepted, and the same release at another revision, a short revision, another release and no emcc refused, and checks the rebuild script's pin.
 - The recipe and pins changed, so check-font-engine-evidence fails at this commit until the push's font-engine run is recorded (the m18-complete leg only).
+
+## 2026-10-30 cp30 (claude, stream 1)
+done: checkpoint cp30 through 787b8cd changes-requested (independent subagent); delta M18.209, .32, .143, .162, .208
+red: ci 41117375355 at 99db217, job 124275552567 e2e (firefox 2/4): library.pack-credits.spec.ts:59 `expect(await icon()).toBe(before)` failed on try and retry; the rest of the run was cancelled after it, so it is not a stale cancel
+windows verify: 1319 s c62be1b, 1316 s 5ae0b5d, 1307 s 99db217 (hold 1400 s)
+reopen: M18.213 firefox credits e2e (F1), M18.214 nightly wedged 11 h (F2), M18.215 over-cap reviews recorded (F3), M18.216 catalog survives one failed pack read (F4); F5 folds into M18.210; F6 in M18.207
+argued: F7 CreditedPack type exported only from the main player entry
+next: fix M18.213 first (Fixes-ci 41117375355); M18.208 evidence, M18.207; rows M18.130 and M18.210-212 enter the backlog before their code
