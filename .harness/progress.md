@@ -3531,3 +3531,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 
 - cp26 F2: with 417153f's run queued (Fixes-ci: 40905801401), the Windows reds 40984987413 and 40985544159 printed "none declares Fixes-ci" and exit 1, though 417153f fixes the very job. last-ci now also waits (exit 2, M18.118's bounds) for a pending run whose commit changes a product path and names a ci run on the branch (gh/REST view: headBranch) that failed one of the red run's failed jobs; for a completed red the jobs are read, for a pending one taken from it; an intermittent tree waits for such a fix too. Harness-only commits and fixes of another job stay exit 1; cold-setup keeps the direct rule; landing-block (M18.192) is untouched.
 - Review r1 (pass) minor: ci-ok matched a pending red to a fix of another job; ci-ok is now never the matching job. M18.199 r1 minors: a run read twice across pages counts once; TREE_MAX_PAGES 10 (GitHub lists 1000 filtered runs at most).
+
+## M18.195 + M18.190 — Windows witness cleanup closed (2026-10-30)
+
+- verify (windows-latest) green on the three consecutive main ci runs from the fix 417153f, none rerun or cancelled: 40989002393 (417153f, 1518 s), 40989802224 (910259b, 1493 s), 40992813175 (e05d904, 923 s); also green on 40995859923 (35b26c7) and 40998912681 (f70abf7).
+- check-ci-evidence --record f70abf7: gates 40998912655, ci 40998912681, green on all three OSes; the paged same-tree read (M18.199) found no intermittent job on 417153f's tree.
+- No retry and no other raised timeout; the one test replaced in 417153f (`Removes-test:`, the old 2 s reserve case rewritten for the new wait) was judged a rename with changed assertions by cp26; the one lengthened wait is Huy's 2026-10-30 decision (ADR-0189 amendment). M18.190 closes with it. The `blocks-landing` mark is lifted: next the font batch, then the cli batch (M18.198, M18.201).
