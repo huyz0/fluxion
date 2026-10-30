@@ -227,7 +227,11 @@ for (const spec of ['library.import-svg', 'library.my-shapes', 'library.replace-
   leg(`${spec}: Chromium, Firefox, WebKit; no retries`, () =>
     playwrightSpecs([`e2e/${spec}.spec.ts`], ['chromium', 'firefox', 'webkit'], { runner: imageRunner() }),
   );
-leg('CLI pack import and font-subset option exercise real files', () => tests('packages/cli/src/pack-import.test.ts'));
+// the font-subset half is the built bin's convert --subset-fonts e2e (M18.204, cp28 F2): pack import alone never ran it
+leg('CLI pack import and font-subset option exercise real files', () => {
+  const imported = tests('packages/cli/src/pack-import.test.ts');
+  return imported === true ? tests('packages/cli/src/e2e/cli.subset-fonts.test.ts') : imported;
+});
 leg('all pack names resolve through DSL and bounded catalog detail', () => tests('packages/dsl/src/catalog/pack-catalog.test.ts'));
 leg('core AI catalog remains within AI_CATALOG_MAX_TOKENS', () => tests('packages/dsl/src/catalog/token-budget.test.ts'));
 leg('cloud architecture example renders to its golden', () => {

@@ -3626,3 +3626,7 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Approved over 7545e70..903bdc3; reopened M18.203 (bounded read of font.subset.unicodes), M18.204 (m18-complete runs the CLI font-subset e2e), M18.205 (iconify-pack-2198 baseline from a nightly); F4 argued: Windows verify rose to 1344 s of 1500 s (job 124099116821), so each further row keeps it under 1400 s or waits for Huy's bound card.
 - cp27's request: first success trace on Windows (ci 41042146448, febe298, job 124017286444): `exited-after-reserve`, closeToExitMs 3283, expiryToVerdictMs 1283, taskkill exit 178 ms code 0. The old 2 s reserve would have failed this clean close.
 - Order: wait for HEAD's ci green; M18.136 + M18.109 (stream 4), M18.32/143/162 (stream 2), M18.203 before the next font row; M18.204/205 any time; then the rest and M18.10/42/43.
+
+## M18.204 — the completion gate runs the CLI font-subset e2e it names (2026-10-30)
+
+- cp28 F2: the leg 'CLI pack import and font-subset option exercise real files' ran only pack-import.test.ts. It now runs packages/cli/src/e2e/cli.subset-fonts.test.ts after it, and fails when either is missing or red; tests/harness/m18-cli-subset-leg.test.mjs proves both suites run and that an absent or failing subset e2e fails the leg.

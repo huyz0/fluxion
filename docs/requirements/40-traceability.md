@@ -57,7 +57,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-FIL-011 | C | R8 | M32 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-001 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.import-image.spec.ts` +6 |
 | FR-AST-002 | S | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/image-codec.browser.test.ts` +3 |
-| FR-AST-003 | S | R3 | M18 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/artwork-fonts.test.ts` +29 |
+| FR-AST-003 | S | R3 | M18 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/artwork-fonts.test.ts` +30 |
 | FR-AST-004 | S | R4 | M23 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-005 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.remove-unused.spec.ts` +3 |
 | FR-AST-006 | S | R2 | M15 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +3 |
