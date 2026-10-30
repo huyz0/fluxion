@@ -48,6 +48,7 @@ export async function start(bytes: Uint8Array, root: HTMLElement): Promise<Start
   try {
     const mounted = mountPlayer(root, opened.value.store, opened.value.registries, {
       ...(opened.value.assets === undefined ? {} : { assets: opened.value.assets }),
+      ...(opened.value.credits === undefined ? {} : { credits: opened.value.credits }),
       links: true,
       chrome: true,
     });

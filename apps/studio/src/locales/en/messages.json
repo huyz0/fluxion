@@ -35,6 +35,18 @@
       "apps/studio/src/diagnostic-button.tsx"
     ]
   },
+  "5Cj9Ws": {
+    "message": "Font",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
+    ]
+  },
+  "6LTyxl": {
+    "message": "Revision",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
+    ]
+  },
   "7Zdnlq": {
     "message": "Document",
     "origin": [
@@ -47,10 +59,22 @@
       "apps/studio/src/file-bar.tsx"
     ]
   },
+  "AhtxDG": {
+    "message": "This document uses no shapes from a shape pack.",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
+    ]
+  },
   "Aruo98": {
     "message": "The file could not be opened: {0}",
     "origin": [
       "apps/studio/src/file-bar.tsx"
+    ]
+  },
+  "BdX6Wa": {
+    "message": "{count, plural, one {Applies to # shape} other {Applies to # shapes}}",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
     ]
   },
   "Bkwb5U": {
@@ -137,6 +161,12 @@
       "apps/studio/src/autosave/recovery-prompt.tsx"
     ]
   },
+  "MLt-rv": {
+    "message": "Modifications",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
+    ]
+  },
   "MT99Ku": {
     "message": "Asking…",
     "origin": [
@@ -209,6 +239,12 @@
       "apps/studio/src/file-bar.tsx"
     ]
   },
+  "_Opt7Y": {
+    "message": "Shape credits",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
+    ]
+  },
   "a5zD9f": {
     "message": "Changes",
     "origin": [
@@ -232,6 +268,12 @@
     "message": "Provider",
     "origin": [
       "apps/studio/src/ai/ai-settings-section.tsx"
+    ]
+  },
+  "bS_j8D": {
+    "message": "Licence",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
     ]
   },
   "bzSI52": {
@@ -319,6 +361,12 @@
       "apps/studio/src/font-subset-port.ts"
     ]
   },
+  "lDIOek": {
+    "message": "Credits",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
+    ]
+  },
   "mmYVfA": {
     "message": "Saved.",
     "origin": [
@@ -391,10 +439,22 @@
       "apps/studio/src/diagnostic-button.tsx"
     ]
   },
+  "wdxz7K": {
+    "message": "Source",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
+    ]
+  },
   "wja8aL": {
     "message": "Untitled",
     "origin": [
       "apps/studio/src/App.tsx"
+    ]
+  },
+  "yz7wBu": {
+    "message": "Close",
+    "origin": [
+      "apps/studio/src/pack-credits.tsx"
     ]
   }
 }

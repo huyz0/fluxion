@@ -16,6 +16,7 @@ import { bindLinks } from './deck-links.js';
 import { DeckOverview } from './deck-overview.js';
 import { toggleFullscreen } from './fullscreen.js';
 import { i18n } from './i18n.js';
+import type { CreditedPack, CreditsLabels } from './pack-credits.js';
 import { PresentationController } from './presentation-controller.js';
 import { ScreenBoundary } from './screen-boundary.js';
 import { useElementBox } from './use-box.js';
@@ -41,6 +42,10 @@ export type PlayerDeckProps = {
   readonly chrome?: boolean;
   /** The names of the chrome's controls in the page's language (English by default). */
   readonly labels?: Partial<ChromeLabels>;
+  /** The credits of the shape packs the document uses, shown from the chrome (ADR-0050); with none, the chrome has no credits button. */
+  readonly credits?: readonly CreditedPack[];
+  /** The words of the credits list in the page's language (English by default). */
+  readonly creditsLabels?: Partial<CreditsLabels>;
   /** `viewport` (default) fills the window; `container` fills the nearest positioned ancestor, as inside the `<fluxion-player>` element. */
   readonly layout?: 'viewport' | 'container';
   /** Whose keys move the deck: `window` (default: a deck that is the page) or `stage` (the deck's own, when it has focus: an embedded deck must not take the page's keys). */
@@ -61,9 +66,12 @@ const interactive = (target: EventTarget | null): boolean => {
 /** Whether `target` is in the deck's own chrome, whose buttons take only the keys that press them. */
 const inChrome = (target: EventTarget | null): boolean => target instanceof Element && target.closest('[part~="chrome"]') !== null;
 
+/** Whether `target` is in the open credits panel, whose keys scroll and close it and never move the deck (M18.143). */
+const inCredits = (target: EventTarget | null): boolean => target instanceof Element && target.closest('[part~="credits-panel"]') !== null;
+
 /**
- * Whether a key is not the deck's: one with a modifier, a repeat, one another handler took, or one aimed at a link, button or field. A button of the deck's own chrome
- * keeps Enter and Space (they press it) and lets the other keys through to the deck.
+ * Whether a key is not the deck's: one with a modifier, a repeat, one another handler took, one in the credits panel, or one aimed at a link, button or field. A
+ * button of the deck's own chrome keeps Enter and Space (they press it) and lets the other keys through to the deck.
  */
 const leftAlone = (e: KeyboardEvent): boolean =>
   e.ctrlKey ||
@@ -71,6 +79,7 @@ const leftAlone = (e: KeyboardEvent): boolean =>
   e.altKey ||
   e.repeat ||
   e.defaultPrevented ||
+  inCredits(e.target) ||
   (interactive(e.target) && !(inChrome(e.target) && e.key !== 'Enter' && e.key !== ' '));
 
 /** The overview grid being open or not. */
@@ -200,13 +209,20 @@ type ChromeDeck = {
 };
 
 /** The chrome over a deck: its buttons are the deck's own moves, the overview and full screen. */
-function ChromeOf(props: { readonly deck: ChromeDeck; readonly labels: Partial<ChromeLabels> | undefined }): ReactNode {
+function ChromeOf(props: {
+  readonly deck: ChromeDeck;
+  readonly labels: Partial<ChromeLabels> | undefined;
+  readonly credits: readonly CreditedPack[] | undefined;
+  readonly creditsLabels: Partial<CreditsLabels> | undefined;
+}): ReactNode {
   const { controller, overview, stage, index, count } = props.deck;
   return (
     <DeckChrome
       index={index}
       count={count}
       {...(props.labels === undefined ? {} : { labels: props.labels })}
+      {...(props.credits === undefined ? {} : { credits: props.credits })}
+      {...(props.creditsLabels === undefined ? {} : { creditsLabels: props.creditsLabels })}
       onPrevious={() => void controller.prev()}
       onNext={() => void controller.next()}
       onOverview={overview.toggle}
@@ -284,7 +300,7 @@ function withDefaults(props: PlayerDeckProps): {
  * @public
  */
 export function PlayerDeck(props: PlayerDeckProps): ReactNode {
-  const { store, registries, assets, labels, onController } = props;
+  const { store, registries, assets, labels, credits, creditsLabels, onController } = props;
   const { background, links, chrome, layout, scope } = withDefaults(props);
   const ref = useRef<HTMLDivElement>(null);
   const box = useElementBox(ref);
@@ -329,7 +345,9 @@ export function PlayerDeck(props: PlayerDeckProps): ReactNode {
         <ShownScreen store={store} registries={registries} assets={assets} screen={shown} box={box} hidden={hidden} />
       </div>
       <Announcer store={store} screen={shown} index={index} count={screens.length} />
-      {chrome ? <ChromeOf deck={{ controller, overview, stage: ref, index, count: screens.length }} labels={labels} /> : null}
+      {chrome ? (
+        <ChromeOf deck={{ controller, overview, stage: ref, index, count: screens.length }} labels={labels} credits={credits} creditsLabels={creditsLabels} />
+      ) : null}
       {overview.open ? (
         <DeckOverview
           store={store}

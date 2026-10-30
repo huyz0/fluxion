@@ -6,7 +6,7 @@ import { type ArrangePort, type AssetStore, createAssetStore, createGlobalRoutin
 import { PlayerRoot } from '@fluxion/player';
 import { ok, type RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
-import { type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { type CSSProperties, type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { AiPanel } from './ai/ai-panel.js';
 import { registerStoredKeys } from './ai/client.js';
 import { createArrangeRunner, layoutOptionsSchemaOf } from './arrange-port.js';
@@ -28,6 +28,7 @@ import { fluxionFileOf, type LaunchHandle, MAX_OPEN_BYTES, pickedFromLaunch, pic
 import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { registerOpenedFonts } from './opened-fonts.js';
 import type { DocumentCatalog } from './pack-catalog.js';
+import { CreditsButton } from './pack-credits.js';
 import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
 import { createRoutePort } from './route-port.js';
@@ -137,6 +138,18 @@ function useGlobalRouting(core: Core, registries: OpenDocument['registries']): O
   return useMemo(() => ({ ...registries, refined: () => live.get()?.refined() }), [registries, live]);
 }
 
+/** The AI panel's frame: bounded by the viewport and scrolling its own content, so a taller panel keeps every control reachable (M18.206). */
+const AI_PANEL_STYLE: CSSProperties = {
+  position: 'fixed',
+  top: 48,
+  right: 8,
+  maxHeight: 'calc(100vh - 56px)',
+  overflowY: 'auto',
+  zIndex: 9000,
+  background: 'var(--fx-bg, #fff)',
+  border: '1px solid #cbd5e1',
+};
+
 /** The editor over an open document, with its autosave and the status line in the toolbar. */
 function ProtectedEditor(props: {
   readonly opened: OpenDocument & { readonly assets: AssetStore; readonly fonts: ReturnType<typeof fontSources> };
@@ -165,6 +178,8 @@ function ProtectedEditor(props: {
   const imports = useMemo(() => studioLibraryImports(opened, { document, fetch: (...args) => fetch(...args), now: () => Date.now() }), [opened]);
   useEffect(() => () => imports.dispose(), [imports]);
   const shapePackSources = useSyncExternalStore(imports.subscribe, imports.sources);
+  // what a save embeds, read when it is needed: the imported libraries' sources, then the first-party definitions loaded
+  const saveSources = () => [...shapePackSources, ...(catalog?.sources() ?? [])];
   return (
     <>
       <EditorRoot
@@ -188,8 +203,7 @@ function ProtectedEditor(props: {
               store={core.store}
               assets={assets}
               entry={entry}
-              // the imported libraries' sources and the first-party definitions the document loaded, read at save time
-              shapePackSources={() => [...shapePackSources, ...(catalog?.sources() ?? [])]}
+              shapePackSources={saveSources}
               onOpened={(id) => navigate(`/edit/${id}`)}
               onSaved={(saved) => {
                 void autosave?.saved();
@@ -198,6 +212,7 @@ function ProtectedEditor(props: {
             />
             <AutosaveBar state={state} readOnly={guard.phase === 'read-only'} />
             <DiagnosticButton store={core.store} />
+            <CreditsButton store={core.store} saved={entry?.file.shapePacks ?? []} sources={saveSources} names={catalog?.names} />
             <button type="button" aria-pressed={aiOpen} onClick={() => setAiOpen((open) => !open)}>
               {t`AI assistant`}
             </button>
@@ -205,19 +220,7 @@ function ProtectedEditor(props: {
         }
       />
       {aiOpen ? (
-        // bounded by the viewport and scrolling its own content, so a taller panel keeps every control reachable (M18.206)
-        <div
-          style={{
-            position: 'fixed',
-            top: 48,
-            right: 8,
-            maxHeight: 'calc(100vh - 56px)',
-            overflowY: 'auto',
-            zIndex: 9000,
-            background: 'var(--fx-bg, #fff)',
-            border: '1px solid #cbd5e1',
-          }}
-        >
+        <div style={AI_PANEL_STYLE}>
           <AiPanel store={core.store} execute={core.execute} registries={core.registries} session={session} />
         </div>
       ) : null}

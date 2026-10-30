@@ -265,7 +265,10 @@ M18.12–14 implement and test this decision before it is a supported authoring 
 [ADR-0050](decisions/ADR-0050-pack-license-attribution.md) supplements that pending format
 with source credits and used-subset attribution. Content-asset permissions never authorize
 code dependencies; current code/font policy stays unchanged. M18.12/14/33 implement
-validation, portable credits and the license gate/player UI before these are supported.
+validation, portable credits and the license gate (`check-licenses --packs`); M18.143 shows the
+credits: the studio's Credits dialog lists the used packs' applicable credits (a saved namespace
+keeps the file's), and the player's chrome offers them from the file's embedded records
+(`credits` on `mountPlayer`/`PlayerDeck`, `PackCreditsList`), as text, offline.
 
 ## First-party declarative pack suite (ADR-0193, ADR-0194)
 

@@ -127,3 +127,12 @@ of those credits and preservation of source notices; no missing metadata is sile
 - `docs/standards/tech-stack.md` §3; `scripts/gates/thresholds.mjs` license tables.
 - `scripts/gates/check-licenses.mjs` and `spdx.mjs`; existing license harness regressions.
 - ADR-0048/0049, NFR-LIC-001/002/003 and FR-LIB-009.
+
+## Amendments
+
+- 2026-10-27 (M18.33, M18.143): the gate is `check-licenses --packs` against
+  `SHAPE_CONTENT_LICENSES` (core's `shapePackContentLicenses`). The player's credits are a chrome
+  button and panel fed by `creditedPacks` of the file's subsets (`@fluxion/player`:
+  `PackCreditsList`, `CreditedPack`, `credits` on `mountPlayer`, `PlayerDeck` and `OpenedFlux`);
+  the studio lists the same records, plus the library-loaded packs' applicable credits, in a
+  Credits dialog. A source reference is a link only when it is an http(s) URL.

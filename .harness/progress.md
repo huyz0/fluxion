@@ -3673,3 +3673,8 @@ next: read Windows verify at c62be1b before next product push; stream 2; M18.205
 ## M18.32 — All twelve packs in the studio library, loaded lazily (2026-10-27)
 
 The studio reads and verifies every first-party pack index (one SDK loader each, ADR-0181) and the library lists and searches all twelve packs by the names their indexes give, packs headed and ordered by their index names; a category is read, hash-checked and its definition registered only when it is picked, dropped, used as a replacement or already used by the open document, and the save embeds only those definitions as distribution sources (ADR-0185). A namespace the opened file embeds stays the file's. Searching the complete first-party index (386 entries) finds the cylinder and the database icons under LIBRARY_SEARCH_10K_MAX_MS without reading a category.
+
+## M18.143 — Pack credits in the studio and the player (2026-10-27)
+
+The studio's Credits dialog lists each used pack's licence, attribution and applicable credits with their notices (saved namespaces keep the file's pinned credits; library-loaded packs give their index's credits trimmed to the used definitions), and the player's chrome offers the same from the file's embedded records, as text and offline; e2e library.pack-credits covers studio, save and the one-file player.
+- Rebase onto febe298 (2026-10-30): over M18.17, App.tsx passed 400 lines (useDocumentCatalog moved to use-document-catalog.ts); review r5 changes-requested (Credits omitted imported SVG libraries), fixed with one saveSources reader for the save and the dialog; r6 pass, minor (no e2e of the wiring) carried in the commit body. Rounds counted from the merge-base (M18.193), agreed with stream 1.

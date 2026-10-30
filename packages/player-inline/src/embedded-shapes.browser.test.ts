@@ -119,3 +119,24 @@ describe('FR-LIB-004 FR-AST-003: retained artwork fonts (M18.97)', () => {
     reopened.value.release();
   });
 });
+
+it('NFR-LIC-003: the player gets the credits the file pins, offline, and a file with no saved shapes has none (ADR-0050)', async () => {
+  const pack = subset();
+  const opened = await openFlux(await archive(pack));
+  if (!opened.ok) throw new Error(opened.message);
+  expect(opened.value.credits).toEqual([{ id: pack.id, version: pack.version, license: pack.license, attribution: pack.attribution, credits: pack.credits }]);
+  opened.value.release();
+  const b = documentBuilder();
+  b.screen();
+  const written = await writePortableFlux({
+    document: b.build(),
+    appVersion: '0',
+    hasher: { sha256: async (bytes) => sha256Hex(bytes) },
+    shapePacks: { sources: [], builtinIds: new Set(), licensePolicy: allowsShapePackContentLicense },
+  });
+  if (!written.ok) throw new Error(written.error.reason);
+  const plain = await openFlux(written.value.bytes);
+  if (!plain.ok) throw new Error(plain.message);
+  expect(plain.value.credits).toEqual([]);
+  plain.value.release();
+});

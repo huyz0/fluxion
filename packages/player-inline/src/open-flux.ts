@@ -12,7 +12,7 @@ import {
 } from '@fluxion/core';
 import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
 import { basicPack } from '@fluxion/pack-basic';
-import { renderRegistriesFor } from '@fluxion/player';
+import { creditedPacks, renderRegistriesFor } from '@fluxion/player';
 import type { OpenedFlux } from '@fluxion/player/element';
 import { registerSavedShapePacks } from '@fluxion/render';
 import type { AssetRecord, RecordId } from '@fluxion/schema';
@@ -121,6 +121,8 @@ export async function openFlux(
         store,
         registries: routes === undefined ? render : { ...render, refined: routes.refined },
         assets: (id: RecordId) => images.urls.get(id),
+        // the file's own pinned credits, never an installed pack's (ADR-0050)
+        credits: creditedPacks(loaded.value.shapePacks ?? []),
         release,
       },
     };

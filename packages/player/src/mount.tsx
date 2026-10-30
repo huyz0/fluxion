@@ -4,6 +4,7 @@ import type { Store } from '@fluxion/core';
 import type { AssetUrls, RenderRegistries } from '@fluxion/render';
 import { createRoot } from 'react-dom/client';
 import type { ChromeLabels } from './deck-chrome.js';
+import type { CreditedPack, CreditsLabels } from './pack-credits.js';
 import { PlayerDeck } from './player-deck.js';
 
 /**
@@ -30,6 +31,10 @@ export type MountOptions = {
   readonly chrome?: boolean;
   /** The names of the chrome's controls in the page's language. */
   readonly labels?: Partial<ChromeLabels>;
+  /** The credits of the shape packs the document uses, shown from the chrome (ADR-0050). */
+  readonly credits?: readonly CreditedPack[];
+  /** The words of the credits list in the page's language. */
+  readonly creditsLabels?: Partial<CreditsLabels>;
   /** The colour of the bars around a screen of another shape (default black). */
   readonly background?: string;
 };
@@ -49,6 +54,8 @@ export function mountPlayer(root: HTMLElement, store: Store, registries: RenderR
       {...(options.links === undefined ? {} : { links: options.links })}
       {...(options.chrome === undefined ? {} : { chrome: options.chrome })}
       {...(options.labels === undefined ? {} : { labels: options.labels })}
+      {...(options.credits === undefined ? {} : { credits: options.credits })}
+      {...(options.creditsLabels === undefined ? {} : { creditsLabels: options.creditsLabels })}
       {...(options.background === undefined ? {} : { background: options.background })}
     />,
   );

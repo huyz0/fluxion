@@ -6,6 +6,8 @@
 
 import { AssetUrls } from '@fluxion/render';
 import { RenderRegistries } from '@fluxion/render';
+import { ShapePackCredit } from '@fluxion/core';
+import { ShapePackFontCredit } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 
 // @public
@@ -19,6 +21,8 @@ export type MountOptions = {
     readonly links?: boolean;
     readonly chrome?: boolean;
     readonly labels?: Partial<ChromeLabels>;
+    readonly credits?: readonly CreditedPack[];
+    readonly creditsLabels?: Partial<CreditsLabels>;
     readonly background?: string;
 };
 

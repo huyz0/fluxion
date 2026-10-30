@@ -7,6 +7,8 @@
 import { AssetUrls } from '@fluxion/render';
 import { RecordId } from '@fluxion/schema';
 import { RenderRegistries } from '@fluxion/render';
+import { ShapePackCredit } from '@fluxion/core';
+import { ShapePackFontCredit } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 
 // @public
@@ -26,6 +28,7 @@ export type OpenedFlux = {
     readonly store: Store;
     readonly registries: RenderRegistries;
     readonly assets?: AssetUrls;
+    readonly credits?: readonly CreditedPack[];
     readonly release: () => void;
 };
 

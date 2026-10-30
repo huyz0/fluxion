@@ -11,6 +11,13 @@ export { bindLinks, formatLink, type LinkWindow, parseLink } from './deck-links.
 export { type FullscreenDocument, type FullscreenResult, type FullscreenTarget, toggleFullscreen } from './fullscreen.js';
 export { LASER_FADE, type LaserPoint, type TrailDot, trailKeys } from './laser-keys.js';
 export { LaserTrail, type LaserTrailProps } from './laser-trail.js';
+export {
+  type CreditedPack,
+  type CreditsLabels,
+  creditedPacks,
+  DEFAULT_CREDITS_LABELS,
+  PackCreditsList,
+} from './pack-credits.js';
 export { PlayerDeck, type PlayerDeckProps } from './player-deck.js';
 export { PlayerRoot, type PlayerRootProps } from './player-root.js';
 export { type DeckSource, type Position, PresentationController, type Visit } from './presentation-controller.js';

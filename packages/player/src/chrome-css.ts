@@ -13,5 +13,11 @@ export const CHROME_CSS: string = [
   '[part~="controls"][data-visible="false"]{opacity:0;visibility:hidden;pointer-events:none}',
   `[part~="controls"] button{${BUTTON}}`,
   '[part~="controls"] [part~="fullscreen"]{margin-left:auto}',
+  `[part~="credits-panel"]{position:absolute;right:12px;top:40px;bottom:64px;width:min(480px,calc(100% - 24px));overflow:auto;padding:12px 16px;border-radius:6px;${SHADE};background:var(--fx-player-chrome-background,rgba(0,0,0,.85))}`,
+  `[part~="credits-close"]{${BUTTON};float:right}`,
+  '[part~="credits-panel"] h3{margin:0 0 4px;font-size:1em}',
+  '[part~="credits-panel"] ul{margin:0 0 12px;padding:0;list-style:none}',
+  '[part~="credits-panel"] a{color:inherit}',
+  '[part~="credit-notice"]{white-space:pre-wrap;font-size:.8em;opacity:.85;margin:4px 0 12px}',
   `[part~="counter"]{position:absolute;right:12px;top:8px;padding:2px 8px;border-radius:4px;font-variant-numeric:tabular-nums;pointer-events:none;${SHADE}}`,
 ].join('\n');

@@ -18,7 +18,10 @@ import { registerSavedShapePacks } from '@fluxion/render';
 import { Registry } from '@fluxion/core';
 import { RenderRegistries } from '@fluxion/render';
 import { SavedShapePackPorts } from '@fluxion/render';
+import { ShapePackCredit } from '@fluxion/core';
+import { ShapePackFontCredit } from '@fluxion/core';
 import { Store } from '@fluxion/core';
+import { VersionedShapePackSubset } from '@fluxion/core';
 
 // @public
 export function bindLinks(controller: PresentationController, win: LinkWindow): () => void;
@@ -43,6 +46,32 @@ export type ChromeLabels = {
     readonly next: string;
     readonly overview: string;
     readonly fullscreen: string;
+    readonly credits: string;
+    readonly closeCredits: string;
+};
+
+// @public
+export type CreditedPack = {
+    readonly id: string;
+    readonly name?: string;
+    readonly version: string;
+    readonly license: string;
+    readonly attribution: string;
+    readonly credits: readonly ShapePackCredit[];
+    readonly fontCredits?: readonly ShapePackFontCredit[];
+};
+
+// @public
+export function creditedPacks(subsets: readonly VersionedShapePackSubset[], names?: ReadonlyMap<string, string>): CreditedPack[];
+
+// @public
+export type CreditsLabels = {
+    readonly license: string;
+    readonly font: string;
+    readonly source: string;
+    readonly revision: string;
+    readonly modifications: string;
+    readonly appliesTo: (count: number) => string;
 };
 
 // @public
@@ -69,6 +98,8 @@ export type DeckChromeProps = {
     readonly onFullscreen: () => void;
     readonly labels?: Partial<ChromeLabels>;
     readonly idleMs?: number;
+    readonly credits?: readonly CreditedPack[];
+    readonly creditsLabels?: Partial<CreditsLabels>;
 };
 
 // @public
@@ -76,6 +107,9 @@ export interface DeckSource {
     groups?(screen: RecordId): number;
     screens(): readonly RecordId[];
 }
+
+// @public
+export const DEFAULT_CREDITS_LABELS: CreditsLabels;
 
 // @public
 export const DEFAULT_LABELS: ChromeLabels;
@@ -148,6 +182,12 @@ export class NumberEntry {
 }
 
 // @public
+export function PackCreditsList(props: {
+    readonly packs: readonly CreditedPack[];
+    readonly labels?: Partial<CreditsLabels>;
+}): ReactNode;
+
+// @public
 export function parseLink(hash: string): Position | undefined;
 
 // @public
@@ -162,6 +202,8 @@ export type PlayerDeckProps = {
     readonly links?: boolean;
     readonly chrome?: boolean;
     readonly labels?: Partial<ChromeLabels>;
+    readonly credits?: readonly CreditedPack[];
+    readonly creditsLabels?: Partial<CreditsLabels>;
     readonly layout?: "viewport" | "container";
     readonly scope?: "window" | "stage";
     readonly onController?: (controller: PresentationController) => void;

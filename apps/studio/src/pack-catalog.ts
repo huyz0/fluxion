@@ -77,6 +77,8 @@ export type DocumentCatalog = LibraryCatalog & {
   sources(): readonly ShapePackSourceData[];
   /** Load every catalog definition `defIds` names that is not registered yet; resolves to the ids that failed. */
   resolve(defIds: Iterable<string>): Promise<readonly string[]>;
+  /** Every first-party pack's display name by pack id, saved namespaces included (M18.143). */
+  readonly names: ReadonlyMap<string, string>;
 };
 
 /**
@@ -129,6 +131,7 @@ export function documentCatalog(
   return {
     entries,
     ensure,
+    names: new Map(catalog.loaders.map((l) => [l.index.id, l.index.name])),
     sources: () =>
       [...loaded].map(([pack, used]) => ({
         kind: 'distribution' as const,

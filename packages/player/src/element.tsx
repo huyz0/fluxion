@@ -7,6 +7,7 @@ import { type AssetUrls, CONTENT_CSS, ContentCssContext, presentationOrder, type
 import type { RecordId } from '@fluxion/schema';
 import { createRoot, type Root } from 'react-dom/client';
 import { CHROME_CSS } from './chrome-css.js';
+import type { CreditedPack } from './pack-credits.js';
 import { PlayerDeck } from './player-deck.js';
 import type { PresentationController } from './presentation-controller.js';
 
@@ -22,6 +23,8 @@ export type OpenedFlux = {
   readonly registries: RenderRegistries;
   /** The URLs its images are drawn from, by asset id. */
   readonly assets?: AssetUrls;
+  /** The credits of the shape packs the file embeds (ADR-0050), shown from the chrome. */
+  readonly credits?: readonly CreditedPack[];
   /** Let go of what opening made (image URLs, loaded fonts). */
   readonly release: () => void;
 };
@@ -199,6 +202,7 @@ class PlayerCore {
           store={opened.store}
           registries={opened.registries}
           {...(opened.assets === undefined ? {} : { assets: opened.assets })}
+          {...(opened.credits === undefined ? {} : { credits: opened.credits })}
           chrome={this.#host.attribute('controls') !== null}
           layout="container"
           scope="stage"
