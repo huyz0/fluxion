@@ -19,7 +19,7 @@ export async function loadWitnessDriver(kind: WitnessBrowserKind): Promise<Witne
 }
 export function processOwner(server: BrowserServer, cleanup?: WitnessCleanup, platform: NodeJS.Platform = process.platform): BrowserProcessOwner {
   const child = server.process();
-  const windows = platform === 'win32' ? createWindowsTermination(child) : undefined;
+  const windows = platform === 'win32' ? createWindowsTermination(child, undefined, undefined, () => cleanup?.remaining() ?? 2000) : undefined;
   return ownBrowserProcess(
     {
       hasExited: () => child.exitCode !== null || child.signalCode !== null,
@@ -31,7 +31,7 @@ export function processOwner(server: BrowserServer, cleanup?: WitnessCleanup, pl
       },
       close: windows ? windows.kill : () => server.close(),
       kill: windows ? windows.kill : () => server.kill(),
-      ...(windows ? { immediate: true, stop: windows.stop } : {}),
+      ...(windows ? { immediate: true, stop: windows.stop, diagnostics: windows.diagnostics } : {}),
     },
     cleanup,
   );

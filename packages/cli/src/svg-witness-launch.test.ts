@@ -84,7 +84,10 @@ it('NFR-SEC-001: Windows ownership bypasses both synchronous Playwright shutdown
   const cleanup = createWitnessCleanup();
   const owner = processOwner(f.server, cleanup, 'win32');
   expect(await owner.close()).toBe(true);
-  expect(createWindowsTermination).toHaveBeenCalledWith(f.process);
+  // the helper is bounded by what is left of the session's lifecycle (M18.195)
+  expect(createWindowsTermination).toHaveBeenCalledWith(f.process, undefined, undefined, expect.any(Function));
+  const bound = vi.mocked(createWindowsTermination).mock.calls[0]?.[3];
+  expect(bound?.()).toBeGreaterThan(119000);
   expect(f.server.close).not.toHaveBeenCalled();
   expect(f.server.kill).not.toHaveBeenCalled();
   expect(f.process.exitCode).toBe(0);

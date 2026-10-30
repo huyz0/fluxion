@@ -111,7 +111,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0186](ADR-0186-checked-svg-tree.md) | Reuse checked SVG data before serialization | accepted | 2026-10-26 |
 | [0187](ADR-0187-svg-import-routing.md) | Preserve SVG paint with diagnosed viewport routing fallback | accepted | 2026-10-26 |
 | [0188](ADR-0188-svg-batch-boundary.md) | Shared bounded SVG batch reports before host distribution | accepted | 2026-10-26 |
-| [0189](ADR-0189-bounded-svg-witness.md) | Canonical requests and bounded shared SVG witnesses | accepted | 2026-10-26 |
+| [0189](ADR-0189-bounded-svg-witness.md) | Canonical requests and bounded shared SVG witnesses (amendment M18.195, accepted 2026-10-30: the Windows cleanup reserve waits for the observed exit within the 120 s lifecycle) | accepted | 2026-10-26 |
 | [0190](ADR-0190-quick-latency-advisory.md) | Quick latency advisory with unchanged verification | accepted | 2026-10-26 |
 | [0191](ADR-0191-ci-provisioning-envelope.md) | Reserve verification separately from provisioning; retain interrupted streams without reruns | accepted (Windows bounds superseded by ADR-0197, macOS by ADR-0209) | 2026-10-26 |
 | [0192](ADR-0192-artwork-font-retention.md) | Exact licensed artwork fonts in portable shape packs | accepted | 2026-10-26 |

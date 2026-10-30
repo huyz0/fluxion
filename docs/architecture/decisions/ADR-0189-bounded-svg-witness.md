@@ -67,3 +67,35 @@ Before serialization compute conservative markup upper bound from bounded nodes/
 ## Consequences and references
 
 This clarifies ADR-0187 qualification endpoints; it does not relax its original-source/mounted exact bounds, pixel threshold, font or negative-control obligations. Cross-path raw bounds remain diagnostic evidence; all failed probes stay failed. The initial pinned font profile is deliberately narrow and unsupported capabilities refuse explicitly. Node bridge owns only its launched browser; there is no release/deployment or remote service. ADR-0187, ADR-0188, ADR-0176 and architecture01 are retained. Verification of the actual iframe and installed artifact cannot be replaced by the earlier27case feasibility result.
+
+## Amendment M18.195 (2026-10-29): the Windows cleanup reserve waits for the observed exit
+
+Status: accepted 2026-10-30 by Huy, who accepted the lifecycle-bounded wait although it counts as a raised timeout under M18.195's acceptance (ADR-0176); the acceptance is amended to allow it. Decision-makers: Huy.
+
+**Context.** On Windows the Node bridge ends its owned browser with one owned `taskkill /PID <pid> /T /F` spawn, started at close. M18.190 read the verdict after the loop's I/O, but Windows verify still failed in 3 of 9 heavy runs with a cleanup failure (ci 40894960957, 40905801401). The independent diagnosis (cp25 F1) found no logic fault. Spawning taskkill, walking and terminating the tree, the kernel teardown and the exit's delivery to the loop can together exceed two wall-clock seconds on an oversubscribed runner. The helper's own two-second spawn timeout and the `stop()` at the verdict then cut off a termination that was succeeding. Reproduced on Linux with a helper that succeeds after 2.5 s: the close is `false`.
+
+**Options.**
+1. Keep the fixed 2 s from close. Simple, but it reports a working termination as a failure under load, which users on loaded machines also hit.
+2. Serialise the CI steps. It hides the load sensitivity instead of handling it.
+3. On the `immediate` (Windows owned termination) path, decide from evidence, bounded by the lifecycle already documented above. Chosen.
+
+**Decision.** For an `immediate` owned termination, the reserve lasts until the owned browser's exit is observed, two seconds have passed since the owned termination failed, or the session's lifecycle ends, whichever is first. The lifecycle is the 120 s from the session's creation; for a close at or after 118 s this is the same two seconds as before.
+- An observed exit is a clean close, and only an observed exit is.
+- A termination helper that fails (spawn throws, `error`, a non-zero exit or its bound) gives the exit two seconds from its failure, never less than the reserve from close and never past the lifecycle end. It is not decided at once, because a taskkill can exit non-zero having ended the root: ci 40858059983 shows code 255 with the root terminated and its exit observed 16 ms later.
+- A helper that has not ended the process when the lifecycle ends is a cleanup failure.
+- The helper's spawn timeout is what is left of that lifecycle (at least 2 s), not a fixed 2 s.
+
+Unchanged: non-Windows close, then kill after the grace, within two seconds; one owned termination path only; the probe's injected-failure contract (one owned spawn, the browser untouched, `cleanup`); no retry and no alternative browser. The WITNESS_CLEANUP trace adds the helper's spawn-return and exit times, its exit code and signal, whether the verdict waited for the exit, and how the termination stood.
+
+**Consequences.** On a loaded Windows host a close can take longer than two seconds and up to the session's lifecycle end; it is never open-ended. A real termination failure still fails, and no sooner than before.
+
+**Confirmation.** `packages/cli/src/svg-witness-cleanup-windows.test.ts` covers these cases with a real child and a real helper process:
+- a helper that succeeds after 2.5 s is a clean close;
+- a non-zero helper is a failure two seconds after it failed (the reserve at the earliest), the process untouched;
+- a helper that never returns fails at the lifecycle end;
+- a helper that fails after the reserve is decided two seconds after it failed, not at the lifecycle end;
+- a non-zero helper followed by the owned exit, before or after the reserve, is a clean close;
+- the helper's bound is a whole number of milliseconds, as Node's spawn requires.
+
+`svg-witness-cleanup-trace.test.ts` pins that the two seconds after a failed termination never run past the lifecycle end.
+The installed probe (`svg-witness.test.ts`) passes unchanged. M18.195 closes on three consecutive green Windows verify runs on main.

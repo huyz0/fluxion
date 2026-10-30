@@ -29,20 +29,62 @@ it('NFR-SEC-001: an owned process that has not exited at the reserve prints one 
   const closed = cleanup.close();
   await vi.advanceTimersByTimeAsync(2000);
   expect(await closed).toBe(false);
-  expect(lines()).toEqual([{ decided: 'owned-not-exited', sinceTerminationMs: 2000, expiryToVerdictMs: 0, forced: true, platform: process.platform }]);
+  expect(lines()).toEqual([
+    {
+      decided: 'owned-not-exited',
+      sinceTerminationMs: 2000,
+      expiryToVerdictMs: 0,
+      forced: true,
+      waitedForExit: false,
+      termination: 'none',
+      helper: null,
+      platform: process.platform,
+    },
+  ]);
 });
 
-it('NFR-SEC-001: on Windows, where the owned taskkill starts at once, the trace times it from that start', async () => {
+it('NFR-SEC-001: on Windows, where the owned taskkill starts at once, the trace times it from that start and shows the wait for exit', async () => {
   const lines = traces();
-  const cleanup = createWitnessCleanup();
+  // the owned taskkill succeeds but the process never exits: the verdict waits for the exit until the lifecycle ends (M18.195)
+  const cleanup = createWitnessCleanup({ lifecycleMs: 5000 });
   const resource = stuck(true);
   ownBrowserProcess(resource, cleanup);
   const closed = cleanup.close();
   await vi.advanceTimersByTimeAsync(2000);
+  expect(lines()).toEqual([]);
+  await vi.advanceTimersByTimeAsync(3000);
   expect(await closed).toBe(false);
   expect(resource.kill).toHaveBeenCalledTimes(1);
   expect(resource.close).not.toHaveBeenCalled();
-  expect(lines()).toEqual([{ decided: 'owned-not-exited', sinceTerminationMs: 2000, expiryToVerdictMs: 0, forced: true, platform: process.platform }]);
+  expect(lines()).toEqual([
+    {
+      decided: 'owned-not-exited',
+      sinceTerminationMs: 5000,
+      expiryToVerdictMs: 3000,
+      forced: true,
+      waitedForExit: true,
+      termination: 'done',
+      helper: null,
+      platform: process.platform,
+    },
+  ]);
+});
+
+it('NFR-SEC-001: the two-second window after a failed Windows termination never runs past the lifecycle end', async () => {
+  const lines = traces();
+  // the owned taskkill fails 1 s before the 5 s lifecycle ends: the verdict comes at the lifecycle end, not 2 s after the failure
+  const cleanup = createWitnessCleanup({ lifecycleMs: 5000 });
+  const resource = {
+    ...stuck(true),
+    kill: vi.fn(() => new Promise<void>((_, reject) => setTimeout(() => reject(Error('taskkill exited 1')), 4000))),
+  };
+  ownBrowserProcess(resource, cleanup);
+  const closed = cleanup.close();
+  await vi.advanceTimersByTimeAsync(4999);
+  expect(lines()).toEqual([]);
+  await vi.advanceTimersByTimeAsync(1);
+  expect(await closed).toBe(false);
+  expect(lines()).toMatchObject([{ sinceTerminationMs: 5000, expiryToVerdictMs: 3000, waitedForExit: true, termination: 'failed' }]);
 });
 
 it('NFR-SEC-001: a launch still pending with no owned process at the reserve prints one trace naming that branch', async () => {
@@ -52,7 +94,18 @@ it('NFR-SEC-001: a launch still pending with no owned process at the reserve pri
   const closed = cleanup.close();
   await vi.advanceTimersByTimeAsync(2000);
   expect(await closed).toBe(false);
-  expect(lines()).toEqual([{ decided: 'launch-pending', sinceTerminationMs: null, expiryToVerdictMs: 0, forced: false, platform: process.platform }]);
+  expect(lines()).toEqual([
+    {
+      decided: 'launch-pending',
+      sinceTerminationMs: null,
+      expiryToVerdictMs: 0,
+      forced: false,
+      waitedForExit: false,
+      termination: 'none',
+      helper: null,
+      platform: process.platform,
+    },
+  ]);
 });
 
 it('NFR-SEC-001: a clean close prints no trace', async () => {
