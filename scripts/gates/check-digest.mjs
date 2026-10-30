@@ -6,7 +6,8 @@
 // From the commit that adopted this gate on, each task commit must carry, in its own tree, a pass
 // digest line for its task bound to its own content identity. Earlier task commits need a pass line
 // for their task in the evaluated digest, or a reviewed exemption in .harness/baselines/digest-exempt.txt.
-// A done backlog row needs its Commit cell once a later commit exists to record it. A posthoc line
+// A done backlog row needs its Commit cell once a later commit exists to record it, naming a commit of that row on HEAD's
+// history (M18.207). A posthoc line
 // (reviewer `...:posthoc`) that names a content identity must match one of its task's commits
 // (M18.119): a posthoc review binds to what landed, not to a diff that never did. A `rebind` line
 // counts only when it names a pass line of its task, and a pass line a commit adds for other content
@@ -140,22 +141,37 @@ function posthocProblems(commits, entries, milestone) {
     .map((l) => `${l.task}: posthoc digest line names content ${l.content.slice(0, 12)}, which no ${l.task} commit has`);
 }
 
+/** Why a done row's filled Commit cell names no commit of that row on HEAD's history (`history`: sha and subject), or undefined. */
+function cellProblem(id, cell, history) {
+  const named = /^[0-9a-f]{7,40}$/.test(cell) ? history.filter((c) => c.sha.startsWith(cell)) : [];
+  if (!named.length) return `${id}: Commit cell ${cell} is not a commit on HEAD's history`;
+  if (named.some((c) => c.subject.startsWith(`${id}:`))) return undefined;
+  return `${id}: Commit cell ${cell} is a commit of another task (${named[0]?.subject.split(':')[0]})`;
+}
+
 /**
- * Done rows with an empty Commit cell. Checking HEAD's own tree, HEAD's row may stay empty (no
+ * Done rows with an empty Commit cell, and filled cells that name no landed commit of their row (M18.207, cp29 F1): the sha must
+ * be a commit on HEAD's history whose subject begins with the row's id. Checking HEAD's own tree, HEAD's row may stay empty (no
  * commit can name itself); checking the index, the pending commit is the later one that must fill it.
  */
 function commitCellProblems(commits, tree) {
   const head = tree === 'index' ? null : git(['rev-parse', 'HEAD']).stdout.trim();
   const committed = new Map(commits.map((c) => [c.task, c.sha]));
-  const problems = [];
-  for (const line of show(tree, BACKLOG).split(/\r?\n/)) {
-    const cells = line.split('|').map((c) => c.trim());
-    const id = /^M\d+\.\d+$/.exec(cells[1] ?? '')?.[0];
-    if (!id || !/^done\b/.test(cells[6] ?? '') || cells[7]) continue;
-    const sha = committed.get(id);
-    if (sha && sha !== head) problems.push(`${id}: done since ${sha.slice(0, 7)} but its Commit cell is empty`);
-  }
-  return problems;
+  const history = lines(git(['log', '--format=%H %s', 'HEAD'])).map((l) => ({ sha: l.slice(0, 40), subject: l.slice(41) }));
+  return show(tree, BACKLOG)
+    .split(/\r?\n/)
+    .map((line) => rowCellProblem(line, { committed, head, history }))
+    .filter(Boolean);
+}
+
+/** The Commit cell problem of one backlog line, if it is a done row (see commitCellProblems). */
+function rowCellProblem(line, { committed, head, history }) {
+  const cells = line.split('|').map((c) => c.trim());
+  const id = /^M\d+\.\d+$/.exec(cells[1] ?? '')?.[0];
+  if (!id || !/^done\b/.test(cells[6] ?? '')) return undefined;
+  if (cells[7]) return cellProblem(id, cells[7], history);
+  const sha = committed.get(id);
+  return sha && sha !== head ? `${id}: done since ${sha.slice(0, 7)} but its Commit cell is empty` : undefined;
 }
 
 /** Check one tree ('index' or 'HEAD') against the active milestone's committed task history. */

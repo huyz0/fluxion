@@ -3706,3 +3706,7 @@ backfill: M18.143's three untracked over-cap rounds appended as posthoc lines wi
 round-allowance: M18.143 Huy answered "You decide" on the open decision cards (2026-10-28, via the coordinator); stream 2 closed the fourth-round card on its recommended option "allow"
 
 - 2026-10-30 M18.208 evidence: font-engine run 41118543736 (push of 787b8cd) fetched emsdk at 35659964bc27, passed the emcc revision check and rebuilt woff2-codec.wasm 3829e158c6a1 unchanged; re-recorded in .harness/reviews/font-engine-evidence.json.
+
+## 2026-10-30 M18.207: a Commit cell names a landed commit of its row (cp29 F1, F3)
+- check-digest's commitCellProblems now also refuses a filled cell whose sha is no commit on HEAD's history, or whose commit subject does not begin with the row's id. All 174 done rows on main pass; M18.136's cell already reads 78a8aae (cp29). digest.test.mjs gains a case (unreachable sha, another task's sha, the row's own sha), and the existing Commit cell case now uses its rows' real shas instead of placeholders.
+- The backlog header count is 193, matching the rows. tests/harness/helpers.mjs empties the Commit cells it copies into a sandbox, which holds none of those commits (the land.test sandboxes otherwise read every real cell as unreachable).

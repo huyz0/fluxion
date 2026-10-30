@@ -64,7 +64,9 @@ export function sandbox(paths = DEFAULT_PATHS, { git = false } = {}) {
   for (const p of paths) cpSync(join(REPO, p), join(dir, p), { recursive: true, filter: (src) => !TRANSIENT.test(src) });
   // a live `blocks-landing` row would refuse the fixtures' task commits; tests that need one write it (M18.123)
   const backlog = join(dir, 'docs/backlog/current.md');
-  if (existsSync(backlog)) writeFileSync(backlog, readFileSync(backlog, 'utf8').replaceAll(' `blocks-landing`', ''));
+  // nor does the sandbox hold the commits the real Commit cells name, which check-digest refuses (M18.207): copied cells start empty
+  const emptied = (text) => text.replace(/^(\|[^|\n]*(?:\|[^|\n]*){5}\|) [0-9a-f]{7,40} \|$/gm, '$1 |');
+  if (existsSync(backlog)) writeFileSync(backlog, emptied(readFileSync(backlog, 'utf8').replaceAll(' `blocks-landing`', '')));
   const sb = {
     dir,
     path: (p) => join(dir, p),

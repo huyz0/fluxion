@@ -155,7 +155,26 @@ describe('digest coverage (M18.99)', () => {
     r = check(['--head']);
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /M18\.5: done since [0-9a-f]{7} but its Commit cell is empty/);
-    put('docs/backlog/current.md', backlog([ROW('M18.5', 'done', 'abc1234'), ROW('M18.6', 'done', 'def5678')]));
+    const [m185, m186] = ['M18.5', 'M18.6'].map((id) => run('log', '--format=%h', '--grep', `^${id}:`, '-1'));
+    put('docs/backlog/current.md', backlog([ROW('M18.5', 'done', m185), ROW('M18.6', 'done', m186)]));
+    r = check();
+    assert.equal(r.status, 0, out(r));
+  });
+
+  it('a filled Commit cell names a landed commit of its own row (M18.207)', () => {
+    const [m185, m186] = ['M18.5', 'M18.6'].map((id) => run('log', '--format=%h', '--grep', `^${id}:`, '-1'));
+    // a sha no commit on HEAD's history has (a commit that never landed, or a typo)
+    put('docs/backlog/current.md', backlog([ROW('M18.5', 'done', 'abc1234'), ROW('M18.6', 'done', m186)]));
+    let r = check();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /M18\.5: Commit cell abc1234 is not a commit on HEAD's history/);
+    // another task's sha
+    put('docs/backlog/current.md', backlog([ROW('M18.5', 'done', m186), ROW('M18.6', 'done', m186)]));
+    r = check();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, new RegExp(`M18\\.5: Commit cell ${m186} is a commit of another task \\(M18\\.6\\)`));
+    // each row's own commit is accepted
+    put('docs/backlog/current.md', backlog([ROW('M18.5', 'done', m185), ROW('M18.6', 'done', m186)]));
     r = check();
     assert.equal(r.status, 0, out(r));
   });
