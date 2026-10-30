@@ -3572,3 +3572,8 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 
 - Approved over 7545e70..4c8513b; cp26's order was kept (record, M18.199/200, M18.195 + M18.190 closed on live runs, font batch M18.173–176). F1 (minor) reopened as M18.202: readZip inflates each entry before reading the next directory record, though M18.175 promises every declared size is refused first.
 - Order: wait for the font batch's ci 41020919664 to go green (last-ci exit 0); M18.17 (M18.202 with it or just before); then the cli batch M18.198 + M18.201, holding the next feature batch until its Windows verify is green; then stream 2, then M18.10/42/43.
+
+## M18.202 — a ZIP import checks every declared size before it inflates (2026-10-30)
+
+- `zip.ts` `readZip`: the whole central directory is read and the entry count, each declared size and their running total are checked before the first entry inflates (cp27 F1); entries then inflate in order as before.
+- Tests: `zip.test.ts` shapes a three-entry ZIP whose first deflate body is invalid and whose last entry declares more than maxEntryBytes (and, separately, sizes whose total passes maxTotalBytes): both are refused for the declared size, and within the limits the corrupt body is refused. `import-svg.test.ts` adds the same shape through `convertSvgLibrary`. Both failed before the change (the inflate error came first). Format 283 of 283, editor import 11 of 11.

@@ -164,6 +164,33 @@ describe('convertSvgLibrary', () => {
     );
   });
 
+  it('NFR-SEC-001: a multi-entry ZIP is refused for a declared size before its corrupt first entry is inflated (M18.202)', async () => {
+    const svg = encode(`<svg viewBox="0 0 10 10">${'<rect width="10" height="10"/>'.repeat(20)}</svg>`);
+    const shaped = (last: number, middle = svg.length) => {
+      const zip = zipOf([
+        { name: 'a.svg', bytes: svg },
+        { name: 'b.svg', bytes: svg },
+        { name: 'c.svg', bytes: svg },
+      ]);
+      const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+      // the first entry's deflate body becomes an invalid block, and the central directory declares the other sizes
+      const start = 30 + view.getUint16(26, true) + view.getUint16(28, true);
+      zip.fill(0xff, start, start + 4);
+      let at = view.getUint32(zip.length - 22 + 16, true);
+      for (const size of [svg.length, middle, last]) {
+        view.setUint32(at + 24, size, true);
+        at += 46 + view.getUint16(at + 28, true) + view.getUint16(at + 30, true) + view.getUint16(at + 32, true);
+      }
+      return item('shaped.zip', zip);
+    };
+    const message = async (zip: ReturnType<typeof item>) => {
+      const r = await convertSvgLibrary({ kind: 'zip', items: [zip] }, optionsOf(host(), { rights: own }));
+      return r.ok ? '' : r.error[0]?.message;
+    };
+    expect(await message(shaped(INPUT_LIMITS.maxEntryBytes + 1))).toMatch(/^ZIP refused: c\.svg: \d+ bytes inflated \(more than/);
+    expect(await message(shaped(INPUT_LIMITS.maxEntryBytes, INPUT_LIMITS.maxEntryBytes))).toMatch(/^ZIP refused: the entries inflate to more than/);
+  });
+
   it('NFR-SEC-001: a non-SVG, an escaping, an empty or a colliding name is refused, naming the path, before any witness starts', async () => {
     const svg = encode('<svg viewBox="0 0 10 10"><rect width="10" height="10"/></svg>');
     const h = host();

@@ -263,19 +263,15 @@ function entryOrFailure(bytes: Uint8Array, view: DataView, item: Listing, strict
 }
 
 /**
- * Read every entry of the zip `bytes`, inflated and checked. A fault is a `reason`; nothing throws.
- *
- * @public
+ * The central directory records the end record at `end` lists, with the entry count, each declared size and their running total checked
+ * against `limits` before any entry inflates, so a damaged early body never hides an over-cap declaration (M18.202).
  */
-export function readZip(bytes: Uint8Array, limits: ZipLimits = {}): Result<ZipEntry[], ZipFailure> {
-  const { maxEntries = 4096, maxEntryBytes = 256 * 1024 * 1024, maxTotalBytes = 512 * 1024 * 1024 } = limits;
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const end = bytes.length < 22 ? -1 : findEnd(view);
-  if (end < 0) return failure('no zip end record');
+function listingOf(bytes: Uint8Array, view: DataView, end: number, limits: ZipLimits): Result<Listing[], ZipFailure> {
   const count = view.getUint16(end + 10, true);
-  if (count > maxEntries) return failure(`${count} entries (more than ${maxEntries})`, 'limit');
-  const entries: ZipEntry[] = [];
   let at = view.getUint32(end + 16, true);
+  const { maxEntries = 4096, maxEntryBytes = 256 * 1024 * 1024, maxTotalBytes = 512 * 1024 * 1024 } = limits;
+  if (count > maxEntries) return failure(`${count} entries (more than ${maxEntries})`, 'limit');
+  const listing: Listing[] = [];
   let total = 0;
   for (let i = 0; i < count; i++) {
     const item = listingAt(bytes, view, at, limits.strictNames === true);
@@ -283,10 +279,28 @@ export function readZip(bytes: Uint8Array, limits: ZipLimits = {}): Result<ZipEn
     if (item.value.size > maxEntryBytes) return failure(`${item.value.name}: ${item.value.size} bytes inflated (more than ${maxEntryBytes})`, 'limit');
     total += item.value.size;
     if (total > maxTotalBytes) return failure(`the entries inflate to more than ${maxTotalBytes} bytes`, 'limit');
-    const entry = entryOrFailure(bytes, view, item.value, limits.strictNames === true);
+    listing.push(item.value);
+    at = item.value.next;
+  }
+  return ok(listing);
+}
+
+/**
+ * Read every entry of the zip `bytes`, inflated and checked. A fault is a `reason`; nothing throws.
+ *
+ * @public
+ */
+export function readZip(bytes: Uint8Array, limits: ZipLimits = {}): Result<ZipEntry[], ZipFailure> {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const end = bytes.length < 22 ? -1 : findEnd(view);
+  if (end < 0) return failure('no zip end record');
+  const listing = listingOf(bytes, view, end, limits);
+  if (!listing.ok) return listing;
+  const entries: ZipEntry[] = [];
+  for (const item of listing.value) {
+    const entry = entryOrFailure(bytes, view, item, limits.strictNames === true);
     if (!entry.ok) return entry;
     entries.push(entry.value);
-    at = item.value.next;
   }
   return ok(entries);
 }

@@ -276,6 +276,42 @@ describe('zip', () => {
     expect(readZip(nowhere).ok).toBe(false);
   }, 30_000);
 
+  it('NFR-SEC-001: every declared size is checked before any entry inflates, so a corrupt first body never hides an over-cap last entry (M18.202)', () => {
+    const body = text('hello hello hello hello hello hello hello hello');
+    const zip = writeZip([
+      { name: 'a.txt', bytes: body },
+      { name: 'b.txt', bytes: body },
+      { name: 'c.txt', bytes: body },
+    ]);
+    if (!zip.ok) throw new Error(zip.error.reason);
+    const shaped = (sizes: readonly number[]) => {
+      const bytes = zip.value.slice();
+      const view = new DataView(bytes.buffer);
+      // the first entry's deflate body becomes an invalid block (type 3)
+      const start = 30 + view.getUint16(26, true) + view.getUint16(28, true);
+      bytes.fill(0xff, start, start + 4);
+      // each central record declares the given inflated size
+      let at = view.getUint32(bytes.length - 22 + 16, true);
+      for (const size of sizes) {
+        view.setUint32(at + 24, size, true);
+        at += 46 + view.getUint16(at + 28, true) + view.getUint16(at + 30, true) + view.getUint16(at + 32, true);
+      }
+      return bytes;
+    };
+    const why = (bytes: Uint8Array, limits: Parameters<typeof readZip>[1]) => {
+      const r = readZip(bytes, limits);
+      return r.ok ? 'ok' : r.error;
+    };
+    const n = body.length;
+    expect(why(shaped([n, n, 1001]), { maxEntryBytes: 1000 })).toEqual({ reason: 'c.txt: 1001 bytes inflated (more than 1000)', kind: 'limit' });
+    expect(why(shaped([n, n, 600]), { maxTotalBytes: 2 * n + 599 })).toEqual({
+      reason: `the entries inflate to more than ${2 * n + 599} bytes`,
+      kind: 'limit',
+    });
+    // within the limits, the corrupt first body is what is refused
+    expect(JSON.stringify(why(shaped([n, n, n]), {}))).toMatch(/a\.txt/);
+  });
+
   it('FR-FIL-009: a local header that disagrees with the central directory is refused', () => {
     const zip = writeZip([{ name: 'a.txt', bytes: text('hello hello hello hello') }]);
     if (!zip.ok) throw new Error(zip.error.reason);
