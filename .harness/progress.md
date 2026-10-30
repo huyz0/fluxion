@@ -3614,3 +3614,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - The strict XML reader refuses an element with more than 256 attributes (XmlLimits.maxAttributes, both library and entry limits).
 - A stencil `<text>` whose characters fall outside printable ASCII reports `non-ascii-label-characters-replaced: N stencil text(s)`, as model cell labels already did.
 - Triangle directions and label positions look up only their tables' own keys; `toString`/`__proto__` style values fall back to the defaults (before, the entry was refused).
+
+## M18.126 — full-collection pack encoding budget (2026-10-27)
+- Nightly perf job: packages/format/bench/iconify-pack-2198.bench.ts imports and encodes all 2198 pinned Lucide icons; budget ICONIFY_PACK_2198_MAX_MS 4000 ms (local p99 about 0.8 s), calibrated 31.367 units.
+- Node test packages/editor/src/library/imported-pack-scaling.test.ts: median per-definition encode time of the full collection is at most 3 times that of a 1-in-16 sample (a quadratic encoder would be about 16 times); about 6 s locally.
+- Encoder: groups append instead of spreading, and each category is validated against the one parsed index with its entries looked up once (`categoryOfIndex`), instead of re-parsing the index per category.
+- Review r1 changes-requested, fixed: the bench reads the corpus through Vite's raw glob, not node:fs (format is pure); its header names perf-baseline.mjs. The 31.367-unit baseline is a local median (a local rerun read 32.2); a new entry has no nightly value yet, so the first nightly run's units should be recorded with a `Threshold-change:` trailer if they differ by more than the tolerance.

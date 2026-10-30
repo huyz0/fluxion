@@ -87,13 +87,14 @@ describe('perf-baseline: calibration units (NFR-PERF-005, ADR-0170)', () => {
   it('HARNESS NFR-PERF-005: the benchmark CLI annotates threshold failures with measured units and absolute latency', () => {
     const sb = sandbox(['scripts/ci/perf-baseline.mjs', 'scripts/gates/thresholds.mjs', 'perf-baseline.calibrated.json']);
     try {
-      // Synthetic over-budget reports test the diagnostic path, never qualify a performance gate.
+      // Synthetic over-budget reports test the diagnostic path, never qualify a performance gate. p99 30 s is over every
+      // bench budget, the 4 s full-collection pack encode included (M18.126).
       sb.write(
         'scripts/gates/lib.mjs',
         `import {writeFileSync} from 'node:fs';
 export function run(_command,args) {
   const name=args.at(-1).split('/').at(-1).replace('.bench.ts','');
-  const tasks=[{name,latency:{p50:100,p99:3000}},{name:'calibration',latency:{p50:10,p99:12}}];
+  const tasks=[{name,latency:{p50:100,p99:30000}},{name:'calibration',latency:{p50:10,p99:12}}];
   const report={testResults:[{assertionResults:[{title:name,status:'passed',benchmarks:[{tasks}]}]}]};
   writeFileSync(args.find(arg=>arg.startsWith('--outputFile=')).slice('--outputFile='.length),JSON.stringify(report));
   return {status:0,stderr:''};
@@ -108,7 +109,7 @@ export function run(_command,args) {
           annotations.some((line) => line.startsWith(`::error::FAIL ${name}: 10.000 calibration units`)),
           out(result),
         );
-      assert.match(result.stdout, /layered-500:.*p99 3000\.0 ms, limit 2000 ms/);
+      assert.match(result.stdout, /layered-500:.*p99 30000\.0 ms, limit 2000 ms/);
       assert.match(result.stdout, /baseline .* \+ 15 %25/);
     } finally {
       sb.cleanup();

@@ -95,12 +95,30 @@ export function parseShapePackCategory(
 ): Result<ShapePackCategory, readonly Diagnostic[]> {
   const metadata = parseShapePackIndex(index, licensePolicy);
   if (!metadata.ok) return metadata;
-  if (!Object.hasOwn(metadata.value.categories, category)) return err([problem(['category'], 'category is not indexed')]);
+  const entries = new Map(metadata.value.definitions.filter((entry) => entry.category === category).map((entry) => [entry.id, entry]));
+  return categoryOfIndex(input, { index: metadata.value, category, entries }, licensePolicy);
+}
+
+/** The index entries of `category` by definition id, for {@link categoryOfIndex}. */
+export type CategoryEntries = ReadonlyMap<string, ShapePackIndex['definitions'][number]>;
+
+/** Which category of which validated index {@link categoryOfIndex} checks, with that category's entries. */
+export type IndexedCategory = { readonly index: ShapePackIndex; readonly category: string; readonly entries: CategoryEntries };
+
+/**
+ * {@link parseShapePackCategory} against an index already validated under `licensePolicy`, with `entries` the
+ * index entries of `category`: the encoder validates every category of one index without parsing it again for each.
+ */
+export function categoryOfIndex(
+  input: unknown,
+  { index, category, entries }: IndexedCategory,
+  licensePolicy: ShapePackLicensePolicy,
+): Result<ShapePackCategory, readonly Diagnostic[]> {
+  if (!Object.hasOwn(index.categories, category)) return err([problem(['category'], 'category is not indexed')]);
   const envelope = categoryEnvelopeSchema.safeParse(input);
   if (!envelope.success) return err(issues(envelope.error.issues));
   const errors: Diagnostic[] = [];
   const definitions: ShapeDef[] = [];
-  const entries = new Map(metadata.value.definitions.filter((entry) => entry.category === category).map((entry) => [entry.id, entry]));
   const seen = new Set<string>();
   envelope.data.definitions.forEach((raw, i) => {
     const at = ['definitions', i];
@@ -115,9 +133,7 @@ export function parseShapePackCategory(
     if (def.value.license !== undefined) errors.push(...licenseProblem(def.value.license, licensePolicy, [...at, 'license']));
     definitions.push(def.value);
   });
-  for (const entry of metadata.value.definitions) {
-    if (entry.category === category && !seen.has(entry.id)) errors.push(problem(['definitions'], `missing indexed definition ${entry.id}`));
-  }
+  for (const entry of entries.values()) if (!seen.has(entry.id)) errors.push(problem(['definitions'], `missing indexed definition ${entry.id}`));
   return errors.length ? err(errors) : ok({ formatVersion: '1.0', definitions });
 }
 

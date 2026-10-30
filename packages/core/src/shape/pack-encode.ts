@@ -9,7 +9,8 @@ import { sha256Hex } from '../hash/sha256.js';
 import { utf8 } from '../hash/stable-id.js';
 import type { ShapePackDistributionFontResource, ShapePackFonts, VersionedShapePackIndex } from './pack-font-types.js';
 import { parseVersionedShapePackCategory, parseVersionedShapePackIndex } from './pack-font-validation.js';
-import type { ShapePackCredit, ShapePackLicensePolicy } from './pack-types.js';
+import type { ShapePackCredit, ShapePackIndex, ShapePackLicensePolicy } from './pack-types.js';
+import { type CategoryEntries, categoryOfIndex } from './pack-validation.js';
 import { parseShapeDef, type ShapeDef } from './shape-def.js';
 
 /**
@@ -148,6 +149,45 @@ function fontFiles(fonts: ShapePackDraftFonts): Result<[string, Uint8Array][], r
   return errors.length ? err(errors) : ok(out);
 }
 
+/** The stored definitions grouped by category slug; linear in their number, each appended to its group once. */
+function groupBySlug(members: readonly { def: ShapeDef }[]): Map<string, ShapeDef[]> {
+  const groups = new Map<string, ShapeDef[]>();
+  for (const { def } of members) {
+    const group = groups.get(def.category as string);
+    if (group) group.push(def);
+    else groups.set(def.category as string, [def]);
+  }
+  return groups;
+}
+
+/** Every written category file validated against the one parsed `index`, with its entries looked up once per slug. */
+function checkCategories(
+  index: VersionedShapePackIndex,
+  envelopes: ReadonlyMap<string, unknown>,
+  licensePolicy: ShapePackLicensePolicy,
+): Result<true, readonly Diagnostic[]> {
+  // a 1.1 category also checks every definition's font closure against its index: that parser validates the index itself
+  if (index.formatVersion === '1.1') {
+    for (const [slug, envelope] of envelopes) {
+      const category = parseVersionedShapePackCategory(envelope, index, slug, licensePolicy);
+      if (!category.ok) return err(category.error.map((d) => ({ ...d, path: `/categories/${slug}${d.path}` })));
+    }
+    return ok(true);
+  }
+  const legacy: ShapePackIndex = index;
+  const bySlug = new Map<string, Map<string, ShapePackIndex['definitions'][number]>>();
+  for (const entry of legacy.definitions) {
+    const entries = bySlug.get(entry.category) ?? new Map();
+    bySlug.set(entry.category, entries.set(entry.id, entry));
+  }
+  for (const [category, envelope] of envelopes) {
+    const entries: CategoryEntries = bySlug.get(category) ?? new Map();
+    const checked = categoryOfIndex(envelope, { index: legacy, category, entries }, licensePolicy);
+    if (!checked.ok) return err(checked.error.map((d) => ({ ...d, path: `/categories/${category}${d.path}` })));
+  }
+  return ok(true);
+}
+
 /**
  * Encode `draft` as a declarative pack (ADR-0048, ADR-0196) and validate every file it writes under
  * `licensePolicy`. Refuses an empty pack, ids outside the namespace, invalid definitions and rights the policy
@@ -163,8 +203,7 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
   const fonts = draft.fonts === undefined ? ok([] as [string, Uint8Array][]) : fontFiles(draft.fonts);
   if (!fonts.ok) return fonts;
   const formatVersion = draft.fonts === undefined ? '1.0' : '1.1';
-  const groups = new Map<string, ShapeDef[]>();
-  for (const { def } of members.value) groups.set(def.category as string, [...(groups.get(def.category as string) ?? []), def]);
+  const groups = groupBySlug(members.value);
   const categoryFiles = new Map<string, Uint8Array>();
   const envelopes = new Map<string, unknown>();
   const descriptors: Record<string, { path: string; sha256: string }> = {};
@@ -202,10 +241,8 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
     licensePolicy,
   );
   if (!index.ok) return index;
-  for (const [slug, envelope] of envelopes) {
-    const category = parseVersionedShapePackCategory(envelope, index.value, slug, licensePolicy);
-    if (!category.ok) return err(category.error.map((d) => ({ ...d, path: `/categories/${slug}${d.path}` })));
-  }
+  const checked = checkCategories(index.value, envelopes, licensePolicy);
+  if (!checked.ok) return checked;
   const files = new Map<string, Uint8Array>([['index.json', utf8(canonicalJson(index.value))], ...categoryFiles, ...fonts.value]);
   return ok({ files, index: index.value, definitions: members.value.map((m) => m.def) });
 }

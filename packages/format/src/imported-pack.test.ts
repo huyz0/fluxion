@@ -29,7 +29,7 @@ const interRights = {
 };
 const FILES = import.meta.glob('../../../specs/import/corpus/iconify/lucide.json', { query: '?raw', import: 'default', eager: true });
 // Every 16th pinned Lucide icon plus the two the document uses, with their aliases. Packing all 2198 exceeded the timeout
-// on loaded CI runners (M18.117); the editor's FR-LIB-005 test imports the complete collection, but no test packs all of it
+// on loaded CI runners (M18.117); editor library/imported-pack-scaling.test.ts packs all of it (M18.126), and the nightly perf job times it
 function lucideSample(text: string): string {
   const collection = JSON.parse(text) as { icons: Record<string, unknown>; aliases: Record<string, { parent: string }> };
   const kept = Object.keys(collection.icons).filter((name, i) => i % 16 === 0 || name === 'album' || name === 'arrow-up');

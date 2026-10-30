@@ -81,11 +81,11 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.drag-insert.spec.ts`, `packages/editor/src/library/library-insert.test.ts` |
 | FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/artwork.test.ts` +16 |
 | FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/artwork-fonts.test.ts` +52 |
-| FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-iconify.test.ts` +4 |
+| FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-iconify.test.ts` +6 |
 | FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/import-drawio.test.ts` +4 |
 | FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/pack-encode.test.ts` +18 |
 | FR-LIB-008 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/editor/src/library/my-shapes.test.ts` |
-| FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/file-recovery.test.ts` +21 |
+| FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/file-recovery.test.ts` +22 |
 | FR-LIB-010 | S | R6 | M26 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-011 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.replace-shape.spec.ts` +3 |
 | FR-ANC-001 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/anchor.test.ts`, `packages/routing/src/connector-route.test.ts` |
