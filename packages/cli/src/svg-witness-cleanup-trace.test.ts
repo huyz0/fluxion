@@ -109,7 +109,8 @@ it('NFR-SEC-001: a termination that rejects after the cleanup settled arms no ti
   expect(await closed).toBe(true);
   await vi.advanceTimersByTimeAsync(0);
   expect(vi.getTimerCount()).toBe(0);
-  expect(lines()).toEqual([]);
+  // the exit came after the reserve, so the close is traced as a slow clean one (M18.201), and nothing else is
+  expect(lines()).toMatchObject([{ decided: 'exited-after-reserve', closeToExitMs: 3000, waitedForExit: true }]);
 });
 
 it('NFR-SEC-001: a launch still pending with no owned process at the reserve prints one trace naming that branch', async () => {

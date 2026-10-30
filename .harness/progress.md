@@ -3589,3 +3589,10 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 
 - `svg-witness-cleanup.ts`: the immediate termination's rejection handler returns once the cleanup has settled, so `stop()` ending a running taskkill after the observed exit no longer arms the two-second window. The verdict is unchanged.
 - Test (`svg-witness-cleanup-trace.test.ts`, fake timers): the exit is observed while the termination runs, settling stops the helper, the termination rejects, and no timer is pending. It failed before the fix (1 timer); the witness suites pass 61 of 61.
+
+## M18.201 — a slow but clean Windows witness close shows in ci (2026-10-30)
+
+- `svg-witness-cleanup.ts`: when an immediate (Windows) termination's exit is observed after the two-second reserve, one WITNESS_CLEANUP line with decided 'exited-after-reserve', `closeToExitMs` and the helper's diagnostics is printed; the verdict stays a clean close, and no wait or bound changes.
+- `cli.pack-import.test.ts`: every `pack-import` run echoes the CLI's WITNESS_CLEANUP lines through `packImport`, on success as on failure, as `ADVISORY witness-cleanup …` lines on stdout (`witnessAdvisories` in `spawn-bin.ts`). verify shows `ADVISORY ` lines under a passing step and ci raises them as warnings; vitest silences `console.log` of passing tests but not `process.stdout.write` (checked locally: only the stdout write reached the run's output).
+- Review r1 (changes-requested): F1 the echo went to `console.log`, which a green verify never shows (now ADVISORY on stdout, with a unit test of the mapping); F2 the commit body names the M18.198 test change.
+- Tests: a helper succeeding after 2.5 s prints that line (closeToExit > 2400 ms, helper code 0); a close inside the reserve prints none. M18.198's test (not landed, same cli batch) closes after the reserve, so it now expects exactly that line instead of none; its timer assertion is unchanged. Witness suites 63 of 63; pack-import e2e 4 of 4; `spawn-bin.test.ts` 1 of 1.

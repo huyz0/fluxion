@@ -88,6 +88,35 @@ it('NFR-SEC-001: an immediate termination whose helper succeeds after 2.5 s is a
   expect(Number.isInteger(timeouts[0])).toBe(true);
 }, 15000);
 
+/** The WITNESS_CLEANUP lines written to stderr while `run` settles. */
+async function traced(run: () => Promise<boolean>) {
+  const lines: string[] = [];
+  vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => (lines.push(String(chunk)), true));
+  const closed = await run();
+  vi.restoreAllMocks();
+  const traces = lines.filter((l) => l.startsWith('WITNESS_CLEANUP ')).map((l) => JSON.parse(l.slice('WITNESS_CLEANUP '.length)));
+  return { closed, traces };
+}
+
+it('NFR-SEC-001: a clean close observed after the reserve prints one exited-after-reserve trace with its times (M18.201)', async () => {
+  const child = await browser();
+  const { launch } = helper(child, 2500);
+  const { closed, traces } = await traced(() => own(child, launch).close());
+  expect(closed).toBe(true);
+  expect(traces).toHaveLength(1);
+  expect(traces[0]).toMatchObject({ decided: 'exited-after-reserve', waitedForExit: true, helper: { code: 0, signal: null } });
+  expect(traces[0].closeToExitMs).toBeGreaterThan(2400);
+  expect(traces[0].helper.exitMs).toBeGreaterThanOrEqual(traces[0].helper.spawnReturnMs);
+}, 30000);
+
+it('NFR-SEC-001: a clean close observed inside the reserve prints no trace (M18.201)', async () => {
+  const child = await browser();
+  const { launch } = helper(child, 50);
+  const { closed, traces } = await traced(() => own(child, launch).close());
+  expect(closed).toBe(true);
+  expect(traces).toEqual([]);
+}, 30000);
+
 it('NFR-SEC-001: an immediate termination whose helper exits non-zero is a cleanup failure two seconds after it, traced, the process untouched', async () => {
   const child = await browser();
   const { launch } = helper(child, 50, 1);

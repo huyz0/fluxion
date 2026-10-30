@@ -21,3 +21,14 @@ export function fluxion(
 
 /** Per-test timeout of the e2e suites: each case spawns Node several times, slow on a loaded machine. */
 export const E2E_TIMEOUT = 30_000;
+
+/**
+ * The CLI's WITNESS_CLEANUP stderr lines as `ADVISORY ` lines: verify shows those on a passing step and ci raises them as warnings,
+ * so a slow but clean witness close reaches a green ci log (M18.201). Written to stdout, which vitest does not silence.
+ */
+export function witnessAdvisories(stderr: string): string[] {
+  return stderr
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith('WITNESS_CLEANUP '))
+    .map((line) => `ADVISORY witness-cleanup ${line}`);
+}

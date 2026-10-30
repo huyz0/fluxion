@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { sha256Hex, writeZip } from '@fluxion/format';
 import { allowsShapePackContentLicense, createArtworkShapePackLoader } from '@fluxion/sdk';
 import { afterAll, describe, expect, it } from 'vitest';
-import { fluxion, REPO } from './spawn-bin.js';
+import { fluxion, REPO, witnessAdvisories } from './spawn-bin.js';
 
 const CORPUS = join(REPO, 'specs/import/corpus');
 const dir = mkdtempSync(join(tmpdir(), 'fluxion-pack-import-e2e-'));
@@ -27,6 +27,12 @@ type Manifest = {
 };
 const manifest = JSON.parse(readFileSync(join(CORPUS, 'manifest.json'), 'utf8')) as Manifest;
 const member = (path: string) => path.slice('svg/'.length);
+/** `fluxion pack-import`, echoing the CLI's WITNESS_CLEANUP lines whether it succeeds or fails, so each slow close is in the ci log (M18.201). */
+function packImport(args: readonly string[]) {
+  const r = fluxion(['pack-import', ...args]);
+  for (const line of witnessAdvisories(r.stderr)) process.stdout.write(`${line}\n`);
+  return r;
+}
 
 /**
  * The corpus's declared rights as a `--credits` file: one upstream credit per Lucide member, pinned to its upstream path at the
@@ -95,9 +101,9 @@ describe('fluxion pack-import of the 50-SVG corpus (M18.16)', () => {
     const credits = creditsFile();
     const fromFolder = join(dir, 'folder-pack');
     const fromZip = join(dir, 'zip-pack');
-    const a = fluxion(['pack-import', join(CORPUS, 'svg'), ...meta(fromFolder), '--credits', credits]);
+    const a = packImport([join(CORPUS, 'svg'), ...meta(fromFolder), '--credits', credits]);
     expect(a.status, a.stdout + a.stderr).toBe(0);
-    const b = fluxion(['pack-import', corpusZip(), ...meta(fromZip), '--credits', credits]);
+    const b = packImport([corpusZip(), ...meta(fromZip), '--credits', credits]);
     expect(b.status, b.stdout + b.stderr).toBe(0);
     expect(tree(fromZip)).toEqual(tree(fromFolder));
     const reply = JSON.parse(a.stdout).result;
@@ -130,7 +136,7 @@ describe('fluxion pack-import of the 50-SVG corpus (M18.16)', () => {
     mkdirSync(input);
     cpSync(join(CORPUS, 'svg/original-label-badge.svg'), join(input, 'badge.svg'));
     const out = join(dir, 'badge-pack');
-    const r = fluxion(['pack-import', input, ...meta(out), '--license', 'MIT', '--attribution', 'Fluxion contributors', '--author', 'Fluxion contributors']);
+    const r = packImport([input, ...meta(out), '--license', 'MIT', '--attribution', 'Fluxion contributors', '--author', 'Fluxion contributors']);
     expect(r.status, r.stdout + r.stderr).toBe(0);
     const index = JSON.parse(readFileSync(join(out, 'index.json'), 'utf8'));
     expect(index.formatVersion).toBe('1.1');
@@ -147,7 +153,7 @@ describe('fluxion pack-import beyond one witness session (M18.16 r2 F1)', () => 
     for (let i = 0; i < 129; i++)
       writeFileSync(join(input, `s${String(i).padStart(3, '0')}.svg`), `<svg viewBox="0 0 ${i + 10} 10"><rect width="${i + 10}" height="10"/></svg>`);
     const out = join(dir, 'many-pack');
-    const r = fluxion(['pack-import', input, ...meta(out), '--license', 'MIT', '--attribution', 'Me', '--author', 'Me']);
+    const r = packImport([input, ...meta(out), '--license', 'MIT', '--attribution', 'Me', '--author', 'Me']);
     expect(r.status, r.stdout + r.stderr).toBe(0);
     expect(JSON.parse(r.stdout).result.acceptedCount).toBe(129);
   });
@@ -261,7 +267,7 @@ describe('fluxion pack-import refusals (NFR-SEC-001)', () => {
     for (const [label, args, message] of cases) {
       const out = join(dir, `refused-${label}`);
       const started = performance.now();
-      const r = fluxion(['pack-import', args[0] as string, ...meta(out), ...args.slice(1)]);
+      const r = packImport([args[0] as string, ...meta(out), ...args.slice(1)]);
       expect(performance.now() - started, label).toBeLessThan(10_000);
       expect(r.status, `${label}: ${r.stdout}`).toBe(1);
       expect(

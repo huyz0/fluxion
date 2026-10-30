@@ -51,11 +51,15 @@ class CleanupCoordinator implements WitnessCleanup {
     }
     this.resolve(success);
   }
-  /** One line on stderr naming why the reserve ended in a cleanup failure, and when (M18.195: diagnose before attempt 3). */
-  private trace() {
+  /**
+   * One line on stderr naming why the reserve ended in a cleanup failure, and when (M18.195: diagnose before attempt 3), or that a
+   * Windows close succeeded only after the reserve (M18.201), so each slow close shows in the ci log.
+   */
+  private trace(after?: 'exited-after-reserve') {
     const now = performance.now();
     const trace = {
-      decided: this.resource ? 'owned-not-exited' : 'launch-pending',
+      decided: after ?? (this.resource ? 'owned-not-exited' : 'launch-pending'),
+      ...(after ? { closeToExitMs: Math.round(now - (this.deadline - RESERVE_MS)) } : {}),
       sinceTerminationMs: this.terminationStartedAt === undefined ? null : Math.round(now - this.terminationStartedAt),
       expiryToVerdictMs: Math.round(now - this.deadline),
       forced: this.forced,
@@ -123,7 +127,10 @@ class CleanupCoordinator implements WitnessCleanup {
     this.limit = setTimeout(() => setImmediate(this.decide), waitFor);
   }
   private observe(resource: OwnedBrowserProcess): boolean {
-    this.unsubscribe = resource.onExit(() => this.finish(true));
+    this.unsubscribe = resource.onExit(() => {
+      if (this.waiting && !this.settled) this.trace('exited-after-reserve');
+      this.finish(true);
+    });
     if (this.settled) {
       this.unsubscribe();
       return false;
