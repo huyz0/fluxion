@@ -106,19 +106,31 @@ function dialogKeys(e: KeyboardEvent<HTMLElement>, close: () => void): void {
   (e.shiftKey ? last : first)?.focus();
 }
 
+/**
+ * While the dialog is open a clipboard chord is not a cut or paste of the selection behind it. Held on the window, before the editor's listeners:
+ * Firefox raises copy, cut and paste on the body when the focus is on a button (a non-editable target), so a handler on the dialog never sees them
+ * (ci 41117375355, M18.213). A copy of text selected in the dialog still copies it: only the editor's handling is held, not the browser's.
+ */
+function useClipboardHeld(): void {
+  useEffect(() => {
+    const hold = (e: Event) => e.stopPropagation();
+    for (const type of ['copy', 'cut', 'paste']) window.addEventListener(type, hold, true);
+    return () => {
+      for (const type of ['copy', 'cut', 'paste']) window.removeEventListener(type, hold, true);
+    };
+  }, []);
+}
+
 /** The credits dialog: every used pack's credits, or a line saying there are none; it takes the focus, and Escape or Close closes it. */
 export function PackCreditsDialog(props: { readonly packs: readonly CreditedPack[]; readonly onClose: () => void }): JSX.Element {
   const close = useRef<HTMLButtonElement>(null);
   useEffect(() => close.current?.focus(), []);
+  useClipboardHeld();
   return (
     <dialog
       open
       aria-label={t`Shape credits`}
       onKeyDown={(e) => dialogKeys(e, props.onClose)}
-      // a clipboard chord in the dialog is not a cut or paste of the selection behind it
-      onCut={(e) => e.stopPropagation()}
-      onCopy={(e) => e.stopPropagation()}
-      onPaste={(e) => e.stopPropagation()}
       style={{ position: 'fixed', top: 48, zIndex: 10_000, maxWidth: 640, maxHeight: '75vh', overflow: 'auto', padding: 16 }}
     >
       <h2 style={{ marginTop: 0 }}>{t`Shape credits`}</h2>
