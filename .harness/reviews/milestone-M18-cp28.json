@@ -1,0 +1,78 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp28",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..903bdc397bea99299dcfa8580c3ba662d1fe126c",
+  "reviewer": "claude:independent-subagent:m18-cp28",
+  "verdict": "approve",
+  "reviewedDelta": "4c8513b6d6d7087fcb01844c5b049be79dbd91e9..903bdc397bea99299dcfa8580c3ba662d1fe126c: 8628af0 cp27 record (07:57Z push); aa91aac M18.202 + 59d955c M18.17 (10:12Z push, ci 41039060702 green); 74dcd74 M18.198 + febe298 M18.201 (10:37Z push, ci 41042146448 green, Windows verify 124017286444 green 11:17Z); 4892809 M18.40 + 858fb9d M18.104 + 903bdc3 M18.126 (13:49Z push, ci 41066494490: Windows verify 124099116821 green, 'Run pnpm verify' 1344 s; ubuntu verify, e2e, size and api still queued when this review was written). 7 task commits and 1 bookkeeping commit; the earlier range was covered by cp1-cp27. Checked here: vitest zip.test.ts + imported-pack-scaling.test.ts (18/18); check-layering (0 violations); check-api (44 reports match); check-trace --milestone M18 (every Must covered); check-digest --head --full-history (197 commits with evidence; the staged-mode run flags only M18.126's Commit cell, which the next commit fills); check-tests-kept and check-drift --commit on all 8 commits (exit 0); live job and step timings over the GitHub API. A tsx micro-benchmark of subsetFontGaps (F1). Not checked: Firefox/WebKit legs of library.font-subset (HEAD's e2e is queued), the job logs (the blob host is refused by the proxy), the nightly perf leg for iconify-pack-2198 (no nightly has run since it landed), and mutation.",
+  "cp27DispositionsCheck": "F1 (reopen -> M18.202): done at aa91aac. readZip now builds the full listing (count, each declared size, running total, strict names) in listingOf before any entryOrFailure. zip.test.ts and import-svg.test.ts shape three-entry ZIPs with a corrupt first deflate body and an over-cap last declaration, and an over-total sum; the size refusal comes first, and within limits the corrupt body is still refused. Existing tests are unchanged. PlanDelta order: (1) record first: kept. (2) wait for 41020919664: its test jobs were all green by 09:31Z, before the 10:12Z push, but the run itself (e2e-report and ci-ok, queued for runners) completed only at 11:47Z, so 'complete green' was read at job level. That is acceptable but worth stating. (3) M18.17 with M18.202: kept. (4) the cli batch together, and the next feature batch held until its Windows verify was green: kept (green 11:17Z, next push 13:49Z). The first exited-after-reserve durations (closeToExitMs 3283, helper exitMs 178, expiryToVerdictMs 1283, run 41042146448) are not yet in progress.md. Stream 1 adds them in the cp28 record. Read: taskkill returns in 178 ms, but the owned exit is observed about 3.1 s later, past the 2 s reserve. (5) 'any further Windows-side test growth needs that card answered first' was not honoured: M18.40 and M18.126 added Windows-run tests without the card being answered (F4).",
+  "questions": {
+    "coherence": "One design. Format owns the pure parts of each import or save: the up-front ZIP listing; the draw.io XML caps and own-key lookups; font inventory, plan, job runner, the candidate and its record shape behind injected WebAssembly and timers; and the pack encoder's single-pass grouping. Hosts own workers, timers and fs. The studio and the CLI run the same subset code over the same pinned modules, each with its own reopen check (reopensWithSubsets and reopensIntact are near-duplicates, which is tolerable). The studio importer reuses registerSvgLibrary and FileBar.shapePackSources, so imported packs save the way M18.192 packs do. The witness cleanup changes stay inside CleanupCoordinator.",
+    "specFidelity": "M18.202, M18.198, M18.201 and M18.104 meet their acceptance as written; the boundary tests are exact (256 versus 257 attributes, a rejection after settle with zero timers, 2.5 s versus 50 ms helpers). M18.17 covers the three EARS clauses in e2e/library.import-svg.spec.ts (50 registered, inserted, save and reopen drawing; a refusal by path with nothing registered; a token-mapped colour following a theme change). It was green on all three browsers in ci 41039060702. M18.40 meets FR-AST-003 through ADR-0201, the compat fixture, the CLI e2e and the three-browser e2e (HEAD's e2e still queued), but F1 leaves it with an unbounded parse of an untrusted field. M18.126 meets 'linear' through a 3x per-definition ratio test (16x would be quadratic) and adds the budget. Its baseline's origin breaks the perf script's own rule (F3).",
+    "standardsDrift": "Commit subjects, digest lines, changesets and ADR numbering hold. The perf baseline file states 're-record it from a nightly run only'. M18.126 added a locally measured entry without a trailer (F3). That is new rather than re-recorded, but the rule exists so that units come from the hosted runner.",
+    "gateHonesty": "The m18-complete leg 'CLI pack import and font-subset option exercise real files' still runs only packages/cli/src/pack-import.test.ts, which has no --subset-fonts case. M18.40's own progress note says so and hands it to M18.16, which is already done, so no row owns the fix (F2). Spot checks of three mutants: removing listingOf's up-front pass fails both M18.202 tests; dropping 'if (this.settled) return' leaves one timer, which fails M18.198; returning PAINTERS[shape] without hasOwn fails M18.104's own-key case. No tests were removed and no thresholds loosened. ICONIFY_PACK_2198_MAX_MS is a new budget (weakens up), and the harness test's synthetic p99 rose from 3000 to 30000 only so that it still exceeds every budget, the new 4000 ms one included. That is not a loosening.",
+    "architecture": "check-layering is clean. The new format modules touch no timers, clock, fs or DOM, and the bench reads its corpus through a Vite raw glob. core gains categoryOfIndex (internal, not exported from the index). Contracts: CLI convert --json adds optional result.fonts (schema regenerated, apiVersion 1, additive under contracts.md rule 3). The file format adds font.subset on loose asset records, with the spec section 4 change, ADR-0201 and a CLI-written fixture plus compat test. editor's font-subset exports moved to format (unreleased 0.0.0, minor changeset; api reports match). No new runtime dependency. The format package gains about 1.4 MB of WASM assets, which the player never loads (HEAD's size job is still queued).",
+    "planHealth": "182 rows against 43 planned (4.2x), with 19 todo. The delta closed 7 rows and opens 3 small ones. Windows 'Run pnpm verify' went from 1259/1281 s to 1344 s of its 1500 s bound when M18.40 and M18.126 landed: about 90 %. Core mutation shards were cancelled at 60 min in nightly 41028194620, and M18.126 adds core code, so M18.10 stays the long pole. The remaining order (stream 4: M18.136 and M18.109; stream 2: M18.32, M18.143, M18.162; then the other todo rows, then M18.10/42/43) is sound, provided that Windows-run test growth stops until Huy answers the bound card."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "packages/format/src/font-subset-save.ts",
+      "line": 167,
+      "evidence": "subsetFontGaps (and coveredBy, line 126) parse a file's font.subset.unicodes with no bound on length or pair count. They then test each codepoint with pairs.some(...), which is O(codepoints x pairs). apps/studio/src/file-session.ts:303 calls gapsOf(document) on every successful save, whether or not subsetting is on. font.subset arrives from any opened .flux, because asset records are loose (ADR-0201). Measured with tsx: a 1.6 MB unicodes string (200k single-codepoint parts) against 5000 CJK codepoints takes 13.8 s in subsetFontGaps.",
+      "failure_scenario": "A crafted .flux whose font record carries a multi-megabyte font.subset.unicodes, together with text that uses a few thousand distinct characters, freezes the studio's main thread for tens of seconds or longer on every Save. With subsetting on, the same cost hits coveredBy, both in the studio and in convert --subset-fonts. The cost grows with file size rather than with the 5 MiB font caps."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/gates/m18-complete.mjs",
+      "line": 230,
+      "evidence": "leg('CLI pack import and font-subset option exercise real files', () => tests('packages/cli/src/pack-import.test.ts')): that suite has no --subset-fonts case (grep finds only pack-import cases). The CLI evidence for M18.40 is packages/cli/src/e2e/cli.subset-fonts.test.ts, which no completion leg runs. The M18.40 progress note hands the fix to M18.16, but M18.16 is done (3ffad13).",
+      "failure_scenario": "A regression that breaks convert --subset-fonts, or its result.fonts --json contract, leaves the completion gate green under a leg that claims to cover it. Ordinary CI would still run the e2e, but the completion gate's claim is false."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "perf-baseline.calibrated.json",
+      "line": 7,
+      "evidence": "'iconify-pack-2198': 31.367 was recorded locally; the M18.126 progress note says a local rerun read 32.2. scripts/ci/perf-baseline.mjs:6 says baselines are 're-record[ed] from a nightly run only with a Threshold-change: trailer', and M17.25 recorded the others from nightly 39861908556. No nightly has run since 903bdc3, and no backlog row records the first hosted units. The progress note's 'should be recorded' has no owner.",
+      "failure_scenario": "The calibration ratio for a hashing- and JSON-heavy encode is not machine-invariant against the layout calibration workload. If hosted units exceed 36.07 (+15 %), the nightly perf job goes red on unchanged code, and someone re-records under pressure. If they come in well below, the regression budget is loose by that margin with nobody noticing."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": ".github/workflows/ci.yml",
+      "line": 50,
+      "evidence": "cp27's planDelta: 'any further Windows-side wait or test growth needs that card answered first'. The 13:49Z batch added cli.subset-fonts e2e (built bin, worker threads), font-subset-save/compat tests and the full-collection scaling test (about 6 s locally). Windows 'Run pnpm verify' read 1259 s (59d955c), 1281 s (febe298) and 1344 s (903bdc3, job 124099116821) of 1500 s.",
+      "failure_scenario": "About 156 s of headroom remains. A loaded Windows runner, or two more test-bearing rows (M18.143 and M18.32 both add three-browser and SDK suites), pushes the step past its 25-minute timeout, and main goes red for a reason no test names."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.203",
+      "note": "| M18.203 | A subset font's recorded range is read in bounded time (cp28 F1) | NFR-SEC-001, FR-AST-003 | WHEN a document's font.subset.unicodes is read (subsetFontGaps on every studio save, coveredBy in a subset save in the studio or convert --subset-fonts) THE SYSTEM SHALL bound its work by the number of codepoints tested times log of the ranges: ranges are parsed once, merged and searched, and a range string longer than a stated cap or with more than 0x110000 covered scalars is treated as no recorded range (whole-font semantics, reported as a gap); a format test SHALL show a 1.6 MB range against 5000 codepoints finishing under 200 ms, and every existing font-subset test stays unchanged | M18.40 | todo | |"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.204",
+      "note": "| M18.204 | The completion gate runs the CLI font-subset e2e it names (cp28 F2) | FR-AST-003, HARNESS | WHEN m18-complete runs the leg 'CLI pack import and font-subset option exercise real files' THE SYSTEM SHALL run packages/cli/src/e2e/cli.subset-fonts.test.ts as well as packages/cli/src/pack-import.test.ts, and fail when either is missing or red; a harness case SHALL show the leg failing when cli.subset-fonts.test.ts is absent | M18.40 | todo | |"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.205",
+      "note": "| M18.205 | The pack-encode perf baseline comes from a nightly run (cp28 F3) | NFR-PERF-005, FR-LIB-005, HARNESS | WHEN the first nightly perf job after 903bdc3 completes THE SYSTEM SHALL record iconify-pack-2198's median calibration units from that run in perf-baseline.calibrated.json with a Threshold-change: trailer that cites the run id, as M17.25 did for the layout benches; if that run fails the leg, the cause is diagnosed before any re-record; ICONIFY_PACK_2198_MAX_MS stays 4000 | M18.126 | todo | |"
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "target": "review-argued",
+      "note": "No product defect. It is a plan breach whose remedy is a hold, not a row. The 25-minute Windows step bound is Huy's decision (the open bound card). Until the card is answered, no row that adds Windows-run node tests lands, except under its own measurement showing the step under 1400 s. Record the 1344 s reading in progress.md beside the cp28 record."
+    }
+  ],
+  "planDelta": "Add M18.203 (bounded font.subset range parse; cp28 F1), M18.204 (completion leg runs cli.subset-fonts; F2) and M18.205 (nightly-sourced iconify-pack-2198 baseline; F3), none blocks-landing; the backlog header goes to 185. Order: (1) Land the cp28 record (harness path): it fills M18.126's Commit cell and writes to progress.md the first exited-after-reserve trace (run 41042146448, job 124017286444: closeToExitMs 3283, helper exitMs 178, expiryToVerdictMs 1283; taskkill returns in 178 ms, but the owned exit arrives about 3.1 s later) and Windows verify 1344 s at 903bdc3. (2) Wait for ci 41066494490 to finish green, at job level for e2e, size and api, and the run itself before the next product push. (3) M18.204 and M18.205 are harness/baseline work and may land at any time; M18.205 waits for the next nightly. (4) M18.203 (format-only) lands before or with the next font-touching row. (5) Stream 4 (M18.136, M18.109) and stream 2 (M18.32, M18.143, M18.162) proceed. Each must show that its Windows 'Run pnpm verify' stays under 1400 s, or wait for Huy's answer on the bound card. M18.143 had 6 review rounds: rebase it once onto the final stream-2 base and re-review there rather than chasing main. (6) The other todo rows, then M18.10, M18.42, M18.43. Learned: 'cp28 (through `903bdc3`): an additive loose field is still untrusted input, so a reader that parses it needs a bound like any importer; a baseline measured off the machine that judges it is a guess until the hosted run records it; and a completion leg named for a feature must run that feature's test, not a neighbour's.'"
+}

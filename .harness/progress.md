@@ -3620,3 +3620,9 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 - Node test packages/editor/src/library/imported-pack-scaling.test.ts: median per-definition encode time of the full collection is at most 3 times that of a 1-in-16 sample (a quadratic encoder would be about 16 times); about 6 s locally.
 - Encoder: groups append instead of spreading, and each category is validated against the one parsed index with its entries looked up once (`categoryOfIndex`), instead of re-parsing the index per category.
 - Review r1 changes-requested, fixed: the bench reads the corpus through Vite's raw glob, not node:fs (format is pure); its header names perf-baseline.mjs. The 31.367-unit baseline is a local median (a local rerun read 32.2); a new entry has no nightly value yet, so the first nightly run's units should be recorded with a `Threshold-change:` trailer if they differ by more than the tolerance.
+
+## M18.43 — checkpoint cp28 (2026-10-30)
+
+- Approved over 7545e70..903bdc3; reopened M18.203 (bounded read of font.subset.unicodes), M18.204 (m18-complete runs the CLI font-subset e2e), M18.205 (iconify-pack-2198 baseline from a nightly); F4 argued: Windows verify rose to 1344 s of 1500 s (job 124099116821), so each further row keeps it under 1400 s or waits for Huy's bound card.
+- cp27's request: first success trace on Windows (ci 41042146448, febe298, job 124017286444): `exited-after-reserve`, closeToExitMs 3283, expiryToVerdictMs 1283, taskkill exit 178 ms code 0. The old 2 s reserve would have failed this clean close.
+- Order: wait for HEAD's ci green; M18.136 + M18.109 (stream 4), M18.32/143/162 (stream 2), M18.203 before the next font row; M18.204/205 any time; then the rest and M18.10/42/43.
