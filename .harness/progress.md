@@ -3630,3 +3630,5 @@ check-licenses refuses a first-party pack index, credit or definition whose cont
 ## M18.204 — the completion gate runs the CLI font-subset e2e it names (2026-10-30)
 
 - cp28 F2: the leg 'CLI pack import and font-subset option exercise real files' ran only pack-import.test.ts. It now runs packages/cli/src/e2e/cli.subset-fonts.test.ts after it, and fails when either is missing or red; tests/harness/m18-cli-subset-leg.test.mjs proves both suites run and that an absent or failing subset e2e fails the leg.
+## M18.43 — plan M18.206 (2026-10-30)
+- ci 41066494490 at 903bdc3 failed `e2e (webkit 1/4)`: ai-panel.apply-undo.spec.ts:51 could not click Apply ("element is outside of the viewport", first try and retry). The shard passed at febe298. M18.40 added the "Subset embedded fonts" checkbox to the AI panel, whose fixed-position container has no height bound or scroll, so the taller panel pushes Apply below the viewport. M18.206 fixes the layout, not the test.
