@@ -3753,3 +3753,9 @@ open: name the nightly previous-playwright webkit failure from the next nightly 
 - Scope agreed with stream 1: refuse rather than embed (the row allows either); embedding becomes a later row on M18.97's versioned subset registry with the Studio file-session wiring. No core pack registration touched.
 - `saveMyShape(view, ids, item, { source, available })` returns a result: refused with the unavailable definitions named; `createMyShapes(storage, available)` refuses such items on put and import; `parseMyShapes(raw, available?)`. Import renames a colliding id to the next free `<id>-<n>`. ADR-0048 amendment M18.120.
 - Tests 8/8: mixed selection refused naming aws:lambda, flow:decision; put/import refused into a host without them; renaming on import.
+
+## 2026-11-02 M18.220 (claude, stream 1)
+red: ci 41431036963 at 21b5120, verify (windows-latest) job 125229373897: pack-import.test.ts:234 "the entry-count, per-entry and total caps..." timed out at 20 s; the same tree passed Windows verify at 590e0a4 (987 s), so it is load-dependent
+fix: the cost is the walk, not the fixture: pack-import awaited one lstat per entry, 4097 in a row (236 ms here, far more under Windows' scanner). The walk now counts entries readdir types as regular files with no stat and reads their sizes 64 at a time after the count (15 ms here); links and other entries still go through lstat, and readListed still re-checks each file. Test unchanged (r1 had split the case: the wrong lever)
+also red: e2e chromium 2/4 at 6d45a30 (ci 41426181149) failed 5 unrelated specs mid-shard (goto ERR_ABORTED, element detached) on a product tree that passed at 2c236ec; read as a runner fault unless it recurs
+

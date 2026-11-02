@@ -14,23 +14,49 @@ export { categoryOf, memberIds, slugOf } from '@fluxion/format';
 /** A refusal of the input: what is wrong, and the member path it concerns ('' for the whole input). */
 export type InputProblem = SvgMemberProblem;
 
-type Found = { readonly path: string; readonly abs: string; readonly size: number };
+type Found = { readonly path: string; readonly abs: string; size: number };
 
-/** One entry of a walk: a nested folder is listed, a regular file is kept, anything else is refused. */
+/** A listed regular file, counted against the entry cap; its size is read after the listing (`sized`). */
+function keep(path: string, abs: string, found: Found[]): InputProblem | undefined {
+  found.push({ path, abs, size: 0 });
+  return found.length > INPUT_LIMITS.maxEntries ? { path: '', message: `more than ${INPUT_LIMITS.maxEntries} entries` } : undefined;
+}
+
+/** One entry the listing did not type as a regular file: a nested folder is listed, a regular file is kept, anything else is refused. */
 async function visit(path: string, abs: string, found: Found[]): Promise<InputProblem | undefined> {
   const stat: Stats = await lstat(abs);
   if (stat.isSymbolicLink()) return { path, message: 'is a symbolic link; pack-import never follows links' };
   if (stat.isDirectory()) return list(abs, `${path}/`, found);
   if (!stat.isFile()) return { path, message: 'is not a regular file' };
-  found.push({ path, abs, size: stat.size });
-  return found.length > INPUT_LIMITS.maxEntries ? { path: '', message: `more than ${INPUT_LIMITS.maxEntries} entries` } : undefined;
+  return keep(path, abs, found);
 }
 
-/** Lists the regular files under `dir` into `found` (each folder in name order), stopping at a link, a non-regular entry or the entry cap. */
+/**
+ * Lists the regular files under `dir` into `found` (each folder in name order), stopping at a link, a non-regular entry or the
+ * entry cap. Entries the listing types as regular files are counted without a stat each (M18.220: 4097 awaited lstats took
+ * most of 20 s on a loaded Windows runner); every other entry is checked with `lstat`.
+ */
 async function list(dir: string, prefix: string, found: Found[]): Promise<InputProblem | undefined> {
-  for (const name of (await readdir(dir)).sort()) {
-    const problem = await visit(`${prefix}${name}`, join(dir, name), found);
+  const entries = (await readdir(dir, { withFileTypes: true })).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  for (const entry of entries) {
+    const path = `${prefix}${entry.name}`;
+    const abs = join(dir, entry.name);
+    const problem = entry.isFile() ? keep(path, abs, found) : await visit(path, abs, found);
     if (problem) return problem;
+  }
+  return undefined;
+}
+
+/** The listed files' sizes by `lstat`, 64 at a time; a file that is no longer a regular file is refused. */
+async function sized(found: Found[]): Promise<InputProblem | undefined> {
+  for (let i = 0; i < found.length; i += 64) {
+    const batch = found.slice(i, i + 64);
+    const stats = await Promise.all(batch.map((f) => lstat(f.abs)));
+    for (const [j, stat] of stats.entries()) {
+      const f = batch[j] as Found;
+      if (!stat.isFile()) return { path: f.path, message: 'is not a regular file' };
+      f.size = stat.size;
+    }
   }
   return undefined;
 }
@@ -46,7 +72,7 @@ function oversized(found: readonly Found[]): InputProblem | undefined {
 /** The regular members of `root`, by `/`-separated relative path in code-unit order, or the first problem met. */
 async function walk(root: string): Promise<SvgBatchFile[] | InputProblem> {
   const found: Found[] = [];
-  const problem = (await list(root, '', found)) ?? oversized(found);
+  const problem = (await list(root, '', found)) ?? (await sized(found)) ?? oversized(found);
   if (problem) return problem;
   // the batch orders by path; the listing is sorted the same way (code units over the whole path, not per folder)
   found.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
