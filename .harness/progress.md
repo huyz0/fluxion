@@ -3826,3 +3826,8 @@ A Ctrl/Cmd+C, X or V chord goes through the clipboard catcher except when the fo
 - land.mjs reads it once per attempt. A non-harness commit on red or fix-pending lands only when each Fixes-ci names a run in that list; a run that was red once (ci-run-red's check) no longer passes. Every refusal names the red runs and their jobs.
 - On unknown, a feature subject waits with or without a scope (`feat:`, `feat(x):`, `feat!:`).
 - Tests: last-ci red-file case (completed, pending failed job, intermittent, green), three ciRefusal unit cases (run and jobs named, stale Fixes-ci refused, scope-less feat), and the land integration case refuses a Fixes-ci for a run that is not red.
+
+## 2026-11-02 M18.228: last-ci lists every completed red ci run since the newest green (M18.225 follow-up)
+- M18.226 (Fixes-ci: 41508926960, the Windows headroom red at c7c26ed) was refused by land.mjs: once the run at b5194f1 completed red too, M18.225's list held only the newest completed red, and the run it fixes had dropped out though no green had followed it.
+- last-ci --red-file now walks back from the newest completed run and lists each completed red run until the newest green. Pending runs with a failed job and failed runs of an intermittent tree are listed as before.
+- Test: the M18.225 red-file case adds consecutive reds (all three listed with their jobs) and a red behind a green (not listed).

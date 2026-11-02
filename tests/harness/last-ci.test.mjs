@@ -384,7 +384,7 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.match(r.out, /UNKNOWN ci: the jobs of run 42 on the tree of its green at sha4200 \(run 42\) could not be read/);
   });
 
-  it('M18.225: --red-file names each run read as red now with its failed jobs: completed, pending, intermittent (cp33 F2)', () => {
+  it('M18.225: --red-file names each run read as red now with its failed jobs: completed since the newest green (M18.228), pending, intermittent (cp33 F2)', () => {
     const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
     const windows = (conclusion) => [
       { name: 'verify (ubuntu-latest)', conclusion: 'success' },
@@ -413,6 +413,30 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     r = lastCi([on(71, '20', 'success'), on(70, '10', 'failure'), gates], '2026-09-29T03:30:00Z', undefined, { red: true });
     assert.equal(r.status, 1, r.out);
     assert.deepEqual(r.red.red, [{ run: '70', workflow: 'ci', sha: 'sha7000', jobs: ['verify (windows-latest)'] }]);
+    // two completed reds in a row: the older is red still, since no green came after it (M18.228); a red behind a green is not
+    const again = run('ci', 'failure', '2026-09-29T02:30:00Z', { databaseId: 63, headSha: 'dddd000000', jobs: windows('failure') });
+    const older = run('ci', 'failure', '2026-09-29T01:50:00Z', { databaseId: 59, headSha: '9999000000', jobs: windows('failure') });
+    r = lastCi(
+      [again, done, green, older, gates].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      undefined,
+      undefined,
+      { red: true },
+    );
+    assert.equal(r.status, 1, r.out);
+    assert.deepEqual(
+      r.red.red.map((x) => x.run),
+      ['63'],
+      'the green at 02:10 ends the reds behind it',
+    );
+    r = lastCi([again, done, older, gates], undefined, undefined, { red: true });
+    assert.deepEqual(
+      r.red.red.map((x) => [x.run, x.jobs]),
+      [
+        ['63', ['verify (windows-latest)']],
+        ['60', ['verify (windows-latest)']],
+        ['59', ['verify (windows-latest)']],
+      ],
+    );
     // green: none
     r = lastCi([green, gates], undefined, undefined, { red: true });
     assert.deepEqual(r.red, { verdict: 0, red: [] });

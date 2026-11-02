@@ -38,7 +38,8 @@
 // changes a product path and declares Fixes-ci for a ci run on the branch that failed the same job (M18.200,
 // cp26 F2); a harness-only commit fixes no product job. In --runs-file a run's `paths` stand for its commit's.
 // --red-file <path>: writes the runs it reads as red, `{ verdict, red: [{ run, workflow, sha, jobs }] }`, for land.mjs to tie a
-// commit's Fixes-ci to the run that is red now (M18.225, cp33 F2).
+// commit's Fixes-ci to the run that is red now (M18.225, cp33 F2): every completed red run newer than the newest green one
+// (M18.228), pending runs with a failed job, and the failed runs of an intermittent tree.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
@@ -374,6 +375,12 @@ for (const workflow of WORKFLOWS) {
   }
   const doneJobs = await failedJobs(done.databaseId);
   noteRed(workflow, done, doneJobs);
+  // the completed red runs behind it back to the newest green are red still: none has a green after it (M18.228)
+  for (const r of mine.slice(mine.indexOf(done) + 1)) {
+    if (r.status !== 'completed') continue;
+    if (r.conclusion === 'success' || r.conclusion === 'skipped') break;
+    noteRed(workflow, r, await failedJobs(r.databaseId));
+  }
   if (pending > 0) {
     // a red workflow that blocks (exit 1) outranks a wait (M5.2 review F1)
     const red = await redWithPending(workflow, done, mine.slice(0, pending), doneJobs);
