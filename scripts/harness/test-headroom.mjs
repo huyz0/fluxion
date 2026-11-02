@@ -9,8 +9,11 @@
 //
 //   node scripts/harness/test-headroom.mjs --run <ci run id> [--run <id>…]   download with gh
 //   node scripts/harness/test-headroom.mjs --file <durations.json> […]       offline
-//   [--share 0.5] [--json]
-// Exit 1 when a test is listed, 0 when none is, 2 when no reading could be read.
+//   [--previous <durations.json> …] [--warn-only] [--share 0.5] [--json]
+// Exit 1 when a test is listed, 0 when none is, 2 when no reading could be read or a report holds none.
+// With --previous (the same OS's report from the run before), a test is only a warning the first time: exit 1 needs it over
+// the share in both runs (M18.224, cp33 F1). CI's verify job runs it that way, so one slow runner does not redden main; with no
+// previous report it passes --warn-only, which lists without failing (a report with no readings still exits 2).
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -61,11 +64,25 @@ function download(run) {
 const readReport = (file, run) => {
   const r = JSON.parse(readFileSync(file, 'utf8'));
   if (typeof r?.platform !== 'string' || !Array.isArray(r.tests)) throw new Error(`${file}: not a durations report`);
+  // an empty report reads as "nothing slow"; it means the reporter stopped recording (M18.222 R1 F1)
+  if (r.tests.length === 0) throw new Error(`${file}: a durations report with no readings`);
   return { platform: r.platform, ...(run ? { run } : {}), tests: r.tests };
 };
 
-/** @param {Report[]} reports @param {ReturnType<typeof headroom>} listed @param {number} share */
-function print(reports, listed, share) {
+/**
+ * The listed tests also over `share` in the previous run's reports: those fail a run.
+ * @param {ReturnType<typeof headroom>} listed @param {Report[]} previous @param {number} share
+ */
+export const persistent = (listed, previous, share) => {
+  const before = new Set(headroom(previous, share).map((t) => `${t.module}\u0000${t.name}`));
+  return listed.filter((t) => before.has(`${t.module}\u0000${t.name}`));
+};
+
+/**
+ * @param {Report[]} reports @param {ReturnType<typeof headroom>} listed @param {number} share
+ * @param {ReturnType<typeof headroom>} twice the listed tests also over in the previous run
+ */
+function print(reports, listed, share, twice) {
   const where = [...new Set(reports.map((r) => `${r.platform}${r.run ? `@${r.run}` : ''}`))].join(', ');
   for (const t of listed) {
     const run = t.worst.run ? ` in run ${t.worst.run}` : '';
@@ -74,13 +91,21 @@ function print(reports, listed, share) {
     );
   }
   console.log(`test-headroom: ${listed.length} test(s) over ${Math.round(share * 100)}% of their timeout across ${where}`);
+  for (const t of twice) console.log(`test-headroom: over in two consecutive runs: ${t.module} > ${t.name}`);
 }
 
-function main(argv) {
-  const all = (flag) => argv.flatMap((a, i) => (a === flag && argv[i + 1] ? [argv[i + 1]] : []));
-  const shareArg = all('--share')[0];
-  const share = shareArg === undefined ? 0.5 : Number(shareArg);
-  if (!(share > 0 && share <= 1)) throw new Error('--share takes a number in (0, 1]');
+/** An unreadable previous report (a cancelled run, a format change) leaves this run warning only, as no previous report does. */
+function readPrevious(file) {
+  try {
+    return [readReport(file)];
+  } catch (e) {
+    console.error(`test-headroom: previous report ignored: ${e instanceof Error ? e.message : e}`);
+    return [];
+  }
+}
+
+/** @param {string[]} argv */
+function readCurrent(argv, all) {
   /** @type {Report[]} */
   const reports = all('--file').map((f) => readReport(f));
   for (const run of all('--run')) {
@@ -91,14 +116,26 @@ function main(argv) {
       rmSync(dir, { recursive: true, force: true });
     }
   }
+  return reports;
+}
+
+function main(argv) {
+  const all = (flag) => argv.flatMap((a, i) => (a === flag && argv[i + 1] ? [argv[i + 1]] : []));
+  const shareArg = all('--share')[0];
+  const share = shareArg === undefined ? 0.5 : Number(shareArg);
+  if (!(share > 0 && share <= 1)) throw new Error('--share takes a number in (0, 1]');
+  const reports = readCurrent(argv, all);
   if (!reports.length) {
     console.error('test-headroom: no durations report read (pass --run <id> or --file <path>)');
     return 2;
   }
   const listed = headroom(reports, share);
-  if (argv.includes('--json')) console.log(JSON.stringify({ share, reports: reports.length, listed }, null, 2));
-  else print(reports, listed, share);
-  return listed.length ? 1 : 0;
+  const previousFiles = all('--previous');
+  const previous = previousFiles.flatMap(readPrevious);
+  const twice = previousFiles.length ? persistent(listed, previous, share) : listed;
+  if (argv.includes('--json')) console.log(JSON.stringify({ share, reports: reports.length, listed, persistent: twice }, null, 2));
+  else print(reports, listed, share, previousFiles.length ? twice : []);
+  return twice.length && !argv.includes('--warn-only') ? 1 : 0;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -21,6 +21,10 @@ concurrency:
 jobs:
   verify:
     name: verify (${{ matrix.os }})
+    # actions: read lets the headroom step read the previous run's durations (M18.224)
+    permissions:
+      contents: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -51,15 +55,26 @@ jobs:
         # M18.222: each unit test's duration and timeout on this OS, for scripts/harness/test-headroom.mjs
         env:
           FLUXION_TEST_DURATIONS: .harness/tmp/test-durations/${{ matrix.os }}.json
-      # a test over half its timeout is a warning here, a red main on a slower runner later (cp32 F1)
+      # a test over half its timeout is a warning on its first run and fails the job when the run before on this OS had it over
+      # too (M18.224, cp33 F1): one slow runner warns, a test that keeps no headroom reddens main before a slower runner times it out
       - name: test headroom
-        if: always()
-        timeout-minutes: 2
+        timeout-minutes: 3
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OS: ${{ matrix.os }}
         run: |
-          f=".harness/tmp/test-durations/${{ matrix.os }}.json"
-          [ -f "$f" ] || { echo "::warning::no test durations recorded on ${{ matrix.os }}"; exit 0; }
-          node scripts/harness/test-headroom.mjs --file "$f" | sed 's/^test-headroom: \(.* ms of .*\)$/::warning::\1/' || true
+          f=".harness/tmp/test-durations/$OS.json"
+          [ -f "$f" ] || { echo "::error::no test durations recorded on $OS"; exit 1; }
+          prev_run=$(gh run list -R "$GITHUB_REPOSITORY" --workflow ci.yml --branch main --status completed --limit 1 --json databaseId -q '.[0].databaseId' || true)
+          previous=()
+          if [ -n "$prev_run" ] && gh run download "$prev_run" -R "$GITHUB_REPOSITORY" -n "test-durations-$OS" -D "$RUNNER_TEMP/previous-durations"; then
+            previous=(--previous "$RUNNER_TEMP/previous-durations/$OS.json")
+          else
+            echo "::warning::no durations from the previous run on $OS; this run only warns"
+            previous=(--warn-only)
+          fi
+          node scripts/harness/test-headroom.mjs --file "$f" "${previous[@]}" | sed -e 's/^test-headroom: \(.* ms of .*\)$/::warning::\1/' -e 's/^test-headroom: \(over in two consecutive runs: .*\)$/::error::\1/'
       - name: test durations
         if: always()
         timeout-minutes: 2

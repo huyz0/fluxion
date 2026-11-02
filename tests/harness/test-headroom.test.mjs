@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
 import { testStepEnv } from '../../scripts/gates/lib.mjs';
-import { headroom } from '../../scripts/harness/test-headroom.mjs';
+import { headroom, persistent } from '../../scripts/harness/test-headroom.mjs';
 import { reading } from '../../tools/vitest/durations-reporter.mjs';
 
 const t = (name, durationMs, timeoutMs = 10_000) => ({ module: 'packages/x/src/a.test.ts', name, project: 'node', durationMs, timeoutMs });
@@ -61,5 +61,37 @@ describe('test headroom (M18.222)', () => {
     assert.match(listed.stdout, /a\.test\.ts > bounded: 6000 ms of 10000 ms \(60%\) on darwin/);
     assert.equal(run('--file', ok).status, 0);
     assert.equal(run().status, 2);
+  });
+
+  it('fails only on a test over half its timeout in this run and the run before; an empty report is unreadable (M18.224)', () => {
+    const now = [{ platform: 'linux', tests: [t('steady', 6_000), t('blip', 6_000), t('fast', 100)] }];
+    const before = [{ platform: 'linux', tests: [t('steady', 7_000), t('blip', 1_000), t('fast', 9_000)] }];
+    assert.deepEqual(
+      persistent(headroom(now), before, 0.5).map((x) => x.name),
+      ['steady'],
+    );
+    const write = (name, tests) => {
+      const f = join(dir, name);
+      writeFileSync(f, JSON.stringify({ platform: 'linux', tests }));
+      return f;
+    };
+    const run = (...a) => spawnSync(process.execPath, ['scripts/harness/test-headroom.mjs', ...a], { encoding: 'utf8' });
+    const cur = write('now.json', now[0].tests);
+    const twice = run('--file', cur, '--previous', write('before.json', before[0].tests));
+    assert.equal(twice.status, 1, twice.stderr);
+    assert.match(twice.stdout, /over in two consecutive runs: packages\/x\/src\/a\.test\.ts > steady/);
+    assert.doesNotMatch(twice.stdout, /consecutive runs: .*blip/);
+    assert.equal(run('--file', cur, '--previous', write('calm.json', [t('steady', 100)])).status, 0);
+    // CI's path with no previous report: it lists and warns, and only a report with no readings fails
+    const warned = run('--file', cur, '--warn-only');
+    assert.equal(warned.status, 0, warned.stderr);
+    assert.match(warned.stdout, /steady: 6000 ms of 10000 ms/);
+    assert.equal(run('--file', write('empty-warned.json', []), '--warn-only').status, 2);
+    const empty = run('--file', write('empty.json', []));
+    assert.equal(empty.status, 2);
+    assert.match(empty.stderr, /no readings/);
+    const unreadable = run('--file', cur, '--previous', write('empty-before.json', []));
+    assert.equal(unreadable.status, 0, unreadable.stderr);
+    assert.match(unreadable.stderr, /previous report ignored/);
   });
 });

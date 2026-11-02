@@ -239,18 +239,22 @@ describe('reading a recorded subset range (NFR-SEC-001, FR-AST-003)', () => {
     expect(unicodes.length).toBeGreaterThan(1_600_000);
     const doc = docOf('x', recorded(unicodes));
     expect(subsetFontGaps(doc, CJK)).toEqual([{ asset: 'f1', missing: CJK.slice(16) }]);
+    // the ratios time a quarter of it (50 000 points, about 400 kB): a ratio does not depend on the size, and 21 reads of the whole
+    // range used 78% of the 20 s timeout on ubuntu under coverage (M18.224, cp33 F1); both regressions still cost about 16 times
+    const quarter = ['U+4E00-4E0F', ...parts.slice(0, parts.length / 4)].join(',');
+    const timed = docOf('x', recorded(quarter));
     // (a) 16 times the codepoints may cost at most 3 times in total (cp28 F1 scanned every recorded run per codepoint: about 16 times)
     const sample = CJK.filter((_, i) => i % 16 === 0);
     const byCodepoints = ratio(
-      () => readMs(doc, CJK),
-      () => readMs(doc, sample),
+      () => readMs(timed, CJK),
+      () => readMs(timed, sample),
     );
     expect(byCodepoints, `${byCodepoints.toFixed(2)} times`).toBeLessThanOrEqual(SCALING_MAX);
     // (b) 16 times the range may cost at most 3 times per character (a quadratic parse: about 16 times)
-    const prefix = ['U+4E00-4E0F', ...parts.slice(0, parts.length / 16)].join(',');
+    const prefix = ['U+4E00-4E0F', ...parts.slice(0, parts.length / 64)].join(',');
     const short = docOf('x', recorded(prefix));
     const perChar = ratio(
-      () => readMs(doc, CJK) / unicodes.length,
+      () => readMs(timed, CJK) / quarter.length,
       () => readMs(short, CJK) / prefix.length,
     );
     expect(perChar, `${perChar.toFixed(2)} times per character`).toBeLessThanOrEqual(SCALING_MAX);

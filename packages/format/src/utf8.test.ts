@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { decodeUtf8, encodeUtf8 } from './utf8.js';
+import { decodeUtf8, decodeUtf8Strict, encodeUtf8 } from './utf8.js';
 
 // an independent reference: encodeURIComponent's %XX bytes of the text with each lone surrogate made U+FFFD
 const LONE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
@@ -48,5 +48,13 @@ describe('UTF-8 for the pure packages (FR-LIB-006, NFR-SEC-001)', () => {
         expect(decodeUtf8(encodeUtf8(s))).toBe(s);
       }),
     );
+  });
+
+  it('FR-LIB-006 NFR-SEC-001: decodes long ASCII, short ASCII gaps and chunk-crossing sequences alike (M18.224)', () => {
+    for (const text of ['a'.repeat(20_000), 'aé'.repeat(10_000), `${'a'.repeat(8191)}€${'b'.repeat(40)}😀`, `${'x'.repeat(31)}é`.repeat(500)]) {
+      expect(decodeUtf8Strict(encodeUtf8(text)), text.slice(0, 8)).toBe(text);
+    }
+    expect(decodeUtf8Strict(Uint8Array.from([...encodeUtf8('a'.repeat(9000)), 0xff]))).toBeUndefined();
+    expect(decodeUtf8(Uint8Array.from([0x61, 0xe2, 0x82, 0x61]))).toBe('a\ufffd\ufffda');
   });
 });

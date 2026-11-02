@@ -96,17 +96,13 @@ const tree = (root: string): Record<string, string> =>
   );
 
 describe('fluxion pack-import of the 50-SVG corpus (M18.16)', () => {
-  it('FR-LIB-004 NFR-LIC-003: a folder and a ZIP give one byte-identical pack of 50 shapes that loads clean, each credit scoped to its members', {
+  // the folder and the ZIP import are two tests (M18.224, cp33 F1): as one they used 61% of the 120 s timeout on ubuntu
+  const fromFolder = join(dir, 'folder-pack');
+  it('FR-LIB-004 NFR-LIC-003: a folder of the 50-SVG corpus gives a pack of 50 shapes that loads clean, each credit scoped to its members', {
     timeout: 120_000,
   }, async () => {
-    const credits = creditsFile();
-    const fromFolder = join(dir, 'folder-pack');
-    const fromZip = join(dir, 'zip-pack');
-    const a = packImport([join(CORPUS, 'svg'), ...meta(fromFolder), '--credits', credits]);
+    const a = packImport([join(CORPUS, 'svg'), ...meta(fromFolder), '--credits', creditsFile()]);
     expect(a.status, a.stdout + a.stderr).toBe(0);
-    const b = packImport([corpusZip(), ...meta(fromZip), '--credits', credits]);
-    expect(b.status, b.stdout + b.stderr).toBe(0);
-    expect(tree(fromZip)).toEqual(tree(fromFolder));
     const reply = JSON.parse(a.stdout).result;
     expect([reply.inputCount, reply.svgCount, reply.acceptedCount, reply.definitions.length]).toEqual([50, 50, 50, 50]);
     for (const d of reply.definitions) expect(d.anchors, d.id).toBeGreaterThanOrEqual(4);
@@ -130,6 +126,14 @@ describe('fluxion pack-import of the 50-SVG corpus (M18.16)', () => {
     const lucide = parsed.credits.find((c: { id: string }) => c.id === 'lucide-accessibility');
     expect(lucide).toMatchObject({ definitionIds: ['corpus:lucide-accessibility'], source: { kind: 'upstream', sha256: manifest.svg[0]?.sha256 } });
     expect(lucide.notice).toBe(readFileSync(join(CORPUS, 'licenses/lucide.txt'), 'utf8'));
+  });
+
+  it("FR-LIB-004 NFR-LIC-003: a ZIP of the 50-SVG corpus gives the folder's pack byte for byte", { timeout: 120_000 }, () => {
+    expect(existsSync(join(fromFolder, 'index.json')), 'the folder test runs first and writes its pack').toBe(true);
+    const fromZip = join(dir, 'zip-pack');
+    const b = packImport([corpusZip(), ...meta(fromZip), '--credits', creditsFile()]);
+    expect(b.status, b.stdout + b.stderr).toBe(0);
+    expect(tree(fromZip)).toEqual(tree(fromFolder));
   });
 
   it('FR-AST-003: the corpus text badge makes the pack a 1.1 that retains fonts-core Inter under its own OFL credit', { timeout: 60_000 }, () => {
@@ -202,8 +206,14 @@ describe('fluxion pack-import refusals (NFR-SEC-001)', () => {
     }
   }
   /** A ZIP of `entries`; an entry of exactly `BOMB` characters is declared to inflate to `inflated` bytes. */
-  function zip(name: string, entries: { name: string; text: string | Uint8Array }[], inflated?: number): string {
-    const written = writeZip(entries.map((e) => ({ name: e.name, bytes: typeof e.text === 'string' ? new TextEncoder().encode(e.text) : e.text })));
+  function zip(name: string, entries: { name: string; text: string | Uint8Array; method?: 'store' }[], inflated?: number): string {
+    const written = writeZip(
+      entries.map((e) => ({
+        name: e.name,
+        bytes: typeof e.text === 'string' ? new TextEncoder().encode(e.text) : e.text,
+        ...(e.method ? { method: e.method } : {}),
+      })),
+    );
     if (!written.ok) throw new Error(written.error.reason);
     if (inflated !== undefined) inflate(written.value, BOMB.length, inflated);
     const path = join(dir, name);
@@ -225,21 +235,11 @@ describe('fluxion pack-import refusals (NFR-SEC-001)', () => {
     return folder;
   };
 
-  it('NFR-SEC-001: a symlink, the caps, an id collision or empty slug, an uncredited member, an existing -o, traversal, an inflated-size bomb, a member that does not paint and an unpermitted license exit 1 within 10 s and leave nothing', {
-    timeout: 90_000,
-  }, () => {
-    const hidden = named('hidden', { 'a.svg': square, 'b.svg': '<svg viewBox="0 0 10 10"><rect width="10" height="10" opacity="0"/></svg>' });
-    const linked = named('linked', { 'a.svg': square });
-    symlinkSync(join(linked, 'a.svg'), join(linked, 'b.svg'));
-    const many = named('many', Object.fromEntries(Array.from({ length: 4097 }, (_, i) => [`s${i}.svg`, ''])));
-    const big = join(dir, 'big.zip');
-    writeFileSync(big, '');
-    truncateSync(big, 256 * 1024 * 1024 + 1);
-    const existing = join(dir, 'refused-existing');
-    mkdirSync(existing);
-    const uncredited = join(dir, 'uncredited.json');
+  // one test per refusal (M18.224, cp33 F1): as one test the thirteen CLI runs used 73% of its 90 s on ubuntu; fixtures are built per case
+  const uncreditedCredits = () => {
+    const path = join(dir, 'uncredited.json');
     writeFileSync(
-      uncredited,
+      path,
       JSON.stringify({
         license: 'MIT',
         attribution: 'Me',
@@ -248,66 +248,101 @@ describe('fluxion pack-import refusals (NFR-SEC-001)', () => {
         ],
       }),
     );
-    const cases: [string, readonly string[], RegExp][] = [
-      ['symlink', [linked, ...rights], /b\.svg is a symbolic link/],
-      ['entries', [many, ...rights], /more than 4096 entries/],
-      ['oversized', [big, ...rights], /ZIP file exceeds 256 MiB/],
-      ['collision', [named('collision', { 'x/A B.svg': square, 'y/a-b.svg': square }), ...rights], /gives the id corpus:a-b/],
-      ['slug', [named('slug', { '!!!.svg': square }), ...rights], /gives no valid definition id/],
-      ['uncredited', [named('two', { 'a.svg': square, 'b.svg': square }), '--credits', uncredited], /no credit names b\.svg/],
-      ['existing', [named('one', { 'a.svg': square }), ...rights], /exists/],
-      ['traversal', [zip('traversal.zip', [{ name: '../a.svg', text: square }]), ...rights], /\.\.\/a\.svg escapes the input/],
-      [
-        'bomb',
-        [zip('bomb.zip', [{ name: 'a.svg', text: BOMB }], 128 * MiB + 1), ...rights],
-        /ZIP refused: a\.svg: 134217729 bytes inflated \(more than 134217728\)/,
+    return path;
+  };
+  const cases: [string, () => readonly string[], RegExp][] = [
+    [
+      'symlink',
+      () => {
+        const linked = named('linked', { 'a.svg': square });
+        symlinkSync(join(linked, 'a.svg'), join(linked, 'b.svg'));
+        return [linked, ...rights];
+      },
+      /b\.svg is a symbolic link/,
+    ],
+    ['entries', () => [named('many', Object.fromEntries(Array.from({ length: 4097 }, (_, i) => [`s${i}.svg`, '']))), ...rights], /more than 4096 entries/],
+    [
+      'oversized',
+      () => {
+        const big = join(dir, 'big.zip');
+        writeFileSync(big, '');
+        truncateSync(big, 256 * 1024 * 1024 + 1);
+        return [big, ...rights];
+      },
+      /ZIP file exceeds 256 MiB/,
+    ],
+    ['collision', () => [named('collision', { 'x/A B.svg': square, 'y/a-b.svg': square }), ...rights], /gives the id corpus:a-b/],
+    ['slug', () => [named('slug', { '!!!.svg': square }), ...rights], /gives no valid definition id/],
+    ['uncredited', () => [named('two', { 'a.svg': square, 'b.svg': square }), '--credits', uncreditedCredits()], /no credit names b\.svg/],
+    [
+      'existing',
+      () => {
+        mkdirSync(join(dir, 'refused-existing'));
+        return [named('one', { 'a.svg': square }), ...rights];
+      },
+      /exists/,
+    ],
+    ['traversal', () => [zip('traversal.zip', [{ name: '../a.svg', text: square }]), ...rights], /\.\.\/a\.svg escapes the input/],
+    [
+      'bomb',
+      () => [zip('bomb.zip', [{ name: 'a.svg', text: BOMB }], 128 * MiB + 1), ...rights],
+      /ZIP refused: a\.svg: 134217729 bytes inflated \(more than 134217728\)/,
+    ],
+    // a real 128 MiB entry and a small one, then one declaring 128 MiB more: the total cap, met before the second is inflated. The real
+    // entry is stored: deflating 128 MiB in the test was 10 of the case's 10.5 s under coverage (M18.224), and the cap reads declared sizes
+    [
+      'inflated-total',
+      () => [
+        zip(
+          'total.zip',
+          [
+            { name: 'a.svg', text: new Uint8Array(128 * MiB), method: 'store' },
+            { name: 'm.svg', text: square },
+            { name: 'b.svg', text: BOMB },
+          ],
+          128 * MiB,
+        ),
+        ...rights,
       ],
-      // a real 128 MiB entry and a small one, then one declaring 128 MiB more: the total cap, met before the second is inflated
-      [
-        'inflated-total',
-        [
-          zip(
-            'total.zip',
-            [
-              { name: 'a.svg', text: new Uint8Array(128 * MiB) },
-              { name: 'm.svg', text: square },
-              { name: 'b.svg', text: BOMB },
-            ],
-            128 * MiB,
-          ),
-          ...rights,
-        ],
-        /ZIP refused: the entries inflate to more than 268435456 bytes/,
+      /ZIP refused: the entries inflate to more than 268435456 bytes/,
+    ],
+    [
+      'zip-entries',
+      () => [
+        zip(
+          'entries.zip',
+          Array.from({ length: 4097 }, (_, i) => ({ name: `s${i}.svg`, text: square })),
+        ),
+        ...rights,
       ],
-      [
-        'zip-entries',
-        [
-          zip(
-            'entries.zip',
-            Array.from({ length: 4097 }, (_, i) => ({ name: `s${i}.svg`, text: square })),
-          ),
-          ...rights,
-        ],
-        /ZIP refused: 4097 entries \(more than 4096\)/,
-      ],
-      ['unpainted', [hidden, ...rights], /b\.svg: /],
-      ['license', [join(CORPUS, 'svg'), '--license', 'LicenseRef-Proprietary', '--attribution', 'Me', '--author', 'Me'], /licen/i],
-    ];
-    for (const [label, args, message] of cases) {
-      const out = join(dir, `refused-${label}`);
-      const started = performance.now();
-      const r = packImport([args[0] as string, ...meta(out), ...args.slice(1)]);
-      expect(performance.now() - started, label).toBeLessThan(10_000);
-      expect(r.status, `${label}: ${r.stdout}`).toBe(1);
-      expect(
-        JSON.parse(r.stdout)
-          .errors.map((e: { message: string }) => e.message)
-          .join('\n'),
-        label,
-      ).toMatch(message);
-      if (label === 'existing') expect(readdirSync(out)).toEqual([]);
-      else expect(existsSync(out), label).toBe(false);
-    }
+      /ZIP refused: 4097 entries \(more than 4096\)/,
+    ],
+    [
+      'unpainted',
+      () => [named('hidden', { 'a.svg': square, 'b.svg': '<svg viewBox="0 0 10 10"><rect width="10" height="10" opacity="0"/></svg>' }), ...rights],
+      /b\.svg: /,
+    ],
+    ['license', () => [join(CORPUS, 'svg'), '--license', 'LicenseRef-Proprietary', '--attribution', 'Me', '--author', 'Me'], /licen/i],
+  ];
+
+  it.each(cases)('NFR-SEC-001: %s is refused with exit 1 within 10 s and leaves nothing', { timeout: 90_000 }, (label, argsOf, message) => {
+    const args = argsOf();
+    const out = join(dir, `refused-${label}`);
+    const started = performance.now();
+    const r = packImport([args[0] as string, ...meta(out), ...args.slice(1)]);
+    expect(performance.now() - started, label).toBeLessThan(10_000);
+    expect(r.status, `${label}: ${r.stdout}`).toBe(1);
+    expect(
+      JSON.parse(r.stdout)
+        .errors.map((e: { message: string }) => e.message)
+        .join('\n'),
+      label,
+    ).toMatch(message);
+    if (label === 'existing') expect(readdirSync(out)).toEqual([]);
+    else expect(existsSync(out), label).toBe(false);
+  });
+
+  it('NFR-SEC-001: no refusal leaves a partial pack behind', () => {
     expect(readdirSync(dir).filter((name) => name.includes('.partial-'))).toEqual([]);
   });
 });

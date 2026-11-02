@@ -106,24 +106,32 @@ const optionsOf = (h: ReturnType<typeof host>, extra: Partial<SvgLibraryOptions>
 const own: SvgLibraryRights = { kind: 'original', license: 'MIT', attribution: 'Me', author: 'Me' };
 
 describe('convertSvgLibrary', () => {
-  it('FR-LIB-004 NFR-LIC-003: the 50-SVG corpus as files or a ZIP gives one pack of 50 definitions with 33 scoped credits, the same bytes', async () => {
+  // the files and the ZIP conversion are two tests (M18.224, cp33 F1): as one they used 51% of the 20 s timeout on ubuntu under coverage
+  let filesPack: ReadonlyMap<string, Uint8Array> | undefined;
+  it('FR-LIB-004 NFR-LIC-003: the 50-SVG corpus as files gives one pack of 50 definitions with 33 scoped credits', async () => {
     const h = host();
     const files = await convertSvgLibrary({ kind: 'files', items: corpusItems() }, optionsOf(h));
-    const entries = corpusItems().map((i) => ({ name: i.name, bytes: new Uint8Array(readFileSync(join(CORPUS, 'svg', i.name))) }));
-    const zipBytes = zipOf([...entries].reverse());
-    const zipped = await convertSvgLibrary({ kind: 'zip', items: [item('corpus.zip', zipBytes)] }, optionsOf(host()));
-    if (!files.ok || !zipped.ok) throw new Error(JSON.stringify(files.ok ? zipped : files));
+    if (!files.ok) throw new Error(JSON.stringify(files));
     const { pack } = files.value;
+    filesPack = pack.files;
     expect(pack.source.definitions).toHaveLength(50);
     for (const def of pack.source.definitions) expect(def.anchors?.length).toBeGreaterThanOrEqual(4);
     expect(pack.index.credits).toHaveLength(33);
     // the corpus's text badge draws in the given Inter face, so the pack is 1.1 and carries its bytes
     expect(pack.index.formatVersion).toBe('1.1');
     expect([...pack.source.fonts.keys()]).toEqual([INTER.face.sha256]);
-    expect([...zipped.value.pack.files]).toEqual([...pack.files]);
     // every member through one session (50 < 128)
     expect(h.startWitness).toHaveBeenCalledTimes(1);
     expect(h.requests).toHaveLength(50);
+  });
+
+  it('FR-LIB-004 NFR-LIC-003: the 50-SVG corpus as a ZIP gives the same bytes as the files', async () => {
+    expect(filesPack, 'the files test runs first and keeps its pack').toBeDefined();
+    const entries = corpusItems().map((i) => ({ name: i.name, bytes: new Uint8Array(readFileSync(join(CORPUS, 'svg', i.name))) }));
+    const zipBytes = zipOf([...entries].reverse());
+    const zipped = await convertSvgLibrary({ kind: 'zip', items: [item('corpus.zip', zipBytes)] }, optionsOf(host()));
+    if (!zipped.ok) throw new Error(JSON.stringify(zipped));
+    expect([...zipped.value.pack.files]).toEqual([...(filesPack ?? [])]);
   });
 
   it('NFR-SEC-001: the entry-count, per-entry and total caps of picked files are met from their sizes before any bytes are read', async () => {

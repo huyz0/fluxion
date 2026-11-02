@@ -101,6 +101,18 @@ describe('deflate and inflate', () => {
     );
   }, 30_000);
 
+  it('FR-FIL-003 NFR-SEC-001: a match that overlaps its own output repeats its period, and the output limit holds to the byte (M18.224)', () => {
+    // period 1, 3 and 7: copyWithin chunks double while a match reads bytes it writes
+    for (const unit of ['A', 'abc', 'abcdefg']) {
+      const bytes = text(unit.repeat(40_000));
+      const packed = deflateRaw(bytes);
+      const back = inflateRaw(packed, bytes.length);
+      expect(back.ok && decodeUtf8(back.value), unit).toBe(unit.repeat(40_000));
+      const over = inflateRaw(packed, bytes.length - 1);
+      expect(over.ok ? 'ok' : over.error.reason, unit).toMatch(/larger than allowed/);
+    }
+  });
+
   it('FR-FIL-003: the encoder is deterministic and compresses repetitive text', () => {
     const bytes = sample(500);
     expect(Array.from(deflateRaw(bytes))).toEqual(Array.from(deflateRaw(bytes)));

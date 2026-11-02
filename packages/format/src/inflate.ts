@@ -107,6 +107,16 @@ class Inflater {
     return fail('a code is not in the table');
   }
 
+  /** Room for `n` more bytes, or the output limit's failure (as `put` would fail on the first byte past it). */
+  private reserve(n: number): void {
+    if (this.outPos + n > this.maxOut) fail('the output is larger than allowed', 'limit');
+    if (this.outPos + n > this.out.length) {
+      const grown = new Uint8Array(Math.max(this.outPos + n, Math.min(this.out.length * 2, this.maxOut + 1)));
+      grown.set(this.out);
+      this.out = grown;
+    }
+  }
+
   private put(byte: number): void {
     if (this.outPos >= this.maxOut) fail('the output is larger than allowed', 'limit');
     if (this.outPos === this.out.length) {
@@ -126,7 +136,16 @@ class Inflater {
     if (dc >= DISTANCE_BASE.length) fail('a distance code is out of range');
     const dist = (DISTANCE_BASE[dc] as number) + this.bits(DISTANCE_EXTRA[dc] as number);
     if (dist > this.outPos) fail('a match reaches before the start of the output');
-    for (let k = 0; k < length; k++) this.put(this.out[this.outPos - dist] as number);
+    // copied by copyWithin in chunks that double while the match overlaps its own output: a call per byte made inflating a draw.io
+    // library's 16 Mi budget a large part of its import under coverage (M18.224)
+    this.reserve(length);
+    const from = this.outPos - dist;
+    for (let left = length; left > 0; ) {
+      const n = Math.min(left, this.outPos - from);
+      this.out.copyWithin(this.outPos, from, from + n);
+      this.outPos += n;
+      left -= n;
+    }
   }
 
   private codes(literal: Huffman, distance: Huffman): void {
