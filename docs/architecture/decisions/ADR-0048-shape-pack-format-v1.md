@@ -148,6 +148,22 @@ route unstroked for markers. A reader without the pack falls back to the straigh
 any unknown router. Wiring `connectors.json` into the pack loader, embedding used connector
 definitions in portable saves and offering the types in the editor are follow-up rows.
 
+### M18.111 — loading a pack's `connectors.json` (FR-CON-010)
+
+The SDK reads a pack's `connectors.json` with `loadPackConnectors(bytes, pack, maxBytes)`: the bytes
+are capped and copied, decoded as strict UTF-8 JSON and validated by `parseConnectorDefs`; any
+problem refuses the whole file with `FLX_PACK_INVALID`, and the definitions come back deeply
+frozen. The file stays beside the shape index, not listed in it, so shape index/category formats
+are unchanged. A host registers the definitions with routing's `registerConnectorDefs(routers,
+input, pack)`, which re-validates the input, checks every id against other sources
+(`FLX_REGISTRY_DUPLICATE`) and every base router against the registry (`FLX_PACK_INVALID`), and
+only then registers each type as a `connectorDefRouter` under the pack as source: all or none, one
+disposable for all. A `describe` must be one catalog line (`describeOf`), checked up front, so a
+registry with `requireDescribe` cannot refuse a type half-way. Registration lives in routing because
+the SDK does not depend on routing (architecture 01). The same pack registering again replaces its
+types id by id; a type the newer file drops stays until the earlier registration is disposed. No
+host loads pack directories yet; the document open path registers embedded types (M18.112).
+
 ### M18.34 — My shapes file (FR-LIB-008)
 
 My shapes, the person's local pack, is stored in local storage under `fluxion.my-shapes` and

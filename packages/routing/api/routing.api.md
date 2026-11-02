@@ -9,6 +9,8 @@ import { AnchorRef } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { ConnectorDecoration } from '@fluxion/core';
 import { ConnectorDef } from '@fluxion/core';
+import { Diagnostic } from '@fluxion/schema';
+import { Disposable } from '@fluxion/core';
 import { IndexedBox } from '@fluxion/geometry';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
@@ -16,6 +18,7 @@ import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
+import { Result } from '@fluxion/schema';
 import { Route } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
 import { Transform } from '@fluxion/schema';
@@ -260,6 +263,9 @@ export const polylineRouter: Router;
 
 // @public
 export function registerBuiltinRouters(routers: Registry<string, Router>): ReturnType<Registry<string, Router>["register"]>;
+
+// @public
+export function registerConnectorDefs(routers: Registry<string, Router>, input: unknown, pack: string): Result<Disposable, readonly Diagnostic[]>;
 
 // @public
 export function rerouteAffected(view: ReadView, ctx: RouteContext, moved: readonly RecordId[], quality?: "cheap" | "full"): ReadonlyMap<RecordId, ConnectorRoute | undefined>;

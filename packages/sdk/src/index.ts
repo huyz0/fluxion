@@ -9,6 +9,8 @@ export const VERSION: string = '0.0.0';
 
 export {
   allowsShapePackContentLicense,
+  type ConnectorDecoration,
+  type ConnectorDef,
   type CoreRegistries,
   createCoreRegistries,
   type Disposable,
@@ -73,5 +75,6 @@ export {
   createArtworkShapePackLoader,
 } from './artwork-pack-loader.js';
 export { definePack, type Pack, type PackRegistries, type PackSpec, registerShapeDef, type ThemeDef } from './pack.js';
+export { loadPackConnectors } from './pack-connectors.js';
 export { createShapePackLoader, type ShapePackLoader, type ShapePackLoaderOptions } from './pack-loader.js';
 export { buildShapePackFiles, type DeclarativeShapePack, namedShapeDefs } from './pack-source.js';

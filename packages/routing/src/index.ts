@@ -26,6 +26,7 @@ export { type RouteSegment, type SearchInput, searchRoute } from './orthogonal/s
 export { type SimplifyOptions, simplify } from './orthogonal/simplify.js';
 export { ORTHOGONAL_STUB, orthogonalRouter } from './orthogonal.js';
 export { fanOrthogonal, fanWaypoint, type ParallelEdge, parallelOffsets } from './parallel.js';
+export { registerConnectorDefs } from './register-connector-defs.js';
 export { type RouteEnd, type RouteQuality, type RouteRequest, type Router, straightRouter } from './router.js';
 export { type TrimmedRoute, trimRoute } from './trim.js';
 

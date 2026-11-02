@@ -5,6 +5,8 @@
 ```ts
 
 import { allowsShapePackContentLicense } from '@fluxion/core';
+import { ConnectorDecoration } from '@fluxion/core';
+import { ConnectorDef } from '@fluxion/core';
 import { contrastRatio } from '@fluxion/theme';
 import { CoreRegistries } from '@fluxion/core';
 import { createCoreRegistries } from '@fluxion/core';
@@ -114,6 +116,10 @@ export interface ArtworkShapePackLoader {
 // @public
 export function buildShapePackFiles(pack: DeclarativeShapePack, licensePolicy?: ShapePackLicensePolicy): Result<Readonly<Record<string, string>>, readonly Diagnostic[]>;
 
+export { ConnectorDecoration }
+
+export { ConnectorDef }
+
 export { contrastRatio }
 
 export { CoreRegistries }
@@ -153,6 +159,9 @@ export { HandleDef }
 export { hitTestShape }
 
 export { LIGHT_THEME }
+
+// @public
+export function loadPackConnectors(bytes: Uint8Array, pack: string, maxBytes: number): Result<readonly ConnectorDef[], readonly Diagnostic[]>;
 
 export { MARKER_SIZE }
 
