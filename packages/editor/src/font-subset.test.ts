@@ -178,7 +178,11 @@ describe('used-glyph font subsetting (FR-AST-003, ADR-0051)', () => {
     const [a, b] = [await subset(LATIN), await subset([...LATIN].reverse().concat(LATIN))];
     expect(b.woff2).toEqual(a.woff2);
     expect([b.sha256, b.cacheKey, b.fingerprint]).toEqual([a.sha256, a.cacheKey, a.fingerprint]);
-    const withMetrics = await subset(LATIN, { metrics: { ascent: 0.935 } });
+  });
+
+  // Split from the case above (M18.230): three LATIN subsets in one case took 11 s of its 20 s on a macOS runner.
+  it('FR-AST-003: font metrics change the fingerprint but not the cache key', async () => {
+    const [a, withMetrics] = [await subset(LATIN), await subset(LATIN, { metrics: { ascent: 0.935 } })];
     expect(withMetrics.cacheKey).toBe(a.cacheKey);
     expect(withMetrics.fingerprint).not.toBe(a.fingerprint);
   });
