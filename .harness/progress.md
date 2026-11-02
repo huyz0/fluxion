@@ -3841,3 +3841,8 @@ green: ci 41523125332 at 7b16aed on all three verify OSes and all 12 e2e shards,
 reopen: M18.229 pack-import refusals bound their own work (F3); M18.230 darwin editor font-subset headroom (F1, Fixes-ci 41520931458); M18.231 foreign digest lines and progress entries (F2); M18.232 cancelled runs in last-ci and the headroom baseline (F5); M18.112 acceptance wires a loaded pack's connectors.json into a host (F6); M18.214 lands after M18.226/230/229 (F7)
 argued: F4 M18.144's e2e closed before its own CI (fixed by M18.227)
 next: M18.226 (reviewed, held by the checkpoint budget), M18.230, M18.229, then M18.231, M18.232, then M18.214, .205, .216, then the held product stacks
+
+## 2026-11-02 M18.226: main green again: the studio subset-on-save default-save case regains headroom on Windows (ci 41508926960)
+- M18.224's headroom step failed verify (windows-latest) at c7c26ed: apps/studio font-subset-save's default-save case read 11262 of 20000 ms (56%) in that run and over half in the one before.
+- Cost: two deep `toEqual` checks of the reopened font against the original 800 KB took about 1 s each in local Chromium (the step profile: 992 ms and 1023 ms of the case's 2721 ms). They now compare in one pass (`sameBytes`, length then every byte); the case runs in 567 ms locally. No timeout raised, no assertion dropped.
+- Also red: ci 41511418799 at b5194f1, M18.144's new e2e case on firefox and webkit; stream 2 fixes it in its own row.

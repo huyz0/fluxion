@@ -32,6 +32,9 @@ async function input(source: string): Promise<SaveInput> {
   return { file: undefined, document, bytesOf: async (id) => (id === 'f1' ? { bytes, mime: 'font/ttf' } : undefined), hasher: webHasher, appVersion: '0.0.0' };
 }
 
+/** The same bytes, compared in one pass: a deep `toEqual` over a font's 800 KB took about 1 s each in Chromium, 4-5 s on Windows CI (M18.226). */
+const sameBytes = (a: Uint8Array | undefined, b: Uint8Array): boolean => a !== undefined && a.length === b.length && a.every((v, i) => v === b[i]);
+
 async function pixels(family: string, bytes: Uint8Array): Promise<Uint8ClampedArray> {
   document.fonts.add(await new FontFace(family, bytes.slice().buffer).load());
   const canvas = new OffscreenCanvas(700, 80);
@@ -73,7 +76,7 @@ describe('subset-on-save in the studio (FR-AST-003, ADR-0051)', () => {
     if (!opened.ok) throw new Error(opened.error);
     const record = opened.value.document.records['f1' as never] as unknown as { hash: string; mime: string };
     expect(record).toMatchObject({ hash: await webHasher.sha256(original), mime: 'font/ttf' });
-    expect(opened.value.assets.get(record.hash)?.bytes).toEqual(original);
+    expect(sameBytes(opened.value.assets.get(record.hash)?.bytes, original)).toBe(true);
     const broken = (): FontJobWorker => {
       throw new Error('workers are blocked');
     };
@@ -84,7 +87,7 @@ describe('subset-on-save in the studio (FR-AST-003, ADR-0051)', () => {
     expect(fontReportLine(failed.value.fonts)).toContain('FiraSans-Regular.ttf stayed whole');
     const reopened = await openFileBytes('kept.flux', failed.value.bytes, webHasher);
     if (!reopened.ok) throw new Error(reopened.error);
-    expect(reopened.value.assets.get(record.hash)?.bytes).toEqual(original);
+    expect(sameBytes(reopened.value.assets.get(record.hash)?.bytes, original)).toBe(true);
     const upload = await fileBytes({ ...(await input('upload')), subsetFonts: studioSubsetDeps() });
     expect(upload.ok && upload.value.fonts).toMatchObject([{ status: 'kept', reason: 'unverified-source' }]);
   });
