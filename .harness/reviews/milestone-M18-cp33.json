@@ -79,7 +79,7 @@
     },
     {
       "finding": "F3",
-      "disposition": "argued",
+      "disposition": "argue",
       "target": "review-argued",
       "note": "cp33 F3: the m18-complete CLI legs spawn the built bin before the gate's build. A stale dist can only produce a false red there, because 'full verification' builds and re-runs those suites in the same gate run. Check dist freshness in the leg when m18-complete.mjs is next touched."
     },
@@ -91,9 +91,9 @@
     },
     {
       "finding": "F5",
-      "disposition": "fixed",
+      "disposition": "reopen",
       "target": "M18.43",
-      "note": "Fix in the cp33 record commit: give state.json a current 'updated'. The progress.md misordering stays as history."
+      "note": "Fix in the cp33 record commit: give state.json a current 'updated'. The progress.md misordering stays as history. (Fixed in the cp33 record commit 33978d1.)"
     }
   ],
   "planDelta": "Add M18.224 (headroom regained, check fails rather than warns, cp33 F1) and M18.225 (Fixes-ci tied to the current red run, cp33 F2). Add the off-ledger rows M18.218, M18.130 and M18.182-189 (cp33 F4). The header goes to 202 + 2 + 1 + 1 + 8 = 214, or whatever the rows count; check-digest now enforces it. Before writing, check that M18.224 and M18.225 are not reserved by a stream. Order: (1) Land the cp33 record with the new rows (harness path). (2) Wait for 41485115914 at c699c7a to finish verify macOS and Windows; if it is green, main is green at the tip. (3) M18.224, before any further product stack, then M18.225; both are harness/test-path work. (4) Stream 1: M18.214 (restated) and M18.205, then M18.216. Find out why nightly 41421711034 never started. (5) Held stacks: stream 3 M18.35 (with cp32 F4's acceptance), M18.130 and M18.122; stream 2 M18.218 and M18.144; stream 6 M18.182-189. Then M18.131, M18.157, M18.10, M18.42 and M18.43. Learned: 'cp33 (through `c699c7a`): a measurement is not a fix; the headroom check's first readings listed four tests over half their timeout, and the row closed before its own CI run reported. A review disposition pointing at an id with no row cannot be checked.'"
