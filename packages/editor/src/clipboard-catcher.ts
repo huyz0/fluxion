@@ -22,8 +22,8 @@ const KEEPS_FOCUS = 'data-fx-keeps-focus';
 /**
  * Whether a chord pressed on `target` goes through the catcher: everywhere but inside an element marked {@link KEEPS_FOCUS} (M18.144). The catcher
  * is the only way a paste from another document gets in on an engine that raises clipboard events only from an editable target (WebKit 26.5,
- * FR-EDT-007, NFR-PORT-001), so a plain button or list keeps routing; a marked control keeps its focus, and its chord is done by the browser's event
- * if one is raised there, else by the async path (which that engine may refuse a read).
+ * FR-EDT-007, NFR-PORT-001), so a plain button or list keeps routing; a marked control keeps its focus, and the editor does no copy, cut or
+ * paste for a chord pressed on it, from its event (which Firefox raises on the body) or the async path (M18.227).
  */
 export function catchesFrom(target: EventTarget | null): boolean {
   return !(target instanceof Element) || target.closest(`[${KEEPS_FOCUS}]`) === null;

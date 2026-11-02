@@ -116,6 +116,9 @@ function settle(e: ClipboardEvent, catcher: ClipboardCatcher): void {
   catcher.restore();
 }
 
+/** Whether no control marked to keep its focus has it; one that has is left the chords pressed on it, whose events Firefox raises on the body (M18.227). */
+const free = (): boolean => catchesFrom(document.activeElement);
+
 /** Listen for the clipboard events while mounted; the menu commands over the async API. */
 export function useSystemClipboard(input: SystemClipboardInput): SystemClipboardCommands {
   const { clipboard, session, run, paused, place, notify } = input;
@@ -125,7 +128,7 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
   useEffect(() => {
     const { catcher } = fallback;
     // not the editor's: a field's own copy and paste, a dialog, presenting; the catcher is a field only the editor's chords reach
-    const editingHere = (target: EventTarget | null) => !paused && session.mode.get() === 'edit' && (catcher.owns(target) || !isEditable(target));
+    const editingHere = (target: EventTarget | null) => !paused && session.mode.get() === 'edit' && (catcher.owns(target) || (!isEditable(target) && free()));
     const own = (e: ClipboardEvent) => e.clipboardData !== null && editingHere(e.target);
     const caught = (e: ClipboardEvent) => settle(e, catcher);
     const out = (command: string) => (e: ClipboardEvent) => {
