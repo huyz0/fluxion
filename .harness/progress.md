@@ -3746,3 +3746,10 @@ open: name the nightly previous-playwright webkit failure from the next nightly 
 - Goldens: wavy/zigzag paths; pipe/cable boxes grow by the wider margin. Checked rendered in Chromium.
 - Review r1 changes-requested (a Z route's short jog limited the fillet, hook returned: 98–152° turns on 4–12 px jogs): the wave's route is now also averaged over ±2 amplitudes at 1 px (ends pinned), so a short jog becomes a gentle slope; test covers the L and Z jogs of 4, 8, 12, 20 px (all under 60°).
 - Review r2 changes-requested (smoothing 15–30x slower: 1 px resample + a path sampler over up to 4096 segments): the smoothed route is sampled a sixth of the reach apart and walked by its own length table with a binary search. decorateRoute per call (600 px L / 8000 px zigzag route, wavy, zigzag): original 0.15/0.04/1.38/0.33 ms, r2 3.9/3.5/36.6/32.9 ms, now 0.24/0.13/1.92/1.46 ms. Not gated by a bench (a new bench needs a threshold and gate leg).
+
+## M18.120 — My shapes use only available shapes (2026-10-27)
+
+- M18.113 committed locally as 4775f50 (r3 pass), held for M18.117 (three-OS CI) per cp12.
+- Scope agreed with stream 1: refuse rather than embed (the row allows either); embedding becomes a later row on M18.97's versioned subset registry with the Studio file-session wiring. No core pack registration touched.
+- `saveMyShape(view, ids, item, { source, available })` returns a result: refused with the unavailable definitions named; `createMyShapes(storage, available)` refuses such items on put and import; `parseMyShapes(raw, available?)`. Import renames a colliding id to the next free `<id>-<n>`. ADR-0048 amendment M18.120.
+- Tests 8/8: mixed selection refused naming aws:lambda, flow:decision; put/import refused into a host without them; renaming on import.

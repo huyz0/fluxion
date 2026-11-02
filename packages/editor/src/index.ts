@@ -186,6 +186,7 @@ export {
   type MyShapesResult,
   type MyShapesStorage,
   parseMyShapes,
+  type ShapeAvailable,
   saveMyShape,
 } from './library/my-shapes.js';
 export { registerSvgLibrary, type SvgLibrary } from './library/register-svg.js';

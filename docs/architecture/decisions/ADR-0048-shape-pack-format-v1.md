@@ -164,3 +164,15 @@ overwritten: it is moved to `fluxion.my-shapes.unreadable` first, and while that
 nothing is written. This file is the "pack file" FR-LIB-008 exports and imports: the local pack's
 items are groups with text, styles and bindings, which a shape pack's single-outline definitions
 cannot hold, so it is a separate envelope and the shape pack formats are unchanged.
+
+### M18.120 — My shapes use only shapes every session has (FR-LIB-008, NFR-LIC-003)
+
+FR-LIB-008's "local pack" is the person's My shapes and its "pack file" is the `fluxion-my-shapes`
+file above: neither carries shape definitions or pack credits. So an item may use only shapes
+every session has (the host's `ShapeAvailable`, in Studio the built-in basic shapes); saving a
+selection with any other shape is refused with a reason naming those definitions, and `put` and
+import refuse such items too, so no item inserts as unknown shapes or without its pack's
+attribution. Carrying the used definitions and credits in an item (embedding) is a later row on
+the versioned pack-subset registry. An imported item whose id is held already is added under the
+next free `<id>-<n>`, never replacing the held item.
+

@@ -317,7 +317,7 @@ export function createGlobalRouting(store: Store, ctx: RouteContext, port: Globa
 export function createHitIndex(store: Store, context: HitContext): HitIndex;
 
 // @public
-export function createMyShapes(storage: MyShapesStorage): MyShapes;
+export function createMyShapes(storage: MyShapesStorage, available: ShapeAvailable): MyShapes;
 
 // @public
 export function createSession(docId: string): Session;
@@ -1154,7 +1154,7 @@ export type ParsedRefused = {
 };
 
 // @public
-export function parseMyShapes(raw: string): MyShapesResult<readonly MyShape[]>;
+export function parseMyShapes(raw: string, available?: ShapeAvailable): MyShapesResult<readonly MyShape[]>;
 
 // @public
 export function parsePayload(raw: string): ParsedPayload;
@@ -1386,7 +1386,10 @@ export function sameType(view: ReadView, selected: readonly RecordId[], pool: re
 export function saveMyShape(view: ReadView, ids: readonly RecordId[], item: {
     readonly id: string;
     readonly name: string;
-}, source: Parameters<typeof copyPayload>[2]): MyShape | undefined;
+}, host: {
+    readonly source: Parameters<typeof copyPayload>[2];
+    readonly available: ShapeAvailable;
+}): MyShapesResult<MyShape>;
 
 // @public
 export type ScreenItem = {
@@ -1459,6 +1462,9 @@ export type SettingsStore = {
     get(key: string): unknown;
     set(key: string, value: unknown): void;
 };
+
+// @public
+export type ShapeAvailable = (defId: string) => boolean;
 
 // @public
 export type ShapeDefs = {

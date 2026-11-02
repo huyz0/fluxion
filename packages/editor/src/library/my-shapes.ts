@@ -72,8 +72,34 @@ const validId = (id: string): boolean => /^[\w-]{1,64}$/.test(id);
 const MAX_NAME = 120;
 
 /**
- * Save the elements `ids` of `view` (members and the bindings between them included) as item `id` named `name`;
- * undefined when none is an element or `id` is not 1 to 64 letters, digits, `_` or `-`.
+ * Whether a shape definition is in every session, so an item that uses it inserts and renders anywhere: the built-in
+ * shapes. My shapes items carry no definitions, so a host passes this and an item using any other is refused.
+ *
+ * @public
+ */
+export type ShapeAvailable = (defId: string) => boolean;
+
+/** The definitions of the shapes in `payload` that `available` refuses, sorted, each once. */
+function unavailableShapes(payload: ClipboardPayload, available: ShapeAvailable): readonly string[] {
+  const ids = new Set<string>();
+  for (const r of payload.records) {
+    const defId = (r as { readonly kind?: unknown; readonly defId?: unknown }).defId;
+    if ((r as { readonly kind?: unknown }).kind === 'shape' && typeof defId === 'string' && !available(defId)) ids.add(defId);
+  }
+  return [...ids].sort();
+}
+
+/** Why `payload` cannot be kept, when it uses shapes that are not available everywhere. */
+const unavailableReason = (payload: ClipboardPayload, available: ShapeAvailable): string | undefined => {
+  const missing = unavailableShapes(payload, available);
+  return missing.length === 0 ? undefined : `it uses shapes that are not built in: ${missing.join(', ')}`;
+};
+
+/**
+ * Save the elements `ids` of `view` (members and the bindings between them included) as item `id` named `name`; refused,
+ * with the reason, when none is an element, the name is blank, `id` is not 1 to 64 letters, digits, `_` or `-`, or a
+ * shape's definition is not `host.available` (it would not insert in another session); `host.source` is the copy's
+ * source.
  *
  * @public
  */
@@ -81,12 +107,16 @@ export function saveMyShape(
   view: ReadView,
   ids: readonly RecordId[],
   item: { readonly id: string; readonly name: string },
-  source: Parameters<typeof copyPayload>[2],
-): MyShape | undefined {
-  const payload = copyPayload(view, ids, source);
+  host: { readonly source: Parameters<typeof copyPayload>[2]; readonly available: ShapeAvailable },
+): MyShapesResult<MyShape> {
+  const payload = copyPayload(view, ids, host.source);
   const name = item.name.trim().slice(0, MAX_NAME);
-  if (payload?.bounds === undefined || name === '' || !validId(item.id)) return undefined;
-  return { id: item.id, name, payload: { ...payload, bounds: payload.bounds } };
+  if (payload?.bounds === undefined) return { ok: false, reason: 'nothing selected can be saved' };
+  if (name === '') return { ok: false, reason: 'the name is blank' };
+  if (!validId(item.id)) return { ok: false, reason: `the id ${item.id} is not valid` };
+  const unavailable = unavailableReason(payload, host.available);
+  if (unavailable !== undefined) return { ok: false, reason: unavailable };
+  return { ok: true, value: { id: item.id, name, payload: { ...payload, bounds: payload.bounds } } };
 }
 
 /**
@@ -114,7 +144,7 @@ const isObject = (v: unknown): v is { readonly [key: string]: unknown } => typeo
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
 /** `raw` as a validated item, or why it is not one. */
-function itemOf(raw: unknown, k: number): MyShape | string {
+function itemOf(raw: unknown, k: number, available?: ShapeAvailable): MyShape | string {
   if (!isObject(raw)) return `item ${k} is not an object`;
   const { id, name, payload } = raw;
   if (typeof id !== 'string' || !validId(id)) return `item ${k} has no valid id`;
@@ -124,22 +154,25 @@ function itemOf(raw: unknown, k: number): MyShape | string {
   const b = parsed.payload.bounds as { readonly [key: string]: unknown } | undefined;
   if (b === undefined || !finite(b['x']) || !finite(b['y']) || !finite(b['w']) || !finite(b['h']) || b['w'] < 0 || b['h'] < 0)
     return `item ${k} has no valid bounds`;
+  const unavailable = available === undefined ? undefined : unavailableReason(parsed.payload, available);
+  if (unavailable !== undefined) return `item ${k}: ${unavailable}`;
   const bounds = { x: b['x'], y: b['y'], w: b['w'], h: b['h'] };
   return { id, name: name.trim(), payload: { ...parsed.payload, bounds } };
 }
 
 /**
  * The items of a `fluxion-my-shapes` file (untrusted text): every item validated like a pasted clipboard, ids unique,
- * names present, bounds finite; a file with any bad item is refused whole, with the reason.
+ * names present, bounds finite and, given `available`, every shape's definition available; a file with any bad item is
+ * refused whole, with the reason.
  *
  * @public
  */
-export function parseMyShapes(raw: string): MyShapesResult<readonly MyShape[]> {
-  return readFile(raw, 1);
+export function parseMyShapes(raw: string, available?: ShapeAvailable): MyShapesResult<readonly MyShape[]> {
+  return readFile(raw, 1, available);
 }
 
 /** `parseMyShapes`, with at least `least` items (what is stored may hold none). */
-function readFile(raw: string, least: number): MyShapesResult<readonly MyShape[]> {
+function readFile(raw: string, least: number, available?: ShapeAvailable): MyShapesResult<readonly MyShape[]> {
   if (raw.length > MAX_PAYLOAD_CHARS) return { ok: false, reason: 'the file is too large' };
   let json: unknown;
   try {
@@ -153,7 +186,7 @@ function readFile(raw: string, least: number): MyShapesResult<readonly MyShape[]
   if (!Array.isArray(raws) || raws.length < least || raws.length > MAX_MY_SHAPES) return { ok: false, reason: 'no items, or too many' };
   const items: MyShape[] = [];
   for (const [k, r] of raws.entries()) {
-    const item = itemOf(r, k);
+    const item = itemOf(r, k, available);
     if (typeof item === 'string') return { ok: false, reason: item };
     if (items.some((i) => i.id === item.id)) return { ok: false, reason: `item ${k} repeats id ${item.id}` };
     items.push(item);
@@ -185,7 +218,7 @@ export type MyShapes = {
   put(item: MyShape): boolean;
   /** Remove the item `id`. */
   remove(id: string): boolean;
-  /** Add the items of a file; an item whose id is held already replaces it. How many were added, or why the file is refused. */
+  /** Add the items of a file; an item whose id is held already is added under a new id, never replacing it. How many were added, or why the file is refused. */
   importFile(raw: string): MyShapesResult<number>;
 };
 
@@ -195,6 +228,20 @@ export type MyShapes = {
  * @public
  */
 export const MY_SHAPES_KEY = 'fluxion.my-shapes';
+
+/**
+ * `adds` with each id that `now` (or an earlier add) holds already given the next free `<id>-<n>`: an import never
+ * replaces an item the person has.
+ */
+function renamed(now: readonly MyShape[], adds: readonly MyShape[]): readonly MyShape[] {
+  const taken = new Set(now.map((i) => i.id));
+  return adds.map((item) => {
+    let id = item.id;
+    for (let n = 2; taken.has(id); n++) id = `${item.id.slice(0, 64 - String(n).length - 1)}-${n}`;
+    taken.add(id);
+    return id === item.id ? item : { ...item, id };
+  });
+}
 
 /**
  * Where an unreadable stored value is kept before My shapes is written again (a newer version's file, say), so it is
@@ -209,11 +256,11 @@ export const MY_SHAPES_UNREADABLE_KEY = 'fluxion.my-shapes.unreadable';
  * tab saved are kept. A stored value that does not validate is never used and never destroyed: it is moved to
  * {@link MY_SHAPES_UNREADABLE_KEY} before the next change (opening writes nothing), and while it cannot be moved (that key
  * holds another value, or storage refuses) nothing is written. An emptied My shapes stores a file of no items, which
- * reads back as empty.
+ * reads back as empty. An item put or imported must use only `available` shapes.
  *
  * @public
  */
-export function createMyShapes(storage: MyShapesStorage): MyShapes {
+export function createMyShapes(storage: MyShapesStorage, available: ShapeAvailable): MyShapes {
   const read = (key: string): string | null => {
     try {
       return storage.getItem(key);
@@ -265,12 +312,14 @@ export function createMyShapes(storage: MyShapesStorage): MyShapes {
   };
   return {
     items: items.get,
-    put: (item) => typeof itemOf(item, 0) !== 'string' && change((now) => merged(now, [item])),
+    put: (item) => typeof itemOf(item, 0, available) !== 'string' && change((now) => merged(now, [item])),
     remove: (id) => change((now) => (now.some((i) => i.id === id) ? now.filter((i) => i.id !== id) : undefined)),
     importFile: (raw) => {
-      const file = parseMyShapes(raw);
+      const file = parseMyShapes(raw, available);
       if (!file.ok) return file;
-      return change((now) => merged(now, file.value)) ? { ok: true, value: file.value.length } : { ok: false, reason: 'there is no room for the items' };
+      return change((now) => [...now, ...renamed(now, file.value)])
+        ? { ok: true, value: file.value.length }
+        : { ok: false, reason: 'there is no room for the items' };
     },
   };
 }
