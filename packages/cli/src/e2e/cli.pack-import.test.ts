@@ -29,10 +29,22 @@ type Manifest = {
 const manifest = JSON.parse(readFileSync(join(CORPUS, 'manifest.json'), 'utf8')) as Manifest;
 const member = (path: string) => path.slice('svg/'.length);
 /** `fluxion pack-import`, echoing the CLI's WITNESS_CLEANUP lines whether it succeeds or fails, so each slow close is in the ci log (M18.201). */
-function packImport(args: readonly string[]) {
-  const r = fluxion(['pack-import', ...args]);
+function packImport(args: readonly string[], env: NodeJS.ProcessEnv = process.env) {
+  const r = fluxion(['pack-import', ...args], REPO, env);
   for (const line of witnessAdvisories(r.stderr)) process.stdout.write(`${line}\n`);
   return r;
+}
+
+/** The first mark of each phase a run printed with FLUXION_PACK_IMPORT_PHASES, in ms from its process's start (M18.229). */
+type Marks = { start?: number; 'witness-ready'?: number; disposed?: number; end?: number };
+function phasesOf(stderr: string): Marks {
+  const marks: Record<string, number> = {};
+  for (const line of stderr.split(/\r?\n/)) {
+    if (!line.startsWith('PACK_IMPORT_PHASE ')) continue;
+    const { phase, ms } = JSON.parse(line.slice('PACK_IMPORT_PHASE '.length)) as { phase: string; ms: number };
+    marks[phase] ??= ms;
+  }
+  return marks as Marks;
 }
 
 /**
@@ -329,8 +341,15 @@ describe('fluxion pack-import refusals (NFR-SEC-001)', () => {
     const args = argsOf();
     const out = join(dir, `refused-${label}`);
     const started = performance.now();
-    const r = packImport([args[0] as string, ...meta(out), ...args.slice(1)]);
-    expect(performance.now() - started, label).toBeLessThan(10_000);
+    const r = packImport([args[0] as string, ...meta(out), ...args.slice(1)], { ...process.env, FLUXION_PACK_IMPORT_PHASES: '1' });
+    const total = Math.round(performance.now() - started);
+    const marks = phasesOf(r.stderr);
+    // where the run's time went, in the ci log: Node start-up before `start`, then reading, the witness start and close (M18.229)
+    process.stdout.write(`ADVISORY pack-import-phases ${label} ${JSON.stringify({ total, ...marks })}\n`);
+    expect(marks.start, `${label}: ${r.stderr}`).toBeTypeOf('number');
+    expect(marks.end, `${label}: ${r.stderr}`).toBeTypeOf('number');
+    // the bound is the command's own work, witness close included, from its start to its final outcome; only Node's start-up is left out
+    expect((marks.end as number) - (marks.start as number), label).toBeLessThan(10_000);
     expect(r.status, `${label}: ${r.stdout}`).toBe(1);
     expect(
       JSON.parse(r.stdout)
@@ -338,6 +357,8 @@ describe('fluxion pack-import refusals (NFR-SEC-001)', () => {
         .join('\n'),
       label,
     ).toMatch(message);
+    // the unpainted refusal names the one unpainted member, and only it: a.svg paints
+    if (label === 'unpainted') expect(JSON.parse(r.stdout).errors.map((e: { message: string }) => e.message.split(':')[0])).toEqual(['b.svg']);
     if (label === 'existing') expect(readdirSync(out)).toEqual([]);
     else expect(existsSync(out), label).toBe(false);
   });

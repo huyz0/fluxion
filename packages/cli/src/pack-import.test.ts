@@ -288,6 +288,28 @@ describe('pack-import bounds (NFR-SEC-001)', () => {
     expect(p.dispose).toHaveBeenCalledOnce();
   });
 
+  it('NFR-SEC-001: a run marks its phases, ending after the witness closes; every member is painted once, the unpainted one named (M18.229)', async () => {
+    const run = async (input: string, paint?: SvgPaintWitness, out = fresh()) => {
+      const marks: string[] = [];
+      const p = ports(paint);
+      const { code, reply } = await packImport([input, ...flags(out)], { ...p.ports, phase: (name) => marks.push(name) });
+      return { code, reply, marks };
+    };
+    let calls = 0;
+    // the unpainted member converts first of three: the batch still paints the other two, and names only it
+    const unpainted = await run(folder({ 'a.svg': SQUARE, 'b.svg': SQUARE, 'c.svg': SQUARE }), async (r) =>
+      ++calls === 1 ? { identity: r.identity, status: 'unsupported' as const, fontHashes: [] } : painted(r),
+    );
+    expect([unpainted.code, calls, unpainted.marks]).toEqual([1, 3, ['start', 'witness-ready', 'disposed', 'end']]);
+    expect((unpainted.reply.errors ?? []).map((e) => e.message.split(':')[0])).toEqual(['a.svg']);
+    const accepted = await run(folder({ 'a.svg': SQUARE }));
+    expect([accepted.code, accepted.marks]).toEqual([0, ['start', 'witness-ready', 'disposed', 'end']]);
+    const existing = fresh();
+    mkdirSync(existing);
+    const early = await run(folder({ 'a.svg': SQUARE }), undefined, existing);
+    expect([early.code, early.marks]).toEqual([1, ['start', 'end']]);
+  });
+
   it('FR-LIB-004: more members than one witness session admits (129 > 128) are all converted through a second session', async () => {
     const out = fresh();
     const members = Object.fromEntries(Array.from({ length: 129 }, (_, i) => [`s${String(i).padStart(3, '0')}.svg`, SQUARE]));

@@ -30,7 +30,12 @@ import type { NodeSvgWitnessOptions } from './svg-witness-types.js';
 export type PackImportPorts = {
   /** Starts the paint witness (the shipped Node bridge by default). */
   readonly witness: (options: NodeSvgWitnessOptions) => ReturnType<typeof createNodeSvgPaintWitness>;
+  /** Marks a phase of the run (start, witness-ready, disposed, end), so a bound can time the command's own work (M18.229). */
+  readonly phase?: (name: PackImportPhase) => void;
 };
+
+/** The phases a run marks: `end` once its outcome is final, the witness closed; start-up before `start` is Node's, not the command's. */
+export type PackImportPhase = 'start' | 'witness-ready' | 'disposed' | 'end';
 
 const invalid = (path: string, message: string): Diagnostic => ({ code: 'FLX_SVG_IMPORT_INVALID', severity: 'error', path, message });
 const refused = (diagnostics: readonly Diagnostic[]): Outcome => ({ exitCode: 1, diagnostics });
@@ -96,6 +101,7 @@ async function convert(files: readonly SvgBatchFile[], ids: ReadonlyMap<string, 
     ports.witness({ theme: LIGHT_THEME, fonts: [{ ...inter.face, bytes: inter.rights.bytes, profile: 'inter-latin-400-ascii' }], ...browserOption }),
   );
   if ('kind' in sessions) return { failed: sessions.kind === 'peer-missing' ? 2 : 1, diagnostics: sessions.diagnostics } as const;
+  ports.phase?.('witness-ready');
   let report: SvgBatchReport;
   try {
     report = await importSvgBatch(
@@ -104,6 +110,7 @@ async function convert(files: readonly SvgBatchFile[], ids: ReadonlyMap<string, 
     );
   } finally {
     await sessions.dispose();
+    ports.phase?.('disposed');
   }
   // a session that could not start or close is the failure, not the members it left unwitnessed
   const failure = sessions.failure();
@@ -218,14 +225,31 @@ export function packImportCommand(ports: PackImportPorts): Command {
       browser: { type: 'string' },
     },
     run: async ({ values, positionals }, io) => {
-      const flags = flagsOf(values, positionals);
-      if ('exitCode' in flags) return flags;
-      const rights = await rightsOf(values);
-      if ('exitCode' in rights) return rights;
-      return packImport({ flags, rights, browser: browserOf(values) }, ports, io.stderr);
+      ports.phase?.('start');
+      try {
+        const flags = flagsOf(values, positionals);
+        if ('exitCode' in flags) return flags;
+        const rights = await rightsOf(values);
+        if ('exitCode' in rights) return rights;
+        return await packImport({ flags, rights, browser: browserOf(values) }, ports, io.stderr);
+      } finally {
+        // every outcome, a throw included, after the witness has closed
+        ports.phase?.('end');
+      }
     },
   };
 }
 
+/**
+ * Each phase as a `PACK_IMPORT_PHASE {"phase","ms"}` stderr line, `ms` from the process's start, when FLUXION_PACK_IMPORT_PHASES is
+ * set (M18.229): the e2e refusals bound the command's own work, start to end, and the ci log shows where a slow run went.
+ */
+const phaseTrace = (name: PackImportPhase): void => {
+  process.stderr.write(`PACK_IMPORT_PHASE ${JSON.stringify({ phase: name, ms: Math.round(performance.now()) })}\n`);
+};
+
 /** `pack-import`, with the shipped Node paint witness. */
-export const PACK_IMPORT: Command = packImportCommand({ witness: createNodeSvgPaintWitness });
+export const PACK_IMPORT: Command = packImportCommand({
+  witness: createNodeSvgPaintWitness,
+  ...(process.env['FLUXION_PACK_IMPORT_PHASES'] ? { phase: phaseTrace } : {}),
+});
