@@ -331,7 +331,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts` +3 |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/ai/adapters.test.ts` +5 |
-| NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +3 |
+| NFR-SEC-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-evidence.test.mjs` +4 |
 | NFR-SEC-006 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/open-sources.test.ts`, `e2e/privacy.no-telemetry.spec.ts` |
 | NFR-SEC-007 | S | R6 | M28 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/shape/content-license-policy.test.ts` |
 | NFR-A11Y-001 | M | R1 | M9 | [30-non-functional.md](30-non-functional.md) | `e2e/a11y.editor.spec.ts` +4 |

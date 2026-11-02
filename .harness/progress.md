@@ -3731,3 +3731,10 @@ next: M18.219 before any product push; then M18.216, .205, .214 (stream 1), M18.
 - examples/dsl/cloud-architecture.flux.yaml (uses cloud and basic: DNS, CDN, gateway, container, function, queue, database, cache, storage, monitoring) renders to its new golden; the examples host registers the cloud pack.
 - After the rebase onto 2c236ec: the eval prompt (scripts/eval/common.ts) now builds its catalog with `core: ['core', 'basic', 'themes-core']`, so the examples host's cloud pack is one summary line; the scripted recordings were re-authored with `pnpm eval --author` as eval/README.md says to after a catalog change. The editor grammar test's example count is 13 with the new example; the authoring guide lists it (regenerated).
 - Review r1 pass; minor F1 (no model-callable surface takes `pack` yet: MCP list_catalog and the CLI catalog command build without options) is latent while both bundle only basic; follow-up row proposed to stream 1.
+## 2026-11-02 M18.219 (claude, stream 1)
+done: osv-scanner.toml drops four dead excusals (http-cache-semantics, postcss-selector-parser overridden since M18.67; extract-zip x2 no longer locked) and renews braces 3.0.3 and sprintf-js 1.0.3 to 2026-12-02 (both still latest on the line their parent pins: micromatch ^3.0.3, argparse ~1.0.2)
+minimatch: api-extractor's only call is minimatch(name, pattern), so "@microsoft/api-extractor>minimatch": 11.0.3 drops 10.2.3; build and check-api pass (44 reports match). 10.2.6 and 3.1.5 are excused by advisory GHSA-g3hv-75wg-m249 only
+check: scripts/gates/check-osv-expiry.mjs runs ahead of the scan in security.yml and fails 7 days before any expiry
+note: the cp31 verdict JSON names M18.218 for F1/F2; that id was already stream 2's, so the row is M18.219 (cp31 record minor 1)
+open: name the nightly previous-playwright webkit failure from the next nightly after 590e0a4 (cp31 F3 remainder); cold budget re-record after this lockfile change
+
