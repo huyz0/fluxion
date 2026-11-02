@@ -63,13 +63,28 @@ const LANDED = 'refs/remotes/origin/main';
  * that landed are closed, so a task committed but not landed, amended or re-reviewed after HEAD moved
  * keeps counting (M18.177, M18.193 cp24 F4).
  */
-function committedDigest() {
+function landedBase() {
   const base = git(['merge-base', 'HEAD', LANDED]);
-  const at = git(['show', `${base.status === 0 ? base.stdout.trim() : 'HEAD'}:.harness/reviews/digest.log`]);
+  return base.status === 0 ? base.stdout.trim() : 'HEAD';
+}
+function committedDigest() {
+  const at = git(['show', `${landedBase()}:.harness/reviews/digest.log`]);
   return parseDigest(at.status === 0 ? at.stdout : '');
 }
-/** Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127), among lines not yet landed (M18.177, M18.193). */
-const roundOf = (task, content = '') => nextRound(tracked(), task, { content, committed: committedDigest() });
+/**
+ * The tasks with a commit of their own on the landed base, by subject `<task>: ` (M18.231, cp34 F2); undefined when the
+ * base has no task commit at all (a fixture baseline), where the committed lines close rounds as before.
+ */
+function landedTasks() {
+  const log = git(['log', '--format=%s', landedBase()]);
+  const tasks = new Set((log.status === 0 ? log.stdout : '').split(/\r?\n/).flatMap((s) => /^(M\d+\.\d+): /.exec(s)?.[1] ?? []));
+  return tasks.size > 0 ? tasks : undefined;
+}
+/**
+ * Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127), among lines not yet landed
+ * (M18.177, M18.193); a task's lines that another row's commit carried onto the base still count until its own commit lands (M18.231).
+ */
+const roundOf = (task, content = '') => nextRound(tracked(), task, { content, committed: committedDigest(), landed: landedTasks() });
 /**
  * The human allowance for review rounds past the cap, as `.harness/state.json` roundAllowance[task] or a
  * progress.md line `round-allowance: <task> <who, when>`; '' when none is named (M18.215, cp30 F3).

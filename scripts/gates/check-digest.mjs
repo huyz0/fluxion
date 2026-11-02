@@ -24,6 +24,10 @@ const EXEMPT = '.harness/baselines/digest-exempt.txt';
 const BACKLOG = 'docs/backlog/current.md';
 /** The task whose commit made review.mjs write only `vendor:role[:posthoc]` reviewers (M18.141). */
 const GRAMMAR_SINCE = 'M18.127';
+/** The task whose commit made a commit's digest lines name only its own task (M18.231, cp34 F2). */
+const OWN_LINES_SINCE = 'M18.231';
+const PROGRESS = '.harness/progress.md';
+const STATE = '.harness/state.json';
 
 const show = (tree, path) => {
   const r = git(['show', `${tree === 'index' ? '' : tree}:${path}`]);
@@ -185,6 +189,89 @@ function rowCellProblem(line, { committed, head, history }) {
   return sha && sha !== head ? `${id}: done since ${sha.slice(0, 7)} but its Commit cell is empty` : undefined;
 }
 
+/** The task the staged tree is committing, by its state.json currentTask; '' when unreadable. */
+function stagedTask() {
+  try {
+    return String(JSON.parse(show('index', STATE)).currentTask ?? '');
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * The rows whose review lines a change adds, leaving out lines any commit may carry: `rebind` and posthoc lines (both bind a commit
+ * already landed, M18.127) and the milestone's checkpoint records, the row titled "Final independent milestone review" in the
+ * backlog of the tree judged (M18.43 in M18). `range` is git diff's arguments; `tree` the backlog's tree.
+ */
+function addedLineTasks(range, tree) {
+  const checkpoints = new Set([...show(tree, BACKLOG).matchAll(/^\| (M\d+\.\d+) \| Final independent milestone review/gm)].map((m) => m[1]));
+  return addedLines(range)
+    .filter((l) => l.verdict !== 'rebind' && !isPosthoc(l.reviewer) && !checkpoints.has(l.task))
+    .map((l) => l.task);
+}
+
+/** The digest lines a change adds, parsed; `range` is git diff's arguments. */
+function addedLines(range) {
+  const diff = git(['diff', '--no-color', '-U0', ...range, '--', DIGEST]).stdout;
+  return parseDigest(
+    diff
+      .split(/\r?\n/)
+      .filter((l) => l.startsWith('+') && !l.startsWith('+++'))
+      .map((l) => l.slice(1))
+      .join('\n'),
+  );
+}
+
+/**
+ * The row the staged change is committed as: the task of the staged pass line bound to the staged content, which `record` wrote
+ * for this change; state.json's currentTask only when there is none, since several streams share state.json (M18.231 r2 F1).
+ */
+function stagedOwner() {
+  const ids = new Set(contentIds().filter(Boolean));
+  return addedLines(['--cached', 'HEAD']).findLast((l) => l.verdict === 'pass' && ids.has(l.content))?.task ?? stagedTask();
+}
+
+/** Every task commit on HEAD from OWN_LINES_SINCE's first one on, oldest first, whatever milestone is current (M18.231 r1 F3). */
+function ownLineCommits() {
+  const rows = lines(git(['log', '--reverse', '--format=%H%x09%s', 'HEAD'])).flatMap((l) => {
+    const [sha, subject = ''] = l.split('\t');
+    const task = /^(M\d+\.\d+): /.exec(subject)?.[1];
+    return task ? [{ sha, task }] : [];
+  });
+  const from = rows.findIndex((c) => c.task === OWN_LINES_SINCE);
+  return from < 0 ? [] : rows.slice(from);
+}
+
+/**
+ * A commit adds digest lines for its own task only (M18.231, cp34 F2): a replay that carries another row's review lines onto main
+ * would close that row's rounds before its own commit lands. Task commits from OWN_LINES_SINCE's first one on, by subject, and the
+ * staged change, as its stagedOwner.
+ */
+function foreignLineProblems(tree) {
+  const judged = ownLineCommits().map(({ sha, task }) => ({ who: `${sha.slice(0, 7)} ${task}`, task, range: [`${sha}^`, sha], at: sha }));
+  const staged = tree === 'index' && judged.length > 0 ? stagedOwner() : '';
+  if (tree === 'index' && judged.length > 0)
+    judged.push({ who: `staged ${staged || '(no currentTask)'}`, task: staged, range: ['--cached', 'HEAD'], at: 'index' });
+  return judged.flatMap(({ who, task, range, at }) =>
+    [...new Set(addedLineTasks(range, at).filter((t) => t !== task))].map((t) => `${who}: adds review digest lines of ${t}, another row's (M18.231)`),
+  );
+}
+
+/**
+ * progress.md holds an entry (`## <date> <task>:` or `## <task> — …`) only for a task with a commit on HEAD, or the staged task, or one headed
+ * saying `not landed` (M18.231, cp34 F2): a replay must not leave the ledger claiming work main does not have.
+ */
+function progressProblems(tree) {
+  const landed = new Set(lines(git(['log', '--format=%s', 'HEAD'])).flatMap((s) => /^(M\d+\.\d+): /.exec(s)?.[1] ?? []));
+  if (tree === 'index') landed.add(stagedOwner());
+  return show(tree, PROGRESS)
+    .split(/\r?\n/)
+    .flatMap((h) => {
+      const m = /^## (?:\d{4}-\d{2}-\d{2} )?(M\d+\.\d+)\b/.exec(h);
+      return m && !landed.has(m[1]) && !/\bnot landed\b/.test(h) ? [`progress.md has an entry for ${m[1]}, which has no commit: ${h.slice(0, 90)}`] : [];
+    });
+}
+
 /** Check one tree ('index' or 'HEAD') against the active milestone's committed task history. */
 export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
   // a checkout without history or a roadmap (partial harness sandboxes) has nothing to cover
@@ -207,6 +294,8 @@ export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
     ...posthocProblems(commits, entries, milestone),
     ...commitCellProblems(commits, tree),
     ...headerCountProblems(show(tree, BACKLOG)),
+    ...foreignLineProblems(tree),
+    ...progressProblems(tree),
   ];
   if (problems.length) return { ok: false, detail: `digest: ${problems.length} problem(s)\n  ${problems.join('\n  ')}` };
   return { ok: true, detail: `digest: ${commits.length} ${milestone} task commits have tracked review evidence and Commit cells` };

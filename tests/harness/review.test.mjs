@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { chmodSync, readdirSync, rmSync } from 'node:fs';
 import { after, afterEach, before, describe, it } from 'node:test';
+import { nextRound, parseDigest } from '../../scripts/gates/review-content.mjs';
 import { out, sandbox } from './helpers.mjs';
 
 const TASK = 'M0.5';
@@ -538,5 +539,66 @@ describe('rebase-stable content binding (ADR-0195, M18.99)', () => {
       [task, round, verdict, reviewer, content, bound],
       [TASK, lines()[pass - 1].split('\t')[2], 'rebind', 't:unit', `content:${id(sha)}`, `bound:${pass}`],
     );
+  });
+});
+
+describe('rounds of a row whose lines another commit carried (M18.231, cp34 F2)', () => {
+  const lines = (task, n, verdict = 'changes-requested') =>
+    Array.from({ length: n }, (_, i) => `${task}\th${i}\tr${i + 1}\t${i === n - 1 ? 'pass' : verdict}\tclaude:independent-subagent\t0 findings\tcontent:c${i}`);
+  // M18.35's r1-r4 landed inside M18.111's commit; M18.35 itself has not landed
+  const digest = parseDigest([...lines('M18.35', 4), ...lines('M18.111', 1)].join('\n'));
+  it('HARNESS: carried lines keep counting until the row lands: the next round is r5, not r1', () => {
+    assert.deepEqual(nextRound(digest, 'M18.35', { content: 'new', committed: digest, landed: new Set(['M18.111']) }), { round: 5, reapply: false });
+    // content that already passed among them keeps its round
+    assert.deepEqual(nextRound(digest, 'M18.35', { content: 'c3', committed: digest, landed: new Set(['M18.111']) }), { round: 4, reapply: true });
+  });
+  it("HARNESS: once the row's own commit landed, its landed lines close its rounds", () => {
+    assert.deepEqual(nextRound(digest, 'M18.35', { content: 'new', committed: digest, landed: new Set(['M18.111', 'M18.35']) }), { round: 1, reapply: false });
+    // without a landed set (older callers) the landed lines close rounds as before
+    assert.deepEqual(nextRound(digest, 'M18.35', { content: 'new', committed: digest }), { round: 1, reapply: false });
+  });
+});
+
+describe('review.mjs record counts a carried row through the landed set (M18.231 r1 F5)', () => {
+  it("HARNESS: lines another row's commit carried keep counting; the row's own commit closes them", () => {
+    const s = sandbox(undefined, { git: true });
+    try {
+      const rec = (verdict) => {
+        s.write(
+          '.harness/tmp/v.json',
+          JSON.stringify({
+            task: TASK,
+            kind: 'code',
+            diff_sha256: s.node('scripts/harness/review.mjs', ['hash']).stdout.trim(),
+            reviewer: 'test:unit',
+            verdict,
+            findings: [],
+          }),
+        );
+        return s.node('scripts/harness/review.mjs', ['record', '--file', s.path('.harness/tmp/v.json'), '--task', TASK]);
+      };
+      s.write('src/a.txt', 'one\n');
+      s.git('add', '-A');
+      assert.equal(rec('changes-requested').status, 0);
+      s.write('src/a.txt', 'two\n');
+      s.git('add', '-A');
+      assert.equal(rec('changes-requested').status, 0);
+      // another row's commit carries both lines onto the base
+      s.git('add', '-A');
+      s.git('commit', '-q', '-m', 'M0.1: chore(harness): carries M0.5 lines', '--no-verify');
+      s.write('src/a.txt', 'three\n');
+      s.git('add', '-A');
+      let r = rec('changes-requested');
+      assert.match(r.stdout, new RegExp(`recorded changes-requested for ${TASK} round 3 `), out(r));
+      // once the row's own commit is on the base, its lines close its rounds
+      s.git('add', '-A');
+      s.git('commit', '-q', '-m', `${TASK}: fix(harness): its own commit`, '--no-verify');
+      s.write('src/a.txt', 'four\n');
+      s.git('add', '-A');
+      r = rec('changes-requested');
+      assert.match(r.stdout, new RegExp(`recorded changes-requested for ${TASK} round 1 `), out(r));
+    } finally {
+      s.cleanup();
+    }
   });
 });

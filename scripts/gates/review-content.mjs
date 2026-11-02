@@ -169,11 +169,14 @@ export const isPosthoc = (reviewer) => parseReviewer(reviewer)?.posthoc ?? /:pos
  * the task that have not landed (missing from `committed`, the parsed digest on the landed base): one past
  * the highest of them, so a pass never restarts the count before the task's commit and the round cap
  * counts changes-requested rounds after a pass; content that already passed among them is a
- * re-application on a new base and keeps that round, marked `reapply` (M18.177, cp23 F1).
+ * re-application on a new base and keeps that round, marked `reapply` (M18.177, cp23 F1). With `landed`, the tasks
+ * that have a commit on the landed base, a task's landed lines close its rounds only once its own commit is there (M18.231).
  */
-export function nextRound(digest, task, { content = '', committed = [] } = {}) {
+export function nextRound(digest, task, { content = '', committed = [], landed } = {}) {
   const key = (l) => [l.task, l.hash, l.round, l.verdict, l.reviewer, l.content].join('\t');
-  const before = new Set(committed.filter((l) => l.task === task).map(key));
+  // lines another row's commit carried onto the base close nothing while `task` has no commit there (M18.231, cp34 F2)
+  const closed = landed === undefined || landed.has(task);
+  const before = new Set(closed ? committed.filter((l) => l.task === task).map(key) : []);
   const since = digest.filter((l) => l.task === task && l.verdict !== 'rebind' && !before.has(key(l)));
   const passed = content ? since.findLast((l) => l.verdict === 'pass' && l.content === content) : undefined;
   const number = (l) => Number(/^r(\d+)$/.exec(l.round)?.[1]) || 0;

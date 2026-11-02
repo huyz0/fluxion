@@ -242,6 +242,80 @@ describe('digest coverage (M18.99)', () => {
       run('reset', '-q', '--hard', start);
     }
   });
+  it('HARNESS: from M18.231 a commit adds only its own task digest lines, and progress.md names only landed rows (M18.231, cp34 F2)', () => {
+    const start = run('rev-parse', 'HEAD');
+    try {
+      // a backlog of open rows, so earlier cases' done rows ask for no Commit cell here
+      const final = '| M18.43 | Final independent milestone review, dispositions and closeout | HARNESS | WHEN x THE SYSTEM SHALL y | — | todo | |';
+      put('docs/backlog/current.md', backlog([...['M18.1', 'M18.2', 'M18.3', 'M18.5', 'M18.6', 'M18.231'].map((id) => ROW(id)), final]));
+      commit('chore: open rows');
+      // before M18.231 a carried line passes
+      put('src/carry.txt', 'x\n');
+      append(DIGEST, line('M18.5', 'changes-requested'));
+      task('M18.1');
+      assert.equal(check(['--head']).status, 0, out(check(['--head'])));
+      task('M18.231');
+      let r = check(['--head']);
+      assert.equal(r.status, 0, out(r));
+      // after it, a task commit carrying another row's line is refused, by commit
+      append(DIGEST, line('M18.6', 'changes-requested'));
+      const carried = task('M18.2');
+      r = check(['--head']);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, new RegExp(`${carried.slice(0, 7)} M18\\.2: adds review digest lines of M18\\.6, another row's \\(M18\\.231\\)`));
+      run('reset', '-q', '--hard', 'HEAD^');
+      // staged: judged against state.json's currentTask
+      put('.harness/state.json', JSON.stringify({ currentTask: 'M18.3' }));
+      append(DIGEST, line('M18.3', 'changes-requested'));
+      assert.equal(check().status, 0, out(check()));
+      append(DIGEST, line('M18.6', 'changes-requested'));
+      r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /staged M18\.3: adds review digest lines of M18\.6/);
+      run('reset', '-q', '--hard', 'HEAD');
+      // the staged owner is the row whose pass line binds the staged content, not state.json's currentTask, which another
+      // stream may have set (M18.231 r2 F1); its own lines pass, a third row's are still refused
+      put('.harness/state.json', JSON.stringify({ currentTask: 'M18.6' }));
+      put('src/owner.txt', 'x\n');
+      append(DIGEST, line('M18.3', 'changes-requested'));
+      append(DIGEST, line('M18.3', 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+      r = check();
+      assert.equal(r.status, 0, out(r));
+      append(DIGEST, line('M18.5', 'changes-requested'));
+      r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /staged M18\.3: adds review digest lines of M18\.5/);
+      assert.doesNotMatch(r.stderr, /lines of M18\.3/);
+      run('reset', '-q', '--hard', 'HEAD');
+      // any commit may carry checkpoint records (the final-review row), rebind and posthoc lines (M18.231 r1 F1, F4)
+      put('.harness/state.json', JSON.stringify({ currentTask: 'M18.3' }));
+      append(DIGEST, line('M18.43', 'pass', '5'.repeat(64)));
+      append(DIGEST, 'M18.6\t-\tr1\trebind\tharness:rebind\t0 findings\tcontent:6666\tbound:1\n');
+      append(DIGEST, `M18.6\tdeadbeef\tr2\tpass\tclaude:independent-subagent:posthoc\t0 findings\tcontent:${'7'.repeat(64)}\n`);
+      r = check();
+      assert.doesNotMatch(r.stderr, /another row's/, out(r));
+      run('reset', '-q', '--hard', 'HEAD');
+      // progress: an entry for a row with no commit is refused unless headed (not landed …); the staged task's own entry passes
+      put('.harness/state.json', JSON.stringify({ currentTask: 'M18.3' }));
+      put('.harness/progress.md', '## 2026-11-02 M18.1: landed\n\n## 2026-11-02 M18.3: this commit\n');
+      assert.equal(check().status, 0, out(check()));
+      put('.harness/progress.md', '## 2026-11-02 M18.1: landed\n\n## 2026-11-02 M18.9: carried\n');
+      r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /progress\.md has an entry for M18\.9, which has no commit/);
+      put('.harness/progress.md', '## 2026-11-02 M18.9: carried (not landed: a replay carried it)\n');
+      assert.equal(check().status, 0, out(check()));
+      // the `## <task> — title (date)` heading form is judged too (M18.231 r2 F2)
+      put('.harness/progress.md', '## M18.9 — carried by a replay (2026-11-02)\n');
+      r = check();
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /progress\.md has an entry for M18\.9, which has no commit/);
+      put('.harness/progress.md', '## M18.9 — attempt measured, not landed (2026-11-02)\n');
+      assert.equal(check().status, 0, out(check()));
+    } finally {
+      run('reset', '-q', '--hard', start);
+    }
+  });
 });
 
 describe('backlog header count (M18.223, cp32 F5)', () => {
