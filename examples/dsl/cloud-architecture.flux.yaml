@@ -1,0 +1,31 @@
+flux: 1
+title: A web service on one cloud
+theme: light
+uses: [cloud, basic]
+screens:
+  - id: request-path
+    title: From a request to the data
+    # every shape is the cloud pack's, named by its short name through uses: (FR-LIB-007); with no layout named, the default `layered` ranks them along the edges
+    nodes:
+      dns:     { shape: dns, label: DNS }
+      cdn:     { shape: cdn, label: CDN }
+      gateway: { shape: api-gateway, label: API gateway }
+      app:     { shape: container, label: Web app }
+      worker:  { shape: function, label: Thumbnailer }
+      queue:   { shape: queue, label: Jobs }
+      db:      { shape: database, label: Orders }
+      cache:   { shape: cache, label: Sessions }
+      files:   { shape: object-storage, label: Uploads }
+      logs:    { shape: monitoring, label: Logs }
+    edges:
+      - dns -> cdn
+      - cdn -> gateway: HTTPS
+      - gateway -> app
+      - app -> db: SQL
+      - app -> cache
+      - app -> queue: enqueue
+      - queue -> worker
+      - worker -> files
+      - app ~> logs
+    notes: |
+      The cloud pack's provider-neutral symbols, laid out by rank from the edge to the data.

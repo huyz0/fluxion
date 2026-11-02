@@ -51,6 +51,16 @@ describe('catalog formats (FR-AI-002)', () => {
     expect(isCatalogJson({ ...JSON.parse(text), extra: [] })).toBe(false);
   });
 
+  it('NFR-AI-002: a catalog built with core ends with its summarized packs in each format, and its json validates', () => {
+    const r = registries();
+    r.shapeDefs.register('cloud:database', { id: 'cloud:database', describe: 'A managed database.' } as unknown as ShapeDef, 'cloud');
+    const { catalog } = buildCatalog(r, { core: ['core', 'basic'], names: new Map([['cloud', 'Cloud architecture']]) });
+    expect(formatCatalog(catalog, 'llm').endsWith('packs:\ncloud — Cloud architecture; 1 entry (shapes); listed with pack: cloud\n')).toBe(true);
+    expect(formatCatalog(catalog, 'md')).toContain('## Packs\n\n- `cloud`: Cloud architecture; 1 entry (shapes)\n');
+    expect(isCatalogJson(JSON.parse(formatCatalog(catalog, 'json')))).toBe(true);
+    expect(isCatalogJson({ ...catalog, packs: [{ id: 'cloud', name: 'Cloud', count: 0, kinds: ['shapes'] }] })).toBe(false);
+  });
+
   it('FR-AI-002: the md format has a heading per kind that has entries and a bullet per entry with its plugin', () => {
     const md = formatCatalog(buildCatalog(registries()).catalog, 'md');
     expect(md).toContain('# Fluxion catalog');

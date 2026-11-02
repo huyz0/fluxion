@@ -43,6 +43,24 @@ export type Catalog = {
   readonly effects: readonly CatalogEntry[];
   /** Transitions (`transitions`). */
   readonly transitions: readonly CatalogEntry[];
+  /** With `core`: one line per other registrant, whose entries are listed only when asked for with `pack` (ADR-0211). */
+  readonly packs?: readonly PackSummary[];
+};
+
+/**
+ * A registrant the catalog does not list entry by entry (ADR-0211): what a model reads to know the pack exists and to ask for its entries.
+ *
+ * @public
+ */
+export type PackSummary = {
+  /** The registrant's id: the pack a document names in `uses:` and the `pack` a catalog of its entries is built with. */
+  readonly id: string;
+  /** Its display name (the pack index's `name`), or its id when the host gave none. */
+  readonly name: string;
+  /** How many entries it registered, over every kind. */
+  readonly count: number;
+  /** The kinds it registered entries of (`shapes`, `markers`...), in the catalog's order. */
+  readonly kinds: readonly string[];
 };
 
 /**
@@ -55,6 +73,14 @@ export type CatalogOptions = {
   readonly detail?: 'summary' | 'full';
   /** Only entries registered by this plugin id (`core`, `basic`, a plugin's id). */
   readonly pack?: string;
+  /**
+   * The registrants listed entry by entry (`core` for the built-ins, `basic`...); every other registrant is summarized in {@link Catalog.packs}, one
+   * line each, so a host with every first-party pack keeps the catalog within its budget (NFR-AI-002, ADR-0211). Every registrant is listed when
+   * omitted; ignored with `pack`.
+   */
+  readonly core?: readonly string[];
+  /** Pack display names by registrant id, for the summary lines; the id is used when a name is missing. */
+  readonly names?: ReadonlyMap<string, string>;
 };
 
 /**
@@ -85,10 +111,16 @@ const layoutDetail: Details = (value) => {
   return { options };
 };
 
+/** Whether `source` is listed entry by entry under `options`. */
+function listed(source: string, options: CatalogOptions): boolean {
+  if (options.pack !== undefined) return source === options.pack;
+  return options.core === undefined || options.core.includes(source);
+}
+
 function entries(registry: Registry<string, unknown>, options: CatalogOptions, details?: Details): CatalogEntry[] {
   return registry
     .list()
-    .filter(([key]) => options.pack === undefined || registry.source(key) === options.pack)
+    .filter(([key]) => listed(registry.source(key) ?? 'core', options))
     .map(([key, value]): CatalogEntry => {
       const base = { id: key, describe: describeOf(value) ?? '', source: registry.source(key) ?? 'core' };
       const detail = options.detail === 'full' ? details?.(value) : undefined;
@@ -96,12 +128,50 @@ function entries(registry: Registry<string, unknown>, options: CatalogOptions, d
     });
 }
 
+/** The kinds of the catalog and the registry each is read from, in the catalog's order. */
+const KINDS = [
+  ['shapes', 'shapeDefs'],
+  ['connectors', 'routers'],
+  ['markers', 'markers'],
+  ['layouts', 'layouts'],
+  ['templates', 'templates'],
+  ['themes', 'themes'],
+  ['effects', 'effects'],
+  ['transitions', 'transitions'],
+] as const;
+
+type Tally = Map<string, { count: number; kinds: string[] }>;
+
+/** Count into `found` the entries of `registry` (the catalog's `kind`) whose registrant `options` does not list. */
+function tally(found: Tally, registry: Registry<string, unknown>, kind: string, options: CatalogOptions): void {
+  for (const [key] of registry.list()) {
+    const source = registry.source(key) ?? 'core';
+    if (listed(source, options)) continue;
+    const summary = found.get(source) ?? { count: 0, kinds: [] };
+    summary.count += 1;
+    if (!summary.kinds.includes(kind)) summary.kinds.push(kind);
+    found.set(source, summary);
+  }
+}
+
+/** One summary per registrant `options.core` leaves out, sorted by id; none without `core` or with `pack`. */
+function summaries(registries: CoreRegistries, options: CatalogOptions): PackSummary[] {
+  if (options.core === undefined || options.pack !== undefined) return [];
+  const found: Tally = new Map();
+  for (const [kind, name] of KINDS) tally(found, registries[name] as Registry<string, unknown>, kind, options);
+  return [...found]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([id, { count, kinds }]) => ({ id, name: options.names?.get(id) ?? id, count, kinds }));
+}
+
 /**
- * The catalog of `registries`, and a diagnostic for each entry that has no one-line `describe` (`FLX_REGISTRY_UNDESCRIBED`).
+ * The catalog of `registries`, and a diagnostic for each listed entry that has no one-line `describe` (`FLX_REGISTRY_UNDESCRIBED`). With `core`, the
+ * other registrants are summarized in `packs` (no diagnostics: their entries are checked when a catalog is built with their `pack`).
  *
  * @public
  */
 export function buildCatalog(registries: CoreRegistries, options: CatalogOptions = {}): CatalogResult {
+  const packs = summaries(registries, options);
   const catalog: Catalog = {
     shapes: entries(registries.shapeDefs, options, shapeDetail),
     connectors: entries(registries.routers, options),
@@ -111,6 +181,7 @@ export function buildCatalog(registries: CoreRegistries, options: CatalogOptions
     themes: entries(registries.themes, options),
     effects: entries(registries.effects, options),
     transitions: entries(registries.transitions, options),
+    ...(packs.length === 0 ? {} : { packs }),
   };
   const described = ['shapes', 'connectors', 'markers', 'layouts', 'templates', 'effects', 'transitions'] as const;
   const diagnostics = described.flatMap((kind) =>

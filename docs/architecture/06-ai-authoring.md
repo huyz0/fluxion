@@ -216,7 +216,9 @@ entry with an empty line and a diagnostic. Themes are listed by id and name. `--
 (`basic:diamond — decision; params: none; anchors: n,e,s,w`) for prompts and `list_catalog`;
 `json` adds param schemas (editor completion, FR-DSL-009); `md` feeds the docs site. Budget: the core-pack catalog plus the cheat sheet must fit in **8 000 tokens** (NFR-AI-002),
 checked by a token-count test with a fixed tokenizer in `pnpm verify`. Additional packs cost only
-their summary lines; `--detail=<pack>` / `list_catalog({ pack })` expands one pack on demand.
+their summary lines; `--detail=<pack>` / `list_catalog({ pack })` expands one pack on demand. A host names the registrants it lists entry by entry
+with `core` (`['core', 'basic']`); every other registrant becomes one `packs` line (id, name, entry count, kinds) that names the `pack` to ask for
+(ADR-0211, M18.41).
 
 ## 7. Quality linter (FR-AI-005)
 

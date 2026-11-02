@@ -84,6 +84,7 @@ export type Catalog = {
     readonly themes: readonly CatalogEntry[];
     readonly effects: readonly CatalogEntry[];
     readonly transitions: readonly CatalogEntry[];
+    readonly packs?: readonly PackSummary[];
 };
 
 // @public
@@ -108,6 +109,8 @@ export function catalogJsonSchema(): {
 export type CatalogOptions = {
     readonly detail?: "summary" | "full";
     readonly pack?: string;
+    readonly core?: readonly string[];
+    readonly names?: ReadonlyMap<string, string>;
 };
 
 // @public
@@ -654,6 +657,14 @@ export type OutlineScreen = {
     readonly id: string;
     readonly title: string;
     readonly intent: string;
+};
+
+// @public
+export type PackSummary = {
+    readonly id: string;
+    readonly name: string;
+    readonly count: number;
+    readonly kinds: readonly string[];
 };
 
 // @public

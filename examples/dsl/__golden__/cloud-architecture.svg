@@ -1,0 +1,279 @@
+<svg data-screen-id="1Z2KZssLL2EpkIAQ6Pq48P" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="5HGQAskzmKLUCU2VkngR8J" data-kind="shape" data-place="left:224px;top:80px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M28 11.2 C28 22.77 28 34.35 28 45.92" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M28 15.68 C32.85 15.68 37.71 15.68 42.56 15.68 C44.05 17.17 45.55 18.67 47.04 20.16 C45.55 21.65 44.05 23.15 42.56 24.64 C37.71 24.64 32.85 24.64 28 24.64" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M28 28 C23.15 28 18.29 28 13.44 28 C11.95 29.49 10.45 30.99 8.96 32.48 C10.45 33.97 11.95 35.47 13.44 36.96 C18.29 36.96 23.15 36.96 28 36.96" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      DNS
+    </text>
+    <g class="fx-members" data-place="left:-224px;top:-80px;transform-origin:252px 108px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="3JSnqPHc9PWeyILyJ5WV7a" data-kind="shape" data-place="left:224px;top:216px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M11.2 28 C11.2 22 14.4 16.45 19.6 13.45 C24.8 10.45 31.2 10.45 36.4 13.45 C41.6 16.45 44.8 22 44.8 28 C44.8 34 41.6 39.55 36.4 42.55 C31.2 45.55 24.8 45.55 19.6 42.55 C14.4 39.55 11.2 34 11.2 28 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M21.28 28 C21.28 22 22.56 16.45 24.64 13.45 C26.72 10.45 29.28 10.45 31.36 13.45 C33.44 16.45 34.72 22 34.72 28 C34.72 34 33.44 39.55 31.36 42.55 C29.28 45.55 26.72 45.55 24.64 42.55 C22.56 39.55 21.28 34 21.28 28 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M11.2 28 C22.4 28 33.6 28 44.8 28" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      CDN
+    </text>
+    <g class="fx-members" data-place="left:-224px;top:-216px;transform-origin:252px 244px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="7ZK4cmlgVLytsUEZFmOPVo" data-kind="shape" data-place="left:224px;top:352px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M19.04 16.8 C16.05 20.53 13.07 24.27 10.08 28 C13.07 31.73 16.05 35.47 19.04 39.2" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M36.96 16.8 C39.95 20.53 42.93 24.27 45.92 28 C42.93 31.73 39.95 35.47 36.96 39.2" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M31.36 15.68 C29.12 23.89 26.88 32.11 24.64 40.32" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      API gateway
+    </text>
+    <g class="fx-members" data-place="left:-224px;top:-352px;transform-origin:252px 380px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="186Rk54u1naDFYTa2I7jc1" data-kind="shape" data-place="left:224px;top:488px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M28 11.2 C33.23 13.81 38.45 16.43 43.68 19.04 C43.68 25.01 43.68 30.99 43.68 36.96 C38.45 39.57 33.23 42.19 28 44.8 C22.77 42.19 17.55 39.57 12.32 36.96 C12.32 30.99 12.32 25.01 12.32 19.04 C17.55 16.43 22.77 13.81 28 11.2 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M12.32 19.04 C17.55 21.65 22.77 24.27 28 26.88 C33.23 24.27 38.45 21.65 43.68 19.04" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M28 26.88 C28 32.85 28 38.83 28 44.8" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      Web app
+    </text>
+    <g class="fx-members" data-place="left:-224px;top:-488px;transform-origin:252px 516px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="53yHvS1O2kLxwPFkmjiTp6" data-kind="shape" data-place="left:176px;top:760px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M31.36 8.96 C26.51 16.05 21.65 23.15 16.8 30.24 C20.53 30.24 24.27 30.24 28 30.24 C26.88 35.84 25.76 41.44 24.64 47.04 C29.49 39.57 34.35 32.11 39.2 24.64 C35.47 24.64 31.73 24.64 28 24.64 C29.12 19.41 30.24 14.19 31.36 8.96 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      Thumbnailer
+    </text>
+    <g class="fx-members" data-place="left:-176px;top:-760px;transform-origin:204px 788px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="32Fq8fCFc64LoQ6K6VmqUv" data-kind="shape" data-place="left:176px;top:624px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M8.96 21.28 C12.32 21.28 15.68 21.28 19.04 21.28 C19.04 25.76 19.04 30.24 19.04 34.72 C15.68 34.72 12.32 34.72 8.96 34.72 C8.96 30.24 8.96 25.76 8.96 21.28 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M22.96 21.28 C26.32 21.28 29.68 21.28 33.04 21.28 C33.04 25.76 33.04 30.24 33.04 34.72 C29.68 34.72 26.32 34.72 22.96 34.72 C22.96 30.24 22.96 25.76 22.96 21.28 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M36.96 21.28 C40.32 21.28 43.68 21.28 47.04 21.28 C47.04 25.76 47.04 30.24 47.04 34.72 C43.68 34.72 40.32 34.72 36.96 34.72 C36.96 30.24 36.96 25.76 36.96 21.28 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      Jobs
+    </text>
+    <g class="fx-members" data-place="left:-176px;top:-624px;transform-origin:204px 652px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="2ipTukbNSNueiGTYrmcZ7U" data-kind="shape" data-place="left:368px;top:624px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M14 15.68 C14 23.89 14 32.11 14 40.32 C14 42.79 20.27 44.8 28 44.8 C35.73 44.8 42 42.79 42 40.32 C42 32.11 42 23.89 42 15.68" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M14 15.68 C14 13.21 20.27 11.2 28 11.2 C35.73 11.2 42 13.21 42 15.68 C42 18.15 35.73 20.16 28 20.16 C20.27 20.16 14 18.15 14 15.68 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M14 28 C14 30.47 20.27 32.48 28 32.48 C35.73 32.48 42 30.47 42 28" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      Orders
+    </text>
+    <g class="fx-members" data-place="left:-368px;top:-624px;transform-origin:396px 652px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="1FntojcF2kTfo641ReJ5fy" data-kind="shape" data-place="left:272px;top:624px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M11.2 36.96 C11.2 27.68 18.72 20.16 28 20.16 C37.28 20.16 44.8 27.68 44.8 36.96" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M28 36.96 C31.36 32.48 34.72 28 38.08 23.52" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      Sessions
+    </text>
+    <g class="fx-members" data-place="left:-272px;top:-624px;transform-origin:300px 652px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="55Ecy0XYyD50Vk9RDhiE1e" data-kind="shape" data-place="left:176px;top:896px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M12.32 16.8 C22.77 16.8 33.23 16.8 43.68 16.8 C42.19 26.13 40.69 35.47 39.2 44.8 C31.73 44.8 24.27 44.8 16.8 44.8 C15.31 35.47 13.81 26.13 12.32 16.8 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M12.32 16.8 C12.32 15.4 15.31 14.11 20.16 13.41 C25.01 12.71 30.99 12.71 35.84 13.41 C40.69 14.11 43.68 15.4 43.68 16.8 C43.68 18.2 40.69 19.5 35.84 20.2 C30.99 20.9 25.01 20.9 20.16 20.2 C15.31 19.5 12.32 18.2 12.32 16.8 Z" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      Uploads
+    </text>
+    <g class="fx-members" data-place="left:-176px;top:-896px;transform-origin:204px 924px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="2iQUDPYmnhcGsuiktuKPph" data-kind="shape" data-place="left:80px;top:624px;width:56px;height:56px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 56 56">
+      <path class="fx-outline" d="M6.72 0 L49.28 0 C52.99 0 56 3.01 56 6.72 L56 49.28 C56 52.99 52.99 56 49.28 56 L6.72 56 C3.01 56 0 52.99 0 49.28 L0 6.72 C0 3.01 3.01 0 6.72 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M11.2 11.2 C11.2 22.4 11.2 33.6 11.2 44.8 C22.77 44.8 34.35 44.8 45.92 44.8" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+      <path class="fx-decoration" d="M14.56 36.96 C17.55 33.23 20.53 29.49 23.52 25.76 C26.13 28 28.75 30.24 31.36 32.48 C35.47 27.25 39.57 22.03 43.68 16.8" style="fill:none;stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-label">
+      Logs
+    </text>
+    <g class="fx-members" data-place="left:-80px;top:-624px;transform-origin:108px 652px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="6QZDGcxwVj3in8Cmj3N9XT" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:228px;top:112px;width:48px;height:128px;opacity:1" viewBox="228 112 48 128">
+      <defs>
+        <marker id="fx-id-0-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M252 136 L252 209" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+  <g data-el-id="7m3r9oRFKRlhenqDQr9xYK" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:228px;top:248px;width:48px;height:128px;opacity:1" viewBox="228 248 48 128">
+      <defs>
+        <marker id="fx-id-1-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M252 272 L252 345" marker-end="url(#fx-id-1-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-connector-label" data-place="font-family:var(--fx-font-body);font-size:var(--fx-font-size-md);font-weight:400;font-style:normal;line-height:var(--fx-font-line-height-normal);color:var(--fx-color-text);text-align:center;justify-content:center;opacity:1;left:252px;top:312px">
+      HTTPS
+    </text>
+  </g>
+  <g data-el-id="5ehMKAYkkmpmH3PQLQkFhv" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:228px;top:384px;width:48px;height:128px;opacity:1" viewBox="228 384 48 128">
+      <defs>
+        <marker id="fx-id-2-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M252 408 L252 481" marker-end="url(#fx-id-2-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+  <g data-el-id="09CjI5LmcDtl2nFycPlIe4" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:254.72px;top:517.23px;width:138.57px;height:133.54px;opacity:1" viewBox="254.72 517.23 138.57 133.54">
+      <defs>
+        <marker id="fx-id-3-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M278.72 541.23 L364.2 621.96" marker-end="url(#fx-id-3-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-connector-label" data-place="font-family:var(--fx-font-body);font-size:var(--fx-font-size-md);font-weight:400;font-style:normal;line-height:var(--fx-font-line-height-normal);color:var(--fx-color-text);text-align:center;justify-content:center;opacity:1;left:324px;top:584px">
+      SQL
+    </text>
+  </g>
+  <g data-el-id="65DG7ESja85RdpUDWCwTeQ" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:237.88px;top:520px;width:76.24px;height:128px;opacity:1" viewBox="237.88 520 76.24 128">
+      <defs>
+        <marker id="fx-id-4-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M261.88 544 L287.79 617.4" marker-end="url(#fx-id-4-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+  <g data-el-id="1dVXp2hc8pRzABoe4sangc" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:189.88px;top:520px;width:76.24px;height:128px;opacity:1" viewBox="189.88 520 76.24 128">
+      <defs>
+        <marker id="fx-id-5-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M242.12 544 L216.21 617.4" marker-end="url(#fx-id-5-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <text class="fx-connector-label" data-place="font-family:var(--fx-font-body);font-size:var(--fx-font-size-md);font-weight:400;font-style:normal;line-height:var(--fx-font-line-height-normal);color:var(--fx-color-text);text-align:center;justify-content:center;opacity:1;left:228px;top:584px">
+      enqueue
+    </text>
+  </g>
+  <g data-el-id="1vXOi0d0J3yDqIpbVSbshQ" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:180px;top:656px;width:48px;height:128px;opacity:1" viewBox="180 656 48 128">
+      <defs>
+        <marker id="fx-id-6-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M204 680 L204 753" marker-end="url(#fx-id-6-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+  <g data-el-id="2qr0NWQ3q6oG8q8NG5ESVF" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:180px;top:792px;width:48px;height:128px;opacity:1" viewBox="180 792 48 128">
+      <defs>
+        <marker id="fx-id-7-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M204 816 L204 889" marker-end="url(#fx-id-7-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+  <g data-el-id="2h2TCgOmh1J0mKLX2xRZC3" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:110.72px;top:517.23px;width:138.57px;height:133.54px;opacity:1" viewBox="110.72 517.23 138.57 133.54">
+      <defs>
+        <marker id="fx-id-8-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M225.28 541.23 L139.81 621.96" marker-end="url(#fx-id-8-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:8 4">
+      </path>
+    </svg>
+  </g>
+</svg>

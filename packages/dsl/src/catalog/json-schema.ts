@@ -10,6 +10,13 @@ const entrySchema = z.strictObject({
 
 const list = z.array(entrySchema);
 
+const packSchema = z.strictObject({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  count: z.number().int().min(1),
+  kinds: z.array(z.string().min(1)).min(1),
+});
+
 const catalogSchema = z.strictObject({
   shapes: list,
   connectors: list,
@@ -19,6 +26,7 @@ const catalogSchema = z.strictObject({
   themes: list,
   effects: list,
   transitions: list,
+  packs: z.array(packSchema).optional(),
 });
 
 /**

@@ -30,9 +30,12 @@ export function canonical(value: unknown): string {
   return JSON.stringify(sort(value));
 }
 
+/** The packs the prompt's catalog lists entry by entry; the host's other packs (cloud) are one summary line each (ADR-0211). */
+const CORE_PACKS = ['core', 'basic', 'themes-core'];
+
 /** The standing instructions of every request: the cheat sheet and the catalog of this host's registries. */
 export function systemPrompt(): string {
-  return `${CHEAT_SHEET}\n${formatCatalog(buildCatalog(registries()).catalog, 'llm')}`;
+  return `${CHEAT_SHEET}\n${formatCatalog(buildCatalog(registries(), { core: CORE_PACKS }).catalog, 'llm')}`;
 }
 
 /** Hash of what shapes a reply besides the case: the rendered system prompt, the template id and the tokenizer id. */

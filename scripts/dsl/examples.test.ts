@@ -151,6 +151,13 @@ describe('examples/dsl/layered-flow.flux.yaml', () => {
   });
 });
 
+describe('examples/dsl/cloud-architecture.flux.yaml', () => {
+  it('FR-LIB-007: the example, its cloud shapes named through uses:, is drawn as its golden SVG, twice to the same bytes', async () => {
+    const svg = await matchesGolden('cloud-architecture');
+    expect(svg.length).toBeGreaterThan(0);
+  });
+});
+
 describe('examples/dsl/templates.flux.yaml', () => {
   it('FR-LAY-014: the example is drawn as its golden SVG, twice to the same bytes, with the shapes its templates build', async () => {
     const svg = await matchesGolden('templates');
