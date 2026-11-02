@@ -113,7 +113,7 @@ describe('<LibraryImportDialog> collections (FR-LIB-005, FR-LIB-006)', () => {
     // a credits file names member paths, which a library has none of
     expect([...(field('Rights') as HTMLSelectElement).options].map((o) => o.value)).toEqual(['original', 'upstream']);
     await click('Convert');
-    expect(refusals().map(([, m]) => m)).toEqual(['Choose the license of the SVGs.', 'Give the attribution.', "Give the author's name."]);
+    expect(refusals().map(([, m]) => m)).toEqual(['Choose the license of the library.', 'Give the attribution.', "Give the author's name."]);
     expect(f.convertCollection).not.toHaveBeenCalled();
     await declareOwnWork();
     await click('Convert');

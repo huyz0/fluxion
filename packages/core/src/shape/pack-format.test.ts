@@ -144,6 +144,10 @@ describe('the encoder and category names (ADR-0210)', () => {
     const { index, files } = encoded.value;
     expect(Object.values(index.categories).map(nameOf)).toEqual(['Arrows & Pointers', 'Café Icons', undefined]);
     expect(index).toMatchObject({ formatVersion: '1.2', fontResources: [], fontFaces: [], definitionFonts: [], fontCredits: [] });
+    // texts alike but for spacing or normalization slug apart, and only the first keeps the name (M18.211 r1 F1)
+    const alike = encodeShapePack(draft(['Arrows & Pointers', 'Arrows  & Pointers', 'Cafe\u0301 Icons', 'Café Icons']), policy);
+    if (!alike.ok) throw new Error(JSON.stringify(alike.error));
+    expect(Object.values(alike.value.index.categories).map(nameOf)).toEqual(['Arrows & Pointers', undefined, 'Café Icons', undefined]);
     // every category file is written in its index's version
     const text = (bytes: Uint8Array | undefined) => String.fromCharCode(...(bytes ?? []));
     for (const entry of Object.values(index.categories)) expect(JSON.parse(text(files.get(entry.path))).formatVersion).toBe('1.2');

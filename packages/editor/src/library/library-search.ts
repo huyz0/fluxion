@@ -1,8 +1,8 @@
 // The library's search index (FR-LIB-001, ADR-0021): lower-cased, accent-folded tokens of an entry's name, pack (id and
-// name), category and keywords, in a sorted array answered by binary search. A query of several words keeps the entries that
+// name), category (slug and display name) and keywords, in a sorted array answered by binary search. A query of several words keeps the entries that
 // satisfy every word; a word matches a token exactly (best), as its prefix, or, when nothing has it as a prefix, inside
 // it. Results rank by the sum of the words' matches, then by name. Pure; built once per set of packs.
-import type { ShapeDef } from '@fluxion/core';
+import { categoryTitle, type ShapeDef, type ShapePackNamedCategoryEntry } from '@fluxion/core';
 
 /**
  * What the library lists and searches: one shape definition's name, home and keywords.
@@ -18,8 +18,10 @@ export type LibraryEntry = {
   readonly pack: string;
   /** The pack's name as its index gives it, for the panel's heading; the id when absent. */
   readonly packName?: string | undefined;
-  /** Its category in the panel. */
+  /** Its category in the panel: a pack's category slug, or a registered definition's own category text. */
   readonly category: string;
+  /** The category's display name as its pack gives it (a pack 1.2 `name`, ADR-0210); else the panel titles `category`. */
+  readonly categoryName?: string | undefined;
   /** Words that find it. */
   readonly keywords: readonly string[];
 };
@@ -64,7 +66,7 @@ export function entryOf(def: ShapeDef): LibraryEntry {
 }
 
 /**
- * The entries of a pack index's definitions, with the names the index gives them and the pack's own name; nothing of their
+ * The entries of a pack index's definitions, with the names the index gives them, its category names (1.2) and the pack's own name; nothing of their
  * geometry is needed (FR-LIB-009).
  *
  * @public
@@ -72,10 +74,42 @@ export function entryOf(def: ShapeDef): LibraryEntry {
 export function entriesOfIndex(index: {
   readonly id: string;
   readonly name: string;
+  readonly categories?: Readonly<Record<string, ShapePackNamedCategoryEntry>> | undefined;
   readonly definitions: readonly { readonly id: string; readonly name: string; readonly category: string; readonly keywords: readonly string[] }[];
 }): LibraryEntry[] {
-  return index.definitions.map((d) => ({ id: d.id, name: d.name, pack: index.id, packName: index.name, category: d.category, keywords: d.keywords }));
+  return index.definitions.map((d) =>
+    withName(
+      { id: d.id, name: d.name, pack: index.id, packName: index.name, category: d.category, keywords: d.keywords },
+      index.categories?.[d.category]?.name,
+    ),
+  );
 }
+
+/**
+ * The entries of a saved pack subset's definitions (FR-LIB-009, M18.212): named from their ids as registered definitions are, under
+ * the subset's category names where it gives them. A subset carries no pack name, so its pack is headed by its id.
+ *
+ * @public
+ */
+export function entriesOfSubset(subset: {
+  readonly definitions: readonly ShapeDef[];
+  readonly categoryNames?: Readonly<Record<string, string>> | undefined;
+}): LibraryEntry[] {
+  return subset.definitions.map((def) => {
+    const entry = entryOf(def);
+    return withName(entry, subset.categoryNames?.[entry.category]);
+  });
+}
+
+/**
+ * The heading of an entry's category (M18.212): its pack's display name for it, else `categoryTitle` of its category, the rule
+ * the pack encoder keeps names by.
+ *
+ * @public
+ */
+export const categoryLabel = (entry: LibraryEntry): string => entry.categoryName ?? categoryTitle(entry.category);
+
+const withName = (entry: LibraryEntry, name: string | undefined): LibraryEntry => (name === undefined ? entry : { ...entry, categoryName: name });
 
 const compare = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
@@ -100,6 +134,7 @@ function tableOf(entries: readonly LibraryEntry[]): { readonly tokens: string[];
       ...tokensOf(e.pack),
       ...tokensOf(e.packName ?? ''),
       ...tokensOf(e.category),
+      ...tokensOf(e.categoryName ?? ''),
       ...e.keywords.flatMap(tokensOf),
     ])) {
       const list = byToken.get(t);

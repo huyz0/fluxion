@@ -131,12 +131,17 @@ function slugsOf(categories: readonly (string | undefined)[]): Map<string | unde
  */
 function namesOf(slugs: ReadonlyMap<string | undefined, string>): Map<string, string> {
   const names = new Map<string, string>();
+  const taken = new Set<string>();
   for (const [text, slug] of slugs) {
     const name = text?.normalize('NFC').replace(/\s+/g, ' ').trim();
     if (name === undefined || name.length > CATEGORY_NAME_MAX) continue;
     const own = slugOf(name);
     if (name === own || name === categoryTitle(own) || name === categoryTitle(slug)) continue;
-    if (categoryNameProblem(name) === undefined) names.set(slug, name);
+    // texts that differ only in spacing or normalization slug apart; the first keeps the name, so no two headings read alike
+    if (categoryNameProblem(name) === undefined && !taken.has(name)) {
+      names.set(slug, name);
+      taken.add(name);
+    }
   }
   return names;
 }

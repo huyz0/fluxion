@@ -53,7 +53,8 @@ lock), byte stability of first-party packs and goldens.
   golden is byte-identical. Texts that slug alike are already numbered, never merged (ADR-0196), so
   one slug never has two texts and the planned collision diagnostic has nothing to report; a
   numbered twin (`uncategorized` beside the default, `Charts Graphs` beside `Charts & Graphs`) keeps
-  no name. Over 80 characters, a text keeps no name rather than refusing the import (slugs are
+  no name. Texts that are alike only once folded (spacing, NFC) slug apart, and only the first keeps
+  the name (M18.212), so no two headings read alike. Over 80 characters, a text keeps no name rather than refusing the import (slugs are
   already cut at 60).
 - **One predicate.** `packHasFonts` / `isFontFormat` (core) answer "1.1 or 1.2" for every reader that
   keeps fonts: core registration, encode and font validation; format's lock (`parseLock`, the

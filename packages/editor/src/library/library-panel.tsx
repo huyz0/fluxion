@@ -15,7 +15,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { LibraryImportDialog } from './library-import-dialog.js';
 import type { LibraryImporter, LibraryImportInput } from './library-importer.js';
 import { LIBRARY_DRAG_TYPE } from './library-insert.js';
-import { buildLibraryIndex, entryOf, type LibraryEntry } from './library-search.js';
+import { buildLibraryIndex, categoryLabel, entryOf, type LibraryEntry } from './library-search.js';
 
 /**
  * Shape definitions a host offers before their geometry is loaded (FR-LIB-009, M18.32): the entries to list, by their pack
@@ -194,22 +194,28 @@ function Item(props: {
   );
 }
 
-/** The entries grouped by pack (in order of the packs' names), then category, each in name order. */
+/**
+ * The entries grouped by pack (in order of the packs' names), then category, each in name order; a category is headed by its
+ * pack's display name for it, else its title form (M18.212).
+ */
 function grouped(entries: readonly LibraryEntry[]): Array<{
   readonly pack: string;
   readonly name: string;
-  readonly categories: Array<{ readonly category: string; readonly items: LibraryEntry[] }>;
+  readonly categories: Array<{ readonly category: string; readonly label: string; readonly items: LibraryEntry[] }>;
 }> {
-  const packs = new Map<string, { name: string; cats: Map<string, LibraryEntry[]> }>();
+  const packs = new Map<string, { name: string; cats: Map<string, { label: string; items: LibraryEntry[] }> }>();
   for (const e of entries) {
-    const pack = packs.get(e.pack) ?? { name: e.pack, cats: new Map<string, LibraryEntry[]>() };
-    // any entry that knows the pack's index name names the pack
+    const pack = packs.get(e.pack) ?? { name: e.pack, cats: new Map<string, { label: string; items: LibraryEntry[] }>() };
+    // any entry that knows the pack's index name names the pack, and any that knows its category's name names the category
     if (e.packName !== undefined) pack.name = e.packName;
-    pack.cats.set(e.category, [...(pack.cats.get(e.category) ?? []), e]);
+    const cat = pack.cats.get(e.category) ?? { label: categoryLabel(e), items: [] };
+    if (e.categoryName !== undefined) cat.label = e.categoryName;
+    cat.items.push(e);
+    pack.cats.set(e.category, cat);
     packs.set(e.pack, pack);
   }
   return [...packs]
-    .map(([pack, { name, cats }]) => ({ pack, name, categories: [...cats].map(([category, items]) => ({ category, items })) }))
+    .map(([pack, { name, cats }]) => ({ pack, name, categories: [...cats].map(([category, { label, items }]) => ({ category, label, items })) }))
     .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
 }
 
@@ -285,8 +291,8 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
           <section key={p.pack} aria-label={t`Pack ${p.name}`} data-pack={p.pack}>
             {p.categories.map((c) => (
               <div key={c.category}>
-                <h3 className="fx-chrome-heading">{`${p.name} / ${c.category}`}</h3>
-                <ul className="fx-chrome-library-list" aria-label={`${p.name} ${c.category}`}>
+                <h3 className="fx-chrome-heading">{`${p.name} / ${c.label}`}</h3>
+                <ul className="fx-chrome-library-list" aria-label={`${p.name} ${c.label}`}>
                   {c.items.map(show)}
                 </ul>
               </div>

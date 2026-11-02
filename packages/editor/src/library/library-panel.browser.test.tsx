@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { LibraryPanel } from './library-panel.js';
+import { entriesOfIndex, entriesOfSubset } from './library-search.js';
 
 let host: HTMLElement;
 let root: Root;
@@ -118,7 +119,7 @@ describe('library panel (FR-LIB-001)', () => {
     await act(async () => root.render(<LibraryPanel shapeDefs={shapeDefs} catalog={catalog} onPick={(id) => picked.push(id)} />));
     expect(names()).toEqual(['basic:cylinder', 'basic:rect', 'devices:usb-drive', 'flow:decision']);
     // a pack's heading is its index name when an entry gives one
-    expect([...host.querySelectorAll('h3')].map((h) => h.textContent)).toEqual(['Basic shapes / Boxes', 'Devices / peripherals', 'flow / Flow']);
+    expect([...host.querySelectorAll('h3')].map((h) => h.textContent)).toEqual(['Basic shapes / Boxes', 'Devices / Peripherals', 'flow / Flow']);
     expect(host.querySelector('[data-def-id="basic:rect"]')?.textContent).toBe('Rectangle');
     // not loaded: an empty tile, but listed, searched and picked like the rest
     const usb = () => host.querySelector('[data-def-id="devices:usb-drive"]') as HTMLElement;
@@ -131,5 +132,43 @@ describe('library panel (FR-LIB-001)', () => {
     await act(async () => void shapeDefs.register('devices:usb-drive', def('devices:usb-drive', 'peripherals'), 'devices'));
     expect(usb().querySelector('svg path')).not.toBeNull();
     expect(names().filter((n) => n === 'devices:usb-drive')).toHaveLength(1);
+  });
+
+  it('FR-LIB-005, FR-LIB-009: a category is headed by its pack 1.2 name, else its slug title-cased, and found by either (M18.212)', async () => {
+    const shapeDefs = createRegistry<string, ShapeDef>('shapeDefs');
+    const defs = [def('icons:arrow', 'cursors'), def('plain:box', 'flow-charts'), def('saved:pointer', 'arrows-pointers')];
+    for (const d of defs) shapeDefs.register(d.id, d, 'test');
+    const index = (id: string, name: string, slug: string, categoryName?: string) => ({
+      id,
+      name,
+      categories: { [slug]: { path: `categories/${slug}.json`, sha256: '0'.repeat(64), ...(categoryName === undefined ? {} : { name: categoryName }) } },
+      definitions: [{ id: `${id}:${id === 'icons' ? 'arrow' : 'box'}`, name: id === 'icons' ? 'Arrow' : 'Box', category: slug, keywords: [] }],
+    });
+    const catalog = [
+      // a just-imported 1.2 pack, a 1.0 pack, and a subset reopened from a saved file (no pack name: its id heads it)
+      // the icons pack names its `cursors` category so that a word of the name is no word of the slug
+      ...entriesOfIndex(index('icons', 'My icons', 'cursors', 'Arrows & Pointers')),
+      ...entriesOfIndex(index('plain', 'Plain', 'flow-charts')),
+      ...entriesOfSubset({ definitions: [defs[2] as ShapeDef], categoryNames: { 'arrows-pointers': 'Arrows & Pointers' } }),
+    ];
+    await act(async () => root.render(<LibraryPanel shapeDefs={shapeDefs} catalog={catalog} />));
+    expect([...host.querySelectorAll('h3')].map((h) => h.textContent)).toEqual([
+      'My icons / Arrows & Pointers',
+      'Plain / Flow Charts',
+      'saved / Arrows & Pointers',
+    ]);
+    expect(host.querySelector('ul[aria-label="My icons Arrows & Pointers"]')).not.toBeNull();
+    const box = host.querySelector('input[type="search"]') as HTMLInputElement;
+    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set as (v: string) => void;
+    // 'pointers' is only in the icons pack's category name; 'cursors' only in its slug
+    for (const [query, found] of [
+      ['pointers', ['icons:arrow', 'saved:pointer']],
+      ['cursors', ['icons:arrow']],
+      ['arrows-pointers', ['icons:arrow', 'saved:pointer']],
+    ] as const) {
+      setValue.call(box, query);
+      await act(async () => box.dispatchEvent(new Event('input', { bubbles: true })));
+      expect(names(), query).toEqual(found);
+    }
   });
 });

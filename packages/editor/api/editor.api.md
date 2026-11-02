@@ -46,6 +46,7 @@ import { RenderRegistries } from '@fluxion/render';
 import { Result } from '@fluxion/schema';
 import { RouteContext } from '@fluxion/routing';
 import { ShapeDef } from '@fluxion/core';
+import { ShapePackNamedCategoryEntry } from '@fluxion/core';
 import { Store } from '@fluxion/core';
 import { SvgBatchReport } from '@fluxion/format';
 import { SvgImportFont } from '@fluxion/format';
@@ -192,6 +193,9 @@ export type CatalogEntry = {
     readonly family: string;
     readonly category: string;
 };
+
+// @public
+export const categoryLabel: (entry: LibraryEntry) => string;
 
 // @public
 export function chordOf(k: KeyPress): string;
@@ -498,12 +502,19 @@ export function endDrop(view: ReadView, shapeDefs: {
 export function entriesOfIndex(index: {
     readonly id: string;
     readonly name: string;
+    readonly categories?: Readonly<Record<string, ShapePackNamedCategoryEntry>> | undefined;
     readonly definitions: readonly {
         readonly id: string;
         readonly name: string;
         readonly category: string;
         readonly keywords: readonly string[];
     }[];
+}): LibraryEntry[];
+
+// @public
+export function entriesOfSubset(subset: {
+    readonly definitions: readonly ShapeDef[];
+    readonly categoryNames?: Readonly<Record<string, string>> | undefined;
 }): LibraryEntry[];
 
 // @public
@@ -844,6 +855,7 @@ export type LibraryEntry = {
     readonly pack: string;
     readonly packName?: string | undefined;
     readonly category: string;
+    readonly categoryName?: string | undefined;
     readonly keywords: readonly string[];
 };
 

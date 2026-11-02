@@ -71,7 +71,9 @@ describe('convertCollectionLibrary: Iconify', () => {
   }, 60_000);
 
   it('FR-LIB-005 NFR-LIC-003: a collection that declares no licence is refused, and so is one the content policy does not permit', async () => {
-    const none = await convertCollectionLibrary({ kind: 'iconify', item: item('iconify/original-aliases.json') }, optionsOf(host()));
+    // both are refused before any witness starts (M18.210 r1 F1, F3)
+    const h = host();
+    const none = await convertCollectionLibrary({ kind: 'iconify', item: item('iconify/original-aliases.json') }, optionsOf(h));
     expect(none.ok).toBe(false);
     expect(!none.ok && none.error.map((p) => p.message)).toEqual([expect.stringMatching(/declares no license; it cannot be saved portably/)]);
     const text = JSON.stringify({
@@ -81,9 +83,10 @@ describe('convertCollectionLibrary: Iconify', () => {
     const bytes = new TextEncoder().encode(text);
     const closed = await convertCollectionLibrary(
       { kind: 'iconify', item: { name: 'closed.json', size: bytes.length, bytes: async () => bytes } },
-      optionsOf(host()),
+      optionsOf(h),
     );
-    expect(closed.ok).toBe(false);
+    expect(!closed.ok && closed.error.map((p) => p.message)).toEqual(['the content license policy does not permit LicenseRef-Closed']);
+    expect(h.startWitness).not.toHaveBeenCalled();
   });
 });
 

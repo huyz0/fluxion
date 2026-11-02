@@ -178,7 +178,16 @@ export { LibraryImportDialog, type LibraryImportDialogProps } from './library/li
 export type { LibraryImporter, LibraryImportInput, LibraryImportRequest } from './library/library-importer.js';
 export { type LibraryCatalog, LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { type ReplaceDeps, replaceableShape, replaceSelectedShape } from './library/library-replace.js';
-export { buildLibraryIndex, entriesOfIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';
+export {
+  buildLibraryIndex,
+  categoryLabel,
+  entriesOfIndex,
+  entriesOfSubset,
+  entryOf,
+  type LibraryEntry,
+  type LibraryIndex,
+  tokensOf,
+} from './library/library-search.js';
 export {
   createMyShapes,
   exportMyShapes,

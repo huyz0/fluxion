@@ -1824,5 +1824,11 @@
     "origin": [
       "packages/editor/src/layout-picker-section.tsx"
     ]
+  },
+  "z_dD07": {
+    "message": "Choose the license of the library.",
+    "origin": [
+      "packages/editor/src/library/library-import-form.ts"
+    ]
   }
 }

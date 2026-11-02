@@ -43,9 +43,13 @@ export function initialForm(input: LibraryImportInput): LibraryImportForm {
 
 const blank = (value: string) => value.trim() === '';
 
+/** What a declaration covers: picked SVG files, or one draw.io library (M18.210 r1 F2). */
+export type DeclaredSubject = 'svgs' | 'library';
+
 /** The rights the one-credit forms declare, or what is missing. */
-function oneCredit(form: LibraryImportForm): SvgLibraryRights | string[] {
-  const missing = [...(blank(form.license) ? [t`Choose the license of the SVGs.`] : []), ...(blank(form.attribution) ? [t`Give the attribution.`] : [])];
+function oneCredit(form: LibraryImportForm, subject: DeclaredSubject): SvgLibraryRights | string[] {
+  const license = subject === 'library' ? t`Choose the license of the library.` : t`Choose the license of the SVGs.`;
+  const missing = [...(blank(form.license) ? [license] : []), ...(blank(form.attribution) ? [t`Give the attribution.`] : [])];
   if (form.kind === 'original') {
     if (blank(form.author)) missing.push(t`Give the author's name.`);
     return missing.length ? missing : { kind: 'original', license: form.license, attribution: form.attribution, author: form.author };
@@ -58,8 +62,8 @@ function oneCredit(form: LibraryImportForm): SvgLibraryRights | string[] {
 }
 
 /** The declared rights, or every reason the declaration is not complete. */
-function rightsOf(form: LibraryImportForm): SvgLibraryRights | string[] {
-  if (form.kind !== 'credits') return oneCredit(form);
+function rightsOf(form: LibraryImportForm, subject: DeclaredSubject): SvgLibraryRights | string[] {
+  if (form.kind !== 'credits') return oneCredit(form, subject);
   if (form.creditsText === undefined) return [t`Choose a credits file.`];
   let json: unknown;
   try {
@@ -72,13 +76,13 @@ function rightsOf(form: LibraryImportForm): SvgLibraryRights | string[] {
 }
 
 /** The request the form declares, or every problem with it; nothing is converted while there is one. */
-export function requestOf(form: LibraryImportForm): LibraryImportRequest | string[] {
+export function requestOf(form: LibraryImportForm, subject: DeclaredSubject = 'svgs'): LibraryImportRequest | string[] {
   const identity = [
     ...(blank(form.namespace) ? [t`Give the namespace.`] : []),
     ...(blank(form.version) ? [t`Give the version.`] : []),
     ...(blank(form.name) ? [t`Give the name.`] : []),
   ];
-  const rights = rightsOf(form);
+  const rights = rightsOf(form, subject);
   const problems = [...identity, ...(Array.isArray(rights) ? rights : [])];
   if (problems.length || Array.isArray(rights)) return problems;
   return { namespace: form.namespace.trim(), version: form.version.trim(), name: form.name.trim(), rights };

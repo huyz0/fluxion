@@ -27,7 +27,7 @@ import { localSettings } from './local-settings.js';
 import { fluxionFileOf, type LaunchHandle, MAX_OPEN_BYTES, pickedFromLaunch, pickedFromUrl, srcOf } from './open-sources.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { registerOpenedFonts } from './opened-fonts.js';
-import type { DocumentCatalog } from './pack-catalog.js';
+import { type DocumentCatalog, withPackEntries } from './pack-catalog.js';
 import { CreditsButton } from './pack-credits.js';
 import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
@@ -180,6 +180,9 @@ function ProtectedEditor(props: {
   const shapePackSources = useSyncExternalStore(imports.subscribe, imports.sources);
   // what a save embeds, read when it is needed: the imported libraries' sources, then the first-party definitions loaded
   const saveSources = () => [...shapePackSources, ...(catalog?.sources() ?? [])];
+  // the library lists the imported and saved packs by their own pack and category names (M18.212)
+  const saved = entry?.file.shapePacks ?? noSavedPacks;
+  const library = useMemo(() => withPackEntries(catalog, shapePackSources, saved), [catalog, shapePackSources, saved]);
   return (
     <>
       <EditorRoot
@@ -195,7 +198,7 @@ function ProtectedEditor(props: {
         fonts={fonts}
         arrange={arrange}
         libraryImporter={imports.importer}
-        {...(catalog === undefined ? {} : { catalog })}
+        {...(library === undefined ? {} : { catalog: library })}
         toolbar={
           <>
             <FileBar

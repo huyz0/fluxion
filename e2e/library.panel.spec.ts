@@ -13,7 +13,7 @@ test.describe('library panel', { tag: '@desktop' }, () => {
     // the basic pack, by the name its index gives, under its category heading, with a thumbnail and a name for each shape
     const items = left.locator('.fx-chrome-library-item');
     await expect(left.getByRole('region', { name: 'Pack Basic shapes' })).toBeVisible();
-    await expect(left.getByRole('heading', { name: 'Basic shapes / basic' })).toBeVisible();
+    await expect(left.getByRole('heading', { name: 'Basic shapes / Basic' })).toBeVisible();
     expect(await items.count()).toBeGreaterThanOrEqual(15);
     await expect(left.getByRole('region', { name: 'Pack Basic shapes' }).locator('.fx-chrome-library-item').first().locator('svg path')).toHaveCount(1);
     await expect(left.locator('[data-def-id="basic:cylinder"]')).toContainText('Cylinder');

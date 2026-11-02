@@ -2,7 +2,8 @@
 // collection (a subset of it: the full 2198 icons are converted in import-collection.test.ts, a four-minute witness per browser
 // here) and the original draw.io library into packs that register, a save of a document using one of their shapes reopens
 // offline drawing it and crediting it, and a collection without a licence, a library without its credit or a held namespace
-// registers nothing and says why.
+// registers nothing and says why. A collection's category heads its shapes by the name it gives, before the save and after the
+// reopen (M18.212).
 import { readFileSync } from 'node:fs';
 import type { Locator, Page } from '@playwright/test';
 import { EditorPage } from './pages/editor.js';
@@ -123,10 +124,10 @@ test.describe('library Iconify and draw.io import', { tag: '@desktop' }, () => {
     await dialog.getByLabel('Name', { exact: true }).fill('Mixed');
     // a credit missing its parts is refused before anything converts
     await dialog.getByRole('button', { name: 'Convert', exact: true }).click();
-    await expect(dialog.getByRole('alert')).toContainText('Choose the license of the SVGs.');
+    await expect(dialog.getByRole('alert')).toContainText('Choose the license of the library.');
     await declareOwnWork(dialog);
     await convertAndImport(dialog, /^\d+ shapes? (is|are) ready$/, 120_000);
-    const pack = library.getByRole('region', { name: 'Pack original-mixed' });
+    const pack = library.getByRole('region', { name: 'Pack Mixed' });
     await pack.locator('.fx-chrome-library-item button').first().click();
     await expect(editor.screens.first().locator('.fx-artwork')).toHaveCount(1);
 
@@ -145,6 +146,29 @@ test.describe('library Iconify and draw.io import', { tag: '@desktop' }, () => {
     await expect(again.screens.first().locator('.fx-artwork path').first()).toHaveAttribute('d', /\S/);
     const list = await credits(again);
     await expect(list.getByRole('region', { name: 'Mixed' })).toContainText('Fluxion contributors. Licence: MIT');
+  });
+
+  test('FR-LIB-005 FR-LIB-009: a category is headed by the name its collection gives, before the save and after the reopen', async ({ page }) => {
+    test.setTimeout(120_000);
+    const { editor, library } = await libraryOf(page);
+    const dialog = await pick(library, ICONIFY, {
+      name: 'category-names.json',
+      mimeType: 'application/json',
+      buffer: readFileSync('fixtures/iconify/category-names.json'),
+    });
+    await convertAndImport(dialog, /^2 shapes are ready$/, 60_000);
+    // the name, not the slug's title form 'Arrows Pointers'
+    await expect(library.getByRole('heading', { name: 'Fluxion arrows / Arrows & Pointers', exact: true })).toBeVisible();
+    await library.getByRole('searchbox', { name: 'Search the library' }).fill('pointers');
+    await expect(library.locator('[data-def-id^="fluxion-arrows:"]')).toHaveCount(2);
+    await library.locator('[data-def-id="fluxion-arrows:pointer"] button').click();
+    await expect(editor.screens.first().locator('.fx-artwork')).toHaveCount(1);
+
+    // a saved subset carries its category names but no pack name, so its namespace heads it
+    const again = await saveAndReopenOffline(page);
+    const reopened = again.panel('Screens, library and layers');
+    await reopened.getByRole('tab', { name: 'Library', exact: true }).click();
+    await expect(reopened.getByRole('heading', { name: 'fluxion-arrows / Arrows & Pointers', exact: true })).toBeVisible();
   });
 
   test('FR-LIB-005 NFR-LIC-003: a collection that declares no licence is refused, and nothing is registered', async ({ page }) => {

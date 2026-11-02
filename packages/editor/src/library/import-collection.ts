@@ -99,8 +99,34 @@ function omittedOf(report: IconifyImportReport | DrawioImportReport): SvgMemberP
   );
 }
 
+/** The few fields of an Iconify document the licence check reads. */
+type Declared = { readonly [K in 'prefix' | 'info' | 'license' | 'spdx']?: unknown };
+const isRecord = (v: unknown): v is Declared => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/**
+ * Why the licence an Iconify collection declares (`info.license.spdx`) cannot be saved portably, read before any witness starts so
+ * a refused licence costs no conversion (M18.210 r1 F1); undefined when it can, or when the text is no collection (its importer
+ * says why).
+ */
+function licenceProblem(text: string): SvgMemberProblem | undefined {
+  let doc: unknown;
+  try {
+    doc = JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+  if (!isRecord(doc)) return undefined;
+  const info = isRecord(doc.info) ? doc.info : {};
+  const license = isRecord(info.license) ? info.license.spdx : undefined;
+  const prefix = typeof doc.prefix === 'string' ? doc.prefix : '';
+  if (typeof license !== 'string') return whole(`collection ${prefix} declares no license; it cannot be saved portably`);
+  return allowsShapePackContentLicense(license) ? undefined : whole(`the content license policy does not permit ${license}`);
+}
+
 /** An Iconify collection as a pack, credited from its own declared name, author and SPDX licence (`iconifyShapePack`). */
 async function iconify(text: string, options: CollectionLibraryOptions): Promise<Result<CollectionLibraryConversion, readonly SvgMemberProblem[]>> {
+  const refused = licenceProblem(text);
+  if (refused !== undefined) return err([refused]);
   const report = await witnessed(options, (witness) => importIconifyCollection(text, { witness, ...facesOf(options) }));
   if (!report.ok) return report;
   if (report.value.status === 'failed') return err(omittedOf(report.value));
@@ -142,7 +168,8 @@ async function drawio(text: string, options: CollectionLibraryOptions): Promise<
 
 /**
  * Convert one picked Iconify collection or draw.io library into a checked pack, registering nothing; or every refusal, each by its
- * path ('' for the whole file). The file's size is checked before it is read; for draw.io, the rights and the licence policy before
+ * path ('' for the whole file). The file's size is checked before it is read; its declared licence (Iconify) or its declared rights and
+ * the licence policy (draw.io) before
  * any witness starts. Entries a converter refuses are left out and listed in `omitted`.
  * @public
  */

@@ -197,7 +197,7 @@ function converting({ importer, input, form }: Steps): Promise<Result<Conversion
   }
   if (importer.convertCollection === undefined) return [t`This host cannot import a collection.`];
   if (input.kind === 'iconify') return importer.convertCollection(input, undefined);
-  const request = requestOf(form);
+  const request = requestOf(form, 'library');
   if (Array.isArray(request)) return request;
   if (request.rights.kind === 'credits') return [t`Declare one credit for the library.`]; // kind-switch-allow: declared rights, a closed union
   const { namespace, version, name, rights } = request;

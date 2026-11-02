@@ -3,8 +3,8 @@
 // category is fetched, hash-checked and registered only when it is picked, dropped or already used by the open document.
 // What a document loaded is what its save embeds (`sources`). A namespace the opened file brought its own saved geometry
 // for is left to that geometry: installed and saved versions never mix (ADR-0183).
-import { allowsShapePackContentLicense, type Hasher, type Registry, type ShapeDef } from '@fluxion/core';
-import { entriesOfIndex, type LibraryCatalog, type LibraryEntry } from '@fluxion/editor';
+import { allowsShapePackContentLicense, type Hasher, type Registry, type ShapeDef, type VersionedShapePackSubset } from '@fluxion/core';
+import { entriesOfIndex, entriesOfSubset, type LibraryCatalog, type LibraryEntry } from '@fluxion/editor';
 import type { ShapePackSourceData } from '@fluxion/format';
 import { createShapePackLoader, type ShapePackLoader } from '@fluxion/sdk';
 
@@ -158,4 +158,26 @@ export function bundledPackCatalog(hasher: Hasher): Promise<PackCatalog> {
 /** Every shape definition id the records use. */
 export function usedDefIds(records: Readonly<Record<string, { readonly type?: unknown; readonly kind?: unknown; readonly defId?: unknown }>>): string[] {
   return Object.values(records).flatMap((r) => (r.type === 'element' && r.kind === 'shape' && typeof r.defId === 'string' ? [r.defId] : []));
+}
+
+/** Nothing to load: every entry {@link withPackEntries} adds is registered already. */
+const noneToLoad = async (): Promise<boolean> => false;
+
+/**
+ * `catalog` with the entries of the packs this document registered itself (M18.212): the imported libraries' `sources` and the
+ * subsets the opened file `saved`, so the library heads them by their pack and category names (a saved subset has no pack name,
+ * so its id heads it). The catalog itself when there are none.
+ */
+export function withPackEntries(
+  catalog: LibraryCatalog | undefined,
+  sources: readonly ShapePackSourceData[],
+  saved: readonly VersionedShapePackSubset[],
+): LibraryCatalog | undefined {
+  const entries = [
+    // kind-switch-allow: a source is a distribution or a saved subset, a closed union
+    ...sources.flatMap((s) => (s.kind === 'distribution' ? entriesOfIndex(s.index) : entriesOfSubset(s.subset))),
+    ...saved.flatMap((s) => entriesOfSubset(s)),
+  ];
+  if (entries.length === 0) return catalog;
+  return { entries: [...(catalog?.entries ?? []), ...entries], ensure: catalog?.ensure ?? noneToLoad };
 }
