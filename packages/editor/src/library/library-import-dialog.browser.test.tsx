@@ -1,6 +1,7 @@
 // FR-LIB-004 NFR-LIC-003: the library's Import SVG dialog (M18.176) with a fake importer, through every state: idle, a declaration
 // refused before converting, converting, refused by member path, converted with colors and token selects, importing (re-converted
-// only when a color is mapped) and imported, the final pack alone registered.
+// only when a color is mapped) and imported, the final pack alone registered. The collection states are in
+// library-import-collection.browser.test.tsx.
 
 import { createRegistry, type ShapeDef } from '@fluxion/core';
 import type { ImportedPack } from '@fluxion/format';
@@ -8,6 +9,7 @@ import { err, ok, type TokenRef } from '@fluxion/schema';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CollectionLibraryInput } from './import-collection.js';
 import type { SvgLibraryConversion } from './import-svg.js';
 import type { SvgLibraryInput } from './import-svg-input.js';
 import { LibraryImportDialog } from './library-import-dialog.js';
@@ -41,9 +43,12 @@ function fake() {
   const later = <T,>() => new Promise<T>((resolve) => pending.push({ resolve: resolve as (value: unknown) => void }));
   const convert = vi.fn((_input: SvgLibraryInput, _request: LibraryImportRequest) => later<Awaited<ReturnType<LibraryImporter['convert']>>>());
   const register = vi.fn((_pack: ImportedPack) => later<Awaited<ReturnType<LibraryImporter['register']>>>());
-  const importer: LibraryImporter = { convert, register, colorTokens: ['{color.accent}', '{color.text}'] as TokenRef[] };
+  const convertCollection = vi.fn((_input: CollectionLibraryInput, _declared: unknown) =>
+    later<Awaited<ReturnType<NonNullable<LibraryImporter['convertCollection']>>>>(),
+  );
+  const importer: LibraryImporter = { convert, convertCollection, register, colorTokens: ['{color.accent}', '{color.text}'] as TokenRef[] };
   const settle = (value: unknown) => act(async () => pending.shift()?.resolve(value));
-  return { importer, convert, register, settle };
+  return { importer, convert, convertCollection, register, settle };
 }
 
 const field = (label: string) =>

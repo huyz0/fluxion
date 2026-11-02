@@ -1,6 +1,7 @@
 // FR-LIB-004 FR-LIB-009: the studio's SVG library importer (M18.17) converts through the shipped renderer's witness over this page with
 // fonts-core's Inter, registers the final pack into the open document with its exact face, keeps its source for the save, and releases
-// both on dispose.
+// both on dispose. FR-LIB-005 FR-LIB-006 (M18.210): an Iconify collection and a draw.io library convert through the same witness and
+// fonts and register the same way, their sources kept for the save.
 import { artworkFontAlias } from '@fluxion/core';
 import { seededRandom } from '@fluxion/schema';
 import { describe, expect, it, vi } from 'vitest';
@@ -17,6 +18,10 @@ const badge =
   Object.values(import.meta.glob('../../../specs/import/corpus/svg/original-label-badge.svg', { query: '?raw', import: 'default', eager: true }))[0] ?? '';
 const donut =
   Object.values(import.meta.glob('../../../specs/import/corpus/svg/original-donut.svg', { query: '?raw', import: 'default', eager: true }))[0] ?? '';
+const aliases =
+  Object.values(import.meta.glob('../../../specs/import/corpus/iconify/original-aliases.json', { query: '?raw', import: 'default', eager: true }))[0] ?? '';
+const mixed =
+  Object.values(import.meta.glob('../../../specs/import/corpus/drawio/original-mixed.xml', { query: '?raw', import: 'default', eager: true }))[0] ?? '';
 const item = (name: string, text: string) => {
   const bytes = new TextEncoder().encode(text);
   return { name, size: bytes.byteLength, bytes: async () => bytes };
@@ -96,5 +101,34 @@ describe('studioLibraryImports (FR-LIB-004)', () => {
     expect((await imports.importer.register(converted.value.pack)).ok).toBe(true);
     expect(doc.core.registries.shapeDefs.get('mine:label-badge')).toBeDefined();
     imports.dispose();
+  });
+
+  it('FR-LIB-005 FR-LIB-009: an Iconify collection with its own licence converts, registers and keeps its source for the save', async () => {
+    const doc = opened();
+    const imports = studioLibraryImports(doc, { document, fetch: (...args) => fetch(...args), now: () => Date.now() });
+    const licensed = JSON.stringify({ ...JSON.parse(aliases), info: { name: 'Corpus', author: { name: 'Fluxion' }, license: { spdx: 'MIT' } } });
+    const converted = await imports.importer.convertCollection?.({ kind: 'iconify', item: item('corpus.json', licensed) }, undefined);
+    if (!converted?.ok) throw new Error(JSON.stringify(converted?.error));
+    expect(converted.value.pack.index).toMatchObject({ id: 'fluxion-corpus', name: 'Corpus', license: 'MIT' });
+    expect(converted.value.pack.source.definitions.map((d) => d.id)).toContain('fluxion-corpus:mirrored');
+    expect((await imports.importer.register(converted.value.pack)).ok).toBe(true);
+    expect(doc.core.registries.shapeDefs.get('fluxion-corpus:mirrored')).toBeDefined();
+    expect(imports.sources()).toEqual([converted.value.pack.source]);
+    imports.dispose();
+  });
+
+  it('FR-LIB-006 FR-LIB-009: a draw.io library converts under its declared credit, registers and keeps its source for the save', async () => {
+    const doc = opened();
+    const imports = studioLibraryImports(doc, { document, fetch: (...args) => fetch(...args), now: () => Date.now() });
+    const converted = await imports.importer.convertCollection?.({ kind: 'drawio', item: item('mixed.xml', mixed) }, { ...request, namespace: 'mixed' });
+    if (!converted?.ok) throw new Error(JSON.stringify(converted?.error));
+    expect(converted.value.pack.index).toMatchObject({ id: 'mixed', license: 'MIT', attribution: 'Me' });
+    const ids = converted.value.pack.source.definitions.map((d) => d.id);
+    expect(ids.length).toBeGreaterThan(0);
+    expect((await imports.importer.register(converted.value.pack)).ok).toBe(true);
+    expect(ids.every((id) => doc.core.registries.shapeDefs.get(id) !== undefined)).toBe(true);
+    expect(imports.sources()).toEqual([converted.value.pack.source]);
+    imports.dispose();
+    expect(ids.some((id) => doc.core.registries.shapeDefs.get(id) !== undefined)).toBe(false);
   });
 });

@@ -1,32 +1,39 @@
-// The library's Import SVG dialog (FR-LIB-004, NFR-LIC-003, M18.176): the person declares the pack and its rights, converts once,
-// sees each refusal by member path or the accepted count and the colors found, maps any color to a theme token, and imports. A
-// mapped color re-converts first, so the witness sees the mapped paint; only the final pack is registered, never the first.
+// The library's import dialog (FR-LIB-004/005/006, NFR-LIC-003, M18.176, M18.210): for SVG files or a ZIP the person declares the
+// pack and its rights, converts once, sees each refusal by member path or the accepted count and the colors found, maps any color to
+// a theme token, and imports. A mapped color re-converts first, so the witness sees the mapped paint; only the final pack is
+// registered, never the first. An Iconify collection declares nothing (its own licence credits it); a draw.io library declares the
+// pack and one credit (a credits file names member paths, which a library has none of). A collection's refused entries are listed
+// by name beside the ready count; its colors are kept as written.
 import { shapePackContentLicenses } from '@fluxion/core';
-import type { TokenRef } from '@fluxion/schema';
+import type { SvgMemberProblem } from '@fluxion/format';
+import type { Result, TokenRef } from '@fluxion/schema';
 import { plural, t } from '@lingui/core/macro';
 import '../i18n.js';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { dialogKey } from '../dialog-keys.js';
+import type { CollectionLibraryConversion } from './import-collection.js';
 import type { SvgLibraryConversion } from './import-svg.js';
-import type { SvgLibraryInput } from './import-svg-input.js';
 import { initialForm, type LibraryImportForm, type RightsKind, requestOf } from './library-import-form.js';
-import type { LibraryImporter } from './library-importer.js';
+import type { LibraryImporter, LibraryImportInput } from './library-importer.js';
 
 /** Props of {@link LibraryImportDialog}. @public */
 export type LibraryImportDialogProps = {
   /** The host's importer. */
   readonly importer: LibraryImporter;
-  /** What the person picked. */
-  readonly input: SvgLibraryInput;
+  /** What the person picked: SVG files or a ZIP, or one Iconify collection or draw.io library (then the importer's `convertCollection` converts it). */
+  readonly input: LibraryImportInput;
   /** Close the dialog. */
   readonly onClose: () => void;
 };
+
+/** A picked input's conversion: SVG files' (with their colors) or a collection's (with its omitted entries). */
+type Conversion = SvgLibraryConversion | CollectionLibraryConversion;
 
 type Phase =
   | { readonly step: 'idle' }
   | { readonly step: 'converting' }
   | { readonly step: 'refused'; readonly problems: readonly { readonly path: string; readonly message: string }[] }
-  | { readonly step: 'converted'; readonly conversion: SvgLibraryConversion }
+  | { readonly step: 'converted'; readonly conversion: Conversion }
   | { readonly step: 'importing' }
   | { readonly step: 'imported'; readonly count: number };
 
@@ -128,6 +135,24 @@ function Colors(props: {
   );
 }
 
+/** A collection's entries left out of the pack, each by its name in the source. */
+function Omitted(props: { readonly conversion: CollectionLibraryConversion }): ReactNode {
+  const { omitted } = props.conversion;
+  if (omitted.length === 0) return null;
+  return (
+    <details className="fx-chrome-import-omitted">
+      <summary>{plural(omitted.length, { one: '# entry is left out', other: '# entries are left out' })}</summary>
+      <ul>
+        {omitted.map((p) => (
+          <li key={`${p.path}\u0000${p.message}`} data-path={p.path}>
+            {p.path === '' ? p.message : `${p.path}: ${p.message}`}
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
 /** What the dialog shows below the form for `phase`. */
 function Outcome(props: { readonly phase: Phase; readonly colors: ReactNode }): ReactNode {
   const { phase } = props;
@@ -148,7 +173,7 @@ function Outcome(props: { readonly phase: Phase; readonly colors: ReactNode }): 
   return (
     <>
       <p aria-live="polite">{plural(phase.conversion.pack.source.definitions.length, { one: '# shape is ready', other: '# shapes are ready' })}</p>
-      {props.colors}
+      {'omitted' in phase.conversion ? <Omitted conversion={phase.conversion} /> : props.colors}
     </>
   );
 }
@@ -156,7 +181,7 @@ function Outcome(props: { readonly phase: Phase; readonly colors: ReactNode }): 
 /** What the dialog's steps act on. */
 type Steps = {
   readonly importer: LibraryImporter;
-  readonly input: SvgLibraryInput;
+  readonly input: LibraryImportInput;
   readonly form: LibraryImportForm;
   readonly mapped: Readonly<Record<string, TokenRef>>;
   readonly setPhase: (phase: Phase) => void;
@@ -164,20 +189,36 @@ type Steps = {
 
 const declarationRefused = (problems: readonly string[]): Phase => ({ step: 'refused', problems: problems.map((message) => ({ path: '', message })) });
 
-/** Convert once under the declaration; an incomplete declaration is refused before anything is converted. */
-async function convertStep({ importer, input, form, setPhase }: Steps): Promise<void> {
+/** The conversion of `input` under the form: an Iconify collection declares nothing, the rest the form's declaration. */
+function converting({ importer, input, form }: Steps): Promise<Result<Conversion, readonly SvgMemberProblem[]>> | string[] {
+  if (!('item' in input)) {
+    const request = requestOf(form);
+    return Array.isArray(request) ? request : importer.convert(input, request);
+  }
+  if (importer.convertCollection === undefined) return [t`This host cannot import a collection.`];
+  if (input.kind === 'iconify') return importer.convertCollection(input, undefined);
   const request = requestOf(form);
-  if (Array.isArray(request)) return setPhase(declarationRefused(request));
-  setPhase({ step: 'converting' });
-  const done = await importer.convert(input, request);
-  setPhase(done.ok ? { step: 'converted', conversion: done.value } : { step: 'refused', problems: done.error });
+  if (Array.isArray(request)) return request;
+  if (request.rights.kind === 'credits') return [t`Declare one credit for the library.`]; // kind-switch-allow: declared rights, a closed union
+  const { namespace, version, name, rights } = request;
+  return importer.convertCollection(input, { namespace, version, name, rights });
+}
+
+/** Convert once under the declaration; an incomplete declaration is refused before anything is converted. */
+async function convertStep(steps: Steps): Promise<void> {
+  const pending = converting(steps);
+  if (Array.isArray(pending)) return steps.setPhase(declarationRefused(pending));
+  steps.setPhase({ step: 'converting' });
+  const done = await pending;
+  steps.setPhase(done.ok ? { step: 'converted', conversion: done.value } : { step: 'refused', problems: done.error });
 }
 
 /** Register the final pack: re-converted first when a color is mapped, so the witness sees the mapped paint. */
-async function importStep({ importer, input, form, mapped, setPhase }: Steps, conversion: SvgLibraryConversion): Promise<void> {
+async function importStep({ importer, input, form, mapped, setPhase }: Steps, conversion: Conversion): Promise<void> {
   setPhase({ step: 'importing' });
   let final = conversion;
-  if (Object.keys(mapped).length) {
+  // a collection's colors are kept as written: only SVG files offer the mapping
+  if (Object.keys(mapped).length && !('item' in input)) {
     // the first pack is discarded, never registered
     const request = requestOf(form);
     if (Array.isArray(request)) return setPhase(declarationRefused(request));
@@ -193,8 +234,45 @@ async function importStep({ importer, input, form, mapped, setPhase }: Steps, co
   );
 }
 
+/** The dialog's title for each kind of picked input (read when shown, in the active language). */
+const TITLES: Readonly<Record<LibraryImportInput['kind'], () => string>> = {
+  files: () => t`Import SVG`,
+  zip: () => t`Import SVG`,
+  iconify: () => t`Import Iconify collection`,
+  drawio: () => t`Import draw.io library`,
+};
+const titleOf = (input: LibraryImportInput): string => TITLES[input.kind]();
+
+/** The pack identity and rights fields: none for an Iconify collection, one credit for a draw.io library. */
+function Declaration(props: {
+  readonly input: LibraryImportInput;
+  readonly form: LibraryImportForm;
+  readonly busy: boolean;
+  readonly set: (patch: Partial<LibraryImportForm>) => void;
+}): ReactNode {
+  const { input, form, busy, set } = props;
+  if (input.kind === 'iconify') return <p>{t`The collection's own license and author credit it.`}</p>;
+  return (
+    // the declaration is fixed while a convert or import runs, so what finishes is always what the dialog shows
+    <fieldset className="fx-chrome-import-declaration" disabled={busy}>
+      <Field label={t`Namespace`} value={form.namespace} onChange={(namespace) => set({ namespace })} />
+      <Field label={t`Version`} value={form.version} onChange={(version) => set({ version })} />
+      <Field label={t`Name`} value={form.name} onChange={(name) => set({ name })} />
+      <label className="fx-chrome-formrow">
+        {t`Rights`}
+        <select value={form.kind} onChange={(e) => set({ kind: e.target.value as RightsKind })}>
+          <option value="original">{t`My own work`}</option>
+          <option value="upstream">{t`From a source`}</option>
+          {input.kind === 'drawio' ? null : <option value="credits">{t`Credits file…`}</option>}
+        </select>
+      </label>
+      <Rights form={form} set={set} />
+    </fieldset>
+  );
+}
+
 /**
- * The dialog that imports picked SVG files or a ZIP into the library.
+ * The dialog that imports picked SVG files or a ZIP, or one Iconify collection or draw.io library, into the library.
  *
  * @public
  */
@@ -216,7 +294,7 @@ export function LibraryImportDialog(props: LibraryImportDialogProps): ReactNode 
   const ctx: Steps = { importer, input, form, mapped, setPhase };
   const busy = phase.step === 'converting' || phase.step === 'importing';
   const colors =
-    phase.step === 'converted' ? (
+    phase.step === 'converted' && 'colors' in phase.conversion ? (
       <Colors
         conversion={phase.conversion}
         tokens={importer.colorTokens}
@@ -235,27 +313,13 @@ export function LibraryImportDialog(props: LibraryImportDialogProps): ReactNode 
       className="fx-chrome-picker fx-chrome-import"
       role="dialog"
       aria-modal="true"
-      aria-label={t`Import SVG`}
+      aria-label={titleOf(input)}
       // Esc closes only when nothing runs: what a running convert or import ends with is always shown
       onKeyDown={(e) => dialogKey(e, busy ? () => undefined : onClose)}
     >
-      <h2 className="fx-chrome-heading">{t`Import SVG`}</h2>
-      <p>{plural(input.items.length, { one: '# file picked', other: '# files picked' })}</p>
-      {/* the declaration is fixed while a convert or import runs, so what finishes is always what the dialog shows */}
-      <fieldset className="fx-chrome-import-declaration" disabled={busy}>
-        <Field label={t`Namespace`} value={form.namespace} onChange={(namespace) => set({ namespace })} />
-        <Field label={t`Version`} value={form.version} onChange={(version) => set({ version })} />
-        <Field label={t`Name`} value={form.name} onChange={(name) => set({ name })} />
-        <label className="fx-chrome-formrow">
-          {t`Rights`}
-          <select value={form.kind} onChange={(e) => set({ kind: e.target.value as RightsKind })}>
-            <option value="original">{t`My own work`}</option>
-            <option value="upstream">{t`From a source`}</option>
-            <option value="credits">{t`Credits file…`}</option>
-          </select>
-        </label>
-        <Rights form={form} set={set} />
-      </fieldset>
+      <h2 className="fx-chrome-heading">{titleOf(input)}</h2>
+      <p>{'item' in input ? input.item.name : plural(input.items.length, { one: '# file picked', other: '# files picked' })}</p>
+      <Declaration input={input} form={form} busy={busy} set={set} />
       <Outcome phase={phase} colors={colors} />
       <div className="fx-chrome-actions">
         <button type="button" className="fx-chrome-button" disabled={busy || phase.step === 'imported'} onClick={() => void convertStep(ctx)}>
