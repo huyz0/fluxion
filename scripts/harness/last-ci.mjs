@@ -147,7 +147,12 @@ async function redWithPending(workflow, done, newer, jobs) {
 /** The runs read as red this time, for --red-file (M18.225). */
 const reds = [];
 /** Note run `r` of `workflow` as red, with the jobs that failed in it. */
-const noteRed = (workflow, r, jobs) => reds.push({ run: String(r.databaseId), workflow, sha: String(r.headSha).slice(0, 7), jobs });
+const noteRed = (workflow, r, jobs) => {
+  // a pending run can also be the intermittent tree's failed run: listed once, with the jobs of both readings (M18.232)
+  const seen = reds.find((x) => x.run === String(r.databaseId));
+  if (seen) seen.jobs = [...new Set([...seen.jobs, ...jobs])];
+  else reds.push({ run: String(r.databaseId), workflow, sha: String(r.headSha).slice(0, 7), jobs });
+};
 
 /** Job conclusions that already make a pending run red; cancelled, skipped and unfinished ones do not. */
 const FAILED_JOB = new Set(['failure', 'timed_out', 'startup_failure']);
@@ -331,7 +336,18 @@ let verdict = 0;
 /** Red outranks unknown, unknown outranks a wait (M18.128). */
 const worst = (a, b) => [1, UNKNOWN, 2, 0].find((code) => code === a || code === b);
 for (const workflow of WORKFLOWS) {
-  const mine = newestFirst.filter((r) => r.workflowName === workflow);
+  // a cancelled run none of whose jobs failed is neither red nor a stop on the walk back to the newest green, so no
+  // Fixes-ci names one (M18.232); one with a failed job, or whose jobs cannot be read, is red as before (r1 F1). With no
+  // other completed run in view it is still the verdict, never green
+  const ofWorkflow = newestFirst.filter((r) => r.workflowName === workflow);
+  const clean = new Set();
+  for (const r of ofWorkflow) {
+    if (r.status !== 'completed' || r.conclusion !== 'cancelled') continue;
+    const jobs = await Promise.resolve(source.jobs?.(r.databaseId)).catch(() => null);
+    if (Array.isArray(jobs) && !jobs.some((j) => FAILED_JOB.has(j.conclusion) && j.name !== 'ci-ok')) clean.add(r);
+  }
+  const cancelled = (r) => clean.has(r);
+  const mine = ofWorkflow.some((r) => r.status === 'completed' && !cancelled(r)) ? ofWorkflow.filter((r) => !cancelled(r)) : ofWorkflow;
   const done = mine.find((r) => r.status === 'completed');
   // only runs started after that one can carry a fix: in newest-first order they come before it (review r2 F1)
   const pending = done === undefined ? mine.length : mine.indexOf(done);

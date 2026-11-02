@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
 import { testStepEnv } from '../../scripts/gates/lib.mjs';
-import { headroom, persistent } from '../../scripts/harness/test-headroom.mjs';
+import { headroom, persistent, previousRun } from '../../scripts/harness/test-headroom.mjs';
 import { reading } from '../../tools/vitest/durations-reporter.mjs';
 
 const t = (name, durationMs, timeoutMs = 10_000) => ({ module: 'packages/x/src/a.test.ts', name, project: 'node', durationMs, timeoutMs });
@@ -93,5 +93,37 @@ describe('test headroom (M18.222)', () => {
     const unreadable = run('--file', cur, '--previous', write('empty-before.json', []));
     assert.equal(unreadable.status, 0, unreadable.stderr);
     assert.match(unreadable.stderr, /previous report ignored/);
+  });
+  it('compares with the newest completed run whose verify on this OS finished, skipping a cancelled one and its own (M18.232)', async () => {
+    const verify = (os, conclusion) => [
+      { name: 'verify (ubuntu-latest)', conclusion: 'success' },
+      { name: `verify (${os})`, conclusion },
+    ];
+    // newest first: a cancelled run, this run's own earlier attempt, then a red and a green one
+    const runs = [
+      { databaseId: 9, jobs: verify('macos-latest', 'cancelled') },
+      { databaseId: 8, jobs: verify('macos-latest', 'success') },
+      { databaseId: 7, jobs: verify('macos-latest', 'failure') },
+      { databaseId: 6, jobs: verify('macos-latest', 'success') },
+    ];
+    const jobsOf = (id) => runs.find((r) => String(r.databaseId) === id)?.jobs ?? null;
+    assert.deepEqual(await previousRun(runs, jobsOf, { os: 'macos-latest', exclude: '8' }), { run: '7', conclusion: 'failure' });
+    assert.deepEqual(await previousRun(runs, jobsOf, { os: 'macos-latest' }), { run: '8', conclusion: 'success' });
+    assert.equal(await previousRun(runs.slice(0, 1), jobsOf, { os: 'macos-latest' }), undefined);
+    assert.equal(await previousRun(runs, () => null, { os: 'macos-latest' }), undefined, 'unreadable jobs give no baseline');
+    // the CLI prints the id on stdout (the CI step's baseline, so it does not fall back to --warn-only) and names it on stderr
+    const file = join(dir, 'runs.json');
+    writeFileSync(file, JSON.stringify(runs));
+    const pick = (...a) =>
+      spawnSync(process.execPath, ['scripts/harness/test-headroom.mjs', '--pick-previous', '--runs-file', file, ...a], { encoding: 'utf8' });
+    const picked = pick('--os', 'macos-latest', '--exclude', '8');
+    assert.equal(picked.status, 0, picked.stderr);
+    assert.equal(picked.stdout.trim(), '7');
+    assert.match(picked.stderr, /comparing with run 7, whose verify \(macos-latest\) concluded failure/);
+    const none = pick('--os', 'windows-latest');
+    assert.equal(none.status, 0, none.stderr);
+    assert.equal(none.stdout, '');
+    assert.match(none.stderr, /no completed main run .* verify \(windows-latest\)/);
+    assert.equal(pick().status, 2, 'no --os');
   });
 });

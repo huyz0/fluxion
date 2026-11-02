@@ -442,6 +442,61 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.deepEqual(r.red, { verdict: 0, red: [] });
   });
 
+  it('M18.232: a cancelled ci run is neither red nor a stop, and a run read red twice is listed once (cp34 F5)', () => {
+    const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
+    const windows = (conclusion) => [
+      { name: 'verify (ubuntu-latest)', conclusion: 'success' },
+      { name: 'verify (windows-latest)', conclusion },
+      { name: 'ci-ok', conclusion: conclusion === 'success' ? 'success' : 'failure' },
+    ];
+    const red = (id, at) => run('ci', 'failure', `2026-09-29T02:${at}:00Z`, { databaseId: id, headSha: `sha${id}000000`, jobs: windows('failure') });
+    const cancelled = (id, at) => run('ci', 'cancelled', `2026-09-29T02:${at}:00Z`, { databaseId: id, headSha: `sha${id}000000`, jobs: windows('cancelled') });
+    // a cancelled run between two reds: not listed, and the walk goes on past it to the older red
+    let r = lastCi([red(63, '30'), cancelled(64, '15'), red(60, '00'), gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.deepEqual(
+      r.red.red.map((x) => x.run),
+      ['63', '60'],
+    );
+    // a cancelled newest run over a green: the green is the verdict, nothing is red, and no Fixes-ci can name the cancelled run
+    const green = run('ci', 'success', '2026-09-29T02:10:00Z', { databaseId: 61, headSha: 'bbbb000000', jobs: windows('success') });
+    r = lastCi([cancelled(65, '40'), green, gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /ci green at bbbb000 \(run 61\)/);
+    assert.deepEqual(r.red, { verdict: 0, red: [] });
+    // a cancelled newest run over a red: the red is the verdict
+    r = lastCi([cancelled(65, '40'), red(60, '00'), gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /RED ci failure at sha6000 \(run 60\)/);
+    // a cancelled run whose verify had already failed is red, over a green on another tree, and a Fixes-ci target (r1 F1)
+    const failedThenCancelled = run('ci', 'cancelled', '2026-09-29T02:40:00Z', {
+      databaseId: 66,
+      headSha: 'sha66000000',
+      jobs: [
+        { name: 'verify (windows-latest)', conclusion: 'failure' },
+        { name: 'e2e (webkit)', conclusion: 'cancelled' },
+      ],
+    });
+    r = lastCi([failedThenCancelled, green, gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.deepEqual(r.red.red, [{ run: '66', workflow: 'ci', sha: 'sha6600', jobs: ['verify (windows-latest)'] }]);
+    // a pending run whose job failed, on the product tree of an intermittent green: one entry for that run
+    const on = (id, minute, state) =>
+      run('ci', state, `2026-09-29T03:${minute}:00Z`, {
+        databaseId: id,
+        headSha: `sha${id}000000`,
+        tree: 'T1',
+        jobs: windows(state === 'in_progress' ? 'failure' : state),
+      });
+    r = lastCi([on(72, '25', 'in_progress'), on(71, '20', 'success'), on(70, '10', 'failure'), gates], '2026-09-29T03:30:00Z', undefined, {
+      red: true,
+    });
+    assert.equal(r.status, 1, r.out);
+    const ids = r.red.red.map((x) => x.run);
+    assert.deepEqual(ids, [...new Set(ids)], r.out);
+    assert.ok(ids.includes('72') && ids.includes('70'), r.out);
+  });
+
   it("M18.199: the tree's runs are paged back to its start, never read from a fixed window (cp26 F1)", () => {
     const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
     const jobs = (windows) => [

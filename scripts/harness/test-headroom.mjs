@@ -10,6 +10,10 @@
 //   node scripts/harness/test-headroom.mjs --run <ci run id> [--run <id>…]   download with gh
 //   node scripts/harness/test-headroom.mjs --file <durations.json> […]       offline
 //   [--previous <durations.json> …] [--warn-only] [--share 0.5] [--json]
+//   node scripts/harness/test-headroom.mjs --pick-previous --os <os> [--exclude <run id>] [--repo <o/r>] [--runs-file <f>]
+//     prints the run whose report is the baseline (M18.232): the newest completed main ci run, other than --exclude,
+//     whose `verify (<os>)` job concluded success or failure; a cancelled or skipped job wrote no full report.
+//     --runs-file: a JSON array, newest first, of `{ databaseId, jobs: [{ name, conclusion }] }` (tests).
 // Exit 1 when a test is listed, 0 when none is, 2 when no reading could be read or a report holds none.
 // With --previous (the same OS's report from the run before), a test is only a warning the first time: exit 1 needs it over
 // the share in both runs (M18.224, cp33 F1). CI's verify job runs it that way, so one slow runner does not redden main; with no
@@ -41,6 +45,70 @@ export function headroom(reports, share = 0.5) {
     tests.set(key, { module: t.module, name: t.name, timeoutMs: t.timeoutMs, worst, share: used });
   }
   return [...tests.values()].filter((t) => t.share > share).sort((a, b) => b.share - a.share);
+}
+
+/** How many completed main runs the baseline search reads before it gives up and the run only warns. */
+const PREVIOUS_RUNS = 10;
+
+/**
+ * The run whose `verify (<os>)` report a run compares with (M18.232, cp34 F5): the first of `runs` (newest
+ * first), other than `exclude`, whose verify job on `os` concluded success or failure; undefined when none.
+ * @param {{ databaseId: number | string }[]} runs
+ * @param {(id: string) => Promise<{ name: string, conclusion: string | null }[] | null> | { name: string, conclusion: string | null }[] | null} jobsOf
+ * @param {{ os: string, exclude?: string }} where
+ */
+export async function previousRun(runs, jobsOf, { os, exclude }) {
+  for (const r of runs.slice(0, PREVIOUS_RUNS)) {
+    const id = String(r.databaseId);
+    if (id === String(exclude)) continue;
+    const job = (await jobsOf(id))?.find((j) => j.name === `verify (${os})`);
+    if (job?.conclusion === 'success' || job?.conclusion === 'failure') return { run: id, conclusion: job.conclusion };
+  }
+  return undefined;
+}
+
+/** @param {string[]} args */
+function gh(args) {
+  const r = spawnSync('gh', args, { encoding: 'utf8' });
+  if (r.status !== 0) throw new Error(`gh ${args.slice(0, 2).join(' ')}: ${(r.stderr || r.error?.message || '').trim()}`);
+  return JSON.parse(r.stdout);
+}
+
+/** --pick-previous: print the baseline run id on stdout and which run it is on stderr; nothing when none. */
+async function pickPrevious(all) {
+  const os = all('--os')[0];
+  if (!os) throw new Error('--pick-previous needs --os <os>');
+  const exclude = all('--exclude')[0];
+  const file = all('--runs-file')[0];
+  const repo = all('--repo').flatMap((r) => ['--repo', r]);
+  const runs = file
+    ? JSON.parse(readFileSync(file, 'utf8'))
+    : gh([
+        'run',
+        'list',
+        ...repo,
+        '--workflow',
+        'ci.yml',
+        '--branch',
+        'main',
+        '--status',
+        'completed',
+        '--limit',
+        String(PREVIOUS_RUNS + 1),
+        '--json',
+        'databaseId',
+      ]);
+  const jobsOf = file
+    ? (id) => runs.find((r) => String(r.databaseId) === id)?.jobs ?? null
+    : (id) => gh(['run', 'view', id, ...repo, '--json', 'jobs']).jobs ?? null;
+  const found = await previousRun(runs, jobsOf, { os, exclude });
+  if (!found) {
+    console.error(`test-headroom: no completed main run in the last ${PREVIOUS_RUNS} has a finished verify (${os}) to compare with`);
+    return 0;
+  }
+  console.error(`test-headroom: comparing with run ${found.run}, whose verify (${os}) concluded ${found.conclusion}`);
+  console.log(found.run);
+  return 0;
 }
 
 /** @param {string} dir */
@@ -121,6 +189,7 @@ function readCurrent(argv, all) {
 
 function main(argv) {
   const all = (flag) => argv.flatMap((a, i) => (a === flag && argv[i + 1] ? [argv[i + 1]] : []));
+  if (argv.includes('--pick-previous')) return pickPrevious(all);
   const shareArg = all('--share')[0];
   const share = shareArg === undefined ? 0.5 : Number(shareArg);
   if (!(share > 0 && share <= 1)) throw new Error('--share takes a number in (0, 1]');
@@ -140,7 +209,7 @@ function main(argv) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    process.exitCode = main(process.argv.slice(2));
+    process.exitCode = await main(process.argv.slice(2));
   } catch (e) {
     console.error(`test-headroom: ${e instanceof Error ? e.message : e}`);
     process.exitCode = 2;
