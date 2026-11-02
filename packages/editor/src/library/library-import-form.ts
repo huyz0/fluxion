@@ -5,8 +5,7 @@ import { parseImportCredits } from '@fluxion/format';
 import { t } from '@lingui/core/macro';
 import '../i18n.js';
 import type { SvgLibraryRights } from './import-svg.js';
-import type { SvgLibraryInput } from './import-svg-input.js';
-import type { LibraryImportRequest } from './library-importer.js';
+import type { LibraryImportInput, LibraryImportRequest } from './library-importer.js';
 
 /** Which rights form the person fills in. */
 export type RightsKind = 'credits' | 'original' | 'upstream';
@@ -28,16 +27,16 @@ export type LibraryImportForm = {
   readonly sha256: string;
 };
 
-/** `My Icons.zip` → `my-icons`: a namespace from the first picked name. */
-export const namespaceOf = (input: SvgLibraryInput): string =>
-  (input.items[0]?.name.split('/').at(-1) ?? '')
-    .replace(/\.(svg|zip)$/i, '')
+/** `My Icons.zip` → `my-icons`: a namespace from the first picked name (the collection's or library's file name, M18.210). */
+export const namespaceOf = (input: LibraryImportInput): string =>
+  (('item' in input ? input.item : input.items[0])?.name.split('/').at(-1) ?? '')
+    .replace(/\.(svg|zip|json|xml|drawio)$/i, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
 /** The fields a fresh dialog starts with: the namespace from the first name, version 1.0.0, no rights and no license. */
-export function initialForm(input: SvgLibraryInput): LibraryImportForm {
+export function initialForm(input: LibraryImportInput): LibraryImportForm {
   const namespace = namespaceOf(input);
   return { namespace, version: '1.0.0', name: namespace, kind: 'original', license: '', attribution: '', author: '', reference: '', sha256: '' };
 }

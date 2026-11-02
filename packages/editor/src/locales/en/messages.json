@@ -137,6 +137,12 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
+  "61qBPO": {
+    "message": "{0, plural, one {# entry is left out} other {# entries are left out}}",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "6RpzCH": {
     "message": "Clear {0}",
     "origin": [
@@ -250,6 +256,12 @@
     "message": "Search commands",
     "origin": [
       "packages/editor/src/command-palette.tsx"
+    ]
+  },
+  "AbtlPO": {
+    "message": "Declare one credit for the library.",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "BItucz": {
@@ -510,6 +522,12 @@
     "message": "Remove anchor {0}",
     "origin": [
       "packages/editor/src/anchor-section.tsx"
+    ]
+  },
+  "KmNsuD": {
+    "message": "Import draw.io library",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "KwmOUj": {
@@ -1202,6 +1220,12 @@
       "packages/editor/src/edit-toolbar.tsx"
     ]
   },
+  "e4vkfN": {
+    "message": "Import Iconify collection",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
   "e9FHRh": {
     "message": "{count} element selected",
     "origin": [
@@ -1300,6 +1324,12 @@
   },
   "hvZwVx": {
     "message": "Convert",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "hyW4Af": {
+    "message": "This host cannot import a collection.",
     "origin": [
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
@@ -1410,6 +1440,12 @@
     "message": "Source SHA-256",
     "origin": [
       "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "nppFyZ": {
+    "message": "Import draw.io…",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
     ]
   },
   "o-XJ9D": {
@@ -1672,6 +1708,12 @@
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
+  "vbkj4D": {
+    "message": "Import Iconify…",
+    "origin": [
+      "packages/editor/src/library/library-panel.tsx"
+    ]
+  },
   "vk-d3n": {
     "message": "{0} ms mean, {1} ms max ({2})",
     "origin": [
@@ -1743,6 +1785,12 @@
     "message": "Arrange the selection",
     "origin": [
       "packages/editor/src/layout-picker-section.tsx"
+    ]
+  },
+  "yMI9iJ": {
+    "message": "The collection's own license and author credit it.",
+    "origin": [
+      "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
   "yTqatN": {

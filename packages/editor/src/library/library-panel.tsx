@@ -3,7 +3,8 @@
 // matches are listed best first. Picking one is the host's (`onPick`, M8.18: click to insert, drag to drop). With
 // `onReplace` and a replaceable selection, the Replace toggle (or a shift-click) makes the next pick replace the
 // selected shape instead (FR-LIB-011, M18.37). With the host's `importer`, **Import SVG…** picks SVG files or a ZIP and opens the
-// import dialog (FR-LIB-004, M18.176). A host's `catalog` adds entries whose geometry is not loaded yet (FR-LIB-009, M18.32):
+// import dialog (FR-LIB-004, M18.176); with its `convertCollection` too, **Import Iconify…** and **Import draw.io…** pick one
+// collection or library file (FR-LIB-005/006, M18.210). A host's `catalog` adds entries whose geometry is not loaded yet (FR-LIB-009, M18.32):
 // they are listed and searched by their pack index's names, drawn as a plain tile until loaded, and picked like any other
 // (the host loads the definition first); a registered definition with a catalog entry takes the catalog's names.
 import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
@@ -11,9 +12,8 @@ import { pathData, useValue } from '@fluxion/render';
 import { plural, t } from '@lingui/core/macro';
 import '../i18n.js';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import type { SvgLibraryInput } from './import-svg-input.js';
 import { LibraryImportDialog } from './library-import-dialog.js';
-import type { LibraryImporter } from './library-importer.js';
+import type { LibraryImporter, LibraryImportInput } from './library-importer.js';
 import { LIBRARY_DRAG_TYPE } from './library-insert.js';
 import { buildLibraryIndex, entryOf, type LibraryEntry } from './library-search.js';
 
@@ -46,7 +46,7 @@ export type LibraryPanelProps = {
   readonly canReplace?: boolean | undefined;
   /** Registered IDs left out of the listing and search, such as hidden Iconify icons (FR-LIB-005). */
   readonly hidden?: ReadonlySet<string> | undefined;
-  /** The host's SVG library import; without it there is no **Import SVG…**. */
+  /** The host's library import; without it there is no **Import SVG…** (nor **Import Iconify…** or **Import draw.io…**). */
   readonly importer?: LibraryImporter | undefined;
   /** Entries the host can load on pick, by their pack index's names (M18.32); a registered definition keeps its own entry otherwise. */
   readonly catalog?: readonly LibraryEntry[] | undefined;
@@ -54,38 +54,68 @@ export type LibraryPanelProps = {
 
 const NO_ENTRIES: readonly LibraryEntry[] = [];
 
-/** The picked files as an import input: one ZIP, or SVG files. */
-function inputOf(files: readonly File[]): SvgLibraryInput {
+/** What an import entry picks: SVG files or a ZIP, one Iconify collection, or one draw.io library. */
+type ImportKind = 'svg' | 'iconify' | 'drawio';
+
+/** The picked files as an import input: one ZIP or SVG files, or the one collection or library file. */
+function inputOf(kind: ImportKind, files: readonly File[]): LibraryImportInput | undefined {
   const items = files.map((f) => ({ name: f.name, size: f.size, bytes: async () => new Uint8Array(await f.arrayBuffer()) }));
+  if (kind !== 'svg') return items[0] === undefined ? undefined : { kind, item: items[0] };
   return { kind: files.length === 1 && /\.zip$/i.test(files[0]?.name ?? '') ? 'zip' : 'files', items };
 }
 
-/** **Import SVG…**: a file picker, then the dialog over what was picked. */
-function ImportSvg(props: { readonly importer: LibraryImporter }): ReactNode {
-  const [input, setInput] = useState<SvgLibraryInput | undefined>(undefined);
+/** The file picker of each entry. */
+const PICKERS: Readonly<Record<ImportKind, { readonly accept: string; readonly multiple: boolean }>> = {
+  svg: { accept: '.svg,.zip,image/svg+xml,application/zip', multiple: true },
+  iconify: { accept: '.json,application/json', multiple: false },
+  drawio: { accept: '.xml,.drawio,application/xml,text/xml', multiple: false },
+};
+
+/** One import entry (**Import SVG…**, **Import Iconify…** or **Import draw.io…**): a file picker, then the dialog over what was picked. */
+function ImportEntry(props: { readonly importer: LibraryImporter; readonly kind: ImportKind; readonly label: string }): ReactNode {
+  const [input, setInput] = useState<LibraryImportInput | undefined>(undefined);
+  const picker = PICKERS[props.kind];
   return (
     <>
       <button
         type="button"
         className="fx-chrome-button fx-chrome-library-import"
+        data-import={props.kind}
         onClick={(e) => (e.currentTarget.nextElementSibling as HTMLInputElement | null)?.click()}
       >
-        {t`Import SVG…`}
+        {props.label}
       </button>
       <input
         type="file"
-        accept=".svg,.zip,image/svg+xml,application/zip"
-        multiple
+        accept={picker.accept}
+        multiple={picker.multiple}
         aria-hidden="true"
         tabIndex={-1}
         hidden
         onChange={(e) => {
           const files = [...(e.target.files ?? [])];
           e.target.value = '';
-          if (files.length) setInput(inputOf(files));
+          const picked = inputOf(props.kind, files);
+          if (picked !== undefined) setInput(picked);
         }}
       />
       {input === undefined ? null : <LibraryImportDialog importer={props.importer} input={input} onClose={() => setInput(undefined)} />}
+    </>
+  );
+}
+
+/** The import entries the host's importer offers. */
+function ImportEntries(props: { readonly importer: LibraryImporter }): ReactNode {
+  const { importer } = props;
+  return (
+    <>
+      <ImportEntry importer={importer} kind="svg" label={t`Import SVG…`} />
+      {importer.convertCollection === undefined ? null : (
+        <>
+          <ImportEntry importer={importer} kind="iconify" label={t`Import Iconify…`} />
+          <ImportEntry importer={importer} kind="drawio" label={t`Import draw.io…`} />
+        </>
+      )}
     </>
   );
 }
@@ -230,7 +260,7 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      {importer === undefined ? null : <ImportSvg importer={importer} />}
+      {importer === undefined ? null : <ImportEntries importer={importer} />}
       {onReplace === undefined ? null : (
         <button
           type="button"

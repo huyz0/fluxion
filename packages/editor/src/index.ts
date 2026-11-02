@@ -156,6 +156,12 @@ export {
   TEMPLATE_CHOICE,
 } from './layout-picker.js';
 export { LayoutPickerSection, type LayoutPickerSectionProps } from './layout-picker-section.js';
+export {
+  type CollectionLibraryConversion,
+  type CollectionLibraryInput,
+  type CollectionLibraryOptions,
+  convertCollectionLibrary,
+} from './library/import-collection.js';
 export { type DrawioLibrary, importDrawioLibrary } from './library/import-drawio.js';
 export { type IconifyLibrary, importIconifyLibrary } from './library/import-iconify.js';
 export {
@@ -169,7 +175,7 @@ export { MAX_BATCH_COLORS, type SvgBatchColors, svgBatchColors } from './library
 export type { SvgLibraryInput, SvgLibraryItem } from './library/import-svg-input.js';
 export { svgWitnessStarter } from './library/import-svg-witness.js';
 export { LibraryImportDialog, type LibraryImportDialogProps } from './library/library-import-dialog.js';
-export type { LibraryImporter, LibraryImportRequest } from './library/library-importer.js';
+export type { LibraryImporter, LibraryImportInput, LibraryImportRequest } from './library/library-importer.js';
 export { type LibraryCatalog, LibraryPanel, type LibraryPanelProps } from './library/library-panel.js';
 export { type ReplaceDeps, replaceableShape, replaceSelectedShape } from './library/library-replace.js';
 export { buildLibraryIndex, entriesOfIndex, entryOf, type LibraryEntry, type LibraryIndex, tokensOf } from './library/library-search.js';

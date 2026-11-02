@@ -115,8 +115,8 @@ function sourceOf(rights: Exclude<SvgLibraryRights, { readonly kind: 'credits' }
   return { kind: 'upstream', reference: rights.reference, sha256: rights.sha256 };
 }
 
-/** The rights the declaration gives, or why it is not a complete one. */
-function rightsOf(rights: SvgLibraryRights): ImportRights | string {
+/** The rights the declaration gives, or why it is not a complete one. @internal */
+export function rightsOf(rights: SvgLibraryRights): ImportRights | string {
   if (rights.kind === 'credits') {
     const filed = rights.credits.credits.find((c) => c.noticeFile !== undefined);
     if (filed) return `credit ${filed.id} names the notice file ${filed.noticeFile}; give its notice inline`;

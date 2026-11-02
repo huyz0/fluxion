@@ -240,6 +240,27 @@ export type ClipboardPayload = {
 };
 
 // @public
+export type CollectionLibraryConversion = {
+    readonly pack: ImportedPack;
+    readonly omitted: readonly SvgMemberProblem[];
+};
+
+// @public
+export type CollectionLibraryInput = {
+    readonly kind: "iconify" | "drawio";
+    readonly item: SvgLibraryItem;
+};
+
+// @public
+export type CollectionLibraryOptions = Pick<SvgLibraryOptions, "fonts" | "startWitness" | "now"> & {
+    readonly declared?: Pick<SvgLibraryOptions, "namespace" | "version" | "name"> & {
+        readonly rights: Exclude<SvgLibraryRights, {
+            readonly kind: "credits";
+        }>;
+    };
+};
+
+// @public
 export type CommandCanvas = {
     readonly viewport: CanvasSize;
     targets(): FitTargets;
@@ -274,6 +295,9 @@ export function connectorTool(): Tool;
 
 // @public
 export const CONTEXT_MENU_EVENT = "fx-contextmenu";
+
+// @public
+export function convertCollectionLibrary(input: CollectionLibraryInput, options: CollectionLibraryOptions): Promise<Result<CollectionLibraryConversion, readonly SvgMemberProblem[]>>;
 
 // @public
 export function convertSvgLibrary(input: SvgLibraryInput, options: SvgLibraryOptions): Promise<Result<SvgLibraryConversion, readonly SvgMemberProblem[]>>;
@@ -829,16 +853,20 @@ export function LibraryImportDialog(props: LibraryImportDialogProps): ReactNode;
 // @public
 export type LibraryImportDialogProps = {
     readonly importer: LibraryImporter;
-    readonly input: SvgLibraryInput;
+    readonly input: LibraryImportInput;
     readonly onClose: () => void;
 };
 
 // @public
 export type LibraryImporter = {
     readonly convert: (input: SvgLibraryInput, request: LibraryImportRequest) => Promise<Result<SvgLibraryConversion, readonly SvgMemberProblem[]>>;
+    readonly convertCollection?: (input: CollectionLibraryInput, declared: CollectionLibraryOptions["declared"]) => Promise<Result<CollectionLibraryConversion, readonly SvgMemberProblem[]>>;
     readonly register: (pack: ImportedPack) => Promise<Result<unknown, readonly Diagnostic[]>>;
     readonly colorTokens: readonly TokenRef[];
 };
+
+// @public
+export type LibraryImportInput = SvgLibraryInput | CollectionLibraryInput;
 
 // @public
 export type LibraryImportRequest = Pick<SvgLibraryOptions, "namespace" | "version" | "name" | "rights" | "colors">;

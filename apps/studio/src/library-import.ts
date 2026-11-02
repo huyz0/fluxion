@@ -1,8 +1,9 @@
-// The studio's SVG library importer (FR-LIB-004, M18.17): the editor's Import SVG… converts through the shipped renderer's paint
+// The studio's library importer (FR-LIB-004/005/006, M18.17, M18.210): the editor's Import SVG…, Import Iconify… and Import draw.io… convert through the shipped renderer's paint
 // witness over this page, with fonts-core's Inter 400 (its bytes as the studio serves them, its OFL-1.1 notice) as the one face text
 // may draw in, and registers the final pack, with its exact face, into the open document's registries. Every registered pack's
 // source is kept for the save (FR-LIB-009, ADR-0192); disposing releases the packs and forgets their sources.
 import {
+  convertCollectionLibrary,
   convertSvgLibrary,
   type LibraryImporter,
   type LibraryImportRequest,
@@ -85,7 +86,8 @@ export function studioLibraryImports(
     sources = registered.map((r) => r.source);
     for (const listener of listeners) listener();
   };
-  const convert = async (input: Parameters<LibraryImporter['convert']>[0], request: LibraryImportRequest) => {
+  /** What every convert witnesses with: the light theme, Inter as the one face, the page's clock; or why there is none. */
+  const witnessing = async () => {
     if (theme === undefined) return err([{ path: '', message: 'The studio has no light theme to witness under.' }]);
     // a failed read is not kept, so a later convert tries again
     font ??= interFont(ports.fetch).then((r) => {
@@ -95,16 +97,19 @@ export function studioLibraryImports(
     const inter = await font;
     if (!inter.ok) return err(inter.error.map((d) => ({ path: '', message: d.message })));
     const witnessFont = { ...inter.value.face, bytes: inter.value.rights.bytes, profile: 'inter-latin-400-ascii' as const };
-    return convertSvgLibrary(input, {
-      ...request,
-      tokenRefs: new Set(colorTokens),
-      fonts: [inter.value],
-      now: ports.now,
-      startWitness: svgWitnessStarter({ document: ports.document, theme, fonts: [witnessFont] }),
-    });
+    return ok({ fonts: [inter.value], now: ports.now, startWitness: svgWitnessStarter({ document: ports.document, theme, fonts: [witnessFont] }) });
+  };
+  const convert = async (input: Parameters<LibraryImporter['convert']>[0], request: LibraryImportRequest) => {
+    const witness = await witnessing();
+    return witness.ok ? convertSvgLibrary(input, { ...request, tokenRefs: new Set(colorTokens), ...witness.value }) : witness;
+  };
+  const convertCollection: NonNullable<LibraryImporter['convertCollection']> = async (input, declared) => {
+    const witness = await witnessing();
+    return witness.ok ? convertCollectionLibrary(input, { ...witness.value, ...(declared === undefined ? {} : { declared }) }) : witness;
   };
   const importer: LibraryImporter = {
     convert,
+    convertCollection,
     colorTokens,
     async register(pack) {
       const began = epoch;
