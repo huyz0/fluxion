@@ -59,22 +59,34 @@ describe('ciRefusal (M18.223, cp32 F2)', () => {
   const product = { paths: ['packages/core/src/x.ts', '.harness/progress.md'], subject: 'M1.2: fix(core): x', message: 'M1.2: fix(core): x\n' };
   const feature = { ...product, subject: 'M1.2: feat(core): x' };
   const harness = { paths: ['scripts/gates/x.mjs', 'docs/backlog/current.md'], subject: 'M1.3: feat(harness): x', message: '' };
-  const red = (id) => (id === '7' ? null : `run ${id} is not red`);
+  // run 7 is red now: a completed red, or a pending run whose job already failed
+  const red = [{ run: '7', workflow: 'ci', sha: 'abc1234', jobs: ['verify (windows-latest)', 'e2e (webkit)'] }];
+  const fixes = (id) => ({ ...product, message: `M1.2: fix(core): x\n\nFixes-ci: ${id}\n` });
   it('HARNESS: on green every commit lands', () => {
-    assert.equal(ciRefusal(0, feature, red), null);
+    assert.equal(ciRefusal({ verdict: 0, red: [] }, feature), null);
   });
-  it('HARNESS: on red (1) or a pending declared fix (2) a product commit needs Fixes-ci naming a red run; a harness-only commit lands', () => {
+  it('HARNESS: on red (1) or a pending declared fix (2) a product commit needs Fixes-ci naming a run red now; a harness-only commit lands', () => {
     for (const verdict of [1, 2]) {
-      assert.match(ciRefusal(verdict, product, red), /main's ci is red \(last-ci exit \d\)/);
-      assert.equal(ciRefusal(verdict, { ...product, message: 'M1.2: fix(core): x\n\nFixes-ci: 7\n' }, red), null);
-      assert.match(ciRefusal(verdict, { ...product, message: 'M1.2: fix(core): x\n\nFixes-ci: 8\n' }, red), /names no red run of the branch: run 8 is not red/);
-      assert.equal(ciRefusal(verdict, harness, red), null);
+      const ci = { verdict, red };
+      // the refusal names the red run and its failed jobs
+      assert.match(
+        ciRefusal(ci, product),
+        new RegExp(`main's ci is red \\(last-ci exit ${verdict}\\) at run 7 \\(ci at abc1234: verify \\(windows-latest\\), e2e \\(webkit\\)\\)`),
+      );
+      assert.equal(ciRefusal(ci, fixes(7)), null);
+      // a stale red run, red once but not now, is refused
+      assert.match(ciRefusal(ci, fixes(5)), /its Fixes-ci: 5 names no run that is red now; main's ci is red .* at run 7 /);
+      assert.equal(ciRefusal(ci, harness), null);
     }
+    // a red verdict last-ci names no run for: nothing a Fixes-ci can name
+    assert.match(ciRefusal({ verdict: 1, red: [] }, fixes(7)), /Fixes-ci: 7 names no run that is red now; .* at no run last-ci names/);
   });
-  it('HARNESS: on unknown (3) a feature commit waits; a fix and a harness-only feature land', () => {
-    assert.match(ciRefusal(3, feature, red), /main's ci is unknown \(last-ci exit 3\)/);
-    assert.equal(ciRefusal(3, product, red), null);
-    assert.equal(ciRefusal(3, harness, red), null);
+  it('HARNESS: on unknown (3) a feature commit waits, with or without a scope; a fix and a harness-only feature land', () => {
+    for (const subject of ['M1.2: feat(core): x', 'M1.2: feat: x', 'M1.2: feat!: x', 'M1.2: feat(core)!: x'])
+      assert.match(ciRefusal({ verdict: 3, red: [] }, { ...product, subject }), /main's ci is unknown \(last-ci exit 3\)/, subject);
+    assert.equal(ciRefusal({ verdict: 3, red: [] }, product), null);
+    assert.equal(ciRefusal({ verdict: 3, red: [] }, { ...product, subject: 'M1.2: feature-flag(core): x' }), null);
+    assert.equal(ciRefusal({ verdict: 3, red: [] }, harness), null);
   });
 });
 
@@ -477,7 +489,7 @@ describe('land (M18.106)', () => {
     }
   });
 
-  it("HARNESS: while main's ci is red, refuses a product commit and lands a Fixes-ci fix (M18.223, cp32 F2)", () => {
+  it("HARNESS: while main's ci is red, refuses a product commit and a stale Fixes-ci, and lands a Fixes-ci fix (M18.223, M18.225)", () => {
     reset();
     // the cases before leave M0.20 blocking; this one is about main's ci alone
     upstream('docs/backlog/current.md', sb.read('docs/backlog/current.md').replaceAll('`blocks-landing`', ''));
@@ -504,7 +516,12 @@ describe('land (M18.106)', () => {
     };
     try {
       reviewed('M0.23', 'src/feature.txt', 'x\n');
-      refusedBy(/M0\.23: test: src\/feature\.txt\) may not land: main's ci is red \(last-ci exit 1\)/);
+      refusedBy(
+        /M0\.23: test: src\/feature\.txt\) may not land: main's ci is red \(last-ci exit 1\) at run 601 \(ci at [0-9a-f]{7}: verify \(windows-latest\)\)/,
+      );
+      // a Fixes-ci naming a run that is not red now (stale, or never red) is refused (M18.225, cp33 F2)
+      reviewed('M0.24', 'src/stale-fix.txt', 'x\n', { [TRAILER]: 'Fixes-ci: 599' });
+      refusedBy(/M0\.24: test: src\/stale-fix\.txt\) may not land: its Fixes-ci: 599 names no run that is red now/);
       // (a harness-only commit's pass-through is ciRefusal's unit case; the sandbox's checkpoint budget allows two more task commits here)
       reviewed('M0.25', 'src/fix-red.txt', 'fix\n', { [TRAILER]: 'Fixes-ci: 601' });
       const fixed = land('--push', '--ci-runs-file', runsFile);

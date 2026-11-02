@@ -1,14 +1,14 @@
 // M5.2 (M4 final F3, NFR-DX-003): the loop reads main's last CI before a task.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { cleanEnv, REPO } from './helpers.mjs';
 
-/** Runs last-ci.mjs against `runs` (gh run list shape) with a backlog and extra `args`; returns its status and output. */
-function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined, { backlog, args = [] } = {}) {
+/** Runs last-ci.mjs against `runs` (gh run list shape) with a backlog and extra `args`; returns its status, output and --red-file. */
+function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined, { backlog, args = [], red = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'last-ci-'));
   try {
     const file = join(dir, 'runs.json');
@@ -18,14 +18,17 @@ function lastCi(runs, now = '2026-09-29T03:30:00Z', cwd = undefined, { backlog, 
     writeFileSync(backlogFile, backlog ?? '');
     const r = spawnSync(
       process.execPath,
-      [join(REPO, 'scripts/harness/last-ci.mjs'), '--runs-file', file, '--now', now, '--offline', '--backlog', backlogFile, ...args],
+      [
+        join(REPO, 'scripts/harness/last-ci.mjs'),
+        ...['--runs-file', file, '--now', now, '--offline', '--backlog', backlogFile, ...(red ? ['--red-file', join(dir, 'red.json')] : []), ...args],
+      ],
       {
         encoding: 'utf8',
         cwd,
         env: cleanEnv(),
       },
     );
-    return { status: r.status, out: r.stdout + r.stderr };
+    return { status: r.status, out: r.stdout + r.stderr, red: red ? JSON.parse(readFileSync(join(dir, 'red.json'), 'utf8')) : undefined };
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -379,6 +382,40 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     r = lastCi([{ ...ci(42, '30', 'success'), jobs: 'throws' }, gates]);
     assert.equal(r.status, 3, r.out);
     assert.match(r.out, /UNKNOWN ci: the jobs of run 42 on the tree of its green at sha4200 \(run 42\) could not be read/);
+  });
+
+  it('M18.225: --red-file names each run read as red now with its failed jobs: completed, pending, intermittent (cp33 F2)', () => {
+    const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
+    const windows = (conclusion) => [
+      { name: 'verify (ubuntu-latest)', conclusion: 'success' },
+      { name: 'verify (windows-latest)', conclusion },
+      { name: 'ci-ok', conclusion: conclusion === 'success' ? 'success' : 'failure' },
+    ];
+    // the newest completed run failed: it is the red run, with its failed jobs (the aggregate left out)
+    const done = run('ci', 'failure', '2026-09-29T02:00:00Z', { databaseId: 60, headSha: 'aaaa000000', jobs: windows('failure') });
+    let r = lastCi([done, gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.deepEqual(r.red, { verdict: 1, red: [{ run: '60', workflow: 'ci', sha: 'aaaa000', jobs: ['verify (windows-latest)'] }] });
+    // a pending run whose job already failed is red too, at that run; an older red run is not listed once a green follows it
+    const green = run('ci', 'success', '2026-09-29T02:10:00Z', { databaseId: 61, headSha: 'bbbb000000', tree: 'T2', jobs: windows('success') });
+    const pending = run('ci', 'in_progress', '2026-09-29T02:20:00Z', {
+      databaseId: 62,
+      headSha: 'cccc000000',
+      message: 'M1.3: feat(x): w',
+      jobs: [{ name: 'e2e (webkit)', conclusion: 'timed_out' }],
+    });
+    r = lastCi([pending, green, done, gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.deepEqual(r.red.red, [{ run: '62', workflow: 'ci', sha: 'cccc000', jobs: ['e2e (webkit)'] }]);
+    // a green on an intermittent tree: the failed run on that tree is the red one
+    const on = (id, minute, conclusion) =>
+      run('ci', conclusion, `2026-09-29T03:${minute}:00Z`, { databaseId: id, headSha: `sha${id}000000`, tree: 'T1', jobs: windows(conclusion) });
+    r = lastCi([on(71, '20', 'success'), on(70, '10', 'failure'), gates], '2026-09-29T03:30:00Z', undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.deepEqual(r.red.red, [{ run: '70', workflow: 'ci', sha: 'sha7000', jobs: ['verify (windows-latest)'] }]);
+    // green: none
+    r = lastCi([green, gates], undefined, undefined, { red: true });
+    assert.deepEqual(r.red, { verdict: 0, red: [] });
   });
 
   it("M18.199: the tree's runs are paged back to its start, never read from a fixed window (cp26 F1)", () => {

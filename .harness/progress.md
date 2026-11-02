@@ -3820,3 +3820,9 @@ A Ctrl/Cmd+C, X or V chord goes through the clipboard catcher except when the fo
 
 - sdk `loadPackConnectors(bytes, pack, maxBytes)`: capped copy, strict UTF-8 JSON, `parseConnectorDefs`, deep-frozen; any problem FLX_PACK_INVALID. routing `registerConnectorDefs(routers, input, pack)`: re-validates, refuses ids other sources hold (FLX_REGISTRY_DUPLICATE) and missing base routers (FLX_PACK_INVALID) before registering anything; one disposable. Registration is in routing since sdk may not depend on routing; ADR-0048 amendment M18.111. Tests: routing register-connector-defs.test.ts 6/6, sdk pack-connectors.test.ts 2/2.
 - r1 changes-requested: a long or multi-line describe is refused up front (a requireDescribe registry threw half-way); replacement documented and tested as id by id; the row is narrowed to the SDK and routing functions (index and createShapePackLoader unchanged; no host loads pack directories), with the open path wired in M18.112.
+
+## 2026-11-02 M18.225: a Fixes-ci on a red main names the run last-ci reads as red now (cp33 F2)
+- last-ci --red-file writes `{ verdict, red: [{ run, workflow, sha, jobs }] }`: the newest completed red run, a pending run whose job already failed, and the failed run of an intermittent tree, each with its failed jobs (the aggregate left out).
+- land.mjs reads it once per attempt. A non-harness commit on red or fix-pending lands only when each Fixes-ci names a run in that list; a run that was red once (ci-run-red's check) no longer passes. Every refusal names the red runs and their jobs.
+- On unknown, a feature subject waits with or without a scope (`feat:`, `feat(x):`, `feat!:`).
+- Tests: last-ci red-file case (completed, pending failed job, intermittent, green), three ciRefusal unit cases (run and jobs named, stale Fixes-ci refused, scope-less feat), and the land integration case refuses a Fixes-ci for a run that is not red.

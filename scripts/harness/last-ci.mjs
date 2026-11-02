@@ -37,8 +37,10 @@
 // A red run, or an intermittent tree, also waits (exit 2, bounded as above) for a pending run whose commit
 // changes a product path and declares Fixes-ci for a ci run on the branch that failed the same job (M18.200,
 // cp26 F2); a harness-only commit fixes no product job. In --runs-file a run's `paths` stand for its commit's.
+// --red-file <path>: writes the runs it reads as red, `{ verdict, red: [{ run, workflow, sha, jobs }] }`, for land.mjs to tie a
+// commit's Fixes-ci to the run that is red now (M18.225, cp33 F2).
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
 import { blockingRows } from '../gates/landing-block.mjs';
 import { repoPath } from '../gates/lib.mjs';
@@ -141,6 +143,11 @@ async function redWithPending(workflow, done, newer, jobs) {
  * Pending runs whose jobs already failed (M18.191, cp24 F1): each is red at that run, waited for only
  * while a newer pending run declares Fixes-ci for it; unreadable jobs are unknown, never green.
  */
+/** The runs read as red this time, for --red-file (M18.225). */
+const reds = [];
+/** Note run `r` of `workflow` as red, with the jobs that failed in it. */
+const noteRed = (workflow, r, jobs) => reds.push({ run: String(r.databaseId), workflow, sha: String(r.headSha).slice(0, 7), jobs });
+
 /** Job conclusions that already make a pending run red; cancelled, skipped and unfinished ones do not. */
 const FAILED_JOB = new Set(['failure', 'timed_out', 'startup_failure']);
 async function pendingRed(workflow, newer) {
@@ -157,6 +164,11 @@ async function pendingRed(workflow, newer) {
     const failedOnes = jobs.filter((j) => FAILED_JOB.has(j.conclusion));
     const failed = failedOnes.map((j) => `${j.name}${j.conclusion === 'failure' ? '' : ` ${j.conclusion}`}`);
     if (failed.length === 0) continue;
+    noteRed(
+      workflow,
+      r,
+      failedOnes.map((j) => j.name),
+    );
     const run = { ...r, conclusion: `failure in ${failed.join(', ')} (run still pending)` };
     const red =
       i === 0
@@ -225,7 +237,7 @@ async function sameTreeVerdict(workflow, done) {
   }
   const found = intermittent(withJobs);
   const lines = describe(found).map((line) => `last-ci: INTERMITTENT ${workflow} ${where}: ${line}`);
-  return { verdict: found.length ? 1 : 0, lines, jobs: found.map((f) => f.job) };
+  return { verdict: found.length ? 1 : 0, lines, jobs: found.map((f) => f.job), found };
 }
 /** An intermittent tree waits (exit 2) while a newer pending run is a bounded product fix of one of its jobs (M18.200). */
 async function intermittentWithPending(tree, newer) {
@@ -347,15 +359,24 @@ for (const workflow of WORKFLOWS) {
   }
   if (done.conclusion === 'success' || done.conclusion === 'skipped') {
     let tree = workflow === 'ci' ? await sameTreeVerdict(workflow, done) : { verdict: 0, lines: [] };
+    // each failed run of an intermittent tree is red for --red-file, as a Fixes-ci target (M18.225)
+    for (const run of new Set((tree.found ?? []).map((f) => f.run)))
+      noteRed(
+        workflow,
+        { databaseId: run, headSha: tree.found.find((f) => f.run === run).sha },
+        tree.found.filter((f) => f.run === run).map((f) => f.job),
+      );
     if (tree.verdict === 1) tree = await intermittentWithPending(tree, mine.slice(0, pending));
     verdict = worst(verdict, tree.verdict);
     for (const line of tree.lines) console.log(line);
     if (tree.verdict === 0) console.log(`last-ci: ${workflow} green at ${sha} (run ${done.databaseId})${tail}`);
     continue;
   }
+  const doneJobs = await failedJobs(done.databaseId);
+  noteRed(workflow, done, doneJobs);
   if (pending > 0) {
     // a red workflow that blocks (exit 1) outranks a wait (M5.2 review F1)
-    const red = await redWithPending(workflow, done, mine.slice(0, pending));
+    const red = await redWithPending(workflow, done, mine.slice(0, pending), doneJobs);
     verdict = worst(verdict, red.verdict);
     console.log(red.line);
     continue;
@@ -438,4 +459,6 @@ if (verdict === 1) {
       `last-ci: ${blocking.join(', ')} blocks landing (\`blocks-landing\`): only that row and commits confined to HARNESS_PATHS proceed until it is done; other rows wait`,
     );
 }
+const redFile = opt('red-file');
+if (redFile) writeFileSync(redFile, `${JSON.stringify({ verdict, red: reds })}\n`);
 process.exit(verdict);
