@@ -3791,3 +3791,12 @@ next: M18.223 and M18.222 before the next product stack; then M18.214, .205, .21
 - The panel heads a category by its pack's 1.2 `name`, else core's `categoryTitle` of the slug (so first-party headings read "Basic shapes / Basic"), and search matches the name and the slug. The studio adds the entries of its imported packs (index names) and of the opened file's saved subsets (category names; a subset has no pack name, so its id heads it) to the library catalog.
 - Review minors folded in: two category texts alike once folded (spacing, NFC) keep the name only on the first (M18.211 r1 F1); an Iconify collection's licence is checked before any witness starts (M18.210 r1 F1, F3 pins the messages); a draw.io declaration asks for "the license of the library" (F2).
 - New original fixture fixtures/iconify/category-names.json; the e2e sees "Fluxion arrows / Arrows & Pointers" before the save and "fluxion-arrows / Arrows & Pointers" after the reopen (Chromium 6/6 with library.panel).
+
+## 2026-11-02 cp33 (claude, stream 1)
+done: checkpoint cp33 through c699c7a changes-requested (independent subagent); delta cp32 record, M18.223, M18.222, M18.43 plan split of M18.105, M18.210, .211, .212
+green: ci 41465339550 at be85289 and 41480586602 at 9565074; six stale queued runs (21b5120..1388999) cancelled under Huy's keep-the-tip rule hid no red; e2e chromium 2/4 passed at b74e347, so 6d45a30's failure stays a runner fault
+reopen: M18.224 listed tests regain headroom and the headroom step fails rather than warns (F1 major: drawio 16 Mi budget 72%, pack-import refusals 73%, font-subset range 64-78%, 50-SVG corpus 65% on ubuntu); M18.225 Fixes-ci names the run last-ci reads red (F2, with M18.223's open minors)
+F4: M18.182 row added from stream 6's held 0d16f98; M18.218 and M18.130 rows land with their stacks after M18.224 (argued, not added here, to keep their replay conflict-free); M18.214 restated as long, not wedged; nightly 41421711034 queued since 09:33Z behind the same runner backlog, re-read at M18.214
+fixed: F5 state.json updated is current; the misordered 2026-10-30 progress entry stays as history
+argued: F3 m18-complete CLI legs read a stale dist only as a false red
+next: M18.224 before the held product stacks of streams 3 and 2 land, then M18.225 and M18.214, .205, .216
