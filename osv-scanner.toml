@@ -36,3 +36,32 @@ reason = "extract-zip 2.0.1 via puppeteer-core via @lhci/cli (the Lighthouse CI 
 id = "GHSA-jmr9-qjv8-65gv"
 ignoreUntil = 2026-11-02
 reason = "extract-zip 2.0.1 via puppeteer-core via @lhci/cli (the Lighthouse CI job; its downloader is not run); no fixed version published"
+
+# M18.217: GHSA-g3hv-75wg-m249 (minimatch, fixed only in 11.0.1) in three versions, all in development and docs tooling whose patterns
+# are our own config, never input: 10.2.3 under @microsoft/api-extractor (API reports), 10.2.6 under typedoc (check-api, the docs site), and
+# 3.1.5 under glob 7, rimraf 3, chrome-launcher and @lhci/cli (the Lighthouse job's profile cleanup). No 10.x or 3.x fix is published, and
+# minimatch 11 breaks both consumers (typedoc calls the removed Minimatch.matchOne; glob 7's sync throws), so each version is excused by
+# itself and a later advisory on any other minimatch still fails the scan. glob 13 is overridden to 14.0.3 in pnpm-workspace.yaml.
+[[PackageOverrides]]
+name = "minimatch"
+version = "10.2.3"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-02
+reason = "minimatch 10.2.3 via @microsoft/api-extractor (API report generation, development only); no 10.x fix, typedoc-era API needed"
+
+[[PackageOverrides]]
+name = "minimatch"
+version = "10.2.6"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-02
+reason = "minimatch 10.2.6 via typedoc (check-api and the docs build, development only); no 10.x fix and typedoc 0.28.20 fails on minimatch 11 (Minimatch.matchOne)"
+
+[[PackageOverrides]]
+name = "minimatch"
+version = "3.1.5"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-02
+reason = "minimatch 3.1.5 via glob 7 via rimraf 3 via chrome-launcher via @lhci/cli (Lighthouse CI job; patterns are its own temp paths); no 3.x fix and glob 7 fails on minimatch 11"
