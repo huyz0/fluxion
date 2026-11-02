@@ -23,7 +23,7 @@
           </path>
         </marker>
       </defs>
-      <path class="fx-route-decoration" d="M100 45 L104 46.5 L112 40.5 L120 51 L128 39 L136 51 L144 39 L152 51 L160 39 L168 51 L176 39 L184 51 L196 47 L184 55 L196 63 L184 71 L196 79 L184 87 L196 95 L184 103 L196 111 L184 119 L196 127 L184 135 L196 143 L184 151 L196 159 L184 167 L196 175 L184 183 L196 179 L204 191 L212 179 L220 191 L228 179 L236 191 L244 179 L252 191 L260 180.13 L268 186.88 L273 185" data-part="line" style="fill:none;stroke:var(--fx-color-connector);stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter">
+      <path class="fx-route-decoration" d="M100 45 L104 46.5 L112 40.5 L120 51 L128 39 L136 51 L144 39 L152 51 L160 39 L167.87 51.01 L177.22 39.84 L179.89 53.6 L193.71 52.8 L183.81 63.22 L196 70.71 L184 78.71 L196 86.71 L184 94.71 L196 102.71 L184 110.71 L196 118.71 L184 126.71 L196 134.71 L184 142.71 L196 150.71 L184 158.71 L196.15 166.34 L185.98 176.4 L199.97 176.29 L201.99 190.01 L211.5 178.98 L219.43 191 L227.43 179 L235.43 191 L243.43 179 L251.43 191 L259.43 179.91 L267.43 187.09 L273 185" data-part="line" style="fill:none;stroke:var(--fx-color-connector);stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter">
       </path>
       <path class="fx-route" d="M100 45 L190 45 L190 185 L273 185" data-decorated="zigzag" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:none;stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
       </path>

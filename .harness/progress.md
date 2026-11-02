@@ -3738,3 +3738,11 @@ check: scripts/gates/check-osv-expiry.mjs runs ahead of the scan in security.yml
 note: the cp31 verdict JSON names M18.218 for F1/F2; that id was already stream 2's, so the row is M18.219 (cp31 record minor 1)
 open: name the nightly previous-playwright webkit failure from the next nightly after 590e0a4 (cp31 F3 remainder); cold budget re-record after this lockfile change
 
+## M18.113 — wavy/zigzag bends, pipe frame (2026-10-27)
+
+- M18.107 landed as bfce2d0 (r1 pass).
+- decorateRoute: wavy and zigzag follow the route with its corners rounded to 2 amplitudes (geometry roundCorners), so a bend turns the wave: on an L route the wavy stroke's sharpest turn drops from 169° to 41°, the zigzag's shortest stroke through the bend from 6.3 px (chamfer) to 10.0 px (straight run 14.4).
+- ConnectorView frames a decorated route with the usual margin plus how far its widest stroke passes the line's, so a wide pipe wall is not clipped (test fails without it: wall edge at 59 < box 76).
+- Goldens: wavy/zigzag paths; pipe/cable boxes grow by the wider margin. Checked rendered in Chromium.
+- Review r1 changes-requested (a Z route's short jog limited the fillet, hook returned: 98–152° turns on 4–12 px jogs): the wave's route is now also averaged over ±2 amplitudes at 1 px (ends pinned), so a short jog becomes a gentle slope; test covers the L and Z jogs of 4, 8, 12, 20 px (all under 60°).
+- Review r2 changes-requested (smoothing 15–30x slower: 1 px resample + a path sampler over up to 4096 segments): the smoothed route is sampled a sixth of the reach apart and walked by its own length table with a binary search. decorateRoute per call (600 px L / 8000 px zigzag route, wavy, zigzag): original 0.15/0.04/1.38/0.33 ms, r2 3.9/3.5/36.6/32.9 ms, now 0.24/0.13/1.92/1.46 ms. Not gated by a bench (a new bench needs a threshold and gate leg).

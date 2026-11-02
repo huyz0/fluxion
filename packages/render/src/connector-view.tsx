@@ -61,14 +61,17 @@ const round = (v: number) => Math.round(v * 1000) / 1000 || 0;
 const pointsOf = (commands: readonly PathCommand[]): Vec2[] =>
   commands.flatMap((c) => [...('control1' in c ? [c.control1, c.control2] : []), ...('control' in c ? [c.control] : []), ...('to' in c ? [c.to] : [])]);
 
-/** The box of a route: its points' bounds plus room for the stroke and markers. */
-function routeFrame(commands: readonly PathCommand[]): Frame {
+/** The box of a route: its points' bounds plus `margin`, room for the stroke and markers. */
+function routeFrame(commands: readonly PathCommand[], margin: number): Frame {
   const points = pointsOf(commands);
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
-  const [x, y] = [Math.min(...xs) - ROUTE_MARGIN, Math.min(...ys) - ROUTE_MARGIN];
-  return { x, y, w: Math.max(...xs) - Math.min(...xs) + 2 * ROUTE_MARGIN, h: Math.max(...ys) - Math.min(...ys) + 2 * ROUTE_MARGIN };
+  const [x, y] = [Math.min(...xs) - margin, Math.min(...ys) - margin];
+  return { x, y, w: Math.max(...xs) - Math.min(...xs) + 2 * margin, h: Math.max(...ys) - Math.min(...ys) + 2 * margin };
 }
+
+/** The room a route's box leaves around its points: the usual margin, widened by how far a decoration's widest stroke passes the line's. */
+const marginFor = (strokes: readonly DecoratedStroke[], width: number): number => ROUTE_MARGIN + Math.max(0, ...strokes.map((d) => (d.width - width) / 2));
 
 /** The registered marker `marker` names (none for `none`, an absent or an unregistered one). */
 const markerOf = (registries: RenderRegistries, marker: Marker | undefined): MarkerDef | undefined =>
@@ -213,7 +216,7 @@ export function ConnectorView(props: ElementViewProps): ReactNode {
   // coordinates: an empty SVG box with visible overflow is not painted by every engine (M4.21)
   // the box is held across a drag, not across passes: the settled route is framed as a renderer that drew it first frames it (FR-EDT-010)
   const held = heldFrame(frames.current, store, routed.global);
-  const { x, y, w, h } = framed(held, routeFrame([...stroked, ...decorated.flatMap((d) => d.commands)]));
+  const { x, y, w, h } = framed(held, routeFrame([...stroked, ...decorated.flatMap((d) => d.commands)], marginFor(decorated, width)));
   frames.current = { store, global: routed.global, frame: { x, y, w, h } };
   const box: CSSProperties = { left: x, top: y, width: w, height: h, opacity: style.opacity };
   return (

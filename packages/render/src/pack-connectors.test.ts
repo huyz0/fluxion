@@ -116,7 +116,11 @@ describe('pack connector types (FR-CON-010)', () => {
       expect(last.x).toBeCloseTo(100, 6);
       expect(last.y).toBeCloseTo(60, 6);
       // it leaves the route by up to the amplitude (in stroke widths) between the ends
-      const ys = (stroke?.commands ?? []).slice(1, 12).map((c) => Math.abs((c as { to: Vec2 }).to.y));
+      // on the first leg, short of where its bend is rounded
+      const ys = (stroke?.commands ?? [])
+        .map((c) => (c as { to: Vec2 }).to)
+        .filter((p) => p.x > 0 && p.x < 70)
+        .map((p) => Math.abs(p.y));
       expect(Math.max(...ys)).toBeGreaterThan(1);
       expect(Math.max(...ys)).toBeLessThanOrEqual(6 + 1e-9);
     }
@@ -146,5 +150,61 @@ describe('pack connector types (FR-CON-010)', () => {
     expect(decorateRoute([{ kind: 'M', to: { x: 1, y: 1 } }], { kind: 'wavy', amplitude: 3, wavelength: 12 }, 2)).toEqual([
       { commands: [{ kind: 'M', to: { x: 1, y: 1 } }], width: 2, part: 'line' },
     ]);
+  });
+
+  it("FR-CON-010: WHEN a wavy or zigzag connector turns an orthogonal bend THE SYSTEM SHALL draw it without a hook or chamfer, and size a wide pipe's box to its walls", () => {
+    const bend = trimRoute(
+      [
+        { kind: 'M', to: { x: 0, y: 0 } },
+        { kind: 'L', to: { x: 100, y: 0 } },
+        { kind: 'L', to: { x: 100, y: 60 } },
+      ],
+      0,
+      0,
+    ).commands;
+    const pointsOf = (commands: readonly PathCommand[]) => commands.map((c) => (c as { to: Vec2 }).to);
+    // a wave turns gently all along, the bends included (a hook folds it back on itself): an L, and Z routes whose middle
+    // jog is too short to round to the wave's full height
+    const sharpest = (commands: readonly PathCommand[]) => {
+      const wave = pointsOf(decorateRoute(commands, { kind: 'wavy', amplitude: 3, wavelength: 12 }, 2)[0]?.commands ?? []);
+      const turns = wave.slice(1, -1).map((b, k) => {
+        const [a, c] = [wave[k] as Vec2, wave[k + 2] as Vec2];
+        const [u, v] = [
+          { x: b.x - a.x, y: b.y - a.y },
+          { x: c.x - b.x, y: c.y - b.y },
+        ];
+        return Math.abs((Math.atan2(u.x * v.y - u.y * v.x, u.x * v.x + u.y * v.y) * 180) / Math.PI);
+      });
+      return Math.max(...turns);
+    };
+    const jog = (h: number): PathCommand[] => [
+      { kind: 'M', to: { x: 0, y: 0 } },
+      { kind: 'L', to: { x: 60, y: 0 } },
+      { kind: 'L', to: { x: 60, y: h } },
+      { kind: 'L', to: { x: 120, y: h } },
+    ];
+    for (const route of [bend, jog(4), jog(8), jog(12), jog(20)]) expect(sharpest(route), JSON.stringify(route[2])).toBeLessThan(60);
+    // a zigzag keeps its strokes about as long through the bend as along a straight run (a chamfer cuts one short)
+    const zig = pointsOf(decorateRoute(bend, { kind: 'zigzag', amplitude: 3, wavelength: 8 }, 2)[0]?.commands ?? []);
+    const strokes = zig.slice(2, -1).map((p, k) => Math.hypot(p.x - (zig[k + 1] as Vec2).x, p.y - (zig[k + 1] as Vec2).y));
+    // a full stroke on a straight run: half a wave along, twice the amplitude across
+    expect(Math.min(...strokes)).toBeGreaterThan(0.6 * Math.hypot(8, 12));
+    // a pipe whose walls are wider than the usual margin: the connector's box holds the whole stroke
+    const { registries: r } = registries();
+    const wide = connectorDefRouter({ id: 'lines:wide-pipe', router: 'orthogonal', decoration: { kind: 'pipe', wall: 20 } }, r.routers);
+    if (wide === undefined) throw new Error('no orthogonal router');
+    r.routers.register('lines:wide-pipe', wide, 'lines');
+    const { file } = joined('lines:wide-pipe');
+    const html = normalizeSvg(renderDocumentToHtml(file, { registries: r }).html);
+    const [vx, vy, vw, vh] = (/class="fx-connector"[^>]*viewBox="([^"]+)"/.exec(html)?.[1] ?? '').split(' ').map(Number) as [number, number, number, number];
+    const line = /class="fx-route-decoration" d="([^"]+)" data-part="line" style="[^"]*stroke-width:([\d.]+)/.exec(html);
+    const half = Number(line?.[2]) / 2;
+    expect(half).toBeGreaterThan(24);
+    for (const [, x, y] of (line?.[1] ?? '').matchAll(/([\d.-]+) ([\d.-]+)/g)) {
+      expect(Number(x) - half).toBeGreaterThanOrEqual(vx);
+      expect(Number(y) - half).toBeGreaterThanOrEqual(vy);
+      expect(Number(x) + half).toBeLessThanOrEqual(vx + vw);
+      expect(Number(y) + half).toBeLessThanOrEqual(vy + vh);
+    }
   });
 });
