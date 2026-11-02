@@ -3,6 +3,7 @@ import type { Disposable, Registry } from '../registry.js';
 import { type ArtworkFontBinding, artworkFontAlias } from './artwork-fonts.js';
 import type { ShapePackSubset11, VersionedShapePackSubset } from './pack-font-types.js';
 import { parseVersionedShapePackSubset } from './pack-font-validation.js';
+import { packHasFonts } from './pack-format.js';
 import type { ShapePackLicensePolicy, ShapePackSubset } from './pack-types.js';
 import { parseShapePackSubset } from './pack-validation.js';
 import type { ShapeDef } from './shape-def.js';
@@ -118,7 +119,8 @@ function bindingsOf(pack: ShapePackSubset11): Map<string, ArtworkFontBinding[]> 
   return result;
 }
 
-const isV11 = (pack: VersionedShapePackSubset): pack is ShapePackSubset11 => pack.formatVersion === '1.1';
+/** A subset that carries exact fonts: format 1.1 or 1.2. */
+const isV11 = (pack: VersionedShapePackSubset): pack is ShapePackSubset11 => packHasFonts(pack);
 
 /**
  * The distinct exact fonts that validated subsets bind, one per byte identity, sorted by hash.

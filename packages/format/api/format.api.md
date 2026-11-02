@@ -15,6 +15,7 @@ import { safeLinkUrl } from '@fluxion/schema';
 import { sha256Hex } from '@fluxion/core';
 import { ShapeDef } from '@fluxion/core';
 import { ShapePackCredit } from '@fluxion/core';
+import { ShapePackFontFormat } from '@fluxion/core';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { ShapePackSource } from '@fluxion/core';
 import { SvgArtwork } from '@fluxion/schema';
@@ -838,7 +839,7 @@ export type ShapePackDataLock = {
     readonly kind: "declarative-shapes";
     readonly id: string;
     readonly version: string;
-    readonly packFormat: "1.0" | "1.1";
+    readonly packFormat: "1.0" | ShapePackFontFormat;
     readonly entry: string;
     readonly integrity: string;
 };

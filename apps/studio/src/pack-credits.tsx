@@ -1,7 +1,7 @@
 // The studio's credits of the shape packs a document uses (NFR-LIC-003, ADR-0050, M18.143): the packs the opened file embeds keep the credits the
 // file pins, and the packs the library loaded give their index's credits; either way only the credits that apply to a definition the document uses
 // now, scoped lists trimmed to those definitions, as a portable save would embed them. Shown in a dialog from the toolbar, as text (the player's list).
-import type { ShapePackCredit, ShapePackFontCredit, Store, VersionedShapePackSubset } from '@fluxion/core';
+import { packHasFonts, type ShapePackCredit, type ShapePackFontCredit, type Store, type VersionedShapePackSubset } from '@fluxion/core';
 import type { ShapePackSourceData } from '@fluxion/format';
 import { type CreditedPack, type CreditsLabels, PackCreditsList } from '@fluxion/player';
 import { plural, t } from '@lingui/core/macro';
@@ -21,9 +21,9 @@ type Rights = {
   readonly name?: string | undefined;
 };
 
-/** A pack's font credits: a 1.1 pack's, none for 1.0. */
+/** A pack's font credits: a 1.1 or 1.2 pack's, none for 1.0. */
 const fontCreditsOf = (pack: { readonly formatVersion: string } & Partial<{ readonly fontCredits: readonly ShapePackFontCredit[] }>) =>
-  pack.formatVersion === '1.1' ? (pack.fontCredits ?? []) : [];
+  packHasFonts(pack) ? (pack.fontCredits ?? []) : [];
 
 /** The credits of `pack` that apply to the used definitions, scoped lists trimmed to them; undefined when it has no used definition. */
 function applicable(pack: Rights, used: ReadonlySet<string>, name: string | undefined): CreditedPack | undefined {

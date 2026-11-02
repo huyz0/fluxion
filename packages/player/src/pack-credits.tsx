@@ -1,7 +1,7 @@
 // The credits of the shape packs a document uses (NFR-LIC-003, ADR-0050, M18.143): each pack's licence and attribution and every applicable source credit
 // with its notice, read from the records the file embeds, so it works offline. Every field is untrusted text and is drawn as text: no markup, and a source
 // reference becomes a link only when it is an http(s) URL, opened on a click, never fetched.
-import type { ShapePackCredit, ShapePackFontCredit, ShapePackSource, VersionedShapePackSubset } from '@fluxion/core';
+import { packHasFonts, type ShapePackCredit, type ShapePackFontCredit, type ShapePackSource, type VersionedShapePackSubset } from '@fluxion/core';
 import type { ReactNode } from 'react';
 
 /**
@@ -70,7 +70,7 @@ export function creditedPacks(subsets: readonly VersionedShapePackSubset[], name
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
     .map((s) => {
       const name = names.get(s.id);
-      const fontCredits = s.formatVersion === '1.1' ? s.fontCredits : [];
+      const fontCredits = packHasFonts(s) ? s.fontCredits : [];
       return {
         id: s.id,
         ...(name === undefined ? {} : { name }),

@@ -12,6 +12,7 @@ import type {
   VersionedShapePackIndex,
   VersionedShapePackSubset,
 } from './pack-font-types.js';
+import { isFontFormat } from './pack-format.js';
 import { category11Schema, index11Schema, subset11Schema } from './pack-schema.js';
 import type { ShapePackLicensePolicy } from './pack-types.js';
 import { parseShapePackCategory, parseShapePackIndex, parseShapePackSubset } from './pack-validation.js';
@@ -29,10 +30,16 @@ const issues = (items: readonly { path: readonly PropertyKey[]; message: string 
   );
 const versionOf = (input: unknown): unknown => (typeof input === 'object' && input !== null && 'formatVersion' in input ? input.formatVersion : undefined);
 const FONT_KEYS = ['fontResources', 'fontFaces', 'definitionFonts', 'fontCredits'] as const;
-/** The 1.0 view of a parsed 1.1 envelope, so the unchanged 1.0 rules check its shared fields. */
+/** The 1.0 view of a parsed 1.1 or 1.2 envelope (no fonts, no category names), so the unchanged 1.0 rules check its shared fields. */
 function legacyView<T extends object>(value: T): Record<string, unknown> {
   const out: Record<string, unknown> = { ...value, formatVersion: '1.0' };
   for (const key of FONT_KEYS) delete out[key];
+  delete out['categoryNames'];
+  const categories = out['categories'];
+  if (typeof categories === 'object' && categories !== null)
+    out['categories'] = Object.fromEntries(
+      Object.entries(categories as Record<string, { path: string; sha256: string }>).map(([slug, { path, sha256 }]) => [slug, { path, sha256 }]),
+    );
   return out;
 }
 function permitted(license: string, policy: ShapePackLicensePolicy): boolean {
@@ -192,13 +199,14 @@ function closureProblems(fonts: Fonts, definitions: readonly ShapeDef[], at: str
 }
 
 /**
- * Parse a pack index of version 1.0 or 1.1. Version 1.0 uses `parseShapePackIndex` unchanged.
+ * Parse a pack index of version 1.0, 1.1 or 1.2. Version 1.0 uses `parseShapePackIndex` unchanged.
  * Version 1.1 also validates exact resource, face, binding and scoped font-credit closure without
- * geometry or I/O; artwork text closure is checked when a category is acquired.
+ * geometry or I/O; artwork text closure is checked when a category is acquired. Version 1.2 is 1.1
+ * plus category display names (ADR-0210); a name in 1.0 or 1.1 is refused.
  * @public
  */
 export function parseVersionedShapePackIndex(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackIndex, readonly Diagnostic[]> {
-  return versionOf(input) === '1.1' ? parseIndex11(input, licensePolicy) : parseShapePackIndex(input, licensePolicy);
+  return isFontFormat(versionOf(input)) ? parseIndex11(input, licensePolicy) : parseShapePackIndex(input, licensePolicy);
 }
 function parseIndex11(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<ShapePackIndex11, readonly Diagnostic[]> {
   const parsed = index11Schema.safeParse(input);
@@ -221,7 +229,7 @@ export function parseVersionedShapePackCategory(
   licensePolicy: ShapePackLicensePolicy,
 ): Result<VersionedShapePackCategory, readonly Diagnostic[]> {
   if (versionOf(input) !== versionOf(index)) return err([problem(['formatVersion'], 'category version differs from its index')]);
-  if (versionOf(index) !== '1.1') return parseShapePackCategory(input, index, category, licensePolicy);
+  if (!isFontFormat(versionOf(index))) return parseShapePackCategory(input, index, category, licensePolicy);
   const metadata = parseIndex11(index, licensePolicy);
   if (!metadata.ok) return metadata;
   const envelope = category11Schema.safeParse(input);
@@ -230,18 +238,27 @@ export function parseVersionedShapePackCategory(
   const legacy = parseShapePackCategory({ ...envelope.data, formatVersion: '1.0' }, legacyView(pack), category, licensePolicy);
   if (!legacy.ok) return legacy;
   const errors = closureProblems(pack, legacy.value.definitions, 'definitions');
-  const value: ShapePackCategory11 = { formatVersion: '1.1', definitions: legacy.value.definitions };
+  const value: ShapePackCategory11 = { formatVersion: pack.formatVersion, definitions: legacy.value.definitions };
   return errors.length ? err(errors) : ok(value);
 }
 
+/** A 1.2 subset's category names whose slug no included definition uses. */
+function namedCategoryProblems(names: Readonly<Record<string, string>> | undefined, definitions: readonly ShapeDef[]): Diagnostic[] {
+  const used = new Set(definitions.map((d) => d.category));
+  return Object.keys(names ?? {})
+    .filter((slug) => !used.has(slug))
+    .map((slug) => problem(['categoryNames', slug], 'a category name must name a category of an included definition'));
+}
+
 /**
- * Parse a saved subset of version 1.0 or 1.1. Version 1.0 uses `parseShapePackSubset` unchanged.
+ * Parse a saved subset of version 1.0, 1.1 or 1.2. Version 1.0 uses `parseShapePackSubset` unchanged.
  * Version 1.1 validates every included definition's exact font closure and scoped font credits;
- * an empty font closure is valid and is never downgraded to 1.0.
+ * an empty font closure is valid and is never downgraded to 1.0. Version 1.2 is 1.1 plus `categoryNames`,
+ * each naming a category an included definition uses (ADR-0210).
  * @public
  */
 export function parseVersionedShapePackSubset(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackSubset, readonly Diagnostic[]> {
-  if (versionOf(input) !== '1.1') return parseShapePackSubset(input, licensePolicy);
+  if (!isFontFormat(versionOf(input))) return parseShapePackSubset(input, licensePolicy);
   const parsed = subset11Schema.safeParse(input);
   if (!parsed.success) return err(issues(parsed.error.issues));
   const legacy = parseShapePackSubset(legacyView(parsed.data), licensePolicy);
@@ -250,6 +267,7 @@ export function parseVersionedShapePackSubset(input: unknown, licensePolicy: Sha
   const errors = [
     ...fontProblems(parsed.data, new Set(definitions.map((d) => d.id)), licensePolicy, false),
     ...closureProblems(parsed.data, definitions, 'definitions'),
+    ...namedCategoryProblems(parsed.data.categoryNames, definitions),
   ];
   const value: ShapePackSubset11 = { ...parsed.data, definitions };
   return errors.length ? err(errors) : ok(value);

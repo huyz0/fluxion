@@ -190,7 +190,7 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
     z.union([
       z
         .object({
-          pack: z.object({ id: z.string(), version: z.string(), formatVersion: z.enum(['1.0', '1.1']), dir: z.string() }).strict(),
+          pack: z.object({ id: z.string(), version: z.string(), formatVersion: z.enum(['1.0', '1.1', '1.2']), dir: z.string() }).strict(),
           inputCount: z.number().int().min(0),
           svgCount: z.number().int().min(0),
           acceptedCount: z.number().int().min(0),

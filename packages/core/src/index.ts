@@ -95,12 +95,23 @@ export type {
   ShapePackFontResource,
   ShapePackFonts,
   ShapePackIndex11,
+  ShapePackNamedCategoryEntry,
   ShapePackSubset11,
   VersionedShapePackCategory,
   VersionedShapePackIndex,
   VersionedShapePackSubset,
 } from './shape/pack-font-types.js';
 export { parseVersionedShapePackCategory, parseVersionedShapePackIndex, parseVersionedShapePackSubset } from './shape/pack-font-validation.js';
+export {
+  CATEGORY_NAME_MAX,
+  categoryNameProblem,
+  categoryTitle,
+  isFontFormat,
+  packHasFonts,
+  type ShapePackFontFormat,
+  type ShapePackVersioned,
+  type ShapePackWithFonts,
+} from './shape/pack-format.js';
 export {
   type ArtworkFontRequirement,
   type ArtworkShapeRegistries,

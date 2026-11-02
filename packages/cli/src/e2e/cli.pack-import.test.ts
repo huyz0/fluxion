@@ -1,6 +1,7 @@
 // FR-LIB-004 NFR-SEC-001 NFR-LIC-003: the built `fluxion pack-import` (ADR-0206) turns the frozen 50-SVG corpus, as a folder or a
 // ZIP, into one byte-identical pack directory under the shipped Chromium paint witness, each member credited to its declared rights;
-// an input outside the bounds is refused within 10 s and writes nothing.
+// an input outside the bounds is refused within 10 s and writes nothing. A folder named unlike its slug's title form keeps its name
+// in a pack 1.2 (ADR-0210).
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, truncateSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -143,6 +144,34 @@ describe('fluxion pack-import of the 50-SVG corpus (M18.16)', () => {
     const inter = readFileSync(join(REPO, 'packs/fonts-core/fonts/inter-latin-400-normal.woff2'));
     expect(readFileSync(join(out, index.fontResources[0].path))).toEqual(inter);
     expect(index.fontCredits[0]).toMatchObject({ license: 'OFL-1.1', definitionIds: ['corpus:badge'] });
+  });
+});
+
+describe('fluxion pack-import category names (M18.211, ADR-0210)', () => {
+  it('FR-LIB-003 FR-LIB-009: a folder named unlike its slug title makes a 1.2 pack that keeps the name, replies 1.2 and loads clean', {
+    timeout: 60_000,
+  }, async () => {
+    const input = join(dir, 'named');
+    for (const folder of ['Arrows & Pointers', 'data']) mkdirSync(join(input, folder), { recursive: true });
+    cpSync(join(CORPUS, 'svg/original-donut.svg'), join(input, 'Arrows & Pointers', 'donut.svg'));
+    cpSync(join(CORPUS, 'svg/original-donut.svg'), join(input, 'data', 'ring.svg'));
+    const out = join(dir, 'named-pack');
+    const r = packImport([input, ...meta(out), '--license', 'MIT', '--attribution', 'Fluxion contributors', '--author', 'Fluxion contributors']);
+    expect(r.status, r.stdout + r.stderr).toBe(0);
+    expect(JSON.parse(r.stdout).result.pack).toMatchObject({ id: 'corpus', formatVersion: '1.2' });
+    const bytes = new Uint8Array(readFileSync(join(out, 'index.json')));
+    const index = JSON.parse(new TextDecoder().decode(bytes));
+    // the slug-form folder keeps no name; the other keeps its text, which its slug's title form ('Arrows Pointers') would lose
+    expect(index.categories).toMatchObject({ 'arrows-pointers': { name: 'Arrows & Pointers' }, data: {} });
+    expect(index.categories.data).not.toHaveProperty('name');
+    const loader = await createArtworkShapePackLoader(bytes, {
+      maxBytes: 16 * 1024 * 1024,
+      read: async (path) => new Uint8Array(readFileSync(join(out, ...path.split('/')))),
+      hasher: { sha256: async (b) => sha256Hex(b) },
+      licensePolicy: allowsShapePackContentLicense,
+    });
+    if (!loader.ok) throw new Error(JSON.stringify(loader.error));
+    for (const entry of loader.value.index.definitions) expect((await loader.value.acquire(entry.id)).ok, entry.id).toBe(true);
   });
 });
 

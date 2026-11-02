@@ -88,6 +88,19 @@ describe('the studio credits of the packs a document uses (NFR-LIC-003, ADR-0050
     ).not.toHaveProperty('fontCredits');
   });
 
+  it("NFR-LIC-003 FR-LIB-009: a 1.2 pack's font credits are kept as a 1.1 pack's are (ADR-0210: 1.2 is 1.1 plus category names)", () => {
+    const v12 = {
+      ...saved,
+      formatVersion: '1.2',
+      categoryNames: { people: 'People & Groups' },
+      fontResources: [],
+      fontFaces: [],
+      definitionFonts: [],
+      fontCredits: [font('inter', ['people:person', 'people:pair'])],
+    } as unknown as ShapePackSubset;
+    expect(documentCredits([v12], [], ['people:person'])[0]?.fontCredits).toEqual([font('inter', ['people:person'])]);
+  });
+
   it('NFR-LIC-003, FR-LIB-004: an imported SVG library (a 1.1 distribution the save embeds) is listed by its own name, with its font credit', () => {
     const imported = {
       ...lucide,

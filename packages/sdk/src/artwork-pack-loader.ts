@@ -1,5 +1,6 @@
 import {
   artworkFontProfiles,
+  packHasFonts,
   parseVersionedShapePackCategory,
   parseVersionedShapePackIndex,
   type ShapeDef,
@@ -162,7 +163,7 @@ async function acquireFonts(state: State, id: string, bound: readonly Binding[],
 async function acquire(state: State, entry: ShapePackDefinitionEntry, signal: Signal): Promise<Result<AcquiredArtworkDefinition, Failure>> {
   const { index, options } = state;
   const id = entry.id;
-  const bound = index.formatVersion === '1.1' ? bindingsOf(index, id) : ok([]);
+  const bound = packHasFonts(index) ? bindingsOf(index, id) : ok([]);
   if (!bound.ok) return bound;
   if (signal?.aborted) return err(cancelled(id));
   const loaded = await shared(state.categories, entry.category, () => readCategory(index, entry.category, options, parseVersionedShapePackCategory));
@@ -172,7 +173,7 @@ async function acquire(state: State, entry: ShapePackDefinitionEntry, signal: Si
   if (!definition) return err(problem(['definitions', id], 'verified category lacks its indexed definition'));
   const fonts = await acquireFonts(state, id, bound.value, signal);
   if (!fonts.ok) return fonts;
-  const credits = index.formatVersion === '1.1' ? index.fontCredits.filter((credit) => credit.definitionIds.includes(id)) : [];
+  const credits = packHasFonts(index) ? index.fontCredits.filter((credit) => credit.definitionIds.includes(id)) : [];
   return ok(Object.freeze({ definition, fonts: Object.freeze(fonts.value), fontCredits: Object.freeze(credits) }));
 }
 

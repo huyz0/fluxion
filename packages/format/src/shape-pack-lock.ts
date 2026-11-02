@@ -1,4 +1,12 @@
-import { parseShapePackSubset, parseVersionedShapePackSubset, type ShapePackLicensePolicy, type VersionedShapePackSubset } from '@fluxion/core';
+import {
+  isFontFormat,
+  packHasFonts,
+  parseShapePackSubset,
+  parseVersionedShapePackSubset,
+  type ShapePackFontFormat,
+  type ShapePackLicensePolicy,
+  type VersionedShapePackSubset,
+} from '@fluxion/core';
 import { checkedSchema, type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
 import { z } from 'zod';
 import { encodeBase64 } from './base64.js';
@@ -18,7 +26,10 @@ const lockFields = {
 export const shapePackLock10Schema: z.ZodType<ShapePackDataLock & { readonly packFormat: '1.0' }> = checkedSchema<
   ShapePackDataLock & { readonly packFormat: '1.0' }
 >()(z.strictObject({ ...lockFields, packFormat: z.literal('1.0') }));
-const lock11Schema = checkedSchema<ShapePackDataLock & { readonly packFormat: '1.1' }>()(z.strictObject({ ...lockFields, packFormat: z.literal('1.1') }));
+// 1.1 retains exact artwork fonts (ADR-0192); 1.2 is 1.1 plus category names (ADR-0210)
+const lock11Schema = checkedSchema<ShapePackDataLock & { readonly packFormat: ShapePackFontFormat }>()(
+  z.strictObject({ ...lockFields, packFormat: z.enum(['1.1', '1.2']) }),
+);
 const listedSchema = z.object({ sha256: z.string().regex(/^[0-9a-f]{64}$/), size: z.number().int().nonnegative() });
 const object = (input: unknown): input is Record<string, unknown> => typeof input === 'object' && input !== null && !Array.isArray(input);
 /** Whether the opaque value explicitly declares the known data-only kind. */
@@ -37,9 +48,9 @@ function invalidIdentity(lock: ShapePackDataLock, ids: ReadonlySet<string>, path
   return lock.entry !== `plugins/${lock.id}@${lock.version}/defs.json` || ids.has(lock.id) || paths.has(lock.entry);
 }
 
-/** A known lock: the 1.1 schema when it says 1.1, otherwise the unchanged 1.0 contract. */
+/** A known lock: the font-format schema when it says 1.1 or 1.2, otherwise the unchanged 1.0 contract. */
 function parseLock(raw: unknown, path: string): Result<ShapePackDataLock, FormatError> {
-  const parsed = (object(raw) && raw['packFormat'] === '1.1' ? lock11Schema : shapePackLock10Schema).safeParse(raw);
+  const parsed = (object(raw) && isFontFormat(raw['packFormat']) ? lock11Schema : shapePackLock10Schema).safeParse(raw);
   if (parsed.success) return ok(parsed.data);
   return failure(
     path,
@@ -87,7 +98,7 @@ function parseEntry(item: Captured, policy: ShapePackLicensePolicy): Result<Vers
   } catch {
     return failure(item.path, 'shape entry is not valid JSON');
   }
-  const parsed = item.lock.packFormat === '1.1' ? parseVersionedShapePackSubset(input, policy) : parseShapePackSubset(input, policy);
+  const parsed = isFontFormat(item.lock.packFormat) ? parseVersionedShapePackSubset(input, policy) : parseShapePackSubset(input, policy);
   if (!parsed.ok)
     return failure(
       item.path,
@@ -99,13 +110,13 @@ function parseEntry(item: Captured, policy: ShapePackLicensePolicy): Result<Vers
   return parsed;
 }
 
-/** Every 1.1 font resource must be present as `assets/<sha256>.woff2` with its exact size and hash; archive readers rehash. */
+/** Every 1.1 or 1.2 font resource must be present as `assets/<sha256>.woff2` with its exact size and hash; archive readers rehash. */
 async function fontAssetsMatch(
   subset: VersionedShapePackSubset,
   entries: ReadonlyMap<string, Uint8Array>,
   hash: (bytes: Uint8Array) => Promise<string>,
 ): Promise<boolean> {
-  if (subset.formatVersion !== '1.1') return true;
+  if (!packHasFonts(subset)) return true;
   for (const resource of subset.fontResources) {
     const bytes = entries.get(`assets/${resource.sha256}.woff2`);
     if (!bytes || bytes.byteLength !== resource.size || (await hash(bytes.slice())) !== resource.sha256) return false;
