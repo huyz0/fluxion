@@ -2,7 +2,7 @@
 // file they opened. Save writes over the file only when the file may be written over (a whole `.flux` this major version wrote) and the
 // browser gave a handle; anything else, and Save a copy, asks for a new name. Ctrl or Cmd+S is Save.
 
-import type { Store } from '@fluxion/core';
+import type { ConnectorDef, Store } from '@fluxion/core';
 import type { AssetStore } from '@fluxion/editor';
 import type { ShapePackSourceData } from '@fluxion/format';
 import { createId, type RecordId, type Result } from '@fluxion/schema';
@@ -33,6 +33,8 @@ export type FileBarProps = {
   readonly entry: OpenedEntry | undefined;
   /** Explicit SDK sources for new namespaces, or how to read them at save time; loaded embedded sources remain authoritative. */
   readonly shapePackSources?: readonly ShapePackSourceData[] | (() => readonly ShapePackSourceData[]);
+  /** The registered pack connector type of an id, embedded for the types the document uses (FR-CON-010, FR-LIB-009). */
+  readonly connectorDefOf?: (type: string) => ConnectorDef | undefined;
   /** Go to the editor of the document `docId`. */
   readonly onOpened: (docId: string) => void;
   /** Called after the file was written, with its name and bytes (autosave marks the journal saved; the library keeps a copy). */
@@ -55,7 +57,10 @@ export function currentFile(
   entry: OpenedEntry | undefined,
   store: Store,
   assets: AssetStore,
-  shapePackSources: readonly ShapePackSourceData[] = [],
+  sources: {
+    readonly shapePacks?: readonly ShapePackSourceData[] | undefined;
+    readonly connectorDefOf?: ((type: string) => ConnectorDef | undefined) | undefined;
+  } = {},
 ): Promise<Result<SavedBytes, string>> {
   return fileBytes({
     file: entry?.file,
@@ -63,7 +68,8 @@ export function currentFile(
     bytesOf: (id) => heldBytes(assets, id),
     hasher: webHasher,
     appVersion: STUDIO_VERSION,
-    shapePackSources,
+    shapePackSources: sources.shapePacks ?? [],
+    ...(sources.connectorDefOf === undefined ? {} : { connectorDefOf: sources.connectorDefOf }),
     ...(embedExternalOn() ? { embedExternal: urlReader } : {}),
     ...(subsetFontsOn() ? { subsetFonts: studioSubsetDeps() } : {}),
     fonts: (document) =>
@@ -118,7 +124,7 @@ export async function openWithHost(host: FileHost, onOpened: (docId: string) => 
  * @public
  */
 export function FileBar(props: FileBarProps): JSX.Element {
-  const { host, store, assets, entry, onOpened, onSaved, shapePackSources } = props;
+  const { host, store, assets, entry, onOpened, onSaved, shapePackSources, connectorDefOf } = props;
   const [message, setMessage] = useState('');
   // the handle the next Save writes through: the file's own when it may be written over, else the copy that was saved last
   const target = useRef<unknown>(entry !== undefined && mayOverwrite(entry.file) ? entry.handle : undefined);
@@ -147,7 +153,10 @@ export function FileBar(props: FileBarProps): JSX.Element {
       if (saving.current) return;
       saving.current = true;
       try {
-        const made = await currentFile(entry, store, assets, typeof shapePackSources === 'function' ? shapePackSources() : shapePackSources);
+        const made = await currentFile(entry, store, assets, {
+          shapePacks: typeof shapePackSources === 'function' ? shapePackSources() : shapePackSources,
+          connectorDefOf,
+        });
         if (!made.ok) return setMessage(made.error);
         const said = !copy && target.current !== undefined ? await overwrite(target.current, made.value.bytes) : await saveAs(made.value.bytes);
         setMessage(`${said}${warningsOf(made.value)}`);
@@ -157,7 +166,7 @@ export function FileBar(props: FileBarProps): JSX.Element {
         saving.current = false;
       }
     },
-    [entry, store, assets, shapePackSources, saveAs, overwrite],
+    [entry, store, assets, shapePackSources, connectorDefOf, saveAs, overwrite],
   );
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -5,6 +5,13 @@
  */
 
 export { type AssetStore, createMemoryAssetStore, referencedAssetHashes, type SelectedAssets, selectAssets, usedAssetIds } from './asset-store.js';
+export {
+  CONNECTOR_ENTRY_PREFIX,
+  type EmbeddedConnectors,
+  embeddedConnectors,
+  savedConnectorEntries,
+  usedConnectorTypes,
+} from './connector-entries.js';
 export { type OpenedDocument, openDocumentText, type Salvage } from './document-open.js';
 export {
   type EmbedFailure,
@@ -36,7 +43,6 @@ export {
   type WriteFluxInput,
   writeFlux,
 } from './flux-writer.js';
-
 export {
   type EncodedImage,
   type ImageCodec,

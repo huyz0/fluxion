@@ -14,10 +14,12 @@ import {
   type VersionedShapePackSubset,
 } from '@fluxion/core';
 import { registerApplyPatchCommand } from '@fluxion/dsl';
+import type { EmbeddedConnectors } from '@fluxion/format';
 import { registerArrangeCommand, registerBuiltInLayouts, registerBuiltInTemplates } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
 import { themesCorePack } from '@fluxion/pack-themes-core';
 import { registerSavedShapePacks, renderRegistriesFor } from '@fluxion/player';
+import { registerConnectorDefs } from '@fluxion/routing';
 import { type DocumentFile, err, ok, type Result } from '@fluxion/schema';
 
 /**
@@ -57,7 +59,12 @@ function registerLayouts(registries: Core['registries']): { readonly ok: true } 
  */
 export function openDocument(
   file: DocumentFile,
-  options: { readonly readOnly?: boolean; readonly logger?: Logger; readonly shapePacks?: readonly VersionedShapePackSubset[] } = {},
+  options: {
+    readonly readOnly?: boolean;
+    readonly logger?: Logger;
+    readonly shapePacks?: readonly VersionedShapePackSubset[];
+    readonly connectors?: readonly EmbeddedConnectors[];
+  } = {},
 ): Result<OpenDocument, string> {
   options.logger?.log('debug', 'opening a document', { records: Object.keys(file.records).length, readOnly: options.readOnly === true });
   const core = createCore(file, options.readOnly === true ? { policy: 'read-only' } : {});
@@ -73,7 +80,13 @@ export function openDocument(
   const patching = registerApplyPatchCommand(core.registries.commands, core.registries);
   if (!patching.ok) return err(`The AI patch command failed to register: ${patching.error.message}`);
   const artworkFonts = createRegistry<string, readonly ArtworkFontBinding[]>('artworkFonts');
-  return ok({ core, registries: renderRegistriesFor(core.registries, artworkFonts), artworkFonts, themes: themesCorePack.themes });
+  const registries = renderRegistriesFor(core.registries, artworkFonts);
+  // the pack connector types the file carries (FR-CON-010, FR-LIB-009): an entry that is refused leaves its connectors drawn straight
+  for (const { pack, input } of options.connectors ?? []) {
+    const types = registerConnectorDefs(registries.routers, input, pack);
+    if (!types.ok) options.logger?.log('warn', 'saved connector types were refused', { pack, problems: types.error.map((d) => d.message) });
+  }
+  return ok({ core, registries, artworkFonts, themes: themesCorePack.themes });
 }
 
 /**

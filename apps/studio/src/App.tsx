@@ -3,7 +3,9 @@
 
 import { type Core, writable } from '@fluxion/core';
 import { type ArrangePort, type AssetStore, createAssetStore, createGlobalRouting, createSession, EditorRoot, type GlobalRouting } from '@fluxion/editor';
+import { embeddedConnectors } from '@fluxion/format';
 import { PlayerRoot } from '@fluxion/player';
+import { connectorDefOf } from '@fluxion/routing';
 import { ok, type RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
 import { type CSSProperties, type JSX, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
@@ -207,6 +209,7 @@ function ProtectedEditor(props: {
               assets={assets}
               entry={entry}
               shapePackSources={saveSources}
+              connectorDefOf={(type) => connectorDefOf(registries.routers, type)}
               onOpened={(id) => navigate(`/edit/${id}`)}
               onSaved={(saved) => {
                 void autosave?.saved();
@@ -238,7 +241,13 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   const readOnly = guard.phase === 'read-only';
   const opened = useMemo(() => {
     const file = entry === undefined ? loadDocument(docId, cryptoRandom) : ok(entry.file.document);
-    const doc = file.ok ? openDocument(file.value, { readOnly, logger: studioLogger(window.location.search, console).child('studio') }) : file;
+    const doc = file.ok
+      ? openDocument(file.value, {
+          readOnly,
+          logger: studioLogger(window.location.search, console).child('studio'),
+          connectors: embeddedConnectors(entry?.file.extraEntries),
+        })
+      : file;
     if (!doc.ok) return doc;
     // the bytes of the document's assets (images, fonts) and the font picker's sources live as long as the document is open here
     const assets = createAssetStore();

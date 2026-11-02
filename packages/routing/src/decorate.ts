@@ -32,6 +32,8 @@ export type DecoratedRouter = Router & {
   readonly base: string;
   /** How the route is drawn. */
   readonly decoration: ConnectorDecoration;
+  /** The definition it was made from, as a save embeds it (FR-LIB-009). */
+  readonly def: ConnectorDef;
 };
 
 /** Most points one decorated stroke has: a long route with a short wave is drawn coarser, not slower. */
@@ -248,7 +250,19 @@ export function connectorDefRouter(def: ConnectorDef, routers: { get(id: string)
     route: (r) => base.route(r),
     base: def.router,
     decoration: def.decoration,
+    def,
   };
+}
+
+/**
+ * The pack connector definition `routers` holds as `type` (a decorated router's), else undefined: what a save embeds for a
+ * connector of that type (FR-CON-010, FR-LIB-009).
+ *
+ * @public
+ */
+export function connectorDefOf(routers: { get(id: string): Router | undefined }, type: string): ConnectorDef | undefined {
+  const def = (routers.get(type) as Partial<DecoratedRouter> | undefined)?.def;
+  return typeof def === 'object' ? def : undefined;
 }
 
 /**

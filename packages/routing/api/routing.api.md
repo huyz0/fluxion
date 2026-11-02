@@ -82,6 +82,11 @@ export function buildGrid(input: GridInput): Grid;
 export function chooseAutoSides(edges: readonly AutoEdge[], options?: AutoOptions): AutoChoice[];
 
 // @public
+export function connectorDefOf(routers: {
+    get(id: string): Router | undefined;
+}, type: string): ConnectorDef | undefined;
+
+// @public
 export function connectorDefRouter(def: ConnectorDef, routers: {
     get(id: string): Router | undefined;
 }): DecoratedRouter | undefined;
@@ -103,6 +108,7 @@ export const curvedRouter: Router;
 export type DecoratedRouter = Router & {
     readonly base: string;
     readonly decoration: ConnectorDecoration;
+    readonly def: ConnectorDef;
 };
 
 // @public

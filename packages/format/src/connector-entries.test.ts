@@ -1,0 +1,65 @@
+import type { ConnectorDef } from '@fluxion/core';
+import { documentBuilder } from '@fluxion/schema/testing';
+import { describe, expect, it } from 'vitest';
+import { embeddedConnectors, savedConnectorEntries, usedConnectorTypes } from './connector-entries.js';
+import { decodeUtf8, encodeUtf8 } from './utf8.js';
+
+const def = (id: string): ConnectorDef => ({ id: id as ConnectorDef['id'], router: 'orthogonal', decoration: { kind: 'double', gap: 3 } });
+const DEFS = new Map([def('lines:wavy'), def('lines:double'), def('net:wire')].map((d) => [d.id as string, d]));
+
+function doc() {
+  const b = documentBuilder({ seed: 7 });
+  const s = b.screen();
+  const [a, c, e] = [0, 1, 2].map((i) => b.rect(s, { x: i * 200, y: 0, w: 80, h: 50 })) as [never, never, never];
+  b.connect(a, c, { route: 'lines:wavy' });
+  b.connect(c, e, { route: 'net:wire' });
+  b.connect(a, e, { route: 'net:wire' });
+  b.connect(a, e, { route: 'other:unknown' });
+  b.connect(c, a, { route: 'orthogonal' });
+  return b.build();
+}
+
+describe('pack connector types in saved entries (FR-CON-010, FR-LIB-009)', () => {
+  it('FR-LIB-009: a save embeds the definitions of exactly the pack connector types the document uses, one entry per pack', () => {
+    expect(usedConnectorTypes(doc())).toEqual(['lines:wavy', 'net:wire', 'other:unknown']);
+    const known = (t: string) => DEFS.get(t);
+    const entries = savedConnectorEntries(
+      doc(),
+      new Map([
+        ['plugins/x@1/player.js', encodeUtf8('x')],
+        ['connectors/old.json', encodeUtf8('{}')],
+      ]),
+      known,
+    );
+    // a pack no longer used is dropped; `other` has no definition and no earlier entry, so nothing is written for it
+    expect([...entries.keys()]).toEqual(['plugins/x@1/player.js', 'connectors/lines.json', 'connectors/net.json']);
+    const text = decodeUtf8(entries.get('connectors/net.json') as Uint8Array);
+    expect(JSON.parse(text)).toEqual({ format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [def('net:wire')] });
+    // canonical: the same definitions give the same bytes
+    expect(savedConnectorEntries(doc(), undefined, known).get('connectors/lines.json')).toEqual(entries.get('connectors/lines.json'));
+  });
+
+  it('FR-LIB-009: an entry for a pack whose used types the host does not know (refused on open) is kept as it was', () => {
+    const refused = encodeUtf8('{"format":"fluxion-connector-defs","formatVersion":"1.1","definitions":[]}');
+    const entries = savedConnectorEntries(doc(), new Map([['connectors/net.json', refused]]), (t) => (t === 'lines:wavy' ? DEFS.get(t) : undefined));
+    expect(entries.get('connectors/net.json')).toBe(refused);
+    expect([...entries.keys()]).toEqual(['connectors/lines.json', 'connectors/net.json']);
+  });
+
+  it('FR-CON-010: reading back gives each pack with its JSON; an entry that is not UTF-8 JSON or is nested reads as nothing to register', () => {
+    const entries = savedConnectorEntries(doc(), undefined, (t) => (t === 'lines:wavy' ? DEFS.get(t) : undefined));
+    const read = embeddedConnectors(
+      new Map([
+        ...entries,
+        ['connectors/bad.json', encodeUtf8('{"format":')],
+        ['connectors/bin.json', new Uint8Array([0xff, 0xfe])],
+        ['connectors/deep/x.json', encodeUtf8('{}')],
+        ['connectors/readme.txt', encodeUtf8('hi')],
+      ]),
+    );
+    expect(read.map((r) => r.pack)).toEqual(['bad', 'bin', 'lines']);
+    expect(read.find((r) => r.pack === 'lines')?.input).toEqual({ format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [def('lines:wavy')] });
+    expect(read.filter((r) => r.input === undefined).map((r) => r.pack)).toEqual(['bad', 'bin']);
+    expect(embeddedConnectors(undefined)).toEqual([]);
+  });
+});

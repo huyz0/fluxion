@@ -6,6 +6,7 @@
 
 import { AnyRecord } from '@fluxion/schema';
 import { AssetRecord } from '@fluxion/schema';
+import { ConnectorDef } from '@fluxion/core';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { FileIO } from '@fluxion/core';
@@ -41,6 +42,9 @@ export const categoryOf: (path: string) => string;
 
 // @public
 export function checkAsset(asset: FluxAsset): AssetCheck;
+
+// @public
+export const CONNECTOR_ENTRY_PREFIX = "connectors/";
 
 // @public
 export type ContentHasher = {
@@ -114,6 +118,15 @@ export type DrawioProcessedReport = {
     readonly acceptedCount: number;
     readonly entries: readonly DrawioEntryOutcome[];
 };
+
+// @public
+export type EmbeddedConnectors = {
+    readonly pack: string;
+    readonly input: unknown;
+};
+
+// @public
+export function embeddedConnectors(entries: ReadonlyMap<string, Uint8Array> | undefined): readonly EmbeddedConnectors[];
 
 // @public
 export type EmbeddedFont = {
@@ -806,6 +819,9 @@ export function sanitizeAsset(asset: FluxAsset): FluxAsset | undefined;
 export function sanitizeSvg(input: string): string | undefined;
 
 // @public
+export function savedConnectorEntries(document: DocumentFile, entries: ReadonlyMap<string, Uint8Array> | undefined, defOf: (type: string) => ConnectorDef | undefined): ReadonlyMap<string, Uint8Array>;
+
+// @public
 export function scaleToFit(width: number, height: number, max: number): PixelSize | undefined;
 
 // @public
@@ -1015,6 +1031,9 @@ export const UNPINNED_HASH: string;
 
 // @public
 export function usedAssetIds(doc: DocumentFile): ReadonlySet<string>;
+
+// @public
+export function usedConnectorTypes(document: DocumentFile): readonly string[];
 
 // @public
 export function usedFontFamilies(doc: DocumentFile): ReadonlySet<string> | undefined;

@@ -8,6 +8,7 @@ import type { AssetStore } from './asset-store.js';
 import { screenToPage } from './camera.js';
 import { Canvas } from './canvas.js';
 import { type CanvasMenuInput, useCanvasMenu } from './canvas-menu.js';
+import { connectorTypeInspectors } from './connector-types.js';
 import { ImagePicker } from './image-picker.js';
 import type { EditorLayout } from './layout.js';
 import { type ArrangePort, LAYOUT_CHOICES, registeredLayoutIds } from './layout-arrange.js';
@@ -82,7 +83,7 @@ function inspectorFor(props: EditBodyProps): ReactNode {
   return (
     <Inspector
       session={session}
-      fields={{ store, execute, shapeDefs: registries.shapeDefs }}
+      fields={{ store, execute, shapeDefs: registries.shapeDefs, inspectors: connectorTypeInspectors(registries.routers) }}
       layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema, choices, templates, arrange }}
     />
   );

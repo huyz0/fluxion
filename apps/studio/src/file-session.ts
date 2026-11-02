@@ -2,7 +2,7 @@
 // writes. The decisions are here, apart from the browser APIs that move the bytes (file-host.ts): a `.flux`, `.flux.html` or `.flux.json` opens
 // to a document and its assets; a file written by a newer major version (`readOnly`) or opened in part (`salvage`) is never saved over its
 // own file, only as a copy; and only a `.flux` is saved over, since the others are different formats.
-import { allowsShapePackContentLicense, artworkFontRequirements, type FileIO, type VersionedShapePackSubset } from '@fluxion/core';
+import { allowsShapePackContentLicense, artworkFontRequirements, type ConnectorDef, type FileIO, type VersionedShapePackSubset } from '@fluxion/core';
 import {
   type ContentHasher,
   createMemoryAssetStore,
@@ -18,6 +18,7 @@ import {
   type Salvage,
   type ShapePackSourceData,
   type SubsetSave,
+  savedConnectorEntries,
   selectAssets,
   sha256Hex,
   subsetFontGaps,
@@ -243,6 +244,11 @@ export type SaveInput = {
   readonly fonts?: (document: DocumentFile) => Promise<{ readonly records: readonly AnyRecord[]; readonly assets: ReadonlyMap<string, FluxAsset> }>;
   /** Subset-on-save (FR-AST-003, ADR-0051): how each font job runs; absent while the option is off, which writes whole fonts. */
   readonly subsetFonts?: FontSubsetDeps;
+  /**
+   * The definition of a registered pack connector type (routing `connectorDefOf`): the types the document uses are written as
+   * `connectors/<pack>.json` entries, replacing the file's (FR-CON-010, FR-LIB-009); absent, the file's entries are kept as they are.
+   */
+  readonly connectorDefOf?: (type: string) => ConnectorDef | undefined;
 };
 
 /** The assets of `input.document` that have bytes, by hash: those the file held, else those the editor holds. */
@@ -273,6 +279,15 @@ function gapsOf(document: DocumentFile): SavedBytes['fontGaps'] {
   }));
 }
 
+/**
+ * The extra entries a save writes: the file's, with its `connectors/` entries replaced by the pack connector types `document`
+ * uses when the host gives their definitions.
+ */
+function savedEntries(input: SaveInput, document: DocumentFile): ReadonlyMap<string, Uint8Array> {
+  const entries = input.file?.extraEntries ?? new Map<string, Uint8Array>();
+  return input.connectorDefOf === undefined ? entries : savedConnectorEntries(document, entries, input.connectorDefOf);
+}
+
 /** Write `document` with the assets of `byHash` it references. */
 async function writeDocument(input: SaveInput, document: DocumentFile, byHash: ReadonlyMap<string, FluxAsset>): Promise<Result<SavedBytes, string>> {
   const store = createMemoryAssetStore(input.hasher);
@@ -288,7 +303,8 @@ async function writeDocument(input: SaveInput, document: DocumentFile, byHash: R
     appVersion: input.appVersion,
     generator: 'fluxion studio',
     ...(file?.source === undefined ? {} : { source: file.source }),
-    ...(file === undefined ? {} : { extraEntries: file.extraEntries, manifestExtras: file.manifestExtras }),
+    extraEntries: savedEntries(input, embedded.document),
+    ...(file === undefined ? {} : { manifestExtras: file.manifestExtras }),
     hasher: input.hasher,
     plugins: file?.plugins ?? [],
     shapePacks: shapeSaveOptions(file?.shapePacks ?? [], input.shapePackSources ?? [], file?.unresolvedShapeIds ?? new Set(), file?.artworkFonts),

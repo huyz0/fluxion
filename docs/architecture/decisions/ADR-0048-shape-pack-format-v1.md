@@ -164,6 +164,23 @@ the SDK does not depend on routing (architecture 01). The same pack registering 
 types id by id; a type the newer file drops stays until the earlier registration is disposed. No
 host loads pack directories yet; the document open path registers embedded types (M18.112).
 
+### M18.112 — pack connector types in saved files and the inspector (FR-CON-010, FR-LIB-009)
+
+A save embeds the definitions of the pack connector types the document's connectors use: one
+`connectors/<pack>.json` extra entry per pack, a `fluxion-connector-defs` envelope in canonical JSON
+(definitions in id order), replacing the file's earlier `connectors/` entries (format
+`savedConnectorEntries`; the host gives each type's definition, routing `connectorDefOf`, which a
+decorated router now carries as `def`). A pack with a used type the host does not know (an entry
+it refused on open, say) keeps the file's entry as it was, so a save never drops what another
+reader could register; entries of packs no longer used are dropped. They are ordinary extra entries,
+so the container, manifest and document schema are unchanged and an older reader keeps them as
+opaque entries. On open, `embeddedConnectors` reads each entry (over 1 MiB or not UTF-8 JSON reads
+as nothing) and the host registers it with `registerConnectorDefs`, which validates it and refuses
+it whole; a refused entry is logged and its connectors are drawn as an unknown type (straight).
+Studio registers them when it opens a file and embeds the used types when it saves. The editor's
+connector Route field offers the registered pack types after the built-in routers. The player's
+open path, whose routing runs in a worker, is a follow-up row.
+
 ### M18.34 — My shapes file (FR-LIB-008)
 
 My shapes, the person's local pack, is stored in local storage under `fluxion.my-shapes` and
