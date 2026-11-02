@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { rmSync } from 'node:fs';
 import { after, before, describe, it } from 'node:test';
+import { headerCountProblems } from '../../scripts/gates/check-digest.mjs';
 import { cleanEnv, out, sandbox } from './helpers.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
@@ -241,4 +242,11 @@ describe('digest coverage (M18.99)', () => {
       run('reset', '-q', '--hard', start);
     }
   });
+});
+
+describe('backlog header count (M18.223, cp32 F5)', () => {
+  const text = (stated, n) => `Planned: 3 rows; current: ${stated} rows.\n\n${Array.from({ length: n }, (_, i) => ROW(`M0.${i + 1}`)).join('\n')}\n`;
+  it('accepts a header whose count matches the rows', () => assert.deepEqual(headerCountProblems(text(2, 2)), []));
+  it('names a header whose count drifted from the rows', () => assert.match(headerCountProblems(text(3, 2))[0], /current: 3 but it has 2 rows/));
+  it('ignores a backlog without a count header', () => assert.deepEqual(headerCountProblems(backlog([ROW('M0.1')])), []));
 });

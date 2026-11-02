@@ -10,10 +10,12 @@
 // a rewritten commit follows it the same way (M18.155). A conflict or any refused gate
 // stops the run with the local branch back where it started; nothing is pushed. While a `blocks-landing` row is open, only that row's commits
 // and commits confined to harness paths land, and closing it needs CI evidence (M18.123, M18.135). With --push, the result is pushed as a fast-forward, retried when the branch moved.
-// Pushing still needs a human's request (skill ship).
+// Main's ci is read once per attempt with last-ci (M18.223, cp32 F2): while it is red or waiting on a declared fix, a commit
+// that changes a non-harness path lands only with a `Fixes-ci: <id>` trailer naming a red run of the branch (ci-run-red.mjs);
+// while it is unknown, a `feat` commit waits. Pushing still needs a human's request (skill ship).
 import { existsSync, realpathSync, statSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { ciEvidenceHolds, ciFixProblem, landingBlock } from '../gates/landing-block.mjs';
+import { ciEvidenceHolds, ciFixProblem, harnessPath, landingBlock } from '../gates/landing-block.mjs';
 import { exists, git, node, repoPath, run } from '../gates/lib.mjs';
 
 const argv = process.argv.slice(2);
@@ -155,11 +157,33 @@ function remapped(sha, rewritten) {
   return must(['commit-tree', treeWith(sha, rewritten), '-p', parent, '-m', 'land: remapped'], 'write a remapped commit');
 }
 
+/** Main's ci by last-ci (M18.223): 0 green, 1 red, 2 waiting on a declared fix, 3 unknown; any other answer is unknown. */
+function ciVerdict(branch) {
+  const runsFile = opt('ci-runs-file');
+  const r = node('scripts/harness/last-ci.mjs', ['--branch', branch, ...(runsFile ? ['--runs-file', runsFile, '--offline'] : [])]);
+  return [0, 1, 2, 3].includes(r.status) ? r.status : 3;
+}
+
+/**
+ * Why a commit may not land while main's ci gives `verdict`, or null (M18.223, cp32 F2): a commit confined to harness paths
+ * always may; on red (1) or a pending declared fix (2) any other commit needs a `Fixes-ci: <id>` trailer whose run `isRed`
+ * confirms; on unknown (3) a `feat` commit waits.
+ */
+export function ciRefusal(verdict, { paths, subject, message }, isRed) {
+  if (verdict === 0 || paths.every(harnessPath)) return null;
+  if (verdict === 3) return /^M\d+\.\d+: feat\(/.test(subject) ? "main's ci is unknown (last-ci exit 3); a feature commit waits until it reads green" : null;
+  const ids = [...message.matchAll(/^Fixes-ci: (\d+)\s*$/gm)].map((m) => m[1]);
+  if (!ids.length)
+    return `main's ci is red (last-ci exit ${verdict}); until it is green only harness-path commits and commits carrying Fixes-ci: <red run> land`;
+  const notRed = ids.map((id) => isRed(id)).find(Boolean);
+  return notRed ? `its Fixes-ci names no red run of the branch: ${notRed}` : null;
+}
+
 /**
  * Re-apply each local commit of `start` missing from `upstream` onto `upstream`, oldest first,
  * committing each through the hooks. Commits already on upstream (same patch) are skipped.
  */
-function recommit(upstream, start) {
+function recommit(upstream, start, verdict) {
   const commits = lines(git(['rev-list', '--reverse', '--right-only', '--cherry-pick', '--no-merges', `${upstream}...${start}`]));
   must(['reset', '-q', '--hard', upstream], 'move to the remote branch');
   const rewritten = new Map();
@@ -181,6 +205,13 @@ function recommit(upstream, start) {
       ciFixProblem: (task, id) => ciFixProblem(task, id, must(['rev-parse', 'HEAD'], 'read the tip'), { runsFile: opt('ci-runs-file') }),
     });
     if (blocked) return fail(`${sha.slice(0, 7)} (${subject}) may not land: ${blocked}`);
+    const message = must(['log', '-1', '--format=%B', sha], 'read the message');
+    const red = ciRefusal(verdict, { paths, subject, message }, (id) => {
+      const runsFile = opt('ci-runs-file');
+      const r = node('scripts/gates/ci-run-red.mjs', [id, '--since', upstream, ...(runsFile ? ['--runs-file', runsFile] : [])]);
+      return r.status === 0 ? null : r.stderr.trim() || `run ${id} is not a red ci run`;
+    });
+    if (red) return fail(`${sha.slice(0, 7)} (${subject}) may not land: ${red}`);
     const picked = git(['cherry-pick', '-n', remapped(sha, rewritten)]);
     if (picked.status !== 0)
       return fail(
@@ -225,7 +256,7 @@ function attempt({ remote, branch, push, start }) {
   if (!lines(git(['rev-list', `${upstream}..${start}`])).length) return { ok: true, message: `nothing to land on ${remote}/${branch}` };
   const clobbered = untrackedInTheWay(upstream);
   if (clobbered.length) return fail(`untracked files would be overwritten by ${remote}/${branch}; move them first:\n  ${clobbered.join('\n  ')}`);
-  const gated = recommit(upstream, start);
+  const gated = recommit(upstream, start, ciVerdict(branch));
   if (!gated.ok) return gated;
   const digest = node('scripts/gates/check-digest.mjs', ['--head']);
   if (digest.status !== 0) return fail(`landed history lacks review evidence:\n${digest.stdout}${digest.stderr}`);

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, rmSync, writeFileSync } from 'node:fs';
 import { after, before, describe, it } from 'node:test';
-import { fillCommitCells, regenerateSteps } from '../../scripts/harness/land.mjs';
+import { ciRefusal, fillCommitCells, regenerateSteps } from '../../scripts/harness/land.mjs';
 import { cleanEnv, out, sandbox } from './helpers.mjs';
 
 describe('fillCommitCells (M18.106)', () => {
@@ -55,6 +55,29 @@ describe('regenerateSteps (M18.163)', () => {
   });
 });
 
+describe('ciRefusal (M18.223, cp32 F2)', () => {
+  const product = { paths: ['packages/core/src/x.ts', '.harness/progress.md'], subject: 'M1.2: fix(core): x', message: 'M1.2: fix(core): x\n' };
+  const feature = { ...product, subject: 'M1.2: feat(core): x' };
+  const harness = { paths: ['scripts/gates/x.mjs', 'docs/backlog/current.md'], subject: 'M1.3: feat(harness): x', message: '' };
+  const red = (id) => (id === '7' ? null : `run ${id} is not red`);
+  it('HARNESS: on green every commit lands', () => {
+    assert.equal(ciRefusal(0, feature, red), null);
+  });
+  it('HARNESS: on red (1) or a pending declared fix (2) a product commit needs Fixes-ci naming a red run; a harness-only commit lands', () => {
+    for (const verdict of [1, 2]) {
+      assert.match(ciRefusal(verdict, product, red), /main's ci is red \(last-ci exit \d\)/);
+      assert.equal(ciRefusal(verdict, { ...product, message: 'M1.2: fix(core): x\n\nFixes-ci: 7\n' }, red), null);
+      assert.match(ciRefusal(verdict, { ...product, message: 'M1.2: fix(core): x\n\nFixes-ci: 8\n' }, red), /names no red run of the branch: run 8 is not red/);
+      assert.equal(ciRefusal(verdict, harness, red), null);
+    }
+  });
+  it('HARNESS: on unknown (3) a feature commit waits; a fix and a harness-only feature land', () => {
+    assert.match(ciRefusal(3, feature, red), /main's ci is unknown \(last-ci exit 3\)/);
+    assert.equal(ciRefusal(3, product, red), null);
+    assert.equal(ciRefusal(3, harness, red), null);
+  });
+});
+
 /** Key of `reviewed`'s extra files that is a commit-message trailer instead (Object.entries skips it). */
 const TRAILER = Symbol('trailer');
 
@@ -69,7 +92,11 @@ describe('land (M18.106)', () => {
   const git = (cwd, ...args) => spawnSync('git', args, { cwd, encoding: 'utf8', env: cleanEnv() });
   const remoteHead = () => ok(git(origin, 'rev-parse', 'main'));
   const head = () => ok(sb.git('rev-parse', 'HEAD'));
-  const land = (...args) => sb.node('scripts/harness/land.mjs', args);
+  /** Main's ci as last-ci reads it: no runs yet (green) unless a case passes its own --ci-runs-file (M18.223). */
+  const land = (...args) => {
+    if (!args.includes('--ci-runs-file')) writeFileSync(`${sb.dir}-no-runs.json`, '[]');
+    return sb.node('scripts/harness/land.mjs', args.includes('--ci-runs-file') ? args : [...args, '--ci-runs-file', `${sb.dir}-no-runs.json`]);
+  };
   /** Another stream pushes `file` straight to the remote. */
   function upstream(file, text) {
     ok(git(other, 'pull', '-q', '--ff-only', 'origin', 'main'));
@@ -445,6 +472,44 @@ describe('land (M18.106)', () => {
       assert.equal(remoteHead(), head());
       reviewed('M0.21', 'src/fix.txt', 'fix again\n', { [TRAILER]: 'Fixes-ci: 501' });
       refusedBy(/a M0\.21 commit carrying Fixes-ci: 501 already landed; the exemption is spent/);
+    } finally {
+      rmSync(runsFile, { force: true });
+    }
+  });
+
+  it("HARNESS: while main's ci is red, refuses a product commit and lands a Fixes-ci fix (M18.223, cp32 F2)", () => {
+    reset();
+    // the cases before leave M0.20 blocking; this one is about main's ci alone
+    upstream('docs/backlog/current.md', sb.read('docs/backlog/current.md').replaceAll('`blocks-landing`', ''));
+    reset();
+    const runsFile = `${sb.dir}-red-runs.json`;
+    // ci run 601 failed on the remote tip and is main's newest completed ci run
+    const at = (sha) => ({ workflowName: 'ci', headSha: sha, status: 'completed', createdAt: '2026-11-02T10:00:00Z' });
+    writeFileSync(
+      runsFile,
+      JSON.stringify([
+        { databaseId: 601, ...at(remoteHead()), conclusion: 'failure', jobs: [{ name: 'verify (windows-latest)', conclusion: 'failure' }] },
+        { databaseId: 602, ...at(remoteHead()), workflowName: 'gates', conclusion: 'success', jobs: [] },
+      ]),
+    );
+    const refusedBy = (pattern) => {
+      const start = head();
+      const before = remoteHead();
+      const r = land('--push', '--ci-runs-file', runsFile);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, pattern);
+      assert.equal(head(), start);
+      assert.equal(remoteHead(), before);
+      reset();
+    };
+    try {
+      reviewed('M0.23', 'src/feature.txt', 'x\n');
+      refusedBy(/M0\.23: test: src\/feature\.txt\) may not land: main's ci is red \(last-ci exit 1\)/);
+      // (a harness-only commit's pass-through is ciRefusal's unit case; the sandbox's checkpoint budget allows two more task commits here)
+      reviewed('M0.25', 'src/fix-red.txt', 'fix\n', { [TRAILER]: 'Fixes-ci: 601' });
+      const fixed = land('--push', '--ci-runs-file', runsFile);
+      assert.equal(fixed.status, 0, out(fixed));
+      assert.equal(remoteHead(), head());
     } finally {
       rmSync(runsFile, { force: true });
     }

@@ -3769,3 +3769,8 @@ reopen: M18.222 timing-bound tests measured on all OSes (F1 major), M18.223 land
 argued: F3 is M18.218; F6 minimatch excusal by id; F7 SHA-256 padding vectors
 next: M18.223 and M18.222 before the next product stack; then M18.214, .205, .216 (stream 1) and the held stacks of streams 2, 3 and 4
 
+
+## 2026-11-02 M18.223: land.mjs refuses product commits while main's ci is red (cp32 F2, F5)
+- land.mjs asks last-ci for the branch before recommitting. On red or fix-pending (exit 1 or 2) a commit that touches any non-harness path lands only with a `Fixes-ci:` trailer naming a red run of the branch (checked by ci-run-red.mjs); on unknown (exit 3) only feature rows wait. Harness-only commits always land, so a ci fix row and its bookkeeping never deadlock.
+- check-digest fails when the backlog header's `current:` count differs from its rows (cp32 F5 fixed it by hand once).
+- Tests: three ciRefusal unit cases, an integration case (product commit refused on a red run, a Fixes-ci fix lands), three header-count cases; the land sandbox reads an empty runs file so other cases see green.

@@ -164,6 +164,17 @@ function commitCellProblems(commits, tree) {
     .filter(Boolean);
 }
 
+/**
+ * The backlog header's `current: N` against its `| M<n>.<k> |` rows (M18.223, cp32 F5): a row added without the count, or a
+ * count bumped without a row, is a problem. A backlog without the header has nothing to compare.
+ */
+export function headerCountProblems(text) {
+  const stated = /^Planned: \d+ rows; current: (\d+)\b/m.exec(text)?.[1];
+  if (stated === undefined) return [];
+  const rows = text.split(/\r?\n/).filter((l) => /^\| M\d+\.\d+ \|/.test(l)).length;
+  return Number(stated) === rows ? [] : [`backlog header says current: ${stated} but it has ${rows} rows; correct the header`];
+}
+
 /** The Commit cell problem of one backlog line, if it is a done row (see commitCellProblems). */
 function rowCellProblem(line, { committed, head, history }) {
   const cells = line.split('|').map((c) => c.trim());
@@ -195,6 +206,7 @@ export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
     ...grammarProblems(entries),
     ...posthocProblems(commits, entries, milestone),
     ...commitCellProblems(commits, tree),
+    ...headerCountProblems(show(tree, BACKLOG)),
   ];
   if (problems.length) return { ok: false, detail: `digest: ${problems.length} problem(s)\n  ${problems.join('\n  ')}` };
   return { ok: true, detail: `digest: ${commits.length} ${milestone} task commits have tracked review evidence and Commit cells` };
