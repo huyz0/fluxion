@@ -178,3 +178,6 @@ M18.162 (cp20 F2): packs/icons-lucide/package.json keeps "license": "MIT". check
 cp30 F7: OpenedFlux in @fluxion/player/element references CreditedPack, which is exported only from @fluxion/player. It is a type-only import from the main entry with no runtime cost. Export it from ./element if the element API is next touched (M18.42 docs may name it).
 cp31 F3: M18.214's evidence is already restated in its local commit (reviewed r1 pass): the nightly was long, not wedged (16.9, 13.8, 14.0 h), M18.205 records from nightly 41184728589, and progress.md carries the M18.209 three-OS correction. It lands right after cp31. The nightly previous-playwright webkit failure is re-read after 590e0a4's next nightly.
 cp31 F4: the Credits dialog pulls outside focus back to Close while open; that is the intended trap for a dialog that is modal in effect. Move to showModal() when the dialog is next touched.
+cp32 F3: pack on MCP list_catalog and the CLI catalog is row M18.218 (stream 2, ADR-0212), reviewed and waiting behind cp32; no new row.
+cp32 F6: osv-scanner cannot scope an id excusal to one package; check-osv-expiry bounds the window to 2026-12-02 and any new advisory still fails.
+cp32 F7: SHA-256 padding is unchanged and a differential run against node:crypto matched for lengths 0-299 and 1023-100003; add 55/63/64/119/120-byte vectors when sha256.ts is next touched.

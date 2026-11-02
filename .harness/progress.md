@@ -3761,3 +3761,11 @@ also red: e2e chromium 2/4 at 6d45a30 (ci 41426181149) failed 5 unrelated specs 
 
 ## 2026-11-02 M18.221: the draw.io amplification case fits its 10 s on macOS again (ci 41444571519)
 - The case was not hanging: under coverage its 4.4 MB library cost 1052 ms locally, 642 of it the pure SHA-256 of the provenance hash (an array destructure, a closure and six calls per block) and 147 the UTF-8 encode (a pair per character); a loaded macOS runner multiplies that past 10 s. Hashing now runs in locals and ASCII is encoded inline: about 470 ms under coverage. Review r1 F1: a slicing XML text decoder would have saved another 120 ms but cost about 9x the memory on dense references (540 MB against 63 MB on 30 Mi characters of `&#256;`), so the decoder keeps its preallocated buffer. No timeout or assertion changed.
+
+## 2026-11-02 cp32 (claude, stream 1)
+done: checkpoint cp32 through 84bdb8e changes-requested (independent subagent); delta cp31 record, M18.41, .219, .113, .120, .220, .221
+red: e2e chromium 2/4 at 6d45a30 (ci 41426181149) read as a runner fault (14 min shard vs 3-4, unchanged tree green at 2c236ec, green at 21b5120); Windows verify at 21b5120 and macOS verify at 42493b1 fixed by M18.220 and M18.221, both intermittent
+reopen: M18.222 timing-bound tests measured on all OSes (F1 major), M18.223 land.mjs refuses product commits on red ci (F2 major; a6a2ef5 and 5028ff7 landed while main read red); M18.35 acceptance carries M18.120's open minor (F4); header count fixed (F5)
+argued: F3 is M18.218; F6 minimatch excusal by id; F7 SHA-256 padding vectors
+next: M18.223 and M18.222 before the next product stack; then M18.214, .205, .216 (stream 1) and the held stacks of streams 2, 3 and 4
+
