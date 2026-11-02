@@ -226,6 +226,28 @@ test.describe('source view', { tag: '@desktop' }, () => {
     await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(0);
   });
 
+  test('FR-EDT-022, FR-EDT-007: a clipboard chord on the focused Reload button leaves its focus and the waiting text alone (M18.144)', async ({ page }) => {
+    const { editor, left, text } = await openSource(page);
+    await select(text.locator('.cm-line', { hasText: 'label: Alpha' }), 'rect');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.type('t');
+    await expect(left.locator('.fx-source-marker[data-severity="error"]')).toHaveCount(1);
+    await editor.toolbarButton('Snapping').click();
+    await dragShape(editor, 'Beta', { dx: 120, dy: 80 });
+    const banner = left.getByText('Canvas changed — reload');
+    await expect(banner).toBeVisible();
+    // the banner keeps its focus (data-fx-keeps-focus): a chord does not move it to the clipboard catcher, so its blur does not apply the text
+    const reload = left.getByRole('button', { name: 'Reload' });
+    await reload.focus();
+    for (const key of ['ControlOrMeta+c', 'ControlOrMeta+x', 'ControlOrMeta+v']) {
+      await page.keyboard.press(key);
+      await expect(reload).toBeFocused();
+    }
+    await expect(banner).toBeVisible();
+    await expect(text).toContainText('shape: rectt');
+    await expect(text).not.toContainText('pin:');
+  });
+
   test('FR-EDT-022: text typed just before the editor is blurred is applied at once', async ({ page }) => {
     const { editor, left, text } = await openSource(page);
     await page.evaluate(() => {

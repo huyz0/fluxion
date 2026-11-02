@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { clipboardCatcher } from './clipboard-catcher.js';
+import { catchesFrom, clipboardCatcher } from './clipboard-catcher.js';
 
 const catchers: ReturnType<typeof clipboardCatcher>[] = [];
 const made = () => {
@@ -85,5 +85,16 @@ describe('the clipboard catcher (FR-EDT-007, NFR-PORT-001)', () => {
     c.dispose();
     expect(document.querySelector('[data-fx-clipboard-catcher]')).toBeNull();
     expect(c.owns(document.activeElement)).toBe(false);
+  });
+
+  it('a chord routes from anywhere but inside an element marked data-fx-keeps-focus (M18.144)', () => {
+    const banner = document.createElement('div');
+    banner.setAttribute('data-fx-keeps-focus', '');
+    const reload = document.createElement('button');
+    banner.append(reload);
+    const plain = document.createElement('button');
+    document.body.append(banner, plain);
+    expect([null, window, document.body, plain].map((t) => catchesFrom(t))).toEqual([true, true, true, true]);
+    expect([banner, reload].map((t) => catchesFrom(t))).toEqual([false, false]);
   });
 });

@@ -69,6 +69,38 @@ test.describe('copy and paste across documents', { tag: '@desktop' }, () => {
     await expect(second.elements).toHaveCount(3);
   });
 
+  test('FR-EDT-007, NFR-PORT-001: with a Navigator screen button focused, the keys still paste from another tab on an engine that raises clipboard events only from an editable field (M18.144)', async ({
+    page,
+    context,
+  }) => {
+    // the same engine as above: a plain control outside the canvas still sends the chord through the catcher, the only way the other tab's shapes get in
+    await context.addInitScript(() => {
+      const editable = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA)$/.test(t.tagName));
+      for (const type of ['copy', 'cut', 'paste'])
+        window.addEventListener(type, (e) => (editable(e.target) ? undefined : e.stopImmediatePropagation()), { capture: true });
+      const refused = () => Promise.reject(new DOMException('refused', 'NotAllowedError'));
+      Object.defineProperty(navigator.clipboard, 'read', { value: refused });
+      Object.defineProperty(navigator.clipboard, 'readText', { value: refused });
+    });
+    const first = new EditorPage(page);
+    await joinedPair(page, first);
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.press('ControlOrMeta+c');
+    const other = await context.newPage();
+    const second = new EditorPage(other);
+    await second.open('new');
+    await other.bringToFront();
+    const screen = second.panel('Screens, library and layers').locator('.fx-chrome-screen-button').first();
+    await screen.click();
+    await screen.focus();
+    await expect(screen).toBeFocused();
+    await other.keyboard.press('ControlOrMeta+v');
+    await expect(second.elements).toHaveCount(3);
+    await expect(second.canvas.locator('.fx-el[data-kind="connector"]')).toHaveCount(1);
+    // the focus is given back to the button once the paste is handled
+    await expect(screen).toBeFocused();
+  });
+
   test('FR-EDT-007: a keyboard copy then a menu Paste in chromium pastes the same shapes', async ({ page, context, browserName }) => {
     // the async clipboard read needs a grant, and the custom path is Chromium's (webkit keeps custom types per origin)
     // (the row asks for Chromium; the other engines pass this test without running it, the keyboard path above covers them)

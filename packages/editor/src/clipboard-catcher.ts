@@ -16,6 +16,19 @@ export type ClipboardCatcher = {
   dispose(): void;
 };
 
+/** The marker of a control whose focus a chord leaves alone: one whose blur does something (the source view's Reload banner applies the waiting text). */
+const KEEPS_FOCUS = 'data-fx-keeps-focus';
+
+/**
+ * Whether a chord pressed on `target` goes through the catcher: everywhere but inside an element marked {@link KEEPS_FOCUS} (M18.144). The catcher
+ * is the only way a paste from another document gets in on an engine that raises clipboard events only from an editable target (WebKit 26.5,
+ * FR-EDT-007, NFR-PORT-001), so a plain button or list keeps routing; a marked control keeps its focus, and its chord is done by the browser's event
+ * if one is raised there, else by the async path (which that engine may refuse a read).
+ */
+export function catchesFrom(target: EventTarget | null): boolean {
+  return !(target instanceof Element) || target.closest(`[${KEEPS_FOCUS}]`) === null;
+}
+
 /** A catcher in `doc`, made on the first chord. */
 export function clipboardCatcher(doc: Document): ClipboardCatcher {
   let area: HTMLTextAreaElement | undefined;

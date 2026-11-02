@@ -185,7 +185,7 @@ function CanvasBanner(props: {
 }): ReactNode {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: only listens to the focus leaving its button; the live region itself is not interactive
-    <div ref={props.box} className="fx-chrome-source-banner" role="status" onBlur={(e) => props.onLeave(e.relatedTarget)}>
+    <div ref={props.box} className="fx-chrome-source-banner" role="status" data-fx-keeps-focus="" onBlur={(e) => props.onLeave(e.relatedTarget)}>
       {props.shown ? (
         <>
           <span>{t`Canvas changed — reload`}</span>

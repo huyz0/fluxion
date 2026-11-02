@@ -6,7 +6,7 @@
 // (WebKit 26.5, M18.132); a chord no event answers all the same is done by the async path after a short wait (M11.59).
 import { useCallback, useEffect, useRef } from 'react';
 import type { Clipboard } from './clipboard.js';
-import { type ClipboardCatcher, clipboardCatcher } from './clipboard-catcher.js';
+import { type ClipboardCatcher, catchesFrom, clipboardCatcher } from './clipboard-catcher.js';
 import { type ChordFallback, chordAction, chordFallback, type Timers } from './clipboard-chord.js';
 import { readAsync, readFromEvent, writeAsync, writeToEvent } from './clipboard-dom.js';
 import { isEditable } from './editor-keys.js';
@@ -149,10 +149,10 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
       const action = chordAction(e);
       if (action === undefined || e.defaultPrevented || !editingHere(e.target)) return;
       // a chord still waiting is done (and the focus given back) first, then this one is routed; a copy or cut of the page's selected text,
-      // with nothing selected on the canvas, is the browser's own and goes where it went before
+      // with nothing selected on the canvas, is the browser's own and goes where it went before, and a control marked to keep its focus keeps it (M18.144)
       fallback.pressed(action);
       const pageText = action !== 'paste' && session.selection.get().length === 0 && document.getSelection()?.isCollapsed === false;
-      if (!pageText) catcher.route();
+      if (!pageText && (catcher.owns(e.target) || catchesFrom(e.target))) catcher.route();
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('copy', onCopy);
