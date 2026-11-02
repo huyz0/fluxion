@@ -3846,3 +3846,6 @@ next: M18.226 (reviewed, held by the checkpoint budget), M18.230, M18.229, then 
 - M18.224's headroom step failed verify (windows-latest) at c7c26ed: apps/studio font-subset-save's default-save case read 11262 of 20000 ms (56%) in that run and over half in the one before.
 - Cost: two deep `toEqual` checks of the reopened font against the original 800 KB took about 1 s each in local Chromium (the step profile: 992 ms and 1023 ms of the case's 2721 ms). They now compare in one pass (`sameBytes`, length then every byte); the case runs in 567 ms locally. No timeout raised, no assertion dropped.
 - Also red: ci 41511418799 at b5194f1, M18.144's new e2e case on firefox and webkit; stream 2 fixes it in its own row.
+## M18.43 — plan M18.233, connectors.json from loaded packs (2026-11-02)
+
+- cp34 F6 widened M18.112's acceptance with packs the studio and CLI load carrying connectors.json. That clause moved to the new row M18.233 (stream 3, after M18.122, depends on M18.112) rather than being dropped, and M18.112 is narrowed back to the saved/embedded path its reviewed content (8475df5) covers.
