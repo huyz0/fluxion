@@ -3717,3 +3717,11 @@ round-allowance: M18.143 Huy answered "You decide" on the open decision cards (2
 - main's ci at 590e0a4 failed security/osv-scanner on two new advisories: GHSA-3g3m-2fjr-6pw4 (glob 13.0.6, fixed 14.0.2) via Storybook's react-docgen plugin, and GHSA-g3hv-75wg-m249 (minimatch 10.2.3, 10.2.6 and 3.1.5; fixed only in 11.0.1) via api-extractor, typedoc, that glob, and glob 7 under rimraf 3 in @lhci/cli. All development and docs tooling.
 - Override `glob@>=13 <14.0.2: 14.0.3`; the plugin calls only globSync, checked against 14.0.3. Overriding minimatch to 11 was tried and dropped: glob 7.2.3's sync throws (`rawGlob.charAt` of undefined) and typedoc 0.28.20 (the latest) calls the removed `Minimatch.matchOne`, which failed the check-api TypeDoc harness test in the staged verify. So the three minimatch versions are excused one by one in osv-scanner.toml ([[PackageOverrides]] by exact version, until 2026-12-02); an advisory on any other minimatch still fails the scan. Budget re-recorded with --cold-pending (ADR-0145).
 - The scanner cannot run in this container (binary download refused), so the scan itself is proved by the ci run at the fix commit.
+
+## 2026-11-02 cp31 (claude, stream 1)
+done: checkpoint cp31 through 2c236ec changes-requested (independent subagent); delta M18.213 x2, .215, .208, .207, .217
+ci: 41412874125 at 590e0a4 green on all 12 e2e shards; red only osv-scanner (fixed by 2c236ec); windows verify 987 s
+reopen: M18.219 osv-scanner excusals expiring 2026-11-02 and the minimatch excusals narrowed (F1 major, F2)
+argued: F3 M18.214 evidence is in its local commit; F4 credits dialog focus trap, showModal() when next touched
+next: M18.219 before any product push; then M18.216, .205, .214 (stream 1), M18.113/.120 (stream 3), 721eec3/M18.210 (stream 4), M18.41/.144 (stream 2)
+
