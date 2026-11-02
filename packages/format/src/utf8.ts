@@ -31,6 +31,13 @@ export function encodeUtf8(text: string): Uint8Array {
   const out = new Uint8Array(text.length * 3);
   let n = 0;
   for (let i = 0; i < text.length; ) {
+    // ASCII, nearly all of a library's text, is written inline: a call and a pair per character dominated its hash under coverage (M18.221)
+    const unit = text.charCodeAt(i);
+    if (unit < 0x80) {
+      out[n++] = unit;
+      i++;
+      continue;
+    }
     const [code, units] = codePointAt(text, i);
     n = writeCodePoint(out, n, code);
     i += units;

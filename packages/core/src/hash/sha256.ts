@@ -10,7 +10,6 @@ const K = Uint32Array.from([
   0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
   0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ]);
-const rotr = (x: number, n: number) => (x >>> n) | (x << (32 - n));
 /**
  * The SHA-256 of `data` as 32 bytes, computed in plain JavaScript (slow on large inputs: prefer SubtleCrypto where it exists).
  *
@@ -23,31 +22,50 @@ export function sha256Bytes(data: Uint8Array): Uint8Array {
   const view = new DataView(padded.buffer);
   writeSha256Length(view, data.length);
   const h = Uint32Array.from([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
-  const w = new Uint32Array(64);
+  const w = new Int32Array(64);
+  // one block's rounds in plain locals, with no per-block array, closure or call (M18.221: a 4 MiB draw.io library's provenance
+  // hash was most of its import's time under coverage)
   for (let off = 0; off < padded.length; off += 64) {
-    let [a, b, c, d, e, f, g, hh] = h as unknown as number[] as [number, number, number, number, number, number, number, number];
+    for (let i = 0; i < 16; i++) w[i] = view.getInt32(off + i * 4);
+    for (let i = 16; i < 64; i++) {
+      // FIPS 180-4 §6.2.2: σ0 and σ1 of the schedule
+      const x = w[i - 15] as number;
+      const y = w[i - 2] as number;
+      const s0 = ((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3);
+      const s1 = ((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10);
+      w[i] = (w[i - 16] as number) + s0 + (w[i - 7] as number) + s1;
+    }
+    let a = h[0] as number;
+    let b = h[1] as number;
+    let c = h[2] as number;
+    let d = h[3] as number;
+    let e = h[4] as number;
+    let f = h[5] as number;
+    let g = h[6] as number;
+    let hh = h[7] as number;
     for (let i = 0; i < 64; i++) {
-      // FIPS 180-4 §6.2.2: generate each schedule word in the round that consumes it.
-      if (i < 16) w[i] = view.getUint32(off + i * 4);
-      else {
-        const x = w[i - 15] as number;
-        const y = w[i - 2] as number;
-        w[i] = ((w[i - 16] as number) + (rotr(x, 7) ^ rotr(x, 18) ^ (x >>> 3)) + (w[i - 7] as number) + (rotr(y, 17) ^ rotr(y, 19) ^ (y >>> 10))) >>> 0;
-      }
-      const t1 = (hh + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + (K[i] as number) + (w[i] as number)) >>> 0;
-      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+      // Σ1, Ch, Σ0 and Maj with the rotations written out: a call per rotation is most of the cost where coverage counts calls
+      const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+      const t1 = (hh + S1 + ((e & f) ^ (~e & g)) + (K[i] as number) + (w[i] as number)) | 0;
+      const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+      const t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) | 0;
       hh = g;
       g = f;
       f = e;
-      e = (d + t1) >>> 0;
+      e = (d + t1) | 0;
       d = c;
       c = b;
       b = a;
-      a = (t1 + t2) >>> 0;
+      a = (t1 + t2) | 0;
     }
-    [a, b, c, d, e, f, g, hh].forEach((v, i) => {
-      h[i] = ((h[i] as number) + v) >>> 0;
-    });
+    h[0] = (h[0] as number) + a;
+    h[1] = (h[1] as number) + b;
+    h[2] = (h[2] as number) + c;
+    h[3] = (h[3] as number) + d;
+    h[4] = (h[4] as number) + e;
+    h[5] = (h[5] as number) + f;
+    h[6] = (h[6] as number) + g;
+    h[7] = (h[7] as number) + hh;
   }
   const out = new Uint8Array(32);
   const view32 = new DataView(out.buffer);
