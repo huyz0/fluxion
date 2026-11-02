@@ -3,12 +3,14 @@
 // Canonical JSON (keys sorted at every depth), category slugs from any category text, SHA-256 of each category file, and the
 // index and every category validated by the pack parsers under the caller's content policy. Pure: core's synchronous SHA-256.
 // A draft with `fonts` encodes as pack 1.1 (ADR-0192): its font metadata in the index and each exact font file, checked against
-// its resource, at `fonts/<sha256>.woff2`.
+// its resource, at `fonts/<sha256>.woff2`. A category text that is neither its slug nor the slug's title form is kept as the
+// category's display name, and the pack encodes as 1.2, which is 1.1 plus names (ADR-0210); every other pack's bytes are unchanged.
 import { type Diagnostic, err, ok, type Result } from '@fluxion/schema';
 import { sha256Hex } from '../hash/sha256.js';
 import { utf8 } from '../hash/stable-id.js';
 import type { ShapePackDistributionFontResource, ShapePackFonts, VersionedShapePackIndex } from './pack-font-types.js';
 import { parseVersionedShapePackCategory, parseVersionedShapePackIndex } from './pack-font-validation.js';
+import { CATEGORY_NAME_MAX, categoryNameProblem, categoryTitle, packHasFonts } from './pack-format.js';
 import type { ShapePackCredit, ShapePackIndex, ShapePackLicensePolicy } from './pack-types.js';
 import { type CategoryEntries, categoryOfIndex } from './pack-validation.js';
 import { parseShapeDef, type ShapeDef } from './shape-def.js';
@@ -121,8 +123,26 @@ function slugsOf(categories: readonly (string | undefined)[]): Map<string | unde
   return slugs;
 }
 
-/** Every definition with its category slug, parsed and in the namespace, in draft order. */
-function stored(draft: ShapePackDraft): Result<{ def: ShapeDef; name: string }[], readonly Diagnostic[]> {
+/**
+ * The display name each slug keeps (ADR-0210): its category text in NFC with each run of whitespace as one space, when that is
+ * neither its own slug nor that slug's `categoryTitle`. So a slug-form text (every first-party category) keeps none, nor does a text
+ * whose slug was numbered only to tell it apart (`uncategorized` beside the default, `Charts Graphs` beside `Charts & Graphs`). A
+ * text that is no valid name even so (over 80 characters, say) keeps none, and its category shows its title form, as before 1.2.
+ */
+function namesOf(slugs: ReadonlyMap<string | undefined, string>): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const [text, slug] of slugs) {
+    const name = text?.normalize('NFC').replace(/\s+/g, ' ').trim();
+    if (name === undefined || name.length > CATEGORY_NAME_MAX) continue;
+    const own = slugOf(name);
+    if (name === own || name === categoryTitle(own) || name === categoryTitle(slug)) continue;
+    if (categoryNameProblem(name) === undefined) names.set(slug, name);
+  }
+  return names;
+}
+
+/** Every definition with its category slug, parsed and in the namespace, in draft order, and each slug's display name. */
+function stored(draft: ShapePackDraft): Result<{ members: { def: ShapeDef; name: string }[]; names: Map<string, string> }, readonly Diagnostic[]> {
   const slugs = slugsOf(draft.definitions.map(({ def }) => def.category));
   const out: { def: ShapeDef; name: string }[] = [];
   for (const [i, { def: raw, name }] of draft.definitions.entries()) {
@@ -131,7 +151,7 @@ function stored(draft: ShapePackDraft): Result<{ def: ShapeDef; name: string }[]
     if (!def.value.id.startsWith(`${draft.id}:`)) return err([problem(`/definitions/${i}/def/id`, 'definition is outside the pack namespace')]);
     out.push({ def: def.value, name });
   }
-  return out.length ? ok(out) : err([problem('/definitions', 'a pack needs at least one definition')]);
+  return out.length ? ok({ members: out, names: namesOf(slugs) }) : err([problem('/definitions', 'a pack needs at least one definition')]);
 }
 
 /** The font files of a 1.1 draft by their resource paths, or the diagnostics of bytes that are missing or not their resource's. */
@@ -166,8 +186,8 @@ function checkCategories(
   envelopes: ReadonlyMap<string, unknown>,
   licensePolicy: ShapePackLicensePolicy,
 ): Result<true, readonly Diagnostic[]> {
-  // a 1.1 category also checks every definition's font closure against its index: that parser validates the index itself
-  if (index.formatVersion === '1.1') {
+  // a 1.1 or 1.2 category also checks every definition's font closure against its index: that parser validates the index itself
+  if (packHasFonts(index)) {
     for (const [slug, envelope] of envelopes) {
       const category = parseVersionedShapePackCategory(envelope, index, slug, licensePolicy);
       if (!category.ok) return err(category.error.map((d) => ({ ...d, path: `/categories/${slug}${d.path}` })));
@@ -188,6 +208,32 @@ function checkCategories(
   return ok(true);
 }
 
+/** Each category's canonical file in `formatVersion`, its envelope for checking, and its index entry (with its name, if any). */
+function categoryFilesOf(groups: ReadonlyMap<string, ShapeDef[]>, formatVersion: string, names: ReadonlyMap<string, string>) {
+  const categoryFiles = new Map<string, Uint8Array>();
+  const envelopes = new Map<string, unknown>();
+  const descriptors: Record<string, { path: string; sha256: string; name?: string }> = {};
+  for (const [slug, definitions] of groups) {
+    const path = `categories/${slug}.json`;
+    const envelope = { formatVersion, definitions };
+    const bytes = utf8(canonicalJson(envelope));
+    categoryFiles.set(path, bytes);
+    envelopes.set(slug, envelope);
+    const name = names.get(slug);
+    descriptors[slug] = { path, sha256: sha256Hex(bytes), ...(name === undefined ? {} : { name }) };
+  }
+  return { categoryFiles, envelopes, descriptors };
+}
+
+/** The index's font metadata: the draft's, an empty closure for a fontless 1.2 (which carries 1.1's fields), none for 1.0. */
+function fontMetadataOf(fonts: ShapePackDraftFonts | undefined, formatVersion: string): Partial<ShapePackFonts<ShapePackDistributionFontResource>> {
+  if (fonts !== undefined) {
+    const { fontResources, fontFaces, definitionFonts, fontCredits } = fonts;
+    return { fontResources, fontFaces, definitionFonts, fontCredits };
+  }
+  return formatVersion === '1.2' ? { fontResources: [], fontFaces: [], definitionFonts: [], fontCredits: [] } : {};
+}
+
 /**
  * Encode `draft` as a declarative pack (ADR-0048, ADR-0196) and validate every file it writes under
  * `licensePolicy`. Refuses an empty pack, ids outside the namespace, invalid definitions and rights the policy
@@ -198,32 +244,14 @@ function checkCategories(
  * @public
  */
 export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackLicensePolicy): Result<EncodedShapePack, readonly Diagnostic[]> {
-  const members = stored(draft);
-  if (!members.ok) return members;
+  const parts = stored(draft);
+  if (!parts.ok) return parts;
+  const { members, names } = parts.value;
   const fonts = draft.fonts === undefined ? ok([] as [string, Uint8Array][]) : fontFiles(draft.fonts);
   if (!fonts.ok) return fonts;
-  const formatVersion = draft.fonts === undefined ? '1.0' : '1.1';
-  const groups = groupBySlug(members.value);
-  const categoryFiles = new Map<string, Uint8Array>();
-  const envelopes = new Map<string, unknown>();
-  const descriptors: Record<string, { path: string; sha256: string }> = {};
-  for (const [slug, definitions] of groups) {
-    const path = `categories/${slug}.json`;
-    const envelope = { formatVersion, definitions };
-    const bytes = utf8(canonicalJson(envelope));
-    categoryFiles.set(path, bytes);
-    envelopes.set(slug, envelope);
-    descriptors[slug] = { path, sha256: sha256Hex(bytes) };
-  }
-  const metadata =
-    draft.fonts === undefined
-      ? {}
-      : {
-          fontResources: draft.fonts.fontResources,
-          fontFaces: draft.fonts.fontFaces,
-          definitionFonts: draft.fonts.definitionFonts,
-          fontCredits: draft.fonts.fontCredits,
-        };
+  // names need 1.2, which carries the 1.1 font metadata (empty without fonts); a pack without names is written exactly as before
+  const formatVersion = names.size > 0 ? '1.2' : draft.fonts === undefined ? '1.0' : '1.1';
+  const { categoryFiles, envelopes, descriptors } = categoryFilesOf(groupBySlug(members), formatVersion, names);
   const index = parseVersionedShapePackIndex(
     {
       format: 'fluxion-shape-pack',
@@ -234,9 +262,9 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
       license: draft.license,
       attribution: draft.attribution,
       categories: descriptors,
-      definitions: members.value.map(({ def, name }) => ({ id: def.id, name, keywords: def.keywords ?? [], category: def.category as string })),
+      definitions: members.map(({ def, name }) => ({ id: def.id, name, keywords: def.keywords ?? [], category: def.category as string })),
       credits: draft.credits,
-      ...metadata,
+      ...fontMetadataOf(draft.fonts, formatVersion),
     },
     licensePolicy,
   );
@@ -244,5 +272,5 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
   const checked = checkCategories(index.value, envelopes, licensePolicy);
   if (!checked.ok) return checked;
   const files = new Map<string, Uint8Array>([['index.json', utf8(canonicalJson(index.value))], ...categoryFiles, ...fonts.value]);
-  return ok({ files, index: index.value, definitions: members.value.map((m) => m.def) });
+  return ok({ files, index: index.value, definitions: members.map((m) => m.def) });
 }

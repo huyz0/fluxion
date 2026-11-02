@@ -1,6 +1,13 @@
 // Check a declarative pack's files through the same loader a host uses (ADR-0048, ADR-0050, ADR-0193): the version-aware artwork
 // loader, so a 1.1 pack's exact fonts are read and verified as a host acquires them (ADR-0192).
-import { allowsShapePackContentLicense, type ShapeDef, type ShapePackLicensePolicy, sha256Hex, type VersionedShapePackIndex } from '@fluxion/core';
+import {
+  allowsShapePackContentLicense,
+  packHasFonts,
+  type ShapeDef,
+  type ShapePackLicensePolicy,
+  sha256Hex,
+  type VersionedShapePackIndex,
+} from '@fluxion/core';
 import { type Diagnostic, err, jsonPointer, ok, type Result } from '@fluxion/schema';
 import { createArtworkShapePackLoader } from '../artwork-pack-loader.js';
 
@@ -30,9 +37,9 @@ function reader(files: Readonly<Record<string, string>>, fonts: Readonly<Record<
   };
 }
 
-/** Every path the index names: itself, its categories and, for 1.1, its font resources. */
+/** Every path the index names: itself, its categories and, for 1.1 and 1.2, its font resources. */
 function namedPaths(index: VersionedShapePackIndex): Set<string> {
-  const fonts = index.formatVersion === '1.1' ? index.fontResources.map((r) => r.path) : [];
+  const fonts = packHasFonts(index) ? index.fontResources.map((r) => r.path) : [];
   return new Set(['index.json', ...Object.values(index.categories).map((c) => c.path), ...fonts]);
 }
 

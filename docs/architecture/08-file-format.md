@@ -311,6 +311,16 @@ admit 1.1 subsets and `ShapePackDataLock.packFormat` admits `'1.1'`; hosts that 
 with their exact fonts (M18.97, 09-extensibility), and so does the studio (M18.115). Imported
 artwork whose text needs exact fonts saves the same way, as a 1.1 distribution source (M18.81).
 
+
+### Pack 1.2 category names (ADR-0210)
+
+Pack 1.2 is 1.1 plus category display names: an index category entry may carry `name`
+(non-empty, at most 80 characters, NFC, no control character), and a saved subset may carry
+`categoryNames` for the categories its definitions use (fixtures `fixtures/shape-pack/v1.2/`,
+including `labels.flux`). The encoder writes a name only for a category text that is neither its
+own slug nor that slug's `categoryTitle`, so a pack without one keeps its 1.0 or 1.1 bytes. Names
+are refused in 1.0 and 1.1. Every font-bearing reader asks `packHasFonts` (1.1 or 1.2); a used 1.2
+source saves under `packFormat: '1.2'` with its fonts checked at the lock as in 1.1. Migration: none.
 ### Known shape data I/O (ADR-0184)
 
 Both loaders validate known locks and saved geometry before returning `LoadedFlux.shapePacks`.

@@ -128,6 +128,15 @@ export type BinaryOp = "+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "
 export function canonicalJson(value: unknown): string;
 
 // @public
+export const CATEGORY_NAME_MAX = 80;
+
+// @public
+export function categoryNameProblem(name: string): string | undefined;
+
+// @public
+export function categoryTitle(slug: string): string;
+
+// @public
 export function checkVersionedShapePackSubsets(registry: Registry<string, ShapeDef>, inputs: readonly unknown[], policy: ShapePackLicensePolicy): Result<readonly VersionedShapePackSubset[], readonly Diagnostic[]>;
 
 // @public
@@ -502,6 +511,9 @@ export type IntegrityHook = (context: HookContext) => void;
 export function isArtworkFontAlias(family: string): boolean;
 
 // @public
+export const isFontFormat: (version: unknown) => version is ShapePackFontFormat;
+
+// @public
 export type LogEntry = {
     readonly level: LogLevel;
     readonly namespace: string;
@@ -594,6 +606,9 @@ export type OutlineSpec = {
     readonly closed?: boolean;
     readonly smooth?: boolean;
 };
+
+// @public
+export function packHasFonts<T extends ShapePackVersioned>(pack: T): pack is ShapePackWithFonts<T>;
 
 // @public
 export type ParamHandle = {
@@ -763,7 +778,7 @@ export type ShapePackCategory = {
 
 // @public
 export type ShapePackCategory11 = {
-    readonly formatVersion: "1.1";
+    readonly formatVersion: ShapePackFontFormat;
     readonly definitions: readonly ShapeDef[];
 };
 
@@ -849,6 +864,9 @@ export type ShapePackFontFace = {
 };
 
 // @public
+export type ShapePackFontFormat = "1.1" | "1.2";
+
+// @public
 export type ShapePackFontResource = {
     readonly id: string;
     readonly sha256: string;
@@ -880,8 +898,9 @@ export type ShapePackIndex = {
 };
 
 // @public
-export type ShapePackIndex11 = Omit<ShapePackIndex, "formatVersion"> & {
-    readonly formatVersion: "1.1";
+export type ShapePackIndex11 = Omit<ShapePackIndex, "formatVersion" | "categories"> & {
+    readonly formatVersion: ShapePackFontFormat;
+    readonly categories: Readonly<Record<string, ShapePackNamedCategoryEntry>>;
 } & ShapePackFonts<ShapePackDistributionFontResource>;
 
 // @public
@@ -889,6 +908,11 @@ export const shapePackIndexSchema: z.ZodType<ShapePackIndex>;
 
 // @public
 export type ShapePackLicensePolicy = (expression: string) => boolean;
+
+// @public
+export type ShapePackNamedCategoryEntry = ShapePackCategoryEntry & {
+    readonly name?: string;
+};
 
 // @public
 export type ShapePackSource = {
@@ -917,11 +941,22 @@ export type ShapePackSubset = {
 
 // @public
 export type ShapePackSubset11 = Omit<ShapePackSubset, "formatVersion"> & {
-    readonly formatVersion: "1.1";
+    readonly formatVersion: ShapePackFontFormat;
+    readonly categoryNames?: Readonly<Record<string, string>>;
 } & ShapePackFonts<ShapePackFontResource>;
 
 // @public
 export const shapePackSubsetSchema: z.ZodType<ShapePackSubset>;
+
+// @public
+export type ShapePackVersioned = {
+    readonly formatVersion: string;
+};
+
+// @public
+export type ShapePackWithFonts<T extends ShapePackVersioned> = T & {
+    readonly formatVersion: ShapePackFontFormat;
+};
 
 // @public
 export type ShapeText = FittedText & {

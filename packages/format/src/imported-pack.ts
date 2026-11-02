@@ -78,7 +78,7 @@ export type ImportedPackOptions = {
 
 /** A validated pack: what a distribution publishes and what the portable writer saves. @public */
 export type ImportedPack = {
-  /** Validated index whose category hashes name `categories` bytes exactly; 1.1 when entries need fonts. */
+  /** Validated index whose category hashes name `categories` bytes exactly; 1.1 when entries need fonts, 1.2 when a category keeps its text as its name (ADR-0210). */
   readonly index: VersionedShapePackIndex;
   /** Canonical category files keyed by their index path. */
   readonly categories: ReadonlyMap<string, Uint8Array>;

@@ -90,6 +90,28 @@ describe('the credits of the shape packs a document uses (NFR-LIC-003, ADR-0050)
     expect([...lucide.querySelectorAll('li')].map((li) => li.getAttribute('part'))).toEqual(['credit', 'font-credit']);
   });
 
+  it("NFR-LIC-003 FR-LIB-009: a 1.2 subset's font credits are listed as a 1.1 subset's are (ADR-0210: 1.2 is 1.1 plus category names)", () => {
+    const font = {
+      id: 'inter',
+      license: 'OFL-1.1',
+      attribution: 'The Inter Project Authors',
+      notice: 'SIL OPEN FONT LICENSE Version 1.1',
+      source: { kind: 'upstream', reference: 'https://github.com/rsms/inter', sha256: 'c'.repeat(64) },
+      resourceIds: ['inter-400'],
+      definitionIds: ['lucide:database'] as QualifiedName[],
+    } as const;
+    const v12 = {
+      ...subset('lucide', [upstream]),
+      formatVersion: '1.2',
+      categoryNames: { databases: 'Databases & Storage' },
+      fontResources: [],
+      fontFaces: [],
+      definitionFonts: [],
+      fontCredits: [font],
+    } as const;
+    expect(creditedPacks([v12]).map((p) => p.fontCredits)).toEqual([[font]]);
+  });
+
   it('NFR-LIC-003: only an absolute http(s) URL is a link', () => {
     for (const ok of ['https://lucide.dev', 'http://example.com/a']) expect(isWebLink(ok)).toBe(true);
     for (const no of ['javascript:alert(1)', 'iconify:lucide', 'data:text/html,x', '//example.com', 'lucide.dev', '']) expect(isWebLink(no)).toBe(false);

@@ -67,7 +67,8 @@ it('FR-LIB-004: 1.0 files keep their unchanged parsers and results, and the pres
   expect(parseShapePackIndex(index(), policy).ok).toBe(false);
   expect(parseShapePackCategory(category(), index(), 'labels', policy).ok).toBe(false);
   expect(parseShapePackSubset(subset(), policy).ok).toBe(false);
-  for (const formatVersion of ['1.2', '2.0', undefined]) expect(indexOk({ ...index(), formatVersion }), String(formatVersion)).toBe(false);
+  // 1.2 is a known version since ADR-0210 (1.1 plus category names); a later one still is not
+  for (const formatVersion of ['1.3', '2.0', undefined]) expect(indexOk({ ...index(), formatVersion }), String(formatVersion)).toBe(false);
 });
 
 it('FR-LIB-004: a category must declare the same version as its index', () => {

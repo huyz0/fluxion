@@ -1,5 +1,6 @@
 import type { QualifiedName } from '@fluxion/schema';
-import type { ShapePackCategory, ShapePackIndex, ShapePackSource, ShapePackSubset } from './pack-types.js';
+import type { ShapePackFontFormat } from './pack-format.js';
+import type { ShapePackCategory, ShapePackCategoryEntry, ShapePackIndex, ShapePackSource, ShapePackSubset } from './pack-types.js';
 import type { ShapeDef } from './shape-def.js';
 
 /** Exact font bytes a pack 1.1 envelope declares; no bytes are carried in metadata. @public */
@@ -74,24 +75,45 @@ export type ShapePackFonts<R extends ShapePackFontResource> = {
   readonly fontCredits: readonly ShapePackFontCredit[];
 };
 
-/** Version 1.1 distribution metadata with exact font bindings (ADR-0192). @public */
-export type ShapePackIndex11 = Omit<ShapePackIndex, 'formatVersion'> & {
-  /** Distribution format version. */
-  readonly formatVersion: '1.1';
+/** A 1.1 or 1.2 index's category entry: a 1.0 entry plus, in 1.2 only, a display name (ADR-0210). @public */
+export type ShapePackNamedCategoryEntry = ShapePackCategoryEntry & {
+  /**
+   * Format 1.2 only: the category's display name as its source gave it, when that differs from `categoryTitle` of its slug;
+   * non-empty, at most 80 characters, NFC, no control character.
+   */
+  readonly name?: string;
+};
+
+/**
+ * Version 1.1 distribution metadata with exact font bindings (ADR-0192); version 1.2 is the same plus category display names in
+ * `categories` (ADR-0210).
+ * @public
+ */
+export type ShapePackIndex11 = Omit<ShapePackIndex, 'formatVersion' | 'categories'> & {
+  /** Distribution format version: 1.1, or 1.2 when a category has a display name. */
+  readonly formatVersion: ShapePackFontFormat;
+  /** Lazy category metadata keyed by slug; a `name` only in 1.2. */
+  readonly categories: Readonly<Record<string, ShapePackNamedCategoryEntry>>;
 } & ShapePackFonts<ShapePackDistributionFontResource>;
 
-/** Version 1.1 category geometry, validated against its index's font closure. @public */
+/** Version 1.1 or 1.2 category geometry, validated against its index's font closure. @public */
 export type ShapePackCategory11 = {
-  /** Distribution format version. */
-  readonly formatVersion: '1.1';
+  /** Distribution format version, its index's. */
+  readonly formatVersion: ShapePackFontFormat;
   /** Exactly the indexed definitions assigned to this category. */
   readonly definitions: readonly ShapeDef[];
 };
 
-/** Version 1.1 saved subset; every included definition's font closure is retained. @public */
+/**
+ * Version 1.1 or 1.2 saved subset; every included definition's font closure is retained, and a 1.2 subset keeps the display names
+ * of its definitions' categories (ADR-0210).
+ * @public
+ */
 export type ShapePackSubset11 = Omit<ShapePackSubset, 'formatVersion'> & {
-  /** Saved pack format. */
-  readonly formatVersion: '1.1';
+  /** Saved pack format: 1.2 when its pack's index is 1.2. */
+  readonly formatVersion: ShapePackFontFormat;
+  /** Format 1.2 only: display names by category slug, for the slugs its definitions use that have one. */
+  readonly categoryNames?: Readonly<Record<string, string>>;
 } & ShapePackFonts<ShapePackFontResource>;
 
 /** A pack index of any supported version. @public */

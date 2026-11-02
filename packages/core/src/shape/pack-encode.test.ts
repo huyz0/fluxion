@@ -3,12 +3,16 @@ import {
   allowsShapePackContentLicense,
   canonicalJson,
   encodeShapePack,
-  parseShapePackCategory,
-  parseShapePackIndex,
+  parseVersionedShapePackCategory,
+  parseVersionedShapePackIndex,
   type ShapeDef,
   type ShapePackDraft,
+  type ShapePackNamedCategoryEntry,
   sha256Hex,
 } from '../index.js';
+
+/** A category entry's display name: only a 1.1 or 1.2 entry types one, and only 1.2 holds it. */
+const nameOf = (e: ShapePackNamedCategoryEntry | undefined) => e?.name;
 
 const box: ShapeDef = {
   id: 'sample:box',
@@ -50,7 +54,7 @@ describe('one shared pack encoder (M18.108, ADR-0196)', () => {
     expect(canonicalJson(JSON.parse('{"__proto__":1}'))).toBe('{\n  "__proto__": 1\n}\n');
   });
 
-  it('FR-LIB-007, FR-LIB-009: the same draft gives the same validated bytes, with each category hashed in the index', () => {
+  it('FR-LIB-007, FR-LIB-009: the same draft gives the same validated bytes, with each category hashed in the index and its text kept as its name (1.2)', () => {
     const encoded = encodeShapePack(draft([at('boxes', 'a'), at('Charts & Graphs', 'b'), at(undefined, 'c'), at('boxes', 'd')]), policy);
     if (!encoded.ok) throw new Error(JSON.stringify(encoded.error));
     const { files, index, definitions } = encoded.value;
@@ -59,10 +63,17 @@ describe('one shared pack encoder (M18.108, ADR-0196)', () => {
     expect(again.ok && [...again.value.files.values()].map(text)).toEqual([...files.values()].map(text));
     for (const [slug, entry] of Object.entries(index.categories)) {
       expect(entry.sha256).toBe(sha256Hex(files.get(entry.path) ?? new Uint8Array()));
-      expect(parseShapePackCategory(JSON.parse(text(files.get(entry.path))), index, slug, policy).ok).toBe(true);
+      expect(parseVersionedShapePackCategory(JSON.parse(text(files.get(entry.path))), index, slug, policy).ok).toBe(true);
     }
     expect(text(files.get('index.json'))).toBe(canonicalJson(index));
-    expect(parseShapePackIndex(JSON.parse(text(files.get('index.json'))), policy)).toEqual({ ok: true, value: index });
+    expect(parseVersionedShapePackIndex(JSON.parse(text(files.get('index.json'))), policy)).toEqual({ ok: true, value: index });
+    // 'Charts & Graphs' is neither its slug nor the slug's title form ('Charts Graphs'), so it is kept, which takes format 1.2
+    expect(index.formatVersion).toBe('1.2');
+    expect(Object.entries(index.categories).map(([slug, e]) => [slug, nameOf(e)])).toEqual([
+      ['boxes', undefined],
+      ['charts-graphs', 'Charts & Graphs'],
+      ['uncategorized', undefined],
+    ]);
     // the index keeps draft order; each category file keeps it among its own definitions
     expect(definitions.map((d) => d.category)).toEqual(['boxes', 'charts-graphs', 'uncategorized', 'boxes']);
     expect(index.definitions.map((d) => [d.id, d.name, d.category])).toEqual([

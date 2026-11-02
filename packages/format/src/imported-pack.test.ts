@@ -1,4 +1,4 @@
-import { allowsShapePackContentLicense } from '@fluxion/core';
+import { allowsShapePackContentLicense, type ShapePackNamedCategoryEntry } from '@fluxion/core';
 import type { QualifiedName, Result } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
@@ -129,7 +129,7 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
     expect(refused(importedShapePack({ ...declared, entries: [{ ...entries[0], name: '' }] as typeof entries }))).toEqual(['/entries/0/name']);
   });
 
-  it('FR-LIB-005: categories keep distinct slugs', async () => {
+  it('FR-LIB-005 FR-LIB-003: categories keep distinct slugs, and a pack 1.2 keeps each source text its slug title would lose (ADR-0210)', async () => {
     const icon = { body: '<path d="M2 2h12v12H2z"/>' };
     const categorized = JSON.stringify({
       prefix: 'cats',
@@ -142,6 +142,36 @@ describe('imported collections as saveable credited packs (M18.101)', () => {
     expect(pack.index.definitions.map((d) => [d.id, d.category])).toEqual(['a', 'b', 'c', 'd', 'e'].map((n, i) => [`cats:${n}`, slugs[i]]));
     expect([...pack.categories.keys()].sort()).toEqual(slugs.map((s) => `categories/${s}.json`).sort());
     expect(pack.source.definitions.map((d) => d.category)).toEqual(slugs);
+    // the texts survive as names; the numbered twin 'Charts Graphs' is its own slug's title form and keeps none
+    expect(pack.index.formatVersion).toBe('1.2');
+    expect(Object.fromEntries(Object.entries(pack.index.categories).map(([slug, e]: [string, ShapePackNamedCategoryEntry]) => [slug, e.name]))).toEqual({
+      'charts-graphs': 'Charts & Graphs',
+      'charts-graphs-2': undefined,
+      category: 'Флаги',
+      'category-2': '矢印',
+      uncategorized: undefined,
+    });
+    // a save keeps the names of the categories it uses
+    const opened = value(await loadFlux(value(await save(['cats:a', 'cats:c'], [pack.source])).bytes, { hasher, shapePackLicensePolicy: licensePolicy }));
+    expect(opened.shapePacks[0]).toMatchObject({ formatVersion: '1.2', categoryNames: { 'charts-graphs': 'Charts & Graphs', category: 'Флаги' } });
+  });
+
+  it('FR-LIB-004 FR-LIB-003: a declared import whose definition names a category text keeps that text as the 1.2 name (ADR-0210)', async () => {
+    const svg = value(await importSvgShape('<svg viewBox="0 0 10 10"><rect width="9" height="9"/></svg>', { id: 'mine:box', witness }));
+    const pack = value(
+      importedShapePack({
+        namespace: 'mine',
+        version: '1.0.0',
+        name: 'My shapes',
+        license: 'MIT',
+        attribution: 'Me',
+        notice: 'MIT',
+        source: { kind: 'original', author: 'Me', statement: 'Mine.' },
+        licensePolicy,
+        entries: [{ definition: { ...svg.definition, category: 'Arrows & Pointers' }, name: 'Box', fonts: svg.fonts }],
+      }),
+    );
+    expect(pack.index).toMatchObject({ formatVersion: '1.2', categories: { 'arrows-pointers': { name: 'Arrows & Pointers' } } });
   });
 });
 

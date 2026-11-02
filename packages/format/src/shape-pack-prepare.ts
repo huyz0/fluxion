@@ -1,10 +1,12 @@
 import {
+  packHasFonts,
   parseShapeDef,
   parseVersionedShapePackIndex,
   parseVersionedShapePackSubset,
   type ShapeDef,
   type ShapePackCredit,
   type ShapePackDefinitionEntry,
+  type ShapePackFontFormat,
   type ShapePackFontResource,
   type ShapePackLicensePolicy,
   type ShapePackSubset,
@@ -47,8 +49,8 @@ export type ShapePackDataLock = {
   readonly id: string;
   /** Exact pinned semantic version. */
   readonly version: string;
-  /** Saved envelope version; 1.1 retains exact artwork fonts (ADR-0192). */
-  readonly packFormat: '1.0' | '1.1';
+  /** Saved envelope version; 1.1 retains exact artwork fonts (ADR-0192), and 1.2 also category display names (ADR-0210). */
+  readonly packFormat: '1.0' | ShapePackFontFormat;
   /** Exact canonical archive path of the definitions. */
   readonly entry: string;
   /** SHA-256 as standard padded base64, prefixed with `sha256-`. */
@@ -129,9 +131,18 @@ function distribution(input: Record<string, unknown>, policy: ShapePackLicensePo
   const pack = index.value;
   const { format, id, version, license, attribution, credits } = pack;
   const header = { format, id, version, license, attribution, credits, definitions: resolved.value };
-  if (pack.formatVersion === '1.0') return ok({ ...header, formatVersion: '1.0' });
+  if (!packHasFonts(pack)) return ok({ ...header, formatVersion: '1.0' });
   const { fontFaces, definitionFonts, fontCredits } = pack;
-  return ok({ ...header, formatVersion: '1.1', fontResources: pack.fontResources.map(retained), fontFaces, definitionFonts, fontCredits });
+  const fonts = { fontResources: pack.fontResources.map(retained), fontFaces, definitionFonts, fontCredits };
+  const names = Object.fromEntries(Object.entries(pack.categories).flatMap(([slug, e]) => (e.name === undefined ? [] : [[slug, e.name]])));
+  return ok({ ...header, formatVersion: pack.formatVersion, ...fonts, ...namesOf(names, resolved.value) });
+}
+
+/** A 1.2 subset's `categoryNames` for the categories `definitions` use (ADR-0210), none when no used category has a name. */
+function namesOf(names: Readonly<Record<string, string>> | undefined, definitions: readonly ShapeDef[]): { categoryNames?: Record<string, string> } {
+  const used = new Set(definitions.map((d) => d.category));
+  const kept = Object.fromEntries(Object.entries(names ?? {}).filter(([slug]) => used.has(slug)));
+  return Object.keys(kept).length ? { categoryNames: kept } : {};
 }
 
 /**
@@ -201,7 +212,7 @@ function usedFonts(source: ShapePackSubset11, used: ReadonlySet<string>): Omit<S
 type Pending = {
   readonly id: string;
   readonly version: string;
-  readonly packFormat: '1.0' | '1.1';
+  readonly packFormat: '1.0' | ShapePackFontFormat;
   readonly entry: string;
   readonly bytes: Uint8Array;
   readonly fonts: readonly { readonly resource: ShapePackFontResource; readonly bytes: Uint8Array | undefined }[];
@@ -225,8 +236,10 @@ function usedSubset(
   policy: ShapePackLicensePolicy,
 ): Result<VersionedShapePackSubset, readonly Diagnostic[]> {
   const definitions = subset.definitions.filter((d) => used.has(d.id)).sort(byId);
-  const header = { ...subset, definitions, credits: usedCredits(subset.credits, used) };
-  return parseVersionedShapePackSubset(subset.formatVersion === '1.1' ? { ...header, ...usedFonts(subset, used) } : header, policy);
+  const { categoryNames: _, ...rest } = subset as ShapePackSubset11;
+  const header = { ...rest, definitions, credits: usedCredits(subset.credits, used) };
+  if (!packHasFonts(subset)) return parseVersionedShapePackSubset(header, policy);
+  return parseVersionedShapePackSubset({ ...header, ...usedFonts(subset, used), ...namesOf(subset.categoryNames, definitions) }, policy);
 }
 
 function usedIds(document: DocumentFile, builtinIds: ReadonlySet<string>): Result<Set<string>, readonly Diagnostic[]> {
@@ -286,7 +299,7 @@ function pendingEntries(
     if (!source.definitions.some((d) => used.has(d.id))) continue;
     const subset = usedSubset(source, used, policy);
     if (!subset.ok) return subset;
-    const retainedFonts = subset.value.formatVersion === '1.1' ? subset.value.fontResources : [];
+    const retainedFonts = packHasFonts(subset.value) ? subset.value.fontResources : [];
     entries.push({
       id: source.id,
       version: source.version,
