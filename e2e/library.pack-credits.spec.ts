@@ -63,6 +63,8 @@ test.describe('pack credits', { tag: '@desktop' }, () => {
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
     await expect(editor.toolbarButton('Credits')).toBeFocused();
+    // undo in the dialog undid nothing behind it: the library search keeps what was typed (WebKit's native undo is document-wide, ci 41127689125)
+    await expect(left.getByRole('searchbox', { name: 'Search the library' })).toHaveValue('database');
     // the save pins the credits that apply to what is used
     await page.getByRole('group', { name: 'File' }).getByRole('button', { name: 'Save a copy' }).click();
     await expect.poll(async () => (await writes(page)).length).toBe(1);

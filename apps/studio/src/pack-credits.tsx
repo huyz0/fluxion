@@ -5,7 +5,7 @@ import type { ShapePackCredit, ShapePackFontCredit, Store, VersionedShapePackSub
 import type { ShapePackSourceData } from '@fluxion/format';
 import { type CreditedPack, type CreditsLabels, PackCreditsList } from '@fluxion/player';
 import { plural, t } from '@lingui/core/macro';
-import { type JSX, type KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { type JSX, type KeyboardEvent, type RefObject, useEffect, useRef, useState } from 'react';
 import { type DocumentCatalog, usedDefIds } from './pack-catalog.js';
 
 /** A pack's rights as the credits need them, with the ids of its definitions at hand. */
@@ -88,7 +88,9 @@ function creditsLabels(): CreditsLabels {
 
 /**
  * Keys in the credits dialog stay in it, as in the editor's own dialogs: none reaches the canvas's shortcuts (the arrows scroll the dialog, Delete deletes
- * nothing behind it), Escape closes it, Tab cycles through its links and buttons, and F5 does not reload the page.
+ * nothing behind it, undo and redo undo nothing behind it), Escape closes it, Tab cycles through its links and buttons, and F5 does not reload the page. Tab is always moved here, never
+ * left to the browser: WebKit's own Tab skips buttons and links, so from anywhere in the dialog but the last control it would leave the dialog for the
+ * next text field (ci 41127689125, M18.213).
  */
 function dialogKeys(e: KeyboardEvent<HTMLElement>, close: () => void): void {
   e.stopPropagation();
@@ -98,12 +100,37 @@ function dialogKeys(e: KeyboardEvent<HTMLElement>, close: () => void): void {
     close();
     return;
   }
+  // undo and redo are not the browser's either: WebKit's native undo is document-wide, so Ctrl/Cmd+Z on a button would undo the text typed into a
+  // field behind the dialog (the library search) and move the focus there (ci 41127689125)
+  if (undoChord(e)) e.preventDefault();
   if (e.key !== 'Tab') return;
-  const controls = [...e.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not(:disabled)')];
-  const [first, last] = [controls[0], controls.at(-1)];
-  if (document.activeElement !== (e.shiftKey ? first : last)) return;
   e.preventDefault();
-  (e.shiftKey ? last : first)?.focus();
+  nextControl(e.currentTarget, e.shiftKey)?.focus();
+}
+
+/** Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z or Ctrl/Cmd+Y. */
+const undoChord = (e: KeyboardEvent<HTMLElement>): boolean => (e.ctrlKey || e.metaKey) && !e.altKey && ['z', 'y'].includes(e.key.toLowerCase());
+
+/** The control Tab (or Shift+Tab, `back`) moves to in `dialog`: the next one in order, wrapping; the first (or last) from anywhere else. */
+function nextControl(dialog: HTMLElement, back: boolean): HTMLElement | undefined {
+  const controls = [...dialog.querySelectorAll<HTMLElement>('a[href], button:not(:disabled)')];
+  const at = controls.indexOf(document.activeElement as HTMLElement);
+  if (at < 0) return back ? controls.at(-1) : controls[0];
+  return controls[(at + (back ? -1 : 1) + controls.length) % controls.length];
+}
+
+/**
+ * While the dialog is open the focus stays in it: a focus that lands outside (a click behind it, an engine's own Tab from the page) goes back to its
+ * Close button, so the keys stay the dialog's and Escape can return the focus to the Credits button (M18.213).
+ */
+function useFocusKept(dialog: RefObject<HTMLDialogElement | null>, close: RefObject<HTMLButtonElement | null>): void {
+  useEffect(() => {
+    const keep = (e: FocusEvent) => {
+      if (e.target instanceof Node && dialog.current !== null && !dialog.current.contains(e.target)) close.current?.focus();
+    };
+    document.addEventListener('focusin', keep);
+    return () => document.removeEventListener('focusin', keep);
+  }, [dialog, close]);
 }
 
 /**
@@ -124,10 +151,13 @@ function useClipboardHeld(): void {
 /** The credits dialog: every used pack's credits, or a line saying there are none; it takes the focus, and Escape or Close closes it. */
 export function PackCreditsDialog(props: { readonly packs: readonly CreditedPack[]; readonly onClose: () => void }): JSX.Element {
   const close = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => close.current?.focus(), []);
+  useFocusKept(dialog, close);
   useClipboardHeld();
   return (
     <dialog
+      ref={dialog}
       open
       aria-label={t`Shape credits`}
       onKeyDown={(e) => dialogKeys(e, props.onClose)}
@@ -161,21 +191,19 @@ export function CreditsButton(props: {
   const { store, saved, sources, names } = props;
   const [credits, setCredits] = useState<readonly CreditedPack[] | undefined>(undefined);
   const button = useRef<HTMLButtonElement>(null);
+  // the focus goes back to the button once the dialog has gone (its focus keeping no longer holds it), however it was closed
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (credits === undefined && wasOpen.current) button.current?.focus();
+    wasOpen.current = credits !== undefined;
+  }, [credits]);
   const show = () => setCredits(documentCredits(saved, sources(), usedDefIds(store.toDocument().records), names));
   return (
     <>
       <button ref={button} type="button" aria-pressed={credits !== undefined} onClick={() => (credits === undefined ? show() : setCredits(undefined))}>
         {t`Credits`}
       </button>
-      {credits === undefined ? null : (
-        <PackCreditsDialog
-          packs={credits}
-          onClose={() => {
-            setCredits(undefined);
-            button.current?.focus();
-          }}
-        />
-      )}
+      {credits === undefined ? null : <PackCreditsDialog packs={credits} onClose={() => setCredits(undefined)} />}
     </>
   );
 }
