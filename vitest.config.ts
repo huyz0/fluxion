@@ -9,6 +9,7 @@ import { t } from './scripts/gates/thresholds.mjs';
 import { domFreeAliases } from './tools/vite-dom-free/index.mjs';
 import { i18nCatalogs } from './tools/vite-lingui/catalogs.mjs';
 import { lingui } from './tools/vite-lingui/index.mjs';
+import { DurationsReporter } from './tools/vitest/durations-reporter.mjs';
 
 interface Workspace {
   dir: string;
@@ -56,6 +57,10 @@ export default defineConfig({
     // the slowest property there (nightly 39387799270: 45 and 63 s against 20), and a hang still fails well inside the job's 30 min
     testTimeout: Math.min(20_000 * Math.max(1, fcRuns / 200), 180_000),
     hookTimeout: 20_000,
+    // M18.222: CI's verify job names a per-OS file; scripts/harness/test-headroom.mjs lists tests over half their timeout
+    ...(process.env['FLUXION_TEST_DURATIONS']
+      ? { reporters: ['default', ...(process.env['GITHUB_ACTIONS'] ? ['github-actions'] : []), new DurationsReporter()] }
+      : {}),
     setupFiles: ['./tools/vitest/fast-check.setup.ts', './tools/vitest/i18n.setup.ts'],
     env: { FC_SEED: process.env.FC_SEED ?? (process.env.CI ? String(CI_SEED) : ''), FC_RUNS: process.env.FC_RUNS ?? '' },
     projects: [

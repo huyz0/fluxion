@@ -21,8 +21,11 @@ export const quoteWin = (a) => (/^[\w.,:/\\=@+-]+$/.test(a) ? a : `"${String(a).
  * The environment the pre-commit ladder gives its test steps: no GIT_* variable but GIT_EXEC_PATH.
  * A hook exports GIT_DIR, GIT_INDEX_FILE and the like; a test that spawns git with them would
  * reach the repository being committed, whatever directory it runs in (M18.140, cp15 F2).
+ * FLUXION_TEST_DURATIONS is dropped too: only the root Vitest run records durations (M18.222), not a
+ * harness test or corpus run that starts Vitest in a sandbox or the same checkout.
  */
-export const testStepEnv = (env = process.env) => Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith('GIT_') || k === 'GIT_EXEC_PATH'));
+export const testStepEnv = (env = process.env) =>
+  Object.fromEntries(Object.entries(env).filter(([k]) => (!k.startsWith('GIT_') || k === 'GIT_EXEC_PATH') && k !== 'FLUXION_TEST_DURATIONS'));
 
 export function run(cmd, args = [], opts = {}) {
   // Windows needs a shell to run .cmd shims (pnpm, npx, codex). Passing an args array together

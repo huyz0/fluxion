@@ -48,6 +48,28 @@ jobs:
       # the only three-OS run of the full ladder (M2.22); gates.yml keeps the ubuntu-only harness gates
       - run: pnpm verify
         timeout-minutes: ${{ matrix.os == 'windows-latest' && 25 || matrix.os == 'macos-latest' && 20 || 15 }}
+        # M18.222: each unit test's duration and timeout on this OS, for scripts/harness/test-headroom.mjs
+        env:
+          FLUXION_TEST_DURATIONS: .harness/tmp/test-durations/${{ matrix.os }}.json
+      # a test over half its timeout is a warning here, a red main on a slower runner later (cp32 F1)
+      - name: test headroom
+        if: always()
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          f=".harness/tmp/test-durations/${{ matrix.os }}.json"
+          [ -f "$f" ] || { echo "::warning::no test durations recorded on ${{ matrix.os }}"; exit 0; }
+          node scripts/harness/test-headroom.mjs --file "$f" | sed 's/^test-headroom: \(.* ms of .*\)$/::warning::\1/' || true
+      - name: test durations
+        if: always()
+        timeout-minutes: 2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-durations-${{ matrix.os }}
+          path: .harness/tmp/test-durations
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 30
       # The ladder persists live streams and completed failures; do not rerun failed checks.
       - name: verification failure reports
         if: always() && (failure() || cancelled())

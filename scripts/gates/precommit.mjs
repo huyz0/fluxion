@@ -158,7 +158,9 @@ const STEPS = [
     // touches no browser-tested workspace nor its dependencies runs the node project only, its
     // coverage limited to the workspaces without browser tests (ladder-scope.mjs).
     () => {
-      const vitest = (...a) => runAsync('pnpm', a, { env: testStepEnv() });
+      // CI's verify job names a durations file (M18.222); only this run writes it
+      const durations = process.env.FLUXION_TEST_DURATIONS ? { FLUXION_TEST_DURATIONS: process.env.FLUXION_TEST_DURATIONS } : {};
+      const vitest = (...a) => runAsync('pnpm', a, { env: { ...testStepEnv(), ...durations } });
       if (mode === 'quick') return vitest('exec', 'vitest', 'run', '--changed');
       const plan = testPlan();
       if (plan.browser) return vitest('run', 'test:coverage');

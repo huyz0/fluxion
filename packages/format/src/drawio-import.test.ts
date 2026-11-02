@@ -170,6 +170,30 @@ describe('draw.io library import (FR-LIB-006)', () => {
     expect(report.entryCount).toBe(rows.length);
   });
 
+  it('FR-LIB-006 NFR-SEC-001: once one route walk spends the step budget, later walks are refused before they are converted (M18.222)', async () => {
+    // the bound is the library's step budget, not a wall clock (cp32 F1): the first walk overruns it while painting, and every
+    // later entry meets the spent budget before conversion, so a library of n walks converts one (unbounded: n)
+    const points = `<Array as="points">${Array.from({ length: 5000 }, (_, i) => `<mxPoint x="${i}" y="0"/>`).join('')}</Array>`;
+    const labels = Array.from(
+      { length: 3500 },
+      (_, i) =>
+        `<mxCell id="l${i}" value="x" style="text" vertex="1" parent="e"><mxGeometry x="0" y="0" width="4" height="4" relative="1" as="geometry"/></mxCell>`,
+    ).join('');
+    const walk = {
+      title: 'walk',
+      xml: model(
+        `${box('v', 'rounded=0')}<mxCell id="e" edge="1" parent="1" source="v" target="v"><mxGeometry relative="1" as="geometry">${points}</mxGeometry></mxCell>${labels}`,
+      ),
+    };
+    const report = await importDrawioLibrary(library([walk, walk, walk, walk]), options);
+    const reasons = report.status === 'processed' ? report.entries.map((e) => (e.status === 'refused' ? (e.diagnostics[0]?.message ?? '') : 'accepted')) : [];
+    // the walk's own refusal comes from painting; the pre-conversion check names both budgets
+    expect(reasons).toEqual([
+      expect.stringMatching(/conversion steps exhausted$/),
+      ...Array(3).fill(expect.stringMatching(/^library-work-limit: .* or the step budget$/)),
+    ]);
+  });
+
   it('FR-LIB-006 NFR-SEC-001: amplifying entries are refused while converting, in bounded time', { timeout: 10_000 }, async () => {
     // diagnostic review after r3: output, labels, placeholders, dashes, anchors and route walks were each unbounded
     const many = (n: number, unit: string) => unit.repeat(n);

@@ -6,6 +6,20 @@ import { join, relative, sep } from 'node:path';
 import { type SvgPaintWitness, writeZip } from '@fluxion/format';
 import { ok } from '@fluxion/schema';
 import { afterAll, describe, expect, it, vi } from 'vitest';
+
+// counts the folder walk's lstat calls: the entry-count cap is a step bound, not a wall clock (M18.222, cp32 F1)
+const fsCalls = vi.hoisted(() => ({ lstat: 0 }));
+vi.mock('node:fs/promises', async (original) => {
+  const fs = await original<typeof import('node:fs/promises')>();
+  return {
+    ...fs,
+    lstat: (...a: Parameters<typeof fs.lstat>) => {
+      fsCalls.lstat++;
+      return fs.lstat(...a);
+    },
+  };
+});
+
 import type { CliIo, Outcome } from './command.js';
 import { runCommands } from './main.js';
 import { type PackImportPorts, packImportCommand } from './pack-import.js';
@@ -235,7 +249,10 @@ describe('pack-import bounds (NFR-SEC-001)', () => {
     const many = fresh();
     mkdirSync(many);
     for (let i = 0; i <= 4096; i++) writeFileSync(join(many, `s${i}.svg`), '');
+    const before = fsCalls.lstat;
     await refusedBeforeWitness(many, /more than 4096 entries/);
+    // the listing types each entry: the input itself is the one lstat, never one per entry (4097 before M18.220)
+    expect(fsCalls.lstat - before).toBe(1);
     const big = folder({ 'a.svg': SQUARE });
     truncateSync(join(big, 'a.svg'), 128 * 1024 * 1024 + 1);
     await refusedBeforeWitness(big, /a\.svg entry exceeds 128 MiB/);

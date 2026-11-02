@@ -3774,3 +3774,8 @@ next: M18.223 and M18.222 before the next product stack; then M18.214, .205, .21
 - land.mjs asks last-ci for the branch before recommitting. On red or fix-pending (exit 1 or 2) a commit that touches any non-harness path lands only with a `Fixes-ci:` trailer naming a red run of the branch (checked by ci-run-red.mjs); on unknown (exit 3) only feature rows wait. Harness-only commits always land, so a ci fix row and its bookkeeping never deadlock.
 - check-digest fails when the backlog header's `current:` count differs from its rows (cp32 F5 fixed it by hand once).
 - Tests: three ciRefusal unit cases, an integration case (product commit refused on a red run, a Fixes-ci fix lands), three header-count cases; the land sandbox reads an empty runs file so other cases see green.
+
+## 2026-11-02 M18.222: bounded-time unit tests keep measured headroom on every OS (cp32 F1)
+- CI's verify job sets FLUXION_TEST_DURATIONS per OS; tools/vitest/durations-reporter.mjs records each test's duration beside the timeout it ran under, the ladder passes the variable to the root Vitest run only, and the job uploads test-durations-<os> and warns on every test over half its timeout. `node scripts/harness/test-headroom.mjs --run <id>` lists them across the three OSes and any runs given.
+- Bounds as steps, not clocks: of four drawio route walks only the first is converted (the rest meet the spent budget before conversion; a wall-clock ratio was tried and dropped, since pure packages may not read a clock), and the pack-import entry-count cap refuses 4097 entries with one lstat. Subset-range read was already a ratio (M18.209).
+- testing.md rule 23: timeouts are never raised to pass, and a Fixes-ci for a timeout cites two green runs of its job here.
