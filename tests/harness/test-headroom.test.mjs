@@ -123,7 +123,43 @@ describe('test headroom (M18.222)', () => {
     const none = pick('--os', 'windows-latest');
     assert.equal(none.status, 0, none.stderr);
     assert.equal(none.stdout, '');
-    assert.match(none.stderr, /no completed main run .* verify \(windows-latest\)/);
+    assert.match(none.stderr, /no main run .* verify \(windows-latest\)/);
     assert.equal(pick().status, 2, 'no --os');
+  });
+  it('HARNESS: an in-progress run whose verify on this OS finished is the baseline, as gh lists runs of any status (M18.238, cp35 F2)', () => {
+    // 41545000572's macOS check compared with 41540384128 because 41543941850 was still running, though its macOS verify had finished
+    const runs = [
+      { databaseId: 41545000572, status: 'in_progress', jobs: [{ name: 'verify (macos-latest)', conclusion: null }] },
+      {
+        databaseId: 41543941850,
+        status: 'in_progress',
+        jobs: [
+          { name: 'verify (macos-latest)', conclusion: 'failure' },
+          { name: 'e2e (webkit, 1/4)', conclusion: null },
+        ],
+      },
+      { databaseId: 41540384128, status: 'completed', jobs: [{ name: 'verify (macos-latest)', conclusion: 'success' }] },
+    ];
+    writeFileSync(join(dir, 'gh-runs.json'), JSON.stringify(runs));
+    // a stub gh (a node script, so it runs on every OS): `run list` answers with the runs its --status filter keeps, `run view <id>` with that run's jobs
+    writeFileSync(
+      join(dir, 'gh-stub.cjs'),
+      `const { readFileSync, appendFileSync } = require('node:fs');
+const a = process.argv.slice(2);
+appendFileSync(${JSON.stringify(join(dir, 'gh-calls.log'))}, a.join(' ') + '\\n');
+const runs = JSON.parse(readFileSync(${JSON.stringify(join(dir, 'gh-runs.json'))}, 'utf8'));
+const st = a.indexOf('--status');
+if (a[0] === 'run' && a[1] === 'list') console.log(JSON.stringify(runs.filter((r) => st < 0 || r.status === a[st + 1]).map((r) => ({ databaseId: r.databaseId }))));
+else if (a[0] === 'run' && a[1] === 'view') console.log(JSON.stringify({ jobs: runs.find((r) => String(r.databaseId) === a[2]).jobs }));
+else process.exit(1);
+`,
+    );
+    const r = spawnSync(process.execPath, ['scripts/harness/test-headroom.mjs', '--pick-previous', '--os', 'macos-latest', '--exclude', '41545000572'], {
+      encoding: 'utf8',
+      env: { ...process.env, FLUXION_HEADROOM_GH: join(dir, 'gh-stub.cjs') },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), '41543941850', r.stderr);
+    assert.match(r.stderr, /comparing with run 41543941850, whose verify \(macos-latest\) concluded failure/);
   });
 });

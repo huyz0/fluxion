@@ -11,8 +11,8 @@
 //   node scripts/harness/test-headroom.mjs --file <durations.json> […]       offline
 //   [--previous <durations.json> …] [--warn-only] [--share 0.5] [--json]
 //   node scripts/harness/test-headroom.mjs --pick-previous --os <os> [--exclude <run id>] [--repo <o/r>] [--runs-file <f>]
-//     prints the run whose report is the baseline (M18.232): the newest completed main ci run, other than --exclude,
-//     whose `verify (<os>)` job concluded success or failure; a cancelled or skipped job wrote no full report.
+//     prints the run whose report is the baseline (M18.232): the newest main ci run, completed or still in progress (M18.238),
+//     other than --exclude, whose `verify (<os>)` job concluded success or failure; a cancelled or skipped job wrote no full report.
 //     --runs-file: a JSON array, newest first, of `{ databaseId, jobs: [{ name, conclusion }] }` (tests).
 // Exit 1 when a test is listed, 0 when none is, 2 when no reading could be read or a report holds none.
 // With --previous (the same OS's report from the run before), a test is only a warning the first time: exit 1 needs it over
@@ -47,12 +47,14 @@ export function headroom(reports, share = 0.5) {
   return [...tests.values()].filter((t) => t.share > share).sort((a, b) => b.share - a.share);
 }
 
-/** How many completed main runs the baseline search reads before it gives up and the run only warns. */
+/** How many main runs, completed or in progress, the baseline search reads before it gives up and the run only warns. */
 const PREVIOUS_RUNS = 10;
 
 /**
  * The run whose `verify (<os>)` report a run compares with (M18.232, cp34 F5): the first of `runs` (newest
- * first), other than `exclude`, whose verify job on `os` concluded success or failure; undefined when none.
+ * first), other than `exclude`, whose verify job on `os` concluded success or failure; undefined when none. `runs` holds
+ * in-progress runs too: when runs overlap, the run before is often still going after its verify on this OS finished and
+ * uploaded its report, and skipping it would compare with an older run and miss two consecutive readings (M18.238, cp35 F2).
  * @param {{ databaseId: number | string }[]} runs
  * @param {(id: string) => Promise<{ name: string, conclusion: string | null }[] | null> | { name: string, conclusion: string | null }[] | null} jobsOf
  * @param {{ os: string, exclude?: string }} where
@@ -67,9 +69,13 @@ export async function previousRun(runs, jobsOf, { os, exclude }) {
   return undefined;
 }
 
-/** @param {string[]} args */
+/**
+ * gh, or the node script FLUXION_HEADROOM_GH names (a harness stub that runs on every OS, M18.238).
+ * @param {string[]} args
+ */
 function gh(args) {
-  const r = spawnSync('gh', args, { encoding: 'utf8' });
+  const stub = process.env.FLUXION_HEADROOM_GH;
+  const r = stub ? spawnSync(process.execPath, [stub, ...args], { encoding: 'utf8' }) : spawnSync('gh', args, { encoding: 'utf8' });
   if (r.status !== 0) throw new Error(`gh ${args.slice(0, 2).join(' ')}: ${(r.stderr || r.error?.message || '').trim()}`);
   return JSON.parse(r.stdout);
 }
@@ -83,27 +89,13 @@ async function pickPrevious(all) {
   const repo = all('--repo').flatMap((r) => ['--repo', r]);
   const runs = file
     ? JSON.parse(readFileSync(file, 'utf8'))
-    : gh([
-        'run',
-        'list',
-        ...repo,
-        '--workflow',
-        'ci.yml',
-        '--branch',
-        'main',
-        '--status',
-        'completed',
-        '--limit',
-        String(PREVIOUS_RUNS + 1),
-        '--json',
-        'databaseId',
-      ]);
+    : gh(['run', 'list', ...repo, '--workflow', 'ci.yml', '--branch', 'main', '--limit', String(PREVIOUS_RUNS + 1), '--json', 'databaseId']);
   const jobsOf = file
     ? (id) => runs.find((r) => String(r.databaseId) === id)?.jobs ?? null
     : (id) => gh(['run', 'view', id, ...repo, '--json', 'jobs']).jobs ?? null;
   const found = await previousRun(runs, jobsOf, { os, exclude });
   if (!found) {
-    console.error(`test-headroom: no completed main run in the last ${PREVIOUS_RUNS} has a finished verify (${os}) to compare with`);
+    console.error(`test-headroom: no main run in the last ${PREVIOUS_RUNS} has a finished verify (${os}) to compare with`);
     return 0;
   }
   console.error(`test-headroom: comparing with run ${found.run}, whose verify (${os}) concluded ${found.conclusion}`);
