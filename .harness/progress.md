@@ -4015,3 +4015,8 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 
 ## 2026-11-03 M18.242 (docs, cp38 F3; the row stays todo until a webkit nightly after c790660): ADR-0020 names the shared-copy step
 - ADR-0020's keyboard paste order gains step 3, the newest copy of the origin's editor pages when the paste carries no HTML, no file and exactly that copy's text/plain, linking ADR-0213; its Cross-tab paragraph says the editor's pages of one origin also share that copy on that engine, and another origin gets the text only. ADR-0213 says it amends ADR-0020 (decision-makers line and Decision Outcome). Docs only.
+
+## 2026-11-03 M18.255: the font-subset refusal case is cheaper on macOS verify (ci 41628401301, 41638116368)
+- verify (macos-latest) failed the headroom step at 521a424 (job 125891475979) and b62129c (job 125924377646): 'fonts that cannot be subset safely keep their original bytes with a reason' read 10951 and 10436 ms of 20 s, two consecutive runs over half; 'font metrics change the fingerprint but not the cache key' read 10063 ms at the first.
+- Each 'subset' answer of the refusal case is a whole subset (three of them), and the metrics case makes two; both used LATIN. They now subset LETTERS (M18.246's ASCII letters, é and a combining acute, hoisted to module scope), since neither checks the inventory's size; every refusal is decided before the engine runs. Assertions, reasons and timeouts are unchanged.
+- Locally (vitest, packages/editor): the refusal case 907 to 416 ms, the metrics case 523 to 162 ms. The next darwin reading is recorded by run id when it completes; until then the darwin effect is an estimate.

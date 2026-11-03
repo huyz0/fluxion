@@ -36,6 +36,11 @@ const hasher = { sha256 };
 const instantiate: WasmInstantiate = async (bytes, imports) => (await WebAssembly.instantiate(bytes as BufferSource, imports as WebAssembly.Imports)).instance;
 const engines = (): Promise<FontEngines> => instantiateFontEngines(MODULES, { sha256, instantiate });
 const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+/**
+ * ASCII letters (f and i bring the ligature closure), é and a combining acute: a WOFF2 of this size costs a fifth of a
+ * LATIN one (57 vs 304 ms locally), for cases where what varies is not the inventory's size (M18.246, M18.255).
+ */
+const LETTERS = [...range(0x41, 0x5a), ...range(0x61, 0x7a), 0xe9, 0x301];
 /** The Google Fonts `latin` slice's unicode-range. */
 const LATIN = [
   ...range(0x20, 0x7e),
@@ -175,19 +180,18 @@ describe('used-glyph font subsetting (FR-AST-003, ADR-0051)', () => {
   });
 
   it('FR-AST-003: output, cache key and fingerprint are deterministic across fresh engines', async () => {
-    // ASCII letters (f and i bring the ligature closure), é and a combining acute: the order and duplicates of the
-    // inventory are what vary, and a WOFF2 of this size costs a fifth of a LATIN one (57 vs 304 ms locally); two LATIN
-    // subsets read 11372 and 10609 ms of 20 s on macOS after M18.230 (ci 41540384128, 41555557451; M18.246)
-    const LETTERS = [...range(0x41, 0x5a), ...range(0x61, 0x7a), 0xe9, 0x301];
+    // the order and duplicates of the inventory are what vary; two LATIN subsets read 11372 and 10609 ms of 20 s on
+    // macOS after M18.230 (ci 41540384128, 41555557451; M18.246)
     const [a, b] = [await subset(LETTERS), await subset([...LETTERS].reverse().concat(LETTERS))];
     expect(a.woff2.length).toBeGreaterThan(0);
     expect(b.woff2).toEqual(a.woff2);
     expect([b.sha256, b.cacheKey, b.fingerprint]).toEqual([a.sha256, a.cacheKey, a.fingerprint]);
   });
 
-  // Split from the case above (M18.230): three LATIN subsets in one case took 11 s of its 20 s on a macOS runner.
+  // Split from the case above (M18.230): three LATIN subsets in one case took 11 s of its 20 s on a macOS runner; two
+  // read 10063 ms at ci 41628401301 (M18.255).
   it('FR-AST-003: font metrics change the fingerprint but not the cache key', async () => {
-    const [a, withMetrics] = [await subset(LATIN), await subset(LATIN, { metrics: { ascent: 0.935 } })];
+    const [a, withMetrics] = [await subset(LETTERS), await subset(LETTERS, { metrics: { ascent: 0.935 } })];
     expect(withMetrics.cacheKey).toBe(a.cacheKey);
     expect(withMetrics.fingerprint).not.toBe(a.fingerprint);
   });
@@ -213,7 +217,9 @@ describe('used-glyph font subsetting (FR-AST-003, ADR-0051)', () => {
   });
 
   it('FR-AST-003: fonts that cannot be subset safely keep their original bytes with a reason', async () => {
-    const reason = async (extra: Partial<FontSubsetInput>, codepoints = LATIN) => {
+    // each 'subset' answer is a whole subset: LETTERS, since LATIN's three read 10951 and 10436 ms of 20 s on macOS
+    // (ci 41628401301, 41638116368; M18.255); every refusal is decided before the engine runs
+    const reason = async (extra: Partial<FontSubsetInput>, codepoints = LETTERS) => {
       const outcome = await subsetFont(input(codepoints, extra), await engines(), hasher);
       return outcome.status === 'kept' ? outcome.reason : 'subset';
     };
