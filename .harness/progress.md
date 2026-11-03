@@ -3914,3 +3914,8 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
   - 41543941850 at a96ef73, job 125614724452: start 569, witness-ready 1662, disposed 2192, end 2192, total 2255. Own work 1623 ms: launch 1093, convert and close 530.
   - 41545000572 at 2264c60, job 125618321484: start 842, witness-ready 2469, disposed 3175, end 3175, total 3255. Own work 2333 ms: launch 1627, convert and close 706.
 - Start-up (Node and CLI load before `start`) was 0.57-0.90 s in every run, so the 11386 ms at b5194f1 (no phase trace then) is not explained by start-up: it was the command's own work, most of it the witness launch and close, which vary 2x between these runs. The other refusals (symlink, entries, oversized, collision, slug, uncredited, existing, traversal) took 0.4-1.9 s in all three. No fail, so M18.229 stays closed.
+
+## 2026-11-03 M18.241: drawio-import's edge-label and amplifying-entries cases do less work (ci 41566616103)
+- verify (macos-latest) failed headroom at f0805eb: 'edges anchored on edge labels…' read 2730 then 3013 ms of 5000 (two runs over 50%); 'amplifying entries…' read 6699 ms of 10000. Locally they took 55 and 200 ms; no input scaled worse than linearly (deep chain 500/2000/8000 links: 10/45/170 ms), so the darwin time is the cases' own work slowed ~30-55x, and the cut is the work.
+- The deep chain had 2000 links to meet a 32 cap; 64 are refused the same way. The 3 Mi embedded SVG and the three stencils move to their own cases, the SVG one base64 quantum over its cap. Local: 9, 40, 41 and 4 ms. No timeout raised, no assertion removed.
+- Next three darwin readings go under M18.234.

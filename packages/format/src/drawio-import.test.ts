@@ -154,7 +154,8 @@ describe('draw.io library import (FR-LIB-006)', () => {
     const report = await importDrawioLibrary(
       library([
         { title: 'doubled', xml: chain(30, true) },
-        { title: 'deep', xml: chain(2000, false) },
+        // twice the 32 cap is enough to be refused by it; 2000 links only added parsing (M18.241: 2730 and 3013 ms of 5000 on darwin)
+        { title: 'deep', xml: chain(64, false) },
         { title: 'ok', xml: model(box('2', 'rounded=0')) },
       ]),
       options,
@@ -214,27 +215,41 @@ describe('draw.io library import (FR-LIB-006)', () => {
       { title: 'lines', xml: model(box('2', 'rounded=0', many(100, 'a&#10;'))) },
       { title: 'placeholders', xml: model(wrapper) },
       { title: 'unclosed tags', xml: model(box('2', 'html=1', many(60_000, '&lt;'))) },
-      { title: 'svg data', data: `data:image/svg+xml;base64,${many(3 * 1024 * 1024, 'A')}` },
     ];
     const painted = counted();
     const { report, work } = await drawioLibraryWork(library(rows), { ...options, witness: painted.witness });
     const reasons = report.status === 'processed' ? report.entries.map((e) => (e.status === 'refused' ? (e.diagnostics[0]?.message ?? '') : 'accepted')) : [];
     expect(reasons).toHaveLength(rows.length);
-    for (const [i, pattern] of [/exceeds 64 lines/, /resolved label exceeds 4096/, /label exceeds 4096/, /embedded SVG exceeds/].entries())
+    for (const [i, pattern] of [/exceeds 64 lines/, /resolved label exceeds 4096/, /label exceeds 4096/].entries())
       expect(reasons[i], rows[i]?.title).toMatch(pattern);
     // no entry reaches the witness, and none charges more characters than its own source: nothing is amplified
     expect(painted.calls()).toBe(0);
     for (const [i, row] of rows.entries()) expect(work[i]?.chars, row.title).toBeLessThanOrEqual(JSON.stringify(row).length);
-    // labels stop at their caps after a few steps; the placeholders stop before all 100 lookups; the embedded SVG is
-    // refused by its size before any decoding
+    // labels stop at their caps after a few steps; the placeholders stop before all 100 lookups
     expect(work.slice(0, 3).map((w) => w.steps <= 64)).toEqual([true, true, true]);
     expect(work[1]?.steps).toBeLessThan(100);
-    expect(work[3]).toEqual({ chars: 0, steps: 0, made: 0 });
     // nothing is made for any of them: no SVG written, no label line rendered (r2 F2); an ordinary two-line label makes some
-    expect(work.map((w) => w.made)).toEqual([0, 0, 0, 0]);
+    expect(work.map((w) => w.made)).toEqual([0, 0, 0]);
     const control = await drawioLibraryWork(library([{ title: 'two lines', xml: model(box('2', 'rounded=0', 'a&#10;b')) }]), options);
     expect(control.work[0]?.made).toBeGreaterThan(0);
+  });
 
+  // M18.241: the embedded SVG and the stencils were the amplifying case's own work (6699 ms of 10000 on darwin at f0805eb)
+  it('FR-LIB-006 NFR-SEC-001: an embedded SVG over 2 Mi characters is refused by its size before any decoding (M18.241)', { timeout: 10_000 }, async () => {
+    // the cap is 2 Mi decoded bytes as base64 plus 64 characters of data URL; one base64 quantum over it is enough
+    const cap = Math.ceil((2 * 1024 * 1024 * 4) / 3) + 64;
+    const row = { title: 'svg data', data: `data:image/svg+xml;base64,${'A'.repeat(cap + 4)}` };
+    const painted = counted();
+    const { report, work } = await drawioLibraryWork(library([row]), { ...options, witness: painted.witness });
+    expect(report.status === 'processed' && report.entries[0]?.status === 'refused' && report.entries[0].diagnostics[0]?.message).toMatch(
+      /embedded SVG exceeds/,
+    );
+    expect(painted.calls()).toBe(0);
+    expect(work[0]).toEqual({ chars: 0, steps: 0, made: 0 });
+  });
+
+  it('FR-LIB-006 NFR-SEC-001: amplifying stencils are refused at their caps before their work (M18.241)', { timeout: 10_000 }, async () => {
+    const many = (n: number, unit: string) => unit.repeat(n);
     const stencil = (inner: string) => `<shapes><shape name="s" w="10" h="10">${inner}</shape></shapes>`;
     const dash = `<foreground><dashpattern pattern="${many(17, '1 ').trim()}"/><dashed dashed="1"/><rect x="0" y="0" w="10" h="10"/><stroke/></foreground>`;
     const anchors = `<connections>${many(257, '<constraint x="0.5" y="0.5"/>')}</connections><foreground><rect x="0" y="0" w="10" h="10"/><fillstroke/></foreground>`;
