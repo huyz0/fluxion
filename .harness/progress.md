@@ -4049,3 +4049,7 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 | 41680012230 | 457 (9%) | 1387 (14%) | 3051 (31%) | 81 (1%) | 1444 (14%) |
 
 - All five cases stay under a third of their timeout. The highest reading in the file is 'equal titles number in order and references decode in linear time' (10 s) at 4607 ms (46%) at 41660137068; it read 1719, 2745, 4607, 2349, 3093 ms in the same runs. Under half, so no row, but it is the one to watch.
+
+## M18.43 — record checkpoint cp39 (2026-11-03)
+- cp39 over 7545e708..fc0ef8a, changes-requested (independent subagent): F1 reopens new row M18.257 (main's e2e flakes at 94e0654, 19447ab and b8f54c7, fixed with their causes or quarantined under rule 19 by 2026-11-04 20:40Z), F2 amends M18.253 (Fixes-ci and docs-only exceptions; 76c2e40 recorded; 41633787769 by job; blockedReason names Huy's cancel card and the macOS capacity cancellations), F3 hands off to Huy's pending card on the nightlies' mutation shards, F4 argued (M18.255's goal holds over three darwin runs).
+- Order: this record; M18.257's progress record and M18.253's bookkeeping; M18.257's fixes or quarantine before the deadline; M18.256's third Windows run; the held product stacks only once last-ci exits 0.
