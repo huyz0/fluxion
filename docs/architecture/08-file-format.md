@@ -155,14 +155,15 @@ import (drop/paste/picker/URL/FluxScript ref)
   → normalize:  raster → decode, cap longest side 2560 px (FR-AST-002), re-encode WebP q≈0.82
                           (keep the original if smaller or animated, detected from the bytes; AVIF is kept, not encoded, in M10, ADR-0025)
                 SVG    → allowlist sanitizer (ADR-0150) → `minifySvg` (keep viewBox; no SVGO, ADR-0025)
-                font   → keep full file in session; embedded whole on save (subsetting is later, ADR-0022 amendment M10.3)
+                font   → keep full file in session; embedded whole on save unless subsetting is on (below)
                 video/Lottie → as-is, size warning > 5 MB (FR-AST-004)
   → sha256 (Hasher port) → asset record { hash, mime, size, w, h, name, source? }
   → bytes in session AssetStore (OPFS in studio, memory in CLI), deduped by hash (FR-FIL-004)
 save
   → collect referenced asset hashes (records, theme, component props, snapshots)
-  → font subsetting (later, not in M10: ADR-0025): glyphs used in text + a safety range for the document's
-    scripts, hb-subset wasm (lazy chunk in studio, npm module in CLI), WOFF2, pin unused variable axes
+  → font subsetting, opt-in (ADR-0051, ADR-0201, M18.39/40): glyphs the document's text can draw, pinned
+    HarfBuzz subset + WOFF2 wasm (studio worker, CLI `convert --subset-fonts` worker thread); the asset record
+    gains `font.subset`; a font that cannot be subset safely stays whole with its reason (09-extensibility)
   → write only referenced assets (unreferenced ones stay in the session store so undo still works)
 ```
 

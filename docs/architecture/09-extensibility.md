@@ -253,14 +253,16 @@ Target: from scaffold to running in the dev studio in under 1 minute.
 | `layouts-elk` (optional) | elkjs layered/stress/rectpacking in a worker; EPL-2.0, unmodified, lazy | R3 |
 | `routing-libavoid` (optional) | libavoid-js wasm router; LGPL-2.1, separate chunk | R3 |
 
-### M18 declarative shape-pack decision (implementation pending)
+### Declarative shape-pack format and credits (ADR-0048, ADR-0050)
+
+How to write, import and version a pack: [docs/guides/pack-authoring.md](../guides/pack-authoring.md).
 
 [ADR-0048](decisions/ADR-0048-shape-pack-format-v1.md) defines the data boundary beside
 the existing SDK runtime `PackSpec`: a licensed `index.json`, hashed per-category
 `ShapeDef` files, metadata-only search and atomic category registration. Saved files
 carry only used definitions and attribution, pinned by a data-only manifest lock.
 The loader must never execute that data; code-plugin activation remains M27.
-M18.12–14 implement and test this decision before it is a supported authoring format.
+M18.12–14 implemented it; the sections below give the current contracts.
 
 [ADR-0050](decisions/ADR-0050-pack-license-attribution.md) supplements that pending format
 with source credits and used-subset attribution. Content-asset permissions never authorize
@@ -306,7 +308,7 @@ statement. The validators preserve notices and do not fetch source references.
 The structural JSON Schemas in `packages/core/generated/` support tooling, but do not
 replace semantic/license validation. Regenerate with `node scripts/core/pack-schemas.mjs --write`
 after building core; omit `--write` to check snapshots. Category byte-hash verification
-and lazy loading remain M18.13, and imported paint-tree validation remains M18.47.
+and lazy loading are the loader's (below); imported paint trees are validated as artwork (ADR-0180).
 
 Optional `ShapeDef.artwork` carries inert imported paint independently of the routing outline
 (ADR-0180). `SvgArtwork` and `SvgArtworkNode` describe the bounded tree; `parseSvgArtwork`
@@ -420,12 +422,69 @@ format readers/writers (ADR-0183/0184). M18.76 restores subsets before host rend
 saves (ADR-0185). Registration refuses existing namespaces transactionally, even with disjoint
 IDs or matching source ownership. M18.14 verifies a real 5000-definition source shrinks to exactly three referenced shapes,
 including a grouped child, with all applicable notices and identical offline rendering.
-Credit-display UI remains M18.33.
+Credits are shown by the studio's Credits dialog and the player (M18.143, above).
 
 SVG import reuses `inspectSvgTree` from format (ADR-0186): bounded, allowlisted decoded
-data with removal diagnostics. This is not semantic artwork validation; M18.15 must
-validate viewport, geometry and local references through core before registration.
+data with removal diagnostics. It is not semantic artwork validation: core's `parseSvgArtwork`
+validates viewport, geometry and local references before registration (M18.15).
 `fluxion pack-import` (ADR-0206, M18.16) is the host that joins the batch (ADR-0188), the Node
 paint witness (ADR-0189) and `importedShapePack` (ADR-0192): a folder or ZIP of SVGs, each member
 credited to its declared rights by a scoped credit, becomes one checked 1.0/1.1 pack directory
 written atomically, or nothing.
+
+### Library imports in the studio (M18.17, M18.210–212)
+
+The library panel's **Import SVG…**, **Import Iconify…** and **Import draw.io…** run the same
+transaction as `fluxion pack-import`, in the browser. The editor's `convertSvgLibrary` (files or a
+ZIP; sizes and entry counts checked before any bytes are read, member rules and credits shared with
+the CLI through format's `svg-pack-members` and `parseImportCredits`) and `convertCollectionLibrary`
+(one Iconify collection credited from its own SPDX license, which must be declared; or one draw.io
+library under the user's declared identity and single credit) check rights and the content policy
+before the paint witness starts, then convert all members or refuse with each refusal listed by
+member. They register nothing: `registerSvgLibrary` registers the final pack's subset atomically in
+one new namespace (a held one is refused) after its exact fonts load. The SVG dialog offers the
+literal colors the artwork uses (at most 64, the rest counted) for mapping to theme color tokens,
+and re-witnesses with the mapping before importing. The studio's `LibraryImporter` keeps every
+registered `pack.source`, so the save embeds the used definitions and their credits like a
+first-party pack's. Category headings read `<pack name> / <category name>`, from the 1.2 `name`
+(08-file-format, ADR-0210) or core's `categoryTitle(slug)`; search matches both. Iconify import
+(M18.18) resolves aliases, rotations and flips; draw.io import (M18.19, ADR-0049) reads mxlibrary
+and stencil XML with a strict bounded reader, never fetches external images, and keeps refused
+entries in the denominator. The paint witness's lifecycle, including Windows cleanup, is ADR-0189.
+
+### Pack connector types (ADR-0048 amendments M18.38, M18.111, M18.112)
+
+A pack may ship `connectors.json` (its own format 1.0 envelope, separate from the shape index):
+data-only connector definitions, each a built-in base router plus one closed decoration (wavy,
+zigzag, double, pipe, cable) and a default style. Core's `parseConnectorDefs` validates it,
+sdk's `loadPackConnectors(bytes, pack, maxBytes)` reads it capped and strict, and routing's
+`registerConnectorDefs(routers, input, pack)` registers each type as a decorated router, all or
+nothing (`FLX_PACK_INVALID`, `FLX_REGISTRY_DUPLICATE`). A connector names the type as `route.type`;
+the document schema is unchanged. A save embeds `connectors/<pack>.json` with the used types, the
+studio registers them again on open, and the connector inspector lists registered pack types.
+Not yet wired: loading a pack directory's own `connectors.json` in the studio and CLI (M18.233)
+and the player's worker routing (M18.147).
+
+### My shapes and replace shape (M18.34–37)
+
+My shapes are the user's reusable selections: each item is a clipboard payload (ADR-0020) with
+bounds, stored under `fluxion.my-shapes` and exported or imported as a `fluxion-my-shapes` 1.0
+file, validated item by item as a paste and refused whole (FR-LIB-008, ADR-0048 amendment M18.34).
+An unreadable stored value is set aside, never overwritten. Inserting one is one undo step. Core's
+`shape.replace` swaps a shape's definition in one transaction, keeping box, text and style; named
+bindings keep their anchor name where the new definition has it, else take the nearest anchor; the
+library's replace mode (toggle or shift-click) calls it with both definitions' anchors. The My
+shapes editor workflow is M18.35, still open.
+
+### Font subsetting on save (ADR-0051, ADR-0201)
+
+Format owns the host-agnostic subset path: `glyphInventory` lists what the document's text can
+draw (unbounded fields keep a font whole), `planFontSubsets` keys a cache by source, face, rights,
+inventory and the pinned engine hashes, and `subsetFont` runs the pinned HarfBuzz subset and WOFF2
+codec modules (`packages/format/assets/font-engine/`) with fresh engines per font, refusing
+collections, variable fonts, reserved font names, unverified uploads and outputs that are not
+smaller with a typed `kept` reason. The studio runs each font job in a worker with a watchdog
+when its "Subset embedded fonts to the text they draw when saving" setting is on (off by default); `fluxion convert --subset-fonts` does the same
+with worker threads and reports `result.fonts`. A subset is recorded as `font.subset` on the
+asset record, and a candidate file is reopened and checked before it replaces the whole fonts.
+

@@ -1,6 +1,6 @@
 # Delivery
 
-The authoritative EARS rows are in [the backlog](../../docs/backlog/current.md).
+The authoritative EARS rows are in [the backlog](../../../docs/backlog/current.md).
 
 | Row | Deliverable | Qualification |
 |---|---|---|

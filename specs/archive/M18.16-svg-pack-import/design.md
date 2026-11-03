@@ -1,6 +1,6 @@
 # Design
 
-Contract: [ADR-0206](../../docs/architecture/decisions/ADR-0206-svg-pack-import-command.md).
+Contract: [ADR-0206](../../../docs/architecture/decisions/ADR-0206-svg-pack-import-command.md).
 
 `packages/cli/src/pack-import.ts` (command), `pack-import-rights.ts` (flags or `--credits` file → pack
 license, scoped credits, member coverage), `pack-import-input.ts` (bounded folder walk, or a ZIP's size

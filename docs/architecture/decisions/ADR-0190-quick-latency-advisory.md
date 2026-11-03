@@ -34,4 +34,4 @@ Quick performance regression warnings remain visible in normal,summary and GitHu
 
 ## More Information
 
-See specs/M18.86-quick-latency and ADR0176. Original evidence /workspace/fluxion-M18.85-budget-controlled.log; independent replan /workspace/fluxion-M18.85-policy-replan-review.md. M18.85 implementation remains unqualified and separate.
+See specs/archive/M18.86-quick-latency and ADR0176. Original evidence /workspace/fluxion-M18.85-budget-controlled.log; independent replan /workspace/fluxion-M18.85-policy-replan-review.md. M18.85 implementation remains unqualified and separate.

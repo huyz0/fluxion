@@ -1,6 +1,6 @@
 # Design
 
-[ADR-0192](../../docs/architecture/decisions/ADR-0192-artwork-font-retention.md) defines the version, ownership, rights and compatibility decisions. Resource identity and supported-profile declarations belong in a shared pure lower-layer module; binary acquisition/validation and FontFace effects remain host responsibilities. Core must not import format/render or browser APIs to validate metadata.
+[ADR-0192](../../../docs/architecture/decisions/ADR-0192-artwork-font-retention.md) defines the version, ownership, rights and compatibility decisions. Resource identity and supported-profile declarations belong in a shared pure lower-layer module; binary acquisition/validation and FontFace effects remain host responsibilities. Core must not import format/render or browser APIs to validate metadata.
 
 Pack 1.1 binds exact resources to source face descriptors, definitions and scoped rights. The version-aware reader validates every reference and canonical subset/lock identity. SDK acquisition verifies actual bytes before returning owned copies. Persistence selects only used definitions, keeps all applicable notices even when bytes deduplicate, and carries generic binary assets without ordinary-family font descriptors. Hosts apply private exact-face aliases only to renderer-facing text; canonical source art remains unchanged.
 
