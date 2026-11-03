@@ -46,6 +46,58 @@ describe('pack connector types in saved entries (FR-CON-010, FR-LIB-009)', () =>
     expect([...entries.keys()]).toEqual(['connectors/lines.json', 'connectors/net.json']);
   });
 
+  it('FR-CON-010, FR-LIB-009: a pack with known and unknown used types and no earlier entry writes every known definition (cp35 F3)', () => {
+    const b = documentBuilder({ seed: 239 });
+    const s = b.screen();
+    const [a, c] = [0, 1].map((i) => b.rect(s, { x: i * 200, y: 0, w: 80, h: 50 })) as [never, never];
+    b.connect(a, c, { route: 'lines:wavy' });
+    b.connect(c, a, { route: 'lines:zig' });
+    b.connect(a, c, { route: 'lines:double' });
+    const entries = savedConnectorEntries(b.build(), undefined, (t) => DEFS.get(t));
+    const read = JSON.parse(decodeUtf8(entries.get('connectors/lines.json') as Uint8Array));
+    expect(read).toEqual({ format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [def('lines:double'), def('lines:wavy')] });
+  });
+
+  it("FR-CON-010, FR-LIB-009: the earlier entry's definitions of the unknown used types join the known ones; an unused, invalid or repeated one is not carried (cp35 F3)", () => {
+    const b = documentBuilder({ seed: 240 });
+    const s = b.screen();
+    const [a, c] = [0, 1].map((i) => b.rect(s, { x: i * 200, y: 0, w: 80, h: 50 })) as [never, never];
+    b.connect(a, c, { route: 'lines:wavy' });
+    b.connect(c, a, { route: 'lines:zig' });
+    b.connect(a, c, { route: 'lines:bad' });
+    for (const route of ['lines:two', 'lines:long', 'lines:line'] as const) b.connect(c, a, { route });
+    const zig = { ...def('lines:zig'), decoration: { kind: 'zigzag', amplitude: 4, wavelength: 10 } };
+    // refused on open by this host (a newer envelope), but its definitions are valid 1.0 definitions
+    const earlier = encodeUtf8(
+      JSON.stringify({
+        format: 'fluxion-connector-defs',
+        formatVersion: '1.1',
+        definitions: [
+          def('lines:wavy'),
+          { id: 'lines:zig', router: 'nope' },
+          zig,
+          def('lines:gone'),
+          { ...zig, name: 'Second zig' },
+          { id: 'lines:bad', router: 'orthogonal', decoration: { kind: 'none-such' } },
+          // valid 1.0 definitions whose describe registering refuses (two lines, past 160 characters), and one it takes
+          { ...def('lines:two'), describe: 'two\nlines' },
+          { ...def('lines:long'), describe: 'x'.repeat(161) },
+          { ...def('lines:line'), describe: 'One line.' },
+        ],
+      }),
+    );
+    const known = new Map([['lines:wavy', { ...def('lines:wavy'), name: 'Wavy here' }]]);
+    const entries = savedConnectorEntries(b.build(), new Map([['connectors/lines.json', earlier]]), (t) => known.get(t));
+    const read = JSON.parse(decodeUtf8(entries.get('connectors/lines.json') as Uint8Array));
+    // the host's own definition of a known type wins over the earlier one; zig travels on once (the first valid one, a
+    // second would refuse the whole entry); gone is unused, bad not 1.0, two and long would refuse it on registering
+    expect(read).toEqual({
+      format: 'fluxion-connector-defs',
+      formatVersion: '1.0',
+      definitions: [{ ...def('lines:line'), describe: 'One line.' }, known.get('lines:wavy'), zig],
+    });
+  });
+
   it('FR-CON-010: reading back gives each pack with its JSON; an entry that is not UTF-8 JSON or is nested reads as nothing to register', () => {
     const entries = savedConnectorEntries(doc(), undefined, (t) => (t === 'lines:wavy' ? DEFS.get(t) : undefined));
     const read = embeddedConnectors(

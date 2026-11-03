@@ -4138,3 +4138,9 @@ done: a pack index that fails to read refuses that pack alone (catalog.refused),
 tests: pack-catalog.test.ts adds three cases (index read rejects, category read rejects, bundled read retried); removing either guard fails one
 note: a category read failure already came back as a loader result (sdk), so ensure needed no change
 
+## M18.239 — a save keeps a pack's known connector types beside an unknown one (2026-11-03)
+- format `savedConnectorEntries`: a pack with known and unknown used types writes every known definition plus the earlier entry's valid 1.0 definitions of the unknown types (any envelope version read); the host's definition wins for a known type; a pack with no known used type keeps the earlier entry as before. ADR-0048 amendment M18.239.
+- Tests: format connector-entries.test.ts (known+unknown with no earlier entry; with a 1.1 earlier entry, unused and invalid definitions not carried), studio pack-connectors.browser.test.tsx (save, reopen without the pack, then again with an earlier refused entry: wavy and pipe both register).
+- Review r1 changes-requested F1 (two earlier definitions of one unknown type were both carried, so the entry was refused whole on reopen): at most one per id, the first valid one; format case added.
+- Review r2 changes-requested F1 (an earlier definition parseConnectorDefs takes but registering refuses, a describe of two lines or past 160 characters, refused the whole entry): carried only when its describe is one catalog line (describeOf); format case added.
+- Review r3 pass; minor F1 left open: a carried definition so large that the canonical entry passes 1 MiB is read back as nothing, so the known types draw plain (a crafted file only).

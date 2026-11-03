@@ -101,6 +101,45 @@ describe('pack connector types in a saved file (FR-CON-010, FR-LIB-009)', () => 
     expect(again.value.extraEntries.get('connectors/lines.json')).toEqual(future);
   });
 
+  it("FR-CON-010, FR-LIB-009: a pack with a known and an unknown used type saves the known one, and keeps an earlier entry's unknown one (cp35 F3)", async () => {
+    const b = documentBuilder({ seed: 239 });
+    const screen = b.screen({ size: { w: 400, h: 240 } });
+    const a = b.rect(screen, { x: 20, y: 20, w: 80, h: 50 });
+    const c = b.rect(screen, { x: 280, y: 160, w: 80, h: 50 });
+    b.connect(a, c, { route: 'lines:wavy' });
+    b.connect(c, a, { route: 'lines:pipe' });
+    const [wavy, pipe] = LINES.definitions;
+    // this studio has only the wavy type of the pack
+    const withWavy = openDocument(b.build());
+    if (!withWavy.ok) throw new Error(withWavy.error);
+    expect(registerConnectorDefs(withWavy.value.registries.routers, { ...LINES, definitions: [wavy] }, 'lines').ok).toBe(true);
+    const save = async (file: Parameters<typeof fileBytes>[0]['file']) => {
+      const saved = await fileBytes({
+        file,
+        document: withWavy.value.core.store.toDocument(),
+        bytesOf: () => Promise.resolve(undefined),
+        hasher,
+        appVersion: '1.0.0',
+        connectorDefOf: (type) => connectorDefOf(withWavy.value.registries.routers, type),
+      });
+      if (!saved.ok) throw new Error(saved.error);
+      const reopened = await openFileBytes('mixed.flux', saved.value.bytes, hasher);
+      if (!reopened.ok) throw new Error(reopened.error);
+      const withoutPack = openDocument(reopened.value.document, { connectors: embeddedConnectors(reopened.value.extraEntries) });
+      if (!withoutPack.ok) throw new Error(withoutPack.error);
+      return { file: reopened.value, routers: withoutPack.value.registries.routers };
+    };
+    // no earlier entry: the known type travels, the unknown one has nothing to carry
+    const first = await save(undefined);
+    expect(connectorDefOf(first.routers, 'lines:wavy')).toEqual(wavy);
+    expect(first.routers.get('lines:pipe')).toBeUndefined();
+    // an earlier entry (refused here: a newer envelope) holding the unknown type: both travel
+    const future = new TextEncoder().encode(JSON.stringify({ ...LINES, formatVersion: '1.1' }));
+    const second = await save({ ...first.file, extraEntries: new Map([['connectors/lines.json', future]]) });
+    expect(connectorDefOf(second.routers, 'lines:wavy')).toEqual(wavy);
+    expect(connectorDefOf(second.routers, 'lines:pipe')).toEqual(pipe);
+  });
+
   it('FR-CON-010: a refused embedded entry is logged and its connectors are drawn as an unknown type, the document still opens', () => {
     const logged: unknown[] = [];
     const logger = { log: (...args: unknown[]) => void logged.push(args) } as never;

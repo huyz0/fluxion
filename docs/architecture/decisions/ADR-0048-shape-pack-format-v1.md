@@ -181,6 +181,16 @@ Studio registers them when it opens a file and embeds the used types when it sav
 connector Route field offers the registered pack types after the built-in routers. The player's
 open path, whose routing runs in a worker, is a follow-up row.
 
+### M18.239 — a pack's known connector types travel with its unknown ones (FR-CON-010, FR-LIB-009)
+
+Amends M18.112: a pack some of whose used types the host knows writes its entry with every known
+definition, joined by the file's earlier definitions of the used types the host does not know, so
+reopening without the pack draws the known types and an entry refused on open (a newer envelope,
+say) keeps its types. The entry is a 1.0 envelope, so only earlier definitions that any host
+registers join it: valid 1.0 definitions of the pack whose describe, if any, is one catalog line,
+at most one per id (the first). Any other is dropped, since it would make the whole entry refused. The host's own definition of a known type replaces the earlier one. A pack none of whose
+used types the host knows keeps the file's entry as it was, as before. The file format is unchanged.
+
 ### M18.34 — My shapes file (FR-LIB-008)
 
 My shapes, the person's local pack, is stored in local storage under `fluxion.my-shapes` and
