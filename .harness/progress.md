@@ -3894,3 +3894,8 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 ## 2026-11-03 M18.238: the headroom baseline is the newest run whose verify on that OS finished, in progress or not (cp35 F2)
 - `--pick-previous` lists main ci runs of any status (gh run list without --status completed), so a run still going whose verify (<os>) concluded success or failure is the baseline; a cancelled or unfinished verify is still skipped, and the run's own id is excluded.
 - 41545000572's macOS check had compared with 41540384128 because 41543941850 was still running, though its macOS verify had finished and listed drawio; the new harness case replays that through a gh stub (FLUXION_HEADROOM_GH, a node script so it runs on every OS). With `--status completed` put back, the case fails.
+
+## 2026-11-03 M18.240: webkit copy-with-text-selected e2e waits for the opening fit (ci 41556494848 flake)
+- e2e-report at de05cda failed on one webkit retry: clipboard.copy-paste.spec.ts:72 expected '100 %', received '34 %'. The spec read the zoom label on the editor's first frame (unfitted 100 %); useFitOnOpen then fitted the camera and rewrote the label inside the selection, so the selection no longer matched what was read. A test race, not a product fault: the fit is specified to land a frame after open (canvas.pan-zoom.spec.ts waits for it the same way).
+- The spec now waits until the label is no longer 100 % before reading and selecting it. No retry, quarantine or assertion change.
+- Local evidence: chromium 75/75 over --repeat-each 25 with the wait; chromium at 20x CPU throttling already shows the fitted label on its first read, so the race reproduces only in webkit, which this container lacks; the ci log ('100 %' read, '34 %' selected) is the witness.

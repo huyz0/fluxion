@@ -64,6 +64,9 @@ test.describe('copy and paste inside a document', { tag: '@desktop' }, () => {
       // after every other listener (a microtask), so what the editor did to the event is known
       window.addEventListener('copy', (e) => queueMicrotask(() => w.copies.push({ tag: (e.target as Element).tagName, prevented: e.defaultPrevented })));
     });
+    // the first frame shows the unfitted 100 %; the fit lands a frame later and rewrites the label under a selection
+    // made before it (ci 41556494848, webkit: '100 %' read, '34 %' selected), so select once the fit has landed
+    await expect(editor.zoomValue).not.toHaveText('100 %');
     const label = await editor.zoomValue.textContent();
     await editor.zoomValue.evaluate((el) => getSelection()?.selectAllChildren(el));
     await page.keyboard.press('ControlOrMeta+c');
