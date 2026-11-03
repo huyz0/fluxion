@@ -1,10 +1,10 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.231",
+  "currentTask": "M18.43",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209).",
+  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp35 F5: M18.214 needs a completed nightly on a current main commit; dispatching or cancelling a nightly on the remote needs Huy's authorization, asked 2026-11-03 on a decision card (the last nightly, 41292607829 at 797ff41, failed). M18.205 records from that nightly; M18.216 lands after M18.214 is settled.",
   "updated": "2026-11-02T23:07:43.382965+00:00",
   "rowAttempts": {
     "M18.157": 2,

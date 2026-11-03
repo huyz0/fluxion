@@ -1,0 +1,99 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp35",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..5b9d68ef387a2b2e368287656a4e870748323699",
+  "reviewer": "claude:independent-subagent:m18-cp35",
+  "verdict": "changes-requested",
+  "reviewedDelta": "Delta 7b16aed..5b9d68e (819b44b, 3cf8227, 7a95912, f4e2c44, 0d07237, a96ef73, 2264c60, 5b9d68e). Ran: check-commits --range 7b16aed..5b9d68e (8/8 pass); check-digest --head --full-history (249 M18 task commits have tracked review evidence and Commit cells); check-layering (34 workspaces, 0 violations); check-tests-kept --commit 0d07237 (exit 0); last-ci --branch main (ci green at 5b9d68e run 41549069021, gates green, cold-setup 782 s over budget exempt while M18.157 open, nightly RED at 797ff41 run 41292607829). gh run list: 41530066394 (819b44b) failure, then seven green main runs 41532570080..41549069021. Read the verify headroom and pack-import-phases lines in the logs of 41543941850, 41545000572 and 41549069021 (test-headroom --run could not download artifacts: proxy 403 on blob storage). Read diffs of 2264c60 (format connector-entries.ts, studio bootstrap/file-session/file-bar/App), 0d07237 (pack-import phases), a96ef73 (last-ci cancelled runs, test-headroom --pick-previous, ci.yml), 5b9d68e (check-digest foreign lines and progress headings, nextRound landed set), f4e2c44 and 3cf8227 (test splits), and the backlog, state.json, review-argued.txt and M18.md changes. Header count 218 matches the 218 rows.",
+  "cp34DispositionsCheck": {
+    "F1": "Partly honoured. M18.226 (3cf8227) and M18.230 (f4e2c44) landed, and the editor determinism case was split with assertions and timeout kept. The three-run headroom clause moved to new row M18.234 (todo). M18.230 closed its drawio clause because the case was 'listed over 50% on darwin in neither' of two runs, but the case read 57% on darwin at 41543941850 (a96ef73). See F1 below.",
+    "F2": "Honoured. 5b9d68e adds foreignLineProblems and progressProblems to check-digest and a landed set to nextRound. M18.218 and M18.130 are todo rows again, the misplaced progress entries are marked 'not landed', and M18.35's round allowance is named in progress.md. Harness cases were added in digest.test.mjs and review.test.mjs. One gap remains: bullet entries are not checked (F4).",
+    "F3": "Honoured. 0d07237 bounds end - start from the CLI's own phase marks. The tip run shows the unpainted refusal at 1.3-3.4 s on all OSes (windows verify phases total 1637 ms, start 459, witness-ready 1327). The three-run Windows evidence moved to M18.235 (todo), and the amended acceptance (the batch never stops at the first unpainted member) is stated in the commit.",
+    "F4": "Argued line added (review-argued.txt cp34 F4) and Learned line added to M18.md. Honoured.",
+    "F5": "Honoured by a96ef73: last-ci skips clean cancelled runs, and the headroom step uses --pick-previous and prints its baseline (seen in the logs). Its baseline is the newest completed run, so it skips a run whose verify on that OS has finished while other jobs still run (F2 below).",
+    "F6": "Honoured by moving the clause. 7a95912 put it whole into new row M18.233 (todo, after M18.122) and narrowed M18.112 back to the saved and embedded path, saying so in the row.",
+    "F7": "Not honoured. M18.214, M18.205 and M18.216 are still todo, and product row M18.112 (2264c60, stream 3 held stack) landed ahead of them and ahead of M18.231. That is against cp34's order: 'before any other product row', and step (5) 'Only then held product stacks'. state.json blockedReason does not name M18.214, and the cp31 F3 argued line was not replaced. The cp34 condition 'If M18.214 still cannot land by cp35, set blockedReason ... and replace the cp31 argued line' is now due."
+  },
+  "questions": {
+    "coherence": "Mostly coherent. The harness rows (M18.231, M18.232) build on the existing review-content and last-ci helpers instead of adding parallel ones. M18.112 adds one format helper (savedConnectorEntries/embeddedConnectors) used only by the studio, and the player path is deferred to M18.147. No duplicated helpers found.",
+    "specFidelity": "M18.112 meets its narrowed acceptance only partly. Its own r3 reviewer left open a case where a pack with one known and one unknown used type and no earlier entry writes no entry, so known types draw plain after reopening without the pack, against 'draw the same decoration'. No row tracks it (F3). Plan item 14 (FR-CON-010 'Pack connector renders and routes') now depends on M18.233 and M18.147, both todo. M18.214/205/216 (NFR-PERF-005) have been deferred again (F5).",
+    "standardsDrift": "The cp34 lesson 'land the CI-recovery and harness rows before held product stacks' was set aside within the same delta: M18.112 landed before M18.231 and before the stream-1 rows. Commit subjects, trailers and review lines follow the conventions. Fixes-ci is used on 3cf8227 and f4e2c44.",
+    "gateHonesty": "check-digest passes, and foreign digest lines are now refused. Two weaknesses remain. (a) The headroom step's two-consecutive rule can be skipped: 41545000572's darwin step compared with 41540384128, not with 41543941850 whose darwin verify had already listed drawio at 57%, because --pick-previous lists only runs whose whole run is completed (F2). (b) progressProblems judges headings only, so the cp34 F2 instance (a bullet under another row's heading) would not be caught again (F4). Spot-checked mutants: (1) moving ports.phase('start') to after rightsOf in pack-import.ts. The unit case at pack-import.test.ts:291 checks the order of marks, so it likely kills it, but a start mark placed just before end would still pass the e2e bound. (2) sameBytes in font-subset-save.browser.test.ts returning true for equal length would fail on the hash/record checks only partly, but it compares every byte, so it is constraining. (3) savedConnectorEntries keeping the earlier entry even when all types are known would fail connector-entries.test.ts canonical-entry case. m18-complete cannot pass while M18.214/233/234/235 are todo.",
+    "architecture": "Layering clean (check-layering 0 violations). New public API: format CONNECTOR_ENTRY_PREFIX, usedConnectorTypes, savedConnectorEntries, embeddedConnectors, EmbeddedConnectors, and routing connectorDefOf/DecoratedRouter.def, each recorded in api.md, plus an ADR-0048 amendment for the extra entries. cli reads FLUXION_PACK_IMPORT_PHASES at module scope (cli is not a pure package), and its phase lines go to stderr, outside the --json contract. No new dependencies.",
+    "planHealth": "Planned 43 rows, now 218 (about 5x), up 2 since cp34's 216 (M18.233, M18.234, M18.235 added, M18.218 and M18.130 restored). The growth is again CI recovery and review follow-ups. Each fix row that splits its evidence clause into a new row (M18.234, M18.235) adds rows that close only after CI reports. Later milestones should plan for CI-evidence rows from the start."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "packages/format/src/drawio-import.test.ts",
+      "line": 197,
+      "summary": "drawio 'amplifying entries are refused while converting, in bounded time' read 57% of its 10 s timeout on darwin after M18.230 closed its drawio clause on the ground that the case was not listed in two runs. cp34 F1 asked for it to be shown under 50% on darwin or to assert its bound by a count.",
+      "evidence": "ci 41543941850 (a96ef73), verify (macos-latest): '##[warning]packages/format/src/drawio-import.test.ts > ... amplifying entries are refused while converting, in bounded time: 5690 ms of 10000 ms (57%) on darwin' and 'test-headroom: 1 test(s) over 50% of their timeout across darwin'. f4e2c44 body: 'drawio-import's amplifying-entries case was listed over 50% on darwin in neither 41520931458 nor 41523125332'. It read 5046 ms (50.5%) on darwin at 2966a8a (cp34 F1). The case still bounds by wall clock only ({ timeout: 10_000 })."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/harness/test-headroom.mjs",
+      "line": 94,
+      "summary": "--pick-previous lists only main runs whose whole run is completed. When runs overlap, a verify step compares with an older run and skips the newer one whose verify on that OS had already finished and listed a test, so the 'over in two consecutive runs' rule can be skipped.",
+      "evidence": "41545000572 verify (macos-latest) at 23:33:37Z: 'test-headroom: comparing with run 41540384128'. The darwin verify of 41543941850 had finished at 23:31:28Z with drawio at 57%, but its windows job ran until about 23:37Z, so the run was not yet 'completed'. The other OSes of 41545000572 (later) compared with 41543941850. gh run list ... --status completed at lines 86-99."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "packages/format/src/connector-entries.ts",
+      "line": 56,
+      "summary": "M18.112 landed with its reviewer's open minor untracked. When a pack has a known and an unknown used type and the file has no earlier entry, the save writes nothing for that pack, so the known types draw plain after reopening without the pack, against the row's 'draw the same decoration'. No backlog row tracks it.",
+      "evidence": "savedConnectorEntries: 'if (known.length === defs.length) out.set(...) else if (earlier !== undefined) out.set(name, earlier);'. There is no else branch for known definitions. 2264c60 body: 'Minor F1 left open: when a pack has one known and one unknown used type and the file has no earlier entry for it, nothing is written for the pack'. grep for this case in docs/backlog/current.md finds nothing, and M18.147 and M18.233 cover other paths."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "scripts/gates/check-digest.mjs",
+      "line": 263,
+      "summary": "progressProblems judges only '## <task>' headings. A replayed bullet under another row's heading, which was the M18.35 instance in cp34 F2, would still pass, while M18.231's acceptance says progress.md SHALL hold no entry for a row with no commit on main.",
+      "evidence": "Regex /^## (?:\\d{4}-\\d{2}-\\d{2} )?(M\\d+\\.\\d+)\\b/ applied to headings only. progress.md M18.231 entry, r2 line: 'Bullet entries stay unjudged: they carry no task id a check can tell apart from a reference.' The round-cap bypass, the harmful part of cp34 F2, is closed by foreignLineProblems and nextRound's landed set."
+    },
+    {
+      "id": "F5",
+      "severity": "major",
+      "file": ".harness/state.json",
+      "line": 7,
+      "summary": "cp34 F7 was not honoured. M18.214, M18.205 and M18.216 are still todo at the fourth checkpoint since cp31. Product row M18.112 landed ahead of them and ahead of harness row M18.231, against the cp34 order. blockedReason does not name M18.214's authorization, and the cp31 F3 argued line was not replaced as cp34 required by cp35.",
+      "evidence": "git log 7b16aed..5b9d68e: 2264c60 M18.112 (feat, 23:04Z) before 5b9d68e M18.231 (23:44Z). No M18.214/205/216 commit. Backlog rows 194, 200 and 202 are todo with empty Commit cells. progress.md 'next: M18.226 ..., M18.230, M18.229, then M18.231, M18.232, then M18.214, .205, .216, then the held product stacks'. state.json blockedReason names only cp24 F5 and cp25 F4. review-argued.txt:179 is the unchanged cp31 F3 line. last-ci: 'nightly RED failure at 797ff41 (run 41292607829)'."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.237",
+      "note": "| M18.237 | drawio amplifying-entries refusal asserts its bound by a count (cp35 F1, ci 41543941850) | FR-LIB-006, NFR-SEC-001, NFR-DX-004, HARNESS | WHEN drawio-import.test.ts 'amplifying entries are refused while converting, in bounded time' runs on any OS THE SYSTEM SHALL assert by count which budget refuses each amplifying entry (output, labels, placeholders, dashes, anchors, route walks) before its work, with the 10 s timeout only an outer guard; no timeout raised, no assertion removed; progress.md SHALL record the darwin reading at 41543941850 (5690 ms, 57%) and the next three darwin readings by run id | M18.230 | todo | |"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.238",
+      "note": "| M18.238 | The headroom baseline is the newest run whose verify on that OS finished, not the newest completed run (cp35 F2) | HARNESS | WHEN the verify headroom step picks its previous run THE SYSTEM SHALL consider main ci runs that are in progress as well as completed, other than its own, and take the newest whose verify (<os>) job concluded success or failure; a harness case SHALL cover an in-progress newer run whose verify on that OS finished (it is the baseline), shown with 41545000572/41543941850 | M18.232 | todo | |"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.239",
+      "note": "| M18.239 | A save embeds the known connector types of a pack even when one of its used types is unknown (cp35 F3, M18.112 r3 F1) | FR-CON-010, FR-LIB-009 | WHEN a document uses a pack's known and unknown connector types and is saved THE SYSTEM SHALL write that pack's connectors/<pack>.json with every known definition, merged with any earlier entry's definitions of the unknown types, so that after reopening without the pack every known type draws the same decoration and an earlier refused entry's types are not lost; format and studio cases SHALL cover known+unknown with and without an earlier entry | M18.112 | todo | |"
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "Bullets carry no task id the gate can tell apart from a reference, as M18.231 r2 found. The harm in cp34 F2, rounds restarting past the cap, is closed by foreignLineProblems and nextRound's landed set, both with harness cases, and a misplaced bullet now needs its digest lines, which are refused. Review code-reviews progress bullets by hand until a structured progress format exists."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M18.214",
+      "note": "No new row. Before any further product commit: either land M18.214 (then M18.205, M18.216), or, if it waits on Huy's authorization for a nightly cancel or dispatch, set state.json blockedReason to name that authorization and the date asked, and replace review-argued.txt cp31 F3 with a cp35 F5 line stating it, not a restatement. Held product stacks (streams 2, 3 and 6) do not land before one of those is done."
+    }
+  ],
+  "planDelta": "Add M18.237 (drawio amplifying-entries bound by count, F1), M18.238 (headroom baseline by job, F2) and M18.239 (save embeds known types of a mixed pack, F3). Header goes from 218 to 221 and must match the row count. Order: (1) land this cp35 record with the new rows (harness path). (2) Settle M18.214: land it, or record blockedReason and replace the cp31 F3 argued line (F5). Then M18.205 and M18.216. (3) M18.237 and M18.238 (CI recovery and harness), then M18.234 and M18.235, read from runs after M18.237. (4) Only then held product stacks: stream 3 M18.35 (r5 under its allowance), M18.130, M18.122, M18.233, M18.239, M18.147; stream 2 M18.218 (needs Huy's round allowance); stream 6. Learned: 'cp35 (through `5b9d68e`): main stayed green for seven runs, but a product row landed ahead of the order the checkpoint set, and a clause closed on \"not listed in two runs\" read 57% on the next run. Absence from a listing is not a bound.'"
+}
