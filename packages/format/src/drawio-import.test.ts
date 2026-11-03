@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { encodeBase64 } from './base64.js';
 import { deflateRaw } from './deflate.js';
-import { importDrawioLibrary } from './drawio-import.js';
+import { drawioLibraryWork, importDrawioLibrary } from './drawio-import.js';
 import type { SvgPaintRequest, SvgPaintWitness } from './svg-import.js';
 import { encodeUtf8 } from './utf8.js';
 
@@ -18,6 +18,15 @@ const corpus = (name: string) => FILES[`../../../specs/import/corpus/drawio/${na
 const witness: SvgPaintWitness = async (r) => ({ identity: r.identity, status: 'painted', fontHashes: r.fonts.map((f) => f.sha256) });
 const font = { family: 'Roboto', weight: 400, style: 'normal' as const, sha256: 'a'.repeat(64) };
 const options = { witness, namespace: 'drawio', fonts: [font], defaultFont: font.sha256 };
+/** The test witness, counting its calls: a refused amplifying entry must never reach it (M18.237). */
+const counted = () => {
+  let n = 0;
+  const counting: SvgPaintWitness = async (r) => {
+    n += 1;
+    return witness(r);
+  };
+  return { witness: counting, calls: () => n };
+};
 const library = (rows: unknown[]) => `<mxlibrary>${JSON.stringify(rows).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</mxlibrary>`;
 const model = (cells: string) => `<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/>${cells}</root></mxGraphModel>`;
 const box = (id: string, style: string, value = '') =>
@@ -194,10 +203,66 @@ describe('draw.io library import (FR-LIB-006)', () => {
     ]);
   });
 
+  // M18.237 (cp35 F1): each amplifying entry's bound is asserted by what it charged to the library budget and by the witness
+  // never being called, not by elapsed time; the 10 s timeout is only an outer guard. The route walk, which spends the whole
+  // step budget, is its own case below.
   it('FR-LIB-006 NFR-SEC-001: amplifying entries are refused while converting, in bounded time', { timeout: 10_000 }, async () => {
     // diagnostic review after r3: output, labels, placeholders, dashes, anchors and route walks were each unbounded
     const many = (n: number, unit: string) => unit.repeat(n);
     const wrapper = `<object label="${many(100, '%k%')}" placeholders="1" k="${many(100, 'ab')}" id="2"><mxCell style="rounded=0" vertex="1" parent="1"><mxGeometry width="80" height="40" as="geometry"/></mxCell></object>`;
+    const rows = [
+      { title: 'lines', xml: model(box('2', 'rounded=0', many(100, 'a&#10;'))) },
+      { title: 'placeholders', xml: model(wrapper) },
+      { title: 'unclosed tags', xml: model(box('2', 'html=1', many(60_000, '&lt;'))) },
+      { title: 'svg data', data: `data:image/svg+xml;base64,${many(3 * 1024 * 1024, 'A')}` },
+    ];
+    const painted = counted();
+    const { report, work } = await drawioLibraryWork(library(rows), { ...options, witness: painted.witness });
+    const reasons = report.status === 'processed' ? report.entries.map((e) => (e.status === 'refused' ? (e.diagnostics[0]?.message ?? '') : 'accepted')) : [];
+    expect(reasons).toHaveLength(rows.length);
+    for (const [i, pattern] of [/exceeds 64 lines/, /resolved label exceeds 4096/, /label exceeds 4096/, /embedded SVG exceeds/].entries())
+      expect(reasons[i], rows[i]?.title).toMatch(pattern);
+    // no entry reaches the witness, and none charges more characters than its own source: nothing is amplified
+    expect(painted.calls()).toBe(0);
+    for (const [i, row] of rows.entries()) expect(work[i]?.chars, row.title).toBeLessThanOrEqual(JSON.stringify(row).length);
+    // labels stop at their caps after a few steps; the placeholders stop before all 100 lookups; the embedded SVG is
+    // refused by its size before any decoding
+    expect(work.slice(0, 3).map((w) => w.steps <= 64)).toEqual([true, true, true]);
+    expect(work[1]?.steps).toBeLessThan(100);
+    expect(work[3]).toEqual({ chars: 0, steps: 0, made: 0 });
+    // nothing is made for any of them: no SVG written, no label line rendered (r2 F2); an ordinary two-line label makes some
+    expect(work.map((w) => w.made)).toEqual([0, 0, 0, 0]);
+    const control = await drawioLibraryWork(library([{ title: 'two lines', xml: model(box('2', 'rounded=0', 'a&#10;b')) }]), options);
+    expect(control.work[0]?.made).toBeGreaterThan(0);
+
+    const stencil = (inner: string) => `<shapes><shape name="s" w="10" h="10">${inner}</shape></shapes>`;
+    const dash = `<foreground><dashpattern pattern="${many(17, '1 ').trim()}"/><dashed dashed="1"/><rect x="0" y="0" w="10" h="10"/><stroke/></foreground>`;
+    const anchors = `<connections>${many(257, '<constraint x="0.5" y="0.5"/>')}</connections><foreground><rect x="0" y="0" w="10" h="10"/><fillstroke/></foreground>`;
+    const text = `<foreground><text str="${many(5000, 'a&#10;')}" x="5" y="5"/></foreground>`;
+    const anchorsPattern = /exceeds 256 connection points/;
+    for (const [inner, pattern] of [
+      [dash, /dash pattern exceeds 16/],
+      [anchors, anchorsPattern],
+      [text, /label exceeds 4096/],
+    ] as const) {
+      const source = stencil(inner);
+      const stencilPainted = counted();
+      const {
+        report: r,
+        work: [spent],
+      } = await drawioLibraryWork(source, { ...options, witness: stencilPainted.witness });
+      expect(r.status === 'processed' && r.entries[0]?.status === 'refused' && r.entries[0].diagnostics[0]?.message).toMatch(pattern);
+      // refused at its cap before the dashes, points or lines are written out: no witness, no steps, no more characters than its source
+      expect(stencilPainted.calls()).toBe(0);
+      expect(spent?.steps, String(pattern)).toBe(0);
+      expect(spent?.chars, String(pattern)).toBeLessThanOrEqual(source.length);
+      // refused at its cap before any dash value, anchor or label line is made (r2 F1); the anchors' stencil has already
+      // written its rectangle, which is less than one unit per refused constraint
+      expect(spent?.made, String(pattern)).toBeLessThan(pattern === anchorsPattern ? 257 : 1);
+    }
+  });
+
+  it('FR-LIB-006 NFR-SEC-001: a route walk is refused once it spends the library step budget (M18.237)', { timeout: 10_000 }, async () => {
     const points = `<Array as="points">${Array.from({ length: 5000 }, (_, i) => `<mxPoint x="${i}" y="0"/>`).join('')}</Array>`;
     const labels = Array.from(
       { length: 3500 },
@@ -205,38 +270,16 @@ describe('draw.io library import (FR-LIB-006)', () => {
         `<mxCell id="l${i}" value="x" style="text" vertex="1" parent="e"><mxGeometry x="0" y="0" width="4" height="4" relative="1" as="geometry"/></mxCell>`,
     ).join('');
     const walked = `${box('v', 'rounded=0')}<mxCell id="e" edge="1" parent="1" source="v" target="v"><mxGeometry relative="1" as="geometry">${points}</mxGeometry></mxCell>${labels}`;
-    const rows = [
-      { title: 'lines', xml: model(box('2', 'rounded=0', many(100, 'a&#10;'))) },
-      { title: 'placeholders', xml: model(wrapper) },
-      { title: 'unclosed tags', xml: model(box('2', 'html=1', many(60_000, '&lt;'))) },
-      { title: 'svg data', data: `data:image/svg+xml;base64,${many(3 * 1024 * 1024, 'A')}` },
-      // last: it spends the library's whole step budget
-      { title: 'route walks', xml: model(walked) },
-    ];
-    const report = await importDrawioLibrary(library(rows), options);
+    const row = { title: 'route walks', xml: model(walked) };
+    const painted = counted();
+    const { report, work } = await drawioLibraryWork(library([row]), { ...options, witness: painted.witness });
     const reasons = report.status === 'processed' ? report.entries.map((e) => (e.status === 'refused' ? (e.diagnostics[0]?.message ?? '') : 'accepted')) : [];
-    expect(reasons).toHaveLength(rows.length);
-    for (const [i, pattern] of [
-      /exceeds 64 lines/,
-      /resolved label exceeds 4096/,
-      /label exceeds 4096/,
-      /embedded SVG exceeds/,
-      /conversion steps exhausted/,
-    ].entries())
-      expect(reasons[i], rows[i]?.title).toMatch(pattern);
-
-    const stencil = (inner: string) => `<shapes><shape name="s" w="10" h="10">${inner}</shape></shapes>`;
-    const dash = `<foreground><dashpattern pattern="${many(17, '1 ').trim()}"/><dashed dashed="1"/><rect x="0" y="0" w="10" h="10"/><stroke/></foreground>`;
-    const anchors = `<connections>${many(257, '<constraint x="0.5" y="0.5"/>')}</connections><foreground><rect x="0" y="0" w="10" h="10"/><fillstroke/></foreground>`;
-    const text = `<foreground><text str="${many(5000, 'a&#10;')}" x="5" y="5"/></foreground>`;
-    for (const [inner, pattern] of [
-      [dash, /dash pattern exceeds 16/],
-      [anchors, /exceeds 256 connection points/],
-      [text, /label exceeds 4096/],
-    ] as const) {
-      const r = await importDrawioLibrary(stencil(inner), options);
-      expect(r.status === 'processed' && r.entries[0]?.status === 'refused' && r.entries[0].diagnostics[0]?.message).toMatch(pattern);
-    }
+    expect(reasons).toEqual([expect.stringMatching(/conversion steps exhausted/)]);
+    expect(painted.calls()).toBe(0);
+    // the walk is refused by the step budget (16 Mi steps), overrunning it by less than one route's points
+    expect(work[0]?.steps).toBeGreaterThan(16 * 1024 * 1024);
+    expect(work[0]?.steps).toBeLessThanOrEqual(16 * 1024 * 1024 + 5000);
+    expect(work[0]?.chars).toBeLessThanOrEqual(JSON.stringify(row).length);
   });
 
   it('FR-LIB-006: equal titles number in order and references decode in linear time', { timeout: 10_000 }, async () => {

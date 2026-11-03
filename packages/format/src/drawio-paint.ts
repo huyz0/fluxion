@@ -8,8 +8,12 @@ export const refuse = (reason: string): never => {
   throw new Unsupported(reason);
 };
 
-/** Library-wide conversion budget: decoded and converted characters, and bounded conversion steps (ADR-0049). */
-export type Budget = { left: number; steps: number };
+/**
+ * Library-wide conversion budget: decoded and converted characters, and bounded conversion steps (ADR-0049). `made`
+ * only counts what conversion produced (SVG characters written, label lines, dash values, anchors) and limits nothing:
+ * tests bound an amplifying entry's work by it (M18.237).
+ */
+export type Budget = { left: number; steps: number; made: number };
 /** Charge `count` conversion steps (route points walked, placeholder lookups); the overrunning entry is refused. */
 export const step = (budget: Budget, count: number): void => {
   budget.steps -= count;
@@ -20,13 +24,16 @@ export const step = (budget: Budget, count: number): void => {
 export class Sink {
   private chars = 0;
   private readonly max: number;
+  readonly budget: Budget;
   readonly parts: string[] = [];
-  constructor(max: number) {
+  constructor(max: number, budget: Budget) {
     this.max = max;
+    this.budget = budget;
   }
   push(markup: string): void {
     this.chars += markup.length;
     if (this.chars > this.max) refuse('library-work-limit: converted SVG exceeds the entry or library budget');
+    this.budget.made += markup.length;
     this.parts.push(markup);
   }
 }
@@ -73,7 +80,7 @@ export type Label = {
  * One label as `<text>` lines: explicit line breaks only (no font metrics in pure code, so no wrapping); the host's
  * default face renders it, so no family/weight is written (the font contract refuses faces the host lacks).
  */
-export function labelSvg(label: Label): string {
+export function labelSvg(label: Label, budget: Budget): string {
   if (label.text.length > MAX_LABEL_CHARS) refuse(`label exceeds ${MAX_LABEL_CHARS} characters`);
   const lines = label.text.split('\n').map((l) => l.trim());
   if (lines.length > MAX_LABEL_LINES) refuse(`label exceeds ${MAX_LABEL_LINES} lines`);
@@ -84,10 +91,10 @@ export function labelSvg(label: Label): string {
   const first = firstBaseline(label, lh * (lines.length - 1));
   // one text element per line: the checked text profile has no tspan and only printable ASCII
   return lines
-    .map(
-      (l, i) =>
-        `<text x="${num(x)}" y="${num(first + i * lh)}" text-anchor="${anchor}" font-size="${num(label.size)}" fill="${label.color}" stroke="none">${escapeXml(asciiOnly(l))}</text>`,
-    )
+    .map((l, i) => {
+      budget.made += 1;
+      return `<text x="${num(x)}" y="${num(first + i * lh)}" text-anchor="${anchor}" font-size="${num(label.size)}" fill="${label.color}" stroke="none">${escapeXml(asciiOnly(l))}</text>`;
+    })
     .join('');
 }
 

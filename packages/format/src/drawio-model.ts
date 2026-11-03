@@ -212,7 +212,7 @@ function label(scene: Scene, cell: Cell, box: Box, middle = false): string {
     size,
     color: color(v.get('fontColor'), '#000000'),
   };
-  const svg = labelSvg(spec);
+  const svg = labelSvg(spec, scene.budget);
   if (svg && /[^\x20-\x7e\n]/.test(cell.label)) scene.omissions.push(`non-ascii-label-characters-replaced: cell ${cell.id}`);
   if (svg) {
     // no font metrics here: estimate the text extent so the viewport does not clip it
@@ -343,7 +343,7 @@ export function modelSvg(model: XmlNode, budget: Budget): ModelSvg {
   const cells = cellsOf(model, budget);
   const scene: Scene = {
     cells,
-    out: new Sink(Math.min(MAX_SVG_CHARS, budget.left)),
+    out: new Sink(Math.min(MAX_SVG_CHARS, budget.left), budget),
     budget,
     omissions: [],
     origins: new Map(),

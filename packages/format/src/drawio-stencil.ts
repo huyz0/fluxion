@@ -89,17 +89,23 @@ function pathData(node: XmlNode): string {
 }
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
-const dashPattern = (node: XmlNode, p: Paint): string | undefined => {
+const dashPattern = (node: XmlNode, p: Paint, budget: Budget): string | undefined => {
   const text = (attr(node, 'pattern') ?? '').trim();
   // the pattern is repeated on every later stroke, so its size is bounded rather than charged once
   if (text.length > MAX_DASH_VALUES * 12) refuse(`dash pattern exceeds ${MAX_DASH_VALUES} values`);
   const pattern = text.split(/\s+/).map(Number);
   if (pattern.length > MAX_DASH_VALUES) refuse(`dash pattern exceeds ${MAX_DASH_VALUES} values`);
-  return pattern.length && pattern.every((v) => Number.isFinite(v) && v >= 0) ? pattern.map((v) => num(v * p.width)).join(' ') : p.dash;
+  if (!pattern.length || !pattern.every((v) => Number.isFinite(v) && v >= 0)) return p.dash;
+  return pattern
+    .map((v) => {
+      budget.made += 1;
+      return num(v * p.width);
+    })
+    .join(' ');
 };
 const ignore = () => undefined;
 /** Paint-state nodes; fonts are not chosen here (labels use the host default face). */
-const PAINT_OPS: Readonly<Record<string, (p: Paint, node: XmlNode) => void>> = {
+const PAINT_OPS: Readonly<Record<string, (p: Paint, node: XmlNode, budget: Budget) => void>> = {
   strokecolor: (p, node) => {
     p.stroke = color(attr(node, 'color'), p.stroke);
   },
@@ -118,8 +124,8 @@ const PAINT_OPS: Readonly<Record<string, (p: Paint, node: XmlNode) => void>> = {
   dashed: (p, node) => {
     p.dash = n(node, 'dashed') ? (p.dash ?? '3 3') : undefined;
   },
-  dashpattern: (p, node) => {
-    p.dash = dashPattern(node, p);
+  dashpattern: (p, node, budget) => {
+    p.dash = dashPattern(node, p, budget);
   },
   linejoin: (p, node) => {
     if (JOINS.has(attr(node, 'join') ?? '')) p.join = attr(node, 'join') as string;
@@ -149,7 +155,7 @@ const STATE_OPS: Readonly<Record<string, (state: State, node: XmlNode) => void>>
     // a point label: a zero-size box at (x, y) aligned as the stencil says
     const p = state.paint;
     const spec = { text: attr(node, 'str') ?? '', x: n(node, 'x'), y: n(node, 'y'), w: 0, h: 0, size: p.fontSize, color: p.fontColor };
-    const svg = labelSvg({ ...spec, align: attr(node, 'align') ?? 'center', valign: attr(node, 'valign') ?? 'middle' });
+    const svg = labelSvg({ ...spec, align: attr(node, 'align') ?? 'center', valign: attr(node, 'valign') ?? 'middle' }, state.out.budget);
     // the checked text profile keeps printable ASCII only: a drawn text that lost characters is reported, as cell labels are
     if (svg && /[^\x20-\x7e\n]/.test(spec.text)) state.replaced++;
     state.out.push(svg);
@@ -171,7 +177,8 @@ function flush(state: State, kind: string): void {
 
 function paintNode(state: State, node: XmlNode): void {
   if (Object.hasOwn(STATE_OPS, node.name)) (STATE_OPS[node.name] as (state: State, node: XmlNode) => void)(state, node);
-  else if (Object.hasOwn(PAINT_OPS, node.name)) (PAINT_OPS[node.name] as (p: Paint, node: XmlNode) => void)(state.paint, node);
+  else if (Object.hasOwn(PAINT_OPS, node.name))
+    (PAINT_OPS[node.name] as (p: Paint, node: XmlNode, budget: Budget) => void)(state.paint, node, state.out.budget);
   else refuse(`unsupported-stencil-node: ${node.name}`);
 }
 
@@ -193,12 +200,13 @@ function drawNode(state: State, node: XmlNode): void {
   } else paintNode(state, node);
 }
 
-function anchorsOf(shape: XmlNode): AnchorDef[] {
+function anchorsOf(shape: XmlNode, budget: Budget): AnchorDef[] {
   const connections = elements(shape, 'connections')[0];
   if (!connections) return [];
   const constraints = elements(connections, 'constraint');
   if (constraints.length > MAX_ANCHORS) refuse(`stencil exceeds ${MAX_ANCHORS} connection points`);
   return constraints.map((c, i) => {
+    budget.made += 1;
     const x = n(c, 'x');
     const y = n(c, 'y');
     if (x < 0 || x > 1 || y < 0 || y > 1) refuse('constraint outside the shape');
@@ -241,9 +249,9 @@ export function stencilSvg(shape: XmlNode, budget: Budget): StencilSvg {
   if (w <= 0 || h <= 0) refuse('invalid-stencil-size');
   const unknown = elements(shape).find((c) => !['connections', 'background', 'foreground'].includes(c.name));
   if (unknown) refuse(`unsupported-stencil-node: ${unknown.name}`);
-  const { parts: out, replaced } = draw(shape, new Sink(Math.min(MAX_SVG_CHARS, budget.left)));
+  const { parts: out, replaced } = draw(shape, new Sink(Math.min(MAX_SVG_CHARS, budget.left), budget));
   if (out.every((o) => o === '')) refuse('stencil paints nothing');
   const omissions = replaced > 0 ? [`non-ascii-label-characters-replaced: ${replaced} stencil text${replaced === 1 ? '' : 's'}`] : [];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${num(w)}" height="${num(h)}" viewBox="0 0 ${num(w)} ${num(h)}">${out.join('')}</svg>`;
-  return { svg, w, h, anchors: anchorsOf(shape), omissions };
+  return { svg, w, h, anchors: anchorsOf(shape, budget), omissions };
 }

@@ -251,15 +251,34 @@ function sourcesOf(text: string): { format: 'stencil' | 'mxlibrary'; sources: So
  * @public
  */
 export async function importDrawioLibrary(text: string, options: DrawioImportOptions): Promise<DrawioImportReport> {
+  return (await drawioLibraryWork(text, options)).report;
+}
+
+/** What one entry charged to the library budget (decoded and converted characters, conversion steps) and what it made (`Budget.made`). */
+export type DrawioEntryWork = { readonly chars: number; readonly steps: number; readonly made: number };
+
+/**
+ * `importDrawioLibrary`, with what each entry charged to the library budget, in entry order (M18.237): tests bound an
+ * amplifying entry's work by these counts rather than by elapsed time. Not exported from the package.
+ */
+export async function drawioLibraryWork(
+  text: string,
+  options: DrawioImportOptions,
+): Promise<{ readonly report: DrawioImportReport; readonly work: readonly DrawioEntryWork[] }> {
   const { namespace, ...rest } = options;
-  if (typeof namespace !== 'string' || !NAMESPACE.test(namespace)) return failed('invalid target namespace');
+  if (typeof namespace !== 'string' || !NAMESPACE.test(namespace)) return { report: failed('invalid target namespace'), work: [] };
   const parsed = sourcesOf(text);
-  if (typeof parsed === 'string') return failed(parsed);
+  if (typeof parsed === 'string') return { report: failed(parsed), work: [] };
   const ids = idsOf(namespace, parsed.sources);
   const entries: DrawioEntryOutcome[] = [];
-  const context: Context = { options: rest, budget: { left: WORK_CHARS, steps: WORK_STEPS } };
-  for (const [index, source] of parsed.sources.entries()) entries.push(await convert(source, { index, id: ids[index] as string }, context));
-  return {
+  const work: DrawioEntryWork[] = [];
+  const context: Context = { options: rest, budget: { left: WORK_CHARS, steps: WORK_STEPS, made: 0 } };
+  for (const [index, source] of parsed.sources.entries()) {
+    const before = { ...context.budget };
+    entries.push(await convert(source, { index, id: ids[index] as string }, context));
+    work.push({ chars: before.left - context.budget.left, steps: before.steps - context.budget.steps, made: context.budget.made - before.made });
+  }
+  const report: DrawioImportReport = {
     status: 'processed',
     format: parsed.format,
     sourceSha256: sha256Hex(encodeUtf8(text)),
@@ -267,4 +286,5 @@ export async function importDrawioLibrary(text: string, options: DrawioImportOpt
     acceptedCount: entries.filter((e) => e.status === 'accepted').length,
     entries,
   };
+  return { report, work };
 }
