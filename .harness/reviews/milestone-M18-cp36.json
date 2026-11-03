@@ -1,0 +1,83 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp36",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..7ae54a69df37867d647388b7b6717b1a2f4c1582",
+  "reviewer": "claude:independent-subagent:m18-cp36",
+  "verdict": "changes-requested",
+  "reviewedDelta": "Delta dd13eb5..7ae54a6: de05cda M18.42, 60ce6af M18.238, 22bce9f M18.240, 4bc3dd8 M18.237, f0805eb M18.235, 7ae54a6 M18.241. Ran at 7ae54a6: check-commits --range dd13eb5..7ae54a6 (6/6 pass); check-digest --head --full-history (256 M18 task commits have tracked review evidence and Commit cells); check-layering (34 workspaces, 0 violations); check-tests-kept --commit on all six (exit 0 each); check-api (44 reports match); last-ci --branch main (ci green at 7ae54a6 run 41586983302, gates green 41586983311, cold-setup 668 s over budget exempt while M18.157 open, nightly RED at 590e0a4 run 41421711034). Main ci runs in the delta: 41556494848 (de05cda) red on a webkit e2e retry, fixed by M18.240; 41566616103 (f0805eb) red on darwin headroom, fixed by M18.241; the others green. Read the test-headroom lines of verify on all three OSes in 41558197198, 41561685492, 41566160092, 41566616103 and 41586983302. Read nightly job lists for 41559194820 (dispatched at 60ce6af, still running: perf, properties and previous chromium/firefox green; previous webkit, visual-xos windows/macos red; 10 core mutation shards cancelled at 60 min; chain 2 core-31..43 queued) and 41421711034, and the perf and previous-playwright (webkit) logs of 41559194820, 41421711034, 41292607829, 41184728589, 41028194620, 40842994983 and 40470089950. Read the diffs of 4bc3dd8 (format drawio budget `made`), 7ae54a6, 60ce6af, 22bce9f and the backlog, state.json, progress.md and review-argued.txt changes. Header count 224 matches the 224 rows (207 done, 17 todo).",
+  "cp35DispositionsCheck": {
+    "F1": "Honoured. M18.237 (4bc3dd8) asserts the refusals by count (`made`, chars, steps, 0 witness calls) with the 10 s timeout as outer guard. Its darwin case then read 6699 ms (67%) at f0805eb and the edge-label case 2730/3013 ms, so 41566616103 went red; M18.241 (7ae54a6, Fixes-ci 41566616103) cut the work, and tip 41586983302 lists 0 tests on darwin. The three darwin readings are open in M18.234, as the row says.",
+    "F2": "Honoured. M18.238 (60ce6af) drops --status completed. CI shows it working: 41566616103's macOS step compared with 41566160092 while that run was still in progress, and failed on 'over in two consecutive runs' for the edge-label case. The harness case replays 41545000572/41543941850 through a gh stub.",
+    "F3": "Honoured as ordered: M18.239 is a todo row in the held stream-3 stack.",
+    "F4": "Honoured: review-argued.txt carries the cp35 F4 line.",
+    "F5": "Honoured. dd13eb5 put cp35 F5 into state.json blockedReason and replaced the cp31 F3 argued line, Huy authorized dispatch 41559194820, and no held product stack landed in the delta (M18.42 is docs). Two things were lost. The replacement line drops cp31 F3's 'previous-playwright webkit failure is re-read after 590e0a4's next nightly' (see F1). blockedReason calls 41292607829 'the last nightly', but 41421711034 at 590e0a4 completed red on 2026-11-02 (see F2)."
+  },
+  "questions": {
+    "coherence": "Coherent. M18.237 and M18.241 work in one drawio-import test file and one budget type. M18.241 moves the work that M18.237's bigger assertions added into separate cases, so it does not contradict M18.237. M18.238 edits the existing pickPrevious helper rather than adding a second one. M18.240 copies canvas.pan-zoom.spec's wait for the opening fit. One small drift: M18.237 is typed test(format) but changes shipped importer source (Budget.made, the labelSvg and Sink signatures). check-api passes, since none of it is exported from the package index.",
+    "specFidelity": "Each delta row meets its own acceptance. M18.42 narrowed its own row in the same commit and moved the M18-packs archive to M18.236, which is stated and has a row. M18.235's claim that 'the 11.4 s at b5194f1 was the command's own work' is inferred from start-up in other runs, since b5194f1 had no phase trace, and own work varies 1.6 to 3.4 s across the three runs. That answers the row as worded. Two gaps reach beyond the delta. M18.132 (done) is contradicted by every nightly since it landed (F1). Plan item 10's search-budget leg names a test file that no row writes (F3).",
+    "standardsDrift": "Fixes-ci was used correctly on 22bce9f and 7ae54a6, and harness rows landed while main was red only under path exemptions. The lesson 'a row closes after its CI run' slipped again: M18.237 closed before its darwin reading, and that reading turned main red one commit later. The row did split its readings out to M18.234, and the gate M18.238 fixed caught the problem, so the cost was one red run. The convention of recording each nightly's result in progress.md has stopped: 41421711034's perf FAIL and the nightly previous-WebKit failures since 40842994983 appear nowhere in progress.md or the backlog.",
+    "gateHonesty": "m18-complete reads 59/76 and cannot go green while 17 rows are todo. One leg can never pass as written: 'all first-party packs searchable within library search budget' names packages/editor/src/library/first-party-packs.test.ts, which does not exist. M18.32 put that test in apps/studio/src/pack-catalog.test.ts:83, so closing the leg needs a gate edit with no row behind it (F3). The nightly is the only place previous WebKit and the perf benches are judged, and its red results have gone unread (F1, F2). Mutant spot-checks: (1) putting --status completed back into pickPrevious fails the new harness case (progress.md records it), and 41566616103 is real evidence the rule fires. (2) Raising the drawio nest cap from 32 to 100 lets the 64-link chain through, so the case fails. 64 links constrain the cap more tightly than 2000 did. (3) In M18.237, moving `budget.made += 1` in labelSvg before the 64-line refuse makes the refused 'lines' entry make > 0, so `work.map(w => w.made)` equal to [0,0,0] fails. All three tests constrain.",
+    "architecture": "Layering is clean (0 violations) and check-api matches. Format stays pure, and the `made` counter is plain data threaded through Budget. drawioLibraryWork is a module export, not part of the package index. No new dependencies. ci.yml changed only a comment, and FLUXION_HEADROOM_GH is a harness-only stub hook.",
+    "planHealth": "Planned 43 rows, now 224 (5.2x), up 3 since cp35's 221: M18.236 (docs follow-up), M18.240 and M18.241 (CI red fixes). Five of the six delta commits are CI recovery, harness or evidence. The two red runs in the delta came from darwin timing and a webkit race, not product faults. This review adds three rows from nightly evidence that nobody read for up to six days. Later milestones should read every completed nightly into progress.md as a standing task, rather than only when a row waits on one."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "packages/editor/src/use-system-clipboard.ts",
+      "summary": "On the previous Playwright's WebKit, nightly e2e failures went from 1 spec (the descoped clipboard.cross-document:7) to 6, and now 8, from the first nightly after M18.132 (e06dbd7, 'clipboard chords go through an editable target', aimed at that engine). The new failures include in-document copy/paste, which M11.82 had fixed, and the cross-document:33 spec that M18.132 added. M18.132 is marked done. It was checked only by an emulation e2e, and no row, progress entry or Deferred row records the regression. The roadmap Deferred row still says one spec fails.",
+      "evidence": "previous-playwright (webkit): 40470089950 at f0682fe (2026-10-27 07:55, before e06dbd7 at 22:26): '1 failed', clipboard.cross-document.spec.ts:7. 40842994983 (453b5ca), 41028194620, 41184728589, 41292607829, 41421711034: '6 failed', clipboard.copy-paste.spec.ts:8, :41, :58, clipboard.cross-document.spec.ts:7, :33, layout.live-container.spec.ts:52. 41559194820 (60ce6af, job 125665410248): '8 failed', the six plus clipboard.cross-document.spec.ts:72 and tools.connector.spec.ts:6 ('Expected: 2 Received: 1' shapes at line 17). Backlog M18.132: 'done | e06dbd7'. roadmap.md:95 says 'One WebKit clipboard spec that still fails ... The two clipboard.copy-paste specs failed for a cause now fixed (M11.82)'. progress.md:3739 'open: name the nightly previous-playwright webkit failure ...' was never closed, and dd13eb5's cp35 F5 line dropped it."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "file": "perf-baseline.calibrated.json",
+      "line": 7,
+      "summary": "Nightly 41421711034 at 590e0a4 failed its perf leg on iconify-pack-2198, and nothing records it. The four nightly readings spread 30.8 to 37.4 units around a local baseline of 31.367 with a 15% tolerance, so recording M18.205's baseline from one nightly would leave the leg failing at random. state.json blockedReason, written on 11-03, names 41292607829 as 'the last nightly'.",
+      "evidence": "41421711034 perf (job 125198549551): '##[error]FAIL iconify-pack-2198: 37.400 calibration units, limit 36.072 (baseline 31.367 + 15 %)'. Other nightly readings: 41184728589 32.799, 41292607829 33.803, 41559194820 30.844 (PASS). subset-range-read reads 0.795 to 0.843, all under 0.898. grep of progress.md, the backlog and review-argued.txt for 41421711034 finds only 'queued since 09:33Z' (progress.md:3799). M18.205's acceptance: 'if that run fails the leg, the cause is diagnosed before any re-record'. blockedReason: '(the last nightly, 41292607829 at 797ff41, failed)'."
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "file": "scripts/gates/m18-complete.mjs",
+      "line": 215,
+      "summary": "The completion leg 'all first-party packs searchable within library search budget' runs packages/editor/src/library/first-party-packs.test.ts, which does not exist. M18.32 (done, daecd29) put the full-index LIBRARY_SEARCH_10K_MAX_MS case in apps/studio/src/pack-catalog.test.ts instead. No row writes the file or rebinds the leg, so it can only close through an unplanned gate edit. cp32 and cp33 listed it as an 'expected' red leg without a disposition.",
+      "evidence": "m18-complete output: 'FAIL all first-party packs searchable within library search budget — missing packages/editor/src/library/first-party-packs.test.ts'. m18-complete.mjs:215 has leg(..., () => tests('packages/editor/src/library/first-party-packs.test.ts')), unchanged since ff93c75 (M18.1). The search lives at apps/studio/src/pack-catalog.test.ts:83: 'searching the complete first-party index finds the cylinder and the database icons under LIBRARY_SEARCH_10K_MAX_MS'. A backlog grep for first-party-packs.test finds no row."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "docs/architecture/09-extensibility.md",
+      "line": 267,
+      "summary": "M18.42's open reviewer minor (r1 F1) is not tracked. 09-extensibility still says ADR-0050 'supplements that pending format' under a heading that now says the format shipped.",
+      "evidence": "09-extensibility.md:267: '[ADR-0050](...) supplements that pending format'. de05cda body: 'R11 minor (r1 F1): 09-extensibility still says ADR-0050 \"supplements that pending format\" under the heading that now says it shipped.' M18.236's acceptance covers only the M18.218/M18.233 gaps and the spec archive."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.242",
+      "note": "| M18.242 | Keyboard copy and paste on the previous Playwright's WebKit after M18.132 (cp36 F1; nightlies 40842994983-41559194820) | FR-EDT-007, FR-LAY-010, NFR-PORT-001 | WHEN the nightly previous-playwright (webkit) job runs THE SYSTEM SHALL fail no spec other than the descoped clipboard.cross-document.spec.ts:7 (roadmap Deferred, M11.59), as at 40470089950 before e06dbd7; the cause of clipboard.copy-paste.spec.ts:8, :41, :58, clipboard.cross-document.spec.ts:33, :72 and layout.live-container.spec.ts:52 failing on every nightly since 40842994983 SHALL be diagnosed on that engine (the uploaded previous-playwright-webkit-results traces or a local WebKit of that release) and recorded in progress.md, then fixed, or, if it is the engine's limit, recorded in an ADR with Huy's decision and the roadmap Deferred row rewritten to name each failing spec; tools.connector.spec.ts:6 (first red at 41559194820) SHALL be shown to share that cause or get its own row; no retry, quarantine or removed assertion; the evidence SHALL cite a nightly run id after the fix | M18.132, M18.214 | todo | |"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.243",
+      "note": "| M18.243 | The iconify-pack-2198 nightly perf FAIL at 590e0a4 is diagnosed before its baseline is recorded (cp36 F2, nightly 41421711034) | NFR-PERF-005, FR-LIB-005, HARNESS | WHEN M18.205 records iconify-pack-2198's calibration units THE SYSTEM SHALL first record in progress.md the cause of nightly 41421711034's perf FAIL (37.400 units against limit 36.072), with every nightly reading by run id (41184728589 32.799, 41292607829 33.803, 41421711034 37.400, 41559194820 30.844), and SHALL record the baseline from those nightly readings, not one run and not the local 31.367, or reduce the bench's spread, so that the 15 % tolerance holds over them; the tolerance and ICONIFY_PACK_2198_MAX_MS (4000) stay unchanged and the Threshold-change: trailer names the runs; state.json blockedReason SHALL name the newest completed nightly | M18.214 | todo | |"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.244",
+      "note": "| M18.244 | m18-complete's library search leg runs the test that holds it (cp36 F3) | FR-LIB-007, FR-LIB-009, HARNESS | WHEN m18-complete runs THE SYSTEM SHALL judge 'all first-party packs searchable within library search budget' by a suite that exists and searches the complete first-party index under LIBRARY_SEARCH_10K_MAX_MS without loading unused geometry: apps/studio/src/pack-catalog.test.ts's 'searching the complete first-party index…' (M18.32, daecd29), or a new packages/editor/src/library/first-party-packs.test.ts that does so; no leg removed, no threshold changed, and the leg SHALL still fail when its named file is missing; the rebind is reviewed as a gate change | M18.32 | todo | |"
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M18.236",
+      "note": "No new row; amend M18.236 to: | M18.236 | Archive the M18-packs spec and close the pack guide's gaps (M18.42 follow-up) | FR-LIB-003, FR-LIB-007, HARNESS | WHEN M18.10, M18.35 and M18.218 and M18.233 are done THE SYSTEM SHALL merge specs/M18-packs into the living docs and move it to specs/archive/, so m18-complete's 'no open M18 spec folders' leg passes, and docs/guides/pack-authoring.md and 09-extensibility SHALL no longer name M18.218 or M18.233 as gaps, and 09-extensibility SHALL no longer call the format ADR-0050 supplements 'pending' (M18.42 r1 F1, cp36 F4) | M18.10, M18.35, M18.218, M18.233, M18.42 | todo | |"
+    }
+  ],
+  "planDelta": "Add M18.242 (previous-WebKit clipboard after M18.132, F1), M18.243 (iconify-pack-2198 nightly FAIL diagnosed before the baseline, F2) and M18.244 (rebind the library search leg, F3). Amend M18.236 (F4). The header goes from 224 to 227 and must match the row count. Order: (1) Land this cp36 record with the new rows (harness path). (2) When 41559194820 completes, land M18.214 (record its cause and the run), then M18.243, then M18.205 from the recorded nightly readings, then M18.216. (3) M18.244 (gate rebind, harness). M18.234 reads its three runs from 41586983302 on. (4) Record M18.242's diagnosis (the cause, from the traces) before the held product stacks land; its fix, or Huy's ADR decision, may follow. (5) Then the held product stacks in cp35's order: stream 3 M18.35, M18.130, M18.122, M18.233, M18.239, M18.147; stream 2 M18.218 (needs Huy's round allowance); stream 6. Learned: 'cp36 (through `7ae54a6`): main's ci was read run by run and recovered twice within the delta, but the nightly went unread for six days: a done clipboard row for previous WebKit had turned 1 nightly failure into 6, and a perf leg failed once in four runs. A row aimed at an engine only the nightly runs is not done until that nightly reads green.'"
+}

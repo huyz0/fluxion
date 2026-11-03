@@ -3919,3 +3919,7 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 - verify (macos-latest) failed headroom at f0805eb: 'edges anchored on edge labels…' read 2730 then 3013 ms of 5000 (two runs over 50%); 'amplifying entries…' read 6699 ms of 10000. Locally they took 55 and 200 ms; no input scaled worse than linearly (deep chain 500/2000/8000 links: 10/45/170 ms), so the darwin time is the cases' own work slowed ~30-55x, and the cut is the work.
 - The deep chain had 2000 links to meet a 32 cap; 64 are refused the same way. The 3 Mi embedded SVG and the three stencils move to their own cases, the SVG one base64 quantum over its cap. Local: 9, 40, 41 and 4 ms. No timeout raised, no assertion removed.
 - Next three darwin readings go under M18.234.
+
+## M18.43 — record checkpoint cp36 (2026-11-03)
+- cp36 over 7545e708..7ae54a6, changes-requested: F1 reopen M18.242 (previous-Playwright WebKit nightly failures went from 1 spec to 6, then 8, after M18.132), F2 reopen M18.243 (nightly 41421711034's iconify-pack-2198 perf FAIL diagnosed before M18.205 records a baseline), F3 reopen M18.244 (m18-complete's library search leg names a missing test file), F4 amends M18.236 (09-extensibility's "pending" ADR-0050 wording).
+- Order: this record; when nightly 41559194820 completes, M18.214, M18.243, M18.205, M18.216; M18.244; M18.234 from 41586983302 on; M18.242's diagnosis recorded; then the held product stacks in cp35's order.
