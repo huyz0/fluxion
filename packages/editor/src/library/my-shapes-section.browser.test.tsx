@@ -24,7 +24,7 @@ const item = (id: string, name: string, defIds: readonly string[] = []): MyShape
 });
 
 /** In-memory My shapes; `refuse` makes put and import refuse. */
-function fakeMyShapes(initial: readonly MyShape[], refuse = { put: false, import: false }): MyShapes {
+function fakeMyShapes(initial: readonly MyShape[], refuse: { put: boolean; import: boolean; remove?: boolean } = { put: false, import: false }): MyShapes {
   const items = writable<readonly MyShape[]>(initial);
   return {
     available: (defId) => defId.startsWith('basic:'),
@@ -35,6 +35,7 @@ function fakeMyShapes(initial: readonly MyShape[], refuse = { put: false, import
       return true;
     },
     remove: (id) => {
+      if (refuse.remove === true) return false;
       items.set(items.get().filter((x) => x.id !== id));
       return true;
     },
@@ -48,7 +49,7 @@ async function render(over: Partial<MyShapesSectionProps> = {}) {
   const props: MyShapesSectionProps = {
     myShapes: fakeMyShapes([item('a', 'Pair'), item('b', 'Trio')]),
     canSave: true,
-    onSave: (name) => {
+    onSave: async (name) => {
       saved.push(name);
       return { ok: true, value: undefined };
     },
@@ -87,16 +88,30 @@ describe('My shapes section (FR-LIB-008)', () => {
     expect(document.activeElement?.textContent).toBe('Pair');
   });
 
-  it('FR-LIB-008: a stored item whose shapes are not available here is listed as unavailable and cannot be inserted (cp32 F4)', async () => {
+  it('FR-LIB-008: a stored item whose shapes are not available here is listed as unavailable, with why shown, and cannot be inserted (cp32 F4)', async () => {
     const inserted: string[] = [];
     await render({ myShapes: fakeMyShapes([item('a', 'Pair', ['basic:rect']), item('b', 'Flow', ['flow:decision'])]), onInsert: (i) => inserted.push(i.id) });
     expect(names()).toEqual(['Pair', 'Flow (unavailable)']);
     const flow = button('Flow (unavailable)');
     expect(flow.disabled).toBe(true);
-    expect(flow.title).toBe('Unavailable: it uses shapes that are not built in: flow:decision');
+    // the reason is visible text, not only a tooltip, and is the button's description
+    const reason = document.getElementById(flow.getAttribute('aria-describedby') ?? '');
+    expect(reason?.textContent).toBe('Unavailable: it uses shapes that are not built in: flow:decision');
+    expect(reason?.checkVisibility()).toBe(true);
+    expect(button('Pair').hasAttribute('aria-describedby')).toBe(false);
     await act(async () => flow.click());
     await act(async () => button('Pair').click());
     expect(inserted).toEqual(['a']);
+  });
+
+  it('FR-LIB-008, FR-LIB-009: an item whose other shapes its packs carry is listed as available and inserts (M18.122 r1 F1)', async () => {
+    const inserted: string[] = [];
+    const packs = [{ subset: { id: 'flow', definitions: [{ id: 'flow:decision' }] }, fonts: {} }] as unknown as NonNullable<MyShape['packs']>;
+    await render({ myShapes: fakeMyShapes([{ ...item('b', 'Flow', ['flow:decision']), packs }]), onInsert: (i) => inserted.push(i.id) });
+    expect(names()).toEqual(['Flow']);
+    expect(button('Flow').disabled).toBe(false);
+    await act(async () => button('Flow').click());
+    expect(inserted).toEqual(['b']);
   });
 
   it('FR-LIB-008: an undo storage refuses is told, not silently lost', async () => {
@@ -107,6 +122,14 @@ describe('My shapes section (FR-LIB-008)', () => {
     // M18.130: the removal stays offered and focus stays on its Undo, never the page body
     expect(host.querySelector('[role="status"]')?.textContent).toContain('Removed Pair.');
     expect(document.activeElement).toBe(button('Undo'));
+  });
+
+  it('FR-LIB-008: a remove storage refuses is told, keeps the item and offers no Undo (M18.35 r4 F1)', async () => {
+    const { told } = await render({ myShapes: fakeMyShapes([item('a', 'Pair')], { put: false, import: false, remove: true }) });
+    await act(async () => button('Remove Pair from My shapes').click());
+    expect(told).toEqual(['Pair could not be removed from My shapes.']);
+    expect(names()).toEqual(['Pair']);
+    expect(host.querySelector('[role="status"]')).toBeNull();
   });
 
   it('FR-LIB-008: every removal in a row can be undone, latest first (M18.130)', async () => {
@@ -126,7 +149,7 @@ describe('My shapes section (FR-LIB-008)', () => {
   it('FR-LIB-008: when the control focus would return to is disabled, focus stays in the section (M18.130)', async () => {
     let canSave = true;
     const props = await render({
-      onSave: () => {
+      onSave: async () => {
         canSave = false;
         return { ok: true, value: undefined };
       },
@@ -165,7 +188,7 @@ describe('My shapes section (FR-LIB-008)', () => {
   it('FR-LIB-008: nothing selected disables saving, and a refused save is told with its reason', async () => {
     await render({ canSave: false });
     expect(button('Save selection to My shapes').disabled).toBe(true);
-    const { told } = await render({ onSave: () => ({ ok: false, reason: 'it uses shapes that are not built in: x:y' }) });
+    const { told } = await render({ onSave: async () => ({ ok: false, reason: 'it uses shapes that are not built in: x:y' }) });
     await act(async () => button('Save selection to My shapes').click());
     await type('Pipe');
     await act(async () => button('Save').click());

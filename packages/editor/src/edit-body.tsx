@@ -20,7 +20,7 @@ import type { LibraryImporter } from './library/library-importer.js';
 import { insertShape } from './library/library-insert.js';
 import type { LibraryCatalog, LibraryPanelProps } from './library/library-panel.js';
 import { replaceableShape, replaceSelectedShape } from './library/library-replace.js';
-import { insertMyShape, type MyShapes, saveMyShape } from './library/my-shapes.js';
+import { insertMyShape, type MyShape, type MyShapes, type MyShapesPacks, type MyShapesResult, saveMyShape } from './library/my-shapes.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
 import { placeImageFiles } from './place-images.js';
 import type { Execute } from './pointer.js';
@@ -58,6 +58,8 @@ export type EditBodyProps = {
   readonly layoutOptionsSchema?: OptionsSchemaOf | undefined;
   /** The person's My shapes (FR-LIB-008); the library has no My shapes section without them. */
   readonly myShapes?: MyShapes | undefined;
+  /** The open document's packs for My shapes (M18.122): items then carry pack subsets, and inserting one registers them. */
+  readonly myShapePacks?: MyShapesPacks | undefined;
   /** The host's layout worker, which the options form lays out in (M17.34). */
   readonly arrange?: ArrangePort | undefined;
   /** The host's SVG library import, behind the library panel's **Import SVG…** (M18.176). */
@@ -105,29 +107,40 @@ function downloadText(name: string, text: string): void {
 
 /** The library's My shapes section: save the selection, insert an item at the middle of the view (selected), export and import. */
 function mineFor(props: EditBodyProps, selection: readonly RecordId[]): LibraryPanelProps['mine'] {
-  const { myShapes, store, session, tools, execute, screenId, newId, assetStore, box, notify } = props;
+  const { myShapes, myShapePacks, store, session, tools, execute, screenId, newId, assetStore, box, notify } = props;
   if (myShapes === undefined) return undefined;
   const { available } = myShapes;
+  /** `item` on the canvas once its packs are in the document. */
+  const inserted = async (item: MyShape): Promise<MyShapesResult<readonly RecordId[]>> => {
+    if ((item.packs?.length ?? 0) > 0) {
+      if (myShapePacks === undefined) return { ok: false, reason: 'its shape packs cannot be added to this document' };
+      const added = await myShapePacks.forInsert(item.packs ?? []);
+      if (!added.ok) return added;
+    }
+    const deps = { view: store, execute, seal: () => store.history.seal(), screen: screenId, newId, assets: assetStore };
+    return insertMyShape(deps, item, screenToPage(session.camera.get(), { x: box.w / 2, y: box.h / 2 }), available);
+  };
   return {
     myShapes,
     canSave: selection.length > 0,
     notify,
-    onSave: (name) => {
+    onSave: async (name) => {
       const source = {
         docId: session.docId,
         screen: screenId,
         endPoint: (id: RecordId, end: 'source' | 'target') => tools.ctx.route?.(id)?.[end].point,
         assetData: assetStore.url,
       };
-      const saved = saveMyShape(store, selection, { id: newId(), name }, { source, available });
+      const saved = await saveMyShape(store, selection, { id: newId(), name }, { source, available, packs: myShapePacks });
       if (!saved.ok) return saved;
       return myShapes.put(saved.value) ? saved : { ok: false, reason: 'there is no room for it' };
     },
     onInsert: (item) => {
-      const deps = { view: store, execute, seal: () => store.history.seal(), screen: screenId, newId, assets: assetStore };
-      const inserted = insertMyShape(deps, item, screenToPage(session.camera.get(), { x: box.w / 2, y: box.h / 2 }), available);
-      if (inserted.ok) session.selection.set(inserted.value);
-      else notify(t`${item.name} could not be inserted: ${inserted.reason}.`);
+      const refused = (reason: string) => notify(t`${item.name} could not be inserted: ${reason}.`);
+      inserted(item).then(
+        (r) => (r.ok ? session.selection.set(r.value) : refused(r.reason)),
+        () => refused('its shape packs could not be registered'),
+      );
     },
     onExport: (text) => downloadText('my-shapes.json', text),
   };

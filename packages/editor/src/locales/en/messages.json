@@ -77,6 +77,12 @@
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
+  "1uWa_y": {
+    "message": "{0} could not be removed from My shapes.",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "2Qmo07": {
     "message": "The next shape picked replaces the selected one, keeping its text and connectors (shift-click does it once)",
     "origin": [
@@ -458,12 +464,6 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
-  "GzUNlJ": {
-    "message": "{0} could not be inserted: {1}.",
-    "origin": [
-      "packages/editor/src/edit-body.tsx"
-    ]
-  },
   "H3oH0g": {
     "message": "Redo",
     "origin": [
@@ -619,6 +619,12 @@
     "message": "Hidden from presentation",
     "origin": [
       "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "NfrBJH": {
+    "message": "The selection could not be saved to My shapes.",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "Nu4oKW": {
@@ -1816,6 +1822,12 @@
     "message": "Remove unused ({0})",
     "origin": [
       "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "vsRAki": {
+    "message": "{0} could not be inserted: {reason}.",
+    "origin": [
+      "packages/editor/src/edit-body.tsx"
     ]
   },
   "w-TEqB": {

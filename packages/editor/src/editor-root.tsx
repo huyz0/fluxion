@@ -20,12 +20,13 @@ import { createClipboard } from './clipboard.js';
 import { PaletteHost } from './command-palette.js';
 import { readRoutes } from './connector-handles.js';
 import { Measured } from './debug-overlay.js';
-import { EditBody, type EditBodyProps } from './edit-body.js';
+import { EditBody } from './edit-body.js';
 import { EditToolbar } from './edit-toolbar.js';
 import { type EditorCommand, registeredLayoutCommands } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
 import type { FontSources } from './font-picker.js';
 import { createHitIndex, type HitIndex } from './hit-test.js';
+import { hostPanels } from './host-panels.js';
 import { i18n } from './i18n.js';
 import { ImagePicker } from './image-picker.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
@@ -35,7 +36,7 @@ import { type ArrangePort, registeredLayoutIds } from './layout-arrange.js';
 import type { OptionsSchemaOf } from './layout-options-form.js';
 import type { LibraryImporter } from './library/library-importer.js';
 import type { LibraryCatalog } from './library/library-panel.js';
-import type { MyShapes } from './library/my-shapes.js';
+import type { MyShapes, MyShapesPacks } from './library/my-shapes.js';
 import { startLiveLayout } from './live-layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
@@ -95,6 +96,8 @@ export type EditorRootProps = {
   readonly catalog?: LibraryCatalog;
   /** The person's My shapes (FR-LIB-008, `createMyShapes` over the host's storage); no My shapes section without them. */
   readonly myShapes?: MyShapes;
+  /** The open document's packs for My shapes (M18.122): saved items carry the subsets they use, and an insert registers them. */
+  readonly myShapePacks?: MyShapesPacks;
 };
 
 /** Randomness from the browser's crypto. */
@@ -319,14 +322,6 @@ function useShellBasics(props: EditorRootProps) {
   const { tools, present } = useTools({ ...props, execute }, session, screenId);
   const switchMode = useModeSwitch(store, session, tools, present);
   return { store, settings, layout, setLayout, session, screenId, shown, execute, tools, present, switchMode };
-}
-
-/** What the host gives the panels: the Source tab's registries, the layout form, My shapes, arrange, the SVG importer and the catalog. */
-function hostPanels(
-  props: EditorRootProps,
-): Pick<EditBodyProps, 'sourceRegistries' | 'layoutOptionsSchema' | 'myShapes' | 'arrange' | 'libraryImporter' | 'catalog'> {
-  const { sourceRegistries, layoutOptionsSchema, myShapes, arrange, libraryImporter, catalog } = props;
-  return { sourceRegistries, layoutOptionsSchema, myShapes, arrange, libraryImporter, catalog };
 }
 
 function EditorShell(props: EditorRootProps): ReactNode {

@@ -2,12 +2,16 @@
 // local pack. An item holds the selection as a clipboard payload (ADR-0020): its elements with their members, styles
 // and text, the bindings between them and the image bytes they use, so inserting one is a paste into any document.
 // Items are kept in local storage and travel as a `fluxion-my-shapes` file, which is untrusted on import: every item
-// is validated like a pasted clipboard before anything of it is used.
+// is validated like a pasted clipboard before anything of it is used. An item that uses pack shapes carries their subsets
+// (M18.122, `my-shapes-packs.ts`), and a file holding one is version 1.1.
 import { type ReadSignal, type ReadView, writable } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { type ClipboardPayload, copyPayload, type PasteDeps, pasteInto } from '../clipboard.js';
 import { MAX_PAYLOAD_CHARS, parsePayload } from '../clipboard-format.js';
+import { type MyShapePack, type MyShapesResult, packShapeIds, parseMyShapePacks } from './my-shapes-packs.js';
+
+export type { MyShapesResult } from './my-shapes-packs.js';
 
 /**
  * One saved item of My shapes.
@@ -24,26 +28,9 @@ export type MyShape = {
     /** The selection's bounds, page units: an insert centres them. */
     readonly bounds: NonNullable<ClipboardPayload['bounds']>;
   };
+  /** The pack subsets of the shapes it uses that are not built in (M18.122); none when it uses only built-in shapes. */
+  readonly packs?: readonly MyShapePack[];
 };
-
-/**
- * What reading something untrusted gave: `value`, or why it was refused.
- *
- * @public
- */
-export type MyShapesResult<T> =
-  | {
-      /** It was read. */
-      readonly ok: true;
-      /** What was read. */
-      readonly value: T;
-    }
-  | {
-      /** It was refused. */
-      readonly ok: false;
-      /** Why, for the person. */
-      readonly reason: string;
-    };
 
 /**
  * The `fluxion-my-shapes` file: exported items, imported elsewhere.
@@ -53,8 +40,8 @@ export type MyShapesResult<T> =
 export type MyShapesFile = {
   /** Discriminator. */
   readonly format: 'fluxion-my-shapes';
-  /** File format version. */
-  readonly formatVersion: '1.0';
+  /** File format version: 1.1 when an item carries packs. */
+  readonly formatVersion: '1.0' | '1.1';
   /** The items. */
   readonly items: readonly MyShape[];
 };
@@ -79,63 +66,83 @@ const MAX_NAME = 120;
  */
 export type ShapeAvailable = (defId: string) => boolean;
 
-/** The definitions of the shapes in `payload` that `available` refuses, sorted, each once. */
-function unavailableShapes(payload: ClipboardPayload, available: ShapeAvailable): readonly string[] {
+/** The definitions of the shapes in `payload` that neither `available` nor `packs` has, sorted, each once. */
+function unavailableShapes(payload: ClipboardPayload, available: ShapeAvailable, packs?: readonly MyShapePack[]): readonly string[] {
+  const carried = packShapeIds(packs);
   const ids = new Set<string>();
   for (const r of payload.records) {
     const defId = (r as { readonly kind?: unknown; readonly defId?: unknown }).defId;
-    if ((r as { readonly kind?: unknown }).kind === 'shape' && typeof defId === 'string' && !available(defId)) ids.add(defId);
+    if ((r as { readonly kind?: unknown }).kind === 'shape' && typeof defId === 'string' && !available(defId) && !carried.has(defId)) ids.add(defId);
   }
   return [...ids].sort();
 }
 
-/** Why `payload` cannot be kept, when it uses shapes that are not available everywhere. */
-const unavailableReason = (payload: ClipboardPayload, available: ShapeAvailable): string | undefined => {
-  const missing = unavailableShapes(payload, available);
+/** Why `payload` cannot be kept with `packs`, when it uses shapes that are neither available everywhere nor carried. */
+const unavailableReason = (payload: ClipboardPayload, available: ShapeAvailable, packs?: readonly MyShapePack[]): string | undefined => {
+  const missing = unavailableShapes(payload, available, packs);
   return missing.length === 0 ? undefined : `it uses shapes that are not built in: ${missing.join(', ')}`;
+};
+
+/**
+ * A document's packs for My shapes (M18.122): the subsets a saved item carries, and how an inserted item's subsets join the
+ * document (registered where absent, and embedded by its next save).
+ *
+ * @public
+ */
+export type MyShapesPacks = {
+  /** The subsets the shapes of `records` need beyond the built-in ones, or why there are none to carry. */
+  readonly forSave: (records: ClipboardPayload['records']) => Promise<MyShapesResult<readonly MyShapePack[]>>;
+  /** Make `packs` usable in the document; why not, with nothing registered. */
+  readonly forInsert: (packs: readonly MyShapePack[]) => Promise<MyShapesResult<undefined>>;
 };
 
 /**
  * Save the elements `ids` of `view` (members and the bindings between them included) as item `id` named `name`; refused,
  * with the reason, when none is an element, the name is blank, `id` is not 1 to 64 letters, digits, `_` or `-`, or a
- * shape's definition is not `host.available` (it would not insert in another session); `host.source` is the copy's
- * source.
+ * shape's definition is neither `host.available` nor carried by the subsets `host.packs` gives (it would not insert in
+ * another session); `host.source` is the copy's source.
  *
  * @public
  */
-export function saveMyShape(
+export async function saveMyShape(
   view: ReadView,
   ids: readonly RecordId[],
   item: { readonly id: string; readonly name: string },
-  host: { readonly source: Parameters<typeof copyPayload>[2]; readonly available: ShapeAvailable },
-): MyShapesResult<MyShape> {
+  host: { readonly source: Parameters<typeof copyPayload>[2]; readonly available: ShapeAvailable; readonly packs?: MyShapesPacks | undefined },
+): Promise<MyShapesResult<MyShape>> {
   const payload = copyPayload(view, ids, host.source);
   const name = item.name.trim().slice(0, MAX_NAME);
   if (payload?.bounds === undefined) return { ok: false, reason: 'nothing selected can be saved' };
   if (name === '') return { ok: false, reason: 'the name is blank' };
   if (!validId(item.id)) return { ok: false, reason: `the id ${item.id} is not valid` };
-  const unavailable = unavailableReason(payload, host.available);
+  const saved = { id: item.id, name, payload: { ...payload, bounds: payload.bounds } };
+  if (unavailableReason(payload, host.available) === undefined) return { ok: true, value: saved };
+  const packs = host.packs === undefined ? undefined : await host.packs.forSave(payload.records);
+  if (packs?.ok === false) return packs;
+  const unavailable = unavailableReason(payload, host.available, packs?.value);
   if (unavailable !== undefined) return { ok: false, reason: unavailable };
-  return { ok: true, value: { id: item.id, name, payload: { ...payload, bounds: payload.bounds } } };
+  return { ok: true, value: { ...saved, packs: packs?.value ?? [] } };
 }
 
 /**
- * Why `item` cannot be inserted where only `available` shapes exist, or undefined when it can: what a host re-checks a stored
- * item with on read (an item kept from before, or by another host on the same storage), to list it as unavailable rather
- * than insert unknown shapes (cp32 F4).
+ * Why `item` cannot be inserted where only `available` shapes exist and its packs carry the rest, or undefined when it can:
+ * what a host re-checks a stored item with on read (an item kept from before, or by another host on the same storage), and
+ * what the section lists it with, to list it as unavailable rather than insert unknown shapes (cp32 F4); a shape its packs
+ * carry counts, as inserting registers them (M18.122 r1 F1).
  *
  * @public
  */
-export const myShapeUnavailable = (item: MyShape, available: ShapeAvailable): string | undefined => unavailableReason(item.payload, available);
+export const myShapeUnavailable = (item: MyShape, available: ShapeAvailable): string | undefined => unavailableReason(item.payload, available, item.packs);
 
 /**
  * Insert `item` centred on `centre` (page units) as one undo step, through the paste path: the ids of the inserted
- * roots, or why nothing was inserted (it uses shapes that are not `available` here, as an item kept from before may).
+ * roots, or why nothing was inserted (it uses shapes that are neither `available` here nor carried by its packs, as an
+ * item kept from before may). An item's packs must be registered first ({@link MyShapesPacks.forInsert}).
  *
  * @public
  */
 export function insertMyShape(deps: PasteDeps, item: MyShape, centre: Vec2, available: ShapeAvailable): MyShapesResult<readonly RecordId[]> {
-  const unavailable = unavailableReason(item.payload, available);
+  const unavailable = unavailableReason(item.payload, available, item.packs);
   if (unavailable !== undefined) return { ok: false, reason: unavailable };
   const { x, y, w, h } = item.payload.bounds;
   const roots = pasteInto(deps, item.payload, { x: centre.x - (x + w / 2), y: centre.y - (y + h / 2) });
@@ -148,28 +155,45 @@ export function insertMyShape(deps: PasteDeps, item: MyShape, centre: Vec2, avai
  * @public
  */
 export function exportMyShapes(items: readonly MyShape[]): string {
-  const file: MyShapesFile = { format: 'fluxion-my-shapes', formatVersion: '1.0', items };
+  const formatVersion = items.some((i) => (i.packs?.length ?? 0) > 0) ? '1.1' : '1.0';
+  const file: MyShapesFile = { format: 'fluxion-my-shapes', formatVersion, items };
   return JSON.stringify(file);
 }
 
 const isObject = (v: unknown): v is { readonly [key: string]: unknown } => typeof v === 'object' && v !== null && !Array.isArray(v);
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
-/** `raw` as a validated item, or why it is not one. */
-function itemOf(raw: unknown, k: number, available?: ShapeAvailable): MyShape | string {
+/** The packs of item `k` of a file of `version`: none in 1.0, validated in 1.1. */
+function packsOf(raw: unknown, k: number, version: string): readonly MyShapePack[] | string {
+  if (raw === undefined) return [];
+  if (version !== '1.1') return `item ${k} carries packs, which version ${version} has not`;
+  const packs = parseMyShapePacks(raw);
+  return typeof packs === 'string' ? `item ${k}: ${packs}` : packs;
+}
+
+/** `raw` as finite, non-negative bounds, or undefined. */
+function boundsOf(raw: unknown): MyShape['payload']['bounds'] | undefined {
+  const b = raw as { readonly [key: string]: unknown } | undefined;
+  if (b === undefined || !finite(b['x']) || !finite(b['y']) || !finite(b['w']) || !finite(b['h']) || b['w'] < 0 || b['h'] < 0) return undefined;
+  return { x: b['x'], y: b['y'], w: b['w'], h: b['h'] };
+}
+
+/** `raw` as a validated item of a file of `version`, or why it is not one. */
+function itemOf(raw: unknown, k: number, read: { readonly available?: ShapeAvailable | undefined; readonly version: string }): MyShape | string {
   if (!isObject(raw)) return `item ${k} is not an object`;
   const { id, name, payload } = raw;
   if (typeof id !== 'string' || !validId(id)) return `item ${k} has no valid id`;
   if (typeof name !== 'string' || name.trim() === '' || name.length > MAX_NAME) return `item ${k} has no valid name`;
   const parsed = parsePayload(JSON.stringify(payload ?? null));
   if (!parsed.ok) return `item ${k}: ${parsed.reason}`;
-  const b = parsed.payload.bounds as { readonly [key: string]: unknown } | undefined;
-  if (b === undefined || !finite(b['x']) || !finite(b['y']) || !finite(b['w']) || !finite(b['h']) || b['w'] < 0 || b['h'] < 0)
-    return `item ${k} has no valid bounds`;
-  const unavailable = available === undefined ? undefined : unavailableReason(parsed.payload, available);
+  const bounds = boundsOf(parsed.payload.bounds);
+  if (bounds === undefined) return `item ${k} has no valid bounds`;
+  const packs = packsOf(raw['packs'], k, read.version);
+  if (typeof packs === 'string') return packs;
+  const unavailable = read.available === undefined ? undefined : unavailableReason(parsed.payload, read.available, packs);
   if (unavailable !== undefined) return `item ${k}: ${unavailable}`;
-  const bounds = { x: b['x'], y: b['y'], w: b['w'], h: b['h'] };
-  return { id, name: name.trim(), payload: { ...parsed.payload, bounds } };
+  const item = { id, name: name.trim(), payload: { ...parsed.payload, bounds } };
+  return packs.length === 0 ? item : { ...item, packs };
 }
 
 /**
@@ -183,8 +207,8 @@ export function parseMyShapes(raw: string, available?: ShapeAvailable): MyShapes
   return readFile(raw, 1, available);
 }
 
-/** `parseMyShapes`, with at least `least` items (what is stored may hold none). */
-function readFile(raw: string, least: number, available?: ShapeAvailable): MyShapesResult<readonly MyShape[]> {
+/** The JSON of a My shapes file `raw`, with its version, or why it is not one. */
+function fileOf(raw: string): MyShapesResult<{ readonly json: { readonly [key: string]: unknown }; readonly version: string }> {
   if (raw.length > MAX_PAYLOAD_CHARS) return { ok: false, reason: 'the file is too large' };
   let json: unknown;
   try {
@@ -193,12 +217,21 @@ function readFile(raw: string, least: number, available?: ShapeAvailable): MySha
     return { ok: false, reason: 'not JSON' };
   }
   if (!isObject(json) || json['format'] !== 'fluxion-my-shapes') return { ok: false, reason: 'not a My shapes file' };
-  if (json['formatVersion'] !== '1.0') return { ok: false, reason: `version ${String(json['formatVersion'])} cannot be read` };
+  const version = json['formatVersion'];
+  if (version !== '1.0' && version !== '1.1') return { ok: false, reason: `version ${String(version)} cannot be read` };
+  return { ok: true, value: { json, version } };
+}
+
+/** `parseMyShapes`, with at least `least` items (what is stored may hold none). */
+function readFile(raw: string, least: number, available?: ShapeAvailable): MyShapesResult<readonly MyShape[]> {
+  const file = fileOf(raw);
+  if (!file.ok) return file;
+  const { json, version } = file.value;
   const raws = json['items'];
   if (!Array.isArray(raws) || raws.length < least || raws.length > MAX_MY_SHAPES) return { ok: false, reason: 'no items, or too many' };
   const items: MyShape[] = [];
   for (const [k, r] of raws.entries()) {
-    const item = itemOf(r, k, available);
+    const item = itemOf(r, k, { available, version });
     if (typeof item === 'string') return { ok: false, reason: item };
     if (items.some((i) => i.id === item.id)) return { ok: false, reason: `item ${k} repeats id ${item.id}` };
     items.push(item);
@@ -327,7 +360,7 @@ export function createMyShapes(storage: MyShapesStorage, available: ShapeAvailab
   return {
     available,
     items: items.get,
-    put: (item) => typeof itemOf(item, 0, available) !== 'string' && change((now) => merged(now, [item])),
+    put: (item) => typeof itemOf(item, 0, { available, version: '1.1' }) !== 'string' && change((now) => merged(now, [item])),
     remove: (id) => change((now) => (now.some((i) => i.id === id) ? now.filter((i) => i.id !== id) : undefined)),
     importFile: (raw) => {
       const file = parseMyShapes(raw, available);

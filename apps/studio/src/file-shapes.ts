@@ -6,6 +6,9 @@ import type { DocumentFile } from '@fluxion/schema';
 /** Explicit bundled geometry; namespace strings never imply a builtin. */
 const builtinIds: ReadonlySet<string> = new Set(basicPack.shapes.map((def) => def.id));
 
+/** The shapes every Studio session has (the bundled basic shapes), which no saved pack carries. */
+export const builtinShapeIds: ReadonlySet<string> = builtinIds;
+
 /** Whether every Studio session has shape definition `defId` (the bundled basic shapes): what My shapes items may use (FR-LIB-008). */
 export const isBuiltinShape = (defId: string): boolean => builtinIds.has(defId);
 
@@ -28,9 +31,15 @@ export function shapeSaveOptions(
   fonts: ReadonlyMap<string, Uint8Array> = new Map(),
 ): Omit<PrepareShapePacksOptions, 'hasher'> & { readonly sources: readonly ShapePackSourceData[] } {
   return {
-    sources: [...packs.map((subset) => ({ kind: 'embedded' as const, subset, fonts })), ...sources],
+    sources: [...embeddedSources(packs, fonts), ...sources],
     builtinIds,
     licensePolicy: allowsShapePackContentLicense,
     preservedUnresolvedIds: preserved,
   };
 }
+
+/** A loaded file's saved packs as save sources, with the retained artwork font bytes their 1.1 subsets bind. */
+export const embeddedSources = (
+  packs: readonly VersionedShapePackSubset[],
+  fonts: ReadonlyMap<string, Uint8Array> = new Map(),
+): readonly ShapePackSourceData[] => packs.map((subset) => ({ kind: 'embedded' as const, subset, fonts }));

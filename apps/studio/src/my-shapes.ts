@@ -3,6 +3,8 @@
 import { createMyShapes, type MyShapes, type MyShapesStorage } from '@fluxion/editor';
 import { isBuiltinShape } from './file-shapes.js';
 
+export { useMyShapePacks } from './my-shape-packs.js';
+
 /** This browser's local storage, or a map for this page when the browser refuses it (a private window, a sandbox). */
 function browserStorage(): MyShapesStorage {
   try {

@@ -14,6 +14,7 @@ import { browserMeasurer } from '@fluxion/render';
 import { CommandFailure } from '@fluxion/core';
 import { CommandTxOptions } from '@fluxion/core';
 import { ConnectorElement } from '@fluxion/schema';
+import { ContentHasher } from '@fluxion/format';
 import { CoreRegistries } from '@fluxion/core';
 import { createCanvasMeasurer } from '@fluxion/render';
 import { DeclaredImportCredits } from '@fluxion/format';
@@ -47,6 +48,7 @@ import { Result } from '@fluxion/schema';
 import { RouteContext } from '@fluxion/routing';
 import { ShapeDef } from '@fluxion/core';
 import { ShapePackNamedCategoryEntry } from '@fluxion/core';
+import { ShapePackSourceData } from '@fluxion/format';
 import { Store } from '@fluxion/core';
 import { SvgBatchReport } from '@fluxion/format';
 import { SvgImportFont } from '@fluxion/format';
@@ -56,6 +58,7 @@ import { Theme } from '@fluxion/theme';
 import { ThemeError } from '@fluxion/theme';
 import { TokenRef } from '@fluxion/schema';
 import { Vec2 } from '@fluxion/geometry';
+import { VersionedShapePackSubset } from '@fluxion/core';
 import { WitnessSessionPort } from '@fluxion/format';
 import { WritableSignal } from '@fluxion/core';
 
@@ -481,6 +484,7 @@ export type EditorRootProps = {
     readonly libraryImporter?: LibraryImporter;
     readonly catalog?: LibraryCatalog;
     readonly myShapes?: MyShapes;
+    readonly myShapePacks?: MyShapesPacks;
 };
 
 // @public
@@ -991,6 +995,9 @@ export type MenuTarget = "canvas" | "element" | "screen";
 export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | undefined): MenuTarget;
 
 // @public
+export function mergeMyShapePacks(a: MyShapePack, b: MyShapePack): MyShapesResult<MyShapePack>;
+
+// @public
 export function MetadataDialog(props: MetadataDialogProps): ReactNode;
 
 // @public
@@ -1059,6 +1066,30 @@ export type MyShape = {
     readonly payload: ClipboardPayload & {
         readonly bounds: NonNullable<ClipboardPayload["bounds"]>;
     };
+    readonly packs?: readonly MyShapePack[];
+};
+
+// @public
+export type MyShapePack = {
+    readonly subset: VersionedShapePackSubset;
+    readonly fonts: Readonly<Record<string, string>>;
+};
+
+// @public
+export type MyShapePackSet = {
+    readonly add: (packs: readonly MyShapePack[]) => Promise<MyShapesResult<undefined>>;
+    readonly sources: () => readonly ShapePackSourceData[];
+    readonly dispose: () => void;
+};
+
+// @public
+export function myShapePackSet(registries: ArtworkShapeRegistries, ports: ArtworkFontPorts): MyShapePackSet;
+
+// @public
+export type MyShapePackSources = {
+    readonly sources: () => readonly ShapePackSourceData[];
+    readonly builtinIds: ReadonlySet<string>;
+    readonly hasher: ContentHasher;
 };
 
 // @public
@@ -1073,8 +1104,14 @@ export type MyShapes = {
 // @public
 export type MyShapesFile = {
     readonly format: "fluxion-my-shapes";
-    readonly formatVersion: "1.0";
+    readonly formatVersion: "1.0" | "1.1";
     readonly items: readonly MyShape[];
+};
+
+// @public
+export type MyShapesPacks = {
+    readonly forSave: (records: ClipboardPayload["records"]) => Promise<MyShapesResult<readonly MyShapePack[]>>;
+    readonly forInsert: (packs: readonly MyShapePack[]) => Promise<MyShapesResult<undefined>>;
 };
 
 // @public
@@ -1093,7 +1130,7 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode;
 export type MyShapesSectionProps = {
     readonly myShapes: MyShapes;
     readonly canSave: boolean;
-    readonly onSave: (name: string) => MyShapesResult<unknown>;
+    readonly onSave: (name: string) => Promise<MyShapesResult<unknown>>;
     readonly onInsert: (item: MyShape) => void;
     readonly onExport: (text: string) => void;
     readonly notify?: ((message: string) => void) | undefined;
@@ -1148,6 +1185,12 @@ export type OptionWriter = (id: string, args: unknown, options?: {
 }) => {
     readonly ok: boolean;
 };
+
+// @public
+export function packsFor(records: readonly AnyRecord[], host: MyShapePackSources): Promise<MyShapesResult<readonly MyShapePack[]>>;
+
+// @public
+export const packShapeIds: (packs: readonly MyShapePack[] | undefined) => ReadonlySet<string>;
 
 // @public
 export function pageToScreen(camera: Camera, p: Vec2): Vec2;
@@ -1211,6 +1254,9 @@ export type ParsedRefused = {
     readonly ok: false;
     readonly reason: string;
 };
+
+// @public
+export function parseMyShapePacks(raw: unknown): readonly MyShapePack[] | string;
 
 // @public
 export function parseMyShapes(raw: string, available?: ShapeAvailable): MyShapesResult<readonly MyShape[]>;
@@ -1448,7 +1494,8 @@ export function saveMyShape(view: ReadView, ids: readonly RecordId[], item: {
 }, host: {
     readonly source: Parameters<typeof copyPayload>[2];
     readonly available: ShapeAvailable;
-}): MyShapesResult<MyShape>;
+    readonly packs?: MyShapesPacks | undefined;
+}): Promise<MyShapesResult<MyShape>>;
 
 // @public
 export type ScreenItem = {

@@ -242,7 +242,7 @@ function usedSubset(
   return parseVersionedShapePackSubset({ ...header, ...usedFonts(subset, used), ...namesOf(subset.categoryNames, definitions) }, policy);
 }
 
-function usedIds(document: DocumentFile, builtinIds: ReadonlySet<string>): Result<Set<string>, readonly Diagnostic[]> {
+function usedIds(document: Pick<DocumentFile, 'records'>, builtinIds: ReadonlySet<string>): Result<Set<string>, readonly Diagnostic[]> {
   const used = new Set<string>();
   for (const record of Object.values(document.records)) {
     if (record.type === 'element' && record['kind'] === 'shape') {
@@ -276,7 +276,7 @@ function checkResolved(
 }
 
 function pendingEntries(
-  document: DocumentFile,
+  document: Pick<DocumentFile, 'records'>,
   inputs: readonly ShapePackSourceData[],
   options: {
     readonly builtinIds: ReadonlySet<string>;
@@ -334,7 +334,7 @@ async function verifiedFonts(
  * @public
  */
 export async function prepareUsedShapePacks(
-  document: DocumentFile,
+  document: Pick<DocumentFile, 'records'>,
   sources: readonly ShapePackSourceData[],
   options: PrepareShapePacksOptions,
 ): Promise<Result<PreparedShapePacks, readonly Diagnostic[]>> {

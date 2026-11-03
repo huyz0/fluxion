@@ -198,6 +198,7 @@ export {
   type MyShape,
   type MyShapes,
   type MyShapesFile,
+  type MyShapesPacks,
   type MyShapesResult,
   type MyShapesStorage,
   myShapeUnavailable,
@@ -205,6 +206,16 @@ export {
   type ShapeAvailable,
   saveMyShape,
 } from './library/my-shapes.js';
+export {
+  type MyShapePack,
+  type MyShapePackSet,
+  type MyShapePackSources,
+  mergeMyShapePacks,
+  myShapePackSet,
+  packShapeIds,
+  packsFor,
+  parseMyShapePacks,
+} from './library/my-shapes-packs.js';
 export { MyShapesSection, type MyShapesSectionProps } from './library/my-shapes-section.js';
 export { registerSvgLibrary, type SvgLibrary } from './library/register-svg.js';
 export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';

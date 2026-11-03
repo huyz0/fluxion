@@ -26,7 +26,7 @@ import { rememberSaved } from './library/library-service.js';
 import { RecentFiles } from './library/recent-files.js';
 import { studioLibraryImports } from './library-import.js';
 import { localSettings } from './local-settings.js';
-import { myShapesOf } from './my-shapes.js';
+import { myShapesOf, useMyShapePacks } from './my-shapes.js';
 import { fluxionFileOf, type LaunchHandle, MAX_OPEN_BYTES, pickedFromLaunch, pickedFromUrl, srcOf } from './open-sources.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { registerOpenedFonts } from './opened-fonts.js';
@@ -125,8 +125,7 @@ function useArrangeRunner(core: Core): ArrangePort {
  * `.flux.html` draw (M16.28). The worker ends when the document closes.
  */
 function useGlobalRouting(core: Core, registries: OpenDocument['registries']): OpenDocument['registries'] {
-  // the pass and its worker belong to the effect, so a remount (StrictMode) disposes one and starts the next; the registries read
-  // whichever pass is live through `live`, which is stable for the document
+  // the pass and its worker belong to the effect (a StrictMode remount disposes one, starts the next); registries read it via `live`
   const live = useMemo(() => writable<{ readonly refined: GlobalRouting['refined'] } | undefined>(undefined), [core, registries]);
   useEffect(() => {
     const port = createRoutePort();
@@ -181,8 +180,8 @@ function ProtectedEditor(props: {
   const imports = useMemo(() => studioLibraryImports(opened, { document, fetch: (...args) => fetch(...args), now: () => Date.now() }), [opened]);
   useEffect(() => () => imports.dispose(), [imports]);
   const shapePackSources = useSyncExternalStore(imports.subscribe, imports.sources);
-  // what a save embeds, read when it is needed: the imported libraries' sources, then the first-party definitions loaded
-  const saveSources = () => [...shapePackSources, ...(catalog?.sources() ?? [])];
+  // what a save embeds, read when it is needed: imported libraries, loaded first-party definitions, My shapes' packs (M18.122)
+  const mine = useMyShapePacks(opened, entry, () => [...shapePackSources, ...(catalog?.sources() ?? [])], catalog);
   // the library lists the imported and saved packs by their own pack and category names (M18.212)
   const saved = entry?.file.shapePacks ?? noSavedPacks;
   const library = useMemo(() => withPackEntries(catalog, shapePackSources, saved), [catalog, shapePackSources, saved]);
@@ -200,6 +199,7 @@ function ProtectedEditor(props: {
         assets={assets}
         fonts={fonts}
         myShapes={myShapesOf()}
+        myShapePacks={mine.packs}
         arrange={arrange}
         libraryImporter={imports.importer}
         {...(library === undefined ? {} : { catalog: library })}
@@ -210,7 +210,7 @@ function ProtectedEditor(props: {
               store={core.store}
               assets={assets}
               entry={entry}
-              shapePackSources={saveSources}
+              shapePackSources={mine.saveSources}
               connectorDefOf={(type) => connectorDefOf(registries.routers, type)}
               onOpened={(id) => navigate(`/edit/${id}`)}
               onSaved={(saved) => {
@@ -220,7 +220,7 @@ function ProtectedEditor(props: {
             />
             <AutosaveBar state={state} readOnly={guard.phase === 'read-only'} />
             <DiagnosticButton store={core.store} />
-            <CreditsButton store={core.store} saved={entry?.file.shapePacks ?? []} sources={saveSources} names={catalog?.names} />
+            <CreditsButton store={core.store} saved={entry?.file.shapePacks ?? []} sources={mine.saveSources} names={catalog?.names} />
             <button type="button" aria-pressed={aiOpen} onClick={() => setAiOpen((open) => !open)}>
               {t`AI assistant`}
             </button>

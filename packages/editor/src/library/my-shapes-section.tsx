@@ -17,9 +17,9 @@ export type MyShapesSectionProps = {
   readonly myShapes: MyShapes;
   /** Whether something is selected to save. */
   readonly canSave: boolean;
-  /** Save the selection under `name`; why not, when nothing was saved. */
-  readonly onSave: (name: string) => MyShapesResult<unknown>;
-  /** Put `item` on the canvas. */
+  /** Save the selection under `name`; why not, when nothing was saved (it may wait for the selection's pack subsets). */
+  readonly onSave: (name: string) => Promise<MyShapesResult<unknown>>;
+  /** Put `item` on the canvas (it may wait for its packs to register). */
   readonly onInsert: (item: MyShape) => void;
   /** Hand the person the export file's text (a download). */
   readonly onExport: (text: string) => void;
@@ -77,11 +77,13 @@ function ItemList(props: {
   readonly onInsert: (item: MyShape) => void;
   readonly onRemove: (item: MyShape) => void;
 }): ReactNode {
+  const ids = useId();
   return (
     <ul className="fx-chrome-library-mine-list" aria-label={t`My shapes`}>
       {props.items.map((item) => {
-        // re-checked on every read: a stored item whose shapes are not available here is listed, marked, and not inserted
+        // re-checked on every read: a stored item whose shapes are not available here is listed with why, and not inserted
         const unavailable = myShapeUnavailable(item, props.available);
+        const reason = `${ids}-${item.id}`;
         return (
           <li key={item.id} className="fx-chrome-library-mine-item" data-my-shape={item.id} data-unavailable={unavailable === undefined ? undefined : ''}>
             <button
@@ -89,7 +91,7 @@ function ItemList(props: {
               className="fx-chrome-button fx-chrome-library-mine-insert"
               data-mine="insert"
               disabled={unavailable !== undefined}
-              title={unavailable === undefined ? undefined : t`Unavailable: ${unavailable}`}
+              aria-describedby={unavailable === undefined ? undefined : reason}
               onClick={() => props.onInsert(item)}
             >
               {unavailable === undefined ? item.name : t`${item.name} (unavailable)`}
@@ -97,6 +99,11 @@ function ItemList(props: {
             <button type="button" className="fx-chrome-button" aria-label={t`Remove ${item.name} from My shapes`} onClick={() => props.onRemove(item)}>
               ×
             </button>
+            {unavailable === undefined ? null : (
+              <span id={reason} className="fx-chrome-library-mine-reason">
+                {t`Unavailable: ${unavailable}`}
+              </span>
+            )}
           </li>
         );
       })}
@@ -173,8 +180,13 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode {
           onDone={(name) => {
             setNaming(false);
             focusNext.current = '[data-mine="save"]';
-            const saved = name === undefined ? undefined : onSave(name);
-            if (saved?.ok === false) notify(t`The selection could not be saved to My shapes: ${saved.reason}.`);
+            if (name === undefined) return;
+            onSave(name).then(
+              (saved) => {
+                if (!saved.ok) notify(t`The selection could not be saved to My shapes: ${saved.reason}.`);
+              },
+              () => notify(t`The selection could not be saved to My shapes.`),
+            );
           }}
         />
       ) : (
@@ -187,7 +199,8 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode {
         available={myShapes.available}
         onInsert={onInsert}
         onRemove={(item) => {
-          myShapes.remove(item.id);
+          // a refused remove (storage full or blocked) keeps the item listed, and says so rather than offering an Undo
+          if (!myShapes.remove(item.id)) return notify(t`${item.name} could not be removed from My shapes.`);
           setRemoved((now) => [...now, item]);
           focusNext.current = '[data-mine="undo"]';
         }}

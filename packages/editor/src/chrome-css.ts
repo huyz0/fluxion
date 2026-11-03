@@ -91,6 +91,8 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-library-mine-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .fx-chrome-library-mine-insert { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fx-chrome-library-mine-undo { color: var(--ui-muted); }
+.fx-chrome-library-mine-item[data-unavailable] { flex-wrap: wrap; }
+.fx-chrome-library-mine-reason { flex-basis: 100%; color: var(--ui-muted); font-size: 0.9em; overflow-wrap: anywhere; }
 .fx-chrome-library-mine-files { display: flex; flex-wrap: wrap; gap: 4px; }
 .fx-chrome-notes-host { padding: 4px; }
 .fx-chrome-notes { min-height: 8em; padding: 6px; border: 1px solid var(--ui-border); border-radius: 4px; font: 13px/1.4 system-ui, sans-serif; outline: none; }

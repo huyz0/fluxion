@@ -229,3 +229,31 @@ an item kept before the check, or by another host on the same storage, that uses
 host's `ShapeAvailable` refuses is listed as unavailable (`myShapeUnavailable`), with its reason,
 and is not inserted.
 
+
+### M18.122 — My shapes carry the pack subsets they use (FR-LIB-008, FR-LIB-009, NFR-LIC-003)
+
+This amends M18.120: an item may now also use pack shapes, carried with it. An item gains
+`packs: [{ subset, fonts }]`. Each `subset` is the canonical 1.0/1.1 saved subset that a save of
+the open document would embed (`prepareUsedShapePacks` over the selection's records and the host's
+save sources). It is narrowed to the shapes the item uses and keeps their credits, and for 1.1
+the font resources, faces and font credits. `fonts` maps each retained resource's SHA-256 to its
+exact bytes in base64. A file holding such an item is `formatVersion` "1.1", and a file without
+one stays "1.0", so older readers still read it. A 1.0 file carrying `packs` is refused. On import
+and `put`, each pack is parsed under the content policy, and the item is refused whole when a
+namespace repeats or a font map is not exactly the subset's retained hashes. A shape that is
+neither built in nor carried still refuses the save, with the reason.
+
+Inserting an item first runs `MyShapesPacks.forInsert`, one insert at a time (`myShapePackSet`).
+A namespace the document already holds with every shape the item uses, at the same geometry, is
+used as it is. An absent namespace is registered through `registerSavedShapePacks`, with its exact
+fonts verified by hash. A namespace an earlier insert registered gains the item's other shapes:
+the two subsets of one pack version are joined (`mergeMyShapePacks`, re-validated) and the set is
+registered again, since registration refuses a held namespace. A namespace held with other
+geometry, at another version, or held by the file without a shape the item uses refuses the whole
+insert and leaves what was registered. The packs registered this way join the document's save
+sources, one subset per namespace, so the next save embeds them. Closing the document releases
+them. The library lists an item whose other shapes its packs carry as insertable. In Studio an
+item's shapes of an installed first-party pack are loaded from the library first, so they are
+used as they are and the library keeps that namespace. In Studio the port's save sources are the file's embedded packs, imported libraries, loaded
+first-party definitions and earlier inserts. `prepareUsedShapePacks` now takes any value with
+`records` (a widening).

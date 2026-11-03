@@ -742,7 +742,7 @@ export type PrepareShapePacksOptions = {
 };
 
 // @public
-export function prepareUsedShapePacks(document: DocumentFile, sources: readonly ShapePackSourceData[], options: PrepareShapePacksOptions): Promise<Result<PreparedShapePacks, readonly Diagnostic[]>>;
+export function prepareUsedShapePacks(document: Pick<DocumentFile, "records">, sources: readonly ShapePackSourceData[], options: PrepareShapePacksOptions): Promise<Result<PreparedShapePacks, readonly Diagnostic[]>>;
 
 // @public
 export function readEntry(text: string): EntryRead | EntryRefused;

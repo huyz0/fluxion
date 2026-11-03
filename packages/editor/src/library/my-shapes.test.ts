@@ -68,8 +68,8 @@ function shapeLook(core: ReturnType<typeof createCore>) {
 const BUILT_IN: ShapeAvailable = (defId) => defId.startsWith('basic:');
 
 /** `ids` of `a` saved as `item`, which must succeed. */
-function saved(a: ReturnType<typeof source>, item: { id: string; name: string }, ids: readonly RecordId[] = a.picked): MyShape {
-  const r = saveMyShape(a.core.store, ids, item, { source: SOURCE(a.screen), available: BUILT_IN });
+async function saved(a: ReturnType<typeof source>, item: { id: string; name: string }, ids: readonly RecordId[] = a.picked): Promise<MyShape> {
+  const r = await saveMyShape(a.core.store, ids, item, { source: SOURCE(a.screen), available: BUILT_IN });
   if (!r.ok) throw new Error(r.reason);
   return r.value;
 }
@@ -80,9 +80,9 @@ function memoryStorage(initial: Record<string, string> = {}) {
 }
 
 describe('My shapes (FR-LIB-008)', () => {
-  it('FR-LIB-008: WHEN a styled group is saved, exported and imported THE SYSTEM SHALL insert it into a second document with its geometry, style, text and connector', () => {
+  it('FR-LIB-008: WHEN a styled group is saved, exported and imported THE SYSTEM SHALL insert it into a second document with its geometry, style, text and connector', async () => {
     const a = source();
-    const item = saved(a, { id: 'api-pair', name: ' API pair ' });
+    const item = await saved(a, { id: 'api-pair', name: ' API pair ' });
     expect(item.name).toBe('API pair');
     const mine = createMyShapes(memoryStorage(), BUILT_IN);
     expect(mine.put(item)).toBe(true);
@@ -111,11 +111,11 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(elements(b.core)).toEqual([]);
   });
 
-  it('FR-LIB-008: items persist in storage and survive a reload; a damaged stored value is ignored', () => {
+  it('FR-LIB-008: items persist in storage and survive a reload; a damaged stored value is ignored', async () => {
     const a = source();
     const storage = memoryStorage();
     const mine = createMyShapes(storage, BUILT_IN);
-    const item = saved(a, { id: 'pair', name: 'Pair' });
+    const item = await saved(a, { id: 'pair', name: 'Pair' });
     mine.put(item);
     mine.put({ ...item, id: 'pair-2', name: 'Pair 2' });
     expect(mine.remove('pair')).toBe(true);
@@ -138,11 +138,11 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(refused.items()).toEqual([]);
   });
 
-  it("FR-LIB-008: an unreadable stored value is set aside before anything is written, never overwritten; another tab's items are kept", () => {
+  it("FR-LIB-008: an unreadable stored value is set aside before anything is written, never overwritten; another tab's items are kept", async () => {
     const a = source();
-    const item = saved(a, { id: 'pair', name: 'Pair' });
+    const item = await saved(a, { id: 'pair', name: 'Pair' });
     // a newer version's file: not used, kept aside, then My shapes starts afresh
-    const newer = JSON.stringify({ format: 'fluxion-my-shapes', formatVersion: '1.1', items: [item] });
+    const newer = JSON.stringify({ format: 'fluxion-my-shapes', formatVersion: '2.0', items: [item] });
     const storage = memoryStorage({ [MY_SHAPES_KEY]: newer });
     const mine = createMyShapes(storage, BUILT_IN);
     expect(mine.items()).toEqual([]);
@@ -167,9 +167,9 @@ describe('My shapes (FR-LIB-008)', () => {
     ).toEqual(['pair', 'pair-2']);
   });
 
-  it('FR-LIB-008: removing the last item stores an empty My shapes that reads back and stays writable', () => {
+  it('FR-LIB-008: removing the last item stores an empty My shapes that reads back and stays writable', async () => {
     const a = source();
-    const item = saved(a, { id: 'pair', name: 'Pair' });
+    const item = await saved(a, { id: 'pair', name: 'Pair' });
     const kept = 'a value set aside earlier';
     const storage = memoryStorage({ [MY_SHAPES_UNREADABLE_KEY]: kept });
     const mine = createMyShapes(storage, BUILT_IN);
@@ -182,13 +182,13 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(storage.map.get(MY_SHAPES_UNREADABLE_KEY)).toBe(kept);
   });
 
-  it('FR-LIB-008: an item a file could not read back (id, name) is refused on save and put', () => {
+  it('FR-LIB-008: an item a file could not read back (id, name) is refused on save and put', async () => {
     const a = source();
-    expect(saveMyShape(a.core.store, a.picked, { id: 'shape:1', name: 'Pair' }, { source: SOURCE(a.screen), available: BUILT_IN })).toEqual({
+    expect(await saveMyShape(a.core.store, a.picked, { id: 'shape:1', name: 'Pair' }, { source: SOURCE(a.screen), available: BUILT_IN })).toEqual({
       ok: false,
       reason: 'the id shape:1 is not valid',
     });
-    const item = saved(a, { id: 'pair', name: 'Pair' });
+    const item = await saved(a, { id: 'pair', name: 'Pair' });
     const storage = memoryStorage();
     const mine = createMyShapes(storage, BUILT_IN);
     expect(mine.put({ ...item, id: 'shape:1' })).toBe(false);
@@ -201,9 +201,9 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(parseMyShapes(exportMyShapes(mine.items())).ok).toBe(true);
   });
 
-  it('FR-LIB-008: an import is refused whole for a foreign format, a bad record, a binding to nothing, a repeated id or bad bounds', () => {
+  it('FR-LIB-008: an import is refused whole for a foreign format, a bad record, a binding to nothing, a repeated id or bad bounds', async () => {
     const a = source();
-    const item = saved(a, { id: 'pair', name: 'Pair' });
+    const item = await saved(a, { id: 'pair', name: 'Pair' });
     const file = (items: unknown[]) => JSON.stringify({ format: 'fluxion-my-shapes', formatVersion: '1.0', items });
     const shape = item.payload.records.find((r) => r.type === 'element') as { id: string };
     const cases: string[] = [
@@ -236,7 +236,7 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(parseMyShapes(file([item]))).toEqual({ ok: true, value: [item] });
   });
 
-  it('FR-LIB-008, NFR-LIC-003: a selection using shapes that are not built in is refused with their names, on save, put and import', () => {
+  it('FR-LIB-008, NFR-LIC-003: a selection using shapes that are not built in is refused with their names, on save, put and import', async () => {
     const b = documentBuilder({ seed: 343 });
     const screen = b.screen();
     const plain = b.rect(screen, { x: 0, y: 0, w: 80, h: 40 });
@@ -244,11 +244,11 @@ describe('My shapes (FR-LIB-008)', () => {
     const cloud = b.rect(screen, { x: 240, y: 0, w: 80, h: 80, defId: 'aws:lambda' });
     const core = createCore(b.build());
     const save = (ids: readonly RecordId[]) => saveMyShape(core.store, ids, { id: 'mixed', name: 'Mixed' }, { source: SOURCE(screen), available: BUILT_IN });
-    expect(save([plain, decision, cloud])).toEqual({ ok: false, reason: 'it uses shapes that are not built in: aws:lambda, flow:decision' });
-    const ok = save([plain]);
+    expect(await save([plain, decision, cloud])).toEqual({ ok: false, reason: 'it uses shapes that are not built in: aws:lambda, flow:decision' });
+    const ok = await save([plain]);
     expect(ok.ok).toBe(true);
     // the same item checked against a host that has those packs saves; put and import into a host without them refuse it
-    const everywhere = saveMyShape(core.store, [plain, decision], { id: 'mixed', name: 'Mixed' }, { source: SOURCE(screen), available: () => true });
+    const everywhere = await saveMyShape(core.store, [plain, decision], { id: 'mixed', name: 'Mixed' }, { source: SOURCE(screen), available: () => true });
     if (!everywhere.ok) throw new Error(everywhere.reason);
     const mine = createMyShapes(memoryStorage(), BUILT_IN);
     expect(mine.put(everywhere.value)).toBe(false);
@@ -265,13 +265,13 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(elements(t.core)).toEqual([]);
   });
 
-  it('FR-LIB-008, NFR-LIC-003: a stored item is re-checked on read: one whose shapes are not available is listed as unavailable and not inserted (cp32 F4)', () => {
+  it('FR-LIB-008, NFR-LIC-003: a stored item is re-checked on read: one whose shapes are not available is listed as unavailable and not inserted (cp32 F4)', async () => {
     const b = documentBuilder({ seed: 343 });
     const screen = b.screen();
     const decision = b.rect(screen, { x: 0, y: 0, w: 80, h: 80, defId: 'flow:decision' });
     const core = createCore(b.build());
     // kept by a host that had the flow pack, on the same storage
-    const kept = saveMyShape(core.store, [decision], { id: 'flow', name: 'Flow' }, { source: SOURCE(screen), available: () => true });
+    const kept = await saveMyShape(core.store, [decision], { id: 'flow', name: 'Flow' }, { source: SOURCE(screen), available: () => true });
     if (!kept.ok) throw new Error(kept.reason);
     const mine = createMyShapes(memoryStorage({ [MY_SHAPES_KEY]: exportMyShapes([kept.value]) }), BUILT_IN);
     const [read] = mine.items();
@@ -283,9 +283,9 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(elements(t.core)).toEqual([]);
   });
 
-  it('FR-LIB-008: an imported item whose id is held already is added under a new id, never replacing the held one', () => {
+  it('FR-LIB-008: an imported item whose id is held already is added under a new id, never replacing the held one', async () => {
     const a = source();
-    const item = saved(a, { id: 'pair', name: 'Pair' });
+    const item = await saved(a, { id: 'pair', name: 'Pair' });
     const mine = createMyShapes(memoryStorage(), BUILT_IN);
     expect(mine.put(item)).toBe(true);
     const file = JSON.stringify({
