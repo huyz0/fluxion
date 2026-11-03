@@ -75,7 +75,9 @@ jobs:
             echo "::warning::no durations from the previous run on $OS; this run only warns"
             previous=(--warn-only)
           fi
-          node scripts/harness/test-headroom.mjs --file "$f" "${previous[@]}" | sed -e 's/^test-headroom: \(.* ms of .*\)$/::warning::\1/' -e 's/^test-headroom: \(over in two consecutive runs: .*\)$/::error::\1/'
+          # the bounded-time cases whose readings rows record by run id even under the share (M18.247, M18.248)
+          show=(--show 'packages/format/src/drawio-import.test.ts > ' --show 'deterministic across fresh engines')
+          node scripts/harness/test-headroom.mjs --file "$f" "${previous[@]}" "${show[@]}" | sed -e 's/^test-headroom: \(.* ms of .*\)$/::warning::\1/' -e 's/^test-headroom: \(over in two consecutive runs: .*\)$/::error::\1/'
       - name: test durations
         if: always()
         timeout-minutes: 2

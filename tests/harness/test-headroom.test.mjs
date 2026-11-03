@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
 import { testStepEnv } from '../../scripts/gates/lib.mjs';
-import { headroom, persistent, previousRun } from '../../scripts/harness/test-headroom.mjs';
+import { headroom, persistent, previousRun, shown } from '../../scripts/harness/test-headroom.mjs';
 import { reading } from '../../tools/vitest/durations-reporter.mjs';
 
 const t = (name, durationMs, timeoutMs = 10_000) => ({ module: 'packages/x/src/a.test.ts', name, project: 'node', durationMs, timeoutMs });
@@ -61,6 +61,27 @@ describe('test headroom (M18.222)', () => {
     assert.match(listed.stdout, /a\.test\.ts > bounded: 6000 ms of 10000 ms \(60%\) on darwin/);
     assert.equal(run('--file', ok).status, 0);
     assert.equal(run().status, 2);
+  });
+
+  it('prints the readings of the named tests, listed or not, on lines the CI step does not turn into warnings (M18.247)', () => {
+    const reports = [
+      { platform: 'darwin', run: '7', tests: [t('edge', 900, 5_000), t('other', 10), t('amplifying', 6_000)] },
+      { platform: 'linux', tests: [{ ...t('edge', 40, 5_000), module: 'packages/y/src/b.test.ts' }, t('no timeout', 3, 0)] },
+    ];
+    assert.deepEqual(shown(reports, ['a.test.ts > edge', 'amplifying', 'no timeout']), [
+      'test-headroom reading: packages/x/src/a.test.ts > amplifying: 6000 ms of 10000 ms (60%) on darwin in run 7',
+      'test-headroom reading: packages/x/src/a.test.ts > edge: 900 ms of 5000 ms (18%) on darwin in run 7',
+      'test-headroom reading: packages/x/src/a.test.ts > no timeout: 3 ms of 0 ms on linux',
+    ]);
+    assert.deepEqual(shown(reports, []), []);
+    const f = join(dir, 'show.json');
+    writeFileSync(f, JSON.stringify({ platform: 'darwin', tests: [t('edge', 900, 5_000)] }));
+    const out = spawnSync(process.execPath, ['scripts/harness/test-headroom.mjs', '--file', f, '--warn-only', '--show', 'edge'], { encoding: 'utf8' });
+    assert.equal(out.status, 0, out.stderr);
+    const line = out.stdout.split('\n').find((l) => l.includes('reading:'));
+    assert.equal(line, 'test-headroom reading: packages/x/src/a.test.ts > edge: 900 ms of 5000 ms (18%) on darwin');
+    // the step's sed rewrites `test-headroom: … ms of …` into a warning; a reading line keeps its own prefix
+    assert.doesNotMatch(line, /^test-headroom: /);
   });
 
   it('fails only on a test over half its timeout in this run and the run before; an empty report is unreadable (M18.224)', () => {

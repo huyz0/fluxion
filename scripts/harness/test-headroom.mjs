@@ -9,7 +9,9 @@
 //
 //   node scripts/harness/test-headroom.mjs --run <ci run id> [--run <id>…]   download with gh
 //   node scripts/harness/test-headroom.mjs --file <durations.json> […]       offline
-//   [--previous <durations.json> …] [--warn-only] [--share 0.5] [--json]
+//   [--previous <durations.json> …] [--warn-only] [--share 0.5] [--json] [--show <text> …]
+//     --show: also print the reading of every test whose `<module> > <name>` contains <text>, listed or not, as a
+//     `test-headroom reading:` line (M18.247: the logs otherwise hold only the tests over the share).
 //   node scripts/harness/test-headroom.mjs --pick-previous --os <os> [--exclude <run id>] [--repo <o/r>] [--runs-file <f>]
 //     prints the run whose report is the baseline (M18.232): the newest main ci run, completed or still in progress (M18.238),
 //     other than --exclude, whose `verify (<os>)` job concluded success or failure; a cancelled or skipped job wrote no full report.
@@ -140,9 +142,10 @@ export const persistent = (listed, previous, share) => {
 
 /**
  * @param {Report[]} reports @param {ReturnType<typeof headroom>} listed @param {number} share
- * @param {ReturnType<typeof headroom>} twice the listed tests also over in the previous run
+ * @param {{ twice: ReturnType<typeof headroom>, show: string[] }} also the listed tests also over in the previous run, and the
+ *   tests whose readings are printed too (--show)
  */
-function print(reports, listed, share, twice) {
+function print(reports, listed, share, { twice, show }) {
   const where = [...new Set(reports.map((r) => `${r.platform}${r.run ? `@${r.run}` : ''}`))].join(', ');
   for (const t of listed) {
     const run = t.worst.run ? ` in run ${t.worst.run}` : '';
@@ -152,6 +155,25 @@ function print(reports, listed, share, twice) {
   }
   console.log(`test-headroom: ${listed.length} test(s) over ${Math.round(share * 100)}% of their timeout across ${where}`);
   for (const t of twice) console.log(`test-headroom: over in two consecutive runs: ${t.module} > ${t.name}`);
+  for (const line of shown(reports, show)) console.log(line);
+}
+
+/**
+ * The readings of the tests whose `<module> > <name>` contains one of `texts`, one line each, by report then module and name.
+ * @param {Report[]} reports @param {string[]} texts
+ */
+export function shown(reports, texts) {
+  if (!texts.length) return [];
+  return reports.flatMap((report) =>
+    report.tests
+      .filter((t) => texts.some((text) => `${t.module} > ${t.name}`.includes(text)))
+      .map((t) => ({ platform: report.platform, ...(report.run ? { run: report.run } : {}), ...t }))
+      .sort((a, b) => a.module.localeCompare(b.module) || a.name.localeCompare(b.name))
+      .map((t) => {
+        const share = t.timeoutMs > 0 ? ` (${Math.round((t.durationMs / t.timeoutMs) * 100)}%)` : '';
+        return `test-headroom reading: ${t.module} > ${t.name}: ${t.durationMs} ms of ${t.timeoutMs} ms${share} on ${t.platform}${t.run ? ` in run ${t.run}` : ''}`;
+      }),
+  );
 }
 
 /** An unreadable previous report (a cancelled run, a format change) leaves this run warning only, as no previous report does. */
@@ -195,7 +217,7 @@ function main(argv) {
   const previous = previousFiles.flatMap(readPrevious);
   const twice = previousFiles.length ? persistent(listed, previous, share) : listed;
   if (argv.includes('--json')) console.log(JSON.stringify({ share, reports: reports.length, listed, persistent: twice }, null, 2));
-  else print(reports, listed, share, previousFiles.length ? twice : []);
+  else print(reports, listed, share, { twice: previousFiles.length ? twice : [], show: all('--show') });
   return twice.length && !argv.includes('--warn-only') ? 1 : 0;
 }
 
