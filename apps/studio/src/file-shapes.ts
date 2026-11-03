@@ -6,6 +6,9 @@ import type { DocumentFile } from '@fluxion/schema';
 /** Explicit bundled geometry; namespace strings never imply a builtin. */
 const builtinIds: ReadonlySet<string> = new Set(basicPack.shapes.map((def) => def.id));
 
+/** Whether every Studio session has shape definition `defId` (the bundled basic shapes): what My shapes items may use (FR-LIB-008). */
+export const isBuiltinShape = (defId: string): boolean => builtinIds.has(defId);
+
 /** Capture unresolved references at open time, not from subsequent edited registry state. */
 export function unresolvedShapeIds(document: DocumentFile, packs: readonly VersionedShapePackSubset[]): ReadonlySet<string> {
   const resolved = new Set([...builtinIds, ...packs.flatMap((pack) => pack.definitions.map((def) => def.id))]);

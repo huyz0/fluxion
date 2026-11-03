@@ -207,5 +207,8 @@ selection with any other shape is refused with a reason naming those definitions
 import refuse such items too, so no item inserts as unknown shapes or without its pack's
 attribution. Carrying the used definitions and credits in an item (embedding) is a later row on
 the versioned pack-subset registry. An imported item whose id is held already is added under the
-next free `<id>-<n>`, never replacing the held item.
+next free `<id>-<n>`, never replacing the held item. A stored item is re-checked on read and on insert (M18.35, cp32 F4):
+an item kept before the check, or by another host on the same storage, that uses shapes the
+host's `ShapeAvailable` refuses is listed as unavailable (`myShapeUnavailable`), with its reason,
+and is not inserted.
 

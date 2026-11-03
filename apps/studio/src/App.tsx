@@ -26,6 +26,7 @@ import { rememberSaved } from './library/library-service.js';
 import { RecentFiles } from './library/recent-files.js';
 import { studioLibraryImports } from './library-import.js';
 import { localSettings } from './local-settings.js';
+import { myShapesOf } from './my-shapes.js';
 import { fluxionFileOf, type LaunchHandle, MAX_OPEN_BYTES, pickedFromLaunch, pickedFromUrl, srcOf } from './open-sources.js';
 import { type OpenedEntry, openedEntry } from './opened-files.js';
 import { registerOpenedFonts } from './opened-fonts.js';
@@ -198,6 +199,7 @@ function ProtectedEditor(props: {
         themes={themes}
         assets={assets}
         fonts={fonts}
+        myShapes={myShapesOf()}
         arrange={arrange}
         libraryImporter={imports.importer}
         {...(library === undefined ? {} : { catalog: library })}

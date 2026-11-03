@@ -16,6 +16,7 @@ import { LibraryImportDialog } from './library-import-dialog.js';
 import type { LibraryImporter, LibraryImportInput } from './library-importer.js';
 import { LIBRARY_DRAG_TYPE } from './library-insert.js';
 import { buildLibraryIndex, categoryLabel, entryOf, type LibraryEntry } from './library-search.js';
+import { MyShapesSection, type MyShapesSectionProps } from './my-shapes-section.js';
 
 /**
  * Shape definitions a host offers before their geometry is loaded (FR-LIB-009, M18.32): the entries to list, by their pack
@@ -44,6 +45,8 @@ export type LibraryPanelProps = {
   readonly onReplace?: ((id: string) => void) | undefined;
   /** Whether the selection is one shape a pick could replace (default false). */
   readonly canReplace?: boolean | undefined;
+  /** The person's My shapes, listed above the packs (FR-LIB-008); none without it. */
+  readonly mine?: MyShapesSectionProps | undefined;
   /** Registered IDs left out of the listing and search, such as hidden Iconify icons (FR-LIB-005). */
   readonly hidden?: ReadonlySet<string> | undefined;
   /** The host's library import; without it there is no **Import SVG…** (nor **Import Iconify…** or **Import draw.io…**). */
@@ -232,7 +235,7 @@ function listed(defs: ReadonlyMap<string, ShapeDef>, catalog: readonly LibraryEn
  * @public
  */
 export function LibraryPanel(props: LibraryPanelProps): ReactNode {
-  const { shapeDefs, onPick, onReplace, canReplace = false, hidden, importer, catalog = NO_ENTRIES } = props;
+  const { shapeDefs, onPick, onReplace, canReplace = false, hidden, importer, catalog = NO_ENTRIES, mine } = props;
   const [query, setQuery] = useState('');
   const [replacing, setReplacing] = useState(false);
   // losing the replaceable selection lets go of the toggle, so a later selection does not find it still on
@@ -258,6 +261,7 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
   const show = (e: LibraryEntry) => <Item key={e.id} entry={e} def={defs.get(e.id)} onPick={pick} />;
   return (
     <div className="fx-chrome-library">
+      {mine === undefined ? null : <MyShapesSection {...mine} />}
       <input
         type="search"
         className="fx-chrome-library-search"

@@ -3,10 +3,12 @@ import type { CoreRegistries, Store } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import { type RenderRegistries, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
+import { t } from '@lingui/core/macro';
 import { type ReactNode, useCallback } from 'react';
 import type { AssetStore } from './asset-store.js';
 import { screenToPage } from './camera.js';
 import { Canvas } from './canvas.js';
+import './i18n.js';
 import { type CanvasMenuInput, useCanvasMenu } from './canvas-menu.js';
 import { connectorTypeInspectors } from './connector-types.js';
 import { ImagePicker } from './image-picker.js';
@@ -18,6 +20,7 @@ import type { LibraryImporter } from './library/library-importer.js';
 import { insertShape } from './library/library-insert.js';
 import type { LibraryCatalog, LibraryPanelProps } from './library/library-panel.js';
 import { replaceableShape, replaceSelectedShape } from './library/library-replace.js';
+import { insertMyShape, type MyShapes, saveMyShape } from './library/my-shapes.js';
 import { Inspector, LeftTabs, Timeline } from './panels.js';
 import { placeImageFiles } from './place-images.js';
 import type { Execute } from './pointer.js';
@@ -53,6 +56,8 @@ export type EditBodyProps = {
   readonly sourceRegistries?: CoreRegistries | undefined;
   /** The options schema of a layout id, for the inspector's layout options form; no form without it. */
   readonly layoutOptionsSchema?: OptionsSchemaOf | undefined;
+  /** The person's My shapes (FR-LIB-008); the library has no My shapes section without them. */
+  readonly myShapes?: MyShapes | undefined;
   /** The host's layout worker, which the options form lays out in (M17.34). */
   readonly arrange?: ArrangePort | undefined;
   /** The host's SVG library import, behind the library panel's **Import SVG…** (M18.176). */
@@ -87,6 +92,64 @@ function inspectorFor(props: EditBodyProps): ReactNode {
       layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema, choices, templates, arrange }}
     />
   );
+}
+
+/** Hand the browser `text` as a file named `name` to save. */
+function downloadText(name: string, text: string): void {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 0);
+}
+
+/** The library's My shapes section: save the selection, insert an item at the middle of the view (selected), export and import. */
+function mineFor(props: EditBodyProps, selection: readonly RecordId[]): LibraryPanelProps['mine'] {
+  const { myShapes, store, session, tools, execute, screenId, newId, assetStore, box, notify } = props;
+  if (myShapes === undefined) return undefined;
+  const { available } = myShapes;
+  return {
+    myShapes,
+    canSave: selection.length > 0,
+    notify,
+    onSave: (name) => {
+      const source = {
+        docId: session.docId,
+        screen: screenId,
+        endPoint: (id: RecordId, end: 'source' | 'target') => tools.ctx.route?.(id)?.[end].point,
+        assetData: assetStore.url,
+      };
+      const saved = saveMyShape(store, selection, { id: newId(), name }, { source, available });
+      if (!saved.ok) return saved;
+      return myShapes.put(saved.value) ? saved : { ok: false, reason: 'there is no room for it' };
+    },
+    onInsert: (item) => {
+      const deps = { view: store, execute, seal: () => store.history.seal(), screen: screenId, newId, assets: assetStore };
+      const inserted = insertMyShape(deps, item, screenToPage(session.camera.get(), { x: box.w / 2, y: box.h / 2 }), available);
+      if (inserted.ok) session.selection.set(inserted.value);
+      else notify(t`${item.name} could not be inserted: ${inserted.reason}.`);
+    },
+    onExport: (text) => downloadText('my-shapes.json', text),
+  };
+}
+
+/** The library panel's props: a pick inserts (or replaces the selected shape), with the host's importer, catalog and My shapes. */
+function libraryFor(
+  props: EditBodyProps,
+  selection: readonly RecordId[],
+  insert: (defId: string) => void,
+  loaded: (defId: string, then: () => void) => void,
+): LibraryPanelProps {
+  const { registries, store, execute, session, catalog } = props;
+  return {
+    shapeDefs: registries.shapeDefs,
+    onPick: (id) => insert(id),
+    onReplace: (id) => loaded(id, () => void replaceSelectedShape({ view: store, execute, session, shapeDefs: registries.shapeDefs }, id)),
+    canReplace: replaceableShape(store, selection) !== undefined,
+    importer: props.libraryImporter,
+    catalog: catalog?.entries,
+    mine: mineFor(props, selection),
+  };
 }
 
 /** The panels around the canvas. */
@@ -133,14 +196,7 @@ export function EditBody(props: EditBodyProps): ReactNode {
   const onRemap = useCallback((remap: ReadonlyMap<RecordId, RecordId>) => followRemap(session, remap), [session]);
   // a library pick replaces the selected shape when the panel's Replace toggle or a shift-click asks (FR-LIB-011)
   const selection = useValue(session.selection.get);
-  const library: LibraryPanelProps = {
-    shapeDefs: registries.shapeDefs,
-    onPick: (id) => insert(id),
-    onReplace: (id) => loaded(id, () => void replaceSelectedShape({ view: store, execute, session, shapeDefs: registries.shapeDefs }, id)),
-    canReplace: replaceableShape(store, selection) !== undefined,
-    importer: props.libraryImporter,
-    catalog: catalog?.entries,
-  };
+  const library = libraryFor(props, selection, insert, loaded);
   return (
     <div className="fx-chrome-body">
       {panel('left', leftTabsFor(props, library, onRemap))}

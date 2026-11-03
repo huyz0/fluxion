@@ -120,14 +120,26 @@ export function saveMyShape(
 }
 
 /**
- * Insert `item` centred on `centre` (page units) as one undo step, through the paste path; the ids of the inserted
- * roots, or undefined when nothing was inserted.
+ * Why `item` cannot be inserted where only `available` shapes exist, or undefined when it can: what a host re-checks a stored
+ * item with on read (an item kept from before, or by another host on the same storage), to list it as unavailable rather
+ * than insert unknown shapes (cp32 F4).
  *
  * @public
  */
-export function insertMyShape(deps: PasteDeps, item: MyShape, centre: Vec2): readonly RecordId[] | undefined {
+export const myShapeUnavailable = (item: MyShape, available: ShapeAvailable): string | undefined => unavailableReason(item.payload, available);
+
+/**
+ * Insert `item` centred on `centre` (page units) as one undo step, through the paste path: the ids of the inserted
+ * roots, or why nothing was inserted (it uses shapes that are not `available` here, as an item kept from before may).
+ *
+ * @public
+ */
+export function insertMyShape(deps: PasteDeps, item: MyShape, centre: Vec2, available: ShapeAvailable): MyShapesResult<readonly RecordId[]> {
+  const unavailable = unavailableReason(item.payload, available);
+  if (unavailable !== undefined) return { ok: false, reason: unavailable };
   const { x, y, w, h } = item.payload.bounds;
-  return pasteInto(deps, item.payload, { x: centre.x - (x + w / 2), y: centre.y - (y + h / 2) });
+  const roots = pasteInto(deps, item.payload, { x: centre.x - (x + w / 2), y: centre.y - (y + h / 2) });
+  return roots === undefined ? { ok: false, reason: 'nothing could be inserted' } : { ok: true, value: roots };
 }
 
 /**
@@ -212,6 +224,8 @@ export type MyShapesStorage = {
  * @public
  */
 export type MyShapes = {
+  /** The shapes an item may use here (the host's). */
+  readonly available: ShapeAvailable;
   /** The items, oldest first. */
   readonly items: ReadSignal<readonly MyShape[]>;
   /** Add `item`, or replace the item with its id; false when it would not read back (id, name, payload), storage refuses it (full) or there are too many. */
@@ -311,6 +325,7 @@ export function createMyShapes(storage: MyShapesStorage, available: ShapeAvailab
     return [...now.filter((i) => !ids.has(i.id)), ...adds];
   };
   return {
+    available,
     items: items.get,
     put: (item) => typeof itemOf(item, 0, available) !== 'string' && change((now) => merged(now, [item])),
     remove: (id) => change((now) => (now.some((i) => i.id === id) ? now.filter((i) => i.id !== id) : undefined)),

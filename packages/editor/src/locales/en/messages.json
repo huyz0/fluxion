@@ -11,6 +11,12 @@
       "packages/editor/src/inspector.tsx"
     ]
   },
+  "05McJv": {
+    "message": "{0} (unavailable)",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "0HrOO3": {
     "message": "No command matches",
     "origin": [
@@ -192,6 +198,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "84nh8m": {
+    "message": "Export My shapes",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "8uA5Jn": {
     "message": "Shortcut",
     "origin": [
@@ -225,7 +237,8 @@
   "9uI_rE": {
     "message": "Undo",
     "origin": [
-      "packages/editor/src/history-buttons.tsx"
+      "packages/editor/src/history-buttons.tsx",
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "A2rvmC": {
@@ -360,6 +373,12 @@
       "packages/editor/src/source-view/source-status.ts"
     ]
   },
+  "EOwry0": {
+    "message": "That file could not be read.",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "EPVGbb": {
     "message": "Line {0}: ",
     "origin": [
@@ -421,6 +440,12 @@
       "packages/editor/src/toolbar-extras.tsx"
     ]
   },
+  "GcPKNR": {
+    "message": "Save selection to My shapes",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "Gl1I_5": {
     "message": "Overwrote canvas changes to: {list}.",
     "origin": [
@@ -433,10 +458,22 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
+  "GzUNlJ": {
+    "message": "{0} could not be inserted: {1}.",
+    "origin": [
+      "packages/editor/src/edit-body.tsx"
+    ]
+  },
   "H3oH0g": {
     "message": "Redo",
     "origin": [
       "packages/editor/src/history-buttons.tsx"
+    ]
+  },
+  "H4g4sF": {
+    "message": "The selection could not be saved to My shapes: {0}.",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "HemInN": {
@@ -480,6 +517,12 @@
     "message": "Up to date.",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "Iqhpxy": {
+    "message": "Remove {0} from My shapes",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "IruwXN": {
@@ -534,6 +577,12 @@
     "message": "New screen",
     "origin": [
       "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "LbM5wr": {
+    "message": "My shapes",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "LgNEg7": {
@@ -669,6 +718,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "QlHlh_": {
+    "message": "Import My shapes",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "Rr-tAv": {
     "message": "Document details",
     "origin": [
@@ -730,6 +785,12 @@
     "origin": [
       "packages/editor/src/panels.tsx",
       "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "VQfe81": {
+    "message": "{0} could not be put back in My shapes.",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "VbeIOx": {
@@ -844,6 +905,12 @@
     "message": "The document refused the change: {0}",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "_8Uv5S": {
+    "message": "My shapes file to import",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "_Le-z-": {
@@ -1238,6 +1305,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "eFk3HX": {
+    "message": "Unavailable: {unavailable}",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "eZb-lw": {
     "message": "Present",
     "origin": [
@@ -1418,6 +1491,12 @@
       "packages/editor/src/source-view/source-view.tsx"
     ]
   },
+  "nA3mmY": {
+    "message": "Name of the saved shape",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "nFtI-h": {
     "message": "This document holds no assets.",
     "origin": [
@@ -1593,6 +1672,12 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
+  "t6kun5": {
+    "message": "Removed {0}.",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
   "t_YqKh": {
     "message": "Remove",
     "origin": [
@@ -1603,6 +1688,7 @@
   "tfDRzk": {
     "message": "Save",
     "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx",
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
@@ -1718,6 +1804,12 @@
     "message": "{0} ms mean, {1} ms max ({2})",
     "origin": [
       "packages/editor/src/debug-overlay.tsx"
+    ]
+  },
+  "vlKI9V": {
+    "message": "That file could not be imported: {0}.",
+    "origin": [
+      "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
   "vnJ9jj": {

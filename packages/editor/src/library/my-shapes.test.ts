@@ -9,6 +9,7 @@ import {
   MY_SHAPES_KEY,
   MY_SHAPES_UNREADABLE_KEY,
   type MyShape,
+  myShapeUnavailable,
   parseMyShapes,
   type ShapeAvailable,
   saveMyShape,
@@ -91,8 +92,8 @@ describe('My shapes (FR-LIB-008)', () => {
     const theirs = createMyShapes(memoryStorage(), BUILT_IN);
     expect(theirs.importFile(file)).toEqual({ ok: true, value: 1 });
     const b = target();
-    const roots = insertMyShape(b.deps, theirs.items()[0] as MyShape, { x: 500, y: 400 });
-    expect(roots).toHaveLength(2);
+    const inserted = insertMyShape(b.deps, theirs.items()[0] as MyShape, { x: 500, y: 400 }, BUILT_IN);
+    expect(inserted.ok ? inserted.value : []).toHaveLength(2);
     expect(shapeLook(b.core)).toEqual(shapeLook(a.core));
     // the group came along, centred where asked; its connector is bound to both new shapes
     const group = elements(b.core).find((e) => e.kind === 'group') as El;
@@ -255,6 +256,31 @@ describe('My shapes (FR-LIB-008)', () => {
     expect(mine.importFile(file)).toEqual({ ok: false, reason: 'item 0: it uses shapes that are not built in: flow:decision' });
     expect(parseMyShapes(file).ok).toBe(true);
     expect(mine.items()).toEqual([]);
+    // an item kept from before (stored without the check) inserts nothing where its shapes are not available
+    const t = target();
+    expect(insertMyShape(t.deps, everywhere.value, { x: 0, y: 0 }, BUILT_IN)).toEqual({
+      ok: false,
+      reason: 'it uses shapes that are not built in: flow:decision',
+    });
+    expect(elements(t.core)).toEqual([]);
+  });
+
+  it('FR-LIB-008, NFR-LIC-003: a stored item is re-checked on read: one whose shapes are not available is listed as unavailable and not inserted (cp32 F4)', () => {
+    const b = documentBuilder({ seed: 343 });
+    const screen = b.screen();
+    const decision = b.rect(screen, { x: 0, y: 0, w: 80, h: 80, defId: 'flow:decision' });
+    const core = createCore(b.build());
+    // kept by a host that had the flow pack, on the same storage
+    const kept = saveMyShape(core.store, [decision], { id: 'flow', name: 'Flow' }, { source: SOURCE(screen), available: () => true });
+    if (!kept.ok) throw new Error(kept.reason);
+    const mine = createMyShapes(memoryStorage({ [MY_SHAPES_KEY]: exportMyShapes([kept.value]) }), BUILT_IN);
+    const [read] = mine.items();
+    expect(read?.id).toBe('flow');
+    expect(myShapeUnavailable(read as MyShape, BUILT_IN)).toBe('it uses shapes that are not built in: flow:decision');
+    expect(myShapeUnavailable(read as MyShape, () => true)).toBeUndefined();
+    const t = target();
+    expect(insertMyShape(t.deps, read as MyShape, { x: 0, y: 0 }, BUILT_IN).ok).toBe(false);
+    expect(elements(t.core)).toEqual([]);
   });
 
   it('FR-LIB-008: an imported item whose id is held already is added under a new id, never replacing the held one', () => {

@@ -20,7 +20,7 @@ import { createClipboard } from './clipboard.js';
 import { PaletteHost } from './command-palette.js';
 import { readRoutes } from './connector-handles.js';
 import { Measured } from './debug-overlay.js';
-import { EditBody } from './edit-body.js';
+import { EditBody, type EditBodyProps } from './edit-body.js';
 import { EditToolbar } from './edit-toolbar.js';
 import { type EditorCommand, registeredLayoutCommands } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
@@ -35,6 +35,7 @@ import { type ArrangePort, registeredLayoutIds } from './layout-arrange.js';
 import type { OptionsSchemaOf } from './layout-options-form.js';
 import type { LibraryImporter } from './library/library-importer.js';
 import type { LibraryCatalog } from './library/library-panel.js';
+import type { MyShapes } from './library/my-shapes.js';
 import { startLiveLayout } from './live-layout.js';
 import { Inspector, LeftTabs, PANEL_NAMES, Timeline, ToolButtons, Toolbar } from './panels.js';
 import type { Execute } from './pointer.js';
@@ -92,6 +93,8 @@ export type EditorRootProps = {
   readonly libraryImporter?: LibraryImporter;
   /** Shape definitions the library offers before their geometry is loaded (FR-LIB-009, M18.32): listed by their pack index's names, loaded on pick. */
   readonly catalog?: LibraryCatalog;
+  /** The person's My shapes (FR-LIB-008, `createMyShapes` over the host's storage); no My shapes section without them. */
+  readonly myShapes?: MyShapes;
 };
 
 /** Randomness from the browser's crypto. */
@@ -316,6 +319,14 @@ function useShellBasics(props: EditorRootProps) {
   return { store, settings, layout, setLayout, session, screenId, shown, execute, tools, present, switchMode };
 }
 
+/** What the host gives the panels: the Source tab's registries, the layout form, My shapes, arrange, the SVG importer and the catalog. */
+function hostPanels(
+  props: EditorRootProps,
+): Pick<EditBodyProps, 'sourceRegistries' | 'layoutOptionsSchema' | 'myShapes' | 'arrange' | 'libraryImporter' | 'catalog'> {
+  const { sourceRegistries, layoutOptionsSchema, myShapes, arrange, libraryImporter, catalog } = props;
+  return { sourceRegistries, layoutOptionsSchema, myShapes, arrange, libraryImporter, catalog };
+}
+
 function EditorShell(props: EditorRootProps): ReactNode {
   const { store, registries } = props;
   useChromeCss();
@@ -369,11 +380,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
           execute={execute}
           assetStore={assets}
           notify={notify}
-          sourceRegistries={props.sourceRegistries}
-          layoutOptionsSchema={props.layoutOptionsSchema}
-          arrange={props.arrange}
-          libraryImporter={props.libraryImporter}
-          catalog={props.catalog}
+          {...hostPanels(props)}
           screenId={screenId}
           area={area}
           newId={newId}

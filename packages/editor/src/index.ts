@@ -200,10 +200,12 @@ export {
   type MyShapesFile,
   type MyShapesResult,
   type MyShapesStorage,
+  myShapeUnavailable,
   parseMyShapes,
   type ShapeAvailable,
   saveMyShape,
 } from './library/my-shapes.js';
+export { MyShapesSection, type MyShapesSectionProps } from './library/my-shapes-section.js';
 export { registerSvgLibrary, type SvgLibrary } from './library/register-svg.js';
 export type { LiveFrame, LiveLayoutDeps, LiveLayoutRun, LivePlan } from './live-layout.js';
 export { startLiveLayout } from './live-layout.js';

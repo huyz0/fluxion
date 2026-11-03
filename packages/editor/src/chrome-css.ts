@@ -85,6 +85,13 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-library-item { min-width: 0; }
 .fx-chrome-library-button, .fx-chrome-library-label { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; box-sizing: border-box; text-align: center; font-size: 12px; color: var(--ui-text); }
 .fx-chrome-library-thumb { color: var(--ui-text); }
+.fx-chrome-library-mine { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; min-width: 0; }
+.fx-chrome-library-mine-form, .fx-chrome-library-mine-item, .fx-chrome-library-mine-undo { display: flex; align-items: center; gap: 4px; min-width: 0; margin: 0; }
+.fx-chrome-library-mine-form .fx-chrome-library-search { flex: 1; min-width: 0; width: auto; }
+.fx-chrome-library-mine-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.fx-chrome-library-mine-insert { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-chrome-library-mine-undo { color: var(--ui-muted); }
+.fx-chrome-library-mine-files { display: flex; flex-wrap: wrap; gap: 4px; }
 .fx-chrome-notes-host { padding: 4px; }
 .fx-chrome-notes { min-height: 8em; padding: 6px; border: 1px solid var(--ui-border); border-radius: 4px; font: 13px/1.4 system-ui, sans-serif; outline: none; }
 .fx-chrome-notes:focus { border-color: var(--ui-accent); }

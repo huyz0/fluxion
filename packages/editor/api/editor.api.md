@@ -480,6 +480,7 @@ export type EditorRootProps = {
     readonly layoutOptionsSchema?: OptionsSchemaOf;
     readonly libraryImporter?: LibraryImporter;
     readonly catalog?: LibraryCatalog;
+    readonly myShapes?: MyShapes;
 };
 
 // @public
@@ -700,7 +701,7 @@ export function importIconifyLibrary(registry: Registry<string, ShapeDef>, text:
 }): Promise<Result<IconifyLibrary, readonly Diagnostic[]>>;
 
 // @public
-export function insertMyShape(deps: PasteDeps, item: MyShape, centre: Vec2): readonly RecordId[] | undefined;
+export function insertMyShape(deps: PasteDeps, item: MyShape, centre: Vec2, available: ShapeAvailable): MyShapesResult<readonly RecordId[]>;
 
 // @public
 export function inspect(view: ReadView, ids: readonly RecordId[], overrides?: Inspectors, defs?: ShapeDefs): InspectorModel | undefined;
@@ -898,6 +899,7 @@ export type LibraryPanelProps = {
     readonly onPick?: ((id: string) => void) | undefined;
     readonly onReplace?: ((id: string) => void) | undefined;
     readonly canReplace?: boolean | undefined;
+    readonly mine?: MyShapesSectionProps | undefined;
     readonly hidden?: ReadonlySet<string> | undefined;
     readonly importer?: LibraryImporter | undefined;
     readonly catalog?: readonly LibraryEntry[] | undefined;
@@ -1061,6 +1063,7 @@ export type MyShape = {
 
 // @public
 export type MyShapes = {
+    readonly available: ShapeAvailable;
     readonly items: ReadSignal<readonly MyShape[]>;
     put(item: MyShape): boolean;
     remove(id: string): boolean;
@@ -1084,10 +1087,26 @@ export type MyShapesResult<T> = {
 };
 
 // @public
+export function MyShapesSection(props: MyShapesSectionProps): ReactNode;
+
+// @public
+export type MyShapesSectionProps = {
+    readonly myShapes: MyShapes;
+    readonly canSave: boolean;
+    readonly onSave: (name: string) => MyShapesResult<unknown>;
+    readonly onInsert: (item: MyShape) => void;
+    readonly onExport: (text: string) => void;
+    readonly notify?: ((message: string) => void) | undefined;
+};
+
+// @public
 export type MyShapesStorage = {
     getItem(key: string): string | null;
     setItem(key: string, value: string): void;
 };
+
+// @public
+export const myShapeUnavailable: (item: MyShape, available: ShapeAvailable) => string | undefined;
 
 // @public
 export function newDocument(random: Random): DocumentFile;
