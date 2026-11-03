@@ -3970,3 +3970,13 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 - eval-live, properties, mutation-plan: success in both.
 - mutation: 287 shards each. 41559194820: 161 success, 20 cancelled at the 60-minute limit, 106 queued or running, so its aggregate is already red (M18.10). 41612451867: 6 success, 281 queued or running; the two runs share the runner pool.
 - So M18.243 and M18.205 proceed on these concluded perf legs; M18.214 closes when 41559194820 reports completed. blockedReason names both running nightlies, the newest completed one and M18.10's pending card.
+
+## 2026-11-03 M18.243: the iconify-pack-2198 nightly perf FAIL at 590e0a4 is runner noise on unchanged code (cp36 F2)
+- Every nightly reading, calibration units (median of five samples; sample range; p99):
+  - 41184728589 at 797ff41: 32.799 (32.761-33.151; p99 774.9 ms)
+  - 41292607829 at 797ff41: 33.803 (33.465-34.654; p99 804.6 ms)
+  - 41421711034 at 590e0a4: 37.400 FAIL, limit 36.072 (36.611-40.649; p99 1039.4 ms)
+  - 41559194820 at 60ce6af: 30.844 (29.557-33.104; p99 935.4 ms)
+  - 41612451867 at 095be5d: 31.053 (30.913-32.583; p99 746.4 ms)
+- Cause: no code the bench runs changed between 797ff41 and 590e0a4 (`git log 797ff41..590e0a4` over packages/format, core, schema, geometry, scripts/ci/perf-baseline.mjs, vitest.config.ts, package.json and pnpm-lock.yaml is empty), yet the same encode read 33.803 and then 37.400. In that same 41421711034 job the CPU-bound layout benches read at or under their baselines (tree-500 0.897 < 0.91, radial-500 0.950 < 0.969, mindmap-500 0.819 < 0.845), so calibration had normalised CPU speed; the iconify encode (2198 canonical JSON documents, SHA-256 and validation of every file) is allocation- and memory-bound and spread 11 % within that one run. The FAIL is runner noise that calibration does not cancel, not a regression. The later readings (30.844, 31.053) also include 84bdb8e (M18.221, a faster pure SHA-256), which landed after 590e0a4.
+- The baseline is therefore taken from all five nightly readings, not one run and not the local 31.367: their median, 32.799, gives a limit of 37.719 at the unchanged 15 % tolerance, which holds over every reading (maximum 37.400). M18.205 records it, with subset-range-read's, in perf-baseline.calibrated.json under a Threshold-change: trailer naming the five runs; ICONIFY_PACK_2198_MAX_MS stays 4000. blockedReason already names the newest completed nightly (M18.249).
