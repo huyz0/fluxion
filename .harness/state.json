@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.256",
+  "currentTask": "M18.248",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp35 F5: M18.214 needs a completed nightly on a current main commit; dispatching or cancelling a nightly on the remote needs Huy's authorization, asked 2026-11-03 on a decision card (Huy authorized one dispatch on 2026-11-03 01:20Z. Running: dispatched 41559194820 at 60ce6af and scheduled 41612451867 at 095be5d, both with every leg but mutation concluded; 41559194820 has 20 mutation shards cancelled at the limit, so it ends red. The newest completed nightly is 41421711034 at 590e0a4, red, perf FAIL on iconify-pack-2198, M18.243). M18.205 records its baseline from every nightly reading after M18.243 diagnoses the 41421711034 FAIL, not from one run; M18.216 lands after M18.214 is settled. M18.10 (2026-11-03): Huy to answer stream 2's card on tzap's survivor confirmation (make it cheaper, or an ADR for --verify-survivors off); the mutation partitioning waits on it.",
-  "updated": "2026-11-03T16:39:24.377Z",
+  "updated": "2026-11-03T22:09:01.710Z",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 3
