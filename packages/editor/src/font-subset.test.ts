@@ -175,7 +175,12 @@ describe('used-glyph font subsetting (FR-AST-003, ADR-0051)', () => {
   });
 
   it('FR-AST-003: output, cache key and fingerprint are deterministic across fresh engines', async () => {
-    const [a, b] = [await subset(LATIN), await subset([...LATIN].reverse().concat(LATIN))];
+    // ASCII letters (f and i bring the ligature closure), é and a combining acute: the order and duplicates of the
+    // inventory are what vary, and a WOFF2 of this size costs a fifth of a LATIN one (57 vs 304 ms locally); two LATIN
+    // subsets read 11372 and 10609 ms of 20 s on macOS after M18.230 (ci 41540384128, 41555557451; M18.246)
+    const LETTERS = [...range(0x41, 0x5a), ...range(0x61, 0x7a), 0xe9, 0x301];
+    const [a, b] = [await subset(LETTERS), await subset([...LETTERS].reverse().concat(LETTERS))];
+    expect(a.woff2.length).toBeGreaterThan(0);
     expect(b.woff2).toEqual(a.woff2);
     expect([b.sha256, b.cacheKey, b.fingerprint]).toEqual([a.sha256, a.cacheKey, a.fingerprint]);
   });
