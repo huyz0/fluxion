@@ -3923,3 +3923,7 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 ## M18.43 — record checkpoint cp36 (2026-11-03)
 - cp36 over 7545e708..7ae54a6, changes-requested: F1 reopen M18.242 (previous-Playwright WebKit nightly failures went from 1 spec to 6, then 8, after M18.132), F2 reopen M18.243 (nightly 41421711034's iconify-pack-2198 perf FAIL diagnosed before M18.205 records a baseline), F3 reopen M18.244 (m18-complete's library search leg names a missing test file), F4 amends M18.236 (09-extensibility's "pending" ADR-0050 wording).
 - Order: this record; when nightly 41559194820 completes, M18.214, M18.243, M18.205, M18.216; M18.244; M18.234 from 41586983302 on; M18.242's diagnosis recorded; then the held product stacks in cp35's order.
+
+## 2026-11-03 M18.244: m18-complete's library search leg runs the test that holds it (cp36 F3)
+- The leg "all first-party packs searchable within library search budget" named packages/editor/src/library/first-party-packs.test.ts, which never existed. It now runs apps/studio/src/pack-catalog.test.ts (M18.32, daecd29) in the node project and requires its passed case "searching the complete first-party index…": the search under LIBRARY_SEARCH_10K_MAX_MS that reads no category file (`f.read` stays empty).
+- `tests()` takes `named`: a passing suite without a passed case of that name fails the leg; a missing file still fails it. Harness cases cover all three with a runner port. Locally the case passes (vitest node project). No leg removed, no threshold changed.

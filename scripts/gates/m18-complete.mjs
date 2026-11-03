@@ -36,8 +36,9 @@ function failedTest(out) {
   }
 }
 
-// A nonempty report, successful process, and every assertion passed are all required.
-function tests(file, { project = 'node', config } = {}) {
+// A nonempty report, successful process, and every assertion passed are all required; with `named`, a passed
+// case whose full name holds that text is required too, so the leg judges the case it names (M18.244, cp36 F3).
+function tests(file, { project = 'node', config, named } = {}) {
   if (!exists(file)) return `missing ${file}`;
   const dir = mkdtempSync(join(tmpdir(), 'm18-tests-'));
   try {
@@ -54,10 +55,9 @@ function tests(file, { project = 'node', config } = {}) {
     if (r.status !== 0) return `${file}: ${failedTest(out) ?? result(r)}`;
     const report = JSON.parse(readFileSync(out, 'utf8'));
     const assertions = report.testResults.flatMap((suite) => suite.assertionResults);
-    return (
-      (report.numFailedTestSuites === 0 && assertions.length > 0 && assertions.every((a) => a.status === 'passed')) ||
-      `${file}: empty, failed, skipped or todo tests`
-    );
+    if (!(report.numFailedTestSuites === 0 && assertions.length > 0 && assertions.every((a) => a.status === 'passed')))
+      return `${file}: empty, failed, skipped or todo tests`;
+    return !named || assertions.some((a) => String(a.fullName ?? a.title ?? '').includes(named)) || `${file}: no passed case named '${named}'`;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -212,7 +212,10 @@ const PACKS = [
   'people',
 ];
 for (const pack of PACKS) leg(`${pack}: every definition validates and has a nonempty passing visual golden`, () => tests(`packs/${pack}/src/pack.test.ts`));
-leg('all first-party packs searchable within library search budget', () => tests('packages/editor/src/library/first-party-packs.test.ts'));
+// M18.32's catalog suite searches the complete first-party index under LIBRARY_SEARCH_10K_MAX_MS and reads no category (M18.244)
+leg('all first-party packs searchable within library search budget', () =>
+  tests('apps/studio/src/pack-catalog.test.ts', { named: 'searching the complete first-party index' }),
+);
 leg('pack licenses and attribution policy enforced', () => {
   const checked = command('scripts/gates/check-licenses.mjs', ['--packs']);
   return checked === true
