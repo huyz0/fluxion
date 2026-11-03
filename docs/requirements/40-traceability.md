@@ -110,7 +110,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-CON-012 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/attachment.test.ts` |
 | FR-CON-013 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
 | FR-RTE-001 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/connector-view.browser.test.tsx` +2 |
-| FR-RTE-002 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/perf.route-drag-200.spec.ts` +6 |
+| FR-RTE-002 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/perf.route-drag-200.spec.ts` +7 |
 | FR-RTE-003 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `apps/studio/src/route-port.test.ts` +9 |
 | FR-RTE-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/determinism.test.ts`, `packages/routing/src/orthogonal/grid.test.ts` |
 | FR-RDR-001 | M | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
@@ -304,7 +304,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SITE-004 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-SITE-005 | C | R8 | M33 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | NFR-PERF-001 | M | R1 | M6 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.drag-500.spec.ts` +19 |
-| NFR-PERF-002 | M | R3 | M16 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.big-screen.spec.ts` +7 |
+| NFR-PERF-002 | M | R3 | M16 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.big-screen.spec.ts` +8 |
 | NFR-PERF-003 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.open-50.spec.ts` |
 | NFR-PERF-004 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-005 | M | R2 | M13 | [30-non-functional.md](30-non-functional.md) | `packages/layout/bench/calibration.bench.ts` +7 |

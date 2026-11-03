@@ -51,6 +51,8 @@ test.describe('connector drag performance', { tag: '@perf' }, () => {
     await page.mouse.up();
     expect(frames.length).toBeGreaterThanOrEqual(60);
     const fps = (frames.length - 1) / (((frames.at(-1) as number) - (frames[0] as number)) / 1000);
+    // the reading is kept on a pass too, as big-screen's is: a pass alone says nothing of the margin over the floor (M18.131)
+    test.info().annotations.push({ type: 'drag fps', description: fps.toFixed(1) });
     expect(fps, `${fps.toFixed(1)} fps over ${frames.length} frames`).toBeGreaterThanOrEqual(ROUTE_DRAG_200_MIN_FPS);
     // the hub followed the pointer, 180 by 90 screen px, to within a snap's reach
     const end = await hub.boundingBox();

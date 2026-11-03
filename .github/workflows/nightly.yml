@@ -201,6 +201,9 @@ jobs:
       - run: pnpm exec playwright test --project=perf --workers=1 --retries=0 --reporter=list,json,github
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/e2e.json
+      # the specs' fps readings in the log, on a pass too: the report below is uploaded only on a failure (M18.131)
+      - if: ${{ always() }}
+        run: node scripts/ci/perf-readings.mjs test-results/e2e.json
       - if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
