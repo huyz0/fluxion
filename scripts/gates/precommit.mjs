@@ -28,6 +28,7 @@ import {
   testScope,
   workspaceCatalogOnly,
 } from './ladder-scope.mjs';
+import { listFlag, splitLadder } from './ladder-split.mjs';
 import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync, testStepEnv } from './lib.mjs';
 import { withLiveStepLog } from './live-step-log.mjs';
 
@@ -316,8 +317,20 @@ async function runStep([name, , available, exec]) {
   return { lines: [`FAIL ${name} (${ms}ms)`, ...detail], ok: false };
 }
 
-const applicable = STEPS.filter(([, applies]) => applies(mode));
-// without the barrier (quick mode has no build) nothing is known to be independent: run in order
+// --skip a,b / --only a,b (with --all only): CI splits the full ladder across jobs (ADR-0214, M18.256; ladder-split.mjs)
+const ordered = STEPS.filter(([, applies]) => applies(mode));
+const split = splitLadder(
+  ordered.map(([name]) => name),
+  { skip: listFlag(process.argv, '--skip'), only: listFlag(process.argv, '--only'), mode, barrier: BARRIER, known: STEPS.map(([name]) => name) },
+);
+if ('error' in split) {
+  console.error(`precommit: ${split.error}`);
+  process.exit(2);
+}
+const applicable = ordered.map((step) => {
+  const why = split.off.get(step[0]);
+  return why === undefined ? step : [step[0], step[1], () => why, step[3]];
+});
 const barrier = applicable.findIndex(([name]) => name === BARRIER);
 const cut = barrier < 0 ? applicable.length : barrier + 1;
 const results = [];

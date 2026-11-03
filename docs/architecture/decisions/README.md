@@ -119,7 +119,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0194](ADR-0194-pack-source-and-version-ledger.md) | Packs export their source; one SDK check covers files, versions and bounds | accepted | 2026-10-27 |
 | [0195](ADR-0195-content-bound-review-evidence.md) | Reviews bind to rebase-stable content, and each commit carries its own evidence | accepted (budget record's commit amended by ADR-0205) | 2026-10-27 |
 | [0196](ADR-0196-one-shape-pack-encoder.md) | One shape pack encoder for first-party and imported packs | accepted | 2026-10-27 |
-| [0197](ADR-0197-windows-verify-envelope.md) | Windows verification gets its own CI envelope (25 of 45 minutes) | accepted | 2026-10-27 |
+| [0197](ADR-0197-windows-verify-envelope.md) | Windows verification gets its own CI envelope (25 of 45 minutes) | accepted (option 2, the split: amended by 0214) | 2026-10-27 |
 | [0198](ADR-0198-chained-mutation-matrices.md) | Nightly mutation partitions run as chained matrices of at most 256 jobs | accepted | 2026-10-27 |
 | [0199](ADR-0199-one-shared-pack-test.md) | Every first-party pack runs one shared pack test | accepted | 2026-10-27 |
 | [0200](ADR-0200-studio-library-first-party-packs.md) | The studio library offers every first-party pack, loaded lazily | accepted | 2026-10-27 |
@@ -133,6 +133,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0210](ADR-0210-pack-category-names.md) | Shape pack format 1.2: category display names, as 1.1 plus `name` | accepted | 2026-11-02 |
 | [0211](ADR-0211-catalog-summarizes-packs.md) | The AI catalog lists core entries in full and every other pack as one line; a pack's entries come with `pack` | accepted | 2026-11-02 |
 | [0213](ADR-0213-clipboard-copy-shared-between-pages.md) | The editor's newest copy is shared between its pages of one origin, for an engine that keeps only text/plain | accepted | 2026-11-03 |
+| [0214](ADR-0214-windows-harness-tests-job.md) | On Windows the full ladder's harness-tests leg runs in a job of its own | accepted | 2026-11-03 |
 
 ## ADR required when
 

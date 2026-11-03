@@ -50,7 +50,8 @@ jobs:
           git config --global user.name "ci"
           git config --global user.email "ci@example.invalid"
       # the only three-OS run of the full ladder (M2.22); gates.yml keeps the ubuntu-only harness gates
-      - run: pnpm verify
+      # ADR-0214 (M18.256): on Windows the harness tests run in harness-windows, beside this job, not inside its 25 minutes
+      - run: ${{ matrix.os == 'windows-latest' && 'node scripts/gates/precommit.mjs --all --skip harness-tests' || 'pnpm verify' }}
         timeout-minutes: ${{ matrix.os == 'windows-latest' && 25 || matrix.os == 'macos-latest' && 20 || 15 }}
         # M18.222: each unit test's duration and timeout on this OS, for scripts/harness/test-headroom.mjs
         env:
@@ -95,6 +96,43 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: verify-failures-${{ matrix.os }}
+          path: .harness/tmp/verify-logs
+          include-hidden-files: true
+          retention-days: 14
+
+  # ADR-0214 (M18.256): the Windows ladder's harness-tests leg, split off verify (windows-latest) so the two longest legs
+  # (Vitest and the harness suite, 1150-1360 s and 1050-1210 s side by side on 4 vCPUs) no longer share one runner and one
+  # 25-minute step. The same precommit ladder with --only keeps its ordered prefix (typecheck, build), so the leg reads dist/
+  # as in verify; verify (windows-latest) runs every other leg with --skip harness-tests. Same step and job bounds as verify.
+  harness-windows:
+    name: harness tests (windows-latest)
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0 (version from packageManager)
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: chromium for the font-engine harness test
+        timeout-minutes: 15
+        run: pnpm exec playwright install --with-deps chromium
+      - name: git identity for sandbox tests
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@example.invalid"
+      - run: node scripts/gates/precommit.mjs --all --only harness-tests
+        timeout-minutes: 25
+      - name: verification failure reports
+        if: always() && (failure() || cancelled())
+        timeout-minutes: 2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: verify-failures-harness-windows-latest
           path: .harness/tmp/verify-logs
           include-hidden-files: true
           retention-days: 14
@@ -465,7 +503,7 @@ jobs:
 
   ci-ok:
     if: always()
-    needs: [verify, cold-setup, build, cli-mcp, e2e, e2e-report, visual, a11y, lighthouse, size, api, license, security, eval-recorded]
+    needs: [verify, harness-windows, cold-setup, build, cli-mcp, e2e, e2e-report, visual, a11y, lighthouse, size, api, license, security, eval-recorded]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

@@ -369,7 +369,11 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     const ladder = readFileSync(join(REPO, 'scripts/gates/precommit.mjs'), 'utf8');
     assert.match(ladder, /\[\s*'examples',[\s\S]*?examplesNeeded\([\s\S]*?'test:examples'/);
     assert.match(JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts.verify, /precommit\.mjs --all$/);
-    assert.match(readFileSync(join(REPO, '.github/workflows/ci.yml'), 'utf8'), /^\s+- run: pnpm verify$/m);
+    // on Windows the same --all ladder, with only harness-tests left to its own job (ADR-0214)
+    assert.match(
+      readFileSync(join(REPO, '.github/workflows/ci.yml'), 'utf8'),
+      /^\s+- run: \$\{\{ matrix\.os == 'windows-latest' && 'node scripts\/gates\/precommit\.mjs --all --skip harness-tests' \|\| 'pnpm verify' \}\}$/m,
+    );
   });
 
   it('FR-AI-009: a staged change that can move the eval prompt, or its cases, recordings or runner, runs the recorded eval (M16.37)', () => {

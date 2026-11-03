@@ -24,7 +24,8 @@ describe('gates workflow (NFR-PORT-005)', () => {
   it('runs the same gate scripts as the local hooks', () => {
     // `pnpm verify` is the ladder itself (precommit.mjs --all), run by ci.yml since M2.22
     assert.equal(JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts.verify, 'node scripts/gates/precommit.mjs --all');
-    assert.match(ci, /- run: pnpm verify\n/);
+    // ADR-0214: Windows runs the same ladder split in two jobs (--skip / --only harness-tests); the other OSes run `pnpm verify`
+    assert.match(ci, /'node scripts\/gates\/precommit\.mjs --all --skip harness-tests' \|\| 'pnpm verify' \}\}\n/);
     assert.doesNotMatch(ci, /node --test "tests\/harness\/\*\.test\.mjs"/, 'full ladder runs the harness once');
     assert.match(wf, /node scripts\/gates\/check-workflows\.mjs --require-docker/);
     assert.match(wf, /node scripts\/gates\/check-commits\.mjs --range/);
@@ -234,8 +235,15 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(verify, /^ {4}timeout-minutes: \$\{\{ matrix\.os == 'windows-latest' && 45 \|\| matrix\.os == 'macos-latest' && 40 \|\| 35 \}\}$/m);
     assert.match(
       verify,
-      /- run: pnpm verify\n\s+timeout-minutes: \$\{\{ matrix\.os == 'windows-latest' && 25 \|\| matrix\.os == 'macos-latest' && 20 \|\| 15 \}\}\n/,
+      /- run: \$\{\{ matrix\.os == 'windows-latest' && 'node scripts\/gates\/precommit\.mjs --all --skip harness-tests' \|\| 'pnpm verify' \}\}\n\s+timeout-minutes: \$\{\{ matrix\.os == 'windows-latest' && 25 \|\| matrix\.os == 'macos-latest' && 20 \|\| 15 \}\}\n/,
     );
+    // ADR-0214 (M18.256): the leg verify (windows-latest) skips runs in harness-windows, within the same step and job bounds, and ci-ok needs it
+    const harness = /^ {2}harness-windows:[\s\S]*?(?=^ {2}\S)/m.exec(ci)?.[0] ?? '';
+    assert.match(harness, /name: harness tests \(windows-latest\)\n\s+runs-on: windows-latest\n\s+timeout-minutes: 45\n/);
+    assert.match(harness, /- run: node scripts\/gates\/precommit\.mjs --all --only harness-tests\n\s+timeout-minutes: 25\n/);
+    assert.match(harness, /playwright install --with-deps chromium/);
+    assert.doesNotMatch(harness, /continue-on-error|retry/);
+    assert.match(ci, /needs: \[verify, harness-windows, /);
     assert.match(verify, /chromium for the Vitest browser project \(T1\)\n\s+timeout-minutes: 15/);
     assert.doesNotMatch(verify, /name: harness tests|continue-on-error|retry/);
     assert.match(verify, /name: verification failure reports\n\s+if: always\(\) && \(failure\(\) \|\| cancelled\(\)\)\n\s+timeout-minutes: 2/);
