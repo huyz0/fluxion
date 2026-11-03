@@ -3960,3 +3960,13 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 ## M18.43 — record checkpoint cp37 (2026-11-03)
 - cp37 over 7545e708..5847a7c, changes-requested: F1 amends M18.242 (record the cause from nightly 41612451867's clipboard probe: on WebKit 26.5 a copy keeps only text/plain, and onPaste answers the paste before finding no payload, cancelling the M11.59 fallback), F2 reopens new row M18.249 (read nightlies 41559194820 and 41612451867 by leg; M18.243 proceeds on concluded perf legs without the mutation tail), F3 amends M18.245 (tools.connector:6 is intermittent: red at 41559194820, green at 41612451867).
 - Order: this record; M18.249, M18.243 (five readings), M18.205; M18.214 when 41559194820 completes, then M18.216; M18.242's cause recorded; then the held product stacks in cp35's order, each on green main ci.
+
+## 2026-11-03 M18.249: nightlies 41559194820 and 41612451867 read by leg (cp37 F2)
+- 41559194820 (workflow_dispatch at 60ce6af, Huy's go 01:20Z) and 41612451867 (schedule at 095be5d) are both still running only because of mutation shards; every other leg has concluded. Read at 11:30Z through the REST jobs API.
+- perf (41559194820 job 125665410247, success): iconify-pack-2198 30.844 units (limit 36.072), subset-range-read 0.798 (limit 0.898); every e2e perf spec passed; no fps lines (the reading log is 5bca80b's, after 60ce6af).
+- perf (41612451867 job 125837475599, success): iconify-pack-2198 31.053, subset-range-read 0.803; big-screen pan 51.1 fps, zoom 60.0 fps; 200-connector drag 55.6 fps (all floors 50 fps).
+- previous-playwright (webkit): 41559194820 job 125665410248 failed 8 specs: clipboard.copy-paste :8, :41, :58; clipboard.cross-document :7, :33, :72; layout.live-container :52; tools.connector :6. 41612451867 job 125837475826 failed the same 7 without tools.connector :6 (M18.245, intermittent). chromium and firefox passed in both.
+- visual-xos: ubuntu passed in both; windows (125665410283, 125837475788) and macos (125665412378, 125837475657) failed the same two chromium baselines, render.static-html :21 and render.shapes-gallery :22, the known-red legs awaiting Huy (cp24 F5, ADR-0202).
+- eval-live, properties, mutation-plan: success in both.
+- mutation: 287 shards each. 41559194820: 161 success, 20 cancelled at the 60-minute limit, 106 queued or running, so its aggregate is already red (M18.10). 41612451867: 6 success, 281 queued or running; the two runs share the runner pool.
+- So M18.243 and M18.205 proceed on these concluded perf legs; M18.214 closes when 41559194820 reports completed. blockedReason names both running nightlies, the newest completed one and M18.10's pending card.
