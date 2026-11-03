@@ -4036,3 +4036,16 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 - Read from each run's verify (macos-latest) headroom step. The determinism case ('output, cache key and fingerprint are deterministic across fresh engines') is listed in no run after 5847a7c: 41620482680 (5847a7c), 41624433527 (7a73552), 41624941136 (94e0654), 41625372038, 41625760874, 41627122928, 41628401301, 41638116368, 41639993998, 41640611038, 41660137068, 41675824973, 41680012230 (41633787769's macOS verify was cancelled).
 - Its readings in ms, printed since M18.247 (b925fff): 2088 ms (10%) at 41639993998, 3049 ms (15%) at 41640611038, 3741 ms (19%) at 41660137068, 3855 ms (19%) at 41675824973, 3635 ms (18%) at 41680012230, all of 20000. Before M18.246 it read 11372 and 10609 ms.
 - Other tests listed on darwin in those runs: the font-subset refusal case ('fonts that cannot be subset safely keep their original bytes with a reason', 52-61% at 41624941136, 41627122928, 41628401301, 41638116368) and the metrics case (50% at 41628401301), both stream 1's M18.255 (f0e2efc). The three runs after f0e2efc, 41660137068, 41675824973 and 41680012230, list no test over 50% on darwin, so the row's three runs with no test listed are those three. No new row.
+
+## 2026-11-03 M18.247: darwin readings of drawio-import's cut cases after M18.241, by run id
+- Read from the `test-headroom reading:` lines that the verify (macos-latest) headroom step prints since b925fff (M18.247's `--show`), in ms of each case's timeout (5 s for edge-label, 10 s for the others):
+
+| run (commit) | edge-label | amplifying entries | embedded SVG | amplifying stencils | route walk |
+|---|---|---|---|---|---|
+| 41639993998 (b925fff) | 458 (9%) | 741 (7%) | 994 (10%) | 47 (0%) | 1183 (12%) |
+| 41640611038 | 263 (5%) | 910 (9%) | 1520 (15%) | 85 (1%) | 1300 (13%) |
+| 41660137068 | 503 (10%) | 1514 (15%) | 3011 (30%) | 183 (2%) | 2640 (26%) |
+| 41675824973 | 352 (7%) | 1472 (15%) | 2219 (22%) | 163 (2%) | 1830 (18%) |
+| 41680012230 | 457 (9%) | 1387 (14%) | 3051 (31%) | 81 (1%) | 1444 (14%) |
+
+- All five cases stay under a third of their timeout. The highest reading in the file is 'equal titles number in order and references decode in linear time' (10 s) at 4607 ms (46%) at 41660137068; it read 1719, 2745, 4607, 2349, 3093 ms in the same runs. Under half, so no row, but it is the one to watch.
