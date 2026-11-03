@@ -107,9 +107,12 @@ wipe the first (M7.3 review F1).
   Web custom formats are not visible there (M7.3 review F2), so the order is:
   1. `application/x-fluxion+json`;
   2. the `<template data-fluxion>` in `text/html`;
-  3. image files;
-  4. `image/svg+xml`, or `text/plain` that parses as an `<svg>` document;
-  5. other `text/plain`.
+  3. the newest copy of the origin's open editor pages, when the paste carries no HTML and no file
+     and its `text/plain` is exactly that copy's text: an engine may keep only `text/plain`
+     (WebKit 26.5; amended by [ADR-0213](ADR-0213-clipboard-copy-shared-between-pages.md), M18.242);
+  4. image files;
+  5. `image/svg+xml`, or `text/plain` that parses as an `<svg>` document;
+  6. other `text/plain`.
 - **Menu Paste:** `navigator.clipboard.read()`, which may prompt. The order is:
   1. `web application/x-fluxion+json`;
   2. the `text/html` template;
@@ -140,7 +143,10 @@ wipe the first (M7.3 review F1).
     payload, or centred in view when the source screen is not the one shown.
   - The paste is one store transaction, so one undo step.
 - **Cross-tab** needs nothing extra: tabs share the system clipboard, so the same path serves a
-  paste in the same document, another document, another tab or another origin.
+  paste in the same document, another document, another tab or another origin. On an engine that
+  keeps only a copy's `text/plain`, the editor's pages of one origin also share their newest copy on
+  a BroadcastChannel, which step 3 of the keyboard order reads ([ADR-0213](ADR-0213-clipboard-copy-shared-between-pages.md));
+  another origin then gets the text only.
 
 ### Consequences
 

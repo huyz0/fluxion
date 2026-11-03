@@ -2,6 +2,7 @@
 status: accepted
 date: 2026-11-03
 decision-makers: packs stream (M18.242), subject to independent review
+amends: ADR-0020 (keyboard paste order step 3 and Cross-tab paragraph)
 ---
 
 # ADR-0213 — The editor's newest copy is shared between its pages of one origin, for an engine that keeps only text/plain
@@ -41,6 +42,9 @@ the pages, no change to the clipboard format or to what other applications recei
    in-document copy and paste broken on a supported engine; rejected while option 1 works.
 
 ## Decision Outcome
+
+This **amends ADR-0020**: its keyboard paste order gains the shared copy as step 3, after the
+`text/html` template and before image files, and its Cross-tab paragraph names the channel.
 
 - `clipboard-share.ts` (editor, DOM layer): `clipboardShare(channel, now)` keeps the newest copy
   (`{ json, text, at }`). `copied(json, text)` always makes the page's own copy the newest (another

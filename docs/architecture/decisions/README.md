@@ -32,7 +32,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0017](ADR-0017-hosts-bundle-first-party-packs.md) | Hosts bundle first-party packs as listed dependencies (packs at rank 5) | accepted | 2026-09-29 |
 | [0018](ADR-0018-shape-text-fitting.md) | Shape text fitting: an optional `textFit` on shapes, pure layout in core | accepted | 2026-09-29 |
 | [0019](ADR-0019-stroke-alignment-and-corner-radius.md) | Stroke alignment and corner radius on any outline | accepted | 2026-09-29 |
-| [0020](ADR-0020-clipboard-format.md) | The clipboard format: one versioned Fluxion payload in every representation each path allows | accepted | 2026-10-01 |
+| [0020](ADR-0020-clipboard-format.md) | The clipboard format: one versioned Fluxion payload in every representation each path allows | accepted (keyboard paste order and Cross-tab: amended by 0213) | 2026-10-01 |
 | [0021](ADR-0021-screen-sections-and-library-search.md) | Screen sections are `section` records, and the library is searched by an own prefix and keyword index | accepted | 2026-10-02 |
 | [0022](ADR-0022-font-sourcing-and-licensing.md) | Fonts are vendored OFL assets, the Google Fonts catalog is a snapshot fetched by the studio only, uploads are sniffed by magic bytes, subsetting waits past M10 (amendment M10.3) | accepted | 2026-10-03 |
 | [0023](ADR-0023-i18n-pipeline.md) | The i18n pipeline: Lingui, with macros transformed and messages extracted by the native tools, never by Babel | accepted | 2026-10-03 |
