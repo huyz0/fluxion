@@ -284,8 +284,10 @@ event writes a custom `application/x-fluxion+json` `DataTransfer` type. A menu c
 `ClipboardItem`, with `web application/x-fluxion+json` where supported. Both also write `text/html`
 (rendered SVG plus the payload in `<template data-fluxion>`, parsed inertly with `DOMParser` on
 paste) and `text/plain` (the text in reading order; FluxScript for a whole screen from M12). Paste
-tries the custom type, then the template, image, SVG and text, and validates the payload as an
-opened file. It then remaps IDs
+tries the custom type, then the template, then the newest copy of the origin's open editor pages
+when the paste carries exactly that copy's text and no file (`clipboard-share.ts`, a
+BroadcastChannel: an engine may keep only text/plain, ADR-0213), then image, SVG and text, and
+validates the payload as an opened file. It then remaps IDs
 through the `Random` port, keeps bindings whose both ends were copied, turns the others into free
 endpoints, and offsets by +16 px per repeated paste. System paste also accepts SVG (sanitized,
 NFR-SEC-001), images (asset + image element), and Mermaid or Markdown text (importers,

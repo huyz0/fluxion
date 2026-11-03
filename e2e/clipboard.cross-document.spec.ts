@@ -118,4 +118,34 @@ test.describe('copy and paste across documents', { tag: '@desktop' }, () => {
     await expect(second.elements).toHaveCount(3);
     await expect(second.canvas.locator('.fx-el[data-kind="connector"]')).toHaveCount(1);
   });
+
+  test('FR-EDT-007, NFR-PORT-001: on an engine whose clipboard keeps only text/plain, the keys paste in the same and in another tab (M18.242)', async ({
+    page,
+    context,
+  }) => {
+    // WebKit 26.5 (clipboard-events-probe, nightly 41612451867): a copy's custom type and HTML arrive empty at the paste, only its text/plain is kept
+    await context.addInitScript(() => {
+      const set = DataTransfer.prototype.setData;
+      DataTransfer.prototype.setData = function (this: DataTransfer, type: string, data: string) {
+        if (type === 'text/plain') set.call(this, type, data);
+      };
+    });
+    const first = new EditorPage(page);
+    await joinedPair(page, first);
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.press('ControlOrMeta+c');
+    await page.keyboard.press('ControlOrMeta+v');
+    await expect(first.elements).toHaveCount(6);
+    // a page opened after the copy
+    const other = await context.newPage();
+    const second = new EditorPage(other);
+    await second.open('new');
+    await other.bringToFront();
+    await other.keyboard.press('ControlOrMeta+v');
+    await expect(second.elements).toHaveCount(3);
+    await expect(second.canvas.locator('.fx-el[data-kind="connector"]')).toHaveCount(1);
+    // one press, one paste
+    await other.waitForTimeout(400);
+    await expect(second.elements).toHaveCount(3);
+  });
 });
