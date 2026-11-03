@@ -169,6 +169,9 @@ test.describe('source view', { tag: '@desktop' }, () => {
   });
 
   test('FR-EDT-022: a shape dragged on the canvas writes its pin, in one regenerated text, and undo takes the pin away', async ({ page }) => {
+    // the page's clock, held still while the drag runs: the look waits for 50 quiet ms, which a loaded runner can leave between two of the
+    // drag's moves and so look mid-drag (ci 41624941136, firefox: two texts with a pin); a held clock makes the drag one gesture however slow it runs
+    await page.clock.install();
     const { editor, text } = await openSource(page);
     await expect(text).not.toContainText('pin:');
     // the drag is the pointer's exactly: snapping is off
@@ -183,7 +186,11 @@ test.describe('source view', { tag: '@desktop' }, () => {
         if (w.__texts.at(-1) !== now) w.__texts.push(now);
       }).observe(document.body, { subtree: true, childList: true, characterData: true });
     });
+    // a second ahead, so the page's time has not passed it by the time the pause arrives; nothing is waiting to be looked at before the drag
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
     const { before, dx, dy } = await dragShape(editor, 'Alpha', { dx: 120, dy: 80 });
+    // time runs again once the pointer is up: the quiet wait starts after the drag's last move
+    await page.clock.resume();
     const alpha = text.locator('.cm-line', { hasText: 'label: Alpha' });
     await expect(alpha).toContainText('pin: { x: ');
     const pin = await pinOf(text, 'Alpha');

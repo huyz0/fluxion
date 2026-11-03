@@ -5,7 +5,7 @@
 // is open or while presenting are the browser's own. A chord goes through a hidden editable target (clipboard-catcher.ts), since an engine may raise the event only from one
 // (WebKit 26.5, M18.132); a chord no event answers all the same is done by the async path after a short wait (M11.59).
 // That engine keeps only a copy's text/plain, so the newest copy of the origin's editor pages is shared and a paste of exactly its text is that copy (ADR-0213, M18.242).
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Clipboard, ClipboardPayload } from './clipboard.js';
 import { type ClipboardCatcher, catchesFrom, clipboardCatcher } from './clipboard-catcher.js';
 import { type ChordFallback, chordAction, chordFallback, type Timers } from './clipboard-chord.js';
@@ -194,7 +194,9 @@ export function useSystemClipboard(input: SystemClipboardInput): SystemClipboard
   const commandsRef = useRef<SystemClipboardCommands | undefined>(undefined);
   const fallback = useChordFallback(commandsRef);
   const share = useClipboardShare();
-  useEffect(() => {
+  // on before the editor is painted (a layout effect, not a passive one, which React may run after the paint): a chord pressed as soon as the
+  // editor shows is routed, not lost to a page with no listener (M18.257, ci 41625372038)
+  useLayoutEffect(() => {
     const { catcher } = fallback;
     // not the editor's: a field's own copy and paste, a dialog, presenting; the catcher is a field only the editor's chords reach
     const editingHere = (target: EventTarget | null) => !paused && session.mode.get() === 'edit' && (catcher.owns(target) || (!isEditable(target) && free()));

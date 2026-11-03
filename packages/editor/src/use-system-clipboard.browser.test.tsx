@@ -4,7 +4,7 @@
 
 import { createCore } from '@fluxion/core';
 import { documentBuilder } from '@fluxion/schema/testing';
-import { act, type JSX, StrictMode } from 'react';
+import { act, type JSX, StrictMode, useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { type ClipboardPayload, copyPayload, createClipboard } from './clipboard.js';
@@ -64,6 +64,27 @@ const chord = (target: Element, key: string) => target.dispatchEvent(new Keyboar
 const isCatcher = () => document.activeElement instanceof HTMLElement && 'fxClipboardCatcher' in document.activeElement.dataset;
 
 describe('clipboard chords and the focus (FR-EDT-007)', () => {
+  it('FR-EDT-007, NFR-PORT-001: a chord pressed as soon as the editor is committed, before any passive effect, is routed through the catcher (M18.257)', async () => {
+    let routed: boolean | undefined;
+    // runs in the same commit as the editor, after its layout effects and before its passive ones: the earliest a key can reach a shown editor
+    function Early(): null {
+      useLayoutEffect(() => {
+        chord(host.querySelector('[data-testid="canvas"]') as Element, 'v');
+        routed = isCatcher();
+      }, []);
+      return null;
+    }
+    await act(async () =>
+      root.render(
+        <>
+          <Harness onBlur={nothing} />
+          <Early />
+        </>,
+      ),
+    );
+    expect(routed).toBe(true);
+  });
+
   it('FR-EDT-007: a chord on a focused control marked to keep its focus leaves it alone, so its blur handler does not run', async () => {
     let blurs = 0;
     await act(async () => root.render(<Harness onBlur={() => blurs++} />));
