@@ -4065,3 +4065,14 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 - [firefox] source-view.two-way-sync.spec.ts:201 ('one regenerated text'), ci 41624941136 (job 126064075211): two different texts with a pin where one is expected. Cause: the view looks at the canvas after 50 quiet ms (RECONCILE_DELAY_MS, ADR-0032, as designed), and the test's drag is eight Playwright mouse moves, each a round trip; a loaded runner can leave more than 50 ms between two of them, so the view looked mid-drag and wrote a first pin, then the final one. The product did what it says; the test relied on runner speed.
 - Fix: the test installs the page clock and holds it still from just before the drag (pausing a second ahead, since the page's time runs on while the pause is sent) until the pointer is up, then lets it run: the quiet wait starts after the last move however slow the runner, and the test still requires exactly one text with a pin. No fixed wait, assertion, timeout or retry changed.
 - Locally (chromium; this container has no firefox or webkit): both spec files 5 times each, 85 passed. The five main runs after this commit are read by id under this row.
+
+## 2026-11-03 M18.256: the Windows verify step under 20 minutes in three consecutive main ci runs after 0fc624a
+- Since 0fc624a, verify (windows-latest) runs `precommit.mjs --all --skip harness-tests` and the new job harness tests (windows-latest) runs `--only harness-tests` (ADR-0214). Step times, from each job's step start and end:
+
+| run (commit) | verify (windows-latest) step | harness tests (windows-latest) step |
+|---|---|---|
+| 41680012230 (0fc624a) | 927.1 s (VERIFY all, from the log) | 756.2 s (job) |
+| 41729130437 (ac27cb1) | 607 s (22:25:39 to 22:35:46, job 126241578582) | 809 s (22:23:34 to 22:37:03, job 126241577971) |
+| 41729679980 (fc0ef8a) | 912 s (22:37:12 to 22:52:24, job 126243459469) | 532 s (22:30:25 to 22:39:17, job 126243458806) |
+
+- All under 1200 s (80% of the 25-minute step limit); the highest is 927 s (62%). Before the split the step read 1188-1415 s and was killed at 1500 s in 41639993998. Both Windows jobs succeeded in the three runs. 41680012230 is red only for M18.257's webkit flake (e2e-report), not for either Windows job.
