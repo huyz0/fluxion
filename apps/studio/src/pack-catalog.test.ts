@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { openDocument } from './bootstrap.js';
 import { openFileBytes } from './file-session.js';
 import { shapeSaveOptions } from './file-shapes.js';
-import { documentCatalog, loadPackCatalog, usedDefIds } from './pack-catalog.js';
+import { bundledPackCatalog, documentCatalog, loadPackCatalog, usedDefIds } from './pack-catalog.js';
 
 declare global {
   interface ImportMeta {
@@ -176,5 +176,51 @@ describe('the first-party packs in the studio library (M18.32)', () => {
     expect(defs.get('devices:laptop')).toBeUndefined();
     expect(problems).toEqual([expect.stringContaining('devices:laptop could not be loaded')]);
     expect(doc.sources()).toEqual([]);
+  });
+
+  it("FR-LIB-009, FR-LIB-007: one pack index that fails to read refuses that pack alone, and another pack's shapes still resolve (M18.216)", async () => {
+    const f = packFiles();
+    const failing = Object.fromEntries(
+      Object.entries(f.indexes).map(([path, read]) => [path, path.includes('/pack-devices/') ? () => Promise.reject(new Error('network error')) : read]),
+    );
+    const catalog = await loadPackCatalog(hasher, failing, f.categories);
+    expect(catalog.refused).toEqual([expect.stringMatching(/pack-devices\/pack\/index\.json: network error$/)]);
+    expect(catalog.loaders.some((l) => l.index.id === 'people')).toBe(true);
+    expect(catalog.loaders.some((l) => l.index.id === 'devices')).toBe(false);
+    const b = documentBuilder();
+    const screen = b.screen();
+    for (const defId of ['devices:laptop', 'people:person'] as QualifiedName[]) b.rect(screen, { defId });
+    const opened = value(openDocument(b.build()));
+    const doc = documentCatalog(catalog, opened.core.registries.shapeDefs, new Set(), () => undefined);
+    // devices is not in the catalog, so only people's shape is wanted, and it resolves
+    expect(await doc.resolve(usedDefIds(opened.core.store.toDocument().records))).toEqual([]);
+    expect(opened.core.registries.shapeDefs.get('people:person')).toBeDefined();
+  });
+
+  it('FR-LIB-009: a category file that fails to read is reported, not thrown, and another pack still loads (M18.216)', async () => {
+    const f = packFiles();
+    const failing = Object.fromEntries(
+      Object.entries(f.categories).map(([path, read]) => [
+        path,
+        path.endsWith('pack-devices/pack/categories/computers.json') ? () => Promise.reject(new Error('network error')) : read,
+      ]),
+    );
+    const catalog = await loadPackCatalog(hasher, f.indexes, failing);
+    const defs = createCoreRegistries().shapeDefs;
+    const problems: string[] = [];
+    const doc = documentCatalog(catalog, defs, new Set(), (m) => problems.push(m));
+    expect(await doc.resolve(['devices:laptop', 'people:person'])).toEqual(['devices:laptop']);
+    expect(problems).toEqual([expect.stringContaining('The shape devices:laptop could not be loaded: category could not be read')]);
+    expect(defs.get('people:person')).toBeDefined();
+  });
+
+  it('FR-LIB-009: a bundled catalog read that rejects is not kept for the page, so the next use reads again (M18.216)', async () => {
+    const rejected = bundledPackCatalog(hasher, () => Promise.reject(new Error('offline')));
+    await expect(rejected).rejects.toThrow('offline');
+    const f = packFiles();
+    const again = await bundledPackCatalog(hasher, (h) => loadPackCatalog(h, f.indexes, f.categories));
+    expect(again.loaders.length).toBeGreaterThan(0);
+    // and a catalog that was read is kept
+    expect(await bundledPackCatalog(hasher, () => Promise.reject(new Error('not read again')))).toBe(again);
   });
 });

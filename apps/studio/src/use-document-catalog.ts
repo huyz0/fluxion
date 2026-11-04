@@ -13,12 +13,16 @@ export function useDocumentCatalog(core: Core | undefined, saved: readonly { rea
   const [packs, setPacks] = useState<PackCatalog | undefined>(undefined);
   useEffect(() => {
     let live = true;
-    void bundledPackCatalog(webHasher).then((p) => {
-      if (!live) return;
-      for (const refused of p.refused)
-        studioLogger(window.location.search, console).child('studio').log('error', 'a first-party pack was refused', { refused });
-      setPacks(p);
-    });
+    const logger = studioLogger(window.location.search, console).child('studio');
+    bundledPackCatalog(webHasher).then(
+      (p) => {
+        if (!live) return;
+        for (const refused of p.refused) logger.log('error', 'a first-party pack was refused', { refused });
+        setPacks(p);
+      },
+      // no rejection goes unhandled; the next open reads the catalog again (M18.216)
+      (error: unknown) => logger.log('error', 'the first-party packs could not be read', { error: String(error) }),
+    );
     return () => {
       live = false;
     };

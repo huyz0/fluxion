@@ -4132,3 +4132,9 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 ## 2026-11-04 M18.258 (disclosure): a fourth review round without an allowance
 - M18.258 (0526486) passed in a fourth review round with the same reviewer: r1 changes-requested (fallback refit), r2 pass, then after cp40 amended the row, r3 changes-requested (callers list missed create.ts's dragOut users) and r4 pass. The cap is three rounds; no round-allowance was asked of or given by Huy. This is a disclosed breach, not an allowance. The packets of r3 and r4 said "round 1 of max 3" because the replay onto a new main restarted the recorder's count, which is cp40 F1's defect (M18.259).
 - The change itself is unaffected (r4 found nothing in the code; its only finding in r3 was the progress.md callers list), but the round count was not enforced, and the breach stands as recorded.
+
+## 2026-11-04 M18.216 (claude, stream 1; reviewed 2026-11-02, replayed onto main after M18.214)
+done: a pack index that fails to read refuses that pack alone (catalog.refused), every other pack stays listed and resolvable; a rejected bundled catalog read is not kept for the page; the studio hook handles a rejection
+tests: pack-catalog.test.ts adds three cases (index read rejects, category read rejects, bundled read retried); removing either guard fails one
+note: a category read failure already came back as a loader result (sdk), so ensure needed no change
+

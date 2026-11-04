@@ -29,10 +29,22 @@ const MAX_PACK_FILE_BYTES = 4 * 1024 * 1024;
 
 const encoder = new TextEncoder();
 
-/** The loader of the pack whose index is at `path`, reading its files from `categories`, or why it was refused. */
+/** Why `error` stopped a read, as one line. */
+const reason = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+
+/**
+ * The loader of the pack whose index is at `path`, reading its files from `categories`, or why it was refused: an index that
+ * fails to read refuses its pack alone, never the catalog (M18.216, cp30 F4).
+ */
 async function loaderOf(path: string, read: () => Promise<string>, categories: Files, hasher: Hasher): Promise<ShapePackLoader | string> {
+  let text: string;
+  try {
+    text = await read();
+  } catch (error) {
+    return `${path}: ${reason(error)}`;
+  }
   const root = path.slice(0, -'index.json'.length);
-  const loaded = await createShapePackLoader(encoder.encode(await read()), {
+  const loaded = await createShapePackLoader(encoder.encode(text), {
     maxBytes: MAX_PACK_FILE_BYTES,
     hasher,
     licensePolicy: allowsShapePackContentLicense,
@@ -146,12 +158,15 @@ export function documentCatalog(
   };
 }
 
-/** The bundled catalog, read once per page on first use. */
+/** The bundled catalog, read once per page on first use; a read that rejected is not kept (M18.216). */
 let bundled: Promise<PackCatalog> | undefined;
 
-/** The bundled first-party packs' catalog, verified with `hasher` the first time. */
-export function bundledPackCatalog(hasher: Hasher): Promise<PackCatalog> {
-  bundled ??= loadPackCatalog(hasher);
+/** The bundled first-party packs' catalog, verified with `hasher` the first time it succeeds. */
+export function bundledPackCatalog(hasher: Hasher, read: (hasher: Hasher) => Promise<PackCatalog> = loadPackCatalog): Promise<PackCatalog> {
+  bundled ??= read(hasher).catch((error: unknown) => {
+    bundled = undefined;
+    throw error;
+  });
   return bundled;
 }
 
