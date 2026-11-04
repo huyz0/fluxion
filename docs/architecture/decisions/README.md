@@ -134,6 +134,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0211](ADR-0211-catalog-summarizes-packs.md) | The AI catalog lists core entries in full and every other pack as one line; a pack's entries come with `pack` | accepted | 2026-11-02 |
 | [0213](ADR-0213-clipboard-copy-shared-between-pages.md) | The editor's newest copy is shared between its pages of one origin, for an engine that keeps only text/plain | accepted | 2026-11-03 |
 | [0214](ADR-0214-windows-harness-tests-job.md) | On Windows the full ladder's harness-tests leg runs in a job of its own | accepted | 2026-11-03 |
+| [0215](ADR-0215-old-webkit-page-text-copy.md) | On the previous Playwright's WebKit, a keyboard copy of page text is the engine's limit | accepted | 2026-11-04 |
 
 ## ADR required when
 

@@ -186,3 +186,5 @@ cp33 F4: M18.182 is added as a row (stream 6, held for Huy's go; M18.183-189 hav
 cp34 F4: M18.144 landed a three-engine e2e run only on Chromium and closed before its CI reported; fixed by M18.227 (7b16aed, e2e green on all engines in 41523125332). The lesson is in M18.md Learned (cp34).
 
 cp35 F4: Bullets carry no task id the gate can tell apart from a reference, as M18.231 r2 found. The harm in cp34 F2, rounds restarting past the cap, is closed by foreignLineProblems and nextRound's landed set, both with harness cases, and a misplaced bullet now needs its digest lines, which are refused. Review code-reviews progress bullets by hand until a structured progress format exists.
+
+M18.242 F1: r2 minor, a dangling "On that engine" before "The probe measured" in ADR-0215 option 3; the sentence after it says what the probe measured, so the meaning stands. A round is not spent on it alone (code-review step 5); the next edit of ADR-0215 drops the two words.
