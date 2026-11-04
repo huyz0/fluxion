@@ -9,7 +9,7 @@ import { createId, type Random, type RecordId, type ScreenRecord } from '@fluxio
 import { LIGHT_THEME } from '@fluxion/theme';
 import { t } from '@lingui/core/macro';
 import { I18nProvider } from '@lingui/react';
-import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useInsertionEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useEditorAssets } from './asset-revision.js';
 import type { AssetStore } from './asset-store.js';
 import { registerBuiltinTools } from './builtin-tools.js';
@@ -195,7 +195,8 @@ function useKeyOverrides(settings: SettingsStore): readonly [KeyOverrides, (over
  */
 function useScreenFallback(session: Session, screenId: RecordId | undefined): void {
   const last = useRef(screenId);
-  useEffect(() => {
+  // a layout effect, and before useFitOnOpen: the camera it resets is fitted again in the same frame, before the first screen is painted (M18.258)
+  useLayoutEffect(() => {
     if (last.current === screenId) return;
     last.current = screenId;
     if (session.screen.get() === screenId) return;
@@ -231,7 +232,8 @@ function useShownScreen(
 
 /** A camera never moved (still the default) is fitted to the screen once the canvas has a size. */
 function useFitOnOpen(session: Session, area: Box | undefined, box: { readonly w: number; readonly h: number }): void {
-  useEffect(() => {
+  // before the paint (a layout effect): the first frame that shows the screen shows it fitted, not at an unfitted 100 % (M18.240, M18.245, M18.258)
+  useLayoutEffect(() => {
     if (area !== undefined && box.w > 0 && session.camera.get() === DEFAULT_CAMERA) session.camera.set(fitBox(area, box));
   }, [area, box, session]);
 }

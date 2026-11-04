@@ -11,6 +11,7 @@ import { CANVAS_PATH } from './chrome-css.js';
 import { EditorRoot } from './editor-root.js';
 import { DEFAULT_LAYOUT, LAYOUT_KEY } from './layout.js';
 import { newDocument } from './new-document.js';
+import { switchScreen } from './screen-switch.js';
 import { createSession, DEFAULT_CAMERA } from './session.js';
 import { memorySettings } from './settings.js';
 
@@ -31,6 +32,39 @@ afterEach(() => {
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
 describe('edit-mode root (FR-EDT-001)', () => {
+  it('FR-EDT-001: no frame paints the screen unfitted: at open, after a switch and after the shown screen is deleted, the fit lands before the paint (M18.258)', async () => {
+    const b = documentBuilder({ seed: 76 });
+    b.screen({ size: { w: 1000, h: 500 } });
+    const second = b.screen({ size: { w: 800, h: 800 }, name: 'Second' });
+    const core = createCore(b.build());
+    const session = createSession('local');
+    // each animation frame runs just before a paint: a screen in the canvas while the camera is still the unfitted default is painted so
+    const seen: string[] = [];
+    let watching = true;
+    const watch = () => {
+      if (host.querySelector('main .fx-screen') !== null) seen.push(session.camera.get() === DEFAULT_CAMERA ? 'unfitted' : 'fitted');
+      if (watching) requestAnimationFrame(watch);
+    };
+    requestAnimationFrame(watch);
+    const frames = async (n: number) => {
+      const from = seen.length;
+      await expect.poll(() => seen.length - from).toBeGreaterThan(n);
+    };
+    // not inside act, which would run every effect before the browser could paint: the editor mounts and changes as on a page
+    root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />);
+    await frames(2);
+    switchScreen(session, second);
+    await frames(2);
+    expect(host.querySelector('main .fx-screen')?.getAttribute('data-screen-id')).toBe(second);
+    // the shown screen deleted: the first takes over and starts afresh, and is fitted before it is painted
+    core.store.transact('delete screen', (tx) => tx.delete(second));
+    await frames(2);
+    watching = false;
+    expect(host.querySelector('main .fx-screen')?.getAttribute('data-screen-id')).not.toBe(second);
+    expect(seen.filter((s) => s === 'unfitted')).toEqual([]);
+    expect(session.camera.get()).not.toBe(DEFAULT_CAMERA);
+  });
+
   it('FR-EDT-001: the editor shows the first screen on a named canvas, hidden screens included', async () => {
     const core = createCore(newDocument(seededRandom(3)));
     await act(async () => root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} />));

@@ -11,7 +11,7 @@ import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fl
 import type { RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
 import './i18n.js';
-import { type DOMAttributes, type MouseEvent, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
+import { type DOMAttributes, type MouseEvent, type ReactNode, type RefObject, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, screenToPage, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
 import { wheelCamera, ZOOM_STEP } from './canvas-input.js';
 import { isEditable } from './editor-keys.js';
@@ -263,7 +263,8 @@ export function Canvas(props: CanvasProps): ReactNode {
   const camera = useValue(session.camera.get);
   const space = useRef(false);
   const drag = useRef<Drag | undefined>(undefined);
-  useEffect(() => {
+  // told before the paint (a layout effect): the opening fit it leads to lands in the same frame as the screen, which is never painted unfitted (M18.258)
+  useLayoutEffect(() => {
     onBox(box);
   }, [box, onBox]);
   useWheel(ref, session, box);
