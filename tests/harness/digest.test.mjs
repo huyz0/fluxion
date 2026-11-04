@@ -1,7 +1,7 @@
 // HARNESS NFR-DX-003: every task commit keeps durable, content-bound review evidence (M18.99, ADR-0195).
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { rmSync } from 'node:fs';
+import { chmodSync, rmSync } from 'node:fs';
 import { after, before, describe, it } from 'node:test';
 import { headerCountProblems } from '../../scripts/gates/check-digest.mjs';
 import { cleanEnv, out, sandbox } from './helpers.mjs';
@@ -242,6 +242,60 @@ describe('digest coverage (M18.99)', () => {
       run('reset', '-q', '--hard', start);
     }
   });
+  it('HARNESS: from M18.259 a task commit whose message names more review rounds than its digest lines is refused (M18.259, cp40 F1)', () => {
+    const start = run('rev-parse', 'HEAD');
+    try {
+      put('docs/backlog/current.md', backlog(['M18.1', 'M18.2', 'M18.3', 'M18.259'].map((id) => ROW(id))));
+      commit('chore: open rows');
+      const lines2 = (id, body) => {
+        put(`src/${id}.txt`, `${id}\n`);
+        append(DIGEST, line(id, 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+        run('commit', '-q', '--no-verify', '-m', `${id}: test: change`, '-m', body);
+        return run('rev-parse', 'HEAD');
+      };
+      // before M18.259's commit a body may name lost rounds
+      lines2('M18.1', 'Reviewed: r1 changes-requested, r2 pass.');
+      assert.equal(check(['--head']).status, 0, out(check(['--head'])));
+      lines2('M18.259', 'Reviewed: pass.');
+      assert.equal(check(['--head']).status, 0, out(check(['--head'])));
+      // after it: one pass line under a body that says r2 changes-requested is refused
+      const lost = lines2('M18.2', 'Reviewed: r1 pass, r2 changes-requested (x), r3 pass.');
+      const r = check(['--head']);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, new RegExp(`${lost.slice(0, 7)} M18\\.2: its message names review rounds r2-r3`));
+      assert.match(r.stderr, /M18\.2: its message names review a changes-requested round/);
+      // a landed slip is excused only by a recorded decision, so it cannot keep the gate red for good (M18.259 r4 F1)
+      put('.harness/baselines/named-rounds-exempt.txt', `${lost.slice(0, 7)} M18.2 rounds lost before the hook judged messages (fixture)\n`);
+      assert.equal(check().status, 0, out(check()));
+      run('reset', '-q', '--hard', 'HEAD^');
+      // the commit being made: the commit-msg hook judges its message against its staged lines before it lands (M18.259 r4 F1)
+      sb.write('.githooks/commit-msg', sb.readRepo('.githooks/commit-msg'));
+      chmodSync(sb.path('.githooks/commit-msg'), 0o755);
+      run('config', 'core.hooksPath', '.githooks');
+      put('src/M18.2.txt', 'hooked\n');
+      append(DIGEST, line('M18.2', 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+      const denied = sb.git('commit', '-q', '-m', 'M18.2: test: change', '-m', 'Reviewed: r1 changes-requested (x), r2 pass.');
+      assert.equal(denied.status, 1, out(denied));
+      assert.match(out(denied), /digest message: M18\.2: its message names review round r2 \(the text names r2, the digest holds up to r1\)/);
+      assert.equal(run('log', '-1', '--format=%s'), 'M18.259: test: change');
+      const named = sb.git('commit', '-q', '-m', 'M18.2: test: change', '-m', 'Reviewed: r1 pass.');
+      assert.equal(named.status, 0, out(named));
+      run('config', '--unset', 'core.hooksPath');
+      run('reset', '-q', '--hard', 'HEAD^');
+      // a body under a subject line that cites a checkpoint is still read (M18.259 r1 F1)
+      put('src/M18.2.txt', 'M18.2\n');
+      append(DIGEST, line('M18.2', 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+      run('commit', '-q', '--no-verify', '-m', 'M18.2: test: change (cp40 F1)', '-m', 'Reviewed: r1 changes-requested (x), r2 pass.');
+      assert.equal(check(['--head']).status, 1, out(check(['--head'])));
+      run('reset', '-q', '--hard', 'HEAD^');
+      // another task's or checkpoint's rounds, named in their own sentence, are not read; the rounds held pass
+      lines2('M18.3', 'This follows M18.1 r4 changes-requested. cp40 r2 F1 asked for it.');
+      assert.equal(check(['--head']).status, 0, out(check(['--head'])));
+    } finally {
+      run('reset', '-q', '--hard', start);
+    }
+  });
+
   it('HARNESS: from M18.231 a commit adds only its own task digest lines, and progress.md names only landed rows (M18.231, cp34 F2)', () => {
     const start = run('rev-parse', 'HEAD');
     try {

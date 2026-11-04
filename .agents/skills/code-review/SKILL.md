@@ -20,7 +20,9 @@ Standard: `docs/standards/review.md`.
    - optional: `node scripts/harness/run-reviewer.mjs --task <ID>` runs the other vendor's CLI
      headless on the packet, when a human asks for a cross-vendor review.
 4. Record: `node scripts/harness/review.mjs record --file .harness/tmp/verdict.json --task <ID>`.
-   Record every round, including `changes-requested`.
+   Record every round, including `changes-requested`. On a pass, draft the commit message first and add
+   `--message <file>`: a pass whose message or progress entry names a round the digest lacks is refused,
+   and the commit-msg hook refuses that message too (M18.259).
 5. Fix `blocking` and `major` findings, restage, repeat (max **3 rounds**; after that stop per
    `drive`). Every `minor`, on any verdict, is fixed in a round you run anyway, or triaged: it
    becomes a backlog row **only** if it shows a realistic false green on a plan leg, otherwise

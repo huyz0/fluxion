@@ -61,7 +61,7 @@ node scripts/gates/check-font-engine-evidence.mjs --record <run-id>  record a gr
 node scripts/harness/last-ci.mjs                      main's last completed CI; 1 = red: fix first (while a blocks-landing row is open, only it and harness paths), 2 = fix pending: wait, 3 = unknown
 node scripts/harness/review.mjs context --task M3.4     reviewer packet
 node scripts/harness/run-reviewer.mjs --task M3.4       optional cross-vendor reviewer (default: isolated subagent)
-node scripts/harness/review.mjs record --file v.json    store verdict (bound to content id; stage digest.log)
+node scripts/harness/review.mjs record --file v.json [--message m.txt]  store verdict (content id; stage digest.log; a pass checks the rounds m.txt names)
 node scripts/harness/sync-skills.mjs [--check]          regenerate/check .claude/skills adapters
 ```
 

@@ -1,6 +1,8 @@
 #!/bin/sh
-# Task boundary: subject format, checkpoint cadence, test-removal and threshold trailers.
+# Task boundary: subject format, checkpoint cadence, test-removal and threshold trailers, review rounds named.
 node scripts/gates/check-commit-msg.mjs "$1" || exit 1
 node scripts/gates/check-checkpoint.mjs --message "$1" || exit 1
 node scripts/gates/check-tests-kept.mjs --msg "$1" || exit 1
+# the message names no review round its staged digest lines lack (M18.259)
+node scripts/gates/check-digest.mjs --message "$1" || exit 1
 exec node scripts/gates/check-drift.mjs --msg "$1"

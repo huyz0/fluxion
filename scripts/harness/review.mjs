@@ -3,7 +3,9 @@
 //   review.mjs hash                                  sha256 of `git diff --cached --binary`
 //   review.mjs content [--commit <sha>]              rebase-stable content identity (ADR-0195)
 //   review.mjs context --task M3.4 [--commit <sha>]  reviewer packet (markdown) to stdout
-//   review.mjs record --file v.json --task M3.4 [--commit <sha>]  validate + store .harness/review/<hash>.json
+//   review.mjs record --file v.json --task M3.4 [--commit <sha>] [--message <file>]  validate + store .harness/review/<hash>.json
+// --message names the drafted commit message: a pass is refused when it, or the staged progress.md entry, names a review round
+// the digest does not hold (M18.259); the commit-msg hook judges the final message the same way.
 // --commit reviews a landed commit after the fact (evidence recovery, M18.99); the verdict binds
 // to that commit's content identity instead of the staged diff.
 //   review.mjs rebind --task M3.4 --commit <sha> --line <n>   bind digest line n (a pass of that exact diff) to the commit
@@ -14,7 +16,17 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { currentMilestone, exists, git, node, readText, repoPath, stagedDiff, stagedHash } from '../gates/lib.mjs';
-import { contentId, contentIds, nextRound, parseDigest, parseReviewer, reviewedDiffHash } from '../gates/review-content.mjs';
+import {
+  contentId,
+  contentIds,
+  missingRounds,
+  namedRounds,
+  nextRound,
+  openLines,
+  parseDigest,
+  parseReviewer,
+  reviewedDiffHash,
+} from '../gates/review-content.mjs';
 import { t } from '../gates/thresholds.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -84,7 +96,48 @@ function landedTasks() {
  * Rounds are numbered from the tracked digest, which every worktree shares through history (M18.127), among lines not yet landed
  * (M18.177, M18.193); a task's lines that another row's commit carried onto the base still count until its own commit lands (M18.231).
  */
-const roundOf = (task, content = '') => nextRound(tracked(), task, { content, committed: committedDigest(), landed: landedTasks() });
+const roundOf = (task, content = '') => nextRound([...tracked(), ...lostLines(task)], task, { content, committed: committedDigest(), landed: landedTasks() });
+/** One digest line, as record writes it. */
+const digestLine = (v, { hash, content, round, mark = '' }) =>
+  `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}${mark ? `\t${mark}` : ''}\n`;
+/**
+ * The verdicts this worktree's store holds for `task` whose rounds the tracked digest has lost, as digest lines: a replay onto a new
+ * base that took the base's digest keeps counting from them instead of starting again at r1 (M18.259, cp41 F1). Only while the task
+ * has no commit of its own on the landed base, which has task commits; a landed task's rounds are closed.
+ */
+function lostLines(task) {
+  const landed = landedTasks();
+  if (!landed || landed.has(task)) return [];
+  const held = new Set(tracked().flatMap((l) => (l.task === task && l.verdict !== 'rebind' ? [`${l.round}\t${l.verdict}`] : [])));
+  return roundsFor(task)
+    .filter((v) => Number(v.round) > 0 && !held.has(`r${v.round}\t${v.verdict}`))
+    .sort((a, b) => a.round - b.round || String(a.recordedAt).localeCompare(String(b.recordedAt)))
+    .map((v) => ({
+      text: digestLine(v, { hash: v.diff_sha256, content: v.content_id ?? '', round: v.round, mark: v.mark }),
+      ...parseDigest(digestLine(v, { hash: v.diff_sha256, content: v.content_id ?? '', round: v.round, mark: v.mark }))[0],
+    }));
+}
+/**
+ * The texts a pass is judged against, each read on its own so one cannot run into the next (M18.259 r2 F1): every hunk of
+ * lines the staged change adds to progress.md, and the drafted message given as `--message <file>`.
+ */
+function reviewTexts() {
+  const hunks = [];
+  for (const l of git(['diff', '--cached', '--no-color', '-U0', '--', '.harness/progress.md']).stdout.split(/\r?\n/)) {
+    if (l.startsWith('@@')) hunks.push([]);
+    else if (/^\+(?!\+\+)/.test(l)) hunks.at(-1)?.push(l.slice(1));
+  }
+  const message = arg('message');
+  return [...hunks.map((h) => h.join('\n')), ...(message ? [readFileSync(message, 'utf8')] : [])];
+}
+/** The rounds the texts name for `task`, merged: the highest, and whether any names a round sent back. */
+const textRounds = (task) =>
+  reviewTexts()
+    .map((t) => namedRounds(t, task))
+    .reduce((a, b) => ({ max: Math.max(a.max, b.max), changesRequested: a.changesRequested || b.changesRequested }), {
+      max: 0,
+      changesRequested: false,
+    });
 /**
  * The human allowance for review rounds past the cap, as `.harness/state.json` roundAllowance[task] or a
  * progress.md line `round-allowance: <task> <who, when>`; '' when none is named (M18.215, cp30 F3).
@@ -177,16 +230,25 @@ switch (cmd) {
         `round ${round} is past the cap ${cap}: a pass here needs the human allowance named first, as .harness/state.json roundAllowance["${task}"] or a progress.md line "round-allowance: ${task} <who, when>" (M18.215)`,
         3,
       );
+    // a pass whose staged progress entry or drafted message names rounds the digest does not hold would reset the count (M18.259, cp40 F1)
+    if (v.verdict === 'pass') {
+      const missing = missingRounds(textRounds(task), [
+        ...openLines([...tracked(), ...lostLines(task)], task, { committed: committedDigest(), landed: landedTasks() }),
+        { round: `r${round}`, verdict: v.verdict },
+      ]);
+      if (missing.length) die(`a pass for ${task} would skip review rounds its text names: record ${missing.join('; ')} first (M18.259)`, 3);
+    }
+    const mark = reapply ? 'reapply' : overCap ? 'over-cap' : '';
+    // rounds a replay dropped from the digest go back in before this one, so the ledger holds every round (M18.259, cp41 F1)
+    const lost = lostLines(task);
     mkdirSync(REVIEW_DIR, { recursive: true });
     const name = `${hash || content}.r${round}.json`;
-    writeFileSync(join(REVIEW_DIR, name), JSON.stringify({ ...v, content_id: content, round, recordedAt: new Date().toISOString() }, null, 2));
+    writeFileSync(join(REVIEW_DIR, name), JSON.stringify({ ...v, content_id: content, round, mark, recordedAt: new Date().toISOString() }, null, 2));
     // Tracked digest so history shows non-negotiable 4 held (M0 cp1 F2). The digest is bookkeeping,
     // outside the content identity, so it is staged with the commit it reviews (ADR-0195).
     mkdirSync(dirname(DIGEST), { recursive: true });
-    appendFileSync(
-      DIGEST,
-      `${v.task}\t${hash || '-'}\tr${round}\t${v.verdict}\t${v.reviewer}\t${(v.findings ?? []).length} findings\tcontent:${content}${reapply ? '\treapply' : overCap ? '\tover-cap' : ''}\n`,
-    );
+    appendFileSync(DIGEST, `${lost.map((l) => l.text).join('')}${digestLine(v, { hash, content, round, mark })}`);
+    if (lost.length) console.log(`restored ${lost.map((l) => l.round).join(', ')} of ${task} to the digest from this worktree's verdicts (M18.259)`);
     console.log(
       `recorded ${v.verdict} for ${task} round ${round}${reapply ? ' (reapply)' : overCap ? ' (over-cap)' : ''} (${(hash || content).slice(0, 12)}); stage .harness/reviews/digest.log with this change`,
     );

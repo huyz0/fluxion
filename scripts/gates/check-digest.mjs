@@ -3,6 +3,8 @@
 //   check-digest.mjs            committed history up to HEAD, with the staged tree's digest and backlog
 //   check-digest.mjs --head     the same against HEAD's own tree (CI and completion gates)
 //   --full-history              fail, not skip, on a shallow clone (completion gates must judge history)
+//   check-digest.mjs --message <file>   the commit-msg hook: the message of the commit being made names no review round its staged
+//                                       digest lines do not hold (M18.259)
 // From the commit that adopted this gate on, each task commit must carry, in its own tree, a pass
 // digest line for its task bound to its own content identity. Earlier task commits need a pass line
 // for their task in the evaluated digest, or a reviewed exemption in .harness/baselines/digest-exempt.txt.
@@ -13,19 +15,24 @@
 // counts only when it names a pass line of its task, and a pass line a commit adds for other content
 // must be followed by a later line of its task (M18.127).
 // CI (gates.yml) runs `--head --full-history` on every push and PR.
+import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
-import { contentIds, isPosthoc, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
+import { contentIds, isPosthoc, missingRounds, namedRounds, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
 const DIGEST = '.harness/reviews/digest.log';
 const EXEMPT = '.harness/baselines/digest-exempt.txt';
+/** `<sha7+> <task> <reason>`: a landed commit whose message names rounds its lines lack, excused by a reviewed decision (M18.259 r4 F1). */
+const ROUNDS_EXEMPT = '.harness/baselines/named-rounds-exempt.txt';
 const BACKLOG = 'docs/backlog/current.md';
 /** The task whose commit made review.mjs write only `vendor:role[:posthoc]` reviewers (M18.141). */
 const GRAMMAR_SINCE = 'M18.127';
 /** The task whose commit made a commit's digest lines name only its own task (M18.231, cp34 F2). */
 const OWN_LINES_SINCE = 'M18.231';
+/** The task whose commit made a commit's body and its digest lines agree on the review rounds held (M18.259, cp40 F1). */
+const ROUNDS_SINCE = 'M18.259';
 const PROGRESS = '.harness/progress.md';
 const STATE = '.harness/state.json';
 
@@ -50,9 +57,9 @@ function adoption() {
 const atOrAfter = (sha, base) => git(['merge-base', '--is-ancestor', base, sha]).status === 0;
 
 /** `<sha7+> <task> <reason>` lines: reviewed decisions that a commit's evidence cannot be recovered. */
-function exemptions(tree) {
+function exemptions(tree, file = EXEMPT) {
   return new Set(
-    show(tree, EXEMPT)
+    show(tree, file)
       .split(/\r?\n/)
       .map((l) => /^([0-9a-f]{7,40})\s+(M\d+\.\d+)\s+\S/.exec(l.trim()))
       .filter(Boolean)
@@ -231,14 +238,14 @@ function stagedOwner() {
   return addedLines(['--cached', 'HEAD']).findLast((l) => l.verdict === 'pass' && ids.has(l.content))?.task ?? stagedTask();
 }
 
-/** Every task commit on HEAD from OWN_LINES_SINCE's first one on, oldest first, whatever milestone is current (M18.231 r1 F3). */
-function ownLineCommits() {
+/** Every task commit on HEAD from `since`'s first one on (OWN_LINES_SINCE by default), oldest first, whatever milestone is current (M18.231 r1 F3). */
+function ownLineCommits(since = OWN_LINES_SINCE) {
   const rows = lines(git(['log', '--reverse', '--format=%H%x09%s', 'HEAD'])).flatMap((l) => {
     const [sha, subject = ''] = l.split('\t');
     const task = /^(M\d+\.\d+): /.exec(subject)?.[1];
     return task ? [{ sha, task }] : [];
   });
-  const from = rows.findIndex((c) => c.task === OWN_LINES_SINCE);
+  const from = rows.findIndex((c) => c.task === since);
   return from < 0 ? [] : rows.slice(from);
 }
 
@@ -255,6 +262,45 @@ function foreignLineProblems(tree) {
   return judged.flatMap(({ who, task, range, at }) =>
     [...new Set(addedLineTasks(range, at).filter((t) => t !== task))].map((t) => `${who}: adds review digest lines of ${t}, another row's (M18.231)`),
   );
+}
+
+/**
+ * A task commit's body names no review round its own digest lines do not hold (M18.259, cp40 F1): a body that says "r1
+ * changes-requested, r2 pass" over one pass line has a round the ledger lost, and the cap counted from the wrong number. Task
+ * commits from ROUNDS_SINCE's first one on that add a digest line of their task; sentences naming another task or a checkpoint speak
+ * of other reviews and are not read.
+ */
+function namedRoundProblems(tree) {
+  const exempt = exemptions(tree, ROUNDS_EXEMPT);
+  return ownLineCommits(ROUNDS_SINCE).flatMap(({ sha, task }) => {
+    if (exempt.has(`${sha.slice(0, 7)} ${task}`)) return [];
+    return messageRoundProblems(git(['log', '-1', '--format=%B', sha]).stdout, task, [`${sha}^`, sha]).map((m) => `${sha.slice(0, 7)} ${m}`);
+  });
+}
+
+/** What a message names for `task` that the task's digest lines in `range` (git diff arguments) do not hold. */
+function messageRoundProblems(body, task, range) {
+  const own = addedLines(range).filter((l) => l.task === task && l.verdict !== 'rebind');
+  // a commit with no line of its own is bookkeeping the recorder refuses ("no reviewable content"): it has no rounds to hold
+  if (own.length === 0) return [];
+  return missingRounds(namedRounds(body, task), own).map((m) => `${task}: its message names review ${m} (M18.259)`);
+}
+
+/**
+ * The commit being made, judged in the commit-msg hook before it can land (M18.259 r4 F1): its message against the digest lines the
+ * staged change adds for the subject's task, once ROUNDS_SINCE has a commit on HEAD or is that task.
+ */
+export function checkMessage(message) {
+  const task = /^(M\d+\.\d+): /.exec(message)?.[1];
+  if (!task || git(['rev-parse', '--verify', 'HEAD']).status !== 0) return { ok: true, detail: 'digest message: SKIP — no task subject' };
+  if (task !== ROUNDS_SINCE && ownLineCommits(ROUNDS_SINCE).length === 0) return { ok: true, detail: `digest message: SKIP — before ${ROUNDS_SINCE}` };
+  const problems = messageRoundProblems(message, task, ['--cached', 'HEAD']);
+  if (problems.length)
+    return {
+      ok: false,
+      detail: `digest message: ${problems.join('; ')}: record the missing rounds (posthoc lines for lost ones) or correct the message`,
+    };
+  return { ok: true, detail: `digest message: ${task}'s message names no round its digest lines lack` };
 }
 
 /**
@@ -296,13 +342,18 @@ export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
     ...headerCountProblems(show(tree, BACKLOG)),
     ...foreignLineProblems(tree),
     ...progressProblems(tree),
+    ...namedRoundProblems(tree),
   ];
   if (problems.length) return { ok: false, detail: `digest: ${problems.length} problem(s)\n  ${problems.join('\n  ')}` };
   return { ok: true, detail: `digest: ${commits.length} ${milestone} task commits have tracked review evidence and Commit cells` };
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const verdict = checkDigest({ tree: process.argv.includes('--head') ? 'HEAD' : 'index', fullHistory: process.argv.includes('--full-history') });
+  const at = process.argv.indexOf('--message');
+  const verdict =
+    at > 0
+      ? checkMessage(readFileSync(process.argv[at + 1], 'utf8'))
+      : checkDigest({ tree: process.argv.includes('--head') ? 'HEAD' : 'index', fullHistory: process.argv.includes('--full-history') });
   (verdict.ok ? console.log : console.error)(verdict.detail);
   process.exitCode = verdict.ok ? 0 : 1;
 }

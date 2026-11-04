@@ -1,8 +1,8 @@
 // NFR-DX-003 / non-negotiable 4: a commit needs a pass verdict bound to its reviewed content (ADR-0195).
 import assert from 'node:assert/strict';
-import { chmodSync, readdirSync, rmSync } from 'node:fs';
+import { chmodSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { after, afterEach, before, describe, it } from 'node:test';
-import { nextRound, parseDigest } from '../../scripts/gates/review-content.mjs';
+import { namedRounds, nextRound, parseDigest } from '../../scripts/gates/review-content.mjs';
 import { out, sandbox } from './helpers.mjs';
 
 const TASK = 'M0.5';
@@ -191,6 +191,94 @@ describe('review binding (NFR-DX-003)', () => {
     }
   });
 
+  it('refuses a pass whose message or progress entry names rounds the digest does not hold, until they are appended (M18.259, cp40 F1)', () => {
+    const s = sandbox(undefined, { git: true });
+    try {
+      const rec = (v, message) => {
+        s.write('.harness/tmp/v.json', JSON.stringify(v));
+        s.write('.harness/tmp/msg.txt', message);
+        return s.node('scripts/harness/review.mjs', [
+          'record',
+          '--file',
+          s.path('.harness/tmp/v.json'),
+          '--task',
+          TASK,
+          '--message',
+          s.path('.harness/tmp/msg.txt'),
+        ]);
+      };
+      const v = (over = {}) => ({
+        task: TASK,
+        diff_sha256: s.node('scripts/harness/review.mjs', ['hash']).stdout.trim(),
+        reviewer: 'test:unit',
+        verdict: 'pass',
+        findings: [],
+        ...over,
+      });
+      const body = `${TASK}: feat(x): y\n\nReviewed: r1 changes-requested (a), r2 changes-requested (b), r3 pass.\n`;
+      s.write('src/d.txt', 'a\n');
+      s.git('add', 'src/d.txt');
+      // one line held: r1 changes-requested
+      assert.equal(rec(v({ verdict: 'changes-requested', findings: [{ file: 'src/d.txt', severity: 'major', failure_scenario: 'x' }] }), '').status, 0);
+      s.write('src/d.txt', 'b\n');
+      s.git('add', 'src/d.txt');
+      const refused = rec(v(), body);
+      assert.equal(refused.status, 3, out(refused));
+      assert.match(refused.stderr, /would skip review rounds its text names: record round r3 \(the text names r3, the digest holds up to r2\)/);
+      assert.equal(s.read('.harness/reviews/digest.log').trim().split('\n').length, 1);
+      // the same from a staged progress entry; another task's rounds named in its own sentence are not this task's
+      s.write(
+        '.harness/progress.md',
+        `## ${TASK}\n- M9.9 had r1 and r2 changes-requested.\n- Reviewed: r1 changes-requested, r2 changes-requested, r3 pass.\n`,
+      );
+      s.git('add', '.harness/progress.md');
+      assert.equal(rec(v(), '').status, 3);
+      // a heading that cites a checkpoint ends at its line, so the bullet under it is still read (M18.259 r1 F1)
+      s.write('.harness/progress.md', `## ${TASK}: x (cp40 F1)\n- Reviewed: r1 changes-requested, r2 changes-requested, r3 pass\n`);
+      s.git('add', '.harness/progress.md');
+      assert.equal(rec(v(), '').status, 3);
+      // and so is a body under a subject that cites one
+      assert.equal(rec(v(), `${TASK}: feat(x): y (cp40 F1)\n\nReviewed: r1 changes-requested (a), r2 changes-requested (b), r3 pass.\n`).status, 3);
+      // a progress bullet without a closing period does not run into a message subject that cites a checkpoint (M18.259 r2 F1)
+      s.write('.harness/progress.md', `## ${TASK}\n- Review: r1 changes-requested (x), r2 changes-requested (y), r3 pass\n`);
+      s.git('add', '.harness/progress.md');
+      assert.equal(rec(v(), `${TASK}: feat(x): y (cp40 F1)\n\nShort body.\n`).status, 3);
+      s.git('rm', '-q', '--cached', '.harness/progress.md');
+      // the lost round appended (as a posthoc line would be): the pass is round 3 and is accepted
+      s.write(
+        '.harness/reviews/digest.log',
+        `${s.read('.harness/reviews/digest.log')}${TASK}\t-\tr2\tchanges-requested\ttest:unit:posthoc\t1 findings\tcontent:\n`,
+      );
+      const accepted = rec(v(), body);
+      assert.equal(accepted.status, 0, out(accepted));
+      assert.match(accepted.stdout, /recorded pass for M0\.5 round 3/);
+    } finally {
+      s.cleanup();
+    }
+  });
+
+  it('reads the rounds a text names line by line, and a round sent back only where a round number names it (M18.259 r1)', () => {
+    const none = { max: 0, changesRequested: false };
+    // a subject, a heading or a list item that names a checkpoint or another task does not swallow the next line
+    assert.deepEqual(namedRounds('M18.300: fix(x): y (cp40 F1)\n\nReviewed: r1 changes-requested (a), r2 pass.\n', 'M18.300'), {
+      max: 2,
+      changesRequested: true,
+    });
+    assert.deepEqual(namedRounds('## M18.300: thing (cp40 F1)\n- Reviewed: r1 changes-requested, r2 pass.', 'M18.300'), { max: 2, changesRequested: true });
+    assert.deepEqual(namedRounds('- r1 changes-requested (x), r2 pass\n- Follows M18.231.', 'M18.300'), { max: 2, changesRequested: true });
+    // a wrapped sentence still belongs to the task it names
+    assert.deepEqual(namedRounds('M18.300: x\n\nThis follows M18.237, which was\nsent back in round 3.', 'M18.300'), none);
+    // a list of rounds before the word; a generic or negated use is no round
+    assert.deepEqual(namedRounds('Reviewed: r1 and r2 changes-requested, r3 pass.', 'M18.300'), { max: 3, changesRequested: true });
+    assert.deepEqual(namedRounds('Reviewed: r1 pass, no changes-requested round.', 'M18.300'), { max: 1, changesRequested: false });
+    assert.deepEqual(namedRounds('A pass is refused when the text names a changes-requested round.', 'M18.300'), none);
+    // a checkpoint cited beside the task's own rounds: only the checkpoint's own round and findings are left out (M18.259 r5 F1)
+    assert.deepEqual(namedRounds('Review: r1 changes-requested (cp40 F1 not covered), r2 pass.', 'M18.300'), { max: 2, changesRequested: true });
+    assert.deepEqual(namedRounds("cp40 r3 F1 and cp41's round 4 asked for it.", 'M18.300'), none);
+    // trailers are not read
+    assert.deepEqual(namedRounds('x\n\nFixes-ci: r9 changes-requested', 'M18.300'), none);
+  });
+
   it('counts rounds from the landed base, so a committed but unlanded task keeps counting (M18.193, cp24 F4)', () => {
     const s = sandbox(undefined, { git: true });
     try {
@@ -246,6 +334,70 @@ describe('review binding (NFR-DX-003)', () => {
       s.write('src/b.txt', 'three\n');
       s.git('add', 'src/b.txt');
       assert.match(rec(v()).stdout, /round 1 \(/);
+    } finally {
+      s.cleanup();
+    }
+  });
+
+  it('a replay onto a new base that took its digest continues the round count and restores the lost lines (M18.259, cp41 F1)', () => {
+    const s = sandbox(undefined, { git: true });
+    try {
+      const rec = (verdict) => {
+        s.write(
+          '.harness/tmp/v.json',
+          JSON.stringify({
+            task: TASK,
+            diff_sha256: s.node('scripts/harness/review.mjs', ['hash']).stdout.trim(),
+            reviewer: 'test:unit',
+            verdict,
+            findings: verdict === 'pass' ? [] : [{ file: 'src/r.txt', severity: 'major', failure_scenario: 'x' }],
+          }),
+        );
+        return s.node('scripts/harness/review.mjs', ['record', '--file', s.path('.harness/tmp/v.json'), '--task', TASK]);
+      };
+      const rounds = () =>
+        (existsSync(s.path('.harness/reviews/digest.log')) ? s.read('.harness/reviews/digest.log') : '')
+          .split('\n')
+          .filter((l) => l.startsWith(`${TASK}\t`))
+          .map((l) => l.split('\t').slice(2, 4).join(' '));
+      // a landed base with a task commit on it
+      s.write(
+        'docs/backlog/current.md',
+        `# Backlog\n\n| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n| ${TASK} | x | FR-X-1 | WHEN x THE SYSTEM SHALL y | — | todo | |\n`,
+      );
+      s.git('add', '-A');
+      s.git('commit', '-q', '--no-verify', '-m', 'M0.9: feat(y): base');
+      s.git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+      // four rounds sent back, the fourth past the cap
+      for (const [n, text] of ['one', 'two', 'three', 'four'].entries()) {
+        s.write('src/r.txt', `${text}\n`);
+        s.git('add', 'src/r.txt');
+        assert.equal(rec('changes-requested').status, n < 3 ? 0 : 3);
+      }
+      assert.deepEqual(rounds(), ['r1 changes-requested', 'r2 changes-requested', 'r3 changes-requested', 'r4 changes-requested']);
+      // the replay: main moves, the change is re-applied on it and main's digest taken, so the task's lines are gone
+      s.git('reset', '-q', '--hard');
+      // main's digest: what the base tracks, nothing when it tracks none
+      if (!s.git('ls-files', '.harness/reviews/digest.log').stdout.trim()) rmSync(s.path('.harness/reviews/digest.log'), { force: true });
+      s.write('src/o.txt', 'other\n');
+      s.git('add', 'src/o.txt');
+      s.git('commit', '-q', '--no-verify', '-m', 'M0.8: feat(z): other');
+      s.git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+      s.write('src/r.txt', 'five\n');
+      s.git('add', 'src/r.txt');
+      s.git('commit', '-q', '--no-verify', '-m', `${TASK}: feat(x): five`);
+      assert.deepEqual(rounds(), []);
+      // the replayed packet names round 5, not round 1
+      const packet = s.node('scripts/harness/review.mjs', ['context', '--task', TASK, '--commit', 'HEAD']);
+      assert.equal(packet.status, 0, out(packet));
+      assert.match(packet.stdout, /^# Review packet — M0\.5 \(round 5 of max 3\)/);
+      // and the next verdict puts the lost rounds back before its own
+      s.git('reset', '-q', '--soft', 'HEAD~1');
+      const r5 = rec('changes-requested');
+      assert.equal(r5.status, 3, out(r5));
+      assert.match(r5.stdout, /restored r1, r2, r3, r4 of M0\.5 to the digest/);
+      assert.deepEqual(rounds(), ['r1 changes-requested', 'r2 changes-requested', 'r3 changes-requested', 'r4 changes-requested', 'r5 changes-requested']);
+      assert.equal(s.read('.harness/reviews/digest.log').trim().split('\n').at(-2).split('\t').at(-1), 'over-cap');
     } finally {
       s.cleanup();
     }

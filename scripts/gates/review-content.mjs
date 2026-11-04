@@ -165,6 +165,19 @@ export function parseReviewer(reviewer) {
 export const isPosthoc = (reviewer) => parseReviewer(reviewer)?.posthoc ?? /:posthoc\b/.test(String(reviewer ?? ''));
 
 /**
+ * The task's digest lines that have not landed (missing from `committed`, the parsed digest on the landed base), rebind lines left
+ * out: the rounds of the change under review (M18.177); with `landed`, a task's landed lines close its rounds only once its own
+ * commit is there (M18.231, cp34 F2).
+ */
+export function openLines(digest, task, { committed = [], landed } = {}) {
+  const key = (l) => [l.task, l.hash, l.round, l.verdict, l.reviewer, l.content].join('\t');
+  // lines another row's commit carried onto the base close nothing while `task` has no commit there (M18.231, cp34 F2)
+  const closed = landed === undefined || landed.has(task);
+  const before = new Set(closed ? committed.filter((l) => l.task === task).map(key) : []);
+  return digest.filter((l) => l.task === task && l.verdict !== 'rebind' && !before.has(key(l)));
+}
+
+/**
  * The round of the next verdict for `task` over `content`, numbered from the tracked digest's lines for
  * the task that have not landed (missing from `committed`, the parsed digest on the landed base): one past
  * the highest of them, so a pass never restarts the count before the task's commit and the round cap
@@ -173,13 +186,63 @@ export const isPosthoc = (reviewer) => parseReviewer(reviewer)?.posthoc ?? /:pos
  * that have a commit on the landed base, a task's landed lines close its rounds only once its own commit is there (M18.231).
  */
 export function nextRound(digest, task, { content = '', committed = [], landed } = {}) {
-  const key = (l) => [l.task, l.hash, l.round, l.verdict, l.reviewer, l.content].join('\t');
-  // lines another row's commit carried onto the base close nothing while `task` has no commit there (M18.231, cp34 F2)
-  const closed = landed === undefined || landed.has(task);
-  const before = new Set(closed ? committed.filter((l) => l.task === task).map(key) : []);
-  const since = digest.filter((l) => l.task === task && l.verdict !== 'rebind' && !before.has(key(l)));
+  const since = openLines(digest, task, { committed, landed });
   const passed = content ? since.findLast((l) => l.verdict === 'pass' && l.content === content) : undefined;
   const number = (l) => Number(/^r(\d+)$/.exec(l.round)?.[1]) || 0;
   if (passed) return { round: number(passed), reapply: true };
   return { round: Math.max(0, ...since.map(number)) + 1, reapply: false };
+}
+
+/**
+ * The review rounds a text names for `task` (a commit body, a progress entry): the highest `r<N>` or `round <N>`, and whether it
+ * names a round sent back (`r<N> changes-requested`, a list of rounds before the word too), read only from sentences that name no
+ * other task, since those speak of other reviews, with a checkpoint reference and the round or finding right after it left out
+ * (M18.259, cp40 F1). A sentence ends at `.` or `;`, and also at a
+ * subject line, a blank line, a heading or a list item, so a subject or heading that names a checkpoint does not swallow the next
+ * paragraph. `{ max: 0, changesRequested: false }` when it names none.
+ */
+export function namedRounds(text, task) {
+  const own = (sentence) => [...sentence.matchAll(/\b(M\d+\.\d+)\b/g)].every((m) => m[1] === task);
+  // a checkpoint reference and the round or finding it names (`cp40 r2`, `cp40's round 2 F1`) speak of the checkpoint's review; the
+  // rest of the sentence still names the task's own rounds (M18.259 r5 F1)
+  const ownText = (sentence) => sentence.replace(/\bcp\d+(?:'s)?(?:\s+(?:r|round )\d+)?(?:\s+F\d+)*/g, ' ');
+  const blocks = [];
+  let open = false;
+  for (const [i, line] of String(text ?? '')
+    .split(/\r?\n/)
+    .entries()) {
+    if (/^[A-Z][a-z]*(?:-[A-Za-z]+)+: /.test(line)) continue;
+    if (!line.trim()) {
+      open = false;
+      continue;
+    }
+    const starts = i === 0 || !open || /^\s*(?:#|[-*] |\d+\. )/.test(line);
+    if (starts) blocks.push(line);
+    else blocks[blocks.length - 1] += ` ${line}`;
+    // a subject line and a heading end where they end
+    open = i !== 0 && !/^\s*#/.test(line);
+  }
+  const sentences = blocks
+    .flatMap((b) => b.split(/[.;]\s+/))
+    .filter(own)
+    .map(ownText);
+  const numbers = sentences.flatMap((s) => [...s.matchAll(/\b(?:r|round )(\d+)\b/g)].map((m) => Number(m[1])));
+  const sentBack = /\b(?:r|round )\d+(?:\s*(?:,|and|,\s*and)\s*(?:r|round )?\d+)*\s+changes-requested\b/;
+  return { max: Math.max(0, ...numbers), changesRequested: sentences.some((s) => sentBack.test(s)) };
+}
+
+/**
+ * What `named` (from {@link namedRounds}) says happened that `lines` (the task's digest lines for this change) do not hold: a round
+ * past the highest held, or a changes-requested round when none is held (M18.259); [] when the digest holds them all.
+ */
+export function missingRounds(named, lines) {
+  const held = Math.max(0, ...lines.map((l) => Number(/^r(\d+)$/.exec(l.round)?.[1]) || 0));
+  const missing = [];
+  if (named.max > held)
+    missing.push(
+      `round${named.max - held > 1 ? 's' : ''} r${held + 1}${named.max - held > 1 ? `-r${named.max}` : ''} (the text names r${named.max}, the digest holds up to r${held})`,
+    );
+  if (named.changesRequested && !lines.some((l) => l.verdict === 'changes-requested'))
+    missing.push('a changes-requested round (the text names one, the digest holds none)');
+  return missing;
 }
