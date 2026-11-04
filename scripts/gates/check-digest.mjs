@@ -20,7 +20,7 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
-import { contentIds, isPosthoc, missingRounds, namedRounds, openLines, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
+import { contentIds, isPosthoc, mergeRounds, missingRounds, namedRounds, openLines, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
@@ -340,6 +340,16 @@ function namedRoundProblems(tree) {
   });
 }
 
+/** The text of each progress.md hunk a diff (git diff arguments) adds, one per hunk, as review.mjs record reads the staged ones. */
+function progressHunks(range) {
+  const hunks = [];
+  for (const l of git(['diff', '--no-color', '-U0', ...range, '--', PROGRESS]).stdout.split(/\r?\n/)) {
+    if (l.startsWith('@@')) hunks.push([]);
+    else if (/^\+(?!\+\+)/.test(l)) hunks.at(-1)?.push(l.slice(1));
+  }
+  return hunks.map((h) => h.join('\n'));
+}
+
 /** The remote-tracking branch land.mjs lands on, whose merge-base review.mjs record numbers rounds from. */
 const LANDED = 'refs/remotes/origin/main';
 
@@ -382,7 +392,10 @@ function messageRoundProblems(body, task, parent, target) {
   const own = addedLines(target ? [parent, target] : ['--cached', parent]).filter((l) => l.task === task && l.verdict !== 'rebind');
   // a commit with no line of its own is bookkeeping the recorder refuses ("no reviewable content"): it has no rounds to hold
   if (own.length === 0) return [];
-  return missingRounds(namedRounds(body, task), countedLines(task, target)).map((m) => `${task}: its message names review ${m} (M18.259, M18.268)`);
+  // the body and each progress.md hunk the commit adds, read as review.mjs record reads them (M18.270, cp43 F2)
+  const texts = [body, ...progressHunks(target ? [parent, target] : ['--cached', parent])];
+  const named = mergeRounds(texts.map((t) => namedRounds(t, task)));
+  return missingRounds(named, countedLines(task, target)).map((m) => `${task}: its message or progress lines name review ${m} (M18.259, M18.268, M18.270)`);
 }
 
 /**

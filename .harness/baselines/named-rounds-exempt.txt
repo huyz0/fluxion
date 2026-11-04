@@ -1,0 +1,2 @@
+# <sha7+> <task> <reason>: a landed commit whose message or progress lines name rounds its digest lines lack, excused by a reviewed decision (M18.259 r4 F1).
+c57b425 M18.122 its first changes-requested review was restaged before it was recorded, so its progress entry's r1-r3 sit one round above the digest's; the lost round is held by a posthoc line since M18.270 and its true count was four with the rebind, allowed by stream 1 under Huy's 2026-11-04T13:34:57Z delegation, pending his answer to the cp42 F4 card (cp43 F2)
