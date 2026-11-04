@@ -10,7 +10,16 @@ test.describe('the connector tool', { tag: '@desktop' }, () => {
     // 1280 px viewport and its click places nothing; the fit lands a frame later (nightly 41559194820, previous webkit: one shape of two, as in
     // M18.240), so the points are taken once it has landed
     // the probe (M18.245): what the first frame showed, in the report on every run and in the setup's failure message
-    const first = `first read: zoom ${await editor.zoomValue.textContent()}, screen ${JSON.stringify(await editor.screenBox())}`;
+    // the label and the box read in one evaluate, so a line describes one frame (cp40 F3: two calls read a 100 % label beside an already fitted box)
+    const [label, shown] = await Promise.all([editor.zoomValue.elementHandle(), editor.screens.first().elementHandle()]);
+    const frame = await page.evaluate(
+      ([z, s]) => {
+        const { x, y, width, height } = (s as Element).getBoundingClientRect();
+        return { zoom: (z as Element).textContent, screen: { x, y, width, height } };
+      },
+      [label, shown] as const,
+    );
+    const first = `first read: zoom ${frame.zoom}, screen ${JSON.stringify(frame.screen)}`;
     test.info().annotations.push({ type: 'opening fit', description: first });
     // and in the job log, which a green run keeps too: a line 'M18.245 opening fit:' whose zoom reads 100 % is the unfitted frame seen
     console.log(`M18.245 opening fit: ${first}`);
